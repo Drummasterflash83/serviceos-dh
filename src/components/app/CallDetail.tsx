@@ -1,12 +1,6 @@
-/**
- * Call detail — makes Phone Intelligence visible and actionable for one call:
- * the corrected canonical summary + purpose/urgency/owner/confidence, resolved participants
- * with HONEST unknown/conflict states, a raw↔normalised transcript toggle with the corrections
- * highlighted + explained (evidence + confidence), and a persistent "Mark reviewed" action that
- * survives refresh. The raw transcript is shown immutable alongside the corrected one.
- */
+/** Retained call intelligence with explicit source limitations and review state. */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   Loader2,
@@ -114,39 +108,73 @@ function PartyRow({
   );
 }
 
-export function CallDetail({ callId, onBack }: { callId: string; onBack: () => void }) {
+export function CallDetail(props: { callId: string; onBack: () => void }) {
+  // A new call has a fresh state immediately, before effects run.
+  return <CallDetailView key={props.callId} {...props} />;
+}
+
+function CallDetailView({ callId, onBack }: { callId: string; onBack: () => void }) {
   const [data, setData] = useState<CallDetailData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<"normalised" | "raw">("normalised");
+  const [view, setView] = useState<"normalised" | "raw">("raw");
   const [busy, setBusy] = useState(false);
 
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const generation = useRef(0);
+  const working = useRef(false);
+
   const load = useCallback(async () => {
+    const ticket = ++generation.current;
     setLoading(true);
-    const r = await getCallDetail(callId);
-    setLoading(false);
-    if (r.ok) {
-      setData(r.data);
-      setError(null);
-    } else setError(r.error.message);
+    setData(null);
+    setError(null);
+    try {
+      const r = await getCallDetail(callId);
+      if (ticket !== generation.current) return;
+      if (r.ok) setData(r.data);
+      else setError(r.error.message);
+    } catch {
+      if (ticket === generation.current) setError("Call details could not be checked. Try again.");
+    } finally {
+      if (ticket === generation.current) setLoading(false);
+    }
   }, [callId]);
   useEffect(() => {
     void load();
+    return () => {
+      generation.current++;
+    };
   }, [load]);
 
   async function toggleReviewed() {
-    if (!data) return;
+    if (!data || working.current) return;
+    const ticket = generation.current;
+    working.current = true;
     setBusy(true);
-    if (data.review) await clearCallReview(callId);
-    else await markCallReviewed(callId);
-    await load();
-    setBusy(false);
+    setReviewError(null);
+    try {
+      const result = data.review ? await clearCallReview(callId) : await markCallReviewed(callId);
+      if (ticket !== generation.current) return;
+      if (result.ok)
+        setData((current) => (current ? { ...current, review: result.data.review } : null));
+      else
+        setReviewError("Your review change could not be confirmed. Refresh before trying again.");
+    } catch {
+      if (ticket === generation.current)
+        setReviewError("Your review change could not be confirmed. Refresh before trying again.");
+    } finally {
+      if (ticket === generation.current) {
+        working.current = false;
+        setBusy(false);
+      }
+    }
   }
 
   const ins = data?.insight;
   const corr = data?.transcript.corrections ?? [];
-  const froms = corr.map((c) => c.from);
-  const tos = corr.map((c) => c.to);
+  const froms = corr.filter((c) => c.applied).map((c) => c.from);
+  const tos = corr.filter((c) => c.applied).map((c) => c.to);
 
   return (
     <div className="space-y-4">
@@ -176,6 +204,11 @@ export function CallDetail({ callId, onBack }: { callId: string; onBack: () => v
         </div>
       ) : !data ? null : (
         <>
+          <p className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-sm" role="status">
+            Saved analysis — its match to the current recording has not been verified here. Summary,
+            participants and corrections may be out of date. Check the source before acting.
+            {ins?.updated_at ? ` Analysis saved ${when(ins.updated_at)}.` : ""}
+          </p>
           {/* Summary + structured intelligence */}
           <div className="rounded-2xl border border-hairline bg-white p-5">
             <div className="flex items-center gap-2">
@@ -191,7 +224,8 @@ export function CallDetail({ callId, onBack }: { callId: string; onBack: () => v
               <p className="mt-2 text-sm">{ins.summary}</p>
             ) : (
               <p className="mt-2 text-sm text-muted-foreground">
-                Not analysed yet — this call is still processing.
+                No saved summary is available here. This does not confirm that processing is
+                running.
               </p>
             )}
             {ins && (
@@ -211,7 +245,7 @@ export function CallDetail({ callId, onBack }: { callId: string; onBack: () => v
 
           {/* Participants — honest unknown/conflict */}
           <div className="rounded-2xl border border-hairline bg-white p-5">
-            <div className="text-sm font-semibold">Participants</div>
+            <div className="text-sm font-semibold">Participants suggested by saved analysis</div>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <PartyRow
                 label="Internal (our side)"
@@ -287,34 +321,42 @@ export function CallDetail({ callId, onBack }: { callId: string; onBack: () => v
                   <button
                     key={v}
                     onClick={() => setView(v)}
+                    disabled={v === "normalised" && !data.transcript.normalised}
                     className={cn(
                       "rounded-full px-3 py-1 text-[11px] font-medium capitalize",
                       view === v ? "bg-accent text-white" : "text-muted-foreground",
                     )}
                   >
-                    {v === "raw" ? "Raw (original)" : "Corrected"}
+                    {v === "raw" ? "Saved raw" : "Saved corrected"}
                   </button>
                 ))}
               </div>
             </div>
             <p className="mt-1 text-[11px] text-muted-foreground">
               {view === "raw"
-                ? "The original ASR transcript, unchanged. Mishearings are highlighted."
-                : "Tenant-vocabulary corrections applied. Corrected phrases are highlighted; the raw transcript is preserved."}
+                ? "Saved raw text linked to this analysis. Applied correction phrases are highlighted; recording freshness is unverified."
+                : "Saved corrections linked to the same transcript. Highlighting marks matching phrases, not verified error locations."}
             </p>
+            {!data.transcript.raw && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                No source transcript is linked to this saved analysis. Check the saved recording and
+                results in LEARN.
+              </p>
+            )}
             <div className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded-lg border border-hairline bg-surface-alt/30 p-3 text-[13px] leading-relaxed">
               {view === "raw" ? (
                 <Highlighted text={data.transcript.raw ?? ""} phrases={froms} tone="from" />
               ) : (
-                <Highlighted
-                  text={data.transcript.normalised ?? data.transcript.raw ?? ""}
-                  phrases={tos}
-                  tone="to"
-                />
+                <Highlighted text={data.transcript.normalised ?? ""} phrases={tos} tone="to" />
               )}
             </div>
           </div>
 
+          {reviewError && (
+            <p role="alert" className="text-sm text-destructive">
+              {reviewError}
+            </p>
+          )}
           {/* Persistent action */}
           <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-hairline bg-white p-4">
             <button
@@ -332,10 +374,14 @@ export function CallDetail({ callId, onBack }: { callId: string; onBack: () => v
             </button>
             {data.review && (
               <span className="text-xs text-muted-foreground">
-                Reviewed {when(data.review.reviewed_at)} · persists across refresh
+                Reviewed {when(data.review.reviewed_at)} · call-level review
               </span>
             )}
           </div>
+          <p className="text-xs text-muted-foreground">
+            Review records that someone checked this call; it does not verify recording freshness or
+            approve later analysis.
+          </p>
         </>
       )}
     </div>

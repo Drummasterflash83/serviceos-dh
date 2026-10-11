@@ -1,0 +1,80 @@
+{
+  "observedAt": "2026-10-11T12:54:56.369Z",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "endpoint": {
+    "name": "phone-call-detail",
+    "version": 1,
+    "verifyJwt": true,
+    "status": "ACTIVE"
+  },
+  "checks": [
+    {
+      "name": "no session",
+      "status": 401,
+      "noCallData": true
+    },
+    {
+      "name": "anonymous key",
+      "status": 401,
+      "noCallData": true
+    },
+    {
+      "name": "service cannot impersonate reviewer",
+      "status": 403,
+      "noCallData": true
+    }
+  ],
+  "preservedDataSets": 113,
+  "positiveSignedInAcceptance": false,
+  "productionChanged": false,
+  "newUsers": 0,
+  "newGrants": 0,
+  "version": "learn-call-detail-test/1",
+  "runtimeBundleSha256": "d5c27a9361382a955b4683c90c908174a9ace11e33c2de61d9ee133bbce115c5",
+  "savedResultsSchema": "6632f3df219ea27a9ccc3f668f198f00",
+  "sourceReadback": {
+    "observedAt": "2026-10-11T12:54:14.276Z",
+    "bundleSha256": "d5c27a9361382a955b4683c90c908174a9ace11e33c2de61d9ee133bbce115c5",
+    "checks": [
+      {
+        "path": "_shared/authz.ts",
+        "syntaxMatches": true,
+        "downloadedSha256": "788c10b56574a1b81d47f78a6ba1363c4c3696c4acc98249ed0cdbea81846767"
+      },
+      {
+        "path": "_shared/simwood.ts",
+        "syntaxMatches": true,
+        "downloadedSha256": "fd030cc3ebedd2a83987f22c8d7fc7100311e4cd0f5444d46207bef2812fec9c"
+      },
+      {
+        "path": "phone-call-detail/index.ts",
+        "syntaxMatches": true,
+        "downloadedSha256": "5f8cb95094807814cdbf168f4b3c89096eb7428567ad3ce9bfeab89c0c654db4"
+      }
+    ],
+    "allMatched": true,
+    "method": "Emitted syntax tree comparison retains literals, identifiers, operators, declaration kinds and child structure. Supplemented by downloaded-handler regression tests."
+  },
+  "localTests": {
+    "handler": 8,
+    "responseContract": 4,
+    "downloadedHandler": 8,
+    "typescript": true,
+    "build": true,
+    "prebuild": 47
+  },
+  "localBrowser": {
+    "syntheticBackend": true,
+    "actualComponentAndClient": true,
+    "lateResponseIgnored": true,
+    "absentSummaryNotProcessing": true,
+    "absentCorrectionDisabled": true,
+    "savedCorrectedSelection": true,
+    "failedReadHidesOldDetail": true,
+    "failedReviewNotSuccess": true,
+    "consoleErrors": 0
+  },
+  "frontend": {
+    "state": "pending_matching_protected_deployment"
+  }
+}

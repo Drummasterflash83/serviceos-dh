@@ -404,6 +404,49 @@ succeeded after that failure; no worker was invoked and no source record changed
   recording inventory and one manifest-selected restore are verified; later
   arrivals, scheduled coverage and database recovery still require acceptance.
 
+## Retained call detail — 11 October, 12:55 UTC
+
+The older `/app#communications` call detail could pair the newest recording
+transcript with an insight and corrections from a different transcript. The
+reader now selects the insight's exact transcript ID within the same tenant and
+recording. Missing source IDs remain missing; an interaction summary is never
+silently substituted. Saved corrections are selected deterministically for that
+same source. This linkage does not establish that the text still matches the
+current audio: the legacy screen explicitly labels analysis, participants and
+corrections as unverified and potentially out of date. The LEARN recording viewer
+remains the separate reader with retained provenance checks.
+
+- Hosted TEST `phone-call-detail` v1 is ACTIVE with JWT verification, response
+  contract `phone-call-detail/2` and `Cache-Control: no-store`. It requires a real
+  signed-in owner/admin/ops profile and confirms the call belongs to that tenant
+  before detail reads or review writes. No new account or grant was created.
+- Database read errors fail visibly, including review lookup. Failed review
+  clearing no longer reports success. Invalid actions and request bodies above
+  4,096 bytes fail before call access. Review remains a call-level receipt, not
+  approval of a transcript version, source freshness or later analysis.
+- The client validates the versioned response and requested call. The screen
+  starts with saved raw text, disables corrected text when absent, shows review
+  failures and discards responses arriving after another call opens. No saved
+  summary is described as proof that processing is running.
+- **12 focused tests passed** (eight actual handler, four response-contract).
+  The eight handler cases also pass against downloaded deployed code; its three
+  emitted syntax trees match the reviewed TypeScript. TypeScript and production
+  build passed, including 47 repository prebuild checks.
+- Actual local browser/component/client checks passed for delayed call switching,
+  missing analysis, disabled absent correction, saved correction selection,
+  failed detail clearing and failed review feedback; zero console errors. The
+  backend was simulated for these browser checks.
+- Actual TEST HTTP checks returned 401/401/403 for absent session, anonymous key
+  and service impersonation, without call content. All **113 retained datasets**
+  matched both deployment and HTTP before/after comparisons. No production changes,
+  provider calls, new users or grants occurred.
+- Signed-in positive hosted acceptance of this older call screen and review flow
+  **remains outstanding**. The completed playback run is separate evidence and
+  must not be reused after retirement. Frontend publication follows this source
+  checkpoint; see the deployment record for its final READY status.
+
+[Sanitized evidence](evidence/learn-call-detail-test-2026-10-11.json).
+
 ## Release and completion gates
 
 - [ ] Keep meaningful checkpoints on GitHub `codex/learn-v1-test`; verify exact
