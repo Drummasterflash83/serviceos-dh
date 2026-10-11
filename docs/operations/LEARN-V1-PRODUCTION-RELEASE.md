@@ -1,0 +1,88 @@
+# LEARN V1 production release plan
+
+Status: **preparation only; not approved or ready to execute**. The
+[completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
+The current hosted TEST frontend is Git `1af32a4`, schema package 066 and worker
+v12. That combination has synthetic processing acceptance, not full launch
+acceptance. Source backups are on `codex/learn-v1-test`.
+
+## Required evidence before requesting promotion
+
+- Resolve existing TEST access approvals and verify signed-in customer and
+  OpenFolk journeys on the matching protected frontend: reset/sign-in, source
+  inspection, card evidence/audio, operator review, module controls and scoring.
+- Complete the bounded real Commusoft import and relationship reconciliation;
+  establish historical/incremental coverage for required email, Phone, voicemail
+  and Slack inputs. Reusable Microsoft support remains in scope; identify whether
+  Drummonds needs an actual Microsoft mailbox. Do not substitute fixtures for
+  source acceptance or silently defer unavailable inputs.
+- Prove provider capture through stored inputs, identity/card delivery and
+  reviewed metrics, including disable/resume, lease expiry and unattended worker
+  dispatch. A manually invoked worker does not prove recurring operation.
+- Establish Drummonds' staff/team mapping, working calendars, scoring criteria,
+  weights, scales and source limitations. Missing inputs must remain missing;
+  pay-related use requires authorised human review.
+- Rehearse a real isolated production database restore and reconnect its recording
+  references to verified independent audio backups. Complete credential recovery
+  and storage ownership handover. See [recovery coverage](LEARN-DATA-RECOVERY.md)
+  and [daily recording operations](LEARN-RECORDING-DAILY.md).
+- Resolve every remaining item in the authoritative checklist or obtain an
+  explicit scope decision from Chris. Present specific unresolved limitations;
+  never interpret absence of objections as approval.
+
+## Build the production-specific release candidate
+
+1. Read production's current migration ledger, schema/catalog, deployed function
+   versions, settings and active schedules. Capture a fresh private preservation
+   baseline of source IDs, relationships, counts and fingerprints. Record the
+   currently serving frontend and production environment binding.
+2. Derive an additive, ordered production migration manifest from that actual
+   state. The 066 TEST packages include TEST-specific guards and assumptions;
+   **do not execute TEST bundles on production, copy the TEST database, or run an
+   unreviewed blanket database push**. Keep schema and source hash pins immutable.
+3. Rehearse the exact candidate against an isolated restored full production
+   schema, with network/provider calls and imported schedules disabled. Prove
+   preservation, tenant isolation, authority, rollback on failure and compatibility
+   of every paired reader/writer. Record each required runtime and deployment order.
+4. Pin the frontend Git commit, database package hashes, function source bundles,
+   required environment-variable names and dependencies in one reviewable manifest.
+   Never include secret values. Re-run the documented release checks for that
+   exact candidate and verify the GitHub backup SHA.
+5. Prepare a production-configured Vercel candidate using the existing production
+   project's environment. Never promote a frontend bound to Supabase TEST.
+   Follow [deployment instructions](../DEPLOYMENT.md); Lovable is not a host.
+6. Give Chris the exact production changes, expected user-visible behaviour,
+   preservation/recovery evidence, capture activation plan and rollback limits.
+   Production promotion requires his explicit approval.
+
+## Approved execution order and verification
+
+After approval of the specific manifest, take a fresh recovery/preservation
+checkpoint. Install the reviewed additive database prerequisites, then their
+compatible guarded functions, then the matching production frontend. Do not
+activate capture or schedules as a side effect of schema/frontend installation;
+follow only the separately reviewed activation steps in the approved manifest.
+
+Verify the actual `openfolk.ai` routing and served version, production Supabase
+binding, tenant/operator permissions, Drummonds branding and signed-in journeys.
+Compare source IDs, existing relationships and recorded-file references with the
+baseline. Verify new real inputs and updates through the whole pipeline, including
+scoring limitations and operator-visible diagnostics. Record actual observation
+windows and receipts; an ACTIVE function, HTTP 200 or rising count is insufficient.
+
+## Rollback and operational handover
+
+Choose compatibility boundaries during rehearsal. An old frontend or worker may
+not understand new receipt contracts; Vercel rollback alone is not automatically
+a safe application rollback. For an unsafe paired release, pause affected capture
+through verified controls while retaining inputs and evidence, then use the
+reviewed compatible runtime/frontend version or an additive forward correction.
+Do not drop receipt/audit tables, overwrite existing data from TEST, or rewrite
+published Git history. A production database restore is a separate reviewed
+recovery operation, not a routine way to undo a schema addition.
+
+The final handover must name the operator, monitoring location, actual dispatch
+and backup schedules, alert recipient, escalation route, credential locations
+and rotation dates, recovery steps, expected provider coverage and known limits.
+No credentials belong in this document. Keep customer messages calm and factual;
+record operator detail without claiming failed or stale processing is healthy.

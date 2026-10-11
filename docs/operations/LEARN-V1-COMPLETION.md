@@ -54,6 +54,23 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
+### Matching TEST frontend deployed — 11 October, 18:26 UTC
+
+The protected TEST frontend is now READY from GitHub `1af32a4` at
+[the updated preview](https://serviceos-learn-test-g7nlyfdcg-allkin.vercel.app).
+It brings the recent recovery, freshness, operator review and manual queue UI
+changes onto the same hosted candidate as backend release 066 / worker v12.
+Previous sections describing these changes as local/Git only are historical.
+Exact project, source commit, TEST backend binding and Vercel route protection
+were verified; no production change was made.
+
+The default TEST password-recovery URL points to this new frontend's reset form,
+with the previous exact URL retained in the allowlist. All other Auth settings
+matched after the update. No account was reactivated and no email was sent.
+New-origin browser permission and the existing TEST owner-access approval remain
+pending. Positive signed-in acceptance, real-provider coverage and unattended
+operation are still required. [Evidence](evidence/learn-processing-frontend-test-2026-10-11.json).
+
 ### Existing Workspace key located — 11 October, 15:21 UTC
 
 A scoped local-file check found `ServiceOS Workspace Connector.json` in the
@@ -1016,7 +1033,7 @@ remains the separate reader with retained provenance checks.
 - [ ] Pass the repository's release commands (`npm install`, `npx tsc --noEmit`,
   `npm run build`) and verify required routes, matching API project, sign-in,
   permissions and browser console. Use [deployment requirements](../DEPLOYMENT.md).
-- [ ] Document deployment sequence, rollback, credentials recovery, monitoring,
+- [ ] Complete the [production release plan](LEARN-V1-PRODUCTION-RELEASE.md), including deployment sequence, rollback, credentials recovery, monitoring,
   incident handling, unresolved provider limits and operating ownership.
 - [ ] Present concrete acceptance evidence and obtain Chris's production approval.
 - [ ] Deploy through Vercel/Git and the separate reviewed Supabase release; verify

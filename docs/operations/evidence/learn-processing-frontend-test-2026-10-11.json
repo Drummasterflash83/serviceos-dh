@@ -1,0 +1,77 @@
+{
+  "state": "protected_test_frontend_ready_signed_in_acceptance_pending",
+  "observedAt": "2026-10-11T18:26:39.268Z",
+  "frontend": {
+    "observedAt": "2026-10-11T18:26:07.047Z",
+    "id": "dpl_8dWKJ7uVzp8EvKsThoXhBNBeKtdg",
+    "url": "serviceos-learn-test-g7nlyfdcg-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "1af32a493633b73f5f3fa127d4e47712b27e89fb"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x"
+  },
+  "protection": {
+    "observedAt": "2026-10-11T18:26:29.744Z",
+    "base": "https://serviceos-learn-test-g7nlyfdcg-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "authRedirect": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "verified",
+    "before": {
+      "site_url": "https://serviceos-learn-test-b5u66qgft-allkin.vercel.app/login?reset=1",
+      "uri_allow_list": "https://serviceos-learn-test-b5u66qgft-allkin.vercel.app/login?reset=1"
+    },
+    "after": {
+      "site_url": "https://serviceos-learn-test-g7nlyfdcg-allkin.vercel.app/login?reset=1",
+      "uri_allow_list": "https://serviceos-learn-test-b5u66qgft-allkin.vercel.app/login?reset=1,https://serviceos-learn-test-g7nlyfdcg-allkin.vercel.app/login?reset=1"
+    },
+    "newUsers": 0,
+    "newGrants": 0,
+    "emailsSent": 0,
+    "productionChanged": false,
+    "observedAt": "2026-10-11T18:26:39.268Z",
+    "otherSettingsUnchanged": true
+  },
+  "backend": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "schemaRelease": "066",
+    "workerVersion": 12,
+    "manualProjectionVersion": 1,
+    "manualIdentityVersion": 1
+  },
+  "browserVerified": false,
+  "signedInAcceptance": false,
+  "productionChanged": false,
+  "newUsers": 0,
+  "newGrants": 0,
+  "emailsSent": 0,
+  "limitations": [
+    "New TEST browser-origin approval pending; no browser check claimed",
+    "Existing owner login remains disabled pending explicit access approval",
+    "Real-provider coverage, unattended dispatch and final production approval remain incomplete"
+  ]
+}

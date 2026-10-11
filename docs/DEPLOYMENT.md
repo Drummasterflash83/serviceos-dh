@@ -50,6 +50,23 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The latest staging candidate is
+[serviceos-learn-test-g7nlyfdcg-allkin.vercel.app](https://serviceos-learn-test-g7nlyfdcg-allkin.vercel.app),
+built remotely from GitHub commit `1af32a493633b73f5f3fa127d4e47712b27e89fb`
+and observed READY at **18:26 UTC on 11 October**. It includes the password-reset
+flow, saved-snapshot freshness, projection/identity review and queued manual
+processing messages, paired with TEST schema release 066 and worker v12.
+The exact TEST project, Git SHA, preview-only backend binding and Vercel protection
+were verified. Homepage, login and LEARN routes remain protected. Browser approval
+for this new origin and positive signed-in acceptance are pending.
+
+TEST Auth now uses this preview's `/login?reset=1` as its default recovery target;
+the previous exact TEST recovery URL remains allowlisted. No wildcard redirect,
+user, grant, password, email or other Auth setting changed. The existing owner
+login reactivation proposal remains unapproved. Do not claim an email-token journey
+or authenticated acceptance from these configuration checks.
+[Frontend release evidence](operations/evidence/learn-processing-frontend-test-2026-10-11.json).
+
+The previous scheduler-health staging candidate is
 [serviceos-learn-test-b5u66qgft-allkin.vercel.app](https://serviceos-learn-test-b5u66qgft-allkin.vercel.app),
 built remotely from GitHub commit `aff42842d82ae228de3513a63cad73c2a91ff9a7`
 and observed READY at 14:35 UTC on 11 October. It adds bounded scheduling checks
