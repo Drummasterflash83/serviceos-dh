@@ -162,6 +162,9 @@ export function OperationsOverview({
   const { snapshot, connectors, platform, logs, loading, error, refresh } = useConnectorRuntime();
   const { profile } = useAuth();
   const tenantId = profile?.tenant_id ?? "";
+  const activeTenant = useRef(tenantId);
+  activeTenant.current = tenantId;
+  const loadSequence = useRef(0);
 
   const [busy, setBusy] = useState<{ id: string; action: ConnectorAction } | null>(null);
   const [healthConn, setHealthConn] = useState<RuntimeConnector | null>(null);
@@ -181,6 +184,7 @@ export function OperationsOverview({
   const [cards, setCards] = useState<ApiResult<CardsSummary> | null>(null);
   const [matches, setMatches] = useState<ApiResult<MatchSummary> | null>(null);
   const [schedulers, setSchedulers] = useState<ApiResult<SchedulerHealthItem[]> | null>(null);
+  const [schedulerTenant, setSchedulerTenant] = useState("");
   const [liveCalls, setLiveCalls] = useState<ApiResult<LiveCallOpsSummary> | null>(null);
   const [identity, setIdentity] = useState<ApiResult<IdentitySummary> | null>(null);
   const [phonePipeline, setPhonePipeline] = useState<ApiResult<PhonePipelineStatusResult> | null>(
@@ -201,6 +205,7 @@ export function OperationsOverview({
   const [buildingTimeline, setBuildingTimeline] = useState(false);
 
   const loadJobs = useCallback(async () => {
+    const sequence = ++loadSequence.current;
     const noTenant = <T,>(): Promise<ApiResult<T>> =>
       Promise.resolve<ApiResult<T>>({
         ok: false,
@@ -213,7 +218,7 @@ export function OperationsOverview({
         getInteractionSummary(),
         getCardsSummary(),
         getMatchSummary(),
-        getSchedulerHealth(),
+        tenantId ? getSchedulerHealth(tenantId) : noTenant<SchedulerHealthItem[]>(),
         getLiveCallOpsSummary(),
         getIdentitySummary(),
         // Business-health summaries — the SAME single sources Admin reads for full
@@ -224,6 +229,8 @@ export function OperationsOverview({
         getCustomerCardSummary(),
         getRecommendationSummary(),
       ]);
+    if (activeTenant.current !== tenantId || sequence !== loadSequence.current) return;
+    setSchedulerTenant(tenantId);
     setJobsSummary(sum);
     setRecentJobs(list.ok ? list.data : []);
     setInteractions(inter);
@@ -388,7 +395,7 @@ export function OperationsOverview({
   // Signals / cards / matches / scheduler — all honest (real evidence only).
   const cardsData = cards?.ok ? cards.data : null;
   const matchData = matches?.ok ? matches.data : null;
-  const schedulerItems = schedulers?.ok ? schedulers.data : null;
+  const schedulerItems = schedulerTenant === tenantId && schedulers?.ok ? schedulers.data : null;
   const liveData = liveCalls?.ok ? liveCalls.data : null;
   const liveUnavailable = liveCalls !== null && !liveCalls.ok;
   const identData = identity?.ok ? identity.data : null;

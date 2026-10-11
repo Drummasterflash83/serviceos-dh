@@ -3,6 +3,7 @@ import { Activity, Database, Network, Radio, AlertTriangle } from "lucide-react"
 import { getLearningSnapshot, type LearningSnapshot } from "@/lib/learning-centre";
 import { getSystemHealth, type SystemHealthView } from "@/lib/system-health";
 import { getSchedulerHealth, type SchedulerHealthItem } from "@/lib/scheduler-health";
+import { useAuth } from "@/lib/auth";
 import {
   getBusinessGraphSummary,
   listGraphNodes,
@@ -16,7 +17,7 @@ import { liveConnectors, plannedConnectors } from "@/lib/connector-status";
 type Data = {
   learning: LearningSnapshot;
   health: SystemHealthView | null;
-  schedulers: SchedulerHealthItem[];
+  schedulers: SchedulerHealthItem[] | null;
   graph: GraphSummary | null;
   nodes: GraphNode[];
   edges: GraphEdge[];
@@ -25,14 +26,19 @@ const ago = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "Never";
 
 export function LearningCentre() {
+  const { profile } = useAuth();
+  const tenantId = profile?.tenant_id ?? "";
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
+    setData(null);
+    setError(null);
+    if (!tenantId) return;
     let active = true;
     void Promise.all([
       getLearningSnapshot(),
       getSystemHealth(),
-      getSchedulerHealth(),
+      getSchedulerHealth(tenantId),
       getBusinessGraphSummary(),
       listGraphNodes(12),
       listGraphEdges(12),
@@ -45,7 +51,7 @@ export function LearningCentre() {
       setData({
         learning: learning.data,
         health: health.ok ? health.data : null,
-        schedulers: schedulers.ok ? schedulers.data : [],
+        schedulers: schedulers.ok ? schedulers.data : null,
         graph: graph.ok ? graph.data : null,
         nodes: nodes.ok ? nodes.data : [],
         edges: edges.ok ? edges.data : [],
@@ -54,7 +60,7 @@ export function LearningCentre() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [tenantId]);
   if (error)
     return (
       <Panel>
@@ -63,7 +69,7 @@ export function LearningCentre() {
       </Panel>
     );
   if (!data) return <Panel>Loading the company learning pipeline…</Panel>;
-  const healthySchedulers = data.schedulers.filter((s) => s.status === "healthy").length;
+  const healthySchedulers = data.schedulers?.filter((s) => s.status === "healthy").length ?? 0;
   const live = liveConnectors();
   const plannedByCategory = plannedConnectors().reduce<Record<string, string[]>>((acc, c) => {
     (acc[c.category] ??= []).push(c.name);
@@ -89,7 +95,9 @@ export function LearningCentre() {
           <Metric label="Oldest pending" value={ago(data.learning.oldestPendingAt)} small />
           <Metric
             label="Schedulers on schedule"
-            value={`${healthySchedulers}/${data.schedulers.length}`}
+            value={
+              data.schedulers ? `${healthySchedulers}/${data.schedulers.length}` : "Unverified"
+            }
           />
         </div>
         {data.health && (

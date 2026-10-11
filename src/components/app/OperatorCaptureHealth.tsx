@@ -1,4 +1,5 @@
 import { OperatorPhoneAttempts } from "./OperatorPhoneAttempts";
+import { OperatorSchedulerHealth } from "./OperatorSchedulerHealth";
 import { phoneProcessingSignal } from "@/lib/learn-phone-operator-evidence";
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -88,6 +89,12 @@ export function OperatorCaptureHealth({
         </button>
       </header>
       {error && <p role="status">{error}</p>}
+      <OperatorSchedulerHealth
+        key={`${tenantId}:${actorId}`}
+        tenantId={tenantId}
+        actorId={actorId}
+        client={client}
+      />
       {page && (
         <>
           <p className="text-xs text-muted-foreground">

@@ -549,6 +549,36 @@ remains the separate reader with retained provenance checks.
 
 [Sanitized evidence](evidence/learn-call-detail-test-2026-10-11.json).
 
+## Scoped scheduler health — 11 October, 14:29 UTC
+
+- TEST package **060** is installed. The authenticated reader returns ten bounded,
+  tenant-scoped scheduling summaries without granting browser access to raw logs,
+  job payloads or source metadata. Own-company reads follow existing membership;
+  cross-company reads require an effective OpenFolk grant. View-As is rejected.
+- Full TEST-schema rehearsal and packaged rollback passed before installation.
+  Membership removal, foreign-tenant access, revoked grants, View-As and role
+  impersonation checks passed. All **113 retained datasets** matched before and
+  after installation and HTTP checks; no synthetic users, grants or sessions remain.
+- Actual anonymous/service-role HTTP requests were denied (401/403). A positive
+  signed-in hosted check is **still outstanding**; SQL-role checks are not a
+  substitute for that acceptance.
+- The actual OpenFolk capture controller now includes scheduling checks. Failed,
+  paused, late and unobserved activity remain distinct; recorded queue activity
+  does not claim completed capture. Legacy LEARN/Ops also use the scoped reader.
+  Failed reads show unverified status, and delayed replies cannot cross companies.
+- Actual local component/browser checks passed with a synthetic RPC: failure,
+  recovery and delayed company switching, with zero console errors. Six focused
+  reader/outcome tests, application TypeScript and the production build passed.
+  These frontend changes are not yet deployed to hosted TEST.
+- Commusoft's prepared continuation preflight passed against the new TEST catalog
+  at 14:21 UTC. Its original source baseline, request budget and approval requirement
+  remain intact; no continuation account or provider request was created.
+- Email scheduler installation/secure triggers, real input capture, hosted
+  acceptance and production promotion remain separate unfinished gates. No key or
+  password was created, reset or saved during this checkpoint.
+
+[Sanitized evidence](evidence/learn-scheduler-health-test-2026-10-11.json).
+
 ## Release and completion gates
 
 - [ ] Keep meaningful checkpoints on GitHub `codex/learn-v1-test`; verify exact

@@ -1,0 +1,82 @@
+{
+  "scope": "hosted-TEST-bounded-scheduler-reader-and-local-operator-UI",
+  "databaseRelease": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "installed_needs_signed_in_acceptance",
+    "completedAt": "2026-10-11T14:18:35.392Z",
+    "packageSha256": "602d36fdc87514aef784ad4965160a912893ccb4b8a96eef83c13aecfcea1f84",
+    "expectedFingerprint": "ebeeafeb978b7119d25b694fd210e71c",
+    "afterFingerprint": "ebeeafeb978b7119d25b694fd210e71c",
+    "expectedContract": {
+      "indexes": [
+        "CREATE INDEX learn_email_scheduler_latest_idx ON public.email_sync_runs USING btree (tenant_id, sync_type, started_at DESC NULLS LAST, id DESC)",
+        "CREATE INDEX learn_phone_scheduler_latest_idx ON public.phone_sync_runs USING btree (tenant_id, sync_type, started_at DESC NULLS LAST, id DESC)"
+      ],
+      "rawJobs": false,
+      "function": {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "owner": "postgres",
+        "settings": [
+          "search_path=pg_catalog"
+        ],
+        "definitionHash": "18fb4f9556f5d5d52fd0e5a97ab40b40",
+        "securityDefiner": true
+      },
+      "rawEmail": false
+    },
+    "preservedDataSets": 113,
+    "persistentFixtureUsers": 0,
+    "persistentFixtureGrants": 0,
+    "issuedSessions": 0,
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "httpAcceptance": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-11T14:19:58.231Z",
+    "state": "http_denials_verified",
+    "checks": [
+      {
+        "role": "anon",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "status": 403,
+        "code": "42501"
+      }
+    ],
+    "preservedDataSets": 113,
+    "continuationFingerprint": "82977420c719b7fc923e028e7ba83776",
+    "positiveSignedInAcceptance": false,
+    "newCredentials": 0,
+    "newUsers": 0,
+    "newGrants": 0,
+    "providerRequests": 0
+  },
+  "localAcceptance": {
+    "applicationTypeScript": "passed",
+    "productionBuild": "passed",
+    "readerAndOutcomeTests": 6,
+    "browser": "actual OperatorSchedulerHealth with synthetic RPC",
+    "checks": [
+      "failed, paused, on-schedule and unobserved distinguished",
+      "failed read clears old results",
+      "successful refresh restores results",
+      "company switch clears previous company and ignores delayed reply"
+    ],
+    "consoleErrors": 0
+  },
+  "continuationPreflight": {
+    "verifiedAt": "2026-10-11T14:21:10.233Z",
+    "state": "prepared",
+    "providerRequests": 0
+  },
+  "limitations": [
+    "No positive signed-in hosted acceptance for the new reader",
+    "Frontend changes not yet deployed",
+    "Email scheduler installation and activation remain outstanding",
+    "No production changes or new credentials"
+  ]
+}
