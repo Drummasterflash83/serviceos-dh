@@ -1,0 +1,23 @@
+{
+  "state": "initial_receipt_restore_verified",
+  "scope": "one_receipt_only_not_complete_inventory",
+  "observedAt": "2026-10-11T08:46:46.766Z",
+  "objects": 1,
+  "bytes": 108870,
+  "recordingReferenceCount": 1,
+  "sourceProviderAccess": false,
+  "credentialRole": "Restore",
+  "playback": {
+    "state": "decoded",
+    "decoder": "macOS afconvert",
+    "frames": 535680,
+    "sampleRate": 8000,
+    "channels": 1,
+    "durationSeconds": 66.96,
+    "listening": "not_verified"
+  },
+  "databaseRestore": "not_verified",
+  "backupComplete": false,
+  "elapsedMs": 708,
+  "temporaryAudioRemoved": true
+}

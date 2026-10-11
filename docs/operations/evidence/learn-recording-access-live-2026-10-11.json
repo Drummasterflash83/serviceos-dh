@@ -1,0 +1,74 @@
+{
+  "observedOn": "2026-10-11",
+  "environment": "OpenFolk AWS London recording backup",
+  "status": "access_verified_initial_copy_in_progress",
+  "approval": "Chris explicitly approved two scoped machine identities and one long-lived key each, separately stored in Mac Keychain, rotation within 90 days",
+  "accessStack": {
+    "name": "openfolk-drummonds-recording-access",
+    "state": "CREATE_COMPLETE",
+    "completedAt": "2026-10-11T08:35:18Z",
+    "machineUsers": 2,
+    "consoleAccess": false,
+    "eachUserDirectPolicyAndMatchingBoundary": true
+  },
+  "credentials": {
+    "activeKeysPerIdentity": 1,
+    "storage": "Separate Mac login Keychain services",
+    "createdOn": "2026-10-11",
+    "rotateBy": "2027-01-09",
+    "exactPrivateReadbackVerified": true,
+    "privateTransferFilesRemoved": true,
+    "secretValuesPrinted": false
+  },
+  "liveChecks": {
+    "writerExactStsIdentity": true,
+    "restoreExactStsIdentity": true,
+    "bothBucketProtectionInspectionsPassed": true,
+    "region": "eu-west-2",
+    "private": true,
+    "tlsRequired": true,
+    "encryption": "AES256",
+    "versioning": "Enabled",
+    "retentionMode": "GOVERNANCE",
+    "retentionDays": 30,
+    "conditionalWritesRequired": true
+  },
+  "firstCopy": {
+    "state": "batch_verified",
+    "objects": 1,
+    "bytes": 108870,
+    "sourceAndPinnedVersionSha256Verified": true,
+    "sourceUnchanged": true
+  },
+  "inventory": {
+    "objects": 2888,
+    "totalBytes": 601004261,
+    "recordingRows": 2882,
+    "unreferencedObjectsRetained": 6,
+    "sourceSnapshot": "non_atomic"
+  },
+  "limitations": [
+    "Full inventory copy and finalization in progress; first copy is not complete coverage",
+    "Full-manifest restore and human listening pending; one receipt-only Restore-key read and real audio decode passed",
+    "Database relationship restore unverified",
+    "Daily scheduling and operator monitoring not yet active",
+    "Budget notification recipient verification last observed pending"
+  ],
+  "productionSourceWrites": 0,
+  "productionSourcePermissionChanges": 0,
+  "backupComplete": false,
+  "verifiedCopyCheckpoint": {
+    "objects": 101,
+    "bytes": 21496165,
+    "fullInventoryFinalized": false
+  },
+  "initialRestore": {
+    "objects": 1,
+    "bytes": 108870,
+    "credentialRole": "Restore",
+    "durationSecondsDecoded": 66.96,
+    "sourceProviderAccess": false,
+    "recordingReferencesRetained": 1,
+    "evidence": "learn-recording-initial-restore-live-2026-10-11.json"
+  }
+}

@@ -238,7 +238,8 @@ succeeded after that failure; no worker was invoked and no source record changed
   retention and recovery targets; use the now-approved AWS London setup and
   recording-copy scope under OpenFolk ownership; implement encrypted independent files plus database recovery.
   Verify bytes and isolated restore/playback, record duration and recovery point.
-  [Proposal](LEARN-DATA-RECOVERY.md). No separate recording backup exists yet.
+  [Recovery plan](LEARN-DATA-RECOVERY.md). Initial recording copies are now verified;
+  complete inventory and restore acceptance remain open.
   The costed proposal now includes 601 MB / 2,888 objects, verified London AWS
   rates, an illustrative US$1.89/month operating estimate and a US$5 budget alert
   (not a cap), plus scoped access, daily copies, 30-day governance protection and
@@ -248,8 +249,11 @@ succeeded after that failure; no worker was invoked and no source record changed
   but must happen before free access ends. The approved London foundation reached
   CREATE_COMPLETE at 07:55:12 UTC. S3 readback verifies private access, encryption,
   versioning, 30-day GOVERNANCE retention and protected writes. Both IAM policies
-  are unattached. The $5 monthly alert exists but its owner email verification is
-  pending, so delivery is not yet active. Scoped runtime access remains open.
+  are attached to separate approved Writer/Restore identities with matching
+  permissions boundaries and console access disabled. Each has one active key
+  stored separately in Mac Keychain, due for rotation by 9 January 2027. Both
+  pass live STS and bucket protection checks. The $5 monthly alert still awaits
+  owner email verification, so delivery is not yet active.
   [AWS evidence](evidence/learn-recording-backup-foundation-aws-2026-10-11.json).
   Local CloudFormation foundation and streamed copy/restore/inventory core now
   pass schema lint and eleven synthetic tests. The official AWS SDK destination
@@ -260,18 +264,25 @@ succeeded after that failure; no worker was invoked and no source record changed
   and every recording-row file link; six unlinked objects remain included. Private
   manifests are saved locally. The bounded local copy command now uses private atomic
   disk checkpoints, separate attempt status, exclusive locking and exact Writer
-  credential/principal selection. Thirty-nine local tests pass; the command remains
-  unactivated pending access approval. [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
+  credential/principal selection. Thirty-nine local tests passed before activation;
+  the first live recording copy verified 108,870 bytes. Bounded full-inventory
+  copying is now in progress. [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
   The separate Restore-only command now validates the immutable manifest and restores
   an exact object version without Supabase access, preserving record links and checking
   local audio decoding. Forty-three tests pass, including actual macOS decoding of
   synthetic WAV audio. [Restore evidence](evidence/learn-recording-restore-local-2026-10-11.json).
-  Real Drummonds playback and isolated database recovery remain unverified.
-  Restricted Writer/Restore IAM access is prepared as an unexecuted change set;
-  action-time approval is needed for the new identities/keys. AWS transfers,
-  scheduling, monitoring and database/audio restore acceptance remain open.
+  One real receipt-only Restore-key rehearsal recovered and hashed 108,870 bytes
+  and decoded 66.96 seconds of audio, with one retained recording reference and
+  no source-provider calls. Full-manifest restore, human listening and isolated
+  database relationship recovery remain unverified.
+  [First real restore](evidence/learn-recording-initial-restore-live-2026-10-11.json).
+  Restricted Writer/Restore IAM access was explicitly approved and its stack
+  completed at 08:35:18 UTC. Complete-inventory transfer verification, scheduling,
+  monitoring and database/audio restore acceptance remain open.
+  [Live access evidence](evidence/learn-recording-access-live-2026-10-11.json).
   [Inventory and runner evidence](evidence/learn-recording-inventory-and-batch-2026-10-11.json).
-  AWS foundation resources now exist; no recording transfer occurred.
+  AWS foundation and scoped access are active; only the completed copies are
+  verified, not full coverage or recovery.
 
 ## Release and completion gates
 

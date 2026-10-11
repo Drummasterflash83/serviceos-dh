@@ -5,9 +5,14 @@ this directory creates resources automatically. The OpenFolk AWS account has bee
 verified enabled. Chris plans the paid-plan transition later, before free access ends.
 The approved London foundation reached CREATE_COMPLETE on 11 October 2026 at
 07:55:12 UTC. Direct S3 console inspection confirms its encryption, versioning,
-30-day retention, privacy and write protections; both IAM policies remain
-unattached. The $5 monthly cost alert awaits recipient email verification.
-No real recording has been copied or restored.
+30-day retention, privacy and write protections. Following Chris's action-time approval,
+the separate access stack completed at 08:35:18 UTC. Both restricted identities
+have one active key stored separately in this Mac's login Keychain; live STS and
+S3 protection checks passed for both. The first real recording was copied and
+verified; the full 2,888-object copy is in progress. A separate Restore-key
+receipt rehearsal recovered that file and decoded 66.96 seconds of real audio.
+Full-inventory manifest and database restore acceptance remain open.
+The $5 monthly cost alert awaits recipient email verification.
 [Cloud evidence](../../docs/operations/evidence/learn-recording-backup-foundation-aws-2026-10-11.json).
 
 ## Infrastructure
@@ -31,9 +36,9 @@ The bucket policy requires TLS, explicit SSE-S3 on uploads and create-only
 conditional object writes. The writer policy allows only Drummonds-prefix
 creation/readback plus bucket inspection, and explicitly denies destructive and
 retention-changing actions. The restore policy permits only inspection/readback.
-These are **unattached managed policies**, not new users, keys or access grants.
-Before use, bind each to its separately reviewed identity. Do not attach them to
-an existing broadly privileged application identity.
+The foundation creates managed policies separately from identities. The approved
+access stack now attaches each policy to its dedicated machine user and also uses
+it as that user's permissions boundary. Neither identity has console access.
 
 The US$5 monthly alert is **AWS account-wide**, useful for the new dedicated
 account before cost-allocation tags are activated. It is not a hard cap and does
@@ -63,7 +68,8 @@ AWS references:
 `scripts/backup/recording-backup-core.mjs` implements the byte-copy protocol through
 injected source, S3 and durable-journal ports. The S3 destination and durable journal now have an official AWS SDK implementation
 (`recording-backup-s3.mjs`); the source port is implemented in `recording-backup-source.mjs`. Live service
-acceptance has not occurred. All ports must enforce the approved account/tenant/project,
+acceptance has begun with one verified real recording. Complete-inventory and
+restore acceptance remain open. All ports must enforce the approved account/tenant/project,
 TLS, bounded requests/timeouts and private create-only storage; they cannot be
 populated with browser-supplied URLs, tokens or arbitrary source paths.
 
@@ -114,7 +120,8 @@ never audio, signed URLs, paths, credentials or customer identities.
    when credits run out. Neither step was performed by the agent.
 2. Foundation creation and S3 console configuration readback are complete. Verify
    effective permissions under narrowly scoped writer/restore identities after
-   their reviewed access setup. Complete the budget recipient verification.
+   their reviewed access setup (now verified for STS and bucket inspection, with
+   the first Writer copy verified). Complete the budget recipient verification.
 3. Verify the implemented S3/durable-journal adapter against real AWS, then verify
    the complete Drummonds-only source inventory and actual byte reads. Do not export a production-wide service key
    into AWS. Keep source permission changes within the production release gate.
@@ -123,7 +130,8 @@ never audio, signed URLs, paths, credentials or customer identities.
    must not be misrepresented as a consistent snapshot.
 5. Copy the real inventory including the six-object/recording-row discrepancy,
    verify all bytes/versions, reconcile source changes and record a database
-   recovery-point reference. No such production copy has occurred yet.
+   recovery-point reference. The first copy is verified; full-inventory
+   finalization remains pending.
 6. Rehearse isolated database/file restore, verify relationships and real playback,
    and measure recovery point and duration before declaring recovery ready.
 
@@ -212,7 +220,7 @@ The private reconciliation result preserves missing object references and counts
 null pointers and unreferenced objects. Missing audio remains missing; zero-byte
 objects remain zero bytes. Persist this report with the private inventory in the
 runner before transfer. Private inventory persistence and the bounded local runner
-are now implemented; real activation and hosted scheduling remain unverified.
+are now implemented; real activation has begun, while hosted scheduling remains unverified.
 Matching listings are a non-atomic observation, not a database recovery point.
 
 Nine source tests include the entire source adapter → official AWS SDK → encrypted
@@ -257,7 +265,7 @@ Completing the copy pass explicitly does not claim complete backup coverage:
 Thirty-two tests pass, including four new real-SDK/synthetic-transport batch cases.
 [Evidence](../../docs/operations/evidence/learn-recording-inventory-and-batch-2026-10-11.json).
 
-## Scoped access proposal — prepared, not executed
+## Scoped access proposal — approved and activated
 
 `access.cloudformation.json` creates **two machine IAM users** in the verified
 OpenFolk account: Writer and Restore. Each receives its corresponding existing
@@ -273,13 +281,15 @@ boundary restricts identity-policy permissions; it is not a claim that an AWS
 administrator cannot later change account or resource policies.
 
 CloudFormation change set `recording-scoped-access-20261011` on stack
-`openfolk-drummonds-recording-access` is CREATE_COMPLETE / AVAILABLE, with exactly
-these two Add actions. Schema lint and AWS deployment validation pass. Both the
-editor and the independently reloaded saved template exactly match the local JSON.
-It has **not been executed**; existing foundation policies remain unattached.
+`openfolk-drummonds-recording-access` was executed following Chris's explicit
+action-time approval on 11 October. The stack reached CREATE_COMPLETE at
+08:35:18 UTC with exactly these two users. Each user's direct policy and matching
+permissions boundary were verified in IAM. Console access is disabled; each
+identity has exactly one active access key. Live STS returned the exact stored
+principal and account, and both identities passed all bucket protection checks.
 
-The requested activation also covers creating one programmatic key per machine
-identity and storing each in this Mac's login Keychain, under separate services
+The approved activation created one programmatic key per machine
+identity and stored each in this Mac's login Keychain, under separate services
 `OpenFolk.ServiceOS.RecordingBackup.Writer` and
 `OpenFolk.ServiceOS.RecordingBackup.Restore`, with the verified AWS account ID as
 Keychain account. Keys must never be printed, committed, left in project files,
@@ -296,26 +306,31 @@ moving to a hosted runner; these users grant no deployment permission. An operat
 can disable either key to stop access without deleting retained recordings.
 [AWS access-key guidance](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
 
-Creating these new identities and keys grants new security-sensitive access, so
-browser action-time confirmation is required before execution/provisioning.
-The existing approved recording-copy destination and scope are unchanged.
+Chris supplied the required browser action-time confirmation before these
+identities and keys were created. Both private transfer files were removed after
+exact Keychain readback verification. Keys were created on 11 October 2026 and
+are due for rotation by **9 January 2027**. No key values appear in Git, evidence
+or logs. The approved recording-copy destination and scope are unchanged.
+[Activation evidence](../../docs/operations/evidence/learn-recording-access-live-2026-10-11.json).
 
 
-## Durable local runner — 11 October, prepared but not activated
+## Durable local runner — 11 October, initial copy active
 
 `run-drummonds-recording-backup.mjs` is the explicit command for the approved
-OpenFolk bucket and Drummonds source tenant. It is **not running**, no Writer key
-has been provisioned, and these checks do not prove a real backup exists.
+OpenFolk bucket and Drummonds source tenant. The first bounded live invocation
+verified one 108,870-byte recording. Subsequent batches resume the same private
+inventory; complete coverage requires finalization and independent restore.
 
 It reads a JSON credential (`accessKeyId`, `secretAccessKey`, `principalArn`) from
-only the proposed Writer Keychain service/account above. Provisioning must record
+only the approved Writer Keychain service/account above. Provisioning must record
 the actual generated Writer IAM ARN in that private Keychain item. The command
 rejects root, Restore, other accounts and unrelated IAM users; STS must match the
 stored Writer ARN before any S3 bucket operation. There is no environment/profile
 credential fallback. Source credentials are reused from the existing Supabase CLI
 login, kept in process memory and never sent to AWS. The entire invocation has a
 30-minute abort deadline; source calls have an additional 20,000-request budget.
-Actual IAM permission acceptance remains an activation gate.
+STS, protection inspection and the first Writer copy have passed live acceptance;
+Restore object reads and decoding passed a one-receipt isolated rehearsal.
 
 The private inventory directory must be its canonical absolute path, owned by the
 current user with mode 0700. Inventory/checkpoint files must be regular, single-link
@@ -365,8 +380,9 @@ claim current coverage without the original inventory observation time.
 Thirty-nine local tests pass. The new checks cover separate disk-backed runs,
 checkpoint loss/recovery, lock exclusion, private-file rejection, corrupt-object
 finalization failure, exact credential selection and wrong-principal rejection.
-They use synthetic AWS transports; live Keychain access, effective IAM permissions,
-real recording transfer, daily scheduling and restore acceptance remain pending.
+They use synthetic AWS transports. Separate live evidence now verifies Keychain
+access, exact principals, protection inspection and the first real recording copy.
+Daily scheduling, full-manifest restore and database acceptance remain pending.
 [Evidence](../../docs/operations/evidence/learn-recording-runner-local-2026-10-11.json).
 
 
@@ -376,8 +392,14 @@ real recording transfer, daily scheduling and restore acceptance remain pending.
 using only the **Restore** Keychain item. Its JSON format is the same as Writer's,
 but `principalArn` must identify the generated Restore user. The command has no
 Supabase credential lookup, database connection or Writer fallback. Actual role
-permissions and real AWS acceptance are still unverified; the command has not
-been activated against Drummonds.
+identity, bucket inspection and one exact-version object read have passed live
+checks. A bounded receipt-only rehearsal at 08:46:46 UTC restored 108,870 bytes,
+matched SHA-256, retained one recording reference and decoded 66.96 seconds of
+audio. It used Restore only, made no source-provider calls and removed its
+temporary audio after verification. This does not establish complete-inventory
+coverage, human listening or database relationship recovery. The manifest-based
+command below remains pending until the full inventory is finalized.
+[First restore evidence](../../docs/operations/evidence/learn-recording-initial-restore-live-2026-10-11.json).
 
 After the real backup manifest has been verified, select its run ID and one
 object ID from the private inventory:

@@ -45,8 +45,8 @@ CloudFormation deployment validations passed and all five resources reached
 access blocks, bucket-owner-enforced ownership, SSE-S3 encryption, versioning,
 and enabled 30-day GOVERNANCE default retention. The bucket policy enforces TLS,
 explicit AES256 encryption and conditional create-only writes. No lifecycle
-expiration rule exists. Both writer and restore policies have **zero attachments**;
-no runner identity, credential or new access grant was created.
+expiration rule exists. The foundation originally left both policies unattached;
+the separately approved access setup below now binds them to dedicated identities.
 
 The monthly account-wide US$5 actual-cost alert exists. Its recipient
 `chris@openfolk.ai` is **pending email verification**; AWS says notifications cannot
@@ -54,11 +54,36 @@ be delivered until that verification completes. It is not a spending cap.
 The previous browser file chooser failure was resolved using Template studio;
 the saved editor JSON matched the prepared template before execution. AWS also
 created a template-storage bucket/object. No recordings or secrets were uploaded
-with the template. The recording bucket remains empty. Scoped runtime access,
-real copying, schedules and isolated restore remain unfinished.
+with the template. The separate access activation and first recording copy are
+now verified as described below. Scheduling, full-manifest restore and database
+recovery remain unfinished.
 [Cloud evidence](evidence/learn-recording-backup-foundation-aws-2026-10-11.json).
 Account/resource identifiers and screenshots are retained in ignored private
 runtime evidence. Cloudflare infrastructure and OpenFolk hosting are unchanged.
+
+## Scoped access and first real transfer — 11 October 2026
+
+Chris explicitly approved the prepared Writer/Restore identities and one key each.
+The access stack completed at **08:35:18 UTC**. Each identity has its exact scoped
+policy as both direct policy and permissions boundary, no console access and one
+active key. Keys are stored in separate Mac login Keychain entries; private
+transfer files were removed after exact readback. Rotate by **9 January 2027**.
+
+Both keys passed live STS identity/account checks and S3 protection inspection:
+London, private bucket, TLS, AES256, versioning, 30-day GOVERNANCE retention and
+conditional writes. The first bounded recording copy verified **108,870 bytes**
+against the source and pinned destination version. The complete **2,888-object /
+601,004,261-byte** inventory is now being copied in bounded resumable batches.
+This is partial verified coverage, not a completed backup. No source records,
+files or permissions were modified. At **08:46:46 UTC**, an independent receipt-only
+rehearsal using the Restore key recovered the first exact S3 version, verified
+all 108,870 bytes and decoded **66.96 seconds** of real audio. It retained one
+recording reference, made no source-provider calls and removed temporary audio.
+Human listening and database relationship recovery were not performed. Full
+inventory revalidation, manifest-based restore, daily scheduling and operator
+monitoring remain required.
+[First restore evidence](evidence/learn-recording-initial-restore-live-2026-10-11.json).
+[Live access evidence](evidence/learn-recording-access-live-2026-10-11.json).
 
 ## Local backup implementation — 11 October 2026
 
@@ -67,8 +92,8 @@ an account/region-bound CloudFormation template and a streamed copy/restore core
 The template defines the private London bucket, versioning, 30-day governance
 retention, create-only writes, separate **unattached** writer/restore policies and
 an AWS account-wide US$5 alert (not a cap, excluding Supabase costs). CloudFormation
-schema lint passes. The foundation is now deployed as described above; no policy
-attachment or new cloud access was created.
+schema lint passes. The separate approved access stack now binds the policies
+and keys as described above.
 
 Eleven synthetic tests pass for streamed SHA-256 copy, exact-version readback,
 private isolated restore, changed-source/corrupt-byte rejection, lost upload and
@@ -87,16 +112,17 @@ The complete real metadata inventory subsequently verified all 2,888 objects and
 all 2,882 recording-row file links, with six unlinked objects retained. Private
 inventory/reconciliation files and bounded copy checkpoints are implemented;
 The durable local command now saves atomic disk checkpoints and attempt status,
-resumes from verified receipts, loads only the proposed Writer Keychain credential
-and pins its exact AWS principal. Thirty-nine local tests pass; the command has
-not been activated. [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
+resumes from verified receipts, loads only the approved Writer Keychain credential
+and pins its exact AWS principal. Thirty-nine local tests passed before the
+first live copy. [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
 A separate Restore-only command now recovers an exact S3 version without accessing
 Supabase, retains record-link evidence privately and checks local audio decoding.
 The suite passes 43 tests, including a real macOS decode of synthetic WAV audio.
-No real Drummonds transfer/restore has been run.
+Real transfers have begun and one receipt-only Drummonds restore/decode has
+passed; full-manifest and database recovery remain unverified.
 [Restore command evidence](evidence/learn-recording-restore-local-2026-10-11.json).
-AWS transfer acceptance, daily scheduling, operator monitoring,
-real copies, playback and database restore remain unfinished.
+Complete AWS inventory acceptance, daily scheduling, operator monitoring,
+representative playback coverage and database restore remain unfinished.
 [Inventory and batch evidence](evidence/learn-recording-inventory-and-batch-2026-10-11.json).
 [Source evidence](evidence/learn-recording-backup-source-local-2026-10-11.json). [SDK evidence](evidence/learn-recording-backup-s3-local-2026-10-11.json). Initial source reads can reuse existing authorised credentials in memory inside
 the trusted local/ServiceOS environment; they must never be exported to AWS. Any
@@ -145,7 +171,7 @@ and [read-only backup-list endpoint](https://supabase.com/docs/reference/api/v1-
 These were checked on 11 October. No restore, plan change, backup configuration
 change or audio download was performed during this observation.
 
-## Proposed independent recording backup — not configured
+## Original independent recording-backup proposal — implementation underway
 
 The 11 October 06:07 UTC read-only production metadata audit measured 2,888
 Drummonds recording objects totalling 601,004,261 bytes (about 601 MB / 0.560 GiB).
@@ -316,4 +342,6 @@ production changes.
 
 These steps are acceptance requirements, not completed work. Launch reporting
 must distinguish **records preserved**, **database backups listed**, **recording
-backup verified**, and **restore verified**. The last two remain unverified.
+backup verified**, and **restore verified**. Only initial recording copies and
+one receipt-only audio restore/decode are verified; full-inventory and database
+recovery remain unverified.
