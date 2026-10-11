@@ -137,3 +137,64 @@ test("reader rejects foreign tenants, mixed provider identities, duplicate rows 
     readCaptureHealth({ rpc: async () => ({ data: page, error: { code: "denied" } }) }, id(9)),
   );
 });
+
+test("Workspace diagnostic explains grant uncertainty without overriding newer, paused or future evidence", async () => {
+  const failure = {
+    attempt_id: id(70),
+    occurred_at: "2026-10-10T11:59:30Z",
+    code: "delegation_grant_invalid",
+  };
+  const workspace = {
+    ...row,
+    provider: "google_workspace",
+    account_state: "active_dwd",
+    auth_state: "unknown",
+    last_failure_at: failure.occurred_at,
+    email_failure: failure,
+  };
+  const signal = captureHealthSignal(workspace, now);
+  assert.equal(signal.label, "Workspace access needs review");
+  assert.match(signal.action, /code alone does not identify/);
+  assert.equal(captureHealthSignal({ ...workspace, enabled: false }, now).label, "Capture paused");
+  assert.equal(
+    captureHealthSignal({ ...workspace, last_success_at: "2026-10-10T11:59:50Z" }, now).tone,
+    "current",
+  );
+  assert.equal(
+    captureHealthSignal({ ...workspace, last_failure_at: "2026-10-10T11:59:40Z" }, now).label,
+    "Latest capture needs attention",
+  );
+  assert.equal(
+    captureHealthSignal(
+      { ...workspace, email_failure: { ...failure, occurred_at: "2026-10-10T12:01:00Z" } },
+      now,
+    ).label,
+    "Status timestamps need review",
+  );
+  const page = {
+    version: "learn-operator-capture-health/1",
+    tenant_id: id(9),
+    checked_at: new Date(now).toISOString(),
+    rows: [workspace],
+    next_cursor: null,
+  };
+  await readCaptureHealth({ rpc: async () => ({ data: page, error: null }) }, id(9));
+  for (const change of [
+    { code: "PRIVATE-token" },
+    { attempt_id: "invalid" },
+    { occurred_at: null },
+    { raw_body: "PRIVATE-token" },
+  ]) {
+    await assert.rejects(
+      readCaptureHealth(
+        {
+          rpc: async () => ({
+            data: { ...page, rows: [{ ...workspace, email_failure: { ...failure, ...change } }] },
+            error: null,
+          }),
+        },
+        id(9),
+      ),
+    );
+  }
+});

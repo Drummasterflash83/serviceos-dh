@@ -80,6 +80,16 @@ try:
     assert sql("select to_regclass('learn_phone_schedule_health_lookup') is null and to_regprocedure('learn_phone_account_evidence(uuid,uuid)') is null and to_regprocedure('learn_phone_processing_evidence(uuid)') is null")=='t'
     sql(migration)
     print(sql(source('scripts/verify/learn-phone-operator-evidence.assert.sql')),flush=True)
+    before=sql("select pg_get_functiondef('learn_operator_capture_health(uuid,text)'::regprocedure)")
+    acl=sql("select proowner::text||coalesce(proacl::text,'') from pg_proc where oid='learn_operator_capture_health(uuid,text)'::regprocedure")
+    records=sql("select md5(jsonb_agg(to_jsonb(r) order by id)::text) from email_sync_runs r")
+    migration=source('supabase/migrations/20261101191000_learn_email_failure_health.sql')
+    sql(migration.replace('\ncommit;','\nrollback;'))
+    assert sql("select pg_get_functiondef('learn_operator_capture_health(uuid,text)'::regprocedure)")==before
+    sql(migration)
+    assert sql("select proowner::text||coalesce(proacl::text,'') from pg_proc where oid='learn_operator_capture_health(uuid,text)'::regprocedure")==acl
+    assert sql("select md5(jsonb_agg(to_jsonb(r) order by id)::text) from email_sync_runs r")==records
+    print(sql(source('scripts/verify/learn-email-failure-health.assert.sql')),flush=True)
     data=sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000182';set role authenticated;select learn_operator_capture_health(fixture_id(100));")
     output=root/'.verification-results/learn-operator-capture-health-local.json'
     output.parent.mkdir(exist_ok=True)

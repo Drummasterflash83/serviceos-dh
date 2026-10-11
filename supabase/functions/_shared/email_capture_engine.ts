@@ -308,6 +308,12 @@ export async function runEmailCaptureJob(
         parse_failed: "parse_failure",
         persistence_failed: "persistence_failure",
         source_ineligible: "source_ineligible",
+        sa_config_missing: "source_ineligible",
+        sa_credentials_invalid: "source_ineligible",
+        admin_delegation_missing: "source_ineligible",
+        scopes_missing: "source_ineligible",
+        delegation_grant_invalid: "source_ineligible",
+        delegation_denied: "source_ineligible",
       } as const
     )[error.code];
     const uncertain = error.persistenceUnknown;

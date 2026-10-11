@@ -31,6 +31,15 @@ export interface GmailPageStore {
     message_upsert_count: number;
   }>;
 }
+export const DELEGATION_CAPTURE_CODES = [
+  "sa_config_missing",
+  "sa_credentials_invalid",
+  "admin_delegation_missing",
+  "scopes_missing",
+  "delegation_grant_invalid",
+  "delegation_denied",
+] as const;
+export type DelegationCaptureCode = (typeof DELEGATION_CAPTURE_CODES)[number];
 export class GmailCaptureError extends Error {
   readonly code:
     | "fetch_failed"
@@ -39,7 +48,8 @@ export class GmailCaptureError extends Error {
     | "history_expired"
     | "pagination_no_progress"
     | "checkpoint_conflict"
-    | "source_ineligible";
+    | "source_ineligible"
+    | DelegationCaptureCode;
   readonly persistenceUnknown: boolean;
   constructor(code: GmailCaptureError["code"], persistenceUnknown = false) {
     super(`Email capture requires review (${code}).`);

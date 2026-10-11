@@ -58,9 +58,11 @@ lists multiple `invalid_grant` causes, including subject, signature and assertio
 timing. Local classification now uses `delegation_grant_invalid` instead of
 asserting `subject_invalid`; it requires review and does not trigger endless queue
 retry. Five focused handler/token tests pass, including provider-detail redaction.
-This helper change is not deployed. The V1 durable engine still exposes its broader
-`source_ineligible` category; carrying a specific safe diagnostic through that
-protocol and operator UI remains an explicit acceptance gap.
+This helper change is not deployed. The local V1 worker now preserves six safe
+Workspace diagnostic codes through protocol failure, checkpoint and queue settlement.
+The operator reader/UI exposes only an allowlisted code, attempt ID and timestamp.
+See the local acceptance below; hosted installation and real-mailbox diagnosis
+remain outstanding. Earlier production logs cannot establish the exact grant cause.
 
 Production has the three Workspace credential secret names; TEST has none. No
 credential values were returned. The checked older checkout env files and current
@@ -74,6 +76,38 @@ for each of 29 DWD accounts, and 25 accounts with successful capture in the prev
 produced no replacement evidence. These observations guide investigation, not
 current credential validity or launch acceptance. The bounded diagnosis above
 succeeded after that failure; no worker was invoked and no source record changed.
+
+### Durable email diagnostics — local acceptance, 11 October
+
+- The token adapter keeps only six known permanent Workspace diagnostic codes;
+  unknown provider errors retain a generic category. Provider descriptions, keys
+  and message content are never passed into these diagnostic fields.
+- Additive migrations `20261101190000_learn_email_safe_failures.sql` and
+  `20261101191000_learn_email_failure_health.sql` preserve those codes through
+  the existing transition, blocked checkpoint, failed run and lease-bound job
+  receipt, then expose current mailbox diagnostics to the existing operator role.
+- **23 focused tests and 57 isolated protocol tests passed.** The latter exercised
+  all six codes for both recent and historical capture, no provider reads after
+  token refusal, unchanged retained-message fingerprints and idempotent settlement.
+  The operator SQL suite passed rollback, unchanged function owner/ACL and source
+  rows, tenant isolation, unknown-error redaction and later-success clearing.
+  Every actual SQL health page passed the application parser.
+- The actual operator component displayed the grant diagnostic and cautious recovery
+  guidance in the isolated synthetic browser. Application/worker TypeScript and
+  application/preview builds passed; existing bundling warnings remain.
+- The health view continues to report recent mailbox capture; historical failures
+  retain diagnostics in their run/checkpoint/job but do not appear as recent mailbox
+  health. Missing platform configuration caught before token acquisition can still
+  have the generic eligibility code. This does not prove any live failure is fixed.
+- **Release dependency:** rehearse/install both migrations against the current TEST
+  catalog, then release the diagnostic-aware worker and frontend together. Older
+  clients reject the new checkpoint codes. After any new diagnostic is persisted,
+  do not roll back to an older worker or narrow the SQL allowlist; pause capture
+  and retain compatible readers while repairing forward. No hosted deployment or
+  new role/credential grant has been made by this change.
+
+[Structured evidence](evidence/learn-email-diagnostic-local-2026-10-11.json) and
+[synthetic operator screenshot](evidence/learn-email-diagnostic-local-2026-10-11.jpg).
 
 ## Working and verified in production
 

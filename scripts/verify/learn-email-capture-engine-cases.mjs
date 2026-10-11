@@ -1,3 +1,7 @@
+import {
+  GmailCaptureError,
+  DELEGATION_CAPTURE_CODES,
+} from "../../supabase/functions/_shared/gmail_capture_page.ts";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -551,6 +555,83 @@ export async function verifyEmailCaptureEngine({ t, sql, db, queueJob, q, refere
         p_claim: replacement.attemptCount,
       });
       assert.equal(settled.data.disposition, "applied");
+    },
+  );
+  await t.test(
+    "safe Workspace diagnostic migration rolls back exactly and preserves durable failure receipts",
+    async () => {
+      const migration = readFileSync(
+        new URL(
+          "../../supabase/migrations/20261101190000_learn_email_safe_failures.sql",
+          import.meta.url,
+        ),
+        "utf8",
+      );
+      const definitions = () =>
+        sql(
+          "select string_agg(pg_get_functiondef(oid)||proowner::text||coalesce(proacl::text,''),E'\n' order by proname) from pg_proc where proname in ('email_ingestion_payload_v2','learn_email_job_fail')",
+        );
+      const before = definitions();
+      sql(migration.replace("\ncommit;", "\nrollback;"));
+      assert.equal(definitions(), before);
+      sql(migration);
+      const sources = () =>
+        sql(
+          "select md5(coalesce(jsonb_agg(to_jsonb(m) order by id)::text,'')) from email_messages m",
+        );
+      const retainedSources = sources();
+      for (const code of DELEGATION_CAPTURE_CODES) {
+        for (const historical of [false, true]) {
+          const j = job(historical),
+            p = ports(j, () => {
+              throw Error("No provider request permitted after token refusal");
+            });
+          p.accessToken = async () => {
+            throw new GmailCaptureError(code);
+          };
+          const outcome = await runEmailCaptureJob(db, j, p);
+          assert.equal(outcome.state, "failed");
+          assert.equal(outcome.code, code);
+          assert.equal(p.calls.length, 0);
+          assert.equal(
+            sql(
+              `select state||':'||block_code from email_ingestion_checkpoints where email_account_id=${q(j.accountId)}`,
+            ),
+            "blocked:" + code,
+          );
+          assert.equal(
+            sql(`select error_message from email_sync_runs where id=${q(outcome.attemptId)}`),
+            code,
+          );
+          assert.equal(
+            sql(
+              `select metadata#>>'{email_ingestion_v2,evidence,classification}' from email_sync_runs where id=${q(outcome.attemptId)}`,
+            ),
+            "source_ineligible",
+          );
+          const args = {
+            p_tenant: j.tenantId,
+            p_job: j.jobId,
+            p_attempt: outcome.attemptId,
+            p_claimed_by: j.claimedBy,
+            p_claim: j.attemptCount,
+          };
+          const settled = await db.rpc("learn_email_job_fail", args);
+          assert.equal(settled.data.code, code);
+          assert.equal((await db.rpc("learn_email_job_fail", args)).data.disposition, "replayed");
+          assert.equal(
+            sql(`select status||':'||error_code from platform_jobs where id=${q(j.jobId)}`),
+            "dead_letter:" + code,
+          );
+          assert.equal(sources(), retainedSources);
+          assert.equal(
+            sql(
+              `select coalesce(history_id,'NULL') from email_accounts where id=${q(j.accountId)}`,
+            ),
+            "NULL",
+          );
+        }
+      }
     },
   );
 }

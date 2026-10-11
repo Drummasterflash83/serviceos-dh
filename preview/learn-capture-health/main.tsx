@@ -30,12 +30,23 @@ const rows: CaptureHealthRow[] = Array.from({ length: 50 }, (_, i) => ({
   latest_job: null,
   bounded_complete: null,
 }));
+const emailScenario = new URLSearchParams(location.search).get("email");
+if (emailScenario === "delegation") {
+  const failedAt = stamp(0.5);
+  rows[0] = {
+    ...rows[0],
+    account_state: "active_dwd",
+    last_failure_at: failedAt,
+    email_failure: { attempt_id: id(97), occurred_at: failedAt, code: "delegation_grant_invalid" },
+  };
+}
 const extra: CaptureHealthRow[] = [
   {
     ...rows[0],
     id: id(51),
     key: `phone:${id(51)}`,
     source: "phone",
+    email_failure: null,
     provider: "simwood",
     label: "Phone · synthetic account",
     enabled: true,
@@ -79,6 +90,7 @@ const extra: CaptureHealthRow[] = [
     id: id(52),
     key: `slack:${id(52)}`,
     source: "slack",
+    email_failure: null,
     provider: "slack",
     label: "Operations · synthetic channel",
     enabled: true,

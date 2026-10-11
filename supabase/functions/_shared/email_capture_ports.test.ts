@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createEmailCapturePorts } from "./email_capture_ports.ts";
-import { GmailCaptureError } from "./gmail_capture_page.ts";
+import { GmailCaptureError, DELEGATION_CAPTURE_CODES } from "./gmail_capture_page.ts";
 import { refreshGmailAccessToken, RefreshError } from "./gmail_oauth.ts";
 import { getDelegatedToken, DelegationError } from "./google_workspace.ts";
 import type { EmailJobAttempt } from "./email_job_attempt.ts";
@@ -408,4 +408,20 @@ test("OAuth tokens nearing the bounded page budget are refreshed before capture"
   const source = await f.ports.mailbox(f.attempt);
   assert.equal(await f.ports.accessToken(f.attempt, source), "PRIVATE-refreshed");
   assert.equal(f.counter.refresh, 1);
+});
+
+test("permanent Workspace failures retain only allowlisted diagnostics", async () => {
+  for (const code of [...DELEGATION_CAPTURE_CODES, "PRIVATE-provider-body"]) {
+    const f = fixture();
+    f.deps.delegate = async () => {
+      throw new DelegationError(code, true);
+    };
+    const p = createEmailCapturePorts(f.db, f.deps),
+      source = await p.mailbox(f.attempt);
+    await assert.rejects(
+      p.accessToken(f.attempt, source),
+      safeError(code === "PRIVATE-provider-body" ? "source_ineligible" : code),
+    );
+    assert.equal(f.writes.length, 0);
+  }
 });

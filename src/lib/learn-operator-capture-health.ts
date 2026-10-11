@@ -29,6 +29,7 @@ export type CaptureHealthRow = {
   };
   bounded_complete: boolean | null;
   phone_evidence?: PhoneAccountEvidence | null;
+  email_failure?: { attempt_id: string; occurred_at: string; code: string } | null;
 };
 export type CaptureHealthPage = {
   version: "learn-operator-capture-health/1";
@@ -38,6 +39,33 @@ export type CaptureHealthPage = {
   next_cursor: string | null;
   phone_processing?: PhoneProcessingEvidence | null;
 };
+const emailFailureActions: Record<string, string> = {
+  sa_config_missing:
+    "Check the existing Workspace service-account configuration in the worker's secret store before resuming capture.",
+  sa_credentials_invalid:
+    "Check the existing Workspace service-account key and signing configuration. Resume only after a successful connection check.",
+  admin_delegation_missing:
+    "Review the service-account client ID and delegated access in Google Admin against the existing authorised configuration.",
+  scopes_missing:
+    "Review the authorised Gmail read scopes and the scopes requested by the worker before resuming capture.",
+  delegation_grant_invalid:
+    "Google rejected the delegated token grant. Check the mailbox subject, service-account signing key, assertion timing and account policy; this code alone does not identify which is wrong.",
+  delegation_denied:
+    "Review Workspace delegation and account policy with the existing administrator, then verify a successful connection check.",
+};
+const emailFailureCodes = new Set([
+  ...Object.keys(emailFailureActions),
+  "history_expired",
+  "continuation_expired",
+  "pagination_no_progress",
+  "fetch_failed",
+  "parse_failed",
+  "persistence_failed",
+  "checkpoint_conflict",
+  "source_ineligible",
+  "unexpected_failure",
+  "capture_failed",
+]);
 const object = (v: any) => !!v && typeof v === "object" && !Array.isArray(v);
 const uuid = (v: any) =>
   typeof v === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(v);
@@ -94,6 +122,15 @@ export async function readCaptureHealth(
         !(r.enabled === null || typeof r.enabled === "boolean") ||
         !(r.bounded_complete === null || typeof r.bounded_complete === "boolean") ||
         ![r.last_success_at, r.last_failure_at, r.last_attempt_at].every(maybeDate) ||
+        (r.email_failure != null &&
+          (r.source !== "email" ||
+            !object(r.email_failure) ||
+            Object.keys(r.email_failure).some(
+              (k) => !["attempt_id", "occurred_at", "code"].includes(k),
+            ) ||
+            !uuid(r.email_failure.attempt_id) ||
+            !date(r.email_failure.occurred_at) ||
+            !emailFailureCodes.has(r.email_failure.code))) ||
         (r.phone_evidence != null &&
           (r.source !== "phone" || !validPhoneAccountEvidence(r.phone_evidence, tenant, r.id))) ||
         (r.latest_job !== null &&
@@ -158,6 +195,7 @@ export function captureHealthSignal(
     r.last_failure_at,
     r.last_attempt_at,
     r.latest_job?.completed_at,
+    r.email_failure?.occurred_at,
   ].some((t) => t && Date.parse(t) > now);
   if (future)
     return attention(
@@ -206,11 +244,21 @@ export function captureHealthSignal(
   if (
     r.last_failure_at &&
     (!r.last_success_at || Date.parse(r.last_failure_at) >= Date.parse(r.last_success_at))
-  )
+  ) {
+    const failure = r.email_failure;
+    const action =
+      failure &&
+      Date.parse(failure.occurred_at) === Date.parse(r.last_failure_at) &&
+      r.provider === "google_workspace" &&
+      Object.hasOwn(emailFailureActions, failure.code)
+        ? emailFailureActions[failure.code]
+        : null;
     return attention(
-      "Latest capture needs attention",
-      "Check this account’s most recent sync and connection. Resume from the saved position after resolving the cause.",
+      action ? "Workspace access needs review" : "Latest capture needs attention",
+      action ??
+        "Check this account’s most recent sync and connection. Resume from the saved position after resolving the cause.",
     );
+  }
   const cadence = r.provider === "gmail" ? CADENCE_SEC.emailGmail : CADENCE_SEC.emailWorkspace;
   const fresh = freshnessVerdict(r.last_success_at, cadence, now);
   if (fresh === "never")

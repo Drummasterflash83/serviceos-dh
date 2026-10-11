@@ -106,3 +106,21 @@ test("unknown engine or failure replies stay unconfirmed and omit private diagno
   assert.equal(r.queueOutcome?.state, "unconfirmed");
   assert.equal(foreign.calls.length, 1);
 });
+
+test("safe Workspace failures settle without generic reclassification or automatic retry", async () => {
+  const f = setup({ state: "failed", code: "delegation_grant_invalid" });
+  f.ctx.supabaseAdmin.rpc = async () => ({
+    data: {
+      version: "learn-email-job-failure/1",
+      disposition: "applied",
+      job_id: job,
+      attempt_id: attempt,
+      code: "delegation_grant_invalid",
+    },
+    error: null,
+  });
+  const r = await handleEmailCapture(f.ctx, f.deps);
+  assert.equal(r.queueOutcome?.state, "failed");
+  assert.equal(r.error?.code, "delegation_grant_invalid");
+  assert.equal(r.error?.retryable, false);
+});

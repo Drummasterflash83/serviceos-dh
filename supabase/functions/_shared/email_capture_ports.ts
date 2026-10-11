@@ -6,7 +6,11 @@ import { captureAdmission } from "./learn_capture_control.ts";
 import type { EmailProtocolClient } from "./email_ingestion_protocol.ts";
 import type { EmailJobAttempt } from "./email_job_attempt.ts";
 import type { EmailCapturePorts, EmailMailboxSource } from "./email_capture_engine.ts";
-import { GmailCaptureError } from "./gmail_capture_page.ts";
+import {
+  GmailCaptureError,
+  DELEGATION_CAPTURE_CODES,
+  type DelegationCaptureCode,
+} from "./gmail_capture_page.ts";
 import { getGoogleOAuthConfig, refreshGmailAccessToken, RefreshError } from "./gmail_oauth.ts";
 import {
   getPlatformWorkspaceConfig,
@@ -28,9 +32,9 @@ const defaults: Dependencies = {
   delegate: getDelegatedGmailToken,
   clock: Date.now,
 };
-const denied = (): never => {
+function denied(): never {
   throw new GmailCaptureError("source_ineligible");
-};
+}
 const canRead = (scope: unknown) =>
   typeof scope === "string" &&
   scope
@@ -268,6 +272,12 @@ export function createEmailCapturePorts(
         return newer.access_token;
       } catch (e) {
         if (e instanceof GmailCaptureError) throw e;
+        if (
+          e instanceof DelegationError &&
+          e.permanent &&
+          (DELEGATION_CAPTURE_CODES as readonly string[]).includes(e.code)
+        )
+          throw new GmailCaptureError(e.code as DelegationCaptureCode);
         if (e instanceof RefreshError || e instanceof DelegationError)
           throw new GmailCaptureError(e.permanent ? "source_ineligible" : "fetch_failed");
         throw new GmailCaptureError("fetch_failed");

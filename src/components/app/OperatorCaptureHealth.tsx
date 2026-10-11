@@ -170,6 +170,13 @@ export function OperatorCaptureHealth({
                     {signal.label}
                   </p>
                   <p className="text-sm">{signal.action}</p>
+                  {r.source === "email" && r.email_failure && (
+                    <p className="text-xs text-muted-foreground">
+                      Recorded mailbox diagnostic: {r.email_failure.code} ·{" "}
+                      {stamp(r.email_failure.occurred_at)}. Later activity and account state take
+                      precedence over this diagnostic.
+                    </p>
+                  )}
                   <dl className="text-xs space-y-1">
                     {r.source === "slack" && r.latest_job && (
                       <div>

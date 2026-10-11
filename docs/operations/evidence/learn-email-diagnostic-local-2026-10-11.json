@@ -1,0 +1,26 @@
+{
+  "version": "learn-email-diagnostic-local/1",
+  "observedAt": "2026-10-11T06:47:03.117690+00:00",
+  "environment": "local synthetic; disposable network-isolated PostgreSQL 15",
+  "migrations": {
+    "supabase/migrations/20261101190000_learn_email_safe_failures.sql": "82a333c36dc510bda5051c2eaa1ff1fc3645c659d3678fc198a2eb6639b21ee6",
+    "supabase/migrations/20261101191000_learn_email_failure_health.sql": "2b07b474ebfd35b53d74ab079a89a0dd320664f50fe61def61b7870c8a18f036"
+  },
+  "checks": {
+    "focusedTests": 23,
+    "protocolTests": 57,
+    "protocolCases": "six safe codes in recent and historical capture; unchanged retained messages; blocked checkpoint, failed run, lease-bound job settlement and replay",
+    "operatorSql": "migration rollback; same owner/ACL; unchanged source rows; safe allowlist; foreign tenant excluded; later success clears diagnostic; actual SQL pages pass application parser",
+    "typescript": "application and strict email worker dependency check passed",
+    "builds": "application (47 prebuild checks) and operator preview passed",
+    "browser": "actual operator component renders synthetic invalid-grant guidance; no warning/error console entries"
+  },
+  "limitations": [
+    "No hosted TEST/production release or provider calls. Existing Workspace credential and real mailbox acceptance remain required.",
+    "Protocol suite reproduces the captured email schema; operator suite assembles actual relevant migrations with synthetic prerequisites, not the entire production schema.",
+    "Health diagnostics cover recent mailbox captures; historical failures retain codes in their run/checkpoint/job.",
+    "Unknown provider errors and pre-token eligibility failures remain generic.",
+    "Older workers/readers cannot consume the new checkpoint code values: retain compatible readers when rolling back or pause and repair forward."
+  ],
+  "screenshot": "learn-email-diagnostic-local-2026-10-11.jpg"
+}

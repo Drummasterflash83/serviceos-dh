@@ -1,3 +1,4 @@
+import { DELEGATION_CAPTURE_CODES } from "./gmail_capture_page.ts";
 /** Client for the existing email ingestion v2 protocol. Provider access and
  * source persistence stay in the worker; this module never advances progress
  * through direct table writes. Requests must be retained before first dispatch.
@@ -75,6 +76,7 @@ const operations = [
 ];
 const states = ["ready", "claimed", "blocked", "completed"];
 const blockCodes = [
+  ...DELEGATION_CAPTURE_CODES,
   "history_expired",
   "continuation_expired",
   "pagination_no_progress",

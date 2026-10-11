@@ -1,3 +1,4 @@
+import { DELEGATION_CAPTURE_CODES } from "./gmail_capture_page.ts";
 import { createEmailCapturePorts } from "./email_capture_ports.ts";
 import { runEmailCaptureJob } from "./email_capture_engine.ts";
 import type { WorkerHandlerContext, WorkerHandlerResult } from "./worker_contract.ts";
@@ -59,6 +60,7 @@ export async function handleEmailCapture(
       p_claim: ctx.claim.attemptCount,
     });
     const codes = [
+      ...DELEGATION_CAPTURE_CODES,
       "history_expired",
       "continuation_expired",
       "pagination_no_progress",
