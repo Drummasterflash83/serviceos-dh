@@ -1,5 +1,17 @@
 # Existing TEST environment: verified release gaps
 
+## Company working calendars — local backend/API candidate, not deployed
+
+Versioned company calendar definitions now support named timezones, weekly hours,
+closed dates and custom date hours. Saving and publication are separate; publication
+is prospective and retains earlier rules. The snapshot reader explicitly marks
+periods without a published calendar as missing. Offline SQL, concurrency, DST/date
+override, authority/preservation checks, seven client tests and actual SQL-to-client/
+desk-time parsing pass. Owner settings UI, durable request recovery, approved-delay
+workflow and the working-time collection adapter remain to build. TEST remains on
+049; no Drummonds hours or scores have been changed.
+[Contract, verification and integration work](LEARN-WORK-CALENDARS.md).
+
 ## Resumable work collection — TEST release 049 and paired frontend installed
 
 The replacement freezes the population and history, processes 100 items per batch

@@ -1,0 +1,34 @@
+{
+  "version": "learn-work-calendars-local/1",
+  "observedAt": "2026-10-11T00:04:06.285869+00:00",
+  "source": "supabase/migrations/20261101100000_learn_work_calendars.sql",
+  "sha256": "a90713b70f09e4c6de45edca14c357d539c1221d1668c38dd1d3a5537a7c8093",
+  "deployed": false,
+  "settingsUi": false,
+  "collectionAdapter": false,
+  "approvedDelayWorkflow": false,
+  "verification": {
+    "offlineSql": "passed",
+    "rollbackRehearsal": "passed",
+    "dst": [
+      "Europe/London spring and autumn",
+      "America/New_York skipped and repeated hour",
+      "Australia/Lord_Howe half-hour transition",
+      "Pacific/Apia skipped date"
+    ],
+    "wholeYearMinutes": 527040,
+    "exactClipping": "passed",
+    "publicationHistory": "passed",
+    "concurrentSave": "one next revision",
+    "tenantRoleViewAsAndRpcBoundaries": "passed",
+    "sourceAndMeasurementPreservation": "passed",
+    "actualSqlClientAndDeskTimeParsing": "passed",
+    "clientTests": 7,
+    "appTypecheck": "passed",
+    "calendarAndScorerTests": 21,
+    "definitionAndIntervalLimits": "passed"
+  },
+  "hostedReleaseUnchanged": "049",
+  "productionChanges": false,
+  "providerRequests": 0
+}
