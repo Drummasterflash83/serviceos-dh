@@ -7,6 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**11 October, 23:29 UTC (12 October, 00:29 BST) — bounded voicemail dispatch and operator status backend verified in TEST.**
+Release 076 installed after full-schema rollback rehearsal, preserving all 139 prior
+datasets. Worker v19 and importer v2 then deployed with all 140 datasets and other
+endpoints preserved; both installed sources match the pinned bundle. Ten hosted
+HTTP/RPC checks pass, including idle no-write discovery and denied unauthorised access.
+The dispatcher advances at most two routes/five pages each per UTC minute and uses
+saved receipts, route backoff and existing capture gates. **No TEST cron or real
+routes were activated.** Draft rejection is now in both hosted import paths.
+
+OpenFolk's voicemail status component is built and browser-checked **locally with
+synthetic responses**, showing notifications, source review, drafts, import states,
+worker scan timestamps and recovery guidance. Actual offline SQL verifies the existing
+OpenFolk view grant, expired/View-As denials, pagination and zero private-message
+access for an operator without ownership/manager rights. Fourteen regressions,
+strict worker/UI types and the frontend build pass. **Matching frontend deployment,
+positive hosted scheduled imports and signed-in acceptance are still outstanding.**
+[Evidence](evidence/learn-voicemail-dispatch-2026-10-12.json).
+
+
 **11 October, 23:08 UTC (12 October, 00:08 BST) — retained voicemail discovery installed in TEST.**
 Release 075 passed a full-schema rollback rehearsal, then installed empty private
 scan/candidate/receipt tables and internal RPCs with all 136 prior datasets preserved.

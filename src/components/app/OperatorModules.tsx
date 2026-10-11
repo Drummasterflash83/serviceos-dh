@@ -57,6 +57,11 @@ const LearnSlackRecurring = lazy(() =>
 const OperatorLearnInputs = lazy(() =>
   import("./OperatorLearnInputs").then((module) => ({ default: module.OperatorLearnInputs })),
 );
+const OperatorVoicemailStatus = lazy(() =>
+  import("./OperatorVoicemailStatus").then((module) => ({
+    default: module.OperatorVoicemailStatus,
+  })),
+);
 const tabs: { view: ReceptionistView; label: string }[] = [
   { view: "testing", label: "Automated voice tests" },
   { view: "improvements", label: "Feedback & responses" },
@@ -176,6 +181,11 @@ function OperatorModuleContent({
               />
               <OperatorLearnInputs
                 key={`${tenantId}:${user.id}:${captureRevision}`}
+                tenantId={tenantId}
+                actorId={user.id}
+              />
+              <OperatorVoicemailStatus
+                key={`voicemail:${tenantId}:${user.id}:${captureRevision}`}
                 tenantId={tenantId}
                 actorId={user.id}
               />

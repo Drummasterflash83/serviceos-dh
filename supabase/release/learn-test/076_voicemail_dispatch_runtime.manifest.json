@@ -1,0 +1,26 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "bundleSha256": "712fc8b2743967e2532feae706c917de8c2ca2de953e8a6e2fc3c1889cdd79b0",
+  "fullSchema": "e98a51ad59594757305433a7257c5e6f",
+  "runtimeSchema": "b25c8560a5210fd1a534a4539d709e82",
+  "endpoints": [
+    {
+      "name": "platform-worker",
+      "verifyJwt": false
+    },
+    {
+      "name": "learn-voicemail-import",
+      "verifyJwt": false
+    }
+  ],
+  "modules": 107,
+  "external": [
+    "https://esm.sh/@supabase/supabase-js@2.45.4",
+    "node:buffer",
+    "node:crypto",
+    "node:dns/promises",
+    "npm:mailauth@7.3.0/lib/dkim/verify.js",
+    "npm:mpg123-decoder@1.0.3",
+    "npm:postal-mime@4.0.5"
+  ]
+}

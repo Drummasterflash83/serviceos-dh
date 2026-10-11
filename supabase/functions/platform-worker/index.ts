@@ -1,4 +1,5 @@
 import { runVoicemailQueueJob } from "../_shared/voicemail/queue.ts";
+import { runVoicemailDiscoveryTick } from "../_shared/voicemail/discovery-tick.ts";
 import { isLearnProcessingJob, runLearnProcessingJob } from "../_shared/learn-processing-job.ts";
 import { settlePhoneJob } from "../_shared/phone-recovery-job.ts";
 import {
@@ -113,6 +114,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   const startedMs = Date.now();
   const worker = `worker-${crypto.randomUUID().slice(0, 8)}`;
+
+  const discoveryWork = runVoicemailDiscoveryTick(admin, jobTypes);
+  const background = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } })
+    .EdgeRuntime;
+  background?.waitUntil?.(discoveryWork);
+  const discovery = await discoveryWork;
 
   // 1) reclaim dead workers' jobs, then 2) claim a batch atomically.
   await releaseExpiredLeases(admin);
@@ -400,7 +407,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     counts.waiting -
     counts.unconfirmed;
   return json({
-    success: failed === 0 && counts.unconfirmed === 0,
+    success:
+      failed === 0 &&
+      counts.unconfirmed === 0 &&
+      !["unconfirmed", "attention"].includes(discovery.state),
+    voicemail_discovery: discovery,
     claimed: counts.claimed,
     succeeded: counts.succeeded,
     waiting: counts.waiting,

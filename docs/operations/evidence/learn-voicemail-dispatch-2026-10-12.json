@@ -1,0 +1,223 @@
+{
+  "observedAt": "2026-10-11T23:31:52.058024+00:00",
+  "scope": "hosted TEST dispatcher/runtime with idle boundaries; local operator UI and synthetic SQL acceptance",
+  "release": {
+    "state": "installed_idle_dispatch_schema_verified",
+    "observedAt": "2026-10-11T23:26:27.193Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "packageSha256": "3d071818ed83407c496ac6b6e25a784a6e976bf63986928d5309a3fcd5bbe355",
+    "expected": {
+      "marker": "voicemail-dispatch-installed/1",
+      "fingerprint": "e98a51ad59594757305433a7257c5e6f",
+      "dispatch_fingerprint": "8a2c3ed38f0b91da2c374183a693710f"
+    },
+    "afterFingerprint": "e98a51ad59594757305433a7257c5e6f",
+    "preservedDatasets": 139,
+    "usersCreated": 0,
+    "jobsCreated": 0,
+    "routesCreated": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Dispatch DDL, real operator denial and idle no-write tick against full TEST schema; no positive hosted dispatch, runtime deployment, schedule activation or signed-in acceptance."
+    ]
+  },
+  "runtime": {
+    "state": "deployed_needs_http_acceptance",
+    "sourceBundleSha256": "712fc8b2743967e2532feae706c917de8c2ca2de953e8a6e2fc3c1889cdd79b0",
+    "observedAt": "2026-10-11T23:28:14.912Z",
+    "fullPreservedDatasets": 140,
+    "fullSchemaUnchanged": true,
+    "dependencyFiles": 107,
+    "routesCreated": 0,
+    "credentialsUploaded": 0,
+    "schedulesActivated": 0,
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "runtimeEndpoints": [
+    {
+      "slug": "learn-voicemail-import",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "187a6572512e75b7bd18c7596c698496f67edf6209e466965f4baa9797eb4075"
+    },
+    {
+      "slug": "platform-worker",
+      "version": 19,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "a5a41263895de567e063809a53559681590fd96b0299084d5a8aebf6c8c7d068"
+    }
+  ],
+  "readback": {
+    "observedAt": "2026-10-11T23:28:51.298Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "downloaded_runtime_source_verified",
+    "sourceBundleSha256": "712fc8b2743967e2532feae706c917de8c2ca2de953e8a6e2fc3c1889cdd79b0",
+    "reports": [
+      {
+        "endpoint": "platform-worker",
+        "version": 19,
+        "matchingRuntimeModules": 102,
+        "omittedModules": [
+          "_shared/intelligence/reason_codes.ts",
+          "_shared/intelligence/types.ts",
+          "_shared/worker_contract.ts"
+        ],
+        "emittedImportsChecked": 160,
+        "omittedModulesHaveNoEmittedImporters": true,
+        "differentRuntimeModules": []
+      },
+      {
+        "endpoint": "learn-voicemail-import",
+        "version": 2,
+        "matchingRuntimeModules": 19,
+        "omittedModules": [
+          "_shared/email_capture_engine.ts",
+          "_shared/email_ingestion_outbox.ts",
+          "_shared/email_ingestion_protocol.ts",
+          "_shared/email_job_attempt.ts",
+          "_shared/gmail_page_store.ts"
+        ],
+        "emittedImportsChecked": 23,
+        "omittedModulesHaveNoEmittedImporters": true,
+        "differentRuntimeModules": []
+      }
+    ],
+    "method": "Transpiled syntax-tree comparison normalizes comments, redundant parentheses, associative logical operators and a sole for-of block; emitted imports are checked separately. Review aid, not formal proof.",
+    "limitations": [
+      "Syntax/import comparison; does not verify real provider or Storage transport."
+    ],
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "http": {
+    "state": "hosted_dispatch_boundaries_verified",
+    "observedAt": "2026-10-11T23:29:12.385Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "endpointVersions": {
+      "platform-worker": 19,
+      "learn-voicemail-import": 2
+    },
+    "exactInternalHeader": true,
+    "checks": [
+      {
+        "name": "anonymous_dispatch_denied",
+        "status": 401,
+        "code": "42501",
+        "passed": true
+      },
+      {
+        "name": "service_idle_dispatch",
+        "status": 200,
+        "code": null,
+        "passed": true
+      },
+      {
+        "name": "import_missing_auth",
+        "status": 403,
+        "code": "voicemail_internal_auth_required",
+        "passed": true
+      },
+      {
+        "name": "import_invalid_scope",
+        "status": 400,
+        "code": "voicemail_request_invalid",
+        "passed": true
+      },
+      {
+        "name": "missing_worker_auth",
+        "status": 403,
+        "code": "forbidden",
+        "passed": true
+      },
+      {
+        "name": "anon_worker_auth",
+        "status": 403,
+        "code": "forbidden",
+        "passed": true
+      },
+      {
+        "name": "empty_voicemail_worker",
+        "status": 200,
+        "code": null,
+        "passed": true,
+        "claimed": 0
+      },
+      {
+        "name": "service_empty_recovery",
+        "status": 200,
+        "code": null,
+        "passed": true,
+        "reclaimed": 0
+      },
+      {
+        "name": "service_missing_claim",
+        "status": 409,
+        "code": "PT409",
+        "passed": true
+      },
+      {
+        "name": "anon_queue_denied",
+        "status": 401,
+        "code": "42501",
+        "passed": true
+      }
+    ],
+    "failure": null,
+    "preservedDatasets": 140,
+    "providerRequests": 0,
+    "usersCreated": 0,
+    "jobsCreated": 0,
+    "routesCreated": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Idle discovery/worker and importer auth checks only. No positive hosted scheduled import, live providers, schedule activation, complete coverage or signed-in acceptance."
+    ]
+  },
+  "local": {
+    "state": "passed",
+    "sql": "actual offline PostgreSQL 15, queue/discovery/dispatch migrations and actual OpenFolk grant functions",
+    "checks": [
+      "2-route / 5-page / 1,000-row tick bound",
+      "concurrent tick and historical receipt replay",
+      "per-route backoff and fair continuation",
+      "whole tick rollback on failed receipt",
+      "capture pause without source loss",
+      "ordinary tenant owner denied operator access",
+      "active OpenFolk view grant receives aggregate status",
+      "expired grant and View-As denied",
+      "operator without ownership or manager rights sees no private voicemail messages",
+      "24 routes paginated without overlap or omission",
+      "existing discovered-source-to-private-publication journey still passes"
+    ],
+    "regressions": 14,
+    "strictWorkerTypes": "passed",
+    "strictVoicemailUiTypes": "passed",
+    "frontendBuild": "passed",
+    "browser": "actual component with synthetic controlled RPC; populated, paused, unavailable, empty and refresh verified",
+    "browserScreenshot": ".verification-results/voicemail-controller-synthetic.png",
+    "timeSimulation": "Offline-only postgres fixture clears minute/page receipts to simulate later ticks; no wall-clock cron delivery proven."
+  },
+  "sourceSha256": {
+    "supabase/migrations/20261101450000_learn_voicemail_dispatch.sql": "337d14741d4e244531aa8778103ac211bfa8910404d3dc002bd321160980d672",
+    "supabase/functions/platform-worker/index.ts": "65eb9323bbed78b4f8436754a46237a04af4bd5076b26ae35dcb88a9fcce542e",
+    "supabase/functions/_shared/voicemail/discovery-tick.ts": "5209f5fe7d9d2b55672d638515914ce780ed2c5c33c57ba6496a6941ca316190",
+    "src/components/app/OperatorVoicemailStatus.tsx": "e19ee053be1afb260fd0e6ac604f6bfb0abe8852a40ea4ecfa8d5c4beb3cf485",
+    "src/components/app/OperatorModules.tsx": "0f16e764b28ea844eb6c46203e1e328566f50b03a77db7373a910b3f6c2201e1",
+    "src/lib/learn-voicemail-status.ts": "85e514fd61e540ffb066378bb9794103de0fa4b03e7dbfff9600ff496b1f8cbf",
+    "scripts/verify/voicemail_dispatch_probe.py": "4ae0b1c16cbc598ceb11793305dc39581efcf250556b70576a9254bf4721332b",
+    "supabase/functions/_shared/voicemail/discovery-tick.test.ts": "fc86277bfca1a735afe832553d8c79774d02aaccf2ed102b93f4deb918062daf",
+    "src/lib/learn-voicemail-status.test.ts": "f53b47f9d95dcba90e44edc72d369e3c58a3b0b1f76f7718f27d783644254178"
+  },
+  "limitations": [
+    "Frontend source built and checked locally; hosted frontend remains on earlier Git commit 59077dafbe1419853d971baa92aa73ec0078e549.",
+    "No real route activation, provider requests, new human grants or production changes.",
+    "No TEST schedule was activated; runtime is wired into existing worker invocation.",
+    "Hosted positive scheduled import and signed-in operator/owner acceptance remain unproven.",
+    "Real mailbox ownership/authority, unavailable history and provider coverage still require verification.",
+    "Independent voicemail source/audio backup and restore acceptance remains unfinished."
+  ]
+}

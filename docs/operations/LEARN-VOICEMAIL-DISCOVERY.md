@@ -1,6 +1,67 @@
 # Birchills voicemail: discovery before capture
 
 
+## Recurring dispatch and operator status — 12 October, 00:29 BST
+
+TEST release 076 adds `voicemail_schedule_tick()` to the existing platform-worker
+invocation path. It is called before queue claiming for all-jobs or voicemail-only
+runs; a deliberately narrow run for another connector skips it. No new cron or
+secret is introduced, and no TEST schedule has been activated. Current real routes
+remain disabled. A transaction processes at most two eligible routes and five
+100-row pages per route. Routes are ordered by last attempt; failed routes back off
+for five minutes so another route can progress. Email and Phone gates still apply.
+Per-route page changes roll back together on failure, and the whole tick rolls back
+if its final receipt cannot be saved. Empty configurations create no write heartbeat.
+
+One immutable receipt per UTC minute makes concurrent/lost-response invocation
+replayable. Old receipts retain their observation time and never claim fresh provider
+health. Worker errors or malformed responses surface as unconfirmed; one failure does
+not stop unrelated queued work. The invocation promise is registered with the existing
+Edge background-lifetime mechanism before awaiting it.
+
+`learn_operator_voicemail_status(tenant, after)` uses the existing effective-dated
+OpenFolk view/admin grant and rejects View-As. It paginates 20 routes per page and
+returns only extension/configuration and aggregates: observed candidates, source-review
+reasons, excluded drafts, job states, pass progress, worker attempts and backoff.
+Caller numbers, email addresses, source IDs/paths, transcripts, credentials and audio
+are omitted. The helper is not callable by ordinary clients. Local actual SQL confirms
+that an operator with view authority but no mailbox ownership/manager relationship
+still sees zero private voicemail messages. This status privilege creates no human
+grant and does not bypass private voicemail RLS.
+
+The new OpenFolk LEARN component distinguishes paused/unobserved/overdue/scanning/pass
+finished states. It does not turn an unavailable status into zero or imply that a
+finished retained pass proves provider history. It gives concrete steps for missing
+bindings, unavailable originals and overlapping/reassigned routes. Counts cover
+notifications found by discovery, rather than every earlier/manual import. It is
+built and checked in a local browser using synthetic RPC responses; hosted frontend
+still needs deployment and signed-in verification.
+
+- Release 076 SHA-256: `3d071818ed83407c496ac6b6e25a784a6e976bf63986928d5309a3fcd5bbe355`.
+- Installed catalog: `e98a51ad59594757305433a7257c5e6f`; dispatch metadata: `8a2c3ed38f0b91da2c374183a693710f`.
+- Runtime bundle: `712fc8b2743967e2532feae706c917de8c2ca2de953e8a6e2fc3c1889cdd79b0`.
+- TEST platform-worker **v19** and learn-voicemail-import **v2** are ACTIVE; draft
+  rejection is deployed in both paths. Readback verifies 102/19 emitted modules and
+  160/23 imports respectively. Type-only omitted modules have no emitted importers;
+  syntax normalization is a review aid, not formal proof.
+- All 139 prior datasets survive schema installation; all **140** survive runtime
+  deployment and ten idle/auth/RPC checks. The retired synthetic fixture is retained.
+- Local command: `python3 scripts/verify/learn-voicemail-intake-local.py --dispatch`.
+  It includes discovery-to-publication, dispatch bounds/recovery, actual authority,
+  private-message denial and 24-route pagination. Local fixture receipt resets
+  simulate later ticks; they do not prove real clock-driven delivery.
+- [Sanitized evidence](evidence/learn-voicemail-dispatch-2026-10-12.json).
+
+Next: deploy the matching frontend from Git; obtain signed-in operator/owner acceptance;
+verify positive hosted scheduled import and actual cron operation within authorised
+provider scope; finish real route authority and independent source/audio recovery.
+For runtime rollback, restore the reviewed preceding bundle while preserving schema,
+receipts, candidates and jobs. Do not drop populated evidence tables. Use the new
+140-dataset baseline for subsequent releases; older first-install tools must not run
+again. Production remains unchanged.
+
+
+
 ## Retained-email discovery installed in TEST — 12 October, 00:08 BST
 
 Release 075 adds service-only scan state, candidate tracking, immutable per-request
