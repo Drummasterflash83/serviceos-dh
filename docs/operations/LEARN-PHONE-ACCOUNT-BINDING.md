@@ -771,3 +771,12 @@ read errors and delayed-response isolation. Positive signed-in hosted and real
 Drummonds data acceptance remain outstanding.
 
 [Release and browser evidence](evidence/learn-phone-saved-results-test-2026-10-11.json).
+
+The matching protected TEST frontend is READY at 12:32 UTC from GitHub commit
+`508dc13172f80fa565e52802105951e01a6687b5`, at
+https://serviceos-learn-test-ea944wgld-allkin.vercel.app. Readback confirms the
+existing TEST project, staging target and backend binding. Three route-protection
+checks pass. The actual browser redirects to same-origin app sign-in with zero
+console errors. Three real RPC checks deny no-session/anonymous/service callers.
+This does not substitute for positive signed-in result reading; the earlier
+playback login remains retired and was not reused.

@@ -233,8 +233,10 @@ succeeded after that failure; no worker was invoked and no source record changed
   Long transcripts paginate with a text hash so pages cannot mix edited versions.
   Actual local component checks cover pagination, warning labels, failure recovery
   and discarding delayed replies on company change; offline SQL and full hosted
-  rollback assertions pass. The matching frontend and positive signed-in hosted
-  acceptance remain pending at this checkpoint. Legacy `/app` call detail/feed
+  rollback assertions pass. The matching protected frontend is READY at 12:32 UTC from GitHub `508dc13`,
+  at https://serviceos-learn-test-ea944wgld-allkin.vercel.app. TEST binding, route
+  protection, actual browser sign-in redirect and zero browser errors pass. Three
+  real RPC denials pass; positive signed-in hosted reader acceptance remains open. Legacy `/app` call detail/feed
   freshness remains separate work. [Saved-result evidence](evidence/learn-phone-saved-results-test-2026-10-11.json).
   Hosted TEST now has pipeline, transcription and analysis v1, download v4,
   pending processor v2 and platform worker v7, coordinated with schema release 055.

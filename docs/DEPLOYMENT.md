@@ -50,6 +50,23 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The latest staging candidate is
+[serviceos-learn-test-ea944wgld-allkin.vercel.app](https://serviceos-learn-test-ea944wgld-allkin.vercel.app),
+built remotely from GitHub commit `508dc13172f80fa565e52802105951e01a6687b5`
+and READY at 12:32 UTC on 11 October. It adds paged saved transcripts and advisory
+analysis to customer-card recordings, with source-matched/stale/unverified labels.
+TEST schema release 058 installed at 12:30 UTC and preserved all 113 datasets.
+TEST binding, three Vercel-protected routes, actual app login redirect and zero
+browser errors pass. Positive signed-in reading remains open; the component was
+verified locally with synthetic results, and its SQL passed full-schema hosted
+rollback assertions. No provider requests or production changes.
+[Release evidence](operations/evidence/learn-phone-saved-results-test-2026-10-11.json).
+
+The previous playback candidate `serviceos-learn-test-qu7dogqm4-allkin.vercel.app`
+from `0a8d7eab2eeede40d368a9e5b66508ddd954abeb` passed the approved isolated
+signed-in card-to-generated-audio journey. Its synthetic login is now banned and
+company membership removed. [Acceptance](operations/LEARN-PHONE-PLAYBACK-ACCEPTANCE.md).
+
+The earlier operator candidate is
 [serviceos-learn-test-c6le93r67-allkin.vercel.app](https://serviceos-learn-test-c6le93r67-allkin.vercel.app),
 built remotely from GitHub commit `48999ca1c8439ab039375a0972befc2e5b787cfb`
 and READY at 10:39 UTC on 11 October. It adds safe Phone attempt history and

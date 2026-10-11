@@ -47,7 +47,8 @@
     "legacyWarning": true,
     "readFailureClearsOldResult": true,
     "companySwitchDiscardsDelayedResult": true,
-    "consoleErrors": 0
+    "consoleErrors": 0,
+    "closeDiscardsDelayedResultAndReopens": true
   },
   "limits": {
     "transcriptPageCharacters": 12000,
@@ -58,8 +59,70 @@
   "productionChanges": 0,
   "newPersistentUsers": 0,
   "remaining": [
-    "Protected frontend deployment and signed-in hosted reader acceptance",
+    "Positive signed-in hosted reader acceptance",
     "Real Drummonds provider-to-card transcript and analysis acceptance",
     "Existing legacy /app call detail/feed freshness remains to be upgraded"
-  ]
+  ],
+  "http": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-11T12:32:24.703Z",
+    "checks": [
+      {
+        "name": "no_session",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "name": "anonymous",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "name": "service_role",
+        "status": 403,
+        "code": "42501"
+      }
+    ],
+    "providerRequests": 0,
+    "sourceWrites": 0
+  },
+  "frontend": {
+    "observedAt": "2026-10-11T12:32:34.944Z",
+    "id": "dpl_4E3XcZ8faKjHYwNuRzbkyuqeT2Ej",
+    "url": "serviceos-learn-test-ea944wgld-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "508dc13172f80fa565e52802105951e01a6687b5"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "browserLoginRedirectVerified": true,
+    "browserConsoleErrors": 0
+  },
+  "protection": {
+    "observedAt": "2026-10-11T12:33:05.886Z",
+    "base": "https://serviceos-learn-test-ea944wgld-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  }
 }
