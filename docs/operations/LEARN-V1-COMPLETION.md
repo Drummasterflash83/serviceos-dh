@@ -214,10 +214,17 @@ succeeded after that failure; no worker was invoked and no source record changed
   frontend is READY from Git commit `0a8d7eab2eeede40d368a9e5b66508ddd954abeb`
   at https://serviceos-learn-test-qu7dogqm4-allkin.vercel.app; the actual browser
   reached its same-origin login with no observed warnings/errors. Isolated
-  signed-in acceptance run `73e083fe` is prepared but activation was rejected by
-  automatic approval review: this new owner login needs explicit user approval.
-  [Exact run and retirement plan](LEARN-PHONE-PLAYBACK-ACCEPTANCE.md).
-  Real retained audio playback and signed-in hosted acceptance remain open.
+  signed-in acceptance run `73e083fe` subsequently received explicit user approval
+  and **passed in hosted TEST**, using one generated eight-second recording.
+  Card → call → recording → private audio worked in the actual browser; playback
+  advanced and closing evidence removed the player. Exact bytes, foreign-tenant
+  denial, same-session role revocation and all 113 original dataset comparisons
+  passed. The temporary login is banned and company access removed.
+  TEST needed a private synthetic WAV bucket; it currently has a 1 MiB limit and
+  requires configuration review before real-audio acceptance. No new policies.
+  [Completed run and retirement](LEARN-PHONE-PLAYBACK-ACCEPTANCE.md).
+  [Signed-in acceptance evidence](evidence/learn-phone-playback-acceptance-2026-10-11.json).
+  Real Drummonds retained audio and provider-to-card acceptance remain open.
   [Candidate checks](evidence/learn-phone-playback-candidate-2026-10-11.json).
   [Hosted backend evidence](evidence/learn-phone-playback-test-2026-10-11.json).
   Hosted TEST now has pipeline, transcription and analysis v1, download v4,

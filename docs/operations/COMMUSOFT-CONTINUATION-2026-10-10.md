@@ -1,6 +1,16 @@
 # Drummonds TEST continuation — prepared, not activated
 
-## Latest readiness — 11 October, 12:07 UTC
+## Readiness follow-up — 11 October, 12:18 UTC
+
+The separately approved playback run `73e083fe` has now added its retained
+synthetic fixtures and private generated audio to TEST, then retired its login.
+The 12:07 preflight below predates that run. Before continuation activation,
+reconcile those exact additions against the preserved baseline and rerun
+preflight; do not overwrite the original evidence or blanket-reset hashes.
+The Commusoft continuation still requires its own pending access approval.
+[Playback acceptance and retirement](LEARN-PHONE-PLAYBACK-ACCEPTANCE.md).
+
+## Earlier readiness — 11 October, 12:07 UTC
 
 The same prepared run now passes a fresh **read-only preflight** against the
 installed TEST release 057 environment. The original 60-minute grant proposal,

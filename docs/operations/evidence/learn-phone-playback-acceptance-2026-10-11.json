@@ -1,0 +1,71 @@
+{
+  "version": "learn-phone-playback-acceptance/1",
+  "runId": "73e083fe-4195-49fb-89a2-7679b6eab517",
+  "environment": "hosted TEST",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "userApproved": true,
+  "startedAt": "2026-10-11T12:15:28.632Z",
+  "httpVerifiedAt": "2026-10-11T12:16:54.067Z",
+  "retiredAt": "2026-10-11T12:18:16.697Z",
+  "http": {
+    "cardSourceLinked": true,
+    "audioBytes": 128044,
+    "sha256Matches": true,
+    "oneNewAuditReceiptPerOpen": true,
+    "foreignTenantDenied": true,
+    "sameSessionDemotionDenied": true
+  },
+  "browser": {
+    "runId": "73e083fe-4195-49fb-89a2-7679b6eab517",
+    "verifiedAt": "2026-10-11T12:17:59.258Z",
+    "host": "https://serviceos-learn-test-qu7dogqm4-allkin.vercel.app",
+    "cardToCallToRecording": true,
+    "audioStart": {
+      "currentTime": 0.002052,
+      "paused": false,
+      "duration": 8,
+      "readyState": 4,
+      "errorCode": null
+    },
+    "audioProgress": {
+      "currentTime": 5.817472,
+      "duration": 8,
+      "errorCode": null,
+      "paused": false,
+      "readyState": 4
+    },
+    "audioElementsAfterClose": 0,
+    "refreshRestoredCaptureStatus": true,
+    "browserErrors": 0
+  },
+  "retirement": {
+    "banned": true,
+    "membershipRemoved": true,
+    "passwordRemovedFromJournal": true,
+    "signedOut": true
+  },
+  "preservation": {
+    "originalDatasetsCompared": 113,
+    "allMatch": true,
+    "syntheticObjectExclusion": "Exact generated object in phone-recordings; no other object or prefix excluded"
+  },
+  "storage": {
+    "createdPrivateTestBucket": true,
+    "fileSizeLimit": 1048576,
+    "allowedMimeTypes": ["audio/wav"],
+    "newPolicies": 0,
+    "productionChanges": 0
+  },
+  "localTests": {
+    "passed": 9,
+    "failed": 0,
+    "requiresExperimentalVmModules": true
+  },
+  "limitations": [
+    "Synthetic generated audio, no real provider requests",
+    "No production acceptance or promotion",
+    "No real history or transcript quality acceptance",
+    "Hosted close removes player; pause cleanup separately covered by earlier local actual-component test",
+    "TEST bucket limited to synthetic WAV; real audio formats and limits need separate configuration review"
+  ]
+}

@@ -124,7 +124,7 @@ const snapshot = () =>
     tables
       .map(
         (t) =>
-          `select ${q(t)} as name,count(*)::int as count,md5(coalesce(string_agg(md5(to_jsonb(s)::text),'' order by md5(to_jsonb(s)::text)),'')) as fingerprint from ${t} s where coalesce(to_jsonb(s)->>'tenant_id','') not in (${p.tenants.map(q).join(",")}) and coalesce(to_jsonb(s)->>'id','') not in (${[p.user, ...p.tenants].map(q).join(",")}) and coalesce(to_jsonb(s)->>'user_id','')<>${q(p.user)}`,
+          `select ${q(t)} as name,count(*)::int as count,md5(coalesce(string_agg(md5(to_jsonb(s)::text),'' order by md5(to_jsonb(s)::text)),'')) as fingerprint from ${t} s where coalesce(to_jsonb(s)->>'tenant_id','') not in (${p.tenants.map(q).join(",")}) and coalesce(to_jsonb(s)->>'id','') not in (${[p.user, ...p.tenants].map(q).join(",")}) and coalesce(to_jsonb(s)->>'user_id','')<>${q(p.user)}${t === "storage.objects" ? ` and not (bucket_id='phone-recordings' and name=${q(p.tenants[0] + "/" + p.runId + "/generated.wav")})` : ""}`,
       )
       .join(" union all "),
   );
@@ -288,6 +288,9 @@ if (mode === "--activate") {
       global: { headers: { Authorization: "Bearer " + jwt } },
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     });
+  const auditBefore = await sql(
+    `select count(*)::int as count from learn_phone_playback_audit where actor_id=${q(p.user)} and tenant_id=${q(p.tenants[0])} and recording_id=${q(p.recording)}`,
+  );
   const detail = await readLearnCardDetail(client, p.tenants[0], "customer", p.card);
   check(detail.evidence.some((e) => e.sourceId === p.call));
   const page = await readRetainedRecordings(client, p.tenants[0], "phone_calls", p.call);
@@ -324,7 +327,7 @@ if (mode === "--activate") {
   const audit = await sql(
     `select count(*)::int as count from learn_phone_playback_audit where actor_id=${q(p.user)} and tenant_id=${q(p.tenants[0])} and recording_id=${q(p.recording)}`,
   );
-  check(audit[0]?.count === 1);
+  check(audit[0]?.count === auditBefore[0]?.count + 1);
   check(JSON.stringify(p.baseline) === JSON.stringify(await snapshot()));
   p.httpVerifiedAt = new Date().toISOString();
   save(p);
