@@ -1,0 +1,74 @@
+{
+  "version": "learn-voicemail-signature-evidence/1",
+  "scope": "local_read_only_diagnostic_not_deployed",
+  "successfulAttempt": {
+    "state": "single_original_message_signature_checked",
+    "observedAt": "2026-10-11T21:23:24.966Z",
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "tenantId": "00000000-0000-0000-0000-000000000001",
+    "sourceFingerprint": "c611b8ed260f870a0db96143af1f178bd363789cc08866e557d947a2a82dbbd7",
+    "rawBytes": 97126,
+    "rawSha256": "cc536a8e00ea1b2367b4620a6719cd789d2a6189fd43ee7cae1e582cbbd17125",
+    "verification": {
+      "version": "voicemail-dkim-probe/1",
+      "verifier": "mailauth@7.3.0",
+      "strict": true,
+      "original": {
+        "uniqueRequiredHeaders": true,
+        "fromDomainMatches": true,
+        "contentSignatureVerified": true,
+        "signatures": [
+          {
+            "expectedSigningDomain": true,
+            "status": "pass",
+            "rsaSha256": true,
+            "keyBits": 2048,
+            "completeBody": true,
+            "requiredHeadersSigned": true,
+            "signatureTimeValid": true
+          }
+        ]
+      },
+      "negativeChecks": {
+        "changedSubjectRejected": true,
+        "changedBodyWithForgedPassRejected": true,
+        "duplicateFromRejected": true
+      },
+      "dnsQueries": 1,
+      "refusedQueries": 3,
+      "rawPersisted": false,
+      "limitations": [
+        "Digital-signature evidence only; no mailbox ownership, provider-account binding, complete history or import is established.",
+        "Expected signer is the previously observed provider Google signing domain; its provider-account association must be explicitly configured before automatic import."
+      ]
+    },
+    "tokenRequests": 1,
+    "rawMessageRequests": 1,
+    "productionWrites": 0,
+    "storageUploads": 0,
+    "accessChanges": 0,
+    "credentialUploads": 0,
+    "rawPersisted": false
+  },
+  "attempts": {
+    "rawMessageReads": 2,
+    "uniqueMessages": 1,
+    "firstAttempt": "Local signed-header keys string/array integration error; raw bytes not persisted. Fixed and tested before retry."
+  },
+  "offlineRegressionTests": 2,
+  "dependencyAudit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "remaining": [
+    "Explicit provider-account/signer and mailbox-recipient binding",
+    "Historical owner evidence or explicitly authorised private manager review",
+    "Extract and import the verified raw MIME source, not a separately stored text copy",
+    "Edge runtime compatibility and capture control integration",
+    "Private durable storage, retry/recovery, coverage, signed-in acceptance"
+  ]
+}

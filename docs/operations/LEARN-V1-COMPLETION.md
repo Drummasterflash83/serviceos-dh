@@ -56,6 +56,15 @@ as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
 ### Voicemail route discovered — real read-only checks, 11 October, 21:06 UTC
 
+**Signature update, 21:23 UTC:** one original Gmail notification's complete-body
+signature verified locally against the observed provider signing domain. Changed
+subject/body and duplicate From checks were rejected. Two reads of the same
+message were used after fixing a local verifier integration error; raw content
+was not persisted. This establishes a cryptographic route, not a deployed sender
+verifier or an authorised mailbox/owner binding. Extracting and importing the
+verified raw content still needs implementation.
+[Signature evidence](evidence/learn-voicemail-dkim-2026-10-11.json).
+
 **Local implementation update, 21:18 UTC:** the notification parser and bounded
 MP3 metadata selector passed six local checks, strict types and all three real
 Gmail metadata samples against retained source text. The stored mailbox bindings

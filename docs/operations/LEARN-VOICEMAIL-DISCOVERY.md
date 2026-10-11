@@ -1,5 +1,34 @@
 # Birchills voicemail: discovery before capture
 
+## Original-message signature verified — 11 October 2026, 21:23 UTC
+
+One original Gmail notification was read in memory and verified locally with the
+pinned mailauth 7.3.0 verifier in strict mode. Its RSA-SHA256 signature used a
+2048-bit public key from the previously observed provider Google signing domain.
+It covered the complete MIME body and unique From, To, Subject, Date, Message-ID,
+MIME-Version and Content-Type fields. This is direct cryptographic evidence,
+independent of the notification's Authentication-Results text.
+
+The same check rejected locally altered copies: changed subject, changed body
+with a forged `dkim=pass` header, and a second From field. Only one public DNS key
+lookup was needed; other domains were refused. Raw message/audio bytes stayed in
+memory, were not uploaded or written to disk, and no records or access changed.
+The first diagnostic attempt failed on a library result-shape mismatch; a local
+fix and synthetic check preceded the successful second read of the same message.
+This milestone used two raw-message reads in total, not two unique messages.
+
+Two offline regression tests pass and the isolated diagnostic dependencies have
+zero npm audit findings at this observation. This dependency is separate from the
+application; compatibility with the deployed Edge runtime remains unverified.
+The provider-account/signer association must be explicitly configured before
+automatic import. Mailbox-recipient/historical-owner binding, extraction of the
+verified raw MIME content, durable private import and scheduled capture remain
+unfinished. The earlier parser used retained text; signature verification does
+not retroactively authenticate that separately stored copy.
+
+Evidence: [original-message signature and tamper checks](evidence/learn-voicemail-dkim-2026-10-11.json).
+Reproduction: [isolated diagnostic](../../scripts/verify/voicemail-auth/README.md).
+
 ## Local parser verified — 11 October 2026, 21:18 UTC
 
 The new `birchills_voicemail_email.ts` parser handles the observed subject/body

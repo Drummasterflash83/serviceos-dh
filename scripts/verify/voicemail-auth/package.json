@@ -1,0 +1,8 @@
+{
+  "name": "serviceos-voicemail-auth-verification",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "mailauth": "7.3.0"
+  }
+}
