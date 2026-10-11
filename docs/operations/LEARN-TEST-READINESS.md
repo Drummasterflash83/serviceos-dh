@@ -1,17 +1,20 @@
 # Existing TEST environment: verified release gaps
 
-## Microsoft 365 mail — local page engine and recovery verified
+## Microsoft 365 mail — local page engine, recovery and queue completion verified
 
-The new page engine joins Graph readers to the source journal. Forty-eight unit
+The new page engine joins Graph readers to the source journal. Fifty-four unit
 checks and strict TypeScript pass. Actual engine-to-PostgreSQL integration verifies
 lost-reply recovery by a replacement worker without provider/token access, disabled
 binding denial, folder resumption, message rounds, raw evidence retention and
 cross-job cursor-cycle rejection. Database checks retain atomicity, lease/role/scope
 boundaries, rollback and observed lock contention. A new unique job receipt prevents
 one queue job recording a second page after an uncertain reply.
-Neither Microsoft migration is installed in TEST, and no real provider requests or
-production changes occurred. Credentials, atomic queue completion/continuations,
-worker registration, shared evidence projection, full-schema/hosted validation and
+The job wrapper now completes the queue row and creates its same-stream successor
+atomically. Integration verifies overlapping settlement retries create one child,
+lost-reply recovery, successor failure/lease-expiry rollback and paused recovery.
+None of the three Microsoft migrations is installed in TEST, and no real provider
+requests or production changes occurred. Credentials, physical-folder message-job
+fan-out, recurring scheduling, worker registration, shared evidence projection, full-schema/hosted validation and
 real mailbox acceptance remain open. The controller still marks the adapter as
 unimplemented.
 See [Microsoft mail implementation and remaining work](LEARN-MICROSOFT-MAIL.md).

@@ -41,6 +41,40 @@ and [read-only backup-list endpoint](https://supabase.com/docs/reference/api/v1-
 These were checked on 11 October. No restore, plan change, backup configuration
 change or audio download was performed during this observation.
 
+## Proposed independent recording backup — not configured
+
+On 11 October Chris confirmed that no separate recorded-call backup destination
+exists and asked for a recommendation. Proposed destination: a Drummonds-owned AWS
+account with a private S3 Standard bucket in Europe (London), `eu-west-2`, separate
+from production application administration. This is a proposal, not authorization
+to provision paid infrastructure or copy recordings.
+
+- Block public access, require encrypted transport, use server-side encryption,
+  MFA for account owners and narrowly scoped backup/restore identities. Keep
+  account recovery under Drummonds' control; production runtime credentials must
+  not be able to delete backup versions or bypass retention.
+- Enable versioning and propose 30-day Object Lock governance protection for new
+  backup versions. Confirm this recovery window separately from the business
+  retention policy before applying it. Governance bypass belongs only to a
+  separate recovery administrator; do not use irreversible compliance-mode
+  retention without an established requirement.
+- Copy existing recordings once, then new/changed objects daily, without mirroring
+  source deletions. Keep encrypted private manifests with object versions, sizes,
+  digests and database references. Record source changes during each run rather
+  than claiming an atomic database/file snapshot.
+- Verify copied bytes, rehearse an isolated restore and representative playback,
+  then repeat restore checks monthly. Report last successful backup, coverage,
+  failures and last restore test in OpenFolk with actionable operator diagnostics.
+- Size the initial inventory and daily growth before quoting costs. Include old
+  versions, S3 requests, source egress, backup execution and restore traffic as
+  well as storage. Neither byte volume nor monthly budget is established yet.
+
+Official sources checked on 11 October: [London S3 region](https://docs.aws.amazon.com/general/latest/gr/s3.html),
+[encryption](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingServerSideEncryption.html),
+[Object Lock modes](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html)
+and [pricing components](https://aws.amazon.com/s3/pricing/).
+No AWS resource, backup schedule or recording copy has been created.
+
 ## Remaining recovery work
 
 1. Identify the existing approved encrypted backup destination and its recovery
