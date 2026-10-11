@@ -107,6 +107,41 @@ export async function verifyEmailCaptureEngine({ t, sql, db, queueJob, q, refere
     );
   }
   await t.test(
+    "bound alias profile captures through the original account and rejects an unrelated profile",
+    async () => {
+      const j = job(true),
+        prefix = "alias-" + j.accountId;
+      const p = ports(j, () => Response.json({ messages: [{ id: prefix }] })),
+        mailbox = p.mailbox,
+        fetcher = p.fetcher;
+      p.mailbox = async () => ({ ...(await mailbox()), profileMailbox: "primary@example.invalid" });
+      p.fetcher = async (url) =>
+        String(url).endsWith("/profile")
+          ? Response.json({ emailAddress: "primary@example.invalid", historyId: "100" })
+          : fetcher(url);
+      const result = await runEmailCaptureJob(db, j, p);
+      assert.equal(result.state, "completed");
+      assert.equal(result.recordsProcessed, 1);
+      assert.equal(
+        sql(`select email_address from email_accounts where id=${q(j.accountId)}`),
+        j.accountId + "@example.invalid",
+      );
+      assert.equal(
+        sql(`select count(*) from email_messages where provider_message_id=${q(prefix)}`),
+        "1",
+      );
+      const bad = job(true),
+        b = ports(bad, () => {
+          throw Error("Unrelated profile must not reach message listing");
+        }),
+        read = b.mailbox;
+      b.mailbox = async () => ({ ...(await read()), profileMailbox: "primary@example.invalid" });
+      const refused = await runEmailCaptureJob(db, bad, b);
+      assert.equal(refused.state, "failed");
+      assert.equal(refused.code, "source_ineligible");
+    },
+  );
+  await t.test(
     "mailbox engine traverses both recent labels across atomic queue successors before advancing the captured cursor",
     async () => {
       let j = job();

@@ -151,6 +151,37 @@ Stored mailbox rows still say `user`, `active`, `sync_enabled=true`. This suppor
 stale/unresolved directory identity; it does not establish deletion, renaming or
 the exact cause. No settings were changed and no message content was read.
 
+### Workspace alias capture identity — 11 October, 19:05 UTC
+
+The real alias profile findings exposed a second acceptance gap: Gmail returns
+the primary address for a valid alias, while the V1 capture engine required that
+profile to equal the configured alias string. TEST release **067**, worker **v13**
+and directory discovery **v3** now support an explicit directory-verified primary
+identity for an existing alias. The original account ID, email address, source
+namespace and retained messages stay unchanged. Missing, foreign-domain, disputed
+or changed bindings fail before token access; an unrelated Gmail profile remains
+rejected. OAuth and primary-account exact matching remain in place.
+
+Directory refresh binds an unverified row only to the actual returned primary.
+A database guard preserves its first owner and latches a conflict if later or
+concurrent refreshes disagree. Ordinary refreshes cannot clear that hold or move
+the binding across tenants/connections/addresses. This is not an identity merge;
+operator recovery for a changed owner still needs an explicit reviewed workflow.
+
+Both the standalone migration and exact package passed full-schema rollback
+rehearsals before installation. All **121 datasets** retained their original
+fields; new columns remain null/false for existing rows, with no inferred binding.
+The actual engine/SQL suite passed 58 checks, including alias-profile capture and
+wrong-profile refusal. All 23 port/directory checks passed locally and against
+downloaded deployed modules. Runtime comparison matched 92 worker modules and
+four directory modules; three omitted files have no emitted runtime imports.
+Strict endpoint/worker types and HTTP 403/401 boundary checks pass.
+
+No credential, user, grant, capture schedule or production change was made. The
+existing protected frontend is unchanged. Positive hosted directory refresh,
+real alias-to-card capture and signed-in acceptance still await their existing
+access/credential approvals. [Evidence](evidence/learn-workspace-profile-identity-test-2026-10-11.json).
+
 ### Real Workspace directory and aliases — 11 October, 18:49–18:54 UTC
 
 The existing local credential completed a bounded, read-only scan of its matched

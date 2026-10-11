@@ -179,7 +179,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // Which addresses already existed (to count genuinely-new mailboxes)?
   const { data: existingRows, error: existingError } = await supabase
     .from("google_workspace_mailboxes")
-    .select("email_address, status")
+    .select("email_address, status, directory_primary_email, directory_identity_conflict")
     .eq("tenant_id", tenantId)
     .eq("connection_id", connectionId);
   if (existingError || !Array.isArray(existingRows)) {
@@ -189,6 +189,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const existingEmails = new Set(
     (existingRows ?? []).map((r) => (r.email_address as string).toLowerCase()),
   );
+  const existingByEmail = new Map(existingRows.map((r) => [r.email_address.toLowerCase(), r]));
   const added = users.filter((u) => !existingEmails.has(u.email.toLowerCase())).length;
 
   if (users.length > 0) {
@@ -199,6 +200,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
         tenant_id: tenantId,
         connection_id: connectionId,
         email_address: email,
+        directory_primary_email: existingByEmail.get(email)?.directory_primary_email ?? u.email,
+        directory_identity_conflict:
+          existingByEmail.get(email)?.directory_identity_conflict === true ||
+          (existingByEmail.get(email)?.directory_primary_email != null &&
+            existingByEmail.get(email)?.directory_primary_email !== u.email),
         display_name: u.displayName,
         mailbox_type: u.suspended ? "suspended" : email === u.email ? "user" : "alias",
         last_seen_at: seenAt,

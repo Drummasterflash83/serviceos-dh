@@ -1,0 +1,13 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "e7f0b8d735defaf27da1e775b57cf674f0f0a6523f5a5000be3a2adbeb14b81e",
+  "migrations": [
+    {
+      "file": "20261101360000_learn_workspace_mailbox_identity.sql",
+      "sha256": "2f457d516618fcd2dd55e97b6f8175f22ebc5fb304d9ef9e95ee82540a2e71a3"
+    }
+  ],
+  "probeSha256": "eaffb5c93a9859fb1edf5eb505b00a379364dfa53ad06945d1aded35488e4c44",
+  "priorFingerprint": "e7897de65753b003869960b6b054215d",
+  "preservedDatasets": 121
+}

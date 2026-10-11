@@ -32,6 +32,8 @@ export type EmailMailboxSource = {
   tenantId: string;
   accountId: string;
   mailbox: string;
+  /** Explicit profile identity proved by the current server-side account binding. */
+  profileMailbox?: string;
   historical: { pageToken: string | null; total: number } | null;
 };
 export interface EmailCapturePorts {
@@ -164,6 +166,8 @@ function checkSource(s: EmailMailboxSource, a: EmailJobAttempt) {
     s.accountId !== a.accountId ||
     typeof s.mailbox !== "string" ||
     !s.mailbox.trim() ||
+    (s.profileMailbox !== undefined &&
+      (typeof s.profileMailbox !== "string" || !/^[^\s@]+@[^\s@]+$/.test(s.profileMailbox))) ||
     (a.stream === "historical" &&
       (!s.historical ||
         !pageToken(s.historical.pageToken) ||
@@ -411,7 +415,11 @@ export async function runEmailCaptureJob(
     const source = await ports.mailbox(attempt);
     checkSource(source, attempt);
     const accessToken = await ports.accessToken(attempt, source);
-    const boundary = await readGmailCaptureBoundary(accessToken, source.mailbox, ports.fetcher);
+    const boundary = await readGmailCaptureBoundary(
+      accessToken,
+      source.profileMailbox ?? source.mailbox,
+      ports.fetcher,
+    );
     if (recent?.uninitialized) {
       const r = await transition("initialize_traversal", {
         captured_history_id: boundary,

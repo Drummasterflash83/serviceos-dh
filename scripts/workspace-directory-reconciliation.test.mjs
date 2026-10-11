@@ -406,3 +406,29 @@ test("actual discovery preserves existing aliases and choices without adding eve
     );
   }
 });
+
+test("changed directory ownership is held while retaining the original identity and operator choice", async () => {
+  const f = fixture({
+    mailboxesOverride: [
+      {
+        id: "alias",
+        email_address: "old@example.org",
+        status: "active",
+        sync_enabled: true,
+        directory_primary_email: "original@example.org",
+        directory_identity_conflict: false,
+      },
+    ],
+  });
+  await withPages(
+    [{ users: [{ ...user("replacement@example.org"), aliases: ["old@example.org"] }] }],
+    async () => {
+      assert.equal((await f.run()).status, 200);
+      const row = f.mailboxes.find((m) => m.id === "alias");
+      assert.equal(row.directory_primary_email, "original@example.org");
+      assert.equal(row.directory_identity_conflict, true);
+      assert.equal(row.sync_enabled, true);
+      assert.equal(row.status, "active");
+    },
+  );
+});

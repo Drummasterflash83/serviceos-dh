@@ -1,7 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createEmailCapturePorts } from "./email_capture_ports.ts";
-import { GmailCaptureError, DELEGATION_CAPTURE_CODES } from "./gmail_capture_page.ts";
+import {
+  readGmailCaptureBoundary,
+  GmailCaptureError,
+  DELEGATION_CAPTURE_CODES,
+} from "./gmail_capture_page.ts";
 import { refreshGmailAccessToken, RefreshError } from "./gmail_oauth.ts";
 import { getDelegatedToken, DelegationError } from "./google_workspace.ts";
 import type { EmailJobAttempt } from "./email_job_attempt.ts";
@@ -423,5 +427,66 @@ test("permanent Workspace failures retain only allowlisted diagnostics", async (
       safeError(code === "PRIVATE-provider-body" ? "source_ineligible" : code),
     );
     assert.equal(f.writes.length, 0);
+  }
+});
+
+test("directory-bound alias accepts only its canonical Gmail profile and retains its account identity", async () => {
+  const f = fixture();
+  Object.assign(f.rows.google_workspace_mailboxes[0], {
+    mailbox_type: "alias",
+    directory_primary_email: "primary@example.invalid",
+    directory_identity_conflict: false,
+  });
+  const source = await f.ports.mailbox(f.attempt);
+  assert.equal(source.accountId, account);
+  assert.equal(source.mailbox, "office_one@example.invalid");
+  assert.equal(source.profileMailbox, "primary@example.invalid");
+  const token = await f.ports.accessToken(f.attempt, source);
+  assert.equal(
+    await readGmailCaptureBoundary(token, source.profileMailbox!, async () =>
+      Response.json({ emailAddress: "primary@example.invalid", historyId: "100" }),
+    ),
+    "100",
+  );
+  await assert.rejects(
+    readGmailCaptureBoundary(token, source.profileMailbox!, async () =>
+      Response.json({ emailAddress: "other@example.invalid", historyId: "100" }),
+    ),
+    safeError("source_ineligible"),
+  );
+  assert.equal(f.writes.length, 0);
+});
+test("missing, changed, foreign or disputed alias bindings fail before token acquisition", async () => {
+  for (const patch of [
+    { directory_primary_email: null },
+    { directory_primary_email: "bad" },
+    { directory_primary_email: "person@foreign.invalid" },
+    { directory_identity_conflict: true },
+  ]) {
+    const f = fixture();
+    Object.assign(f.rows.google_workspace_mailboxes[0], {
+      mailbox_type: "alias",
+      directory_primary_email: "primary@example.invalid",
+      ...patch,
+    });
+    await assert.rejects(f.ports.mailbox(f.attempt), safeError("source_ineligible"));
+    assert.equal(f.counter.delegate, 0);
+  }
+  for (const mutate of [
+    (f: any) =>
+      (f.rows.google_workspace_mailboxes[0].directory_primary_email = "other@example.invalid"),
+    (f: any) => (f.rows.google_workspace_mailboxes[0].directory_identity_conflict = true),
+    (f: any, s: any) => (s.profileMailbox = "other@example.invalid"),
+  ]) {
+    const f = fixture();
+    Object.assign(f.rows.google_workspace_mailboxes[0], {
+      mailbox_type: "alias",
+      directory_primary_email: "primary@example.invalid",
+      directory_identity_conflict: false,
+    });
+    const source = await f.ports.mailbox(f.attempt);
+    mutate(f, source);
+    await assert.rejects(f.ports.accessToken(f.attempt, source), safeError("source_ineligible"));
+    assert.equal(f.counter.delegate, 0);
   }
 });

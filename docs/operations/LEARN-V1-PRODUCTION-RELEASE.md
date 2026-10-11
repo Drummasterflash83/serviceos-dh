@@ -92,8 +92,8 @@ record operator detail without claiming failed or stale processing is healthy.
 The 11 October read-only directory audit found two active configured addresses
 that Google reports as aliases; their Gmail profiles resolve to current primary
 users without separate DWD account rows. The earlier directory handler would
-mark these valid alias inputs removed. Use the reviewed v2 alias-preserving
-candidate when packaging production; do not run the earlier primary-only refresh.
+mark these valid alias inputs removed. Use the reviewed v3 directory-identity
+candidate with its additive binding schema and matching worker when packaging production; do not run the earlier primary-only refresh.
 TEST code/readback checks pass, but production is unchanged and still needs the
 explicit release approval. Do not enable parallel primary accounts or merge old
 sources implicitly. Review alias ownership and retained account IDs during real
@@ -106,3 +106,20 @@ The provider distinguishes primary email from editable/non-editable aliases:
 The bounded scan covers the configured domain, not every domain, group or deleted
 user in the Workspace customer:
 [Google users.list reference](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users/list).
+
+### Alias capture identity sequence
+
+TEST package `067_workspace_identity` was installed only after its exact rollback
+rehearsal. The new discovery handler and capture ports require its two columns and
+identity guard; schema precedes runtime. Production must use a production-specific
+manifest and approval, never the TEST package. Existing bindings start unverified.
+A complete authorised directory refresh must establish an alias's primary before
+V1 capture can accept the primary address returned by Gmail. Source account IDs
+and old email namespaces must remain intact.
+
+If ownership changes, the guard retains the original primary and latches a hold.
+A normal refresh or generic retry must not clear it. Operator disposition remains
+an explicit reviewed recovery action, with preservation evidence. For rollback,
+pause affected capture before reverting matching runtime; retain new binding and
+conflict evidence instead of dropping columns after they have been populated.
+Positive hosted real-data acceptance remains open.

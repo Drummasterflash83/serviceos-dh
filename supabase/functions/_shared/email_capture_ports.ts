@@ -98,7 +98,9 @@ export function createEmailCapturePorts(
       const escaped = mailbox.replace(/[\\%_]/g, "\\$&");
       const { data: mailboxes, error: mbError } = await db
         .from("google_workspace_mailboxes")
-        .select("id,tenant_id,connection_id,email_address,status,sync_enabled,mailbox_type")
+        .select(
+          "id,tenant_id,connection_id,email_address,status,sync_enabled,mailbox_type,directory_primary_email,directory_identity_conflict",
+        )
         .eq("tenant_id", attempt.tenantId)
         .ilike("email_address", escaped)
         .limit(2);
@@ -111,7 +113,8 @@ export function createEmailCapturePorts(
         m.email_address.toLowerCase() !== mailbox ||
         m.sync_enabled !== true ||
         !["pending", "active"].includes(m.status) ||
-        m.mailbox_type === "suspended"
+        m.mailbox_type === "suspended" ||
+        m.directory_identity_conflict === true
       )
         denied();
       const { data: c, error: cError } = await db
@@ -141,10 +144,20 @@ export function createEmailCapturePorts(
         Date.parse(c.last_verified_at) > deps.clock() + 5000
       )
         denied();
+      // Primary accounts retain exact-address matching. Alias accounts require a
+      // retained directory binding; a changed owner is held, never silently merged.
+      const profileMailbox = m.mailbox_type === "alias" ? m.directory_primary_email : mailbox;
+      if (
+        !mailboxAddress(profileMailbox) ||
+        profileMailbox !== profileMailbox.toLowerCase() ||
+        profileMailbox.split("@")[1] !== c.domain.toLowerCase()
+      )
+        denied();
       const source: EmailMailboxSource = {
         tenantId: a.tenant_id,
         accountId: a.id,
         mailbox,
+        profileMailbox,
         historical: { pageToken: a.backfill_page_token, total: a.backfill_total_fetched },
       };
       return {
@@ -156,6 +169,9 @@ export function createEmailCapturePorts(
           m.status,
           m.sync_enabled,
           m.mailbox_type,
+          m.directory_primary_email,
+          m.directory_identity_conflict,
+          profileMailbox,
           c.domain.toLowerCase(),
           c.status,
           c.service_account_email.toLowerCase(),
@@ -205,7 +221,8 @@ export function createEmailCapturePorts(
     if (
       !proofs.has(source) ||
       actual.proof !== proofs.get(source) ||
-      actual.source.mailbox !== source.mailbox
+      actual.source.mailbox !== source.mailbox ||
+      actual.source.profileMailbox !== source.profileMailbox
     )
       denied();
   }

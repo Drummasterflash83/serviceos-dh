@@ -1,0 +1,64 @@
+{
+  "version": "learn-workspace-profile-identity-test/1",
+  "observedAt": "2026-10-11T19:05:18.505Z",
+  "state": "test_schema_runtime_and_negative_http_verified",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "067_workspace_identity",
+  "packageSha256": "e7f0b8d735defaf27da1e775b57cf674f0f0a6523f5a5000be3a2adbeb14b81e",
+  "migrationSha256": "2f457d516618fcd2dd55e97b6f8175f22ebc5fb304d9ef9e95ee82540a2e71a3",
+  "schemaFingerprint": "2eec67c4d0bb0841283d17f7961a88f0",
+  "identityGuardDigest": "25435b531474c2fd1e6fff02a686a889",
+  "runtimeBundleSha256": "00fa5d169357b6f63ad828a08b14e83510cee17ee9df10e279f4f9e101414ded",
+  "runtimeEndpoints": [
+    {
+      "name": "google-workspace-discover-mailboxes",
+      "version": 3,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "name": "platform-worker",
+      "version": 13,
+      "status": "ACTIVE",
+      "verifyJwt": false
+    }
+  ],
+  "preservedDatasets": 121,
+  "existingIdentityBindingsInferred": 0,
+  "fullSchemaAndExactPackageRehearsals": "passed_and_rolled_back",
+  "localActualEngineSqlTests": 58,
+  "localPortsAndDiscoveryTests": 23,
+  "downloadedPortsTests": 14,
+  "downloadedDiscoveryTests": 9,
+  "matchedWorkerRuntimeModules": 92,
+  "matchedDirectoryRuntimeModules": 4,
+  "prunedModules": {
+    "count": 3,
+    "verifiedNoEmittedRuntimeImports": true
+  },
+  "strictTypes": "passed_local_SDK_and_Deno_shim",
+  "httpChecks": [
+    {
+      "endpoint": "platform-worker",
+      "method": "POST",
+      "status": 403,
+      "code": "forbidden"
+    },
+    {
+      "endpoint": "google-workspace-discover-mailboxes",
+      "method": "POST",
+      "status": 401
+    }
+  ],
+  "newUsers": 0,
+  "newGrants": 0,
+  "providerRequests": 0,
+  "secretsCreated": 0,
+  "schedulesActivated": 0,
+  "productionChanged": false,
+  "limitations": [
+    "Positive hosted directory scan and mailbox capture still require the pending TEST credential/access approvals.",
+    "Source account IDs and email keys remain unchanged. This does not merge aliases with primary accounts or prove whole-mailbox coverage.",
+    "Ownership conflicts latch a capture hold; explicit operator recovery is still required before resuming a changed binding."
+  ]
+}

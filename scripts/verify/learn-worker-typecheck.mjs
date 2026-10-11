@@ -1,4 +1,4 @@
-/** Strict local TypeScript check of the worker and manual processing endpoints.
+/** Strict local TypeScript check of the worker, manual processing and Workspace discovery endpoints.
  * Uses the installed SDK declarations and a minimal Deno env/serve shim; this
  * does not replace Edge runtime acceptance against the deployed SDK.
  */
@@ -36,9 +36,12 @@ try {
       },
       files: [
         shim,
-        ...["platform-worker", "identity-resolve", "interactions-sync"].map((name) =>
-          join(root, "supabase/functions", name, "index.ts"),
-        ),
+        ...[
+          "platform-worker",
+          "identity-resolve",
+          "interactions-sync",
+          "google-workspace-discover-mailboxes",
+        ].map((name) => join(root, "supabase/functions", name, "index.ts")),
       ],
     }),
   );
@@ -51,7 +54,7 @@ try {
   process.exitCode = result.status ?? 1;
   if (result.status === 0)
     console.log(
-      "Strict worker/manual-endpoint TypeScript check passed (local SDK declarations and Deno shim).",
+      "Strict worker/manual/Workspace endpoint TypeScript check passed (local SDK declarations and Deno shim).",
     );
 } finally {
   rmSync(dir, { recursive: true, force: true });
