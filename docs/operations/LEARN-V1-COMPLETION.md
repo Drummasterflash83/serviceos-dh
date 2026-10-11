@@ -202,18 +202,21 @@ succeeded after that failure; no worker was invoked and no source record changed
   processing configuration. [Phone work](LEARN-PHONE-ACCOUNT-BINDING.md).
   Fresh TEST inventory confirms the pipeline/transcription/analysis endpoints are
   absent, so sync worker deployment alone cannot prove the full Phone journey.
-  The local pipeline now verifies terminal storage and recovers lost acknowledgements;
-  uncertain completion stops the current recovery job's automatic retry. The local
-  download step now owns a durable per-recording attempt, retains old audio, checks
-  the new stored file's hash, and publishes its pointer and completion atomically.
-  An owner/admin recovery request can verify and finish that exact saved attempt
-  without another provider download/upload. Held downloads cannot be selected by
-  later batches merely because they timed out. All 83 focused checks, isolated
-  PostgreSQL checks and strict TypeScript pass. These protections are local only;
-  transcription/analysis still need equivalent ownership and source/output history.
-  The complete processing runtime release, operator recovery UI, full-schema and
-  real-provider acceptance remain open.
-  [Latest evidence](evidence/learn-phone-download-attempts-local-2026-10-11.json).
+  The local candidate now confirms pipeline completion and gives downloads,
+  transcription and analysis exclusive per-recording ownership. Forced processing
+  retains prior audio, transcript, summary and attribution versions. New results
+  carry exact source hashes; stale results no longer count as a completed pipeline.
+  Prepared outputs can be reconciled without repeating provider requests. Unknown
+  paid-request outcomes stay held for review, while confirmed rejections can retry.
+  All 101 focused checks, isolated PostgreSQL assertions and strict TypeScript pass.
+  The complete schema candidate (including missing Phone Intelligence tables) was
+  rehearsed against hosted TEST and rolled back: all 101 preserved data sets and
+  the prior schema remained unchanged. This is not a deployed runtime acceptance.
+  Coordinated TEST deployment, operator history/recovery UI, customer-facing stale
+  result indicators, live-provider and recurring-capture acceptance remain open.
+  Production has an OpenAI secret name; TEST has none. The existing credential's
+  secure location is requested, without asking for its value in chat.
+  [Latest evidence](evidence/learn-phone-derived-versions-2026-10-11.json).
 - [ ] **Slack:** verify authorised workspace/channel scope, history plus replies,
   files/unsupported-content limits, incremental schedule, revocation/recovery and
   source-to-card visibility. Local synthetic history and deployed worker status

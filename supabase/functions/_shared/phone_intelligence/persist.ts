@@ -23,7 +23,6 @@ import {
   type NumberMatch,
   type ResolvedParticipant,
 } from "./participants.ts";
-import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 export const PIPELINE_VERSION = "v1";
 
@@ -221,64 +220,39 @@ export function buildSummaryContext(
   return lines.join("\n");
 }
 
-// ── DB persistence (idempotent, tenant-scoped, failure-isolated) ─────────────
-// The caller passes a service-role client and the already-validated tenant/call/
-// transcript ids. Every write is scoped by tenant_id and keyed so re-processing
-// updates in place (no duplicate rows). Best-effort per row: a phone-intelligence
-// failure must never destroy the transcript, the call, or prior good intelligence.
-
-type Db = SupabaseClient;
-
-export interface PersistIds {
-  tenantId: string;
-  callId: string;
-  transcriptId: string | null;
-  insightId: string | null;
-}
-
-export async function persistComputed(
-  db: Db,
-  ids: PersistIds,
+/** Prepared alongside the analysis. SQL archives and publishes all identity rows atomically. */
+export function buildIntelligencePublication(
+  callId: string,
   computed: ComputedIntelligence,
-): Promise<{ ok: boolean; wrote: string[]; error?: string }> {
-  const wrote: string[] = [];
-  try {
-    const d = computed.direction;
-    // 1) call_directions — one row per (tenant, call): upsert.
-    await db.from("call_directions").upsert(
-      {
-        tenant_id: ids.tenantId,
-        call_id: ids.callId,
-        direction: d.direction,
-        provider_direction: d.providerDirection,
-        originating_number: d.originatingNumber,
-        destination_number: d.destinationNumber,
-        external_party_number: d.externalPartyNumber,
-        originating_extension: d.originatingExtension,
-        answering_extension: d.answeringExtension,
-        pickup_extension: d.pickupExtension,
-        transferred_from_extension: d.transferredFromExtension,
-        transferred_to_extension: d.transferredToExtension,
-        direction_evidence: d.evidence,
-        direction_confidence: d.confidence,
-        classifier_version: d.classifierVersion,
-      },
-      { onConflict: "tenant_id,call_id" },
-    );
-    wrote.push("call_directions");
-
-    // 2) call_participants — idempotent: replace this call's rows for this resolver.
-    await db
-      .from("call_participants")
-      .delete()
-      .eq("tenant_id", ids.tenantId)
-      .eq("call_id", ids.callId)
-      .eq("resolver_version", computed.internal.resolverVersion);
-    const rows = [computed.internal, computed.external]
+  input: Pick<ComputeInput, "rawPayload" | "fromNumber" | "toNumber">,
+) {
+  const d = computed.direction;
+  return {
+    callId,
+    callSource: {
+      raw_payload: input.rawPayload ?? {},
+      from_number: input.fromNumber,
+      to_number: input.toNumber,
+    },
+    resolverVersion: computed.internal.resolverVersion,
+    direction: {
+      direction: d.direction,
+      provider_direction: d.providerDirection,
+      originating_number: d.originatingNumber,
+      destination_number: d.destinationNumber,
+      external_party_number: d.externalPartyNumber,
+      originating_extension: d.originatingExtension,
+      answering_extension: d.answeringExtension,
+      pickup_extension: d.pickupExtension,
+      transferred_from_extension: d.transferredFromExtension,
+      transferred_to_extension: d.transferredToExtension,
+      direction_evidence: d.evidence,
+      direction_confidence: d.confidence,
+      classifier_version: d.classifierVersion,
+    },
+    participants: [computed.internal, computed.external]
       .filter((p) => p.role !== "unknown" || p.resolvedEntityId)
       .map((p) => ({
-        tenant_id: ids.tenantId,
-        call_id: ids.callId,
         participant_role: p.role,
         resolved_entity_id: p.resolvedEntityId,
         display_name: p.displayName,
@@ -287,36 +261,14 @@ export async function persistComputed(
         conflicts: p.conflicts,
         source_fields: p.sourceFields,
         resolver_version: p.resolverVersion,
-      }));
-    if (rows.length) await db.from("call_participants").insert(rows);
-    wrote.push("call_participants");
-
-    // 3) call_transcript_normalisations — upsert by (tenant, transcript, version).
-    if (ids.transcriptId && computed.normalisation) {
-      await db.from("call_transcript_normalisations").upsert(
-        {
-          tenant_id: ids.tenantId,
-          transcript_id: ids.transcriptId,
+      })),
+    normalisation: computed.normalisation
+      ? {
           normalised_text: computed.normalisation.normalised,
           corrections: computed.normalisation.corrections,
           normalisation_version: computed.normalisation.version,
-        },
-        { onConflict: "tenant_id,transcript_id,normalisation_version" },
-      );
-      wrote.push("call_transcript_normalisations");
-    }
-
-    // 4) phone_ai_insights.identity_summary — enrich the existing insight in place.
-    if (ids.insightId) {
-      await db
-        .from("phone_ai_insights")
-        .update({ identity_summary: computed.identitySummary })
-        .eq("tenant_id", ids.tenantId)
-        .eq("id", ids.insightId);
-      wrote.push("phone_ai_insights.identity_summary");
-    }
-    return { ok: true, wrote };
-  } catch (e) {
-    return { ok: false, wrote, error: e instanceof Error ? e.message : String(e) };
-  }
+        }
+      : null,
+    identitySummary: computed.identitySummary,
+  };
 }

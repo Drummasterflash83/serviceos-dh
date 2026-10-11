@@ -63,7 +63,7 @@ begin
   end if;
   if run.status<>'running' or p_data->'source'<>src then raise exception 'phone_attempt_source_changed' using errcode='PT409';end if;
   if exists(select 1 from public.learn_phone_processing_attempts where tenant_id=p_tenant and recording_id=p_recording
-   and state in ('running','prepared','needs_review')) then raise exception 'phone_recording_processing_held' using errcode='PT409';end if;
+   and state in ('running','dispatched','prepared','needs_review')) then raise exception 'phone_recording_processing_held' using errcode='PT409';end if;
   d:=p_data;
  else
   if a.run_id is null then raise exception 'phone_attempt_missing' using errcode='PT409';end if;
@@ -146,7 +146,7 @@ language sql stable set search_path=pg_catalog as $$
   else public.phone_retry_state(s.stage,coalesce(r.runs,'[]'::jsonb),now()) end
  from public.phone_recording_pipeline_state s
  left join public.learn_phone_processing_attempts a on a.tenant_id=s.tenant_id and a.recording_id=s.id
-  and a.state in ('running','prepared','needs_review')
+  and a.state in ('running','dispatched','prepared','needs_review')
  left join lateral (
   select jsonb_agg(jsonb_build_object('status',x.status,'started_at',x.started_at,
    'failed_step',x.metadata->>'failed_step','error_code',x.metadata->>'error_code') order by x.started_at desc) runs

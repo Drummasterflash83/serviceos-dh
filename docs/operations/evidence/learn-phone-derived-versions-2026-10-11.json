@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-11",
+  "state": "local_verified_and_full_test_schema_rehearsed_not_deployed",
+  "change": "Versioned transcription, analysis and atomic attribution with exact-source provenance and recoverable prepared output",
+  "local": {
+    "actualHandlerChecks": 68,
+    "helperRecoveryAndProviderErrorChecks": 33,
+    "strictEdgeTypeScript": "passed",
+    "applicationTypeScript": "passed",
+    "applicationBuild": "passed",
+    "postgresql": "15, disposable network-disabled synthetic fixture",
+    "databaseChecks": [
+      "Retained original transcript/summary/attribution projections before replacement",
+      "Source path/audio SHA-256 and transcript SHA-256 recorded",
+      "Stale results cease to count as current pipeline completion",
+      "Concurrent transcription and analysis share one recording owner",
+      "Uncertain paid requests remain held after expiry",
+      "Confirmed provider rejection releases ownership for bounded recovery",
+      "Prepared output retained during capture pause; publication still denied",
+      "Exact completed receipt replay and prepared-output reconciliation",
+      "Partial output and participant insertion failure roll back every write",
+      "No authenticated journal/history/RPC access",
+      "Migration rollback verified"
+    ]
+  },
+  "hostedTestRehearsal": {
+    "state": "rehearsed_rolled_back",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-11T09:42:29.473Z",
+    "priorMetadataSha256": "6c00bb969aacaf0ae376c109223526fdc8fc35bc622cb55f0a1c54fcbc9048f8",
+    "sources": [
+      {
+        "path": "supabase/migrations/20260805120000_phone_intelligence_v1.sql",
+        "sha256": "7fcbc8ad96e7dcecb3c8362d04385852733decd2f4220ec0161526c7a3af9f00"
+      },
+      {
+        "path": "supabase/migrations/20260807120000_telephony_directory_endpoints.sql",
+        "sha256": "8c016808896d05b0701f3a23945f4bd87f20795dfaf4400a69f3ef27b20a2e24"
+      },
+      {
+        "path": "supabase/migrations/20261101200000_learn_phone_download_attempts.sql",
+        "sha256": "f18cd524860ce9f9df987d61415f108f2c11805970ea930a06272043499fafd3"
+      },
+      {
+        "path": "supabase/migrations/20261101210000_learn_phone_derived_versions.sql",
+        "sha256": "ce2d60a4e60d04c1db69f1b456c2377fc89c5ecef8b6af2526e0e2ca55a16670"
+      }
+    ],
+    "preservedDataSets": 101,
+    "schemaUnchanged": true,
+    "retainedSourcesUnchanged": true,
+    "completedAt": "2026-10-11T09:42:31.220Z"
+  },
+  "credentialMetadata": {
+    "valuesRead": false,
+    "productionOpenaiKeyNamePresent": true,
+    "testOpenaiKeyNamePresent": false,
+    "existingSecureLocationRequested": true
+  },
+  "providerRequests": 0,
+  "persistentHostedChanges": false,
+  "productionChanges": false,
+  "limits": [
+    "Synthetic handlers and SQL fixture; not deployed Deno/provider acceptance",
+    "Full TEST-schema rehearsal rolled back, with no runtime deployment",
+    "Operator result-history and held-attempt disposition/recovery UI unfinished",
+    "Customer stale-result indicators need integration",
+    "No automatic recovery from a paid request with no saved output",
+    "Real-provider and recurring capture acceptance pending secure existing credential availability"
+  ],
+  "officialReferences": [
+    "https://developers.openai.com/api/docs/guides/speech-to-text"
+  ]
+}

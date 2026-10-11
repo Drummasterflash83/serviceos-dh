@@ -69,6 +69,10 @@ async function harness(
     downloadAttemptResponse,
     binaryResponse,
     initialAudio = [],
+    derivedAttemptResponse,
+    openaiConfigured = true,
+    openaiResponse,
+    identityRows = false,
   } = {},
 ) {
   const requests = [],
@@ -77,9 +81,44 @@ async function harness(
   let handler;
   let scheduleHeartbeatCount = 0;
   let pipelineTerminalRow = null;
+  let derivedOutput = null;
   const storedAudio = new Map(initialAudio);
   const db = {
     async rpc(name, args) {
+      if (name === "learn_phone_derived_attempt") {
+        writes.push({ table: name, op: "rpc", v: args });
+        if (derivedAttemptResponse) return derivedAttemptResponse(args);
+        if (args.p_phase === "prepare") derivedOutput = args.p_data;
+        return {
+          error: null,
+          data: {
+            version: "learn-phone-derived-attempt/1",
+            tenantId: tenant,
+            recordingId: id(5),
+            runId: args.p_run,
+            stage: args.p_stage,
+            transcriptId: args.p_stage === "analysis" ? id(6) : null,
+            state: {
+              claim: "running",
+              dispatch: "dispatched",
+              prepare: "prepared",
+              complete: "succeeded",
+              fail: "needs_review",
+              inspect: "prepared",
+            }[args.p_phase],
+            replayed: false,
+            source: {
+              storagePath: "retained.wav",
+              transcriptId: id(6),
+              text: "Original transcript",
+            },
+            prepared: derivedOutput,
+            resultId: args.p_stage === "analysis" ? id(7) : id(6),
+            result: derivedOutput,
+            cached: false,
+          },
+        };
+      }
       if (name === "learn_phone_download_attempt") {
         writes.push({ table: name, op: "rpc", v: args });
         if (downloadAttemptResponse) return downloadAttemptResponse(args);
@@ -213,6 +252,26 @@ async function harness(
                   : null,
             };
         }
+        if (identityRows && table === "phone_calls" && op === "read")
+          return {
+            data: {
+              id: id(8),
+              raw_payload: { direction: "IN" },
+              from_number: null,
+              to_number: null,
+            },
+            error: null,
+          };
+        if (table === "phone_transcripts" && op === "read")
+          return {
+            data: {
+              id: id(6),
+              recording_id: id(5),
+              transcript_text: "Original transcript",
+              status: "completed",
+            },
+            error: null,
+          };
         if (table === "phone_recording_pipeline_state")
           return { data: [], count: pendingRows.length, error: null };
         if (table === "platform_jobs" && op === "insert" && recoveryJobCreate)
@@ -260,6 +319,7 @@ async function harness(
                           : {
                               id: id(5),
                               provider: "simwood",
+                              provider_call_id: identityRows ? "call-1" : null,
                               provider_recording_id: "recording_1",
                               recording_uri: stored,
                               storage_path: alreadyStored ? "retained.wav" : null,
@@ -277,6 +337,7 @@ async function harness(
         },
         gt: () => q,
         limit: () => q,
+        order: () => q,
         in: () => {
           many = true;
           return q;
@@ -319,6 +380,7 @@ async function harness(
     SUPABASE_URL: "https://synthetic.invalid",
     SUPABASE_SERVICE_ROLE_KEY: "synthetic-service",
     PHONE_SCHEDULE_SECRET: "synthetic-schedule",
+    OPENAI_API_KEY: openaiConfigured ? "synthetic-openai-key" : undefined,
     SIMWOOD_USERNAME: credentials ? "synthetic-user" : undefined,
     SIMWOOD_PASSWORD: credentials ? "synthetic-password" : undefined,
   };
@@ -330,6 +392,7 @@ async function harness(
     Response,
     AbortSignal,
     Blob,
+    FormData,
     Uint8Array,
     TextEncoder,
     TextDecoder,
@@ -348,6 +411,28 @@ async function harness(
     },
     fetch: async (url, options) => {
       requests.push({ url: String(url), options });
+      if (String(url).startsWith("https://api.openai.com/")) {
+        if (openaiResponse) return openaiResponse(url, options);
+        return String(url).includes("audio/transcriptions")
+          ? Response.json({ text: "New retained transcript", language: "en" })
+          : Response.json({
+              choices: [
+                {
+                  message: {
+                    content: JSON.stringify({
+                      intent: "request",
+                      urgency: "low",
+                      sentiment: "neutral",
+                      summary: "New summary",
+                      action_required: false,
+                      suggested_owner: "office",
+                      confidence: 0.8,
+                    }),
+                  },
+                },
+              ],
+            });
+      }
       if (String(url).startsWith("https://synthetic.invalid/functions/v1/")) {
         const name = String(url).split("/").at(-1);
         const configured = childResponses[name];
@@ -1340,4 +1425,172 @@ test("reconciliation uses the saved attempt and audio, without credentials, new 
   );
   for (const body of [{ resume_run_id: "invalid" }, { resume_run_id: id(8), force: true }])
     assert.equal((await h.run(body)).status, 400);
+});
+
+test("actual transcription and analysis handlers publish through versioned transactions without direct result mutations", async () => {
+  for (const name of ["phone-transcribe-recording", "phone-analyse-transcript"]) {
+    const h = await harness(name, {
+      initialAudio: [["retained.wav", new Blob([new Uint8Array([1, 2, 3])])]],
+    });
+    const response = await h.run({ transcript_id: id(6), force: true });
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.success, true);
+    assert.equal(h.requests.filter((r) => r.url.startsWith("https://api.openai.com/")).length, 1);
+    assert.deepEqual(
+      h.writes.filter((w) => w.table === "learn_phone_derived_attempt").map((w) => w.v.p_phase),
+      ["claim", "dispatch", "prepare", "complete"],
+    );
+    assert.ok(!h.writes.some((w) => ["phone_transcripts", "phone_ai_insights"].includes(w.table)));
+    const request = h.requests.find((r) => r.url.startsWith("https://api.openai.com/"));
+    assert.equal(request.options.redirect, "error");
+    assert.ok(request.options.signal);
+    if (name === "phone-transcribe-recording")
+      assert.equal(request.options.body.get("file").size, 3);
+    else
+      assert.ok(
+        JSON.parse(request.options.body).messages.at(-1).content.includes("Original transcript"),
+      );
+  }
+});
+
+test("held, foreign and uncertain dispatch replies cannot start a paid request in either actual handler", async () => {
+  for (const name of ["phone-transcribe-recording", "phone-analyse-transcript"]) {
+    for (const fault of ["held", "foreign", "dispatch"]) {
+      const h = await harness(name, {
+        initialAudio: [["retained.wav", new Blob(["audio"])]],
+        derivedAttemptResponse: (a) => {
+          if (fault === "held" || (fault === "dispatch" && a.p_phase === "dispatch"))
+            return {
+              error: {
+                message: fault === "held" ? "phone_recording_processing_held" : "PRIVATE_DETAIL",
+              },
+            };
+          return {
+            error: null,
+            data: {
+              version: "learn-phone-derived-attempt/1",
+              tenantId: fault === "foreign" ? id(99) : tenant,
+              recordingId: id(5),
+              runId: id(4),
+              stage: a.p_stage,
+              transcriptId: a.p_stage === "analysis" ? id(6) : null,
+              state: "running",
+              replayed: false,
+              source: {
+                storagePath: "retained.wav",
+                text: "Original transcript",
+                transcriptId: id(6),
+              },
+            },
+          };
+        },
+      });
+      const r = await h.run({ transcript_id: id(6) });
+      assert.ok(r.status >= 400);
+      assert.equal(h.requests.filter((r) => r.url.startsWith("https://api.openai.com/")).length, 0);
+      assert.ok(!(await r.text()).includes("PRIVATE"));
+    }
+  }
+});
+
+test("uncertain paid request is held and leaves existing transcript and insight rows untouched", async () => {
+  for (const name of ["phone-transcribe-recording", "phone-analyse-transcript"]) {
+    const h = await harness(name, {
+      initialAudio: [["retained.wav", new Blob(["audio"])]],
+      openaiResponse: () => {
+        throw Error("PRIVATE_NETWORK_URL");
+      },
+    });
+    const r = await h.run({ transcript_id: id(6), force: true });
+    assert.equal(r.status, 409);
+    const body = await r.json();
+    assert.equal(body.error.code, "phone_recording_processing_held");
+    assert.equal(h.requests.filter((r) => r.url.startsWith("https://api.openai.com/")).length, 1);
+    assert.ok(!h.writes.some((w) => ["phone_transcripts", "phone_ai_insights"].includes(w.table)));
+    assert.deepEqual(
+      h.writes.filter((w) => w.table === "learn_phone_derived_attempt").map((w) => w.v.p_phase),
+      ["claim", "dispatch", "fail"],
+    );
+    assert.ok(!JSON.stringify(body).includes("PRIVATE"));
+  }
+});
+
+test("actual analysis prepares direction and identity publication in the same saved output", async () => {
+  const h = await harness("phone-analyse-transcript", { identityRows: true });
+  const r = await h.run({ transcript_id: id(6), force: true });
+  assert.equal(r.status, 200);
+  const saved = h.writes.find(
+    (w) => w.table === "learn_phone_derived_attempt" && w.v.p_phase === "prepare",
+  ).v.p_data;
+  assert.equal(saved.raw_payload.phone_intelligence.callId, id(8));
+  assert.deepEqual(JSON.parse(JSON.stringify(saved.raw_payload.phone_intelligence.callSource)), {
+    raw_payload: { direction: "IN" },
+    from_number: null,
+    to_number: null,
+  });
+  assert.equal(saved.raw_payload.phone_intelligence.resolverVersion, "v1");
+  assert.ok(
+    saved.raw_payload.analysis_input.context.includes("RESOLVED") ||
+      saved.raw_payload.analysis_input.context.includes("Call direction"),
+  );
+  assert.ok(
+    !h.writes.some((w) =>
+      ["call_directions", "call_participants", "call_transcript_normalisations"].includes(w.table),
+    ),
+  );
+});
+
+test("cached and reconciled processing returns confirmed receipts without obtaining an OpenAI key", async () => {
+  for (const name of ["phone-transcribe-recording", "phone-analyse-transcript"]) {
+    for (const resume of [false, true]) {
+      const h = await harness(name, {
+        openaiConfigured: false,
+        derivedAttemptResponse: (a) => {
+          const receipt = {
+            version: "learn-phone-derived-attempt/1",
+            tenantId: tenant,
+            recordingId: id(5),
+            runId: a.p_run,
+            stage: a.p_stage,
+            transcriptId: a.p_stage === "analysis" ? id(6) : null,
+            state: "succeeded",
+            cached: true,
+            replayed: false,
+            resultId: a.p_stage === "analysis" ? id(7) : id(6),
+            result:
+              a.p_stage === "analysis"
+                ? { summary: "Retained summary" }
+                : { text: "Retained transcript", model: "original", language: "en" },
+            intelligencePublished: false,
+          };
+          return { error: null, data: a.p_phase === "inspect" ? { ...receipt, receipt } : receipt };
+        },
+      });
+      const r = await h.run({ transcript_id: id(6), ...(resume ? { resume_run_id: id(8) } : {}) });
+      assert.equal(r.status, 200);
+      assert.equal(h.requests.length, 0);
+      const body = await r.json();
+      assert.equal(body.success, true);
+      if (resume) assert.ok(!h.writes.some((w) => w.table === "phone_sync_runs"));
+    }
+  }
+});
+
+test("incomplete model analysis cannot replace a retained summary with default-filled output", async () => {
+  const h = await harness("phone-analyse-transcript", {
+    openaiResponse: () =>
+      Response.json({
+        choices: [{ message: { content: JSON.stringify({ summary: "Incomplete model output" }) } }],
+      }),
+  });
+  const r = await h.run({ transcript_id: id(6), force: true });
+  assert.equal(r.status, 409);
+  assert.ok(
+    !h.writes.some(
+      (w) =>
+        w.table === "learn_phone_derived_attempt" && ["prepare", "complete"].includes(w.v.p_phase),
+    ),
+  );
+  assert.ok(!h.writes.some((w) => w.table === "phone_ai_insights"));
 });

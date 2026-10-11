@@ -229,6 +229,7 @@ export async function handlePhoneProcessPending(
               retryable: [
                 "phone_pipeline_completion_unconfirmed",
                 "phone_download_unconfirmed",
+                "phone_processing_unconfirmed",
                 "phone_recording_processing_held",
               ].includes(lastErrorCode ?? "")
                 ? false

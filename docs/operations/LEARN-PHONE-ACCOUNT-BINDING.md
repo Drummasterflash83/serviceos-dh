@@ -551,3 +551,71 @@ names for future integration, but existing transcription/analysis handlers do no
 claim it yet. This must not be represented as full pipeline concurrency protection.
 TEST/production runtimes, source data, credentials and capture schedules are unchanged.
 [Download evidence](evidence/learn-phone-download-attempts-local-2026-10-11.json).
+
+
+## Transcription, analysis and attribution versions — local and TEST rehearsal, 11 October
+
+Both actual processing handlers now use the same exclusive recording journal as
+new downloads. A confirmed dispatch is permission for one provider request only.
+A lost dispatch acknowledgement stops before a paid call; a lost provider response
+keeps a review hold that expiry cannot steal. Confirmed provider rejection (such
+as rate limiting) can close the attempt for later retry. Existing results are never
+marked failed or replaced merely because their forced replacement failed.
+
+Returned outputs are prepared privately before publication, including when capture
+has been paused since dispatch. Paused or changed sources cannot publish. An exact
+owner/admin `resume_run_id` request reads the saved attempt and publishes its already
+prepared output, or returns its exact completion receipt, without obtaining a key or
+repeating the provider request. A dispatched attempt without a saved output remains
+held; operator investigation and an explicit, reviewed disposition are still needed.
+
+Publication is one transaction: archive the prior projection, write the new current
+transcript/insight, retain source path/content hashes and the prepared model output,
+finish the run and save the receipt. Current row IDs and relationships remain stable.
+Legacy observations are retained without fabricated historical content hashes.
+After a new audio version, older transcript/insight content remains stored but no
+longer counts as current processing. Analysis is tied to the exact transcript hash.
+
+Participant attribution previously used separate unchecked writes, including deleting
+current participant rows before knowing the replacement could be stored. It now
+prepares a server-derived publication with the analysis. The same SQL transaction
+checks call/recording linkage and the call-source snapshot, archives old direction,
+participant and normalisation rows, and publishes their replacements and the identity
+summary. A failed participant insertion rolls back the entire analysis publication.
+Raw model output cannot assert that attribution was published: health uses the database
+receipt. Missing context remains explicitly uncomputed. Partial model analysis cannot
+replace the prior result by filling all other fields with defaults.
+
+The provider helpers now refuse redirects, bound request duration, and keep private
+network-error prose out of responses. Existing model configuration is retained.
+Transcription refuses files above the documented 25 MB input limit before dispatch;
+larger files still need a conversion/chunking workflow, not silent truncation.
+[Official file-transcription documentation](https://developers.openai.com/api/docs/guides/speech-to-text).
+The analysis instruction now uses the supplied company context rather than assuming
+all future clients operate in heating and plumbing.
+
+**Verification:** 68 actual-handler tests and 33 helper/recovery/provider-error tests
+pass (101 total). Strict Edge TypeScript, application TypeScript and the application
+build pass. Isolated PostgreSQL 15 checks exercise complete transcription-to-analysis
+publication, preserved old text/summary/identity rows, source hashes, stale-audio and
+stale-summary detection, pause-after-dispatch retention, exact reconciliation,
+confirmed rejection vs uncertain outcome, rollback after partial failure, restricted
+roles and real concurrent transcription/analysis claims sharing one recording owner.
+
+The hosted TEST inspection found five missing Phone Intelligence foundation tables
+and no configured OpenAI key. Production secret-name metadata confirms an existing
+key is configured; no secret values were read. The prepared schema candidate includes
+the existing Phone Intelligence and endpoint-directory migrations, followed by the
+new download and processing migrations. Its full TEST-schema rehearsal at 09:42 UTC
+completed and rolled back, preserving the original schema and 101 checked data sets.
+Fingerprints retain all pre-existing columns; only newly added schema fields are
+excluded from the before/after rollback comparison. No runtime, schedule, credential,
+login or persistent hosted change was made. No OpenAI request was made.
+
+Still required: package and install the coordinated TEST schema/runtime release;
+exercise it through deployed handlers and signed-in operator/customer journeys;
+expose retained history, held-attempt review and safe reconciliation in the operator
+controller; mark stale historical results honestly in customer readers; verify real
+provider processing and recurring capture after secure credential reuse. A held
+unknown paid request must never be silently restarted to make a queue appear healthy.
+[Evidence](evidence/learn-phone-derived-versions-2026-10-11.json).

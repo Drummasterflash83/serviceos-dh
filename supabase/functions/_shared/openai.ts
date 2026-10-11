@@ -62,15 +62,16 @@ export async function transcribeAudio(opts: {
   try {
     resp = await fetch(OPENAI_TRANSCRIBE_URL, {
       method: "POST",
+      redirect: "error",
+      signal: AbortSignal.timeout(120000),
       headers: { Authorization: `Bearer ${opts.apiKey}` },
       body: form,
     });
   } catch (cause) {
-    const message = cause instanceof Error ? cause.message : "network failure";
     return {
       ok: false,
       code: "network_error",
-      message: `Could not reach OpenAI: ${message}`,
+      message: "The provider response could not be confirmed",
       httpStatus: 502,
     };
   }
@@ -131,7 +132,7 @@ export async function analyseTranscript(opts: {
   context?: string;
 }): Promise<AnalyseResult> {
   const system =
-    "You are an operations analyst for a UK heating & plumbing company. " +
+    "You are an operations analyst for the company represented in the supplied call transcript and context. " +
     "Analyse the phone call transcript and return ONLY a JSON object with exactly these fields: " +
     "intent (string), urgency (one of: low, medium, high, emergency), " +
     "sentiment (one of: negative, neutral, positive, mixed), summary (short operational summary), " +
@@ -166,15 +167,16 @@ export async function analyseTranscript(opts: {
   try {
     resp = await fetch(OPENAI_CHAT_URL, {
       method: "POST",
+      redirect: "error",
+      signal: AbortSignal.timeout(120000),
       headers: { Authorization: `Bearer ${opts.apiKey}`, "content-type": "application/json" },
       body: JSON.stringify(requestBody),
     });
   } catch (cause) {
-    const message = cause instanceof Error ? cause.message : "network failure";
     return {
       ok: false,
       code: "network_error",
-      message: `Could not reach OpenAI: ${message}`,
+      message: "The provider response could not be confirmed",
       httpStatus: 502,
     };
   }
