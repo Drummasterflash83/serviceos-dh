@@ -1,0 +1,14 @@
+{
+  "version": "learn-phone-operator-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "aa2655881487fd36190ddb83aebf6af42e8a1bb204a8fbb4aa371a7f3001b546",
+  "priorFingerprint": "7d31c2f3169a9a3da7298a131a7058eb",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101220000_learn_phone_operator_attempts.sql",
+      "sha256": "74c13bb6713a1fb44e53067762da20467092dec3cca7ee9ebbac244227c09383"
+    }
+  ],
+  "assertionSha256": "4006f339c7283d5df8466ac808e6d8610b9fc562166ca3d2dc8f654adf962753",
+  "preservedDataSets": 111
+}

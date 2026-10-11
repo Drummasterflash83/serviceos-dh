@@ -79,15 +79,23 @@ completed copy checkpoint are retained; a full manifest is not yet confirmed.
 The revised finalizer, covered by 44 passing backup tests, checks at most four
 objects concurrently, then rechecks source metadata before writing its immutable
 manifest. Any failure drains active checks and prevents manifest publication.
-A new finalization attempt is running; no audio upload is repeated.
-This is individually verified coverage, not a completed backup. No source records,
+The revised finalizer completed at **10:39:30 UTC**: all 2,888 pinned S3 versions
+and 601,004,261 bytes passed exact byte hashing and both source comparisons. The
+immutable full-inventory manifest was saved; no audio upload was repeated. A
+Restore-only rehearsal then selected the original recording through that manifest,
+recovered 108,870 bytes, retained its one recording reference and decoded 66.96
+seconds in 1.135 seconds. Temporary audio was removed. This test made no
+Supabase/provider calls and did not perform human listening or database recovery.
+[Full inventory and restore evidence](evidence/learn-recording-inventory-restore-2026-10-11.json).
+This proves the explicitly observed inventory; files arriving later need subsequent
+runs. Recurrence, monitoring and database restore are still required for completion. No source records,
 files or permissions were modified. At **08:46:46 UTC**, an independent receipt-only
 rehearsal using the Restore key recovered the first exact S3 version, verified
 all 108,870 bytes and decoded **66.96 seconds** of real audio. It retained one
 recording reference, made no source-provider calls and removed temporary audio.
 Human listening and database relationship recovery were not performed. Full
-inventory revalidation, manifest-based restore, daily scheduling and operator
-monitoring remain required.
+inventory revalidation and manifest-based restore subsequently passed as described
+above; daily scheduling, operator monitoring and isolated database recovery remain required.
 [First restore evidence](evidence/learn-recording-initial-restore-live-2026-10-11.json).
 [Live access evidence](evidence/learn-recording-access-live-2026-10-11.json).
 

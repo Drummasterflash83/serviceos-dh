@@ -1,0 +1,153 @@
+{
+  "version": "learn-phone-operator-test-evidence/1",
+  "date": "2026-10-11",
+  "scope": "Supabase TEST only; production unchanged",
+  "release": 56,
+  "rehearsal": {
+    "version": "learn-phone-operator/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "aa2655881487fd36190ddb83aebf6af42e8a1bb204a8fbb4aa371a7f3001b546",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-11T10:36:35.119Z",
+    "priorFingerprint": "7d31c2f3169a9a3da7298a131a7058eb",
+    "expectedFingerprint": "49ce8178c104da0915f78467004b84c0",
+    "afterFingerprint": "7d31c2f3169a9a3da7298a131a7058eb",
+    "preservedDataSets": 111,
+    "submissionFailure": null,
+    "receipt": {
+      "fingerprint": "49ce8178c104da0915f78467004b84c0",
+      "functions": 6
+    }
+  },
+  "installation": {
+    "version": "learn-phone-operator/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "aa2655881487fd36190ddb83aebf6af42e8a1bb204a8fbb4aa371a7f3001b546",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-11T10:37:14.766Z",
+    "priorFingerprint": "7d31c2f3169a9a3da7298a131a7058eb",
+    "expectedFingerprint": "49ce8178c104da0915f78467004b84c0",
+    "afterFingerprint": "49ce8178c104da0915f78467004b84c0",
+    "preservedDataSets": 111,
+    "submissionFailure": null,
+    "receipt": {
+      "fingerprint": "49ce8178c104da0915f78467004b84c0",
+      "functions": 6
+    }
+  },
+  "http": {
+    "state": "http_denials_verified",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "role": "anon",
+        "name": "attempt history",
+        "status": 401,
+        "code": "42501",
+        "passed": true
+      },
+      {
+        "role": "anon",
+        "name": "reconcile",
+        "status": 401,
+        "code": "42501",
+        "passed": true
+      },
+      {
+        "role": "anon",
+        "name": "private audit",
+        "status": 401,
+        "code": "42501",
+        "passed": true
+      },
+      {
+        "role": "anon",
+        "name": "private attempts",
+        "status": 401,
+        "code": "42501",
+        "passed": true
+      },
+      {
+        "role": "service_role",
+        "name": "attempt history",
+        "status": 403,
+        "code": "42501",
+        "passed": true
+      },
+      {
+        "role": "service_role",
+        "name": "reconcile",
+        "status": 403,
+        "code": "42501",
+        "passed": true
+      },
+      {
+        "role": "service_role",
+        "name": "private audit",
+        "status": 403,
+        "code": "42501",
+        "passed": true
+      }
+    ],
+    "observedAt": "2026-10-11T10:38:21.031Z",
+    "schemaFingerprint": "49ce8178c104da0915f78467004b84c0",
+    "preservedDataSets": 112,
+    "newUsers": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "positiveSignedInAcceptance": false
+  },
+  "releaseTests": 5,
+  "frontend": {
+    "state": "READY",
+    "deployment": {
+      "observedAt": "2026-10-11T10:39:27.542Z",
+      "id": "dpl_7ee5RCmsjRYaWGPL9tvwWNrYqSxo",
+      "url": "serviceos-learn-test-c6le93r67-allkin.vercel.app",
+      "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+      "readyState": "READY",
+      "target": "staging",
+      "gitSource": {
+        "type": "github",
+        "repoId": 1285975013,
+        "ref": "codex/learn-v1-test",
+        "sha": "48999ca1c8439ab039375a0972befc2e5b787cfb"
+      },
+      "framework": "tanstack-start",
+      "nodeVersion": "24.x"
+    },
+    "protection": {
+      "observedAt": "2026-10-11T10:40:10.273Z",
+      "base": "https://serviceos-learn-test-c6le93r67-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    },
+    "clientSameOriginSignInRedirect": true,
+    "operatorSameOriginSignInRedirect": true,
+    "observedBrowserErrors": 0,
+    "signedInOperatorAcceptance": false
+  },
+  "remaining": [
+    "signed-in hosted operator acceptance",
+    "download recovery verification UI",
+    "governed disposition of uncertain provider outcomes with no saved output",
+    "new real-provider processing and card delivery"
+  ]
+}

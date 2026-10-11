@@ -714,3 +714,22 @@ server-side audio verification path; its operator UI and the governed dispositio
 of no-output uncertain attempts are unfinished.
 
 [Sanitized evidence](evidence/learn-phone-operator-rehearsal-2026-10-11.json).
+
+## Operator recovery — TEST release 056, 11 October
+
+The pinned release rehearsal passed at 10:36 UTC and installation at 10:37 UTC.
+All 111 monitored datasets, including Auth identities, sessions, prior sources and
+operator grants, were preserved. The release repeats the positive SQL assertions
+in a rolled-back savepoint; no synthetic login or authority survives. Ledger now
+has 57 entries. Five release-runner tests cover uncertain acknowledgement, exact
+readback, preservation, target/rehearsal checks and durable journaling.
+
+Seven real HTTP authority-denial checks passed at 10:38 UTC, with all 112 datasets
+(including the new empty audit journal) unchanged. No provider requests occurred.
+The matching protected frontend is READY at 10:39 UTC from backed-up commit
+`48999ca`, at `serviceos-learn-test-c6le93r67-allkin.vercel.app`. Three HTTP
+route-protection checks and actual same-origin client/operator login redirects
+passed, with zero observed browser errors. Signed-in
+hosted operator acceptance remains open; HTTP denials do not replace it.
+
+[Release evidence](evidence/learn-phone-operator-test-2026-10-11.json).

@@ -49,7 +49,19 @@ from the production project above. Its preview-only public configuration targets
 Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
-The current staging candidate is
+The latest staging candidate is
+[serviceos-learn-test-c6le93r67-allkin.vercel.app](https://serviceos-learn-test-c6le93r67-allkin.vercel.app),
+built remotely from GitHub commit `48999ca1c8439ab039375a0972befc2e5b787cfb`
+and READY at 10:39 UTC on 11 October. It adds safe Phone attempt history and
+audited saved-result recovery, paired with TEST database release 056 installed
+at 10:37 UTC. All 111 existing monitored datasets were preserved; seven HTTP
+permission checks passed with 112 datasets unchanged including the new journal.
+No users, grants, provider calls or production changes were introduced. TEST
+backend binding, protection on three routes, actual same-origin client/operator
+login redirects and zero observed browser errors pass. Positive signed-in recovery
+acceptance remains open. [Release evidence](operations/evidence/learn-phone-operator-test-2026-10-11.json).
+
+The previous staging candidate is
 [serviceos-learn-test-k2z4ob4ri-allkin.vercel.app](https://serviceos-learn-test-k2z4ob4ri-allkin.vercel.app),
 built remotely from backed-up GitHub commit `6be7c9b34a50dfdb07264806188eb0d9333e0259`
 and READY on 11 October at 08:31 UTC. It includes the typed team/person ownership

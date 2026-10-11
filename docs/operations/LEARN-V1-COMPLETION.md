@@ -223,10 +223,16 @@ succeeded after that failure; no worker was invoked and no source record changed
   sessions, remained unchanged. No login, grant or candidate schema persisted.
   The actual local UI verified lost-response receipt recovery and disabled writes
   for a read-only operator. Six client tests and the offline SQL/concurrency suite
-  pass. TEST installation, signed-in hosted acceptance, download verification UI
-  and unknown-outcome disposition remain open, along with customer-facing stale
+  pass. TEST release 056 is now installed (10:37 UTC), preserving all 111
+  datasets and retaining no synthetic users/grants. Seven HTTP denials passed
+  (10:38 UTC), preserving 112 datasets including the new empty audit journal.
+  The matching protected frontend is READY from GitHub commit `48999ca`;
+  protection, client/operator login redirects and zero observed browser errors pass.
+  Signed-in hosted acceptance, download verification UI and unknown-outcome
+  disposition remain open, along with customer-facing stale
   indicators, live-provider and recurring-capture acceptance.
-  [Operator recovery evidence](evidence/learn-phone-operator-rehearsal-2026-10-11.json).
+  [Operator recovery evidence](evidence/learn-phone-operator-rehearsal-2026-10-11.json)
+  and [TEST release](evidence/learn-phone-operator-test-2026-10-11.json).
   Chris authorised a dedicated TEST OpenAI key; the secure Platform picker is open
   and awaiting its selection. No TEST OpenAI secret has been provisioned yet.
   [Latest evidence](evidence/learn-phone-processing-test-release-2026-10-11.json).
@@ -268,8 +274,8 @@ succeeded after that failure; no worker was invoked and no source record changed
   retention and recovery targets; use the now-approved AWS London setup and
   recording-copy scope under OpenFolk ownership; implement encrypted independent files plus database recovery.
   Verify bytes and isolated restore/playback, record duration and recovery point.
-  [Recovery plan](LEARN-DATA-RECOVERY.md). Initial recording copies are now verified;
-  complete inventory and restore acceptance remain open.
+  [Recovery plan](LEARN-DATA-RECOVERY.md). The complete observed file inventory and one manifest-selected
+  audio restore are verified; database restore and recurring operation remain open.
   The costed proposal now includes 601 MB / 2,888 objects, verified London AWS
   rates, an illustrative US$1.89/month operating estimate and a US$5 budget alert
   (not a cap), plus scoped access, daily copies, 30-day governance protection and
@@ -300,21 +306,24 @@ succeeded after that failure; no worker was invoked and no source record changed
   stopped at its 30-minute deadline at 10:29:51 UTC; no complete manifest was confirmed.
   The runner now verifies at most four objects concurrently, preserving both source
   checks, exact S3-version byte hashes, ordering and failure draining. All 44 backup
-  tests pass. A new finalization attempt is running with aggregate progress; no audio
-  is recopied. Full coverage must still be established from its final receipt.
+  tests pass. The revised run completed at 10:39:30 UTC: all 2,888 pinned object versions
+  and 601,004,261 bytes verified, with both source comparisons and an immutable
+  manifest. No audio was recopied. Coverage is the explicit observed inventory,
+  not a simultaneous database/storage snapshot or subsequent new files.
   [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
   The separate Restore-only command now validates the immutable manifest and restores
   an exact object version without Supabase access, preserving record links and checking
   local audio decoding. Forty-three tests pass, including actual macOS decoding of
   synthetic WAV audio. [Restore evidence](evidence/learn-recording-restore-local-2026-10-11.json).
-  One real receipt-only Restore-key rehearsal recovered and hashed 108,870 bytes
-  and decoded 66.96 seconds of audio, with one retained recording reference and
-  no source-provider calls. Full-manifest restore, human listening and isolated
-  database relationship recovery remain unverified.
+  The earlier receipt-only rehearsal is now supplemented by a successful real
+  full-manifest Restore-key rehearsal: 108,870 bytes hashed, 66.96 seconds decoded,
+  one recording reference retained, no source-provider calls, and temporary audio
+  removed. Human listening and isolated database relationship recovery remain open.
+  [Verified inventory and restore](evidence/learn-recording-inventory-restore-2026-10-11.json).
   [First real restore](evidence/learn-recording-initial-restore-live-2026-10-11.json).
   Restricted Writer/Restore IAM access was explicitly approved and its stack
-  completed at 08:35:18 UTC. Whole-inventory manifest verification, scheduling,
-  monitoring and database/audio restore acceptance remain open.
+  completed at 08:35:18 UTC. Whole-inventory verification and one manifest-selected decoded audio restore
+  now pass; scheduling, monitoring and isolated database recovery remain open.
   [Live access evidence](evidence/learn-recording-access-live-2026-10-11.json).
   [Inventory and runner evidence](evidence/learn-recording-inventory-and-batch-2026-10-11.json).
   AWS foundation and scoped access are active; only the completed copies are

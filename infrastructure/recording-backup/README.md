@@ -10,9 +10,11 @@ the separate access stack completed at 08:35:18 UTC. Both restricted identities
 have one active key stored separately in this Mac's login Keychain; live STS and
 S3 protection checks passed for both. The first real recording was copied and
 verified; the full 2,888-object copy pass is complete. Whole-inventory verification
-is in progress after the sequential finalizer reached its 30-minute deadline.
+completed at 10:39:30 UTC after the sequential finalizer reached its 30-minute deadline.
 The finalizer now checks at most four objects concurrently and reports aggregate
-progress, without weakening byte, version or source checks. A separate Restore-key
+progress, without weakening byte, version or source checks. A full-manifest Restore
+rehearsal recovered and decoded one real recording, retaining its record reference;
+temporary audio was removed. Daily scheduling and database restore remain open. A separate Restore-key
 receipt rehearsal recovered that file and decoded 66.96 seconds of real audio.
 Full-inventory manifest and database restore acceptance remain open.
 The $5 monthly cost alert awaits recipient email verification.
@@ -401,7 +403,8 @@ matched SHA-256, retained one recording reference and decoded 66.96 seconds of
 audio. It used Restore only, made no source-provider calls and removed its
 temporary audio after verification. This does not establish complete-inventory
 coverage, human listening or database relationship recovery. The manifest-based
-command below remains pending until the full inventory is finalized.
+command below subsequently passed against the finalized inventory at 10:40 UTC;
+see the full-inventory restore evidence in `docs/operations/evidence`.
 [First restore evidence](../../docs/operations/evidence/learn-recording-initial-restore-live-2026-10-11.json).
 
 After the real backup manifest has been verified, select its run ID and one

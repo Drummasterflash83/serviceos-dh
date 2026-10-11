@@ -1,0 +1,62 @@
+{
+  "version": "learn-recording-inventory-restore-evidence/1",
+  "date": "2026-10-11",
+  "destination": "approved OpenFolk AWS London private backup",
+  "inventoryObservedAt": "2026-10-11T08:00:40.074Z",
+  "inventory": {
+    "state": "inventory_verified",
+    "runId": "a03f8be7-f092-4c0a-802e-029440d4be37",
+    "inventorySha256": "faf7cd2122d9fe21d1e2b1f8de7f6ba697a2f56f8d174e6922d4a1efbff14c2d",
+    "recovered": false,
+    "objects": 2888,
+    "totalBytes": 601004261,
+    "verifiedAt": "2026-10-11T10:39:30.643Z",
+    "coverage": "verified_inventory_only",
+    "playback": "not_verified",
+    "databaseRestore": "not_verified",
+    "backupComplete": false,
+    "nextStep": "isolated_playback_and_database_restore"
+  },
+  "recordingReferences": 2882,
+  "unlinkedObjects": 6,
+  "restore": {
+    "state": "restored_and_verified",
+    "rehearsalId": "1a9d58a8-f8d9-4681-9108-724caf1ccad1",
+    "bytes": 108870,
+    "recordingReferenceCount": 1,
+    "playback": {
+      "state": "decoded",
+      "decoder": "macOS afconvert",
+      "frames": 535680,
+      "sampleRate": 8000,
+      "channels": 1,
+      "durationSeconds": 66.96,
+      "listening": "not_verified"
+    },
+    "databaseRestore": "not_verified",
+    "backupComplete": false,
+    "elapsedMs": 1135,
+    "privateEvidenceSaved": true,
+    "temporaryAudioRemoved": true
+  },
+  "localBackupTests": 44,
+  "initialFinalization": {
+    "startedAt": "2026-10-11T09:59:51.610Z",
+    "finishedAt": "2026-10-11T10:29:51.613Z",
+    "state": "deadline_reached",
+    "safeCode": "source_request_unconfirmed"
+  },
+  "verifiedFinalization": {
+    "maxConcurrentObjects": 4,
+    "sourceChecks": "before byte verification and again before manifest publication",
+    "exactPinnedVersionBytes": "all 2888 passed",
+    "sourceAudioReuploads": 0
+  },
+  "limits": [
+    "verified explicit inventory only; non-atomic source snapshot",
+    "human listening not performed",
+    "isolated database restore and record relationship recovery not performed",
+    "daily schedule and operator monitoring unfinished",
+    "new source files after the observed inventory need subsequent backup runs"
+  ]
+}
