@@ -53,10 +53,20 @@ images, no external network, published ports, host mounts or customer records.
 
 Reviewed closure: 22 files,
 `0b8ff421a99248d8954b135f6e0f5f55ba878408010cef789c5a724df1d1e285`.
-The prepared TEST replacement requires controller v5, the installed runtime/schema
-catalogs and all 101 preservation fingerprints, journals before one submission,
-and checks retained sources afterwards. Hosted release is not yet claimed by this
-local checkpoint. Production is unchanged.
+TEST controller v6 is ACTIVE from Git
+`ba06d21995eb1921fa57033d882e03ed2835ccf6` at 03:40 UTC on 11 October.
+The replacement required v5 and the installed catalogs; all 101 monitored datasets,
+schema and other endpoints were preserved. Twenty-six hosted access-boundary
+checks passed, including the readiness action. No positive operator read was
+performed because no new operator access was created.
+
+The paired protected [TEST frontend](https://serviceos-learn-test-gtikepr2g-allkin.vercel.app)
+is READY from Git `2af5955a46d3efcf592659b0b6097e45e0c34ec2` at 03:43 UTC.
+Anonymous deployment protection, actual same-origin operator sign-in redirect and
+synthetic demo warning presentation pass, with zero browser console errors. The
+intermediate frontend v19 is superseded by this refresh-corrected v20 candidate.
+See [local evidence](evidence/learn-phone-readiness-local-2026-10-11.json) and
+[TEST evidence](evidence/learn-phone-readiness-test-2026-10-11.json). Production is unchanged.
 
 These bounded reads are not a database transaction: same-count concurrent edits
 may escape detection. Each table is limited to 20,000 rows, 8 MiB and 100 requests;

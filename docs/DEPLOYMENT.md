@@ -50,19 +50,23 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-j27tmt2pc-allkin.vercel.app](https://serviceos-learn-test-j27tmt2pc-allkin.vercel.app),
-built remotely from GitHub commit `27113d072fa88a7b15e8054f2acf7e36cdc1bfbd`.
-The 11 October 02:51 UTC candidate adds searchable, paginated operator rosters,
-paired with operator endpoint v2 installed at 02:49 UTC. All 101 monitored
-datasets, schema and other endpoints were preserved; eight HTTP boundary checks
-pass. Protection and browser same-origin operator login redirect pass, with zero
-console errors. Signed-in hosted roster acceptance remains outstanding.
-[Roster deployment evidence](operations/evidence/learn-roster-pagination-test-2026-10-11.json).
+[serviceos-learn-test-gtikepr2g-allkin.vercel.app](https://serviceos-learn-test-gtikepr2g-allkin.vercel.app),
+built remotely from GitHub commit `2af5955a46d3efcf592659b0b6097e45e0c34ec2`.
+The 11 October 03:43 UTC candidate corrects Phone configuration reporting and
+clears stale readiness on failed/superseded refreshes. It is paired with controller
+v6 installed at 03:40 UTC. All 101 monitored datasets, schema and other endpoints
+were preserved; 26 hosted access-boundary checks pass. Deployment protection,
+actual same-origin operator sign-in redirect and synthetic demo warning display
+pass, with zero console errors. Signed-in hosted readiness acceptance remains open.
+[Phone readiness evidence](operations/evidence/learn-phone-readiness-test-2026-10-11.json).
+
+The earlier 02:51 UTC candidate added searchable operator rosters and paired with
+controller v2. [Roster evidence](operations/evidence/learn-roster-pagination-test-2026-10-11.json).
 The backend controller was subsequently updated to v3 at 03:04 UTC, from Git
 `9dd72d4994f82e2365e90f797321507e654c25cf`, to correct identity/phone health
 coverage and use checked paginated inventories. All 101 datasets, schema and
 other endpoints were preserved; 14 hosted boundary checks pass. Frontend source
-and request contracts are unchanged, so the staging frontend above is retained.
+and request contracts were unchanged, so the then-current frontend was retained.
 Positive signed-in health acceptance remains outstanding.
 [Operator health evidence](operations/evidence/learn-operator-health-test-2026-10-11.json).
 Controller v4 supersedes v3 at 03:16 UTC, from Git
@@ -76,7 +80,7 @@ Controller v5 supersedes v4 at 03:30 UTC, from Git
 `abc714dead1a9eef552fbe5d37d318ccb54baa5a`. It resolves checked ownership
 at the requested time and keeps ambiguous owners/handovers unresolved. All 101
 datasets, schema and other endpoints were preserved; twenty hosted access checks
-pass. The protected frontend remains unchanged. Positive signed-in ownership
+pass. The protected frontend remained unchanged at that release. Positive signed-in ownership
 acceptance is still pending.
 [Ownership deployment evidence](operations/evidence/learn-ownership-evidence-test-2026-10-11.json).
 The earlier 11 October 02:36 UTC candidate added the searchable/paginated team-group

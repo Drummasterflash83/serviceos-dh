@@ -72,6 +72,8 @@ and metadata fields changed in place cannot reconstruct every historical state.
 Endpoints without a recorded ending and handoffs without timestamps are not inferred.
 Team membership history and free-text role targets are not new temporal guarantees.
 Per-table budgets remain 20,000 rows, 8 MiB and 100 requests. Connection/discovery
-history, phone-readiness checks and cross-client listing retain separate limitations.
+history and cross-client listing retain separate limitations. The subsequent
+[Phone readiness increment](LEARN-PHONE-READINESS.md) checks configuration inventories
+and actual policy/source gates.
 Positive signed-in hosted acceptance and actual card-evidence attribution remain
 required. No provider capture, access grant or production promotion is included.

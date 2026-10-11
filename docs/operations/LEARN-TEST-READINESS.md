@@ -1,14 +1,19 @@
 # Existing TEST environment: verified release gaps
 
-## Phone readiness — verified local candidate
+## Phone readiness — TEST controller v6 and paired frontend installed
 
 The Phone badge now requires confirmed current DDI ownership/handling, a published
 policy and an enabled `phone_call` allowlist. Complete checked reads replace capped,
 unchecked results; conflicts, missing people and read failures cannot look ready.
 The operator UI no longer reports hard-coded inactive settings. Fifty-four focused
 and release checks, TypeScript, the full build and a 132-request isolated database
-check pass. TEST deployment and signed-in acceptance are not claimed by this local
-checkpoint. See [Phone readiness](LEARN-PHONE-READINESS.md).
+check pass. TEST controller v6 is ACTIVE at 03:40 UTC on 11 October; all 101
+monitored datasets, schema and other endpoints were preserved, and 26 hosted
+access checks passed. The refresh-corrected frontend v20 is READY at 03:43 UTC
+from Git `2af5955a46d3efcf592659b0b6097e45e0c34ec2`. Protection, same-origin
+sign-in redirect and synthetic warning presentation pass with no console errors.
+Positive signed-in acceptance and provider/staff checks remain open.
+See [Phone readiness](LEARN-PHONE-READINESS.md).
 
 ## Historical ownership — TEST controller v5 installed
 
