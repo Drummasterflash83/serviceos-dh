@@ -111,9 +111,12 @@ a full database restore or proof that every recording is intelligible.
 
 ## Recurrence and launch limit
 
-After the first repeat run is verified, configure one daily follow-up in this
-chat at 09:00 Europe/London using Codex's automation tool. There is currently no
-matching recording-backup automation. Test the scheduled instruction manually:
+A daily follow-up was created through Codex's automation tool and read back on
+11 October at 11:46 UTC: `drummonds-recording-backup-and-recovery-checks`, attached
+to this chat, **PAUSED**, scheduled for 09:00 local time (Europe/London on this Mac).
+It includes the monthly restore-due check. No scheduled execution has occurred.
+Activate this existing follow-up only after the corrected real repeat succeeds;
+do not create a duplicate. Test the scheduled instruction manually:
 read health, inspect any active process before starting, run only the fixed
 command above, wait for terminal evidence, then report aggregates. Stay quiet
 when no meaningful condition changes; report new failures, overdue coverage,

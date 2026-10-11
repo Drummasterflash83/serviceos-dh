@@ -357,7 +357,8 @@ succeeded after that failure; no worker was invoked and no source record changed
   now accounts for the inventory and both complete reference/metadata passes, with
   a fixed 100,000-request ceiling and the same object, byte and time limits. A new
   live repeat started at 11:38:53 UTC; terminal verification is pending. Recurrence
-  is not enabled, and this local runner is
+  is not enabled: the daily follow-up and monthly due check are created but PAUSED
+  pending that result. No scheduled execution has occurred. This local runner is
   not yet an always-on production backup service.
   [Daily operation runbook](LEARN-RECORDING-DAILY.md).
   [Live access evidence](evidence/learn-recording-access-live-2026-10-11.json).
