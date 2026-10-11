@@ -1,0 +1,74 @@
+{
+  "version": "learn-recording-backup-foundation-aws/1",
+  "observedAt": "2026-10-11T07:58:21.962743+00:00",
+  "environment": "OpenFolk AWS production-backup foundation only; ServiceOS production unchanged",
+  "evidenceMethod": "Signed-in AWS console: CloudFormation, S3 properties/permissions/management, IAM attachments, AWS Budgets",
+  "templateSha256": "87434e07db90f4c2f1e301aefa13f08f3bbf47c588790fde45c3910db239135e",
+  "deployment": {
+    "region": "eu-west-2",
+    "accountIdentityVerified": true,
+    "ownerMfaDevices": 1,
+    "rootAccessKeys": 0,
+    "deploymentValidations": "passed",
+    "stackStatus": "CREATE_COMPLETE",
+    "completedAt": "2026-10-11T07:55:12Z",
+    "resources": {
+      "AWS::S3::Bucket": 1,
+      "AWS::S3::BucketPolicy": 1,
+      "AWS::IAM::ManagedPolicy": 2,
+      "AWS::Budgets::Budget": 1
+    },
+    "additionalConsoleResource": "AWS-generated CloudFormation template bucket/object"
+  },
+  "s3Readback": {
+    "region": "eu-west-2",
+    "publicAccessBlocks": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "objectOwnership": "BucketOwnerEnforced",
+    "encryption": "SSE-S3",
+    "versioning": "Enabled",
+    "objectLock": "Enabled",
+    "defaultRetention": {
+      "mode": "GOVERNANCE",
+      "days": 30
+    },
+    "requireTls": true,
+    "requireExplicitAes256": true,
+    "requireIfNoneMatchOnObjectCreation": true,
+    "lifecycleRules": 0,
+    "objects": 0
+  },
+  "access": {
+    "writerPolicyAttachments": 0,
+    "restorePolicyAttachments": 0,
+    "newIdentities": 0,
+    "newCredentials": 0,
+    "newAccessGrants": 0,
+    "effectiveRunnerPermissionsTested": false,
+    "iamConsoleSummaryNotice": "IAM reports some actions, resources or conditions do not provide permissions. Cause and effective identity permissions remain to be verified before attachment."
+  },
+  "budget": {
+    "usd": 5,
+    "period": "MONTHLY",
+    "scope": "account-wide",
+    "trigger": "ACTUAL > 100%",
+    "hardCap": false,
+    "recipientVerification": "pending",
+    "deliveryVerified": false
+  },
+  "productionSourceWrites": 0,
+  "realAudioCopied": 0,
+  "independentRecoveryAccepted": false,
+  "remaining": [
+    "Recipient email verification and alert delivery acceptance",
+    "Scoped runner/restore access and effective IAM tests",
+    "Complete inventory and private reconciliation persistence",
+    "Real versioned copies and checksums",
+    "Daily operation, monitoring and monthly restore checks",
+    "Isolated database/audio restore and playback"
+  ]
+}

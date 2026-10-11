@@ -2,7 +2,13 @@
 
 Local implementation for the approved Drummonds recording backup. Nothing in
 this directory creates resources automatically. The OpenFolk AWS account has been observed in the console; owner MFA is now
-verified enabled. Chris plans the paid-plan transition later, before free access ends. No real recording has been copied or restored.
+verified enabled. Chris plans the paid-plan transition later, before free access ends.
+The approved London foundation reached CREATE_COMPLETE on 11 October 2026 at
+07:55:12 UTC. Direct S3 console inspection confirms its encryption, versioning,
+30-day retention, privacy and write protections; both IAM policies remain
+unattached. The $5 monthly cost alert awaits recipient email verification.
+No real recording has been copied or restored.
+[Cloud evidence](../../docs/operations/evidence/learn-recording-backup-foundation-aws-2026-10-11.json).
 
 ## Infrastructure
 
@@ -106,8 +112,9 @@ never audio, signed URLs, paths, credentials or customer identities.
 1. OpenFolk AWS signup is observed complete. Owner MFA is verified enabled; plan the paid-plan
    transition before free access ends: the console currently reports free access ending 11 April 2027 or
    when credits run out. Neither step was performed by the agent.
-2. Verify account/region, create the reviewed foundation and inspect actual state;
-   attach narrowly scoped writer/restore identities through the authorised flow.
+2. Foundation creation and S3 console configuration readback are complete. Verify
+   effective permissions under narrowly scoped writer/restore identities after
+   their reviewed access setup. Complete the budget recipient verification.
 3. Verify the implemented S3/durable-journal adapter against real AWS, then verify
    the complete Drummonds-only source inventory and actual byte reads. Do not export a production-wide service key
    into AWS. Keep source permission changes within the production release gate.

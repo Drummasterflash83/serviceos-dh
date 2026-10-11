@@ -37,12 +37,28 @@ console reports a **Free plan ending 11 April 2027 or when credits run out**.
 Chris completed owner MFA and signed in through the in-app browser. Chris will move to the paid plan later; the Free
 plan is not an immediate setup blocker unless an actual service restriction is
 encountered. The transition must happen before free access ends for dependable
-ongoing backups. The agent did not change owner authentication or billing. Scoped backup/restore access and the reviewed source-read mechanism
-remain to be set up. No backup bucket, identity, recording copy or verified
-restore has been created. The London CloudFormation wizard is open, but template
-file-chooser attempts timed out before any template could be selected or stack
-creation submitted; browser control then timed out. No access was granted. Account details remain in private runtime evidence.
-Cloudflare infrastructure and OpenFolk hosting have not been changed.
+ongoing backups. The agent did not change owner authentication or billing.
+
+The approved London foundation was created on 11 October at **07:55:12 UTC**.
+CloudFormation deployment validations passed and all five resources reached
+`CREATE_COMPLETE`. Direct S3 console readback confirms London, all four public
+access blocks, bucket-owner-enforced ownership, SSE-S3 encryption, versioning,
+and enabled 30-day GOVERNANCE default retention. The bucket policy enforces TLS,
+explicit AES256 encryption and conditional create-only writes. No lifecycle
+expiration rule exists. Both writer and restore policies have **zero attachments**;
+no runner identity, credential or new access grant was created.
+
+The monthly account-wide US$5 actual-cost alert exists. Its recipient
+`chris@openfolk.ai` is **pending email verification**; AWS says notifications cannot
+be delivered until that verification completes. It is not a spending cap.
+The previous browser file chooser failure was resolved using Template studio;
+the saved editor JSON matched the prepared template before execution. AWS also
+created a template-storage bucket/object. No recordings or secrets were uploaded
+with the template. The recording bucket remains empty. Scoped runtime access,
+real copying, schedules and isolated restore remain unfinished.
+[Cloud evidence](evidence/learn-recording-backup-foundation-aws-2026-10-11.json).
+Account/resource identifiers and screenshots are retained in ignored private
+runtime evidence. Cloudflare infrastructure and OpenFolk hosting are unchanged.
 
 ## Local backup implementation — 11 October 2026
 
@@ -51,7 +67,8 @@ an account/region-bound CloudFormation template and a streamed copy/restore core
 The template defines the private London bucket, versioning, 30-day governance
 retention, create-only writes, separate **unattached** writer/restore policies and
 an AWS account-wide US$5 alert (not a cap, excluding Supabase costs). CloudFormation
-schema lint passes; no stack, policy attachment or cloud access was created.
+schema lint passes. The foundation is now deployed as described above; no policy
+attachment or new cloud access was created.
 
 Eleven synthetic tests pass for streamed SHA-256 copy, exact-version readback,
 private isolated restore, changed-source/corrupt-byte rejection, lost upload and
@@ -156,7 +173,8 @@ Official sources checked on 11 October: [London S3 region](https://docs.aws.amaz
 [encryption](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingServerSideEncryption.html),
 [Object Lock modes](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html)
 and [pricing components](https://aws.amazon.com/s3/pricing/).
-No AWS resource, backup schedule or recording copy has been created.
+At this earlier proposal stage no AWS resources existed. See the current
+foundation deployment above; scheduling and recording copies remain outstanding.
 
 ## Original costed implementation proposal — now approved with OpenFolk ownership
 
@@ -246,8 +264,9 @@ Sources: [S3 pricing and binary units](https://aws.amazon.com/s3/pricing/),
 
 **Approval received:** the setup and recording copy are approved, with an
 OpenFolk-owned account replacing the original Drummonds-owned assumption.
-The account/access route remains to be established (see the current decision above). No AWS account, IAM access, resource, credential, schedule or
-recording copy has been created. Database restore pricing and acceptance remain a
+The OpenFolk account and private London foundation now exist (see current evidence
+above). Scoped runtime access, credentials, schedules and recording copies remain
+unconfigured. Database restore pricing and acceptance remain a
 separate launch requirement. Approval of this proposal does not approve unrelated
 production changes.
 
