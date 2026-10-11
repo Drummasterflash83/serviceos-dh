@@ -381,3 +381,30 @@ test("explicit refetch honours policy and expired page budgets do not start prov
   );
   assert.equal(p.calls.length, 1);
 });
+
+test("whole-mailbox reconciliation explicitly includes Spam/Trash without provider label or search filters", async () => {
+  const p = provider({ messages: [{ id: "archived" }], nextPageToken: "next-all" });
+  const result = await readGmailCapturePage("synthetic", { ...request, label: "ALL" }, p.fetcher);
+  assert.deepEqual(result, { ids: ["archived"], nextPageToken: "next-all", exhausted: false });
+  const params = p.calls[0].url.searchParams;
+  assert.equal(params.get("includeSpamTrash"), "true");
+  for (const key of ["labelIds", "labelId", "q"]) assert.equal(params.has(key), false);
+});
+
+test("whole-mailbox incremental capture does not send the internal ALL scope as a Gmail label", async () => {
+  const p = provider({
+    historyId: "200",
+    history: [{ id: "101", messagesAdded: [{ message: { id: "archived-new" } }] }],
+  });
+  const result = await readGmailCapturePage(
+    "synthetic",
+    { ...request, mode: "history", label: "ALL", originHistoryId: "100" },
+    p.fetcher,
+  );
+  assert.deepEqual(result, { ids: ["archived-new"], nextPageToken: null, exhausted: true });
+  const params = p.calls[0].url.searchParams;
+  assert.equal(params.get("startHistoryId"), "100");
+  assert.equal(params.get("historyTypes"), "messageAdded");
+  for (const key of ["labelIds", "labelId", "includeSpamTrash"])
+    assert.equal(params.has(key), false);
+});

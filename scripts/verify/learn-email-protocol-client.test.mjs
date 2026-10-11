@@ -34,6 +34,7 @@ import { verifyEmailPageStore } from "./learn-email-page-store-cases.mjs";
 import { verifyEmailCaptureEngine } from "./learn-email-capture-engine-cases.mjs";
 import { verifyEmailPausedRecovery } from "./learn-email-paused-recovery-cases.mjs";
 import { verifyEmailEnqueue } from "./learn-email-enqueue-cases.mjs";
+import { verifyEmailMailboxCoverage } from "./learn-email-mailbox-coverage-cases.mjs";
 const docker = "/usr/local/bin/docker",
   name = "learn-email-protocol-" + randomUUID().slice(0, 8);
 const source = readFileSync(
@@ -1040,6 +1041,7 @@ test("email client preserves the existing hosted progress protocol", async (t) =
     await verifyEmailCaptureEngine({ t, sql, db, queueJob, q, reference });
     await verifyEmailPausedRecovery({ t, sql, db, queueJob, q, reference });
     await verifyEmailEnqueue({ t, sql, sqlAsync, db, queueJob, q });
+    await verifyEmailMailboxCoverage({ t, sql, db, queueJob, q });
   } finally {
     if (created) execFileSync(docker, ["rm", "-f", name], { stdio: "pipe", timeout: 30000 });
     rmSync(dir, { recursive: true, force: true });

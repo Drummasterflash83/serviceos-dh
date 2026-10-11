@@ -6,7 +6,8 @@
 import { parseGmailMessages } from "./gmail_message.ts";
 export type GmailPageRequest = {
   mode: "history" | "reconcile" | "historical";
-  label: "INBOX" | "SENT" | null;
+  /** ALL is our continuation scope, never a Gmail label ID. */
+  label: "INBOX" | "SENT" | "ALL" | null;
   pageSize: number;
   pageToken: string | null;
   originHistoryId: string | null;
@@ -76,7 +77,9 @@ function validateRequest(r: GmailPageRequest) {
     r.pageSize < 1 ||
     r.pageSize > 500 ||
     !(r.pageToken === null || token(r.pageToken)) ||
-    (r.mode === "historical" ? r.label !== null : !["INBOX", "SENT"].includes(r.label ?? "")) ||
+    (r.mode === "historical"
+      ? r.label !== null
+      : !["INBOX", "SENT", "ALL"].includes(r.label ?? "")) ||
     (r.mode === "history" ? !gmailHistoryId(r.originHistoryId) : r.originHistoryId !== null)
   )
     fail();
@@ -169,8 +172,9 @@ export async function readGmailCapturePage(
   if (r.mode === "history") {
     params.set("startHistoryId", r.originHistoryId!);
     params.set("historyTypes", "messageAdded");
-    params.set("labelId", r.label!);
-  } else if (r.label !== null) params.set("labelIds", r.label);
+    if (r.label !== "ALL") params.set("labelId", r.label!);
+  } else if (r.label === "ALL") params.set("includeSpamTrash", "true");
+  else if (r.label !== null) params.set("labelIds", r.label);
   const data = (await request(
     accessToken,
     `${r.mode === "history" ? "/history" : "/messages"}?${params}`,

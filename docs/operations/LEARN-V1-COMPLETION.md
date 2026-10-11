@@ -54,6 +54,31 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
+### Mailbox-wide Gmail capture — candidate rehearsed, 11 October, 19:21 UTC
+
+The recent Gmail reader previously filtered both reconciliation and incremental
+history by Inbox/Sent. That could omit automatically archived/filed communications.
+Continuation v3 now uses one unfiltered mailbox traversal, explicitly includes
+Spam/Trash during listing, and retains their source labels. New protocol accounts
+and completed v2 generations must first reconcile; an old label-limited cursor
+cannot establish mailbox-wide coverage. In-flight v2 pages and their receipts are
+not rewritten. Historical backfill retains its original pagination scope; the new
+recent reconciliation fills its gaps. Incremental capture covers message additions;
+this is not a deletion/label-state mirror or recovery of already purged provider data.
+
+All 64 actual-engine/durable-SQL checks and 13 page-reader checks passed locally,
+plus the strict installed-SDK TypeScript check. The exact 068 package passed a
+full-schema TEST rollback rehearsal, preserving all 121 existing datasets. The
+existing migration administrator needed transaction-only inheritance of the
+protocol-owner role to replace its function; that temporary membership was removed
+before assertions, with original role memberships, function owners and ACLs verified
+identical. No application access was created. Package SHA-256:
+`ccb31394a7e482321c5a3c72dc78604692c57f5d5371617301881c763b1f4c10`.
+
+Persistent TEST installation and matching worker deployment are next. Real-provider
+Google acceptance remains blocked by the pending credential-destination approval.
+No production change or claim of complete real mailbox coverage is made.
+
 ### Matching TEST frontend deployed — 11 October, 18:26 UTC
 
 The protected TEST frontend is now READY from GitHub `1af32a4` at

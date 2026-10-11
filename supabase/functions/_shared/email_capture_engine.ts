@@ -88,8 +88,13 @@ export function recentEmailPage(c: EmailCheckpoint):
       request: GmailPageRequest;
     } {
   const v: Record<string, any> | null = c.continuation;
-  if (!object(v) || v.version !== 2 || !["missing_only", "refetch_all"].includes(v.fetch_policy))
+  if (
+    !object(v) ||
+    ![2, 3].includes(v.version) ||
+    !["missing_only", "refetch_all"].includes(v.fetch_policy)
+  )
     return badContinuation();
+  const labels = v.version === 3 ? ["ALL"] : ["INBOX", "SENT"];
   if (v.phase === "uninitialized") {
     if (
       !keys(v, ["version", "phase", "intent", "fetch_policy"]) ||
@@ -129,13 +134,12 @@ export function recentEmailPage(c: EmailCheckpoint):
     v.page_size > 500 ||
     v.query !== null ||
     !Array.isArray(v.labels) ||
-    v.labels.length !== 2 ||
-    v.labels[0] !== "INBOX" ||
-    v.labels[1] !== "SENT" ||
-    !keys(v.labels_state, ["INBOX", "SENT"])
+    v.labels.length !== labels.length ||
+    !labels.every((label, index) => v.labels[index] === label) ||
+    !keys(v.labels_state, labels)
   )
     return badContinuation();
-  for (const label of ["INBOX", "SENT"]) {
+  for (const label of labels) {
     const s = v.labels_state[label];
     if (
       !keys(s, ["next_page_token", "complete"]) ||
@@ -145,7 +149,7 @@ export function recentEmailPage(c: EmailCheckpoint):
     )
       return badContinuation();
   }
-  const label = v.labels_state.INBOX.complete ? "SENT" : "INBOX";
+  const label = v.version === 3 ? "ALL" : v.labels_state.INBOX.complete ? "SENT" : "INBOX";
   if (v.labels_state[label].complete) return badContinuation();
   return {
     uninitialized: false,
