@@ -25,6 +25,9 @@ export type MicrosoftJobCompletion = {
   observationsStored: number;
   mailboxCoverage: "unverified";
   folderDispatch?: MicrosoftFolderDispatch | null;
+  /** Omitted by historical receipts; never inferred for old completions. */
+  continuationKind?: "page" | "incremental" | null;
+  nextCheckAt?: string | null;
 };
 export async function runMicrosoftCaptureJob(
   db: MicrosoftJournalDb,
@@ -74,6 +77,22 @@ export async function runMicrosoftCaptureJob(
       )
         throw Error();
       const hasDispatch = Object.hasOwn(data, "folderDispatch");
+      const hasSchedule = Object.hasOwn(data, "continuationKind");
+      if (
+        hasSchedule !== Object.hasOwn(data, "nextCheckAt") ||
+        (hasSchedule &&
+          (data.continuationKind === null
+            ? data.nextCheckAt !== null || data.successorId !== null
+            : !["page", "incremental"].includes(data.continuationKind) ||
+              data.sourceReceiptId === null ||
+              data.successorId === null ||
+              typeof data.nextCheckAt !== "string" ||
+              !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,6})?(?:Z|[+-]\d\d:\d\d)$/.test(
+                data.nextCheckAt,
+              ) ||
+              !Number.isFinite(Date.parse(data.nextCheckAt))))
+      )
+        throw Error();
       const dispatch = data.folderDispatch;
       if (hasDispatch && dispatch !== null) {
         const keys = [
@@ -108,6 +127,9 @@ export async function runMicrosoftCaptureJob(
         successorId: data.successorId,
         observationsStored: data.observationsStored,
         mailboxCoverage: "unverified",
+        ...(hasSchedule
+          ? { continuationKind: data.continuationKind, nextCheckAt: data.nextCheckAt }
+          : {}),
         ...(hasDispatch
           ? {
               folderDispatch:

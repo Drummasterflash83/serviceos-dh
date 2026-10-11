@@ -240,3 +240,48 @@ test("inconsistent, unbounded and private dispatch fields cannot become a comple
     assert.equal(f.providerCalls, 0);
   }
 });
+
+test("new scheduled receipts recover the exact next check; old receipts remain unscheduled", async () => {
+  const f = fixture();
+  f.settled = true;
+  const old = await runMicrosoftCaptureJob(f.db, claim, f.ports);
+  assert.equal(Object.hasOwn(old, "continuationKind"), false);
+  Object.assign(f.answer, {
+    successorId: id(8),
+    continuationKind: "incremental",
+    nextCheckAt: "2026-10-11T13:05:00.123456+00:00",
+    privateUrl: "PRIVATE",
+  });
+  const r = await runMicrosoftCaptureJob(f.db, claim, f.ports);
+  assert.equal(r.continuationKind, "incremental");
+  assert.equal(r.nextCheckAt, f.answer.nextCheckAt);
+  assert.equal(JSON.stringify(r).includes("PRIVATE"), false);
+  assert.equal(f.providerCalls, 0);
+});
+
+test("a scheduling receipt must bind its successor, source and due time together", async () => {
+  for (const override of [
+    { nextCheckAt: undefined },
+    { nextCheckAt: "PRIVATE" },
+    { nextCheckAt: null },
+    { successorId: null },
+    { sourceReceiptId: null },
+    { continuationKind: "unknown" },
+    { continuationKind: null },
+    { continuationKind: undefined },
+  ]) {
+    const f = fixture();
+    f.settled = true;
+    Object.assign(
+      f.answer,
+      { successorId: id(8), continuationKind: "incremental", nextCheckAt: "2026-10-11T13:05:00Z" },
+      override,
+    );
+    await assert.rejects(runMicrosoftCaptureJob(f.db, claim, f.ports), error);
+    assert.equal(f.providerCalls, 0);
+  }
+  const f = fixture();
+  f.settled = true;
+  Object.assign(f.answer, { continuationKind: null, nextCheckAt: null });
+  assert.equal((await runMicrosoftCaptureJob(f.db, claim, f.ports)).nextCheckAt, null);
+});

@@ -1,0 +1,48 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "full_schema_rehearsed_and_rolled_back",
+  "observedAt": "2026-10-11T13:31:40.881Z",
+  "migrations": [
+    {
+      "file": "20261101180000_learn_microsoft_source_journal.sql",
+      "sha256": "8f852bf18aad93e64d3fd8192910159f2fdfea102d2807bbfdc429f5e6ab8398"
+    },
+    {
+      "file": "20261101181000_learn_microsoft_job_receipts.sql",
+      "sha256": "f91c07370d28689fcbdfdee8ead990a5dcc7ed12db710f6d709cb93f38fe9bb0"
+    },
+    {
+      "file": "20261101182000_learn_microsoft_queue_completion.sql",
+      "sha256": "2781dca88f9ad4322c8acb042e4c42559cd66cc39db96e4708c9177ac21b2cbe"
+    },
+    {
+      "file": "20261101192000_learn_microsoft_folder_dispatch.sql",
+      "sha256": "3e7fa7064b54ddc2921b318e2da384dcd7ffb6a3fab86fa0ce4e9f9522150f84"
+    },
+    {
+      "file": "20261101260000_learn_microsoft_incremental_queue.sql",
+      "sha256": "b3a30f6e3084849ef613480fa488a8c0da07efe7bcdc3161bb07764cd9a61e7c"
+    }
+  ],
+  "preservedDatasets": 113,
+  "originalCatalogRestored": true,
+  "fixturesRemoved": true,
+  "committedUsers": 0,
+  "newSessions": 0,
+  "newPlatformGrants": 0,
+  "providerRequests": 0,
+  "productionChanged": false,
+  "limitations": [
+    "Synthetic source pages; no real Microsoft mailbox or hosted worker acceptance.",
+    "No Microsoft schema, account, credential, queue job or schedule retained."
+  ],
+  "version": "learn-microsoft-incremental/1",
+  "localTests": 58,
+  "strictTypescript": true,
+  "isolatedActualQueueClaim": true,
+  "localReadThroughSubsequentDeltaRound": true,
+  "pausedAndRevokedTokenRequests": 0,
+  "scheduledIntervalSeconds": 300,
+  "continuedPageDelaySeconds": 1,
+  "adapterEnabled": false
+}

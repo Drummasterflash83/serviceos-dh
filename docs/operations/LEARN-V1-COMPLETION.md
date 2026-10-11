@@ -316,8 +316,15 @@ succeeded after that failure; no worker was invoked and no source record changed
   transcription and scheduling. Existing voicemail tables are not an ingester.
   [Discovery evidence](LEARN-VOICEMAIL-DISCOVERY.md).
 - [ ] **Microsoft:** authorised tenant/mailbox setup and token lifecycle;
-  hosted discovery-to-message dispatch; recurring capture/recovery; canonical projection;
-  worker/controller registration; full-schema and real-mailbox acceptance.
+  persistent hosted release; canonical projection; worker/controller registration,
+  recurring folder discovery, expiry recovery and real-mailbox acceptance.
+  At 13:31 UTC, all five source-journal/dispatch/recurring-queue migrations passed
+  a full-schema hosted TEST rollback rehearsal, preserving all 113 datasets and
+  the original catalog. Local actual-engine/queue tests prove later delta rounds,
+  due-time gating and pause/revocation before token access; 58 focused tests and
+  strict TypeScript pass. Nothing is installed or enabled for Microsoft. No real
+  Microsoft mailbox has been identified for Drummonds.
+  [Evidence](evidence/learn-microsoft-incremental-2026-10-11.json).
 - [ ] **Performance inputs:** finish source-backed response-time, job progression,
   repeat-visit and driving adapters where sources exist. Establish staff identity,
   team membership, calendars and reviewable calculation rules using Drummonds data.

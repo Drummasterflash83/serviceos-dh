@@ -147,6 +147,7 @@ try:
  checks.append('Concurrent exact message submission shares receipt; sparse/removal/raw events and binding identity remain immutable')
  subprocess.run(['node','scripts/verify/learn-microsoft-capture-engine-cases.mjs',NAME],cwd=ROOT,check=True)
  subprocess.run(['node','scripts/verify/learn-microsoft-capture-job-cases.mjs',NAME],cwd=ROOT,check=True)
+ subprocess.run(['node','scripts/verify/learn-microsoft-incremental-cases.mjs',NAME],cwd=ROOT,check=True)
  print(json.dumps({'state':'passed','checks':checks,'limitations':['Network-isolated PostgreSQL 15 with synthetic account/job dependencies; actual migration and actual reader-generated pages.','No hosted/full-schema/Auth/provider acceptance; live worker registration, credential provisioning, projection and schedule activation remain pending.']},indent=2))
 finally:
  subprocess.run([DOCKER,'rm','-f',NAME],capture_output=True)
