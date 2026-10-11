@@ -1,0 +1,115 @@
+{
+  "version": "learn-card-frontend-test/1",
+  "state": "protected_test_frontend_ready_signed_in_acceptance_pending",
+  "observedAt": "2026-10-11T20:19:52.105Z",
+  "frontend": {
+    "observedAt": "2026-10-11T20:19:28.632Z",
+    "id": "dpl_7xoN7dcukRyTgTnN6tttsjFD1pyw",
+    "url": "serviceos-learn-test-1ax7l1586-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "c03a230b48e70a06d59ddbd456f6be8e50b5d596"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x"
+  },
+  "stableAlias": {
+    "observedAt": "2026-10-11T20:19:52.105Z",
+    "alias": "serviceos-learn-test-allkin.vercel.app",
+    "deploymentId": "dpl_7xoN7dcukRyTgTnN6tttsjFD1pyw",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "immutableProtection": {
+    "observedAt": "2026-10-11T20:19:51.083Z",
+    "base": "https://serviceos-learn-test-1ax7l1586-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "authRedirect": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "verified",
+    "before": {
+      "site_url": "https://serviceos-learn-test-g7nlyfdcg-allkin.vercel.app/login?reset=1",
+      "uri_allow_list": "https://serviceos-learn-test-b5u66qgft-allkin.vercel.app/login?reset=1,https://serviceos-learn-test-g7nlyfdcg-allkin.vercel.app/login?reset=1"
+    },
+    "after": {
+      "site_url": "https://serviceos-learn-test-allkin.vercel.app/login?reset=1",
+      "uri_allow_list": "https://serviceos-learn-test-b5u66qgft-allkin.vercel.app/login?reset=1,https://serviceos-learn-test-g7nlyfdcg-allkin.vercel.app/login?reset=1,https://serviceos-learn-test-allkin.vercel.app/login?reset=1"
+    },
+    "newUsers": 0,
+    "newGrants": 0,
+    "emailsSent": 0,
+    "productionChanged": false,
+    "observedAt": "2026-10-11T20:17:10.994Z",
+    "otherSettingsUnchanged": true
+  },
+  "backend": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "schemaRelease": "070",
+    "workerVersion": 16,
+    "cardRefreshVersion": 2,
+    "workspaceDiscoveryVersion": 3
+  },
+  "sourceChanges": [
+    "Explain why unsent drafts remain in source history but are excluded from communication attribution.",
+    "Disclose bounded response-time evidence and truncated recommendation lists.",
+    "Apply compatible dependency-lock updates, with zero production-dependency audit findings and nine development-tool findings remaining."
+  ],
+  "verification": [
+    "npm install",
+    "npx tsc --noEmit before and after dependency updates",
+    "npm run build before and after dependency updates",
+    "Exact Git source SHA and TEST backend binding checked through Vercel management API",
+    "Stable alias and immutable preview both require Vercel authentication on home/login/LEARN routes",
+    "TEST Auth redirect read back with every other setting unchanged"
+  ],
+  "browserVerified": false,
+  "signedInAcceptance": false,
+  "newUsers": 0,
+  "newGrants": 0,
+  "emailsSent": 0,
+  "productionChanged": false,
+  "limitations": [
+    "Owner TEST access and browser acceptance remain pending; protection checks do not prove signed-in routes.",
+    "Existing emails pointing to older allowed TEST URLs are not rewritten.",
+    "Real provider capture and full launch acceptance remain incomplete.",
+    "Dependency audit is not a complete security or runtime reachability assessment."
+  ]
+}

@@ -54,6 +54,22 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
+### Current protected TEST frontend — 11 October, 20:19 UTC
+
+The stable entry is [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
+It resolves to READY deployment `dpl_7xoN7dcukRyTgTnN6tttsjFD1pyw`, built from
+Git SHA `c03a230b48e70a06d59ddbd456f6be8e50b5d596`. The immutable preview is
+`serviceos-learn-test-1ax7l1586-allkin.vercel.app`. Both are Vercel protected; their
+home, login and LEARN routes redirect to Vercel authentication. The preview-only
+backend remains TEST `saatxzwxvdvqevbnskxy`, paired with release 070/worker v16/card
+refresh v2. The frontend includes the draft advice and bounded-evidence explanation.
+
+TEST Auth uses the stable exact `/login?reset=1` recovery target, preserving the
+previous exact recovery URLs and every other setting. This does not reactivate
+Chris's disabled TEST account or send a reset email. The prepared ongoing owner
+access request and browser acceptance remain pending. No production change occurred.
+[Frontend/configuration evidence](evidence/learn-card-frontend-test-2026-10-11.json).
+
 ### Remaining launch work — 11 October, 20:17 UTC
 
 | Requirement | Evidence now | What still closes the gate |
@@ -63,7 +79,7 @@ as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 | Customer cards and scoring | Hosted synthetic source-to-card refresh and isolation pass; configurable scoring and review are implemented | Signed-in Drummonds review, reliable staff/job evidence, calendar/criteria approval and legacy derived-data reconciliation |
 | OpenFolk controller | Scoped controls, diagnostics and recovery tested locally/TEST | Approve ongoing TEST owner access; verify real signed-in operation and customer branding |
 | Recovery and recurring operation | Recorded audio inventory and independent restore verified | Real database restore with record links, confirmed scheduled runs and durable operational ownership |
-| Release | Git backups and staged TEST backend complete; frontend release is being updated | All above acceptance, development dependency review, concrete production approval, deployment and live monitoring |
+| Release | Git backups and staged TEST backend and matching protected frontend deployed | All above acceptance, development dependency review, concrete production approval, deployment and live monitoring |
 
 The frontend release checks passed (`npm install`, `npx tsc --noEmit`, `npm run build`).
 Compatible transitive dependency updates reduce the production-dependency audit
@@ -121,7 +137,8 @@ synthetic tenants were archived, with no users, grants, provider calls or live j
 An earlier harness attempt omitted the existing internal header; its fixtures were
 also archived. A second attempt rolled back on a synthetic-slug collision; the final
 run used unique slugs and the digest-verified existing key, with no credential changes.
-This is not signed-in acceptance. Frontend explanatory copy remains local. Legacy
+This is not signed-in acceptance. Frontend explanatory copy is deployed in the
+20:19 TEST release below; browser acceptance remains pending. Legacy
 priorities, indirect recommendations and reviewed identity suggestions still need
 explicit reconciliation rather than blanket deletion.
 [Verified evidence and release sequence](evidence/learn-card-draft-projection-2026-10-11.json).
@@ -154,7 +171,7 @@ modules matched reviewed source, 145 emitted imports were checked, and the three
 pruned dependencies have no emitted runtime importers. All 14 reader tests passed
 against the download; unsigned POST returned 403. No capture, provider calls,
 credentials, users or production changes occurred. Frontend explanatory copy is
-local only. Production card
+deployed to protected TEST at 20:19, with signed-in acceptance pending. Production card
 summary/aggregate reconciliation remains a required release gate; current label
 changes, Spam eligibility and real-provider acceptance are still unfinished.
 [Evidence](evidence/learn-email-draft-eligibility-2026-10-11.json).

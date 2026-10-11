@@ -1,6 +1,6 @@
 {
   "version": "learn-dependency-patch-audit/1",
-  "state": "validated_locally_test_deployment_pending",
+  "state": "validated_and_deployed_to_protected_test",
   "observedAt": "2026-10-11T20:17:11Z",
   "before": {
     "allDependencies": {
@@ -137,5 +137,11 @@
   "references": [
     "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
     "https://github.com/advisories/GHSA-2v37-7h3g-55p8"
-  ]
+  ],
+  "testFrontend": {
+    "deploymentId": "dpl_7xoN7dcukRyTgTnN6tttsjFD1pyw",
+    "sourceSha": "c03a230b48e70a06d59ddbd456f6be8e50b5d596",
+    "observedReadyAt": "2026-10-11T20:19:28.632Z",
+    "stableUrl": "https://serviceos-learn-test-allkin.vercel.app"
+  }
 }

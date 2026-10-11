@@ -52,7 +52,7 @@
     "No real Gmail capture or signed-in acceptance.",
     "Production draft-derived card summaries/aggregates need reviewed reconciliation before promotion; no production source or derived record has been changed.",
     "Gmail label-change/deletion mirroring and Spam eligibility remain unfinished.",
-    "New plain-language draft advice is local until the next protected frontend release."
+    "Explanatory frontend is now deployed to protected TEST; signed-in browser acceptance is still pending."
   ],
   "projectRef": "saatxzwxvdvqevbnskxy",
   "schema": {
@@ -95,5 +95,10 @@
   "usersCreated": 0,
   "credentialsCreated": 0,
   "schedulesActivated": 0,
-  "productionChanged": false
+  "productionChanged": false,
+  "frontendFollowup": {
+    "evidence": "learn-card-frontend-test-2026-10-11.json",
+    "deployedAt": "2026-10-11T20:19:28.632Z",
+    "signedInAcceptance": false
+  }
 }

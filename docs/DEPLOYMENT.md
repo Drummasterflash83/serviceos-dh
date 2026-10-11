@@ -49,12 +49,16 @@ from the production project above. Its preview-only public configuration targets
 Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
-The latest staging candidate is
-[serviceos-learn-test-g7nlyfdcg-allkin.vercel.app](https://serviceos-learn-test-g7nlyfdcg-allkin.vercel.app),
-built remotely from GitHub commit `1af32a493633b73f5f3fa127d4e47712b27e89fb`
-and observed READY at **18:26 UTC on 11 October**. It includes the password-reset
-flow, saved-snapshot freshness, projection/identity review and queued manual
-processing messages, initially paired with TEST schema release 066 and worker v12.
+The stable staging entry is
+[serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
+It points to immutable preview
+[serviceos-learn-test-1ax7l1586-allkin.vercel.app](https://serviceos-learn-test-1ax7l1586-allkin.vercel.app),
+built remotely from GitHub commit `c03a230b48e70a06d59ddbd456f6be8e50b5d596`
+and observed READY at **20:19 UTC on 11 October**. It includes password recovery,
+snapshot freshness, projection/identity review, queued processing messages, draft
+advice and bounded card-evidence explanation. Compatible dependency-lock updates
+passed TypeScript/build; production-dependency audit is clear, with nine development
+tool findings retained for review.
 The backend now has release **070**, worker **v16**, card refresh **v2**, and Workspace discovery **v3**.
 Release 067 added directory-verified alias identities; 068 adds mailbox-wide recent
 Gmail capture with a mandatory reconciliation when upgrading old label-limited
@@ -65,8 +69,8 @@ revision-checked writes and full eligible counts. Both the worker and manual car
 endpoint were downloaded and verified. A scoped hosted service call refreshed one
 synthetic card and passed tenant isolation, source preservation and job-completion
 checks; its fixtures are archived and all 123 pre-existing datasets were preserved.
-No login/grant was created. The protected frontend is unchanged; new draft and
-bounded-evidence explanation copy remains local. These releases did not infer
+No login/grant was created. The matching explanatory frontend is now deployed;
+positive signed-in browser acceptance remains pending. These releases did not infer
 real alias bindings or activate capture. See the
 [card refresh evidence](operations/evidence/learn-card-draft-projection-2026-10-11.json),
 [draft eligibility evidence](operations/evidence/learn-email-draft-eligibility-2026-10-11.json), the
@@ -76,12 +80,12 @@ The exact TEST project, Git SHA, preview-only backend binding and Vercel protect
 were verified. Homepage, login and LEARN routes remain protected. Browser approval
 for this new origin and positive signed-in acceptance are pending.
 
-TEST Auth now uses this preview's `/login?reset=1` as its default recovery target;
-the previous exact TEST recovery URL remains allowlisted. No wildcard redirect,
+TEST Auth uses the stable alias's `/login?reset=1` as its default recovery target;
+the previous exact TEST recovery URLs remain allowlisted. No wildcard redirect,
 user, grant, password, email or other Auth setting changed. The existing owner
 login reactivation proposal remains unapproved. Do not claim an email-token journey
 or authenticated acceptance from these configuration checks.
-[Frontend release evidence](operations/evidence/learn-processing-frontend-test-2026-10-11.json).
+[Frontend release evidence](operations/evidence/learn-card-frontend-test-2026-10-11.json).
 
 The previous scheduler-health staging candidate is
 [serviceos-learn-test-b5u66qgft-allkin.vercel.app](https://serviceos-learn-test-b5u66qgft-allkin.vercel.app),
