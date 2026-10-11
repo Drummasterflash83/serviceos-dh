@@ -50,8 +50,8 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-hl5br2wcl-allkin.vercel.app](https://serviceos-learn-test-hl5br2wcl-allkin.vercel.app),
-built remotely from GitHub commit `411d2fc8fcfefe92b5b23a6076fdfab74a2aa728`.
+[serviceos-learn-test-qg84mga06-allkin.vercel.app](https://serviceos-learn-test-qg84mga06-allkin.vercel.app),
+built remotely from GitHub commit `7be0489598933719604b4ee6cb79322b5066d3d5`.
 Use explicit API `target: "staging"`: the first deployment of a fresh project can
 be classified as production when target is omitted. Its default hostname and
 intermediate deployments are not the accepted TEST candidate. Preview homepage
@@ -84,18 +84,25 @@ remain empty. The paired frontend above is READY; binding, protection and actual
 same-origin sign-in redirect pass. Signed-in owner acceptance, real company
 configuration and hosted large-evidence transport remain open. No identities,
 operator grants, provider requests or capture activation were created.
+Canonical card-search release 051 is installed (11 October 02:16 UTC / 03:16 local).
+It searches customer titles, job titles/numbers, member names/roles and team names
+under existing caller permissions and RLS. Exact rollback/install/readback preserved
+101 monitored datasets and existing table access. Eight HTTP role-denial checks
+passed. Its paired frontend above is READY; TEST binding, deployment protection and
+actual browser sign-in redirect passed with no console errors. Signed-in hosted
+search acceptance remains pending. No provider, source or production changes occurred.
 History paging is a frontend-only change with no new backend migration. Release 046
 preserved all 87 monitored datasets, including assessment and scoring ledgers, and
 existing assessment privileges.
 Vercel reports READY; TEST environment binding and anonymous protection on homepage,
 login and client routes pass. This candidate rendered the login screen and passed the actual browser
-unauthenticated client redirect check. Signed-in hosted calendar/delay/working-time acceptance, resumable collection/recovery/review, team workload collection/review, team-card/scoring-scope, job-detail, history, card recovery
+unauthenticated client redirect check. Signed-in hosted card-search acceptance, calendar/delay/working-time acceptance, resumable collection/recovery/review, team workload collection/review, team-card/scoring-scope, job-detail, history, card recovery
 and control acceptance remain pending;
 a successful build is not that acceptance. The Phone evidence panel is backed by TEST release 044, installed at 21:24 UTC
 on 10 October with rollback service-path and HTTP-denial checks. Fresh signed-in
 visual acceptance and real scheduled capture remain pending. See the
 [Phone release evidence](operations/evidence/learn-phone-operator-evidence-test-2026-10-10.json).
-See [current deployment evidence](operations/evidence/learn-working-time-test-2026-10-11.json) and
+See [current deployment evidence](operations/evidence/learn-card-search-test-2026-10-11.json) and
 [047 backend evidence](operations/evidence/learn-job-details-test-2026-10-10.json).
 
 Backup pushes to `codex/learn-v1-test` do **not** automatically deploy because

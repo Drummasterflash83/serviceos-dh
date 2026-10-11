@@ -1,6 +1,6 @@
 # Existing TEST environment: verified release gaps
 
-## Canonical card search — TEST release 051 installed; paired frontend pending
+## Canonical card search — TEST release 051 and paired frontend installed
 
 Company-scoped literal search now covers customer titles, job titles/numbers,
 member names/roles and teams beyond the currently loaded card page. It keeps
@@ -11,7 +11,11 @@ SQL responses through the client. Fourteen client tests, both typechecks/builds
 and synthetic browser paging, filtering, stale-response and retry checks pass.
 Hosted rollback rehearsal and installation passed at 02:16 UTC. All 101 monitored
 datasets and existing table access remained unchanged. Eight HTTP access-denial
-checks passed. The paired frontend and signed-in hosted acceptance remain pending.
+checks passed. The paired protected frontend is READY from Git
+`7be0489598933719604b4ee6cb79322b5066d3d5` at
+[the release 051 TEST candidate](https://serviceos-learn-test-qg84mga06-allkin.vercel.app).
+TEST binding, Vercel protection and browser same-origin sign-in redirect pass, with
+no console errors. Signed-in hosted search acceptance remains pending.
 No providers, new operator grants or production changes were involved.
 [Search contract and evidence](LEARN-CARD-SEARCH.md).
 

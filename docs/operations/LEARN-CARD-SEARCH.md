@@ -1,9 +1,9 @@
-# Canonical card search — TEST backend 051
+# Canonical card search — TEST release 051
 
 11 October 2026. Customer, job, person and team cards now have explicit search and
 clear controls. The backend is installed in TEST after rollback rehearsal and preservation checks.
-**The paired frontend and signed-in hosted acceptance remain pending. Production
-and provider connections are unchanged.**
+**TEST release 051 and its paired protected frontend are installed. Signed-in
+hosted acceptance remains pending. Production and provider connections are unchanged.**
 
 Search covers the company's accessible canonical records, including records beyond
 the current browser page. Customer titles, job titles/numbers, member names/roles
@@ -50,14 +50,16 @@ query. Clear restores ordinary browsing. The search is not retained in local sto
   stale-reply rejection, failed-search retry and clear-to-browse. No console errors.
 - Screenshot: `.verification-results/learn-card-search-2026-10-11.jpg` (synthetic).
 
-## Remaining release work
+## Hosted release and remaining acceptance
 
 Release 051 passed rollback rehearsal and installation at 02:16 UTC on 11 October.
 All 101 monitored datasets and existing catalog/table permissions stayed unchanged.
 Eight HTTP denial checks cover all four kinds under anonymous and service roles.
 The exact hosted role probe also passed locally. Seven release guards cover drift,
 durable journaling, preservation failure, receipt shape, expired rehearsal and
-uncertain outcomes. The matching protected frontend and signed-in hosted owner
-acceptance remain pending. [Release evidence](evidence/learn-card-search-test-2026-10-11.json). Search
+uncertain outcomes. The matching protected [TEST frontend](https://serviceos-learn-test-qg84mga06-allkin.vercel.app)
+is READY from Git `7be0489598933719604b4ee6cb79322b5066d3d5`. TEST binding,
+Vercel protection and actual browser same-origin sign-in redirect pass, with no
+console errors. Signed-in hosted owner search acceptance remains pending. [Release evidence](evidence/learn-card-search-test-2026-10-11.json). Search
 does not complete provider imports, response/job-outcome scoring adapters, real
 company configuration, voicemail or wider LEARN V1 production acceptance.
