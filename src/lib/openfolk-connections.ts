@@ -265,9 +265,74 @@ export function projectConnections(
   const views: ConnectionView[] = [];
 
   for (const tpl of PROVIDER_TEMPLATES) {
-    views.push(buildView(tpl, connections, endpoints, identities));
+    if (tpl.family === "telephony" && connections?.telephony_accounts?.length) {
+      for (const phone of connections.telephony_accounts) {
+        const view = buildView(tpl, { ...connections, telephony: phone }, endpoints, identities);
+        views.push({ ...view, id: `${view.id}-${phone.underlying_provider}` });
+      }
+    } else views.push(buildView(tpl, connections, endpoints, identities));
   }
   return views;
+}
+
+function connectionState(status: string, detail: ConnectionLifecycle | undefined, phone = false) {
+  const state = status.toLowerCase();
+  const revoked = state === "revoked" || !!detail?.revoked_at;
+  const failedTest = ["failed", "error"].includes(detail?.last_test_status ?? "");
+  const verifiedAt = detail?.verified_at ? Date.parse(detail.verified_at) : NaN;
+  const verified = Number.isFinite(verifiedAt) && verifiedAt <= Date.now() && !failedTest;
+  const inactive =
+    revoked ||
+    ["disabled", "disconnected", "not_connected", "expired", "not_configured"].includes(state);
+  const connected =
+    !inactive &&
+    !failedTest &&
+    (["connected", "active"].includes(state) ||
+      (phone && state === "configured" && detail?.has_secrets === true && verified));
+  const failed = failedTest || ["error", "failed", "verification_failed"].includes(state);
+  const recentSyncFailed = ["failed", "error"].includes(detail?.last_sync_status ?? "");
+  const discoveryFailed =
+    !!detail?.last_failed_discovery &&
+    (!detail.last_successful_discovery ||
+      Date.parse(detail.last_failed_discovery) >= Date.parse(detail.last_successful_discovery));
+  return {
+    connected,
+    lifecycle: (revoked
+      ? "revoked"
+      : state === "expired"
+        ? "expired"
+        : failed
+          ? "verification_failed"
+          : connected
+            ? recentSyncFailed || discoveryFailed
+              ? "degraded"
+              : "connected"
+            : state === "degraded"
+              ? "degraded"
+              : "setup_required") as ConnectionState,
+    authorisation: (revoked
+      ? "revoked"
+      : state === "expired"
+        ? "expired"
+        : connected
+          ? "authorised"
+          : "not_authorised") as AuthorisationState,
+    verification: (failedTest || failed
+      ? "failed"
+      : inactive && verified
+        ? "stale"
+        : verified
+          ? "verified"
+          : "never_verified") as VerificationState,
+    // A configuration/test is not a current capture heartbeat.
+    health: (failed
+      ? "failed"
+      : state === "degraded" || (connected && (recentSyncFailed || discoveryFailed))
+        ? "degraded"
+        : connected
+          ? "unknown"
+          : "not_connected") as HealthState,
+  };
 }
 
 function buildView(
@@ -305,15 +370,24 @@ function buildView(
 
   if (tpl.family === "google_workspace" && connections?.google_workspace) {
     const g = connections.google_workspace;
-    const connected = g.status === "connected" || g.imported > 0;
+    const state = connectionState(g.status, g.lifecycle);
+    const { connected } = state;
     const boundaries: ConnectionBoundary[] = [
       { label: "Approved domains", value: g.approved_domains.join(", ") || "—" },
+      {
+        label: "Stored domain connections",
+        value:
+          g.connections.map((c) => `${c.domain ?? "Unknown domain"}: ${c.status}`).join(", ") ||
+          "None",
+      },
     ];
     const excludedDomains = Object.entries(g.excluded_domains)
       .map(([d, n]) => `${d} (${n})`)
       .join(", ");
     if (excludedDomains) boundaries.push({ label: "Excluded domains", value: excludedDomains });
-    const warnings: string[] = [];
+    const warnings: string[] = [
+      "Retained inventory and connection tests do not verify current message/call capture.",
+    ];
     if (g.excluded > 0)
       warnings.push(
         `Connected directory contains ${g.excluded} identity(ies) outside the approved tenant boundary`,
@@ -322,17 +396,22 @@ function buildView(
       ...base,
       commercialProvider: "Google Workspace",
       underlyingProvider: "Google Directory / Gmail API",
-      connected,
-      lifecycle: connected ? "connected" : "setup_required",
-      authorisation: connected ? "authorised" : "not_authorised",
-      verification: connected ? "verified" : "never_verified",
-      health: connected ? (g.excluded > 0 ? "degraded" : "healthy") : "not_connected",
-      readiness: g.imported > 0 ? "inventory_ready" : connected ? "connected" : "not_ready",
+      ...state,
+      health: state.health === "unknown" && g.excluded > 0 ? "degraded" : state.health,
+      readiness: connected ? (g.imported > 0 ? "inventory_ready" : "connected") : "not_ready",
       externalRead: connected,
       externalWrite: !g.read_only,
       boundaries,
       warnings,
-      notConnectedReason: connected ? null : tpl.placeholderReason,
+      notConnectedReason: connected
+        ? null
+        : state.lifecycle === "revoked"
+          ? "Connection revoked. Review its authorization before reconnecting."
+          : state.lifecycle === "verification_failed"
+            ? "Provider verification failed. Review diagnostics before retesting."
+            : state.lifecycle === "degraded"
+              ? "Some stored connections need attention. Review each domain status."
+              : tpl.placeholderReason,
       inventoryCount: g.imported,
       lifecycleDetail: g.lifecycle ?? null,
       lastVerified: g.lifecycle?.verified_at ?? null,
@@ -342,7 +421,8 @@ function buildView(
 
   if (tpl.family === "telephony" && connections?.telephony) {
     const t = connections.telephony;
-    const connected = /configured|connected|available|manual/i.test(t.credentials + " " + t.status);
+    const state = connectionState(t.status, t.lifecycle, true);
+    const { connected } = state;
     // Show the provider's REAL declared capabilities verbatim (backend registry keys +
     // states); fall back to the template only when the payload carries no map.
     const caps: CapabilityView[] =
@@ -350,33 +430,39 @@ function buildView(
         ? Object.entries(t.capabilities).map(([k, v]) => cap(k, coerceCapState(v)))
         : tpl.declaredCapabilities.map((c) => ({ ...c }));
     const typedPhone = endpoints.filter(
-      (e) => e.channel === "phone" && e.status === "active",
+      (e) => e.channel === "phone" && e.status === "active" && e.provider === t.underlying_provider,
     ).length;
-    const warnings: string[] = [];
+    const warnings: string[] = [
+      "Retained inventory and connection tests do not verify current message/call capture.",
+    ];
     if (typedPhone === 0)
       warnings.push(
-        "No typed phone endpoints yet — provider API cannot supply the required typed inventory; manual/CSV entry is the route",
+        "No current typed endpoints are recorded for this Phone provider; review its discovery capabilities and inventory setup.",
       );
     return {
       ...base,
       commercialProvider: t.commercial_provider,
       underlyingProvider: t.underlying_provider,
       accountRef: t.account_ref,
-      connected,
-      lifecycle: connected ? "connected" : "setup_required",
-      authorisation: connected ? "authorised" : "not_authorised",
-      verification: connected ? "verified" : "never_verified",
-      health: connected ? "healthy" : "not_connected",
-      readiness: typedPhone > 0 ? "inventory_ready" : connected ? "connected" : "not_ready",
+      ...state,
+      readiness: connected ? (typedPhone > 0 ? "inventory_ready" : "connected") : "not_ready",
       externalRead: connected,
-      externalWrite: /enabled/i.test(t.external_write),
+      externalWrite: connected && t.external_write === "enabled",
       capabilities: caps,
       boundaries: [
         { label: "Provider account / customer", value: t.account_ref || "—" },
         { label: "External provisioning", value: t.external_write || "—" },
       ],
       warnings,
-      notConnectedReason: connected ? null : tpl.placeholderReason,
+      notConnectedReason: connected
+        ? null
+        : state.lifecycle === "revoked"
+          ? "Connection revoked. Review its authorization before reconnecting."
+          : state.lifecycle === "verification_failed"
+            ? "Provider verification failed. Review diagnostics before retesting."
+            : state.lifecycle === "degraded"
+              ? "Some stored connections need attention. Review each domain status."
+              : tpl.placeholderReason,
       inventoryCount: typedPhone,
       evidenceCount: t.evidence_count,
       lifecycleDetail: t.lifecycle ?? null,

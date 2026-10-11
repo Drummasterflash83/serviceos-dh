@@ -1,0 +1,23 @@
+{
+  "state": "local_checks_passed",
+  "runtimeSourceSha256": "0d89476a209b70795edadaccdc8f43749e24f3dda29530fb902421b5b03d0d89",
+  "runtimeFiles": 23,
+  "targetedAndReleaseTests": 74,
+  "applicationTypecheck": "passed",
+  "moduleTypecheck": "passed",
+  "isolatedHttp": {
+    "mailboxes": 2503,
+    "phoneEvidence": 2503,
+    "unrelatedEvents": 2503,
+    "serverRowLimit": 137,
+    "requests": 69,
+    "exactCountHeads": 10,
+    "emptyInventoryPages": 5,
+    "sourceFingerprintsPreserved": true,
+    "hostedSchemaOrAuthorizationAcceptance": false
+  },
+  "hostedDeployment": "not_yet_claimed",
+  "productionChanges": false,
+  "applicationBuild": "passed",
+  "prebuildTests": 47
+}

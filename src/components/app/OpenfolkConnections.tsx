@@ -707,6 +707,12 @@ function renderTab(tab: DetailTab, v: ConnectionView): ReactNode {
           />
           <Row k="Last failed discovery" v={v.lifecycleDetail?.last_failed_discovery ?? "—"} />
           <Row
+            k="Last successful sync"
+            v={v.lifecycleDetail?.last_successful_sync ?? <NotAvailable />}
+          />
+          <Row k="Last failed sync" v={v.lifecycleDetail?.last_failed_sync ?? "—"} />
+          <Row k="Latest sync status" v={v.lifecycleDetail?.last_sync_status ?? <NotAvailable />} />
+          <Row
             k="Last run processed"
             v={
               v.lifecycleDetail?.discovery_counts?.last_run_processed != null ? (

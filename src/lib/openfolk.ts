@@ -160,6 +160,10 @@ export interface ConnectionLifecycle {
   latest_event_at: string | null;
   last_successful_discovery: string | null;
   last_failed_discovery: string | null;
+  last_successful_sync?: string | null;
+  last_failed_sync?: string | null;
+  last_sync_status?: string | null;
+  last_sync_at?: string | null;
   discovery_counts: { last_run_processed: number | null };
   is_fallback: boolean;
   fallback_reason: string | null;
@@ -186,6 +190,7 @@ export interface Connections {
     evidence_count: number;
     lifecycle?: ConnectionLifecycle;
   };
+  telephony_accounts?: Connections["telephony"][];
   slack: { status: string; note: string };
 }
 export interface DiscoveryRun {

@@ -1,4 +1,5 @@
 import test from "node:test";
+import * as connectionInventory from "../supabase/functions/_shared/controlplane/connection_inventory.ts";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createContext, runInContext } from "node:vm";
@@ -425,19 +426,21 @@ test("actual workspace store wires the complete roster into the operator respons
     createContext({
       exports,
       require: (path) =>
-        path.endsWith("identity_inventory.ts")
-          ? identityInventory
-          : path.endsWith("health.ts")
-            ? health
-            : path.endsWith("roster.ts")
-              ? { loadRoster }
-              : path.endsWith("discovery.ts") && !path.endsWith("telephony_discovery.ts")
-                ? { loadApprovedEmailDomains: async () => [] }
-                : path.endsWith("telephony_discovery.ts")
-                  ? { computeTelephonyIdentityResolution: async () => ({}) }
-                  : path.endsWith("capabilities.ts")
-                    ? { providerCapabilities: () => ({}) }
-                    : {},
+        path.endsWith("connection_inventory.ts")
+          ? connectionInventory
+          : path.endsWith("identity_inventory.ts")
+            ? identityInventory
+            : path.endsWith("health.ts")
+              ? health
+              : path.endsWith("roster.ts")
+                ? { loadRoster }
+                : path.endsWith("discovery.ts") && !path.endsWith("telephony_discovery.ts")
+                  ? { loadApprovedEmailDomains: async () => [] }
+                  : path.endsWith("telephony_discovery.ts")
+                    ? { computeTelephonyIdentityResolution: async () => ({}) }
+                    : path.endsWith("capabilities.ts")
+                      ? { providerCapabilities: () => ({}) }
+                      : {},
     }),
   );
   const result = await exports.loadTenantWorkspace(db, tenant);
@@ -446,6 +449,7 @@ test("actual workspace store wires the complete roster into the operator respons
   assert.equal(result.authorityGrants[0].id, rosterId(2));
   assert.equal(result.summary.people, 1);
   assert.equal(result.identityResolution.suggestions.length, 0);
+  assert.equal(result.connections.telephony.status, "not_configured");
 });
 
 test("operator resolve forwards the explicit historical time and subject type without writing", async () => {

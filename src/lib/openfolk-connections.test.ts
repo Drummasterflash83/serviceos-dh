@@ -81,29 +81,33 @@ test("telephony carries the REAL backend capability keys/states verbatim", () =>
   assert.equal(byKey.extension_discovery, "manual");
   assert.equal(byKey.provisioning, "unavailable");
   assert.equal(byKey.endpoint_discovery, "supported");
-  // Connected (credentials configured) but 0 typed phone endpoints -> "connected", the
-  // state BEFORE inventory_ready (never collapsed to a single generic status).
-  assert.equal(v.readiness, "connected");
+  // Manual metadata is not a verified live connection.
+  assert.equal(v.readiness, "not_ready");
+  assert.equal(v.connected, false);
+  assert.equal(v.verification, "never_verified");
 });
 
-test("telephony readiness advances to inventory_ready once typed endpoints exist", () => {
-  const v = projectConnections(CONNECTIONS, {
-    endpoints: [
-      {
-        id: "e1",
-        channel: "phone",
-        endpoint_kind: "ddi",
-        normalized_value: "+441111",
-        display_value: "Main",
-        provider: "sipcentric",
-        is_shared: false,
-        status: "active",
-        source: "manual",
-        updated_at: "2026-07-24T00:00:00Z",
-      },
-    ],
-    identities: [],
-  })!.find((x) => x.family === "telephony")!;
+test("connected telephony retains its own typed inventory readiness", () => {
+  const v = projectConnections(
+    { ...CONNECTIONS, telephony: { ...CONNECTIONS.telephony, status: "connected" } },
+    {
+      endpoints: [
+        {
+          id: "e1",
+          channel: "phone",
+          endpoint_kind: "ddi",
+          normalized_value: "+441111",
+          display_value: "Main",
+          provider: "sipcentric",
+          is_shared: false,
+          status: "active",
+          source: "manual",
+          updated_at: "2026-07-24T00:00:00Z",
+        },
+      ],
+      identities: [],
+    },
+  )!.find((x) => x.family === "telephony")!;
   assert.equal(v.readiness, "inventory_ready");
   assert.equal(v.inventoryCount, 1);
 });
@@ -137,4 +141,105 @@ test("connection state vocabulary is the explicit lifecycle, not collapsed", () 
   assert.ok(CONNECTION_STATES.includes("awaiting_customer_admin"));
   assert.ok(CONNECTION_STATES.includes("revoked"));
   assert.ok(CONNECTION_STATES.length >= 10);
+});
+
+test("retained mailboxes never reactivate disabled, revoked or failed connections", () => {
+  for (const status of ["not_connected", "disabled", "revoked", "error"]) {
+    const v = projectConnections({
+      ...CONNECTIONS,
+      google_workspace: { ...CONNECTIONS.google_workspace, status },
+    }).find((v) => v.family === "google_workspace")!;
+    assert.equal(v.connected, false);
+    assert.equal(v.externalRead, false);
+    assert.equal(v.readiness, "not_ready");
+    assert.equal(v.inventoryCount, 32);
+  }
+});
+test("credential text and manual inventory do not prove connection, verification or healthy capture", () => {
+  for (const status of ["not_configured", "manual", "configured", "revoked", "disabled", "error"]) {
+    const v = projectConnections({
+      ...CONNECTIONS,
+      telephony: { ...CONNECTIONS.telephony, status, credentials: "configured enabled available" },
+    }).find((v) => v.family === "telephony")!;
+    assert.equal(v.connected, false);
+    assert.equal(v.externalRead, false);
+    assert.notEqual(v.health, "healthy");
+  }
+});
+test("failed latest test and failed sync remain visible despite historical verification", () => {
+  const lifecycle = {
+    connection_id: "p1",
+    provider: "sipcentric",
+    status: "configured",
+    auth_mode: "api",
+    account_ref: "masked",
+    configured_fields: ["api_key"],
+    has_secrets: true,
+    verified_at: "2026-01-01T00:00:00Z",
+    last_test_status: "passed",
+    last_test_at: "2026-01-01T00:00:00Z",
+    revoked_at: null,
+    latest_event: null,
+    latest_event_at: null,
+    last_successful_discovery: null,
+    last_failed_discovery: null,
+    discovery_counts: { last_run_processed: 4 },
+    is_fallback: false,
+    fallback_reason: null,
+  };
+  const project = (extra: object) =>
+    projectConnections({
+      ...CONNECTIONS,
+      telephony: {
+        ...CONNECTIONS.telephony,
+        status: "configured",
+        lifecycle: { ...lifecycle, ...extra },
+      },
+    }).find((v) => v.family === "telephony")!;
+  assert.equal(project({}).connected, true);
+  assert.equal(project({}).verification, "verified");
+  assert.equal(project({}).health, "unknown");
+  assert.equal(project({ last_test_status: "failed" }).connected, false);
+  assert.equal(project({ last_test_status: "failed" }).verification, "failed");
+  assert.equal(project({ last_sync_status: "failed" }).health, "degraded");
+  assert.equal(project({ revoked_at: "2026-02-01" }).authorisation, "revoked");
+  assert.equal(project({ has_secrets: false }).connected, false);
+  assert.equal(project({ verified_at: "2099-01-01" }).verification, "never_verified");
+});
+test("multiple Phone providers produce separate views and scoped inventories", () => {
+  const accounts = [
+    { ...CONNECTIONS.telephony, status: "connected" },
+    {
+      ...CONNECTIONS.telephony,
+      status: "revoked",
+      underlying_provider: "simwood",
+      commercial_provider: "Simwood",
+      account_ref: "other",
+    },
+  ];
+  const views = projectConnections(
+    { ...CONNECTIONS, telephony_accounts: accounts },
+    {
+      endpoints: [
+        {
+          id: "e1",
+          channel: "phone",
+          endpoint_kind: "ddi",
+          normalized_value: "+441111",
+          display_value: null,
+          provider: "sipcentric",
+          is_shared: false,
+          status: "active",
+          source: "manual",
+          updated_at: "2026-01-01",
+        },
+      ],
+      identities: [],
+    },
+  ).filter((v) => v.family === "telephony");
+  assert.equal(views.length, 2);
+  assert.equal(new Set(views.map((v) => v.id)).size, 2);
+  assert.equal(views[0].inventoryCount, 1);
+  assert.equal(views[1].inventoryCount, 0);
+  assert.equal(views[1].connected, false);
 });

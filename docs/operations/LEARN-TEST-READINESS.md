@@ -1,5 +1,15 @@
 # Existing TEST environment: verified release gaps
 
+## Connection inventory — verified local candidate
+
+The operator no longer infers connected/healthy status from retained inventory
+or credential wording. Each Phone provider has separate metadata and evidence;
+missing setup has no invented Drummonds account. Complete checked inventories,
+provider-specific latest history and clear failed/revoked states replace capped,
+unverified results. Seventy-four targeted checks and the isolated 69-request
+transport check pass. Hosted deployment is not yet claimed by this checkpoint.
+See [connection inventory](LEARN-CONNECTION-INVENTORY.md).
+
 ## Phone readiness — TEST controller v6 and paired frontend installed
 
 The Phone badge now requires confirmed current DDI ownership/handling, a published
