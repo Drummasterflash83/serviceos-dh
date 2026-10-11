@@ -102,6 +102,24 @@ mailbox. Token/account setup, persistent release, worker registration, recurring
 folder discovery, expired-delta recovery and real-provider acceptance remain open.
 [Evidence](evidence/learn-microsoft-card-rehearsal-2026-10-11.json).
 
+### Microsoft repeat discovery — 11 October, 18:46 UTC
+
+Repeat folder discovery now records each finished scan and queues another after
+15 minutes, preserving original source pages and dispatch identities. A later
+scan finds an added folder without creating duplicate message jobs for known
+folders. Disabled or revoked inputs stop before token access. Local actual-engine
+checks prove exact replay and atomic rollback of a failed reset/settlement; all
+59 adapter checks and strict TypeScript pass.
+
+A full-schema TEST rehearsal ran two scans plus the existing source-to-card
+journey, then rolled everything back. All 121 datasets and the original catalog
+matched. No users, grants, credentials, schedules, provider requests or production
+changes were made. This supersedes recurring discovery as a missing implementation
+in the earlier 18:36 entry. Microsoft still needs credentials/account setup,
+worker/operator integration, expired-delta/deleted-folder recovery, persistent
+release and real-provider acceptance; no Drummonds Microsoft mailbox is identified.
+[Evidence](evidence/learn-microsoft-discovery-2026-10-11.json).
+
 ### Existing Workspace key located — 11 October, 15:21 UTC
 
 A scoped local-file check found `ServiceOS Workspace Connector.json` in the

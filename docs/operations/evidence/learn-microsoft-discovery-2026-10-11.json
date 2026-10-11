@@ -1,0 +1,60 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "full_schema_rehearsed_and_rolled_back",
+  "observedAt": "2026-10-11T18:46:24.319Z",
+  "migrations": [
+    {
+      "file": "20261101180000_learn_microsoft_source_journal.sql",
+      "sha256": "8f852bf18aad93e64d3fd8192910159f2fdfea102d2807bbfdc429f5e6ab8398"
+    },
+    {
+      "file": "20261101181000_learn_microsoft_job_receipts.sql",
+      "sha256": "f91c07370d28689fcbdfdee8ead990a5dcc7ed12db710f6d709cb93f38fe9bb0"
+    },
+    {
+      "file": "20261101182000_learn_microsoft_queue_completion.sql",
+      "sha256": "2781dca88f9ad4322c8acb042e4c42559cd66cc39db96e4708c9177ac21b2cbe"
+    },
+    {
+      "file": "20261101192000_learn_microsoft_folder_dispatch.sql",
+      "sha256": "3e7fa7064b54ddc2921b318e2da384dcd7ffb6a3fab86fa0ce4e9f9522150f84"
+    },
+    {
+      "file": "20261101260000_learn_microsoft_incremental_queue.sql",
+      "sha256": "b3a30f6e3084849ef613480fa488a8c0da07efe7bcdc3161bb07764cd9a61e7c"
+    },
+    {
+      "file": "20261101280000_learn_microsoft_message_projection.sql",
+      "sha256": "121fcd1cd4569b4fe6b72ba818892802e46cc592de936039c64a70214c891e62"
+    },
+    {
+      "file": "20261101350000_learn_microsoft_recurring_discovery.sql",
+      "sha256": "ffad2f09f0f6c960b80222c95bf86aeb99447be03051b3b860a797aa8408d643"
+    }
+  ],
+  "recurringDiscoveryRounds": 2,
+  "addedFolderDispatchedOnce": true,
+  "preservedDatasets": 121,
+  "originalCatalogRestored": true,
+  "fixturesRemoved": true,
+  "committedUsers": 0,
+  "newSessions": 0,
+  "newPlatformGrants": 0,
+  "providerRequests": 0,
+  "productionChanged": false,
+  "limitations": [
+    "Synthetic source pages; no real Microsoft mailbox or hosted worker acceptance.",
+    "No Microsoft schema, account, credential, queue job or schedule retained; existing event bus unchanged.",
+    "Synthetic source-to-card delivery and subsequent same-card refresh verified; no real Microsoft mailbox or unattended dispatch."
+  ],
+  "localChecks": {
+    "adapterTests": 59,
+    "strictTypeScript": "passed",
+    "isolatedPostgres": "passed",
+    "newDiscoveryFindsFolders": true,
+    "previousDispatchAndEvidencePreserved": true,
+    "pauseAndRevocationBeforeCredentials": true,
+    "lateSettlementFailureRollsBackResetAndSuccessor": true,
+    "lostReplyRecoversExactReceipt": true
+  }
+}

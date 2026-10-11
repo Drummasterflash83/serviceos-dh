@@ -26,7 +26,7 @@ export type MicrosoftJobCompletion = {
   mailboxCoverage: "unverified";
   folderDispatch?: MicrosoftFolderDispatch | null;
   /** Omitted by historical receipts; never inferred for old completions. */
-  continuationKind?: "page" | "incremental" | null;
+  continuationKind?: "page" | "incremental" | "discovery" | null;
   nextCheckAt?: string | null;
 };
 export async function runMicrosoftCaptureJob(
@@ -73,7 +73,8 @@ export async function runMicrosoftCaptureJob(
         data.observationsStored > 1000 ||
         data.mailboxCoverage !== "unverified" ||
         (data.sourceReceiptId === null &&
-          (data.observationsStored !== 0 || data.successorId !== null))
+          (data.observationsStored !== 0 ||
+            (data.successorId !== null && data.continuationKind !== "discovery")))
       )
         throw Error();
       const hasDispatch = Object.hasOwn(data, "folderDispatch");
@@ -83,8 +84,8 @@ export async function runMicrosoftCaptureJob(
         (hasSchedule &&
           (data.continuationKind === null
             ? data.nextCheckAt !== null || data.successorId !== null
-            : !["page", "incremental"].includes(data.continuationKind) ||
-              data.sourceReceiptId === null ||
+            : !["page", "incremental", "discovery"].includes(data.continuationKind) ||
+              (data.sourceReceiptId === null && data.continuationKind !== "discovery") ||
               data.successorId === null ||
               typeof data.nextCheckAt !== "string" ||
               !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,6})?(?:Z|[+-]\d\d:\d\d)$/.test(

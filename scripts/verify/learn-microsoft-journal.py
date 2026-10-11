@@ -149,6 +149,7 @@ try:
  subprocess.run(['node','scripts/verify/learn-microsoft-capture-job-cases.mjs',NAME],cwd=ROOT,check=True)
  subprocess.run(['node','scripts/verify/learn-microsoft-incremental-cases.mjs',NAME],cwd=ROOT,check=True)
  subprocess.run(['node','scripts/verify/learn-microsoft-projection-cases.mjs',NAME],cwd=ROOT,check=True)
+ subprocess.run(['node','scripts/verify/learn-microsoft-discovery-cases.mjs',NAME],cwd=ROOT,check=True)
  print(json.dumps({'state':'passed','checks':checks,'limitations':['Network-isolated PostgreSQL 15 with synthetic account/job dependencies; actual migration and actual reader-generated pages.','No hosted/full-schema/Auth/provider acceptance; live worker registration, credential provisioning, real-provider projection acceptance and schedule activation remain pending.']},indent=2))
 finally:
  subprocess.run([DOCKER,'rm','-f',NAME],capture_output=True)

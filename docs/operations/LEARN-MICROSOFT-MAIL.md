@@ -371,13 +371,46 @@ retry; do not overwrite or reuse a submitted journal. The previous 060 rehearsal
 retains its original pins and has not been silently rebased.
 [Combined evidence](evidence/learn-microsoft-card-rehearsal-2026-10-11.json).
 
+## Repeat folder discovery — verified locally and in rollback TEST rehearsal
+
+On 11 October at 18:46 UTC, the recurring-discovery migration passed the current
+TEST 066 full-schema rehearsal. A terminal folder scan now atomically records an
+immutable round transition, resets traversal with a higher revision, and queues
+the next scan for 15 minutes later. Original terminal pages and completion
+receipts remain unchanged. Newly observed physical folders start a message job;
+previously dispatched folders keep their original job/stream identity. No folders
+or messages are deleted merely because they are absent from a later scan.
+
+The actual page/job engines in isolated PostgreSQL verify future-job gating,
+pause and revocation before token access, exact lost-response recovery, and a
+late settlement failure that rolls back the reset, round record and successor
+while preserving the source page. Existing completed receipts do not acquire a
+new schedule on migration; an explicitly admitted job can restart an old exhausted
+stream. The old terminal page supplies that transition's evidence without
+inventing a new provider page. All 59 adapter tests and strict TypeScript pass.
+
+The hosted rehearsal ran two discovery rounds, dispatched one newly added folder
+exactly once, retained the prior dispatch, and reran the source-to-card journey
+against the installed identity publisher. All **121 datasets** and the original
+catalog matched after rollback. No Microsoft schema, account, user, grant,
+credential or schedule was retained; zero provider requests and production writes.
+This is synthetic compatibility, not real-mailbox or unattended-worker acceptance.
+
+```sh
+LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy \
+  node scripts/verify/learn-microsoft-discovery-rehearse.mjs --rehearse --existing-cli-login
+```
+
+This command uses its own one-shot journal; never overwrite a submitted run.
+[Evidence](evidence/learn-microsoft-discovery-2026-10-11.json).
+
 ## Remaining work to deliver the connector
 
 1. Resolve each authorized company/account to its Microsoft tenant and mailbox;
    integrate consent, token storage/refresh/revocation and read-only mail content
    permissions. Transport UUID validation is not authorization. Revalidate the
    company/module/account permission and capture switch at execution time.
-2. Integrate the implemented folder discovery with durable storage, repeat scans,
+2. Integrate the implemented durable discovery and repeat scans with
    operator progress and message-capture eligibility. Prove nested/hidden/search
    behavior on an authorized real mailbox. Discovery and explicit exclusions must
    be visible to OpenFolk. The local traversal does not prove real mailbox coverage.
@@ -387,9 +420,9 @@ retains its original pins and has not been silently rebased.
 3. Complete the worker lifecycle around the implemented recurring message queue: revalidated
    server-side credential ports, then registration and module-aware scheduling around
    the implemented settlement and physical-folder dispatch. The full-schema rollback
-   rehearsal passes; HTTP RPC/worker acceptance and persistent release remain pending. Add explicit rescan/new-pass
-   and expired-delta recovery without discarding old source evidence. A completed
-   discovery pass does not yet restart automatically.
+   rehearsal passes; HTTP RPC/worker acceptance and persistent release remain pending. Complete expired-delta and deleted-folder recovery without discarding old
+   source evidence. Repeat discovery is implemented and rehearsed, but not installed
+   or activated in a hosted worker.
 4. Materialize shared email/interaction evidence by mailbox plus immutable message
    ID. Reconcile sparse, repeated or reordered events without assuming the last
    page is the newest message version. Preserve folder removals and original

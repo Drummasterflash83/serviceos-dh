@@ -285,3 +285,21 @@ test("a scheduling receipt must bind its successor, source and due time together
   Object.assign(f.answer, { continuationKind: null, nextCheckAt: null });
   assert.equal((await runMicrosoftCaptureJob(f.db, claim, f.ports)).nextCheckAt, null);
 });
+
+test("repeat discovery receipts allow exhausted legacy streams without inventing a page", async () => {
+  const f = fixture();
+  f.settled = true;
+  Object.assign(f.answer, {
+    sourceReceiptId: null,
+    successorId: id(8),
+    continuationKind: "discovery",
+    nextCheckAt: "2026-10-11T13:15:00Z",
+    folderDispatch: null,
+  });
+  const r = await runMicrosoftCaptureJob(f.db, claim, f.ports);
+  assert.equal(r.continuationKind, "discovery");
+  assert.equal(r.sourceReceiptId, null);
+  assert.equal(f.providerCalls, 0);
+  f.answer.observationsStored = 1;
+  await assert.rejects(runMicrosoftCaptureJob(f.db, claim, f.ports), error);
+});
