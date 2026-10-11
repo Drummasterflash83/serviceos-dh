@@ -160,6 +160,11 @@ succeeded after that failure; no worker was invoked and no source record changed
   recording copies; implement encrypted independent files plus database recovery.
   Verify bytes and isolated restore/playback, record duration and recovery point.
   [Proposal](LEARN-DATA-RECOVERY.md). No separate recording backup exists yet.
+  The costed proposal now includes 601 MB / 2,888 objects, verified London AWS
+  rates, an illustrative US$1.89/month operating estimate and a US$5 budget alert
+  (not a cap), plus scoped access, daily copies, 30-day governance protection and
+  isolated restore acceptance. Implementation/copy approval and the Drummonds-owned
+  AWS account are still required; no paid resource or recording transfer occurred.
 
 ## Release and completion gates
 

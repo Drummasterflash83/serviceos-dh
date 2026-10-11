@@ -84,6 +84,99 @@ Official sources checked on 11 October: [London S3 region](https://docs.aws.amaz
 and [pricing components](https://aws.amazon.com/s3/pricing/).
 No AWS resource, backup schedule or recording copy has been created.
 
+## Costed implementation proposal — approval required
+
+Use one private S3 Standard bucket in a **Drummonds-owned AWS account**, London,
+with SSE-S3 encryption, blocked public access, versioning and a 30-day default
+Object Lock **governance** period on new versions. Chris/Drummonds retains billing,
+MFA-protected account recovery and the recovery-administrator role. OpenFolk
+operates the scheduled backup and reports failures; it is not the sole recovery
+owner. AWS documents that Object Lock cannot later be disabled on that bucket.
+Governance bypass is reserved for the recovery administrator, never the backup
+worker. No automatic object deletion or source-deletion mirroring is proposed;
+agree the long-term business retention policy before adding expiry rules. The
+30-day lock is deletion protection for each newly written version, not a promise
+that old unchanged versions remain continuously locked.
+
+### Cost basis, checked 11 October 2026
+
+The AWS public **London** price lists give first-tier Standard storage at
+US$0.024/GiB-month, PUT/LIST at US$0.0053 per 1,000 and GET/HEAD at US$0.0042 per
+10,000. The measured 0.560 GiB therefore costs about **US$0.0134/month** to store.
+One initial PUT plus verification GET for each of 2,888 objects costs about
+**US$0.0165**, excluding execution and transfers.
+
+The following is a planning month with headroom, not measured usage:
+
+| Component | Assumption | Estimated USD/month |
+|---|---|---:|
+| S3 storage | 2 GiB including versions/manifests | 0.048 |
+| S3 writes/lists | 10,000 requests | 0.053 |
+| S3 reads/checks | 100,000 requests | 0.042 |
+| Lambda runner | 10,000 GiB-seconds, 100 invocations | 0.167 |
+| Secrets Manager | One scoped source-access credential, 100 reads | 0.401 |
+| Supabase outbound transfer | 2 GB, assuming quota already exhausted | 0.180 |
+| Scheduling, monitoring and restore-transfer contingency | Planning allowance, not a quoted tariff | 1.000 |
+| **Planning total** | Before tax, without free-tier credits | **1.89** |
+
+Propose a **US$5 monthly budget alert** for this recording-backup subsystem.
+This is not a hard spending cap or guaranteed bill. Keep retained backups if the
+alert fires; investigate growth/retries and obtain approval before an architectural
+expansion. Excluded: the existing Supabase plan, development/support effort, any
+new database restore environment and optional customer-managed KMS keys. Runtime
+duration is unmeasured; update the estimate after the first successful backup.
+
+[Reproducible estimate and price-list versions](evidence/learn-recording-backup-estimate-2026-10-11.json).
+Run `node scripts/verify/learn-recording-backup-estimate.mjs` for the saved-rate
+calculation, or add `--refresh-public-prices` to read current public price lists.
+Sources: [S3 pricing and binary units](https://aws.amazon.com/s3/pricing/),
+[London S3 price list](https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3/current/eu-west-2/index.json),
+[Lambda](https://aws.amazon.com/lambda/pricing/),
+[Secrets Manager](https://aws.amazon.com/secrets-manager/pricing/),
+[Supabase egress](https://supabase.com/docs/guides/platform/manage-your-usage/egress),
+[Object Lock considerations](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock-managing.html).
+
+### Operation and recovery contract
+
+1. First capture a private manifest of all Drummonds recording objects, including
+   the six-object difference from the recording-row count; reconcile it rather
+   than dropping unreferenced files. Bind entries to tenant, source path/version,
+   metadata size and recording references. Do not store these details in GitHub.
+2. Copy the initial set, then new/changed objects daily using an independent
+   resumable runner. Proposed target: a completed backup no more than 24 hours
+   behind successfully retained source data; a missed/failed daily run alerts
+   OpenFolk. This recovery-point target must be proven, not inferred from a timer.
+3. Keep AWS write access confined to this backup bucket/prefix, with no delete,
+   retention-bypass, policy-change or account-administration permissions. Use a
+   separate restore identity. Source access must be restricted to Drummonds'
+   approved recording inventory and reads. Do not copy a production-wide Supabase
+   service-role credential into the backup account. Prepare and review the scoped
+   source-read mechanism before enabling the runner; any production code/permission
+   change remains subject to the separate production release approval.
+4. Stream bytes over TLS, compute a SHA-256 digest, record the destination version
+   and verify a downloaded destination copy against that digest. Recheck source
+   metadata after the read; quarantine changed/failed objects and report partial
+   coverage. Never advance a completed manifest past an unverified object.
+5. Publish only aggregate progress, oldest outstanding item age, last verified
+   backup and last restore-test time to OpenFolk. Exclude source paths, signed URLs,
+   credentials, audio and customer identities from operational logs.
+6. Perform the first isolated restore before calling backup coverage verified,
+   then repeat monthly. Restore recorded versions to an isolated private target,
+   check all manifest digests and database references and play representative
+   recordings. Keep existing failed/short audio marked as failures. Disable all
+   capture, email delivery and external-provider actions in the recovery target.
+7. Propose a four-hour recording-recovery target after authorised recovery starts,
+   subject to the rehearsal. It is not a whole-application recovery guarantee.
+   Retain the database recovery-point reference alongside the manifest; resolve
+   timing differences explicitly. A file copy is not an atomic database snapshot.
+
+**Decision needed:** approve the destination, cost allowance, protection period,
+daily schedule and initial recording copy, and identify the Drummonds-owned AWS
+account/access route. No AWS account, IAM access, resource, credential, schedule or
+recording copy has been created. Database restore pricing and acceptance remain a
+separate launch requirement. Approval of this proposal does not approve unrelated
+production changes.
+
 ## Remaining recovery work
 
 1. Identify the existing approved encrypted backup destination and its recovery

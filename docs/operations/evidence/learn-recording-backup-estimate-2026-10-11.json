@@ -1,0 +1,112 @@
+{
+  "contract": "learn-recording-backup-estimate/1",
+  "calculatedAt": "2026-10-11T06:25:51.359Z",
+  "region": "eu-west-2",
+  "currency": "USD",
+  "pricing": {
+    "AmazonS3": {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3/current/eu-west-2/index.json",
+      "publicationDate": "2026-09-28T23:04:16Z",
+      "version": "20260928230416",
+      "rates": {
+        "storage": {
+          "sku": "DV3FSFEQ3QM4J6VP",
+          "usage": "EUW2-TimedStorage-ByteHrs",
+          "unit": "GB-Mo",
+          "usd": 0.024,
+          "effectiveDate": "2026-09-01T00:00:00Z"
+        },
+        "put": {
+          "sku": "CXT6934AJ2W6U8P9",
+          "usage": "EUW2-Requests-Tier1",
+          "unit": "Requests",
+          "usd": 0.0000053,
+          "effectiveDate": "2026-09-01T00:00:00Z"
+        },
+        "get": {
+          "sku": "3D99223WSVTX96UP",
+          "usage": "EUW2-Requests-Tier2",
+          "unit": "Requests",
+          "usd": 4.2e-7,
+          "effectiveDate": "2026-09-01T00:00:00Z"
+        }
+      }
+    },
+    "AWSLambda": {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AWSLambda/current/eu-west-2/index.json",
+      "publicationDate": "2026-10-09T22:31:22Z",
+      "version": "20261009223122",
+      "rates": {
+        "compute": {
+          "sku": "RP9RSZYUC96SQ4G2",
+          "usage": "EUW2-Lambda-GB-Second",
+          "unit": "Lambda-GB-Second",
+          "usd": 0.0000166667,
+          "effectiveDate": "2026-10-01T00:00:00Z"
+        },
+        "invocation": {
+          "sku": "NDYBVXT3KB548Z2A",
+          "usage": "EUW2-Request",
+          "unit": "Request",
+          "usd": 2e-7,
+          "effectiveDate": "2026-10-01T00:00:00Z"
+        }
+      }
+    },
+    "AWSSecretsManager": {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AWSSecretsManager/current/eu-west-2/index.json",
+      "publicationDate": "2026-09-11T12:46:10Z",
+      "version": "20260911124610",
+      "rates": {
+        "secret": {
+          "sku": "PJHVPQZRWG9TYHS5",
+          "usage": "EUW2-AWSSecretsManager-Secrets",
+          "unit": "Secrets",
+          "usd": 0.4,
+          "effectiveDate": "2025-07-01T00:00:00Z"
+        },
+        "secretRead": {
+          "sku": "YUHRT3TNBAHA3BHA",
+          "usage": "EUW2-AWSSecretsManagerAPIRequest",
+          "unit": "API Requests",
+          "usd": 0.000005,
+          "effectiveDate": "2025-07-01T00:00:00Z"
+        }
+      }
+    }
+  },
+  "sourceObservation": "2026-10-11T06:07:25.59617+00:00",
+  "measured": {
+    "objects": 2888,
+    "bytes": 601004261,
+    "gib": 0.559728835709393
+  },
+  "initial": {
+    "storagePerMonth": 0.013433492057025433,
+    "putOnePerObject": 0.0153064,
+    "verifyGetOnePerObject": 0.00121296
+  },
+  "planningMonth": {
+    "items": {
+      "s3Storage2GiB": 0.048,
+      "s3PutList10000": 0.053,
+      "s3GetHead100000": 0.042,
+      "lambda10000GiBSeconds": 0.166667,
+      "lambda100Invocations": 0.000019999999999999998,
+      "oneSecret": 0.4,
+      "secretReads100": 0.0005,
+      "supabaseUncachedEgress2GBIfOverQuota": 0.18,
+      "schedulingMonitoringRestoreAllowanceNotQuotedTariff": 1
+    },
+    "total": 1.890187,
+    "proposedBudgetAlert": 5
+  },
+  "assumptions": [
+    "Planning volumes, not measured runner usage or a guaranteed invoice; 2 GiB allows current objects plus versions/metadata.",
+    "No free-tier credit or remaining egress allowance assumed. USD before tax; currency conversion excluded.",
+    "The $1 operations allowance is a contingency, not a verified vendor tariff or hard cap.",
+    "Excludes existing Supabase subscription, engineering/support, new database restore hosting and optional KMS/customer-managed encryption.",
+    "No resources created, source content read or customer data transferred. Budget alert does not cap charges."
+  ],
+  "egressSource": "https://supabase.com/docs/guides/platform/manage-your-usage/egress"
+}
