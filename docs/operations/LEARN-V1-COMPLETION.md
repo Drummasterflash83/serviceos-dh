@@ -205,6 +205,23 @@ failed and produced no replacement baseline; it does not prove a source loss or
 service failure. No production, provider, credential, schedule or access change
 occurred. [Evidence](evidence/learn-email-scheduler-outcomes-local-2026-10-11.json).
 
+### Email schedulers — hosted TEST runtime, 11 October, 15:07 UTC
+
+The corrected OAuth, Workspace recent-capture and Workspace backfill schedulers
+are now installed as version 1 in TEST. The six-file dependency bundle is pinned
+and the deployment preserved the existing endpoints, schema and all 113 tracked
+datasets. Twenty-one actual-handler checks passed before deployment. Six hosted
+HTTP checks verified method rejection and missing-configuration refusal, again
+preserving the full baseline. A fresh preflight confirmed all three trigger
+secret names absent; no secret, schedule, account or grant was created.
+
+This closes the runtime-installation gap from the 14:03 local correction. It does
+not establish authenticated scheduling, recurring execution, real Google capture
+or source-to-card acceptance. Trigger credentials, explicit schedule activation,
+existing Workspace service-account access and signed-in acceptance remain required.
+The live production schedulers are unchanged.
+[Deployment and boundary evidence](evidence/learn-email-schedulers-test-2026-10-11.json).
+
 ## Working and verified in production
 
 - [x] Retained source inventory and recording object-size metadata observed at the

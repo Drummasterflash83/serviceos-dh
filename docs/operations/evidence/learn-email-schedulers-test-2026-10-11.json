@@ -1,0 +1,108 @@
+{
+  "version": "learn-email-scheduler-runtime/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceBundleSha256": "54f15596434f8aefac4f9314eae5ca8869213195b73b169f094d2dffd39d2eca",
+  "observedAt": "2026-10-11T15:06:25.114Z",
+  "state": "installed_unconfigured_http_boundary_verified",
+  "attempts": [
+    {
+      "name": "email-scheduled-sync",
+      "cliExitStatus": 0
+    },
+    {
+      "name": "email-workspace-scheduled-sync",
+      "cliExitStatus": 0
+    },
+    {
+      "name": "email-workspace-backfill-scheduled-sync",
+      "cliExitStatus": 0
+    }
+  ],
+  "writeAttempted": true,
+  "priorSchemaAndEndpointsPreserved": true,
+  "preservedDataSets": 52,
+  "endpoints": [
+    {
+      "name": "email-scheduled-sync",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "name": "email-workspace-backfill-scheduled-sync",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "name": "email-workspace-scheduled-sync",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    }
+  ],
+  "dependencyFiles": 6,
+  "fullPreservedDatasets": 113,
+  "fullSchemaUnchanged": true,
+  "secretsCreated": 0,
+  "schedulesActivated": 0,
+  "providerRequests": 0,
+  "productionChanged": false,
+  "httpAcceptance": {
+    "observedAt": "2026-10-11T15:07:03.249Z",
+    "state": "unconfigured_http_boundary_verified",
+    "checks": [
+      {
+        "endpoint": "email-scheduled-sync",
+        "method": "GET",
+        "status": 405,
+        "code": "method_not_allowed"
+      },
+      {
+        "endpoint": "email-scheduled-sync",
+        "method": "POST",
+        "status": 500,
+        "code": "config_error"
+      },
+      {
+        "endpoint": "email-workspace-scheduled-sync",
+        "method": "GET",
+        "status": 405,
+        "code": "method_not_allowed"
+      },
+      {
+        "endpoint": "email-workspace-scheduled-sync",
+        "method": "POST",
+        "status": 500,
+        "code": "config_error"
+      },
+      {
+        "endpoint": "email-workspace-backfill-scheduled-sync",
+        "method": "GET",
+        "status": 405,
+        "code": "method_not_allowed"
+      },
+      {
+        "endpoint": "email-workspace-backfill-scheduled-sync",
+        "method": "POST",
+        "status": 500,
+        "code": "config_error"
+      }
+    ],
+    "fullPreservedDatasets": 113,
+    "schemaUnchanged": true,
+    "providerRequests": 0,
+    "secretsCreated": 0,
+    "schedulesActivated": 0,
+    "productionChanged": false,
+    "limitations": [
+      "No positive authenticated scheduler execution; trigger credentials remain absent.",
+      "No cron activation or real mailbox capture acceptance."
+    ]
+  },
+  "handlerChecks": 21,
+  "limitations": [
+    "Trigger secret provisioning, positive scheduling acceptance and explicit cron activation remain pending.",
+    "No Google provider token or mailbox capture; no customer-card acceptance."
+  ]
+}
