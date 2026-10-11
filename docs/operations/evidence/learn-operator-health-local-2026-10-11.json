@@ -1,0 +1,31 @@
+{
+  "version": "learn-operator-health-local/1",
+  "runtimeSourceSha256": "16b5a46ae6e2277ef2b28bea10fd25fad722bb7f8cd360838f898e0533bdedac",
+  "runtimeDependencyFiles": 19,
+  "healthTests": 7,
+  "rosterAndAuthorizationTests": 10,
+  "navigationTests": 23,
+  "deploymentGuardTests": 6,
+  "applicationTypecheck": true,
+  "healthAndRosterTypecheck": true,
+  "isolatedHTTP": {
+    "state": "passed",
+    "inventories": 6,
+    "rowsPerInventory": 2503,
+    "serverRowLimit": 137,
+    "requests": 132,
+    "exactCountHeads": 12,
+    "emptyTerminalPages": 6,
+    "sourceFingerprintsPreserved": true,
+    "foreignRowsExcluded": true,
+    "endedAndFutureLinksExcluded": true,
+    "farEndIssuesDetected": true,
+    "hostedSchemaOrAuthorizationAcceptance": false
+  },
+  "legacyFullStackIntegration": {
+    "state": "not_run_missing_environment",
+    "databaseAccessAttempted": false
+  },
+  "productionChanges": false,
+  "providerRequests": 0
+}

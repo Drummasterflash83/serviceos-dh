@@ -1,3 +1,9 @@
+import {
+  loadOperatorHealth,
+  operatorHealthCounts,
+  operatorHealthIssues,
+  type OperatorHealthInventory,
+} from "./health.ts";
 import { loadRoster } from "./roster.ts";
 // ServiceOS — OpenFolk Control Plane: impure store (service-role reads + resolver bridge).
 //
@@ -84,45 +90,18 @@ export interface TenantSummary {
 export async function loadTenantSummary(
   admin: SupabaseClient,
   tenantId: string,
+  inventory?: OperatorHealthInventory,
 ): Promise<TenantSummary> {
-  const [{ data: tenant }, members, endpoints, ownership, identities] = await Promise.all([
+  const [{ data: tenant, error }, health] = await Promise.all([
     admin.from("tenants").select("slug, display_name").eq("id", tenantId).maybeSingle(),
-    admin.from("team_members").select("id").eq("tenant_id", tenantId).is("effective_to", null),
-    admin
-      .from("communication_endpoints")
-      .select("id")
-      .eq("tenant_id", tenantId)
-      .eq("status", "active"),
-    admin
-      .from("endpoint_ownership_assignments")
-      .select("endpoint_id, assignment_role, review_state")
-      .eq("tenant_id", tenantId)
-      .is("effective_to", null),
-    admin
-      .from("member_integration_identities")
-      .select("id, verification_state")
-      .eq("tenant_id", tenantId)
-      .is("effective_to", null),
+    inventory ?? loadOperatorHealth(admin, tenantId),
   ]);
-  const epIds = new Set((endpoints.data ?? []).map((e) => e.id as string));
-  const accountableEndpoints = new Set(
-    (ownership.data ?? [])
-      .filter((o) => o.assignment_role === "accountable" && o.review_state !== "rejected")
-      .map((o) => o.endpoint_id as string),
-  );
-  const unmapped = [...epIds].filter((id) => !accountableEndpoints.has(id)).length;
-  const conflicted = (ownership.data ?? []).filter((o) => o.review_state === "conflicted").length;
+  if (error || !tenant) throw new Error("Client summary could not be read");
   return {
     tenant_id: tenantId,
-    slug: (tenant?.slug as string | null) ?? null,
-    display_name: (tenant?.display_name as string | null) ?? null,
-    people: (members.data ?? []).length,
-    endpoints_total: epIds.size,
-    endpoints_unmapped: unmapped,
-    identities_unverified: (identities.data ?? []).filter(
-      (i) => i.verification_state !== "verified",
-    ).length,
-    ambiguous_assignments: conflicted,
+    slug: (tenant.slug as string | null) ?? null,
+    display_name: (tenant.display_name as string | null) ?? null,
+    ...operatorHealthCounts(health),
   };
 }
 
@@ -270,178 +249,7 @@ export async function computeDataQuality(
   admin: SupabaseClient,
   tenantId: string,
 ): Promise<DataQualityItem[]> {
-  const items: DataQualityItem[] = [];
-  const [{ data: endpoints }, { data: ownership }, { data: identities }, { data: members }] =
-    await Promise.all([
-      admin
-        .from("communication_endpoints")
-        .select("id, endpoint_kind, normalized_value")
-        .eq("tenant_id", tenantId)
-        .eq("status", "active"),
-      admin
-        .from("endpoint_ownership_assignments")
-        .select("endpoint_id, assignment_role, owner_member_id, review_state, confidence")
-        .eq("tenant_id", tenantId)
-        .is("effective_to", null),
-      admin
-        .from("member_integration_identities")
-        .select("id, provider, external_ref, verification_state")
-        .eq("tenant_id", tenantId)
-        .is("effective_to", null),
-      admin.from("team_members").select("id, effective_to").eq("tenant_id", tenantId),
-    ]);
-
-  const accountable = new Map<
-    string,
-    { owner_member_id: string | null; confidence: number | null }
-  >();
-  for (const o of ownership ?? []) {
-    if (o.assignment_role === "accountable" && o.review_state !== "rejected") {
-      accountable.set(o.endpoint_id as string, {
-        owner_member_id: (o.owner_member_id as string | null) ?? null,
-        confidence: (o.confidence as number | null) ?? null,
-      });
-    }
-  }
-  const inactiveMembers = new Set(
-    (members ?? []).filter((m) => m.effective_to !== null).map((m) => m.id as string),
-  );
-
-  for (const e of endpoints ?? []) {
-    const acc = accountable.get(e.id as string);
-    if (!acc) {
-      items.push({
-        kind: "unmapped_endpoint",
-        detail: `${e.endpoint_kind} ${e.normalized_value} has no accountable owner`,
-        ref: e.id as string,
-      });
-    } else {
-      if (acc.owner_member_id && inactiveMembers.has(acc.owner_member_id)) {
-        items.push({
-          kind: "owner_inactive",
-          detail: `${e.endpoint_kind} ${e.normalized_value} owned by an inactive member`,
-          ref: e.id as string,
-        });
-      }
-      if (acc.confidence != null && acc.confidence < 0.5) {
-        items.push({
-          kind: "low_confidence",
-          detail: `${e.endpoint_kind} ${e.normalized_value} owner confidence ${acc.confidence}`,
-          ref: e.id as string,
-        });
-      }
-    }
-  }
-  for (const i of identities ?? []) {
-    if (i.verification_state !== "verified") {
-      items.push({
-        kind: "unverified_identity",
-        detail: `${i.provider} ${i.external_ref} unverified`,
-        ref: i.id as string,
-      });
-    }
-  }
-
-  // ── Categorised issues (§11): distinct issue TYPES, not one flat total. ──
-  const ownRoles = new Map<string, Set<string>>();
-  for (const o of ownership ?? []) {
-    if (o.review_state === "rejected") continue;
-    const s = ownRoles.get(o.endpoint_id as string) ?? new Set<string>();
-    s.add(o.assignment_role as string);
-    ownRoles.set(o.endpoint_id as string, s);
-  }
-  const confirmedEmails = new Set(
-    (identities ?? [])
-      .filter((i) => i.verification_state === "verified")
-      .map((i) => String(i.external_ref).toLowerCase()),
-  );
-  const confirmedMembers = new Set(
-    (identities ?? [])
-      .filter((i) => i.verification_state === "verified")
-      .map((i) => i.team_member_id as string),
-  );
-  const memberWithPhone = new Set(
-    (ownership ?? []).filter((o) => o.owner_member_id).map((o) => o.owner_member_id as string),
-  );
-  const [{ data: mailboxes }, { data: telInv }] = await Promise.all([
-    admin
-      .from("google_workspace_mailboxes")
-      .select("email_address, status")
-      .eq("tenant_id", tenantId),
-    admin
-      .from("telephony_inventory")
-      .select("id, canonical_type")
-      .eq("tenant_id", tenantId)
-      .eq("status", "active"),
-  ]);
-  const suspended = new Set(
-    (mailboxes ?? [])
-      .filter((m) => String(m.status).toLowerCase() === "suspended")
-      .map((m) => String(m.email_address).toLowerCase()),
-  );
-
-  for (const e of endpoints ?? []) {
-    const val = String(e.normalized_value).toLowerCase();
-    if (
-      e.endpoint_kind !== "shared_mailbox" &&
-      e.endpoint_kind !== "group_address" &&
-      String(e.endpoint_kind).includes("email")
-    ) {
-      if (!confirmedEmails.has(val))
-        items.push({
-          kind: "email_no_confirmed_identity",
-          detail: `${e.normalized_value} has no confirmed person/team identity`,
-          ref: e.id as string,
-        });
-    }
-    if (suspended.has(val))
-      items.push({
-        kind: "suspended_mailbox",
-        detail: `${e.normalized_value} is suspended`,
-        ref: e.id as string,
-      });
-    const roles = ownRoles.get(e.id as string) ?? new Set();
-    if (!roles.has("cover"))
-      items.push({
-        kind: "endpoint_no_cover",
-        detail: `${e.normalized_value} has no cover`,
-        ref: e.id as string,
-      });
-    if (!roles.has("escalation"))
-      items.push({
-        kind: "endpoint_no_escalation",
-        detail: `${e.normalized_value} has no escalation`,
-        ref: e.id as string,
-      });
-  }
-  for (const m of members ?? []) {
-    if (!confirmedMembers.has(m.id as string))
-      items.push({
-        kind: "person_no_email_identity",
-        detail: `member ${(m.id as string).slice(0, 8)} has no confirmed email identity`,
-        ref: m.id as string,
-      });
-    if (!memberWithPhone.has(m.id as string))
-      items.push({
-        kind: "person_no_phone",
-        detail: `member ${(m.id as string).slice(0, 8)} has no phone endpoint`,
-        ref: m.id as string,
-      });
-  }
-  const unclassified = (telInv ?? []).filter((r) => r.canonical_type === "endpoint").length;
-  if (unclassified > 0)
-    items.push({
-      kind: "unclassified_phone_metadata",
-      detail: `${unclassified} provider metadata records not importable as endpoints`,
-      ref: null,
-    });
-  items.push({
-    kind: "provider_capability_unavailable",
-    detail: "telephony DDI/queue discovery unavailable (planned); extensions/devices manual",
-    ref: null,
-  });
-
-  return items;
+  return operatorHealthIssues(await loadOperatorHealth(admin, tenantId));
 }
 
 /** Full tenant workspace for the OpenFolk UI. */
@@ -798,35 +606,13 @@ export async function loadDiscoveryHistory(
 }
 
 export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: string) {
-  const [
-    { members, responsibilities, authorityGrants: authority },
-    { data: identities },
-    { data: endpoints },
-    { data: ownership },
-    summary,
-    dataQuality,
-  ] = await Promise.all([
+  const health = await loadOperatorHealth(admin, tenantId);
+  const [{ members, responsibilities, authorityGrants: authority }, summary] = await Promise.all([
     loadRoster(admin, tenantId),
-    admin
-      .from("member_integration_identities")
-      .select(
-        "id, team_member_id, provider, identity_kind, external_ref, display, primary_login, verification_state",
-      )
-      .eq("tenant_id", tenantId)
-      .is("effective_to", null),
-    admin
-      .from("communication_endpoints")
-      .select(EP_COLS)
-      .eq("tenant_id", tenantId)
-      .order("channel"),
-    admin
-      .from("endpoint_ownership_assignments")
-      .select(ASG_COLS + ", endpoint_id")
-      .eq("tenant_id", tenantId)
-      .is("effective_to", null),
-    loadTenantSummary(admin, tenantId),
-    computeDataQuality(admin, tenantId),
+    loadTenantSummary(admin, tenantId, health),
   ]);
+  const { identities, endpoints, ownership } = health;
+  const dataQuality = operatorHealthIssues(health);
   // Ended (historical) ownership — kept separate so `ownership` stays "currently active".
   const { data: ownershipHistory } = await admin
     .from("endpoint_ownership_assignments")
@@ -841,7 +627,7 @@ export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: strin
     computeTelephonyIdentityResolution(admin, tenantId),
   ]);
   return {
-    summary: { ...summary, people: members.filter((m) => m.effective_to === null).length },
+    summary,
     members: members ?? [],
     identities: identities ?? [],
     endpoints: endpoints ?? [],

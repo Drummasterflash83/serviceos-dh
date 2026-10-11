@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
+import * as health from "../supabase/functions/_shared/controlplane/health.ts";
 import { loadRoster } from "../supabase/functions/_shared/controlplane/roster.ts";
 
 const uid = "20000000-0000-4000-8000-000000000001";
@@ -380,6 +381,7 @@ test("actual workspace store wires the complete roster into the operator respons
     id: uid,
     tenant_id: tenant,
     display_name: "Example coordinator",
+    effective_from: "2026-01-01T00:00:00Z",
     effective_to: null,
   };
   const rows = {
@@ -400,8 +402,12 @@ test("actual workspace store wires the complete roster into the operator respons
         selected = selected.filter((r) => r[key] > value);
         return q;
       };
-      for (const name of ["eq", "is", "not", "in", "or", "order", "limit"]) q[name] = () => q;
-      q.maybeSingle = async () => ({ data: null, error: null });
+      for (const name of ["eq", "lte", "is", "not", "in", "or", "order", "limit"])
+        q[name] = () => q;
+      q.maybeSingle = async () => ({
+        data: table === "tenants" ? { slug: "synthetic", display_name: "Synthetic" } : null,
+        error: null,
+      });
       q.then = (resolve, reject) =>
         Promise.resolve({ data: head ? null : selected, count: selected.length, error: null }).then(
           resolve,
@@ -416,15 +422,17 @@ test("actual workspace store wires the complete roster into the operator respons
     createContext({
       exports,
       require: (path) =>
-        path.endsWith("roster.ts")
-          ? { loadRoster }
-          : path.endsWith("discovery.ts") && !path.endsWith("telephony_discovery.ts")
-            ? { loadApprovedEmailDomains: async () => [] }
-            : path.endsWith("telephony_discovery.ts")
-              ? { computeTelephonyIdentityResolution: async () => ({}) }
-              : path.endsWith("capabilities.ts")
-                ? { providerCapabilities: () => ({}) }
-                : {},
+        path.endsWith("health.ts")
+          ? health
+          : path.endsWith("roster.ts")
+            ? { loadRoster }
+            : path.endsWith("discovery.ts") && !path.endsWith("telephony_discovery.ts")
+              ? { loadApprovedEmailDomains: async () => [] }
+              : path.endsWith("telephony_discovery.ts")
+                ? { computeTelephonyIdentityResolution: async () => ({}) }
+                : path.endsWith("capabilities.ts")
+                  ? { providerCapabilities: () => ({}) }
+                  : {},
     }),
   );
   const result = await exports.loadTenantWorkspace(db, tenant);
