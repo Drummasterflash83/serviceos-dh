@@ -259,6 +259,13 @@ try:
         apply(b'begin;'+bounds_sql+b'rollback;', 'Working-time input bounds rollback rehearsal')
         apply(bounds_sql, 'Explicit working-time retained-input bounds')
         apply(b'begin;'+(ROOT/'scripts/verify/learn-working-release-hosted.assert.sql').read_bytes()+b'rollback;', 'Exact hosted working-time owner and private-helper access probe')
+        if '--include-receipt-guards' in sys.argv:
+            apply((ROOT/'supabase/migrations/20261031020000_learn_performance_corrections.sql').read_bytes(), 'Existing correction ledger for receipt guards')
+            apply((ROOT/'supabase/migrations/20261031040000_learn_saved_assessments.sql').read_bytes(), 'Existing saved assessment ledger for receipt guards')
+            apply((ROOT/'scripts/verify/learn-measurement-receipt-guards-before.assert.sql').read_bytes(), 'Retained pre-migration mismatch fixture and preservation baseline')
+            receipt_sql=(ROOT/'supabase/migrations/20261101160000_learn_measurement_receipt_guards.sql').read_bytes()
+            apply(b'begin;'+receipt_sql+b'rollback;', 'Receipt constraints rollback rehearsal')
+            apply(receipt_sql, 'Receipt constraints installation')
         apply((ROOT/'scripts/verify/learn-working-collection.assert.sql').read_bytes(), 'Frozen working-time collection, exact recovery and preserved source evidence')
         collection_data=docker('exec',TARGET,'psql','-U','supabase_admin','-d','roster_verify','-qAtc', """set request.jwt.claim.sub='bbb50000-0000-4000-8000-000000000001';set role authenticated;
           select jsonb_agg(jsonb_build_object('overview',learn_work_collection_evidence(tenant_id,id,'overview',0),
@@ -273,8 +280,11 @@ try:
         runpy.run_path(str(ROOT/'scripts/verify/learn-working-collection-concurrency.py'), init_globals={'DOCKER':DOCKER,'TARGET':TARGET})
         apply((ROOT/'scripts/verify/learn-working-rule-change.assert.sql').read_bytes(), 'Saved state changes preserve earlier collections and govern new revisions')
         if '--include-working-corrections' in sys.argv:
-            apply((ROOT/'supabase/migrations/20261031020000_learn_performance_corrections.sql').read_bytes(), 'Existing governed performance correction migration')
+            if '--include-receipt-guards' not in sys.argv:
+                apply((ROOT/'supabase/migrations/20261031020000_learn_performance_corrections.sql').read_bytes(), 'Existing governed performance correction migration')
             apply((ROOT/'scripts/verify/learn-working-corrections.assert.sql').read_bytes(), 'Working-time correction provenance, retries and preservation')
+        if '--include-receipt-guards' in sys.argv:
+            apply((ROOT/'scripts/verify/learn-measurement-receipt-guards.assert.sql').read_bytes(), 'Receipt mismatch, confirmation, assessment and preservation checks')
         if '--include-working-volume' in sys.argv:
             apply((ROOT/'scripts/verify/learn-working-collection-volume.assert.sql').read_bytes(), 'Company-volume working-time capture and frozen begin')
             runpy.run_path(str(ROOT/'scripts/verify/learn-working-collection-volume.py'), init_globals={'DOCKER':DOCKER,'TARGET':TARGET})

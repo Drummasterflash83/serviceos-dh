@@ -6,8 +6,12 @@ Current card reads now bind work observations to their original calculation
 receipts before scoring. Wrong people, periods, rule revisions, values and incomplete
 reads withhold the assessment; validated numerical corrections keep the original
 receipt. Forty-seven targeted tests, an isolated five-request PostgREST check and
-rebuilt local browser rejection/recovery pass. Hosted release, positive signed-in
-acceptance and equivalent server append/assessment checks remain outstanding.
+rebuilt local browser rejection/recovery pass. The local database continuation
+now enforces receipt agreement on new observations, confirmations and assessments
+at transaction completion. Actual collectors, chained numerical corrections and
+prospectively published assessment saves pass; malformed receipts roll back, old
+records stay preserved and invalid evidence remains disputable. Target-schema
+rehearsal, hosted release and positive signed-in acceptance remain outstanding.
 See [measurement receipt attribution](LEARN-MEASUREMENT-RECEIPTS.md).
 
 ## Discovery history — TEST controller v8 and paired frontend installed
