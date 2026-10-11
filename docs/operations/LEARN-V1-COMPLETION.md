@@ -7,6 +7,16 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 00:56 BST — historical inbox frontend deployed; playback endpoint gap confirmed.**
+The matching frontend from `7fae7468581655192a9a2f13846fe52103cc53a6` is READY
+in TEST; its immutable and stable hostnames remain Vercel protected. The installed
+reader denies anonymous/service HTTP calls and preserves all 140 datasets.
+Read-only TEST Edge inventory confirms `learn-voicemail-import` v2 but no
+`receptionist-voicemail-recording` endpoint. Next: deploy and verify the private
+playback handler, then complete positive signed-in acceptance under authorised
+mailbox access. Actual playback is not yet available in this TEST build.
+[Evidence](evidence/learn-voicemail-inbox-history-2026-10-12.json).
+
 **12 October, 00:54 BST — historical private-message discovery installed in TEST (077).**
 An actual SQL regression showed that previous owners could read their retained
 messages under RLS but could not find them through the current-mailbox summary.

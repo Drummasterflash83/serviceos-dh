@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-10-11T23:55:53.218839+00:00",
+  "observedAt": "2026-10-11T23:56:56.168Z",
   "scope": "Installed TEST 077 reader; real SQL-role and denied HTTP boundaries; local synthetic UI",
   "rehearsal": {
     "state": "rehearsed_rolled_back",
@@ -77,9 +77,80 @@
     "src/lib/voicemails.ts": "0e6f62f104ba9db00aff558c94ba721d235eab6441d5345e8a6793fc1761da3b"
   },
   "limitations": [
-    "Frontend still requires matching deployment.",
     "No actual signed-in hosted acceptance or successful audio playback.",
     "Recorded historical ownership rules verified, not real Drummonds route authority or source completeness.",
-    "No production changes, real provider calls or persistent access grants."
-  ]
+    "No production changes, real provider calls or persistent access grants.",
+    "TEST private playback endpoint is absent; deployment and boundary verification are required before successful playback acceptance."
+  ],
+  "playbackInventory": {
+    "observedAt": "2026-10-11T23:56:47.920047+00:00",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "privatePlaybackEndpointPresent": false,
+    "importer": {
+      "slug": "learn-voicemail-import",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "source": "Read-only current TEST Edge inventory"
+  },
+  "frontend": {
+    "deployment": {
+      "observedAt": "2026-10-11T23:56:41.078Z",
+      "id": "dpl_HuCfk6BEkV4FbiutAjtH5wV64sgu",
+      "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+      "readyState": "READY",
+      "url": "serviceos-learn-test-10hurtdlw-allkin.vercel.app",
+      "gitSha": "7fae7468581655192a9a2f13846fe52103cc53a6",
+      "aliases": [
+        "serviceos-learn-test-allkin.vercel.app",
+        "serviceos-learn-test-git-codex-learn-v1-test-allkin.vercel.app"
+      ],
+      "errorCode": null
+    },
+    "immutableProtection": {
+      "observedAt": "2026-10-11T23:56:56.168Z",
+      "base": "https://serviceos-learn-test-10hurtdlw-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    },
+    "stableAlias": {
+      "observedAt": "2026-10-11T23:56:55.560Z",
+      "alias": "serviceos-learn-test-allkin.vercel.app",
+      "deploymentId": "dpl_HuCfk6BEkV4FbiutAjtH5wV64sgu",
+      "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    }
+  }
 }

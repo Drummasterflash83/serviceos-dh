@@ -52,27 +52,32 @@ hostnames, and no custom domain or automatic Git linkage was added.
 The stable staging entry is
 [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
 It points to immutable preview
-[serviceos-learn-test-7o36m5005-allkin.vercel.app](https://serviceos-learn-test-7o36m5005-allkin.vercel.app),
-built remotely from GitHub commit `de4bcd98dba0c70d87069ff9b554130d79b7f7b3`
-and observed READY at **23:47 UTC on 11 October**. It includes password recovery,
+[serviceos-learn-test-10hurtdlw-allkin.vercel.app](https://serviceos-learn-test-10hurtdlw-allkin.vercel.app),
+built remotely from GitHub commit `7fae7468581655192a9a2f13846fe52103cc53a6`
+and observed READY at **23:56 UTC on 11 October**. It includes password recovery,
 snapshot freshness, projection/identity review, queued processing messages, draft
 advice and bounded card-evidence explanation. Compatible dependency-lock updates
 passed TypeScript/build; production-dependency audit is clear, with nine development
 tool findings retained for review.
-The backend now has release **076**, worker **v19**, voicemail importer **v2**,
+The backend now has release **077**, worker **v19**, voicemail importer **v2**,
 card refresh **v2**, and Workspace discovery **v3**. The new frontend exposes the
 operator-only voicemail aggregate status and a direct LEARN entry to the existing
 private owner/manager inbox. Its scoped response reader rejects unknown counts and
 incomplete pages; account/company changes discard private UI state. The inbox was
 verified locally with synthetic responses; successful real playback and hosted
-signed-in acceptance remain open. Release 073 added private voicemail
+signed-in acceptance remain open. Release 077 adds a paginated caller-RLS inbox
+reader that keeps old owners' existing message access discoverable after mailbox
+reassignment, without disclosing current mailbox configuration. The full-schema
+rehearsal and install preserved all 140 datasets. The corresponding frontend is
+deployed here. The TEST private playback endpoint is currently absent and must be
+installed and verified before successful audio acceptance. Release 073 added private voicemail
 storage/intake; 074 added durable queue settlement; 075 added retained-email
 discovery; 076 added bounded dispatch and operator status. These releases did not
 activate real voicemail routes or a TEST schedule. Hosted positive scheduled import
 and signed-in operator/owner acceptance remain outstanding. The current frontend
 passed full-project TypeScript; its stable alias and immutable hostname were both
-verified protected at **23:47 UTC**. See the
-[private inbox deployment evidence](operations/evidence/learn-voicemail-inbox-test-2026-10-12.json)
+verified protected at **23:56 UTC**. See the
+[historical inbox evidence](operations/evidence/learn-voicemail-inbox-history-2026-10-12.json)
 and [dispatcher evidence](operations/evidence/learn-voicemail-dispatch-2026-10-12.json).
 Release 067 added directory-verified alias identities; 068 adds mailbox-wide recent
 Gmail capture with a mandatory reconciliation when upgrading old label-limited
