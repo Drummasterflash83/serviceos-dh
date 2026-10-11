@@ -401,23 +401,35 @@ read time from provider coverage. No production or source data changed.
   [Local evidence](evidence/learn-owner-labels-local-2026-10-11.json) and
   [TEST deployment evidence](evidence/learn-owner-labels-test-2026-10-11.json).
 
-### Phone delivery dependency found — 11 October, 15:55 UTC
+### Phone source-to-event handoff installed in TEST — 11 October, 16:21 UTC
 
-A fresh TEST check confirmed that the canonical phone handoff lacks its event bus
-and source-version schema dependencies. The legacy pipeline could still report
-success after that handoff failed. The local correction now reports incomplete
-handoff while retaining completed audio/transcript/analysis, and changed content
-is no longer skipped solely because its prior interaction was enriched.
-Seventy handler tests, eight finaliser/settlement tests and strict TypeScript pass.
+TEST release **061** and `phone-process-pipeline` **v2** now use one scoped atomic
+publisher for the canonical interaction, downstream event and immutable receipt.
+The previously missing event/projection dependencies are installed. Direct raw
+interaction INSERT remains denied; no broad service DML grant was added. Unknown
+legacy provenance is held without deleting recordings, transcripts or insights.
 
-A full-schema rollback rehearsal then exposed the next required change: TEST
-intentionally denies direct interaction INSERT, so restoring legacy dependencies
-alone is insufficient. Preserve that restriction and implement a scoped atomic
-interaction/event publisher with exact source provenance. The failed rehearsal
-was independently verified rolled back: catalog, all 113 retained datasets,
-privileges and fixture absence match. No hosted runtime or production change.
-Phone-to-card completion remains unproven; cached processing receipts are not
-substitutes. [Detailed plan and evidence](LEARN-PHONE-ACCOUNT-BINDING.md#phone-to-learn-handoff--11-october-1555-utc).
+The full-schema and exact-package rollback rehearsals passed. Installation
+preserved all 113 pre-existing datasets; the two additive interaction columns
+remain NULL on retained rows. The monitoring baseline now includes 115 datasets,
+adding event and handoff receipts. Existing schema catalogs that are pinned to
+060 are historical and must not be silently updated/reused to authorize a write.
+
+A hosted, internal-service TEST request reused exact synthetic cached source data
+and returned HTTP 200 only after four terminal runs, one ready interaction, one
+pending event and one matching run/handoff receipt were verified in storage.
+No provider dispatches, new users, grants, secrets, schedules or production writes.
+The fixture is archived; all 115 non-fixture datasets and the schema matched.
+71 actual-handler, six finaliser and three terminal-settlement cases pass, as do
+eight downloaded pipeline-related checks and strict backend TypeScript. All seven
+deployed modules match the tested closure in the syntax-tree comparison.
+
+**Still open:** real-provider and signed-in acceptance; identity/card completion;
+source-revision-safe downstream settlement; and compatibility of the separate
+legacy repair projector. Current identity code can mark enriched before card
+writes complete and consume a newer event without a source-version check. This
+TEST milestone proves source-to-event publication, not completed card delivery.
+[Release and verification evidence](evidence/learn-phone-atomic-handoff-test-2026-10-11.json).
 
 ## Implemented but not fully verified — acceptance gates
 

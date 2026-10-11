@@ -354,6 +354,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
     admin: supabase,
     tenantId,
     recordingId: recordingId as string,
+    runId: syncRunId,
+    transcriptId,
+    insightId,
   });
 
   if (!fin.ok || (!fin.eventPublished && !fin.alreadyEnriched)) {
@@ -406,6 +409,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       interaction_id: fin.interactionId,
       interaction_ready: fin.ok && !fin.alreadyEnriched,
       event_published: fin.eventPublished,
+      handoff_receipt: fin.receipt ?? null,
       ...(fin.ok ? {} : { finalize_skipped: fin.reason ?? "unknown" }),
       trace,
     },
@@ -425,6 +429,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     interaction_id: fin.interactionId,
     interaction_ready: fin.ok && !fin.alreadyEnriched,
     event_published: fin.eventPublished,
+    handoff_receipt: fin.receipt ?? null,
     failed_step: null,
     trace,
     sync_run_id: syncRunId,

@@ -824,3 +824,52 @@ still does not prove identity resolution, customer-card refresh or live coverage
 Real provider-to-card acceptance remains open.
 
 [Readiness and rollback evidence](evidence/learn-phone-handoff-readiness-2026-10-11.json).
+
+
+## Atomic handoff installed in TEST — 11 October, 16:21 UTC
+
+This supersedes the missing-schema and local-only status in the preceding section.
+Release `061_phone_atomic_handoff` installs the original event/projection dependencies
+and a restricted `learn_phone_handoff` RPC. Pipeline v2 passes exact run, recording,
+transcript and insight IDs, requires the matching committed receipt, and saves it
+with its own terminal result. It never writes interactions/events directly. A lost
+publication reply triggers one receipt inspection, not another publication.
+
+The database locks and validates source provenance, refuses superseded recording
+analysis, preserves prior identity/operator metadata, and commits the canonical
+row, pending event and receipt together. Exact unchanged enrichment needs no new
+event; changed content returns to ready. Unknown legacy provenance remains held.
+The receipt is historical evidence and does not promise that later source edits,
+identity processing or cards are current. Authenticated clients cannot invoke the
+publisher or read raw receipts; service has only the scoped RPC, not raw receipt DML.
+
+The package SHA is `4adc5c61c1949ccff1786c2b3c5c312f78351dcd8528268287c23599ffb53e6b`.
+Full catalog: `9780c9f11e60e5219a52088e53a4e6ff`; runtime catalog:
+`4246b7cc2a9984347873e0ff4ec9d92d`. Installed at 16:18 UTC after exact rollback
+rehearsal. All 113 prior datasets were preserved. For this transition only, the
+fingerprint excluded the two newly added nullable interaction columns and asserted
+that both remain NULL in every retained row; no existing field was excluded.
+Subsequent preservation includes both columns and the two new tables (115 datasets).
+
+Hosted acceptance at 16:21 UTC used one synthetic tenant and cached source rows,
+no new login or grant, no storage object, no provider calls and no production writes.
+It verified four successful stage/parent runs, one ready interaction, one pending
+event, exact parent/handoff receipt agreement, preserved source text and zero
+provider dispatches. The fixture is archived and retained for evidence. The
+non-fixture 115 datasets and catalog remain unchanged. All seven downloaded modules
+match the tested closure; eight downloaded pipeline-related checks pass.
+
+Remaining delivery: correct the identity worker's early enriched marker, unchecked
+card writes and subject-wide event consumption; add source-revision-aware settlement
+and prove a complete source-to-card journey. Review the independent legacy repair
+projector before allowing it to touch authoritative phone handoffs. Real provider
+coverage, real audio provenance and signed-in user acceptance remain open.
+
+Rollback/recovery: keep capture paused and do not re-run this one-shot release after
+an uncertain response. Inspect the journal, ledger and catalog first. Preserve
+receipts and event/source records; do not drop the new tables or remove nullable
+columns as an automated rollback. Reverting to the old pipeline would reintroduce
+unconfirmed success, so repair forward or disable the affected TEST input. Production
+promotion and its separately verified rollback plan remain outside this TEST release.
+
+[Sanitized release evidence](evidence/learn-phone-atomic-handoff-test-2026-10-11.json).

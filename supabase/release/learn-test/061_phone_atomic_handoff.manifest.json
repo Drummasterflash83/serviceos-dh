@@ -1,0 +1,29 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "4adc5c61c1949ccff1786c2b3c5c312f78351dcd8528268287c23599ffb53e6b",
+  "migrations": [
+    {
+      "file": "20260709150000_platform_events.sql",
+      "sha256": "42922cee3b774418b884ae606e7ad2e968e9ecb757b5d1663118a62019b10eb3"
+    },
+    {
+      "file": "20260713120000_phone_projection_incremental.sql",
+      "sha256": "1d86e7ffe3b9ca3eeefecbb10b957f25156a74ca197e6b0ff17e6587383ba4cf"
+    },
+    {
+      "file": "20260714120000_input_reliability_finalisation.sql",
+      "sha256": "795daf2ccc415dadf8f7f9e13f25fdcad34c9a14fd931ef4a1581b31e0460b96"
+    },
+    {
+      "file": "20261101290000_learn_phone_atomic_handoff.sql",
+      "sha256": "b0073764aedf6a95d1ba76f30c769efc8ebedc3db81bed5c8baf5556e727783d"
+    }
+  ],
+  "probeSha256": "3aed89f7a2603aadac557bc9bf6fdfdffb4bef984e0e297e958dbaaef8612253",
+  "priorFingerprint": "ebeeafeb978b7119d25b694fd210e71c",
+  "preservedDatasets": 113,
+  "additiveInteractionColumns": [
+    "source_version",
+    "source_updated_at"
+  ]
+}

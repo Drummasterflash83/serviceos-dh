@@ -67,6 +67,7 @@ async function harness(
     pauseWriteTarget = "phone_sync_runs",
     pipelineCompletionFault,
     finalizationResult,
+    handoffResponse,
     downloadAttemptResponse,
     binaryResponse,
     initialAudio = [],
@@ -86,6 +87,14 @@ async function harness(
   const storedAudio = new Map(initialAudio);
   const db = {
     async rpc(name, args) {
+      if (name === "learn_phone_handoff") {
+        writes.push({table:name,op:args.p_phase,v:args});
+        const receipt={version:"learn-phone-handoff/1",state:"committed",tenantId:args.p_tenant,runId:args.p_run,
+          recordingId:args.p_recording,transcriptId:args.p_transcript,insightId:args.p_insight,
+          callId:id(8),interactionId:id(9),eventId:id(10),sourceFingerprint:"a".repeat(64),eventPublished:true,alreadyEnriched:false};
+        if(handoffResponse)return handoffResponse(args,receipt);
+        return {data:receipt,error:null};
+      }
       if (name === "learn_phone_derived_attempt") {
         writes.push({ table: name, op: "rpc", v: args });
         if (derivedAttemptResponse) return derivedAttemptResponse(args);
@@ -500,15 +509,16 @@ async function harness(
     });
     return mod;
   }
-  const readback = process.env.PHONE_HANDLER_READBACK_ROOT;
+  const pipelineReadback = name === "phone-process-pipeline" && process.env.PHONE_PIPELINE_READBACK_ROOT;
+  const readback = pipelineReadback || process.env.PHONE_HANDLER_READBACK_ROOT;
   const useReadback = Boolean(
     readback &&
-    [
+    (pipelineReadback || [
       "simwood-sync-calls",
       "simwood-sync-recordings",
       "phone-process-pending",
       "phone-scheduled-sync",
-    ].includes(name),
+    ].includes(name)),
   );
   const entry = useReadback
     ? resolve(readback, name, "index.ts")
@@ -1627,4 +1637,17 @@ test("phone pipeline retains completed stages but fails when canonical handoff i
 test("already enriched unchanged interaction does not require a duplicate downstream event",async()=>{
  const h=await harness("phone-process-pipeline",{childResponses:completedPipelineChildren,finalizationResult:{...confirmedHandoff,eventPublished:false,alreadyEnriched:true}});
  const response=await h.run({recording_id:id(5)});assert.equal(response.status,200);assert.equal((await response.json()).success,true);
+});
+
+test("actual pipeline and finaliser bind the atomic receipt to the exact completed child results",async()=>{
+ for(const lost of [false,true]){
+  const h=await harness("phone-process-pipeline",{childResponses:completedPipelineChildren,
+   handoffResponse:(args,receipt)=>{if(lost&&args.p_phase==="publish")throw Error("Synthetic lost commit reply");return{data:receipt,error:null};}});
+  const response=await h.run({recording_id:id(5)}),body=await response.json();
+  assert.equal(response.status,200);assert.equal(body.handoff_receipt.runId,id(4));
+  assert.equal(body.handoff_receipt.transcriptId,id(11));assert.equal(body.handoff_receipt.insightId,id(12));
+  const handoffs=h.writes.filter(w=>w.table==="learn_phone_handoff");
+  assert.deepEqual(handoffs.map(w=>w.op),lost?["publish","inspect"]:["publish"]);
+  assert.equal(h.requests.length,3);assert.ok(!h.writes.some(w=>w.table==="interactions"||w.table==="platform_events"));
+ }
 });

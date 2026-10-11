@@ -1,0 +1,133 @@
+{
+  "version": "learn-phone-atomic-handoff/1",
+  "state": "test_installed_cached_source_handoff_verified",
+  "observedAt": "2026-10-11T16:21:01.473Z",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "rehearsal": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "full_schema_rehearsed_and_rolled_back",
+    "observedAt": "2026-10-11T16:15:31.300Z",
+    "migrations": [
+      {
+        "file": "20260709150000_platform_events.sql",
+        "sha256": "42922cee3b774418b884ae606e7ad2e968e9ecb757b5d1663118a62019b10eb3"
+      },
+      {
+        "file": "20260713120000_phone_projection_incremental.sql",
+        "sha256": "1d86e7ffe3b9ca3eeefecbb10b957f25156a74ca197e6b0ff17e6587383ba4cf"
+      },
+      {
+        "file": "20260714120000_input_reliability_finalisation.sql",
+        "sha256": "795daf2ccc415dadf8f7f9e13f25fdcad34c9a14fd931ef4a1581b31e0460b96"
+      },
+      {
+        "file": "20261101290000_learn_phone_atomic_handoff.sql",
+        "sha256": "b0073764aedf6a95d1ba76f30c769efc8ebedc3db81bed5c8baf5556e727783d"
+      }
+    ],
+    "preservedDatasets": 113,
+    "originalCatalogRestored": true,
+    "fixturesRemoved": true,
+    "committedUsers": 0,
+    "newSessions": 0,
+    "newPlatformGrants": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Synthetic source records; no provider capture or authenticated pipeline execution.",
+      "No phone projection schema, event bus, source record, account or grant retained.",
+      "Atomic interaction/event/receipt behaviour tested; downstream identity/card delivery not exercised.",
+      "Legacy analysis without exact source provenance remains held; existing records are retained."
+    ]
+  },
+  "database": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "installed_needs_runtime_and_acceptance",
+    "completedAt": "2026-10-11T16:18:05.715Z",
+    "packageSha256": "4adc5c61c1949ccff1786c2b3c5c312f78351dcd8528268287c23599ffb53e6b",
+    "expectedFingerprint": "9780c9f11e60e5219a52088e53a4e6ff",
+    "afterFingerprint": "9780c9f11e60e5219a52088e53a4e6ff",
+    "preservedDatasets": 113,
+    "installedPreservationDatasets": 115,
+    "additiveInteractionColumnsNull": true,
+    "persistentFixtureUsers": 0,
+    "newSessions": 0,
+    "newPlatformGrants": 0,
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "runtime": {
+    "endpoint": "phone-process-pipeline",
+    "version": 2,
+    "status": "ACTIVE",
+    "verifyJwt": true,
+    "bundleSha256": "47aef9f89a44c452c02bcb829b77206914941c3401714e18f11830848a537c1b",
+    "dependencyFiles": 7,
+    "fullPreservedDatasets": 115,
+    "otherEndpointsPreserved": true
+  },
+  "hosted": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "hosted_cached_source_to_ready_event_verified",
+    "newUsers": 0,
+    "newAccessGrants": 0,
+    "productionChanged": false,
+    "providerAcceptance": false,
+    "checks": [
+      {
+        "name": "unsigned request denied",
+        "status": 401
+      }
+    ],
+    "pipeline": {
+      "status": 200,
+      "success": true,
+      "downloaded": true,
+      "transcribed": true,
+      "analysed": true,
+      "errorCode": null,
+      "interactionReady": true
+    },
+    "providerRequests": 0,
+    "terminalRuns": 4,
+    "readyInteractions": 1,
+    "pendingEvents": 1,
+    "handoffReceipts": 1,
+    "fixtureArchived": true,
+    "preservedNonFixtureDatasets": 115,
+    "schemaUnchanged": true,
+    "observedAt": "2026-10-11T16:21:01.473Z",
+    "limitations": [
+      "Synthetic cached source data and existing internal TEST authority; no real provider, storage-file or signed-in browser acceptance.",
+      "Only interaction/event publication is accepted here. Identity resolution and card delivery remain unverified.",
+      "Synthetic rows and receipts are retained in an archived fixture tenant."
+    ]
+  },
+  "localChecks": {
+    "actualHandlerCases": 71,
+    "finalizerCases": 6,
+    "settlementCases": 3,
+    "downloadedPipelineRelatedCases": 8,
+    "downloadedModulesMatched": 7,
+    "strictBackendTypeScript": true,
+    "offlineDatabase": [
+      "Exact tenant/run/recording/transcript/insight/provider binding",
+      "Immutable historical receipt replay and mismatched request rejection",
+      "Unknown or changed source provenance held",
+      "Superseded recording held",
+      "Changed source returned to ready processing; operator metadata preserved",
+      "Event write failure rolls back canonical row and insight linkage",
+      "Capture pause rejects new publication; committed receipts remain inspectable",
+      "Authenticated publication and direct receipt access denied",
+      "Concurrent same and distinct runs keep one interaction and pending event",
+      "Actual TypeScript client recovers PostgreSQL commit after lost response without republishing",
+      "Concurrent recording/source writer causes stale analysis rejection"
+    ]
+  },
+  "remaining": [
+    "Real-provider capture and coverage, real storage-file provenance and signed-in acceptance remain open.",
+    "Identity worker currently marks enriched before card completion, ignores some write errors, and consumes events without matching the source revision. This must be corrected and verified before phone-to-card completion.",
+    "The legacy repair projector requires separate review so it cannot overwrite a newer authoritative handoff.",
+    "No production release or provider/scheduler activation."
+  ]
+}
