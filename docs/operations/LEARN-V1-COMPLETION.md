@@ -7,7 +7,19 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-Fresh read-only production/TEST audit: **11 October 2026, 06:07 UTC**.
+Latest scoped production observation: **11 October 2026, 14:33 UTC**.
+[Read-only capture inventory](evidence/learn-current-capture-2026-10-11.json)
+shows **18,548 emails, 4,328 calls, 2,882 recording rows, 3,165 cards and zero
+canonical jobs**. Compared with the morning counts, email inventory grew by 37
+and card inventory by five. This is not an identity-preservation comparison.
+Among the newest 200 email runs, Workspace capture includes 138 successful and
+14 failed runs, with latest success at 14:33 UTC and latest failure at 14:31 UTC;
+other run types account for the remaining observations. The newest 200 Phone runs
+are successful call/recording/scheduler receipts through 14:30 UTC. These bounded
+samples do not prove provider coverage or resolve the known mailbox failures.
+The observation issued no provider requests and made no production writes.
+
+Earlier combined production/TEST audit: **11 October 2026, 06:07 UTC**.
 [Sanitized baseline](evidence/learn-launch-baseline-2026-10-11.json), reproduced with
 `node scripts/verify/learn-launch-baseline.mjs --read-only-production-and-test`.
 This reads aggregate source counts and configuration/catalog metadata, never
@@ -569,7 +581,12 @@ remains the separate reader with retained provenance checks.
 - Actual local component/browser checks passed with a synthetic RPC: failure,
   recovery and delayed company switching, with zero console errors. Six focused
   reader/outcome tests, application TypeScript and the production build passed.
-  These frontend changes are not yet deployed to hosted TEST.
+  The matching TEST frontend from `aff42842d82ae228de3513a63cad73c2a91ff9a7`
+  is now READY, observed at 14:35 UTC, at
+  `serviceos-learn-test-b5u66qgft-allkin.vercel.app`. Exact TEST project, Git SHA,
+  backend binding and Vercel protection configuration were checked through the
+  management API. Browser access to this updated origin has been requested;
+  positive signed-in hosted acceptance remains unverified.
 - Commusoft's prepared continuation preflight passed against the new TEST catalog
   at 14:21 UTC. Its original source baseline, request budget and approval requirement
   remain intact; no continuation account or provider request was created.

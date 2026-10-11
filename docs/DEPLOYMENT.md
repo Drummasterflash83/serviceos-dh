@@ -50,6 +50,17 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The latest staging candidate is
+[serviceos-learn-test-b5u66qgft-allkin.vercel.app](https://serviceos-learn-test-b5u66qgft-allkin.vercel.app),
+built remotely from GitHub commit `aff42842d82ae228de3513a63cad73c2a91ff9a7`
+and observed READY at 14:35 UTC on 11 October. It adds bounded scheduling checks
+to OpenFolk and the legacy LEARN/Ops readers, paired with TEST release 060. Its
+exact TEST project, Git SHA, backend environment and Vercel protection configuration
+were verified through the management API. This release does not activate capture,
+install the email schedulers or change production. Browser permission for the
+updated origin is pending; positive signed-in hosted acceptance remains open.
+[Release evidence](operations/evidence/learn-scheduler-health-test-2026-10-11.json).
+
+The previous partial-job-time staging candidate is
 [serviceos-learn-test-c7irm9j5p-allkin.vercel.app](https://serviceos-learn-test-c7irm9j5p-allkin.vercel.app),
 built remotely from GitHub commit `a084b97a7a21f8377c04e054b893a18e69b3bfb9`
 and observed READY at 13:20 UTC on 11 October. It exposes Commusoft job timing
@@ -409,6 +420,7 @@ of hosted email, phone audio or database records.
 
 The 11 October read-only backup check found eight completed production database
 backups and an empty TEST backup list. Database backups exclude Storage file
-bytes; independent recording backup and an isolated restore are still unverified.
+bytes. Independent recording backup and a manifest-selected audio restore are now
+verified; a real database restore and unattended recurring operation remain open.
 See [data recovery coverage](operations/LEARN-DATA-RECOVERY.md) before claiming
 that a GitHub checkpoint or database backup protects all retained customer data.

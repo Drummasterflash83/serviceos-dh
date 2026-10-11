@@ -1,0 +1,108 @@
+{
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "observedAt": "2026-10-11T14:33:49.437Z",
+  "scope": "fixed aggregate inventory and at most 200 newest email/phone runs each",
+  "results": [
+    {
+      "name": "inventory",
+      "rows": [
+        {
+          "observed_at": "2026-10-11 14:33:41.872814+00",
+          "matched_tenants": 1,
+          "emails": 18548,
+          "calls": 4328,
+          "recordings": 2882,
+          "cards": 3165,
+          "jobs": 0
+        }
+      ]
+    },
+    {
+      "name": "recentEmail",
+      "rows": [
+        {
+          "sync_type": "messages",
+          "status": "failed",
+          "runs": 6,
+          "latest_start": "2026-10-11 14:21:02.443+00",
+          "latest_completed": "2026-10-11 14:21:02.689+00"
+        },
+        {
+          "sync_type": "scheduled_sync",
+          "status": "success",
+          "runs": 16,
+          "latest_start": "2026-10-11 14:30:02.338+00",
+          "latest_completed": "2026-10-11 14:30:02.338+00"
+        },
+        {
+          "sync_type": "workspace_backfill_scheduled",
+          "status": "success",
+          "runs": 6,
+          "latest_start": "2026-10-11 14:30:02.117+00",
+          "latest_completed": "2026-10-11 14:30:02.117+00"
+        },
+        {
+          "sync_type": "workspace_discover",
+          "status": "success",
+          "runs": 4,
+          "latest_start": "2026-10-11 14:30:03.223+00",
+          "latest_completed": "2026-10-11 14:30:03.935+00"
+        },
+        {
+          "sync_type": "workspace_messages",
+          "status": "failed",
+          "runs": 14,
+          "latest_start": "2026-10-11 14:31:02.782+00",
+          "latest_completed": "2026-10-11 14:31:02.937+00"
+        },
+        {
+          "sync_type": "workspace_messages",
+          "status": "success",
+          "runs": 138,
+          "latest_start": "2026-10-11 14:33:02.223+00",
+          "latest_completed": "2026-10-11 14:33:02.897+00"
+        },
+        {
+          "sync_type": "workspace_scheduled_sync",
+          "status": "success",
+          "runs": 16,
+          "latest_start": "2026-10-11 14:30:06.957+00",
+          "latest_completed": "2026-10-11 14:30:06.957+00"
+        }
+      ]
+    },
+    {
+      "name": "recentPhone",
+      "rows": [
+        {
+          "sync_type": "calls",
+          "status": "success",
+          "runs": 67,
+          "latest_start": "2026-10-11 14:30:02.820507+00",
+          "latest_completed": "2026-10-11 14:30:03.011+00"
+        },
+        {
+          "sync_type": "recordings",
+          "status": "success",
+          "runs": 67,
+          "latest_start": "2026-10-11 14:30:03.392084+00",
+          "latest_completed": "2026-10-11 14:30:03.863+00"
+        },
+        {
+          "sync_type": "scheduled_sync",
+          "status": "success",
+          "runs": 66,
+          "latest_start": "2026-10-11 14:30:02.425819+00",
+          "latest_completed": "2026-10-11 14:30:03.974+00"
+        }
+      ]
+    }
+  ],
+  "providerRequests": 0,
+  "productionWrites": 0,
+  "limitations": [
+    "Counts are not source preservation or provider completeness.",
+    "Run success is historical processing evidence, not full mailbox or recording coverage.",
+    "No source contents, credentials or raw error messages read."
+  ]
+}

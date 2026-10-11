@@ -75,8 +75,25 @@
   },
   "limitations": [
     "No positive signed-in hosted acceptance for the new reader",
-    "Frontend changes not yet deployed",
     "Email scheduler installation and activation remain outstanding",
-    "No production changes or new credentials"
-  ]
+    "No production changes or new credentials",
+    "Updated TEST origin browser check awaits explicit permission; no hosted browser acceptance claimed"
+  ],
+  "frontendDeployment": {
+    "observedAt": "2026-10-11T14:35:18.517Z",
+    "deploymentId": "dpl_EUUvcn5sYB3ytD4rTLdKEfj8eCcy",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "url": "serviceos-learn-test-b5u66qgft-allkin.vercel.app",
+    "readyState": "READY",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "aff42842d82ae228de3513a63cad73c2a91ff9a7"
+    },
+    "backendBindingVerifiedAtSubmission": "saatxzwxvdvqevbnskxy",
+    "browserAcceptance": "pending-explicit-origin-permission",
+    "positiveSignedInAcceptance": false,
+    "productionChanged": false
+  }
 }
