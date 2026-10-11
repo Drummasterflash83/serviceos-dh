@@ -54,6 +54,39 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
+### Existing draft influence and card refresh — local candidate, 11 October, 20:00 UTC
+
+The read-only production impact audit at **19:57 UTC** found 55 enriched draft
+interactions, 54 linked to people, four directly linked recommendations and 95
+match suggestions. Person/company associations reach 178 cards; this is a broad
+review scope, **not 178 proven incorrect cards**. None had an exact draft-summary
+or latest-timestamp match, none had locked fields, and their priority inputs were
+legacy/unversioned. The three production measurements had no exact draft UUID
+references; that does not prove absence of historical influence. No saved assessment
+table was present in this audit's production metadata. Source bodies, identities,
+card text and score values were not returned. Initial aggregate scans timed out;
+the completed bounded audit uses direct recommendation/suggestion links.
+[Aggregate evidence](evidence/learn-email-draft-impact-2026-10-11.json).
+
+The separate card-refresh handler still read all canonical interactions, so it
+could reintroduce retained drafts into card activity, response timings and timelines
+after TEST 069's publication fix. The local candidate now uses one tenant/card-bound
+SQL input read, filters drafts before the recent windows, excludes directly linked
+draft recommendations without deleting them, and reports full eligible counts.
+Recent response timing remains a bounded communication estimate, not a staff score.
+An unlocked stale latest-activity value can become null; locked/manual fields and
+context remain. Compare-and-set writes reject concurrent card edits or missing rows.
+
+The actual SQL/handler/calculator/saved-card journey passes with 110 drafts, 105 valid
+interactions and 51 valid recommendations. Twelve handler/snapshot tests, strict
+worker types and the local frontend build pass. The full hosted TEST rollback
+rehearsal preserved all 121 datasets and removed its synthetic fixtures. This new
+function/handler/UI is **not deployed**: install its database function first, then
+both `platform-worker` and `customer-card-sync`, then verify bounded refresh and
+signed-in results. Legacy priorities, indirect recommendations and reviewed identity
+suggestions still need explicit reconciliation rather than blanket deletion.
+[Candidate evidence and release sequence](evidence/learn-card-draft-projection-2026-10-11.json).
+
 ### Drafts retained without being treated as replies — TEST 069, 11 October, 19:51 UTC
 
 A read-only production metadata check found **55 Gmail draft messages, all with

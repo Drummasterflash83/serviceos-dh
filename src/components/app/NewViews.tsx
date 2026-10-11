@@ -2058,6 +2058,16 @@ export function Customers() {
                         </span>
                       </div>
                     </div>
+                    {proj.evidence && (
+                      <div className="mt-2 text-muted-foreground">
+                        Response timing uses the latest {proj.evidence.sampledInteractions} eligible
+                        communications and is not an individual staff score.
+                        {proj.evidence.excludedDraftInteractions > 0 &&
+                          ` ${proj.evidence.excludedDraftInteractions} unsent drafts are retained in source history and excluded here.`}
+                        {proj.evidence.recommendationsTruncated &&
+                          ` Showing the latest ${proj.evidence.sampledRecommendations} of ${proj.evidence.eligibleRecommendations} open recommendations.`}
+                      </div>
+                    )}
                     {proj.communication.channels.length > 0 && (
                       <div className="mt-2 text-muted-foreground">
                         Channels: {proj.communication.channels.join(", ")}

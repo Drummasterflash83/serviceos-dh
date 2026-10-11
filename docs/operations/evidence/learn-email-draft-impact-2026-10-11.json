@@ -1,0 +1,49 @@
+{
+  "version": "learn-email-draft-impact/1",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "observedAt": "2026-10-11T19:57:30.232473+00:00",
+  "affectedCards": 178,
+  "draftMessages": 55,
+  "dependentTables": {
+    "measurements": {
+      "tenantRows": 3,
+      "rowsMentioningDraftSource": 0,
+      "rowsMentioningDraftInteraction": 0
+    },
+    "recommendations": {
+      "tenantRows": 24878,
+      "rowsLinkedToDraftInteraction": 4
+    },
+    "interaction_match_suggestions": {
+      "tenantRows": 35255,
+      "rowsLinkedToDraftInteraction": 95
+    }
+  },
+  "priorityVersions": [
+    {
+      "count": 178,
+      "version": "legacy/unversioned"
+    }
+  ],
+  "draftInteractions": 55,
+  "draftsLinkedToPerson": 54,
+  "cardsWithLockedFields": 0,
+  "draftProcessingStates": [
+    {
+      "count": 55,
+      "processing_status": "enriched"
+    }
+  ],
+  "cardsWithDraftSummaryMatch": 0,
+  "cardsWithDraftPrioritySource": 0,
+  "cardsWithDraftLatestTimestamp": 0,
+  "cardsWithNoOtherPersonCommunications": 0,
+  "productionChanged": false,
+  "providerRequests": 0,
+  "limitations": [
+    "Card association includes person/company matches and can overstate affected fields.",
+    "Exact summary/timestamp matches are candidates, not proof of automated authorship.",
+    "Recommendation/suggestion counts use direct interaction links; measurement counts scan retained JSON for UUID references. Missing references do not prove no historical influence.",
+    "No personal identifiers, bodies, addresses, card text or score values are returned."
+  ]
+}

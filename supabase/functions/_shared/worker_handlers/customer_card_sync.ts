@@ -17,7 +17,6 @@ import type { WorkerHandlerContext, WorkerHandlerResult } from "../worker_contra
 
 const DEFAULT_LIMIT = 200;
 const MAX_LIMIT = 500;
-const INTERACTION_WINDOW = 100;
 const TIMELINE_MAX = 10;
 const URGENT_SEVERITY = new Set(["high", "critical", "emergency", "urgent"]);
 
@@ -54,7 +53,7 @@ export async function handleCustomerCardSync(
     let cardQuery = admin
       .from("customer_cards")
       .select(
-        "id, person_id, company_id, title, status, priority, confidence, due_at, completed_at, locked_fields, context",
+        "id, person_id, company_id, title, status, priority, confidence, due_at, completed_at, locked_fields, context, updated_at",
       )
       .eq("tenant_id", tenantId);
 
@@ -181,12 +180,16 @@ export async function handleCustomerCardSync(
           // Skip synthetic fixtures, but bump updated_at so the sweep cursor advances
           // past them (a stale synthetic card must never stall a full sweep).
           if (isSweep) {
-            const { error } = await admin
+            if (typeof card.updated_at !== "string") throw new Error("card_revision_unavailable");
+            const { data: advanced, error } = await admin
               .from("customer_cards")
               .update({ status: card.status })
               .eq("tenant_id", tenantId)
-              .eq("id", cardId);
-            if (error) throw new Error("synthetic_cursor_unconfirmed");
+              .eq("id", cardId)
+              .eq("updated_at", card.updated_at)
+              .select("id")
+              .maybeSingle();
+            if (error || advanced?.id !== cardId) throw new Error("synthetic_cursor_unconfirmed");
           }
           skipped += 1;
           continue;
@@ -197,45 +200,57 @@ export async function handleCustomerCardSync(
           continue;
         }
 
-        // Interactions for this person or company (recent window, ascending).
-        const filters: string[] = [];
-        if (personId) filters.push(`related_person_id.eq.${personId}`);
-        if (companyId) filters.push(`related_company_id.eq.${companyId}`);
-        let interactions: Row[] = [];
-        if (filters.length) {
-          const { data, error } = await admin
-            .from("interactions")
-            .select("id, interaction_type, direction, occurred_at, sentiment, source_type")
-            .eq("tenant_id", tenantId)
-            .or(filters.join(","))
-            .order("occurred_at", { ascending: false, nullsFirst: false })
-            .limit(INTERACTION_WINDOW);
-          if (error) throw new Error("interactions_unavailable");
-          interactions = (data ?? []) as Row[];
+        // Filter retained drafts before taking either bounded evidence window.
+        // A failed/malformed eligibility read must preserve the saved projection.
+        const { data: inputData, error: inputError } = await admin.rpc(
+          "learn_card_projection_inputs",
+          { p_tenant: tenantId, p_card: cardId },
+        );
+        const inputs = inputData as {
+          version?: string;
+          tenantId?: string;
+          cardId?: string;
+          capturedAt?: string;
+          interactions?: Row[];
+          recommendations?: Row[];
+          coverage?: Record<string, number>;
+        } | null;
+        const coverage = inputs?.coverage;
+        const countKeys = [
+          "eligibleInteractions",
+          "excludedDraftInteractions",
+          "interactionsLast7",
+          "interactionsPrev7",
+          "eligibleRecommendations",
+          "excludedDraftRecommendations",
+          "urgentRecommendations",
+        ];
+        if (
+          inputError ||
+          inputs?.version !== "learn-card-inputs/1" ||
+          inputs.tenantId !== tenantId ||
+          inputs.cardId !== cardId ||
+          !Array.isArray(inputs.interactions) ||
+          !Array.isArray(inputs.recommendations) ||
+          !coverage ||
+          countKeys.some((key) => !Number.isSafeInteger(coverage[key]) || coverage[key] < 0) ||
+          coverage.urgentRecommendations > coverage.eligibleRecommendations ||
+          coverage.interactionLimit !== 100 ||
+          coverage.recommendationLimit !== 50 ||
+          inputs.interactions.length !== Math.min(100, coverage.eligibleInteractions) ||
+          inputs.recommendations.length !== Math.min(50, coverage.eligibleRecommendations) ||
+          typeof inputs.capturedAt !== "string" ||
+          !Number.isFinite(Date.parse(inputs.capturedAt))
+        ) {
+          throw new Error("eligible_card_inputs_unavailable");
         }
+        const interactions = inputs.interactions;
+        const recs = inputs.recommendations;
         const ascending = [...interactions].reverse();
 
-        // Open recommendations for this card.
-        const { data: recRows, error: recError } = await admin
-          .from("recommendations")
-          .select("id, type, title, severity, status, recommended_action, created_at")
-          .eq("tenant_id", tenantId)
-          .eq("card_id", cardId)
-          .eq("status", "open")
-          .order("created_at", { ascending: false })
-          .limit(50);
-        if (recError) throw new Error("recommendations_unavailable");
-        const recs = (recRows ?? []) as Row[];
-
         // ── Communication ────────────────────────────────────────────────
-        const last7 = interactions.filter((i) => {
-          const d = daysBetween(i.occurred_at as string | null, nowMs);
-          return d !== null && d <= 7;
-        }).length;
-        const prev7 = interactions.filter((i) => {
-          const d = daysBetween(i.occurred_at as string | null, nowMs);
-          return d !== null && d > 7 && d <= 14;
-        }).length;
+        const last7 = coverage.interactionsLast7;
+        const prev7 = coverage.interactionsPrev7;
         const channels = [
           ...new Set(interactions.map((i) => (i.interaction_type as string | null) ?? "unknown")),
         ];
@@ -262,18 +277,18 @@ export async function handleCustomerCardSync(
 
         // ── Health + Activity (explainable) ───────────────────────────────
         const { health, reasons } = computeHealth({
-          openRecs: recs.length,
-          urgentRecs: urgent.length,
+          openRecs: coverage.eligibleRecommendations,
+          urgentRecs: coverage.urgentRecommendations,
           negativeSentiment: latestSentiment === "negative",
           unansweredInbound: resp.unansweredInbound,
-          waitingActions: waiting.length,
+          waitingActions: coverage.eligibleRecommendations - coverage.urgentRecommendations,
           overdueActions,
         });
         const activity = computeActivityScore({
           interactionsLast7: last7,
           interactionsPrev7: prev7,
-          totalInteractions: interactions.length,
-          openRecs: recs.length,
+          totalInteractions: coverage.eligibleInteractions,
+          openRecs: coverage.eligibleRecommendations,
           lastInteractionAgeDays: daysBetween(lastInteractionAt, nowMs),
           avgResponseHours: resp.avgResponseHours,
         });
@@ -321,7 +336,15 @@ export async function handleCustomerCardSync(
 
         const projection = {
           version: 1,
-          generated_at: new Date(nowMs).toISOString(),
+          generated_at: inputs.capturedAt,
+          evidence: {
+            version: "learn-card-inputs/1",
+            ...coverage,
+            sampledInteractions: interactions.length,
+            sampledRecommendations: recs.length,
+            responseTimeScope: "Latest 100 eligible communications; not a staff performance score",
+            recommendationsTruncated: coverage.eligibleRecommendations > recs.length,
+          },
           identity: {
             display_name: displayName,
             company_name: (company?.name as string | null) ?? null,
@@ -331,12 +354,12 @@ export async function handleCustomerCardSync(
           },
           communication: {
             last_interaction_at: lastInteractionAt,
-            interaction_count: interactions.length,
+            interaction_count: coverage.eligibleInteractions,
             trend: interactionTrend(last7, prev7),
             channels,
           },
           operations: {
-            open_recommendations: recs.length,
+            open_recommendations: coverage.eligibleRecommendations,
             urgent: urgent.map((r) => ({
               title: (r.title as string | null) ?? (r.type as string | null),
               severity: (r.severity as string | null) ?? null,
@@ -374,15 +397,19 @@ export async function handleCustomerCardSync(
         // (e.g. the tenant name) can never persist on the card.
         if (!locked.includes("title")) patch.title = displayName;
         if (!locked.includes("status")) patch.status = healthToCardStatus(health);
-        if (!locked.includes("latest_activity_at") && lastInteractionAt) {
+        if (!locked.includes("latest_activity_at")) {
           patch.latest_activity_at = lastInteractionAt;
         }
-        const { error: updErr } = await admin
+        if (typeof card.updated_at !== "string") throw new Error("card_revision_unavailable");
+        const { data: updatedCard, error: updErr } = await admin
           .from("customer_cards")
           .update(patch)
           .eq("tenant_id", tenantId)
-          .eq("id", cardId);
-        if (updErr) {
+          .eq("id", cardId)
+          .eq("updated_at", card.updated_at)
+          .select("id")
+          .maybeSingle();
+        if (updErr || updatedCard?.id !== cardId) {
           failed += 1;
           continue;
         }

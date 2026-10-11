@@ -100,6 +100,12 @@ try:
   sql(candidate)
   sql('begin;'+source('scripts/verify/learn-processing-queue.assert.sql')+'rollback;')
   subprocess.run(['node','scripts/verify/learn-email-draft-client-probe.mjs',name],cwd=root,check=True,timeout=90)
+  if '--card-drafts' in __import__('sys').argv:
+   sql(source('supabase/migrations/20261101390000_learn_card_projection_eligibility.sql'))
+   sql('begin;'+source('scripts/verify/learn-card-draft-probe.sql')+'rollback;')
+   subprocess.run(['node','scripts/verify/learn-card-draft-client-probe.mjs',name],cwd=root,check=True,timeout=90)
+   print('PASS: card projection filters drafts before windows, preserves counts, excludes draft-derived recommendations and rejects cross-tenant access',flush=True)
+
 
 finally:
  if created:subprocess.run([docker,'rm','-f',name],capture_output=True,timeout=30)

@@ -173,3 +173,24 @@ capture before a rollback; keep the draft-aware page-store and publication guard
 compatible, and recover forward without restoring draft reply attribution.
 Real-provider capture, signed-in card acceptance, Spam eligibility and provider
 label/deletion handling remain open launch requirements.
+
+
+### Card refresh must also use eligible sources
+
+The local `20261101390000_learn_card_projection_eligibility.sql` candidate passed
+full-schema TEST rollback and an actual SQL-to-handler-to-saved-card journey. It
+is not installed. Deploy its database function before matching `platform-worker`
+and `customer-card-sync`; the scheduled wrapper enqueues the shared worker and
+needs no independent eligibility logic. Preserve the function during a runtime
+rollback. Do not run a legacy card refresh as a repair: it can reintroduce drafts.
+
+The 19:57 UTC production audit found four draft-linked recommendations and 95
+match suggestions. Its 178 person/company-associated cards are a review boundary,
+not a list of proved corrupt cards. None had an exact draft summary/timestamp
+match; all had legacy/unversioned priority inputs. Refresh eligible projections
+with revision-checked writes, retain historical source/derived records, and review
+unversioned priority and indirect recommendation influence separately. Do not
+rewrite manual text, accepted identity decisions or saved performance evidence
+based solely on a shared company link. See the
+[impact evidence](evidence/learn-email-draft-impact-2026-10-11.json) and
+[candidate verification](evidence/learn-card-draft-projection-2026-10-11.json).

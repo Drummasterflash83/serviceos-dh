@@ -1,0 +1,55 @@
+{
+  "version": "learn-card-draft-projection/1",
+  "state": "local_and_full_schema_rehearsed_not_deployed",
+  "observedAt": "2026-10-11T20:00:52.275Z",
+  "productionImpactEvidence": "learn-email-draft-impact-2026-10-11.json",
+  "behavior": [
+    "Filter retained drafts before the 100-interaction and 50-recommendation windows.",
+    "Keep full eligible communication and recommendation counts, with bounded response-time/timeline evidence explicitly disclosed.",
+    "Exclude directly draft-linked recommendations from the projection while preserving recommendation records.",
+    "Clear an unlocked stale latest-activity date when no eligible communication remains.",
+    "Use the saved card revision when updating; preserve concurrent manual edits and fail unconfirmed updates.",
+    "Retain manual context, locked title/status/activity fields and all source records."
+  ],
+  "verification": {
+    "handlerAndSnapshotTestsPassed": 12,
+    "actualDatabaseJourney": "Actual SQL eligibility -> real shared card handler/calculator -> revision-checked saved projection: 110 drafts excluded, 105 eligible interactions, 51 eligible recommendations; one draft recommendation retained/excluded; all source and recommendation hashes unchanged.",
+    "strictWorkerTypes": "Passed with installed SDK declarations and Deno env/serve shim, not native Deno.",
+    "frontendProductionBuild": "Passed locally; no frontend deployment.",
+    "fullSchemaRollback": {
+      "version": "learn-card-draft-rehearsal/1",
+      "state": "full_schema_rehearsed_and_rolled_back",
+      "observedAt": "2026-10-11T20:00:52.275Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "migrationSha256": "b14c9e3ec74f36d0b140d39a70fcff8d436cbd00348922f644a4efda6c9dca02",
+      "probeSha256": "a0c573ed51d368a5a35a4d9e8ddddf2428923e1ed8ffc07017a0dfa1ad2465a7",
+      "preservedDatasets": 121,
+      "schemaRestored": true,
+      "fixturesRemoved": true,
+      "usersCreated": 0,
+      "persistentRoleGrantsCreated": 0,
+      "temporaryMembershipsRevoked": 0,
+      "providerRequests": 0,
+      "productionChanged": false,
+      "limitations": [
+        "Synthetic SQL assertions; no persistent migration or positive hosted capture.",
+        "Production card refresh and reconciliation require a separately reviewed release; no source or derived data changed."
+      ]
+    }
+  },
+  "releaseSequence": [
+    "Prepare and rehearse pinned TEST package for migration 20261101390000_learn_card_projection_eligibility.sql.",
+    "Install the TEST input function before deploying its callers.",
+    "Deploy matching platform-worker and customer-card-sync; scheduled sync only enqueues the shared worker.",
+    "Download both runtimes and verify source and HTTP access boundaries before a bounded card refresh.",
+    "Verify signed-in card evidence and preserve existing source/derived history before separately approved production promotion."
+  ],
+  "limitations": [
+    "No persistent hosted schema/runtime/frontend change in this step.",
+    "Directly linked draft recommendations are excluded; indirect legacy recommendation influence and unversioned card priority need separate review.",
+    "Production summaries had no exact draft matches in this bounded audit; no summary, priority, relationship, match suggestion or score has been rewritten.",
+    "Gmail label/deletion mirroring, Spam eligibility, real capture and signed-in acceptance remain open."
+  ],
+  "providerRequests": 0,
+  "productionChanged": false
+}

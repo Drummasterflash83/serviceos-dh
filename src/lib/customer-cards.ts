@@ -17,6 +17,15 @@ export type CardHealth = "excellent" | "good" | "attention" | "critical";
 export interface CardProjection {
   version: number;
   generated_at: string;
+  evidence?: {
+    sampledInteractions: number;
+    eligibleInteractions: number;
+    excludedDraftInteractions: number;
+    excludedDraftRecommendations: number;
+    sampledRecommendations: number;
+    eligibleRecommendations: number;
+    recommendationsTruncated: boolean;
+  };
   identity: {
     display_name: string;
     company_name: string | null;
@@ -164,7 +173,12 @@ export function deriveHonestState(card: ProjectedCard): HonestCardState {
       ...base,
     };
   }
-  return { state: "normal", label: "No issues recorded", reason: "No differentiated open issues in the saved snapshot", ...base };
+  return {
+    state: "normal",
+    label: "No issues recorded",
+    reason: "No differentiated open issues in the saved snapshot",
+    ...base,
+  };
 }
 
 export interface CustomerCardSummary {
@@ -200,6 +214,17 @@ function parseProjection(context: unknown): CardProjection | null {
   return {
     version: typeof p.version === "number" ? p.version : 1,
     generated_at: p.generated_at ?? "",
+    ...(p.evidence &&
+    [
+      p.evidence.sampledInteractions,
+      p.evidence.eligibleInteractions,
+      p.evidence.excludedDraftInteractions,
+      p.evidence.excludedDraftRecommendations,
+      p.evidence.sampledRecommendations,
+      p.evidence.eligibleRecommendations,
+    ].every((n) => Number.isSafeInteger(n) && n >= 0)
+      ? { evidence: p.evidence }
+      : {}),
     identity: {
       display_name: identity.display_name ?? "Unknown contact",
       company_name: identity.company_name ?? null,
