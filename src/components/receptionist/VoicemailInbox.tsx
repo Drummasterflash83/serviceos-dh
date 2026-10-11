@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { ChevronDown, Info, Mail, RefreshCw, ShieldCheck, Voicemail } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -13,7 +13,7 @@ import {
 } from "@/lib/voicemails";
 import "./voicemails.css";
 import {
-  parseVoicemailMailboxes,
+  parseVoicemailMailboxPage,
   parseVoicemailMessages,
   VOICEMAIL_MESSAGE_FIELDS,
 } from "@/lib/voicemail-reader";
@@ -73,22 +73,28 @@ export default function VoicemailInbox(props: InboxProps) {
 function ScopedVoicemailInbox({ tenant, userId, demo = false }: InboxProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const mailboxes = useQuery({
-    queryKey: ["receptionist-voicemails", tenant, userId, demo],
+  const mailboxes = useInfiniteQuery({
+    queryKey: ["private-voicemail-mailboxes-v1", tenant, userId, demo],
     enabled: !!userId && !demo,
-    initialData: demo ? demoMailboxes : undefined,
+    initialPageParam: null as string | null,
+    initialData: demo
+      ? { pages: [{ rows: demoMailboxes, nextAfter: null as string | null }], pageParams: [null] }
+      : undefined,
+    getNextPageParam: (last) => last.nextAfter,
     retry: false,
     gcTime: 0,
-    queryFn: async () => {
-      const { data, error } = await getSupabaseClient().rpc("voicemail_mailbox_summary", {
+    queryFn: async ({ pageParam }) => {
+      const { data, error } = await getSupabaseClient().rpc("learn_voicemail_mailboxes", {
         p_tenant: tenant,
+        p_after: pageParam,
       });
       if (error) throw error;
-      return parseVoicemailMailboxes(data);
+      return parseVoicemailMailboxPage(data, tenant, pageParam);
     },
   });
-  const connectionNotice = voicemailConnectionNotice(mailboxes.data ?? []);
-  const mailbox = mailboxes.data?.find((m) => m.id === selected);
+  const mailboxRows = mailboxes.data?.pages.flatMap((p) => p.rows) ?? [];
+  const connectionNotice = voicemailConnectionNotice(mailboxRows);
+  const mailbox = mailboxRows.find((m) => m.id === selected);
   const messages = useQuery({
     queryKey: ["receptionist-voicemail-messages", tenant, userId, selected, page, demo],
     enabled: !!userId && !!mailbox && !demo,
@@ -148,7 +154,7 @@ function ScopedVoicemailInbox({ tenant, userId, demo = false }: InboxProps) {
             <RefreshCw size={16} /> Check again
           </button>
         </section>
-      ) : !mailboxes.data?.length ? (
+      ) : !mailboxRows.length ? (
         <section className="rw-panel">
           <h3>Your mailboxes will appear here</h3>
           <p>
@@ -168,7 +174,7 @@ function ScopedVoicemailInbox({ tenant, userId, demo = false }: InboxProps) {
             </section>
           )}
           <div className="vm-mailboxes" aria-label="Choose a mailbox">
-            {mailboxes.data.map((m) => (
+            {mailboxRows.map((m) => (
               <button
                 key={m.id}
                 type="button"
@@ -183,7 +189,11 @@ function ScopedVoicemailInbox({ tenant, userId, demo = false }: InboxProps) {
                 <Voicemail size={22} />
                 <span>
                   <strong>{m.display_name}</strong>
-                  <span>Extension {m.extension}</span>
+                  <span>
+                    {m.access_scope === "retained_messages"
+                      ? "Previous mailbox assignment"
+                      : `Extension ${m.extension}`}
+                  </span>
                 </span>
                 <span className="vm-count">
                   <strong>{voicemailCountLabel(m).value}</strong>
@@ -192,6 +202,15 @@ function ScopedVoicemailInbox({ tenant, userId, demo = false }: InboxProps) {
               </button>
             ))}
           </div>
+          {mailboxes.hasNextPage && (
+            <button
+              className="rw-btn rw-btn-light"
+              disabled={mailboxes.isFetching}
+              onClick={() => void mailboxes.fetchNextPage()}
+            >
+              {mailboxes.isFetchingNextPage ? "Loading more mailboxes…" : "Show more mailboxes"}
+            </button>
+          )}
           <section id="voicemail-messages" className="rw-panel vm-messages" aria-live="polite">
             {!mailbox ? (
               <p>Select a mailbox above to open its messages.</p>
@@ -200,7 +219,11 @@ function ScopedVoicemailInbox({ tenant, userId, demo = false }: InboxProps) {
                 <div className="vm-mailbox-heading">
                   <div>
                     <h2>{mailbox.display_name}</h2>
-                    <p>Extension {mailbox.extension}</p>
+                    <p>
+                      {mailbox.access_scope === "retained_messages"
+                        ? "Messages retained under your existing access"
+                        : `Extension ${mailbox.extension}`}
+                    </p>
                   </div>
                   <button
                     className="rw-btn rw-btn-light"
@@ -214,20 +237,29 @@ function ScopedVoicemailInbox({ tenant, userId, demo = false }: InboxProps) {
                   </button>
                 </div>
                 <div className="vm-source">
-                  <p>
-                    <Mail size={16} />{" "}
-                    {mailbox.email_enabled === true
-                      ? `Email notifications enabled${mailbox.notification_email ? ` · ${mailbox.notification_email}` : ""}`
-                      : mailbox.email_enabled === false
-                        ? "Email notifications are off"
-                        : "Email setup awaiting verification"}
-                  </p>
-                  <p>
-                    {mailbox.last_synced_at
-                      ? `Last message sync: ${voicemailDate(mailbox.last_synced_at)}`
-                      : "Birchills message sync awaiting connection"}
-                    {mailbox.sync_state === "error" ? " · Latest sync needs attention" : ""}
-                  </p>
+                  {mailbox.access_scope === "retained_messages" ? (
+                    <p>
+                      You can still read these earlier messages. Current mailbox settings and other
+                      people’s messages are not included.
+                    </p>
+                  ) : (
+                    <>
+                      <p>
+                        <Mail size={16} />{" "}
+                        {mailbox.email_enabled === true
+                          ? `Email notifications enabled${mailbox.notification_email ? ` · ${mailbox.notification_email}` : ""}`
+                          : mailbox.email_enabled === false
+                            ? "Email notifications are off"
+                            : "Email setup awaiting verification"}
+                      </p>
+                      <p>
+                        {mailbox.last_synced_at
+                          ? `Last message sync: ${voicemailDate(mailbox.last_synced_at)}`
+                          : "Birchills message sync awaiting connection"}
+                        {mailbox.sync_state === "error" ? " · Latest sync needs attention" : ""}
+                      </p>
+                    </>
+                  )}
                   <small>
                     Counts cover messages saved in OpenFolk. Notification settings alone do not
                     confirm an email was sent. Saved messages do not establish complete provider
@@ -242,7 +274,8 @@ function ScopedVoicemailInbox({ tenant, userId, demo = false }: InboxProps) {
                   <p>
                     {page > 0
                       ? "No saved messages on this page. Use Newer to return to earlier pages."
-                      : mailbox.sync_state === "current"
+                      : mailbox.access_scope === "retained_messages" ||
+                          mailbox.sync_state === "current"
                         ? "No saved messages in this mailbox."
                         : "Messages will appear after the provider connection is verified."}
                   </p>

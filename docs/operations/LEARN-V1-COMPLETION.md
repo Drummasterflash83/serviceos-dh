@@ -7,6 +7,20 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 00:54 BST — historical private-message discovery installed in TEST (077).**
+An actual SQL regression showed that previous owners could read their retained
+messages under RLS but could not find them through the current-mailbox summary.
+The new SECURITY INVOKER reader paginates already-visible mailbox/message groups.
+Historical-only groups contain no current notification address, extension, name or
+sync settings. The new owner still sees only their messages; an ordinary company
+owner has no mailbox bypass. Manager grant/revocation and foreign-tenant denial
+passed in the actual TEST schema. Both rehearsal and installation preserved all
+140 datasets; all banned/passwordless probe fixtures rolled back, with no sessions
+or persistent access created. Local UI checks cover 20+3 mailbox pagination and
+historical message detail; 18 regressions, full TypeScript and build pass. Matching
+frontend deployment and actual signed-in playback remain separate gates.
+[Evidence](evidence/learn-voicemail-inbox-history-2026-10-12.json).
+
 **12 October, 00:47 BST — private inbox entry deployed to protected TEST.**
 Deployment `dpl_3axjgqPF1VNeXaRWzGANk7cvMzja` is READY from
 `de4bcd98dba0c70d87069ff9b554130d79b7f7b3`; the stable TEST alias points to it.

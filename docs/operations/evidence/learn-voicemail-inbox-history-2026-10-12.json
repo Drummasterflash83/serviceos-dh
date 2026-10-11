@@ -1,0 +1,85 @@
+{
+  "observedAt": "2026-10-11T23:55:53.218839+00:00",
+  "scope": "Installed TEST 077 reader; real SQL-role and denied HTTP boundaries; local synthetic UI",
+  "rehearsal": {
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-11T23:53:48.677Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "packageSha256": "fa745292ffb7519b612877c36fd2dce83cdf8d9a7dfc0d649987ef035d0c347b",
+    "expected": {
+      "marker": "voicemail-inbox-installed/1",
+      "fingerprint": "6993886b70c352d13bae0800ffb39f08"
+    },
+    "afterFingerprint": "ed4d1ecae448c223753ab1640d9fe44a",
+    "preservedDatasets": 140,
+    "usersRetained": 0,
+    "grantsRetained": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Real SQL roles and complete TEST schema; no actual signed-in browser session or successful playback. Transaction-local banned/passwordless fixtures rolled back."
+    ]
+  },
+  "installation": {
+    "state": "installed_private_inbox_verified",
+    "observedAt": "2026-10-11T23:54:40.003Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "packageSha256": "fa745292ffb7519b612877c36fd2dce83cdf8d9a7dfc0d649987ef035d0c347b",
+    "expected": {
+      "marker": "voicemail-inbox-installed/1",
+      "fingerprint": "6993886b70c352d13bae0800ffb39f08"
+    },
+    "afterFingerprint": "6993886b70c352d13bae0800ffb39f08",
+    "preservedDatasets": 140,
+    "usersRetained": 0,
+    "grantsRetained": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Real SQL roles and complete TEST schema; no actual signed-in browser session or successful playback. Transaction-local banned/passwordless fixtures rolled back."
+    ]
+  },
+  "http": {
+    "observedAt": "2026-10-11T23:55:29.868Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "role": "anon",
+        "status": 401,
+        "code": "42501",
+        "passed": true
+      },
+      {
+        "role": "service_role",
+        "status": 403,
+        "code": "42501",
+        "passed": true
+      }
+    ],
+    "preservedDatasets": 140,
+    "positiveSignedInAcceptance": false,
+    "productionChanged": false
+  },
+  "verification": {
+    "offlineSql": "Regression reproduced and historical owner, new owner, manager revocation, tenant isolation, 20+3 pagination, rollback and source preservation passed",
+    "nodeTests": 18,
+    "fullProjectTypeScript": "passed",
+    "frontendBuild": "passed",
+    "browser": "Actual components with synthetic response: 20+3 mailbox pagination, no current settings/connection warning on historical groups, retained message detail",
+    "browserErrors": 0,
+    "screenshot": ".verification-results/voicemail-historical-inbox-synthetic.png"
+  },
+  "sourceSha256": {
+    "supabase/migrations/20261101460000_learn_voicemail_inbox_history.sql": "7ea9237b8adc4fdcd70f8616254e8ccd5f50fb048cce1316621a28b6ce364457",
+    "scripts/verify/learn-voicemail-inbox-hosted.assert.sql": "8a99436526089b6a9c6520fe5a7503edb230043266c29748f755b1df46462834",
+    "src/components/receptionist/VoicemailInbox.tsx": "242863c2276ac22bf925cdb47c454426b9a8dee5a004ad0cd3b63a9c74f2403b",
+    "src/lib/voicemail-reader.ts": "fd2813ab578027cf01eb25f9ef535e998e131d7a162d32b1199361ed61e4be24",
+    "src/lib/voicemails.ts": "0e6f62f104ba9db00aff558c94ba721d235eab6441d5345e8a6793fc1761da3b"
+  },
+  "limitations": [
+    "Frontend still requires matching deployment.",
+    "No actual signed-in hosted acceptance or successful audio playback.",
+    "Recorded historical ownership rules verified, not real Drummonds route authority or source completeness.",
+    "No production changes, real provider calls or persistent access grants."
+  ]
+}

@@ -1,5 +1,36 @@
 # Birchills voicemail: discovery before capture
 
+## Historical inbox visibility — TEST 077, 12 October
+
+The original message policy snapshots the owner, but the mailbox summary starts
+from current mailbox assignments. Actual SQL reproduced an old owner seeing one
+message through RLS and zero mailboxes after reassignment. The additive
+`learn_voicemail_mailboxes(tenant, after)` reader fixes discovery using the union
+of caller-visible mailbox IDs and caller-visible message mailbox IDs. It is
+SECURITY INVOKER with a fixed search path and authenticated execution only.
+Message, mailbox and Storage RLS are unchanged. It returns 20 rows with an opaque
+UUID continuation; the next page starts strictly after that ID.
+
+When current mailbox configuration is not visible, only the existing message
+group ID, its caller-visible saved count and a generic historical label are shown.
+Current names, extensions, notification addresses and sync settings stay hidden.
+No connection warning is inferred for historical-only groups. Current owners and
+explicit managers retain their existing views; revocation follows existing RLS.
+The UI now uses this paginated reader in both LEARN and Receptionist.
+
+The full TEST schema rehearsal and installation passed real-role old/new owner,
+ordinary owner denial, manager/revocation, foreign tenant and 20+3 pagination
+checks. Temporary banned/passwordless identities and every fixture rolled back
+inside the release transaction; no session or persistent access was created.
+All **140 datasets** were preserved. Runtime worker/importer versions are unchanged.
+Rollback can restore the preceding frontend while retaining the unused reader;
+do not remove messages or change ownership to make an older UI display them.
+Subsequent preservation checks should use the inbox-inclusive catalog.
+
+These checks verify the existing recorded ownership rules, not that Drummonds'
+historical route assignments are correct. Real route authority, signed-in playback
+and provider completeness remain open. [Evidence](evidence/learn-voicemail-inbox-history-2026-10-12.json).
+
 ## Private inbox entry from LEARN — 12 October, local acceptance
 
 `LearnVoicemails` opens the existing `VoicemailInbox` from LEARN. It uses the same

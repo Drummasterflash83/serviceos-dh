@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseVoicemailMailboxes, parseVoicemailMessages } from "./voicemail-reader.ts";
+import {
+  parseVoicemailMailboxes,
+  parseVoicemailMessages,
+  parseVoicemailMailboxPage,
+} from "./voicemail-reader.ts";
+import { voicemailConnectionNotice } from "./voicemails.ts";
 
 const tenant = "11111111-1111-4111-8111-111111111111";
 const mailbox = "22222222-2222-4222-8222-222222222222";
@@ -28,6 +33,67 @@ const message = (id = other) => ({
   email_evidence_at: null,
   email_recipient: null,
   recording_available: true,
+});
+const historic = () => ({
+  ...summary(),
+  access_scope: "retained_messages",
+  display_name: "Earlier private messages",
+  extension: "",
+});
+const envelope = () => ({
+  version: "learn-voicemail-mailboxes/1",
+  tenant_id: tenant,
+  after: null,
+  observed_at: "2026-10-12T00:00:00Z",
+  next_after: null,
+  rows: [historic()],
+});
+test("historic message groups reveal no current mailbox settings or connection warning", () => {
+  const page = parseVoicemailMailboxPage(envelope(), tenant, null);
+  assert.equal(page.rows[0].access_scope, "retained_messages");
+  assert.equal(voicemailConnectionNotice(page.rows), null);
+  for (const change of [
+    { notification_email: "new-owner@example.invalid" },
+    { email_enabled: true },
+    { extension: "601" },
+    { display_name: "New owners name" },
+    { last_synced_at: "2026-10-12T00:00:00Z" },
+    { message_count: 0 },
+  ])
+    assert.throws(() =>
+      parseVoicemailMailboxPage(
+        { ...envelope(), rows: [{ ...historic(), ...change }] },
+        tenant,
+        null,
+      ),
+    );
+});
+test("mailbox cursors, version and tenant must match the requested page", () => {
+  for (const change of [
+    { version: "unknown" },
+    { tenant_id: other },
+    { after: other },
+    { observed_at: "bad" },
+    { next_after: other },
+    { rows: [summary()] },
+    { rows: [historic(), historic()] },
+  ])
+    assert.throws(() => parseVoicemailMailboxPage({ ...envelope(), ...change }, tenant, null));
+  assert.throws(() => parseVoicemailMailboxPage({ ...envelope(), after: other }, tenant, other));
+  assert.equal(parseVoicemailMailboxPage({ ...envelope(), rows: [] }, tenant, null).rows.length, 0);
+});
+test("twenty-row page advances to exactly its last identity", () => {
+  const rows = Array.from({ length: 20 }, (_, i) => ({
+    ...summary(),
+    id: `22222222-2222-4222-8222-${String(i + 1).padStart(12, "0")}`,
+    access_scope: "current",
+  }));
+  const page = { ...envelope(), rows, next_after: rows.at(-1)!.id };
+  assert.equal(parseVoicemailMailboxPage(page, tenant, null).nextAfter, page.next_after);
+  assert.throws(() => parseVoicemailMailboxPage({ ...page, next_after: rows[0].id }, tenant, null));
+  assert.throws(() =>
+    parseVoicemailMailboxPage({ ...page, rows: [...rows].reverse() }, tenant, null),
+  );
 });
 test("private reader preserves saved messages while source connection is unverified", () => {
   assert.equal(parseVoicemailMailboxes([summary()])[0].message_count, 1);

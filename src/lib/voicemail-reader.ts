@@ -10,7 +10,7 @@ const fail = () => {
   throw Error("Saved voicemail data could not be verified. Refresh to try again.");
 };
 
-/** The summary RPC is SECURITY INVOKER: mailbox visibility and counts use caller RLS. */
+/** Mailbox visibility and counts use caller RLS, including historical-only message groups. */
 export function parseVoicemailMailboxes(raw: unknown): Mailbox[] {
   if (!Array.isArray(raw)) return fail();
   const ids = new Set<string>();
@@ -26,11 +26,22 @@ export function parseVoicemailMailboxes(raw: unknown): Mailbox[] {
       !["awaiting_connection", "current", "error"].includes(r.sync_state) ||
       !(r.last_synced_at === null || stamp(r.last_synced_at)) ||
       (r.sync_state === "current" && r.last_synced_at === null) ||
+      (r.access_scope !== undefined &&
+        !["current", "retained_messages"].includes(r.access_scope)) ||
+      (r.access_scope === "retained_messages" &&
+        (r.notification_email !== null ||
+          r.email_enabled !== null ||
+          r.last_synced_at !== null ||
+          r.sync_state !== "awaiting_connection" ||
+          r.extension !== "" ||
+          r.display_name !== "Earlier private messages" ||
+          r.message_count < 1)) ||
       !count(r.message_count)
     )
       return fail();
     ids.add(r.id);
     return {
+      ...(r.access_scope ? { access_scope: r.access_scope } : {}),
       id: r.id,
       display_name: r.display_name,
       extension: r.extension,
@@ -41,6 +52,32 @@ export function parseVoicemailMailboxes(raw: unknown): Mailbox[] {
       message_count: r.message_count,
     };
   });
+}
+
+export function parseVoicemailMailboxPage(raw: any, tenant: string, after: string | null) {
+  if (
+    !uuid(tenant) ||
+    !(after === null || uuid(after)) ||
+    !raw ||
+    raw.version !== "learn-voicemail-mailboxes/1" ||
+    raw.tenant_id !== tenant ||
+    raw.after !== after ||
+    !stamp(raw.observed_at) ||
+    !Array.isArray(raw.rows) ||
+    raw.rows.length > 20 ||
+    !(raw.next_after === null || uuid(raw.next_after))
+  )
+    return fail();
+  const rows = parseVoicemailMailboxes(raw.rows);
+  if (
+    rows.some(
+      (r, i) =>
+        !r.access_scope || (i > 0 ? r.id <= rows[i - 1].id : after !== null && r.id <= after),
+    ) ||
+    (raw.next_after !== null && (rows.length !== 20 || raw.next_after !== rows.at(-1)?.id))
+  )
+    return fail();
+  return { rows, nextAfter: raw.next_after as string | null };
 }
 
 export const VOICEMAIL_PAGE_SIZE = 20;

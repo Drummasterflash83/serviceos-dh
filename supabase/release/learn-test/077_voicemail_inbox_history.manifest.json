@@ -1,0 +1,17 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "fa745292ffb7519b612877c36fd2dce83cdf8d9a7dfc0d649987ef035d0c347b",
+  "priorFingerprint": "e98a51ad59594757305433a7257c5e6f",
+  "priorInboxFingerprint": "ed4d1ecae448c223753ab1640d9fe44a",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101460000_learn_voicemail_inbox_history.sql",
+      "sha256": "7ea9237b8adc4fdcd70f8616254e8ccd5f50fb048cce1316621a28b6ce364457"
+    },
+    {
+      "path": "scripts/verify/learn-voicemail-inbox-hosted.assert.sql",
+      "sha256": "8a99436526089b6a9c6520fe5a7503edb230043266c29748f755b1df46462834"
+    }
+  ],
+  "preservedDatasets": 140
+}
