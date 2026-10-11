@@ -200,15 +200,20 @@ succeeded after that failure; no worker was invoked and no source record changed
   transcription, playable audio, retry/recovery and recurring capture with the
   real Birchill account. Preserve existing IDs and distinguish capture from shadow
   processing configuration. [Phone work](LEARN-PHONE-ACCOUNT-BINDING.md).
-  Retained call playback is now implemented as a **candidate, not deployed**:
+  Retained call playback is implemented and its backend is now **installed in TEST**:
   owner/admin evidence cards list exact tenant/provider/call recordings and request
-  audited 60-second links to private retained audio. Nine protocol/client/actual
-  handler tests, isolated PostgreSQL assertions, and a full installed TEST-schema
-  rollback rehearsal passed (112 data sets unchanged). The actual component played
-  generated audio in the browser; closing evidence stopped it, switching company
-  discarded a delayed old link, and listing failure recovered on retry. No real
-  recording playback or signed-in hosted acceptance is claimed.
-  [Playback evidence](evidence/learn-phone-playback-candidate-2026-10-11.json).
+  audited 60-second links to private retained audio. Candidate checks included
+  nine protocol/client/actual handler tests, isolated PostgreSQL assertions and
+  actual-component browser playback of generated audio. Closing evidence stopped
+  playback; switching company discarded a delayed old link; listing retry worked.
+  Release 057 installed at 11:08 UTC after the exact package rollback rehearsal,
+  preserving 112 data sets. Endpoint v1 is ACTIVE with JWT protection; runtime
+  deployment and nine anonymous/service HTTP denials preserved 113 data sets.
+  All three downloaded source files matched transpiled syntax and downloaded
+  handler tests passed. No new users or grants were created. TEST frontend update,
+  real retained audio playback and signed-in hosted acceptance remain open.
+  [Candidate checks](evidence/learn-phone-playback-candidate-2026-10-11.json).
+  [Hosted backend evidence](evidence/learn-phone-playback-test-2026-10-11.json).
   Hosted TEST now has pipeline, transcription and analysis v1, download v4,
   pending processor v2 and platform worker v7, coordinated with schema release 055.
   The local candidate now confirms pipeline completion and gives downloads,

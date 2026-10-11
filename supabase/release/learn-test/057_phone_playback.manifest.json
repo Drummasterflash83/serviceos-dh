@@ -1,0 +1,14 @@
+{
+  "version": "learn-phone-playback-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "7860023117986d2edee6bf34219e94924393ae635f0760ce0dc6890abce91454",
+  "priorFingerprint": "49ce8178c104da0915f78467004b84c0",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101230000_learn_phone_playback.sql",
+      "sha256": "2c08721acb41ea61403690e9030c87f4a10bf2a401c514fb43d8d6cbc11a3068"
+    }
+  ],
+  "assertionSha256": "d7f864b4e60b65d75d8ab4b0ed65847b220ce1fa81562c3e15f717d709645d06",
+  "preservedDataSets": 112
+}

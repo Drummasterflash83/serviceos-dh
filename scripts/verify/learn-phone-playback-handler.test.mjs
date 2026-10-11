@@ -81,6 +81,10 @@ async function harness({ role = "owner", authError = false, auditError = false }
     },
   });
   const cache = new Map();
+  const readback = process.env.PHONE_PLAYBACK_READBACK_ROOT;
+  const entry = resolve(
+    readback ? readback + "/index.ts" : "supabase/functions/learn-phone-playback/index.ts",
+  );
   async function load(file) {
     if (cache.has(file)) return cache.get(file);
     const mod = new vm.SourceTextModule(
@@ -99,11 +103,18 @@ async function harness({ role = "owner", authError = false, auditError = false }
             },
             { context },
           )
-        : load(resolve(dirname(parent.identifier), spec)),
+        : load(
+            resolve(
+              dirname(parent.identifier),
+              readback && parent.identifier === entry && spec.startsWith("../_shared/")
+                ? "functions/" + spec.slice(3)
+                : spec,
+            ),
+          ),
     );
     return mod;
   }
-  await (await load(resolve("supabase/functions/learn-phone-playback/index.ts"))).evaluate();
+  await (await load(entry)).evaluate();
   return {
     calls,
     run: (body = { tenant_id: id(1), recording_id: id(3) }, headers = {}) =>

@@ -1,0 +1,143 @@
+{
+  "schemaRehearsal": {
+    "version": "learn-phone-playback/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "7860023117986d2edee6bf34219e94924393ae635f0760ce0dc6890abce91454",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-11T11:07:41.281Z",
+    "priorFingerprint": "49ce8178c104da0915f78467004b84c0",
+    "expectedFingerprint": "a6f5cfa886fe094cc5318ecbb75b472c",
+    "afterFingerprint": "49ce8178c104da0915f78467004b84c0",
+    "preservedDataSets": 112,
+    "submissionFailure": null,
+    "receipt": {
+      "fingerprint": "a6f5cfa886fe094cc5318ecbb75b472c",
+      "functions": 8
+    }
+  },
+  "schemaInstallation": {
+    "version": "learn-phone-playback/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "7860023117986d2edee6bf34219e94924393ae635f0760ce0dc6890abce91454",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-11T11:08:37.362Z",
+    "priorFingerprint": "49ce8178c104da0915f78467004b84c0",
+    "expectedFingerprint": "a6f5cfa886fe094cc5318ecbb75b472c",
+    "afterFingerprint": "a6f5cfa886fe094cc5318ecbb75b472c",
+    "preservedDataSets": 112,
+    "submissionFailure": null,
+    "receipt": {
+      "fingerprint": "a6f5cfa886fe094cc5318ecbb75b472c",
+      "functions": 8
+    }
+  },
+  "runtime": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-11T11:08:57.981Z",
+    "state": "deployed_needs_hosted_acceptance",
+    "sourceBundleSha256": "f8ac00eb85c69ea1f9fa4d2a862b0b2da8e22a77409bff0fee466a3bc6156e8d",
+    "cliExitStatus": 0,
+    "schemaUnchanged": true,
+    "retainedSourcesUnchanged": true,
+    "otherEndpointsUnchanged": true,
+    "preservedDataSets": 113,
+    "endpoint": {
+      "name": "learn-phone-playback",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    "completedAt": "2026-10-11T11:09:05.286Z"
+  },
+  "httpDenials": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "http_denials_verified",
+    "checks": [
+      {
+        "role": "anon",
+        "name": "recording list",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "role": "anon",
+        "name": "private audit",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "role": "anon",
+        "name": "playback endpoint",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "role": "anon",
+        "name": "internal impersonation",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "role": "anon",
+        "name": "direct authorizer",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "role": "service_role",
+        "name": "recording list",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "role": "service_role",
+        "name": "private audit",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "role": "service_role",
+        "name": "playback endpoint",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "role": "service_role",
+        "name": "internal impersonation",
+        "status": 401,
+        "passed": true
+      }
+    ],
+    "schemaFingerprint": "a6f5cfa886fe094cc5318ecbb75b472c",
+    "preservedDataSets": 113,
+    "newUsers": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "positiveSignedInAcceptance": false,
+    "observedAt": "2026-10-11T11:10:22.840Z"
+  },
+  "deployedSource": {
+    "files": [
+      {
+        "path": "learn-phone-playback/index.ts",
+        "syntaxMatches": true
+      },
+      {
+        "path": "_shared/authz.ts",
+        "syntaxMatches": true
+      },
+      {
+        "path": "_shared/learn-phone-playback.ts",
+        "syntaxMatches": true
+      }
+    ],
+    "allMatched": true,
+    "method": "Transpiled syntax trees retain identifier/literal text, operators, declaration kind and child structure; comments, locations, punctuation and redundant parenthesis excluded. Supplemented with downloaded handler tests."
+  },
+  "scope": "Hosted TEST only; signed-in positive playback and production acceptance remain open",
+  "downloadedHandlerTests": 3,
+  "newPersistentUsers": 0,
+  "productionChanges": 0
+}
