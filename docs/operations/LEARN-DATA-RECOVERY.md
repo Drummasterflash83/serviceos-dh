@@ -83,8 +83,12 @@ reference passes, and checks object revision, ETag, size and links around reads.
 The full source → AWS SDK → manifest → isolated restore path passes synthetic
 tests (28 combined). One real Drummonds object passed a bounded metadata-only
 probe against database and Storage API, with no audio download.
-Actual full inventory, AWS acceptance, daily scheduling, operator monitoring,
+The complete real metadata inventory subsequently verified all 2,888 objects and
+all 2,882 recording-row file links, with six unlinked objects retained. Private
+inventory/reconciliation files and bounded copy checkpoints are implemented;
+32 local tests pass. AWS transfer acceptance, daily scheduling, operator monitoring,
 real copies, playback and database restore remain unfinished.
+[Inventory and batch evidence](evidence/learn-recording-inventory-and-batch-2026-10-11.json).
 [Source evidence](evidence/learn-recording-backup-source-local-2026-10-11.json). [SDK evidence](evidence/learn-recording-backup-s3-local-2026-10-11.json). Initial source reads can reuse existing authorised credentials in memory inside
 the trusted local/ServiceOS environment; they must never be exported to AWS. Any
 new source access or production runtime deployment remains behind its applicable

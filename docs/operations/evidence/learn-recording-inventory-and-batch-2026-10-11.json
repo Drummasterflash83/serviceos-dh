@@ -1,0 +1,74 @@
+{
+  "version": "learn-recording-full-inventory-and-batch/1",
+  "observedAt": "2026-10-11T08:09:58.056255+00:00",
+  "realInventory": {
+    "version": "recording-source-full-inventory/1",
+    "observedAt": "2026-10-11T08:00:40.074Z",
+    "completedAt": "2026-10-11T08:07:45.871Z",
+    "outcome": "complete_metadata_inventory_verified",
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "tenantId": "00000000-0000-0000-0000-000000000001",
+    "managementRequests": 2,
+    "sourceRequests": 2930,
+    "objects": 2888,
+    "recordingRows": 2882,
+    "totalBytes": 601004261,
+    "unreferencedObjects": 6,
+    "rowsWithoutStoragePointer": 0,
+    "missingObjectReferences": 0,
+    "inventorySha256": "205e688a9e8ffb215b3d33d8699cb9624422e08f8d3646eb34f663041b26718f",
+    "reconciliationSha256": "dfdb594a26818afa798840c7e06b235ffe2167474d31994e2395e1642ceb1506",
+    "sourceSnapshot": "non_atomic",
+    "privateInventoryPersisted": true,
+    "audioBytesDownloaded": 0,
+    "sourceWrites": 0,
+    "awsRequests": 0,
+    "backupComplete": false
+  },
+  "privateFilesModeVerified": true,
+  "sourceHashes": {
+    "scripts/backup/inventory-drummonds-recordings.mjs": "5e816633c6e93c91ddd4a55ea87987b47940808a8a391cf3b66c05dcb7af3b59",
+    "scripts/backup/recording-backup-batch.mjs": "b35c7b2962578784f3f095407c897417f584acc6c9c4d7324d90fedaeaa4608b",
+    "scripts/backup/recording-backup-batch.test.mjs": "0ab5c4ca2e305a3c31daa635830e4b57cc9afe30b4f89205aa4a1f4882e2f927"
+  },
+  "localTests": {
+    "command": "npm test --prefix scripts/backup",
+    "passed": 32,
+    "failed": 0,
+    "batchTests": 4
+  },
+  "cloudAccessProposal": {
+    "status": "CREATE_COMPLETE",
+    "execution": "AVAILABLE_NOT_EXECUTED",
+    "resources": {
+      "AWS::IAM::User": 2
+    },
+    "deploymentValidations": "passed",
+    "templateReadbackExact": true,
+    "templateSha256": "65026ba10762f27375b8a41ba51e0969acef85b4e7414bddb841581a1f399a24",
+    "newAccessGranted": false
+  },
+  "iamNoticeDiagnosis": {
+    "observedScope": "Explicit deny actions only",
+    "nonApplicableActions": [
+      "DeleteAccessPoint",
+      "DeleteAccessPointForObjectLambda",
+      "DeleteMultiRegionAccessPoint",
+      "DeleteStorageLensConfiguration",
+      "DeleteStorageLensGroup",
+      "DeleteJobTagging",
+      "DeleteStorageLensConfigurationTagging",
+      "DeleteAccessGrant",
+      "DeleteAccessGrantsLocation",
+      "DeleteAccessPointPolicy",
+      "DeleteAccessPointPolicyForObjectLambda"
+    ],
+    "explanation": "Delete* includes resource types outside the backup bucket/object ARNs. These unrelated actions have no applicable deny resource. This does not add an Allow; effective credentials still require live tests."
+  },
+  "remaining": [
+    "Scoped access execution/credential provisioning approval",
+    "Real AWS transfer and restore",
+    "Daily runtime and monitoring",
+    "Database/audio restore acceptance"
+  ]
+}

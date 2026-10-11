@@ -246,8 +246,13 @@ succeeded after that failure; no worker was invoked and no source record changed
   and encrypted journal add eight signed-wire synthetic tests (19 combined).
   The recursive Supabase source adapter now joins the synthetic copy/manifest/
   restore test path (28 tests combined), and one real object passed metadata-only
-  verification. Actual full inventory, AWS acceptance, scheduling, monitoring,
-  byte copies and database/audio restore acceptance remain open.
+  verification. The complete real metadata inventory now verifies all 2,888 objects
+  and every recording-row file link; six unlinked objects remain included. Private
+  manifests are saved locally. The bounded copy runner has 32 passing tests overall.
+  Restricted Writer/Restore IAM access is prepared as an unexecuted change set;
+  action-time approval is needed for the new identities/keys. AWS transfers,
+  scheduling, monitoring and database/audio restore acceptance remain open.
+  [Inventory and runner evidence](evidence/learn-recording-inventory-and-batch-2026-10-11.json).
   AWS foundation resources now exist; no recording transfer occurred.
 
 ## Release and completion gates

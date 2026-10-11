@@ -228,3 +228,73 @@ node scripts/backup/verify-recording-source.mjs --drummonds-metadata-only
 Source references: [folder listing semantics](https://supabase.com/docs/reference/javascript/file-buckets-list),
 [authenticated downloads](https://supabase.com/docs/guides/storage/serving/downloads),
 [Info response contract](https://github.com/supabase/storage/blob/master/src/storage/renderer/info.ts).
+
+
+## Complete real metadata inventory and bounded copy runner — 11 October
+
+The real tenant inventory completed at 08:07:45 UTC: **2,888 objects,
+601,004,261 bytes, 2,882 recording rows**. Two complete recursive listings and
+record-reference passes matched; every file's Storage Info metadata matched.
+All recording rows have matching files and non-null paths. Six objects have no
+recording-row reference and remain in the inventory. This is a non-atomic metadata
+observation, not proof of playable audio or independent recovery.
+
+`inventory-drummonds-recordings.mjs --drummonds-metadata-only` uses the existing
+CLI login and existing source credential in memory, with a 20-minute limit and
+20,000-request budget. The successful run used 2 management and 2,930 source
+requests; no audio downloads, source writes or AWS requests. It saved inventory,
+reconciliation and safe summary in a new ignored 0700 directory with synced 0600
+files. File hashes and modes were independently checked. Private paths/links
+stay out of Git and console output.
+
+`copyRecordingBatch` processes a persisted inventory under object/byte limits.
+A durable checkpoint follows each verified object receipt. Interrupted checkpoint
+writes recover the existing receipt on resume without another audio upload.
+The checkpoint binds inventory hash and destination; crossing either fails.
+Completing the copy pass explicitly does not claim complete backup coverage:
+`finalizeRecordingInventory` must independently recheck all receipts and versions.
+Thirty-two tests pass, including four new real-SDK/synthetic-transport batch cases.
+[Evidence](../../docs/operations/evidence/learn-recording-inventory-and-batch-2026-10-11.json).
+
+## Scoped access proposal — prepared, not executed
+
+`access.cloudformation.json` creates **two machine IAM users** in the verified
+OpenFolk account: Writer and Restore. Each receives its corresponding existing
+foundation policy, also used as its permissions boundary. No login profile,
+console password, administrator policy, group membership, source credential,
+scheduler or key is included in this template. The account/region rules pin the
+reviewed account and London deployment. AWS-generated names avoid collisions.
+
+Writer can inspect the one backup bucket and create/read/verify objects under the
+Drummonds prefix. Restore can inspect and read that prefix only. Neither can delete
+backup data, bypass retention, change bucket protections or manage IAM. The
+boundary restricts identity-policy permissions; it is not a claim that an AWS
+administrator cannot later change account or resource policies.
+
+CloudFormation change set `recording-scoped-access-20261011` on stack
+`openfolk-drummonds-recording-access` is CREATE_COMPLETE / AVAILABLE, with exactly
+these two Add actions. Schema lint and AWS deployment validation pass. Both the
+editor and the independently reloaded saved template exactly match the local JSON.
+It has **not been executed**; existing foundation policies remain unattached.
+
+The requested activation also covers creating one programmatic key per machine
+identity and storing each in this Mac's login Keychain, under separate services
+`OpenFolk.ServiceOS.RecordingBackup.Writer` and
+`OpenFolk.ServiceOS.RecordingBackup.Restore`, with the verified AWS account ID as
+Keychain account. Keys must never be printed, committed, left in project files,
+exported to the source provider, or used as root/admin credentials. Any transient
+transfer file must be private and removed immediately after verified Keychain
+storage. The restore key is loaded only for deliberate restore checks, not the
+copy scheduler. Production deployment/credential transfer remains a separate gate.
+
+These are long-lived programmatic keys for the initial trusted local copy/restore
+runner, not expiring sessions. A key compromise would expose the permitted backup
+prefix. Record creation/last-use metadata, rotate within 90 days and revoke promptly
+when this runtime is retired. Prefer workload roles/temporary credentials when
+moving to a hosted runner; these users grant no deployment permission. An operator
+can disable either key to stop access without deleting retained recordings.
+[AWS access-key guidance](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
+
+Creating these new identities and keys grants new security-sensitive access, so
+browser action-time confirmation is required before execution/provisioning.
+The existing approved recording-copy destination and scope are unchanged.

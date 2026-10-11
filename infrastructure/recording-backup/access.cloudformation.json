@@ -1,0 +1,134 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "OpenFolk recording backup scoped machine identities. No console login, keys, source access, scheduler or transfer. Execution grants scoped S3 access and requires explicit approval.",
+  "Parameters": {
+    "ExpectedAccountId": {
+      "Type": "String",
+      "AllowedPattern": "^[0-9]{12}$"
+    },
+    "WriterPolicyArn": {
+      "Type": "String",
+      "AllowedPattern": "^arn:aws:iam::[0-9]{12}:policy/openfolk-drummonds-recording-backup-BackupWriterPolicy-[A-Za-z0-9]+$"
+    },
+    "RestorePolicyArn": {
+      "Type": "String",
+      "AllowedPattern": "^arn:aws:iam::[0-9]{12}:policy/openfolk-drummonds-recording-backup-BackupRestorePolicy-[A-Za-z0-9]+$"
+    }
+  },
+  "Rules": {
+    "ExpectedAccountAndRegion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::AccountId"
+              },
+              {
+                "Ref": "ExpectedAccountId"
+              }
+            ]
+          },
+          "AssertDescription": "Verified OpenFolk account only"
+        },
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::Region"
+              },
+              "eu-west-2"
+            ]
+          },
+          "AssertDescription": "London deployment only"
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "Writer": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "Path": "/serviceos/recording-backup/",
+        "ManagedPolicyArns": [
+          {
+            "Ref": "WriterPolicyArn"
+          }
+        ],
+        "PermissionsBoundary": {
+          "Ref": "WriterPolicyArn"
+        },
+        "Tags": [
+          {
+            "Key": "OpenFolkPurpose",
+            "Value": "recording-backup"
+          },
+          {
+            "Key": "AccessPurpose",
+            "Value": "writer"
+          },
+          {
+            "Key": "TenantId",
+            "Value": "00000000-0000-0000-0000-000000000001"
+          }
+        ]
+      }
+    },
+    "Restore": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "Path": "/serviceos/recording-backup/",
+        "ManagedPolicyArns": [
+          {
+            "Ref": "RestorePolicyArn"
+          }
+        ],
+        "PermissionsBoundary": {
+          "Ref": "RestorePolicyArn"
+        },
+        "Tags": [
+          {
+            "Key": "OpenFolkPurpose",
+            "Value": "recording-backup"
+          },
+          {
+            "Key": "AccessPurpose",
+            "Value": "restore"
+          },
+          {
+            "Key": "TenantId",
+            "Value": "00000000-0000-0000-0000-000000000001"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "WriterUserName": {
+      "Value": {
+        "Ref": "Writer"
+      }
+    },
+    "WriterUserArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Writer",
+          "Arn"
+        ]
+      }
+    },
+    "RestoreUserName": {
+      "Value": {
+        "Ref": "Restore"
+      }
+    },
+    "RestoreUserArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Restore",
+          "Arn"
+        ]
+      }
+    }
+  }
+}
