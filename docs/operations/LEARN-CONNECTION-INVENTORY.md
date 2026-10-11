@@ -57,10 +57,20 @@ no published ports and no host mounts.
 
 Reviewed runtime: 23 files,
 `0d89476a209b70795edadaccdc8f43749e24f3dda29530fb902421b5b03d0d89`.
-The TEST replacement is pinned to controller v6, the installed catalogs and 101
-preservation fingerprints. This local checkpoint does not yet claim deployment.
-The compatible frontend is released first, then the backend adds per-provider
-cards and checked evidence. Production remains unchanged.
+TEST controller v7 is ACTIVE from Git `5369311a98dfb071d53d4527f07d149f4b5ef556`
+at 03:55 UTC on 11 October. The replacement required controller v6 and the installed
+catalogs. All 101 monitored datasets, schema and other endpoints were preserved;
+26 hosted access-boundary checks passed. No new grants, provider requests, source
+writes or production changes occurred.
+
+The paired protected [TEST frontend](https://serviceos-learn-test-2nm718p5o-allkin.vercel.app)
+is READY from the same commit at 03:55 UTC. It was deployed before the backend.
+Anonymous deployment protection, same-origin operator sign-in redirect and
+synthetic connection-card details pass, with zero browser console errors. The
+manual Phone fixture shows setup required, never verified and external read disabled;
+retained evidence remains visible, with distinct sync/discovery fields.
+See [local evidence](evidence/learn-connection-inventory-local-2026-10-11.json) and
+[TEST evidence](evidence/learn-connection-inventory-test-2026-10-11.json).
 
 Inventory bounds remain 20,000 rows, 8 MiB and 100 requests per table. Latest queries
 are intentional single-row, provider-scoped reads with deterministic timestamp/ID

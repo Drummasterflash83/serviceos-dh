@@ -71,8 +71,9 @@ These reads are not a transactionally frozen history. Same-count concurrent edit
 and metadata fields changed in place cannot reconstruct every historical state.
 Endpoints without a recorded ending and handoffs without timestamps are not inferred.
 Team membership history and free-text role targets are not new temporal guarantees.
-Per-table budgets remain 20,000 rows, 8 MiB and 100 requests. Connection/discovery
-history and cross-client listing retain separate limitations. The subsequent
+Per-table budgets remain 20,000 rows, 8 MiB and 100 requests. Discovery history and cross-client listing retain separate limitations. The
+[connection inventory increment](LEARN-CONNECTION-INVENTORY.md) checks current
+connection metadata and provider-specific latest evidence. The subsequent
 [Phone readiness increment](LEARN-PHONE-READINESS.md) checks configuration inventories
 and actual policy/source gates.
 Positive signed-in hosted acceptance and actual card-evidence attribution remain

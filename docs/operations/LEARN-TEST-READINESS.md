@@ -1,13 +1,18 @@
 # Existing TEST environment: verified release gaps
 
-## Connection inventory — verified local candidate
+## Connection inventory — TEST controller v7 and paired frontend installed
 
 The operator no longer infers connected/healthy status from retained inventory
 or credential wording. Each Phone provider has separate metadata and evidence;
 missing setup has no invented Drummonds account. Complete checked inventories,
 provider-specific latest history and clear failed/revoked states replace capped,
 unverified results. Seventy-four targeted checks and the isolated 69-request
-transport check pass. Hosted deployment is not yet claimed by this checkpoint.
+transport check pass. TEST controller v7 is ACTIVE at 03:55 UTC on 11 October;
+all 101 monitored datasets, schema and other endpoints were preserved. Twenty-six
+hosted access checks passed. Protected frontend v21 is READY from Git
+`5369311a98dfb071d53d4527f07d149f4b5ef556`; protection, same-origin sign-in
+redirect and synthetic connection-card details pass with no console errors.
+Positive signed-in acceptance and live capture/recovery remain open.
 See [connection inventory](LEARN-CONNECTION-INVENTORY.md).
 
 ## Phone readiness — TEST controller v6 and paired frontend installed

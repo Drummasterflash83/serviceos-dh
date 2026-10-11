@@ -1,0 +1,264 @@
+{
+  "version": "learn-connection-inventory-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceGitSha": "5369311a98dfb071d53d4527f07d149f4b5ef556",
+  "backend": {
+    "observedAt": "2026-10-11T03:55:30.239Z",
+    "sourceBundleSha256": "0d89476a209b70795edadaccdc8f43749e24f3dda29530fb902421b5b03d0d89",
+    "dependencyFiles": 23,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 101,
+    "sourceRecordsPreserved": true,
+    "endpoint": {
+      "slug": "openfolk-control-plane",
+      "version": 7,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "e2bf72eca0da4cdd4b2c3b921b894f7d6b59fc2cbb7952cdd436a559e280830f"
+    }
+  },
+  "http": {
+    "observedAt": "2026-10-11T03:55:57.697Z",
+    "state": "boundary_checks_passed",
+    "checks": [
+      {
+        "name": "preflight",
+        "action": "preflight",
+        "status": 200,
+        "code": null,
+        "passed": true
+      },
+      {
+        "name": "method",
+        "action": "preflight",
+        "status": 405,
+        "code": "method_not_allowed",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "action": "workspace",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "action": "data_quality",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "action": "resolve",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "action": "readiness",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "action": "resolve",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "action": "readiness",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "action": "resolve",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "action": "readiness",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "action": "resolve",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "action": "readiness",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "action": "resolve",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "action": "readiness",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "action": "resolve",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "action": "readiness",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      }
+    ],
+    "sourcesPreserved": true,
+    "schemaPreserved": true
+  },
+  "frontend": {
+    "observedAt": "2026-10-11T03:55:09.560Z",
+    "id": "dpl_EyCpznUGyQ7Te1MxVz16yPxtGDNK",
+    "url": "https://serviceos-learn-test-2nm718p5o-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "5369311a98dfb071d53d4527f07d149f4b5ef556"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "anonymousProtection": {
+      "observedAt": "2026-10-11T03:55:49.016Z",
+      "base": "https://serviceos-learn-test-2nm718p5o-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    }
+  },
+  "browser": {
+    "observedAt": "2026-10-11T03:56:16.056Z",
+    "syntheticManualPhoneNotConnectedOrVerified": true,
+    "retainedInventoryWarningRendered": true,
+    "separateSyncFieldsRendered": true,
+    "operatorRedirectsToSameOriginSignIn": true,
+    "consoleErrors": 0,
+    "signedInOperatorAcceptance": false
+  },
+  "productionChanges": false,
+  "providerRequests": 0,
+  "newOperatorGrants": 0,
+  "limitations": [
+    "Synthetic demo presentation is not positive signed-in operator acceptance.",
+    "Large inventories/history queries were exercised on isolated synthetic tables.",
+    "Live source capture and recovery are not verified by this release."
+  ]
+}

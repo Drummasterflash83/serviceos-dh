@@ -50,14 +50,19 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-gtikepr2g-allkin.vercel.app](https://serviceos-learn-test-gtikepr2g-allkin.vercel.app),
-built remotely from GitHub commit `2af5955a46d3efcf592659b0b6097e45e0c34ec2`.
-The 11 October 03:43 UTC candidate corrects Phone configuration reporting and
-clears stale readiness on failed/superseded refreshes. It is paired with controller
-v6 installed at 03:40 UTC. All 101 monitored datasets, schema and other endpoints
-were preserved; 26 hosted access-boundary checks pass. Deployment protection,
-actual same-origin operator sign-in redirect and synthetic demo warning display
-pass, with zero console errors. Signed-in hosted readiness acceptance remains open.
+[serviceos-learn-test-2nm718p5o-allkin.vercel.app](https://serviceos-learn-test-2nm718p5o-allkin.vercel.app),
+built remotely from GitHub commit `5369311a98dfb071d53d4527f07d149f4b5ef556`.
+The 11 October 03:55 UTC candidate separates retained inventory from connection
+health, shows distinct Phone providers and keeps failed/revoked states visible.
+It is paired with controller v7, deployed after the frontend. All 101 monitored
+datasets, schema and other endpoints were preserved; 26 hosted access checks pass.
+Deployment protection, same-origin operator sign-in redirect and synthetic
+connection-card details pass, with zero console errors. Positive signed-in hosted
+acceptance and actual capture/recovery remain outstanding.
+[Connection inventory evidence](operations/evidence/learn-connection-inventory-test-2026-10-11.json).
+
+The earlier 03:43 UTC candidate corrected Phone readiness and cleared stale
+badges on failed/superseded refreshes, paired with controller v6 at 03:40 UTC.
 [Phone readiness evidence](operations/evidence/learn-phone-readiness-test-2026-10-11.json).
 
 The earlier 02:51 UTC candidate added searchable operator rosters and paired with
