@@ -42,6 +42,39 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
+### Email diagnosis — 11 October, 06:17 UTC
+
+[Read-only failure diagnosis](evidence/learn-email-failure-diagnosis-2026-10-11.json)
+samples the latest 100 failed/retrying Workspace jobs: 99 `delegation_failed`,
+one `db_error`. The latest 200 failed Workspace capture runs all retained
+`invalid_grant`, across four accounts. These are bounded samples, not all-time
+failure counts or proof that the other accounts have full coverage.
+
+The downloaded deployed worker and token helper confirm that the old code reduces
+token failures to a generic code and does not retain Google's error description.
+The exact cause therefore cannot be recovered from these logs alone. Google's
+[service-account troubleshooting](https://developers.google.com/identity/protocols/oauth2/service-account#error-codes)
+lists multiple `invalid_grant` causes, including subject, signature and assertion
+timing. Local classification now uses `delegation_grant_invalid` instead of
+asserting `subject_invalid`; it requires review and does not trigger endless queue
+retry. Five focused handler/token tests pass, including provider-detail redaction.
+This helper change is not deployed. The V1 durable engine still exposes its broader
+`source_ineligible` category; carrying a specific safe diagnostic through that
+protocol and operator UI remains an explicit acceptance gap.
+
+Production has the three Workspace credential secret names; TEST has none. No
+credential values were returned. The checked older checkout env files and current
+process environment contain no copy. Chris has been asked for the secure location
+of the existing service-account key so real TEST capture can proceed. Do not
+export credentials from a running production function or invent a new key.
+
+An earlier extended authority aggregate observed one matching eligible mailbox
+for each of 29 DWD accounts, and 25 accounts with successful capture in the previous
+24 hours (47 reported processing observations). A repeat aggregate timed out and
+produced no replacement evidence. These observations guide investigation, not
+current credential validity or launch acceptance. The bounded diagnosis above
+succeeded after that failure; no worker was invoked and no source record changed.
+
 ## Working and verified in production
 
 - [x] Retained source inventory and recording object-size metadata observed at the
@@ -77,6 +110,9 @@ as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
   verify bounded real historical/incremental capture through the installed V1
   engine into interactions/cards, and verify pause, credential expiry, resume,
   duplicate suppression and schedule/expired-lease recovery. Exercise matching UI.
+  Existing Workspace key availability in TEST is a current dependency; the live
+  four-account `invalid_grant` issue requires a bounded diagnostic with a safe
+  cause category, not a guessed Google-admin change.
 - [ ] **Commusoft:** resume remaining jobs and property-scoped contacts; reconcile
   missing customer/property references and unzoned timestamps; publish valid
   customer/contact/site/job relationships with held records visible for review.

@@ -180,7 +180,7 @@ Deno.test("classifyDelegationError: distinct permanent codes", () => {
     "admin_delegation_missing",
   );
   assertEquals(classifyDelegationError("invalid_scope", 401).code, "scopes_missing");
-  assertEquals(classifyDelegationError("invalid_grant", 401).code, "subject_invalid");
+  assertEquals(classifyDelegationError("invalid_grant", 401).code, "delegation_grant_invalid");
   assertEquals(classifyDelegationError("anything", 503), {
     code: "provider_temporary",
     permanent: false,

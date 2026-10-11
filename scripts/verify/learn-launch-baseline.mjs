@@ -5,7 +5,8 @@ const production = "tgbnakbxwcqjeimygroz";
 // Production identity from the retained source-preservation baseline; local demo
 // and the isolated real-data TEST tenant deliberately have different identities.
 const tenant = "00000000-0000-0000-0000-000000000001";
-if (process.argv.slice(2).join(" ") !== "--read-only-production-and-test")
+const operation = process.argv.slice(2).join(" ");
+if (!["--read-only-production-and-test", "--read-only-email-failure-sample"].includes(operation))
   throw Error("Explicit read-only production and TEST scope required");
 const token = savedCliToken();
 async function read(path, query) {
@@ -45,6 +46,54 @@ if (
   );
   throw Error("Production identity or health differs");
 }
+if (operation === "--read-only-email-failure-sample") {
+  const rows = await read(
+    "/database/query/read-only",
+    `select jsonb_build_object(
+    'observedAt',clock_timestamp(),'tenantExists',exists(select 1 from public.tenants where id='${tenant}'),
+    'sample',(select coalesce(jsonb_agg(x),'[]') from (
+      select case when error_code ~ '^[a-z][a-z0-9_]{0,39}$' then error_code else 'unclassified' end as code,
+      count(*) as jobs,min(updated_at) as earliest,max(updated_at) as latest
+      from (select error_code,updated_at from public.platform_jobs where tenant_id='${tenant}'
+        and job_type='email.workspace_sync' and status in ('dead_letter','retrying')
+        order by updated_at desc limit 100) recent group by 1 order by 1
+    ) x),
+    'runCauses',(select coalesce(jsonb_agg(x),'[]') from (
+      select case when error_message in (
+       'Domain-wide delegation failed (invalid_grant)',
+       'Domain-wide delegation failed (unauthorized_client)',
+       'Domain-wide delegation failed (access_denied)',
+       'Domain-wide delegation failed (invalid_scope)',
+       'Domain-wide delegation failed (private_key_invalid)',
+       'Domain-wide delegation failed (no_access_token)',
+       'Domain-wide delegation failed (delegation_denied)'
+      ) then split_part(split_part(error_message,'(',2),')',1) else 'unclassified' end as cause,
+      count(*) as runs,count(distinct metadata->>'email_account_id') as accounts,
+      min(started_at) as earliest,max(started_at) as latest
+      from (select error_message,metadata,started_at from public.email_sync_runs
+       where tenant_id='${tenant}' and sync_type='workspace_messages' and status='failed'
+       order by started_at desc limit 200) recent group by 1 order by 1
+    ) x)) as observation`,
+  );
+  if (rows?.length !== 1 || rows[0]?.observation?.tenantExists !== true)
+    throw Error("Email failure sample unavailable");
+  console.log(
+    JSON.stringify(
+      {
+        contract: "learn-email-failure-sample/1",
+        projectRef: production,
+        ...rows[0].observation,
+        limitations: [
+          "At most 100 most recently updated failed/retrying Workspace jobs and 200 failed capture runs, not all failures or per-mailbox coverage.",
+          "Machine-readable codes and allowlisted cause categories only; no raw errors, source data, provider calls or writes.",
+        ],
+      },
+      null,
+      2,
+    ),
+  );
+  process.exit(0);
+}
 const query = `select jsonb_build_object(
  'observedAt',clock_timestamp(),
  'tenantExists',exists(select 1 from public.tenants where id='${tenant}'),
@@ -53,6 +102,24 @@ const query = `select jsonb_build_object(
  'workspaceMailboxes',(select coalesce(jsonb_agg(x),'[]') from (select status,sync_enabled,mailbox_type,count(*) as mailboxes from public.google_workspace_mailboxes where tenant_id='${tenant}' group by status,sync_enabled,mailbox_type order by status,sync_enabled,mailbox_type)x),
  'recentEmailRuns',(select coalesce(jsonb_agg(x),'[]') from (select sync_type,status,count(*) as runs,max(started_at) as latestStarted,max(completed_at) as latestCompleted from public.email_sync_runs where tenant_id='${tenant}' and started_at>=now()-interval '7 days' group by sync_type,status order by sync_type,status)x),
  'emailJobs',(select coalesce(jsonb_agg(x),'[]') from (select job_type,status,count(*) as jobs from public.platform_jobs where tenant_id='${tenant}' and job_type like 'email.%' group by job_type,status order by job_type,status)x),
+ 'recentEmailFailureCodes',(select coalesce(jsonb_agg(x),'[]') from (
+  select job_type,case when error_code ~ '^[a-z][a-z0-9_]{0,39}$' then error_code else 'unclassified' end as code,
+   count(*) as jobs,max(updated_at) as latest_updated
+  from public.platform_jobs where tenant_id='${tenant}' and job_type like 'email.%' and status in ('dead_letter','retrying') and updated_at>=now()-interval '24 hours'
+  group by 1,2 order by 1,2)x),
+ 'workspaceAccountAuthority',(select coalesce(jsonb_agg(x),'[]') from (
+  select matched_mailboxes,eligible_mailboxes,count(*) as accounts from (
+   select a.id,count(m.id) as matched_mailboxes,
+    count(m.id) filter(where m.sync_enabled and m.status in ('pending','active') and m.mailbox_type<>'suspended' and c.status='active' and c.last_verified_at is not null and lower(c.domain)=split_part(lower(a.email_address),'@',2)) as eligible_mailboxes
+   from public.email_accounts a left join public.google_workspace_mailboxes m on m.tenant_id=a.tenant_id and lower(m.email_address)=lower(a.email_address)
+   left join public.google_workspace_connections c on c.tenant_id=m.tenant_id and c.id=m.connection_id
+   where a.tenant_id='${tenant}' and a.provider='gmail' and a.status in ('active_dwd','pending_tokenless_dwd') group by a.id
+  ) account_matches group by matched_mailboxes,eligible_mailboxes order by matched_mailboxes,eligible_mailboxes)x),
+ 'captureAccountCoverage',(select coalesce(jsonb_agg(x),'[]') from (
+  select sync_type,count(distinct coalesce(to_jsonb(r)->>'email_account_id',r.metadata->>'email_account_id')) as accounts_with_success,
+   count(*) filter(where coalesce(to_jsonb(r)->>'email_account_id',r.metadata->>'email_account_id') is null) as runs_without_account_identity,
+   sum(coalesce(r.records_processed,0)) as reported_processed_observations
+  from public.email_sync_runs r where tenant_id='${tenant}' and sync_type in ('messages','workspace_messages','workspace_backfill') and status='success' and completed_at>=now()-interval '24 hours' group by sync_type order by sync_type)x),
  'sources',jsonb_build_object(
   'emails',(select count(*) from public.email_messages where tenant_id='${tenant}'),
   'calls',(select count(*) from public.phone_calls where tenant_id='${tenant}'),

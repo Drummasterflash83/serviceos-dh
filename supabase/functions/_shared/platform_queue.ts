@@ -55,6 +55,7 @@ const NON_RETRYABLE = new Set([
   "admin_delegation_missing",
   "scopes_missing",
   "subject_invalid",
+  "delegation_grant_invalid",
   "mailbox_disabled",
   "not_dwd_account",
 ]);

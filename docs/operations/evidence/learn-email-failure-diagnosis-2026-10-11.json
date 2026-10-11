@@ -1,0 +1,62 @@
+{
+  "contract": "learn-email-failure-sample/1",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sample": [
+    {
+      "code": "db_error",
+      "jobs": 1,
+      "latest": "2026-10-11T03:37:39.235717+00:00",
+      "earliest": "2026-10-11T03:37:39.235717+00:00"
+    },
+    {
+      "code": "delegation_failed",
+      "jobs": 99,
+      "latest": "2026-10-11T06:14:03.37864+00:00",
+      "earliest": "2026-10-09T09:23:01.683389+00:00"
+    }
+  ],
+  "runCauses": [
+    {
+      "runs": 200,
+      "cause": "invalid_grant",
+      "latest": "2026-10-11T06:14:03.139+00:00",
+      "accounts": 4,
+      "earliest": "2026-10-10T11:09:01.514+00:00"
+    }
+  ],
+  "observedAt": "2026-10-11T06:17:12.218495+00:00",
+  "tenantExists": true,
+  "limitations": [
+    "At most 100 most recently updated failed/retrying Workspace jobs and 200 failed capture runs, not all failures or per-mailbox coverage.",
+    "Machine-readable codes and allowlisted cause categories only; no raw errors, source data, provider calls or writes."
+  ],
+  "sourceInspection": {
+    "downloadOnly": true,
+    "files": [
+      {
+        "path": "index.ts",
+        "sha256": "6add6d044f74381d614d2f442007a2a1cb697ebe16d139a28b2da5b5a9826376"
+      },
+      {
+        "path": "functions/_shared/google_workspace.ts",
+        "sha256": "4be72980af682baa10833967efa8f541f45267485b80f5fad9667296f363a3b4"
+      }
+    ],
+    "findings": [
+      "Deployed worker maps token-mint errors to generic delegation_failed.",
+      "Deployed token helper retains only the provider error code, not error_description; sampled invalid_grant cannot be narrowed retrospectively."
+    ]
+  },
+  "credentialReadiness": {
+    "productionWorkspaceSecretNamesPresent": true,
+    "testWorkspaceSecretNamesPresent": false,
+    "checkedLocalProjectFilesContainWorkspaceKey": false,
+    "secretValuesReturned": false
+  },
+  "localVerification": {
+    "command": "node --test supabase/functions/_shared/google_workspace.test.ts scripts/email-scheduled-sync.test.mjs",
+    "passed": 5,
+    "providerCalls": false
+  },
+  "productionChanges": false
+}

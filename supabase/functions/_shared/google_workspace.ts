@@ -143,7 +143,9 @@ export function classifyDelegationError(
     return { code: "admin_delegation_missing", permanent: true };
   }
   if (e === "invalid_scope") return { code: "scopes_missing", permanent: true };
-  if (e === "invalid_grant") return { code: "subject_invalid", permanent: true };
+  // A service-account invalid_grant also covers assertion timing/signature and
+  // account policy failures. The code alone cannot identify an invalid mailbox.
+  if (e === "invalid_grant") return { code: "delegation_grant_invalid", permanent: true };
   if (status === 0 || status === 408 || status === 429 || status >= 500) {
     return { code: "provider_temporary", permanent: false };
   }
