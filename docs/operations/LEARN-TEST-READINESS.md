@@ -1,6 +1,6 @@
 # Existing TEST environment: verified release gaps
 
-## Measurement receipt attribution — verified local candidate
+## Measurement receipt attribution — TEST database release 052 installed
 
 Current card reads now bind work observations to their original calculation
 receipts before scoring. Wrong people, periods, rule revisions, values and incomplete
@@ -11,7 +11,13 @@ now enforces receipt agreement on new observations, confirmations and assessment
 at transaction completion. Actual collectors, chained numerical corrections and
 prospectively published assessment saves pass; malformed receipts roll back, old
 records stay preserved and invalid evidence remains disputable. Target-schema
-rehearsal, hosted release and positive signed-in acceptance remain outstanding.
+rollback rehearsal and TEST installation passed at 04:40–04:41 UTC, preserving
+all 101 monitored datasets and existing RPC permissions. The aggregate read-only
+audit cannot execute the private checker and does not establish compatibility of
+all retained observations. Protected frontend v23 is READY at 04:46 UTC from
+Git `5bfdc822c4ab5865ab3876ecb2c2c013002939ce`; anonymous protection and actual
+client/operator sign-in redirects pass with zero console errors. Positive signed-in
+hosted acceptance remains outstanding.
 See [measurement receipt attribution](LEARN-MEASUREMENT-RECEIPTS.md).
 
 ## Discovery history — TEST controller v8 and paired frontend installed

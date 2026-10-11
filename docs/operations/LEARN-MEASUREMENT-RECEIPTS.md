@@ -1,6 +1,7 @@
 # Work measurements bound to their retained receipts
 
-Local candidate, 11 October 2026. Not deployed to hosted TEST or production.
+TEST database release 052 installed on 11 October 2026 at 04:41 UTC.
+Paired protected frontend v23 is READY at 04:46 UTC. Production is unchanged.
 
 The current card assessment reader previously checked measurement scope and
 whether its evidence references had allowed table/UUID shapes. It did not read
@@ -28,7 +29,7 @@ Reads use the signed-in client and existing owner/admin RLS. Receipt summaries
 select only required columns and JSON projections, in batches of 100 with exact
 counts; full item proofs, rosters and source contents are not fetched to populate
 a card. The existing 500-observation history limit remains. The client reader changes no schema, permissions, provider connections, source
-records, reviews or stored assessments. The local database continuation below
+records, reviews or stored assessments. The database enforcement below
 adds constraints without rewriting retained records.
 
 ## Verification
@@ -60,8 +61,9 @@ Run `node --test scripts/learn-measurement-receipts.test.mjs` and
 
 This guards the current card measurement-read path. Saved assessment snapshots
 retain their original reader and are not reclassified or rewritten here. The server-side continuation below now guards new observations, confirmations and
-assessment inserts locally. Signed-in hosted transport acceptance, target-schema
-rehearsal and the paired release remain to complete.
+assessment inserts in TEST. Target-schema rehearsal and installation passed.
+The paired frontend is READY, with protection and same-origin client/operator
+sign-in redirects verified. Positive signed-in hosted transport acceptance remains open.
 
 Receipt agreement does not independently establish every source item's identity,
 historical assignment or calculation. Detailed retained item review and source
@@ -69,7 +71,7 @@ provenance remain necessary. Communications/job-outcome/driving adapters, comple
 provider coverage and real staff acceptance remain outstanding; this checkpoint
 establishes no real employee score or pay outcome.
 
-## Database enforcement — local continuation
+## Database enforcement
 
 Migration `20261101160000_learn_measurement_receipt_guards.sql` adds private
 receipt validation and three transaction-deferred constraints. They check newly
@@ -109,3 +111,26 @@ anonymous, authenticated and service roles cannot execute the private checker.
 
 [Database verification evidence](evidence/learn-measurement-receipt-guards-local-2026-10-11.json).
 This is local integration evidence, not deployment or hosted acceptance.
+
+## Hosted TEST installation
+
+Release 052 passed its rollback rehearsal at 04:40 UTC and installed at 04:41 UTC
+on 11 October. The observed catalog matched the rehearsed fingerprint. All 101
+monitored dataset fingerprints and existing RPC definitions/permissions were
+preserved. Four private helpers and three deferred constraints were installed;
+no new users, grants, provider requests or production changes were made.
+
+A subsequent aggregate audit through the management read-only endpoint was denied
+permission to execute the private checker. This confirms that particular access
+boundary; it does **not** prove that every retained hosted observation matches a
+receipt. No permission was widened to complete that audit. Positive signed-in hosted
+collection, correction, confirmation and assessment acceptance remains outstanding.
+
+[Rollback rehearsal](evidence/learn-receipt-guards-test-rehearsal-2026-10-11.json) and
+[installation evidence](evidence/learn-receipt-guards-test-install-2026-10-11.json).
+
+Frontend v23 was built remotely from Git `5bfdc822c4ab5865ab3876ecb2c2c013002939ce`
+and reported READY at 04:46 UTC. TEST environment binding, anonymous protection on
+three routes and actual client/operator same-origin sign-in redirects passed, with
+zero browser console errors. These checks do not exercise a signed-in assessment.
+[Paired TEST release evidence](evidence/learn-measurement-receipts-test-2026-10-11.json).

@@ -1,0 +1,83 @@
+{
+  "version": "learn-measurement-receipts-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceGitSha": "5bfdc822c4ab5865ab3876ecb2c2c013002939ce",
+  "backend": {
+    "version": "learn-receipt-guards/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "80b346d0c402a97c188324583dcd53cc29892c62c94bfb961ab9931d299de034",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-11T04:41:37.492Z",
+    "priorFingerprint": "f7bb32f854d113491677ad084c99bc4e",
+    "expectedFingerprint": "cbbe6690e680ebf211b49bf25275c9d5",
+    "afterFingerprint": "cbbe6690e680ebf211b49bf25275c9d5",
+    "preservedDataSets": 101,
+    "submissionFailure": null,
+    "receipt": {
+      "fingerprint": "cbbe6690e680ebf211b49bf25275c9d5",
+      "functions": 4
+    }
+  },
+  "frontend": {
+    "observedAt": "2026-10-11T04:46:15.803Z",
+    "id": "dpl_H17PveuSPcXLUq1WYyHVQJaPD3Ph",
+    "url": "https://serviceos-learn-test-k9hzxdyni-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "5bfdc822c4ab5865ab3876ecb2c2c013002939ce"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "anonymousProtection": {
+      "observedAt": "2026-10-11T04:46:32.926Z",
+      "base": "https://serviceos-learn-test-k9hzxdyni-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    }
+  },
+  "browser": {
+    "observedAt": "2026-10-11T04:46:55.079Z",
+    "clientRedirectsToSameOriginSignIn": true,
+    "operatorRedirectsToSameOriginSignIn": true,
+    "consoleErrors": 0,
+    "signedInClientAcceptance": false,
+    "signedInOperatorAcceptance": false
+  },
+  "aggregateReceiptAudit": {
+    "state": "permission_denied",
+    "endpoint": "management database/query/read-only",
+    "privateCheckerExecuteDenied": true,
+    "retainedObservationCompatibilityProved": false,
+    "permissionsChanged": false
+  },
+  "productionChanges": false,
+  "providerRequests": 0,
+  "newOperatorGrants": 0,
+  "limitations": [
+    "Positive receipt and malformed-receipt behavior verified locally; signed-in hosted acceptance remains outstanding.",
+    "Read-only management audit cannot execute the private receipt checker; no claim of complete historical receipt agreement.",
+    "Existing saved snapshots are preserved, not retroactively revalidated.",
+    "Source attribution, complete provider coverage and real staff acceptance remain outstanding."
+  ]
+}

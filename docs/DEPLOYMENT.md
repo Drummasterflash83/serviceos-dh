@@ -50,15 +50,24 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-fs74fmg09-allkin.vercel.app](https://serviceos-learn-test-fs74fmg09-allkin.vercel.app),
-built remotely from GitHub commit `523d1abf5583516c68b0e38673794ec78fc11ba0`.
-The 11 October 04:11 UTC candidate adds complete cursor-based discovery/sync
-history with filters, previous/next navigation and failed-read recovery. It is
-paired with controller v8 at 04:10 UTC. All 101 monitored datasets, schema and
-other endpoints were preserved; 32 hosted access checks pass. Deployment protection,
-same-origin operator sign-in redirect and the synthetic 57-run history browser
-checks pass with zero console errors. Positive signed-in hosted acceptance and
-actual capture/recovery remain outstanding.
+[serviceos-learn-test-k9hzxdyni-allkin.vercel.app](https://serviceos-learn-test-k9hzxdyni-allkin.vercel.app),
+built remotely from GitHub commit `5bfdc822c4ab5865ab3876ecb2c2c013002939ce`.
+The 11 October 04:46 UTC candidate adds receipt attribution checks before performance
+scoring. It is paired with database release 052, installed at 04:41 UTC after a
+successful rollback rehearsal. All 101 monitored datasets and existing RPC access
+were preserved. Four private helpers and three deferred constraints protect new
+observations, confirmations and assessments. Controller v8 is unchanged.
+Deployment protection and actual client/operator same-origin sign-in redirects pass
+with zero browser console errors. Positive signed-in hosted acceptance remains open;
+the follow-up aggregate audit could not execute the private checker through the
+read-only management endpoint and does not prove historical receipt compatibility.
+[Receipt release evidence](operations/evidence/learn-measurement-receipts-test-2026-10-11.json).
+
+The earlier 04:11 UTC candidate added complete cursor-based discovery/sync
+history with filters, previous/next navigation and failed-read recovery, paired
+with controller v8 at 04:10 UTC. All 101 monitored datasets, schema and other
+endpoints were preserved; 32 hosted access checks pass. Synthetic 57-run history
+browser checks pass with zero console errors. Actual capture/recovery remains open.
 [Discovery history evidence](operations/evidence/learn-discovery-history-test-2026-10-11.json).
 
 The earlier 03:55 UTC candidate separated retained inventory from connection
