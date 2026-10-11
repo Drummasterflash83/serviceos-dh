@@ -893,3 +893,22 @@ the operator requeue journey and legacy repair-projector compatibility still nee
 completion before activating real capture.
 
 [Detailed evidence and limitations](evidence/learn-identity-card-test-2026-10-11.json).
+
+
+## Retained-source repair through cards — 11 October, 17:10 UTC
+
+TEST release 063 / worker v10 replace the legacy direct-upsert repair path with
+atomic interaction/event/receipt publication. Calls with authoritative
+`phone_handoff` provenance delegate refresh to that existing publisher; basic
+calls use retained call facts and the actual provider. Legacy unowned canonical
+records or manually changed projected fields are held for operator review.
+No source, transcript or insight is discarded. Lost acknowledgements inspect the
+same receipt without repeating publication.
+
+Hosted synthetic Phone and Email inputs created two customer cards through the
+actual queue; a changed email refreshed its original card and preserved links.
+All four jobs, three consumed events and the absence of pending work were checked
+in durable TEST state. All 117 non-fixture datasets remained unchanged. This does
+not verify Birchills credentials, voicemail coverage, real processing, signed-in
+review or operator resolution of held legacy records. Those gates remain open.
+[Evidence](evidence/learn-interaction-projection-test-2026-10-11.json).

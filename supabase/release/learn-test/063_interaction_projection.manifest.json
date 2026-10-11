@@ -1,0 +1,13 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "55d1422bc2433d6980e5b573501a9b7b35834f1a47f02b5412777669266fdead",
+  "migrations": [
+    {
+      "file": "20261101310000_learn_interaction_projection.sql",
+      "sha256": "1b1cfa38b70cc5b611b96496adfdb50aa920ef614ff2ae62615eaee6cb5f7f4f"
+    }
+  ],
+  "probeSha256": "76072c51bb0fd3905e4416c71fc9c83f430673941b939d26c1fea1b3b3e9c624",
+  "priorFingerprint": "851ab50d52a8d36ea1ee728c0a3f3ecf",
+  "preservedDatasets": 116
+}

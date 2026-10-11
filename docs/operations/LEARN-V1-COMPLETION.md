@@ -428,6 +428,42 @@ This milestone proves source-to-event publication. The next section adds hosted
 synthetic card delivery; real-provider and signed-in acceptance remain open.
 [Release and verification evidence](evidence/learn-phone-atomic-handoff-test-2026-10-11.json).
 
+### Retained Phone/Email to cards installed in TEST — 11 October, 17:10 UTC
+
+- TEST release **063** and **platform-worker v10** are installed. The repair and
+  backfill path now publishes the canonical interaction, pending event and exact
+  receipt together through scoped functions. No raw interaction write permission
+  was added. Confirmed phone analysis remains owned by its provenance-checked
+  publisher; basic calls preserve their actual provider rather than assuming Simwood.
+- New and changed emails reach cards. In the hosted synthetic acceptance, Phone
+  and Email created two cards; a later email update refreshed the existing card
+  while preserving both identity/card links. All four queued jobs completed,
+  three events were consumed, and no pending event or eligible source remained.
+  This proves retained-source processing, **not real-provider capture or coverage**.
+- Lost replies are inspected by the same immutable request instead of republished.
+  Concurrent requests, stale source selection and event-failure rollback passed
+  against offline PostgreSQL. Nine actual-handler cases, nine downloaded-handler
+  cases and three local HTTP-wrapper cases passed; strict backend/application
+  TypeScript and the production build passed.
+- Full-schema and exact-package rollback rehearsals passed. All **116 existing
+  datasets** matched at installation; all **117 non-fixture datasets**, including
+  the new receipt table, matched around deployment and hosted verification. No
+  user, grant, credential, provider call, schedule or production change occurred.
+  Synthetic acceptance tenants are archived and their evidence is retained.
+- The manual `interactions-sync` wrapper now handles partial failure honestly,
+  rejects mismatched tenant/invalid input and avoids work after duplicate/failed
+  job admission. That wrapper is **local/Git only**, not deployed. Its legacy
+  best-effort start/settlement remains a separate hardening gate.
+- Unowned legacy canonical rows and manually changed projected fields are held
+  visibly for review; they are not overwritten. Operator resolution/requeue is
+  **still missing**. Outstanding holds make the batch report review required;
+  successful clean full batches request bounded continuation (20 default, 50 max).
+  Generic queue continuation remains best effort and needs final operational
+  acceptance before unattended historical import is called complete. Email
+  mailbox binding and source coverage remain explicitly unverified.
+
+[Sanitized TEST evidence](evidence/learn-interaction-projection-test-2026-10-11.json).
+
 ### Atomic identity/card delivery installed in TEST — 11 October, 16:40 UTC
 
 TEST release **062** and `platform-worker` **v9** replace the early enriched marker

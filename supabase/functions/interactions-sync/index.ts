@@ -9,7 +9,7 @@
 // Runtime: Deno.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-import { requireTenantUser } from "../_shared/authz.ts";
+import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 import {
   completePlatformJob,
   createPlatformJob,
@@ -49,12 +49,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (!auth.ok) return fail(auth.error.code, auth.error.message, auth.error.httpStatus);
   const tenantId = auth.ctx.tenantId;
 
-  let body: { source?: string; limit?: number; since?: string } = {};
+  let body: { source?: string; limit?: number; since?: string; tenant_id?: unknown } = {};
   try {
-    body = (await req.json()) as typeof body;
+    const parsed = await req.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+      return fail("invalid_body", "Use a JSON object", 400);
+    body = parsed;
   } catch {
-    body = {};
+    return fail("invalid_body", "Use a JSON object", 400);
   }
+  const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
+  if (mismatch) return fail(mismatch.code, mismatch.message, mismatch.httpStatus);
+  if (body.source !== undefined && !["all", "phone", "email"].includes(body.source))
+    return fail(
+      "projection_source_invalid",
+      "Choose Phone, Email or all communication inputs.",
+      400,
+    );
   const source = body.source === "phone" || body.source === "email" ? body.source : "all";
 
   const job = await createPlatformJob(admin, {
@@ -66,8 +77,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
     payload: { source, limit: body.limit ?? null, since: body.since ?? null },
     createdBy: auth.ctx.userId !== "service" ? auth.ctx.userId : null,
   });
-  const jobId = job.duplicate ? null : job.id;
-  if (jobId) await startPlatformJob(admin, jobId);
+  if (!job.id)
+    return fail(
+      "job_unconfirmed",
+      "The processing request could not be recorded. Please retry.",
+      503,
+    );
+  if (job.duplicate)
+    return json({ success: true, accepted: true, already_running: true, job_id: job.id }, 202);
+  const jobId = job.id;
+  await startPlatformJob(admin, jobId);
 
   const res = await handleInteractionsSync({
     supabaseAdmin: admin,
@@ -76,7 +95,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     payload: body as Record<string, unknown>,
   });
 
-  if (res.result) {
+  if (res.success) {
     if (jobId) {
       await completePlatformJob(admin, jobId, {
         recordsProcessed: res.recordsProcessed ?? 0,
@@ -86,6 +105,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return json({ success: res.success, ...res.result });
   }
   const message = res.error?.message ?? "interactions sync failed";
-  if (jobId) await failPlatformJob(admin, jobId, message);
-  return fail(res.error?.code ?? "sync_error", message, 500);
+  if (jobId) await failPlatformJob(admin, jobId, message, res.result);
+  return json(
+    { ...res.result, success: false, error: { code: res.error?.code ?? "sync_error", message } },
+    500,
+  );
 });

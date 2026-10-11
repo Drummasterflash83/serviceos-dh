@@ -1,0 +1,108 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "hosted_phone_email_to_cards_and_incremental_refresh_verified",
+  "newUsers": 0,
+  "newAccessGrants": 0,
+  "providerRequests": 0,
+  "productionChanged": false,
+  "workerRuns": [
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    }
+  ],
+  "unsignedStatus": 403,
+  "delivery": {
+    "cards": 2,
+    "refreshed_cards": 1,
+    "enriched": 2,
+    "pending": 0,
+    "consumed": 3,
+    "projection_receipts": 3,
+    "identity_receipts": 3,
+    "provider_runs": 0,
+    "recordings": 0,
+    "actual_provider": 1
+  },
+  "identityAndCardLinksPreserved": true,
+  "fixtureArchived": true,
+  "fixtureAbsent": false,
+  "preservedNonFixtureDatasets": 117,
+  "schemaUnchanged": true,
+  "observedAt": "2026-10-11T17:10:59.823Z",
+  "limitations": [
+    "Synthetic retained Phone/Email sources and existing internal TEST authority; no real provider or signed-in browser acceptance.",
+    "Legacy ownership review and its operator recovery remain open. Synthetic records retained in one archived fixture tenant.",
+    "The manual interactions-sync endpoint has not been deployed; this verifies the actual queued platform-worker path."
+  ],
+  "database": {
+    "release": "063",
+    "packageSha256": "55d1422bc2433d6980e5b573501a9b7b35834f1a47f02b5412777669266fdead",
+    "sourceSha256": "1b1cfa38b70cc5b611b96496adfdb50aa920ef614ff2ae62615eaee6cb5f7f4f",
+    "catalogFingerprint": "537f21e8392a8c3034434120d7fc35a7",
+    "preservedAtInstall": 116,
+    "fullSchemaRehearsalRolledBack": true
+  },
+  "runtime": {
+    "name": "platform-worker",
+    "version": 10,
+    "sourceBundleSha256": "d753dd2b43b478c5b898f065d7f68391afbc5804ab054ed30a43077e231d6405",
+    "downloadedRuntimeFilesCompared": 91,
+    "runtimeSyntaxDifferences": 0,
+    "typeOnlyFilesPruned": 3
+  },
+  "localVerification": {
+    "handlerCases": 9,
+    "downloadedHandlerCases": 9,
+    "httpWrapperCases": 3,
+    "offlinePostgres": [
+      "atomic source/interaction/event/receipt and event-failure rollback",
+      "authoritative phone handoff delegation preserves analysis/provenance",
+      "exact receipt replay and foreign-replay denial",
+      "source updates preserve manual notes and identity links",
+      "manual canonical edits and legacy ownership held for review",
+      "capture pause and direct table/function access denial",
+      "actual Phone/Email and identity handlers recover lost commit replies without republishing",
+      "overlapping same/different request IDs yield one interaction/event per source",
+      "concurrent source edit invalidates stale selection"
+    ],
+    "backendStrictTypeScript": true,
+    "applicationTypeScript": true,
+    "applicationBuild": true
+  },
+  "verificationHarnessCorrections": [
+    "First attempt expected 401 instead of the worker contract HTTP 403; authoritative inspection confirmed no fixture or jobs created and all 117 datasets unchanged.",
+    "Second attempt completed initial two worker jobs then attempted a service-only selector through the management read-only role. Fixture archived and all 117 non-fixture datasets unchanged. Final attempt used existing service RPC authority and completed all four jobs."
+  ],
+  "captureActivated": false,
+  "manualHttpEndpointDeployed": false,
+  "frontendChanged": false
+}
