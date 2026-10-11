@@ -45,6 +45,39 @@ assert.equal(
   "t",
 );
 sql(migration);
+const fanoutMigration = readFileSync(
+  new URL(
+    "../../supabase/migrations/20261101192000_learn_microsoft_folder_dispatch.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const beforeFunction = sql(
+  "select pg_get_functiondef('learn_microsoft_job_settle(uuid,uuid,text,integer,boolean)'::regprocedure);",
+);
+const beforeAuthority = sql(
+  "select proowner::text||coalesce(proacl::text,'') from pg_proc where oid='learn_microsoft_job_settle(uuid,uuid,text,integer,boolean)'::regprocedure;",
+);
+sql(fanoutMigration.replace(/commit;\n$/, "rollback;\n"));
+assert.equal(
+  sql(
+    "select to_regclass('learn_microsoft_folder_dispatches') is null and to_regprocedure('learn_microsoft_dispatch_folders(uuid,uuid,uuid)') is null;",
+  ),
+  "t",
+);
+assert.equal(
+  sql(
+    "select pg_get_functiondef('learn_microsoft_job_settle(uuid,uuid,text,integer,boolean)'::regprocedure);",
+  ),
+  beforeFunction,
+);
+sql(fanoutMigration);
+assert.equal(
+  sql(
+    "select proowner::text||coalesce(proacl::text,'') from pg_proc where oid='learn_microsoft_job_settle(uuid,uuid,text,integer,boolean)'::regprocedure;",
+  ),
+  beforeAuthority,
+);
 const tenant = uid(1),
   account = uid(200),
   mailbox = uid(201),
@@ -52,7 +85,8 @@ const tenant = uid(1),
 sql(
   `insert into email_accounts values(${q(account)},${q(tenant)},'microsoft_365','active','ok');insert into learn_microsoft_mailbox_bindings(id,tenant_id,email_account_id,microsoft_tenant_id,mailbox_id,enabled) values(${q(binding)},${q(tenant)},${q(account)},${q(uid(5))},${q(mailbox)},true);`,
 );
-function create(n, kind = "folders", folder = "") {
+function create(n, kind = "folders", folder = "", scope = { tenant, account, mailbox, binding }) {
+  const { tenant, account, mailbox, binding } = scope;
   const jobType = kind === "folders" ? "email.microsoft_discovery" : "email.microsoft_sync";
   const payload = {
     email_account_id: account,
@@ -132,7 +166,7 @@ await assert.rejects(
   (e) => e.code === "settlement_unconfirmed",
 );
 assert.equal(sql(`select status from platform_jobs where id=${q(first.jobId)};`), "succeeded");
-assert.equal(sql(`select count(*) from platform_jobs where parent_job_id=${q(first.jobId)};`), "1");
+assert.equal(sql(`select count(*) from platform_jobs where parent_job_id=${q(first.jobId)};`), "2");
 const recovered = await runMicrosoftCaptureJob(db, first, ports([]));
 assert.equal(recovered.state, "completed");
 assert.ok(recovered.successorId);
@@ -140,7 +174,7 @@ assert.equal(tokens, 1);
 assert.equal(fetches, 1);
 const repeated = await runMicrosoftCaptureJob(db, first, ports([]));
 assert.deepEqual(repeated, recovered);
-assert.equal(sql(`select count(*) from platform_jobs where parent_job_id=${q(first.jobId)};`), "1");
+assert.equal(sql(`select count(*) from platform_jobs where parent_job_id=${q(first.jobId)};`), "2");
 const next = claim(recovered.successorId);
 const last = await runMicrosoftCaptureJob(db, next, ports([{ value: [] }]));
 assert.equal(last.successorId, null);
@@ -160,7 +194,23 @@ const args = (c) => ({
 assert.ok((await db.rpc("learn_microsoft_job_settle", args(missing))).error);
 assert.equal(sql(`select status from platform_jobs where id=${q(missing.jobId)};`), "running");
 // Save a real page first, then make successor insertion fail. Completion must roll back.
-const mail = create(213, "messages", "Folder");
+const mail = claim(
+  sql(
+    `select message_job_id from learn_microsoft_folder_dispatches where tenant_id=${q(tenant)} and folder_id='Folder';`,
+  ),
+);
+assert.equal(
+  sql(`select payload->>'folder_id' from platform_jobs where id=${q(mail.jobId)};`),
+  "Folder",
+);
+assert.deepEqual(recovered.folderDispatch, {
+  physicalFolders: 1,
+  searchFolders: 0,
+  newJobs: 1,
+  reusedJobs: 0,
+  previouslyDispatched: 0,
+});
+assert.equal(exhausted.folderDispatch, null);
 const base = `https://graph.microsoft.com/v1.0/users/${mailbox}/mailFolders/Folder/messages/delta`;
 await runMicrosoftCapturePage(
   db,
@@ -315,6 +365,220 @@ sql(
   `update platform_jobs set payload=payload||'{"folder_id":"changed"}'::jsonb where id=${q(first.jobId)};`,
 );
 assert.ok((await db.rpc("learn_microsoft_job_settle", args(first))).error);
+// Follow the real discovery page -> dispatch -> message engine path with hidden,
+// search, nested and repeated folders. Graph alone is synthetic.
+const scope2 = { tenant, account: uid(300), mailbox: uid(301), binding: uid(302) };
+sql(
+  `insert into email_accounts values(${q(scope2.account)},${q(tenant)},'microsoft_365','active','ok');insert into learn_microsoft_mailbox_bindings(id,tenant_id,email_account_id,microsoft_tenant_id,mailbox_id,enabled) values(${q(scope2.binding)},${q(tenant)},${q(scope2.account)},${q(uid(5))},${q(scope2.mailbox)},true);`,
+);
+const hidden = create(310, "messages", "Hidden", scope2);
+const discovery = create(311, "folders", "", scope2);
+const rootNext = `https://graph.microsoft.com/v1.0/users/${scope2.mailbox}/mailFolders?$skiptoken=More`;
+const discoveredFolder = { ...folder, id: "Inbox" };
+await runMicrosoftCapturePage(
+  db,
+  discovery,
+  ports([
+    {
+      value: [
+        discoveredFolder,
+        { ...folder, id: "Hidden", isHidden: true },
+        { ...folder, id: "Search", "@odata.type": "#microsoft.graph.mailSearchFolder" },
+        discoveredFolder,
+      ],
+      "@odata.nextLink": rootNext,
+    },
+  ]),
+);
+const sourceHash = sql(
+  `select md5(source_page::text) from learn_microsoft_source_pages where job_id=${q(discovery.jobId)};`,
+);
+// Failure after earlier folder work must leave neither dispatches nor new jobs.
+sql(
+  "create function fail_search_dispatch() returns trigger language plpgsql as $$begin if new.kind='search' then raise exception 'synthetic_search_dispatch_failure';end if;return new;end $$;create trigger synthetic_dispatch_failure before insert on learn_microsoft_folder_dispatches for each row execute function fail_search_dispatch();",
+);
+await assert.rejects(
+  runMicrosoftCaptureJob(db, discovery, ports([])),
+  (e) => e.code === "settlement_unconfirmed",
+);
+assert.equal(
+  sql(`select count(*) from platform_jobs where parent_job_id=${q(discovery.jobId)};`),
+  "0",
+);
+assert.equal(
+  sql(
+    `select count(*) from learn_microsoft_folder_dispatches d join learn_microsoft_capture_streams s on s.id=d.stream_id where s.binding_id=${q(scope2.binding)};`,
+  ),
+  "0",
+);
+assert.equal(sql(`select status from platform_jobs where id=${q(discovery.jobId)};`), "running");
+assert.equal(
+  sql(
+    `select md5(source_page::text) from learn_microsoft_source_pages where job_id=${q(discovery.jobId)};`,
+  ),
+  sourceHash,
+);
+sql(
+  "drop trigger synthetic_dispatch_failure on learn_microsoft_folder_dispatches;drop function fail_search_dispatch();",
+);
+// Expiry after inserts also rolls the entire settlement back.
+sql(
+  `update platform_jobs set lease_expires_at=clock_timestamp()+interval '1 second' where id=${q(discovery.jobId)};create function slow_search_dispatch() returns trigger language plpgsql as $$begin if new.kind='search' then perform pg_sleep(1.2);end if;return new;end $$;create trigger synthetic_dispatch_slow before insert on learn_microsoft_folder_dispatches for each row execute function slow_search_dispatch();`,
+);
+assert.ok((await db.rpc("learn_microsoft_job_settle", args(discovery))).error);
+assert.equal(
+  sql(`select count(*) from platform_jobs where parent_job_id=${q(discovery.jobId)};`),
+  "0",
+);
+sql(
+  `drop trigger synthetic_dispatch_slow on learn_microsoft_folder_dispatches;drop function slow_search_dispatch();update platform_jobs set lease_expires_at=clock_timestamp()+interval '10 minutes' where id=${q(discovery.jobId)};`,
+);
+// A key occupied by a different authority is refused, never adopted.
+sql(
+  `update platform_jobs set payload=payload||jsonb_build_object('email_account_id',${q(uid(99))}) where id=${q(hidden.jobId)};`,
+);
+await assert.rejects(
+  runMicrosoftCaptureJob(db, discovery, ports([])),
+  (e) => e.code === "settlement_unconfirmed",
+);
+assert.equal(
+  sql(`select count(*) from platform_jobs where parent_job_id=${q(discovery.jobId)};`),
+  "0",
+);
+sql(
+  `update platform_jobs set payload=payload||jsonb_build_object('email_account_id',${q(scope2.account)}) where id=${q(hidden.jobId)};update learn_microsoft_mailbox_bindings set enabled=false where id=${q(scope2.binding)};`,
+);
+// Concurrent settlement of retained evidence after pause, with observed blocking.
+const fanoutFinish = `select learn_microsoft_job_settle(${q(tenant)},${q(discovery.jobId)},'worker',1,true);`;
+const fanoutFirst = asyncSql(
+  "begin;set application_name='microsoft-fanout-first';set role service_role;" +
+    fanoutFinish +
+    "select pg_sleep(2);commit;",
+);
+let fanoutReady = false;
+for (let i = 0; i < 100; i++) {
+  if (
+    sql(
+      "select count(*) from pg_stat_activity where application_name='microsoft-fanout-first' and wait_event='PgSleep';",
+    ) === "1"
+  ) {
+    fanoutReady = true;
+    break;
+  }
+  await new Promise((r) => setTimeout(r, 10));
+}
+assert.ok(fanoutReady);
+const fanoutSecond = asyncSql(
+  "set application_name='microsoft-fanout-second';set role service_role;" + fanoutFinish,
+);
+let fanoutWaiting = false;
+for (let i = 0; i < 100; i++) {
+  if (
+    sql(
+      "select count(*) from pg_stat_activity where application_name='microsoft-fanout-second' and wait_event_type='Lock';",
+    ) === "1"
+  ) {
+    fanoutWaiting = true;
+    break;
+  }
+  await new Promise((r) => setTimeout(r, 10));
+}
+assert.ok(fanoutWaiting);
+const fanoutReplies = (await Promise.all([fanoutFirst, fanoutSecond])).map((v) =>
+  JSON.parse(v.split("\n").find((line) => line.startsWith("{"))),
+);
+assert.deepEqual(fanoutReplies[0], fanoutReplies[1]);
+const rootDone = await runMicrosoftCaptureJob(db, discovery, ports([]));
+assert.deepEqual(rootDone.folderDispatch, {
+  physicalFolders: 2,
+  searchFolders: 1,
+  newJobs: 1,
+  reusedJobs: 1,
+  previouslyDispatched: 0,
+});
+const dispatched = (id) =>
+  sql(
+    `select d.message_job_id from learn_microsoft_folder_dispatches d join learn_microsoft_capture_streams s on s.id=d.stream_id where s.binding_id=${q(scope2.binding)} and d.folder_id=${q(id)};`,
+  );
+assert.equal(dispatched("Hidden"), hidden.jobId);
+assert.equal(dispatched("Search"), "");
+const inbox = claim(dispatched("Inbox"));
+const tokensBeforePaused = tokens;
+await assert.rejects(
+  runMicrosoftCaptureJob(db, inbox, ports([])),
+  (e) => e.code === "stream_unconfirmed",
+);
+assert.equal(tokens, tokensBeforePaused);
+sql(`update learn_microsoft_mailbox_bindings set enabled=true where id=${q(scope2.binding)};`);
+const inboxBase = `https://graph.microsoft.com/v1.0/users/${scope2.mailbox}/mailFolders/Inbox/messages/delta`;
+const inboxDone = await runMicrosoftCaptureJob(
+  db,
+  inbox,
+  ports([
+    {
+      value: [{ id: "RetainedMessage", subject: "Synthetic mail from discovered folder" }],
+      "@odata.deltaLink": inboxBase + "?$deltatoken=InboxDone",
+    },
+  ]),
+);
+assert.equal(inboxDone.observationsStored, 1);
+assert.equal(inboxDone.folderDispatch, null);
+assert.equal(
+  sql(
+    `select source_page->'events'->0->'raw'->>'subject' from learn_microsoft_source_pages where job_id=${q(inbox.jobId)};`,
+  ),
+  "Synthetic mail from discovered folder",
+);
+const repeatedRoot = await runMicrosoftCaptureJob(
+  db,
+  claim(rootDone.successorId),
+  ports([{ value: [discoveredFolder] }]),
+);
+assert.deepEqual(repeatedRoot.folderDispatch, {
+  physicalFolders: 1,
+  searchFolders: 0,
+  newJobs: 0,
+  reusedJobs: 0,
+  previouslyDispatched: 1,
+});
+assert.equal(dispatched("Inbox"), inbox.jobId); // even after its message job completed
+let nested = repeatedRoot;
+for (const page of [
+  { value: [] },
+  { value: [] },
+  { value: [{ ...folder, id: "Nested", parentFolderId: "Search" }] },
+  { value: [] },
+]) {
+  assert.ok(nested.successorId);
+  nested = await runMicrosoftCaptureJob(db, claim(nested.successorId), ports([page]));
+}
+assert.equal(nested.successorId, null);
+assert.ok(dispatched("Nested"));
+assert.equal(
+  sql(
+    `select count(*) from learn_microsoft_folder_dispatches d join learn_microsoft_capture_streams s on s.id=d.stream_id where s.binding_id=${q(scope2.binding)};`,
+  ),
+  "4",
+);
+for (const role of ["anon", "authenticated", "service_role"]) {
+  for (const statement of [
+    "select * from learn_microsoft_folder_dispatches",
+    "delete from learn_microsoft_folder_dispatches",
+    "truncate learn_microsoft_folder_dispatches",
+    `select learn_microsoft_dispatch_folders(${q(tenant)},${q(uid(99))},${q(discovery.jobId)})`,
+  ])
+    assert.throws(() => sql(`set role ${role};${statement};`));
+}
+assert.throws(() => sql("delete from learn_microsoft_folder_dispatches;"));
+// An existing completed-discovery installation must not silently skip fan-out.
+assert.throws(
+  () => sql(fanoutMigration),
+  (e) => String(e.stderr).includes("existing_discovery_requires_backfill"),
+);
+console.log(
+  "PASS: discovered physical/hidden folders drive retained message capture; search folders are excluded but children traversed; duplicate/completed-folder suppression, matching active-job reuse, conflicting identity refusal, atomic insertion/lease rollback, concurrent settlement, paused no-token behavior, private immutable dispatches and upgrade guard verified",
+);
+
 console.log(
   "PASS: actual Microsoft queue wrapper + database: atomic successor creation with observed two-session lock contention, lost completion recovery, repeated replay, successor failure/lease rollback, exhausted discovery, no-page denial, paused recovery, cross-company/role denial and immutable completion receipts",
 );

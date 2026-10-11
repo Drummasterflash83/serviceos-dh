@@ -1,5 +1,5 @@
 /** Durable completion around the page engine. Registration awaits real credential
- * ports, enqueue/controller integration and hosted acceptance. */
+ * ports, recurring scheduling/controller integration and hosted acceptance. */
 import { uuid, object } from "./microsoft_graph_transport.ts";
 import {
   runMicrosoftCapturePage,
@@ -8,6 +8,13 @@ import {
   type MicrosoftCaptureClaim,
   type MicrosoftCapturePorts,
 } from "./microsoft_capture_engine.ts";
+export type MicrosoftFolderDispatch = {
+  physicalFolders: number;
+  searchFolders: number;
+  newJobs: number;
+  reusedJobs: number;
+  previouslyDispatched: number;
+};
 export type MicrosoftJobCompletion = {
   contract: "microsoft-job-settlement/1";
   state: "completed";
@@ -17,6 +24,7 @@ export type MicrosoftJobCompletion = {
   successorId: string | null;
   observationsStored: number;
   mailboxCoverage: "unverified";
+  folderDispatch?: MicrosoftFolderDispatch | null;
 };
 export async function runMicrosoftCaptureJob(
   db: MicrosoftJournalDb,
@@ -65,6 +73,32 @@ export async function runMicrosoftCaptureJob(
           (data.observationsStored !== 0 || data.successorId !== null))
       )
         throw Error();
+      const hasDispatch = Object.hasOwn(data, "folderDispatch");
+      const dispatch = data.folderDispatch;
+      if (hasDispatch && dispatch !== null) {
+        const keys = [
+          "physicalFolders",
+          "searchFolders",
+          "newJobs",
+          "reusedJobs",
+          "previouslyDispatched",
+        ];
+        if (
+          !object(dispatch) ||
+          Object.keys(dispatch).length !== keys.length ||
+          !keys.every(
+            (k) => Number.isSafeInteger(dispatch[k]) && dispatch[k] >= 0 && dispatch[k] <= 1000,
+          ) ||
+          data.sourceReceiptId === null ||
+          dispatch.physicalFolders + dispatch.searchFolders > data.observationsStored ||
+          dispatch.newJobs + dispatch.reusedJobs > dispatch.physicalFolders ||
+          dispatch.newJobs + dispatch.reusedJobs + dispatch.previouslyDispatched >
+            dispatch.physicalFolders + dispatch.searchFolders ||
+          dispatch.physicalFolders - dispatch.newJobs - dispatch.reusedJobs >
+            dispatch.previouslyDispatched
+        )
+          throw Error();
+      }
       return {
         contract: data.contract,
         state: "completed",
@@ -74,6 +108,20 @@ export async function runMicrosoftCaptureJob(
         successorId: data.successorId,
         observationsStored: data.observationsStored,
         mailboxCoverage: "unverified",
+        ...(hasDispatch
+          ? {
+              folderDispatch:
+                dispatch === null
+                  ? null
+                  : {
+                      physicalFolders: dispatch.physicalFolders,
+                      searchFolders: dispatch.searchFolders,
+                      newJobs: dispatch.newJobs,
+                      reusedJobs: dispatch.reusedJobs,
+                      previouslyDispatched: dispatch.previouslyDispatched,
+                    },
+            }
+          : {}),
       };
     } catch {
       throw new MicrosoftJournalError("settlement_unconfirmed");

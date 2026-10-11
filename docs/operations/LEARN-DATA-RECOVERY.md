@@ -1,5 +1,43 @@
 # LEARN data recovery coverage
 
+## Approved scope and account ownership — 11 October 2026
+
+Chris approved the backup setup and initial recording copy, then clarified that
+there is no existing AWS account and the account should belong to **OpenFolk**.
+This supersedes the Drummonds-owned account assumption in the original proposal
+below. The approval covers the described private encrypted recording backup,
+daily copies, 30-day governance protection, monthly restore checks and cost basis;
+it does not approve unrelated production changes. Chris/OpenFolk controls billing,
+MFA and recovery access. Keep Drummonds data isolated in its own backup bucket and
+scoped runtime permissions; never mix future clients into this recording inventory.
+
+**Recommended implementation remains AWS S3 in London (`eu-west-2`), under an
+OpenFolk-owned AWS account.** Chris also has an existing Cloudflare account for
+OpenFolk, so its R2 alternative was checked against current official documentation:
+
+- R2 offers an EU jurisdiction, but no listed UK/London jurisdiction; a Western
+  Europe location hint is explicitly best effort, not a residency guarantee.
+  [Data location](https://developers.cloudflare.com/r2/reference/data-location/).
+- R2 bucket locks can prevent overwrite/deletion for a period, but administrators
+  can remove the rules. S3 versioning and S3 Object Lock configuration APIs are
+  not supported by R2; substituting it would require a different version-retention
+  design and an explicit location decision, not simply changing the S3 endpoint.
+  [Bucket locks](https://developers.cloudflare.com/r2/buckets/bucket-locks/) and
+  [S3 compatibility](https://developers.cloudflare.com/r2/api/s3/api/).
+- Its Standard free allowance is 10 GB-month, 1 million write-class operations
+  and 10 million read-class operations per month. This inventory could fit within
+  unused allowance, but existing account usage, execution and source egress still
+  need to be counted. Price alone does not close the recovery requirements.
+  [R2 pricing](https://developers.cloudflare.com/r2/pricing/).
+
+No additional approval of the same AWS recording-copy scope is needed. The next
+external dependency is the OpenFolk AWS account: Chris must complete account
+signup, billing/identity verification, terms and owner MFA. Then provide the
+account ID and secure access route only, never passwords or keys in chat. Scoped
+backup/restore access and the reviewed source-read mechanism remain to be set up;
+no account, bucket, identity, recording copy or verified restore exists yet.
+Cloudflare infrastructure and OpenFolk hosting have not been changed.
+
 ## Verified observation — 11 October 2026
 
 The read-only Supabase Management API observation completed at 02:25:54 UTC.
@@ -84,7 +122,7 @@ Official sources checked on 11 October: [London S3 region](https://docs.aws.amaz
 and [pricing components](https://aws.amazon.com/s3/pricing/).
 No AWS resource, backup schedule or recording copy has been created.
 
-## Costed implementation proposal — approval required
+## Original costed implementation proposal — now approved with OpenFolk ownership
 
 Use one private S3 Standard bucket in a **Drummonds-owned AWS account**, London,
 with SSE-S3 encryption, blocked public access, versioning and a 30-day default
@@ -170,9 +208,9 @@ Sources: [S3 pricing and binary units](https://aws.amazon.com/s3/pricing/),
    Retain the database recovery-point reference alongside the manifest; resolve
    timing differences explicitly. A file copy is not an atomic database snapshot.
 
-**Decision needed:** approve the destination, cost allowance, protection period,
-daily schedule and initial recording copy, and identify the Drummonds-owned AWS
-account/access route. No AWS account, IAM access, resource, credential, schedule or
+**Approval received:** the setup and recording copy are approved, with an
+OpenFolk-owned account replacing the original Drummonds-owned assumption.
+The account/access route remains to be established (see the current decision above). No AWS account, IAM access, resource, credential, schedule or
 recording copy has been created. Database restore pricing and acceptance remain a
 separate launch requirement. Approval of this proposal does not approve unrelated
 production changes.

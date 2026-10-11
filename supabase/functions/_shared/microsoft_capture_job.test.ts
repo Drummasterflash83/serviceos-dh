@@ -191,3 +191,52 @@ test("pending after apply is not completion and private errors are sanitized", a
   await assert.rejects(runMicrosoftCaptureJob(g.db, claim, g.ports), error);
   assert.equal(g.providerCalls, 0);
 });
+
+test("folder dispatch receipts preserve bounded counts without claiming mailbox coverage", async () => {
+  const f = fixture();
+  f.settled = true;
+  f.answer.observationsStored = 5;
+  f.answer.folderDispatch = {
+    physicalFolders: 3,
+    searchFolders: 1,
+    newJobs: 1,
+    reusedJobs: 1,
+    previouslyDispatched: 1,
+  };
+  const result = await runMicrosoftCaptureJob(f.db, claim, f.ports);
+  assert.deepEqual(result.folderDispatch, f.answer.folderDispatch);
+  assert.equal(result.mailboxCoverage, "unverified");
+  assert.equal(f.providerCalls, 0);
+  f.answer.folderDispatch = null;
+  assert.equal((await runMicrosoftCaptureJob(f.db, claim, f.ports)).folderDispatch, null);
+});
+
+test("inconsistent, unbounded and private dispatch fields cannot become a completion", async () => {
+  const valid = {
+    physicalFolders: 1,
+    searchFolders: 0,
+    newJobs: 1,
+    reusedJobs: 0,
+    previouslyDispatched: 0,
+  };
+  for (const dispatch of [
+    { ...valid, raw: "PRIVATE" },
+    { ...valid, newJobs: -1 },
+    { ...valid, physicalFolders: 1001 },
+    { ...valid, newJobs: 0.5 },
+    { ...valid, physicalFolders: 0 },
+    { ...valid, reusedJobs: 1 },
+    { ...valid, previouslyDispatched: 1 },
+    { ...valid, newJobs: 0 },
+    { ...valid, physicalFolders: 2, newJobs: 2 },
+    {},
+    undefined,
+  ]) {
+    const f = fixture();
+    f.settled = true;
+    f.answer.observationsStored = 1;
+    f.answer.folderDispatch = dispatch;
+    await assert.rejects(runMicrosoftCaptureJob(f.db, claim, f.ports), error);
+    assert.equal(f.providerCalls, 0);
+  }
+});

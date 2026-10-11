@@ -1,0 +1,36 @@
+{
+  "version": "learn-microsoft-folder-dispatch-local/1",
+  "observedAt": "2026-10-11T07:11:25.599940+00:00",
+  "state": "local_discovery_to_retained_message_verified",
+  "sourceSha256": {
+    "supabase/migrations/20261101192000_learn_microsoft_folder_dispatch.sql": "3e7fa7064b54ddc2921b318e2da384dcd7ffb6a3fab86fa0ce4e9f9522150f84",
+    "supabase/functions/_shared/microsoft_capture_job.ts": "ba1c04cbb8c4f51ec8a0f7f3a3b03ea5c5c192f15eaf95c884f55a0adeef2bf0",
+    "scripts/verify/learn-microsoft-capture-job-cases.mjs": "18f37b666cc6144d71516a2008858d1266347770d0359e3d3366f6a287654a96"
+  },
+  "unitTests": {
+    "passed": 56,
+    "failed": 0
+  },
+  "strictWorkerTypeScript": "passed",
+  "isolatedIntegration": {
+    "command": "python3 scripts/verify/learn-microsoft-journal.py",
+    "database": "Network-isolated disposable PostgreSQL 15",
+    "checks": [
+      "Actual discovery reader, source journal, queue settlement and message engine retain a message from a discovered folder.",
+      "Hidden folders included; search folders excluded while their physical children remain discoverable.",
+      "Repeated folder observations do not enqueue again after the original message job completes.",
+      "Matching active jobs reused; conflicting authority or queue identity rejected.",
+      "Partial insert failure and expired lease roll back dispatches, queue children and completion while retaining source pages.",
+      "Two workers observed contending on the same settlement recover identical receipts and one dispatch decision.",
+      "Paused binding denies new token/provider work; retained completion remains recoverable.",
+      "Application roles denied direct dispatch-table/helper access; retained decisions immutable.",
+      "Migration rollback restores prior function; owner/execute grants preserved; populated old discovery completion requires explicit backfill."
+    ]
+  },
+  "installedWorkerBundleUnchanged": true,
+  "limitations": [
+    "Synthetic Graph and account/queue dependencies; not full target-schema or hosted acceptance.",
+    "No Microsoft credentials, live provider requests, production writes or activation.",
+    "Credential ports, worker/controller registration, recurring discovery/capture, canonical projection and real-mailbox acceptance remain unfinished."
+  ]
+}

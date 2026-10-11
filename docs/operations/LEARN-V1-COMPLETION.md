@@ -154,8 +154,10 @@ succeeded after that failure; no worker was invoked and no source record changed
   measurement review/correction and work history have dated release evidence in
   [TEST readiness](LEARN-TEST-READINESS.md). Positive acceptance is component-specific;
   anonymous denials do not prove the signed-in owner/operator journey.
-- [x] Local Microsoft readers, durable pages, retry recovery and atomic same-stream
-  queue completion pass unit and isolated database checks. No real Microsoft
+- [x] Local Microsoft readers, durable pages, retry recovery, atomic queue completion
+  and discovery-to-message dispatch pass unit and isolated database checks. A
+  discovered folder drives retained message capture with synthetic Graph responses;
+  hidden/search/nested folders, deduplication, pause and rollback are verified. No real Microsoft
   provider calls or hosted installation. [Remaining work](LEARN-MICROSOFT-MAIL.md).
 - [x] Local OAuth scheduling guard now prevents known revoked/expired/missing-auth
   accounts receiving new jobs; heartbeat write failure returns an uncertain result.
@@ -216,22 +218,24 @@ succeeded after that failure; no worker was invoked and no source record changed
   transcription and scheduling. Existing voicemail tables are not an ingester.
   [Discovery evidence](LEARN-VOICEMAIL-DISCOVERY.md).
 - [ ] **Microsoft:** authorised tenant/mailbox setup and token lifecycle;
-  discovery-to-message jobs; recurring capture/recovery; canonical projection;
+  hosted discovery-to-message dispatch; recurring capture/recovery; canonical projection;
   worker/controller registration; full-schema and real-mailbox acceptance.
 - [ ] **Performance inputs:** finish source-backed response-time, job progression,
   repeat-visit and driving adapters where sources exist. Establish staff identity,
   team membership, calendars and reviewable calculation rules using Drummonds data.
   Unsupported inputs stay visibly unavailable until connected and verified.
 - [ ] **Backups:** confirm measured volume, estimated total cost, account owner,
-  retention and recovery targets; obtain approval for a new paid destination and
-  recording copies; implement encrypted independent files plus database recovery.
+  retention and recovery targets; use the now-approved AWS London setup and
+  recording-copy scope under OpenFolk ownership; implement encrypted independent files plus database recovery.
   Verify bytes and isolated restore/playback, record duration and recovery point.
   [Proposal](LEARN-DATA-RECOVERY.md). No separate recording backup exists yet.
   The costed proposal now includes 601 MB / 2,888 objects, verified London AWS
   rates, an illustrative US$1.89/month operating estimate and a US$5 budget alert
   (not a cap), plus scoped access, daily copies, 30-day governance protection and
-  isolated restore acceptance. Implementation/copy approval and the Drummonds-owned
-  AWS account are still required; no paid resource or recording transfer occurred.
+  isolated restore acceptance. Chris approved setup/copy and changed account ownership to OpenFolk. No AWS
+  account exists yet. AWS London remains recommended after checking Cloudflare
+  R2 location/versioning differences; account setup/access is still required.
+  No paid resource or recording transfer occurred.
 
 ## Release and completion gates
 
