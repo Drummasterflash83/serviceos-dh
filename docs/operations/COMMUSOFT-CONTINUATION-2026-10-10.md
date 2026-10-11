@@ -1,15 +1,35 @@
 # Drummonds TEST continuation — prepared, not activated
 
-## Readiness follow-up — 11 October, 12:18 UTC
+## Latest readiness — 11 October, 12:38 UTC
 
-The separately approved playback run `73e083fe` has now added its retained
-synthetic fixtures and private generated audio to TEST, then retired its login.
-The 12:07 preflight below predates that run. Before continuation activation,
-reconcile those exact additions and the subsequent additive saved-result reader
-release 058 against the preserved baseline and catalog, then rerun
-preflight; do not overwrite the original evidence or blanket-reset hashes.
-The Commusoft continuation still requires its own pending access approval.
-[Playback acceptance and retirement](LEARN-PHONE-PLAYBACK-ACCEPTANCE.md).
+The original continuation now passes its full read-only preflight against TEST
+release 058. All 78 original dataset fingerprints match after a narrowly scoped
+reconciliation of the approved, retired playback run `73e083fe`. Exactly nine
+tables gained known fixture rows: one call, two recording metadata rows, one
+interaction/person/company/card/profile, two tenant directory rows, and one
+generated storage object. No unknown differences were accepted.
+
+The check verified exact playback run markers, banned account, removed membership,
+private bucket and generated object's size. It excluded only exact fixture row IDs
+and the exact bucket/object name when comparing to the old baseline, then checked
+two current and two original-data scans. All original hashes matched. The refreshed
+baseline includes and protects those additions. Previous bytes are retained in the
+private `commusoft-continuation-before-refresh-058.json`; both older baseline
+histories remain in the current journal too. Do not repeat this one-shot refresh
+or overwrite any original proof.
+
+Continuation catalog is now `b35981f6b70c615e9e234540ddff1777`; the saved-result
+catalog separately matched installed release 058. The earlier 057 refresh remains
+pinned to its historical schema. Twenty-one focused checks pass, including
+unretired/wrong identities, changed old rows, extra additions, drift and scope changes.
+
+Full preflight passed at 12:38:34 UTC: current Auth contract, worker/verifier,
+credential binding, paused capture, original 100-page jobs checkpoint and all 78
+preserved datasets. Zero requests and zero active continuation grants. Identity,
+60-minute limit and maximum 4,000 read-only requests are unchanged.
+**The existing access approval request remains pending. No import was activated.**
+
+[Sanitized refreshed readiness](evidence/learn-commusoft-continuation-playback-refresh-2026-10-11.json).
 
 ## Earlier readiness — 11 October, 12:07 UTC
 

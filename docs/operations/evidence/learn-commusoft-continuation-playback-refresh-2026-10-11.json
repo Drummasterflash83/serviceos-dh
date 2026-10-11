@@ -1,0 +1,44 @@
+{
+  "version": "commusoft-playback-compatibility/1",
+  "checkedAt": "2026-10-11T12:38:07.251Z",
+  "schemaFingerprint": "b35981f6b70c615e9e234540ddff1777",
+  "savedResultFingerprint": "6632f3df219ea27a9ccc3f668f198f00",
+  "priorBaselineSha256": "55e625046d498332f910cee67f4d45d88cc7614990ba5cac15312b7cb0fee836",
+  "currentBaselineSha256": "c36cdd37e8e9c82bcdbc14a15f754506ac74eb26e891d885237fbaa6ba76f11c",
+  "retiredPlaybackRun": "73e083fe-4195-49fb-89a2-7679b6eab517",
+  "expectedAddedRows": {
+    "public.phone_calls": 1,
+    "public.phone_recordings": 2,
+    "public.interactions": 1,
+    "public.people": 1,
+    "public.companies": 1,
+    "public.customer_cards": 1,
+    "public.profiles": 1,
+    "public.tenants": 2,
+    "storage.objects": 1
+  },
+  "originalDataMatched": true,
+  "runId": "d764008e-8c8f-4837-999a-8d38b5e6e2d5",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "prepared",
+  "protectedDatasets": 78,
+  "preflightVerifiedAt": "2026-10-11T12:38:34.952Z",
+  "startingJobPages": 100,
+  "boundary": {
+    "requests": 0,
+    "active_grants": 0,
+    "banned": 0
+  },
+  "durationMinutes": 60,
+  "maxProviderRequests": 4000,
+  "limits": {
+    "additionalJobPages": 500,
+    "customerContactPages": 2000,
+    "workaddressContactPages": 1500
+  },
+  "newUsers": 0,
+  "newGrants": 0,
+  "providerRequests": 0,
+  "approval": "still_required_for_activation",
+  "focusedTestsPassed": 21
+}

@@ -20,3 +20,9 @@ These are contract/coverage questions following successful requests, rather than
 
 Kind regards,
 Christopher
+
+Internal verification note — 11 October 2026 (not part of the email):
+Rechecked https://developer.commusoft.com/list-jobs-24695917e0. Its published
+completion/closure examples still include explicit timezone offsets. This does
+not establish the timezone of the unzoned values actually retained from Drummonds;
+the timezone and missing historical-property questions remain unresolved.

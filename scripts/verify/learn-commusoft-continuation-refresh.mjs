@@ -8,10 +8,10 @@ import { savedCliToken, TEST_PROJECT } from "./learn-test-readiness.mjs";
 import { communicationQuery } from "./learn-card-communication-catalog.mjs";
 import { readPhoneHealthCatalog, PHONE_HEALTH_PRESERVED } from "./learn-phone-health-catalog.mjs";
 import {
-  CONTINUATION_SCHEMA,
   validateContinuationPlan,
   continuationPreservationQuery,
 } from "./learn-commusoft-continuation-session.mjs";
+export const COMPATIBILITY057_SCHEMA = "147379faf1b523f103ceac7abc52c615";
 const run = "d764008e-8c8f-4837-999a-8d38b5e6e2d5";
 const file = ".verification-results/commusoft-continuation-session.json";
 const fixtures = ["76b546af-076e-46fd-866e-ad7611c60ed1", "c9e44b8f-8fca-4df7-ad1a-73da45a3f52b"];
@@ -55,7 +55,7 @@ export async function refreshPreparedContinuation(
     "Only the original prepared run can refresh once",
   );
   const before = complete(plan.before);
-  check((await catalog()).fingerprint === CONTINUATION_SCHEMA, "TEST release differs");
+  check((await catalog()).fingerprint === COMPATIBILITY057_SCHEMA, "TEST release differs");
   const original = continuationPreservationQuery(plan);
   const normalized = original.replace(
     /from (public\.[a-z_]+) s where /g,
@@ -86,7 +86,7 @@ export async function refreshPreparedContinuation(
     "Original retained data changed during refresh",
   );
   check(
-    (await catalog()).fingerprint === CONTINUATION_SCHEMA,
+    (await catalog()).fingerprint === COMPATIBILITY057_SCHEMA,
     "TEST release changed during refresh",
   );
   const refreshed = structuredClone(plan);
@@ -95,7 +95,7 @@ export async function refreshPreparedContinuation(
   refreshed.compatibility057 = {
     version: "commusoft-continuation-compatibility/1",
     checkedAt: now(),
-    schemaFingerprint: CONTINUATION_SCHEMA,
+    schemaFingerprint: COMPATIBILITY057_SCHEMA,
     priorBaseline: before,
     priorBaselineSha256: hash(ordered(before)),
     currentBaselineSha256: hash(ordered(current)),

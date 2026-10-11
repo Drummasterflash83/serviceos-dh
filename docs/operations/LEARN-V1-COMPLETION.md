@@ -305,6 +305,12 @@ succeeded after that failure; no worker was invoked and no source record changed
   Auth checker without removing the old guards. Twenty focused tests pass.
   No user, grant or provider request was created; the original approval remains
   pending. [Readiness evidence](evidence/learn-commusoft-continuation-refresh-2026-10-11.json).
+  A second exact reconciliation at 12:38 UTC proved the original 78 hashes after
+  the approved playback fixtures and release 058; previous journals and both
+  original baselines remain retained. Twenty-one checks pass. Full read-only
+  preflight now passes on 058 with no active grant or provider request, preserving
+  the original account, 100-page checkpoint, duration and budget.
+  [Latest readiness](evidence/learn-commusoft-continuation-playback-refresh-2026-10-11.json).
 - [ ] **Voicemail:** establish the actual supported message/audio contract and
   mailbox scope, then implement and verify ingestion, private access, replay,
   transcription and scheduling. Existing voicemail tables are not an ingester.

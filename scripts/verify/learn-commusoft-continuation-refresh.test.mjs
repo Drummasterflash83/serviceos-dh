@@ -1,11 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  newContinuationPlan,
-  CONTINUATION_SCHEMA,
-} from "./learn-commusoft-continuation-session.mjs";
+import { newContinuationPlan } from "./learn-commusoft-continuation-session.mjs";
 import { PHONE_HEALTH_PRESERVED } from "./learn-phone-health-catalog.mjs";
 import {
+  COMPATIBILITY057_SCHEMA,
   refreshPreparedContinuation,
   refreshSummary,
 } from "./learn-commusoft-continuation-refresh.mjs";
@@ -42,7 +40,7 @@ function fixture() {
     p,
     current,
     query,
-    catalog: async () => ({ fingerprint: CONTINUATION_SCHEMA }),
+    catalog: async () => ({ fingerprint: COMPATIBILITY057_SCHEMA }),
     calls: () => calls,
   };
 }
@@ -116,7 +114,8 @@ test("schema drift and current-row drift between passes reject refreshed evidenc
     let catalogs = 0,
       normal = 0;
     const catalog = async () => ({
-      fingerprint: ++catalogs === 2 && fault === "schema" ? "0".repeat(32) : CONTINUATION_SCHEMA,
+      fingerprint:
+        ++catalogs === 2 && fault === "schema" ? "0".repeat(32) : COMPATIBILITY057_SCHEMA,
     });
     const query = async (sql) => {
       const rows = await f.query(sql);
