@@ -5,12 +5,14 @@ import { execFileSync } from "node:child_process";
 import { savedCliToken } from "./learn-test-readiness.mjs";
 import { getDelegatedToken } from "../../supabase/functions/_shared/google_workspace.ts";
 const retry = process.argv.includes("--retry-after-local-fix");
-const extract = process.argv.includes("--extract-signed-content");
+const decode = process.argv.includes("--decode-signed-content");
+const extract = process.argv.includes("--extract-signed-content") || decode;
 if (
   process.argv.slice(2).join(" ") !==
   "--read-only-production-and-google" +
     (retry ? " --retry-after-local-fix" : "") +
-    (extract ? " --extract-signed-content" : "")
+    (extract && !decode ? " --extract-signed-content" : "") +
+    (decode ? " --decode-signed-content" : "")
 )
   throw Error("Explicit read-only scope required");
 if (retry && extract) throw Error("Independent extraction journal required");
@@ -66,9 +68,11 @@ const matches = scope.filter(
 );
 if (matches.length !== 1) throw Error("Scope no longer matches");
 
-const stem = extract
-  ? ".verification-results/voicemail-signed-extraction-sample"
-  : ".verification-results/voicemail-raw-auth-sample" + (retry ? "-v2" : "");
+const stem = decode
+  ? ".verification-results/voicemail-portable-decode-sample"
+  : extract
+    ? ".verification-results/voicemail-signed-extraction-sample"
+    : ".verification-results/voicemail-raw-auth-sample" + (retry ? "-v2" : "");
 writeFileSync(
   stem + "-journal.json",
   JSON.stringify({
@@ -123,6 +127,7 @@ try {
           extract
             ? "scripts/verify/learn-voicemail-extraction-probe.mjs"
             : "scripts/verify/learn-voicemail-dkim-probe.mjs",
+          ...(decode ? ["--decode"] : []),
         ],
         {
           input: extract

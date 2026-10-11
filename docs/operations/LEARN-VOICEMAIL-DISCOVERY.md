@@ -1,5 +1,44 @@
 # Birchills voicemail: discovery before capture
 
+## Import coordinator and portable decode — local verification, 21:47 UTC
+
+`scripts/verify/voicemail-auth/private-import.mjs` now connects route admission,
+bounded raw-source loading, signature/MIME extraction, actual audio decoding,
+private intake preparation, uploads without overwrite, byte-hash readback and
+atomic publication. It requires the provider's message ID and receipt time to
+match the admitted source. Storage paths must match the SQL-reserved IDs. A
+second admission check precedes upload; SQL rechecks capture before publication.
+Unknown upload acknowledgements are resolved by readback, never by overwriting
+the object. Unknown publication acknowledgements require the same idempotent
+request to be retried. Source or decoder mutation and mismatched readbacks fail.
+
+The default decoder is pinned `mpg123-decoder@1.0.3` WebAssembly. It processes
+bounded chunks, rejects decode errors/empty output, enforces input/PCM/duration
+limits, clears PCM chunks and frees the decoder. It uses no native executable or
+temporary audio file. A real read-only sample passed signature, extraction and
+this decoder: **228,096 PCM frames at 8 kHz, 28.512 seconds**, exactly matching
+the prior native duration/frame check and the same audio hash. Its two returned
+PCM channels describe the decoder output, not the original file's channel count;
+the earlier native inspection identified the original as mono. No listening,
+transcription, storage upload, database mutation or source-file persistence occurred.
+
+The coordinator passed 12 cases against actual offline PostgreSQL intake RPCs,
+using synthetic signed messages and a controlled in-memory storage adapter:
+admission before provider reads, decode required, changed receipt refused,
+invalid fixture rejected by the actual decoder, partial-upload retry, exact
+replay, corrupt readback, lost upload/publication acknowledgements, pause during
+upload, mutation and historical-owner preservation. Four synthetic messages were
+published in the disposable database. Successful fixture publication used an
+explicit decoder test double; the real portable decoder was independently proved
+against the provider sample. These are not hosted Storage or signed-in proofs.
+
+Seven signature/extraction/decoder tests pass; dependency audit reports zero
+findings at this observation. No hosted migration or capture has been enabled.
+Remaining: deployed runtime/SDK and credential wiring, actual Storage acceptance,
+verified routes and ownership, scheduling/coverage, larger-message handling,
+independent backup coverage and signed-in owner/manager acceptance.
+[Coordinator and portable decode evidence](evidence/learn-voicemail-import-coordinator-2026-10-11.json).
+
 ## Durable intake contract — local and TEST rollback verification, 21:40 UTC
 
 Migration `20261101420000_learn_voicemail_private_intake.sql` adds a private
@@ -24,8 +63,8 @@ back both objects and verify their actual digests and sizes. Only then may it ca
 `voicemail_intake_publish`. SQL verifies receipt/digest agreement, private buckets,
 object paths/sizes/MIME metadata, route and capture controls, then inserts the
 voicemail and publishes the journal atomically. **SQL metadata is not a substitute
-for hashing the stored bytes.** The upload/readback coordinator is not implemented
-yet, so this contract is not a working ingestion worker. Original-message size is
+for hashing the stored bytes.** The upload/readback coordinator was still missing
+at this milestone; see the subsequent local coordinator evidence above. Original-message size is
 currently capped at 1 MiB; larger messages need an explicit supported path rather
 than silent skipping. The new source bucket must join recovery/backup acceptance.
 

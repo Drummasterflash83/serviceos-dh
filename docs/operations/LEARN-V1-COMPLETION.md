@@ -56,6 +56,14 @@ as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
 ### Voicemail route discovered — real read-only checks, 11 October, 21:06 UTC
 
+**Coordinator update, 21:47 UTC:** local code now connects verified raw extraction
+to decode, intake, immutable uploads, byte-hash readback and publication. Twelve
+orchestration cases passed against actual offline PostgreSQL with controlled
+storage faults; the portable decoder separately decoded the real signed sample
+to 28.512 seconds without native tools or files. Hosted Storage/runtime acceptance,
+verified routes, installation, scheduling/coverage, backup coverage and signed-in
+acceptance remain. [Coordinator evidence](evidence/learn-voicemail-import-coordinator-2026-10-11.json).
+
 **Private intake update, 21:40 UTC:** the new service-only preparation/publication
 contract passed actual offline PostgreSQL privacy, retry, concurrency, pause,
 conflict and atomic-failure tests. The hosted TEST rehearsal needed the existing

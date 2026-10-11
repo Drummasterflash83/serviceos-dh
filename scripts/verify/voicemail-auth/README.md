@@ -8,6 +8,7 @@ Install without lifecycle scripts from the repository root:
 npm ci --prefix scripts/verify/voicemail-auth --ignore-scripts --no-fund --no-audit
 node --test scripts/verify/learn-voicemail-dkim-probe.test.mjs
 node --test scripts/verify/voicemail-auth/signed-voicemail.test.mjs
+node --test scripts/verify/voicemail-auth/decode-audio.test.mjs
 ```
 
 `learn-voicemail-dkim-probe.mjs` reads one original email on stdin, bounded at 1 MiB.
@@ -67,7 +68,7 @@ extracted audio hash/size to the earlier successful real decode evidence. The
 now obtained from the verified original MIME body. The child prints only
 sanitized proof, never candidate text, headers, addresses or audio. No raw or
 decoded content is persisted. The generic extractor's audio-format validation
-still requires a decoder; matching the previous digest proves this one sample.
+requires the separate decoder below; matching the previous digest proved that sample.
 
 ```sh
 node scripts/verify/learn-voicemail-raw-auth-sample.mjs --read-only-production-and-google --extract-signed-content
@@ -77,3 +78,36 @@ Primary references:
 - [mailauth verifier](https://github.com/postalsys/mailauth)
 - [Verifier result fields](https://github.com/postalsys/mailauth/blob/master/docs/dkim.md)
 - [Gmail original-message reads](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/get)
+
+## Private import coordinator
+
+`private-import.mjs` accepts a service-role SDK-shaped client, a fixed tenant/route,
+source message ID/account/receipt time, a bounded provider loader and the restricted
+DNS resolver. It calls route admission before the loader, verifies that the loaded
+source identity/receipt is unchanged, then verifies/extracts the signed message.
+Its default decoder is `decode-audio.mjs`, using pinned mpg123 WebAssembly with
+bounded input, chunks, PCM output and duration. Actual frame decoding was verified
+against the same real 28.512-second sample. PCM output channel count is not an
+assertion about the source's channel layout. Decode errors and empty output fail;
+this does not assess intelligibility or prove every malformed MPEG tail is rejected.
+
+After SQL preparation and a second admission check, both files are uploaded with
+`upsert:false` and read back for size/SHA256 verification before publication.
+Unknown upload replies are resolved by checking existing bytes. Conflicts never
+cause overwrite or deletion. Failed/paused publication retains the private intake
+and files for a retry. Published records retain the route's historical owner;
+current extension reassignment does not change it.
+
+`python3 scripts/verify/learn-voicemail-intake-local.py` now also runs the Node
+coordinator against the actual PostgreSQL functions. Its synthetic loader and
+in-memory storage adapter inject failures; successful publication uses a decoder
+test double, while invalid audio is also rejected using the actual decoder. This
+is orchestration proof, not hosted Storage transport or deployed runtime proof.
+
+The diagnostic wrapper's `--decode-signed-content` mode uses a separate exclusive
+journal for one real read-only signature/extraction/portable-decode check. Raw,
+audio and PCM are not saved. No credentials are passed to the decoder child.
+
+Still required: deployed runtime support and actual SDK/provider wiring, verified
+routes/ownership, TEST installation and hosted storage acceptance, scheduling and
+coverage, larger-message handling, recovery coverage and signed-in acceptance.

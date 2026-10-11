@@ -1,0 +1,109 @@
+{
+  "version": "learn-voicemail-import-coordinator/1",
+  "state": "local_coordinator_and_real_portable_decode_verified_not_deployed",
+  "coordinator": {
+    "state": "actual_sql_coordinator_checks_passed",
+    "publishedMessages": 4,
+    "provider": "synthetic_loader_only",
+    "storage": "controlled_in_memory_adapter_with_actual_SQL_metadata",
+    "decoder": "synthetic_contract_double_for_publication_actual_decoder_rejects_invalid_fixture",
+    "providerReads": 13,
+    "uploadAttempts": 18,
+    "readbacks": 18,
+    "cases": [
+      "route_pause_before_provider",
+      "decode_required",
+      "provider_receipt_change_denied",
+      "actual_decoder_rejects_invalid_audio",
+      "partial_upload_retry",
+      "identical_replay",
+      "corrupt_readback_denied",
+      "lost_storage_ack_resolved",
+      "lost_publication_ack_replay",
+      "pause_during_upload",
+      "decoder_mutation_denied",
+      "historical_owner_snapshot"
+    ],
+    "hostedRequests": 0
+  },
+  "localSignatureExtractionDecoderTests": 7,
+  "realPortableDecode": {
+    "state": "single_signed_notification_content_extracted",
+    "observedAt": "2026-10-11T21:47:08.399Z",
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "tenantId": "00000000-0000-0000-0000-000000000001",
+    "sourceFingerprint": "c611b8ed260f870a0db96143af1f178bd363789cc08866e557d947a2a82dbbd7",
+    "rawBytes": 97126,
+    "rawSha256": "cc536a8e00ea1b2367b4620a6719cd789d2a6189fd43ee7cae1e582cbbd17125",
+    "verification": {
+      "state": "signed_source_extracted_requires_mailbox_binding_and_audio_validation",
+      "signature": {
+        "uniqueRequiredHeaders": true,
+        "fromDomainMatches": true,
+        "contentSignatureVerified": true,
+        "signatures": [
+          {
+            "expectedSigningDomain": true,
+            "status": "pass",
+            "rsaSha256": true,
+            "keyBits": 2048,
+            "completeBody": true,
+            "requiredHeadersSigned": true,
+            "signatureTimeValid": true
+          }
+        ]
+      },
+      "recipientMatchedSignedTo": true,
+      "extractedAudioBytes": 57285,
+      "extractedAudioSha256": "1df68281b1ca6f74fffd18d70a25e8025069f492a5efa57fec106031809cb597",
+      "matchesPreviouslyDecodedAudio": true,
+      "rawSha256": "cc536a8e00ea1b2367b4620a6719cd789d2a6189fd43ee7cae1e582cbbd17125",
+      "sourceContentFingerprint": "f7c58f6afe1a2a0fb0f0e8f5c76f2cd1cf8748fe1e97eb425b3d1c6799add8f9",
+      "parserVersion": "birchills-voicemail-email/1",
+      "reportedDurationSeconds": 28,
+      "transcriptPresent": true,
+      "timestampBasis": "gmail_internal_date",
+      "contentBasis": "signature_verified_raw_mime_not_retained_email_copy",
+      "portableDecode": {
+        "state": "decoded",
+        "decoder": "mpg123-decoder@1.0.3",
+        "frames": 228096,
+        "sampleRate": 8000,
+        "decodedChannels": 2,
+        "durationSeconds": 28.512,
+        "listening": "not_verified"
+      },
+      "rawPersisted": false,
+      "audioPersisted": false,
+      "dnsQueries": 1,
+      "refusedQueries": 1,
+      "limitations": [
+        "No mailbox-owner or provider-account association is established by a signed To match.",
+        "One observed sample; not historical coverage or a deployed importer.",
+        "Portable in-memory decode checked; no playback or transcription performed."
+      ]
+    },
+    "tokenRequests": 1,
+    "rawMessageRequests": 1,
+    "productionWrites": 0,
+    "storageUploads": 0,
+    "accessChanges": 0,
+    "credentialUploads": 0,
+    "rawPersisted": false
+  },
+  "dependencyAudit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "limitations": [
+    "Actual local PostgreSQL intake; provider/storage are controlled adapters, and successful publication uses a decoder contract double.",
+    "Real signed extraction and portable audio decoding are separately observed; no real voicemail was imported or uploaded.",
+    "Portable decoder currently proved in Node, not the deployed Edge runtime.",
+    "The decoder returns two PCM channels; the original file was identified as mono by the earlier native probe.",
+    "No new live/TEST routes or user access, no hosted migration installed."
+  ]
+}

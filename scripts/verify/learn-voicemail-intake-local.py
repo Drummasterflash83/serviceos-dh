@@ -109,5 +109,6 @@ try:
  denied('set role service_role;'+call({**source,'email_id':'abcdef04'},candidate),'voicemail_route_unverified')
  assert sql('select count(*) from receptionist_voicemails')=='1'
  print('PASS: actual private intake DDL, rollback rehearsal, disabled routes, sender/time binding, permission denials, concurrent retry, distinct email evidence, conflicting replay, incomplete uploads, capture pause, atomic publication, historical owner snapshot, manager revocation, private storage, tenant isolation and retained history')
+ subprocess.run(['node','scripts/verify/learn-voicemail-import-client-probe.mjs',name],cwd=root,check=True,timeout=60)
 finally:
  if created:subprocess.run([docker,'rm','-f',name],capture_output=True,timeout=30)

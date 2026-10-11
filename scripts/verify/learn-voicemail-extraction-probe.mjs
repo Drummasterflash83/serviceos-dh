@@ -1,6 +1,9 @@
 /** One bounded in-memory original message; stdout contains only sanitized evidence. */
 import { extractSignedVoicemail } from "./voicemail-auth/signed-voicemail.mjs";
 import { providerKeyResolver } from "./voicemail-auth/provider-dkim-resolver.mjs";
+import { decodeVoicemailAudio } from "./voicemail-auth/decode-audio.mjs";
+const decode = process.argv.slice(2).join(" ") === "--decode";
+if (process.argv.length > 2 && !decode) throw Error("Unknown probe mode");
 const chunks = [];
 let size = 0;
 for await (const chunk of process.stdin) {
@@ -31,6 +34,12 @@ try {
     source.audio.length !== input.expectedAudioBytes
   )
     throw Error("Extracted audio differs from previously decoded sample");
+  const portableDecode = decode ? await decodeVoicemailAudio(source.audio) : undefined;
+  if (
+    portableDecode &&
+    Math.abs(portableDecode.durationSeconds - source.candidate.reportedDurationSeconds) > 2
+  )
+    throw Error("Decoded duration differs");
   process.stdout.write(
     JSON.stringify({
       state: source.state,
@@ -46,13 +55,16 @@ try {
       transcriptPresent: source.candidate.providerTranscript !== null,
       timestampBasis: source.candidate.timestampBasis,
       contentBasis: "signature_verified_raw_mime_not_retained_email_copy",
+      ...(portableDecode ? { portableDecode } : {}),
       rawPersisted: false,
       audioPersisted: false,
       ...stats,
       limitations: [
         "No mailbox-owner or provider-account association is established by a signed To match.",
         "One observed sample; not historical coverage or a deployed importer.",
-        "Audio identity matches the earlier full local decode; no new playback or transcription performed.",
+        decode
+          ? "Portable in-memory decode checked; no playback or transcription performed."
+          : "Audio identity matches the earlier full local decode; no new playback or transcription performed.",
       ],
     }),
   );
