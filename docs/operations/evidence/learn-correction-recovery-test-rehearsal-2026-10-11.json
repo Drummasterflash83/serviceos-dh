@@ -1,0 +1,17 @@
+{
+  "version": "learn-correction-recovery/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "584948b52e0a2ca6b0c81c05f73bdc3c59b60375070903aa467d7747b47f3343",
+  "mode": "rehearse",
+  "state": "rehearsed_rolled_back",
+  "observedAt": "2026-10-11T05:02:49.604Z",
+  "priorFingerprint": "b0fb35158b23263826fe6ebe70d0d041",
+  "expectedFingerprint": "a0444e093a188b5d35c9bfd3d2d7ff21",
+  "afterFingerprint": "b0fb35158b23263826fe6ebe70d0d041",
+  "preservedDataSets": 101,
+  "submissionFailure": null,
+  "receipt": {
+    "fingerprint": "a0444e093a188b5d35c9bfd3d2d7ff21",
+    "functions": 2
+  }
+}

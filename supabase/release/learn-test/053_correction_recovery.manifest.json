@@ -1,0 +1,17 @@
+{
+  "version": "learn-correction-recovery-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "584948b52e0a2ca6b0c81c05f73bdc3c59b60375070903aa467d7747b47f3343",
+  "priorFingerprint": "b0fb35158b23263826fe6ebe70d0d041",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101170000_learn_correction_recovery.sql",
+      "sha256": "daed0808006b6506556f8226dcf1444f411e0b635096c3efeba1b12b6f3997e4"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-correction-recovery-hosted.assert.sql",
+    "sha256": "4cd0d8a5ac90567279571c25b9c883a0966a817190734bcabf83f8fb5465ae69"
+  },
+  "preservedDataSets": 101
+}
