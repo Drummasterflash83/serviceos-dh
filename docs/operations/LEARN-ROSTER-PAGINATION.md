@@ -61,8 +61,9 @@ it never returns a partial directory as complete. Concurrent same-count changes
 can still occur across these reads: this is not a transactional snapshot or a
 historical membership proof. The subsequent [operator health increment](LEARN-OPERATOR-HEALTH.md) extends checked
 paging to identity/endpoint/ownership inventories and corrects their quality
-metrics. Suggestion readers, connection evidence, ownership resolution and history
-still have separate limits; neither increment claims whole-workspace scalability.
+metrics. The [identity inventory increment](LEARN-IDENTITY-INVENTORY.md) checks
+suggestion reads. Connection evidence, ownership resolution and history still
+have separate limits; these increments do not claim whole-workspace scalability.
 
 Reproduce with `node --test scripts/learn-roster-recovery.test.mjs`,
 `python3 scripts/verify/learn-roster-pagination-http.py`, and the local

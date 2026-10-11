@@ -65,6 +65,13 @@ other endpoints were preserved; 14 hosted boundary checks pass. Frontend source
 and request contracts are unchanged, so the staging frontend above is retained.
 Positive signed-in health acceptance remains outstanding.
 [Operator health evidence](operations/evidence/learn-operator-health-test-2026-10-11.json).
+Controller v4 supersedes v3 at 03:16 UTC, from Git
+`6a1544dcd4ebfb09f6bb4919447e841d6c5127e8`. It checks complete identity
+inventories and keeps suggested links within their provider and current scope.
+All 101 datasets, schema and other endpoints were preserved; fourteen hosted
+boundary checks pass. Frontend source/contracts remain unchanged. Signed-in
+identity acceptance remains pending.
+[Identity deployment evidence](operations/evidence/learn-identity-inventory-test-2026-10-11.json).
 The earlier 11 October 02:36 UTC candidate added the searchable/paginated team-group
 chooser, retaining backend release 051. Local browser checks cover 256 groups,
 retry, selection and scoring scope; hosted signed-in acceptance remains pending.

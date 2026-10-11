@@ -56,7 +56,13 @@ Reviewed controller closure: 20 files,
 `4a51b09af59e87a13c80224c30b301a40640a3bd98cd2fa0aee416677ada2d92`.
 The TEST replacement runner requires operator v3 and unchanged existing schema,
 and journals all 101 preservation fingerprints before one deployment attempt.
-Deployment evidence is recorded separately. No frontend request contract changes.
+Controller v4 is ACTIVE, installed on 11 October at 03:16 UTC from Git
+`6a1544dcd4ebfb09f6bb4919447e841d6c5127e8`. All 101 monitored datasets,
+schema and other endpoints were preserved. Fourteen hosted workspace/data-quality
+boundary checks passed. The existing protected frontend is retained at Git
+`27113d0`; no frontend source or request contract changed. Positive signed-in
+hosted acceptance remains pending. See [local evidence](evidence/learn-identity-inventory-local-2026-10-11.json)
+and [TEST evidence](evidence/learn-identity-inventory-test-2026-10-11.json).
 
 The read is current, not a transactional or historical snapshot. Per-table limits
 remain 20,000 rows, 8 MiB and 100 requests. Same-count concurrent edits remain

@@ -1,5 +1,24 @@
 # Existing TEST environment: verified release gaps
 
+## Identity suggestions — TEST controller v4 installed
+
+Email and extension suggestions now use checked complete inventories, current
+people/links and exact provider scope. Matching logins or extension numbers from
+other providers do not count as existing links. Conflicting links, shared or
+suspended provider evidence, and prior operator decisions remain review-only.
+Actual isolated HTTP verification reads more than 2,500 rows per inventory under
+a 137-row server cap, retaining name ambiguity and the latest review decision.
+Forty-nine targeted tests, twenty email verification cases and seven deployment
+guards pass; the new identity module typechecks.
+
+Controller v4 is ACTIVE from Git `6a1544dcd4ebfb09f6bb4919447e841d6c5127e8`
+at 03:16 UTC on 11 October. All 101 monitored datasets, schema and other endpoints
+were preserved; fourteen hosted access-boundary checks passed. Frontend source
+and contracts are unchanged. Signed-in hosted acceptance and actual card evidence
+attribution remain open. No grants, provider requests, automatic identity/ownership
+writes or production changes occurred.
+See [identity evidence behaviour and limits](LEARN-IDENTITY-INVENTORY.md).
+
 ## Operator health — TEST controller v3 installed
 
 The queue now retains member IDs for verified email links and requires actual

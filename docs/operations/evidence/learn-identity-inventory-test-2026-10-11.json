@@ -1,0 +1,140 @@
+{
+  "version": "learn-identity-inventory-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceGitSha": "6a1544dcd4ebfb09f6bb4919447e841d6c5127e8",
+  "backend": {
+    "observedAt": "2026-10-11T03:16:18.248Z",
+    "sourceBundleSha256": "4a51b09af59e87a13c80224c30b301a40640a3bd98cd2fa0aee416677ada2d92",
+    "dependencyFiles": 20,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 101,
+    "identityInventoryPreserved": true,
+    "endpoint": {
+      "slug": "openfolk-control-plane",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "723a58ab23feb285d0777bce8cf49516d4a5debed4af3d8f52eb8ad782dfab81"
+    }
+  },
+  "http": {
+    "observedAt": "2026-10-11T03:16:38.266Z",
+    "state": "boundary_checks_passed",
+    "checks": [
+      {
+        "name": "preflight",
+        "action": "preflight",
+        "status": 200,
+        "code": null,
+        "passed": true
+      },
+      {
+        "name": "method",
+        "action": "preflight",
+        "status": 405,
+        "code": "method_not_allowed",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "action": "workspace",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "action": "data_quality",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      }
+    ],
+    "sourcesPreserved": true,
+    "schemaPreserved": true
+  },
+  "frontend": {
+    "changed": false,
+    "retainedUrl": "https://serviceos-learn-test-j27tmt2pc-allkin.vercel.app",
+    "sourceGitSha": "27113d072fa88a7b15e8054f2acf7e36cdc1bfbd",
+    "requestContractChanged": false,
+    "freshSignedInAcceptance": false
+  },
+  "productionChanges": false,
+  "newGrants": 0,
+  "providerRequests": 0,
+  "newIdentityOrOwnershipWrites": 0,
+  "limitations": [
+    "No signed-in operator, tenant directory result or database mutation was tested. No account, grant, machine credential, provider request or schedule was created."
+  ]
+}
