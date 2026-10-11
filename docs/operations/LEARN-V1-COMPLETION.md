@@ -235,6 +235,9 @@ succeeded after that failure; no worker was invoked and no source record changed
   isolated restore acceptance. Chris approved setup/copy and changed account ownership to OpenFolk. No AWS
   account exists yet. AWS London remains recommended after checking Cloudflare
   R2 location/versioning differences; account setup/access is still required.
+  Local CloudFormation foundation and streamed copy/restore/inventory core now
+  pass schema lint and eleven synthetic tests. Real adapters, scheduling,
+  monitoring, byte copies and database/audio restore acceptance remain open.
   No paid resource or recording transfer occurred.
 
 ## Release and completion gates

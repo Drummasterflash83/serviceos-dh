@@ -1,0 +1,61 @@
+{
+  "version": "learn-recording-backup-local/1",
+  "observedAt": "2026-10-11T07:28:08.518204+00:00",
+  "state": "local_copy_inventory_and_restore_protocol_verified",
+  "sourceSha256": {
+    "scripts/backup/recording-backup-core.mjs": "29a36832c792c5338a5730ab02353daff6ea9b1a751f699c0c9436c2470f6f5e",
+    "scripts/backup/recording-backup-core.test.mjs": "ca61ce814d5d8de2181076d6369bbf64d3a57e0e8f3ea1b3262e45e84e58bf39",
+    "scripts/backup/recording-backup-template.mjs": "68edb94b6870f6b4f69eb272ae78240e7b74668ee0501111e0fed961eea27f93",
+    "infrastructure/recording-backup/foundation.cloudformation.json": "87434e07db90f4c2f1e301aefa13f08f3bbf47c588790fde45c3910db239135e"
+  },
+  "unitTests": {
+    "command": "node --test scripts/backup/recording-backup-core.test.mjs",
+    "passed": 11,
+    "failed": 0,
+    "fixture": "Synthetic bytes, in-memory source/destination/journal ports, real local streaming and isolated temporary files"
+  },
+  "cloudFormationValidation": {
+    "command": "cfn-lint infrastructure/recording-backup/foundation.cloudformation.json",
+    "version": "1.46.0",
+    "exitCode": 0,
+    "diagnostics": 0
+  },
+  "verifiedLocally": [
+    "Byte-exact SHA-256 copy and pinned-version readback before recording a receipt",
+    "Private isolated restore with original recording references and 0700 directory/0600 file permissions",
+    "Lost upload/receipt/manifest acknowledgement recovery without blindly overwriting",
+    "Changed source, corrupt/truncated/oversized bytes, foreign scope and unverified destination rejected",
+    "Version identity, encryption and 30-day retention checks",
+    "Every inventory object needs a verified receipt; saved manifests retain historical scope after source deletion"
+  ],
+  "preparedInfrastructure": {
+    "region": "eu-west-2",
+    "ownership": "OpenFolk",
+    "versioning": true,
+    "encryption": "AES256",
+    "retention": "30-day GOVERNANCE",
+    "publicAccessBlocked": true,
+    "conditionalWritesRequired": true,
+    "accessPolicies": "Unattached writer and restore managed policies; no identities or grants created",
+    "monthlyAlertUSD": 5,
+    "alertScope": "AWS account-wide, excludes Supabase, not a spending cap"
+  },
+  "limits": {
+    "maximumObjectBytes": 268435456,
+    "maximumInventoryObjects": 10000,
+    "snapshot": "non_atomic",
+    "coverage": "verified_inventory_only",
+    "playback": "not_verified",
+    "databaseRestore": "not_verified"
+  },
+  "cloudResourcesCreated": false,
+  "realRecordingsCopied": 0,
+  "productionChanged": false,
+  "remaining": [
+    "AWS account signup, owner MFA and reviewed scoped access",
+    "Real source inventory/read, S3 transport and private durable journal adapters",
+    "Daily bounded resumable scheduling and operator monitoring",
+    "Real complete inventory reconciliation, encrypted copies and byte verification",
+    "Isolated database/audio restore, playable audio, relationship integrity and measured recovery targets"
+  ]
+}

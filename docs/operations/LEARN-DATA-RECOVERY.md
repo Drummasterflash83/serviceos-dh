@@ -38,6 +38,24 @@ backup/restore access and the reviewed source-read mechanism remain to be set up
 no account, bucket, identity, recording copy or verified restore exists yet.
 Cloudflare infrastructure and OpenFolk hosting have not been changed.
 
+## Local backup implementation — 11 October 2026
+
+The [backup foundation](../../infrastructure/recording-backup/README.md) now includes
+an account/region-bound CloudFormation template and a streamed copy/restore core.
+The template defines the private London bucket, versioning, 30-day governance
+retention, create-only writes, separate **unattached** writer/restore policies and
+an AWS account-wide US$5 alert (not a cap, excluding Supabase costs). CloudFormation
+schema lint passes; no stack, policy attachment or cloud access was created.
+
+Eleven synthetic tests pass for streamed SHA-256 copy, exact-version readback,
+private isolated restore, changed-source/corrupt-byte rejection, lost upload and
+journal acknowledgement recovery, and whole-inventory completion. Manifest
+recovery retains its original scope/time; it does not claim current source coverage.
+Real S3/source/journal adapters, daily scheduling, operator monitoring, real
+recording copies, playback and database restore remain unfinished. The scoped
+source-read mechanism remains behind its applicable production approval boundary.
+[Local evidence](evidence/learn-recording-backup-local-2026-10-11.json).
+
 ## Verified observation — 11 October 2026
 
 The read-only Supabase Management API observation completed at 02:25:54 UTC.
