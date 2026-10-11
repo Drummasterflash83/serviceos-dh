@@ -200,6 +200,15 @@ succeeded after that failure; no worker was invoked and no source record changed
   transcription, playable audio, retry/recovery and recurring capture with the
   real Birchill account. Preserve existing IDs and distinguish capture from shadow
   processing configuration. [Phone work](LEARN-PHONE-ACCOUNT-BINDING.md).
+  Retained call playback is now implemented as a **candidate, not deployed**:
+  owner/admin evidence cards list exact tenant/provider/call recordings and request
+  audited 60-second links to private retained audio. Nine protocol/client/actual
+  handler tests, isolated PostgreSQL assertions, and a full installed TEST-schema
+  rollback rehearsal passed (112 data sets unchanged). The actual component played
+  generated audio in the browser; closing evidence stopped it, switching company
+  discarded a delayed old link, and listing failure recovered on retry. No real
+  recording playback or signed-in hosted acceptance is claimed.
+  [Playback evidence](evidence/learn-phone-playback-candidate-2026-10-11.json).
   Hosted TEST now has pipeline, transcription and analysis v1, download v4,
   pending processor v2 and platform worker v7, coordinated with schema release 055.
   The local candidate now confirms pipeline completion and gives downloads,
@@ -326,8 +335,9 @@ succeeded after that failure; no worker was invoked and no source record changed
   now pass; scheduling, monitoring and isolated database recovery remain open.
   [Live access evidence](evidence/learn-recording-access-live-2026-10-11.json).
   [Inventory and runner evidence](evidence/learn-recording-inventory-and-batch-2026-10-11.json).
-  AWS foundation and scoped access are active; only the completed copies are
-  verified, not full coverage or recovery.
+  AWS foundation and scoped access are active. The full explicitly observed
+  recording inventory and one manifest-selected restore are verified; later
+  arrivals, scheduled coverage and database recovery still require acceptance.
 
 ## Release and completion gates
 

@@ -132,11 +132,11 @@ first live copy. [Runner evidence](evidence/learn-recording-runner-local-2026-10
 A separate Restore-only command now recovers an exact S3 version without accessing
 Supabase, retains record-link evidence privately and checks local audio decoding.
 The suite passes 43 tests, including a real macOS decode of synthetic WAV audio.
-Real transfers have begun and one receipt-only Drummonds restore/decode has
-passed; full-manifest and database recovery remain unverified.
+The complete observed inventory and one full-manifest-selected Drummonds
+restore/decode subsequently passed at 10:40 UTC; database recovery remains unverified.
 [Restore command evidence](evidence/learn-recording-restore-local-2026-10-11.json).
-Complete AWS inventory acceptance, daily scheduling, operator monitoring,
-representative playback coverage and database restore remain unfinished.
+Daily scheduling, operator monitoring, broader representative playback coverage
+and database restore remain unfinished.
 [Inventory and batch evidence](evidence/learn-recording-inventory-and-batch-2026-10-11.json).
 [Source evidence](evidence/learn-recording-backup-source-local-2026-10-11.json). [SDK evidence](evidence/learn-recording-backup-s3-local-2026-10-11.json). Initial source reads can reuse existing authorised credentials in memory inside
 the trusted local/ServiceOS environment; they must never be exported to AWS. Any
@@ -356,6 +356,6 @@ production changes.
 
 These steps are acceptance requirements, not completed work. Launch reporting
 must distinguish **records preserved**, **database backups listed**, **recording
-backup verified**, and **restore verified**. Only initial recording copies and
-one receipt-only audio restore/decode are verified; full-inventory and database
-recovery remain unverified.
+backup verified**, and **restore verified**. All 2,888 objects in the explicitly
+observed inventory and one manifest-selected audio restore/decode are verified.
+Subsequent arrivals, scheduled coverage and isolated database recovery remain unverified.

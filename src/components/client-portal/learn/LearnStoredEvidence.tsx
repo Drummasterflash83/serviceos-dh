@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { loadPerformanceEvidence } from "@/lib/learn-performance-evidence";
 import type { EvidenceRef } from "@/lib/learn-scorecards";
+import { LearnPhoneAudio } from "./LearnPhoneAudio";
 
 /** Remount on source/tenant changes so an earlier source cannot flash on a new card. */
 export function LearnStoredEvidence(props: { tenantId: string; reference: EvidenceRef }) {
@@ -102,6 +103,13 @@ function SourceEvidence({ tenantId, reference }: { tenantId: string; reference: 
               ))}
             </dl>
             <small>Source reference: {reference.id}</small>
+            {(reference.table === "phone_calls" || reference.table === "phone_recordings") && (
+              <LearnPhoneAudio
+                tenantId={tenantId}
+                table={reference.table}
+                sourceId={reference.id}
+              />
+            )}
           </div>
         ) : (
           <p>Reading source…</p>

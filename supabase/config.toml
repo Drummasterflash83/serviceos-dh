@@ -350,3 +350,7 @@ verify_jwt = true
 # User JWT, then authenticated platform-admin approval; no schedule or trigger key.
 [functions.learn-commusoft-verify]
 verify_jwt = true
+
+# Retained call audio requires a real signed-in company owner/admin.
+[functions.learn-phone-playback]
+verify_jwt = true
