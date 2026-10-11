@@ -149,3 +149,27 @@ or cursor reset is an acceptable rollback shortcut.
 Real-provider initial reconciliation, subsequent capture, source-to-card acceptance,
 score eligibility (including draft/spam treatment), and operator recovery still
 need acceptance before this change can be part of an approved production release.
+
+
+## Draft eligibility release gate — TEST 069
+
+The draft guard retains Gmail source messages and existing canonical records,
+while excluding labelled drafts from new customer communication publication,
+identity attribution, card excerpts and activity counts. Source revision changes
+make later corrections eligible for reassessment without rewriting receipts.
+The worker parser requires the matching page-store update: new drafts have
+unknown direction and no sent timestamp. Install the database before its worker.
+
+A read-only production metadata check identified 55 retained Gmail drafts, each
+with an existing canonical interaction. Before promotion, inspect their derived
+card summaries, relationships, aggregates and scoring evidence and prepare a
+bounded, reviewed reconciliation with before/after preservation evidence. Do not
+delete source messages, canonical history or immutable receipts to hide the issue.
+This observation does not establish 55 incorrect staff scores.
+
+Do not use the TEST-pinned package in production. Prove the production function
+and role prerequisites and build a separate release manifest. Pause affected
+capture before a rollback; keep the draft-aware page-store and publication guard
+compatible, and recover forward without restoring draft reply attribution.
+Real-provider capture, signed-in card acceptance, Spam eligibility and provider
+label/deletion handling remain open launch requirements.

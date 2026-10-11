@@ -54,7 +54,7 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
-### Drafts retained without being treated as replies — candidate rehearsed, 11 October
+### Drafts retained without being treated as replies — TEST 069, 11 October, 19:51 UTC
 
 A read-only production metadata check found **55 Gmail draft messages, all with
 canonical interactions**. This is not evidence of 55 incorrect staff scores; it
@@ -62,7 +62,7 @@ identifies source records that must not be treated as sent replies. Production
 remains unchanged. Google's documented send flow replaces a draft with a new sent
 message ID, so both source records may legitimately be retained.
 
-The candidate preserves draft bodies/labels, gives new drafts no sent timestamp or
+TEST 069 preserves draft bodies/labels, gives new drafts no sent timestamp or
 outbound direction, and excludes drafts from customer communication publication,
 identity/card delivery, restricted card excerpts and new activity counts. Existing
 source/canonical records and receipts are retained. Direct publication and operator
@@ -76,8 +76,13 @@ source bodies and correction recovery. Fourteen Gmail-reader and fifteen review-
 regressions pass, alongside 65 actual email-engine/durable SQL checks. The page
 store accepts unknown direction only for a labelled draft with no sent timestamp.
 The full TEST schema rehearsal rolled back with all 121 datasets
-and original permissions restored. Persistent TEST release and matching worker
-verification are next. Frontend explanatory copy is local only. Production card
+and original permissions restored. The exact package was then installed with
+all 121 datasets preserved. Worker v15 was deployed and downloaded: all 92 runtime
+modules matched reviewed source, 145 emitted imports were checked, and the three
+pruned dependencies have no emitted runtime importers. All 14 reader tests passed
+against the download; unsigned POST returned 403. No capture, provider calls,
+credentials, users or production changes occurred. Frontend explanatory copy is
+local only. Production card
 summary/aggregate reconciliation remains a required release gate; current label
 changes, Spam eligibility and real-provider acceptance are still unfinished.
 [Evidence](evidence/learn-email-draft-eligibility-2026-10-11.json).

@@ -1,7 +1,7 @@
 {
   "version": "learn-email-draft-eligibility/1",
-  "state": "candidate_rehearsed_not_installed",
-  "recordedAt": "2026-10-11T19:44:56.274Z",
+  "state": "installed_and_runtime_verified_real_capture_pending",
+  "recordedAt": "2026-10-11T19:51:25.993Z",
   "productionReadOnlyObservation": {
     "gmailDraftMessages": 55,
     "draftsWithCanonicalInteractions": 55,
@@ -44,13 +44,56 @@
       ]
     },
     "actualEmailEngineTestsPassed": 65,
-    "pageStorage": "Actual Gmail capture engine persists a labelled draft with unknown direction and null sent_at; SQL rejects unknown-direction non-drafts and drafts with a sent timestamp."
+    "pageStorage": "Actual Gmail capture engine persists a labelled draft with unknown direction and null sent_at; SQL rejects unknown-direction non-drafts and drafts with a sent timestamp.",
+    "exactPackageRollback": true,
+    "downloadedReaderTestsPassed": 14
   },
   "limitations": [
-    "Persistent TEST deployment and matching runtime verification are pending.",
     "No real Gmail capture or signed-in acceptance.",
     "Production draft-derived card summaries/aggregates need reviewed reconciliation before promotion; no production source or derived record has been changed.",
     "Gmail label-change/deletion mirroring and Spam eligibility remain unfinished.",
     "New plain-language draft advice is local until the next protected frontend release."
-  ]
+  ],
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "schema": {
+    "release": "069_email_draft_eligibility",
+    "installedAt": "2026-10-11T19:50:26.487Z",
+    "fingerprint": "db53a9b09d1cf3b70dea70278c1b7338",
+    "guardDigest": "b8c89f1b2c8c5bb6f396366e7b2ba537",
+    "packageSha256": "b8866b5fbe8206246a7499399f5ab57a0dec24a6860b0e6c713f02d309d1b98d",
+    "preservedDatasets": 121,
+    "existingAuthorityRestored": true,
+    "temporaryMembershipsRevoked": 1,
+    "newFunctionPermission": "EXECUTE on private draft classifier granted only to the existing restricted card reader; no user or administrator access added"
+  },
+  "runtime": {
+    "deployedAt": "2026-10-11T19:51:01.573Z",
+    "workerVersion": 15,
+    "sourceBundleSha256": "2f5394bee7c44cff277bd4069bef0088fe8970ad981cb062399847b30957eb55",
+    "dependencyFiles": 95,
+    "emittedImportsChecked": 145,
+    "omittedModulesHaveNoEmittedImporters": true,
+    "omittedModules": [
+      "_shared/intelligence/reason_codes.ts",
+      "_shared/intelligence/types.ts",
+      "_shared/worker_contract.ts"
+    ],
+    "matchingRuntimeModules": 92,
+    "differentRuntimeModules": [],
+    "comparisonMethod": "Compare transpiled syntax trees excluding comments, source positions, punctuation and redundant parenthesis nodes. Runtime-relevant identifier/literal text, operators, declaration kind and child structure are retained. Also normalizes associative logical operators preserving operand order and the optional enclosing block around a sole for-of statement. This is a review aid, not formal equivalence proof.",
+    "unsignedHttp": [
+      {
+        "endpoint": "platform-worker",
+        "method": "POST",
+        "status": 403,
+        "code": "forbidden"
+      }
+    ],
+    "preservedDatasets": 121
+  },
+  "providerRequests": 0,
+  "usersCreated": 0,
+  "credentialsCreated": 0,
+  "schedulesActivated": 0,
+  "productionChanged": false
 }
