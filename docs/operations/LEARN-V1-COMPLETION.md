@@ -365,7 +365,7 @@ occurred. [Evidence](evidence/learn-email-scheduler-outcomes-local-2026-10-11.js
   transcription and scheduling. Existing voicemail tables are not an ingester.
   [Discovery evidence](LEARN-VOICEMAIL-DISCOVERY.md).
 - [ ] **Microsoft:** authorised tenant/mailbox setup and token lifecycle;
-  persistent hosted release; canonical projection; worker/controller registration,
+  persistent hosted release; real canonical/card acceptance; worker/controller registration,
   recurring folder discovery, expiry recovery and real-mailbox acceptance.
   At 13:31 UTC, all five source-journal/dispatch/recurring-queue migrations passed
   a full-schema hosted TEST rollback rehearsal, preserving all 113 datasets and
@@ -374,6 +374,15 @@ occurred. [Evidence](evidence/learn-email-scheduler-outcomes-local-2026-10-11.js
   strict TypeScript pass. Nothing is installed or enabled for Microsoft. No real
   Microsoft mailbox has been identified for Drummonds.
   [Evidence](evidence/learn-microsoft-incremental-2026-10-11.json).
+  At 14:59 UTC, the canonical message projection also passed a full-schema TEST
+  rollback rehearsal, including the missing shared event-bus foundation. Complete
+  synthetic messages reached email/thread/interaction records and durable events;
+  all 113 datasets and the original schema were restored. Seven isolated projection
+  checks cover retries, version ordering, mailbox isolation and failure rollback.
+  Sparse/conflicting observations stay held, attachments remain uncaptured, and a
+  pending event does not prove customer-card delivery. No Microsoft installation
+  or live activation occurred.
+  [Projection evidence](evidence/learn-microsoft-projection-2026-10-11.json).
 - [ ] **Performance inputs:** finish source-backed response-time, job progression,
   repeat-visit and driving adapters where sources exist. Establish staff identity,
   team membership, calendars and reviewable calculation rules using Drummonds data.
