@@ -175,8 +175,12 @@ succeeded after that failure; no worker was invoked and no source record changed
   they never display an internal UUID as the owner label. All 150 references on a
   full findings page are supported within a bounded lookup. Nineteen card/communication
   checks, both TypeScript checks and both builds passed. Synthetic browser verification
-  shows “Office” for the customer finding. Hosted TEST and production acceptance remain
-  pending. [Evidence](evidence/learn-owner-labels-local-2026-10-11.json).
+  shows “Office” for the customer finding. The matching Git commit `6be7c9b` is now
+  READY in protected Vercel TEST (08:31 UTC); backend binding, protected HTTP routes
+  and client/operator sign-in redirects pass, with no observed browser console errors.
+  Positive signed-in hosted and production acceptance remain pending.
+  [Local evidence](evidence/learn-owner-labels-local-2026-10-11.json) and
+  [TEST deployment evidence](evidence/learn-owner-labels-test-2026-10-11.json).
 
 ## Implemented but not fully verified — acceptance gates
 

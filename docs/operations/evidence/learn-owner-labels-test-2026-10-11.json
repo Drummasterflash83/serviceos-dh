@@ -1,0 +1,61 @@
+{
+  "version": "learn-owner-labels-test/1",
+  "state": "frontend_ready_signed_in_acceptance_pending",
+  "frontend": {
+    "observedAt": "2026-10-11T08:31:55.219Z",
+    "id": "dpl_8S9DikzUMuDeeZsRxXVzfVKvZEV7",
+    "url": "serviceos-learn-test-k2z4ob4ri-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "6be7c9b34a50dfdb07264806188eb0d9333e0259"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x"
+  },
+  "protection": {
+    "observedAt": "2026-10-11T08:32:28.047Z",
+    "base": "https://serviceos-learn-test-k2z4ob4ri-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "backendBinding": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "anonymousKeyProjectAndRoleVerified": true,
+    "previewOnly": true
+  },
+  "browser": {
+    "clientLoginSameOrigin": true,
+    "unauthenticatedClientRedirect": "/login?redirect=%2Fclient%3Fsection%3Dlearn",
+    "unauthenticatedOperatorRedirect": "/login?redirect=%2Fopenfolk",
+    "consoleErrorsObserved": 0,
+    "signedInAcceptance": false,
+    "privateScreenshot": ".verification-results/learn-owner-labels-test-login-2026-10-11.jpg"
+  },
+  "localEvidence": "learn-owner-labels-local-2026-10-11.json",
+  "limitations": [
+    "No signed-in hosted card, scoring or controller acceptance",
+    "No backend migrations, worker deployments, access grants or provider calls",
+    "Backup/restore command source is in Git but has not been activated",
+    "Production unchanged"
+  ]
+}

@@ -4,6 +4,19 @@ For the current cross-component launch requirements, delivery order and remainin
 acceptance gates, use [LEARN V1 completion checklist](LEARN-V1-COMPLETION.md).
 The sections below retain detailed, dated component history.
 
+## Card ownership labels — protected TEST frontend ready, 11 October 08:31 UTC
+
+Candidate [serviceos-learn-test-k2z4ob4ri-allkin.vercel.app](https://serviceos-learn-test-k2z4ob4ri-allkin.vercel.app)
+is READY from Git `6be7c9b34a50dfdb07264806188eb0d9333e0259`. Customer/job findings
+resolve typed team/person owner and waiting-on names; unavailable/ambiguous mappings
+show an explicit gap. Local browser and 19 card/communication checks passed.
+Hosted TEST binding, three protected HTTP routes and actual client/operator
+same-origin sign-in redirects pass with no observed browser console errors.
+Signed-in hosted ownership/card/controller acceptance remains open. Backend release
+054 and worker v6 are unchanged; no grants, provider calls or production changes.
+Backup/restore commands remain unactivated despite their source being in the commit.
+[Evidence](evidence/learn-owner-labels-test-2026-10-11.json).
+
 ## Microsoft 365 mail — local page engine, recovery and queue completion verified
 
 The new page engine joins Graph readers to the source journal. Fifty-four unit

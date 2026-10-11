@@ -50,13 +50,18 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current staging candidate is
-[serviceos-learn-test-pncxu962n-allkin.vercel.app](https://serviceos-learn-test-pncxu962n-allkin.vercel.app),
-built remotely from backed-up GitHub commit `a621415c451c31336a8b19cde8a7a0e7284b3110`
-and READY on 11 October at 07:00 UTC. It adds the customer timeline source viewer
-and safe Workspace diagnostics. TEST backend binding, deployment protection on
-three routes, actual client/operator same-origin sign-in redirects and zero
-observed browser console errors pass. Positive signed-in source/diagnostic and
-real-mailbox acceptance remain open.
+[serviceos-learn-test-k2z4ob4ri-allkin.vercel.app](https://serviceos-learn-test-k2z4ob4ri-allkin.vercel.app),
+built remotely from backed-up GitHub commit `6be7c9b34a50dfdb07264806188eb0d9333e0259`
+and READY on 11 October at 08:31 UTC. It includes the typed team/person ownership
+name fix for customer/job findings, with clear unresolved-assignment gaps. It also
+retains the source timeline viewer and safe Workspace diagnostics from the prior
+07:00 UTC candidate `serviceos-learn-test-pncxu962n-allkin.vercel.app`.
+TEST backend binding, deployment protection on three routes, actual client/operator
+same-origin sign-in redirects and zero observed browser console errors pass.
+Positive signed-in card/source/diagnostic and real-provider acceptance remain open.
+No backend or production change occurred. Backup/restore scripts in this Git commit
+remain unactivated; this frontend deployment does not run them.
+[Frontend evidence](operations/evidence/learn-owner-labels-test-2026-10-11.json).
 
 TEST database release 054 installed at 06:52 UTC and `platform-worker` v6 at
 06:54 UTC. Rollback/install/worker/HTTP evidence preserved all 101 monitored
