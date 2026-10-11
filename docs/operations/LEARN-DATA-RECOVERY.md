@@ -204,6 +204,23 @@ After Chris confirms the reset/save, arrange secure local access to that exact
 restore rehearsal. Do not recreate the Supabase project or restore over production.
 Neither possession of the password nor a successful connection proves recoverability.
 
+#### Password-manager check — 11 October, 13:40 UTC
+
+Chris unlocked 1Password for this check. In the visible Allkin account, searching
+Supabase found a dashboard login, not a database connection credential. Exact
+production-project and `postgres` searches returned no results. The eight
+ServiceOS matches listed application-named entries and an empty **Openfolk ServiceOS**
+secure note; no database-specific item was identified. No password was revealed,
+copied, changed or saved by this check.
+This is a bounded search of the visible account, not proof that no credential
+exists in another account or under unrelated names.
+
+Chris subsequently requested new API keys be stored in **Openfolk ServiceOS**.
+The service/environment scope is awaiting clarification; API keys must not be
+mistaken for the database password needed by PostgreSQL restore. No new key or
+password reset has been performed. The database owner reset/save handoff above
+remains required unless an existing database credential is located.
+
 Official references checked 11 October:
 [database password reset](https://supabase.com/docs/guides/troubleshooting/how-do-i-reset-my-supabase-database-password-oTs5sB)
 and [connection methods and parameters](https://supabase.com/docs/guides/database/connecting-to-postgres).
