@@ -5,7 +5,7 @@
 The Phone badge now requires confirmed current DDI ownership/handling, a published
 policy and an enabled `phone_call` allowlist. Complete checked reads replace capped,
 unchecked results; conflicts, missing people and read failures cannot look ready.
-The operator UI no longer reports hard-coded inactive settings. Fifty-three focused
+The operator UI no longer reports hard-coded inactive settings. Fifty-four focused
 and release checks, TypeScript, the full build and a 132-request isolated database
 check pass. TEST deployment and signed-in acceptance are not claimed by this local
 checkpoint. See [Phone readiness](LEARN-PHONE-READINESS.md).

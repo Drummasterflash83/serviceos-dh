@@ -1,4 +1,5 @@
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { computeSourceReadiness } from "../supabase/functions/_shared/controlplane/readiness.ts";
 const tenant = "10000000-0000-4000-8000-000000000001";
@@ -295,4 +296,57 @@ test("failed, truncated, changed or foreign inventories cannot yield a readiness
     await assert.rejects(computeSourceReadiness(database(fixture(), transform), tenant, now));
   await assert.rejects(computeSourceReadiness(database(fixture()), "bad", now));
   await assert.rejects(computeSourceReadiness(database(fixture()), tenant, NaN));
+});
+
+test("actual operator refresh clears failed readiness and ignores superseded responses", async () => {
+  const source = readFileSync(
+    new URL("../src/routes/openfolk.$tenantId.tsx", import.meta.url),
+    "utf8",
+  );
+  const body = source
+    .split("const fetchAll = useCallback(async () => {")[1]
+    .split("}, [tenantId]);")[0];
+  const pending = [];
+  const values = [];
+  const fetchGeneration = { current: 0 };
+  const refresh = new Function(
+    "getWorkspace",
+    "getReadiness",
+    "getAudit",
+    "fetchGeneration",
+    "setReadiness",
+    "setWorkspace",
+    "setError",
+    "setAudit",
+    "setLastRefresh",
+    "tenantId",
+    "return async () => {" + body + "}",
+  )(
+    async () => ({ ok: true, data: {} }),
+    () => new Promise((resolve) => pending.push(resolve)),
+    async () => ({ ok: true, data: { entries: [] } }),
+    fetchGeneration,
+    (v) => values.push(v),
+    () => {},
+    () => {},
+    () => {},
+    () => {},
+    tenant,
+  );
+  const first = refresh();
+  assert.equal(values.at(-1), null);
+  const second = refresh();
+  pending[1]({ ok: false, error: { message: "offline" } });
+  await second;
+  pending[0]({ ok: true, data: { level: "ready_for_chris_shadow" } });
+  await first;
+  assert.ok(values.every((v) => v === null));
+  const third = refresh();
+  pending[2]({ ok: true, data: { level: "ready_for_evaluation" } });
+  await third;
+  assert.equal(values.at(-1).level, "ready_for_evaluation");
+  const fourth = refresh();
+  pending[3]({ ok: false });
+  await fourth;
+  assert.equal(values.at(-1), null);
 });

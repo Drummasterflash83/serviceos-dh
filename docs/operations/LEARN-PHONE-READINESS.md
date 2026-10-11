@@ -25,15 +25,17 @@ provider requests or capture controls are changed by this read.
 
 The operator UI removes a hard-coded draft/disabled/inactive panel and explains
 that provider capture, audio playback and processing acceptance are separate.
+Refresh clears the previous readiness value and rejects superseded responses;
+a failed read cannot retain a green badge.
 Even the highest configuration result never grants staff-pilot readiness. Existing
 wire types and operator authorization are retained.
 
 ## Verification
 
-- Ten focused tests cover configuration gates, ownership review, overlap, current
+- Eleven focused tests cover configuration gates, ownership review, overlap, current
   people, foreign references, confidence, source scope, inventory failures and
   2,503 DDIs / 5,006 assignments under a simulated 137-row server cap.
-- Ownership, health, roster, identity and release guards pass together: 53 tests.
+- Ownership, health, roster, identity and release guards pass together: 54 tests.
 - Actual isolated PostgREST v14.5 and the installed client read 2,503 DDIs,
   people, teams and policy versions plus 5,006 assignments, with a 137-row cap.
   All 132 requests are read-only, including twelve count HEADs and six terminal

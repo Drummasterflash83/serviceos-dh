@@ -6,7 +6,7 @@
  * ownership) require an admin grant server-side; a viewer's write returns 403 (surfaced
  * inline). Never in tenant navigation.
  */
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ShieldAlert } from "lucide-react";
@@ -183,19 +183,23 @@ function TenantWorkspace({ tenantId, tenantName }: { tenantId: string; tenantNam
   // fetchAll refreshes data IN PLACE. It never toggles `loading`, so the workspace is
   // not unmounted on a mutation refetch — the durable section/endpoint, expanded role
   // form, and scroll position all survive. Only the first load gates the render.
+  const fetchGeneration = useRef(0);
   const fetchAll = useCallback(async () => {
+    const generation = ++fetchGeneration.current;
+    setReadiness(null);
     const [w, r, a] = await Promise.all([
       getWorkspace(tenantId),
       getReadiness(tenantId),
       getAudit(tenantId),
     ]);
+    if (generation !== fetchGeneration.current) return;
     if (w.ok) {
       setWorkspace(w.data);
       setError(null);
     } else {
       setError(w.error);
     }
-    if (r.ok) setReadiness(r.data);
+    setReadiness(r.ok ? r.data : null);
     if (a.ok) setAudit(a.data.entries);
     setLastRefresh(new Date().toISOString());
   }, [tenantId]);
@@ -210,6 +214,7 @@ function TenantWorkspace({ tenantId, tenantName }: { tenantId: string; tenantNam
     });
     return () => {
       active = false;
+      fetchGeneration.current++;
     };
   }, [fetchAll, search.tools]);
 
