@@ -347,15 +347,31 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const insightId = typeof a.data.insight_id === "string" ? a.data.insight_id : null;
 
   // --- Step 5: produce the canonical interaction + publish interaction.ready ---
-  // The pipeline's ONLY hand-off to the shared business layer. Best-effort: a
-  // failure here never fails the (already successful) analysis — downstream
-  // enrichment engines are independent subscribers, not pipeline dependencies.
-  // The scheduled interactions/identity syncs also cover this on their own cadence.
+  // A completed analysis is retained even if this hand-off fails, but the full
+  // pipeline cannot claim success until canonical storage and its downstream
+  // event are confirmed. Subscriber/card completion is still separate.
   const fin = await finalizeInteractionForRecording({
     admin: supabase,
     tenantId,
     recordingId: recordingId as string,
   });
+
+  if (!fin.ok || (!fin.eventPublished && !fin.alreadyEnriched)) {
+    return await finishFailed(
+      "phone_handoff_unconfirmed",
+      "Audio and analysis are saved, but delivery to LEARN could not be confirmed. Review this run before retrying.",
+      503,
+      { downloaded: true, transcribed: true, analysed: true },
+      "handoff",
+      {
+        transcript_id: transcriptId,
+        insight_id: insightId,
+        interaction_id: fin.interactionId,
+        event_published: fin.eventPublished,
+        handoff_reason: fin.ok ? "event_unconfirmed" : fin.reason ?? "unknown",
+      },
+    );
+  }
 
   const interactionStatus = !fin.ok
     ? `skipped(${fin.reason ?? "unknown"})`

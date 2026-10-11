@@ -7,20 +7,21 @@
 //      the AI summary/sentiment never reaches the timeline),
 //   2. upserts the ONE canonical `interactions` row for the call (same shape &
 //      conflict key as interactions-sync, so the two are interchangeable),
-//   3. marks it READY (never downgrading an already-ENRICHED row),
+//   3. marks changed content READY, preserving ENRICHED only for the same version,
 //   4. PUBLISHES `interaction.ready` on the bus.
 //
 // It does NOT know about identity resolution, customer cards, recommendations or
 // any other engine — those are independent subscribers of interaction.ready. The
 // phone pipeline therefore never grows a downstream dependency. Best-effort and
-// failure-isolated: a failure here never fails the (already successful) analysis.
+// failure-isolated: a failure retains the already saved analysis and is reported
+// as an incomplete pipeline hand-off.
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { publishEvent } from "./events.ts";
 
 export interface FinalizeResult {
   ok: boolean;
-  reason?: string; // when !ok: no_call | no_call_id | db_error
+  reason?: string; // when !ok: safe diagnostic code only
   callId: string | null;
   interactionId: string | null;
   eventPublished: boolean;
@@ -62,7 +63,9 @@ export async function finalizeInteractionForRecording(opts: {
       .eq("id", recordingId)
       .maybeSingle();
     if (recErr) return { ...base, reason: "db_error" };
-    const providerCallId = (rec?.provider_call_id as string | null) ?? null;
+    if (!rec || typeof rec.provider !== "string" || !rec.provider)
+      return { ...base, reason: "no_call_id" };
+    const providerCallId = (rec.provider_call_id as string | null) ?? null;
     if (!providerCallId) return { ...base, reason: "no_call_id" };
 
     const { data: call, error: callErr } = await admin
@@ -72,6 +75,7 @@ export async function finalizeInteractionForRecording(opts: {
       )
       .eq("tenant_id", tenantId)
       .eq("provider_call_id", providerCallId)
+      .eq("provider", rec.provider)
       .order("started_at", { ascending: false, nullsFirst: false })
       .limit(1)
       .maybeSingle();
@@ -80,7 +84,7 @@ export async function finalizeInteractionForRecording(opts: {
     const callId = call.id as string;
 
     // 2) Back-fill the insight's call_id (only when unset — never overwrite).
-    const { data: insight } = await admin
+    const { data: insight, error: insightError } = await admin
       .from("phone_ai_insights")
       .select("id, call_id, summary, sentiment, updated_at")
       .eq("tenant_id", tenantId)
@@ -88,13 +92,21 @@ export async function finalizeInteractionForRecording(opts: {
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (insight && (insight.call_id as string | null) === null) {
-      await admin
+    if (insightError) return { ...base, callId, reason: "db_error" };
+    if (!insight) return { ...base, callId, reason: "no_insight" };
+    if (insight.call_id && insight.call_id !== callId)
+      return { ...base, callId, reason: "insight_call_mismatch" };
+    if ((insight.call_id as string | null) === null) {
+      const { data: linked, error: linkError } = await admin
         .from("phone_ai_insights")
         .update({ call_id: callId })
         .eq("tenant_id", tenantId)
         .eq("id", insight.id as string)
-        .is("call_id", null);
+        .is("call_id", null)
+        .select("id, call_id")
+        .maybeSingle();
+      if (linkError || linked?.id !== insight.id || linked?.call_id !== callId)
+        return { ...base, callId, reason: "insight_link_unconfirmed" };
     }
     const summary = (insight?.summary as string | null) ?? null;
     const sentiment = (insight?.sentiment as string | null) ?? null;
@@ -103,24 +115,28 @@ export async function finalizeInteractionForRecording(opts: {
     // projector) so a pipeline-created interaction is never re-selected as "repair".
     let sourceVersion: string | null = null;
     try {
-      const { data: ver } = await admin.rpc("phone_projection_version", {
+      const { data: ver, error: versionError } = await admin.rpc("phone_projection_version", {
         p_tenant_id: tenantId,
         p_call_id: callId,
       });
-      sourceVersion = typeof ver === "string" ? ver : null;
+      sourceVersion = !versionError && typeof ver === "string" && /^[a-f0-9]{32}$/.test(ver) ? ver : null;
     } catch {
-      sourceVersion = null; // best-effort; the projector will repair once if null
+      sourceVersion = null;
     }
 
-    // 3) Preserve an already-ENRICHED interaction — never downgrade its status.
-    const { data: existing } = await admin
+    if (!sourceVersion) return { ...base, callId, reason: "projection_unavailable" };
+
+    // 3) Preserve enrichment only while the projected content version is unchanged.
+    const { data: existing, error: existingError } = await admin
       .from("interactions")
-      .select("id, processing_status")
+      .select("id, processing_status, source_version")
       .eq("tenant_id", tenantId)
       .eq("source_table", SOURCE_TABLE)
       .eq("source_id", callId)
       .maybeSingle();
-    const alreadyEnriched = (existing?.processing_status as string | null) === "enriched";
+    if (existingError) return { ...base, callId, reason: "db_error" };
+    const alreadyEnriched = existing?.processing_status === "enriched" &&
+      existing?.source_version === sourceVersion;
     const targetStatus = alreadyEnriched ? "enriched" : "ready";
 
     const direction = dirOf(call.direction);
@@ -169,7 +185,7 @@ export async function finalizeInteractionForRecording(opts: {
     if (upErr || !upserted) return { ...base, callId, reason: "db_error" };
     const interactionId = upserted.id as string;
 
-    // 4) Publish interaction.ready (skip if already enriched — nothing new to fan out).
+    // 4) Changed content must reach subscribers even when an older version was enriched.
     let eventPublished = false;
     if (!alreadyEnriched) {
       const ev = await publishEvent(admin, {

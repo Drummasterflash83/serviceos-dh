@@ -780,3 +780,47 @@ checks pass. The actual browser redirects to same-origin app sign-in with zero
 console errors. Three real RPC checks deny no-session/anonymous/service callers.
 This does not substitute for positive signed-in result reading; the earlier
 playback login remains retired and was not reused.
+
+## Phone-to-LEARN handoff — 11 October, 15:55 UTC
+
+The pipeline could return `success:true` after its finaliser failed to create the
+canonical interaction or publish its downstream event. A fresh read-only TEST
+check found no `platform_events`, no `interactions.source_version`, and no
+`phone_projection_version(uuid,uuid)`. Earlier cached-stage success therefore
+must not be interpreted as completed delivery to a LEARN card.
+
+The local pipeline now reports `phone_handoff_unconfirmed` with `failed_step=handoff`
+when canonical storage or required event publication is unconfirmed. It retains
+all three completed-stage flags and the transcript/insight IDs in the run metadata.
+It does not delete or automatically repeat saved audio, transcription or analysis.
+The finaliser also checks insight/inventory reads and linkage acknowledgements,
+requires the source-version function, scopes call lookup by provider, and sends
+changed content back to downstream processing even when an older version was
+enriched. Existing person/company attribution is preserved. These corrections are
+**local/Git only**, not deployed.
+
+Seventy actual-handler checks, five finaliser cases and three settlement cases
+pass; strict backend TypeScript passes. Handler tests cover failed finalisation,
+missing event acknowledgement, retained completed stages, no repeated child
+requests, and unchanged already-enriched data. Finaliser tests cover failed reads,
+failed/conflicting insight linkage and changed-version re-enrichment.
+
+A full hosted TEST rollback rehearsal of the three authoritative legacy schema
+migrations reached the actual service-role interaction insert, then correctly
+failed because direct INSERT is denied. The test did not weaken that restriction.
+Independent readback confirmed the original catalog, all 113 retained datasets,
+fixture absence and the original denied privilege. The temporary event table,
+projection objects and its service-role privileges are absent after rollback.
+No identity, grant, schedule or provider request persisted.
+
+**Next implementation:** replace the legacy multi-request finaliser with a scoped
+transactional publisher that validates exact tenant/provider/call/recording,
+transcript and insight provenance, preserves source/identity fields, and saves
+canonical projection plus downstream event atomically. Rehearse source-version
+changes, competing publications, event failure rollback and lost acknowledgements.
+Install only through a fresh pinned TEST release; do not grant general direct
+interaction writes merely to make the legacy path pass. A durable pending event
+still does not prove identity resolution, customer-card refresh or live coverage.
+Real provider-to-card acceptance remains open.
+
+[Readiness and rollback evidence](evidence/learn-phone-handoff-readiness-2026-10-11.json).

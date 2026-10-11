@@ -1,0 +1,35 @@
+{
+  "version": "learn-phone-handoff-readiness/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-11T15:55:21.424Z",
+  "state": "rehearsal_failed_rollback_verified",
+  "reason": "Legacy finaliser requires direct interaction INSERT that TEST service_role is deliberately denied; use a scoped transactional function instead of broadening direct DML.",
+  "originalCatalogRestored": true,
+  "retainedDatasetsPreserved": 113,
+  "event_bus_absent": true,
+  "projection_columns_absent": true,
+  "function_absent": true,
+  "fixture_absent": true,
+  "interaction_direct_insert_still_denied": true,
+  "newUsers": 0,
+  "newGrants": 0,
+  "providerRequests": 0,
+  "productionChanged": false,
+  "localRuntimeState": "verified_not_deployed",
+  "handlerChecks": 70,
+  "finaliserChecks": 5,
+  "terminalSettlementChecks": 3,
+  "strictBackendTypescript": true,
+  "missingTestDependencies": [
+    "platform_events",
+    "interactions.source_version",
+    "phone_projection_version(uuid,uuid)"
+  ],
+  "limitations": [
+    "Phone-to-card delivery is not verified.",
+    "Legacy interaction and event writes remain separate transactions; a scoped atomic publisher is required before installation.",
+    "The existing projection version function selects the latest call insight; exact recording/transcript provenance and competing updates require the transactional publisher.",
+    "No real provider, retained audio, paid model request or authenticated hosted pipeline executed.",
+    "The hosted TEST pipeline and frontend remain unchanged."
+  ]
+}

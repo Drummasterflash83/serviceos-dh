@@ -401,6 +401,24 @@ read time from provider coverage. No production or source data changed.
   [Local evidence](evidence/learn-owner-labels-local-2026-10-11.json) and
   [TEST deployment evidence](evidence/learn-owner-labels-test-2026-10-11.json).
 
+### Phone delivery dependency found — 11 October, 15:55 UTC
+
+A fresh TEST check confirmed that the canonical phone handoff lacks its event bus
+and source-version schema dependencies. The legacy pipeline could still report
+success after that handoff failed. The local correction now reports incomplete
+handoff while retaining completed audio/transcript/analysis, and changed content
+is no longer skipped solely because its prior interaction was enriched.
+Seventy handler tests, eight finaliser/settlement tests and strict TypeScript pass.
+
+A full-schema rollback rehearsal then exposed the next required change: TEST
+intentionally denies direct interaction INSERT, so restoring legacy dependencies
+alone is insufficient. Preserve that restriction and implement a scoped atomic
+interaction/event publisher with exact source provenance. The failed rehearsal
+was independently verified rolled back: catalog, all 113 retained datasets,
+privileges and fixture absence match. No hosted runtime or production change.
+Phone-to-card completion remains unproven; cached processing receipts are not
+substitutes. [Detailed plan and evidence](LEARN-PHONE-ACCOUNT-BINDING.md#phone-to-learn-handoff--11-october-1555-utc).
+
 ## Implemented but not fully verified — acceptance gates
 
 - [ ] **Google email:** reconcile every enabled mailbox against current connection

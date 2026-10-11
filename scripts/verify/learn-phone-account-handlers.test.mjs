@@ -66,6 +66,7 @@ async function harness(
     pauseWriteThrow = false,
     pauseWriteTarget = "phone_sync_runs",
     pipelineCompletionFault,
+    finalizationResult,
     downloadAttemptResponse,
     binaryResponse,
     initialAudio = [],
@@ -463,6 +464,15 @@ async function harness(
     const mod = new vm.SourceTextModule(source, { context, identifier: file });
     cache.set(file, mod);
     await mod.link(async (spec, parent) => {
+      if (spec.endsWith("/phone_enrich.ts") && finalizationResult) {
+        const key = "finalization-fixture";
+        if (!cache.has(key)) cache.set(key, new vm.SyntheticModule(
+          ["finalizeInteractionForRecording"], function () {
+            this.setExport("finalizeInteractionForRecording", async () => finalizationResult);
+          }, { context },
+        ));
+        return cache.get(key);
+      }
       if (spec === "https://esm.sh/@supabase/supabase-js@2.45.4") {
         const key = "supabase";
         if (!cache.has(key)) {
@@ -1252,6 +1262,7 @@ test("phone scheduler never overwrites an unknown or mismatched atomic settlemen
   }
 });
 
+const confirmedHandoff = {ok:true,callId:id(8),interactionId:id(9),eventPublished:true,alreadyEnriched:false};
 const completedPipelineChildren = {
   "simwood-download-recording": { body: { success: true } },
   "phone-transcribe-recording": { body: { success: true, transcript_id: id(11) } },
@@ -1261,6 +1272,7 @@ test("pipeline success requires confirmed terminal storage, recovering a lost ac
   for (const fault of [undefined, "lost_reply", "not_saved", "read_error", "conflict"]) {
     const h = await harness("phone-process-pipeline", {
       childResponses: completedPipelineChildren,
+      finalizationResult: confirmedHandoff,
       pipelineCompletionFault: fault,
     });
     const response = await h.run({ recording_id: id(5) });
@@ -1593,4 +1605,26 @@ test("incomplete model analysis cannot replace a retained summary with default-f
     ),
   );
   assert.ok(!h.writes.some((w) => w.table === "phone_ai_insights"));
+});
+
+test("phone pipeline retains completed stages but fails when canonical handoff is unconfirmed", async () => {
+  for (const finalizationResult of [
+    {...confirmedHandoff,ok:false,eventPublished:false,reason:"db_error"},
+    {...confirmedHandoff,eventPublished:false},
+    {...confirmedHandoff,ok:false,eventPublished:false,reason:"projection_unavailable"},
+  ]) {
+    const h=await harness("phone-process-pipeline",{childResponses:completedPipelineChildren,finalizationResult});
+    const response=await h.run({recording_id:id(5)}),body=await response.json();
+    assert.equal(response.status,503);assert.equal(body.success,false);
+    assert.equal(body.error.code,"phone_handoff_unconfirmed");assert.equal(body.failed_step,"handoff");
+    assert.equal(body.downloaded,true);assert.equal(body.transcribed,true);assert.equal(body.analysed,true);
+    assert.equal(h.requests.length,3,"no repeated provider/paid children");
+    const terminal=h.writes.find(w=>w.table==="phone_sync_runs"&&w.op==="update");
+    assert.equal(terminal.v.status,"failed");assert.equal(terminal.v.metadata.insight_id,id(12));
+    assert.ok(!h.writes.some(w=>w.table==="phone_transcripts"||w.table==="phone_ai_insights"));
+  }
+});
+test("already enriched unchanged interaction does not require a duplicate downstream event",async()=>{
+ const h=await harness("phone-process-pipeline",{childResponses:completedPipelineChildren,finalizationResult:{...confirmedHandoff,eventPublished:false,alreadyEnriched:true}});
+ const response=await h.run({recording_id:id(5)});assert.equal(response.status,200);assert.equal((await response.json()).success,true);
 });
