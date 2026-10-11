@@ -54,6 +54,28 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
+### Hosted TEST sign-in — 11 October, 15:02 UTC
+
+The accepted preview opens and its login route renders without recorded browser
+console errors. Positive signed-in acceptance remains pending. Chris reported
+that the emailed reset link led to an unavailable localhost address. A read-only
+TEST configuration check confirmed `site_url=http://localhost:3000` and an empty
+redirect allowlist. Both now point exactly to the approved preview's existing
+`/login?reset=1` page; read-back verified every other Auth setting unchanged.
+No password, account, grant, provider, schedule or production change was made.
+The earlier temporary operator login remains banned and has no effective grant.
+Ongoing owner/operator access has been prepared and awaits Chris's choice.
+Do not reuse or reactivate a retired acceptance account implicitly.
+[Configuration evidence](evidence/learn-test-password-reset-redirect-2026-10-11.json).
+
+This TEST default intentionally opens the password form for dashboard-generated
+recovery links as well as app-generated links. It is pinned to the accepted
+preview; moving the preview requires reviewing this destination and its exact
+allowlist. A successful configuration read-back does not prove email delivery or
+password-change completion. Chris completes password entry and stores it in
+1Password. Supabase documents the fallback/allowlist behaviour in its
+[redirect guidance](https://supabase.com/docs/guides/auth/redirect-urls).
+
 ### Email diagnosis — 11 October, 06:17 UTC
 
 [Read-only failure diagnosis](evidence/learn-email-failure-diagnosis-2026-10-11.json)
