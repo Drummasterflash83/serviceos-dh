@@ -9,7 +9,7 @@ export const CONTROLPLANE_ENDPOINTS = [{ name: "openfolk-control-plane", verifyJ
 // Current reviewed source candidate. The original hosted v1 checksum is retained
 // in learn-controlplane-hosted-2026-10-10.json; this first-install runner still
 // refuses replacing that installed endpoint. A replacement needs its own release.
-export const CONTROLPLANE_SHA = "55530404e70a3eaf74a12587155d02ebf93f7fce05b3c3ee31283b38db8b3304";
+export const CONTROLPLANE_SHA = "0b8ff421a99248d8954b135f6e0f5f55ba878408010cef789c5a724df1d1e285";
 export const controlPlaneBundle = () => edgeRuntimeBundle(CONTROLPLANE_ENDPOINTS);
 export function deployControlPlane(args) {
   if (Object.keys(args.replaceVersions ?? {}).length) throw Error("First installation only; review replacements separately");

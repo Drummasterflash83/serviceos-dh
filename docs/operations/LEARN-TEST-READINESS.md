@@ -1,5 +1,15 @@
 # Existing TEST environment: verified release gaps
 
+## Phone readiness — verified local candidate
+
+The Phone badge now requires confirmed current DDI ownership/handling, a published
+policy and an enabled `phone_call` allowlist. Complete checked reads replace capped,
+unchecked results; conflicts, missing people and read failures cannot look ready.
+The operator UI no longer reports hard-coded inactive settings. Fifty-three focused
+and release checks, TypeScript, the full build and a 132-request isolated database
+check pass. TEST deployment and signed-in acceptance are not claimed by this local
+checkpoint. See [Phone readiness](LEARN-PHONE-READINESS.md).
+
 ## Historical ownership — TEST controller v5 installed
 
 Endpoint matching retains channel/provider scope and refuses ambiguous matches.

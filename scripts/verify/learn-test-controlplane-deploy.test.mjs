@@ -8,10 +8,10 @@ import { RUNTIME_PRESERVED } from "./learn-email-runtime-catalog.mjs";
 import { TEST_PROJECT } from "./learn-test-readiness.mjs";
 const token = "sbp_" + "0".repeat(40);
 
-test("control-plane closure pins all 21 source files and actual server authorization", () => {
+test("control-plane closure pins all 22 source files and actual server authorization", () => {
   const bundle = controlPlaneBundle();
   assert.equal(bundle.sha256, CONTROLPLANE_SHA);
-  assert.equal(bundle.files.length, 21);
+  assert.equal(bundle.files.length, 22);
   for (const name of ["openfolk-control-plane/index.ts", "_shared/controlplane/authz.ts", "_shared/controlplane/store.ts"])
     assert.ok(bundle.files.some(f => f.path === name));
   assert.deepEqual(bundle.external, ["https://esm.sh/@supabase/supabase-js@2.45.4"]);

@@ -271,7 +271,8 @@ const WORKSPACE: Workspace = {
 const READINESS: SourceReadiness = {
   channel: "phone",
   level: "ready_for_evaluation",
-  summary: "Ready for evaluation — enough mapping to label real calls; not yet ready for shadow.",
+  summary:
+    "Ready to evaluate configured Phone ownership; shadow configuration remains incomplete. Live capture and staff trial acceptance are separate.",
   checks: [
     { key: "ddis_discovered", ok: true, detail: "1 DDI(s) discovered" },
     { key: "extensions_discovered", ok: true, detail: "1 extension(s) discovered" },
@@ -281,8 +282,8 @@ const READINESS: SourceReadiness = {
     { key: "primary_handling", ok: false, detail: "0 endpoint(s) with a primary handler" },
     { key: "no_conflicts", ok: true, detail: "no conflicting assignments" },
     { key: "confidence_sufficient", ok: true, detail: "ownership confidence sufficient" },
-    { key: "health_policy_state", ok: true, detail: "Customer Health policy: draft" },
-    { key: "source_allowlist_state", ok: true, detail: "source allowlist: disabled" },
+    { key: "health_policy_state", ok: false, detail: "Customer Health policy: draft" },
+    { key: "source_allowlist_state", ok: false, detail: "source allowlist: disabled" },
   ],
 };
 const AUDIT: AuditEntry[] = [

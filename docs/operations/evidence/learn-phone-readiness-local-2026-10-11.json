@@ -1,0 +1,25 @@
+{
+  "state": "local_checks_passed",
+  "runtimeSourceSha256": "0b8ff421a99248d8954b135f6e0f5f55ba878408010cef789c5a724df1d1e285",
+  "runtimeFiles": 22,
+  "focusedAndReleaseTests": 53,
+  "prebuildTests": 47,
+  "applicationTypecheck": "passed",
+  "moduleTypecheck": "passed",
+  "applicationBuild": "passed",
+  "isolatedHttp": {
+    "ddis": 2503,
+    "assignments": 5006,
+    "members": 2503,
+    "teams": 2503,
+    "policyVersions": 2503,
+    "serverRowLimit": 137,
+    "requests": 132,
+    "exactCountHeads": 12,
+    "emptyPages": 6,
+    "sourceFingerprintsPreserved": true,
+    "hostedSchemaOrAuthorizationAcceptance": false
+  },
+  "hostedDeployment": "not_yet_claimed",
+  "productionChanges": false
+}

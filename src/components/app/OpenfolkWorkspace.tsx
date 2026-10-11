@@ -936,17 +936,12 @@ export function OpenfolkWorkspace({
                 <p className="text-xs text-muted-foreground">Readiness unavailable.</p>
               )}
             </Card>
-            <Card title="Customer Health source — preparation only (inactive)">
-              <p className="mb-3 text-xs text-muted-foreground">
-                Customer Health is prepared but NOT enabled. No Health objects, commitments,
-                Actions, Outcomes, notifications or customer contact exist.
+            <Card title="Phone processing acceptance">
+              <p className="text-xs text-muted-foreground">
+                Configuration checks above describe the selected company's settings. Confirm
+                provider capture, recording playback and a successful shadow processing run
+                separately before a staff trial. Configuration readiness does not enable capture.
               </p>
-              <dl className="grid grid-cols-1 gap-y-1.5 text-xs sm:grid-cols-2">
-                <ConnRowsInline k="Policy" v="draft" />
-                <ConnRowsInline k="Source allowlist" v="disabled" />
-                <ConnRowsInline k="Sources" v="empty" />
-                <ConnRowsInline k="Processing" v="inactive" />
-              </dl>
             </Card>
           </div>
         )}
