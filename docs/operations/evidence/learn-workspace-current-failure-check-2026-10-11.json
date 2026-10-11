@@ -1,0 +1,117 @@
+{
+  "observedAt": "2026-10-11T15:26:47.100Z",
+  "state": "bounded_existing_mailbox_checks_complete",
+  "accountsChecked": 4,
+  "results": [
+    {
+      "accountId": "496e6f51-4b50-4f69-a0b4-efd3e2f31769",
+      "latestRecordedFailure": "2026-10-11 14:59:01.539+00",
+      "state": "provider_check_failed",
+      "code": "delegation_grant_invalid"
+    },
+    {
+      "accountId": "7c9b0e92-5acc-409d-a2b7-2bf6a3c7f431",
+      "latestRecordedFailure": "2026-10-11 14:47:02.61+00",
+      "state": "provider_check_failed",
+      "code": "delegation_grant_invalid"
+    },
+    {
+      "accountId": "ad815ae0-dd52-48db-a3ac-c19e5e49960f",
+      "latestRecordedFailure": "2026-10-11 15:18:04.805+00",
+      "state": "provider_check_failed",
+      "code": "delegation_grant_invalid"
+    },
+    {
+      "accountId": "d663dd11-effd-4d71-ac69-f9a09cb102cb",
+      "latestRecordedFailure": "2026-10-11 14:39:01.873+00",
+      "state": "provider_check_failed",
+      "code": "delegation_grant_invalid"
+    }
+  ],
+  "tokenRequests": 4,
+  "profileRequests": 0,
+  "messageRequests": 0,
+  "productionWrites": 0,
+  "testCredentialUploaded": false,
+  "version": "learn-workspace-current-failure-check/1",
+  "savedDirectory": {
+    "observedAt": "2026-10-11T15:27:16.892Z",
+    "rows": [
+      {
+        "account_id": "496e6f51-4b50-4f69-a0b4-efd3e2f31769",
+        "account_status": "active_dwd",
+        "auth_state": "unknown",
+        "mailbox_type": "user",
+        "directory_status": "active",
+        "sync_enabled": true
+      },
+      {
+        "account_id": "7c9b0e92-5acc-409d-a2b7-2bf6a3c7f431",
+        "account_status": "active_dwd",
+        "auth_state": "unknown",
+        "mailbox_type": "user",
+        "directory_status": "active",
+        "sync_enabled": true
+      },
+      {
+        "account_id": "ad815ae0-dd52-48db-a3ac-c19e5e49960f",
+        "account_status": "active_dwd",
+        "auth_state": "unknown",
+        "mailbox_type": "user",
+        "directory_status": "active",
+        "sync_enabled": true
+      },
+      {
+        "account_id": "d663dd11-effd-4d71-ac69-f9a09cb102cb",
+        "account_status": "active_dwd",
+        "auth_state": "unknown",
+        "mailbox_type": "user",
+        "directory_status": "active",
+        "sync_enabled": true
+      }
+    ],
+    "providerRequests": 0,
+    "productionWrites": 0
+  },
+  "currentDirectory": {
+    "observedAt": "2026-10-11T15:28:09.200Z",
+    "state": "readonly_directory_check_complete",
+    "results": [
+      {
+        "accountId": "d663dd11-effd-4d71-ac69-f9a09cb102cb",
+        "httpStatus": 404
+      },
+      {
+        "accountId": "7c9b0e92-5acc-409d-a2b7-2bf6a3c7f431",
+        "httpStatus": 404
+      },
+      {
+        "accountId": "496e6f51-4b50-4f69-a0b4-efd3e2f31769",
+        "httpStatus": 404
+      },
+      {
+        "accountId": "ad815ae0-dd52-48db-a3ac-c19e5e49960f",
+        "httpStatus": 404
+      }
+    ],
+    "tokenRequests": 1,
+    "directoryRequests": 4,
+    "messageRequests": 0,
+    "productionWrites": 0,
+    "testCredentialUploaded": false,
+    "limitations": [
+      "Current Google Directory flags; no user, licence, mailbox, permission or capture configuration changed."
+    ]
+  },
+  "interpretation": "Four addresses still fail delegated token acquisition and Google Directory users.get returns HTTP 404, while saved ServiceOS directory records mark them active. This is evidence of stale/unresolved directory identity, not proof of deletion or its cause.",
+  "nextAction": "Correct directory completeness and write-confirmation safeguards, then prepare a bounded directory reconciliation. Preserve every stored message and historical account.",
+  "codeFindings": [
+    "listDirectoryUsers returns a partial array if maxPages is reached with a continuation; caller can treat absent users as removed.",
+    "Discovery ignores existing-mailbox read and removal-write errors, so it can record success without verified reconciliation."
+  ],
+  "limitations": [
+    "No directory, mailbox, permission, source, schedule or production changes.",
+    "No message contents read; no TEST key upload.",
+    "A 404 is not by itself permission to disable a mailbox or delete its history."
+  ]
+}

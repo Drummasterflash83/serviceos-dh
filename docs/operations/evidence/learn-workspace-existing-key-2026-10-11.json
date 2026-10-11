@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-10-11T15:21:30.934Z",
+  "credentialLocation": "/Users/chrisdrummond/Downloads/ServiceOS Workspace Connector.json",
+  "identityMatches": 1,
+  "googleTokenRequests": 1,
+  "gmailProfileRequests": 1,
+  "messageRequests": 0,
+  "productionWrites": 0,
+  "credentialCopied": false,
+  "state": "existing_credential_and_mailbox_profile_verified",
+  "mailboxIdentityMatches": true,
+  "version": "learn-workspace-existing-key/1",
+  "testProvisioning": "blocked_pending_explicit_destination_approval",
+  "secretValuesDisclosed": false,
+  "storedIn1Password": false,
+  "limitations": [
+    "One existing configured impersonation subject and gmail.readonly profile only; no email content or directory read.",
+    "Does not establish every mailbox grant, historical coverage, capture-to-card delivery, or the cause of four previously failing mailboxes.",
+    "Automatic approval review rejected copying the private key into TEST because destination-specific authorization is needed. Nothing was uploaded."
+  ]
+}

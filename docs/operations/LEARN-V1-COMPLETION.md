@@ -54,6 +54,49 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
+### Existing Workspace key located — 11 October, 15:21 UTC
+
+A scoped local-file check found `ServiceOS Workspace Connector.json` in the
+owner's Downloads folder. Its service-account email and client ID exactly match
+one active production Drummonds Workspace connection. The existing signer then
+obtained one `gmail.readonly` delegated token for that connection's configured
+impersonation subject; one Gmail profile request confirmed the same mailbox.
+No messages, directory records or credential values were output. Production was
+read-only and no new Google key or permission was created. This resolves the
+credential-location blocker, not full mailbox or capture acceptance.
+
+TEST preflight found zero active Workspace connections, zero DWD accounts and
+none of the three `GOOGLE_WORKSPACE_*` secrets. A concrete proposal to copy the
+existing key to those secrets is prepared, with an original 113-dataset baseline
+and secret digests. **Not applied:** automatic approval review rejected that
+upload because the general credential-reuse goal did not specifically authorize
+sending this private key to TEST Supabase. Chris has been asked for that exact
+destination approval. Do not retry through another transport or extract a
+production runtime secret. The key has not been stored in 1Password by this run.
+After approval, verify the existing secret values by digest, preserve all other
+secrets and data, and keep mailbox/schedule activation separate from provisioning.
+[Credential verification evidence](evidence/learn-workspace-existing-key-2026-10-11.json).
+
+At 15:28 UTC, bounded follow-up checks confirmed that the four previously failing
+mailbox subjects still return `delegation_grant_invalid`; the same key already
+succeeded for the configured admin mailbox. Google Directory `users.get` returned
+HTTP 404 for all four addresses using the existing Directory read-only grant.
+Stored mailbox rows still say `user`, `active`, `sync_enabled=true`. This supports
+stale/unresolved directory identity; it does not establish deletion, renaming or
+the exact cause. No settings were changed and no message content was read.
+
+Source inspection found two reconciliation gaps to close before a live refresh:
+`listDirectoryUsers` returns partial results if its page limit is reached while
+continuation remains, and the discovery endpoint ignores existing-row read and
+removal-update errors. An incomplete or failed directory scan must never be
+reported as complete reconciliation or used to infer removals. Existing mail and
+account history must remain intact. Prepare a bounded, reviewed reconciliation
+after correcting these safeguards; do not silently disable the four accounts from
+this diagnostic alone. Google's [user resource contract](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users)
+documents the directory fields; [current diagnostic evidence](evidence/learn-workspace-current-failure-check-2026-10-11.json)
+retains only account IDs, statuses and safe result codes.
+
+
 ### Hosted TEST sign-in — 11 October, 15:02 UTC
 
 The accepted preview opens and its login route renders without recorded browser
