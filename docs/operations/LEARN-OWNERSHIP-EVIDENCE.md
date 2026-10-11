@@ -57,7 +57,14 @@ Reviewed controller closure: 21 files,
 `55530404e70a3eaf74a12587155d02ebf93f7fce05b3c3ee31283b38db8b3304`.
 The TEST runner requires controller v4 and the existing catalog, records all 101
 preservation fingerprints before one submission and checks them afterward.
-Deployment evidence is recorded separately. Frontend contracts are compatible;
+Controller v5 is ACTIVE, installed on 11 October at 03:30 UTC from Git
+`abc714dead1a9eef552fbe5d37d318ccb54baa5a`. All 101 monitored datasets,
+schema and other endpoints were preserved. Twenty hosted access checks passed
+for workspace, data quality and ownership resolution. The protected frontend is
+unchanged at Git `27113d0`; positive signed-in acceptance remains pending.
+See [local evidence](evidence/learn-ownership-evidence-local-2026-10-11.json) and
+[TEST evidence](evidence/learn-ownership-evidence-test-2026-10-11.json).
+Frontend contracts are compatible;
 `subject_type` is an optional addition to the existing resolve request.
 
 These reads are not a transactionally frozen history. Same-count concurrent edits

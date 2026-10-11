@@ -68,7 +68,8 @@ The read is current, not a transactional or historical snapshot. Per-table limit
 remain 20,000 rows, 8 MiB and 100 requests. Same-count concurrent edits remain
 possible. Review ordering uses creation time then ID for deterministic ties; IDs
 do not establish real-time precedence between simultaneous conflicting decisions.
-Existing interaction ownership resolution, connection evidence, discovery history
-and cross-client listing retain separate coverage limits. Positive signed-in
+The subsequent [ownership increment](LEARN-OWNERSHIP-EVIDENCE.md) checks endpoint,
+assignment and handoff reads at the requested time. Connection evidence, discovery
+history, phone readiness and cross-client listing retain separate coverage limits. Positive signed-in
 hosted acceptance, complete provider capture and actual card evidence attribution
 remain required. This increment neither enables capture nor promotes production.

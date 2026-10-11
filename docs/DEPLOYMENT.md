@@ -72,6 +72,13 @@ All 101 datasets, schema and other endpoints were preserved; fourteen hosted
 boundary checks pass. Frontend source/contracts remain unchanged. Signed-in
 identity acceptance remains pending.
 [Identity deployment evidence](operations/evidence/learn-identity-inventory-test-2026-10-11.json).
+Controller v5 supersedes v4 at 03:30 UTC, from Git
+`abc714dead1a9eef552fbe5d37d318ccb54baa5a`. It resolves checked ownership
+at the requested time and keeps ambiguous owners/handovers unresolved. All 101
+datasets, schema and other endpoints were preserved; twenty hosted access checks
+pass. The protected frontend remains unchanged. Positive signed-in ownership
+acceptance is still pending.
+[Ownership deployment evidence](operations/evidence/learn-ownership-evidence-test-2026-10-11.json).
 The earlier 11 October 02:36 UTC candidate added the searchable/paginated team-group
 chooser, retaining backend release 051. Local browser checks cover 256 groups,
 retry, selection and scoring scope; hosted signed-in acceptance remains pending.

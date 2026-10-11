@@ -62,8 +62,9 @@ can still occur across these reads: this is not a transactional snapshot or a
 historical membership proof. The subsequent [operator health increment](LEARN-OPERATOR-HEALTH.md) extends checked
 paging to identity/endpoint/ownership inventories and corrects their quality
 metrics. The [identity inventory increment](LEARN-IDENTITY-INVENTORY.md) checks
-suggestion reads. Connection evidence, ownership resolution and history still
-have separate limits; these increments do not claim whole-workspace scalability.
+suggestion reads, and the [ownership increment](LEARN-OWNERSHIP-EVIDENCE.md) checks
+historical ownership reads. Connection evidence and history still have separate
+limits; these increments do not claim whole-workspace scalability.
 
 Reproduce with `node --test scripts/learn-roster-recovery.test.mjs`,
 `python3 scripts/verify/learn-roster-pagination-http.py`, and the local

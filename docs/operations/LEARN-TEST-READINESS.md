@@ -1,5 +1,24 @@
 # Existing TEST environment: verified release gaps
 
+## Historical ownership — TEST controller v5 installed
+
+Endpoint matching retains channel/provider scope and refuses ambiguous matches.
+Only confirmed, effective assignments supply ownership; overlapping accountable
+rows are also flagged in the health queue. Historical lookup excludes later or
+undated handoffs, keeps conflicting targets unresolved and checks person/team
+recipients within the same tenant (including effective dates for people).
+Actual isolated HTTP verification covers 2,503 endpoints and handoffs under a
+137-row server cap, preserving accountability and the assignment-version reference.
+Thirty-seven focused tests, twelve pure resolver cases and eight deployment guards
+pass; ownership/health TypeScript checks pass.
+
+Controller v5 is ACTIVE from Git `abc714dead1a9eef552fbe5d37d318ccb54baa5a`
+at 03:30 UTC on 11 October. All 101 monitored datasets, schema and other endpoints
+were preserved; twenty hosted access checks passed. The frontend is unchanged.
+Positive signed-in acceptance and actual card-evidence attribution remain open.
+No grants, provider requests, ownership writes or production changes occurred.
+See [ownership behaviour, evidence and limits](LEARN-OWNERSHIP-EVIDENCE.md).
+
 ## Identity suggestions — TEST controller v4 installed
 
 Email and extension suggestions now use checked complete inventories, current

@@ -67,8 +67,10 @@ See [local evidence](evidence/learn-operator-health-local-2026-10-11.json) and
 
 These are current reads, not a transactionally frozen or historical snapshot;
 same-count concurrent edits remain possible. The subsequent [identity inventory increment](LEARN-IDENTITY-INVENTORY.md) checks
-email/phone suggestion inventories and provider scope. Ownership resolution,
-connection evidence, history and cross-client listing retain separate coverage limits. The source inventories do not prove actual
+email/phone suggestion inventories and provider scope. The
+[ownership increment](LEARN-OWNERSHIP-EVIDENCE.md) checks historical ownership and
+flags overlapping accountable rows in health results. Connection evidence,
+history, phone readiness and cross-client listing retain separate coverage limits. The source inventories do not prove actual
 mail/call delivery or complete provider capture. Positive signed-in hosted
 acceptance remains required. No new grants, provider calls or production release
 are part of this increment.
