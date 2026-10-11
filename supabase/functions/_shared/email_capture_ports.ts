@@ -17,6 +17,11 @@ import {
   getDelegatedGmailToken,
   DelegationError,
 } from "./google_workspace.ts";
+export type EmailCredentialScope = Pick<EmailJobAttempt, "tenantId" | "accountId" | "syncType">;
+export type EmailCredentialPorts = Omit<EmailCapturePorts, "mailbox" | "accessToken"> & {
+  mailbox(scope: EmailCredentialScope): Promise<EmailMailboxSource>;
+  accessToken(scope: EmailCredentialScope, source: EmailMailboxSource): Promise<string>;
+};
 export type EmailCaptureDb = EmailProtocolClient & { from(table: string): any };
 type Dependencies = {
   oauthConfig: typeof getGoogleOAuthConfig;
@@ -53,10 +58,10 @@ const mailboxAddress = (v: unknown): v is string =>
 export function createEmailCapturePorts(
   db: EmailCaptureDb,
   overrides: Partial<Dependencies> = {},
-): EmailCapturePorts {
+): EmailCredentialPorts {
   const deps = { ...defaults, ...overrides },
     proofs = new WeakMap<EmailMailboxSource, string>();
-  async function authorization(attempt: EmailJobAttempt) {
+  async function authorization(attempt: EmailCredentialScope) {
     try {
       const { data: a, error } = await db
         .from("email_accounts")
@@ -183,7 +188,7 @@ export function createEmailCapturePorts(
       throw new GmailCaptureError("fetch_failed");
     }
   }
-  async function oauthRow(a: EmailJobAttempt) {
+  async function oauthRow(a: EmailCredentialScope) {
     const { data: t, error } = await db
       .from("email_oauth_tokens")
       .select(
@@ -216,7 +221,7 @@ export function createEmailCapturePorts(
         (typeof t.token_type === "string" && t.token_type.toLowerCase() === "bearer"))
     );
   }
-  async function checkAgain(attempt: EmailJobAttempt, source: EmailMailboxSource) {
+  async function checkAgain(attempt: EmailCredentialScope, source: EmailMailboxSource) {
     const actual = await authorization(attempt);
     if (
       !proofs.has(source) ||

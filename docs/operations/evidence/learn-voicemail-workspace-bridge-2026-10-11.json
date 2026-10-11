@@ -1,0 +1,86 @@
+{
+  "observedAt": "2026-10-11T22:09:23.364537+00:00",
+  "scope": "local_offline_actual_supabase_user_worker",
+  "image": "public.ecr.aws/supabase/edge-runtime:v1.74.3",
+  "imageId": "sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c",
+  "network": "none",
+  "customerData": false,
+  "credentials": false,
+  "workerLimits": {
+    "memoryMiB": 256,
+    "cpuHardMs": 2000,
+    "wallMs": 30000
+  },
+  "result": {
+    "state": "passed",
+    "signedExtraction": true,
+    "tamperRejected": true,
+    "invalidAudioRejected": true,
+    "positiveAudioDecode": {
+      "state": "decoded",
+      "decoder": "mpg123-decoder@1.0.3",
+      "frames": 225216,
+      "sampleRate": 8000,
+      "decodedChannels": 2,
+      "durationSeconds": 28.152,
+      "listening": "not_verified"
+    },
+    "coordinatorWithControlledTransport": true,
+    "internalAuthEnforced": true,
+    "workspaceProviderBridge": true,
+    "providerReads": 2,
+    "tokenReads": 1,
+    "uploads": 2,
+    "readbacks": 2,
+    "audioBytes": 56304,
+    "version": {
+      "deno": "supabase-edge-runtime-1.74.3 (compatible with Deno v2.1.4)",
+      "v8": "11.6.189.12",
+      "typescript": "5.1.6"
+    }
+  },
+  "sourceSha256": {
+    "supabase/functions/_shared/birchills_voicemail_email.ts": "16563facd8fd43ca87d3b57b91bf4a076b6bb218efa9af6fa71d6e6ffd0a5474",
+    "supabase/functions/_shared/email_capture_engine.ts": "0c8ffe0506f7db1d1ef73cc0150d08ae5d43a66810aa084582489dd097144380",
+    "supabase/functions/_shared/email_capture_ports.ts": "f0059f968ed31a0de9281499ad5fa73c409dbe4055b55d754229da1e776bc24e",
+    "supabase/functions/_shared/email_ingestion_outbox.ts": "77c27b83a59a388511fc9d542ddf6eed7f266cd03cc0bcb04916b372399a3f8f",
+    "supabase/functions/_shared/email_ingestion_protocol.ts": "1cd9e7b6c942918e98dfb11776fc586378074bf014516140993826a7a4bb8c3a",
+    "supabase/functions/_shared/email_job_attempt.ts": "3344da6044bb7eec1f19d41cf5b120769e8a8493dc1f9a8398e48f96e0c4b4cb",
+    "supabase/functions/_shared/gmail_capture_page.ts": "30a38959180866516e5ee044557bc092cdf045998171d0e3ebf07bd8d23f83c1",
+    "supabase/functions/_shared/gmail_consent.ts": "55e101f7a90811080f3add1421eaf07f26bcddcdfeacd30324fac26ae853a702",
+    "supabase/functions/_shared/gmail_message.ts": "11b973746997257d651375fdf9b27060e280e737560eb9d8685d420d2ea6bb74",
+    "supabase/functions/_shared/gmail_oauth.ts": "d6df51e4ba480f940d606add9235288031249f09ce5d327b2969b09c12ce4f7a",
+    "supabase/functions/_shared/gmail_page_store.ts": "3b180eb9db038039790d59378693c0b36808b69017208261317b27450153ea50",
+    "supabase/functions/_shared/google_workspace.ts": "dc9b4f58f89b29b4b60757745a9ee1a934928e27394b9eb1d5fedafcf1248108",
+    "supabase/functions/_shared/learn_capture_control.ts": "cb57569632bb1255507ac7af55b31ebdb37e992cd7dc0825581df524df4da830",
+    "supabase/functions/_shared/marketing_email.ts": "d2452df2955e679b92a66264dbf9b3519b771cfdb63f7c6d48d3879504819ebf",
+    "supabase/functions/_shared/simwood.ts": "cebaeb015a988776991a273d2c6623a008c6ed01185d23298110aa6da66ac88b",
+    "supabase/functions/_shared/voicemail/bounded-json.ts": "08fa572b3768f604ec346c0c7c5cbd4f57707dc5f2194674ab139fdb9ad302c4",
+    "supabase/functions/_shared/voicemail/decode-audio.js": "7a85b89bf1f803573f86c7702e2fda6c0de9b6df097eb4a6a20484cada1fc7a3",
+    "supabase/functions/_shared/voicemail/edge.js": "6f0740c6b4d71b0f92d089a2784f15171fc172170cab7cec9ac1f16bf22403cc",
+    "supabase/functions/_shared/voicemail/import-http.ts": "bbc154d881bc6af506642cb41c6f0b61cfe86276221984cbce9edc5fd456abf0",
+    "supabase/functions/_shared/voicemail/private-import.js": "23c8283f7467848e49dde08d12717624b1e6843724672b392294068796b20831",
+    "supabase/functions/_shared/voicemail/provider-keys.js": "6741731369a66d6d0d3cfbacc3fc299bf4dd5c073b8e489b189db49aef29eb53",
+    "supabase/functions/_shared/voicemail/signed-source.js": "a357d261fe8536d156edd8f9de0e5c64e014bee464d66c510a5d188d900d29a5",
+    "supabase/functions/_shared/voicemail/workspace-import.ts": "afef4096450bd121e248fe98219f1cd78a159f12a8b22552971f3b9ebc1430cc",
+    "supabase/functions/learn-voicemail-import/index.ts": "5a5729f3e8707fce3149b3b5b5fce237b527605fa555c3e856ce16560ac10fa4",
+    "scripts/verify/voicemail-auth/edge-fixture.mjs": "701f856c305103a4b6749b89d1659ce9b0bb1afc2e24af60496475ce16f5d401",
+    "scripts/verify/voicemail-auth/edge-runtime-probe.ts": "3b349c69400b9a2041aebd12ceb7522fffd81aa1967e9ec1031d4dd7f8547dc3",
+    "scripts/verify/voicemail-auth/package-lock.json": "6f4e42f155a819d72c38ee87b6f87462fc0dcdfb4b96b12d5d12f250eadb77d7",
+    "scripts/verify/learn-voicemail-edge-runtime.py": "d88543f3360b803c087012364af1ab41b44323ed81c4e918a4627bd0d47cc234"
+  },
+  "limitations": [
+    "controlled SDK transport; not hosted Storage or SQL",
+    "synthetic audio only",
+    "DNS supplied by synthetic resolver",
+    "no hosted deployment or provider activation",
+    "real service-key/provider credential reuse not exercised",
+    "queue registration, discovery, scheduling and coverage not implemented",
+    "1 MiB raw source bound; primary Workspace mailboxes only"
+  ],
+  "regressions": {
+    "nodeTestsPassed": 28,
+    "strictWorkerTypes": "passed using installed Supabase SDK and Deno declaration shim",
+    "deployment": "not_performed"
+  }
+}

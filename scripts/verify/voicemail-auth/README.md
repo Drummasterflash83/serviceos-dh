@@ -144,3 +144,25 @@ accounts, secrets or hosted capture are created by either test.
 Primary references for this harness:
 - [Supabase user-worker example](https://github.com/supabase/edge-runtime/blob/main/examples/main/index.ts)
 - [Synthetic encoder](https://github.com/shijinyu/lamejs)
+
+## Workspace bridge and internal HTTP entry
+
+`supabase/functions/learn-voicemail-import/index.ts` is a prepared server-only
+one-message endpoint, not a schedule or active deployment. It authenticates an
+exact existing internal/service key before parsing the bounded body. The tenant
+comes from the internal header. The shared Workspace bridge reuses the existing
+credential-binding code, confirms Gmail profile identity, rechecks the route and
+reads one bounded original message before invoking the shared importer. It does
+not accept raw message bytes, provider tokens or caller-selected URLs over HTTP.
+
+```sh
+node --test scripts/verify/voicemail-auth/workspace-import.test.mjs supabase/functions/_shared/email_capture_ports.test.ts
+```
+
+The Edge harness now stages the static dependency graph of this endpoint and
+executes its shared HTTP handler/provider bridge with controlled SDK/provider
+transports. It does not call the actual SDK/network endpoint or mint a live token.
+Live DNS resolution and hosted provider/storage compatibility remain unproven.
+The public DNS resolver's restrictions are shared with the Node diagnostic.
+The authenticated response explicitly keeps `coverageComplete:false`; scheduling,
+source enumeration, queue fences and history coverage are still required.

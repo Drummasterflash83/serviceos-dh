@@ -1,5 +1,58 @@
 # Birchills voicemail: discovery before capture
 
+## Workspace source bridge and internal entry point — local only, 22:09 UTC
+
+Prepared `supabase/functions/learn-voicemail-import/index.ts` connects the shared
+importer to existing Workspace credential checks and bounded Gmail original-message
+reads. It handles **one message per internal call**. It is not deployed, registered
+with the queue or scheduled. No service key, provider secret, user, grant or route
+was created or changed.
+
+The HTTP handler requires an exact existing service-role or internal key, with the
+tenant in `x-internal-tenant-id`; user JWT role claims are not authority. Its 2 KiB
+body accepts only route/account/message IDs and the expected Gmail receipt time.
+It returns only a publication receipt, processed count and `coverageComplete:false`.
+Unconfirmed publication never becomes a success or an assertion that nothing changed.
+
+Before credentials or provider traffic, SQL route admission checks the tenant,
+verified historical mailbox route and both Email/Phone controls. The bridge reuses
+`createEmailCapturePorts` for account, Workspace connection, directory identity and
+service-account binding. The only change to that existing component is a narrower
+credential-scope type: it no longer requires unrelated queue-attempt fields.
+Gmail's profile must match the primary mailbox; routes and controls are checked
+again before a single `format=raw` read. The response is bounded at 1.5 MB JSON /
+1 MiB decoded original, requires canonical base64url and the same ID/receipt time,
+and uses fixed Google URLs, refused redirects and 15-second request timeouts.
+The importer then verifies signature/audio and performs immutable upload/readback.
+The bridge clears its original-message byte buffer on exit. Aliases remain held
+for a separately verified binding; this is not a claim of complete mailbox coverage.
+
+The restricted public DKIM resolver is now shared with diagnostics: three cached
+selector lookups maximum, only the exact pinned signing domain, 5-second DNS
+attempts. Nested selector/domain tricks and other domains are refused. Errors
+retain allowlisted credential/provider codes without response bodies or secrets.
+
+**Verification:** 28 Node regressions pass, including the existing 14 credential
+checks, seven signature/decode checks and seven new provider/HTTP/bounds checks.
+Strict worker types pass using the installed SDK and a Deno declaration shim.
+The actual offline Edge user worker again passes under a 2-second CPU limit,
+including HTTP authentication before work, a synthetic token handoff, two controlled
+Gmail reads, real signature/decode, two immutable uploads and two hash readbacks.
+The runtime test uses simulated database/provider/storage transports and public
+synthetic signing material; it makes no external requests. The actual endpoint
+SDK/hosted network path has not been exercised. Test containers are removed.
+
+[Evidence](evidence/learn-voicemail-workspace-bridge-2026-10-11.json).
+Next: prepare/install the TEST foundation and private intake schema with preservation
+checks, verify actual hosted Storage and endpoint packaging, then add durable queue
+admission/settlement, discovery and coverage. Real routes/owner binding, provider
+credential destination approval, backup coverage and signed-in acceptance remain
+required before activation. Production is unchanged.
+
+Primary contracts checked:
+[Gmail message get](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/get)
+and [profile get](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users/getProfile).
+
 ## Shared voicemail code verified in Edge Runtime — local only, 22:01 UTC
 
 The signature/MIME verifier, audio decoder and private import coordinator now live

@@ -4,6 +4,10 @@ import {
   decodeVoicemailAudio,
   importPrivateVoicemail,
 } from "../../../supabase/functions/_shared/voicemail/edge.js";
+import { importWorkspaceVoicemail } from "../../../supabase/functions/_shared/voicemail/workspace-import.ts";
+import { createVoicemailImportHttpHandler } from "../../../supabase/functions/_shared/voicemail/import-http.ts";
+import { providerKeyResolver } from "../../../supabase/functions/_shared/voicemail/provider-keys.js";
+import { Buffer } from "node:buffer";
 import fixture from "./fixture.json" with { type: "json" };
 Deno.serve(async () => {
   const resolver = async (name, type) => {
@@ -102,25 +106,81 @@ Deno.serve(async () => {
         }),
       },
     };
-    const imported = await importPrivateVoicemail({
-      client,
-      tenantId,
-      routeId,
-      source: { accountId, id: "abcdef1234", internalDate: options.internalDate },
-      resolver,
-      loadRaw: async ({ id }) => ({
-        id,
-        internalDate: options.internalDate,
-        raw: new TextEncoder().encode(fixture.raw),
-      }),
+    let providerReads = 0,
+      tokenReads = 0;
+    const endpoint = createVoicemailImportHttpHandler({
+      serviceKey: "synthetic-server-secret",
+      run: (input) =>
+        importWorkspaceVoicemail(client, input, {
+          importer: importPrivateVoicemail,
+          resolver: providerKeyResolver((name) => resolver(name, "TXT")).resolve,
+          ports: () => ({
+            mailbox: async () => ({
+              tenantId,
+              accountId,
+              mailbox: options.expectedMailbox,
+              profileMailbox: options.expectedMailbox,
+            }),
+            accessToken: async () => {
+              tokenReads++;
+              return "synthetic-provider-token";
+            },
+          }),
+          fetcher: async (url, init) => {
+            providerReads++;
+            if (
+              init.redirect !== "error" ||
+              init.headers.Authorization !== "Bearer synthetic-provider-token"
+            )
+              throw Error("Provider request unsafe");
+            if (url === "https://gmail.googleapis.com/gmail/v1/users/me/profile")
+              return Response.json({ emailAddress: options.expectedMailbox });
+            if (
+              url !==
+              "https://gmail.googleapis.com/gmail/v1/users/me/messages/abcdef1234?format=raw"
+            )
+              throw Error("Unexpected URL");
+            return Response.json({
+              id: "abcdef1234",
+              internalDate: options.internalDate,
+              raw: Buffer.from(fixture.raw).toString("base64url"),
+            });
+          },
+        }),
     });
+    const rejected = await endpoint(
+      new Request("http://localhost/import", { method: "POST", body: "{}" }),
+    );
+    if (rejected.status !== 403 || tokenReads || providerReads || rpcCalls.length)
+      throw Error("Auth did not precede work");
+    const response = await endpoint(
+      new Request("http://localhost/import", {
+        method: "POST",
+        headers: {
+          authorization: "Bearer synthetic-server-secret",
+          "x-internal-tenant-id": tenantId,
+        },
+        body: JSON.stringify({
+          routeId,
+          accountId,
+          messageId: "abcdef1234",
+          internalDate: options.internalDate,
+        }),
+      }),
+    );
+    const imported = await response.json();
     if (
-      imported.state !== "published" ||
-      !imported.storedBytesReadBack ||
+      response.status !== 200 ||
+      imported.success !== true ||
+      imported.messageId !== intakeId ||
+      imported.coverageComplete !== false ||
       uploads !== 2 ||
-      rpcCalls.length !== 4
+      readbacks !== 2 ||
+      rpcCalls.length !== 5 ||
+      providerReads !== 2 ||
+      tokenReads !== 1
     )
-      throw Error("Import orchestration incomplete");
+      throw Error("Import orchestration incomplete: " + JSON.stringify(imported));
     return Response.json({
       state: "passed",
       signedExtraction: true,
@@ -128,6 +188,10 @@ Deno.serve(async () => {
       invalidAudioRejected,
       positiveAudioDecode: decoded,
       coordinatorWithControlledTransport: true,
+      internalAuthEnforced: true,
+      workspaceProviderBridge: true,
+      providerReads,
+      tokenReads,
       uploads,
       readbacks,
       audioBytes: fixture.audioBytes,

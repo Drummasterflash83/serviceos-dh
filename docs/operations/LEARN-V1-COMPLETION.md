@@ -7,6 +7,19 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**22:09 UTC — voicemail provider bridge and internal endpoint prepared, local only.**
+The importer now reuses the existing Workspace credential checks, verifies Gmail
+profile identity and loads one bounded original message after route/capture admission.
+The internal HTTP handler rejects user/forged tokens before any credential or provider
+work. Its safe result states distinguish missing delegation, denied access, unavailable
+source and unconfirmed publication. Twenty-eight regressions, strict worker types and
+an actual offline Edge worker check pass; the latter uses controlled Gmail/storage
+transports and a synthetic signed recording. No hosted deployment, queue registration,
+schedule, real route, credential or production change occurred. TEST foundation/intake
+installation, actual hosted Storage, durable queue/discovery/coverage and real-owner
+acceptance remain outstanding. [Evidence](evidence/learn-voicemail-workspace-bridge-2026-10-11.json)
+and [integration scope](LEARN-VOICEMAIL-DISCOVERY.md).
+
 **22:01 UTC — voicemail runtime integration, local evidence only.** Shared server
 code now handles signed source verification, MIME extraction, MP3 decoding and
 private import coordination in both Node and Supabase Edge Runtime. An actual
