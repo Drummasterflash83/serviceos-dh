@@ -1,16 +1,16 @@
 # Existing TEST environment: verified release gaps
 
-## Microsoft 365 mail — local reader and folder discovery only
+## Microsoft 365 mail — local readers, discovery and source journal
 
-Microsoft Graph mail reading and resumable folder traversal pass 38 synthetic
-tests and strict TypeScript checks. Discovery visits nested and hidden folders,
-identifies virtual search folders, retains raw page observations, and rejects
-scope changes, hierarchy conflicts, repeated cursors and explicit size limits.
-A discovered folder feeds the mail reader in a synthetic integration test.
-No real provider requests or hosted changes occurred. Microsoft 365 remains an
-unimplemented connector in the controller: authorization, atomic page/checkpoint
-storage, shared evidence materialization, scheduling, controller integration and
-real mailbox acceptance are still required.
+Graph reading and resumable folder traversal pass 38 synthetic tests and strict
+TypeScript checks. The new private source journal also passes isolated PostgreSQL
+checks using actual reader-generated pages: atomic page/checkpoint storage, exact
+retry, role/scope denial, pause/revocation, mid-transaction lease expiry, rollback,
+immutable raw evidence and observed two-session lock contention. No real provider
+requests or hosted changes occurred. The migration has not been installed in TEST.
+Microsoft 365 remains an unimplemented connector in the controller: credential and
+binding management, worker/RPC integration, shared evidence materialization,
+scheduling, full-schema/hosted validation and real mailbox acceptance remain open.
 See [Microsoft mail implementation and remaining work](LEARN-MICROSOFT-MAIL.md).
 
 ## Numerical correction recovery — TEST database release 053 installed
