@@ -49,25 +49,31 @@ from the production project above. Its preview-only public configuration targets
 Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
-TEST backend advanced independently on 11 October at 06:52–06:55 UTC to database
-release 054 and `platform-worker` v6 for safe Workspace failure diagnostics.
-Rollback/install/worker/HTTP evidence preserved all 101 monitored datasets and
-existing authority. The frontend candidate below remains the older version until
-its replacement is verified; real-mailbox and signed-in diagnostic acceptance
-remain open. [Backend evidence](operations/evidence/learn-email-diagnostic-test-2026-10-11.json).
+The current staging candidate is
+[serviceos-learn-test-pncxu962n-allkin.vercel.app](https://serviceos-learn-test-pncxu962n-allkin.vercel.app),
+built remotely from backed-up GitHub commit `a621415c451c31336a8b19cde8a7a0e7284b3110`
+and READY on 11 October at 07:00 UTC. It adds the customer timeline source viewer
+and safe Workspace diagnostics. TEST backend binding, deployment protection on
+three routes, actual client/operator same-origin sign-in redirects and zero
+observed browser console errors pass. Positive signed-in source/diagnostic and
+real-mailbox acceptance remain open.
 
-The current verified staging candidate is
-[serviceos-learn-test-428847jna-allkin.vercel.app](https://serviceos-learn-test-428847jna-allkin.vercel.app),
-built remotely from GitHub commit `1e4fc645d4b71e7ae7be8d4e29a0cfbc4092f53a`.
-The 11 October 05:05 UTC candidate adds durable numerical-correction recovery:
-check, exact retry and cancellation after an interrupted request or reload. It is
-paired with TEST database release 053, installed at 05:03 UTC after successful
-rollback rehearsal. All 101 monitored datasets and prior writer authority were
-preserved; the writer adds only its cancellation check. Eight hosted HTTP access-denial
-checks pass. Controller v8 remains unchanged. Deployment protection and actual
-client/operator same-origin sign-in redirects pass with zero browser console errors.
-Positive signed-in hosted recovery acceptance remains open.
-[Correction recovery evidence](operations/evidence/learn-correction-recovery-test-2026-10-11.json).
+TEST database release 054 installed at 06:52 UTC and `platform-worker` v6 at
+06:54 UTC. Rollback/install/worker/HTTP evidence preserved all 101 monitored
+datasets and existing authority. Worker HTTP checks reject missing/incorrect
+internal credentials and accept an authorised execution with no capture jobs.
+No provider calls, access grants or production changes occurred.
+[Diagnostic release evidence](operations/evidence/learn-email-diagnostic-test-2026-10-11.json).
+
+The earlier 05:05 UTC candidate
+[serviceos-learn-test-428847jna-allkin.vercel.app](https://serviceos-learn-test-428847jna-allkin.vercel.app)
+was built from GitHub commit `1e4fc645d4b71e7ae7be8d4e29a0cfbc4092f53a`.
+It added durable numerical-correction recovery: check, exact retry and cancellation
+after an interrupted request or reload, paired with TEST database release 053.
+All 101 monitored datasets and prior writer authority were preserved; the writer
+adds only its cancellation check. Eight hosted HTTP access-denial checks passed.
+Controller v8 remains unchanged. Positive signed-in hosted recovery acceptance
+remains open. [Correction recovery evidence](operations/evidence/learn-correction-recovery-test-2026-10-11.json).
 
 The earlier 04:46 UTC candidate added receipt attribution checks before performance
 scoring, paired with database release 052 at 04:41 UTC. All 101 monitored datasets

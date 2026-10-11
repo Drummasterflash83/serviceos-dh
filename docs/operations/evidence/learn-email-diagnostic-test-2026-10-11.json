@@ -1,7 +1,7 @@
 {
   "version": "learn-email-diagnostic-test/1",
   "projectRef": "saatxzwxvdvqevbnskxy",
-  "state": "database_worker_and_http_verified_frontend_pending",
+  "state": "database_worker_frontend_and_boundaries_verified_real_capture_pending",
   "databaseRehearsal": {
     "version": "learn-email-diagnostic/1",
     "projectRef": "saatxzwxvdvqevbnskxy",
@@ -81,9 +81,53 @@
     ]
   },
   "limitations": [
-    "Frontend release and positive signed-in operator acceptance remain pending.",
+    "Positive signed-in operator diagnostics and customer source-viewer acceptance remain pending.",
     "No real mailbox capture or resolution of production invalid_grant failures is established.",
     "No new users, operator grants, provider calls or production changes.",
     "Once new diagnostic codes are persisted, retain compatible readers and repair forward; older workers reject these codes."
-  ]
+  ],
+  "frontend": {
+    "observedAt": "2026-10-11T07:00:49.866Z",
+    "id": "dpl_5KoBiYxxmT3Up31Nd9SPiESSnmw1",
+    "url": "serviceos-learn-test-pncxu962n-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "a621415c451c31336a8b19cde8a7a0e7284b3110"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "protection": {
+      "observedAt": "2026-10-11T07:01:07.414Z",
+      "base": "https://serviceos-learn-test-pncxu962n-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    },
+    "browser": {
+      "clientLoginSameOrigin": true,
+      "unauthenticatedClientRedirect": "/login?redirect=%2Fclient%3Fsection%3Dlearn",
+      "unauthenticatedOperatorRedirect": "/login?redirect=%2Fopenfolk",
+      "consoleErrorsObserved": 0,
+      "signedInAcceptance": false
+    }
+  }
 }

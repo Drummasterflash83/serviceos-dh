@@ -152,3 +152,12 @@ This is not new hosted or real-provider acceptance. Hosted signed-in Drummonds
 verification, full source/audio access and timeline traversal beyond the bounded
 window remain outstanding. The browser also exposed unresolved team UUID labels
 in customer finding ownership; human-readable team attribution remains to finish.
+
+### Hosted TEST frontend — 11 October, 07:00 UTC
+
+The timeline integration above is now included in protected TEST frontend commit
+`a621415c451c31336a8b19cde8a7a0e7284b3110`. Remote build, TEST configuration,
+deployment protection and actual unauthenticated client/operator redirects pass.
+Positive signed-in customer/source inspection remains pending; local synthetic
+reader acceptance does not prove access to real retained sources.
+[Paired release evidence](evidence/learn-email-diagnostic-test-2026-10-11.json).

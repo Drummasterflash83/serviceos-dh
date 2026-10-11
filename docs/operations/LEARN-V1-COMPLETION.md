@@ -62,8 +62,8 @@ The helper is now installed in hosted TEST worker v6 (see the release below),
 but is not deployed to production. The V1 worker preserves six safe
 Workspace diagnostic codes through protocol failure, checkpoint and queue settlement.
 The operator reader/UI exposes only an allowlisted code, attempt ID and timestamp.
-See the local and hosted acceptance below; the matching frontend release,
-signed-in operator acceptance and real-mailbox diagnosis remain outstanding. Earlier production logs cannot establish the exact grant cause.
+See the local and hosted acceptance below; signed-in operator acceptance
+and real-mailbox diagnosis remain outstanding. Earlier production logs cannot establish the exact grant cause.
 
 Production has the three Workspace credential secret names; TEST has none. No
 credential values were returned. The checked older checkout env files and current
@@ -121,9 +121,13 @@ succeeded after that failure; no worker was invoked and no source record changed
 - HTTP acceptance at 06:55 UTC rejected missing/incorrect worker credentials
   (403) and accepted an authorised execution filtered to no capture jobs (200,
   zero claimed/failed). Sources remained unchanged. Ten release/deployment tests pass.
-- Matching frontend deployment and positive signed-in operator acceptance remain
-  open. These checks made no provider requests, created no access grants and do
-  not establish successful mailbox capture or resolution of production failures.
+- Matching frontend `a621415c451c31336a8b19cde8a7a0e7284b3110` is READY in
+  protected Vercel TEST at 07:00 UTC. TEST backend binding, three protected HTTP
+  routes, same-origin client/operator sign-in redirects and zero observed browser
+  console errors were verified. It also includes the retained source timeline viewer.
+- Positive signed-in operator and customer acceptance remain open. These checks
+  made no provider requests, created no access grants and do not establish
+  successful mailbox capture or resolution of production failures.
 - Production remains unchanged. Preserve compatible readers if new diagnostic
   codes are stored; pause and repair forward instead of reverting to older readers.
 
@@ -161,7 +165,8 @@ succeeded after that failure; no worker was invoked and no source record changed
 - [x] Local customer/job timeline now reuses the restricted source reader already
   used by scorecards. Browser checks verified email/call failure-to-retry recovery
   and explicit unsupported-source messaging using synthetic data. Eighteen reader
-  tests, both TypeScript checks and builds passed; no hosted/frontend release.
+  tests, both TypeScript checks and builds passed. The matching frontend is now
+  deployed to TEST with release 054 above; signed-in source acceptance is pending.
   [Evidence and limits](LEARN-CARD-SOURCES.md#customer-timeline-integration--11-october-2026-local-only).
   Team ownership labels still expose UUIDs in customer findings and need resolution.
 
