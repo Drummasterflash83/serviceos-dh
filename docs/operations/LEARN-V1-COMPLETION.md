@@ -54,6 +54,22 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
+### Operator email availability — TEST 072, 11 October, 20:55 UTC
+
+The operator health reader now returns company-wide retained-email counts:
+available and unavailable at the last recorded observation, unverified
+availability, unverified mailbox binding, and earlier source versions. Older or
+malformed observations stay unverified. The account page limit does not truncate
+these totals. Source contents and provider identifiers remain private; existing
+platform authority and function permissions are unchanged.
+
+The installed TEST function and aggregate were verified against retained synthetic
+history; all 124 pre-existing datasets were preserved. Eleven client checks,
+actual isolated SQL authority/tenant/pagination checks, TypeScript and the frontend
+build passed. The frontend is built locally; deployment and signed-in acceptance
+remain pending. No actual provider requests or production changes occurred.
+[Retention status evidence](evidence/learn-email-retention-health-2026-10-11.json).
+
 ### Gmail ongoing state changes — TEST 071, 11 October, 20:50 UTC
 
 The TEST capture worker handles Gmail label additions/removals and provider
@@ -83,7 +99,7 @@ were preserved. Its synthetic tenant is archived, account disabled and jobs
 retired; no Auth users, grants or provider calls were created.
 
 **Still open:** real Gmail/Edge capture acceptance, signed-in customer review,
-operator availability presentation and unavailable legacy-message reconciliation.
+signed-in availability presentation and unavailable legacy-message reconciliation.
 The archive is included in release preservation and database recovery procedures;
 actual database restore remains blocked on recovery credentials.
 [Deployment and acceptance evidence](evidence/learn-email-mailbox-changes-2026-10-11.json).
@@ -108,7 +124,7 @@ It resolves to READY deployment `dpl_7xoN7dcukRyTgTnN6tttsjFD1pyw`, built from
 Git SHA `c03a230b48e70a06d59ddbd456f6be8e50b5d596`. The immutable preview is
 `serviceos-learn-test-1ax7l1586-allkin.vercel.app`. Both are Vercel protected; their
 home, login and LEARN routes redirect to Vercel authentication. The preview-only
-backend remains TEST `saatxzwxvdvqevbnskxy`, paired with release 071/worker v17/card
+backend remains TEST `saatxzwxvdvqevbnskxy`, paired with release 072/worker v17/card
 refresh v2. The frontend includes the draft advice and bounded-evidence explanation.
 
 TEST Auth uses the stable exact `/login?reset=1` recovery target, preserving the

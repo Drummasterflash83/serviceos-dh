@@ -1,0 +1,41 @@
+{
+  "version": "learn-email-retention-health/1",
+  "state": "test_database_verified_frontend_built_pending_deployment",
+  "observedAt": "2026-10-11T20:55:55.502Z",
+  "testInstallation": {
+    "state": "installed_read_model_verified",
+    "observedAt": "2026-10-11T20:55:55.502Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "packageSha256": "5060f3f95b86feb1b49c6565029a6f971a60185de0197bff0f2931696079aa66",
+    "expected": {
+      "marker": "email-retention-installed/1",
+      "fingerprint": "deb440d53e7a0a47cc4273214b2ce777",
+      "digest": "6617948c7d252d9faa273fc562f14089"
+    },
+    "preservedDatasets": 124,
+    "authorityUnchanged": true,
+    "newAuthUsers": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Actual aggregate verified against retained synthetic TEST records; positive operator HTTP and signed-in UI acceptance remain pending."
+    ]
+  },
+  "localVerification": {
+    "clientChecks": 11,
+    "isolatedSql": "Actual health reader, counts, tenant isolation, platform authority/revocation, payload exclusion, rollback, permissions preservation and every-page application parsing passed.",
+    "projectTypecheck": "passed",
+    "productionBuild": "passed including prebuild checks"
+  },
+  "semantics": [
+    "Available and unavailable are last recorded observations, not present provider state.",
+    "Unbound legacy records and malformed observations remain unverified.",
+    "Unbound is a subset of unverified. Prior source versions are separate from message totals.",
+    "Company-wide counts are independent of the account page. No content or raw provider identifiers returned."
+  ],
+  "limitations": [
+    "Positive signed-in operator HTTP and browser acceptance remain pending.",
+    "No provider requests or production changes. This is not complete mailbox coverage."
+  ]
+}

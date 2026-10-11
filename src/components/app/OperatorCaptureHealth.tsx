@@ -10,6 +10,7 @@ import {
   type CaptureHealthRow,
 } from "@/lib/learn-operator-capture-health";
 import type { OperatorInputClient } from "@/lib/learn-operator-inputs";
+import { emailRetentionAction } from "@/lib/learn-email-retention";
 
 export function OperatorCaptureHealth({
   tenantId,
@@ -105,6 +106,46 @@ export function OperatorCaptureHealth({
             <p>
               No email, phone or Slack accounts were returned for this company. Check connector
               setup before assuming capture is running.
+            </p>
+          )}
+          {page.email_retention ? (
+            <section
+              className="rounded-xl border p-4 space-y-3"
+              aria-label="Retained email availability"
+            >
+              <h3 className="font-semibold">Retained email availability</h3>
+              <p className="text-sm">
+                Company-wide stored records, across all mailbox pages. Availability reflects the
+                last recorded provider observation.
+              </p>
+              <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+                {(
+                  [
+                    ["Stored emails", page.email_retention.total],
+                    ["Available at last observation", page.email_retention.available],
+                    ["Unavailable at last observation", page.email_retention.unavailable],
+                    ["Availability not verified", page.email_retention.unverified],
+                    ["Mailbox binding not verified", page.email_retention.unbound],
+                    ["Retained earlier versions", page.email_retention.archived_versions],
+                  ] as const
+                ).map(([label, count]) => (
+                  <div key={label}>
+                    <dt className="text-muted-foreground">{label}</dt>
+                    <dd className="font-semibold">{count.toLocaleString("en-GB")}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="text-sm">{emailRetentionAction(page.email_retention)}</p>
+              <p className="text-xs text-muted-foreground">
+                Unverified mailbox bindings are included in unverified availability. Earlier
+                versions are separate from the stored-email total. This read does not contact the
+                provider or prove that all email history has been captured.
+              </p>
+            </section>
+          ) : (
+            <p className="text-sm">
+              Retained email availability is not verified by this health response. Check the service
+              deployment before treating any missing count as zero.
             </p>
           )}
           {page.phone_processing &&

@@ -6,6 +6,7 @@ import {
   type PhoneProcessingEvidence,
 } from "./learn-phone-operator-evidence.ts";
 import { CADENCE_SEC, freshnessVerdict } from "./health-model.ts";
+import { validEmailRetention, type EmailRetention } from "./learn-email-retention.ts";
 import type { OperatorInputClient } from "./learn-operator-inputs.ts";
 export type CaptureSource = "email" | "phone" | "slack";
 export type CaptureHealthRow = {
@@ -38,6 +39,7 @@ export type CaptureHealthPage = {
   rows: CaptureHealthRow[];
   next_cursor: string | null;
   phone_processing?: PhoneProcessingEvidence | null;
+  email_retention?: EmailRetention | null;
 };
 const emailFailureActions: Record<string, string> = {
   sa_config_missing:
@@ -92,6 +94,7 @@ export async function readCaptureHealth(
     v.version !== "learn-operator-capture-health/1" ||
     v.tenant_id !== tenant ||
     !date(v.checked_at) ||
+    (v.email_retention != null && !validEmailRetention(v.email_retention, tenant)) ||
     (v.phone_processing != null && !validPhoneProcessingEvidence(v.phone_processing, tenant)) ||
     !Array.isArray(v.rows) ||
     v.rows.length > 50 ||

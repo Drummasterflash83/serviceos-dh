@@ -90,6 +90,16 @@ try:
     assert sql("select proowner::text||coalesce(proacl::text,'') from pg_proc where oid='learn_operator_capture_health(uuid,text)'::regprocedure")==acl
     assert sql("select md5(jsonb_agg(to_jsonb(r) order by id)::text) from email_sync_runs r")==records
     print(sql(source('scripts/verify/learn-email-failure-health.assert.sql')),flush=True)
+    sql(source('scripts/verify/learn-email-retention-health.fixture.sql'))
+    before=sql("select pg_get_functiondef('learn_operator_capture_health(uuid,text)'::regprocedure)")
+    retained=sql("select md5(jsonb_agg(to_jsonb(r) order by id)::text) from email_messages r union all select md5(jsonb_agg(to_jsonb(r) order by id)::text) from learn_email_source_versions r")
+    migration=source('supabase/migrations/20261101410000_learn_email_retention_health.sql')
+    sql(migration.replace('\ncommit;','\nrollback;'))
+    assert sql("select pg_get_functiondef('learn_operator_capture_health(uuid,text)'::regprocedure)")==before
+    sql(migration)
+    assert sql("select proowner::text||coalesce(proacl::text,'') from pg_proc where oid='learn_operator_capture_health(uuid,text)'::regprocedure")==acl
+    print(sql(source('scripts/verify/learn-email-retention-health.assert.sql')),flush=True)
+    assert sql("select md5(jsonb_agg(to_jsonb(r) order by id)::text) from email_messages r union all select md5(jsonb_agg(to_jsonb(r) order by id)::text) from learn_email_source_versions r")==retained
     data=sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000182';set role authenticated;select learn_operator_capture_health(fixture_id(100));")
     output=root/'.verification-results/learn-operator-capture-health-local.json'
     output.parent.mkdir(exist_ok=True)

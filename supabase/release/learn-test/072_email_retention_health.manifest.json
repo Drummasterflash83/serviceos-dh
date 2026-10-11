@@ -1,0 +1,9 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "5060f3f95b86feb1b49c6565029a6f971a60185de0197bff0f2931696079aa66",
+  "migrationPath": "supabase/migrations/20261101410000_learn_email_retention_health.sql",
+  "migrationSha256": "2d9af67e0363ab53f1e4817b14efcf4e66d7234c368a5a5e2828722bdd04f708",
+  "priorFingerprint": "6feb54fea0efbe744d0775cf01f90e22",
+  "priorFunctionDigest": "3e4abf67c2f22199f24673d36566b2ad",
+  "preservedDatasets": 124
+}
