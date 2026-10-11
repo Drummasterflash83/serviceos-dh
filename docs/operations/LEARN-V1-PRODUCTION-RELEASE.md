@@ -177,11 +177,14 @@ label/deletion handling remain open launch requirements.
 
 ### Card refresh must also use eligible sources
 
-The local `20261101390000_learn_card_projection_eligibility.sql` candidate passed
-full-schema TEST rollback and an actual SQL-to-handler-to-saved-card journey. It
-is not installed. Deploy its database function before matching `platform-worker`
-and `customer-card-sync`; the scheduled wrapper enqueues the shared worker and
-needs no independent eligibility logic. Preserve the function during a runtime
+TEST 070 installed `20261101390000_learn_card_projection_eligibility.sql` after
+full-schema and exact-package rollback rehearsals. Matching `platform-worker` v16
+and `customer-card-sync` v2 passed download comparison, handler tests and HTTP denial
+checks. A positive service-to-service synthetic refresh passed over hosted HTTP,
+including isolation, source preservation and completed jobs; fixtures are archived.
+This is not signed-in or real-provider acceptance. For the separately reviewed
+production release, deploy the database function before matching callers. The
+scheduled wrapper enqueues the shared worker and needs no independent eligibility logic. Preserve the function during a runtime
 rollback. Do not run a legacy card refresh as a repair: it can reintroduce drafts.
 
 The 19:57 UTC production audit found four draft-linked recommendations and 95
@@ -193,4 +196,4 @@ unversioned priority and indirect recommendation influence separately. Do not
 rewrite manual text, accepted identity decisions or saved performance evidence
 based solely on a shared company link. See the
 [impact evidence](evidence/learn-email-draft-impact-2026-10-11.json) and
-[candidate verification](evidence/learn-card-draft-projection-2026-10-11.json).
+[TEST verification](evidence/learn-card-draft-projection-2026-10-11.json).

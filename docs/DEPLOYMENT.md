@@ -55,15 +55,20 @@ built remotely from GitHub commit `1af32a493633b73f5f3fa127d4e47712b27e89fb`
 and observed READY at **18:26 UTC on 11 October**. It includes the password-reset
 flow, saved-snapshot freshness, projection/identity review and queued manual
 processing messages, initially paired with TEST schema release 066 and worker v12.
-The backend now has release **069**, worker **v15** and Workspace discovery **v3**.
+The backend now has release **070**, worker **v16**, card refresh **v2**, and Workspace discovery **v3**.
 Release 067 added directory-verified alias identities; 068 adds mailbox-wide recent
 Gmail capture with a mandatory reconciliation when upgrading old label-limited
 cursors. Release 069 preserves drafts while excluding them from communication
 publication, identity attribution and card excerpts; its worker uses the matching
-draft-aware page store. All 121 retained datasets were preserved, downloaded worker
-source matched, and reader/HTTP boundary checks passed. The protected frontend is
-unchanged; new draft explanation copy remains local. These releases did not infer
+draft-aware page store. Release 070 extends the filtering into card refresh, with
+revision-checked writes and full eligible counts. Both the worker and manual card
+endpoint were downloaded and verified. A scoped hosted service call refreshed one
+synthetic card and passed tenant isolation, source preservation and job-completion
+checks; its fixtures are archived and all 123 pre-existing datasets were preserved.
+No login/grant was created. The protected frontend is unchanged; new draft and
+bounded-evidence explanation copy remains local. These releases did not infer
 real alias bindings or activate capture. See the
+[card refresh evidence](operations/evidence/learn-card-draft-projection-2026-10-11.json),
 [draft eligibility evidence](operations/evidence/learn-email-draft-eligibility-2026-10-11.json), the
 [mailbox coverage evidence](operations/evidence/learn-email-mailbox-coverage-test-2026-10-11.json)
 and [identity evidence](operations/evidence/learn-workspace-profile-identity-test-2026-10-11.json).

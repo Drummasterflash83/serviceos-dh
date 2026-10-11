@@ -54,7 +54,7 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
-### Existing draft influence and card refresh — local candidate, 11 October, 20:00 UTC
+### Existing draft influence and card refresh — TEST 070, 11 October, 20:11 UTC
 
 The read-only production impact audit at **19:57 UTC** found 55 enriched draft
 interactions, 54 linked to people, four directly linked recommendations and 95
@@ -70,7 +70,7 @@ the completed bounded audit uses direct recommendation/suggestion links.
 
 The separate card-refresh handler still read all canonical interactions, so it
 could reintroduce retained drafts into card activity, response timings and timelines
-after TEST 069's publication fix. The local candidate now uses one tenant/card-bound
+after TEST 069's publication fix. TEST 070 now uses one tenant/card-bound
 SQL input read, filters drafts before the recent windows, excludes directly linked
 draft recommendations without deleting them, and reports full eligible counts.
 Recent response timing remains a bounded communication estimate, not a staff score.
@@ -80,12 +80,25 @@ context remain. Compare-and-set writes reject concurrent card edits or missing r
 The actual SQL/handler/calculator/saved-card journey passes with 110 drafts, 105 valid
 interactions and 51 valid recommendations. Twelve handler/snapshot tests, strict
 worker types and the local frontend build pass. The full hosted TEST rollback
-rehearsal preserved all 121 datasets and removed its synthetic fixtures. This new
-function/handler/UI is **not deployed**: install its database function first, then
-both `platform-worker` and `customer-card-sync`, then verify bounded refresh and
-signed-in results. Legacy priorities, indirect recommendations and reviewed identity
-suggestions still need explicit reconciliation rather than blanket deletion.
-[Candidate evidence and release sequence](evidence/learn-card-draft-projection-2026-10-11.json).
+rehearsal preserved all 121 datasets and removed its synthetic fixtures. The exact
+package was then installed, followed by `platform-worker` v16 and `customer-card-sync`
+v2. Downloaded source matched reviewed runtime (92 and 6 modules respectively), and
+nine actual-handler tests passed against each download. Unsigned calls returned
+403/401. No other endpoint or source changed during deployment.
+
+The positive hosted **service-to-service** check then passed: tenant mismatch 403,
+cross-tenant card lookup empty, and one synthetic card refreshed over HTTP with
+110 drafts excluded and 105 valid interactions retained. Job completion and saved
+projection evidence were checked. All 123 pre-existing datasets (adding explicit
+recommendation and match-suggestion tracking) were preserved. Two successful-run
+synthetic tenants were archived, with no users, grants, provider calls or live jobs.
+An earlier harness attempt omitted the existing internal header; its fixtures were
+also archived. A second attempt rolled back on a synthetic-slug collision; the final
+run used unique slugs and the digest-verified existing key, with no credential changes.
+This is not signed-in acceptance. Frontend explanatory copy remains local. Legacy
+priorities, indirect recommendations and reviewed identity suggestions still need
+explicit reconciliation rather than blanket deletion.
+[Verified evidence and release sequence](evidence/learn-card-draft-projection-2026-10-11.json).
 
 ### Drafts retained without being treated as replies — TEST 069, 11 October, 19:51 UTC
 

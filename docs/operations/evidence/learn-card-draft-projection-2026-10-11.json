@@ -1,7 +1,7 @@
 {
   "version": "learn-card-draft-projection/1",
-  "state": "local_and_full_schema_rehearsed_not_deployed",
-  "observedAt": "2026-10-11T20:00:52.275Z",
+  "state": "installed_runtime_verified_and_hosted_service_refresh_passed",
+  "observedAt": "2026-10-11T20:11:26.757Z",
   "productionImpactEvidence": "learn-email-draft-impact-2026-10-11.json",
   "behavior": [
     "Filter retained drafts before the 100-interaction and 50-recommendation windows.",
@@ -35,7 +35,57 @@
         "Synthetic SQL assertions; no persistent migration or positive hosted capture.",
         "Production card refresh and reconciliation require a separately reviewed release; no source or derived data changed."
       ]
-    }
+    },
+    "exactPackageRollback": true,
+    "hostedServiceAcceptance": {
+      "version": "learn-card-draft-hosted-service/1",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "observedAt": "2026-10-11T20:11:26.757Z",
+      "state": "hosted_service_refresh_verified",
+      "checks": [
+        {
+          "name": "tenant_mismatch",
+          "status": 403
+        },
+        {
+          "name": "cross_tenant_empty",
+          "status": 200,
+          "cardsProjected": 0
+        },
+        {
+          "name": "synthetic_card_refresh",
+          "status": 200,
+          "cardsProjected": 1
+        }
+      ],
+      "preservedDatasets": 123,
+      "syntheticTenantsArchived": true,
+      "syntheticAccessAndJobsRetired": true,
+      "usersCreated": 0,
+      "newAccessGrants": 0,
+      "providerRequests": 0,
+      "productionChanged": false,
+      "limitations": [
+        "Existing TEST service identity only; this does not prove signed-in user acceptance.",
+        "Synthetic fixtures and job evidence are retained in two archived tenants.",
+        "No real mailbox capture, production correction, or frontend deployment."
+      ],
+      "failure": null
+    },
+    "earlierAttemptOutcomes": [
+      {
+        "attempt": 1,
+        "outcome": "The harness omitted the configured internal-auth header; HTTP 401 internal_auth_mismatch. Both fixtures were archived and all 123 pre-existing datasets were preserved."
+      },
+      {
+        "attempt": 2,
+        "outcome": "Synthetic slugs collided with the retained first fixture; the creation transaction rolled back, verified by absent new tenants. No HTTP request or access change occurred."
+      },
+      {
+        "attempt": 3,
+        "outcome": "Unique slugs and digest-verified existing internal key header; all three scoped HTTP checks passed. Fixtures archived; source history retained."
+      }
+    ]
   },
   "releaseSequence": [
     "Prepare and rehearse pinned TEST package for migration 20261101390000_learn_card_projection_eligibility.sql.",
@@ -45,11 +95,82 @@
     "Verify signed-in card evidence and preserve existing source/derived history before separately approved production promotion."
   ],
   "limitations": [
-    "No persistent hosted schema/runtime/frontend change in this step.",
+    "Frontend explanation of bounded evidence is still local; signed-in browser and real-provider acceptance remain pending.",
     "Directly linked draft recommendations are excluded; indirect legacy recommendation influence and unversioned card priority need separate review.",
     "Production summaries had no exact draft matches in this bounded audit; no summary, priority, relationship, match suggestion or score has been rewritten.",
     "Gmail label/deletion mirroring, Spam eligibility, real capture and signed-in acceptance remain open."
   ],
   "providerRequests": 0,
-  "productionChanged": false
+  "productionChanged": false,
+  "schema": {
+    "release": "070_card_projection_eligibility",
+    "installedAt": "2026-10-11T20:04:51.585Z",
+    "fingerprint": "a1131b60b5fc1c022c772147078365a3",
+    "inputFunctionDigest": "760b1f428c12940564d7d8fb571c27e4",
+    "packageSha256": "08051f6a44b38f3087ef63bf71cbdaf69fad8cd49cc7f7d1474ce7b22a00ddf7",
+    "preservedDatasets": 121,
+    "newUsers": 0,
+    "newPlatformGrants": 0,
+    "functionPermission": "New card input RPC permits the existing service_role only; no user/admin access added."
+  },
+  "runtime": {
+    "deployedAt": "2026-10-11T20:05:35.394Z",
+    "sourceBundleSha256": "f687f26cf474ee5d171a4afc4aed5063ba20abe65c96b6f44b02f80fc7c5d1dc",
+    "dependencyFiles": 97,
+    "endpoints": [
+      {
+        "name": "customer-card-sync",
+        "version": 2,
+        "verifyJwt": true
+      },
+      {
+        "name": "platform-worker",
+        "version": 16,
+        "verifyJwt": false
+      }
+    ],
+    "readback": [
+      {
+        "endpoint": "platform-worker",
+        "version": 16,
+        "matchingRuntimeModules": 92,
+        "omittedModules": [
+          "_shared/intelligence/reason_codes.ts",
+          "_shared/intelligence/types.ts",
+          "_shared/worker_contract.ts"
+        ],
+        "emittedImportsChecked": 145,
+        "omittedModulesHaveNoEmittedImporters": true,
+        "differentRuntimeModules": [],
+        "downloadedHandlerTestsPassed": 9
+      },
+      {
+        "endpoint": "customer-card-sync",
+        "version": 2,
+        "matchingRuntimeModules": 6,
+        "omittedModules": [
+          "_shared/worker_contract.ts"
+        ],
+        "emittedImportsChecked": 6,
+        "omittedModulesHaveNoEmittedImporters": true,
+        "differentRuntimeModules": [],
+        "downloadedHandlerTestsPassed": 9
+      }
+    ],
+    "comparisonMethod": "Transpiled syntax-tree comparison normalizes comments, redundant parentheses, associative logical operators and a sole for-of block; emitted imports are checked separately. Review aid, not formal proof.",
+    "unsignedHttp": [
+      {
+        "endpoint": "platform-worker",
+        "method": "POST",
+        "status": 403,
+        "code": "forbidden"
+      },
+      {
+        "endpoint": "customer-card-sync",
+        "method": "POST",
+        "status": 401
+      }
+    ],
+    "preservedDatasets": 121
+  }
 }
