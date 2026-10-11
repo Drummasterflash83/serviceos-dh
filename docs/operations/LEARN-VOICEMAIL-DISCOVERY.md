@@ -2,6 +2,54 @@
 
 
 
+
+## Hosted synthetic import completed — 11 October, 22:52 UTC
+
+A complete generated source passed the shared production queue adapter, signed MIME
+verification, actual MP3 decode, immutable upload/readback and atomic SQL publication
+against hosted TEST. Code ran locally using the existing TEST service credential
+in memory; provider reads and DNS were controlled synthetic inputs. This is positive
+hosted SQL/Storage acceptance, **not positive dispatch through platform-worker's
+real Workspace bridge**, real-provider acceptance or signed-in playback.
+
+The isolated fixture `ce740001-aaaa-4000-8000-000000000001` contains one private
+mailbox and one generated 28-second voicemail. There is no owner, manager grant,
+profile or login for it. The route's required verifier reference uses the already
+banned synthetic playback actor; its evidence text explicitly identifies runner
+verification, not human or real-provider verification. No Auth row or entitlement
+was created or modified. The setup/claim transaction first rehearsed and rolled
+back with all 136 datasets unchanged, then ran once under an exclusive journal.
+
+One source load led to exactly two immutable uploads/readbacks. The runner discarded
+the successful publication reply; the queue recovered its saved success receipt.
+It then replayed after retirement with no additional source load or write. A foreign
+tenant claim never reached the loader. Final records contain one succeeded job,
+one private message, one binding and one settlement. `coverage_complete` remains
+false and email-delivery state remains unknown.
+
+- Published message: `39ae5f5e-d38c-4fc1-b1d5-2314cce9404e`.
+- Audio: 56,304 bytes; SHA-256 `782a76362731d87a5d1608107758a25e86e36afa28e6dba183b8ce45d06694e1`.
+- Original synthetic email: 76,391 bytes; SHA-256 `89eff41c8b2c380f07e3238065ab7830feff704b07e27a8f4e45699c1b52afc9`.
+- Both final service readbacks match. Anonymous downloads and public URLs are denied.
+- The existing unentitled synthetic subject sees zero messages under SQL's authenticated
+  role and fails `can_manage_voicemail`; no session or token was minted for this check.
+- Exact row/path exclusions preserve all 136 prior datasets. Auth, role, profile,
+  membership and mailbox-manager records have no preservation exclusions.
+
+The tenant is now archived, the route disabled and its credential-free email-account
+metadata disabled. Evidence and files are retained. Setup, claim and import must
+not be rerun: the verifier's exclusive journals and preflight reject existing fixture
+records. Use `--inspect --existing-cli-login` for read-only inspection. Existing
+empty-configuration release probes will correctly reject this newer nonempty TEST
+state; future releases must include this retained fixture in their baseline.
+
+[Sanitized evidence](evidence/learn-voicemail-queue-import-2026-10-11.json).
+Remaining: enumeration/reconciliation and scheduling, real authority/credential
+acceptance, deployed provider-to-queue flow, provider-transcript quality, signed-in
+private playback, access-preserving LEARN/card integration and independent backups.
+Private content must not be projected into shared tenant-wide cards merely because
+it belongs to the same customer or company.
+
 ## Queue schema and worker installed in TEST — boundaries verified, 22:45 UTC
 
 Release 074 is installed in TEST `saatxzwxvdvqevbnskxy`, after a rollback rehearsal

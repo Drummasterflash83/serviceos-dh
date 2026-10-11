@@ -1,0 +1,164 @@
+{
+  "state": "hosted_synthetic_queue_import_verified",
+  "observedAt": "2026-10-11T22:52:59.121Z",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "ids": {
+    "tenant": "ce740001-aaaa-4000-8000-000000000001",
+    "mailbox": "ce740001-aaaa-4000-8000-000000000002",
+    "account": "ce740001-aaaa-4000-8000-000000000003",
+    "route": "ce740001-aaaa-4000-8000-000000000004",
+    "job": "ce740001-aaaa-4000-8000-000000000005"
+  },
+  "queueOutcome": {
+    "state": "succeeded",
+    "historicalReceipt": true,
+    "recordsProcessed": 1
+  },
+  "replay": {
+    "state": "succeeded",
+    "historicalReceipt": true,
+    "recordsProcessed": 1
+  },
+  "crossTenant": {
+    "state": "unconfirmed",
+    "historicalReceipt": false,
+    "recordsProcessed": 0
+  },
+  "sourceLoads": 1,
+  "uploadCalls": 2,
+  "downloadCalls": 2,
+  "publicationAcknowledgementDropped": true,
+  "storageChecks": [
+    {
+      "bucket": "receptionist-voicemails",
+      "path": "ce740001-aaaa-4000-8000-000000000001/ce740001-aaaa-4000-8000-000000000002/39ae5f5e-d38c-4fc1-b1d5-2314cce9404e",
+      "bytes": 56304,
+      "sha256": "782a76362731d87a5d1608107758a25e86e36afa28e6dba183b8ce45d06694e1",
+      "hashMatches": true,
+      "anonymousDenied": true,
+      "publicStatus": 400
+    },
+    {
+      "bucket": "learn-voicemail-sources",
+      "path": "ce740001-aaaa-4000-8000-000000000001/39ae5f5e-d38c-4fc1-b1d5-2314cce9404e/aa039837-cee9-4bb3-8dfb-feb549718deb.eml",
+      "bytes": 76391,
+      "sha256": "89eff41c8b2c380f07e3238065ab7830feff704b07e27a8f4e45699c1b52afc9",
+      "hashMatches": true,
+      "anonymousDenied": true,
+      "publicStatus": 400
+    }
+  ],
+  "retirementConfirmed": true,
+  "preservedDatasets": 136,
+  "observed": {
+    "job": {
+      "id": "ce740001-aaaa-4000-8000-000000000005",
+      "error": null,
+      "lease": null,
+      "status": "succeeded",
+      "tenant": "ce740001-aaaa-4000-8000-000000000001",
+      "worker": "synthetic-voicemail-queue-acceptance-ce740001",
+      "attempt": 1,
+      "records": 1
+    },
+    "route": {
+      "id": "ce740001-aaaa-4000-8000-000000000004",
+      "actor": "effb2fb2-0782-491b-9a49-5cf2a5ef9e4d",
+      "owner": null,
+      "enabled": false,
+      "accessMode": "managers_only"
+    },
+    "tenant": {
+      "id": "ce740001-aaaa-4000-8000-000000000001",
+      "status": "archived",
+      "fixture": true
+    },
+    "account": {
+      "id": "ce740001-aaaa-4000-8000-000000000003",
+      "status": "disabled"
+    },
+    "objects": [
+      {
+        "path": "ce740001-aaaa-4000-8000-000000000001/39ae5f5e-d38c-4fc1-b1d5-2314cce9404e/aa039837-cee9-4bb3-8dfb-feb549718deb.eml",
+        "bytes": "76391",
+        "bucket": "learn-voicemail-sources"
+      },
+      {
+        "path": "ce740001-aaaa-4000-8000-000000000001/ce740001-aaaa-4000-8000-000000000002/39ae5f5e-d38c-4fc1-b1d5-2314cce9404e",
+        "bytes": "56304",
+        "bucket": "receptionist-voicemails"
+      }
+    ],
+    "bindings": [
+      {
+        "job": "ce740001-aaaa-4000-8000-000000000005",
+        "intake": "39ae5f5e-d38c-4fc1-b1d5-2314cce9404e",
+        "source": "aa039837-cee9-4bb3-8dfb-feb549718deb"
+      }
+    ],
+    "messages": [
+      {
+        "id": "39ae5f5e-d38c-4fc1-b1d5-2314cce9404e",
+        "audio": true,
+        "owner": null,
+        "mailbox": "ce740001-aaaa-4000-8000-000000000002",
+        "emailStatus": "unknown"
+      }
+    ],
+    "profiles": 0,
+    "receipts": [
+      {
+        "code": null,
+        "state": "succeeded",
+        "job_id": "ce740001-aaaa-4000-8000-000000000005",
+        "worker": "synthetic-voicemail-queue-acceptance-ce740001",
+        "attempt": 1,
+        "version": "voicemail-queue/1",
+        "tenant_id": "ce740001-aaaa-4000-8000-000000000001",
+        "message_id": "39ae5f5e-d38c-4fc1-b1d5-2314cce9404e",
+        "settled_at": "2026-10-11T22:52:53.090265+00:00",
+        "coverage_complete": false,
+        "records_processed": 1
+      }
+    ],
+    "mailboxManagers": 0,
+    "actorStillBanned": true
+  },
+  "failure": null,
+  "usersCreated": 0,
+  "accessGrantsCreated": 0,
+  "realProviderRequests": 0,
+  "productionChanged": false,
+  "limitations": [
+    "Synthetic source loader and DNS key only; no Google/Birchills provider access, real route ownership, enumeration, scheduling or coverage proof.",
+    "Production queue adapter/coordinator/decoder ran locally against real hosted SQL and Storage; this was not positive dispatch through the deployed platform-worker endpoint.",
+    "No owner or manager entitlement created; SQL/anonymous privacy checks are not signed-in browser playback.",
+    "Generated retained files are acceptance evidence, not an independent backup or restore rehearsal."
+  ],
+  "setupRehearsal": {
+    "state": "synthetic_setup_rehearsed_rolled_back",
+    "observedAt": "2026-10-11T22:52:11.060Z",
+    "setupSha256": "9fae3f9407c0605a23a63fe43e6e3b5123e7454c01d6a282c35442b805a6cd73",
+    "schemaFingerprint": "ae32949d7a76097a899e92d36654293e",
+    "preservedDatasets": 136,
+    "usersCreated": 0,
+    "accessGrantsCreated": 0,
+    "realProviderRequests": 0,
+    "productionChanged": false
+  },
+  "privateRoleDenial": {
+    "allowed": false,
+    "visible": 0,
+    "scope": "SQL role only; no signed-in session or token minted"
+  },
+  "sourceSha256": {
+    "scripts/verify/learn-voicemail-queue-hosted-import.mjs": "e8f5139b758b1b215efa00ca27caa2386687fa8a1338027f4417cb7951281151",
+    "supabase/functions/_shared/voicemail/queue.ts": "6bc853a52a71ef94a2fa370d0544ddff864e7ad527d5e4ffb3c2c60c1443bcbe",
+    "supabase/functions/_shared/voicemail/private-import.js": "23c8283f7467848e49dde08d12717624b1e6843724672b392294068796b20831",
+    "supabase/functions/_shared/voicemail/signed-source.js": "a357d261fe8536d156edd8f9de0e5c64e014bee464d66c510a5d188d900d29a5",
+    "supabase/functions/_shared/voicemail/decode-audio.js": "7a85b89bf1f803573f86c7702e2fda6c0de9b6df097eb4a6a20484cada1fc7a3",
+    "scripts/verify/voicemail-auth/edge-fixture.mjs": "701f856c305103a4b6749b89d1659ce9b0bb1afc2e24af60496475ce16f5d401",
+    "scripts/verify/voicemail-auth/package-lock.json": "6f4e42f155a819d72c38ee87b6f87462fc0dcdfb4b96b12d5d12f250eadb77d7"
+  },
+  "preservationExclusions": "Exact ten newly created/reserved row IDs plus two exact object paths only. No Auth, profile, role, membership or mailbox-manager exclusions."
+}

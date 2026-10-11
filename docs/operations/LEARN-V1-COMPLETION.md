@@ -7,6 +7,19 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**22:52 UTC — synthetic voicemail queue import verified against hosted TEST.**
+The production queue adapter/coordinator and real signature/MP3 decoder ran locally
+against hosted TEST SQL and private Storage. One generated voicemail published with
+one settlement receipt and two exact-hash files. Deliberately losing the publication
+reply recovered success; replay after retirement loaded no source again. A foreign
+tenant claim was rejected before loading, and anonymous/public/unentitled SQL-role
+access was denied. All 136 prior datasets were preserved using exact test-row/object
+exclusions. No login or owner/manager access was created; the fixture tenant is
+archived, its route off and email-account metadata disabled. **This does not prove
+real Gmail/Birchills capture, deployed-worker positive dispatch or signed-in playback.**
+Enumeration/coverage, real route authority, credentials and backup acceptance remain.
+[Evidence](evidence/learn-voicemail-queue-import-2026-10-11.json).
+
 **22:45 UTC — voicemail queue installed in hosted TEST; boundaries verified.**
 Release 074 passed rollback rehearsal and installed with all 134 prior datasets
 preserved. Platform worker v18 deployed with 136 datasets and other endpoints
@@ -1226,10 +1239,14 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   preflight now passes on 058 with no active grant or provider request, preserving
   the original account, 100-page checkpoint, duration and budget.
   [Latest readiness](evidence/learn-commusoft-continuation-playback-refresh-2026-10-11.json).
-- [ ] **Voicemail:** establish the actual supported message/audio contract and
-  mailbox scope, then implement and verify ingestion, private access, replay,
-  transcription and scheduling. Existing voicemail tables are not an ingester.
-  [Discovery evidence](LEARN-VOICEMAIL-DISCOVERY.md).
+- [ ] **Voicemail:** the signed Birchills-email/audio route has real read-only
+  evidence, and the importer/queue now has local plus hosted synthetic acceptance.
+  Still required: verified historical mailbox access, authorised real source capture,
+  enumeration and coverage, recurring scheduling, provider-transcript quality,
+  signed-in private playback, authorised LEARN context/card integration and independent
+  recovery of audio/original-message files. Do not publish private voicemail into
+  tenant-wide cards without preserving its owner/manager access rules.
+  [Discovery and acceptance evidence](LEARN-VOICEMAIL-DISCOVERY.md).
 - [ ] **Microsoft:** authorised tenant/mailbox setup and token lifecycle;
   persistent hosted release; real canonical/card acceptance; worker/controller registration,
   recurring folder discovery activation, expiry recovery and real-mailbox acceptance.

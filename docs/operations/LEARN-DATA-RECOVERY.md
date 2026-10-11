@@ -533,3 +533,16 @@ Before real voicemail activation, extend the approved source/audio inventory and
 backup/restore acceptance to these buckets and their intake/source/publication
 relationships. No customer voicemail files have been imported by this TEST release.
 See [hosted evidence](evidence/learn-voicemail-hosted-test-2026-10-11.json).
+
+
+### Published synthetic voicemail — TEST, 11 October 22:52 UTC
+
+A second synthetic audio/original-email pair (132,695 bytes) now has linked intake,
+source, mailbox, queue and private-message records in archived fixture
+`ce740001-aaaa-4000-8000-000000000001`. Both hosted file hashes match and all 136 prior
+datasets are preserved. The route and account are disabled; no login or mailbox
+access was granted. These two new files plus the earlier unlinked acceptance pair
+are TEST evidence only. Neither this publication nor the earlier byte check proves
+independent backup/restore of the voicemail buckets. Real voicemail activation still
+requires source/audio inventory, retention and a restore that preserves private
+access and these relationships. [Evidence](evidence/learn-voicemail-queue-import-2026-10-11.json).
