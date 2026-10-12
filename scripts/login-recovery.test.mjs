@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
+import { defaultParseSearch } from '@tanstack/react-router';
 
-function fixture({ search = {}, session = null, loading = false, request, update } = {}) {
-  const state = [], calls = [], navigations = [];
+function fixture({ search = {}, searchString, session = null, loading = false, request, update } = {}) {
+  const state = [], calls = [], navigations = [], effects = [];
   let cursor = 0, config;
   const auth = {
     session, loading, configured: true,
@@ -15,7 +16,7 @@ function fixture({ search = {}, session = null, loading = false, request, update
     signUpWithPassword: async () => ({ error: null }),
     signOut: async () => { throw Error('Recovery must not require a second sign-in'); },
   };
-  const route = { useSearch: () => search };
+  const route = { useSearch: () => config.validateSearch(searchString === undefined ? search : defaultParseSearch(searchString)) };
   const element = (type, props) => ({ type, props });
   const source = readFileSync(new URL('../src/routes/login.tsx', import.meta.url), 'utf8')
     .replace('import.meta.env.VITE_ENABLE_SIGNUP', '"false"');
@@ -25,7 +26,7 @@ function fixture({ search = {}, session = null, loading = false, request, update
   runInNewContext(compiled, {
     exports: {}, window: { location: { origin: 'https://test.example.invalid' } },
     require(name) {
-      if (name === 'react') return { useEffect() {}, useState(initial) {
+      if (name === 'react') return { useEffect(effect) { effects.push(effect); }, useState(initial) {
         const i = cursor++; if (!(i in state)) state[i] = initial;
         return [state[i], value => { state[i] = value; }];
       } };
@@ -41,7 +42,7 @@ function fixture({ search = {}, session = null, loading = false, request, update
     },
   });
   let tree;
-  function render() { cursor = 0; tree = config.component(); return tree; }
+  function render() { cursor = 0; tree = config.component(); effects.splice(0).forEach(effect => effect()); return tree; }
   function all(node = tree) {
     if (!node || typeof node !== 'object') return [];
     return [node, ...[node.props?.children].flat(Infinity).flatMap(child => all(child ?? null))];
@@ -56,6 +57,28 @@ function fixture({ search = {}, session = null, loading = false, request, update
     submitDisabled: () => all().find(n => n.props.type === 'submit').props.disabled,
   };
 }
+
+test('the exact emailed reset=1 URL stays on the password form after session recovery', async () => {
+  assert.equal(defaultParseSearch('?reset=1').reset, 1);
+  const f = fixture({ searchString: '?reset=1', loading: true });
+  assert.match(f.text(), /Choose a new password/);
+  f.auth.session = { user: { id: 'synthetic' } }; f.auth.loading = false; f.render();
+  assert.match(f.text(), /Choose a new password/);
+  assert.equal(f.navigations.length, 0);
+  f.input('password', 'synthetic-only-long'); f.input('password-confirm', 'synthetic-only-long'); await f.submit();
+  assert.equal(f.calls.length, 1); assert.equal(f.navigations.length, 1);
+  assert.equal(f.navigations[0].to, '/client');
+});
+test('boolean recovery links remain supported and ordinary sign-in still redirects', () => {
+  for (const searchString of ['?reset=true', '?reset=1&redirect=%2Fopenfolk']) {
+    const f = fixture({ searchString, session: {} });
+    assert.match(f.text(), /Choose a new password/); assert.equal(f.navigations.length, 0);
+  }
+  for (const searchString of ['', '?reset=0', '?reset=false', '?reset=unexpected']) {
+    const f = fixture({ searchString, session: {} });
+    assert.doesNotMatch(f.text(), /Choose a new password/); assert.equal(f.navigations[0].to, '/client');
+  }
+});
 
 test('failed reset request never claims delivery and can be retried', async () => {
   let fail = true;

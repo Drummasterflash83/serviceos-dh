@@ -83,3 +83,19 @@ Reversal, if requested: end only the new grant identified by this journal and
 `owner-approved:<run ID>`, then ban this exact TEST login through Auth Admin.
 Keep its profile, old grants, audit and all client data. Verify the grant no longer
 resolves before recording reversal complete. Do not delete the user or any tenant.
+
+## Password reset URL correction — 12 October
+
+Chris received the email, and Arc showed his authenticated TEST workspace as
+`chris@openfolk.ai`. The reset link skipped the password form because TanStack's
+actual search parser turns `reset=1` into numeric `1`, while our route validator
+accepted only boolean `true` or string `"1"`. The correction accepts numeric `1`.
+The regression harness now runs the real router search parser, route validation
+and redirect effects, including session hydration from the exact emailed URL.
+All eight recovery tests and full TypeScript checks pass locally.
+
+The existing hosted form was opened at `/login?reset=true&redirect=%2Fopenfolk`
+in the same authenticated Arc session; “Choose a new password” and both password
+fields were visibly confirmed. Chris must enter/submit his password and save it
+in 1Password. No second email was sent. Password-update completion and operator
+navigation remain pending; the numeric-link correction still needs TEST deployment.

@@ -21,7 +21,9 @@ function safeRedirect(value: unknown): string | undefined {
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string; reset?: boolean } => {
-    const reset = search.reset === true || search.reset === "1";
+    // TanStack parses JSON-like query values: the emailed `reset=1` becomes
+    // number 1 before validation. Keep the recovery session on its password form.
+    const reset = search.reset === true || search.reset === 1 || search.reset === "1";
     return {
       redirect: safeRedirect(search.redirect),
       reset: reset ? true : undefined,
