@@ -7,6 +7,33 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 18:36 UTC — TEST sign-in confirmed; operator landing fix prepared.**
+Chris is signed in on `test.openfolk.ai`; the Drummonds TEST controller and
+module controls are visible with the existing grant. Default login incorrectly
+sent an operator to the generic client landing page. The prepared fix waits for
+server-verified operator authority before choosing `/openfolk`, preserves explicit
+client destinations and password recovery, and offers retry if authority cannot
+be checked. Twelve recovery/routing tests and the app build pass. This change is
+not yet deployed. The operator report panel's intermittent read failure remains
+separate and unresolved.
+
+The refreshed customer-contact traversal finished all **1,550 parents**, following
+the earlier **871-site** traversal; retained source counts are 2,421 properties,
+12,611 jobs and 2,965 contacts. Commusoft TEST input was then paused through the
+signed-in controller and read back Off. Final preservation reported only
+`auth.users` changed during the user's sign-in; the other 193 protected datasets
+matched. The auth change still requires its explicit evidence review; do not
+claim full preservation acceptance or resume this runner by resetting its baseline.
+
+The former production frontend candidate is **rejected**: `target: staging`
+selected an existing custom Vercel environment with a different isolated backend.
+The release-sequence guard now rejects its evidence state. A normal preview
+without that target is READY, but its actual browser binding and production
+sign-in still need verification. Live still serves the correct production backend;
+no environment override, production deployment or production Auth setting changed.
+Earlier preview-ready statements below are superseded by this finding.
+
+
 **12 October, 18:19 UTC — permanent TEST address established.**
 `https://test.openfolk.ai` now serves the exact existing TEST deployment under
 Vercel authentication on all TEST URLs. HTTPS and four protected entry routes

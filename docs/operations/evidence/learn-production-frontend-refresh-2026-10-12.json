@@ -1,6 +1,6 @@
 {
   "observedAt": "2026-10-12T17:59:11.450Z",
-  "state": "protected_production_configured_preview_ready",
+  "state": "rejected_wrong_custom_environment",
   "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
   "id": "dpl_4Ri5YLNTdH4JPDMbKtXJYaxYSjUA",
   "url": "https://serviceos-yhfbegxeo-allkin.vercel.app",
@@ -34,8 +34,8 @@
     "existingProductionSession": false,
     "signedInAcceptance": false
   },
-  "configuration": "Preview inherits the same existing public environment entries as production; no values changed.",
-  "actualServedBackendBinding": "pending signed-in verification",
+  "configuration": "Correction: target staging selected the existing custom environment, which overrides the shared preview configuration.",
+  "actualServedBackendBinding": "Wrong custom staging backend eityajdtzvdbdqtoipia, confirmed on diagnostic rebuild ee42178; not a production candidate.",
   "productionBackendChanged": false,
   "productionPromotion": false,
   "limitations": [
@@ -43,5 +43,13 @@
     "New production SQL/runtime/configuration remain undeployed.",
     "Signed-in acceptance and served backend binding remain pending.",
     "The local refresh flow is verified with synthetic RPC responses; real-provider filtered acceptance is outstanding."
-  ]
+  ],
+  "supersededByPendingVerification": {
+    "id": "dpl_AcsZP3vENCoG49QYchwsewmB8Esw",
+    "url": "https://serviceos-lun1lcrjo-allkin.vercel.app",
+    "gitSha": "ee42178aa76fd1fa3c4a75d270ef351e9d58c953",
+    "state": "READY",
+    "target": null,
+    "browserBindingVerified": false
+  }
 }

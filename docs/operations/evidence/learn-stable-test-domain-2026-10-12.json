@@ -32,9 +32,16 @@
   "authSiteUrl": "https://test.openfolk.ai/login?reset=1",
   "previousAuthReturnAddressesPreserved": true,
   "browserLoginObserved": true,
-  "signedInOnNewDomain": false,
+  "signedInOnNewDomain": true,
   "passwordRecoveryEndToEndVerified": false,
   "dataOrGrantChanges": false,
   "dnsRecordChanged": false,
-  "futureBuildsMustReassignBothAliases": true
+  "futureBuildsMustReassignBothAliases": true,
+  "signedInVerification": {
+    "observedAt": "2026-10-12T18:34:19Z",
+    "route": "/openfolk/drummonds-commusoft-test",
+    "operatorControlsVisible": true,
+    "genericClientLandingNeedsRoutingFix": true,
+    "reportPanelHealthVerified": false
+  }
 }

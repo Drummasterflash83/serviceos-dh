@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { OpenFolkWordmark } from "@/components/OpenFolkWordmark";
 import { useEffect, useState, type FormEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
 import { friendlySignInError } from "@/lib/auth-errors";
 import { publicAuthTarget } from "@/lib/auth-public-target";
-import { supabaseConfig } from "@/lib/supabase";
+import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
+import { canShowOpenFolkAdmin } from "@/lib/client-workspace-nav";
 import "@/styles/openfolk-home.css";
 
 // Public signup is OFF unless explicitly enabled. Access is invite-only.
@@ -60,13 +62,35 @@ function LoginPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const dest = redirect ?? "/client";
+  const operatorEligible = canShowOpenFolkAdmin(session?.user?.email, true);
+  const needsAuthority = Boolean(session) && !redirect && operatorEligible && mode !== "reset";
+  const authority = useQuery({
+    queryKey: ["login-operator-authority", session?.user?.id],
+    enabled: needsAuthority,
+    retry: false,
+    staleTime: 0,
+    refetchOnMount: "always",
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient()
+        .rpc("current_user_is_openfolk_operator", {
+          required_permission: "platform.controlplane.admin",
+        })
+        .abortSignal(AbortSignal.timeout(15_000));
+      if (error) throw new Error("Workspace access could not be checked.");
+      return data === true;
+    },
+  });
+  const checkingAuthority = needsAuthority && (authority.isPending || authority.isFetching);
+  const authorityFailed = needsAuthority && authority.isError;
+  const dest = redirect ?? (canShowOpenFolkAdmin(session?.user?.email, authority.data) ? "/openfolk" : "/client");
 
   // A recovery link creates a session specifically so the password can be
   // changed here; do not auto-redirect that session away from the form.
   useEffect(() => {
-    if (!loading && session && mode !== "reset") navigate({ to: dest, replace: true });
-  }, [loading, session, mode, dest, navigate]);
+    if (!loading && session && mode !== "reset" && !checkingAuthority && !authorityFailed) {
+      navigate({ to: dest, replace: true });
+    }
+  }, [loading, session, mode, dest, navigate, checkingAuthority, authorityFailed]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -114,7 +138,7 @@ function LoginPage() {
         // The recovery link established this user's authenticated session.
         // Continue with that session after the confirmed update; a best-effort
         // sign-out must not race the login redirect or imply a failed update.
-        await navigate({ to: dest, replace: true });
+        setMode("signin");
         return;
       }
 
@@ -167,7 +191,14 @@ function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={onSubmit} className="space-y-4">
+          {checkingAuthority ? (
+            <p role="status">Opening your workspace…</p>
+          ) : authorityFailed ? (
+            <div className="space-y-4" role="alert">
+              <p>We couldn’t check your workspace access. Please try again.</p>
+              <Button onClick={() => void authority.refetch()}>Try again</Button>
+            </div>
+          ) : <form onSubmit={onSubmit} className="space-y-4">
             {mode !== "reset" && (
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -238,9 +269,9 @@ function LoginPage() {
                       ? "Update password"
                       : "Sign in"}
             </Button>
-          </form>
+          </form>}
 
-          {mode === "signin" && (
+          {mode === "signin" && !session && (
             <div className="mt-4 text-center text-xs text-muted-foreground">
               <button
                 type="button"

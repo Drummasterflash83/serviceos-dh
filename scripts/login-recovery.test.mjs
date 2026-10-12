@@ -5,7 +5,7 @@ import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import { defaultParseSearch } from '@tanstack/react-router';
 
-function fixture({ search = {}, searchString, session = null, loading = false, request, update } = {}) {
+function fixture({ search = {}, searchString, session = null, loading = false, request, update, authority = { data: false, isPending: false, isFetching: false, isError: false } } = {}) {
   const state = [], calls = [], navigations = [], effects = [];
   let cursor = 0, config;
   const auth = {
@@ -35,6 +35,10 @@ function fixture({ search = {}, searchString, session = null, loading = false, r
         createFileRoute: () => options => { config = options; return route; },
         useNavigate: () => async target => { navigations.push(target); },
       };
+      if (name === '@tanstack/react-query') return { useQuery: () => authority };
+      if (name === '@/lib/client-workspace-nav') return { canShowOpenFolkAdmin: (email, allowed) => allowed === true && email?.trim().toLowerCase() === 'chris@openfolk.ai' };
+      if (name === '@/lib/auth-public-target') return { publicAuthTarget: () => 'https://synthetic.supabase.co' };
+      if (name === '@/lib/supabase') return { supabaseConfig: { url: 'https://synthetic.supabase.co' } };
       if (name === '@/lib/auth') return { useAuth: () => auth };
       if (name === '@/lib/auth-errors') return { friendlySignInError: () => 'Safe sign-in error' };
       if (name.endsWith('.css')) return {};
@@ -122,4 +126,31 @@ test('confirmed password update clears password fields and enters the chosen wor
   f.input('password', 'synthetic-only-long'); f.input('password-confirm', 'synthetic-only-long'); await f.submit();
   assert.match(f.text(), /Password updated/); assert.doesNotMatch(f.text(), /synthetic-only-long/);
   assert.equal(f.calls.length, 1); assert.equal(f.navigations[0].to, '/openfolk');
+});
+
+
+test('operator sign-in waits for verified authority, then opens the controller', () => {
+  const authority = { data: undefined, isPending: true, isFetching: true, isError: false };
+  const f = fixture({ session: { user: { id: 'operator', email: 'chris@openfolk.ai' } }, authority });
+  assert.equal(f.navigations.length, 0);
+  Object.assign(authority, { data: true, isPending: false, isFetching: false }); f.render();
+  assert.equal(f.navigations[0].to, '/openfolk');
+});
+test('authority failure stays actionable without falsely opening an empty client workspace', () => {
+  const authority = { isPending: false, isFetching: false, isError: true };
+  const f = fixture({ session: { user: { id: 'operator', email: 'chris@openfolk.ai' } }, authority });
+  assert.equal(f.navigations.length, 0); assert.match(f.text(), /couldn’t check your workspace access/);
+});
+test('email alone never grants operator routing and explicit client destinations are preserved', () => {
+  const session = { user: { id: 'operator', email: 'chris@openfolk.ai' } };
+  assert.equal(fixture({ session }).navigations[0].to, '/client');
+  const authority = { data: true, isPending: false, isFetching: false, isError: false };
+  assert.equal(fixture({ session, authority, search: { redirect: '/client?section=learn' } }).navigations[0].to, '/client?section=learn');
+});
+test('operator recovery stays on password form until confirmed update, then resolves the controller', async () => {
+  const authority = { data: true, isPending: false, isFetching: false, isError: false };
+  const f = fixture({ session: { user: { id: 'operator', email: 'chris@openfolk.ai' } }, authority, search: { reset: true } });
+  assert.equal(f.navigations.length, 0);
+  f.input('password', 'synthetic-only-long'); f.input('password-confirm', 'synthetic-only-long'); await f.submit();
+  assert.equal(f.navigations[0].to, '/openfolk');
 });
