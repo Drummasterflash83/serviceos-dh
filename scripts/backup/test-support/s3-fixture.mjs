@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { Readable } from "node:stream";
 import { createHash } from "node:crypto";
-import { createRecordingS3 } from "../recording-backup-s3.mjs";
+import { createRecordingS3, createDatabaseS3 } from "../recording-backup-s3.mjs";
 import { recordingBackupTemplate } from "../recording-backup-template.mjs";
+import { databaseBackupBinding, databaseBackupTemplate } from "../database-backup-template.mjs";
 const tenant = "00000000-0000-0000-0000-000000000001";
 export const context = {
   tenantId: tenant,
@@ -13,10 +14,14 @@ export const context = {
   prefix: `tenants/${tenant}/`,
 };
 export const time = Date.parse("2026-10-11T12:00:00Z");
+const recordingFixtureContext = context;
 const sha = (b) => createHash("sha256").update(b).digest("hex");
 const xml = (root, body) =>
   `<${root} xmlns="http://s3.amazonaws.com/doc/2006-03-01/">${body}</${root}>`;
-export function fixture({ expectedPrincipalArn, audioBytes } = {}) {
+export function fixture({ expectedPrincipalArn, audioBytes, database = false } = {}) {
+  const context = database ? databaseBackupBinding : recordingFixtureContext;
+  const databasePrincipal =
+    "arn:aws:iam::235099643372:user/serviceos/database-backup/synthetic-writer";
   const calls = [],
     objects = new Map();
   let serial = 0,
@@ -28,7 +33,9 @@ export function fixture({ expectedPrincipalArn, audioBytes } = {}) {
   let failList = null,
     nullVersion = false,
     invalidPolicy = false;
-  const policy = recordingBackupTemplate().Resources.RecordingPolicy.Properties.PolicyDocument;
+  const policy = database
+    ? databaseBackupTemplate().Resources.DatabasePolicy.Properties.PolicyDocument
+    : recordingBackupTemplate().Resources.RecordingPolicy.Properties.PolicyDocument;
   const resolvedPolicy = JSON.parse(
     JSON.stringify(policy, (_k, v) => {
       if (v?.["Fn::GetAtt"]) return `arn:aws:s3:::${context.bucket}`;
@@ -67,7 +74,7 @@ export function fixture({ expectedPrincipalArn, audioBytes } = {}) {
       if (req.hostname === "sts.eu-west-2.amazonaws.com")
         return response(
           200,
-          `<GetCallerIdentityResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/"><GetCallerIdentityResult><Account>${account}</Account><Arn>arn:aws:iam::${account}:role/synthetic</Arn><UserId>synthetic</UserId></GetCallerIdentityResult></GetCallerIdentityResponse>`,
+          `<GetCallerIdentityResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/"><GetCallerIdentityResult><Account>${account}</Account><Arn>${database ? databasePrincipal : `arn:aws:iam::${account}:role/synthetic`}</Arn><UserId>synthetic</UserId></GetCallerIdentityResult></GetCallerIdentityResponse>`,
         );
       assert.equal(req.hostname, "s3.eu-west-2.amazonaws.com");
       assert.equal(req.headers["x-amz-expected-bucket-owner"], context.accountId);
@@ -172,12 +179,13 @@ export function fixture({ expectedPrincipalArn, audioBytes } = {}) {
       );
     },
   };
-  const transport = createRecordingS3(context, {
+  const options = {
     credentials: async () => ({ accessKeyId: "SYNTHETIC", secretAccessKey: "SYNTHETIC" }),
     requestHandler: handler,
-    expectedPrincipalArn,
+    expectedPrincipalArn: expectedPrincipalArn ?? (database ? databasePrincipal : undefined),
     now: () => clock,
-  });
+  };
+  const transport = database ? createDatabaseS3(options) : createRecordingS3(context, options);
   const bytes = audioBytes ?? Buffer.from("RIFF-synthetic-SDK-wire-recording");
   const entry = {
     tenantId: tenant,

@@ -5,7 +5,7 @@ import { STSClient, GetCallerIdentityCommand } from "@aws-sdk/client-sts";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { createHash } from "node:crypto";
 import { recordingContext, RecordingBackupError } from "./recording-backup-core.mjs";
-const MAX_BYTES = 256 * 1024 * 1024;
+import { databaseBackupBinding } from "./database-backup-template.mjs";
 const MAX_JSON = 32 * 1024 * 1024;
 const sha = (b) => createHash("sha256").update(b).digest("hex");
 const requireValue = (ok, code = "s3_response_unverified") => {
@@ -57,11 +57,24 @@ function policyVerified(policy, bucket) {
   );
 }
 /** requestHandler is only a test seam; production defaults to bounded HTTPS. */
-export function createRecordingS3(
-  binding,
+export function createRecordingS3(binding, options = {}) {
+  return createPrivateS3(recordingContext(binding), 256 * 1024 * 1024, options);
+}
+/** Fixed database destination; no arbitrary bucket or source-credential fallback. */
+export function createDatabaseS3(options = {}) {
+  requireValue(
+    /^arn:aws:iam::235099643372:user\/serviceos\/database-backup\/[A-Za-z0-9+=,.@_-]+$/.test(
+      options.expectedPrincipalArn ?? "",
+    ),
+    "s3_database_principal_required",
+  );
+  return createPrivateS3({ ...databaseBackupBinding }, 1024 ** 3, options);
+}
+function createPrivateS3(
+  context,
+  MAX_BYTES,
   { credentials, requestHandler, now = Date.now, expectedPrincipalArn, signal } = {},
 ) {
-  const context = recordingContext(binding);
   requireValue(typeof credentials === "function", "s3_credentials_provider_required");
   const abortAfter = (ms) =>
     signal ? AbortSignal.any([signal, AbortSignal.timeout(ms)]) : AbortSignal.timeout(ms);

@@ -5,10 +5,13 @@ already established recordings bucket. The native database and all 16 Vault
 secrets have passed a local restore. No independent database upload, database
 backup identity, key escrow or recurring database runner is established yet.
 
-The foundation template is prepared and locally validated. Packaging, encryption,
-transfer and independent restore still need executable verification before the
+The foundation template is prepared and locally validated. Real age encryption,
+strict package recovery and the AWS SDK transfer protocol pass a combined
+synthetic round trip. The existing real snapshot passes package admission only;
+it has not been encrypted or uploaded. The operator activation/secret-store
+integration and independent database restore still need completion before the
 combined activation request is presented. **This document is not an approval or
-evidence that a backup exists.**
+evidence that an independent database backup exists.**
 
 ## Exact proposed destination and contents
 
@@ -50,6 +53,40 @@ verified from its official distribution. Generate a dedicated X25519 recipient
 and private identity for database recovery. The writer receives the public
 recipient only; encryption does not require retaining the decryption key on a
 daily runner. S3 additionally requires AES256 server-side encryption.
+
+The implemented package adapter pins the Darwin arm64 age **v1.3.2** executable
+to SHA-256 `4012dfc2725883beafb710894af4f599b7a94f8c8e0f51f02cc96ab8df33915e`.
+The official release archive is
+[age-v1.3.2-darwin-arm64.tar.gz](https://github.com/FiloSottile/age/releases/download/v1.3.2/age-v1.3.2-darwin-arm64.tar.gz),
+18,106,798 bytes, SHA-256
+`e2020b073c44f692685a24d6abc378817eb81ffaaf49fd0531ef8565f767f2f5`.
+This was compared with the official GitHub release metadata over HTTPS; a Sigsum
+transparency proof has not been verified. The local test binaries are in
+`/private/tmp/serviceos-age-1.3.2/`; no system-wide installation was performed.
+Prepare the same verified distribution there before running these tests on
+another Mac. They fail rather than silently skip if it is absent. Other platform
+binaries require their own reviewed pins.
+
+`database_backup_package.py` copies six allowlisted snapshot files into private
+temporary storage, validates the export/native-restore/Vault evidence, builds an
+encrypted manifest with file hashes, and invokes the pinned age executable. It
+publishes a new ciphertext file without replacing an existing file. Recovery
+authenticates and hashes the ciphertext, permits only the exact flat file set,
+and verifies the manifest and snapshot evidence before returning a directory.
+Symlinks, traversal, duplicate/missing members, malformed or mixed snapshot
+evidence, wrong keys, truncation and changed bytes are rejected. Temporary
+plaintext staging exists only in private local directories and is removed on
+normal success/failure; a host crash still needs local cleanup inspection.
+
+`database-backup-transfer.mjs` verifies the local artifact, destination account
+and controls, exact retained object version and downloaded ciphertext hash before
+writing a completion receipt. A lost acknowledgement stops the run; a later retry
+verifies the existing object. The fixed database S3 factory reuses the established
+transport with a separate project binding and 1 GiB bound. Recording limits and
+scope stay at their existing values. The package descriptor and transfer receipt
+contain only project/snapshot bindings, public recipient, hashes and storage
+version metadata; the source manifest remains inside the encrypted package.
+Transfer success explicitly does not claim database restore acceptance.
 
 Save the private age identity and the existing production pgsodium/Vault root key
 in separate labelled fields in **Openfolk ServiceOS** in 1Password. Preserve the
@@ -146,8 +183,9 @@ copy the existing Supabase administrator token into a hosted runner.
 
 ## Activation and acceptance sequence
 
-1. Complete synthetic packaging/encryption/tamper tests and bounded transfer
-   verification, then present the exact combined storage/access/key-escrow/copy
+1. Synthetic packaging/encryption/tamper and bounded SDK transfer checks now pass.
+   Complete the operator runner, key-escrow integration and independent database
+   restore wiring, then present the exact combined storage/access/key-escrow/copy
    proposal for approval. Do not deploy from this document alone.
 2. Reconfirm account/region and empty-or-expected destination, show the resource
    change set, deploy the approved template, create only the two approved keys,
@@ -176,8 +214,14 @@ node scripts/backup/database-backup-template.mjs --write-template
 node --test scripts/backup/database-backup-template.test.mjs
 cfn-lint infrastructure/database-backup/foundation.cloudformation.json
 node scripts/verify/learn-database-backup-estimate.mjs
+python3 -B -m unittest discover -s scripts/backup -p test_database_backup_package.py -v
+node --test scripts/backup/*.test.mjs
 ```
 
-These checks make no authenticated AWS requests. `--refresh-public-prices` on the
+These checks make no real authenticated AWS requests. The transport tests use
+the official SDK with fake credentials and an in-memory request handler; this
+does not prove live IAM enforcement or S3 behaviour. `--refresh-public-prices` on the
 estimate reads public AWS pricing only. They do not prove deployed IAM policy
-behaviour, 1Password recovery, encryption correctness or S3 restore acceptance.
+behaviour, 1Password recovery or independent S3 database restore acceptance.
+The Python tests do use the real pinned age implementation for encryption,
+authentication, tamper rejection and byte-preserving local recovery.

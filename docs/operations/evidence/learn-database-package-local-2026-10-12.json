@@ -1,0 +1,63 @@
+{
+  "contract": "learn-database-package-local/1",
+  "observedAt": "2026-10-12T07:21:59.833470+00:00",
+  "scope": "Local synthetic encryption and SDK transport; real snapshot admission only",
+  "productionWrites": false,
+  "realAWSRequests": false,
+  "realDataUploaded": false,
+  "productionRecoveryKeyCreated": false,
+  "independentBackupAccepted": false,
+  "pythonTests": {
+    "passed": 9,
+    "failed": 0,
+    "usesRealPinnedAge": true
+  },
+  "javascriptBackupTests": {
+    "passed": 69,
+    "failed": 0,
+    "usesOfficialSdkWithSyntheticHandler": true
+  },
+  "verified": [
+    "encrypted synthetic snapshot round trip preserves all six files",
+    "wrong decryption key rejected",
+    "corruption and truncation rejected after ciphertext digest is recomputed",
+    "unsafe paths, symlinks, duplicate and missing archive entries rejected",
+    "incomplete or mixed snapshot evidence rejected",
+    "existing destinations preserved",
+    "lost upload acknowledgement creates no completion receipt",
+    "retry verifies stored version without replacing it",
+    "wrong account, region, policy, null version and corrupt transport stop completion",
+    "failed downloads remove their own partial artifact",
+    "existing recording transport regressions pass"
+  ],
+  "realSnapshotAdmission": {
+    "snapshotAt": "2026-10-12T06:37:26.256528+00:00",
+    "files": 6,
+    "bytes": 197958206,
+    "encrypted": false,
+    "uploaded": false
+  },
+  "age": {
+    "version": "v1.3.2",
+    "platform": "darwin-arm64",
+    "source": "https://github.com/FiloSottile/age/releases/tag/v1.3.2",
+    "archiveSha256": "e2020b073c44f692685a24d6abc378817eb81ffaaf49fd0531ef8565f767f2f5",
+    "executableSha256": "4012dfc2725883beafb710894af4f599b7a94f8c8e0f51f02cc96ab8df33915e",
+    "verification": "Official GitHub release digest over HTTPS; Sigsum proof not verified"
+  },
+  "sourceSha256": {
+    "scripts/backup/database_backup_package.py": "54c37cd57318d69e43322c26381cb33dee056294c5d570e79a032a7f56559b84",
+    "scripts/backup/test_database_backup_package.py": "5f99b3eb83b8c31d28002f7704829014901e8e01040c5ae44d6e49a6974944c6",
+    "scripts/backup/database-backup-transfer.mjs": "e802876868fc8d0b4238882868f6b4d2cb758d8f1dc5c4bafbfaaa7a1c275f9c",
+    "scripts/backup/database-backup-transfer.test.mjs": "30d221e0ccae27208a626a1b740eec14728a9ad009096b8231db1317aa8c0743",
+    "scripts/backup/recording-backup-s3.mjs": "69c51b94644870e03d5f9f920ebe632796e4c1738a50195e2a7d0affa818306e",
+    "scripts/backup/test-support/s3-fixture.mjs": "c45d9ce41fd098f626d7d20d395b8229603309dba053a0222d41eddc0e82d69f"
+  },
+  "remaining": [
+    "operator activation and secret-store integration",
+    "owner-approved new destination/access and real archive copy",
+    "independent database and Vault restore from S3 plus separately escrowed keys",
+    "dependable unattended daily backup and alert delivery",
+    "full application and file recovery"
+  ]
+}

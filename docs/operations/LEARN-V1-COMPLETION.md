@@ -7,15 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — encrypted database package and transfer protocol verified synthetically.**
+The pinned age implementation preserved every snapshot file through encryption,
+the actual AWS SDK with a synthetic request handler, download and decryption.
+Nine Python tests cover round trips, wrong keys, corruption/truncation, unsafe or
+incomplete archives, mixed snapshots, private permissions and binary pinning.
+All 69 JavaScript backup tests pass, including the existing recording transport.
+Uncertain uploads cannot create a completion receipt; retry reads the exact
+retained version. The six-file real snapshot (197,958,206 bytes) passes package
+admission only: no real recovery key, encryption, AWS upload or access change.
+Operator/secret-store integration, independent database restore and dependable
+daily operation remain incomplete. These are local synthetic checks, not live
+AWS/1Password or launch acceptance.
+[Package evidence](evidence/learn-database-package-local-2026-10-12.json) and
+[remaining activation steps](../../infrastructure/database-backup/README.md).
+
 **12 October — independent database backup infrastructure prepared locally.**
 A separate OpenFolk London project-scoped bucket and bounded Writer/Restore
 identities are specified in a generated CloudFormation template. Local policy
 checks and CloudFormation lint pass. The proposal specifies encryption before
 upload, separate 1Password key escrow, 30-day governance retention with no
 automatic deletion, measured size and freshly checked public pricing. No resource,
-credential, upload or schedule has been created. Executable package encryption,
-transfer and independent restore still need verification before the combined
-activation approval request. Dependable daily operation and full-service recovery
+credential, upload or schedule has been created. Package and transport checks are
+updated in the newer entry above; independent restore and the operator runner
+remain required before the combined activation approval request. Dependable daily operation and full-service recovery
 remain open. [Exact proposal](../../infrastructure/database-backup/README.md).
 
 **12 October — fresh complete database capture, isolated restore and Vault decryption passed.**
