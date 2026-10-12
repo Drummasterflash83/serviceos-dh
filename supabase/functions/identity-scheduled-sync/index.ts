@@ -12,6 +12,7 @@
 
 import { createSupabaseAdmin } from "../_shared/simwood.ts";
 import { enqueueJob } from "../_shared/platform_queue.ts";
+import { emptySchedulerCounts, scheduleAndCount } from "../_shared/email_scheduler_health.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -69,22 +70,37 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // ENQUEUE + return fast — the platform-worker claims and runs identity-resolve
   // asynchronously (job_key matches identity-resolve's own, so the worker's run
   // owns the single job row). No heavy work in this request.
-  let queued = 0;
-  let duplicates = 0;
+  const counts = emptySchedulerCounts();
   for (const tenantId of tenantIds) {
-    const r = await enqueueJob(supabase, {
-      tenantId,
-      jobType: "identity.resolve",
-      jobKey: `identity.resolve:${tenantId}`,
-      connectorId: "openfolk-core",
-      moduleId: "core.identity",
-      // Prime the drain at the handler's max batch; the worker then self-continues
-      // (chains the next batch after each full run) until the backlog clears.
-      payload: { limit: 50 },
-    });
-    if (r.duplicate) duplicates += 1;
-    else if (r.id) queued += 1;
+    await scheduleAndCount(
+      supabase,
+      {
+        tenantId,
+        jobType: "identity.resolve",
+        jobKey: `identity.resolve:${tenantId}`,
+        connectorId: "openfolk-core",
+        moduleId: "core.identity",
+        // Prime the drain at the handler's max batch; the worker then self-continues
+        // (chains the next batch after each full run) until the backlog clears.
+        payload: { limit: 50 },
+      },
+      counts,
+      enqueueJob,
+    );
   }
 
-  return json({ success: true, tenants: tenantIds.length, queued, duplicates });
+  if (counts.unconfirmed > 0) {
+    return fail(
+      "enqueue_unconfirmed",
+      "Some scheduling results are uncertain. Check queued jobs before retrying.",
+      503,
+    );
+  }
+  return json({
+    success: true,
+    tenants: tenantIds.length,
+    queued: counts.queued,
+    duplicates: counts.duplicates,
+    capture_paused: counts.paused,
+  });
 });

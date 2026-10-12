@@ -1,6 +1,6 @@
 {
   "version": "learn-production-rpc-bindings/1",
-  "sourceClosureSha256": "8ade602531ba85bba639cc5c30c8a9c964c9680274c54d970778f49aaa9712fb",
+  "sourceClosureSha256": "21eb8361f395bcd3d828e4890f78060cfc2c8aedaf4b007d5c66842e55c55893",
   "baselineSchemaSha256": "abfd39ace5f4ed02cec49ebbbe4deb8b3a6c37aac75892603139ec61a9b2d5e5",
   "sites": [
     {
@@ -403,5 +403,5 @@
     "Catalog presence and execute privileges are checked against the rehearsed archive candidate; named argument semantics and end-to-end execution need their separate journey evidence.",
     "The generic proxy passthroughs must be reviewed again if their production handler bindings change."
   ],
-  "catalogScope": "Actual isolated production archive catalog after packages 001\u2013018; operator Slack setup, real synthetic Vault, legacy bot journeys and original-source preservation passed."
+  "catalogScope": "Actual isolated production archive catalog after packages 001–018; operator Slack setup, real synthetic Vault, legacy bot journeys and original-source preservation passed."
 }

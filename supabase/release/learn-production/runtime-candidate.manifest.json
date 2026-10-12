@@ -99,7 +99,7 @@
       "manifestSha256": "f82a6f15cf862ffe948f85555334647df602702b41c4d1895707d046caed5268"
     }
   ],
-  "sourceClosureSha256": "8ade602531ba85bba639cc5c30c8a9c964c9680274c54d970778f49aaa9712fb",
+  "sourceClosureSha256": "21eb8361f395bcd3d828e4890f78060cfc2c8aedaf4b007d5c66842e55c55893",
   "files": [
     {
       "path": "_shared/audit.ts",
@@ -835,7 +835,7 @@
     },
     {
       "path": "customer-card-scheduled-sync/index.ts",
-      "sha256": "24ea41e32266175a272cb6b334f49f12fc46468b217ae5689f98fe5c3968007c"
+      "sha256": "ca65df45d34c55bfbb0687014fe5d6a29baf6952f3beb5f55039d36fb9a2e659"
     },
     {
       "path": "customer-card-sync/index.ts",
@@ -879,11 +879,11 @@
     },
     {
       "path": "identity-scheduled-sync/index.ts",
-      "sha256": "0a03d5c6a0e881da0f46f9294a4beab6b99cf7409d93a41b31ebc223f46b072b"
+      "sha256": "2651cc9d9854179631ece6c2d7490119aec707e889f38db6a7a82987473719db"
     },
     {
       "path": "interactions-scheduled-sync/index.ts",
-      "sha256": "8553674892e1dd94d58751833be513d6ff812618fd3ddd010553b12e5049ac15"
+      "sha256": "1c240698ebbbab8cbe5886bd5c1b1790985119a6b13343a18e4307dd6e527239"
     },
     {
       "path": "interactions-sync/index.ts",
@@ -959,7 +959,7 @@
     },
     {
       "path": "phone-processing-scheduled-sync/index.ts",
-      "sha256": "f1782149866e62e2b3c4f178d30e1cfd3843636d2607da2645d024b9da63b978"
+      "sha256": "e9665f0e45c8dab59e32e0d8b14203a31cd9a11cf486661ded150b7d383a24cb"
     },
     {
       "path": "phone-scheduled-sync/index.ts",
@@ -1012,8 +1012,9 @@
     {
       "name": "customer-card-scheduled-sync",
       "verifyJwt": false,
-      "sourceClosureSha256": "258574f8e08ecc1ece0787e614cc3689266b59b4a5d99b3f2e299a132f8779a3",
+      "sourceClosureSha256": "787eded50e68c27bcdd3442f2c1a90263b8aea63bd788db7353f40864c3edf0c",
       "sourceFiles": [
+        "_shared/email_scheduler_health.ts",
         "_shared/learn_capture_control.ts",
         "_shared/platform_queue.ts",
         "_shared/simwood.ts",
@@ -1396,8 +1397,9 @@
     {
       "name": "identity-scheduled-sync",
       "verifyJwt": false,
-      "sourceClosureSha256": "c031c4087b1071a9c13f40fd5c745d422f581d8d81c8539473a2ab5d032c684b",
+      "sourceClosureSha256": "522cb518b79076dd8074a2a16a358bd75ed0bbc4fd405b2a6a4d5b24aa19d0e4",
       "sourceFiles": [
+        "_shared/email_scheduler_health.ts",
         "_shared/learn_capture_control.ts",
         "_shared/platform_queue.ts",
         "_shared/simwood.ts",
@@ -1431,8 +1433,9 @@
     {
       "name": "interactions-scheduled-sync",
       "verifyJwt": false,
-      "sourceClosureSha256": "e57b2be5979ce74736bd34051ff2cd3bc3280e9c3854918ad95923498d69363d",
+      "sourceClosureSha256": "6894f38536300068322196b8e6524051a9e6ad9d23e2fa0b15db6a7bc6148c62",
       "sourceFiles": [
+        "_shared/email_scheduler_health.ts",
         "_shared/learn_capture_control.ts",
         "_shared/platform_queue.ts",
         "_shared/simwood.ts",
@@ -2099,8 +2102,9 @@
     {
       "name": "phone-processing-scheduled-sync",
       "verifyJwt": false,
-      "sourceClosureSha256": "4728b0c01ea79401f2cd271ec3a58785234aca1bc50b6b817ce1cbde42d6969b",
+      "sourceClosureSha256": "849c5a2ff971b5131b700bc4f9a69855654eba1eb1ff6a1fd7031abd8a18d953",
       "sourceFiles": [
+        "_shared/email_scheduler_health.ts",
         "_shared/learn_capture_control.ts",
         "_shared/platform_queue.ts",
         "_shared/simwood.ts",

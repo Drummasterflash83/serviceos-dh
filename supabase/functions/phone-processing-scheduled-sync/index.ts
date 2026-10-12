@@ -14,6 +14,7 @@
 
 import { createSupabaseAdmin } from "../_shared/simwood.ts";
 import { enqueueJob } from "../_shared/platform_queue.ts";
+import { emptySchedulerCounts, scheduleAndCount } from "../_shared/email_scheduler_health.ts";
 
 const CONNECTOR_ID = "simwood";
 
@@ -75,19 +76,34 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // ENQUEUE + return fast — the platform-worker claims and runs phone-process-pending
   // asynchronously (matching job_key ⇒ the worker's run owns the single job row).
   // Heavy download/transcribe/analyse no longer happens in this cron request.
-  let queued = 0;
-  let duplicates = 0;
+  const counts = emptySchedulerCounts();
   for (const tenantId of tenantIds) {
-    const r = await enqueueJob(supabase, {
-      tenantId,
-      jobType: "phone.process_pending",
-      jobKey: `phone.process_pending:${tenantId}`,
-      connectorId: CONNECTOR_ID,
-      moduleId: "communications.phone",
-    });
-    if (r.duplicate) duplicates += 1;
-    else if (r.id) queued += 1;
+    await scheduleAndCount(
+      supabase,
+      {
+        tenantId,
+        jobType: "phone.process_pending",
+        jobKey: `phone.process_pending:${tenantId}`,
+        connectorId: CONNECTOR_ID,
+        moduleId: "communications.phone",
+      },
+      counts,
+      enqueueJob,
+    );
   }
 
-  return json({ success: true, tenants: tenantIds.length, queued, duplicates });
+  if (counts.unconfirmed > 0) {
+    return fail(
+      "enqueue_unconfirmed",
+      "Some scheduling results are uncertain. Check queued jobs before retrying.",
+      503,
+    );
+  }
+  return json({
+    success: true,
+    tenants: tenantIds.length,
+    queued: counts.queued,
+    duplicates: counts.duplicates,
+    capture_paused: counts.paused,
+  });
 });

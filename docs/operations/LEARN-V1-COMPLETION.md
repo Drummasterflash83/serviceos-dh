@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — four scheduler failure paths corrected; exact runtime checks passed.**
+
+### Working and verified
+
+- Compiled-runtime checks reproduced false success in customer-card, identity,
+  interaction and phone-processing schedulers when queue writes were uncertain,
+  duplicate lookup returned no job, or only some tenants queued successfully.
+  Twelve of 28 cases failed before the fix; all 28 now pass against the rebuilt
+  artifacts. Auth rejection, tenant binding and successful deduplication still pass.
+- All 37 freshly compiled endpoints reject missing authorization. The reviewed
+  19 dynamic call sites still resolve to 51 available database functions. The
+  nineteen SQL packages are unchanged; the 70-step plan pins the revised runtime.
+- Twenty-eight release adapter/journal tests and three candidate tests pass.
+  Fresh read-only configuration preflight matches all 88 production definitions
+  against this candidate. No production configuration or release was applied.
+
+### Needs finishing
+
+- These isolated checks cover four scheduler HTTP contracts with synthetic data,
+  not the hosted JWT gateway, remaining callers or real provider processing.
+- Complete integrated release gates, positive hosted callers, production sign-in,
+  deployment and initial live observation. Full input coverage, cards/scoring and
+  operational requirements below remain open.
+
+### Blocked externally
+
+- Saved live-login lookup still awaits owner Touch ID in 1Password. No credential
+  was read by the timed-out attempt; independent release work continues.
+
+[Exact compiled scheduler evidence](evidence/learn-production-scheduler-callers-2026-10-12.json).
+
+## Earlier checkpoints
+
 **12 October — production configuration execution prepared; live remains unchanged.**
 
 ### Working and verified
@@ -37,8 +70,6 @@ override a later release observation. No requirement is silently deferred.
   The request for owner authentication is pending; independent work continues.
 
 [Configuration execution evidence](evidence/learn-production-configuration-2026-10-12.json).
-
-## Earlier checkpoints
 
 **12 October, 21:14 UTC — approved historical Slack TEST sample and duplicate check passed.**
 

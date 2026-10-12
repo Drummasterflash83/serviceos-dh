@@ -1,0 +1,260 @@
+{
+  "version": "learn-production-scheduler-callers/1",
+  "state": "scheduler_callers_verified_offline",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "candidateManifestSha256": "eb7175becf0dd851b9aa5f557f64ef4f142f2580df189472d09fc7565b88a86a",
+  "sourceClosureSha256": "21eb8361f395bcd3d828e4890f78060cfc2c8aedaf4b007d5c66842e55c55893",
+  "bundleReportSha256": "e47dc53e69d5e5453ccab1205730e0a72b505c1448f7f6d800f648dea7194abd",
+  "bootReportSha256": "32ef4711bb80dc003549e662add81a8848ba1a02cf18841204937ffa928d39ae",
+  "runtimeWireReportSha256": "0771bb1226b22f6f47f5604596bb6c0d0af52fd3f6e880d78981ef89df5fb410",
+  "callerReportSha256": "497d5699433bcfe2d0fa68954b512295dfd0712029f4043aec0f8e0ce90af304",
+  "reproduction": {
+    "reportSha256": "de0875e04ac326aacf1a6a00fcd78517cb891b4e9e086e3360e418aa39d56350",
+    "checks": 28,
+    "passed": 16,
+    "failed": 12
+  },
+  "checks": [
+    {
+      "endpoint": "customer-card-scheduled-sync",
+      "scenario": "wrong_auth",
+      "passed": true,
+      "status": 403,
+      "expectedStatus": 403
+    },
+    {
+      "endpoint": "customer-card-scheduled-sync",
+      "scenario": "empty",
+      "passed": true,
+      "status": 200,
+      "expectedStatus": 200
+    },
+    {
+      "endpoint": "customer-card-scheduled-sync",
+      "scenario": "queued",
+      "passed": true,
+      "status": 200,
+      "expectedStatus": 200
+    },
+    {
+      "endpoint": "customer-card-scheduled-sync",
+      "scenario": "duplicate",
+      "passed": true,
+      "status": 200,
+      "expectedStatus": 200
+    },
+    {
+      "endpoint": "customer-card-scheduled-sync",
+      "scenario": "enqueue_failure",
+      "passed": true,
+      "status": 503,
+      "expectedStatus": 503
+    },
+    {
+      "endpoint": "customer-card-scheduled-sync",
+      "scenario": "duplicate_lookup_failure",
+      "passed": true,
+      "status": 503,
+      "expectedStatus": 503
+    },
+    {
+      "endpoint": "customer-card-scheduled-sync",
+      "scenario": "partial_failure",
+      "passed": true,
+      "status": 503,
+      "expectedStatus": 503
+    },
+    {
+      "endpoint": "identity-scheduled-sync",
+      "scenario": "wrong_auth",
+      "passed": true,
+      "status": 403,
+      "expectedStatus": 403
+    },
+    {
+      "endpoint": "identity-scheduled-sync",
+      "scenario": "empty",
+      "passed": true,
+      "status": 200,
+      "expectedStatus": 200
+    },
+    {
+      "endpoint": "identity-scheduled-sync",
+      "scenario": "queued",
+      "passed": true,
+      "status": 200,
+      "expectedStatus": 200
+    },
+    {
+      "endpoint": "identity-scheduled-sync",
+      "scenario": "duplicate",
+      "passed": true,
+      "status": 200,
+      "expectedStatus": 200
+    },
+    {
+      "endpoint": "identity-scheduled-sync",
+      "scenario": "enqueue_failure",
+      "passed": true,
+      "status": 503,
+      "expectedStatus": 503
+    },
+    {
+      "endpoint": "identity-scheduled-sync",
+      "scenario": "duplicate_lookup_failure",
+      "passed": true,
+      "status": 503,
+      "expectedStatus": 503
+    },
+    {
+      "endpoint": "identity-scheduled-sync",
+      "scenario": "partial_failure",
+      "passed": true,
+      "status": 503,
+      "expectedStatus": 503
+    },
+    {
+      "endpoint": "interactions-scheduled-sync",
+      "scenario": "wrong_auth",
+      "passed": true,
+      "status": 403,
+      "expectedStatus": 403
+    },
+    {
+      "endpoint": "interactions-scheduled-sync",
+      "scenario": "empty",
+      "passed": true,
+      "status": 200,
+      "expectedStatus": 200
+    },
+    {
+      "endpoint": "interactions-scheduled-sync",
+      "scenario": "queued",
+      "passed": true,
+      "status": 200,
+      "expectedStatus": 200
+    },
+    {
+      "endpoint": "interactions-scheduled-sync",
+      "scenario": "duplicate",
+      "passed": true,
+      "status": 200,
+      "expectedStatus": 200
+    },
+    {
+      "endpoint": "interactions-scheduled-sync",
+      "scenario": "enqueue_failure",
+      "passed": true,
+      "status": 503,
+      "expectedStatus": 503
+    },
+    {
+      "endpoint": "interactions-scheduled-sync",
+      "scenario": "duplicate_lookup_failure",
+      "passed": true,
+      "status": 503,
+      "expectedStatus": 503
+    },
+    {
+      "endpoint": "interactions-scheduled-sync",
+      "scenario": "partial_failure",
+      "passed": true,
+      "status": 503,
+      "expectedStatus": 503
+    },
+    {
+      "endpoint": "phone-processing-scheduled-sync",
+      "scenario": "wrong_auth",
+      "passed": true,
+      "status": 403,
+      "expectedStatus": 403
+    },
+    {
+      "endpoint": "phone-processing-scheduled-sync",
+      "scenario": "empty",
+      "passed": true,
+      "status": 200,
+      "expectedStatus": 200
+    },
+    {
+      "endpoint": "phone-processing-scheduled-sync",
+      "scenario": "queued",
+      "passed": true,
+      "status": 200,
+      "expectedStatus": 200
+    },
+    {
+      "endpoint": "phone-processing-scheduled-sync",
+      "scenario": "duplicate",
+      "passed": true,
+      "status": 200,
+      "expectedStatus": 200
+    },
+    {
+      "endpoint": "phone-processing-scheduled-sync",
+      "scenario": "enqueue_failure",
+      "passed": true,
+      "status": 503,
+      "expectedStatus": 503
+    },
+    {
+      "endpoint": "phone-processing-scheduled-sync",
+      "scenario": "duplicate_lookup_failure",
+      "passed": true,
+      "status": 503,
+      "expectedStatus": 503
+    },
+    {
+      "endpoint": "phone-processing-scheduled-sync",
+      "scenario": "partial_failure",
+      "passed": true,
+      "status": 503,
+      "expectedStatus": 503
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "customer-card-scheduled-sync",
+      "sha256": "daf9197d56d839fa44a79649230c69dd55f3963e6f5e841b755c715cf4fa818d"
+    },
+    {
+      "name": "identity-scheduled-sync",
+      "sha256": "cafb5919c9e0682e9b1b11f62fc69adb15a6d980e10d82bcfa9676c1024d6d14"
+    },
+    {
+      "name": "interactions-scheduled-sync",
+      "sha256": "0498c86e6e330d0fcc97ff74460689faaeb2a37d6fa5d6a7e2f8720305d5015f"
+    },
+    {
+      "name": "phone-processing-scheduled-sync",
+      "sha256": "e3eb8594ce3d2301362ba874d3071515fb31937620cbb7873a35123693da420e"
+    }
+  ],
+  "network": "none",
+  "customerData": false,
+  "realCredentials": false,
+  "containerRemoved": true,
+  "bootChecks": 37,
+  "dynamicRpcReview": {
+    "sites": 19,
+    "uniqueTargets": 51,
+    "failures": 0
+  },
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-scheduler-callers.mjs",
+      "sha256": "a2abbc1d7ae2b16b07256465b7bc205c19156ce765d5881b07b93561dc101791"
+    },
+    {
+      "path": "scripts/verify/learn-production-scheduler-caller.fixture.ts",
+      "sha256": "60b5bf47bfa5372a1f49bd4d3feebebb52745e1dd2b7a97a2dc6e6e9790706f7"
+    }
+  ],
+  "knownLimitations": [
+    "Exact executable HTTP auth/enqueue checks against a synthetic loopback database. No Supabase gateway or real database/provider execution.",
+    "Four production schedulers only; signed-in users and remaining scheduled/worker callers require separate acceptance.",
+    "No production release executed. Hosted gateway, signed-in frontend and complete real-provider source-to-card acceptance remain open."
+  ]
+}

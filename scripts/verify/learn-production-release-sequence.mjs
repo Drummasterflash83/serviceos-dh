@@ -11,7 +11,7 @@ const read = p => JSON.parse(readFileSync(p));
 const base = 'supabase/release/learn-production/';
 const runtimeBytes = readFileSync(base+'runtime-candidate.manifest.json');
 const candidate = JSON.parse(runtimeBytes), candidateSha256 = sha(runtimeBytes);
-const wireRoot = '.verification-results/production-runtime-wire-20261012-slack-recurring';
+const wireRoot = '.verification-results/production-runtime-wire-20261012-scheduler-callers';
 const wire = read(join(wireRoot,'report.json'));
 const backupRoot = '.verification-results/production-runtime-compiled-backup-20261012';
 const backup = read(join(backupRoot,'report.json'));
@@ -23,11 +23,19 @@ if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!=
     backup.projectRef!==candidate.projectRef || backup.state!=='compiled_artifacts_retained_with_unchanged_deployment_metadata')
   throw Error('Exact production artifact set required');
 const verified = (path,expected) => { if(sha(readFileSync(path))!==expected) throw Error('Pinned file changed: '+path); };
-const binding=read('docs/operations/evidence/learn-production-slack-recurring-2026-10-12.json');
-const originalRoot='.verification-results/production-runtime-bundle-20261012-slack-recurring';
+const binding=read('docs/operations/evidence/learn-production-scheduler-callers-2026-10-12.json');
+const originalRoot='.verification-results/production-runtime-bundle-20261012-scheduler-callers';
 verified(join(originalRoot,'report.json'),binding.bundleReportSha256);
-verified(join(originalRoot,'boot-carried-forward/report.json'),binding.bootReportSha256);
-const bundled=read(join(originalRoot,'report.json')), boot=read(join(originalRoot,'boot-carried-forward/report.json'));
+verified(join(originalRoot,'boot-eszip/report.json'),binding.bootReportSha256);
+const bundled=read(join(originalRoot,'report.json')), boot=read(join(originalRoot,'boot-eszip/report.json'));
+const callerPath='.verification-results/production-scheduler-callers-after-20261012/report.json';
+verified(callerPath,binding.callerReportSha256);
+const caller=read(callerPath);
+for(const source of binding.sources) verified(source.path,source.sha256);
+if(caller.manifestSha256!==candidateSha256 || caller.state!=='scheduler_callers_verified_offline' ||
+   !caller.containerRemoved || caller.checks.length!==28 || caller.checks.some(c=>!c.passed) ||
+   caller.artifacts.some(a=>a.sha256!==bundled.endpoints.find(e=>e.name===a.name)?.eszipSha256))
+  throw Error('Exact scheduler caller acceptance differs');
 if(binding.candidateManifestSha256!==candidateSha256 || bundled.manifestSha256!==candidateSha256 ||
    boot.manifestSha256!==candidateSha256 || bundled.sourceClosureSha256!==candidate.sourceClosureSha256 ||
    boot.sourceClosureSha256!==candidate.sourceClosureSha256 ||

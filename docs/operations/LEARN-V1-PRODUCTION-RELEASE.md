@@ -14,9 +14,11 @@ and worker v11 are installed. The production candidate includes packages 001–0
 operator setup and scoped cross-client approval attribution. Package 019 adds
 durable recurring attribution and prevents paused reply jobs consuming attempts.
 All nineteen packages preserve the retained archive and pass the Slack operator /
-legacy bot journeys. Runtime executable bytes are unchanged from package 018;
-boot evidence is carried forward, not a new execution. Twenty-three local release
-adapter/journal checks pass.
+legacy bot journeys. Four schedulers now report uncertain enqueue results as HTTP 503 instead of
+false success. All 37 revised artifacts have fresh compile and missing-auth boot
+evidence; 28 exact-artifact scheduler cases pass against an isolated synthetic
+database. Twenty-eight local release adapter/journal checks pass. Hosted gateway
+and real positive caller acceptance remain separate unfinished gates.
 
 The current protected production preview is Git `04f7f8e`, deployment
 `dpl_tZasPdqxDNGDk8JGQ4v7WzsTy5Ea`, at
@@ -24,7 +26,8 @@ The current protected production preview is Git `04f7f8e`, deployment
 Its rendered auth target is verified as production; sign-in acceptance is still
 pending. The preview is protected and the live deployment remains
 `dpl_DXueDsax146gdtyFoniXRaW3dzMM`. No production backend or alias was changed.
-[Current package/runtime evidence](evidence/learn-production-slack-recurring-2026-10-12.json)
+[Database rehearsal evidence](evidence/learn-production-slack-recurring-2026-10-12.json),
+[current runtime evidence](evidence/learn-production-scheduler-callers-2026-10-12.json)
 and [frontend evidence](evidence/learn-production-frontend-slack-setup-2026-10-12.json)
 supersede older candidate pins below. Real-provider completeness, positive caller
 acceptance, current recovery/drain gates and live activation remain open.
@@ -50,7 +53,7 @@ checks, even when management metadata matches.
 
 Twenty-eight local adapter/journal tests pass, including a composed setup → 37
 uploads → publication → activation simulation. The runtime loader also now uses
-the current recurring-release wire directory. Fresh production reads found all 88
+the current scheduler-caller release wire directory. Fresh production reads found all 88
 existing runtime definitions unchanged, zero release receipts and the original
 nine target schedules intact among eighteen schedules. No configuration, schedule,
 database, runtime or frontend write was performed. The configuration adapter's

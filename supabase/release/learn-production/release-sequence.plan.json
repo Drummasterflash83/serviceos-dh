@@ -1,17 +1,17 @@
 {
   "version": "learn-production-release-sequence/1",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "candidateSha256": "5aa869b0c96cb8123aee02eab5db895ea72bb29a35ac8a7bc57c2e04237a21b7",
+  "candidateSha256": "eb7175becf0dd851b9aa5f557f64ef4f142f2580df189472d09fc7565b88a86a",
   "steps": [
     {
       "id": "fresh-release-preflight",
       "kind": "check",
-      "pinSha256": "3954d896230011466c8fb57c06decca91b6f200362cb43ea26265cb52f64fe37"
+      "pinSha256": "4a80d3b2848d3bb6689f43f351c986c9c125b01d143086c837d853d8c0369d71"
     },
     {
       "id": "pause-existing-schedules",
       "kind": "schedule",
-      "pinSha256": "d10a96232bfadedc6ede1a1e6a47c7b4785a2c6cc789d0e7e334988ad98329e5"
+      "pinSha256": "26a6a3f28a31bc720fc8e20505a25afc653a178e3fdb9c9edbaf7c45807603c7"
     },
     {
       "id": "verify-in-flight-drain",
@@ -126,7 +126,7 @@
     {
       "id": "runtime-customer-card-scheduled-sync",
       "kind": "runtime",
-      "pinSha256": "cb98c8dbf3ac2927d61beb7318ae3bd6ad11099439f74feff2d8c04e72cd2768"
+      "pinSha256": "a303464b60e701dd97d63de223e63713c812a49e16183c3613fa683eff34c4a2"
     },
     {
       "id": "runtime-customer-card-sync",
@@ -176,12 +176,12 @@
     {
       "id": "runtime-identity-scheduled-sync",
       "kind": "runtime",
-      "pinSha256": "655b5332bb7f00e7c8a9f4ba92c08852393a528980de5814a7e26974fcb3f2bf"
+      "pinSha256": "4944d21f35dbadb553e5110b2f681aa3101472b51fba6c12479c9b030596a379"
     },
     {
       "id": "runtime-interactions-scheduled-sync",
       "kind": "runtime",
-      "pinSha256": "3ff51f5dec32e770cdb9235fc5766f177539477112a54e45cdcc343fafe86653"
+      "pinSha256": "8a1322089d91432177852baef8c3e552c3b4a4da260a4e65e2f3e1b17836201c"
     },
     {
       "id": "runtime-interactions-sync",
@@ -261,7 +261,7 @@
     {
       "id": "runtime-phone-processing-scheduled-sync",
       "kind": "runtime",
-      "pinSha256": "013b7875d2092c04523d8b2662c0c4a5c5a9bd94b50f47bcca8a1c9531c84d17"
+      "pinSha256": "06db0f90bf030be217b4e433880f277c11a663a7d47759dea186c66a52c0f3aa"
     },
     {
       "id": "runtime-phone-scheduled-sync",
@@ -311,7 +311,7 @@
     {
       "id": "publish-runtime-metadata",
       "kind": "runtime",
-      "pinSha256": "a8034f99829ccff5c6daa7683c6937a7977190cb3170ccde89187a922d0df84a"
+      "pinSha256": "b8aaee85773f07129d2a380108d8e409c4ae6ea4ebb1531b3ce28d37f34e74b0"
     },
     {
       "id": "runtime-publication-readback",
@@ -341,7 +341,7 @@
     {
       "id": "restore-existing-schedules",
       "kind": "schedule",
-      "pinSha256": "4b61a4b43d7362236040af0999aa59bc4284939e516bab238ccfc7793c28ad6e"
+      "pinSha256": "8fb241773288968ef83d05509af94eede5f1d1ee6f0cc3b4acd98ec367caf1eb"
     },
     {
       "id": "observe-initial-live-capture",
