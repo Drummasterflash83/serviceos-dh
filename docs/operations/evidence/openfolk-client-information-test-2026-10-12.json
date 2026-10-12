@@ -40,10 +40,91 @@
     "providerCalls": 0,
     "productionChanged": false
   },
-  "browserAcceptance": false,
+  "browserAcceptance": {
+    "observedAt": "2026-10-12T10:38:48.248Z",
+    "operatorIdentityVerified": true,
+    "realRetainedSourcePages": 2,
+    "sourceProvenanceDetailExpanded": true,
+    "secondClientEmptyResultVerified": true,
+    "clientSwitchClearsPrivateRows": true,
+    "audit": {
+      "observedAt": "2026-10-12T10:38:48.248Z",
+      "reads": 3,
+      "clients": 2,
+      "exact_actor_and_collection": true,
+      "page_sizes": [
+        25,
+        25,
+        0
+      ],
+      "selected_client_and_reason": true
+    }
+  },
   "limitations": [
     "Initial fixed collections and bounded text fields only; provider input coverage is separate.",
     "Operator recording playback, full performance evidence, complete source detail and cross-linked card journeys remain unfinished.",
     "No production promotion or existing client RLS changes."
-  ]
+  ],
+  "deployment": {
+    "observedAt": "2026-10-12T10:36:27.317Z",
+    "id": "dpl_FT9fnkkMoVJ9LsK8euHF1ey346iN",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "url": "serviceos-learn-test-484vmv6yv-allkin.vercel.app",
+    "gitSha": "c323e911d586726ecc819597f8c31cf0bf2604c3",
+    "aliases": [
+      "serviceos-learn-test-allkin.vercel.app",
+      "serviceos-learn-test-git-codex-learn-v1-test-allkin.vercel.app"
+    ],
+    "errorCode": null
+  },
+  "stableAlias": {
+    "observedAt": "2026-10-12T10:37:03.428Z",
+    "alias": "serviceos-learn-test-allkin.vercel.app",
+    "deploymentId": "dpl_FT9fnkkMoVJ9LsK8euHF1ey346iN",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "immutableProtection": {
+    "observedAt": "2026-10-12T10:37:03.013Z",
+    "base": "https://serviceos-learn-test-484vmv6yv-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?reset=1",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/openfolk",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  }
 }

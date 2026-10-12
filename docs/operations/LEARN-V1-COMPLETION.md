@@ -7,6 +7,16 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 10:38 UTC — signed-in operator source browsing verified in TEST.**
+The new Client information screen is deployed at the stable protected TEST alias
+from `c323e91`. Chris's signed-in operator session loaded two pages of real
+Drummonds retained Commusoft inputs (25 each), expanded source provenance/details,
+and selected a second synthetic client with an empty result. Switching clients
+cleared previous records. Three audit entries matched the real actor, selected
+clients, reasons and page sizes. This is initial content-read acceptance, not
+full cards/scoring/audio or provider-coverage acceptance. No production changes.
+[Frontend, browser and audit evidence](evidence/openfolk-client-information-test-2026-10-12.json).
+
 **12 October, 10:34 UTC — audited client-information reader installed in TEST.**
 The initial fixed-collection operator RPC is installed after full-schema rollback
 rehearsal, preserving 194 datasets. Selected-client pagination, ordinary-client

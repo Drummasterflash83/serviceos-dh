@@ -67,16 +67,17 @@ hostnames, and no custom domain or automatic Git linkage was added.
 The stable staging entry is
 [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
 It points to immutable preview
-[serviceos-learn-test-jxwq3z1qz-allkin.vercel.app](https://serviceos-learn-test-jxwq3z1qz-allkin.vercel.app),
-built remotely from GitHub commit `e8d1690e0255bd0364c855f8e603f487f4b65e54`
-and observed READY at **10:23 UTC on 12 October**. This update fixes password-reset
-URL validation (`reset=1` is parsed as a number by the router). The stable alias,
-TEST backend binding and both hostnames' protection were verified. Eight recovery
-tests and full TypeScript checks passed. Chris completed his password update;
-Arc confirmed his operator directory and Drummonds TEST controller. The corrected
-numeric URL visibly rendered the password form. Full client-information access
-and the controller's failed open-report refresh remain unfinished.
-See [reset and signed-in evidence](operations/evidence/learn-password-reset-test-2026-10-12.json).
+[serviceos-learn-test-484vmv6yv-allkin.vercel.app](https://serviceos-learn-test-484vmv6yv-allkin.vercel.app),
+built remotely from GitHub commit `c323e911d586726ecc819597f8c31cf0bf2604c3`
+and observed READY at **10:36 UTC on 12 October**. This adds the audited operator
+Client information screen and retains the password-reset URL fix. The stable
+alias, TEST backend binding and both hostnames' protection were verified.
+Full TypeScript and 18 focused reader/navigation tests pass. Signed-in browser
+acceptance at 10:38 UTC loaded two real Drummonds source pages, inspected source
+detail, and switched to a second client with no stale records; three read audits
+matched actor/client/reason. Playback, scoring and full card journeys remain open.
+See [client-information evidence](operations/evidence/openfolk-client-information-test-2026-10-12.json)
+and [earlier reset evidence](operations/evidence/learn-password-reset-test-2026-10-12.json).
 
 The deployment retains the prior Connections status distinctions and navigation
 to LEARN input controls, snapshot freshness, projection/identity review, queued

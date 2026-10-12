@@ -48,8 +48,11 @@ Full-schema TEST rehearsal passed with two synthetic companies, pagination,
 foreign record rejection, denied ordinary/view-only/revoked/unsigned/machine
 access, View-As denial, failed-audit denial and source redaction. All fixtures
 rolled back. Installed at 10:34 UTC on 12 October with all 194 datasets preserved,
-including Auth users and identities. No new user or grant was retained. Frontend
-and actual signed-in record browsing remain to verify.
+including Auth users and identities. No new user or grant was retained. The matching frontend was deployed and its first signed-in record browsing
+verified at 10:38 UTC: two real Drummonds source pages, expanded detail, an empty
+second client and cleared state on switching. All three read audits matched the
+real actor, client and reason. Other collections and full source-to-card journeys
+still need representative signed-in acceptance.
 [Initial reader evidence](evidence/openfolk-client-information-test-2026-10-12.json).
 
 The failed care-report refresh was traced to missing TEST `care_health_snapshot`
