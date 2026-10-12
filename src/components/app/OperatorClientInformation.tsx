@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { OperatorLearningEvidence } from "./OperatorLearningEvidence";
 import { OperatorSlackWorkContext } from "./OperatorSlackWorkContext";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import { PhoneAudioViewer } from "@/components/client-portal/learn/LearnPhoneAudio";
@@ -167,6 +168,13 @@ export function OperatorClientInformation({
             {visible.rows.length} records in this page · checked{" "}
             {new Date(visible.observed_at).toLocaleString()} · audited operator access
           </p>
+          {collection === "learning_observations" && (
+            <p>
+              Saved rules-based observations from retained communications. These are not AI
+              summaries or employee scores, and do not prove complete input coverage. Open a result
+              to check its source; no action is taken by viewing it.
+            </p>
+          )}
           {collection === "recordings" && (
             <p>
               Open a recording to check saved audio. Each playback access is recorded with your
@@ -189,6 +197,15 @@ export function OperatorClientInformation({
                 <p className="text-xs text-muted-foreground">Record {row.id}</p>
                 {selected === row.id && (
                   <>
+                    {collection === "learning_observations" && (
+                      <OperatorLearningEvidence
+                        key={`${tenantId}:${actorId}:${row.id}`}
+                        tenantId={tenantId}
+                        actorId={actorId}
+                        observation={row}
+                        accessReason={loadedReason}
+                      />
+                    )}
                     {(collection === "recordings" || collection === "calls") && (
                       <PhoneAudioViewer
                         key={`${tenantId}:${actorId}:${row.id}`}

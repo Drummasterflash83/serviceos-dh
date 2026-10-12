@@ -1,5 +1,6 @@
 /** Operator-only content reads; every request is authorised and audited by SQL. */
 export const clientInformationCollections = {
+  learning_observations: "Learning observations",
   customers: "Customer cards",
   contacts: "Contacts",
   companies: "Companies",

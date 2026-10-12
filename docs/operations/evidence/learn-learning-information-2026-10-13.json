@@ -1,0 +1,20 @@
+{
+  "state": "backend_test_verified_frontend_local",
+  "observedAt": "2026-10-12T23:23:10.830Z",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "packageSha256": "8739428405f6376060f495c2cfa4d05ab25f63f35de6ae50b0c7a4c40641a1f2",
+  "preservedDatasets": 204,
+  "rehearsal": "passed_rolled_back",
+  "syntheticSequenceValuesConsumed": 3,
+  "checks": {
+    "typescript": "passed",
+    "build": "passed",
+    "readerUnitTests": 5,
+    "browser": "pending"
+  },
+  "productionChanged": false,
+  "providerRequests": 0,
+  "newAccounts": 0,
+  "newGrants": 0,
+  "limitation": "Rules-based retained sample only; not AI synthesis or full coverage. Legacy Learning and client programme setup remain open."
+}
