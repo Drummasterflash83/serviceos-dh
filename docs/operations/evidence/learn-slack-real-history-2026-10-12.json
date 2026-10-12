@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "at": "2026-10-12T21:14:27.443Z",
+  "environment": "hosted TEST only",
+  "runId": "315c7d05-deb3-4869-9895-1622d5d70403",
+  "state": "completed_historical_sample_paused",
+  "windows": [
+    {
+      "channel": "07-engineer-technical",
+      "start": "2026-10-01T00:00:00Z",
+      "end": "2026-10-02T00:00:00Z",
+      "messages": 1
+    },
+    {
+      "channel": "05-engineer-wins",
+      "start": "2026-10-07T00:00:00Z",
+      "end": "2026-10-08T00:00:00Z",
+      "messages": 1
+    }
+  ],
+  "workerInvocations": 6,
+  "claimedJobs": 5,
+  "unclaimedInvocations": 1,
+  "discoveryRequests": 5,
+  "providerRequestConservativeUpperBound": 23,
+  "messageObservationsIncludingDiscoveryAndReplay": 5,
+  "uniqueMessages": 2,
+  "versions": 2,
+  "interactions": 2,
+  "replayExactRowsUnchanged": true,
+  "observedParents": 0,
+  "replyAcceptance": false,
+  "capturePaused": true,
+  "activeSlackJobs": 0,
+  "recurringSubscriptions": 0,
+  "preservation": {
+    "datasets": 195,
+    "identical": 181,
+    "appendOnlyPreservingOriginalRows": 13,
+    "changedExistingAuthRows": 1,
+    "onlyExistingOperatorChanged": true,
+    "exactAuthColumnsProven": false,
+    "rawRecordsExported": false
+  },
+  "limitations": [
+    "Two one-day public-channel samples only; not full history",
+    "No observed parents, so real reply acceptance remains open",
+    "No ongoing schedule, private-channel capture or source-to-card acceptance",
+    "No production changes; DMs excluded"
+  ]
+}

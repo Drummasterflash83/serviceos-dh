@@ -105,6 +105,36 @@ if (mode === "prepare") {
   console.log(JSON.stringify({ ...p, steps: undefined }));
 } else {
   const p = JSON.parse(readFileSync(path, "utf8"));
+  const amended = process.env.LEARN_SLACK_APPROVED_HISTORY_AMENDMENT === p.runId;
+  const selected = amended
+    ? JSON.parse(
+        readFileSync(
+          ".verification-results/slack-approved-history-discovery-20261012.json",
+          "utf8",
+        ),
+      )
+    : null;
+  if (amended)
+    check(
+      selected.runId === p.runId &&
+        selected.approvedAmendment === true &&
+        selected.state === "historical_windows_selected" &&
+        selected.requests.length === 5 &&
+        selected.requests.every((r) => r.state === "acknowledged" && r.status === 200) &&
+        selected.messageObservations === 2 &&
+        JSON.stringify(selected.channels.map((r) => r.id)) === JSON.stringify(channels) &&
+        selected.channels.every(
+          (r) =>
+            r.window.maxPages === 2 &&
+            Date.parse(r.window.end) - Date.parse(r.window.start) === 86400000 &&
+            Date.parse(r.window.end) <= Date.parse(end) &&
+            Number(r.latestObservedTimestamp) * 1000 >= Date.parse(r.window.start) &&
+            Number(r.latestObservedTimestamp) * 1000 < Date.parse(r.window.end),
+        ),
+      "Approved discovery receipt differs",
+    );
+  const windowFor = (channel) =>
+    selected?.channels.find((r) => r.id === channel)?.window ?? { start, end };
   check(
     p.version === 1 &&
       p.projectRef === TEST_PROJECT &&
@@ -203,6 +233,7 @@ if (mode === "prepare") {
     process.env.LEARN_REAL_SLACK_APPROVED_RUN === p.runId,
     "Explicit approval of the prepared credential/capture scope is required",
   );
+  check(p.state !== "completed_historical_sample_paused", "Approved historical sample is closed");
   check(
     JSON.parse(readFileSync(path + ".baseline", "utf8")).runId === p.runId,
     "Retained-data baseline required before dispatch",
@@ -210,6 +241,11 @@ if (mode === "prepare") {
   check(
     !p.steps.some((s) => s.state === "submitted" || s.state === "uncertain") && p.steps.length < 12,
     "Uncertain operation or run budget exhausted: inspect, do not replay",
+  );
+  check(
+    (p.steps.length + 1) * 15 + (selected?.messageObservations ?? 0) <= 180 &&
+      (p.steps.length + 1) * 3 + (selected?.requests.length ?? 0) <= 201,
+    "Cumulative message/provider budget exhausted",
   );
   check(
     current.flags?.["learn.enabled"] === true &&
@@ -229,29 +265,55 @@ if (mode === "prepare") {
   // Preserve one observed browser date-entry mistake as a cancelled audit record.
   // It was retired before any worker invocation, so it consumes no provider or
   // message budget. Never exclude an executed or ambiguous approval.
-  const retired = current.history.find(r=>r.id==='36c9acfb-e111-48f4-ae38-5148b88bb0cd');
+  const retired = current.history.find((r) => r.id === "36c9acfb-e111-48f4-ae38-5148b88bb0cd");
   if (retired) {
-    check(retired.jobId==='54b6621a-359c-4b00-b7a8-de340b458ad8' &&
-      retired.account==='563e1183-d1e0-4c62-bce1-302b26d8fe7a' &&
-      retired.jobStatus==='cancelled' && retired.attempt===0 && retired.claimedBy===null &&
-      retired.lease===null && retired.correctedRun===p.runId && retired.pageCommitted===false,
-      "Retired date-entry approval changed or was executed");
-    current.history=current.history.filter(r=>r.id!==retired.id);
+    check(
+      retired.jobId === "54b6621a-359c-4b00-b7a8-de340b458ad8" &&
+        retired.account === "563e1183-d1e0-4c62-bce1-302b26d8fe7a" &&
+        retired.jobStatus === "cancelled" &&
+        retired.attempt === 0 &&
+        retired.claimedBy === null &&
+        retired.lease === null &&
+        retired.correctedRun === p.runId &&
+        retired.pageCommitted === false,
+      "Retired date-entry approval changed or was executed",
+    );
+    current.history = current.history.filter((r) => r.id !== retired.id);
+  }
+  // Retain the two completed empty approvals, but do not treat them as new
+  // historical work. Their worker invocations remain in the cumulative budget.
+  if (amended) {
+    const originalJobs = [
+      "9cbd0666-6fea-47de-a44d-31ec567db99a",
+      "01d6b05d-3be7-470f-8833-29fa94b965e5",
+    ];
+    const originals = current.history.filter((r) => originalJobs.includes(r.jobId));
+    check(
+      originals.length === 2 &&
+        originals.every(
+          (r) =>
+            r.jobStatus === "succeeded" &&
+            Date.parse(r.definition.start) === Date.parse(start) &&
+            Date.parse(r.definition.end) === Date.parse(end),
+        ),
+      "Original completed windows changed",
+    );
+    current.history = current.history.filter((r) => !originalJobs.includes(r.jobId));
   }
   check(
     current.history.length > 0 && current.history.length <= 3 && current.threads.length <= 3,
     "Approval count exceeds the bounded run",
   );
-  const validWindow = (d) =>
-    Date.parse(d.start) === Date.parse(start) &&
-    Date.parse(d.end) === Date.parse(end) &&
+  const validWindow = (d, channel) =>
+    Date.parse(d.start) === Date.parse(windowFor(channel).start) &&
+    Date.parse(d.end) === Date.parse(windowFor(channel).end) &&
     d.maxPages === 2 &&
     !d.recovery &&
     !d.resumesImportId;
   check(
     current.history.every(
       (r) =>
-        validWindow(r.definition) &&
+        validWindow(r.definition, r.definition.channelId) &&
         channels.includes(r.definition.channelId) &&
         r.definition.connectionId === c.id,
     ),
@@ -265,7 +327,7 @@ if (mode === "prepare") {
   check(
     current.threads.every(
       (r) =>
-        validWindow(r.definition) &&
+        validWindow(r.definition, r.scope.channelId) &&
         channels.includes(r.scope.channelId) &&
         r.scope.teamId === team &&
         r.scope.connectionId === c.id &&
@@ -296,8 +358,9 @@ if (mode === "prepare") {
                   a.scope.connectionId === c.id &&
                   channels.includes(a.scope.channelId) &&
                   a.scope.maxPages === 2 &&
-                  Number(a.scope.oldest) === Date.parse(start) / 1000 &&
-                  Number(a.scope.latest) === Date.parse(end) / 1000,
+                  Number(a.scope.oldest) ===
+                    Date.parse(windowFor(a.scope.channelId).start) / 1000 &&
+                  Number(a.scope.latest) === Date.parse(windowFor(a.scope.channelId).end) / 1000,
               )
             : current.threads.some((r) => r.id === j.thread && r.account === j.account)),
       ),
@@ -325,6 +388,7 @@ if (mode === "prepare") {
     at: new Date().toISOString(),
     state: "submitted",
     queuedJobs: current.slackJobs.map((j) => j.id),
+    historicalAmendment: amended,
   };
   p.steps.push(step);
   p.state = "running";

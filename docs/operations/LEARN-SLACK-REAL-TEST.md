@@ -128,7 +128,7 @@ The corrected request then used the approved UTC window. The acceptance runner
 recognises only that exact unexecuted cancelled record as excluded from execution;
 its existing provider/message budgets were not reset or increased.
 
-### Prepared date-window amendment — not yet approved
+### Approved historical date-window amendment — 12 October, 21:05 UTC
 
 To find actual conversations without expanding destinations or message budgets:
 
@@ -151,4 +151,25 @@ To find actual conversations without expanding destinations or message budgets:
   recurring schedules, new grants or production changes.
 
 This changes the approved date selection, not access permissions or destination.
-Wait for Chris's decision before the latest-message discovery or older imports.
+Chris approved this amendment in chat. Discovery completed in five read-only
+requests (identity, two channel checks and two one-message reads). Both channels
+were public, joined and not shared; the responses did not report retention limits.
+Selected windows, recorded before queuing:
+
+- Engineer technical: 1 October 00:00 UTC to 2 October 00:00 UTC.
+- Engineer wins: 7 October 00:00 UTC to 8 October 00:00 UTC.
+
+Discovery retained timestamps and scope metadata only. Its two observations and
+five requests count against the original cumulative caps; earlier receipts and
+the original run ID remain intact. These samples do not establish full history.
+
+**Completed at 21:14 UTC.** Both selected windows completed in one page, each
+storing one ordinary message with a source version and LEARN interaction. The
+single technical-window replay retained all six exact rows unchanged. Neither
+message contained an observed thread parent; no replies were requested or verified.
+Capture is paused, with no active Slack jobs or recurring subscriptions. Six total
+worker invocations include the two original empty windows and one paced no-op.
+Five total message observations include discovery and replay. The conservative
+provider-request upper bound is 23, within the original 201 cap. The runner rejects
+further dispatch after this completed historical sample; unused capacity is not a
+new import approval. [Sanitised acceptance evidence](evidence/learn-slack-real-history-2026-10-12.json).

@@ -43,13 +43,16 @@ Cloudflare-flavoured.
 ## Preview deployments
 
 **Latest release preparation, 12 October:** the candidate contains production
-packages 001–017 and 37 matching runtime artifacts, rehearsed locally against the
-retained archive. Git `254db7860447dc54b900635437fbd8cc0e21e1ef` is built as a
-[protected production-configured preview](https://serviceos-yhfbegxeo-allkin.vercel.app/login).
-It is READY and its login screen loads; all four unauthenticated entry routes
-remain Vercel-protected. The live deployment and domains are unchanged. Production
-sign-in, actual served backend binding, matching backend installation and promotion
-approval remain outstanding. [Current evidence](operations/evidence/learn-production-frontend-refresh-2026-10-12.json).
+packages 001–019 and 37 matching runtime artifacts, rehearsed locally against the
+retained archive. Git `04f7f8edd8e3d55637ce0376698a746191a403b2` is built as a
+[protected production-configured preview](https://serviceos-pgtk1tzt4-allkin.vercel.app/login).
+It is READY and its rendered auth target is verified as production. The earlier
+`serviceos-yhfbegxeo` preview used the wrong backend and must not be promoted.
+The live deployment and domains are unchanged. Chris has authorised deployment;
+signed-in production acceptance, matching backend installation and the remaining
+technical release gates are still outstanding.
+[Current backend evidence](operations/evidence/learn-production-slack-recurring-2026-10-12.json) ·
+[Frontend evidence](operations/evidence/learn-production-frontend-slack-setup-2026-10-12.json).
 The older component rehearsal records below are supporting history; use the
 completion checklist and exact current release manifest for promotion decisions.
 

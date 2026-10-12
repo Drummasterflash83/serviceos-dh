@@ -7,13 +7,16 @@ preview is not a replacement design. This approval supersedes older pending
 ordinary-promotion approval statements below; it does not prove the package,
 runtime, signed-in acceptance or preservation gates passed. The
 [completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
-The current hosted TEST frontend is Git `e847a52`; TEST Slack packages 080–082
-and worker v11 are installed. The production candidate includes packages 001–018,
-37 exact compiled/boot-tested runtime artifacts and a matching 69-step release
-sequence. Package 018 includes Slack user credentials, logged operator setup and
-the scoped cross-client approval attribution fix discovered by full-schema testing.
-All eighteen packages preserve the retained archive and pass the Slack operator /
-legacy bot journeys. Twenty-three local release adapter/journal checks pass.
+The current hosted TEST frontend is Git `e847a52`; TEST Slack packages 080–083
+and worker v11 are installed. The production candidate includes packages 001–019,
+37 exact runtime artifacts with retained compile/boot evidence and a matching
+70-step release sequence. Package 018 includes Slack user credentials, logged
+operator setup and scoped cross-client approval attribution. Package 019 adds
+durable recurring attribution and prevents paused reply jobs consuming attempts.
+All nineteen packages preserve the retained archive and pass the Slack operator /
+legacy bot journeys. Runtime executable bytes are unchanged from package 018;
+boot evidence is carried forward, not a new execution. Twenty-three local release
+adapter/journal checks pass.
 
 The current protected production preview is Git `04f7f8e`, deployment
 `dpl_tZasPdqxDNGDk8JGQ4v7WzsTy5Ea`, at
@@ -21,7 +24,7 @@ The current protected production preview is Git `04f7f8e`, deployment
 Its rendered auth target is verified as production; sign-in acceptance is still
 pending. The preview is protected and the live deployment remains
 `dpl_DXueDsax146gdtyFoniXRaW3dzMM`. No production backend or alias was changed.
-[Current package/runtime evidence](evidence/learn-production-slack-setup-2026-10-12.json)
+[Current package/runtime evidence](evidence/learn-production-slack-recurring-2026-10-12.json)
 and [frontend evidence](evidence/learn-production-frontend-slack-setup-2026-10-12.json)
 supersede older candidate pins below. Real-provider completeness, positive caller
 acceptance, current recovery/drain gates and live activation remain open.
@@ -29,7 +32,7 @@ acceptance, current recovery/drain gates and live activation remain open.
 
 ## Matching processing candidate — 12 October
 
-**Current preparation — 68 steps, no production promotion.**
+**Earlier preparation — 68 steps, superseded by the 70-step sequence above.**
 The exact package/runtime/preview pins are in the release sequence. Local dispatch
 now routes existing approved Commusoft/Slack work; its switch stays off during
 staging. Commusoft's manual update periods retain exact bounds through resume and

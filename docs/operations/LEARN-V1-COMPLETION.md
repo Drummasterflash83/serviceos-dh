@@ -7,6 +7,43 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 21:14 UTC — approved historical Slack TEST sample and duplicate check passed.**
+
+### Working and verified
+
+- Two ordinary Slack messages are stored in Drummonds TEST, one from each approved
+  public channel/day (engineer technical: 1 October; engineer wins: 7 October).
+  Both have retained source versions and matching LEARN interaction records.
+- Repeating the technical-channel window preserved the exact message, version and
+  interaction row digests: two of each, no duplicates or overwritten evidence.
+- Capture is paused; no active Slack jobs or recurring subscriptions remain.
+  The same run used six worker invocations (five claimed jobs, one paced no-op),
+  five discovery requests and five message observations including discovery/replay.
+  A conservative total of 23 provider requests remains below the approved 201 cap.
+- All 195 original TEST datasets were reconciled: 181 identical, thirteen others
+  retain every original row plus expected additions. One pre-existing Auth row
+  changed and is confirmed as the existing TEST operator; exact changed columns
+  cannot be established from the baseline hashes. All earlier source data remains.
+
+### Needs finishing
+
+- Neither sample contained an observed thread parent. Real reply acceptance is
+  still open. These two days do not prove full history, private-channel visibility,
+  ongoing capture, customer attribution or source-to-card processing.
+- Complete the production release gates and signed-in journeys, then promote the
+  matching nineteen-package release using the existing live UX and branding.
+  Deployment is already authorised; this TEST run made no production changes.
+- Complete the other input, scoring, recovery and operational requirements below.
+  This sample does not narrow or complete the overall launch goal.
+
+### Blocked externally
+
+- No further user action was needed for this approved sample. The earlier
+  historical-date approval request is resolved. DMs remain excluded.
+
+[Historical sample and preservation evidence](evidence/learn-slack-real-history-2026-10-12.json).
+
+## Earlier checkpoints
 
 **12 October, 21:03 UTC — real Slack TEST access verified; approved windows empty; matching recurring fix installed.**
 
@@ -55,7 +92,7 @@ override a later release observation. No requirement is silently deferred.
 
 [Recurring release evidence](evidence/learn-production-slack-recurring-2026-10-12.json) ·
 [Real empty-window evidence](evidence/learn-slack-real-empty-windows-2026-10-12.json) ·
-[Exact amendment](LEARN-SLACK-REAL-TEST.md#prepared-date-window-amendment--not-yet-approved).
+[Exact amendment, subsequently approved](LEARN-SLACK-REAL-TEST.md#approved-historical-date-window-amendment--12-october-2105-utc).
 
 **12 October, 20:33 UTC — matching eighteen-package production candidate rehearsed; TEST operator attribution repaired.**
 A full production-schema journey caught a real gap: the generic reference trigger
