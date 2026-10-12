@@ -356,11 +356,26 @@ function TenantWorkspace({ tenantId, tenantName }: { tenantId: string; tenantNam
             <ShieldAlert className="h-4 w-4 text-destructive" />
             {error && (error.code === "forbidden" || error.code.startsWith("http_403"))
               ? "Platform authority required"
-              : "Could not load"}
+              : "OpenFolk workspace unavailable"}
           </div>
           <p className="text-xs text-muted-foreground">
-            Restricted to authorised OpenFolk operators (server-enforced).
+            {error && (error.code === "forbidden" || error.code.startsWith("http_403"))
+              ? "This workspace requires an active OpenFolk operator grant."
+              : "The workspace data could not be verified. Retry the read or return to the client directory; saved information is retained."}
           </p>
+          {error && /^[a-z0-9_]{1,60}$/.test(error.code) && (
+            <p className="mt-2 text-xs text-muted-foreground">Diagnostic: {error.code}</p>
+          )}
+          <button
+            className="op-button mt-3"
+            disabled={loading}
+            onClick={() => {
+              setLoading(true);
+              void fetchAll().finally(() => setLoading(false));
+            }}
+          >
+            Retry workspace read
+          </button>
           <Link to="/openfolk" className="mt-3 inline-flex items-center gap-1 text-xs text-accent">
             <ChevronLeft className="h-3.5 w-3.5" /> All tenants
           </Link>

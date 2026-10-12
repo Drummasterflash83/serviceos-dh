@@ -52,7 +52,7 @@ export function SourceCard({ s }: { s: LcSourceStatus }) {
         </StatusPill>
         {s.scheduleState !== "not_applicable" && (
           <StatusPill tone={s.scheduleState === "active" ? "ok" : "attention"}>
-            schedule {s.scheduleState}
+            schedule {s.scheduleState.replaceAll("_", " ")}
           </StatusPill>
         )}
         <StatusPill tone={FRESH_TONE[s.freshness] ?? "neutral"}>{s.freshness}</StatusPill>
@@ -151,12 +151,12 @@ export function LearningOverviewView({
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <Radio className="h-4 w-4 text-accent" />
           <span className="font-semibold text-display">Source truth</span>
-          <StatusPill tone="ok">{summary.sourcesLive.length} live</StatusPill>
+          <StatusPill tone="neutral">{summary.sourcesLive.length} verified live here</StatusPill>
           <span className="text-muted-foreground">
             live: {summary.sourcesLive.join(", ") || "—"}
           </span>
           <span className="text-muted-foreground">
-            · missing: {summary.sourcesMissing.join(", ") || "—"}
+            · live capture unverified: {summary.sourcesMissing.join(", ") || "—"}
           </span>
           <StatusPill tone={summary.processingHealth === "ok" ? "ok" : "attention"}>
             processing {summary.processingHealth}
@@ -255,7 +255,7 @@ export function LearningOverviewView({
       </SectionCard>
 
       <p className="text-[11px] text-muted-foreground">
-        Generated {fmt(overview.generatedAt)} from live canonical evidence (read-only). Every figure
+        Generated {fmt(overview.generatedAt)} from retained canonical evidence (read-only). Every figure
         is dynamically queried and traceable; empty areas are honest gaps, never fabricated.
       </p>
     </div>

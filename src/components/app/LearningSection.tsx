@@ -170,7 +170,7 @@ export function LearningSection({ tenantId }: { tenantId: string }) {
 
       {loading && (
         <p className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading live evidence…
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading retained evidence…
         </p>
       )}
       {error && (
@@ -191,7 +191,7 @@ export function LearningSection({ tenantId }: { tenantId: string }) {
             />
           )}
           <p className="text-[11px] text-muted-foreground">
-            Generated {fmt(overview.generatedAt)} from live canonical evidence (read-only). Every
+            Generated {fmt(overview.generatedAt)} from retained canonical evidence (read-only). Every
             figure is dynamically queried and traceable; empty areas are honest gaps, never
             fabricated.
           </p>

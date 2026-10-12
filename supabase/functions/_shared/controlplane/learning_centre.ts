@@ -8,6 +8,7 @@
 // read-only proof harness — gathers the tenant-scoped facts). Nothing is fabricated: absent or
 // uncertain evidence is reported as an explicit honest state, never a made-up figure.
 
+import { readOperatorInventory } from "./inventory.ts";
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 // ── Inputs (tenant-scoped facts the caller gathers) ─────────────────────────
@@ -43,14 +44,17 @@ export interface EmailMetrics {
 }
 export interface CommusoftMetrics {
   imports: number; // data_imports rows
+  retainedVersions?: number;
   profilesSeeded: number;
   canonicalRows: number; // jobs+sites+etc actually written
 }
 export interface SlackMetrics {
   connected: boolean;
+  retainedMessages?: number;
   endpoints: number;
 }
 export interface PipelineMetrics {
+  latestInteractionAt?: string | null;
   interactions: number;
   interactionsProcessed: number; // processing_status enriched/analysed
   interactionsPending: number;
@@ -85,7 +89,7 @@ export interface LearningCentreInput {
 
 // ── Outputs ──────────────────────────────────────────────────────────────────
 export type ConnectionState = "live" | "foundation" | "planned" | "not_connected";
-export type ScheduleState = "active" | "dormant" | "not_applicable";
+export type ScheduleState = "active" | "dormant" | "not_applicable" | "not_verified";
 export type Freshness = "fresh" | "recent" | "stale" | "none";
 
 export interface SourceStatus {
@@ -157,12 +161,8 @@ export function freshness(latest: string | null, now: string): Freshness {
   if (dt <= 14 * 24 * HOUR) return "recent";
   return "stale";
 }
-/** Schedule is operator-config, not stored in the data; infer ACTIVE from fresh evidence,
- * DORMANT from stale/none. Honest heuristic — labelled as inferred in the UI. */
-function inferSchedule(f: Freshness): ScheduleState {
-  return f === "fresh" || f === "recent" ? "active" : "dormant";
-}
-
+// Capture state is checked by the connector controller. Saved timestamps alone
+// cannot establish that a schedule is enabled or succeeding now.
 export function buildSourceTruth(input: LearningCentreInput): SourceTruth {
   const { telephony: t, email: e, commusoft: c, slack: s, pipeline: p, health: h, now } = input;
 
@@ -170,13 +170,18 @@ export function buildSourceTruth(input: LearningCentreInput): SourceTruth {
   const telephony: SourceStatus = {
     key: "telephony",
     label: "Telephony",
-    connectionState: t.connection && !t.connection.revoked_at ? "live" : "not_connected",
-    scheduleState: inferSchedule(telFresh),
+    connectionState:
+      t.received > 0 || (t.connection && !t.connection.revoked_at) ? "foundation" : "not_connected",
+    scheduleState: "not_verified",
     latestEvidenceAt: t.latestCallAt,
     freshness: telFresh,
-    received: t.received,
-    processed: t.processed,
-    failedOrPending: t.failedOrPending,
+    received: null,
+    processed: null,
+    failedOrPending: null,
+    measures: [
+      { label: "saved calls", value: String(t.received) },
+      { label: "saved AI insight rows", value: String(t.aiInsights) },
+    ],
     coverage: [
       { label: "recordings", value: String(t.recordings) },
       { label: "transcripts", value: String(t.transcripts) },
@@ -194,8 +199,8 @@ export function buildSourceTruth(input: LearningCentreInput): SourceTruth {
   const email: SourceStatus = {
     key: "email",
     label: "Email",
-    connectionState: e.mailboxesActive > 0 ? "live" : "not_connected",
-    scheduleState: inferSchedule(emFresh),
+    connectionState: e.mailboxesActive > 0 || e.rawMessages > 0 ? "foundation" : "not_connected",
+    scheduleState: "not_verified",
     latestEvidenceAt: e.latestMessageAt,
     freshness: emFresh,
     // received/processed intentionally NULL for email — raw messages and canonical interactions
@@ -226,44 +231,56 @@ export function buildSourceTruth(input: LearningCentreInput): SourceTruth {
   const commusoft: SourceStatus = {
     key: "commusoft",
     label: "Commusoft",
-    connectionState: c.canonicalRows > 0 ? "live" : "planned",
-    scheduleState: "not_applicable",
+    connectionState:
+      c.canonicalRows > 0 || (c.retainedVersions ?? 0) > 0 ? "foundation" : "planned",
+    scheduleState: "not_verified",
     latestEvidenceAt: null,
     freshness: "none",
-    received: c.imports,
-    processed: c.canonicalRows,
+    received: null,
+    processed: null,
+    measures: [
+      { label: "retained input versions", value: String(c.retainedVersions ?? 0) },
+      { label: "published jobs", value: String(c.canonicalRows) },
+    ],
     failedOrPending: null,
     coverage: [{ label: "seeded profiles", value: String(c.profilesSeeded) }],
     confirmedIdentities: null,
     unresolvedIdentities: null,
-    gaps: c.canonicalRows === 0 ? ["analysed but NOT ingested (importer built, never run)"] : [],
-    actionRequired: c.canonicalRows === 0 ? "approve bounded MVP import" : null,
+    gaps: [
+      "Retained versions and published jobs are different stages. Full source coverage is not established here.",
+    ],
+    actionRequired: "Review customer-system capture and publication in Modules",
   };
 
   const slack: SourceStatus = {
     key: "slack",
     label: "Slack",
-    connectionState: s.connected ? "live" : "not_connected",
-    scheduleState: "not_applicable",
+    connectionState: s.connected || (s.retainedMessages ?? 0) > 0 ? "foundation" : "not_connected",
+    scheduleState: "not_verified",
     latestEvidenceAt: null,
     freshness: "none",
     received: null,
     processed: null,
     failedOrPending: null,
-    coverage: [],
-    confirmedIdentities: s.endpoints,
+    coverage: [
+      { label: "retained messages", value: String(s.retainedMessages ?? 0) },
+      { label: "discovered endpoints", value: String(s.endpoints) },
+    ],
+    confirmedIdentities: null,
     unresolvedIdentities: null,
-    gaps: s.connected ? [] : ["not connected (Workspace Discovery designed only)"],
-    actionRequired: s.connected ? null : "approve Workspace-Discovery OAuth",
+    gaps: [
+      "Retained channel history does not establish ongoing capture or complete workspace coverage.",
+    ],
+    actionRequired: "Review Slack channel capture in Modules",
   };
 
-  const pipeFresh: Freshness = p.interactions > 0 ? "fresh" : "none";
+  const pipeFresh = freshness(p.latestInteractionAt ?? null, now);
   const pipeline: SourceStatus = {
     key: "pipeline",
     label: "Canonical intelligence pipeline",
-    connectionState: p.interactions > 0 ? "live" : "foundation",
-    scheduleState: inferSchedule(pipeFresh),
-    latestEvidenceAt: null,
+    connectionState: "foundation",
+    scheduleState: "not_verified",
+    latestEvidenceAt: p.latestInteractionAt ?? null,
     freshness: pipeFresh,
     received: p.interactions,
     processed: p.interactionsProcessed,
@@ -286,12 +303,14 @@ export function buildSourceTruth(input: LearningCentreInput): SourceTruth {
   const missing = sources.filter((x) => x.connectionState !== "live");
   const latestEvidenceAt =
     [t.latestCallAt, e.latestMessageAt].filter(Boolean).sort().reverse()[0] ?? null;
-  const confirmed = t.confirmedIdentities + e.confirmedIdentities + s.endpoints;
+  const confirmed = t.confirmedIdentities + e.confirmedIdentities;
   const unresolved = t.unresolvedIdentities + e.unresolvedIdentities;
   const idTotal = confirmed + unresolved;
 
-  const blindSpots: string[] = [];
-  if (c.canonicalRows === 0) blindSpots.push("Commusoft not ingested");
+  const blindSpots: string[] = [
+    "Current capture is not verified by this retained-data overview; check Modules.",
+  ];
+  if (c.canonicalRows === 0) blindSpots.push("Commusoft jobs not published");
   if (!s.connected) blindSpots.push("Slack not connected");
   if (h.findings === 0) blindSpots.push("Health inactive");
   if (p.waitingDerivedCount === 0) blindSpots.push("waiting relationships not derived");
@@ -302,7 +321,7 @@ export function buildSourceTruth(input: LearningCentreInput): SourceTruth {
     sourcesMissing: missing.map((x) => x.label),
     latestEvidenceAt,
     processingHealth:
-      t.failedOrPending + e.failedOrPending + p.interactionsPending > 0 ? "attention" : "ok",
+      t.failedOrPending + e.failedOrPending + p.interactionsPending > 0 ? "attention" : "unknown",
     identityCoverage: {
       confirmed,
       unresolved,
@@ -377,7 +396,7 @@ export const QUEUE_DEFS: QueueDef[] = [
   },
   {
     key: "intel_customer",
-    label: "Intelligence linked to a customer",
+    label: "Intelligence linked to graph context",
     table: "intelligence_objects",
     filterLabel: "source_entities <> '{}' (links a graph entity)",
     why: "This object is linked to at least one business-graph entity.",
@@ -402,7 +421,7 @@ export const QUEUE_DEFS: QueueDef[] = [
     label: "Communications that produced no intelligence",
     table: "interactions",
     filterLabel: "interactions with no intelligence_ingestion (derived count)",
-    why: "This interaction has no linked intelligence ingestion.",
+    why: "This interaction has no observed ingestion; skipped and pending rows are not observations.",
     // Derived from a set difference (interactions − ingestions); there is no exact per-row
     // PostgREST anti-join here, so we never fabricate a record list — the trace is shown instead.
     count: (p) => p.commsNoIntelligence,
@@ -460,7 +479,9 @@ async function n(
   let q: Q = db.from(table).select("*", { count: "exact", head: true }).eq("tenant_id", tenantId);
   if (f) q = f(q);
   const r = await q;
-  return r.error ? 0 : (r.count ?? 0);
+  if (r.error || !Number.isSafeInteger(r.count) || r.count < 0)
+    throw Error(`Learning count unavailable (${table})`);
+  return r.count;
 }
 async function latestTs(
   db: SupabaseClient,
@@ -474,7 +495,13 @@ async function latestTs(
     .eq("tenant_id", tenantId)
     .order(col, { ascending: false })
     .limit(1);
-  return r.error ? null : ((r.data?.[0]?.[col] as string | undefined) ?? null);
+  if (r.error || !Array.isArray(r.data) || r.data.length > 1)
+    throw Error(`Learning timestamp unavailable (${table})`);
+  const row = r.data[0] as unknown as Record<string, unknown> | undefined;
+  const value = row?.[col] ?? null;
+  if (value !== null && (typeof value !== "string" || !Number.isFinite(Date.parse(value))))
+    throw Error(`Learning timestamp invalid (${table})`);
+  return value;
 }
 /** Distinct non-null values of a single column (paginated). READ-ONLY. Used for thread counts. */
 async function distinctCount(
@@ -484,21 +511,14 @@ async function distinctCount(
   tenantId: string,
   f?: (q: Q) => Q,
 ): Promise<number> {
-  const seen = new Set<string>();
-  for (let from = 0; from < 50000; from += 1000) {
-    let q: Q = db
-      .from(table)
-      .select(col)
-      .eq("tenant_id", tenantId)
-      .not(col, "is", null)
-      .range(from, from + 999);
-    if (f) q = f(q);
-    const r = await q;
-    if (r.error || !r.data || r.data.length === 0) break;
-    for (const row of r.data as Row2[]) seen.add(String(row[col]));
-    if (r.data.length < 1000) break;
-  }
-  return seen.size;
+  const rows = await readOperatorInventory(db, tenantId, table, `id,${col}`, {
+    label: "learning distinct values",
+    filter: (q) => {
+      q = q.not(col, "is", null);
+      return f ? f(q) : q;
+    },
+  });
+  return new Set(rows.map((row) => String(row[col]))).size;
 }
 
 export async function gatherLearningMetrics(
@@ -506,23 +526,42 @@ export async function gatherLearningMetrics(
   tenantId: string,
   now: string,
 ): Promise<LearningCentreInput> {
-  const conn = await db
-    .from("provider_connections")
-    .select("provider, status, revoked_at")
-    .eq("tenant_id", tenantId);
-  const connections = conn.error ? [] : conn.data;
-  const telConn = connections.find((c) => c.provider === "sipcentric" || c.provider === "simwood");
+  const retained = await db.rpc("learn_learning_retained_counts", { p_tenant: tenantId });
+  if (
+    retained.error ||
+    retained.data?.version !== "learn-learning-counts/1" ||
+    retained.data?.tenant_id !== tenantId ||
+    ![retained.data.commusoft_versions, retained.data.slack_messages].every(
+      (v) => Number.isSafeInteger(v) && v >= 0,
+    )
+  )
+    throw Error("Learning retained counts unavailable");
+  const connections = await readOperatorInventory(
+    db,
+    tenantId,
+    "provider_connections",
+    "id,provider,status,revoked_at",
+    { label: "learning connections" },
+  );
+  const telConn = connections.find((c) =>
+    ["sipcentric", "birchills", "simwood"].includes(c.provider),
+  );
   const slackConn = connections.find((c) => c.provider === "slack");
-
-  // Identity links (verified only).
-  const mii = await db
-    .from("member_integration_identities")
-    .select("provider, external_ref, verification_state")
-    .eq("tenant_id", tenantId)
-    .is("effective_to", null);
-  const links = mii.error ? [] : mii.data;
+  const links = await readOperatorInventory(
+    db,
+    tenantId,
+    "member_integration_identities",
+    "id,provider,external_ref,verification_state",
+    {
+      label: "learning identities",
+      filter: (q) => q.lte("effective_from", now).or(`effective_to.is.null,effective_to.gt.${now}`),
+    },
+  );
   const telLinks = links.filter(
-    (i) => i.verification_state === "verified" && /^\d{2,6}$/.test(String(i.external_ref)),
+    (i) =>
+      i.verification_state === "verified" &&
+      ["sipcentric", "birchills", "simwood"].includes(i.provider) &&
+      /^\d{2,6}$/.test(String(i.external_ref)),
   ).length;
   const emailLinks = links.filter(
     (i) => i.verification_state === "verified" && i.provider === "google_workspace",
@@ -561,28 +600,17 @@ export async function gatherLearningMetrics(
   const intelligenceLowConfidence = await n(db, "intelligence_objects", tenantId, (q) =>
     q.lt("confidence", 0.5),
   );
-  const waitingDerivedCount = 0; // waiting_on_ref is unpopulated today; never fabricated.
+  const waitingDerivedCount = await n(db, "intelligence_objects", tenantId, (q) =>
+    q.not("waiting_on_ref", "is", null),
+  );
 
-  // Repeated themes (subject frequency).
-  const subj = await db
-    .from("intelligence_objects")
-    .select("subject")
-    .eq("tenant_id", tenantId)
-    .limit(4000);
-  const themeMap = new Map<string, number>();
-  for (const r of subj.error ? [] : subj.data) {
-    const s = String(r.subject ?? "").trim();
-    if (s) themeMap.set(s, (themeMap.get(s) ?? 0) + 1);
-  }
-  const repeatedThemes = [...themeMap.entries()]
-    .filter(([, c]) => c >= 3)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([subject, count]) => ({ subject, count }));
+  // A capped subject-frequency sample is not company-wide pattern detection.
+  // The dedicated patterns stage remains unavailable rather than fabricating themes.
+  const repeatedThemes: { subject: string; count: number }[] = [];
 
   const interactions = await n(db, "interactions", tenantId);
   const interactionsProcessed = await n(db, "interactions", tenantId, (q) =>
-    q.eq("processing_status", "enriched"),
+    q.in("processing_status", ["enriched", "analysed"]),
   );
   const intelligenceObjects = await n(db, "intelligence_objects", tenantId);
   const recommendations = await n(db, "recommendations", tenantId);
@@ -595,7 +623,9 @@ export async function gatherLearningMetrics(
   const phoneInsights = await n(db, "phone_ai_insights", tenantId);
   const emailReceived = await n(db, "email_messages", tenantId);
   // WS4 — distinct email measures (raw messages vs canonical interactions are different units).
-  const emailInteractions = await n(db, "interactions", tenantId, (q) => q.eq("source_type", "email"));
+  const emailInteractions = await n(db, "interactions", tenantId, (q) =>
+    q.eq("source_type", "email"),
+  );
   const emailFailures = await n(db, "interactions", tenantId, (q) =>
     q.eq("source_type", "email").eq("processing_status", "failed"),
   );
@@ -608,12 +638,14 @@ export async function gatherLearningMetrics(
     now,
     telephony: {
       connection: telConn
-        ? { provider: telConn.provider, status: "", revoked_at: telConn.revoked_at }
+        ? { provider: telConn.provider, status: telConn.status, revoked_at: telConn.revoked_at }
         : null,
       latestCallAt: await latestTs(db, "phone_calls", tenantId, "started_at"),
       received: phoneReceived,
       processed: phoneInsights,
-      failedOrPending: Math.max(0, phoneReceived - phoneInsights),
+      failedOrPending: await n(db, "interactions", tenantId, (q) =>
+        q.eq("source_type", "phone").in("processing_status", ["pending", "failed"]),
+      ),
       recordings: await n(db, "phone_recordings", tenantId),
       transcripts: await n(db, "phone_transcripts", tenantId),
       aiInsights: phoneInsights,
@@ -640,16 +672,21 @@ export async function gatherLearningMetrics(
     },
     commusoft: {
       imports: await n(db, "data_imports", tenantId),
-      profilesSeeded: (await n(db, "import_profiles", tenantId)) || 3,
-      canonicalRows: await n(db, "jobs", tenantId),
+      profilesSeeded: await n(db, "import_profiles", tenantId),
+      retainedVersions: retained.data.commusoft_versions,
+      canonicalRows: await n(db, "jobs", tenantId, (q) =>
+        q.or("source_system.eq.commusoft,source_system.like.commusoft:connection:%"),
+      ),
     },
     slack: {
       connected: !!slackConn && !slackConn.revoked_at,
+      retainedMessages: retained.data.slack_messages,
       endpoints:
         slackLinks ||
         (await n(db, "communication_endpoints", tenantId, (q) => q.eq("channel", "slack"))),
     },
     pipeline: {
+      latestInteractionAt: await latestTs(db, "interactions", tenantId, "occurred_at"),
       interactions,
       interactionsProcessed,
       interactionsPending: Math.max(0, interactions - interactionsProcessed),
@@ -667,7 +704,10 @@ export async function gatherLearningMetrics(
       handoffs: await n(db, "responsibility_handoffs", tenantId),
       commsNoIntelligence: Math.max(
         0,
-        interactions - (await n(db, "intelligence_ingestions", tenantId)),
+        interactions -
+          (await distinctCount(db, "intelligence_ingestions", "interaction_id", tenantId, (q) =>
+            q.eq("status", "observed"),
+          )),
       ),
       repeatedThemes,
     },
@@ -770,7 +810,7 @@ export async function gatherQueueRecords(
     if (def.order)
       q = q.order(def.order.col, { ascending: def.order.ascending, nullsFirst: false });
     const { data, error } = await q.limit(limit + 1);
-    if (error) return { ...base, note: "records could not be read" };
+    if (error || !Array.isArray(data)) throw Error("Learning records could not be verified");
     const rows = (data ?? []) as Row2[];
     const truncated = rows.length > limit;
     const use = rows.slice(0, limit);
@@ -803,6 +843,8 @@ export async function gatherQueueRecords(
             .in("id", ownerIds)
         : Promise.resolve({ data: [] as Row2[] }),
     ]);
+    if ([ent, intr, own].some((r) => !Array.isArray(r.data) || ("error" in r && r.error)))
+      throw Error("Learning source evidence could not be verified");
     const entityById = new Map((ent.data ?? []).map((e: Row2) => [e.id, e]));
     const intById = new Map((intr.data ?? []).map((i: Row2) => [i.id, i]));
     const ownerById = new Map((own.data ?? []).map((o: Row2) => [o.id, o.display_name as string]));
@@ -833,9 +875,10 @@ export async function gatherQueueRecords(
         elapsedMs: occurred ? nowMs - Date.parse(occurred) : null,
         confidence: r.confidence ?? null,
         occurredAt: occurred,
-        owner: ownerRef
-          ? { state: "confirmed", label: ownerById.get(ownerRef) ?? String(ownerRef) }
-          : { state: "unresolved", label: null },
+        owner:
+          ownerRef && ownerById.has(ownerRef)
+            ? { state: "confirmed", label: ownerById.get(ownerRef)! }
+            : { state: "unresolved", label: null },
         customer: (company?.label as string | null) ?? null,
         source: it
           ? {
@@ -861,7 +904,7 @@ export async function gatherQueueRecords(
     q = def.apply(q, nowIso);
     if (def.order) q = q.order(def.order.col, { ascending: def.order.ascending });
     const { data, error } = await q.limit(limit + 1);
-    if (error) return { ...base, note: "records could not be read" };
+    if (error || !Array.isArray(data)) throw Error("Learning records could not be verified");
     const rows = (data ?? []) as Row2[];
     const truncated = rows.length > limit;
     const records: DrillRecord[] = rows.slice(0, limit).map((r) => ({

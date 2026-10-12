@@ -361,7 +361,7 @@ export interface LcSourceStatus {
   key: string;
   label: string;
   connectionState: "live" | "foundation" | "planned" | "not_connected";
-  scheduleState: "active" | "dormant" | "not_applicable";
+  scheduleState: "active" | "dormant" | "not_applicable" | "not_verified";
   latestEvidenceAt: string | null;
   freshness: "fresh" | "recent" | "stale" | "none";
   received: number | null;

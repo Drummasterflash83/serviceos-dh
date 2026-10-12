@@ -1,0 +1,58 @@
+{
+  "state": "test_runtime_browser_verified_frontend_pending",
+  "observedAt": "2026-10-12T23:46:30.112758+00:00",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "packages": [
+    {
+      "name": "089_workspace_read_foundation",
+      "sha256": "112b0ede4a1b67145c0f1e7aa91db0d29d5961d3de3be5a428aeff04679fbfc7",
+      "state": "installed_verified",
+      "preservedDatasets": 204
+    },
+    {
+      "name": "090_learning_counts",
+      "sha256": "ad9320b45a61472f724b561787e79424dfdd7ccffdc8819f77dbab17753cccfd",
+      "state": "installed_verified",
+      "preservedDatasets": 213
+    }
+  ],
+  "runtime": {
+    "endpoint": "openfolk-control-plane",
+    "version": 11,
+    "sourceClosureSha256": "c1f5e4802dccf305ba180c0bd8367c36963d2dbb7ea39bfe4c843372fc9dfb27",
+    "ezbr": "e8f3c0a7abd0d723fe12482ff0ed693c84dab2bfc5dfa37a16dc9d9d16ba4461",
+    "preservedDatasets": 213
+  },
+  "checks": {
+    "rollbackRehearsals": "passed",
+    "unitTests": 23,
+    "targetedTypescript": "passed",
+    "frontendTypescript": "passed",
+    "build": "passed",
+    "signedInLearningOverview": true,
+    "signedInSourceTruth": true,
+    "sourceCounts": {
+      "rawEmailMessages": 20,
+      "emailInteractions": 19,
+      "phoneCalls": 1,
+      "phoneRecordings": 1,
+      "slackMessages": 2,
+      "commusoftInputVersions": 17997,
+      "publishedCommusoftJobs": 1,
+      "interactions": 21,
+      "observations": 17
+    },
+    "captureInference": "not_verified",
+    "impersonation": false
+  },
+  "providerRequests": 0,
+  "newAccounts": 0,
+  "newGrants": 0,
+  "productionChanged": false,
+  "limitations": [
+    "Bounded retained TEST sample only; capture/coverage not established.",
+    "TEST foundation enables read models, not legacy configuration mutations.",
+    "Matching frontend deployment pending.",
+    "Client programme, relevance quality, AI, wider capture and production release remain open."
+  ]
+}

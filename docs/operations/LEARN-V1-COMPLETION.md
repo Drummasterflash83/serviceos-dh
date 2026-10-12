@@ -7,6 +7,44 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 00:48 BST — legacy TEST Learning route repaired and signed-in read verified.**
+
+### Working and verified
+
+- The route failure was missing TEST schema, not Chris's operator grant. Packages
+  089/090 restore nine missing read-model tables, two roster columns and a service-only
+  aggregate reader. Existing raw-input restrictions and operator authentication remain.
+- Both exact packages passed hosted rollback rehearsals and installed successfully.
+  All original datasets/fields were preserved (204 before foundation; 213 afterwards),
+  with no sequence consumption, new logins/grants, provider requests or production changes.
+- TEST control-plane v11 now loads the signed-in Learning overview and Source Truth.
+  Visible retained totals: 20 emails, 19 email interactions, one call/recording,
+  two Slack messages, 17,997 Commusoft input versions and one published job;
+  21 interactions and 17 observations overall. These are the bounded TEST sample.
+- Failed or truncated reads now fail visibly instead of becoming zeros. Saved dates
+  never establish an active schedule; no synthetic themes or fallback profile counts.
+  Commusoft job totals include connection-scoped API records. Different processing
+  stages retain separate units. 23 unit tests, targeted/full TypeScript and build passed.
+
+### Needs finishing
+
+- Frontend wording/error recovery is prepared locally; the stable TEST frontend still
+  needs its matching deployment and browser check. The hosted backend read is verified.
+- New foundation tables enable reads only; legacy configuration writes are not accepted.
+  Client-programme setup, relevant analysis, wider history/ongoing capture, AI,
+  full business publication, scoring and matching live release remain open.
+- This overview does not prove capture health; authoritative connector controls remain
+  in Modules. Source freshness and retained totals must not imply complete coverage.
+
+### Blocked externally
+
+- Live sign-in and TEST AI credential remain unresolved; no new user action was needed
+  for this TEST schema/read repair.
+
+Evidence: [Learning workspace repair](evidence/learn-learning-workspace-2026-10-13.json).
+
+### Previous audited information milestone
+
 **13 October, 00:28 BST — signed-in TEST observation → source journey verified.**
 
 ### Working and verified
