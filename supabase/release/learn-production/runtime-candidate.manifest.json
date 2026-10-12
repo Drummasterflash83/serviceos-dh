@@ -97,6 +97,11 @@
       "path": "supabase/release/learn-production/019_slack_recurring_attribution.sql",
       "sha256": "f5fe1265961b713a338c3bfa650cd8744e2bfeaf04778f90e83f5dc9352e51c0",
       "manifestSha256": "f82a6f15cf862ffe948f85555334647df602702b41c4d1895707d046caed5268"
+    },
+    {
+      "path": "supabase/release/learn-production/020_commusoft_recurring.sql",
+      "sha256": "e1be0657e8da44ad1def758c29a782f4f0bfd224b7a8b2a3587e9e53122266ee",
+      "manifestSha256": "9cbdab15fad083884b6c09f28d00a551007e7022cbb98699af24459d8d145106"
     }
   ],
   "sourceClosureSha256": "21eb8361f395bcd3d828e4890f78060cfc2c8aedaf4b007d5c66842e55c55893",

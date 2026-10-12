@@ -7,18 +7,18 @@ preview is not a replacement design. This approval supersedes older pending
 ordinary-promotion approval statements below; it does not prove the package,
 runtime, signed-in acceptance or preservation gates passed. The
 [completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
-The current hosted TEST frontend is Git `e847a52`; TEST Slack packages 080–083
-and worker v11 are installed. The production candidate includes packages 001–019,
-37 exact runtime artifacts with retained compile/boot evidence and a matching
-70-step release sequence. Package 018 includes Slack user credentials, logged
-operator setup and scoped cross-client approval attribution. Package 019 adds
-durable recurring attribution and prevents paused reply jobs consuming attempts.
-All nineteen packages preserve the retained archive and pass the Slack operator /
-legacy bot journeys. Four schedulers now report uncertain enqueue results as HTTP 503 instead of
-false success. All 37 revised artifacts have fresh compile and missing-auth boot
-evidence; 28 exact-artifact scheduler cases pass against an isolated synthetic
-database. Twenty-eight local release adapter/journal checks pass. Hosted gateway
-and real positive caller acceptance remain separate unfinished gates.
+The current hosted TEST frontend is Git `e847a52`; TEST Slack packages 080–083,
+worker v11 and Commusoft package 084 are installed. Package 084 preserves all 195
+existing datasets and leaves capture paused. The production candidate includes
+packages 001–020, 37 exact runtime artifacts and a 71-step release sequence.
+Package 020 adds recurring Commusoft controls and four-stage checkpointed cycles.
+All twenty packages passed the retained full-schema archive rehearsal, including
+complete inventory traversal, pause/resume and revoked-authority handling.
+The runtime bytes are unchanged from the scheduler fix; their compile/boot and
+28 caller checks are explicitly carried forward, not newly executed. All 31
+release adapter/journal/candidate tests pass. Hosted gateway and real positive
+caller acceptance remain separate unfinished gates. The latest operator frontend
+still needs deployment and hosted acceptance.
 
 The current protected production preview is Git `04f7f8e`, deployment
 `dpl_tZasPdqxDNGDk8JGQ4v7WzsTy5Ea`, at
@@ -26,7 +26,7 @@ The current protected production preview is Git `04f7f8e`, deployment
 Its rendered auth target is verified as production; sign-in acceptance is still
 pending. The preview is protected and the live deployment remains
 `dpl_DXueDsax146gdtyFoniXRaW3dzMM`. No production backend or alias was changed.
-[Database rehearsal evidence](evidence/learn-production-slack-recurring-2026-10-12.json),
+[Database rehearsal evidence](evidence/learn-production-commusoft-recurring-2026-10-12.json),
 [current runtime evidence](evidence/learn-production-scheduler-callers-2026-10-12.json)
 and [frontend evidence](evidence/learn-production-frontend-slack-setup-2026-10-12.json)
 supersede older candidate pins below. Real-provider completeness, positive caller

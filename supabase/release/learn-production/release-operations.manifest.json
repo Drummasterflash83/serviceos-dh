@@ -2,13 +2,13 @@
   "version": "learn-production-release-operations/1",
   "state": "deployment_authorised_execution_gates_incomplete",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "planSha256": "a94bd858fa8a326ecdf14d454f34aa2ed66b5d23e6d3410dfa18e08ab9aff92d",
+  "planSha256": "8cbd47b6b2deeb0b3bd35e92d70b400c093fe086bfbd141ec076a21cd171039c",
   "operations": [
     {
       "id": "fresh-release-preflight",
       "kind": "check",
       "contract": {
-        "candidateSha256": "eb7175becf0dd851b9aa5f557f64ef4f142f2580df189472d09fc7565b88a86a",
+        "candidateSha256": "cac713503926aa8eb4b6e6e59241b1694f731a81057b55fbe2902734c8bbbf6b",
         "requires": [
           "explicit_exact_release_approval",
           "fresh_production_schema_and_runtime_match",
@@ -20,7 +20,7 @@
           "matching_frontend_with_update_window_controls_verified"
         ]
       },
-      "pinSha256": "4a80d3b2848d3bb6689f43f351c986c9c125b01d143086c837d853d8c0369d71"
+      "pinSha256": "70130409892cd26d77d08a8884e116edfb4a6500f0f918ee2246182df3fe9130"
     },
     {
       "id": "pause-existing-schedules",
@@ -28,9 +28,9 @@
       "contract": {
         "mode": "pause",
         "path": "supabase/release/learn-production/schedules-pause.sql",
-        "sha256": "06cf6e5f5f0d3ee0e01191a1a467d7d24992df6a1216f125cd08744cfda620f1"
+        "sha256": "497c367a7a64b988af0c6cb697255361b3386347e40e8c50124eb48ca5849ae7"
       },
-      "pinSha256": "26a6a3f28a31bc720fc8e20505a25afc653a178e3fdb9c9edbaf7c45807603c7"
+      "pinSha256": "e8432b3d27ac5e46ecd8084332dd5b919484a74d462aba62900568cd36b6ec6f"
     },
     {
       "id": "verify-in-flight-drain",
@@ -251,6 +251,16 @@
         "manifestSha256": "f82a6f15cf862ffe948f85555334647df602702b41c4d1895707d046caed5268"
       },
       "pinSha256": "8ae7d2332c1b71f05c4e836d497e5146ab57fe4de71c41db7394ae1c93d700f7"
+    },
+    {
+      "id": "database-020",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/020_commusoft_recurring.sql",
+        "sha256": "e1be0657e8da44ad1def758c29a782f4f0bfd224b7a8b2a3587e9e53122266ee",
+        "manifestSha256": "9cbdab15fad083884b6c09f28d00a551007e7022cbb98699af24459d8d145106"
+      },
+      "pinSha256": "58f6f2a55c66c105db60995ed45b6159ed2f52d4c809f5dbaae71d618c9d2db8"
     },
     {
       "id": "matching-server-configuration",
@@ -1420,9 +1430,9 @@
       "contract": {
         "mode": "restore",
         "path": "supabase/release/learn-production/schedules-restore.sql",
-        "sha256": "b1ee3ed868a3489078ce237bbf03c7ff72609addc18e8edc60f7ea1101af101b"
+        "sha256": "ed6bb2670dd54d3a71378f7556632c25243dedec622582176a4094cf5d49b6c9"
       },
-      "pinSha256": "8fb241773288968ef83d05509af94eede5f1d1ee6f0cc3b4acd98ec367caf1eb"
+      "pinSha256": "c3e229c26122e8c5f80466f553f17dd77a37deb4b7b1736eea4d17d64ef90cd6"
     },
     {
       "id": "observe-initial-live-capture",

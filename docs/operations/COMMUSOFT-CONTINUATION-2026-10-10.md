@@ -16,13 +16,18 @@ pause/resume and exact source-page/version preservation. Browser verification al
 reloaded the uncertain request, reconciled exactly one approval and paused it.
 Twenty-two focused tests, TypeScript and the full frontend build pass.
 
-This is local evidence only. The migration is not yet in the nineteen-package
-production release or installed in TEST. The dedicated worker calls recurring
-scheduling through `learn_commusoft_claim_jobs` only after that migration is
-installed. No real recurring approval or provider call was made. Full-schema
-packaging, hosted acceptance, provider date-filter verification and changed-source
-canonical reconciliation remain required. Existing approvals bind their approving
-operator; transfer/recovery under another operator remains unfinished.
+The backend is now installed and verified in TEST as package 084, preserving
+all 195 existing datasets, with no accounts, grants or provider requests. Capture
+remains paused. Production package 020 passed the complete retained-schema
+rehearsal, including full inventory traversal, four-stage completion and revoked
+approval handling. It is in the twenty-package production candidate; production
+is not changed. The dedicated worker calls recurring scheduling through
+`learn_commusoft_claim_jobs` after installation.
+
+Matching hosted controls, provider date-filter verification, real ongoing capture
+and changed-source canonical reconciliation remain required. Existing approvals
+bind their approving operator; transfer/recovery under another operator remains
+unfinished.
 
 [Evidence](evidence/learn-commusoft-recurring-controls-2026-10-12.json).
 

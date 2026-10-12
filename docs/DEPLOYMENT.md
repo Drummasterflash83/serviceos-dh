@@ -43,15 +43,16 @@ Cloudflare-flavoured.
 ## Preview deployments
 
 **Latest release preparation, 12 October:** the candidate contains production
-packages 001–019 and 37 matching runtime artifacts, rehearsed locally against the
+packages 001–020 and 37 matching runtime artifacts, rehearsed locally against the
 retained archive. Git `04f7f8edd8e3d55637ce0376698a746191a403b2` is built as a
 [protected production-configured preview](https://serviceos-pgtk1tzt4-allkin.vercel.app/login).
-It is READY and its rendered auth target is verified as production. The earlier
+It is READY and its rendered auth target is verified as production. It predates
+the latest Commusoft controls and needs a matching frontend refresh before release. The earlier
 `serviceos-yhfbegxeo` preview used the wrong backend and must not be promoted.
 The live deployment and domains are unchanged. Chris has authorised deployment;
 signed-in production acceptance, matching backend installation and the remaining
 technical release gates are still outstanding.
-[Current backend evidence](operations/evidence/learn-production-slack-recurring-2026-10-12.json) ·
+[Current backend evidence](operations/evidence/learn-production-commusoft-recurring-2026-10-12.json) ·
 [Frontend evidence](operations/evidence/learn-production-frontend-slack-setup-2026-10-12.json).
 The older component rehearsal records below are supporting history; use the
 completion checklist and exact current release manifest for promotion decisions.

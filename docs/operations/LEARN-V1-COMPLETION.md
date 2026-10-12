@@ -7,36 +7,40 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**12 October — Commusoft ongoing-capture controls connected and verified locally.**
+**12 October — recurring Commusoft backend installed in TEST; complete production package rehearsed.**
 
 ### Working and verified
 
-- OpenFolk now has an operator workflow for approving, pausing and resuming
-  ongoing Commusoft cycles, with four-stage progress, verified coverage boundary,
-  page limits and readable recovery states. It uses the existing workspace design.
-- The real application request/recovery code passes against the actual recurring
-  SQL in a disposable database. Pause/resume retains all source pages and versions;
-  an intentionally lost response reconciles without a duplicate approval.
-- Browser verification covers approval, reload, saved-result recovery and pause.
-  Twenty-two focused tests, TypeScript checking and the full frontend build pass.
-  No real-provider call, TEST activation or production change occurred.
+- TEST package 084 is installed and read back, preserving all 195 existing
+  datasets. It adds fixed update windows and recurring controls; no account,
+  grant, provider request or capture activation was created.
+- Production package 020 passed the full-schema isolated restore rehearsal:
+  all original archived rows and sequences were preserved. The synthetic journey
+  verifies complete inventory traversal, four-stage completion, pause/resume,
+  revocation and source preservation.
+- The candidate now has twenty SQL packages, 37 unchanged runtime artifacts and
+  a 71-step release plan. Runtime boot/caller evidence is explicitly carried
+  forward for identical bytes. All 31 release tests pass; fresh read-only
+  configuration preflight matches the 88 existing production definitions.
+- The operator controls passed local browser, application-to-SQL, type and build
+  checks. The matching hosted frontend is the next verification step.
 
 ### Needs finishing
 
-- Package the existing recurring migration for the full production schema, verify
-  the matching hosted operator/worker journey and provider update-date filters,
-  then approve the intended real recurring scope through the controls.
-- The current production release still has nineteen packages and excludes this
-  migration. Do not promote this UI as working recurring capture on that backend.
-- Finish release gates, broader source-to-card acceptance, scoring and operational
-  requirements below. Paused bounded imports do not establish ongoing capture.
+- Deploy and verify the latest operator controls in hosted TEST, verify provider
+  date filters and the intended real recurring capture journey.
+- Refresh the production frontend candidate: its current protected preview is
+  still Git `04f7f8e` and lacks the newest controls. Complete sign-in, integrated
+  release gates, matched installation and initial live observation.
+- Broader history, source-to-card acceptance, scoring and operational requirements
+  below remain open. Paused bounded imports do not establish ongoing capture.
 
 ### Blocked externally
 
 - Live-login credential lookup still awaits owner Touch ID. Other release and
   connector work can continue independently.
 
-[Local operator workflow evidence](evidence/learn-commusoft-recurring-controls-2026-10-12.json).
+[Database and runtime evidence](evidence/learn-production-commusoft-recurring-2026-10-12.json).
 
 ## Earlier checkpoints
 

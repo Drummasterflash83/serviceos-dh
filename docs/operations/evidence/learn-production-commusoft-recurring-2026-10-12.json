@@ -1,0 +1,183 @@
+{
+  "state": "production_commusoft_recurring_rehearsed_offline",
+  "productionChanged": false,
+  "hostedTestChanged": true,
+  "providerRequests": 0,
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "negativeChecks": [
+    "wrong_target",
+    "function_acl_drift",
+    "late_failure"
+  ],
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 382,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "4c5e5b72fb8b265b4de65ba5315550f6011534fb625b28fdc950be97bd1896c9",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "originalArchivePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "duplicateRejected": true,
+  "journey": {
+    "passed": true,
+    "probeSha256": "c883d1b466a221dbd8f3ab4af4a11f5268d2aeb7ba2621245e5860a4c126207e",
+    "sources": [
+      {
+        "path": "scripts/verify/learn-production-commusoft.fixture.sql",
+        "sha256": "fdcf5ee08f2e10ed490daf601cf2b59652d64b4ef5b797154eeed004fbab83ae"
+      },
+      {
+        "path": "scripts/verify/learn-commusoft-contact-traversal.assert.sql",
+        "sha256": "3957047c85032f2543b2dab2534a514cf7a60da3993e0ad54b46f87320652be2"
+      },
+      {
+        "path": "scripts/verify/learn-commusoft-update-windows.assert.sql",
+        "sha256": "de67083fbef78b3c62106ba17f09a9e9309cc3550ffceab51032ce0a9a70cd5b"
+      },
+      {
+        "path": "scripts/verify/learn-commusoft-recurring.assert.sql",
+        "sha256": "20c4ca8304ef236ed395770ec916f6309d92dc2efda85fda16032e68df15a4d6"
+      }
+    ]
+  },
+  "postJourneyPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 385,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "99cae64d717abfbe8f3e090e014dfffb5f5c5d6fc7d7c5b0f87c69cc0206dcb3",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "packages": [
+    "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+    "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+    "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+    "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+    "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+    "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+    "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+    "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+    "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+    "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+    "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+    "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+    "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba",
+    "f4413fe47a9eaa1eb7774e35e22f10f78bf94a55345f4fbe19fe690b4e7d8556",
+    "b877e70fa1cc946ba0c9c8a66f28b6603f99dc8484fefd1411bf30beed325998",
+    "ab4cef1752c520a13047fb287d63931068f7e7468d0014ba955df75a49a9dd56",
+    "304b2e84f822b703a882b184ee490268f2b3802c817dee5f7953c7180a8962d2",
+    "f5fe1265961b713a338c3bfa650cd8744e2bfeaf04778f90e83f5dc9352e51c0",
+    "e1be0657e8da44ad1def758c29a782f4f0bfd224b7a8b2a3587e9e53122266ee"
+  ],
+  "newFunctions": 8,
+  "changedFunctions": 3,
+  "newTables": 3,
+  "existingTablesViewsRolesStorageUnchanged": true,
+  "priorReceiptsUnchanged": true,
+  "addedReleaseReceipts": 1,
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "version": "learn-production-commusoft-recurring/1",
+  "candidateManifestSha256": "cac713503926aa8eb4b6e6e59241b1694f731a81057b55fbe2902734c8bbbf6b",
+  "sourceClosureSha256": "21eb8361f395bcd3d828e4890f78060cfc2c8aedaf4b007d5c66842e55c55893",
+  "bundleReportSha256": "df4f37efe91b8a50ea5b545c22324670a39adbaccdcb968a07d0a2da85ea3e5b",
+  "bootReportSha256": "91338410db9829adc7a20a278e5584fd90a67ccb9ee8d95824158e378c8de25d",
+  "runtimeWireReportSha256": "3d6c1797bf98c4737978cecd1f491f4b5f3a1d945c99f1de013a1b9918acbcaa",
+  "callerReportSha256": "497d5699433bcfe2d0fa68954b512295dfd0712029f4043aec0f8e0ce90af304",
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-scheduler-callers.mjs",
+      "sha256": "a2abbc1d7ae2b16b07256465b7bc205c19156ce765d5881b07b93561dc101791"
+    },
+    {
+      "path": "scripts/verify/learn-production-scheduler-caller.fixture.ts",
+      "sha256": "60b5bf47bfa5372a1f49bd4d3feebebb52745e1dd2b7a97a2dc6e6e9790706f7"
+    }
+  ],
+  "runtimeEvidenceCarriedForward": true,
+  "newRuntimeBootExecution": false,
+  "runtimeDerivation": {
+    "state": "unchanged_runtime_evidence_carried_forward",
+    "observedAt": "2026-10-12T21:50:11.279Z",
+    "priorManifestSha256": "eb7175becf0dd851b9aa5f557f64ef4f142f2580df189472d09fc7565b88a86a",
+    "currentManifestSha256": "cac713503926aa8eb4b6e6e59241b1694f731a81057b55fbe2902734c8bbbf6b",
+    "originalBundleReportSha256": "e47dc53e69d5e5453ccab1205730e0a72b505c1448f7f6d800f648dea7194abd",
+    "originalBootReportSha256": "32ef4711bb80dc003549e662add81a8848ba1a02cf18841204937ffa928d39ae",
+    "sqlRehearsalReportSha256": "2e7c9536f9345151ca58ac1e5c58a31b8bdd5b0e156546c065c994116862d181",
+    "runtimeInputsUnchanged": true,
+    "artifactBytesUnchanged": true,
+    "newBootExecution": false,
+    "productionChanged": false,
+    "explanation": "Only the ordered SQL package set changed. All endpoint metadata, source bytes, entrypoints and JWT settings remain identical. These exact retained executable bytes passed the original offline boot; package 020 passed a separate full-schema recurring capture rehearsal."
+  },
+  "dynamicRpcReview": {
+    "sites": 19,
+    "uniqueTargets": 51,
+    "failures": 0
+  },
+  "knownLimitations": [
+    "No production installation or activation. TEST package 084 installed with capture still paused.",
+    "The recurring journey uses synthetic provider records in the complete restored schema; actual provider filtering and ongoing capture remain unverified.",
+    "Signed-in production, integrated release gates, frontend update, real source-to-card and complete goal acceptance remain open."
+  ],
+  "hostedTestInstallation": {
+    "state": "installed_verified",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T21:53:50.014Z",
+    "packageSha256": "1de06689e1f4f08b319673b56a15dab467bffabba92664f3761b1e99fa304647",
+    "expected": {
+      "marker": "commusoft_recurring_installed",
+      "fingerprint": "ccf126b8adda22510d1fbfffd1987dc1"
+    },
+    "afterFingerprint": "ccf126b8adda22510d1fbfffd1987dc1",
+    "preservedDatasets": 195,
+    "newAccounts": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "credentialsUploaded": 0,
+    "productionChanged": false
+  }
+}

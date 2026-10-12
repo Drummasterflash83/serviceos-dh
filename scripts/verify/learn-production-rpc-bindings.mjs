@@ -6,17 +6,17 @@ const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 const root = "supabase/release/learn-production/";
 const candidate = JSON.parse(readFileSync(root + "runtime-candidate.manifest.json"));
 const review = JSON.parse(readFileSync(root + "rpc-bindings.review.json"));
-const baselineBytes = readFileSync(".verification-results/production-slack-recurring-rehearsal-v5/schema.json");
+const baselineBytes = readFileSync(".verification-results/production-commusoft-recurring-rehearsal-v1/schema.json");
 const baseline = JSON.parse(baselineBytes);
-const provenance = JSON.parse(readFileSync(".verification-results/production-slack-recurring-rehearsal-v5/report.json"));
+const provenance = JSON.parse(readFileSync(".verification-results/production-commusoft-recurring-rehearsal-v1/report.json"));
 const output = process.argv[2];
 if (!/^\.verification-results\/[a-z0-9-]+\.json$/.test(output ?? ""))
   throw Error("Explicit private report path required");
 if (sha(baselineBytes) !== review.baselineSchemaSha256 ||
     review.sourceClosureSha256 !== candidate.sourceClosureSha256 ||
-    provenance.state !== "production_slack_recurring_rehearsed_offline" ||
-    !provenance.containerRemoved || provenance.packages.length !== 19 ||
-    !provenance.journey?.passed || candidate.database.length !== 19)
+    provenance.state !== "production_commusoft_recurring_rehearsed_offline" ||
+    !provenance.containerRemoved || provenance.packages.length !== 20 ||
+    !provenance.journey?.passed || candidate.database.length !== 20)
   throw Error("Rehearsed candidate provenance changed");
 for (const [i, p] of candidate.database.entries()) {
   if (sha(readFileSync(p.path)) !== p.sha256 ||
@@ -44,7 +44,7 @@ const checks = review.sites.map(s => {
     const found = functions.filter(f => f.name === t.name);
     const permission = t.role === "authenticated" ? "authenticatedExecute" : "serviceExecute";
     return { ...t, found: found.length > 0, executeAllowed: found.some(f => f[permission] === true),
-      schemaEvidence: "rehearsed_001_to_019_catalog" };
+      schemaEvidence: "rehearsed_001_to_020_catalog" };
   }), resolution: s.resolution };
 });
 const failures = checks.flatMap(c => c.targets.filter(t => !t.found || !t.executeAllowed)

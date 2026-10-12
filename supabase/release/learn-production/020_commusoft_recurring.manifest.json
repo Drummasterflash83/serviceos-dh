@@ -1,0 +1,45 @@
+{
+  "version": "learn-production-commusoft-recurring/1",
+  "status": "prepared_requires_matching_release_verification",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "e1be0657e8da44ad1def758c29a782f4f0bfd224b7a8b2a3587e9e53122266ee",
+  "priorSha256": "f5fe1265961b713a338c3bfa650cd8744e2bfeaf04778f90e83f5dc9352e51c0",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101550000_learn_commusoft_recurring.sql",
+      "sha256": "b293167dfadc56463a9a7724c8aee335dbab39bc10a5f75b2d143a3ba144e150"
+    }
+  ],
+  "newFunctions": [
+    "learn_commusoft_recurring_actor",
+    "learn_commusoft_recurring_admission",
+    "learn_commusoft_recurring_control",
+    "learn_commusoft_recurring_empty_parent",
+    "learn_commusoft_recurring_page_allowed",
+    "learn_commusoft_recurring_read",
+    "learn_commusoft_recurring_start",
+    "learn_commusoft_schedule_recurring"
+  ],
+  "changedFunctions": [
+    "learn_commusoft_acquire_page",
+    "learn_commusoft_claim_jobs",
+    "learn_commusoft_commit_page"
+  ],
+  "newTables": [
+    "learn_commusoft_recurring",
+    "learn_commusoft_recurring_requests",
+    "learn_commusoft_recurring_steps"
+  ],
+  "changedViews": [],
+  "newSequences": [],
+  "extendedTables": {},
+  "limitations": [
+    "No subscription, credential, grant, job or hosted provider request is created by installation.",
+    "Every cycle traverses full property inventory, jobs, customer contacts and site contacts; only verified completion advances the watermark.",
+    "Real-provider filter acceptance, recurring capture and canonical changed-source reconciliation remain separate acceptance requirements."
+  ]
+}

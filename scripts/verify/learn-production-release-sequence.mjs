@@ -11,28 +11,28 @@ const read = p => JSON.parse(readFileSync(p));
 const base = 'supabase/release/learn-production/';
 const runtimeBytes = readFileSync(base+'runtime-candidate.manifest.json');
 const candidate = JSON.parse(runtimeBytes), candidateSha256 = sha(runtimeBytes);
-const wireRoot = '.verification-results/production-runtime-wire-20261012-scheduler-callers';
+const wireRoot = '.verification-results/production-runtime-wire-20261012-commusoft-recurring';
 const wire = read(join(wireRoot,'report.json'));
 const backupRoot = '.verification-results/production-runtime-compiled-backup-20261012';
 const backup = read(join(backupRoot,'report.json'));
 const schedules = read(base+'schedule-transition.manifest.json');
 const frontend = read('docs/operations/evidence/learn-production-frontend-slack-setup-2026-10-12.json');
-if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!==19 || candidate.endpoints.length!==37 ||
+if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!==20 || candidate.endpoints.length!==37 ||
     wire.projectRef!==candidate.projectRef || wire.candidateManifestSha256!==candidateSha256 ||
     wire.state!=='prepared_not_uploaded' || schedules.runtime.sha256!==candidateSha256 ||
     backup.projectRef!==candidate.projectRef || backup.state!=='compiled_artifacts_retained_with_unchanged_deployment_metadata')
   throw Error('Exact production artifact set required');
 const verified = (path,expected) => { if(sha(readFileSync(path))!==expected) throw Error('Pinned file changed: '+path); };
-const binding=read('docs/operations/evidence/learn-production-scheduler-callers-2026-10-12.json');
-const originalRoot='.verification-results/production-runtime-bundle-20261012-scheduler-callers';
+const binding=read('docs/operations/evidence/learn-production-commusoft-recurring-2026-10-12.json');
+const originalRoot='.verification-results/production-runtime-bundle-20261012-commusoft-recurring';
 verified(join(originalRoot,'report.json'),binding.bundleReportSha256);
-verified(join(originalRoot,'boot-eszip/report.json'),binding.bootReportSha256);
-const bundled=read(join(originalRoot,'report.json')), boot=read(join(originalRoot,'boot-eszip/report.json'));
+verified(join(originalRoot,'boot-carried-forward/report.json'),binding.bootReportSha256);
+const bundled=read(join(originalRoot,'report.json')), boot=read(join(originalRoot,'boot-carried-forward/report.json'));
 const callerPath='.verification-results/production-scheduler-callers-after-20261012/report.json';
 verified(callerPath,binding.callerReportSha256);
 const caller=read(callerPath);
 for(const source of binding.sources) verified(source.path,source.sha256);
-if(caller.manifestSha256!==candidateSha256 || caller.state!=='scheduler_callers_verified_offline' ||
+if(caller.manifestSha256!==bundled.derivation?.priorManifestSha256 || caller.sourceClosureSha256!==candidate.sourceClosureSha256 || caller.state!=='scheduler_callers_verified_offline' ||
    !caller.containerRemoved || caller.checks.length!==28 || caller.checks.some(c=>!c.passed) ||
    caller.artifacts.some(a=>a.sha256!==bundled.endpoints.find(e=>e.name===a.name)?.eszipSha256))
   throw Error('Exact scheduler caller acceptance differs');
@@ -142,4 +142,4 @@ writeFileSync(base+'release-operations.manifest.json',JSON.stringify({version:'l
     'The current protected frontend preview and its production backend binding are verified; signed-in acceptance remains unverified.',
     'Do not restore old runtimes over new checkpoints without reviewed compatibility or forward repair.'],
 },null,2)+'\n');
-console.log(JSON.stringify({state:'prepared_not_executed',steps:plan.steps.length,database:19,runtime:37}));
+console.log(JSON.stringify({state:'prepared_not_executed',steps:plan.steps.length,database:20,runtime:37}));
