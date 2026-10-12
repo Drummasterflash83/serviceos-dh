@@ -7,6 +7,22 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 13:58 UTC — original customer contacts and refreshed properties complete in TEST.**
+The original frozen customer-contact plan completed all 1,547 parents and retained
+2,395 contacts. A fresh operator-approved property pass completed all 25 pages,
+retaining 2,421 properties; the three newly available customers were added without
+replacing the 2,418 earlier source records. All 194 protected datasets match the
+reviewed preservation baseline. Jobs remain at 12,611 retained records.
+
+The next operator-approved work-address contact plan covers 871 sites, with at
+most 1,000 pages of 100 records and a two-hour expiry. It uses the same tenant,
+connection and operator access, under the existing 4,000-request supervisor ceiling;
+no login or grant was created. The site pass is now running. Afterwards, the
+refreshed 1,550-customer contact plan still needs traversal, followed by relationship
+reconciliation and useful whole-account card publication. Completed traversal does
+not establish provider deletion history, resolve missing job parents or finish V1.
+[Retained traversal and preservation evidence](evidence/learn-commusoft-operator-continuation-2026-10-12.json).
+
 **12 October — bounded real phone capture, replay and stored audio verified in TEST.**
 The approved 15-minute sample retained one call and one recording. Repeating the
 metadata retained the same two identities and count. The one 417,425-byte audio
@@ -28,7 +44,7 @@ binding actor, tenant, account, resource/limits and expiry. Its next property
 refresh must use a recorded operator approval, 100 records per page and at most
 50 pages; the original overall 4,000-request ceiling is unchanged. Nine supervisor
 checks pass, and read-only inspection accepted the current real continuation.
-No new property import has started.
+The subsequent bounded property refresh completed as recorded above.
 
 **12 October, 13:24 UTC — property freshness gap measured; refresh rehearsed locally.**
 Four bounded read-only provider requests found 2,421 currently available properties
@@ -2314,8 +2330,10 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   The existing Workspace credential is now provisioned in TEST. Heidi’s live
   mailbox recovery is verified separately; TEST mailbox activation, remaining
   mailbox reconciliation and real V1 capture-to-card acceptance are still open.
-- [ ] **Commusoft:** jobs traversal now reaches 127 pages / 12,611 unique jobs;
-  finish customer/site contacts, reconcile
+- [ ] **Commusoft:** jobs traversal reaches 127 pages / 12,611 unique jobs;
+  the original 1,547-customer contact plan and refreshed 2,421-property traversal
+  are complete. Finish the 871-site contact plan and refreshed 1,550-customer
+  contact traversal; reconcile
   missing customer/property references and unzoned timestamps; publish valid
   customer/contact/site/job relationships with held records visible for review.
   Verify incremental updates and a real source-to-card journey without provider writes.

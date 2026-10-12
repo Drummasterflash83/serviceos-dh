@@ -1,21 +1,58 @@
 {
   "scope": "TEST only",
   "run": "eb260c9d-e1ee-48cf-8cc4-179375b50613",
-  "observedAt": "2026-10-12T13:43:02.515588+00:00",
-  "pages": 1442,
-  "parentsPlanned": 1547,
+  "observedAt": "2026-10-12T13:58:09.310845+00:00",
+  "resource": "propertyContacts",
+  "contactType": "workaddress",
+  "approvalId": "48409f2c-20b3-48af-82c5-3c7f20dc0278",
+  "pages": 0,
+  "parentsPlanned": 871,
   "complete": false,
+  "traversals": [
+    {
+      "pages": 127,
+      "complete": true,
+      "collection": "jobs",
+      "approval_id": "8a84cb95-b150-439f-b47b-6214a3439e49",
+      "contact_type": null,
+      "planned_parents": 0
+    },
+    {
+      "pages": 25,
+      "complete": true,
+      "collection": "properties",
+      "approval_id": "bcbe081a-b889-449b-bd4e-9dcdb4fbcc74",
+      "contact_type": null,
+      "planned_parents": 0
+    },
+    {
+      "pages": 25,
+      "complete": true,
+      "collection": "properties",
+      "approval_id": "9c7c3faf-61a2-427a-b08d-aa4c1bcf9063",
+      "contact_type": null,
+      "planned_parents": 0
+    },
+    {
+      "pages": 1547,
+      "complete": true,
+      "collection": "propertyContacts",
+      "approval_id": "61d8535e-f148-45af-baf3-123a7091c07b",
+      "contact_type": "customer",
+      "planned_parents": 1547
+    }
+  ],
   "sources": [
     {
       "records": 12611,
       "collection": "jobs"
     },
     {
-      "records": 2418,
+      "records": 2421,
       "collection": "properties"
     },
     {
-      "records": 2268,
+      "records": 2395,
       "collection": "propertyContacts"
     }
   ],
@@ -24,11 +61,11 @@
       "error": null,
       "status": "queued",
       "attempt": 0,
-      "availableAt": "2026-10-12T13:43:03.072908+00:00",
+      "availableAt": "2026-10-12T13:57:57.021541+00:00",
       "leaseExpiresAt": null
     }
   ],
-  "requests": 1062,
+  "requests": 1192,
   "maxProviderRequests": 4000,
   "newAccounts": 0,
   "newGrants": 0,
@@ -77,7 +114,7 @@
     "strictTypecheck": "passed"
   },
   "limits": [
-    "Customer contacts and site contacts are not complete.",
+    "The original 1,547-customer contact plan completed; contacts for the refreshed customer list and site contacts remain outstanding.",
     "One real customer/site/job/contact card chain verified separately; whole-account publication and enriched card acceptance remain open.",
     "Generic historical authority failures do not identify their precise cause.",
     "Production release remains separate."
