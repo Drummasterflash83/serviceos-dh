@@ -1,13 +1,18 @@
 # Existing Workspace route for the revoked Gmail account
 
 Status: **approved and applied to production at 06:24:50 UTC on 12 October**;
-committed route confirmed at 06:26 UTC. Scheduled provider outcome pending.
+committed route confirmed at 06:26 UTC; scheduled capture succeeded at 06:37 UTC.
 
 The guarded transaction preserved credentials, revoked OAuth evidence, all other
 account fields and sending/connector permissions. It preserved the identities of
 18,610 emails and 12,862 threads. Backfill remains idle. The normal 06:25 scheduler
-queued a Workspace capture job for this account. Queue admission is not evidence
-of a successful provider run. The proposal and rollback below record the approved
+queued a Workspace capture job for this account. Its first attempt completed at
+06:37:09 UTC with 49 messages fetched/processed and 49 threads processed.
+Readback at 06:38:59 confirms all 18,610 pre-repair email and 12,862 thread
+identities remain. There are 49 saved messages involving the mailbox in the run
+window, plus two concurrent messages. The legacy writer lacks per-account row
+metadata; these observations do not establish complete history or V1 card delivery.
+Backfill is still idle, and the original revoked OAuth state is preserved. The proposal and rollback below record the approved
 scope; the earlier read-only evidence remains a historical pre-change observation.
 
 One existing Drummonds Gmail account has a revoked individual OAuth refresh token.

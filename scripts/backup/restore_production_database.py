@@ -227,9 +227,13 @@ def run(*, combined_audio=False, compare_native=False):
 
 
 if __name__ == '__main__':
-    if sys.argv[1:] not in ([], ['--combined-audio'], ['--compare-native'], ['--complete-capture-v2']):
+    if sys.argv[1:] not in ([], ['--combined-audio'], ['--compare-native'], ['--complete-capture-v2'], ['--complete-capture-small'], ['--complete-capture-small-full']):
         raise SystemExit('Unsupported restore option')
     if sys.argv[1:] == ['--complete-capture-v2']:
         ROOT = Path('.verification-results/production-database-complete-capture-v2-2026-10-12')
+    if sys.argv[1:] == ['--complete-capture-small']:
+        ROOT = Path('.verification-results/production-database-complete-capture-small-2026-10-12')
+    if sys.argv[1:] == ['--complete-capture-small-full']:
+        ROOT = Path('.verification-results/production-database-complete-capture-small-full-2026-10-12')
     run(combined_audio=sys.argv[1:] == ['--combined-audio'],
-        compare_native=sys.argv[1:] in (['--compare-native'], ['--complete-capture-v2']))
+        compare_native=sys.argv[1:] in (['--compare-native'], ['--complete-capture-v2'], ['--complete-capture-small'], ['--complete-capture-small-full']))

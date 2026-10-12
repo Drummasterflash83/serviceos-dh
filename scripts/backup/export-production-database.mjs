@@ -13,8 +13,15 @@ import { savedCliToken } from '../verify/learn-test-readiness.mjs';
 
 const project = 'tgbnakbxwcqjeimygroz';
 const image = 'sha256:28f0e16a019e648089fc1a6d333549a55548f6019c15ae4bd7cd58b989027518';
-const completeCapture = process.argv.slice(2).join(' ') === '--export-complete-capture-v2';
-const root = completeCapture
+const mode = process.argv.slice(2).join(' ');
+const monitoredCapture = mode === '--export-complete-capture-small-full';
+const afterSmallUpgrade = monitoredCapture || mode === '--export-complete-capture-small';
+const completeCapture = afterSmallUpgrade || mode === '--export-complete-capture-v2';
+const root = monitoredCapture
+  ? '.verification-results/production-database-complete-capture-small-full-2026-10-12'
+  : afterSmallUpgrade
+  ? '.verification-results/production-database-complete-capture-small-2026-10-12'
+  : completeCapture
   ? '.verification-results/production-database-complete-capture-v2-2026-10-12'
   : '.verification-results/production-database-export-2026-10-12';
 const docker = '/usr/local/bin/docker';
@@ -67,6 +74,18 @@ try {
       ...(body ? { body: JSON.stringify(body) } : {}), redirect: 'error', signal: AbortSignal.timeout(30000),
     });
     check(r.ok, `Recovery API request failed (HTTP ${r.status})`); return r.json();
+  }
+  if (afterSmallUpgrade) {
+    const addons = await api('/billing/addons');
+    check(addons.selected_addons?.some(a => a.type === 'compute_instance' && a.variant?.id === 'ci_small'),
+      'Approved Small compute must still be selected');
+    const health = await api('/health?services=auth,db,rest,storage');
+    check(Array.isArray(health) && health.length === 4 && health.every(h => h.healthy === true),
+      'All source services must be healthy before the bounded retry');
+    const active = execFileSync(docker, ['ps', '-a', '--filter', 'name=serviceos-export-', '--format', '{{.Names}}'],
+      { encoding: 'utf8', timeout: 20000 }).trim();
+    check(!active, 'Existing export container must be reconciled before retry');
+    report.capacityGate = 'approved_small_and_all_services_healthy';
   }
   const before = await api('/database/query/read-only', { query: `select jsonb_build_object(
     'expired',rolvaliduntil<clock_timestamp(),'name',rolname,'memberships',
@@ -178,16 +197,27 @@ try {
     'serviceos-recovery-pg-dump', `pg_dump -w --format=custom --compress=6 --role=postgres --snapshot=${snapshot.snapshot} --lock-wait-timeout=5s`),
     { stdio: ['pipe', 'pipe', 'pipe'] });
   let archiveBytes = 0; const archiveHash = createHash('sha256');
+  let lastArchiveProgress = Date.now();
   dump.stdout.on('data', chunk => { archiveBytes += chunk.length; archiveHash.update(chunk);
+    lastArchiveProgress = Date.now();
     if (archiveBytes > 3 * 1024 * 1024 * 1024) dump.kill('SIGTERM'); });
   dump.stderr.on('data', chunk => appendFileSync(root + '/dump-stderr.log', chunk, { mode: 0o600 }));
   const exit = once(dump, 'close');
   dump.stdin.end(prefix); login.password = '';
-  const deadline = setTimeout(() => dump.kill('SIGTERM'), 900000);
+  const maxDuration = monitoredCapture ? 1800000 : afterSmallUpgrade ? 180000 : 900000;
+  const stopDump = reason => { report.stopReason = reason; save(); dump.kill('SIGTERM'); };
+  const deadline = setTimeout(() => stopDump('maximum_duration_reached'), maxDuration);
+  const progress = monitoredCapture ? setInterval(() => {
+    report.archiveProgress = { bytes: archiveBytes, checkedAt: new Date().toISOString(),
+      lastProgressAt: new Date(lastArchiveProgress).toISOString() };
+    save();
+    console.log(JSON.stringify({ stage: report.state, archiveBytes }));
+    if (Date.now() - lastArchiveProgress >= 180000) stopDump('no_archive_progress_for_three_minutes');
+  }, 30000) : null;
   try {
     await pipeline(dump.stdout, output);
     const [code] = await exit; check(code === 0, 'Native database export failed; raw output withheld');
-  } finally { clearTimeout(deadline); }
+  } finally { clearTimeout(deadline); if (progress) clearInterval(progress); }
   check(archiveBytes > 0 && archiveBytes <= 3 * 1024 * 1024 * 1024, 'Native archive size outside bound');
   renameSync(root + '/database.dump.partial', root + '/database.dump');
   report.archive = { bytes: archiveBytes, sha256: archiveHash.digest('hex') };

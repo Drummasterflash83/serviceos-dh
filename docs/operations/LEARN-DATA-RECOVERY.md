@@ -1,21 +1,28 @@
 # LEARN data recovery coverage
 
-## Capacity gate before another capture — 12 October 2026
+## Small upgrade and bounded export retry — 12 October, latest state
 
-Read-only investigation found low total memory (408 MiB), elevated load averages
-and subsequent failed metrics scrapes even after export clients were removed.
-The available SQL observation showed no blocked sessions or exhausted connection
-limit. The retained archive has 18 active cron schedules with overlapping starts.
-These findings do not establish the historical failure's single cause. Failed
-metric responses cannot be interpreted as zero CPU, I/O or page-fault activity.
+The approved production Small/2 GB upgrade is complete. SQL, Auth, database, REST
+and Storage remained healthy through ordinary capture cycles and a new bounded
+read-only export. At 06:31 UTC there were no blocked sessions, 11 client sessions
+against a 90-connection limit, about 1 GB available memory and low observed load.
+The older capacity gate below is resolved; full recovery acceptance is not.
 
-A [reviewable Small/2 GB compute proposal](LEARN-DATABASE-CAPACITY.md) is prepared
-and awaiting approval. Existing Pro is confirmed; provider pricing is
-US$0.0206/hour for this compute selection before credits and tax. No billing,
-compute, schedule or retained-data changes have been made. Do not repeat a native
-export simply because one SQL/health request succeeds; first resolve the capacity/
-workload decision and verify steady operation through an ordinary capture cycle.
-[Evidence](evidence/learn-database-capacity-2026-10-12.json).
+The 06:32:08 UTC snapshot captured both operational pg_net tables and transferred
+50,032,640 bytes before the three-minute diagnostic bound stopped the dump.
+Service health remained good during that interval. This is a retained partial
+file, not a usable new archive. At 06:35:57 UTC cleanup confirmed zero CLI sessions,
+zero local export containers and unchanged CLI membership. The short-lived
+credential expires at 06:37:07 UTC; do not refresh while it is still active.
+The original 196,872,981-byte archive and its SHA-256 are unchanged.
+
+At 06:37:12 UTC the old credential was confirmed expired. A new private full
+export began at 06:37 UTC and is transferring data, using a
+30-minute maximum and a three-minute no-progress cutoff, followed by an isolated
+native restore/comparison. It keeps previous attempts in separate directories.
+No production source writes, schedule changes or database upload are authorised
+by this recovery path. Vault key portability and full service recovery remain open.
+[Diagnostic evidence](evidence/learn-recovery-small-export-probe-2026-10-12.json).
 
 ## Latest capture attempt — 12 October 2026, 01:21 UTC
 

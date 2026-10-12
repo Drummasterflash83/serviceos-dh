@@ -6,6 +6,23 @@ The current hosted TEST frontend is Git `9cbf562`, schema package 079 and worker
 v20. That combination has synthetic processing acceptance, not full launch
 acceptance. Source backups are on `codex/learn-v1-test`.
 
+
+## Complete candidate schema rehearsal — 12 October, latest scope
+
+All fourteen production-specific packages now passed one ordered offline install
+and combined exercise against the archived production schema. The 54 journey
+invocations include scoring, Slack replies, capture pause/admission concurrency,
+imports, Commusoft, email, Phone, cards, Microsoft and private voicemail. Original
+299-table / 1,591,576-row / five-sequence preservation, negative package guards,
+role boundaries and Storage checks passed. The isolated container was removed.
+
+[Combined evidence](evidence/learn-combined-release-rehearsal-2026-10-12.json)
+is the current database acceptance milestone. The chronological sections below
+retain earlier package-specific findings; statements that only the first packages
+exist are historical. This does not prove the matching deployed runtime/frontend,
+real-provider coverage or signed-in acceptance. The full release, existing draft
+reconciliation, final live-baseline drift check and production approval remain open.
+
 ## Production archive reconciliation — 12 October, 02:52 UTC
 
 A fresh isolated restore of the existing 00:25 UTC production archive now supplies

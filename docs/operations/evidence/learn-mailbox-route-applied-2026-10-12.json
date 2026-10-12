@@ -25,17 +25,28 @@
   "readback": {
     "jobs": [
       {
-        "status": "queued",
+        "status": "succeeded",
         "job_type": "email.workspace_sync",
         "created_at": "2026-10-12T06:25:03.634341+00:00",
-        "started_at": null,
+        "started_at": "2026-10-12T06:37:00.880838+00:00",
         "next_run_at": null,
-        "completed_at": null,
-        "attempt_count": 0,
-        "records_processed": 0
+        "completed_at": "2026-10-12T06:37:09.774+00:00",
+        "attempt_count": 1,
+        "records_processed": 49
       }
     ],
     "runs": [
+      {
+        "status": "success",
+        "fetched": 49,
+        "ids_seen": 49,
+        "sync_type": "workspace_messages",
+        "error_code": null,
+        "started_at": "2026-10-12T06:37:01.104+00:00",
+        "completed_at": "2026-10-12T06:37:09.726+00:00",
+        "records_processed": 49,
+        "threads_processed": 49
+      },
       {
         "status": "failed",
         "fetched": null,
@@ -55,13 +66,33 @@
       "backfill_total_fetched": 0
     },
     "sources": {
-      "emails": 18610,
-      "identityHash": "755fdb89318c0ea8b91b94b54f6e1773"
+      "emails": 18663,
+      "identityHash": "89725921888dff9f26c12c5c32715eb9"
     },
-    "checkedAt": "2026-10-12T06:28:56.278868+00:00"
+    "checkedAt": "2026-10-12T06:37:25.952511+00:00"
   },
-  "captureVerified": false,
+  "captureVerified": true,
   "historicalBackfillStarted": false,
   "productionReleaseApplied": false,
-  "remaining": "Observe the queued Workspace job to terminal completion. The older queued OAuth job still reported its revoked token; this does not establish failure of the new Workspace job."
+  "remaining": "Bounded scheduled capture recovered. Legacy rows do not have per-account source metadata; full mailbox/history coverage, V1 publication and signed-in acceptance remain unverified. The capture window includes two other concurrent records.",
+  "retentionAfterCapture": {
+    "checkedAt": "2026-10-12T06:38:59.614608+00:00",
+    "captureWindow": {
+      "records": 51,
+      "matchedThreads": 51,
+      "boundAccountMetadata": 0,
+      "matchingMailboxParticipant": 49
+    },
+    "retainedSources": {
+      "emails": {
+        "count": 18610,
+        "identityHash": "755fdb89318c0ea8b91b94b54f6e1773"
+      },
+      "threads": {
+        "count": 12862,
+        "identityHash": "9333f634bf5f1e032e6f302175c8d450"
+      }
+    },
+    "originalIdentitiesPreserved": true
+  }
 }

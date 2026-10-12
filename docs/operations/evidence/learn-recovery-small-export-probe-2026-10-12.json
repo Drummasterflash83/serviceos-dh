@@ -1,0 +1,35 @@
+{
+  "schema": "learn-recovery-small-export-probe/1",
+  "startedAt": "2026-10-12T06:32:00.263Z",
+  "snapshotAt": "2026-10-12T06:32:08.728198+00:00",
+  "state": "stopped_at_three_minute_diagnostic_limit",
+  "partialArchiveBytes": 50032640,
+  "completeArchive": false,
+  "restoreVerified": false,
+  "priorArchiveSha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd",
+  "priorArchiveUnchanged": true,
+  "netSupplement": {
+    "format": "native-postgresql-copy",
+    "tables": [
+      "_http_response",
+      "http_request_queue"
+    ],
+    "bytes": 545728,
+    "sha256": "d29f53e7dfcdc9b2f4ae3b68cef39dd07915b7cee654865b3098dabcedc19c44",
+    "rowsUseExportedSnapshot": true,
+    "sequenceIsNonTransactional": true
+  },
+  "productionDataWrites": false,
+  "destination": "private_local_only",
+  "cleanup": {
+    "healthy": true,
+    "checkedAt": "2026-10-12T06:35:57.568145+00:00",
+    "cliExpired": false,
+    "cliExpiresAt": "2026-10-12T06:37:07.914004+00:00",
+    "remainingCliSessions": 0,
+    "remainingLocalExportContainers": 0,
+    "unchangedRoleMembership": true,
+    "productionDataWrites": false
+  },
+  "nextStep": "One new monitored full export after the temporary CLI credential expires; 30-minute maximum, abort after three minutes without archive progress. Then offline restore and native row comparison."
+}

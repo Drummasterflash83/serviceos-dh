@@ -7,16 +7,28 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**12 October, 06:24–06:26 UTC — approved single-mailbox Workspace repair applied.**
-Chris approved the reviewed one-account recovery. One guarded production transaction
-changed its existing route from individual OAuth to Workspace (`active_dwd`).
-Credentials, revoked OAuth evidence, other account fields, sending permissions and
-all 18,610 retained email / 12,862 thread identities were preserved. Historical
-backfill remains idle. Readback confirmed the committed route, and the normal
-06:25 scheduler queued `email.workspace_sync`. Its terminal provider outcome still
-needs observation; a queued job does not establish restored capture or full history.
-No other mailbox, LEARN release, source history or credential was changed.
-[Recovery record](LEARN-MAILBOX-RECOVERY.md).
+**12 October, 06:35 UTC — Small export diagnostic transfers data; recovery remains open.**
+Production stayed healthy during a bounded read-only export. The new snapshot
+included both operational pg_net tables and transferred 50,032,640 bytes before
+the three-minute diagnostic limit. It is partial and not accepted as a backup.
+Cleanup found no remaining CLI sessions or local export containers; previous
+archives are intact. A separately journaled full transfer started at 06:37 UTC and is producing bytes,
+with a 30-minute maximum and three-minute no-progress cutoff. Offline restore and
+comparison remain pending.
+[Recovery record](LEARN-DATA-RECOVERY.md).
+
+
+**12 October, 06:37–06:39 UTC — approved mailbox repair verified in scheduled capture.**
+The existing Workspace route completed its first scheduled attempt: 49 messages
+fetched/processed and 49 threads processed. Fresh readback confirms the original
+18,610 email and 12,862 thread identities are unchanged. The run's storage window
+contains 49 messages involving the mailbox, plus two concurrent records. Historical
+backfill remains idle; credentials and revoked OAuth evidence were preserved.
+The legacy writer has no per-account message metadata. This verifies the bounded
+live recovery, not complete history, V1 source-to-card delivery or launch acceptance.
+No other mailbox or production LEARN release was changed.
+[Recovery record](LEARN-MAILBOX-RECOVERY.md) and
+[execution evidence](evidence/learn-mailbox-route-applied-2026-10-12.json).
 
 **12 October — all fourteen candidate packages passed a combined offline rehearsal.**
 The final schema passed 54 journey invocations across Microsoft, voicemail,

@@ -3,8 +3,13 @@ import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { savedCliToken } from '../verify/learn-test-readiness.mjs';
 
-const root = '.verification-results/production-database-complete-capture-v2-2026-10-12';
-if (process.argv.slice(2).join(' ') !== '--check-complete-capture-v2') {
+const mode = process.argv.slice(2).join(' ');
+const root = mode === '--check-complete-capture-small-full'
+  ? '.verification-results/production-database-complete-capture-small-full-2026-10-12'
+  : mode === '--check-complete-capture-small'
+  ? '.verification-results/production-database-complete-capture-small-2026-10-12'
+  : '.verification-results/production-database-complete-capture-v2-2026-10-12';
+if (!['--check-complete-capture-v2', '--check-complete-capture-small', '--check-complete-capture-small-full'].includes(mode)) {
   throw Error('Explicit completed-capture check required');
 }
 try {
