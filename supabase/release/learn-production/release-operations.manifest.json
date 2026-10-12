@@ -2,7 +2,7 @@
   "version": "learn-production-release-operations/1",
   "state": "prepared_not_approved_or_executed",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "planSha256": "84ad9777a9a9f5e6094f137f53b77f0c6e36febadadc8a3b1b844b4268225dd4",
+  "planSha256": "a1986168c1f03c2327357f19e37d4018dfbf45d103990697349e583dac31de2b",
   "operations": [
     {
       "id": "fresh-release-preflight",
@@ -1350,12 +1350,12 @@
       "kind": "frontend",
       "contract": {
         "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
-        "id": "dpl_J8BHu5qhjRgeJ3uLQehkot1Fej9k",
-        "url": "https://serviceos-6wpg9beg9-allkin.vercel.app",
-        "gitSha": "e7431669e254d83d8afc2da07e6d7d6a9bc7eba3",
+        "id": "dpl_4Ri5YLNTdH4JPDMbKtXJYaxYSjUA",
+        "url": "https://serviceos-yhfbegxeo-allkin.vercel.app",
+        "gitSha": "254db7860447dc54b900635437fbd8cc0e21e1ef",
         "previousProductionDeployment": "dpl_DXueDsax146gdtyFoniXRaW3dzMM"
       },
-      "pinSha256": "431df89b76cc41fc81361d7be8d0eb9e0d14ae5e626382ddd6b91d0d0f5eeda4"
+      "pinSha256": "dd315febf3ce8e8f58dd6c7423e12f4758728a99f9f3cf980d3bd41d4c121555"
     },
     {
       "id": "signed-in-live-acceptance",
@@ -1435,7 +1435,7 @@
   "limitations": [
     "Journal mechanics are locally tested; production execution adapters and acceptance gates remain unfinished.",
     "Exact artifact pins do not prove current hosted state, approval, signed-in access or provider completeness.",
-    "The retained frontend preview predates update-window controls; rebuild, verify and replace its pin before requesting promotion.",
+    "The current protected frontend preview is built, but served backend binding and signed-in acceptance remain unverified.",
     "Do not restore old runtimes over new checkpoints without reviewed compatibility or forward repair."
   ]
 }

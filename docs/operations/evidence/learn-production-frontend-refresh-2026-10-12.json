@@ -1,0 +1,47 @@
+{
+  "observedAt": "2026-10-12T17:59:11.450Z",
+  "state": "protected_production_configured_preview_ready",
+  "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+  "id": "dpl_4Ri5YLNTdH4JPDMbKtXJYaxYSjUA",
+  "url": "https://serviceos-yhfbegxeo-allkin.vercel.app",
+  "gitSha": "254db7860447dc54b900635437fbd8cc0e21e1ef",
+  "target": "staging",
+  "productionDeploymentUnchanged": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "protection": [
+    {
+      "path": "/",
+      "status": 302,
+      "protectedByVercel": true
+    },
+    {
+      "path": "/login",
+      "status": 302,
+      "protectedByVercel": true
+    },
+    {
+      "path": "/client?section=learn",
+      "status": 302,
+      "protectedByVercel": true
+    },
+    {
+      "path": "/openfolk",
+      "status": 302,
+      "protectedByVercel": true
+    }
+  ],
+  "browser": {
+    "loginScreenLoaded": true,
+    "existingProductionSession": false,
+    "signedInAcceptance": false
+  },
+  "configuration": "Preview inherits the same existing public environment entries as production; no values changed.",
+  "actualServedBackendBinding": "pending signed-in verification",
+  "productionBackendChanged": false,
+  "productionPromotion": false,
+  "limitations": [
+    "The preview is built from the current UI revision; this is not a live promotion.",
+    "New production SQL/runtime/configuration remain undeployed.",
+    "Signed-in acceptance and served backend binding remain pending.",
+    "The local refresh flow is verified with synthetic RPC responses; real-provider filtered acceptance is outstanding."
+  ]
+}

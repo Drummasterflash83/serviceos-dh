@@ -3,14 +3,27 @@
 Status: **preparation only; not approved or ready to execute**. The
 [completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
 The current hosted TEST frontend is Git `e2d51fa` (12 October, 12:50 UTC).
-The database candidate now includes production-specific packages 001–016. Package
-015 brings forward the latest operator information/review, customer context and
-recording access; its archive rehearsal passed. The complete paired production
-runtime/frontend release and live acceptance are still unfinished. Source backups
-are on `codex/learn-v1-test`.
+The database candidate now includes production-specific packages 001–017. Package
+017 adds fixed Commusoft update periods without activating capture; all seventeen
+packages and the synthetic refresh journey passed on the isolated retained
+production archive. The paired runtime contains 37 compiled artifacts. The current
+protected frontend candidate is Git `254db78`; its login screen loads, but signed-in
+acceptance and actual served backend binding remain pending. Source backups are
+on `codex/learn-v1-test`.
 
 
 ## Matching processing candidate — 12 October
+
+**Current preparation — 68 steps, no production promotion.**
+The exact package/runtime/preview pins are in the release sequence. Local dispatch
+now routes existing approved Commusoft/Slack work; its switch stays off during
+staging. Commusoft's manual update periods retain exact bounds through resume and
+preserve full contact-parent coverage. Automatic refresh approval/watermarks,
+real-provider filtered acceptance, production configuration and signed-in journeys
+remain unfinished. The prepared preview now includes the locally browser-verified
+refresh controls; it must not be mistaken for a matched live backend.
+[Refresh package evidence](evidence/learn-production-update-windows-2026-10-12.json)
+and [current preview](evidence/learn-production-frontend-refresh-2026-10-12.json).
 
 **12 October — database and schedule execution adapters connected.**
 The release journal can now use the exact 16 package statements and the two
@@ -176,14 +189,14 @@ checks, the thirteen changed gateway flags and new Slack/Commusoft caller bindin
 remain separate gates.
 
 The production-project **protected preview** is now built from verified GitHub
-checkpoint `e7431669e254d83d8afc2da07e6d7d6a9bc7eba3`:
-[release preview](https://serviceos-6wpg9beg9-allkin.vercel.app/login).
+checkpoint `254db7860447dc54b900635437fbd8cc0e21e1ef`:
+[release preview](https://serviceos-yhfbegxeo-allkin.vercel.app/login).
 It inherits the existing production/preview public configuration and leaves the
 production deployment and custom domains unchanged. Its login screen loads; all
 four unauthenticated routes remain protected. Actual served backend binding and
 signed-in acceptance remain pending. Do not promote this preview before the
 matching database/runtime/configuration and the concrete release approval.
-[Preview evidence](evidence/learn-production-frontend-preview-2026-10-12.json).
+[Preview evidence](evidence/learn-production-frontend-refresh-2026-10-12.json).
 
 **Rollback artifacts and upload bytes are now prepared.** Read-only download
 retained all 28 existing production endpoints as both source (227 files) and

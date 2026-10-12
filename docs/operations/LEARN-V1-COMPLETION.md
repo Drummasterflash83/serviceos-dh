@@ -7,6 +7,16 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 17:57 UTC — current frontend built as a protected preview.**
+Vercel built Git `254db78` to READY in the existing production project as a
+staging preview. All four unauthenticated entry routes remain protected and the
+login screen loads. The current live deployment, domains and backend are unchanged.
+The 68-step release preparation now pins this frontend together with SQL 001–017
+and the 37 verified local server artifacts. The existing live-account sign-in is
+requested in that tab; actual served backend binding and signed-in acceptance are
+still unverified. This supersedes the earlier requirement to rebuild the outdated
+frontend preview. [Current preview evidence](evidence/learn-production-frontend-refresh-2026-10-12.json).
+
 **12 October, 17:54 UTC — recording refresh verified; browser recovery checked.**
 The approved backup now verifies all **2,950 files / 616,063,866 bytes** from the
 17:40 UTC inventory, with **2,944 recording references**, no missing referenced

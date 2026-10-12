@@ -42,6 +42,17 @@ Cloudflare-flavoured.
 
 ## Preview deployments
 
+**Latest release preparation, 12 October:** the candidate contains production
+packages 001–017 and 37 matching runtime artifacts, rehearsed locally against the
+retained archive. Git `254db7860447dc54b900635437fbd8cc0e21e1ef` is built as a
+[protected production-configured preview](https://serviceos-yhfbegxeo-allkin.vercel.app/login).
+It is READY and its login screen loads; all four unauthenticated entry routes
+remain Vercel-protected. The live deployment and domains are unchanged. Production
+sign-in, actual served backend binding, matching backend installation and promotion
+approval remain outstanding. [Current evidence](operations/evidence/learn-production-frontend-refresh-2026-10-12.json).
+The older component rehearsal records below are supporting history; use the
+completion checklist and exact current release manifest for promotion decisions.
+
 The production-specific LEARN candidates now include packages 001–014. The combined
 archive rehearsal preserves every original row/sequence, existing storage owners
 and private voicemail access. The latest suites pass synthetic Microsoft source-to-card

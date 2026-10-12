@@ -16,7 +16,7 @@ const wire = read(join(wireRoot,'report.json'));
 const backupRoot = '.verification-results/production-runtime-compiled-backup-20261012';
 const backup = read(join(backupRoot,'report.json'));
 const schedules = read(base+'schedule-transition.manifest.json');
-const frontend = read('docs/operations/evidence/learn-production-frontend-preview-2026-10-12.json');
+const frontend = read('docs/operations/evidence/learn-production-frontend-refresh-2026-10-12.json');
 if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!==17 || candidate.endpoints.length!==37 ||
     wire.projectRef!==candidate.projectRef || wire.candidateManifestSha256!==candidateSha256 ||
     wire.state!=='prepared_not_uploaded' || schedules.runtime.sha256!==candidateSha256 ||
@@ -69,7 +69,7 @@ for(const e of candidate.endpoints) {
     verified(join(backupRoot,e.name+'.ezbr'),b.ezbrSha256);
   }
 }
-if(frontend.id!=='dpl_J8BHu5qhjRgeJ3uLQehkot1Fej9k' || frontend.gitSha!=='e7431669e254d83d8afc2da07e6d7d6a9bc7eba3' ||
+if(frontend.id!=='dpl_4Ri5YLNTdH4JPDMbKtXJYaxYSjUA' || frontend.gitSha!=='254db7860447dc54b900635437fbd8cc0e21e1ef' ||
    frontend.state!=='protected_production_configured_preview_ready') throw Error('Reviewed frontend artifact required');
 const operations=[];
 function add(id,kind,contract) { operations.push({id,kind,contract,pinSha256:sha(JSON.stringify(contract))}); }
@@ -131,7 +131,7 @@ writeFileSync(base+'release-operations.manifest.json',JSON.stringify({version:'l
   planSha256:sha(JSON.stringify(plan)),operations,
   limitations:['Journal mechanics are locally tested; production execution adapters and acceptance gates remain unfinished.',
     'Exact artifact pins do not prove current hosted state, approval, signed-in access or provider completeness.',
-    'The retained frontend preview predates update-window controls; rebuild, verify and replace its pin before requesting promotion.',
+    'The current protected frontend preview is built, but served backend binding and signed-in acceptance remain unverified.',
     'Do not restore old runtimes over new checkpoints without reviewed compatibility or forward repair.'],
 },null,2)+'\n');
 console.log(JSON.stringify({state:'prepared_not_executed',steps:plan.steps.length,database:17,runtime:37}));

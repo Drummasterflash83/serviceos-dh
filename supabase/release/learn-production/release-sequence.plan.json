@@ -316,7 +316,7 @@
     {
       "id": "promote-matching-frontend",
       "kind": "frontend",
-      "pinSha256": "431df89b76cc41fc81361d7be8d0eb9e0d14ae5e626382ddd6b91d0d0f5eeda4"
+      "pinSha256": "dd315febf3ce8e8f58dd6c7423e12f4758728a99f9f3cf980d3bd41d4c121555"
     },
     {
       "id": "signed-in-live-acceptance",
