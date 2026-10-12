@@ -1,8 +1,8 @@
 {
   "scope": "TEST only",
   "run": "eb260c9d-e1ee-48cf-8cc4-179375b50613",
-  "observedAt": "2026-10-12T12:53:58.83842+00:00",
-  "pages": 1130,
+  "observedAt": "2026-10-12T13:07:36.151019+00:00",
+  "pages": 1268,
   "parentsPlanned": 1547,
   "complete": false,
   "sources": [
@@ -15,20 +15,20 @@
       "collection": "properties"
     },
     {
-      "records": 1865,
+      "records": 2036,
       "collection": "propertyContacts"
     }
   ],
   "jobs": [
     {
-      "error": "commusoft_request_window_expired",
-      "status": "retrying",
+      "error": null,
+      "status": "running",
       "attempt": 1,
-      "availableAt": "2026-10-12T12:51:53.477325+00:00",
-      "leaseExpiresAt": null
+      "availableAt": "2026-10-12T13:07:34.70194+00:00",
+      "leaseExpiresAt": "2026-10-12T13:10:35.398975+00:00"
     }
   ],
-  "requests": 747,
+  "requests": 886,
   "maxProviderRequests": 4000,
   "newAccounts": 0,
   "newGrants": 0,

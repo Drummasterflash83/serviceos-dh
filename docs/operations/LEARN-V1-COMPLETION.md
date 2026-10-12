@@ -7,6 +7,13 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 13:07 UTC — customer-contact import advancing.**
+The existing supervised run reached 1,268 of 1,547 customer properties and retained
+2,036 contacts alongside 2,418 properties and 12,611 jobs. Its exact next worker
+job was running. All 194 datasets match the reviewed preservation baseline.
+Customer contacts and the subsequent site-contact traversal remain incomplete.
+[Current evidence](evidence/learn-commusoft-operator-continuation-2026-10-12.json).
+
 **12 October, 13:04 UTC — bounded real phone capture prepared.**
 TEST recording importer v9 supports explicit metadata-only capture, preserving
 its normal automatic processing default. All 73 local checks, strict TypeScript,
