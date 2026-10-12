@@ -1,6 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createRecoveryEscrow, RecoveryEscrowError } from "./onepassword-database-recovery.mjs";
+import {
+  createRecoveryEscrow,
+  RecoveryEscrowError,
+  templatePipeCommand,
+} from "./onepassword-database-recovery.mjs";
+import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { loadDatabaseCredential } from "./serviceos-database-backup-access.mjs";
 const binding = {
   accountId: "a".repeat(26),
@@ -15,6 +21,24 @@ const material = {
   ageIdentity: "AGE-SECRET-KEY-1" + "A".repeat(59),
   vaultRootKey: "12".repeat(32),
 };
+test("template transport presents a real pipe and keeps secret input out of arguments", () => {
+  const payload = "synthetic-private-value";
+  const literalArgument = "literal; $(exit 99) `exit 99`";
+  const [command, args] = templatePipeCommand(process.execPath, [
+    "-e",
+    "const fs=require('node:fs');const hash=require('node:crypto').createHash('sha256').update(fs.readFileSync(0)).digest('hex');process.stdout.write(JSON.stringify({fifo:fs.fstatSync(0).isFIFO(),hash,argument:process.argv[1]}));",
+    literalArgument,
+  ]);
+  const result = spawnSync(command, args, { input: payload, encoding: "utf8" });
+  assert.equal(result.status, 0);
+  assert.deepEqual(JSON.parse(result.stdout), {
+    fifo: true,
+    hash: createHash("sha256").update(payload).digest("hex"),
+    argument: literalArgument,
+  });
+  assert.ok(!args.join(" ").includes(payload));
+  assert.ok(!result.stderr);
+});
 function fixture() {
   let item = {
     id: binding.itemId,
@@ -151,4 +175,24 @@ test("database credentials use their own role-specific Keychain entry and reject
       /database_scoped_credential_unverified/,
     );
   }
+});
+
+test("desktop account UUID keeps its exact uppercase spelling in CLI arguments", async () => {
+  const bound = { ...binding, accountId: "A".repeat(26) };
+  const argsSeen = [];
+  const escrow = createRecoveryEscrow(bound, {
+    execute: async (args) => {
+      argsSeen.push(args);
+      return JSON.stringify({
+        ...fixture().item,
+        fields: [
+          { id: "serviceos_database_recovery", type: "CONCEALED", value: JSON.stringify(material) },
+        ],
+      });
+    },
+  });
+  assert.deepEqual(await escrow.read(), material);
+  assert.equal(argsSeen[0][argsSeen[0].indexOf("--account") + 1], bound.accountId);
+  assert.throws(() => createRecoveryEscrow({ ...bound, accountId: "A".repeat(25) + "a" }));
+  assert.throws(() => createRecoveryEscrow({ ...bound, itemId: "C".repeat(26) }));
 });

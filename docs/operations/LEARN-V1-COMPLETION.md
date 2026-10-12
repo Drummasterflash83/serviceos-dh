@@ -7,6 +7,16 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 09:20 UTC — database recovery keys saved and read back from 1Password.**
+The approved dedicated age identity and existing production Vault root key are
+now in the concealed recovery field of the exact Openfolk ServiceOS note.
+Read-back verified the age pair and matched the source root key; existing fields
+and metadata were preserved. No key values were printed or written to a plaintext
+host file. Six focused checks pass, including the real POSIX-pipe transport used
+by the CLI. The initial ignored-template attempt was inspected before retry.
+The independent AWS database bucket, scoped identities, upload and independent
+restore remain outstanding. [Escrow evidence](evidence/learn-database-recovery-escrow-2026-10-12.json).
+
 **12 October, 08:56 UTC — Commusoft continuation readiness restored.**
 Full read-only TEST 079 preflight passes: original source preservation, current
 Auth, exact runtime bundles, encrypted credential binding, paused capture and
@@ -27,8 +37,7 @@ and activation remain open. [Provisioning evidence](evidence/learn-workspace-tes
 Chris also approved 1Password desktop CLI integration for the already-approved
 database recovery setup. Chris enabled the setting and native UI read-back confirms “Integrate with
 1Password CLI” is checked. Account metadata is readable; exact-note authenticated
-access is now verified after the owner completed Touch ID. No keys have
-yet been written to the note.
+access is now verified after the owner completed Touch ID. The recovery-key save is verified by the newer 09:20 entry above.
 
 **12 October, 08:30–08:31 UTC — fresh recording backup and linked restore verified.**
 The retried manual daily run verified **2,893 files / 602,476,551 bytes**, including
@@ -54,9 +63,9 @@ a substitute for completing LEARN. No requirement or release approval is waived.
 
 **Database activation decision:** Chris approved the separate London database
 bucket, scoped Writer/Restore identities and keys, 1Password recovery material,
-one bounded encrypted snapshot copy and independent restore. No database
-resources or keys have yet been created. The separate 1Password CLI access
-request is now approved; enablement is not yet verified. Production promotion is not included.
+one bounded encrypted snapshot copy and independent restore. Database recovery keys are now saved in 1Password; no AWS database
+resources or machine keys have yet been created. The separate CLI access route
+is approved and verified. Production promotion is not included.
 
 **12 October — full archive references prepared for fresh file-backup reconciliation.**
 A new offline restore preserved all 1,594,994 native rows and 711 operational rows,

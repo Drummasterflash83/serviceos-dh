@@ -1,0 +1,30 @@
+{
+  "observedAt": "2026-10-12T09:20:19.428Z",
+  "scope": "approved recovery material in existing Openfolk ServiceOS 1Password note",
+  "state": "saved_and_read_back",
+  "productionProject": "tgbnakbxwcqjeimygroz",
+  "agePairVerified": true,
+  "vaultRootKeyComparedToSource": true,
+  "existingFieldsAndMetadataPreserved": true,
+  "secretValuesPrinted": false,
+  "keysWrittenToPlaintextHostFile": false,
+  "productionChanged": false,
+  "awsDatabaseResourcesCreated": false,
+  "databaseCopied": false,
+  "cliTransport": {
+    "priorNodeSocketDryRunFields": 1,
+    "posixPipeDryRunFields": 2,
+    "syntheticMarkerOnlyInPosixPipe": true,
+    "priorUncertainWriteInspectedBeforeRetry": true
+  },
+  "validation": {
+    "focusedTests": 6,
+    "passed": 6
+  },
+  "remaining": [
+    "Independent AWS database destination and scoped credentials",
+    "Encrypted snapshot copy and independent download/restore",
+    "Dependable recurring database operation",
+    "Full-service recovery acceptance"
+  ]
+}

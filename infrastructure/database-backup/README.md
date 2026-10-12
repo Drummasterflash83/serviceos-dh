@@ -2,13 +2,15 @@
 
 12 October 2026. Chris has approved the described destination, scoped access,
 key escrow and bounded first copy/restore. The separate 1Password CLI integration
-was also approved on 12 October and its checked setting verified in the app. No resources,
-keys or database copy have been created.
+was also approved on 12 October and its checked setting verified in the app. The dedicated age recovery key and existing Vault root key were saved and read back
+from Openfolk ServiceOS at 09:20 UTC. No AWS database resources, machine keys or
+database copy have been created.
 
 This is the remaining database recovery work, alongside the
 already established recordings bucket. The native database and all 16 Vault
 secrets have passed a local restore. No independent database upload, database
-backup identity, key escrow or recurring database runner is established yet.
+backup identity or recurring database runner is established yet. Recovery-material
+escrow is verified; AWS credential recovery copies await provisioning.
 
 The foundation template is prepared and locally validated. Real age encryption,
 strict package recovery and the AWS SDK transfer protocol pass a combined
@@ -16,8 +18,8 @@ synthetic round trip. The existing real snapshot passes package admission only;
 it has not been encrypted or uploaded. The encrypted package now also passes a
 full synthetic PostgreSQL/Vault restore through the stdin-only recovery command.
 The supervised operator runner and exact-item 1Password adapter now pass local
-synthetic checks. Live access, escrow, infrastructure provisioning and the first
-real copy still require the distinct approvals and verification below. **This document is not an approval or
+synthetic checks. Live exact-note access and recovery escrow are verified. Approved infrastructure
+provisioning and the first real copy still require execution and verification below. **This document is not an approval or
 evidence that an independent database backup exists.**
 
 ## Exact proposed destination and contents
@@ -139,7 +141,7 @@ complete biometric authentication; do not bypass that prompt. Sessions expire
 after inactivity or when the app locks, so this is suitable for supervised key
 setup/recovery, not a dependable unattended daily key source.
 
-For a subsequent separately approved escrow write, use an in-memory JSON template
+For the approved escrow write, use an in-memory JSON template
 on stdin to `op item edit`; sensitive field assignments must never go into command
 arguments. Preserve all existing fields and stop on conflicting prior recovery
 values. The CLI warns that templates do not preserve passkeys: verify that the
@@ -163,6 +165,23 @@ retrieval is therefore required. Keys travel through protected process input,
 not command arguments, environment variables, clipboard history or diagnostic
 output. Any necessary temporary file must be private and removed afterward;
 ordinary file deletion is not a guarantee of physical secure erasure.
+
+### Verified recovery escrow — 12 October, 09:20 UTC
+
+The saved concealed field was read back from the exact bound secure note. The
+retrieved age identity derives the recorded recipient, and the retrieved Vault
+root key matches the production configuration. Existing fields and metadata are
+unchanged. No private key was printed or written to a plaintext host file.
+[Sanitised evidence](../../docs/operations/evidence/learn-database-recovery-escrow-2026-10-12.json).
+
+The first template attempt returned success but did not add a field. Read-back
+caught it; exact-item inspection confirmed no recovery material had been saved.
+A dry run isolated the cause: Node supplies a socket as child stdin on macOS,
+which the CLI ignored as a template. The adapter now supplies an actual POSIX
+pipe through a fixed `/bin/cat` pipeline. Arguments remain positional; secret JSON
+stays on stdin. A six-test regression suite checks transport, preservation,
+conflicts, uncertain writes and exact account/role binding. Use one persistent
+terminal session for supervised CLI work to reduce repeated biometric prompts.
 
 ## Supervised initial-copy commands — prepared, not run against real services
 

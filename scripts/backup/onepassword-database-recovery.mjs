@@ -7,6 +7,12 @@ const OP = "/private/tmp/serviceos-op-2.40.0/op";
 const OP_SHA256 = "7dff93952c49d25133c8a2487ab7072e656368d4e7089f055f119bc8d1066ae2";
 const FIELD = "serviceos_database_recovery";
 const TITLE = "Openfolk ServiceOS";
+// Node's child-process "pipe" is a socket on macOS. The CLI detects piped
+// templates using the stdin file type and otherwise silently ignores the JSON.
+// cat supplies an actual POSIX pipe; all command arguments remain positional.
+export function templatePipeCommand(command, args) {
+  return ["/bin/sh", ["-c", '/bin/cat | "$@"', "serviceos-1password", command, ...args]];
+}
 const canonical = (value) =>
   JSON.stringify(value, (_k, v) =>
     v && typeof v === "object" && !Array.isArray(v)
@@ -44,7 +50,8 @@ export function validateRecoveryMaterial(value) {
 }
 function validateBinding(binding) {
   need(
-    ["accountId", "vaultId", "itemId"].every((k) => /^[a-z0-9]{26}$/.test(binding?.[k] ?? "")),
+    /^(?:[A-Z0-9]{26}|[a-z0-9]{26})$/.test(binding?.accountId ?? "") &&
+      ["vaultId", "itemId"].every((k) => /^[a-z0-9]{26}$/.test(binding?.[k] ?? "")),
     "onepassword_binding_invalid",
   );
   need(binding.title === TITLE, "onepassword_title_invalid");
@@ -99,7 +106,8 @@ async function executeCli(args, input) {
   const env = { PATH: "/usr/bin:/bin", HOME: process.env.HOME, LANG: "en_US.UTF-8" };
   if (process.env.TMPDIR) env.TMPDIR = process.env.TMPDIR;
   return new Promise((resolve, reject) => {
-    const child = spawn(OP, args, { env, stdio: ["pipe", "pipe", "pipe"] });
+    const [command, argv] = input === undefined ? [OP, args] : templatePipeCommand(OP, args);
+    const child = spawn(command, argv, { env, stdio: ["pipe", "pipe", "pipe"] });
     const chunks = [];
     let bytes = 0,
       failure = false;
