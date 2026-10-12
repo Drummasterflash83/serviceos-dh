@@ -1,0 +1,105 @@
+{
+  "contract": "learn-commusoft-continuation-retired-evidence/1",
+  "observedAt": "2026-10-12T09:56:31.327Z",
+  "environment": "Hosted TEST with authorised real read-only Drummonds provider requests",
+  "project": "saatxzwxvdvqevbnskxy",
+  "runId": "d764008e-8c8f-4837-999a-8d38b5e6e2d5",
+  "state": "retired",
+  "retiredAt": "2026-10-12T09:55:57.275Z",
+  "expiresAt": "2026-10-12 09:58:53.42348+00",
+  "originalDatasetsPreserved": true,
+  "workerInvocations": 414,
+  "requests": {
+    "importPermits": 413,
+    "additionalPropertyDiagnosticAttempts": 6,
+    "totalBudgeted": 419,
+    "approvedMaximum": 4000
+  },
+  "access": {
+    "activeGrants": 0,
+    "loginBanned": true,
+    "temporaryPasswordRemoved": true
+  },
+  "collections": [
+    {
+      "collection": "jobs",
+      "pages": 127,
+      "retained_records": 12611,
+      "traversal_complete": true,
+      "unique_records": 12611
+    },
+    {
+      "collection": "properties",
+      "pages": 25,
+      "retained_records": 2418,
+      "traversal_complete": true,
+      "unique_records": 2418
+    },
+    {
+      "collection": "propertyContacts",
+      "pages": 386,
+      "retained_records": 850,
+      "traversal_complete": false,
+      "unique_records": 850
+    }
+  ],
+  "control": {
+    "resource": "propertyContacts",
+    "contact_type": "customer",
+    "planned_contact_parents": "1547",
+    "retained_pages": "386",
+    "traversal_complete": "false",
+    "paused_flags": 2,
+    "running_jobs": 0
+  },
+  "references": {
+    "at": "2026-10-12T09:32:27.864Z",
+    "jobs": 12611,
+    "withParent": 11058,
+    "missingParent": 1553,
+    "missingByStatus": {
+      "on_hold": 4,
+      "ongoing": 27,
+      "completed": 1522
+    },
+    "invalidReference": 0,
+    "propertiesByStatus": {
+      "active": 2409,
+      "dormant": 9
+    },
+    "missingParentDistinct": 169,
+    "providerRequests": 0,
+    "canonicalPublication": false
+  },
+  "diagnostic": {
+    "initialAttempt": {
+      "requests": 3,
+      "statuses": [
+        403,
+        403,
+        403
+      ],
+      "cause": "Diagnostic used x-api-key/default user agent instead of the verified working Bearer request; our diagnostic error, not evidence of an external outage."
+    },
+    "correctedAttempt": {
+      "requests": 3,
+      "statuses": [
+        404,
+        404,
+        404
+      ],
+      "allJson": true,
+      "authentication": "Existing key via Bearer and established OpenFolk user agent"
+    },
+    "conclusion": "Three sampled missing properties returned authenticated 404. This does not establish why every missing property is absent or that it was deleted."
+  },
+  "canonicalPublicationPerformed": false,
+  "providerWrites": false,
+  "productionChanges": false,
+  "limitations": [
+    "Customer contact traversal is incomplete; work-address contact traversal has not started.",
+    "A collection end cursor is observed coverage, not an atomic provider snapshot.",
+    "Missing property relationships and unzoned timestamps require reconciliation before card acceptance.",
+    "This run performs no canonical publication, incremental or signed-in source-to-card acceptance."
+  ]
+}

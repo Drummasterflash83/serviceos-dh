@@ -1,6 +1,44 @@
-# Drummonds TEST continuation — prepared, not activated
+# Drummonds TEST continuation — partial import retained, access retired
 
-## Latest readiness — 12 October, 08:56 UTC
+## Latest result — 12 October, 09:56 UTC
+
+Approved continuation `d764008e` ran within its 60-minute access window and
+retired at **09:55:57 UTC**, before its 09:58:53 expiry. Both capture flags are
+paused, no import job is running, the exact temporary grant has ended and the
+login is banned with its temporary password removed from the private journal.
+All original protected dataset fingerprints remain preserved.
+
+Retained TEST source coverage is now:
+
+- Properties: **25 pages / 2,418 unique records**, traversal end observed.
+- Jobs: **127 pages / 12,611 unique records**, traversal end observed; resumed
+  from the retained 100-page checkpoint without replacing earlier source pages.
+- Customer contacts: **386 pages / 850 unique records**, incomplete against the
+  stored plan of 1,547 customer parents. Pages can be empty or continue a parent.
+- Work-address contacts: not started by this continuation.
+
+The run used 413 import permits plus six bounded diagnostic GET attempts,
+within the approved maximum of 4,000. The first worker returned 503 before claim;
+its exact response and unchanged queued state were inspected before retry.
+No canonical publication, provider writes, schedules or production changes occurred.
+
+Reference reconciliation remains necessary: **1,553 jobs** reference **169
+properties** absent from the property traversal (1,522 completed, 27 ongoing,
+four on hold). Three sampled property detail requests returned authenticated
+JSON 404 responses. An earlier three-request diagnostic used the wrong header
+and default user agent and received HTML 403; this was our diagnostic error,
+corrected to the already working Bearer request and OpenFolk user agent. It is
+not evidence of an external access outage. The three 404s do not explain every
+missing property or prove deletion.
+
+Next: prepare a new authorised continuation from the saved contact checkpoint;
+never reactivate this retired identity or restart the completed traversals.
+Finish both contact collections, reconcile absent relationships and timestamp
+limitations, then verify canonical publication, incremental updates and signed-in
+source-to-card delivery. No completeness claim or requirement is waived.
+[Sanitised run and retirement evidence](evidence/learn-commusoft-continuation-retired-2026-10-12.json).
+
+## Earlier readiness — 12 October, 08:56 UTC
 
 The same prepared run passes full read-only preflight on TEST 079. The 100-page
 jobs checkpoint, existing encrypted Commusoft credential and paused capture are

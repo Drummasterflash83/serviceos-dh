@@ -7,6 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 09:56 UTC — real Commusoft TEST continuation retained and retired.**
+Source storage now contains 2,418 unique properties (25 pages), 12,611 unique
+jobs (127 pages) and 850 unique customer contacts (386 pages). Properties/jobs
+reached their end cursors; customer contacts remain incomplete against the plan
+of 1,547 parents, and work-address contacts have not started. The original
+protected datasets remain unchanged. Capture is paused, no job is running,
+the temporary grant ended and the login was banned at 09:55:57, before expiry.
+The run used 413 import permits plus six diagnostic reads within its 4,000 cap.
+
+Reconciliation found 1,553 jobs referencing 169 absent properties. Three sampled
+authenticated detail requests returned JSON 404; their broader cause is not yet
+established. An initial diagnostic used the wrong header/default user agent and
+received 403; correcting our request removed that diagnostic access failure.
+No canonical publication or production change occurred. Remaining contacts,
+relationships, incremental updates and signed-in source-to-card acceptance are
+next; a new continuation must use newly authorised access, not this retired login.
+[Run evidence](evidence/learn-commusoft-continuation-retired-2026-10-12.json) and
+[continuation record](COMMUSOFT-CONTINUATION-2026-10-10.md).
+
 **12 October, 09:41 UTC — independent database copy and restore verified.**
 The approved London stack, separate Writer/Restore identities and one key each
 are active. Both credentials are verified in separate Keychain entries and
