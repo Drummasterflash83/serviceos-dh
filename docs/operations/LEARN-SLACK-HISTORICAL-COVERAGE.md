@@ -37,25 +37,55 @@ rejected and the replacement matches the previously verified DH/Heidi identity.
 The granted scopes exactly match the seven manifest scopes plus Slack's
 `identify` scope. Individual/group DM scopes are absent.
 
-Next: extend and verify the bot-only transport for the explicit user identity,
+Next: package the locally verified user-identity transport and SQL changes,
 prepare hosted storage and channel capture, and implement private-channel
 visibility controls. Preserve archived-channel coverage and disclose missing edit
 history. Do not enumerate or ingest DMs with the replacement credential.
 
 ## Current implementation and gaps
 
-The worker uses a tenant-bound Vault bot credential, verifies workspace and channel
+The deployed worker uses a tenant-bound Vault bot credential, verifies workspace and channel
 membership, and imports internal public channels in approved windows of at most
 24 hours. It stores durable checkpoints/source versions, handles rate limits,
 deduplicates messages and supports separately paginated observed threads.
 Recurring capture revisits retained parents. Synthetic and production-archive
 rehearsal evidence exists; real Drummonds Slack acceptance remains outstanding.
 
-The transport rejects private/shared channels and non-bot credentials. It does not
+The deployed transport rejects private/shared channels and non-bot credentials. It does not
 enumerate the workspace, orchestrate a whole-history backfill or download files.
 These are explicit coverage gaps, not channels with no activity. The current
 15-message/60-second policy is conservative; do not promise a full import by
 tomorrow before measuring the workspace and permitted throughput.
+
+### Locally verified user credential path — 12 October
+
+The local worker now supports an explicit `credential_kind: user` and
+`authorized_user_id`, selecting only `user_token` in Vault. Legacy bot connections
+retain `bot_token`; malformed user configuration never falls back to it. The real
+`auth.test` response must match both stored workspace and consenting user. The
+credential kind/user remain pinned across every authority recheck, even if a
+configuration change fails to update its revision.
+
+Public-channel user access can proceed without claiming the user is a member;
+the attestation preserves the real membership flag. This follows
+[Slack's documented user-token access](https://docs.slack.dev/reference/methods/conversations.history/).
+Bot membership rules remain intact. Private/shared channels and individual/group
+DMs remain rejected by this transport stage. Private-channel visibility is still
+required work, not a silently deferred part of the goal.
+
+Migration `20261101560000_learn_slack_user_credential.sql` updates ten existing
+setup, credential, recovery and recurring functions while retaining their current
+grants and consent/claim/tenant/revision gates. Its credential readers resolve the
+selected field's tenant-qualified Vault namespace. It installs no secret, account,
+job or schedule and changes no communications.
+
+All 63 Slack unit tests pass. Isolated PostgreSQL rehearsals pass on both user and
+legacy bot routes, including real history/thread credential readers, rollback,
+unchanged function grants, recurring thread discovery, pause/revocation and
+concurrent scheduling. The fixture uses synthetic records and a synthetic Vault
+table; the full production schema/actual Vault and hosted worker/provider round
+trip remain separate acceptance gates. No message reads, hosted changes or
+production promotion resulted from these tests.
 
 ## Connection preparation
 

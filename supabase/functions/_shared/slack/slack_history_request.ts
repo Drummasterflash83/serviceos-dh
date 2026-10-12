@@ -1,11 +1,11 @@
 import {SlackHistoryTransportError} from './slack_history_errors.ts';
 import {assertSlackHistoryScope} from './slack_history.ts';
 export type HistoryRequestIdentity={tenantId:string;accountId:string;teamId:string;channelId:string;oldest:string;latest:string;consentReference:string;expiresAt:string;maxPages:number;parentTimestamp?:string};
-export type HistoryRequestBinding={teamId:string;channelId:string;isPrivate:false;isShared:false;isMember:true;authorised:()=>Promise<boolean>;request:(method:string,body:Record<string,unknown>)=>Promise<any>};
+export type HistoryRequestBinding={teamId:string;channelId:string;isPrivate:false;isShared:false;isMember:boolean;publicUserAccess?:true;authorised:()=>Promise<boolean>;request:(method:string,body:Record<string,unknown>)=>Promise<any>};
 export type BindHistoryRequest=(identity:HistoryRequestIdentity)=>Promise<HistoryRequestBinding|null>;
 
 export type HistoryArguments={channel:string;oldest:string;latest:string;limit:15;cursor?:string;ts?:string};
-export type ChannelAttestation={tenantId:string;accountId:string;teamId:string;channelId:string;isPrivate:boolean;isShared:boolean;isMember:boolean};
+export type ChannelAttestation={tenantId:string;accountId:string;teamId:string;channelId:string;isPrivate:boolean;isShared:boolean;isMember:boolean;publicUserAccess?:true};
 /** Implemented only by the credential-owning server. Credentials never cross
  * this port. Acquisition must resolve the account and approved consent from
  * authoritative storage, rather than accept a queued/browser claim as authority. */
@@ -35,14 +35,17 @@ export function createHistoryRequestAdapter(ports?:HistoryServerPorts,clock:()=>
    if(!unexpired()||identity.parentTimestamp!==undefined&&(!/^\d{1,12}\.\d{1,6}$/.test(identity.parentTimestamp)||Number(identity.parentTimestamp)>Number(identity.latest)))return null;
    const lease=await ports.acquire(identity);
    if(!lease)return null;
+   let verifiedChannel:ChannelAttestation|null=null;
    const authorised=async()=>{try{
     if(!unexpired()||!fields.every(k=>lease.identity[k]===identity[k])||!await lease.authorised())return false;
     const channel=await lease.inspectChannel();
-    return fields.slice(0,4).every(k=>channel[k as keyof ChannelAttestation]===identity[k])&&channel.isPrivate===false&&channel.isShared===false&&channel.isMember===true&&unexpired()&&await lease.authorised()&&fields.every(k=>lease.identity[k]===identity[k]);
+    const valid=fields.slice(0,4).every(k=>channel[k as keyof ChannelAttestation]===identity[k])&&channel.isPrivate===false&&channel.isShared===false&&typeof channel.isMember==='boolean'&&(channel.isMember===true||channel.publicUserAccess===true)&&unexpired()&&await lease.authorised()&&fields.every(k=>lease.identity[k]===identity[k]);
+    if(valid)verifiedChannel=channel;return valid;
    }catch(error){if(error instanceof SlackHistoryTransportError)throw error;return false;}};
    if(!await authorised())return null;
    let requests=0;
-   return {teamId:identity.teamId,channelId:identity.channelId,isPrivate:false,isShared:false,isMember:true,authorised,
+   const channel=verifiedChannel as ChannelAttestation|null;if(!channel)return null;
+   return {teamId:identity.teamId,channelId:identity.channelId,isPrivate:false,isShared:false,isMember:channel.isMember,...(channel.publicUserAccess?{publicUserAccess:true as const}:{}),authorised,
     request:async(method,body)=>{
      const allowed=['channel','oldest','latest','limit','cursor',...(identity.parentTimestamp?['ts']:[])];
      if(method!==(identity.parentTimestamp?'conversations.replies':'conversations.history')||body?.ts!==identity.parentTimestamp||!body||Object.keys(body).some(k=>!allowed.includes(k))||body.channel!==identity.channelId||body.oldest!==identity.oldest||body.latest!==identity.latest||body.limit!==15||body.cursor!==undefined&&(typeof body.cursor!=='string'||body.cursor.length===0||body.cursor.length>1024))throw Error('history_request_scope_unavailable');

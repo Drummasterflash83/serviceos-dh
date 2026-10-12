@@ -7,9 +7,12 @@ import json
 import subprocess
 import time
 import uuid
+import sys
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[2]
+user_credential = '--user-credential' in sys.argv
+credential_migration = user_credential or '--bot-credential' in sys.argv
 docker = shutil.which('docker') or '/usr/local/bin/docker'
 name = 'serviceos-slack-recurring-threads-' + uuid.uuid4().hex[:8]
 image = 'public.ecr.aws/supabase/postgres:17.6.1.141'
@@ -71,8 +74,28 @@ try:
         '\n'.join(f['definition']+';' for f in observed['functions'] if f['name'] in ['slack_thread_commit_page','learn_slack_read_thread_credential']))
     sql((root/'supabase/migrations/20261031050000_learn_slack_thread_resume.sql').read_text())
     sql((root/'supabase/migrations/20261101005000_learn_slack_recurring_threads.sql').read_text())
+    if credential_migration:
+        # Complete the catalog expected by the credential migration. These are
+        # the actual functions, not mocked credential access implementations.
+        start = thread_source[thread_source.index('create function public.learn_slack_start_thread_import('):thread_source.index('create function public.slack_thread_commit_page(')]
+        sql('begin;\n' + start + '\ncommit;')
+        for path in ['20261030110000_learn_slack_credential_binding.sql',
+                     '20261030140000_learn_slack_operator_reads.sql',
+                     '20261030160000_learn_slack_history_resume.sql']:
+            sql((root/'supabase/migrations'/path).read_text())
+        migration = (root/'supabase/migrations/20261101560000_learn_slack_user_credential.sql').read_text()
+        sql("create table verify.credential_catalog_before as select p.oid,pg_get_functiondef(p.oid) definition,p.proacl from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname like 'learn_slack_%';")
+        # Rehearse transaction rollback before applying and exercising the change.
+        sql(migration.rsplit('commit;',1)[0] + 'rollback;')
+        sql("do $$begin if to_regprocedure('public.learn_slack_credential_field(jsonb)') is not null or exists(select 1 from verify.credential_catalog_before b join pg_proc p on p.oid=b.oid where b.definition is distinct from pg_get_functiondef(p.oid) or b.proacl is distinct from p.proacl) then raise exception 'Credential migration rollback changed catalog';end if;end $$;")
+        sql(migration)
+        sql("do $$begin if exists(select 1 from verify.credential_catalog_before b join pg_proc p on p.oid=b.oid where b.proacl is distinct from p.proacl) then raise exception 'Credential migration changed existing grants';end if;end $$;")
     initial=(root/'scripts/verify/learn-slack-recurring.assert.sql').read_text().split('-- Terminal status')[0]
+    if user_credential:
+        initial=initial.replace('"team_id":"TSETUP"','"team_id":"TSETUP","credential_kind":"user","authorized_user_id":"USETUP"').replace('bot_token','user_token')
     sql(initial)
+    if user_credential:
+        sql((root/'scripts/verify/learn-slack-user-credential.assert.sql').read_text())
     sql((root/'scripts/verify/learn-slack-recurring-threads.assert.sql').read_text())
     sql("""
       update connector_accounts set sync_cursor=jsonb_build_object('complete',true,'pages',1,'cursor',null);
@@ -99,7 +122,8 @@ try:
     assert all(r.returncode==0 for r in results),[r.stderr for r in results]
     sql("do $$begin if (select count(*) from slack_recurring_thread_members where history_import_id=(select current_import from slack_recurring_channels))<>23 then raise exception 'Concurrent thread duplication or missing batch';end if;end $$;")
     print('PASS: conflicting recovery lock is skipped promptly; concurrent schedulers retain one import per parent/window',flush=True)
-    (root/'.verification-results/slack-recurring-threads-local.json').write_text(json.dumps({
+    receipt = 'slack-user-credential-local.json' if user_credential else 'slack-bot-credential-local.json' if credential_migration else 'slack-recurring-threads-local.json'
+    (root/'.verification-results'/receipt).write_text(json.dumps({
       'state':'passed','scope':'Synthetic PostgreSQL; actual scheduler/control/thread functions with minimal Auth/queue fixtures',
       'limits':['No provider calls, hosted deployment or UI activation. Reference guard is a fixture; full reference guard and worker round trip remain separate.']},indent=2)+'\n')
 finally:

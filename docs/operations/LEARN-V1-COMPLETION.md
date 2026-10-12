@@ -7,6 +7,21 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — explicit Slack user credential and public-channel transport verified locally.**
+The worker now binds the approved consenting user and workspace, uses a separate
+`user_token` field, and preserves actual public-channel membership rather than
+requiring Heidi to join every channel. Invalid/mismatched identities and token
+types fail closed. Private/shared channels and DMs remain blocked at this stage.
+Private-channel visibility, whole-history orchestration and hosted acceptance
+are still required; the goal has not been narrowed to public channels.
+
+The matching migration updates ten setup/read/recovery/recurring functions without
+changing their grants, stored communications or current capture state. Both user
+and legacy bot SQL rehearsals passed in disposable network-isolated PostgreSQL,
+including credential namespace isolation, rollback, pause and concurrent thread
+scheduling. All 63 Slack unit tests pass. No hosted package, credential, provider
+message read or production change was made. [Evidence](evidence/learn-slack-user-credential-local-2026-10-12.json).
+
 **12 October, 19:28 UTC — Slack channel-only credential verified; live deployment authorised.**
 Chris explicitly authorised deployment to `openfolk.ai` and `test.openfolk.ai`
 using the existing live UX and Drummonds branding. The conversation showcase is

@@ -7,7 +7,8 @@ import { createSlackHistoryHandler } from "../worker_handlers/slack_history.ts";
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const now = Date.parse("2026-10-09T12:00:00Z"),
   token = "xoxb-synthetic-not-a-credential";
-function fixture() {
+function fixture(kind: "bot" | "user" = "bot") {
+  const credential = kind === "user" ? "xoxp-synthetic-not-a-credential" : token;
   const cfg = {
     approved: true,
     connectionId: id(5),
@@ -52,9 +53,9 @@ function fixture() {
       status: "configured",
       revoked_at: null,
       updated_at: "2026-10-09T11:00:00Z",
-      non_secret_config: { team_id: "T123" },
-      configured_fields: ["bot_token"],
-      secret_refs: { bot_token: id(6) },
+      non_secret_config: { team_id: "T123", ...(kind === "user" ? {credential_kind:"user",authorized_user_id:"U123"} : {}) },
+      configured_fields: [kind === "user" ? "user_token" : "bot_token"],
+      secret_refs: { [kind === "user" ? "user_token" : "bot_token"]: id(6) },
     },
   };
   const requests: any[] = [],
@@ -62,6 +63,8 @@ function fixture() {
     reads: any[] = [],
     state = {
       storage: true,
+      credential,
+      auth: kind === "user" ? {user_id:"U123"} : {bot_id:"B123"},
       team: "T123",
       channel: {
         id: "C123",
@@ -102,7 +105,7 @@ function fixture() {
     rpc: async (name: string, args: any) => {
       rpc.push({ name, args });
       if (name === "learn_slack_recurring_thread_allowed") return {data:state.recurringAllowed,error:null};
-      if (name === "learn_slack_read_credential" || name === "learn_slack_read_thread_credential") return { data: token, error: null };
+      if (name === "learn_slack_read_credential" || name === "learn_slack_read_thread_credential") return { data: state.credential, error: null };
       if (name === "slack_thread_commit_page") {
         rows.slack_thread_imports.checkpoint = args.p_next;
         return { data: true, error: null };
@@ -126,15 +129,15 @@ function fixture() {
       method = u.pathname.split("/").at(-1)!;
     assert.equal(u.origin, "https://slack.com");
     assert.equal(options.redirect, "error");
-    assert.equal(options.headers.Authorization, `Bearer ${token}`);
-    assert.equal(input.includes(token), false);
+    assert.equal(options.headers.Authorization, `Bearer ${state.credential}`);
+    assert.equal(input.includes(state.credential), false);
     assert.equal(options.method, method === "auth.test" ? "POST" : "GET");
     requests.push({ method, params: Object.fromEntries(u.searchParams) });
     const overridden = await state.override?.(method);
     if (overridden) return overridden;
     return Response.json(
       method === "auth.test"
-        ? { ok: true, team_id: state.team, bot_id: "B123" }
+        ? { ok: true, team_id: state.team, ...state.auth }
         : method === "conversations.info"
           ? { ok: true, channel: state.channel }
           : state.history,
@@ -158,8 +161,8 @@ function fixture() {
     run: () => createSlackHistoryHandler(bind, () => now)(ctx),
   };
 }
-function threadFixture() {
-  const f = fixture();
+function threadFixture(kind: "bot" | "user" = "bot") {
+  const f = fixture(kind);
   f.ctx.jobType = "slack.thread_sync";
   f.rows.platform_jobs.job_type = "slack.thread_sync";
   f.rows.platform_jobs.payload.thread_import_id = id(7);
@@ -399,3 +402,49 @@ test('worker commits channel broadcasts through the real adapter and transport w
   assert.equal((await paused.run()).success,false);
   assert.ok(!paused.rpc.some(r=>r.name==='slack_thread_commit_page'));
  });
+
+test('explicit user token captures public nonmember history and replies without pretending membership',async()=>{
+ for(const f of [fixture('user'),threadFixture('user')]){
+  f.state.channel.is_member=false;
+  const binding=await f.bind(f.ctx);assert.ok(binding);
+  const result=await f.run();assert.equal(result.success,true);
+  assert.ok(f.rpc.some(r=>r.name=== (f.ctx.jobType==='slack.thread_sync'?'slack_thread_commit_page':'slack_history_commit_page')));
+  assert.equal(JSON.stringify(result).includes(f.state.credential),false);
+ }
+ const f=fixture('user');f.state.channel.is_member=false;
+ const identity={tenantId:id(1),accountId:id(3),teamId:'T123',channelId:'C123',oldest:'100.1',latest:'200.1',consentReference:'fixture',expiresAt:'2026-10-09T13:00:00Z',maxPages:3};
+ // The actual worker path above verifies transport + storage. Membership itself
+ // must stay factual at the adapter boundary rather than become synthetic true.
+ const adapter=createHistoryRequestAdapter({acquire:async()=>({identity,authorised:async()=>true,inspectChannel:async()=>({...identity,isPrivate:false,isShared:false,isMember:false,publicUserAccess:true}),history:async()=>({})})},()=>now);
+ const bound=await adapter(identity);assert.equal(bound?.isMember,false);assert.equal(bound?.publicUserAccess,true);
+});
+test('user identity, token kind and channel restrictions cannot be widened by the user route',async()=>{
+ for(const mutate of [
+  (f:any)=>f.state.auth.user_id='U999',
+  (f:any)=>f.state.auth.bot_id='B123',
+  (f:any)=>f.state.team='T999',
+  (f:any)=>f.state.credential=token,
+  (f:any)=>f.state.channel.is_private=true,
+  (f:any)=>f.state.channel.is_shared=true,
+  (f:any)=>f.state.channel.is_im=true,
+  (f:any)=>f.state.channel.is_mpim=true,
+  (f:any)=>delete f.state.channel.is_member,
+  (f:any)=>f.state.channel.is_ext_shared=true,
+  (f:any)=>f.state.channel.is_org_shared=true,
+ ]){
+  const f=fixture('user');mutate(f);assert.equal((await f.run()).success,false);
+  assert.ok(!f.requests.some(r=>['conversations.history','conversations.replies'].includes(r.method)));
+  assert.ok(!f.rpc.some(r=>r.name==='slack_history_commit_page'));
+ }
+ const malformed=fixture('user');delete malformed.rows.provider_connections.non_secret_config.authorized_user_id;
+ assert.equal((await malformed.run()).success,false);assert.equal(malformed.rpc.length,0);assert.equal(malformed.requests.length,0);
+});
+test('changing the configured user or credential kind without a revision still fences publication',async()=>{
+ for(const mutate of [
+  (f:any)=>f.rows.provider_connections.non_secret_config.authorized_user_id='U999',
+  (f:any)=>f.rows.provider_connections.non_secret_config.credential_kind='bot',
+ ]){
+  const f=fixture('user');f.state.override=method=>{if(method==='conversations.history')mutate(f);return undefined;};
+  assert.equal((await f.run()).success,false);assert.ok(!f.rpc.some(r=>r.name==='slack_history_commit_page'));
+ }
+});

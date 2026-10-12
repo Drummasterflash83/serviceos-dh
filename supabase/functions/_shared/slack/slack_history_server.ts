@@ -1,4 +1,5 @@
 import { readStoredHistoryScope } from "./slack_history_binding.ts";
+import { readSlackCredentialBinding } from "./slack_credential_binding.ts";
 import { SlackHistoryTransportError } from "./slack_history_errors.ts";
 import type {
   HistoryServerPorts,
@@ -66,14 +67,13 @@ export function createSlackHistoryServerPorts(
       c.status !== "configured" ||
       c.revoked_at !== null ||
       c.non_secret_config?.team_id !== identity.teamId ||
-      !Array.isArray(c.configured_fields) ||
-      !c.configured_fields.includes("bot_token") ||
-      !uuid(c.secret_refs?.bot_token) ||
       typeof c.updated_at !== "string" ||
       !Number.isFinite(Date.parse(c.updated_at))
     )
       return null;
-    return { id: c.id, revision: c.updated_at, secretRef: c.secret_refs.bot_token };
+    const credential = readSlackCredentialBinding(c);
+    if (!credential) return null;
+    return { id: c.id, revision: c.updated_at, ...credential };
   }
   return {
     acquire: async (supplied) => {
@@ -92,7 +92,8 @@ export function createSlackHistoryServerPorts(
           !!current &&
           current.id === initial.id &&
           current.revision === initial.revision &&
-          current.secretRef === initial.secretRef
+          current.secretRef === initial.secretRef &&
+          current.kind === initial.kind && current.userId === initial.userId
         );
       };
       if (!(await authorised())) return null;
@@ -108,7 +109,7 @@ export function createSlackHistoryServerPorts(
       if (
         secret.error ||
         typeof secret.data !== "string" ||
-        !/^xoxb-[A-Za-z0-9-]+$/.test(secret.data) ||
+        !(initial.kind === "user" ? /^xoxp-[A-Za-z0-9-]+$/ : /^xoxb-[A-Za-z0-9-]+$/).test(secret.data) ||
         secret.data.length > 1000
       )
         return null;
@@ -199,8 +200,9 @@ export function createSlackHistoryServerPorts(
       const auth = await request("auth.test");
       if (
         auth.team_id !== identity.teamId ||
-        typeof auth.bot_id !== "string" ||
-        !/^B[A-Z0-9]+$/.test(auth.bot_id)
+        (initial.kind === "user"
+          ? auth.user_id !== initial.userId || !!auth.bot_id
+          : typeof auth.bot_id !== "string" || !/^B[A-Z0-9]+$/.test(auth.bot_id))
       )
         return null;
       const inspectChannel = async () => {
@@ -212,7 +214,9 @@ export function createSlackHistoryServerPorts(
           c.is_channel !== true ||
           c.is_private !== false ||
           c.is_shared !== false ||
-          c.is_member !== true ||
+          typeof c.is_member !== "boolean" ||
+          (initial.kind === "bot" && c.is_member !== true) ||
+          c.is_im === true || c.is_mpim === true ||
           c.is_ext_shared === true ||
           c.is_org_shared === true ||
           c.is_pending_ext_shared === true ||
@@ -226,7 +230,8 @@ export function createSlackHistoryServerPorts(
           channelId: identity.channelId,
           isPrivate: false,
           isShared: false,
-          isMember: true,
+          isMember: c.is_member,
+          ...(initial.kind === "user" ? { publicUserAccess: true as const } : {}),
         };
       };
       return {
