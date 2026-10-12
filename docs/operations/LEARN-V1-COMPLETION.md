@@ -7,6 +7,24 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — governed customer/site/job imports pass production-archive acceptance.**
+All eight production-specific packages install together. The new import framework
+retains durable external identity, per-row outcomes and review conflicts, and
+projects approved customers into cards without overwriting existing card content.
+Actual-schema synthetic journeys pass customer/company matching, exact job/site
+links, repeated imports, two-phone contact handling, honest finalisation,
+100-row batches, card identity reuse, tenant/role boundaries and View-As refusal.
+Marketing consent remains unchanged and existing suppressions retain precedence.
+
+All 1,591,576 original archived rows and five sequences match. The only seeded
+application rows are three reusable import templates, checked against their
+pinned definitions. Existing contact/marketing tables, helper definitions and
+permissions are retained. No duplicate person/company cards or cross-company
+contact parents were found in the archived baseline. No hosted environment changed.
+Commusoft API intake, contact traversal, operator recovery and real coverage are
+still required; these fixtures do not prove Drummonds' imports are complete.
+[Governed import evidence](evidence/learn-production-imports-rehearsal-2026-10-12.json).
+
 **12 October — OpenFolk capture controls pass the production-archive rehearsal.**
 The first seven production packages install together. Database-side Email/Phone/
 Slack controls use the existing OpenFolk authority model, retain audit receipts,

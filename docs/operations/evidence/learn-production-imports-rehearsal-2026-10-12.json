@@ -1,0 +1,139 @@
+{
+  "version": "learn-production-imports-rehearsal/1",
+  "observedAt": "2026-10-12T04:12:03.470305+00:00",
+  "baselineQuality": {
+    "duplicatePersonCardGroups": 0,
+    "duplicateCompanyCardGroups": 0,
+    "foreignContactPointParents": 0
+  },
+  "result": {
+    "state": "production_governed_imports_rehearsed_offline",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "fullReleaseAccepted": false,
+    "signedInAcceptance": false,
+    "packages": [
+      "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+      "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+      "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+      "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+      "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+      "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+      "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+      "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d"
+    ],
+    "containmentBefore": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "negativeChecks": [
+      "wrong_target",
+      "catalog_drift",
+      "late_failure"
+    ],
+    "legacyColumnsAndCatalogPreserved": true,
+    "noInventedHistoricalEvidence": true,
+    "accessProbes": [],
+    "addedImportTemplates": 3,
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299,
+      "rows": 1591576,
+      "sequences": 5,
+      "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+      "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+    },
+    "duplicateRejected": true,
+    "journeys": [
+      {
+        "path": "supabase/tests/commusoft_import.test.sql",
+        "sourceSha256": "662998e55202e0c77bae5f2268b4f7beb073b17e2dbd37a7c69a3d85733ce5d2",
+        "probeSha256": "c00a28da84caf3bd885a97aae179412e7acf0604f1ddc556ae7ed34e75147dde"
+      },
+      {
+        "path": "scripts/verify/learn-import-authority.assert.sql",
+        "sourceSha256": "699f01b1d6615bcc5e2c3b030aec15421bbc939c53421f1ed19166ab436e1716",
+        "probeSha256": "2bacbd10652fd9df8abdb6d7101aa09793e4d04fe8fa318ea8079e79f2ddc5f2"
+      },
+      {
+        "path": "scripts/verify/learn-import-cards.assert.sql",
+        "sourceSha256": "08ceb58cf8b96023045e89c7d135551b23c68539348b734d97a84d48af747bbd",
+        "probeSha256": "2d817294b0036f76db32a038537c8d344b6fb71c836518a8b82188d4ae03193d"
+      },
+      {
+        "path": "scripts/verify/learn-import-batches.assert.sql",
+        "sourceSha256": "e795d5a385e85f530e01353c818d8fcf85b98167d82255d3c77dffc975e4541a",
+        "probeSha256": "2e3b67ae62e6a2daa3b222d02a2f1a98996cc2f31b4e479117b7c64109d57bd7"
+      }
+    ],
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true,
+    "elapsedSeconds": 40.36
+  },
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-imports-candidate.mjs",
+      "sha256": "b1376c07b4a2415d177d4478de806cc25ded2320865564453527b3a2a4f2f3fe"
+    },
+    {
+      "path": "scripts/backup/inspect_production_imports.py",
+      "sha256": "e974638e50f10129590ce1c726e1bedd32b717ee075f2e630af6aabd8ae1304f"
+    },
+    {
+      "path": "scripts/backup/rehearse_production_imports.py",
+      "sha256": "30afc1a75a25e99e3ae442fa4dabf86e80fa8b63a5388c83aae87aaf653d1bc2"
+    },
+    {
+      "path": "scripts/verify/learn-import-recovery.assert.sql",
+      "sha256": "1e9f8b5cce8406d61ccc214eac8bedcf498435aaa3f8a609b29ca8ebc73c2838"
+    },
+    {
+      "path": "supabase/release/learn-production/008_governed_imports.sql",
+      "sha256": "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d"
+    }
+  ],
+  "coverage": [
+    "Ordered install of all eight candidates, wrong target/catalog drift/late rollback/duplicate rejection and original data preservation.",
+    "Customer identity links use strong source/channel evidence; name-only and ambiguous or contradictory channels never silently merge people.",
+    "Customers, companies, sites and jobs keep exact source relationships; contradictory exact site identity cannot fall back to a guessed address.",
+    "Two distinct phone numbers survive an atomic customer import with one primary per channel; replay preserves existing primary contact points.",
+    "Durable row outcomes and retry attempts preserve idempotency, recorded errors, review conflicts and honest incomplete finalisation.",
+    "Imported endpoints do not establish marketing consent; existing suppressions retain precedence.",
+    "Customer cards are created without invented scores/activity; existing card fields and person records remain unchanged; another source alias reuses the same card.",
+    "Bounded 100-row customer batch, exact retry, sanitized per-row failure, late-contract rollback, sites/jobs, wrong-tenant and View-As denials."
+  ],
+  "fixtureAdaptations": [
+    "Production already creates profiles through auth.users; the three legacy profile inserts update the synthetic existing profile on conflict.",
+    "Historical import assertions are followed by the supplemental two-phone and exact-site recovery checks inside the same rollback transaction.",
+    "Three intentional global import templates are compared to pinned source definitions; original import-profile rows are separately compared byte-for-byte.",
+    "Baseline v1 ended on a missing search path in the aggregate inspection; v2 corrected that inspection. Rehearsal v1 detected the unaccounted template additions; v2 explicitly checks them and rejects conflicting pre-existing templates."
+  ],
+  "limitations": [
+    "No production or hosted TEST changes, provider requests, real-customer import or signed-in acceptance.",
+    "Commusoft API intake, contacts traversal, operator approval/recovery and real coverage reconciliation remain required.",
+    "All customer/job/card journeys use synthetic fixtures on the real archived schema.",
+    "Preservation covers the retained archive, excluding known pg_net omissions; full service/Vault recovery remains open."
+  ]
+}

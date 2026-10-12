@@ -1,0 +1,108 @@
+{
+  "version": "learn-production-governed-imports/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+  "priorSha256": "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/release/learn-test/022_governed_imports.sql",
+      "sha256": "0294ba3ef802b53ad158ee98570a79dc713840496bb45d53a4263d3f26ecea9d"
+    },
+    {
+      "path": "supabase/release/learn-test/023_import_authority.sql",
+      "sha256": "8e30b2e65b43de7b39b873b3ee515dd9a44da98a5964d5ae704a66ec8ef2de86"
+    },
+    {
+      "path": "supabase/release/learn-test/024_import_customer_cards.sql",
+      "sha256": "8c89ff5faca8443ad45b8d16a3aa32eeb69b4dbbe2184d668cec48df9fe0f4b5"
+    },
+    {
+      "path": "supabase/release/learn-test/025_import_batches.sql",
+      "sha256": "fc904ebd3a7fb4ec45e6c78994ed954289c317ab15aefbbae40f3dd687cad9cd"
+    }
+  ],
+  "existingTables": [
+    "tenants",
+    "profiles",
+    "view_as_context",
+    "people",
+    "companies",
+    "sites",
+    "jobs",
+    "data_imports",
+    "contact_points",
+    "customer_cards",
+    "import_row_provenance",
+    "import_profiles",
+    "job_number_aliases",
+    "communication_preferences",
+    "contact_suppressions"
+  ],
+  "newTables": [
+    "import_entity_links",
+    "import_conflicts",
+    "import_row_results"
+  ],
+  "newFunctions": [
+    "import_normalize_phone_uk",
+    "import_normalize_postcode",
+    "import_normalize_address",
+    "import_entity_links_guard",
+    "import_row_results_guard",
+    "import_validate_row_shape",
+    "import_validate_customer_row",
+    "import_validate_site_row",
+    "import_validate_job_row",
+    "import_resolve_customer",
+    "import_match_customer",
+    "import_match_site",
+    "import_resolve_job_site",
+    "import_match_job",
+    "import_row_preamble",
+    "import_row_prior",
+    "import_customer_row",
+    "import_site_row",
+    "import_job_row",
+    "import_row_outcome",
+    "import_run_finalize",
+    "import_person_contact_points",
+    "import_resolve_job_site_exact",
+    "import_resolve_job_site_v2",
+    "learn_import_customer_card",
+    "learn_import_customer_card_after_link",
+    "learn_import_customer_cards_reconcile",
+    "learn_import_batch_authority",
+    "learn_import_match_batch",
+    "learn_import_apply_batch"
+  ],
+  "changedFunctions": [],
+  "newSequences": [],
+  "seededProfiles": [
+    "Commusoft Prepared Customers",
+    "Commusoft Prepared Sites",
+    "Commusoft Prepared Jobs"
+  ],
+  "newExistingConstraints": {
+    "contact_points": [
+      "contact_points_person_tenant_fk"
+    ]
+  },
+  "newExistingTriggers": {},
+  "newExistingIndexes": {
+    "customer_cards": [
+      "learn_customer_card_person_uk",
+      "learn_customer_card_company_uk"
+    ]
+  },
+  "limitations": [
+    "No hosted import, real customer projection or provider request.",
+    "Existing marketing permissions and source records remain unchanged.",
+    "Commusoft API intake, operator controls and current-data reconciliation follow as separate required release dependencies.",
+    "Synthetic source-to-card acceptance does not establish real provider coverage."
+  ]
+}

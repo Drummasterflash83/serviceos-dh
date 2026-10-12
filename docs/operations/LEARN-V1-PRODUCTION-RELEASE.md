@@ -326,6 +326,47 @@ verification. A previously admitted bounded batch may complete after a pause;
 the next batch must check again. Commusoft controls and later voicemail/Microsoft
 extensions remain required. No live system changed.
 
+### Governed customer/site/job import framework rehearsed offline
+
+The eighth package, [008_governed_imports.sql](../../supabase/release/learn-production/008_governed_imports.sql),
+adds three import ledgers, 30 functions, two customer-card identity indexes and a
+same-company contact-parent constraint. SHA-256:
+`33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d`.
+It also adds three pinned reusable import templates for customers, sites and jobs.
+Production's contact store, marketing normalizer, anchor indexes, source columns,
+policies and privileges are retained; no source record or card is backfilled.
+Conflicting pre-existing prepared templates cause refusal before installation.
+
+All eight packages install together. Archive inspection found no duplicate person/
+company card identities or foreign-company contact parents. Wrong target, catalog
+drift, late rollback and duplicate application are rejected. Every original row
+and sequence matches, including original import profiles. The three additional
+templates must match their exact pinned source definitions, active/version defaults
+and global scope, and no extra profile may appear. New import ledgers remain empty
+in the preservation database.
+
+A second offline clone passes the historical governed import suite with two-phone
+and exact-site regression coverage, import authority checks, customer-card creation/
+reconciliation and bounded batch application. Customer matching uses source and
+strong channel evidence; ambiguous identities become reviewable conflicts. Exact
+site references never silently degrade to address guesses. Existing card content
+and person records stay intact, alternate source aliases reuse a card, and new
+cards do not invent activity or scores. Imported endpoints never create consent;
+pre-existing marketing suppressions remain effective. A 100-row batch and replay,
+sanitized per-row failure, atomic late failure and tenant/View-As restrictions pass.
+
+Baseline: `scripts/backup/inspect_production_imports.py`; generator:
+`node scripts/verify/learn-production-imports-candidate.mjs`; rehearsal:
+`python3 scripts/backup/rehearse_production_imports.py`. Baseline v1 failed only its
+aggregate-query search path; v2 corrected it. Rehearsal v1 caught the intentional
+profile seeds in the strict preservation check. V2 adds exact template validation,
+original-profile COPY comparison and a pre-existing-template guard. The three
+legacy profile fixtures adapt to production's actual auth trigger. Terminal
+journals remain private and all disposable containers were removed.
+[Evidence](evidence/learn-production-imports-rehearsal-2026-10-12.json) records hashes
+and limitations. Real Commusoft intake, contacts traversal, operator controls,
+source coverage and signed-in acceptance remain required; no hosted work occurred.
+
 ### Outstanding release gates
 
 - Resolve existing TEST access approvals and verify signed-in customer and
