@@ -1,0 +1,151 @@
+{
+  "version": "learn-production-recovery-login/1",
+  "scope": "production authentication and metadata only; no customer export or restore",
+  "attempts": [
+    {
+      "version": "database-login-preflight/1",
+      "project": "tgbnakbxwcqjeimygroz",
+      "startedAt": "2026-10-12T00:12:51.942Z",
+      "state": "refreshed",
+      "productionDataWrites": false,
+      "customerDataExported": false,
+      "passwordReset": false,
+      "networkBanChanges": false,
+      "beforeRole": {
+        "rolname": "cli_login_postgres",
+        "rolcanlogin": true,
+        "rolvaliduntil": "2026-10-02 15:28:10.048802+00",
+        "memberships": [
+          "postgres"
+        ]
+      },
+      "endpoint": {
+        "host": "aws-1-eu-west-2.pooler.supabase.com",
+        "port": 5432,
+        "mode": "session"
+      },
+      "ttlSeconds": 300,
+      "connectionFailure": "tls_verification_failed",
+      "failure": "Database connection check failed; raw output withheld"
+    },
+    {
+      "version": "database-login-preflight/1",
+      "project": "tgbnakbxwcqjeimygroz",
+      "startedAt": "2026-10-12T00:18:42.624Z",
+      "state": "refreshed",
+      "productionDataWrites": false,
+      "customerDataExported": false,
+      "passwordReset": false,
+      "networkBanChanges": false,
+      "caSha256": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+      "beforeRole": {
+        "rolname": "cli_login_postgres",
+        "rolcanlogin": true,
+        "rolvaliduntil": "2026-10-12 00:23:05.235385+00",
+        "memberships": [
+          "postgres"
+        ]
+      },
+      "endpoint": {
+        "host": "aws-1-eu-west-2.pooler.supabase.com",
+        "port": 5432,
+        "mode": "session"
+      },
+      "ttlSeconds": 300,
+      "connection": {
+        "currentUser": "cli_login_postgres",
+        "sessionUser": "cli_login_postgres",
+        "readOnly": "off",
+        "version": "17.6",
+        "tls": false
+      },
+      "failure": "Connection boundary mismatch"
+    },
+    {
+      "version": "database-login-preflight/1",
+      "project": "tgbnakbxwcqjeimygroz",
+      "startedAt": "2026-10-12T00:19:16.975Z",
+      "state": "read_only_connection_verified",
+      "productionDataWrites": false,
+      "customerDataExported": false,
+      "passwordReset": false,
+      "networkBanChanges": false,
+      "caSha256": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+      "beforeRole": {
+        "rolname": "cli_login_postgres",
+        "rolcanlogin": true,
+        "rolvaliduntil": "2026-10-12 00:23:43.292795+00",
+        "memberships": [
+          "postgres"
+        ]
+      },
+      "endpoint": {
+        "host": "aws-1-eu-west-2.pooler.supabase.com",
+        "port": 5432,
+        "mode": "session"
+      },
+      "ttlSeconds": 300,
+      "connection": {
+        "currentUser": "postgres",
+        "sessionUser": "cli_login_postgres",
+        "readOnly": "on",
+        "version": "17.6",
+        "tls": false
+      },
+      "clientTlsVerified": true,
+      "poolerUpstreamTlsObserved": false,
+      "afterRole": [
+        {
+          "rolname": "cli_login_postgres",
+          "rolcanlogin": true,
+          "rolvaliduntil": "2026-10-12 00:24:19.110212+00",
+          "memberships": [
+            "postgres"
+          ]
+        }
+      ],
+      "completedAt": "2026-10-12T00:19:19.815Z"
+    }
+  ],
+  "source": {
+    "postgresVersion": "17.6",
+    "databaseBytesAtInitialAudit": 1754180755,
+    "publicTables": 251,
+    "authTables": 27,
+    "storageTables": 8,
+    "extensionConfigObjects": [
+      "cron.job",
+      "cron.job_run_details",
+      "cron.jobid_seq",
+      "cron.runid_seq",
+      "vault.secrets"
+    ]
+  },
+  "limitations": [
+    "Native database dump and isolated restore not executed",
+    "Vault root-key recovery not verified",
+    "Pooler upstream pg_stat_ssl returned false; client-to-pooler verify-full passed",
+    "Owner database password was not recovered or reset",
+    "Temporary-role password expiry does not terminate established sessions"
+  ],
+  "certificateSha256": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+  "directEndpointCheck": {
+    "host": "db.tgbnakbxwcqjeimygroz.supabase.co",
+    "addressFamilies": [
+      6
+    ],
+    "connection": false,
+    "reason": "EHOSTUNREACH",
+    "databaseAuthenticationAttempted": false
+  },
+  "cleanup": {
+    "observedAt": "2026-10-12T00:20:36.428441+00:00",
+    "liveProbeSessions": 0,
+    "clientContainers": 0,
+    "credentialExpired": false,
+    "expiresAt": "2026-10-12T00:24:19.110212+00:00",
+    "membership": [
+      "postgres"
+    ]
+  }
+}

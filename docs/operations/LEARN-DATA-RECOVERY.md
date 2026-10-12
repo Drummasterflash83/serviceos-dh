@@ -200,6 +200,77 @@ approval boundary.
 
 ## Verified observation — 11 October 2026
 
+### Recovery authentication investigation — 12 October 2026
+
+**00:19 UTC: authenticated read-only production connection verified.** The
+existing CLI role was refreshed for 300 seconds, with unchanged membership.
+Explicit `BEGIN READ ONLY; SET LOCAL ROLE postgres` returned effective user
+`postgres`, session user `cli_login_postgres`, and `transaction_read_only=on`.
+The disposable client exited and was removed. The final credential's recorded
+expiry is 00:24:19 UTC; expiration and remaining sessions must be checked
+separately. The owner password was neither recovered nor reset. This removes
+the need to wait for 1Password before preparing a native database export, but
+does not prove that a complete export or restore will succeed.
+[Sanitized evidence](evidence/learn-production-recovery-login-2026-10-12.json).
+
+Two findings affect the next export: this pooler ignored startup `PGOPTIONS`, so
+the runner must establish read-only transaction settings explicitly and verify
+them; and `pg_stat_ssl` reported `false` for the pooler-to-database connection.
+Client-to-pooler TLS passed libpq `verify-full` with the official root certificate.
+Do not report this as proof of encrypted transport on both hops. No TLS or
+network settings were changed. Prefer a verified direct endpoint for a stronger
+end-to-end transport check if this host can reach it.
+
+The authoritative direct endpoint resolves only to IPv6 from this Mac; its
+credential-free connection attempt returned `EHOSTUNREACH`. No direct database
+login was sent. At 00:20:36 UTC, readback found zero probe database sessions and
+zero client containers. The credential was still within its five-minute lifetime,
+with its unchanged `postgres` membership and recorded 00:24:19 UTC expiry. Do not
+call it expired until a later readback verifies that fact.
+
+The forgotten owner database password is not necessarily the only recovery path.
+The installed official Supabase CLI v2.40.7 refreshes an expiring
+`cli_login_postgres` credential through `POST /cli/login-role` with
+`read_only: false` when no database password is supplied. Production already had
+this role with `postgres` membership; its previous password expired on 2 October.
+This is privileged authentication, even when the intended SQL is read-only.
+Never describe the credential itself as read-only. Do not automatically create a
+missing role, remove an IP ban, reset the owner's password, or drop a shared CLI
+role as cleanup.
+
+The narrow preflight in `scripts/backup/verify-production-database-login.mjs`
+requires that exact existing role and its unchanged membership. It normally
+requires expiry; the reviewed retry also recognises only its own completed
+metadata-check attempt. It
+refreshes once, keeps the password in memory/stdin, and opens only a bounded
+read-only metadata query in a disposable client container. It does not export
+customer records. Exclusive private journals prevent replay after an uncertain
+request. Inspect a prior outcome before preparing another attempt.
+
+At 00:12 UTC a refresh returned a 300-second credential, but the connection stopped
+at TLS verification using the image's general CA bundle. No customer data was
+read. Supabase's official dashboard links a dedicated root certificate. The copy
+already in Downloads matches that download byte-for-byte (SHA-256
+`700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7`). A subsequent
+credential-free PostgreSQL TLS handshake passed CA and hostname verification with
+TLS 1.3. The preflight now pins this certificate and keeps `sslmode=verify-full`.
+The subsequent explicit-transaction check above verifies authentication. An actual
+production restore remains unproven; login or TLS success is not recoverability.
+
+The read-only production inventory reports PostgreSQL 17.6 and about 1.75 GB of
+database allocation. It includes 251 public tables, 27 auth tables, eight storage
+tables and the migration-history table. `cron.job`, `cron.job_run_details`, both
+cron sequences and `vault.secrets` are extension configuration objects. The
+eventual native export must account for these and custom managed-schema policies;
+an application-table-only dump is insufficient. Vault ciphertext alone does not
+prove recovery of the encryption root key. Scheduler and network side effects
+must remain disabled in the isolated restore destination.
+
+Sources: [Supabase CLI-role lifecycle](https://supabase.com/docs/guides/troubleshooting/permission-denied-when-deleting-the-cli_login_postgres-role-808bae),
+[installed CLI authentication implementation](https://github.com/supabase/cli/blob/v2.40.7/internal/utils/flags/db_url.go),
+[Supabase TLS guidance](https://supabase.com/docs/guides/platform/ssl-enforcement),
+and [official dashboard certificate URL](https://github.com/supabase/supabase/blob/master/apps/studio/hooks/custom-content/custom-content.json).
+
 ### Database credential recovery and 1Password handoff
 
 Chris has authorised sorting out the forgotten production database password and

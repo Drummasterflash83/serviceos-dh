@@ -7,6 +7,20 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 01:19 BST — production recovery login verified without resetting the owner password.**
+Read-only metadata showed an existing expired Supabase CLI role. A bounded refresh
+of that same role enabled a fully verified TLS client connection and an explicit
+read-only SQL transaction. Its grants stayed unchanged; no customer export,
+application-data write, IP-ban removal or production release occurred. The check
+also found that pooler startup settings were ignored and its upstream database
+connection reported no TLS; these limits are retained in the recovery runbook.
+The local client is removed, and the last temporary password expires at 01:24:19
+BST. A real native export/isolated restore, Vault recovery and intact audio-record
+relationships remain unproven. **Next recovery action: prepare the complete native
+export and verify its transport/snapshot scope, rather than waiting solely for
+the forgotten database password.**
+[Evidence](evidence/learn-production-recovery-login-2026-10-12.json).
+
 **12 October, 01:01 BST — private playback endpoint installed and boundaries verified in TEST.**
 `receptionist-voicemail-recording` v1 is ACTIVE with JWT verification. It authenticates
 the user, reads the exact message through caller RLS, records the access request,
