@@ -1,6 +1,24 @@
 # Microsoft 365 mail input
 
-## Current status — TEST schema and hosted RPC journey verified; connector not enabled
+## Current status — TEST worker recovery-to-card verified; connector not enabled
+
+Worker **v20** was deployed at **02:25 UTC on 12 October**. All 148 datasets and
+other endpoints were preserved; downloaded-source checks matched 110 runtime
+modules and 177 emitted imports. Twenty control-flow tests passed against both
+local and downloaded code, alongside strict TypeScript. At **02:27 UTC**, five
+hosted calls verified auth denial, recovery of one retained synthetic email while
+capture/account/binding were disabled, and its delivery to one card by the deployed
+identity worker. Fresh paused work remained unclaimed with zero attempts; a repeat
+invocation claimed nothing. The fixture is archived, with no credentials or human
+access and all remaining jobs cancelled; all 148 external datasets were unchanged.
+
+This proves deployed recovery and downstream delivery, not a fresh Graph fetch or
+real-mailbox capture. Consent/identity provisioning, coverage and recovery controls,
+and real-provider/signed-in acceptance remain required. The controller continues
+to advertise `adapterImplemented: false`.
+[Deployed worker evidence](evidence/learn-microsoft-worker-test-2026-10-12.json).
+
+### TEST schema and RPC checkpoint
 
 TEST release **078** installed at **02:17 UTC on 12 October** following an exact
 package rehearsal. Its eight private Microsoft tables were initially empty and
@@ -13,10 +31,10 @@ preservation datasets outside the fixture were unchanged.
 
 The retained synthetic evidence belongs to an archived fixture company; capture
 is paused, its binding/account revoked, token deleted and remaining jobs cancelled.
-No human access or real provider request was created. The **deployed worker is
-still v19** and does not include this Microsoft handler. The next gate is its
-pinned deployment and hosted execution; consent/identity provisioning, controller
-coverage and real-mailbox acceptance remain open.
+No human access or real provider request was created. At this checkpoint the
+deployed worker was still v19; v20 deployment and recovery acceptance are recorded
+above. Consent/identity provisioning, controller coverage and real-mailbox
+acceptance remain open.
 [TEST 078 evidence](evidence/learn-microsoft-test-078-2026-10-12.json).
 
 For rollback, keep the installed source pages, receipts and other retained
@@ -533,7 +551,7 @@ they do not establish an Edge deployment or real network execution.
 ## Remaining work to deliver the connector
 
 1. Resolve each authorized company/account to its Microsoft tenant and mailbox;
-   integrate consent, provision the locally verified token association/refresh path,
+   integrate consent, provision the locally and hosted-RPC verified token association/refresh path,
    complete revocation and read-only mail content
    permissions. Transport UUID validation is not authorization. Revalidate the
    company/module/account permission and capture switch at execution time.
@@ -544,24 +562,23 @@ they do not establish an Edge deployment or real network execution.
    Its traversal follows Microsoft's
    [root folder listing](https://learn.microsoft.com/en-us/graph/api/user-list-mailfolders?view=graph-rest-1.0)
    and [child folder listing](https://learn.microsoft.com/en-us/graph/api/mailfolder-list-childfolders?view=graph-rest-1.0).
-3. Rehearse the credential and worker-failure migrations against the full hosted
-   schema, then verify HTTP RPC/worker behavior and persistently release the complete
-   worker with module-aware scheduling. Earlier projection/discovery full-schema
-   rehearsals passed; they do not cover the new credential and failure migrations.
-   Complete expired-delta and deleted-folder recovery without discarding old
-   source evidence. Repeat discovery is implemented and rehearsed, but not installed
-   or activated in a hosted worker.
-4. Materialize shared email/interaction evidence by mailbox plus immutable message
-   ID. Reconcile sparse, repeated or reordered events without assuming the last
-   page is the newest message version. Preserve folder removals and original
-   bodies separately. Define attachment, inline content and unsupported-folder
+3. Complete fresh-provider execution and scheduled capture acceptance on the
+   installed TEST 078/worker v20. Full-schema credential/failure rehearsal, hosted
+   RPC refresh/storage/card publication, deployed saved-page recovery and pause
+   exclusion are verified. Complete expired-delta and deleted-folder recovery
+   without discarding old source evidence. Repeat discovery is installed but has
+   not run against an authorized real mailbox.
+4. Add hydration and operator handling for sparse/conflicting events currently
+   held from canonical publication. Complete message projection, timestamp-based
+   version ordering, retained removals and original bodies already pass synthetic
+   SQL/RPC acceptance; prove them on real inputs. Define attachment, inline content and unsupported-folder
    handling; `hasAttachments` alone cannot prove attachment capture.
 5. Integrate durable jobs, bounded historical ingestion, incremental schedules,
    operator health/recovery and company switches. Stop future work on disable or
    revocation. Keep customer-facing progress calm and truthful about missing/stale
    inputs, while providing diagnostic detail in OpenFolk.
-6. Verify isolated end-to-end storage/retry/concurrency behavior, hosted TEST access
-   boundaries and an authorized real mailbox. Only then mark adapter capability as
+6. Extend verified isolated storage/retry/concurrency and hosted TEST access/recovery
+   behavior to an authorized real mailbox and signed-in user journey. Only then mark adapter capability as
    implemented and evaluate enabling capture. Production remains a separate release.
 
 ## Reproduce local checks

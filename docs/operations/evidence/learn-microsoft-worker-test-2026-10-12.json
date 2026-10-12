@@ -1,0 +1,181 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "deployment": {
+    "version": "learn-microsoft-runtime/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "d63276fd0c5e330d64c31f0fd9261a3e717bb24aca9d6772cd2a22967b4a3d8b",
+    "observedAt": "2026-10-12T02:25:16.256Z",
+    "state": "deployed_needs_http_acceptance",
+    "attempts": [
+      {
+        "name": "platform-worker",
+        "cliExitStatus": 0
+      }
+    ],
+    "writeAttempted": true,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 52,
+    "endpoints": [
+      {
+        "id": "e7abc6aa-7341-4cbc-9a54-ea1c9c907503",
+        "slug": "platform-worker",
+        "name": "platform-worker",
+        "status": "ACTIVE",
+        "version": 20,
+        "created_at": 1791646885331,
+        "updated_at": 1791771914805,
+        "verify_jwt": false,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_e7abc6aa-7341-4cbc-9a54-ea1c9c907503_20/source/supabase/functions/platform-worker/index.ts",
+        "ezbr_sha256": "126ee9d9a672efd3579740380d6fab2e89df15338b9e83d6250b990b1258a072"
+      }
+    ],
+    "dependencyFiles": 113,
+    "fullPreservedDatasets": 148,
+    "fullSchemaUnchanged": true,
+    "routesCreated": 0,
+    "credentialsUploaded": 0,
+    "schedulesActivated": 0,
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "downloadedSource": {
+    "observedAt": "2026-10-12T02:26:20.957Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "downloaded_runtime_source_verified",
+    "sourceBundleSha256": "d63276fd0c5e330d64c31f0fd9261a3e717bb24aca9d6772cd2a22967b4a3d8b",
+    "reports": [
+      {
+        "endpoint": "platform-worker",
+        "version": 20,
+        "matchingRuntimeModules": 110,
+        "omittedModules": [
+          "_shared/intelligence/reason_codes.ts",
+          "_shared/intelligence/types.ts",
+          "_shared/worker_contract.ts"
+        ],
+        "emittedImportsChecked": 177,
+        "omittedModulesHaveNoEmittedImporters": true,
+        "differentRuntimeModules": []
+      }
+    ],
+    "method": "Transpiled syntax-tree comparison normalizes comments, redundant parentheses, associative logical operators and a sole for-of block; emitted imports are checked separately. Review aid, not formal proof.",
+    "limitations": [
+      "Syntax/import comparison; does not verify real provider or Storage transport."
+    ],
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "hostedWorkerAcceptance": {
+    "state": "deployed_worker_recovery_to_card_verified",
+    "observedAt": "2026-10-12T02:27:21.943Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "workerVersion": 20,
+    "checks": [
+      {
+        "types": [
+          "email.microsoft_sync"
+        ],
+        "auth": "none",
+        "status": 403,
+        "claimed": null,
+        "succeeded": null,
+        "waiting": null,
+        "unconfirmed": null,
+        "code": "forbidden"
+      },
+      {
+        "types": [
+          "email.microsoft_sync"
+        ],
+        "auth": "anon",
+        "status": 403,
+        "claimed": null,
+        "succeeded": null,
+        "waiting": null,
+        "unconfirmed": null,
+        "code": "forbidden"
+      },
+      {
+        "types": [
+          "email.microsoft_sync"
+        ],
+        "auth": "service_role",
+        "status": 200,
+        "claimed": 1,
+        "succeeded": 1,
+        "waiting": 0,
+        "unconfirmed": 0,
+        "code": null
+      },
+      {
+        "types": [
+          "identity.resolve"
+        ],
+        "auth": "service_role",
+        "status": 200,
+        "claimed": 1,
+        "succeeded": 1,
+        "waiting": 0,
+        "unconfirmed": 0,
+        "code": null
+      },
+      {
+        "types": [
+          "email.microsoft_sync"
+        ],
+        "auth": "service_role",
+        "status": 200,
+        "claimed": 0,
+        "succeeded": 0,
+        "waiting": 0,
+        "unconfirmed": 0,
+        "code": null
+      }
+    ],
+    "requests": 5,
+    "cleanup": {
+      "archived": true,
+      "accounts_revoked": true,
+      "bindings_disabled": true,
+      "no_active_jobs": true,
+      "no_credentials": true,
+      "no_human_access": true,
+      "capture_paused": true
+    },
+    "preservedDatasets": 148,
+    "schemaUnchanged": true,
+    "newAuthUsers": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "failure": null,
+    "limitations": [
+      "Deployed Edge worker recovered a synthetic retained page without provider credentials while capture was paused, then delivered its card. Does not prove fresh Graph fetch, consent, real-mailbox coverage or signed-in acceptance.",
+      "Synthetic source/card evidence retained in an archived fixture company; its binding/account revoked, no credentials, capture paused and successor jobs cancelled."
+    ]
+  },
+  "localValidation": {
+    "strictTypeScript": true,
+    "sourceWorkerTests": 20,
+    "downloadedWorkerTests": 20
+  },
+  "sources": [
+    {
+      "path": "scripts/verify/learn-microsoft-runtime-deploy.mjs",
+      "sha256": "1ffac2ec1f86e28f48a59c236b343d58642b3f94bc00c8242e5cafe1b8129ccf"
+    },
+    {
+      "path": "scripts/verify/learn-microsoft-runtime-readback.mjs",
+      "sha256": "6a1344ffca27f7a8ec36f7673cf901f83c434331f9006d894df3a949e7539c69"
+    },
+    {
+      "path": "scripts/verify/learn-microsoft-worker-hosted.mjs",
+      "sha256": "205529241d871a74b4fa9899408e0c74014a4437d38d26b06d5fffdfd0fdb4d7"
+    },
+    {
+      "path": "supabase/release/learn-test/078_microsoft_runtime.manifest.json",
+      "sha256": "979deff010e71cd367345de265930e2b16aa4a7f0d416b6cbb3f233f146ac2b1"
+    }
+  ]
+}

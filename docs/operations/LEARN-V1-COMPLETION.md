@@ -7,6 +7,24 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 03:27 BST — deployed TEST worker completes Microsoft recovery-to-card journey.**
+Worker **v20** is ACTIVE on TEST 078. Deployment preserved all 148 datasets, the
+database schema and every other endpoint. Downloaded-source comparison matched
+110 runtime modules and checked 177 emitted local imports; three omitted modules
+have no emitted importers. Strict TypeScript and all 20 control-flow tests passed
+both locally and against the downloaded worker.
+
+Five bounded hosted calls proved unsigned/anonymous denial, recovery of one saved
+synthetic Microsoft page while capture was paused and the account/binding revoked,
+followed by one card through the deployed identity worker. Fresh paused work stayed
+queued with zero attempts, and a later Microsoft invocation claimed nothing.
+All 148 datasets outside the fixture were preserved. The fixture is archived with
+no credentials, human access or active jobs. No provider calls or production
+changes occurred. This closes deployed saved-page recovery and downstream delivery;
+fresh Graph transport, real consent/mailbox coverage, operator visibility and
+signed-in acceptance remain open. Microsoft is not advertised as ready.
+[Worker deployment and acceptance evidence](evidence/learn-microsoft-worker-test-2026-10-12.json).
+
 **12 October, 03:20 BST — Microsoft TEST 078 installed; hosted RPC email-to-card journey verified.**
 The exact package passed a fresh rollback rehearsal, then installed nine Microsoft
 migrations with all 140 existing datasets unchanged and eight new tables empty.

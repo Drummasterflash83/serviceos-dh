@@ -1,0 +1,22 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "bundleSha256": "d63276fd0c5e330d64c31f0fd9261a3e717bb24aca9d6772cd2a22967b4a3d8b",
+  "fullSchema": "eed0d2261da216333a705c4b00f54bd5",
+  "runtimeSchema": "eb0177db67e3ae860869504891a42eea",
+  "endpoints": [
+    {
+      "name": "platform-worker",
+      "verifyJwt": false
+    }
+  ],
+  "modules": 113,
+  "external": [
+    "https://esm.sh/@supabase/supabase-js@2.45.4",
+    "node:buffer",
+    "node:crypto",
+    "node:dns/promises",
+    "npm:mailauth@7.3.0/lib/dkim/verify.js",
+    "npm:mpg123-decoder@1.0.3",
+    "npm:postal-mime@4.0.5"
+  ]
+}
