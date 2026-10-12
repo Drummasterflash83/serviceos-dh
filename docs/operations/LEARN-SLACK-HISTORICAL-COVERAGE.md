@@ -59,6 +59,22 @@ These are explicit coverage gaps, not channels with no activity. The current
 15-message/60-second policy is conservative; do not promise a full import by
 tomorrow before measuring the workspace and permitted throughput.
 
+### OpenFolk operator setup — 12 October, 19:56 UTC
+
+Hosted TEST package 081 adds `learn_slack_configure` for existing OpenFolk admins,
+using the existing tenant Vault broker and immutable request/check/cancel receipts.
+Workspace/user changes, stale revision, active jobs and enabled recurring capture
+block replacement. Configuration remains explicitly unverified until the real
+provider path succeeds. It changes no module flag, queue or account grant.
+
+Channel/thread setup, recovery and status readers now use logged operator access
+for cross-client support, preserving ordinary client isolation and preview-write
+restrictions. Connection metadata uses a safe RPC rather than broadening table
+RLS. The existing OpenFolk input panel exposes the existing Slack controls in local
+source. The frontend and signed-in journey have not yet been deployed/accepted.
+Hosted installation preserved all 194 original datasets; its new request table is
+empty. [Evidence](evidence/learn-slack-operator-setup-2026-10-12.json).
+
 ### Hosted TEST acceptance — 12 October, 19:47 UTC
 
 The matching package 080 and worker v11 are installed. The exact schema package

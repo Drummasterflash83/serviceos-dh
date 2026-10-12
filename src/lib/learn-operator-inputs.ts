@@ -319,8 +319,8 @@ export async function resolveOperatorInput(
   mode: "apply" | "check" | "cancel",
 ): Promise<InputReceipt> {
   validateInputRequest(r);
-  const { data, error } = await db
-    .rpc(
+  const { data, error } = await Promise.resolve(
+    db.rpc(
       r.definition.kind === "resume_commusoft"
         ? "learn_operator_resume_commusoft"
         : "learn_operator_input_request",
@@ -331,12 +331,12 @@ export async function resolveOperatorInput(
         p_definition: r.definition,
         p_mode: mode,
       },
-    )
-    .catch(() => {
-      throw Error(
-        "The request was not confirmed. Keep it saved and check its receipt before making another change.",
-      );
-    });
+    ),
+  ).catch(() => {
+    throw Error(
+      "The request was not confirmed. Keep it saved and check its receipt before making another change.",
+    );
+  });
   if (error) {
     const contactFailures: Record<string, { code: string; message: string }> = {
       learn_operator_property_traversal_required: {

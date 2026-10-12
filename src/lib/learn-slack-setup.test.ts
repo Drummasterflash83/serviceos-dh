@@ -90,9 +90,7 @@ test("queue retries retain request identity and reject malformed acknowledgement
     /verified/,
   );
 });
-test("connection metadata read is tenant scoped and never selects credential references", async () => {
-  const filters: any[] = [];
-  let columns = "";
+test("connection metadata uses the logged tenant/operator RPC and checks returned tenant", async () => {
   const rows: any[] = [
     {
       id: id(3),
@@ -104,26 +102,15 @@ test("connection metadata read is tenant scoped and never selects credential ref
       team_name: "Fixture workspace",
     },
   ];
-  const q: any = {
-    select: (s: string) => {
-      columns = s;
-      return q;
+  const calls: any[] = [];
+  const db: any = {
+    rpc: async (name: string, args: any) => {
+      calls.push({ name, args });
+      return { data: rows, error: null };
     },
-    eq: (...v: any[]) => {
-      filters.push(v);
-      return q;
-    },
-    is: (...v: any[]) => {
-      filters.push(v);
-      return q;
-    },
-    limit: async () => ({ data: rows, error: null }),
   };
-  const db: any = { from: () => q };
   assert.deepEqual(await loadSlackConnections(db, id(2)), [request.connection]);
-  assert.ok(filters.some(([k, v]) => k === "tenant_id" && v === id(2)));
-  assert.ok(!columns.includes("secret_refs") && !columns.includes("bot_token"));
-  assert.ok(columns.includes("team_id:non_secret_config->>team_id"));
+  assert.deepEqual(calls, [{ name: "learn_slack_connections_read", args: { p_tenant_id: id(2) } }]);
   rows[0].tenant_id = id(99);
   await assert.rejects(loadSlackConnections(db, id(2)));
   rows.splice(0);
@@ -132,6 +119,9 @@ test("connection metadata read is tenant scoped and never selects credential ref
 
 test("both legacy and HTTP conflict responses require a reload, not an uncertain retry", async () => {
   for (const code of ["40001", "PT409"]) {
-    await assert.rejects(startSlackImport({rpc: async () => ({data:null,error:{code}})} as any, request), /Reload setup/);
+    await assert.rejects(
+      startSlackImport({ rpc: async () => ({ data: null, error: { code } }) } as any, request),
+      /Reload setup/,
+    );
   }
 });

@@ -11,7 +11,8 @@ import sys
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[2]
-user_credential = '--user-credential' in sys.argv
+operator_setup = '--operator-setup' in sys.argv
+user_credential = '--user-credential' in sys.argv or operator_setup
 credential_migration = user_credential or '--bot-credential' in sys.argv
 docker = shutil.which('docker') or '/usr/local/bin/docker'
 name = 'serviceos-slack-recurring-threads-' + uuid.uuid4().hex[:8]
@@ -90,6 +91,19 @@ try:
         sql("do $$begin if to_regprocedure('public.learn_slack_credential_field(jsonb)') is not null or exists(select 1 from verify.credential_catalog_before b join pg_proc p on p.oid=b.oid where b.definition is distinct from pg_get_functiondef(p.oid) or b.proacl is distinct from p.proacl) then raise exception 'Credential migration rollback changed catalog';end if;end $$;")
         sql(migration)
         sql("do $$begin if exists(select 1 from verify.credential_catalog_before b join pg_proc p on p.oid=b.oid where b.proacl is distinct from p.proacl) then raise exception 'Credential migration changed existing grants';end if;end $$;")
+    if operator_setup:
+        sql((root/'scripts/verify/learn-slack-operator-setup.fixture.sql').read_text())
+        operator_source=(root/'supabase/migrations/20261031160000_learn_operator_inputs.sql').read_text()
+        sql(operator_source[operator_source.index('create function public.learn_operator_input_access('):operator_source.index('-- Explicit booleans only.')])
+        migration=(root/'supabase/migrations/20261101570000_learn_slack_operator_setup.sql').read_text()
+        original=sql("select md5(string_agg(pg_get_functiondef(p.oid)||coalesce(p.proacl::text,''),'' order by p.oid)) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'").strip()
+        sql(migration.replace('\ncommit;', '\nrollback;'))
+        assert original==sql("select md5(string_agg(pg_get_functiondef(p.oid)||coalesce(p.proacl::text,''),'' order by p.oid)) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'").strip()
+        sql(migration)
+        sql((root/'scripts/verify/learn-slack-operator-setup.assert.sql').read_text())
+        print('PASS: operator setup rollback restores definitions and ACLs',flush=True)
+        (root/'.verification-results/slack-operator-setup-local.json').write_text(json.dumps({'state':'passed','scope':'Synthetic PostgreSQL; real setup/import/access functions with synthetic Vault storage','limits':['No provider, hosted deployment, real Vault encryption or signed-in UI acceptance.']},indent=2)+'\n')
+        sys.exit(0)
     initial=(root/'scripts/verify/learn-slack-recurring.assert.sql').read_text().split('-- Terminal status')[0]
     if user_credential:
         initial=initial.replace('"team_id":"TSETUP"','"team_id":"TSETUP","credential_kind":"user","authorized_user_id":"USETUP"').replace('bot_token','user_token')
@@ -122,7 +136,7 @@ try:
     assert all(r.returncode==0 for r in results),[r.stderr for r in results]
     sql("do $$begin if (select count(*) from slack_recurring_thread_members where history_import_id=(select current_import from slack_recurring_channels))<>23 then raise exception 'Concurrent thread duplication or missing batch';end if;end $$;")
     print('PASS: conflicting recovery lock is skipped promptly; concurrent schedulers retain one import per parent/window',flush=True)
-    receipt = 'slack-user-credential-local.json' if user_credential else 'slack-bot-credential-local.json' if credential_migration else 'slack-recurring-threads-local.json'
+    receipt = 'slack-operator-setup-local.json' if operator_setup else 'slack-user-credential-local.json' if user_credential else 'slack-bot-credential-local.json' if credential_migration else 'slack-recurring-threads-local.json'
     (root/'.verification-results'/receipt).write_text(json.dumps({
       'state':'passed','scope':'Synthetic PostgreSQL; actual scheduler/control/thread functions with minimal Auth/queue fixtures',
       'limits':['No provider calls, hosted deployment or UI activation. Reference guard is a fixture; full reference guard and worker round trip remain separate.']},indent=2)+'\n')

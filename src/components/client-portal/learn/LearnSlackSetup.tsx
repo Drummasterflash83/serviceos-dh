@@ -169,9 +169,9 @@ export function LearnSlackSetup({
           <p role="status">Reading Slack connections…</p>
         ) : connections?.length === 0 ? (
           <p>
-            No configured company Slack connection is available. A company Slack bot connection must
-            be configured before importing. This form does not create credentials. Notification
-            connections alone do not establish history access.
+            No configured company Slack connection is available. An authorised Slack input
+            connection must be configured before importing. This form does not create credentials.
+            Notification connections alone do not establish history access.
           </p>
         ) : (
           connections && (
@@ -275,7 +275,7 @@ export function LearnSlackSetup({
             </button>
           </form>
         )}
-        {!canEdit && <p>Only your company’s owner or admin can approve an import.</p>}
+        {!canEdit && <p>A company owner/admin or OpenFolk administrator can approve an import.</p>}
         {notice && <p role="status">{notice}</p>}
       </div>
       <div

@@ -10,20 +10,13 @@ type SetupClient = LearnReadClient & {
 const uuid = (v: unknown): v is string =>
   typeof v === "string" && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v);
 export async function loadSlackConnections(
-  db: LearnReadClient,
+  db: Pick<SetupClient, "rpc">,
   tenantId: string,
 ): Promise<SlackConnectionOption[]> {
   if (!uuid(tenantId)) throw Error("Invalid workspace");
-  const { data, error } = await db
-    .from("provider_connections")
-    .select(
-      "id,tenant_id,status,revoked_at,updated_at,team_id:non_secret_config->>team_id,team_name:non_secret_config->>team_name",
-    )
-    .eq("tenant_id", tenantId)
-    .eq("provider", "slack")
-    .eq("status", "configured")
-    .is("revoked_at", null)
-    .limit(20);
+  const { data, error } = await db.rpc("learn_slack_connections_read", {
+    p_tenant_id: tenantId,
+  });
   if (error || !Array.isArray(data)) throw Error("Slack connections could not be read.");
   if (
     data.length > 1 ||
@@ -128,7 +121,7 @@ export async function startSlackImport(
           : error.code === "22023"
             ? "The import details were rejected. Review the channel and window before approving again."
             : error.code === "42501"
-              ? "Company owner or admin access is required."
+              ? "Company owner/admin or OpenFolk administrator access is required."
               : "Import was not confirmed. Retry the same request to avoid duplicates; the setup service may need deploying.",
     );
   if (

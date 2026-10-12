@@ -1,0 +1,35 @@
+{
+  "state": "installed_verified",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-12T19:56:40.507Z",
+  "packageSha256": "27a34a7eb251bb2c3f462818b91b702a838b723b42a516de552aa195dfd326f8",
+  "expected": {
+    "marker": "slack_operator_setup_installed",
+    "fingerprint": "626f89fffe3519a042d2705f295eb24b"
+  },
+  "afterFingerprint": "626f89fffe3519a042d2705f295eb24b",
+  "preservedDatasets": 194,
+  "newAccounts": 0,
+  "newGrants": 0,
+  "providerRequests": 0,
+  "credentialsUploaded": 0,
+  "productionChanged": false,
+  "version": "learn-slack-operator-setup/1",
+  "scope": "Hosted TEST schema installation; local synthetic operator and client checks",
+  "localVerification": {
+    "operatorSql": "passed: actual configure/start/read/recovery functions with synthetic Vault fixture",
+    "installationRollback": "restored original definitions and ACLs",
+    "focusedClientTests": 12,
+    "applicationTypeScript": "passed",
+    "productionBuild": "passed"
+  },
+  "newRequestTable": "public.learn_slack_connection_requests (empty on install)",
+  "sourceSha256": "3f91c0a72337b104139f363cd8e1b3d6ca02ed8eafd28e96e7a753f4ff35e41d",
+  "limitations": [
+    "No hosted Slack credential or real messages have been provisioned.",
+    "Positive signed-in hosted operator setup/import and frontend deployment remain unverified.",
+    "Synthetic Vault fixture does not prove real hosted credential round trip.",
+    "Private-channel visibility and whole-history orchestration remain unfinished.",
+    "Matching production packaging and promotion remain unfinished."
+  ]
+}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { OperatorCommusoftResume } from "./OperatorCommusoftResume";
 import { OperatorCommusoftConnection } from "./OperatorCommusoftConnection";
+import { LearnSlackSetup } from "../client-portal/learn/LearnSlackSetup";
 import type { ConnectionControlClient } from "@/lib/learn-commusoft-connection-outbox";
 import { connectionOutboxKey } from "@/lib/learn-operator-request-scope";
 import "@/styles/operator-learn-inputs.css";
@@ -39,6 +40,7 @@ export function OperatorLearnInputs({
     [storageReady, setStorageReady] = useState(false),
     [notice, setNotice] = useState("");
   const [canWrite, setCanWrite] = useState<boolean | null>(null);
+  const [slackOpen, setSlackOpen] = useState(false);
   const [connectionBlocked, setConnectionBlocked] = useState(true);
   const [values, setValues] = useState<InputFlags>({
     "learn.enabled": false,
@@ -347,6 +349,23 @@ export function OperatorLearnInputs({
         onAccessChange={setCanWrite}
         onChanged={() => refresh(generation.current)}
       />
+      <details
+        className="rounded-xl border p-4"
+        open={slackOpen}
+        onToggle={(event) => setSlackOpen(event.currentTarget.open)}
+      >
+        <summary className="cursor-pointer font-semibold">Slack channel capture</summary>
+        {slackOpen && (
+          <div className="pt-4">
+            <LearnSlackSetup
+              key={`${backend}:${tenantId}:${actorId}`}
+              tenantId={tenantId}
+              actorId={actorId}
+              canEdit={canWrite === true && !busy && !pending}
+            />
+          </div>
+        )}
+      </details>
       {data && (
         <>
           <p className="text-xs text-muted-foreground">

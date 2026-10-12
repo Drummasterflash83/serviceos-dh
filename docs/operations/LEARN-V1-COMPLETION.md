@@ -7,6 +7,27 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 19:56 UTC — OpenFolk Slack setup and import controls installed in TEST.**
+Package 081 adds operator-governed user-credential configuration with durable
+request/check/cancel receipts. It binds tenant, workspace and consenting user,
+refuses credential rotation during active/recurring capture, and returns no secret.
+Initial channel/thread imports, recovery and status readers now accept existing
+OpenFolk authority through logged client selection; tenant users retain their
+existing boundaries. Operator profiles are never moved or impersonated.
+
+The exact hosted package passed rollback rehearsal and installation with all 194
+original datasets unchanged and its new request table empty. Synthetic PostgreSQL
+checks cover configuration/replay/cancellation, secret-free metadata, actor and
+identity mismatch, channel/thread approvals and recovery, view-only/expired/preview
+access and tenant isolation. Twelve client tests, TypeScript and build pass. The
+existing OpenFolk input screen now includes the existing Slack capture controls in
+local source; frontend deployment and signed-in acceptance are still pending.
+
+No new account/grant, hosted credential, capture or production change occurred.
+Next: complete the real credential-provisioning and bounded channel/thread import
+journey using Chris's existing operator session, then verify evidence in LEARN.
+[Evidence](evidence/learn-slack-operator-setup-2026-10-12.json).
+
 **12 October, 19:47 UTC — Slack user-credential path installed and checked in hosted TEST.**
 Package 080 passed a full rollback rehearsal and was installed once; the matching
 Slack worker is ACTIVE at v11 with gateway authentication enabled. All 194 retained
