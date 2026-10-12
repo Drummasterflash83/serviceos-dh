@@ -7,6 +7,46 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 22:45 UTC — retained input to learning diagnostic and local hand-off fix.**
+
+### Working and verified
+
+- Fresh read-only TEST inspection confirms 19 enriched email interactions and two
+  reviewed Slack interactions. Their source records remain retained. No provider
+  requests, database writes, AI calls or production changes occurred in this check.
+- Local ingestion fixes now reject failed database reads, missing queue/ledger
+  acknowledgements and oversized batches. Existing skipped decisions survive retries;
+  a lost job-link acknowledgement recovers the existing queued job on serial retry.
+- 16 handler fault tests, 26 mapper checks, 11 in-process decision checks and 11
+  eligibility checks pass. These are local checks, not hosted analysis acceptance.
+
+### Needs finishing
+
+- TEST is missing `intelligence_ingestions`. The 21 inspected interactions have zero
+  interaction graph nodes and zero linked intelligence objects. Enriched/card-ready
+  does not mean analysed. Install the missing dependency and prove durable delivery.
+- Current keyword eligibility accepts 15 of the 19 emails. It rejects both reviewed
+  Slack messages (one as outbound/no signal despite unknown direction, one as marketing).
+  Carry explicit reviewed company/job context into learning without guessing identities
+  or direction. An operator context review is not itself a completed analysis.
+- Replace the unacknowledged graph background request with a durable hand-off, and
+  verify history coverage. The observation consumer also needs atomic/retry-safe
+  persistence before a real end-to-end run: it currently inserts a new observation
+  on invocation and ignores some later persistence errors. Queue deduplication alone
+  is not proof of exactly-once observation delivery.
+- This change is **not deployed**. Prior 21-package/37-artifact release evidence below
+  applies to its pinned revision. Runtime source has changed; regenerate and verify
+  matching artifacts before promoting the new code. All wider launch gates remain open.
+
+### Blocked externally
+
+- Live sign-in still needs the existing credential or owner unlock. The learning
+  defects above are implementation work, not waiting on Chris or a provider.
+
+Evidence: [aggregate diagnostic and local checks](evidence/learn-learning-handoff-2026-10-12.json).
+
+### Previous matched release checkpoint
+
 **12 October — matched production candidate now includes Slack work context.**
 
 ### Working and verified

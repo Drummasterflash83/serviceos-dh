@@ -130,7 +130,7 @@ export function ingestKey(tenantId: string, interactionId: string, mapperVersion
 }
 
 /** Deterministic queue key for the observe job — active-key dedup collapses retries
- *  to one active job; combined with the ledger it is exactly-once per mapper version. */
+ *  to one active job; the ledger supports recovery of a previously linked job. */
 export function observeJobKey(
   tenantId: string,
   interactionId: string,
@@ -268,6 +268,7 @@ export function buildObservationDraft(input: IngestBuildInput): ObservationDraft
 export interface IngestionLedgerRow {
   id: string;
   observe_job_id: string | null;
+  status: string;
 }
 
 export interface IngestDeps {
@@ -299,13 +300,14 @@ export interface IngestDeps {
     draft: ObservationDraft;
     interactionId: string;
   }): Promise<{ jobId: string | null; duplicate: boolean }>;
-  /** Record the observe job id back onto the ledger row (best-effort lineage). */
+  /** Record and confirm the observe job id on the ledger before acknowledging. */
   recordObserveJob(ingestionId: string, observeJobId: string): Promise<void>;
 }
 
 export type IngestOutcome =
   | "observed" // newly claimed + observe enqueued
   | "reused" // ledger already existed; existing/recovered observe job returned
+  | "skipped" // a previous eligibility decision is preserved for this mapper
   | "rejected"; // not found / cross-tenant / not eligible / error
 
 export interface IngestResult {
@@ -317,6 +319,7 @@ export interface IngestResult {
   observeJobType: string; // always intelligence.observe — never a direct evaluation
   channel: string | null;
   reason?: string;
+  retryable?: boolean;
 }
 
 export interface IngestBatchResult {
@@ -324,6 +327,7 @@ export interface IngestBatchResult {
   observed: number;
   reused: number;
   rejected: number;
+  skipped: number;
   results: IngestResult[];
 }
 
@@ -348,7 +352,7 @@ export const DEFAULT_MAX_BATCH = 25;
  *  • The observe job key is deterministic, so the queue's active-key dedup collapses
  *    duplicates; on the narrow claim→enqueue crash window the durable
  *    findObserveJobByKey (any status) recovers the existing job instead of creating a
- *    second Observation.
+ *    second job on a serial retry. This does not prove consumer exactly-once delivery.
  *  • Cross-tenant interactions/cards are rejected (req 4); tenant-scoped loaders make
  *    entity references impossible to leak across tenants.
  *  • Only the ids passed here are touched — nothing is swept implicitly (reqs 5, 11).
@@ -362,8 +366,10 @@ export async function ingestInteractions(
 ): Promise<IngestBatchResult> {
   const mapperVersion = opts.mapperVersion ?? MAPPER_VERSION;
   const domain = opts.domain ?? DEFAULT_INGEST_DOMAIN;
-  const cap = Math.max(1, opts.maxBatch ?? DEFAULT_MAX_BATCH);
-  const ids = opts.interactionIds.slice(0, cap); // bounded — never the full history
+  const cap = opts.maxBatch ?? DEFAULT_MAX_BATCH;
+  const ids = [...new Set(opts.interactionIds)];
+  if (!Number.isSafeInteger(cap) || cap < 1 || cap > DEFAULT_MAX_BATCH || ids.length > cap)
+    throw new Error("ingest_batch_limit_exceeded"); // Never acknowledge a truncated batch.
 
   const results: IngestResult[] = [];
   for (const interactionId of ids) {
@@ -373,10 +379,16 @@ export async function ingestInteractions(
   const observed = results.filter((r) => r.outcome === "observed").length;
   const reused = results.filter((r) => r.outcome === "reused").length;
   const rejected = results.filter((r) => r.outcome === "rejected").length;
-  return { processed: results.length, observed, reused, rejected, results };
+  const skipped = results.filter((r) => r.outcome === "skipped").length;
+  return { processed: results.length, observed, reused, rejected, skipped, results };
 }
 
-function reject(interactionId: string, reason: string, channel: string | null): IngestResult {
+function reject(
+  interactionId: string,
+  reason: string,
+  channel: string | null,
+  retryable = false,
+): IngestResult {
   return {
     interactionId,
     outcome: "rejected",
@@ -386,6 +398,7 @@ function reject(interactionId: string, reason: string, channel: string | null): 
     observeJobType: OBSERVE_JOB_TYPE,
     channel,
     reason,
+    retryable,
   };
 }
 
@@ -418,6 +431,20 @@ async function ingestOne(
       observeJobKey: jobKey,
       domain,
     });
+    if (!claim.row?.id) throw new Error("ingestion_claim_unconfirmed");
+    if (claim.row.status === "skipped" && !claim.claimed) {
+      return {
+        ...reject(interactionId, "previously_skipped", interaction.source_type),
+        outcome: "skipped",
+        idempotent: true,
+        ingestionId: claim.row.id,
+      };
+    }
+    if (
+      !["enqueued", "observed"].includes(claim.row.status) ||
+      (claim.row.status === "observed" && !claim.row.observe_job_id)
+    )
+      return reject(interactionId, "ingestion_ledger_needs_review", interaction.source_type);
 
     // ── REUSE PATH: the ledger already existed (retry or concurrent loser). ──────
     if (!claim.claimed) {
@@ -435,13 +462,15 @@ async function ingestOne(
       // Truly orphaned (crashed before the first enqueue) → enqueue now, idempotently.
       const draft = await buildDraft(deps, tenantId, interaction, mapperVersion, domain);
       const enq = await deps.enqueueObserve({ observeJobKey: jobKey, draft, interactionId });
-      if (row && enq.jobId) await deps.recordObserveJob(row.id, enq.jobId);
+      if (!enq.jobId) throw new Error("observe_enqueue_unconfirmed");
+      await deps.recordObserveJob(row!.id, enq.jobId);
       return reused(interactionId, row?.id ?? null, enq.jobId, interaction.source_type);
     }
 
-    // ── CLAIM PATH: we are the single winner → build + enqueue exactly once. ─────
+    // ── CLAIM PATH: build and enqueue with the deterministic active job key. ─────
     const draft = await buildDraft(deps, tenantId, interaction, mapperVersion, domain);
     const enq = await deps.enqueueObserve({ observeJobKey: jobKey, draft, interactionId });
+    if (!enq.jobId) throw new Error("observe_enqueue_unconfirmed");
     const ingestionId = claim.row?.id ?? null;
     if (ingestionId && enq.jobId) await deps.recordObserveJob(ingestionId, enq.jobId);
     return {
@@ -453,9 +482,10 @@ async function ingestOne(
       observeJobType: OBSERVE_JOB_TYPE,
       channel: interaction.source_type,
     };
-  } catch (e) {
+  } catch {
     // Failure-isolated: one bad record never aborts the bounded batch (req 6/12).
-    return reject(interactionId, e instanceof Error ? e.message.slice(0, 200) : "error", null);
+    // Database exceptions may contain customer values. Keep queue diagnostics content-free.
+    return reject(interactionId, "ingestion_delivery_unconfirmed", null, true);
   }
 }
 

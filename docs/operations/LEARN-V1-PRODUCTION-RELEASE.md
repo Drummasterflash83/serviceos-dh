@@ -1,5 +1,10 @@
 # LEARN V1 production release plan
 
+> 12 October 22:45 UTC: local intelligence-ingestion reliability changes postdate
+> the pinned 21-package candidate below. They have not been deployed. Regenerate
+> and verify matching runtime artifacts before promoting the new source. See
+> `LEARN-V1-COMPLETION.md` for the newly confirmed TEST learning gaps.
+
 Status: **deployment authorised by Chris on 12 October; technical release gates
 still incomplete, no production promotion executed**. Keep the existing live UX
 and Drummonds branding on both `openfolk.ai` and `test.openfolk.ai`. The showcase

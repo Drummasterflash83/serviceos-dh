@@ -245,7 +245,7 @@ interface FakeState {
   interactions: Record<string, IngestInteraction>;
   card?: CardContext | null;
   graph?: string[];
-  ledger: Map<string, { id: string; observe_job_id: string | null }>;
+  ledger: Map<string, { id: string; observe_job_id: string | null; status: string }>;
   jobsByKey: Map<string, string>;
   calls: { enqueue: number; claim: number; record: number; loadInteraction: string[] };
   loadInteractionThrowsFor?: Set<string>;
@@ -254,7 +254,12 @@ function makeDeps(init: {
   interactions: Record<string, IngestInteraction>;
   card?: CardContext | null;
   graph?: string[];
-  seedLedger?: Array<{ ingestKey: string; id: string; observe_job_id: string | null }>;
+  seedLedger?: Array<{
+    ingestKey: string;
+    id: string;
+    observe_job_id: string | null;
+    status: string;
+  }>;
   seedJobs?: Array<{ observeJobKey: string; jobId: string }>;
   loadInteractionThrowsFor?: string[];
 }): { deps: IngestDeps; state: FakeState } {
@@ -269,7 +274,11 @@ function makeDeps(init: {
     loadInteractionThrowsFor: new Set(init.loadInteractionThrowsFor ?? []),
   };
   for (const s of init.seedLedger ?? [])
-    state.ledger.set(s.ingestKey, { id: s.id, observe_job_id: s.observe_job_id });
+    state.ledger.set(s.ingestKey, {
+      id: s.id,
+      observe_job_id: s.observe_job_id,
+      status: "enqueued",
+    });
   for (const s of init.seedJobs ?? []) state.jobsByKey.set(s.observeJobKey, s.jobId);
 
   const deps: IngestDeps = {
@@ -284,7 +293,7 @@ function makeDeps(init: {
       state.calls.claim++;
       const existing = state.ledger.get(k);
       if (existing) return { claimed: false, row: existing };
-      const row = { id: `ing-${++seq}`, observe_job_id: null as string | null };
+      const row = { id: `ing-${++seq}`, observe_job_id: null as string | null, status: "enqueued" };
       state.ledger.set(k, row);
       return { claimed: true, row };
     },
@@ -322,7 +331,7 @@ function makeDeps(init: {
   // Retry the SAME interaction against the shared ledger ⇒ reused, no second job.
   const r2 = await ingestInteractions(deps, { tenantId: T, interactionIds: ["int-email"] });
   check(
-    "retry ⇒ reused (idempotent), NO second observe job / Observation",
+    "retry ⇒ reused (idempotent), no second observe job",
     r2.reused === 1 &&
       r2.results[0].idempotent === true &&
       r2.results[0].observeJobId === r.results[0].observeJobId &&
@@ -340,7 +349,7 @@ function makeDeps(init: {
   ]);
   const jobIds = new Set([a.results[0].observeJobId, b.results[0].observeJobId]);
   check(
-    "two concurrent workers ⇒ exactly one logical Observation (one job id)",
+    "two concurrent workers share one active job in the injected queue",
     state.jobsByKey.size === 1 &&
       jobIds.size === 1 &&
       a.results[0].observeJobType === OBSERVE_JOB_TYPE,
@@ -442,13 +451,15 @@ function makeDeps(init: {
     ids.push(id);
   }
   const { deps, state } = makeDeps({ interactions, card });
-  const r = await ingestInteractions(deps, { tenantId: T, interactionIds: ids });
+  let rejected = false;
+  try {
+    await ingestInteractions(deps, { tenantId: T, interactionIds: ids });
+  } catch {
+    rejected = true;
+  }
   check(
-    "bounded batch: never sweeps history (cap enforced, only passed ids touched)",
-    r.processed === DEFAULT_MAX_BATCH &&
-      state.calls.loadInteraction.length === DEFAULT_MAX_BATCH &&
-      state.calls.loadInteraction.every((x) => ids.includes(x)),
-    { processed: r.processed, loaded: state.calls.loadInteraction.length },
+    "oversize batch is rejected before any reads or partial delivery",
+    rejected && state.calls.loadInteraction.length === 0,
   );
 }
 
@@ -464,6 +475,26 @@ function makeDeps(init: {
       state.calls.enqueue === 1 &&
       !depNames.some((n) => /evaluate|decision|intent|approv|execute|adapter/i.test(n)),
     depNames,
+  );
+}
+
+// A missing acknowledgement is not a successful observation hand-off.
+for (const failed of ["claim", "enqueue", "lineage"]) {
+  const { deps } = makeDeps({ interactions: { "int-email": emailInteraction() }, card });
+  if (failed === "claim") deps.claimIngestion = async () => ({ claimed: false, row: null });
+  if (failed === "enqueue") deps.enqueueObserve = async () => ({ jobId: null, duplicate: false });
+  if (failed === "lineage")
+    deps.recordObserveJob = async () => {
+      throw Error("PRIVATE SOURCE");
+    };
+  const r = await ingestInteractions(deps, { tenantId: T, interactionIds: ["int-email"] });
+  check(
+    `${failed} acknowledgement missing ⇒ rejected and retryable`,
+    r.observed === 0 &&
+      r.reused === 0 &&
+      r.rejected === 1 &&
+      r.results[0].retryable === true &&
+      !JSON.stringify(r).includes("PRIVATE SOURCE"),
   );
 }
 

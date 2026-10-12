@@ -1,0 +1,56 @@
+{
+  "observedAt": "2026-10-12T22:45:35.632Z",
+  "project": "saatxzwxvdvqevbnskxy",
+  "stage": "read_only_retained_learning_diagnostic",
+  "missingTables": [
+    "intelligence_ingestions"
+  ],
+  "channels": {
+    "email": {
+      "retained": 19,
+      "enriched": 19,
+      "eligible": 15,
+      "reasons": {
+        "customer_context": 13,
+        "automated_notification": 2,
+        "marketing": 2,
+        "sales_opportunity": 1,
+        "customer_risk": 1
+      },
+      "reviewed": 0,
+      "graphNodes": 0,
+      "ingestions": null,
+      "observations": 0
+    },
+    "chat": {
+      "retained": 2,
+      "enriched": 2,
+      "eligible": 0,
+      "reasons": {
+        "outbound_no_signal": 1,
+        "marketing": 1
+      },
+      "reviewed": 2,
+      "graphNodes": 0,
+      "ingestions": null,
+      "observations": 0
+    }
+  },
+  "providerRequests": 0,
+  "databaseWrites": 0,
+  "paidAIRequests": 0,
+  "productionChanged": false,
+  "limitations": [
+    "Eligibility is deterministic keyword filtering, not AI analysis.",
+    "An eligible result does not prove any observation or decision was persisted."
+  ],
+  "localVerification": {
+    "handlerFaultTests": 16,
+    "pureMapperChecks": 26,
+    "inProcessDecisionChecks": 11,
+    "eligibilityChecks": 11,
+    "passed": true,
+    "hostedDeployment": false
+  },
+  "releaseImpact": "Runtime source changed. The 21-package release and its runtime artifacts remain evidence for the previous pinned revision only. Rebuild and reverify runtime artifacts before promoting this change."
+}

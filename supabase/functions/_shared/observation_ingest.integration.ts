@@ -115,7 +115,10 @@ function captureDeps(interaction: IngestInteraction): {
       recommended_action: "respond_to_customer",
     }),
     loadGraphNodeRefs: async () => ["node-interaction", "node-person", "node-company"],
-    claimIngestion: async () => ({ claimed: true, row: { id: "ing-1", observe_job_id: null } }),
+    claimIngestion: async () => ({
+      claimed: true,
+      row: { id: "ing-1", observe_job_id: null, status: "enqueued" },
+    }),
     findObserveJobByKey: async () => null,
     enqueueObserve: async ({ draft }) => {
       captured.draft = draft; // the exact payload intelligence.observe would receive
