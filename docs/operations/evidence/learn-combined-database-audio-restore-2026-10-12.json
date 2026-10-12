@@ -1,0 +1,88 @@
+{
+  "version": "learn-combined-database-audio-restore/1",
+  "scope": "actual restored database references reconciled with independent AWS manifest; one linked audio object downloaded and fully decoded",
+  "checkedAt": "2026-10-12T00:53:48.354Z",
+  "database": {
+    "archive": {
+      "bytes": 196872981,
+      "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+    },
+    "tableCatalogMatched": true,
+    "extensionVersionsMatched": true,
+    "noActorRows": {
+      "emails": 0,
+      "recordings": 0
+    },
+    "recordingRelationships": {
+      "recordings": 2882,
+      "withObjectPath": 2882,
+      "missingStorageMetadata": 0
+    },
+    "containerRemoved": true,
+    "sourceComparisonBaselineAvailable": false
+  },
+  "audio": {
+    "version": "combined-database-audio-recovery/1",
+    "state": "references_matched_and_one_linked_backup_recording_decoded",
+    "sourceProviderRequests": 0,
+    "backupComplete": false,
+    "fileInventoryRunId": "2bec8c68-0ef0-4610-ad6c-8d5156f392ed",
+    "listening": "not_verified",
+    "databaseLinksSha256": "5b5b607d2c812a4a03ff66fa5015d2c6507b7be5c0fd6d9f03bb957402f70ce2",
+    "references": {
+      "state": "all_recording_references_matched",
+      "recordingRows": 2882,
+      "referencedObjects": 2882,
+      "manifestObjects": 2888,
+      "retainedUnreferencedObjects": 6,
+      "databaseSnapshotAt": "2026-10-12T00:25:21.393518+00:00",
+      "fileInventoryObservedAt": "2026-10-11T11:38:55.727Z",
+      "atomicDatabaseFileSnapshot": false,
+      "allObjectBytesRechecked": false
+    },
+    "sample": {
+      "bytes": 108870,
+      "sha256": "0f6f606806873cae68c3c16b63dc6f7061cece39635e8c176864180a3fc6ba11",
+      "recordingReferenceCount": 1,
+      "linkedCallCount": 1,
+      "linkedTranscriptCount": 1,
+      "recordedDurationSeconds": null,
+      "decodedDurationSeconds": 66.96,
+      "durationDifferenceSeconds": null,
+      "playback": {
+        "state": "decoded",
+        "decoder": "macOS afconvert",
+        "frames": 535680,
+        "sampleRate": 8000,
+        "channels": 1,
+        "durationSeconds": 66.96,
+        "listening": "not_verified"
+      }
+    },
+    "databaseStageResumedFromVerifiedMetadata": true,
+    "temporaryAudioRemoved": true,
+    "checkedAt": "2026-10-12T00:53:48.354Z"
+  },
+  "databaseMetadataObservations": {
+    "recordingRows": 2882,
+    "recordingDurationPresent": 0,
+    "hasDirectProviderCallMatch": 1474,
+    "hasTranscriptRelationship": 2882,
+    "directMatchDoesNotAssessLinkedIdFallback": true
+  },
+  "tests": {
+    "newReferenceReconciliationTestsPassed": 5
+  },
+  "productionRequests": 0,
+  "productionWrites": false,
+  "awsCredentialRole": "Restore",
+  "sourceDatabaseCredentialRead": false,
+  "newAccountOrPermissionCreated": false,
+  "limits": [
+    "Two different snapshot times; not an atomic database/file snapshot",
+    "All references/version/size metadata matched, but only one object was re-downloaded and decoded in this run",
+    "Human listening quality and signed-in app playback not verified",
+    "Full native source comparison and two operational pg_net tables remain open",
+    "Vault decryption, full application restart and durable independent database backup operation remain open"
+  ]
+}

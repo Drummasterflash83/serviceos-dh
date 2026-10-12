@@ -200,6 +200,41 @@ approval boundary.
 
 ## Verified observation — 11 October 2026
 
+### Combined database/audio recovery — 12 October, 00:53 UTC
+
+The real archive was restored again into the tested offline PostgreSQL environment.
+Its recording/object/call/transcript metadata was retained privately before the
+disposable database was removed. All 2,882 recording references match the AWS
+manifest by tenant, recording ID, object ID, path, byte size and storage version.
+The manifest has 2,888 objects, retaining six unreferenced files. The database
+snapshot is from 12 October 00:25:21 UTC and the file inventory from 11 October
+11:38:55 UTC; agreement does not make them atomic snapshots.
+
+One selected object with a restored call and transcript was downloaded using only
+the approved AWS Restore identity. Manifest, exact S3 version, encryption/retention
+metadata and SHA-256 validation passed. Its 108,870 bytes fully decoded to 66.96
+seconds of 8 kHz mono audio. Temporary recording/decoded output were removed. No
+production/provider credential, request, write or permission change occurred.
+Human listening and signed-in application playback remain unverified.
+
+The first selector stopped because all stored recording durations are null. The
+audio stage resumed from the unchanged private metadata-file SHA-256, selecting
+by bounded size and existing call/transcript links. Missing duration stayed unknown,
+not zero, and nothing was written back to production. Direct provider-call matches
+exist for 1,474 recordings and transcript relationships for all 2,882. This check
+does not assess linked-ID fallback and does not prove the other recordings orphaned.
+
+Five reconciliation tests reject changed versions/sizes, swapped files, wrong
+tenants, duplicate IDs and incomplete references. The actual AWS/restore path
+passed. Exclusive private checkpoints retain the initial stopped selection and
+successful resumed audio stage separately. Do not remove markers or rewrite those
+journals to hide an earlier outcome.
+
+The one-sample combined database/audio rehearsal is verified. Complete source
+comparison, the omitted network-extension tables, Vault decryption, application
+startup and durable independent database backups remain open.
+[Sanitized evidence](evidence/learn-combined-database-audio-restore-2026-10-12.json).
+
 ### Real native database restore — 12 October, 00:44 UTC
 
 **Actual production records restored locally; full service recovery is not yet

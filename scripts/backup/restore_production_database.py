@@ -6,6 +6,8 @@ Private reports contain metadata/hashes only. Never print source rows or SQL err
 import hashlib
 import json
 import os
+import subprocess
+import sys
 import time
 from pathlib import Path
 from database_restore_sandbox import RecoveryError, RestoreSandbox
@@ -32,10 +34,11 @@ def write_private(path, value):
     os.replace(tmp, path)
 
 
-def run():
-    report_path = ROOT / 'restore-v3-report.json'
+def run(*, combined_audio=False):
+    run_name = 'restore-combined' if combined_audio else 'restore-v3'
+    report_path = ROOT / (run_name + '-report.json')
     # An interrupted prior restore must be inspected, not silently restarted.
-    fd = os.open(ROOT / 'restore-v3-started', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    fd = os.open(ROOT / (run_name + '-started'), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     os.close(fd)
     report = {'version': 'production-native-restore/1', 'state': 'preflight',
               'destination': 'new_offline_container', 'productionWrites': False,
@@ -159,6 +162,35 @@ def run():
                 "'missingStorageMetadata',count(*) filter(where storage_path is not null and not exists "
                 "(select 1 from storage.objects o where o.bucket_id='phone-recordings' and o.name=r.storage_path))) "
                 "from public.phone_recordings r;"))
+            if combined_audio:
+                # Extract only relationship/version metadata from the restored
+                # database; no phone numbers, transcripts or communications.
+                rows = json.loads(target.query("select json_agg(json_build_object("
+                    "'id',r.id,'tenantId',r.tenant_id,'storagePath',r.storage_path,"
+                    "'durationSeconds',r.duration_seconds,'objectId',o.id,"
+                    "'storageBytes',(o.metadata->>'size')::bigint,'storageVersion',o.version,"
+                    "'callCount',(select count(*) from public.phone_calls c where c.tenant_id=r.tenant_id "
+                    "and c.provider=r.provider and c.provider_call_id=r.provider_call_id),"
+                    "'transcriptCount',(select count(*) from public.phone_transcripts t where "
+                    "t.tenant_id=r.tenant_id and t.recording_id=r.id)) order by r.id) "
+                    "from public.phone_recordings r left join storage.objects o "
+                    "on o.bucket_id='phone-recordings' and o.name=r.storage_path "
+                    "where r.tenant_id='00000000-0000-0000-0000-000000000001';"))
+                write_private(ROOT / 'restored-recording-links.json', {
+                    'tenantId': '00000000-0000-0000-0000-000000000001',
+                    'sourceProjectRef': 'tgbnakbxwcqjeimygroz',
+                    'databaseSnapshotAt': export['snapshot']['observedAt'], 'rows': rows})
+                report['state'] = 'checking_independent_audio_backup'
+                write_private(report_path, report)
+                print(json.dumps({'stage': report['state']}), flush=True)
+                # AWS is read outside the offline database container through
+                # the already approved Restore identity. No production read.
+                result = subprocess.run(['node', 'scripts/backup/check-restored-database-audio.mjs',
+                                         '--check-existing-restored-database'],
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=240)
+                if result.returncode:
+                    raise RecoveryError('Independent audio relationship check did not complete; private evidence retained')
+                report['combinedAudio'] = json.loads((ROOT / 'combined-audio-report.json').read_text())
             report['containmentAfter'] = target.verify_boundary()
             report['state'] = ('native_archive_restored_full_recovery_unverified' if expected is None
                                else 'native_records_restore_verified_application_recovery_incomplete')
@@ -177,4 +209,6 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    if sys.argv[1:] not in ([], ['--combined-audio']):
+        raise SystemExit('Unsupported restore option')
+    run(combined_audio=sys.argv[1:] == ['--combined-audio'])

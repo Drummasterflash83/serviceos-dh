@@ -7,6 +7,23 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 01:53 BST — restored database and independent recording backup reconciled.**
+All 2,882 restored recording references match the AWS manifest by tenant, object ID,
+path, size, version and recording ID; six unreferenced files remain retained.
+One object downloaded through the existing read-only Restore identity matched its
+SHA-256 and fully decoded to 66.96 seconds, with one restored call and transcript
+relationship. Temporary audio and the offline database were removed. This used
+the existing archive/AWS backup only: no production/provider requests, data writes
+or new access. Five regression tests reject swapped files, changed versions,
+foreign tenants, duplicate IDs and incomplete relationships.
+
+This verifies a combined recovery sample, not atomic snapshots, fresh byte checks
+of every file, human listening quality or signed-in application playback. All
+recording durations in this database snapshot are null; they remain unknown rather
+than being treated as zero. Full database comparison, the two omitted pg_net tables,
+Vault decryption and operational service recovery remain open.
+[Evidence](evidence/learn-combined-database-audio-restore-2026-10-12.json).
+
 **12 October, 01:44 BST — real production database archive restored offline; full recovery acceptance remains open.**
 A native 196,872,981-byte archive from a read-only production snapshot restored
 successfully into the matching PostgreSQL 17.6.1.141 image. All 302 table definitions'

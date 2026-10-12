@@ -64,3 +64,19 @@ them. A new capture needs a reviewed new run directory, bounded production load,
 complete comparison evidence and separate credential/session cleanup. The local
 archive is not the independently retained backup service. Vault decryption,
 external audio recovery and application resumption remain separate requirements.
+
+## Combined audio check
+
+`restore_production_database.py --combined-audio` extracts recording/object/call/
+transcript links from the actual offline restore into a private checkpoint.
+`check-restored-database-audio.mjs` compares them with the existing AWS manifest,
+validates and decodes one linked file using the Restore identity, and removes its
+temporary audio. The 12 October audio phase resumed from unchanged metadata after
+the initial selector found all database durations null. Its successful result is
+recorded separately from the stopped attempt.
+
+All 2,882 references matched; one file was downloaded and decoded. These are
+different database/file snapshot times, not an atomic recovery point. The scripts
+do not invoke production, create accounts, load the Writer credential or send
+recordings to another service. See the
+[combined evidence](../../docs/operations/evidence/learn-combined-database-audio-restore-2026-10-12.json).
