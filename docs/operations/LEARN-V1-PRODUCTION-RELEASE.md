@@ -12,6 +12,31 @@ are on `codex/learn-v1-test`.
 
 ## Matching processing candidate — 12 October
 
+**12 October — scheduler pause and restoration rehearsed against the archive.**
+The exact nine-schedule transaction now passes with the existing production
+`postgres` scheduler permissions. It pauses only the reviewed jobs, preserves
+commands and unrelated schedules, and restores all 18 original schedule rows.
+Eight negative checks cover wrong target/manifest, command drift, duplicate
+attempts and late failures during pause and restoration. All 299 archived tables /
+1,591,576 rows / five sequences match afterward; the isolated container was removed.
+The first harness used the restore-administrator role; the second exposed a direct
+cron-table permission assumption. The final version uses `cron.alter_job` without
+new permissions. No production schedule changed.
+[Rehearsal](evidence/learn-production-schedule-transition-2026-10-12.json) and
+[pinned operations](../../supabase/release/learn-production/schedule-transition.manifest.json).
+
+A read-only production observation at 16:44 UTC found an empty HTTP request queue
+while one worker lease remained live. Fourteen other running job rows had no future
+lease, and 22 email / 12 phone run rows remained unfinished from earlier activity.
+These are retained diagnostic records, not proof that those workers are active.
+Do not erase them or require their historical status to turn green as a substitute
+for checking current execution. The nine schedules were still active and unchanged.
+[Observation](evidence/learn-production-drain-observation-2026-10-12.json).
+The release still needs durable execution journaling, coordination of manual and
+external callers, verified in-flight completion and compatible runtime/configuration
+before schedule restoration. Queue zero and a successful pause cannot close those
+gates. The shared platform-worker pause also delays non-LEARN queued work.
+
 **12 October, 16:37 UTC — existing production service JWT accepted by the gateway.**
 Three GET probes on the retained, unchanged `simwood-test-connection` deployment
 returned 401 for missing/invalid bearers and the exact 405 method guard for the

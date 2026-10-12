@@ -1,0 +1,30 @@
+{
+  "version": "learn-production-schedule-transition/1",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "state": "prepared_not_approved_or_executed",
+  "baseline": {
+    "path": "supabase/release/learn-production/scheduled-callers.manifest.json",
+    "sha256": "c9c0e9a0faa860eecc0b45503b2631240c020cbbbde2627be04f9e1f85daa83e"
+  },
+  "runtime": {
+    "path": "supabase/release/learn-production/runtime-candidate.manifest.json",
+    "sha256": "afca8dcb12acfdb8f05f0f0e1a7779e0a94272226376045f78380ee9e104c708"
+  },
+  "outputs": [
+    {
+      "mode": "pause",
+      "path": "supabase/release/learn-production/schedules-pause.sql",
+      "sha256": "164f4438dd3fb6c5d135e95a6fc70762e9d8e6d0474eeae1eca63c095a3da536"
+    },
+    {
+      "mode": "restore",
+      "path": "supabase/release/learn-production/schedules-restore.sql",
+      "sha256": "9440d984b632a0c5d9dc74c4bd11d0937bad4494e66365168b57093541f9739d"
+    }
+  ],
+  "limitations": [
+    "Does not stop manual/external calls or prove existing work has drained.",
+    "Requires separately reviewed release approval, durable intent/readback journal and compatibility decision before restoring schedules.",
+    "A timeout or lost response is an unknown outcome: inspect current state before any retry."
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "state": "schedule_pause_restore_rehearsed_offline",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "originalSchedules": 18,
+  "negativeChecks": [
+    "wrong_target",
+    "wrong_manifest",
+    "command_drift",
+    "late_failure",
+    "duplicate_pause",
+    "restore_command_drift",
+    "late_restore_failure",
+    "duplicate_restore"
+  ],
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "scheduleCount": 9,
+  "unrelatedSchedulesPreserved": true,
+  "originalSchedulesExactlyRestored": true,
+  "transitionManifestSha256": "fa0a23479f07e2598b6f04f89403d3d895052321fcc1d77b782880f2524cb5d1",
+  "outputs": [
+    {
+      "mode": "pause",
+      "path": "supabase/release/learn-production/schedules-pause.sql",
+      "sha256": "164f4438dd3fb6c5d135e95a6fc70762e9d8e6d0474eeae1eca63c095a3da536"
+    },
+    {
+      "mode": "restore",
+      "path": "supabase/release/learn-production/schedules-restore.sql",
+      "sha256": "9440d984b632a0c5d9dc74c4bd11d0937bad4494e66365168b57093541f9739d"
+    }
+  ],
+  "runtimeManifestSha256": "afca8dcb12acfdb8f05f0f0e1a7779e0a94272226376045f78380ee9e104c708",
+  "containerRemoved": true,
+  "inFlightWorkVerifiedStopped": false,
+  "limitations": [
+    "Cron metadata only; does not establish in-flight drain, caller freeze, hosted execution or a compatible runtime rollback.",
+    "No production schedule was changed. Final release approval and a durable execution journal remain required."
+  ],
+  "initialRehearsals": "First harness used the restore-administrator role; the second exposed direct cron-table permission assumptions. Final SQL uses existing cron.alter_job permissions; the third isolated run passed. No grants were added."
+}
