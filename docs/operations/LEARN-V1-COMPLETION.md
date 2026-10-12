@@ -7,6 +7,21 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 10:14 UTC — approved ongoing TEST operator account active.**
+Chris's existing TEST login is unbanned with one non-expiring
+`platform.controlplane.admin` grant and an exact audit record. Its original
+profile, tenant-facing viewer role, previous grants and 192 checked datasets are
+preserved. Supabase accepted one password-reset request to the stable TEST site;
+email delivery and sign-in remain unverified. Seven local runner tests pass.
+No production, provider or capture changes occurred.
+
+Chris requires authorised OpenFolk operators to inspect all clients' business
+information. Existing controller authority does not yet carry through every
+LEARN reader. Complete a logged selected-client read workflow without moving
+operator profiles between clients, then verify signed-in access and isolation.
+[Access evidence](evidence/learn-test-operator-access-2026-10-12.json) and
+[client-information requirements](LEARN-OPENFOLK-CLIENT-ACCESS.md).
+
 **12 October, 09:56 UTC — real Commusoft TEST continuation retained and retired.**
 Source storage now contains 2,418 unique properties (25 pages), 12,611 unique
 jobs (127 pages) and 850 unique customer contacts (386 pages). Properties/jobs

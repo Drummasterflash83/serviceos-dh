@@ -20,6 +20,12 @@
 - OpenFolk is the operator controller for clients, module/submodule availability,
   connector health, diagnostics and recovery. Customer-facing status should be calm
   and actionable; never invent successful processing or hide material stale data.
+- Chris clarified on 12 October that authorised OpenFolk operators need access to
+  every client's business information to support clients and improve their software.
+  Implement explicit, logged client selection and operator reads across customers,
+  contacts, sites, jobs, communications, recordings, cards and performance evidence.
+  Keep ordinary clients isolated to their own data. Do not implement cross-client
+  support by moving the operator's profile into each client or impersonating staff.
 - Preserve existing communications, recordings and source history. Reuse authorized
   credentials through server-side storage; never commit secrets or raw private data.
 - Back up meaningful checkpoints to `Drummasterflash83/serviceos-dh`, branch

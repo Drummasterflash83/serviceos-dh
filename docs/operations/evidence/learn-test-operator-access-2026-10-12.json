@@ -1,0 +1,30 @@
+{
+  "version": "learn-test-owner-access/1",
+  "project": "saatxzwxvdvqevbnskxy",
+  "runId": "d8950e13-7f55-411a-8052-0103d4091c69",
+  "state": "ready_needs_owner_signin",
+  "permission": "platform.controlplane.admin",
+  "expiresAt": null,
+  "tenantRole": "viewer",
+  "checks": {
+    "identity": 1,
+    "banned": 0,
+    "email_identities": 1,
+    "prior_profile": 1,
+    "owner_profile": 0,
+    "target_tenant": 1,
+    "active_grants": 1,
+    "exact_grant": 1,
+    "exact_audit": 1
+  },
+  "preserved": true,
+  "recoveryRequestAcceptedAt": "2026-10-12T10:14:43.341Z",
+  "datasets": 192,
+  "profilePreserved": true,
+  "previousGrantsPreserved": true,
+  "recoveryEmailsRequested": 1,
+  "emailDeliveryVerified": false,
+  "signedInVerified": false,
+  "crossClientInformationAccepted": false,
+  "productionChanged": false
+}
