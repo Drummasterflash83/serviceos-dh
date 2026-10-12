@@ -7,6 +7,19 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 09:41 UTC — independent database copy and restore verified.**
+The approved London stack, separate Writer/Restore identities and one key each
+are active. Both credentials are verified in separate Keychain entries and
+Openfolk ServiceOS in 1Password, with rotation due 10 January 2027. The retained
+06:37 UTC production snapshot was age-encrypted into 198,018,440 bytes, uploaded
+with AES256 and 30-day governance retention, and downloaded by Restore. Keys
+retrieved again from 1Password recovered 1,594,994 native rows, 711 operational
+rows, all 16 Vault secrets and 2,883 recording relationships offline. Catalog/RLS,
+extensions and package hashes matched; the container and active lock were removed.
+No production data changed. Daily database operation, alerts and full service
+recovery remain open; this is not production LEARN acceptance.
+[Independent recovery evidence](evidence/learn-independent-database-recovery-2026-10-12.json).
+
 **12 October, 09:20 UTC — database recovery keys saved and read back from 1Password.**
 The approved dedicated age identity and existing production Vault root key are
 now in the concealed recovery field of the exact Openfolk ServiceOS note.
@@ -14,8 +27,8 @@ Read-back verified the age pair and matched the source root key; existing fields
 and metadata were preserved. No key values were printed or written to a plaintext
 host file. Six focused checks pass, including the real POSIX-pipe transport used
 by the CLI. The initial ignored-template attempt was inspected before retry.
-The independent AWS database bucket, scoped identities, upload and independent
-restore remain outstanding. [Escrow evidence](evidence/learn-database-recovery-escrow-2026-10-12.json).
+The newer 09:41 entry above verifies the subsequent AWS setup, copy and restore.
+[Escrow evidence](evidence/learn-database-recovery-escrow-2026-10-12.json).
 
 **12 October, 08:56 UTC — Commusoft continuation readiness restored.**
 Full read-only TEST 079 preflight passes: original source preservation, current
@@ -63,9 +76,9 @@ a substitute for completing LEARN. No requirement or release approval is waived.
 
 **Database activation decision:** Chris approved the separate London database
 bucket, scoped Writer/Restore identities and keys, 1Password recovery material,
-one bounded encrypted snapshot copy and independent restore. Database recovery keys are now saved in 1Password; no AWS database
-resources or machine keys have yet been created. The separate CLI access route
-is approved and verified. Production promotion is not included.
+one bounded encrypted snapshot copy and independent restore. These are now
+verified, including key recovery copies and the separate CLI access route.
+No recurring database schedule was created. Production promotion is not included.
 
 **12 October — full archive references prepared for fresh file-backup reconciliation.**
 A new offline restore preserved all 1,594,994 native rows and 711 operational rows,
@@ -112,7 +125,7 @@ it does not provision infrastructure or establish daily operation. Exact-item
 IDs, live escrow/readback, separate AWS credential recovery copies, approved
 bucket/access creation and the real independent copy/restore remain unverified.
 [Operator evidence](evidence/learn-database-backup-operator-local-2026-10-12.json)
-and [operating steps](../../infrastructure/database-backup/README.md#supervised-initial-copy-commands--prepared-not-run-against-real-services).
+and [operating steps](../../infrastructure/database-backup/README.md#supervised-initial-copy-commands--first-real-run-verified).
 
 **12 October — encrypted package now restores an actual synthetic database and Vault.**
 The native archive, operational supplement and recovery evidence passed age
@@ -1993,7 +2006,8 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   Existing Workspace key availability in TEST is a current dependency; the live
   four-account `invalid_grant` issue requires a bounded diagnostic with a safe
   cause category, not a guessed Google-admin change.
-- [ ] **Commusoft:** resume remaining jobs and property-scoped contacts; reconcile
+- [ ] **Commusoft:** jobs traversal now reaches 127 pages / 12,611 unique jobs;
+  finish customer/site contacts, reconcile
   missing customer/property references and unzoned timestamps; publish valid
   customer/contact/site/job relationships with held records visible for review.
   Verify incremental updates and a real source-to-card journey without provider writes.
@@ -2167,14 +2181,18 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   retention and recovery targets; use the now-approved AWS London setup and
   recording-copy scope under OpenFolk ownership; implement encrypted independent files plus database recovery.
   Verify bytes and isolated restore/playback, record duration and recovery point.
-  [Recovery plan](LEARN-DATA-RECOVERY.md). The complete observed file inventory and one manifest-selected
-  audio restore are verified. As of 12 October, the real native database archive
-  restores offline and all 1,591,576 archived rows/five sequence values compare
-  successfully. All 2,882 audio references match the independent manifest and one
-  linked AWS file fully decodes. Remaining: complete source capture (two pg_net
-  tables omitted), Vault decryption, application/Auth recovery, durable independent
-  database backups and verified recurring operation.
-  [Real archive comparison](evidence/learn-native-archive-comparison-2026-10-12.json).
+  [Recovery plan](LEARN-DATA-RECOVERY.md). Latest 12 October evidence verifies
+  2,893 files / 602,476,551 bytes and 2,887 references in the recording inventory.
+  The independently stored database snapshot restores all 1,594,994 native rows,
+  five sequences, 711 operational rows and their separate sequence, 16 Vault
+  secrets and 2,883 recording relationships. The audio reconciliation reports
+  four newer references separately; one linked AWS file decodes successfully.
+  Remaining: dependable recurring database/file operation, missed-run alerts,
+  full application/Auth recovery, controlled capture resumption and voicemail
+  file coverage. No daily database schedule was created by the initial approval.
+  [Independent database recovery](evidence/learn-independent-database-recovery-2026-10-12.json).
+  The observations below are earlier preparation/history, superseded by the
+  dated evidence above where later verification is available.
   Earlier synthetic preparation:
   At 13:51 UTC, a reusable offline logical-restore destination passed a separate
   synthetic PostgreSQL dump/restore: retained row/pointer fingerprints, tenant RLS,

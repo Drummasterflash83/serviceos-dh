@@ -1,5 +1,21 @@
 # LEARN data recovery coverage
 
+**12 October — independent encrypted database copy and restore verified.**
+The approved OpenFolk London bucket now holds the 06:37 UTC production snapshot
+as a 198,018,440-byte age-encrypted package with AES256 server-side encryption
+and governance retention until 11 November. The separate Restore identity
+downloaded and verified it; keys retrieved from Openfolk ServiceOS in 1Password
+then recovered all 1,594,994 native rows, 711 operational rows, 16 Vault secrets
+and 2,883 recording relationships in a network-isolated container. Catalog/RLS,
+extensions and package hashes matched; the container and run lock were removed.
+Both scoped AWS keys are verified in separate Keychain entries and 1Password,
+with rotation due 10 January 2027. No production data changed.
+
+Daily database operation, missed-run alerts and full Auth/application/runtime
+recovery remain open. File bytes are covered by the separate recording backup;
+this database snapshot is not an atomic current copy of those files.
+[Independent recovery evidence](evidence/learn-independent-database-recovery-2026-10-12.json).
+
 **12 October, 08:30–08:31 UTC — fresh recording backup and linked restore verified.**
 The retried manual daily run verified **2,893 files / 602,476,551 bytes**, including
 **five newly copied files / 1,472,290 bytes** and all **2,887 recording references**.
@@ -34,11 +50,10 @@ identity, checks the downloaded manifest, restores one bounded linked file and
 removes temporary audio after decoding. Its actual fresh AWS/audio result remains
 unverified. [Local archive evidence](evidence/learn-complete-archive-recording-links-2026-10-12.json).
 
-The remaining independent database destination, key escrow, access, cost and
-restore sequence are specified in the
-[database backup proposal](../../infrastructure/database-backup/README.md).
-Its infrastructure is validated locally; activation, package/transfer verification
-and dependable recurrence remain incomplete. No new destination has received data.
+The independent database destination, key escrow, access and first restore are
+now verified by the newer observation above. The
+[database backup operating guide](../../infrastructure/database-backup/README.md)
+describes the setup and remaining recurrence requirements.
 
 ## Complete native capture, restore and Vault check — 12 October, latest state
 

@@ -1,0 +1,125 @@
+{
+  "contract": "learn-independent-database-recovery-evidence/1",
+  "observedAt": "2026-10-12T09:41:42.817461+00:00",
+  "environment": "AWS London independent copy of retained production snapshot; network-isolated local restore",
+  "sourceRevision": "58907fcc073effce044913976de7ca15e26249bf",
+  "scope": "One approved snapshot copy and restore; no daily schedule or production data changes",
+  "destination": {
+    "accountId": "235099643372",
+    "region": "eu-west-2",
+    "project": "tgbnakbxwcqjeimygroz",
+    "bucket": "openfolk-serviceos-database-235099643372-eu-west-2",
+    "prefix": "projects/tgbnakbxwcqjeimygroz/"
+  },
+  "stack": {
+    "name": "openfolk-serviceos-database-backup",
+    "state": "CREATE_COMPLETE",
+    "observedAt": "2026-10-12T09:28:51Z",
+    "resources": 6
+  },
+  "access": {
+    "writerAndRestoreSeparated": true,
+    "consoleAccess": false,
+    "permissionsBoundary": "Each identity bounded by its own project-scoped policy",
+    "policyAllowsDeleteOrRetentionBypass": false,
+    "keysPerIdentity": 1,
+    "credentialEscrow": [
+      {
+        "role": "Writer",
+        "state": "keychain_and_onepassword_verified",
+        "at": "2026-10-12T09:36:17.558Z",
+        "rotationDue": "2027-01-10"
+      },
+      {
+        "role": "Restore",
+        "state": "keychain_and_onepassword_verified",
+        "at": "2026-10-12T09:37:44.988Z",
+        "rotationDue": "2027-01-10"
+      }
+    ],
+    "recoveryStore": "Openfolk ServiceOS in 1Password",
+    "keysExcludedFromEvidence": true
+  },
+  "encryptedObject": {
+    "size": 198018440,
+    "sha256": "c17668562077c7242d99914a2494da338efbe03a91bb32a7f58c337d5e4b4730",
+    "encryption": "AES256",
+    "retentionMode": "GOVERNANCE",
+    "createdAt": "2026-10-12T09:38:14.000Z",
+    "retainUntil": "2026-11-11T09:38:13.382Z"
+  },
+  "verification": {
+    "state": "independent_database_snapshot_verified",
+    "attempt": "19ee66c2-d2d2-461e-8030-49ab74be3959",
+    "snapshotAt": "2026-10-12T06:37:26.256528+00:00",
+    "encryptedBytes": 198018440,
+    "independentStorageVerified": true,
+    "keyEscrowReadbackVerified": true,
+    "recovery": {
+      "nativeRows": 1594994,
+      "operationalRows": 711,
+      "recordingRelationships": 2883,
+      "vaultSecretsVerified": 16,
+      "containerRemoved": true
+    },
+    "dailyOperationVerified": false,
+    "fullServiceRecoveryVerified": false,
+    "productionWrites": false
+  },
+  "restore": {
+    "allPhysicalTablesCovered": true,
+    "containment": {
+      "containerLogging": "none",
+      "cronLaunchActiveJobs": false,
+      "hostMounts": 0,
+      "maxWorkerProcesses": 0,
+      "network": "none",
+      "networkWorkerDatabaseAbsent": true,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault"
+      ],
+      "publishedPorts": 0
+    },
+    "extensionVersionsMatched": true,
+    "nativeDataComparison": {
+      "comparisonSha256": "2d746e1448a455807a64651312c7e2cb3840651de0fb819a646a8491351d47d4",
+      "rows": 1594994,
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered",
+      "sequences": 5,
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299
+    },
+    "networkSupplementComparison": {
+      "comparisonSha256": "944033a82ddc233131cf6ee5854b9328712b4f3bb0d3fad693ce331b7b848d3f",
+      "rows": 711,
+      "scope": "two explicitly captured pg_net COPY tables and separately observed nontransactional sequence",
+      "sequences": 1,
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 2
+    },
+    "noActorRows": {
+      "emails": 0,
+      "recordings": 0
+    },
+    "originalPackageFilesUnchanged": true,
+    "recordingRelationships": {
+      "missingStorageMetadata": 0,
+      "recordings": 2883,
+      "withObjectPath": 2883
+    },
+    "sourceAPIRequests": false,
+    "tableCatalogMatched": true,
+    "vaultSecretsVerified": 16
+  },
+  "lockRemoved": true,
+  "limitations": [
+    "Database snapshot is 12 October 06:37 UTC, not a continuously refreshed backup.",
+    "Storage metadata is included; audio bytes remain in the separately verified recording backup.",
+    "AWS source object and separate Restore identity download were verified by the outer runner; the offline restore itself has no AWS or 1Password access.",
+    "Full Auth/application/runtime recovery, capture resumption, daily operation and missed-run alerts remain unverified.",
+    "No production LEARN promotion or daily database schedule was performed."
+  ]
+}

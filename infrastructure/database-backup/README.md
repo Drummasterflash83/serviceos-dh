@@ -1,26 +1,26 @@
-# Independent ServiceOS database backup — approved, not activated
+# Independent ServiceOS database backup — first copy and restore verified
 
-12 October 2026. Chris has approved the described destination, scoped access,
-key escrow and bounded first copy/restore. The separate 1Password CLI integration
-was also approved on 12 October and its checked setting verified in the app. The dedicated age recovery key and existing Vault root key were saved and read back
-from Openfolk ServiceOS at 09:20 UTC. No AWS database resources, machine keys or
-database copy have been created.
+12 October 2026. The approved London CloudFormation stack reached
+`CREATE_COMPLETE` at 09:28 UTC. The separate Writer and Restore identities each
+have one approved key, verified in their separate Mac Keychain entries and in
+the existing Openfolk ServiceOS note in 1Password. Rotation is due **10 January
+2027**. The dedicated age recovery key and existing Vault root key were saved
+and read back from that note at 09:20 UTC; existing note contents were preserved.
 
-This is the remaining database recovery work, alongside the
-already established recordings bucket. The native database and all 16 Vault
-secrets have passed a local restore. No independent database upload, database
-backup identity or recurring database runner is established yet. Recovery-material
-escrow is verified; AWS credential recovery copies await provisioning.
+The retained 06:37 UTC production snapshot was encrypted into **198,018,440
+bytes**, uploaded with AES256 server-side encryption and 30-day governance
+retention, then downloaded by the separate Restore identity. With keys retrieved
+again from 1Password, the downloaded package restored in an offline container:
+**1,594,994 native rows, 711 operational rows, 16 Vault secrets and 2,883 recording
+relationships** verified. Catalog/RLS, extensions and original package hashes
+matched; the container and active lock were removed. No production data changed.
+[Sanitised acceptance evidence](../../docs/operations/evidence/learn-independent-database-recovery-2026-10-12.json).
 
-The foundation template is prepared and locally validated. Real age encryption,
-strict package recovery and the AWS SDK transfer protocol pass a combined
-synthetic round trip. The existing real snapshot passes package admission only;
-it has not been encrypted or uploaded. The encrypted package now also passes a
-full synthetic PostgreSQL/Vault restore through the stdin-only recovery command.
-The supervised operator runner and exact-item 1Password adapter now pass local
-synthetic checks. Live exact-note access and recovery escrow are verified. Approved infrastructure
-provisioning and the first real copy still require execution and verification below. **This document is not an approval or
-evidence that an independent database backup exists.**
+This verifies one independent database snapshot and its recovery route alongside
+the separately established recordings backup. **Daily database scheduling,
+missed-run monitoring and full application/service recovery remain incomplete.**
+The initial approval creates no recurring database schedule. The implementation
+and remaining operating requirements are described below.
 
 ## Exact proposed destination and contents
 
@@ -127,7 +127,7 @@ The official stable macOS arm64 CLI **2.40.0** is prepared only at
 `com.1password.op`, Developer ID Application **AgileBits Inc. (2BUA8C4S2C)**,
 Apple certificate chain. Binary SHA-256:
 `7dff93952c49d25133c8a2487ab7072e656368d4e7089f055f119bc8d1066ae2`.
-Only version/help commands have run; no authenticated account request has occurred.
+Authenticated exact-note reads and approved recovery writes have now succeeded.
 Distribution: [official release history](https://app-updates.agilebits.com/product_history/CLI2).
 
 Chris explicitly approved enabling the CLI route on 12 October. After native window-control errors, Chris enabled the setting; read-back confirmed
@@ -183,7 +183,7 @@ stays on stdin. A six-test regression suite checks transport, preservation,
 conflicts, uncertain writes and exact account/role binding. Use one persistent
 terminal session for supervised CLI work to reduce repeated biometric prompts.
 
-## Supervised initial-copy commands — prepared, not run against real services
+## Supervised initial-copy commands — first real run verified
 
 `run-serviceos-database-backup.mjs` supports only the already retained production
 snapshot specified above. It does not export fresh source data, create resources,
@@ -265,12 +265,13 @@ in the template.
 - **Restore:** inspect and list the same scope, then read selected retained
   versions. No writes, deletion, retention bypass or AWS administration.
 
-The proposed combined approval will also cover one key per new machine user,
-stored separately in this Mac's Keychain as
+Chris approved the combined setup and separately confirmed both keys at creation.
+One key per new machine user is now stored and read back separately in this Mac's Keychain as
 `OpenFolk.ServiceOS.DatabaseBackup.Writer` and
 `OpenFolk.ServiceOS.DatabaseBackup.Restore`, account `235099643372`, with recovery
-copies in the specified 1Password note. Record issue time and rotation due within
-90 days. Do not expand or reuse the recordings identities. No Supabase service
+copies verified in the specified 1Password note. Writer was verified at 09:36 UTC
+and Restore at 09:37 UTC on 12 October; both are due for rotation by 10 January
+2027. Do not expand or reuse the recordings identities. No Supabase service
 key, administrator token or recovery decryption key is placed in AWS.
 
 ## Retention, failure handling and rollback
