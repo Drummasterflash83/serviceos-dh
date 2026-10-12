@@ -1,6 +1,17 @@
 # Microsoft 365 mail input
 
-## Current status — canonical message projection rehearsed; connector not enabled
+## Current status — credential path verified locally; connector not enabled
+
+On 12 October, the server-side credential port and refresh RPCs were added and
+verified against isolated PostgreSQL with synthetic credentials. The complete
+local suite now has **66 passing tests**, plus actual SQL/reader/settlement checks
+and strict worker/Microsoft TypeScript checks. This extends the earlier hosted
+projection rehearsal below; the new credential migration has **not** had a hosted
+full-schema rehearsal or persistent deployment.
+
+The prepared `microsoft_capture_handler.ts` is deliberately **not registered**:
+lease-fenced failure/retry/pause settlement and worker integration remain to be
+completed. No credentials, consent, accounts or schedules were created or enabled.
 
 On 11 October 2026, the first Microsoft Graph mail delta reader was implemented in
 `supabase/functions/_shared/microsoft_mail_page.ts`. Folder discovery and resumable traversal are now implemented in
@@ -404,10 +415,50 @@ LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy \
 This command uses its own one-shot journal; never overwrite a submitted run.
 [Evidence](evidence/learn-microsoft-discovery-2026-10-11.json).
 
+## Credential execution path — local only, 12 October
+
+`microsoft_capture_ports.ts` obtains credentials only through
+`learn_microsoft_credential_read` and `learn_microsoft_credential_refresh` in
+`20261101470000_learn_microsoft_credentials.sql`. Both RPCs require service-role
+execution, the current job owner/attempt/lease, the exact company/account/mailbox
+binding, active account, enabled binding and current capture permission. Human
+roles cannot invoke them. They reuse `email_oauth_tokens`, whose browser reads are
+denied by RLS; no new direct table grants are added.
+
+An existing Microsoft token row is insufficient by itself. Its `raw_payload`
+must contain a trusted `learnMicrosoft` association with contract
+`microsoft-delegated-credential/1`, Microsoft tenant ID, mailbox ID, immutable
+binding ID and app client ID. **The future consent callback must authenticate the
+initiating company/user and validate the provider identity before writing this
+association.** This migration does not supply that callback or treat UUID shape
+as proof of identity. It creates no real association or credential.
+
+`MICROSOFT_MAIL_CLIENT_ID` and `MICROSOFT_MAIL_CLIENT_SECRET` are server-only
+configuration names; neither has been provisioned here. `microsoft_oauth.ts`
+refreshes against the bound Microsoft directory's official token endpoint,
+requests only Graph `Mail.Read`, rejects redirects and bounds response size/time.
+Tokens remain opaque. Refresh-token replacement and omitted scope handling follow
+Microsoft's [authorization-code and refresh contract](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow).
+Endpoint bodies and credentials never become operator errors or queue results.
+
+Refreshed tokens are saved only if the stored token ID, version and old refresh
+token still match. The RPC checks current capture authority again and preserves
+the original identity association. A newer refresh/reconnection wins; the port
+re-reads and validates the committed token before using it. An uncertain save
+reply stops that capture attempt without blindly resubmitting the refresh.
+
+The isolated database exercises actual SQL, credential port, reader and queue
+settlement together, including paused/revoked access, cross-company/client/mailbox
+denial, stale writes and revocation during refresh. This is synthetic provider
+acceptance with minimal database dependencies. Real consent, hosted schema/HTTP
+acceptance, controller credential health and worker failure settlement are open.
+[Local evidence](evidence/learn-microsoft-credentials-local-2026-10-12.json).
+
 ## Remaining work to deliver the connector
 
 1. Resolve each authorized company/account to its Microsoft tenant and mailbox;
-   integrate consent, token storage/refresh/revocation and read-only mail content
+   integrate consent, provision the locally verified token association/refresh path,
+   complete revocation and read-only mail content
    permissions. Transport UUID validation is not authorization. Revalidate the
    company/module/account permission and capture switch at execution time.
 2. Integrate the implemented durable discovery and repeat scans with
@@ -418,7 +469,8 @@ This command uses its own one-shot journal; never overwrite a submitted run.
    [root folder listing](https://learn.microsoft.com/en-us/graph/api/user-list-mailfolders?view=graph-rest-1.0)
    and [child folder listing](https://learn.microsoft.com/en-us/graph/api/mailfolder-list-childfolders?view=graph-rest-1.0).
 3. Complete the worker lifecycle around the implemented recurring message queue: revalidated
-   server-side credential ports, then registration and module-aware scheduling around
+   hosted acceptance of the server-side credential ports, lease-fenced failure/retry
+   and pause settlement, then registration and module-aware scheduling around
    the implemented settlement and physical-folder dispatch. The full-schema rollback
    rehearsal passes; HTTP RPC/worker acceptance and persistent release remain pending. Complete expired-delta and deleted-folder recovery without discarding old
    source evidence. Repeat discovery is implemented and rehearsed, but not installed
@@ -443,18 +495,9 @@ python3 scripts/verify/learn-microsoft-journal.py
 node --test supabase/functions/_shared/microsoft_mail_page.test.ts \
   supabase/functions/_shared/microsoft_mail_folders.test.ts \
   supabase/functions/_shared/microsoft_capture_engine.test.ts \
-  supabase/functions/_shared/microsoft_capture_job.test.ts
-./node_modules/.bin/tsc --noEmit --strict --allowImportingTsExtensions \
-  --target ES2022 --module ESNext --moduleResolution bundler \
-  --lib ES2022,DOM --skipLibCheck \
-  supabase/functions/_shared/microsoft_mail_page.ts \
-  supabase/functions/_shared/microsoft_mail_page.test.ts \
-  supabase/functions/_shared/microsoft_mail_folders.ts \
-  supabase/functions/_shared/microsoft_mail_folders.test.ts \
-  supabase/functions/_shared/microsoft_capture_engine.ts \
-  supabase/functions/_shared/microsoft_capture_engine.test.ts \
-  supabase/functions/_shared/microsoft_capture_job.ts \
-  supabase/functions/_shared/microsoft_capture_job.test.ts
+  supabase/functions/_shared/microsoft_capture_job.test.ts \
+  supabase/functions/_shared/microsoft_credentials.test.ts
+node scripts/verify/learn-worker-typecheck.mjs
 ```
 
 Tests exercise the exported reader with synthetic provider responses, including

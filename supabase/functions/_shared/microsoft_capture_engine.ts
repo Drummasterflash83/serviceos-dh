@@ -1,6 +1,7 @@
-/** One journaled source page per queue job. Not registered for live execution:
- * credential ports, durable queue settlement and schedules must be integrated first. */
+/** One journaled source page per queue job. The credential path is verified
+ * locally; worker failure settlement and hosted acceptance precede registration. */
 import { object, uuid, id, MicrosoftMailError } from "./microsoft_graph_transport.ts";
+import { MicrosoftCredentialError } from "./microsoft_oauth.ts";
 import {
   beginMicrosoftFolderDiscovery,
   stepMicrosoftFolderDiscovery,
@@ -278,7 +279,8 @@ export async function runMicrosoftCapturePage(
   let token: string;
   try {
     token = await ports.accessToken(structuredClone(context), structuredClone(claim));
-  } catch {
+  } catch (error) {
+    if (error instanceof MicrosoftCredentialError) throw error;
     return bad("authorization_unconfirmed");
   }
   let page: unknown, after: Checkpoint, count: number;

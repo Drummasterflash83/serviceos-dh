@@ -7,6 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — Microsoft credential-to-email path verified locally.**
+The new server credential RPCs enforce company, mailbox, client application,
+current job/lease, enabled binding and capture permission. The refresh port saves
+rotated tokens with an optimistic version check and revalidates authority before
+using the committed credential. Actual isolated SQL/port/reader/settlement tests
+proved paused/revoked denial, stale-update protection, lost-reply recovery and a
+complete synthetic email reaching canonical email and interaction records.
+All 66 Microsoft tests and strict worker/Microsoft TypeScript checks pass.
+
+This is **local synthetic acceptance only**. No real credentials were created,
+no hosted migration was installed and the prepared handler remains unregistered.
+Next are lease-fenced failure/retry/pause settlement and worker integration, then
+hosted acceptance, authenticated consent/identity provisioning and real-mailbox
+verification. Drummonds' applicable mail source remains Google; no Microsoft
+mailbox has been identified. The production capacity approval and inaccessible
+1Password vault remain independent blockers.
+[Credential evidence](evidence/learn-microsoft-credentials-local-2026-10-12.json) ·
+[Implementation and remaining work](LEARN-MICROSOFT-MAIL.md).
+
 **12 October, 02:29 BST — capacity evidence gathered; production resize awaiting approval.**
 Post-recovery SQL showed 14 client sessions against a limit of 60, zero blocked
 sessions and zero CLI sessions. One resource scrape showed 408 MiB total memory
@@ -1463,6 +1482,11 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   due-time gating and pause/revocation before token access; 58 focused tests and
   strict TypeScript pass. Nothing is installed or enabled for Microsoft. No real
   Microsoft mailbox has been identified for Drummonds.
+  On 12 October the credential port/refresh RPCs passed local actual-SQL synthetic
+  acceptance through canonical email and interactions; 66 focused tests and strict
+  type checks pass. Consent identity provisioning, hosted credential rehearsal,
+  failure/retry/pause settlement and worker registration remain open.
+  [Credential evidence](evidence/learn-microsoft-credentials-local-2026-10-12.json).
   [Evidence](evidence/learn-microsoft-incremental-2026-10-11.json).
   At 14:59 UTC, the canonical message projection also passed a full-schema TEST
   rollback rehearsal, including the missing shared event-bus foundation. Complete

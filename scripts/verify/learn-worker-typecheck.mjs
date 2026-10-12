@@ -1,4 +1,5 @@
-/** Strict local TypeScript check of the worker, manual processing and Workspace discovery endpoints.
+/** Strict local TypeScript check of the worker, manual processing, Workspace
+ * discovery endpoints and the prepared Microsoft capture path.
  * Uses the installed SDK declarations and a minimal Deno env/serve shim; this
  * does not replace Edge runtime acceptance against the deployed SDK.
  */
@@ -24,10 +25,14 @@ try {
         module: "ESNext",
         moduleResolution: "Bundler",
         allowImportingTsExtensions: true,
+        allowJs: true,
+        checkJs: false,
         noEmit: true,
         strict: true,
         skipLibCheck: true,
-        lib: ["ES2022", "DOM"],
+        lib: ["ES2022", "DOM", "DOM.Iterable"],
+        typeRoots: [join(root, "node_modules/@types")],
+        types: ["node"],
         paths: {
           "https://esm.sh/@supabase/supabase-js@2.45.4": [
             join(root, "node_modules/@supabase/supabase-js/dist/index.d.mts"),
@@ -36,6 +41,14 @@ try {
       },
       files: [
         shim,
+        join(root, "supabase/functions/_shared/microsoft_capture_handler.ts"),
+        join(root, "supabase/functions/_shared/microsoft_credentials.test.ts"),
+        ...[
+          "microsoft_mail_page",
+          "microsoft_mail_folders",
+          "microsoft_capture_engine",
+          "microsoft_capture_job",
+        ].map((name) => join(root, "supabase/functions/_shared", name + ".test.ts")),
         ...[
           "platform-worker",
           "identity-resolve",
