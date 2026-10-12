@@ -1,0 +1,88 @@
+{
+  "observedAt": "2026-10-12T19:47:23.483Z",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "hosted_test_schema_runtime_and_idle_http_verified",
+  "schema": {
+    "packageSha256": "ec198e4481141844854f8a76b8c5339164dd467c493a475118d242329c09eb7e",
+    "afterFingerprint": "d4005b645cc42f2b428676e0b42b9dc5",
+    "preservedDatasets": 194
+  },
+  "rehearsal": {
+    "state": "rehearsed_rolled_back",
+    "preservedDatasets": 194
+  },
+  "runtime": {
+    "endpoint": "learn-slack-worker",
+    "version": 11,
+    "verifyJwt": true,
+    "sourceBundleSha256": "44475398c30996f3766c6e3d02f4c0e061c96d17cf5d3d84634ab22e464d137a",
+    "reports": [
+      {
+        "endpoint": "learn-slack-worker",
+        "version": 11,
+        "matchingRuntimeModules": 14,
+        "omittedModules": [
+          "_shared/worker_contract.ts"
+        ],
+        "emittedImportsChecked": 20,
+        "omittedModulesHaveNoEmittedImporters": true,
+        "differentRuntimeModules": []
+      }
+    ],
+    "method": "Transpiled syntax-tree comparison normalizes comments, redundant parentheses, associative logical operators and a sole for-of block; emitted imports are checked separately. Review aid, not formal proof."
+  },
+  "http": {
+    "state": "http_verified_idle_no_capture",
+    "checks": [
+      {
+        "name": "missing gateway JWT",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "name": "anonymous key without trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "name": "service JWT without trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "name": "wrong trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "name": "caller supplied work selector",
+        "status": 400,
+        "passed": true
+      },
+      {
+        "name": "empty authorized worker",
+        "status": 200,
+        "passed": true
+      }
+    ],
+    "preservedDatasets": 194
+  },
+  "providerRequests": 0,
+  "credentialsUploaded": 0,
+  "channelsActivated": 0,
+  "newAccounts": 0,
+  "newGrants": 0,
+  "productionChanged": false,
+  "limitations": [
+    "Idle queue acceptance only; no real Slack messages imported.",
+    "Hosted credential provisioning and bounded real capture remain outstanding.",
+    "Private-channel visibility and whole-history orchestration remain required.",
+    "Production release and signed-in acceptance remain outstanding.",
+    "Individual and group DMs are excluded by user instruction."
+  ]
+}

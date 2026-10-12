@@ -7,6 +7,22 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 19:47 UTC — Slack user-credential path installed and checked in hosted TEST.**
+Package 080 passed a full rollback rehearsal and was installed once; the matching
+Slack worker is ACTIVE at v11 with gateway authentication enabled. All 194 retained
+datasets match before and after schema installation, worker replacement and HTTP
+verification. Fourteen downloaded executable modules match the reviewed source;
+one type-only module is omitted with no emitted import pointing to it.
+
+Seven HTTP checks pass: missing/incorrect credentials, wrong method and caller
+work selectors are rejected; an authorised empty-queue invocation returns zero
+claimed jobs. This verifies deployment and access controls, not Slack ingestion.
+No hosted Slack credential, channel activation, provider request, new login/grant
+or production change occurred. Real channel/thread capture, private-channel
+visibility and whole-history orchestration remain unfinished. The existing live
+UX remains the product design, and ordinary live deployment is authorised.
+[Hosted evidence](evidence/learn-slack-user-hosted-2026-10-12.json).
+
 **12 October — explicit Slack user credential and public-channel transport verified locally.**
 The worker now binds the approved consenting user and workspace, uses a separate
 `user_token` field, and preserves actual public-channel membership rather than
@@ -39,7 +55,8 @@ field both match the new credential; unrelated note content is preserved.
 The earlier metadata-only inventory identified 180 public and 135 accessible
 private channels, including archived channels. No messages or files were fetched.
 Channel import, thread history, private-channel visibility and full-history
-orchestration remain unfinished; the currently implemented worker is bot-only.
+orchestration remained unfinished at this observation; the later hosted TEST
+update above adds the explicit user credential path.
 No Slack credential has been provisioned to hosted TEST or production, and no
 Slack capture has been activated. [Current scope and evidence](LEARN-SLACK-HISTORICAL-COVERAGE.md).
 

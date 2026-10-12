@@ -1,0 +1,19 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "bundleSha256": "44475398c30996f3766c6e3d02f4c0e061c96d17cf5d3d84634ab22e464d137a",
+  "fullSchema": "d4005b645cc42f2b428676e0b42b9dc5",
+  "runtimeSchema": "c9136a2cf4603f92f7e418966242ff22",
+  "endpoints": [
+    {
+      "name": "learn-slack-worker",
+      "verifyJwt": true
+    }
+  ],
+  "replaceVersions": {
+    "learn-slack-worker": 10
+  },
+  "modules": 15,
+  "external": [
+    "https://esm.sh/@supabase/supabase-js@2.45.4"
+  ]
+}

@@ -37,25 +37,37 @@ rejected and the replacement matches the previously verified DH/Heidi identity.
 The granted scopes exactly match the seven manifest scopes plus Slack's
 `identify` scope. Individual/group DM scopes are absent.
 
-Next: package the locally verified user-identity transport and SQL changes,
-prepare hosted storage and channel capture, and implement private-channel
+Next: provision the reviewed hosted credential destination and verify real
+channel/thread capture, then implement private-channel
 visibility controls. Preserve archived-channel coverage and disclose missing edit
 history. Do not enumerate or ingest DMs with the replacement credential.
 
 ## Current implementation and gaps
 
-The deployed worker uses a tenant-bound Vault bot credential, verifies workspace and channel
-membership, and imports internal public channels in approved windows of at most
+Hosted TEST worker v11 supports tenant-bound Vault bot or explicitly bound user
+credentials, verifies workspace and identity, and imports internal public channels
+in approved windows of at most
 24 hours. It stores durable checkpoints/source versions, handles rate limits,
 deduplicates messages and supports separately paginated observed threads.
 Recurring capture revisits retained parents. Synthetic and production-archive
 rehearsal evidence exists; real Drummonds Slack acceptance remains outstanding.
 
-The deployed transport rejects private/shared channels and non-bot credentials. It does not
+The deployed TEST transport rejects private/shared channels, DMs and mismatched
+credential identities. It does not
 enumerate the workspace, orchestrate a whole-history backfill or download files.
 These are explicit coverage gaps, not channels with no activity. The current
 15-message/60-second policy is conservative; do not promise a full import by
 tomorrow before measuring the workspace and permitted throughput.
+
+### Hosted TEST acceptance — 12 October, 19:47 UTC
+
+The matching package 080 and worker v11 are installed. The exact schema package
+passed rollback rehearsal before installation. All 194 datasets match across
+schema, runtime and HTTP checks. Downloaded source has fourteen matching executable
+modules and one omitted type-only module with no runtime importer. Seven HTTP
+access/empty-queue checks pass. No Slack credential was uploaded, no channel was
+activated and no provider call was made. Real-provider acceptance is still required.
+[Sanitised evidence](evidence/learn-slack-user-hosted-2026-10-12.json).
 
 ### Locally verified user credential path — 12 October
 
