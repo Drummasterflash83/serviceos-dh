@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { OperatorCommusoftResume } from "./OperatorCommusoftResume";
 import { OperatorCommusoftConnection } from "./OperatorCommusoftConnection";
-import { LearnSlackSetup } from "../client-portal/learn/LearnSlackSetup";
+import { OperatorSlackConnection } from "./OperatorSlackConnection";
 import type { ConnectionControlClient } from "@/lib/learn-commusoft-connection-outbox";
 import { connectionOutboxKey } from "@/lib/learn-operator-request-scope";
 import "@/styles/operator-learn-inputs.css";
@@ -357,11 +357,11 @@ export function OperatorLearnInputs({
         <summary className="cursor-pointer font-semibold">Slack channel capture</summary>
         {slackOpen && (
           <div className="pt-4">
-            <LearnSlackSetup
+            <OperatorSlackConnection
               key={`${backend}:${tenantId}:${actorId}`}
               tenantId={tenantId}
               actorId={actorId}
-              canEdit={canWrite === true && !busy && !pending}
+              canWrite={canWrite === true && !busy && !pending}
             />
           </div>
         )}
