@@ -1,0 +1,71 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "a23d06dfae950da5b63269c66b2017cbff5620edd0ba2edfb7a25b732b2e2bc9",
+  "priorFingerprint": "6993886b70c352d13bae0800ffb39f08",
+  "priorMicrosoftFingerprint": "24bfd62aa574c2faa28fcb7bfc5c3e9b",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101180000_learn_microsoft_source_journal.sql",
+      "sha256": "8f852bf18aad93e64d3fd8192910159f2fdfea102d2807bbfdc429f5e6ab8398"
+    },
+    {
+      "path": "supabase/migrations/20261101181000_learn_microsoft_job_receipts.sql",
+      "sha256": "f91c07370d28689fcbdfdee8ead990a5dcc7ed12db710f6d709cb93f38fe9bb0"
+    },
+    {
+      "path": "supabase/migrations/20261101182000_learn_microsoft_queue_completion.sql",
+      "sha256": "2781dca88f9ad4322c8acb042e4c42559cd66cc39db96e4708c9177ac21b2cbe"
+    },
+    {
+      "path": "supabase/migrations/20261101192000_learn_microsoft_folder_dispatch.sql",
+      "sha256": "3e7fa7064b54ddc2921b318e2da384dcd7ffb6a3fab86fa0ce4e9f9522150f84"
+    },
+    {
+      "path": "supabase/migrations/20261101260000_learn_microsoft_incremental_queue.sql",
+      "sha256": "b3a30f6e3084849ef613480fa488a8c0da07efe7bcdc3161bb07764cd9a61e7c"
+    },
+    {
+      "path": "supabase/migrations/20261101280000_learn_microsoft_message_projection.sql",
+      "sha256": "121fcd1cd4569b4fe6b72ba818892802e46cc592de936039c64a70214c891e62"
+    },
+    {
+      "path": "supabase/migrations/20261101350000_learn_microsoft_recurring_discovery.sql",
+      "sha256": "ffad2f09f0f6c960b80222c95bf86aeb99447be03051b3b860a797aa8408d643"
+    },
+    {
+      "path": "supabase/migrations/20261101470000_learn_microsoft_credentials.sql",
+      "sha256": "e68b461739f347de2d1aad7e196b618102b237bef4a878c38a9e144598fcccab"
+    },
+    {
+      "path": "supabase/migrations/20261101480000_learn_microsoft_worker_failures.sql",
+      "sha256": "e4d961ae83228a253de9fa668d788b12b3529c3eb33fa13a5d0dd784cf11e4ab"
+    },
+    {
+      "path": "scripts/verify/learn-microsoft-hosted-probe.mjs",
+      "sha256": "707407889973548cce657071e0c6d912699e2721144cc31fa578cc8b2a7e5fab",
+      "sqlSha256": "bb4f5de5c5e25951ee74b5a13e2de0aa4b5f7c37313db596729df7b74b132551"
+    },
+    {
+      "path": "scripts/verify/learn-microsoft-projection-probe.mjs",
+      "sha256": "6755255b7a44b202d83b6894fa83326af05e02ba7a97a0a9fb46de624bc47438",
+      "sqlSha256": "1b2f4c156b33a058fd9743c011c14a875b863ceecea9fd70514c3733b7d66ef3"
+    },
+    {
+      "path": "scripts/verify/learn-microsoft-card-probe.mjs",
+      "sha256": "fd00888365387fe8c0e74a04a4c829305c77fa8a4dc7d649ba94daec06bf8816",
+      "sqlSha256": "5093860b34d981098ec1f28a0ccc971bd56324d07a6584f51ae4960b4e5f96df"
+    },
+    {
+      "path": "scripts/verify/learn-microsoft-discovery-probe.mjs",
+      "sha256": "5dde99410dcd9fcfe388dd7ccbcf224b47cffd13e54c0fb7a4c28422d86cbe8e",
+      "sqlSha256": "022338f546f86ef75f44d4b68580b6288f8873587d59aa3e099d4e06e11e6aec"
+    },
+    {
+      "path": "scripts/verify/learn-microsoft-worker-hosted-probe.mjs",
+      "sha256": "094fcab86b82879004ff805939c3d1fb589229f989d07fd6d11a742ff597a8ee",
+      "sqlSha256": "5d303d6dee828cbdc731c3a5af27af9fad74d2268cf04224203357fc4cd66a0c"
+    }
+  ],
+  "preservedDatasets": 140,
+  "emptyNewTables": 8
+}

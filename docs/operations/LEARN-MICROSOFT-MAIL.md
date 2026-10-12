@@ -1,6 +1,33 @@
 # Microsoft 365 mail input
 
-## Current status — hosted schema rehearsal passed; connector not enabled
+## Current status — TEST schema and hosted RPC journey verified; connector not enabled
+
+TEST release **078** installed at **02:17 UTC on 12 October** following an exact
+package rehearsal. Its eight private Microsoft tables were initially empty and
+all 140 existing dataset counts/hashes were preserved. At **02:20 UTC**, the actual
+local handler/credential port/reader completed a synthetic email-to-card journey
+over the real hosted RPC boundary in 16 requests. Refresh rotation, durable source
+and canonical records, identity/card publication, replay without duplicate fetch
+or card, and unsigned/anonymous/wrong-application denials all passed. The 148
+preservation datasets outside the fixture were unchanged.
+
+The retained synthetic evidence belongs to an archived fixture company; capture
+is paused, its binding/account revoked, token deleted and remaining jobs cancelled.
+No human access or real provider request was created. The **deployed worker is
+still v19** and does not include this Microsoft handler. The next gate is its
+pinned deployment and hosted execution; consent/identity provisioning, controller
+coverage and real-mailbox acceptance remain open.
+[TEST 078 evidence](evidence/learn-microsoft-test-078-2026-10-12.json).
+
+For rollback, keep the installed source pages, receipts and other retained
+Microsoft evidence. Pause affected capture and cancel only unstarted synthetic
+test jobs where applicable; do not drop the new tables to roll back application
+code. Existing worker v19 can remain in place while Microsoft has no active
+accounts or scheduled jobs. Any later worker downgrade needs a fresh compatibility
+check, because this package changes the shared claim function to respect Microsoft
+capture pauses while permitting saved-page recovery.
+
+### Earlier verification checkpoints
 
 On 12 October, the server-side credential port and refresh RPCs were added and
 verified against isolated PostgreSQL with synthetic credentials. The complete
@@ -16,7 +43,7 @@ discovery and same-card refresh. No Microsoft tokens, fixtures or schema remain
 installed; there were no real provider requests or production changes.
 [Hosted worker evidence](evidence/learn-microsoft-worker-hosted-2026-10-12.json).
 
-Persistent TEST installation and hosted RPC/worker acceptance are the next gates.
+At that checkpoint, persistent TEST installation and hosted RPC/worker acceptance remained open.
 Consent/identity provisioning, controller coverage and real-mailbox acceptance
 remain required; a successful synthetic rollback does not establish live capture.
 

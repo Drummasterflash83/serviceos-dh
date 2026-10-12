@@ -59,8 +59,20 @@ snapshot freshness, projection/identity review, queued processing messages, draf
 advice and bounded card-evidence explanation. Compatible dependency-lock updates
 passed TypeScript/build; production-dependency audit is clear, with nine development
 tool findings retained for review.
-The backend now has release **077**, worker **v19**, voicemail importer **v2**, private playback **v1**,
-card refresh **v2**, and Workspace discovery **v3**. The new frontend exposes the
+The backend now has release **078**, worker **v19**, voicemail importer **v2**, private playback **v1**,
+card refresh **v2**, and Workspace discovery **v3**. Release 078 installed the nine
+Microsoft schema migrations at **02:17 UTC on 12 October**, after an exact rollback
+rehearsal, preserving all 140 existing datasets. It activated no mailbox, worker
+or schedule. A subsequent 16-request synthetic hosted RPC run verified actual
+local handler/credential refresh/source storage/identity/card publication and
+replay, preserving 148 datasets outside the fixture. The fixture is archived,
+paused and revoked, with its dummy token deleted and remaining jobs cancelled.
+The Microsoft handler is **not yet deployed** in worker v19; no real Microsoft
+mailbox or signed-in journey has been verified. Keep its retained source/receipt
+tables when rolling back application code. See
+[Microsoft TEST evidence](operations/evidence/learn-microsoft-test-078-2026-10-12.json).
+
+The new frontend exposes the
 operator-only voicemail aggregate status and a direct LEARN entry to the existing
 private owner/manager inbox. Its scoped response reader rejects unknown counts and
 incomplete pages; account/company changes discard private UI state. The inbox was

@@ -7,6 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 03:20 BST — Microsoft TEST 078 installed; hosted RPC email-to-card journey verified.**
+The exact package passed a fresh rollback rehearsal, then installed nine Microsoft
+migrations with all 140 existing datasets unchanged and eight new tables empty.
+A separate synthetic company then exercised the actual local handler, credential
+port and reader against the installed hosted RPCs: refresh/rotation, durable page,
+canonical email, interaction, identity publication and one customer card. Replaying
+the completed capture and publication produced no extra fetch or card. Unsigned,
+anonymous and wrong-application credential requests were rejected.
+
+The 16-request API run preserved all 148 datasets outside its synthetic fixture.
+The fixture is archived, capture paused, binding/account revoked, dummy credential
+deleted and all remaining jobs cancelled. No Auth user or grant, real provider
+request or production change occurred. The deployed worker remains **v19**; its
+Microsoft source-code registration has not been deployed. Next are a pinned worker
+release and hosted execution, then consent/identity provisioning, controller
+coverage and authorized real-mailbox acceptance. Drummonds' Google/Commusoft/phone/
+Slack and recovery dependencies remain open; this is not live Microsoft capture.
+[TEST 078 and hosted API evidence](evidence/learn-microsoft-test-078-2026-10-12.json).
+
 **12 October, 03:11 BST — Microsoft credentials and worker outcomes pass hosted full-schema rehearsal.**
 All nine Microsoft migrations and five synthetic probes passed against current
 TEST 077 in one rolled-back transaction. This joins the credential refresh and

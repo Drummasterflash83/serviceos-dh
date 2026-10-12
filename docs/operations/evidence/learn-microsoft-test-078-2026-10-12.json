@@ -1,0 +1,198 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "schemaRelease": 78,
+  "rehearsal": {
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-12T02:16:31.912Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "packageSha256": "a23d06dfae950da5b63269c66b2017cbff5620edd0ba2edfb7a25b732b2e2bc9",
+    "expected": {
+      "marker": "microsoft-installed/1",
+      "fingerprint": "eed0d2261da216333a705c4b00f54bd5"
+    },
+    "afterFingerprint": "24bfd62aa574c2faa28fcb7bfc5c3e9b",
+    "preservedDatasets": 140,
+    "fixtureAbsent": true,
+    "emptyNewTables": null,
+    "usersRetained": 0,
+    "credentialsRetained": 0,
+    "grantsRetained": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Microsoft schema only; no deployed worker, real mailbox, consent, active connector or signed-in acceptance."
+    ]
+  },
+  "installation": {
+    "state": "installed_microsoft_schema_verified",
+    "observedAt": "2026-10-12T02:17:11.182Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "packageSha256": "a23d06dfae950da5b63269c66b2017cbff5620edd0ba2edfb7a25b732b2e2bc9",
+    "expected": {
+      "marker": "microsoft-installed/1",
+      "fingerprint": "eed0d2261da216333a705c4b00f54bd5"
+    },
+    "afterFingerprint": "eed0d2261da216333a705c4b00f54bd5",
+    "preservedDatasets": 140,
+    "fixtureAbsent": true,
+    "emptyNewTables": true,
+    "usersRetained": 0,
+    "credentialsRetained": 0,
+    "grantsRetained": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Microsoft schema only; no deployed worker, real mailbox, consent, active connector or signed-in acceptance."
+    ]
+  },
+  "httpAcceptance": {
+    "state": "hosted_rpc_source_to_card_verified",
+    "observedAt": "2026-10-12T02:20:48.375Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      "unsigned_anonymous_and_foreign_application_denied",
+      "actual_handler_refresh_storage_settlement_and_replay",
+      "hosted_identity_publication_creates_card_once",
+      "durable_source_email_interaction_card_relationship_confirmed"
+    ],
+    "trace": [
+      {
+        "name": "learn_microsoft_credential_read",
+        "role": "anon",
+        "status": 401
+      },
+      {
+        "name": "learn_microsoft_credential_read",
+        "role": "none",
+        "status": 401
+      },
+      {
+        "name": "learn_microsoft_credential_read",
+        "role": "service_role",
+        "status": 409
+      },
+      {
+        "name": "learn_microsoft_job_settle",
+        "role": "service_role",
+        "status": 200
+      },
+      {
+        "name": "learn_microsoft_journal_job",
+        "role": "service_role",
+        "status": 200
+      },
+      {
+        "name": "learn_microsoft_journal_open",
+        "role": "service_role",
+        "status": 200
+      },
+      {
+        "name": "learn_microsoft_credential_read",
+        "role": "service_role",
+        "status": 200
+      },
+      {
+        "name": "learn_microsoft_credential_refresh",
+        "role": "service_role",
+        "status": 200
+      },
+      {
+        "name": "learn_microsoft_credential_read",
+        "role": "service_role",
+        "status": 200
+      },
+      {
+        "name": "learn_microsoft_journal_commit",
+        "role": "service_role",
+        "status": 200
+      },
+      {
+        "name": "learn_microsoft_job_settle",
+        "role": "service_role",
+        "status": 200
+      },
+      {
+        "name": "learn_microsoft_job_settle",
+        "role": "service_role",
+        "status": 200
+      },
+      {
+        "name": "learn_identity_pending",
+        "role": "service_role",
+        "status": 200
+      },
+      {
+        "name": "learn_processing_publish",
+        "role": "service_role",
+        "status": 200
+      },
+      {
+        "name": "learn_processing_publish",
+        "role": "service_role",
+        "status": 200
+      },
+      {
+        "name": "learn_processing_settle",
+        "role": "service_role",
+        "status": 200
+      }
+    ],
+    "requests": 16,
+    "syntheticFetches": 1,
+    "syntheticRefreshes": 1,
+    "cleanup": {
+      "archived": true,
+      "accounts_revoked": true,
+      "bindings_disabled": true,
+      "no_active_jobs": true,
+      "no_credentials": true,
+      "no_human_access": true,
+      "capture_paused": true
+    },
+    "preservedDatasets": 148,
+    "schemaUnchanged": true,
+    "newAuthUsers": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "failure": null,
+    "limitations": [
+      "Actual handler/ports/readers ran locally against hosted RPCs with synthetic provider responses. No deployed Edge worker, Microsoft network, real credentials, real mailbox or signed-in acceptance.",
+      "Synthetic source/card evidence retained in an archived fixture company; its binding/account revoked, credential deleted and successor jobs cancelled."
+    ]
+  },
+  "sources": [
+    {
+      "path": "scripts/verify/learn-microsoft-catalog.mjs",
+      "sha256": "c2d14680fc8e39f998a34d7c22bcdf3647b657710c5bdd5ddfc6b727149da925"
+    },
+    {
+      "path": "scripts/verify/learn-microsoft-release.mjs",
+      "sha256": "8ad5f32f117af100ab7e065b146b6b7c46e6bb1c91e870047d1f2247b973c3e1"
+    },
+    {
+      "path": "scripts/verify/learn-microsoft-hosted-http.mjs",
+      "sha256": "42a031c89dcba49d8abfd6899873c5016bdedb1e4af543b0f7f2d93b9acac0e9"
+    },
+    {
+      "path": "supabase/functions/_shared/microsoft_capture_handler.ts",
+      "sha256": "725b4a2de5a20180e8ef8043566109b6a71f7b884cca11380759409c73c77199"
+    },
+    {
+      "path": "supabase/functions/_shared/microsoft_capture_ports.ts",
+      "sha256": "3c79d1668dabc21acaed8ab9812a2af962e7589834e53ebc1914df337042429d"
+    },
+    {
+      "path": "supabase/functions/_shared/microsoft_capture_job.ts",
+      "sha256": "4aefa47335fd875f0cb59e4d27cc654c5685b7b32138306f3c565a6afb6be59c"
+    },
+    {
+      "path": "supabase/functions/_shared/microsoft_capture_engine.ts",
+      "sha256": "f3f4352909610119c925985b05811a8a096cbaeca1709990a976d4ba52df8f15"
+    },
+    {
+      "path": "supabase/functions/_shared/microsoft_mail_page.ts",
+      "sha256": "58906108406f4700d8b2ad370052fb0f6e7591dfd56d45f80bf2edc118254dc8"
+    }
+  ]
+}
