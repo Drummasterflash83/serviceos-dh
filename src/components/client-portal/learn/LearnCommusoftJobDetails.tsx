@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
+import type { ReviewClient } from "@/lib/learn-commusoft-review";
 import {
   JOB_DETAIL_FIELDS,
   JOB_DETAIL_DATES,
@@ -11,11 +12,13 @@ export function LearnCommusoftJobDetails({
   connection,
   version,
   external,
+  client,
 }: {
   tenant: string;
   connection: string;
   version: string;
   external: string;
+  client?: ReviewClient;
 }) {
   const [open, setOpen] = useState(false),
     [revision, setRevision] = useState(0),
@@ -28,7 +31,13 @@ export function LearnCommusoftJobDetails({
     setBusy(true);
     setData(null);
     setError("");
-    void loadCommusoftJobDetails(getSupabaseClient(), tenant, connection, version, external)
+    void loadCommusoftJobDetails(
+      client ?? getSupabaseClient(),
+      tenant,
+      connection,
+      version,
+      external,
+    )
       .then((d) => {
         if (active) setData(d);
       })
@@ -41,7 +50,7 @@ export function LearnCommusoftJobDetails({
     return () => {
       active = false;
     };
-  }, [open, revision, tenant, connection, version, external]);
+  }, [open, revision, tenant, connection, version, external, client]);
   return (
     <details onToggle={(e) => setOpen(e.currentTarget.open)}>
       <summary>Inspect retained job {external}</summary>

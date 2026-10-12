@@ -10,18 +10,21 @@ import {
   type CustomerKind,
   type ReviewConnection,
   type ReviewCustomer,
+  type ReviewClient,
 } from "@/lib/learn-commusoft-review";
 
 export function LearnCommusoftCustomers({
   tenantId,
   canEdit,
   onSaved,
+  client,
 }: {
   tenantId: string;
   canEdit: boolean;
   onSaved?: () => void;
+  client?: ReviewClient;
 }) {
-  const db = getSupabaseClient();
+  const db = client ?? getSupabaseClient();
   const [connections, setConnections] = useState<ReviewConnection[]>([]),
     [connection, setConnection] = useState("");
   const [rows, setRows] = useState<ReviewCustomer[]>([]),

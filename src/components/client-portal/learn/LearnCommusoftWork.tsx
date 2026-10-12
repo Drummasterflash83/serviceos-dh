@@ -7,6 +7,7 @@ import {
   findCommusoftContacts,
   type CustomerCandidate,
   type ReviewConnection,
+  type ReviewClient,
 } from "@/lib/learn-commusoft-review";
 import {
   loadWorkPage,
@@ -27,13 +28,15 @@ export function LearnCommusoftWork({
   actorId,
   canEdit,
   onSaved,
+  client,
 }: {
   tenantId: string;
   actorId: string;
   canEdit: boolean;
   onSaved?: () => void;
+  client?: ReviewClient;
 }) {
-  const db = getSupabaseClient();
+  const db = client ?? getSupabaseClient();
   const scope = { backend: supabaseConfig.url.replace(/\/$/, ""), actorId, tenantId };
   const [connections, setConnections] = useState<ReviewConnection[]>([]),
     [connection, setConnection] = useState(""),
@@ -384,6 +387,7 @@ export function LearnCommusoftWork({
                       connection={connection}
                       version={r.version_id}
                       external={r.external_id}
+                      client={client}
                     />
                   )}
                   {r.contact && (

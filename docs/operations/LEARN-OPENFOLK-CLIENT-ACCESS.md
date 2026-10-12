@@ -132,3 +132,16 @@ that session and showed the password form; no second update was submitted.
 The report-status refresh on Drummonds' controller failed with a visible warning
 and remains to diagnose. Full business-information access is still unfinished.
 [Latest verified evidence](evidence/learn-password-reset-test-2026-10-12.json).
+
+## Audited source-to-card review — 12 October, 10:59 UTC
+
+The TEST backend now exposes `openfolk_business_review` for the fixed existing
+Commusoft review operations. It checks the current admin grant and selected tenant,
+records the real actor and review reason, invokes the governed customer/site/job/
+contact rules and returns an audited receipt. Ordinary tenant ownership checks and
+generic import permissions remain unchanged. Operator profiles are not moved.
+An audit failure rolls back canonical writes; source and contact matching holds
+still apply. The full-schema synthetic customer-to-card relationship journey and
+negative-access checks passed. No real canonical records were published.
+Frontend deployment and real signed-in review remain unverified at this checkpoint.
+See [evidence](evidence/openfolk-business-review-test-2026-10-12.json).

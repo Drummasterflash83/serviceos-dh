@@ -1,0 +1,52 @@
+{
+  "observedAt": "2026-10-12T10:59:26.603Z",
+  "scope": "TEST only",
+  "rehearsal": {
+    "state": "passed_rolled_back",
+    "project": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T10:58:34.807Z",
+    "sources": [
+      {
+        "path": "supabase/migrations/20261101510000_openfolk_business_review.sql",
+        "sha256": "d0228be8d72a04bef8e5d64db705b0cc96bc745916462f437192b436921ab5f9"
+      },
+      {
+        "path": "scripts/verify/openfolk-business-review.assert.sql",
+        "sha256": "6424793913a3f2be3a036c821cce082a8f8c15eb387ef391773d335b1ae983e9"
+      }
+    ],
+    "preservedDatasets": 194,
+    "priorCatalogRestored": true,
+    "newAccountsRetained": 0,
+    "newGrantsRetained": 0,
+    "providerCalls": 0,
+    "productionChanged": false
+  },
+  "installation": {
+    "state": "installed_verified",
+    "project": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T10:59:26.603Z",
+    "sourceSha256": "d0228be8d72a04bef8e5d64db705b0cc96bc745916462f437192b436921ab5f9",
+    "preservedDatasets": 194,
+    "installed": [
+      {
+        "fingerprint": "caa982d878e395233ddc7cd8270fea24",
+        "authenticated": true,
+        "anon": false,
+        "service": false
+      }
+    ],
+    "newAccounts": 0,
+    "newGrants": 0,
+    "providerCalls": 0,
+    "productionChanged": false
+  },
+  "localChecks": {
+    "focusedTests": 25,
+    "navigationBrandingAndWorkerTests": 55,
+    "typescript": "passed"
+  },
+  "frontend": "not yet deployed",
+  "realCanonicalPublication": false,
+  "productionChanged": false
+}

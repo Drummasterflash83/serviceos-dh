@@ -70,6 +70,9 @@ const OperatorMicrosoftStatus = lazy(() =>
 const OperatorClientInformation = lazy(() =>
   import("./OperatorClientInformation").then((m) => ({ default: m.OperatorClientInformation })),
 );
+const OperatorCommusoftReview = lazy(() =>
+  import("./OperatorCommusoftReview").then((m) => ({ default: m.OperatorCommusoftReview })),
+);
 const tabs: { view: ReceptionistView; label: string }[] = [
   { view: "testing", label: "Automated voice tests" },
   { view: "improvements", label: "Feedback & responses" },
@@ -113,6 +116,11 @@ function OperatorModuleContent({
           tenantId={tenantId}
           actorId={user.id}
           company={company}
+        />
+        <OperatorCommusoftReview
+          key={`review:${tenantId}:${user.id}`}
+          tenantId={tenantId}
+          actorId={user.id}
         />
       </Suspense>
     ) : null;

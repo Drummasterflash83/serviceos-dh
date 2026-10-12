@@ -7,6 +7,27 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 10:59 UTC — operator source-to-card review backend verified in TEST.**
+The reviewed customer/site/job/contact path now has an audited OpenFolk facade
+using the real operator identity and existing admin grant. A full-schema rollback
+journey linked one synthetic customer card, site, completed job and contact;
+replay, foreign scope, actor spoofing, revoked access, View-As, ordinary-owner
+compatibility and rollback on audit failure passed. The exact package is installed
+in TEST, preserving the protected rows across 194 datasets. No new retained grants,
+accounts, canonical records or production changes. Frontend deployment and signed-in
+real review remain next. [Evidence](evidence/openfolk-business-review-test-2026-10-12.json).
+
+**12 October, 10:50 UTC — real contact continuation resumed through Chris's operator UI.**
+The prior queued job settled without a provider request. Chris's existing ongoing
+TEST operator account recorded master LEARN on, Email/Phone/Slack off, Commusoft on,
+and an eight-hour continuation from customer-contact page 386. The existing 2,000
+page allowance, 100-record page size, original traversal identity and credential
+are retained. Supervised run `eb260c9d` permits at most 4,000 provider reads overall;
+it creates no identity, grant or schedule. The first read advanced to page 387,
+with 851 contacts retained and all preservation checks passing. The sequential
+worker is still running; completion and site-contact traversal are not yet proven.
+
+
 **12 October, 10:38 UTC — signed-in operator source browsing verified in TEST.**
 The new Client information screen is deployed at the stable protected TEST alias
 from `c323e91`. Chris's signed-in operator session loaded two pages of real
