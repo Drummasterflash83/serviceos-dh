@@ -74,6 +74,7 @@ try:
         assert original == sql("select md5(string_agg(pg_get_functiondef(p.oid)||coalesce(p.proacl::text,''),'' order by p.oid)) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'")
         sql(recurring_migration)
         print(sql(source('scripts/verify/learn-commusoft-recurring.assert.sql')),flush=True)
+        subprocess.run(['node','scripts/verify/learn-commusoft-recurring-control-bridge.mjs',docker,name],cwd=root,check=True,timeout=60)
         print('Recurring installation rollback restores all definitions and grants; no hosted changes.',flush=True)
     overview = sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000180';set role authenticated;select learn_operator_inputs(fixture_id(100));")
     path=root/('.verification-results/commusoft-contact-traversal-overview-legacy.json' if legacy else '.verification-results/commusoft-contact-traversal-overview.json')

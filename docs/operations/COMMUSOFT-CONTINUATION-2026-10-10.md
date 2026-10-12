@@ -1,5 +1,31 @@
 # Drummonds TEST import continuations and remaining coverage
 
+## Ongoing operator workflow — local acceptance, 12 October
+
+OpenFolk's existing input controls now include ongoing Commusoft capture. They
+show stage, last verified coverage boundary, next check and bounded page budgets.
+Approval, pause and resume use immutable request receipts, one shared browser
+lock and a saved request bound to operator, company and backend. Unknown responses
+remain saved; check-before-retry prevents duplicate approvals. Conflicting saved
+import/connection requests block a new ongoing change and vice versa.
+
+The actual application resolver passed against migration
+`20261101550000_learn_commusoft_recurring.sql` in a disposable synthetic database,
+including a committed change whose response was lost, receipt reconciliation,
+pause/resume and exact source-page/version preservation. Browser verification also
+reloaded the uncertain request, reconciled exactly one approval and paused it.
+Twenty-two focused tests, TypeScript and the full frontend build pass.
+
+This is local evidence only. The migration is not yet in the nineteen-package
+production release or installed in TEST. The dedicated worker calls recurring
+scheduling through `learn_commusoft_claim_jobs` only after that migration is
+installed. No real recurring approval or provider call was made. Full-schema
+packaging, hosted acceptance, provider date-filter verification and changed-source
+canonical reconciliation remain required. Existing approvals bind their approving
+operator; transfer/recovery under another operator remains unfinished.
+
+[Evidence](evidence/learn-commusoft-recurring-controls-2026-10-12.json).
+
 ## Fixed update periods — implemented locally, 12 October
 
 Migration `20261101540000_learn_commusoft_update_windows.sql` and prepared

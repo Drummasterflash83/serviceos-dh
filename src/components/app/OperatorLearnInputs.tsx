@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { OperatorCommusoftRecurring } from "./OperatorCommusoftRecurring";
 import { OperatorCommusoftResume } from "./OperatorCommusoftResume";
 import { OperatorCommusoftConnection } from "./OperatorCommusoftConnection";
 import { OperatorSlackConnection } from "./OperatorSlackConnection";
@@ -41,6 +42,7 @@ export function OperatorLearnInputs({
     [notice, setNotice] = useState("");
   const [canWrite, setCanWrite] = useState<boolean | null>(null);
   const [slackOpen, setSlackOpen] = useState(false);
+  const [recurringBlocked, setRecurringBlocked] = useState(false);
   const [connectionBlocked, setConnectionBlocked] = useState(true);
   const [values, setValues] = useState<InputFlags>({
     "learn.enabled": false,
@@ -204,6 +206,7 @@ export function OperatorLearnInputs({
       !data ||
       pending ||
       connectionBlocked ||
+      recurringBlocked ||
       busy ||
       !storageReady ||
       !reason.trim()
@@ -247,7 +250,13 @@ export function OperatorLearnInputs({
     data?.flags["learn.enabled"] === true &&
     data.flags["learn.inputs.commusoft.enabled"] === true;
   const disabled =
-    canWrite !== true || busy || !!pending || connectionBlocked || !data || !storageReady;
+    canWrite !== true ||
+    busy ||
+    !!pending ||
+    connectionBlocked ||
+    recurringBlocked ||
+    !data ||
+    !storageReady;
   const stamp = (value: string | null) =>
     value ? new Date(value).toLocaleString("en-GB") : "Not verified";
   const flagLabel = (value: boolean | null) =>
@@ -344,7 +353,7 @@ export function OperatorLearnInputs({
         connection={selected ?? null}
         statusReady={!!data}
         canWrite={canWrite}
-        blocked={busy || !!pending}
+        blocked={busy || !!pending || recurringBlocked}
         onBlockingChange={setConnectionBlocked}
         onAccessChange={setCanWrite}
         onChanged={() => refresh(generation.current)}
@@ -660,6 +669,18 @@ export function OperatorLearnInputs({
               I have reviewed this client, the settings and the import scope.
             </label>
           </fieldset>
+          <OperatorCommusoftRecurring
+            key={`${backend}:${actorId}:${tenantId}`}
+            tenantId={tenantId}
+            actorId={actorId}
+            backend={backend}
+            overview={data}
+            canWrite={canWrite}
+            blocked={busy || !!pending || connectionBlocked}
+            client={client}
+            onBlockingChange={setRecurringBlocked}
+            onChanged={() => refresh(generation.current)}
+          />
           <div className="space-y-3">
             <h3 className="font-semibold">Import progress</h3>
             {!data.accounts.length && <p>No import account has been recorded.</p>}

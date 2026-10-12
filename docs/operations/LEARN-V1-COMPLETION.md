@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — Commusoft ongoing-capture controls connected and verified locally.**
+
+### Working and verified
+
+- OpenFolk now has an operator workflow for approving, pausing and resuming
+  ongoing Commusoft cycles, with four-stage progress, verified coverage boundary,
+  page limits and readable recovery states. It uses the existing workspace design.
+- The real application request/recovery code passes against the actual recurring
+  SQL in a disposable database. Pause/resume retains all source pages and versions;
+  an intentionally lost response reconciles without a duplicate approval.
+- Browser verification covers approval, reload, saved-result recovery and pause.
+  Twenty-two focused tests, TypeScript checking and the full frontend build pass.
+  No real-provider call, TEST activation or production change occurred.
+
+### Needs finishing
+
+- Package the existing recurring migration for the full production schema, verify
+  the matching hosted operator/worker journey and provider update-date filters,
+  then approve the intended real recurring scope through the controls.
+- The current production release still has nineteen packages and excludes this
+  migration. Do not promote this UI as working recurring capture on that backend.
+- Finish release gates, broader source-to-card acceptance, scoring and operational
+  requirements below. Paused bounded imports do not establish ongoing capture.
+
+### Blocked externally
+
+- Live-login credential lookup still awaits owner Touch ID. Other release and
+  connector work can continue independently.
+
+[Local operator workflow evidence](evidence/learn-commusoft-recurring-controls-2026-10-12.json).
+
+## Earlier checkpoints
+
 **12 October — four scheduler failure paths corrected; exact runtime checks passed.**
 
 ### Working and verified
@@ -37,8 +70,6 @@ override a later release observation. No requirement is silently deferred.
   was read by the timed-out attempt; independent release work continues.
 
 [Exact compiled scheduler evidence](evidence/learn-production-scheduler-callers-2026-10-12.json).
-
-## Earlier checkpoints
 
 **12 October — production configuration execution prepared; live remains unchanged.**
 

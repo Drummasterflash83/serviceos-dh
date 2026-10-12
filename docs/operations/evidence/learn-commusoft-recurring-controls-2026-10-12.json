@@ -1,0 +1,79 @@
+{
+  "version": "learn-commusoft-recurring-controls/1",
+  "state": "local_application_sql_and_browser_verified",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "newAccessGrants": 0,
+  "sources": [
+    {
+      "path": "src/components/app/OperatorCommusoftRecurring.tsx",
+      "sha256": "4cf320d4fac5e3df8ccf5a119ea2f5cd22f0f336ec3569ffea703838106931c6"
+    },
+    {
+      "path": "src/components/app/OperatorLearnInputs.tsx",
+      "sha256": "db96ad664805b41e8411ec8988ecdc3e117b4e6ba34185dac86a02ab5daed1ef"
+    },
+    {
+      "path": "src/lib/learn-commusoft-recurring.ts",
+      "sha256": "a2e1bb9d817e925c12b5ea74a62d3cfa75ba74c02a264e0c77391ce8b240afae"
+    },
+    {
+      "path": "src/lib/learn-operator-request-scope.ts",
+      "sha256": "6b0cceebc7fd2520a70201995dc2ac7e8fcc60498a58c1ed247348f28086e6f5"
+    },
+    {
+      "path": "src/lib/learn-operator-input-outbox.ts",
+      "sha256": "6b26aadab51352f36a2bd6d0d614c2183d3127a30e458efc24cf96095981e192"
+    },
+    {
+      "path": "src/lib/learn-commusoft-connection-outbox.ts",
+      "sha256": "41eb1e978c5147332a9a4cfc52d267a8000f1b68779751ca148be41d6c4294df"
+    },
+    {
+      "path": "src/lib/learn-commusoft-recurring.test.ts",
+      "sha256": "befafe5dbae5db81933e25eab8e961b05edd20607d8f794517de0690d52a09be"
+    },
+    {
+      "path": "scripts/verify/learn-commusoft-recurring-control-bridge.mjs",
+      "sha256": "a66ac5fc891463a0c797cae88914d36ea410b109dd8d51e4dca6eb85ad597cec"
+    },
+    {
+      "path": "scripts/verify/learn-commusoft-contact-traversal.py",
+      "sha256": "f9adb8c998815573921f6717c57b15e5f3d08a41af4ab5ed55e86e989ecb3ba7"
+    },
+    {
+      "path": "supabase/migrations/20261101550000_learn_commusoft_recurring.sql",
+      "sha256": "b293167dfadc56463a9a7724c8aee335dbab39bc10a5f75b2d143a3ba144e150"
+    }
+  ],
+  "checks": {
+    "unitTests": 22,
+    "typecheck": "passed",
+    "frontendBuild": "passed",
+    "applicationSql": {
+      "pauseResume": true,
+      "lostResponseReconciled": true,
+      "applyCount": 2,
+      "sourcePagesAndVersionsPreserved": true
+    },
+    "syntheticBrowser": {
+      "approvalLostResponse": true,
+      "reloadRetainedRequest": true,
+      "reconcileWithoutDuplicate": true,
+      "paused": true
+    }
+  },
+  "evidence": {
+    "sqlLogSha256": "910b0233f97ffee05217617a0b73622594d27fc6de23f95743110c16f3333c06",
+    "unitLogSha256": "66b0bbb90f6aeb53aea9e8367d19b500df0cec9fdcb9bf3df4b5fd32ab8566ad",
+    "buildLogSha256": "e32d51aef549c04e1edc03905153519c1636c62dbf70c3c816a532299343ef89",
+    "screenshotSha256": "d5b2de10925d6a2a46ec797c587ae426fc23abce8b6fcb442cf3a751fa081a69"
+  },
+  "limitations": [
+    "This component and recurring SQL remain local; no hosted activation or permission change occurred.",
+    "The current nineteen-package production release does not yet include the recurring Commusoft migration. Full-schema packaging and hosted acceptance are still required.",
+    "Provider date-filter acceptance, real recurring capture, canonical update reconciliation and signed-in production acceptance remain open.",
+    "The existing approving operator owns pause/resume; authority transfer requires a separately implemented and verified recovery path."
+  ]
+}

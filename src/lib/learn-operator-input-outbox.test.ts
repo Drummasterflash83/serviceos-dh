@@ -185,3 +185,29 @@ test("a competing storage change during a reply is not cleared", async () => {
   await assert.rejects(resolveSavedInput(db, store, immediate, scope, saved, "check", () => true));
   assert.deepEqual(readSavedInput(store, scope), other);
 });
+
+test("a saved ongoing-capture request blocks a competing module/import apply", async () => {
+  const { commusoftRecurringOutboxKey } = await import("./learn-operator-request-scope.ts");
+  const store = storage();
+  store.setItem(commusoftRecurringOutboxKey(scope), "retained unresolved request");
+  let calls = 0;
+  await assert.rejects(
+    resolveSavedInput(
+      {
+        rpc: async () => {
+          calls++;
+          return { data: null, error: null };
+        },
+      },
+      store,
+      immediate,
+      scope,
+      saved,
+      "apply",
+      () => true,
+    ),
+    /ongoing Commusoft/,
+  );
+  assert.equal(calls, 0);
+  assert.equal(store.getItem(inputOutboxKey(scope)), null);
+});

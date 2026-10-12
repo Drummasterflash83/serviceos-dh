@@ -15,3 +15,7 @@ export function connectionOutboxKey(s: InputScope) {
 export function captureOutboxKey(s: InputScope) {
   return `${inputOutboxKey(s)}:capture`;
 }
+
+export function commusoftRecurringOutboxKey(s: InputScope) {
+  return `${inputOutboxKey(s)}:commusoft-recurring`;
+}
