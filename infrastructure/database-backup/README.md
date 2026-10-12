@@ -1,6 +1,10 @@
-# Independent ServiceOS database backup — proposed, not activated
+# Independent ServiceOS database backup — approved, not activated
 
-12 October 2026. This is the remaining database recovery work, alongside the
+12 October 2026. Chris has approved the described destination, scoped access,
+key escrow and bounded first copy/restore. The separate 1Password CLI integration
+decision remains pending; no resources, keys or database copy have been created.
+
+This is the remaining database recovery work, alongside the
 already established recordings bucket. The native database and all 16 Vault
 secrets have passed a local restore. No independent database upload, database
 backup identity, key escrow or recurring database runner is established yet.

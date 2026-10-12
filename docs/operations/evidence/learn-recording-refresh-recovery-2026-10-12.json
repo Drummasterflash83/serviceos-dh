@@ -1,0 +1,82 @@
+{
+  "contract": "learn-recording-refresh-recovery/1",
+  "observedAt": "2026-10-12T08:33:58.766880+00:00",
+  "scope": "Manually initiated daily follow-up using existing approved recording identities and destination",
+  "daily": {
+    "state": "inventory_verified",
+    "runId": "04ac995c-4ef2-4a8c-a4c1-6cd39e605140",
+    "inventoryObservedAt": "2026-10-12T08:14:04.870Z",
+    "verifiedAt": "2026-10-12T08:30:20.589Z",
+    "inventorySha256": "a29aa9f1bc2f8f3967e3b38ada5a594fb762e17c0be658c087352be48e6b8663",
+    "objects": 2893,
+    "totalBytes": 602476551,
+    "recordingReferences": 2887,
+    "newObjectsCopied": 5,
+    "newBytesConsidered": 1472290,
+    "recoveredObjects": 0,
+    "existingReceipts": 2888,
+    "recoveredManifest": false,
+    "coverage": "verified_inventory_only",
+    "sourceSnapshot": "non_atomic",
+    "playback": "not_verified",
+    "databaseRestore": "not_verified",
+    "backupComplete": false,
+    "sourceReconciliation": {
+      "recordingRows": 2887,
+      "rowsWithoutStoragePointer": 0,
+      "unreferencedObjects": 6,
+      "missingObjectReferences": 0
+    },
+    "sourceUsage": {
+      "requests": 20396,
+      "requestBudget": 100000
+    }
+  },
+  "startedAt": "2026-10-12T08:14:03.403Z",
+  "finishedAt": "2026-10-12T08:30:22.297Z",
+  "lockRemoved": true,
+  "combinedRecovery": {
+    "contract": "complete-database-later-audio-recovery/1",
+    "state": "archived_references_covered_and_sample_decoded",
+    "checkedAt": "2026-10-12T08:31:40.516Z",
+    "sourceArchiveSha256": "bdb6be1f2cb934247949d6443305550888e6b4e62f5c55dac419a432616bd3db",
+    "fileInventoryRunId": "04ac995c-4ef2-4a8c-a4c1-6cd39e605140",
+    "coverage": {
+      "state": "all_archived_recording_references_covered",
+      "recordingRows": 2883,
+      "referencedObjects": 2883,
+      "manifestObjects": 2893,
+      "retainedUnreferencedObjects": 6,
+      "additionalBackupReferences": 4,
+      "additionalReferencesRecoveredInDatabase": false,
+      "databaseSnapshotAt": "2026-10-12T06:37:26.256528+00:00",
+      "fileInventoryObservedAt": "2026-10-12T08:14:04.870Z",
+      "atomicDatabaseFileSnapshot": false,
+      "allObjectBytesRechecked": false
+    },
+    "sample": {
+      "bytes": 47705,
+      "recordedDurationSeconds": null,
+      "decodedDurationSeconds": 29.32,
+      "absentFromEarlierDatabase": true,
+      "linkedCalls": 1,
+      "linkedTranscripts": 1,
+      "listening": "not_verified"
+    },
+    "databaseLinksSha256": "4f50d496f55311cc461966a3cca84131f62a6be6b71a8d5183a9a287ad329c8e",
+    "temporaryAudioRemoved": true,
+    "sourceProviderRequests": 0,
+    "writerIdentityUsed": false,
+    "productionWrites": false,
+    "fullServiceRecoveryVerified": false
+  },
+  "scheduledExecutionProven": false,
+  "fullServiceRecoveryVerified": false,
+  "previousFailedAttemptRetained": true,
+  "remaining": [
+    "Independent database setup/copy approved but not activated",
+    "1Password CLI access decision and actual recovery-key escrow",
+    "Dependable unattended scheduling",
+    "Full service/Auth/configuration and voicemail recovery"
+  ]
+}

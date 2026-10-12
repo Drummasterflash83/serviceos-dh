@@ -1,5 +1,21 @@
 # LEARN data recovery coverage
 
+**12 October, 08:30–08:31 UTC — fresh recording backup and linked restore verified.**
+The retried manual daily run verified **2,893 files / 602,476,551 bytes**, including
+**five newly copied files / 1,472,290 bytes** and all **2,887 recording references**.
+No references lacked a file or storage pointer; six unlinked files remain retained.
+The immutable manifest covers the non-atomic 08:14 UTC inventory, not later arrivals.
+It used 20,396 of 100,000 permitted source requests and removed its lock.
+
+The separate Restore identity then read that AWS manifest without Supabase access,
+matched every **2,883 reference in the 06:37 UTC restored database**, and disclosed
+four additional references absent from that earlier snapshot. A recording absent
+from the older rehearsal snapshot was restored: 47,705 bytes, one linked call and
+one transcript, **29.32 seconds decoded**; temporary audio removal was confirmed.
+Human listening was not performed. This is file/archived-reference recovery, not
+an atomic full-service restore. The run was manual; dependable scheduled operation
+remains unproven. [Fresh backup and recovery evidence](evidence/learn-recording-refresh-recovery-2026-10-12.json).
+
 **12 October — complete archive recording metadata recovered.** The retained
 06:37 UTC snapshot restored into an offline container; all 1,594,994 native rows,
 711 operational rows, catalog/RLS and extensions matched. Its 2,883 recording
