@@ -12,6 +12,31 @@ are on `codex/learn-v1-test`.
 
 ## Matching processing candidate — 12 October
 
+**12 October — runtime deployment adapter connected; hosted use remains read-only.**
+The adapter now supports the exact 28 updates, nine new function uploads and
+Supabase's final metadata publication operation. It verifies database receipts,
+original or expected function versions, entrypoints, artifact hashes, JWT flags
+and unaffected endpoints. Read-only is the default; mutation requires the separate
+current scoped release-approval and in-flight-drain gate. It submits once and
+leaves uncertain outcomes for the durable journal's read-only reconciliation.
+
+The prepared release now has **66 steps**, superseding the prior 65-step sequence
+by explicitly adding metadata publication. Fourteen local adapter/journal checks
+pass using synthetic API responses, including a lost upload response, changed
+versions/entrypoints/flags, wrong bytes, absent receipts and prohibited requests.
+The official [publication API](https://supabase.com/docs/reference/api/v1-bulk-update-functions)
+is reflected in the pinned operations.
+[Adapter evidence](evidence/learn-production-runtime-adapter-rehearsal-2026-10-12.json).
+
+The actual production read-only preflight found all 28 existing endpoints unchanged,
+all nine proposed endpoints absent, unrelated endpoints unchanged and no production
+release ledger. No database package or function was installed by this check.
+The first probe rejected the management query's HTTP 201; the corrected transport
+accepts 200/201 only for its two exact read-only queries.
+[Hosted preflight](evidence/learn-production-runtime-adapter-preflight-2026-10-12.json).
+Database/schedule execution integration, configuration, fresh approval/drain gates,
+frontend promotion and positive live acceptance remain unfinished.
+
 **12 October — release sequence and durable journal verified locally.**
 The prepared sequence pins 16 database packages, 37 exact compiled runtime
 artifacts, the rehearsed schedule transitions and the production-configured

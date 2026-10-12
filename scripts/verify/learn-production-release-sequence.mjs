@@ -95,6 +95,11 @@ for(const e of candidate.endpoints) {
   add('runtime-'+e.name,'runtime',{name:e.name,before:e.beforeProduction,verifyJwt:e.verifyJwt,
     eszipSha256:w.eszipSha256,ezbrSha256:w.ezbrSha256,request:w.request});
 }
+add('publish-runtime-metadata','runtime',{action:'publish_metadata',method:'PUT',
+  path:`/v1/projects/${candidate.projectRef}/functions`,
+  targets:candidate.endpoints.map(e=>({name:e.name,verifyJwt:e.verifyJwt,
+    ezbrSha256:wire.endpoints.find(w=>w.name===e.name).ezbrSha256})),
+  reference:'https://supabase.com/docs/reference/api/v1-bulk-update-functions'});
 add('runtime-publication-readback','check',{requires:['all_37_exact_artifacts_and_gateway_flags',
   'provider_publication_metadata_confirmed','unchanged_endpoints_outside_release']});
 add('paired-runtime-acceptance','check',{requires:['positive_scheduled_and_user_callers','tenant_isolation',

@@ -20,7 +20,7 @@ function ports(applied) {
     apply:async step=>{applied.add(step.id);}};
 }
 
-test('all 65 pinned steps execute in order with durable intent before each operation',async t=>{
+test('all pinned steps execute in order with durable intent before each operation',async t=>{
   const dir=fixture(t), journal=openReleaseJournal(dir,full,{create:true}), applied=new Set(), p=ports(applied);
   const seen=[];
   p.apply=async step=>{
@@ -34,10 +34,10 @@ test('all 65 pinned steps execute in order with durable intent before each opera
     for(const step of full.steps) await journal.next(p);
     assert.deepEqual(seen,full.steps.map(x=>x.id));
     assert.equal(journal.status().state,'sequence_verified');
-    await journal.next(p);assert.equal(seen.length,65);
+    await journal.next(p);assert.equal(seen.length,full.steps.length);
   } finally {journal.close();}
   const reopened=openReleaseJournal(dir,full);
-  assert.equal(reopened.status().completed,65);reopened.close();
+  assert.equal(reopened.status().completed,full.steps.length);reopened.close();
 });
 
 test('lost successful response reconciles read-only after reopen and never replays the write',async t=>{

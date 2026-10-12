@@ -1,0 +1,55 @@
+{
+  "version": "learn-production-runtime-adapter-rehearsal/1",
+  "observedAt": "2026-10-12T17:04:40.556938+00:00",
+  "state": "offline_runtime_adapter_and_journal_checks_passed",
+  "sequenceSteps": 66,
+  "runtimeUploads": 37,
+  "runtimePublicationOperations": 1,
+  "testsPassed": 14,
+  "hostedMutationRequests": 0,
+  "providerRequests": 0,
+  "checks": [
+    "28_exact_scoped_patch_uploads_and_9_post_uploads",
+    "publication_requires_all_37_matching_artifacts_and_preserves_unrelated_endpoints",
+    "missing_receipts_read_only_mode_and_changed_step_pins_stop_writes",
+    "changed_metadata_or_artifact_bytes_stop_submission",
+    "lost_upload_response_reconciles_without_duplicate_upload",
+    "wrong_version_entrypoint_or_jwt_flag_not_accepted",
+    "transport_fixed_origin_and_exact_read_only_sql_allowlist",
+    "all_eight_durable_journal_checks_pass_with_66_steps",
+    "unrelated_function_drift_and_wrong_database_receipt_reject_upload"
+  ],
+  "verificationCommand": "node --test scripts/verify/learn-production-runtime-adapter.test.mjs scripts/verify/learn-production-release-journal.test.mjs",
+  "reference": "https://supabase.com/docs/reference/api/v1-bulk-update-functions",
+  "files": [
+    {
+      "path": "scripts/verify/learn-production-runtime-adapter.mjs",
+      "sha256": "e6bbacf4a582e8607c75adfaf49ee3cceec83887bd2c8bea68e48aa7445542c6"
+    },
+    {
+      "path": "scripts/verify/learn-production-runtime-adapter.test.mjs",
+      "sha256": "c94b34f7671029601e5cb04eafe40322b1fcfe288171ae7495bc9811a7f597d7"
+    },
+    {
+      "path": "scripts/verify/learn-production-release-journal.test.mjs",
+      "sha256": "0e3a58d186edb3b8d76cec20f54bad81e699f824b64d48e958b2fa0b157e7793"
+    },
+    {
+      "path": "scripts/verify/learn-production-release-sequence.mjs",
+      "sha256": "2d8ec546d2cbffcb385d4a8187efa780ca203011b61bbc9e7efa9b3d147c7542"
+    },
+    {
+      "path": "supabase/release/learn-production/release-sequence.plan.json",
+      "sha256": "2de627c34d83d67c5c33001f0653e0487cea62da9a7d6d1f7d1dd436aacfdc42"
+    },
+    {
+      "path": "supabase/release/learn-production/release-operations.manifest.json",
+      "sha256": "882a1762ed24414dadd41fc84e7368c9b6fdf5aa83122d9949aa7941b78d2ca3"
+    }
+  ],
+  "limitations": [
+    "Mutation paths use synthetic API ports in these tests. Production uploads/publication remain unexecuted.",
+    "Database and schedule execution adapters, configuration, approval/drain gates, signed-in acceptance and final production promotion remain unfinished.",
+    "The 66-step sequence supersedes the 65-step sequence by explicitly including the official metadata publication operation."
+  ]
+}

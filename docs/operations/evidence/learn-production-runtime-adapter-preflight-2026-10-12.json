@@ -1,0 +1,168 @@
+{
+  "project": "tgbnakbxwcqjeimygroz",
+  "state": "read_only_runtime_preflight",
+  "databaseReady": false,
+  "receiptCount": 0,
+  "unrelatedEndpointsUnchanged": true,
+  "endpoints": [
+    {
+      "name": "customer-card-scheduled-sync",
+      "state": "ready"
+    },
+    {
+      "name": "customer-card-sync",
+      "state": "ready"
+    },
+    {
+      "name": "email-scheduled-sync",
+      "state": "ready"
+    },
+    {
+      "name": "email-workspace-backfill-scheduled-sync",
+      "state": "ready"
+    },
+    {
+      "name": "email-workspace-scheduled-sync",
+      "state": "ready"
+    },
+    {
+      "name": "gmail-sync-messages",
+      "state": "ready"
+    },
+    {
+      "name": "gmail-workspace-backfill-messages",
+      "state": "ready"
+    },
+    {
+      "name": "gmail-workspace-sync-messages",
+      "state": "ready"
+    },
+    {
+      "name": "google-workspace-discover-mailboxes",
+      "state": "ready"
+    },
+    {
+      "name": "identity-resolve",
+      "state": "ready"
+    },
+    {
+      "name": "identity-scheduled-sync",
+      "state": "ready"
+    },
+    {
+      "name": "interactions-scheduled-sync",
+      "state": "ready"
+    },
+    {
+      "name": "interactions-sync",
+      "state": "ready"
+    },
+    {
+      "name": "learn-commusoft-verify",
+      "state": "ready"
+    },
+    {
+      "name": "learn-commusoft-worker",
+      "state": "ready"
+    },
+    {
+      "name": "learn-data-import",
+      "state": "ready"
+    },
+    {
+      "name": "learn-launch-status",
+      "state": "ready"
+    },
+    {
+      "name": "learn-operator-phone-playback",
+      "state": "ready"
+    },
+    {
+      "name": "learn-phone-playback",
+      "state": "ready"
+    },
+    {
+      "name": "learn-slack-schedule",
+      "state": "ready"
+    },
+    {
+      "name": "learn-slack-worker",
+      "state": "ready"
+    },
+    {
+      "name": "learn-voicemail-import",
+      "state": "ready"
+    },
+    {
+      "name": "openfolk-control-plane",
+      "state": "ready"
+    },
+    {
+      "name": "phone-analyse-transcript",
+      "state": "ready"
+    },
+    {
+      "name": "phone-call-detail",
+      "state": "ready"
+    },
+    {
+      "name": "phone-process-pending",
+      "state": "ready"
+    },
+    {
+      "name": "phone-process-pipeline",
+      "state": "ready"
+    },
+    {
+      "name": "phone-processing-scheduled-sync",
+      "state": "ready"
+    },
+    {
+      "name": "phone-scheduled-sync",
+      "state": "ready"
+    },
+    {
+      "name": "phone-transcribe-recording",
+      "state": "ready"
+    },
+    {
+      "name": "platform-worker",
+      "state": "ready"
+    },
+    {
+      "name": "receptionist-voicemail-recording",
+      "state": "ready"
+    },
+    {
+      "name": "simwood-download-recording",
+      "state": "ready"
+    },
+    {
+      "name": "simwood-sync-calls",
+      "state": "ready"
+    },
+    {
+      "name": "simwood-sync-recordings",
+      "state": "ready"
+    },
+    {
+      "name": "simwood-test-connection",
+      "state": "ready"
+    },
+    {
+      "name": "work-transition",
+      "state": "ready"
+    }
+  ],
+  "productionChanges": 0,
+  "publicationReady": false,
+  "reason": "Runtime metadata and receipts do not establish approval, drain, configuration or caller acceptance.",
+  "observedAt": "2026-10-12T17:00:29.557Z",
+  "existingEndpointsUnchanged": 28,
+  "newEndpointsAbsent": 9,
+  "limitations": [
+    "Read-only hosted inventory and receipt check only. No runtime was uploaded or published.",
+    "All planned slots match their before-release state; ready here does not mean publication approved or end-to-end accepted.",
+    "The initial probe expected only HTTP 200; management read-only query returned HTTP 201. The transport now accepts either for those exact read-only queries."
+  ]
+}

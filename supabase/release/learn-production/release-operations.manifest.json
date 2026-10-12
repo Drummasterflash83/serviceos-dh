@@ -2,7 +2,7 @@
   "version": "learn-production-release-operations/1",
   "state": "prepared_not_approved_or_executed",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "planSha256": "fd8cf869f2fe5be299adb7ff60ab94dfe563d348b73c56ce73f93ca42474dcde",
+  "planSha256": "7ad9efb95b27154d89c7b32a498b27c3fde92b24bbc1fbc33a6f770d5797fbfa",
   "operations": [
     {
       "id": "fresh-release-preflight",
@@ -1105,6 +1105,204 @@
         }
       },
       "pinSha256": "1a357db1ad1ba85e164309da5aad25926ef0daa2cbae410ba08dd56aeb3d2dae"
+    },
+    {
+      "id": "publish-runtime-metadata",
+      "kind": "runtime",
+      "contract": {
+        "action": "publish_metadata",
+        "method": "PUT",
+        "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions",
+        "targets": [
+          {
+            "name": "customer-card-scheduled-sync",
+            "verifyJwt": false,
+            "ezbrSha256": "bd9978687dde0860e89849642cd5f05372a23027fb0183c039722088ed63ad59"
+          },
+          {
+            "name": "customer-card-sync",
+            "verifyJwt": true,
+            "ezbrSha256": "ebd8a2d83e279d0fa70c6c6c6f497868db540b7a8ce1e91378f474c6a7289da4"
+          },
+          {
+            "name": "email-scheduled-sync",
+            "verifyJwt": false,
+            "ezbrSha256": "36722ed184e6545973c2dae18de62d61f30cd818bdb1cf5c67cda63c5daa1c70"
+          },
+          {
+            "name": "email-workspace-backfill-scheduled-sync",
+            "verifyJwt": false,
+            "ezbrSha256": "a3c2366c01cdac6474fe7a1a618f9ea3e89be3efabf043e21a73f5bead253240"
+          },
+          {
+            "name": "email-workspace-scheduled-sync",
+            "verifyJwt": false,
+            "ezbrSha256": "d947568344f20d9e7e50e83da5e1c46896bf3ddf8cb7948dd2a8f23785805381"
+          },
+          {
+            "name": "gmail-sync-messages",
+            "verifyJwt": true,
+            "ezbrSha256": "8790bcded25894286914571365040eb13ecba9f30280893b1678be543c38f45a"
+          },
+          {
+            "name": "gmail-workspace-backfill-messages",
+            "verifyJwt": true,
+            "ezbrSha256": "acc55d9bda355bab8cde4b2c058dd881acf5da7e7cc914555444ce8c1a5aa0f0"
+          },
+          {
+            "name": "gmail-workspace-sync-messages",
+            "verifyJwt": true,
+            "ezbrSha256": "c5c7ba64e1d09a6eb3f1049fcbe48aa8cf2f621d75c17d1c4af895c07cf3ab36"
+          },
+          {
+            "name": "google-workspace-discover-mailboxes",
+            "verifyJwt": true,
+            "ezbrSha256": "0697e5842ac4ba50ce407ef06f355308105ec9a33636ed73f38b61cdd7331f95"
+          },
+          {
+            "name": "identity-resolve",
+            "verifyJwt": true,
+            "ezbrSha256": "0db03cd9e8f12b479a6fa838568d5d40f907985b6a564b3ef38bf929c677f951"
+          },
+          {
+            "name": "identity-scheduled-sync",
+            "verifyJwt": false,
+            "ezbrSha256": "6a63553582dd3b67dd3ee940ed6ac4a1e6796ac900364b497321cee077f9615b"
+          },
+          {
+            "name": "interactions-scheduled-sync",
+            "verifyJwt": false,
+            "ezbrSha256": "c6d6eb38ee6299bd525424679b710a964942e7cd7d3b69fccf4dd89bb4212345"
+          },
+          {
+            "name": "interactions-sync",
+            "verifyJwt": true,
+            "ezbrSha256": "82f0bc758f44424c4e25644dc1963736df7bd814e476a3ba34dd8bd58931a45a"
+          },
+          {
+            "name": "learn-commusoft-verify",
+            "verifyJwt": true,
+            "ezbrSha256": "804f41a5476ae7a3bde325b823bf1441e1aa6538c4f267bf6639529b936d44a3"
+          },
+          {
+            "name": "learn-commusoft-worker",
+            "verifyJwt": true,
+            "ezbrSha256": "e4324f60da816f53880c46cd75c72eac917740c084289112474fb816309bc814"
+          },
+          {
+            "name": "learn-data-import",
+            "verifyJwt": true,
+            "ezbrSha256": "3f846657c5b33dbc4626e3fb7168e1c13e7948a3dc699ae49b99e93fb8fac892"
+          },
+          {
+            "name": "learn-launch-status",
+            "verifyJwt": true,
+            "ezbrSha256": "94ef5acf8bca88494687b1d58159dfa7d65fa5ffead130a74681291c677274eb"
+          },
+          {
+            "name": "learn-operator-phone-playback",
+            "verifyJwt": true,
+            "ezbrSha256": "4961ad64123387a5ab4fb45d8207ba27fa84d77f03c9316f8d1bc3a875ae2dd7"
+          },
+          {
+            "name": "learn-phone-playback",
+            "verifyJwt": true,
+            "ezbrSha256": "0379173e772c93f711894f84daf08b0311c5f0e1b10b8fbab457f2d37e42aaad"
+          },
+          {
+            "name": "learn-slack-schedule",
+            "verifyJwt": true,
+            "ezbrSha256": "441af36e5ac8c6507b93b3a864d44e1ff1a7f853502882928906a1972c0798a8"
+          },
+          {
+            "name": "learn-slack-worker",
+            "verifyJwt": true,
+            "ezbrSha256": "f43eecf4a1da576522f74bc14b3f14ac0f03255b2ef9c17d3a0db9b69bd2a790"
+          },
+          {
+            "name": "learn-voicemail-import",
+            "verifyJwt": false,
+            "ezbrSha256": "9f3bec3a5772981aad9b82a523e6ef2d9ee89d95e5ce3d2ab2a96ac25e6bc81e"
+          },
+          {
+            "name": "openfolk-control-plane",
+            "verifyJwt": false,
+            "ezbrSha256": "efe5d729ba4d53bcc188563da1ca9e35c47a9416fa183f4beb7c53282f61d5c7"
+          },
+          {
+            "name": "phone-analyse-transcript",
+            "verifyJwt": true,
+            "ezbrSha256": "2f3da3c896aeaca6a2fb1dd2ac4018588fe17bc4ae4573c396b3b2432a1fca62"
+          },
+          {
+            "name": "phone-call-detail",
+            "verifyJwt": true,
+            "ezbrSha256": "38602cb442190cb9a2f848c218c38adbe5c4a092a88d90cfda32baac6d3809a5"
+          },
+          {
+            "name": "phone-process-pending",
+            "verifyJwt": true,
+            "ezbrSha256": "60c05b0205d68261410b814cb737fcd075a0c22294de95159266624cdf34d6f0"
+          },
+          {
+            "name": "phone-process-pipeline",
+            "verifyJwt": true,
+            "ezbrSha256": "dce74091e4f03d5776c6f0eab788ffad5552f4a53dc12f1bc0b40c96ea1dbb5a"
+          },
+          {
+            "name": "phone-processing-scheduled-sync",
+            "verifyJwt": false,
+            "ezbrSha256": "13e0f5337e720526da0982abe8bff1d7d5a7eec25131224d5874c312747b0e66"
+          },
+          {
+            "name": "phone-scheduled-sync",
+            "verifyJwt": false,
+            "ezbrSha256": "b0e78a5e29eb0f9fadfe124f52b84ecc757b587f5e8a4541f640a23abb0b12a8"
+          },
+          {
+            "name": "phone-transcribe-recording",
+            "verifyJwt": true,
+            "ezbrSha256": "1d2be240c6a71023cab85088feb288279f9798656ed308c7e81b5f38691c5f0d"
+          },
+          {
+            "name": "platform-worker",
+            "verifyJwt": false,
+            "ezbrSha256": "e128c87b49aabf112b25da5e12f5633fff665dbe56cdfd86092fe804122db521"
+          },
+          {
+            "name": "receptionist-voicemail-recording",
+            "verifyJwt": true,
+            "ezbrSha256": "49106359927aa3ff3b42b30acdadeb33dfdd64fa5cec3615f07045d89f85cbcc"
+          },
+          {
+            "name": "simwood-download-recording",
+            "verifyJwt": true,
+            "ezbrSha256": "4aeb7b42bbb3507e843a51918babf34873d172fb209c0b760527ef1990c5b032"
+          },
+          {
+            "name": "simwood-sync-calls",
+            "verifyJwt": true,
+            "ezbrSha256": "8bce2d529b4046fd9bf35421d16ff924e5b528a9012d31a22e1a17cdf0e29923"
+          },
+          {
+            "name": "simwood-sync-recordings",
+            "verifyJwt": true,
+            "ezbrSha256": "1de8ba48b66df00bd2674ff2f1e0591dbdcdee732bd8e4f85b22f4053587016a"
+          },
+          {
+            "name": "simwood-test-connection",
+            "verifyJwt": true,
+            "ezbrSha256": "1bc1f24015fbe289d7721442a3dff2bf20f01d2979dd9c2ae082b5eac067e9c3"
+          },
+          {
+            "name": "work-transition",
+            "verifyJwt": true,
+            "ezbrSha256": "9b0e1ccbd9508767f9fe91899ed101850f26d69987cc9dd4b16a5289d15271df"
+          }
+        ],
+        "reference": "https://supabase.com/docs/reference/api/v1-bulk-update-functions"
+      },
+      "pinSha256": "0ab0f6633777b88ba47ca772bcfd34a2b405bc0ebffbd0d530aa42429a0ed55d"
     },
     {
       "id": "runtime-publication-readback",

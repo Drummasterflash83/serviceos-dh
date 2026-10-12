@@ -294,6 +294,11 @@
       "pinSha256": "1a357db1ad1ba85e164309da5aad25926ef0daa2cbae410ba08dd56aeb3d2dae"
     },
     {
+      "id": "publish-runtime-metadata",
+      "kind": "runtime",
+      "pinSha256": "0ab0f6633777b88ba47ca772bcfd34a2b405bc0ebffbd0d530aa42429a0ed55d"
+    },
+    {
       "id": "runtime-publication-readback",
       "kind": "check",
       "pinSha256": "9a1b51cc7ad0e2ae08761315ab87f4ee34eec2886e3dd39efab6e495815cf871"
