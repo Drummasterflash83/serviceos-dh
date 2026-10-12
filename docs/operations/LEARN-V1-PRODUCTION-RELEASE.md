@@ -12,10 +12,52 @@ are on `codex/learn-v1-test`.
 
 ## Matching processing candidate — 12 October
 
+**Executable packaging and offline startup now pass.** All 37 exact candidate
+artifacts bundle with the pinned Supabase Edge Runtime v1.74.3 and start without
+network access, source/cache mounts, real credentials or customer data. Every
+endpoint rejects a request with no authorization after required input validation.
+The disposable runtime was removed. Twenty launch-reader/candidate checks pass.
+[Exact artifact and boundary evidence](evidence/learn-production-runtime-readiness-2026-10-12.json).
+
+Review found that the restricted status-reader option previously accepted only
+TEST. The candidate now accepts `production_metadata_views` only for the exact
+production backend. Owner/admin and wrong-origin checks pass; unavailable views
+cannot fall back to private source tables. Set `LEARN_STATUS_READ_MODE` to this
+explicit value during the approved release. Neither this setting nor the new
+runtime has been deployed.
+
+A names-only production inventory at 15:24 UTC confirms the existing Google,
+phone, AI and legacy schedule credential names. The new
+`LEARN_COMMUSOFT_WORKER_KEY` and `LEARN_SLACK_WORKER_KEY` are absent; provision them
+with the matching caller bindings as part of the concrete promotion scope.
+Microsoft app credentials are absent. Other absent names include optional
+feature settings and existing service-key fallbacks, not ten mandatory secrets.
+No credential value was read into the report and no setting was changed.
+
+Earlier boot probes are retained privately: source-cache loading lacked an SDK
+type declaration; native request forwarding and endpoint-specific synthetic
+input shapes then corrected the harness. These are not counted as passing runs.
+Only the final exact-artifact offline result is acceptance evidence.
+
+The final packaging uses managed runtime dependencies rather than copying the
+voicemail test dependency tree. All 37 rebuilt artifacts independently passed
+the offline checks; their largest is 19,237,703 bytes, below a conservative
+20,000,000-byte local bundle limit. The complete set is 57,021,299 bytes.
+Use the verified local-bundle deployment path: Supabase documents different
+[local and server-side size limits](https://supabase.com/docs/guides/functions/limits).
+The earlier bloated set is not the release artifact set.
+
+Production's public signing metadata exposes ES256. Current Supabase
+[gateway documentation](https://supabase.com/docs/guides/functions/auth-headers)
+supports asymmetric JWTs; this is not a reason to disable gateway protection.
+The proposed flags remain unchanged, with actual signed-in and scheduled caller
+checks still required. Public signing metadata and missing-auth tests do not
+prove those positive journeys.
+
 The [offline runtime manifest](../../supabase/release/learn-production/runtime-candidate.manifest.json)
 binds all fifteen SQL packages to 37 proposed endpoints and 221 local dependency
 files. The source closure hash is
-`e50e6646536075ef4eb1001c0abe938a7a9df2322f1cac4876bf8861b0650ddb`.
+`c529298cfe2123ea544d00327c011d2693c16614b89713c6911d694d1ecf0e82`.
 It retains observed production/TEST endpoint metadata and inventories environment
 names, literal RPCs, external imports and unresolved dispatch for review. Metadata
 hashes from deployed Edge bundles are not interchangeable with local source hashes.

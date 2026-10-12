@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { launchReadMode, METADATA_TABLES, TEST_ORIGIN } from './read-mode.ts';
+import { launchReadMode, METADATA_TABLES, TEST_ORIGIN, PRODUCTION_ORIGIN } from './read-mode.ts';
 import { readLaunchStatus } from './handler.ts';
 const tenant='11111111-1111-4111-8111-111111111111';
 function client(failed='') {
@@ -44,4 +44,21 @@ test('a missing metadata view remains unavailable and cannot fall back to raw so
  assert.equal((r.body as any).counts.email.record_count,null);
  assert.equal((r.body as any).counts.phone.record_count,0);
  assert.equal(c.reads.includes('email_messages'),false);
+});
+test('production mode is explicitly origin-bound and reads only the rehearsed metadata views',async()=>{
+ for(const origin of [TEST_ORIGIN,PRODUCTION_ORIGIN+'/', 'https://unknown.supabase.co'])
+  assert.throws(()=>launchReadMode(client().db,'production_metadata_views',origin));
+ for(const role of ['owner','admin','viewer','ops']){
+  const c=client('learn_launch_email_messages');
+  const mode=launchReadMode(c.db,'production_metadata_views',PRODUCTION_ORIGIN);
+  const result=await readLaunchStatus({tenant_id:tenant},mode.db,
+    async()=>({userId:'synthetic',tenantId:tenant,role}),Date.now,mode.ownerAdminOnly);
+  assert.equal(result.status,['owner','admin'].includes(role)?200:403);
+  if(result.status===403) assert.equal(c.reads.length,0);
+  else {
+   assert.equal((result.body as any).counts.email.record_count,null);
+   assert.equal(c.reads.includes('email_messages'),false);
+   assert.ok(c.reads.every(t=>(METADATA_TABLES as readonly string[]).some(n=>t===`learn_launch_${n}`)));
+  }
+ }
 });

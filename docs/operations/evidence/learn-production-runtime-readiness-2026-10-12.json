@@ -1,0 +1,557 @@
+{
+  "version": "learn-production-runtime-readiness/1",
+  "observedAt": "2026-10-12T15:31:01.908Z",
+  "scope": "Local exact-artifact runtime acceptance; no hosted release",
+  "sourceClosureSha256": "c529298cfe2123ea544d00327c011d2693c16614b89713c6911d694d1ecf0e82",
+  "manifestSha256": "86c6135717cb2056c08c694861d25ac1de44144f47f6cb4114f296a200c2875a",
+  "runtimeImage": "public.ecr.aws/supabase/edge-runtime:v1.74.3",
+  "runtimeImageId": "sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c",
+  "endpoints": [
+    {
+      "name": "customer-card-scheduled-sync",
+      "verifyJwt": false,
+      "bytes": 546965,
+      "eszipSha256": "535c2327ece1c9e38083b40717097b3a93b31a2754d72fbd1424e431fe92a73c",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "customer-card-sync",
+      "verifyJwt": true,
+      "bytes": 609588,
+      "eszipSha256": "00dd047c0b6b3e257b7ba3db9d8e97f0da63f9b3b3e527d91a44a2b52946a417",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "email-scheduled-sync",
+      "verifyJwt": false,
+      "bytes": 534378,
+      "eszipSha256": "4e3b59f05ffc8db0703aca0d93a5b87b603043a8e77cfe3235160a13a84dd4dc",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "email-workspace-backfill-scheduled-sync",
+      "verifyJwt": false,
+      "bytes": 534584,
+      "eszipSha256": "e262488321969229b3c9b8673b1efb2d1b9f4a0662e1d2263b69579474abad76",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "email-workspace-scheduled-sync",
+      "verifyJwt": false,
+      "bytes": 538300,
+      "eszipSha256": "de79583ab288d22a03a4bfbfb414f09f28bcce1f2a992ecf8aed8bda06abb1ce",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "gmail-sync-messages",
+      "verifyJwt": true,
+      "bytes": 515135,
+      "eszipSha256": "6f246f7d944028135313f9f4742c943c627392bc9665f84dc5d55096152e2cb9",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "gmail-workspace-backfill-messages",
+      "verifyJwt": true,
+      "bytes": 515195,
+      "eszipSha256": "90eb17414c9057ec7b08cdf4468c9addd45b930d804b81554950dffa75110cf4",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "gmail-workspace-sync-messages",
+      "verifyJwt": true,
+      "bytes": 515179,
+      "eszipSha256": "f9ce0c964f5f719a2e537697224db183adc044c55690bb795446fd8f3c25b446",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "google-workspace-discover-mailboxes",
+      "verifyJwt": true,
+      "bytes": 572367,
+      "eszipSha256": "c6ce2492d8577f816939391797350116d7e675c9240605712b1aa468fa93a10c",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "identity-resolve",
+      "verifyJwt": true,
+      "bytes": 552320,
+      "eszipSha256": "6d5dc5b0980d4f0248ac4b8d8f0237d95e5220f25450f999c08c04d4816267e9",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "identity-scheduled-sync",
+      "verifyJwt": false,
+      "bytes": 547160,
+      "eszipSha256": "b9ec80a61030fddf98172a33d258cbb4516e8a50cb67bdb237b3ae70e952b7bf",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "interactions-scheduled-sync",
+      "verifyJwt": false,
+      "bytes": 547568,
+      "eszipSha256": "350c5421678d53bd3efa016695031ec7a4e3aff025bab5a525eab2d31dfbd5be",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "interactions-sync",
+      "verifyJwt": true,
+      "bytes": 552324,
+      "eszipSha256": "821dbd4a6ffd8e930956633008faaa8b2fbb891c4250b0c9f6cf6b352d46d0e1",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "learn-commusoft-verify",
+      "verifyJwt": true,
+      "bytes": 546286,
+      "eszipSha256": "f5d3b182b902a5187a57cd2685c34845fe85648214cfa9b2e72d6d63b041fca0",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "learn-commusoft-worker",
+      "verifyJwt": true,
+      "bytes": 595562,
+      "eszipSha256": "b91378e018b27e7461f252b893776cff509c11fd6508118f6b140b73287ea091",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "learn-data-import",
+      "verifyJwt": true,
+      "bytes": 824548,
+      "eszipSha256": "9ba5155ad91def28335d9472a8b7c4745c420ebb7ce2d5a39d6209c0d09f99f1",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "learn-launch-status",
+      "verifyJwt": true,
+      "bytes": 540185,
+      "eszipSha256": "b66cd6e40f185d0839155a1e4b65908fe371432a5814d09816aeef8ae9a314e7",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "learn-operator-phone-playback",
+      "verifyJwt": true,
+      "bytes": 520899,
+      "eszipSha256": "2918f5c6ecaa9773538cf59b2843b9321644dedf23b8ddb77e75fe5759adacb7",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "learn-phone-playback",
+      "verifyJwt": true,
+      "bytes": 518962,
+      "eszipSha256": "d988d2f39fd7b641bdcd71d86900db94d2759409b26f8e1d5d8efcc6de6ad09d",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "learn-slack-schedule",
+      "verifyJwt": true,
+      "bytes": 493474,
+      "eszipSha256": "32475cb37ee1262f29f022c909a89059601f98b3b7d30d3e5e594090361e0327",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "learn-slack-worker",
+      "verifyJwt": true,
+      "bytes": 607231,
+      "eszipSha256": "6c622b0eb2c4c77819488293046c004145ea6d35d3984ef7b6bc9ef0a5969446",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "learn-voicemail-import",
+      "verifyJwt": false,
+      "bytes": 17392443,
+      "eszipSha256": "23643e29c2294db1dc20c0fcba55806d468f8bf1e7196b29c2118884fed62267",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "openfolk-control-plane",
+      "verifyJwt": false,
+      "bytes": 1071577,
+      "eszipSha256": "7e70134ec7ceb34b55ebdce1944532779865067b7b418840d78d82e44ef6a1fa",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "phone-analyse-transcript",
+      "verifyJwt": true,
+      "bytes": 713222,
+      "eszipSha256": "638bfa9b6026a5e7e6ce6e8fc3aa0b60fca0b306d150497acc277c0f8c603dc1",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "phone-call-detail",
+      "verifyJwt": true,
+      "bytes": 550000,
+      "eszipSha256": "fb24eb6a97c936a27bc5b425ca9252c051b1c08a2c54a9ec93adc49d1dd9dec3",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "phone-process-pending",
+      "verifyJwt": true,
+      "bytes": 627655,
+      "eszipSha256": "3b7d4073c960191891152577f4d4cb71e58f9c4e72eb81e7b86ad805ac37363a",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "phone-process-pipeline",
+      "verifyJwt": true,
+      "bytes": 592620,
+      "eszipSha256": "8cd59144ee62dbf8c8c8e1d9d1d3cf0f80c27a62be6851b511020184d0a051fc",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "phone-processing-scheduled-sync",
+      "verifyJwt": false,
+      "bytes": 547361,
+      "eszipSha256": "07d141f0772cbd43b0051debaa2bfbd00fcf629c5e8deb004aad5534c4c1019f",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "phone-scheduled-sync",
+      "verifyJwt": false,
+      "bytes": 585852,
+      "eszipSha256": "eb72bd5749089d391a66c8a44f2dc93d99e62e28ea4b599b6c5d828defc0beb1",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "phone-transcribe-recording",
+      "verifyJwt": true,
+      "bytes": 578902,
+      "eszipSha256": "71b49b106f283191b8075f4f06052c7fa48bafd9747d94548e4102b4cb0c0bf9",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "platform-worker",
+      "verifyJwt": false,
+      "bytes": 19237703,
+      "eszipSha256": "a3267bfb8f1e2c05ac2769055811a5b2e1ccfbc80b2573da3fd834077ab99112",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "receptionist-voicemail-recording",
+      "verifyJwt": true,
+      "bytes": 497097,
+      "eszipSha256": "53e434fe4e6106b493475748ed91a7e45804b055cbd1e8b6e5afd978a441ab0b",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "simwood-download-recording",
+      "verifyJwt": true,
+      "bytes": 598002,
+      "eszipSha256": "397563fda71e7fc9a8a1b21e9817ada9b027ec0fcf101afb233902aad56bae01",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "simwood-sync-calls",
+      "verifyJwt": true,
+      "bytes": 595086,
+      "eszipSha256": "5cdde3057fc757e53f8195797c262fd169c18e63ad01d470a5040c56841aede8",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "simwood-sync-recordings",
+      "verifyJwt": true,
+      "bytes": 612919,
+      "eszipSha256": "db26763b8b40376dd65dbc7755a06a7dbe1f2918e33b1bebe99073f12315f3af",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "simwood-test-connection",
+      "verifyJwt": true,
+      "bytes": 532093,
+      "eszipSha256": "8d5b263caf3f6c75814e9d059cad4df7cde120095f6f5a3e0d5c6ad5542784a1",
+      "withinConservativeLocalBundleLimit": true
+    },
+    {
+      "name": "work-transition",
+      "verifyJwt": true,
+      "bytes": 560557,
+      "eszipSha256": "2f6239269b3b68355d8eb6a526ed5ad7687438ccb58cddb5ab5a6805e2730f4a",
+      "withinConservativeLocalBundleLimit": true
+    }
+  ],
+  "offlineBoot": {
+    "network": "none",
+    "realCredentials": false,
+    "customerData": false,
+    "sourceOrCacheMounted": false,
+    "harnessSha256": "96c5bac2d9ccb4be33e5d5078aa6be1efab90cef36512ac94c44f1d52b8d7b05",
+    "verifierSha256": "a2cae4ef3c2a5809ab9d2ed32481832ef4cfb31dc8a62f088983231f75ad5ff3",
+    "checks": [
+      {
+        "name": "customer-card-scheduled-sync",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "customer-card-sync",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "email-scheduled-sync",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "email-workspace-backfill-scheduled-sync",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "email-workspace-scheduled-sync",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "gmail-sync-messages",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "gmail-workspace-backfill-messages",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "gmail-workspace-sync-messages",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "google-workspace-discover-mailboxes",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "identity-resolve",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "identity-scheduled-sync",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "interactions-scheduled-sync",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "interactions-sync",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "learn-commusoft-verify",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "learn-commusoft-worker",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "learn-data-import",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "learn-launch-status",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "learn-operator-phone-playback",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "learn-phone-playback",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "learn-slack-schedule",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "learn-slack-worker",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "learn-voicemail-import",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "openfolk-control-plane",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "phone-analyse-transcript",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "phone-call-detail",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "phone-process-pending",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "phone-process-pipeline",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "phone-processing-scheduled-sync",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "phone-scheduled-sync",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "phone-transcribe-recording",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "platform-worker",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "receptionist-voicemail-recording",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "simwood-download-recording",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "simwood-sync-calls",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "simwood-sync-recordings",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "simwood-test-connection",
+        "status": 401,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "work-transition",
+        "status": 401,
+        "code": null,
+        "denied": true
+      }
+    ],
+    "containerRemoved": true
+  },
+  "tests": {
+    "launchStatusAndCandidate": 20,
+    "passed": 20
+  },
+  "configuration": {
+    "observedAt": "2026-10-12T15:24:01.282Z",
+    "newWorkerSecretsMissing": [
+      "LEARN_COMMUSOFT_WORKER_KEY",
+      "LEARN_SLACK_WORKER_KEY"
+    ],
+    "requiredNonSecretSetting": {
+      "LEARN_STATUS_READ_MODE": "production_metadata_views"
+    },
+    "existingCredentialNamesPresent": [
+      "GOOGLE_WORKSPACE_PRIVATE_KEY",
+      "SIMWOOD_USERNAME",
+      "SIMWOOD_PASSWORD",
+      "OPENAI_API_KEY"
+    ],
+    "notes": [
+      "Names only; not credential validity.",
+      "Microsoft app credentials are absent; applicable Drummonds Microsoft capture still needs a decision.",
+      "Other absent names include optional feature settings and keys with existing service-key fallback; they are not all mandatory missing secrets."
+    ]
+  },
+  "earlierProbeFindings": [
+    "Source-cache boot could not resolve an uncached SDK type declaration offline; eszip loading removed the source/cache dependency.",
+    "Synthetic replacement Request objects were incompatible with the native runtime stream; harness now forwards the incoming request.",
+    "Input validation preceded auth on several endpoints; accepted synthetic shapes now reach the missing-auth checks.",
+    "Copying the voicemail test dependency tree bloated artifacts; managed runtime dependency resolution now excludes it. The 37 smaller final artifacts independently passed offline boot and missing-auth checks."
+  ],
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "remaining": [
+    "Hosted gateway/caller acceptance and positive authenticated journeys.",
+    "Current production drift, runtime rollback capture and coordinated deployment journal.",
+    "Required worker keys and explicit production status setting.",
+    "Matching frontend and signed-in production acceptance.",
+    "Real-provider coverage, historical Slack input and complete launch-goal acceptance."
+  ],
+  "dependencyMode": "Managed runtime imports only; no test dependency tree or package manifest copied.",
+  "resolvedLockSha256": null,
+  "localBundleSize": {
+    "allWithinConservative20000000Bytes": true,
+    "largestBytes": 19237703,
+    "totalBytes": 57021299,
+    "documentation": "https://supabase.com/docs/guides/functions/limits"
+  },
+  "gatewayReview": {
+    "publicSigningAlgorithmObserved": "ES256",
+    "existingCandidateFlagsUnchanged": true,
+    "documentation": "https://supabase.com/docs/guides/functions/auth-headers",
+    "conclusion": "Current official docs support asymmetric JWT verification. Public signing metadata alone does not prove actual signed-in or scheduler acceptance; no gateway protection was disabled."
+  }
+}

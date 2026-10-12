@@ -7,6 +7,24 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — matching processing artifacts compile and boot offline.**
+All 37 compiled candidates start in the actual pinned Supabase runtime, with no
+network, source/cache mounts, real credentials or customer records, and reject
+unauthenticated requests. Twenty launch-reader/candidate checks pass. The
+production status reader now has an explicit production-only metadata-view mode;
+wrong origins and disallowed roles fail, with no raw-source fallback. The current
+source closure is `c529298cfe2123ea544d00327c011d2693c16614b89713c6911d694d1ecf0e82`.
+This supersedes the earlier inventory-only runtime milestone below; hosted
+gateway/caller, positive authenticated and provider acceptance remain open.
+[Runtime evidence](evidence/learn-production-runtime-readiness-2026-10-12.json).
+
+The 15:24 production configuration inventory finds existing Google/phone/AI
+credential names but no new Slack/Commusoft worker keys or explicit status-reader
+mode. These must be included in the reviewed production promotion, alongside
+caller bindings. Names are not proof of credential validity. No hosted change
+occurred. The completed Commusoft batch reached 621/871 sites and 2,794 retained
+contact records with all 194 original datasets preserved; the next batch resumed.
+
 **12 October — production processing inventory and historical Slack scope prepared.**
 The [runtime candidate](../../supabase/release/learn-production/runtime-candidate.manifest.json)
 pins 37 endpoint source closures (221 files) against the fifteen production SQL

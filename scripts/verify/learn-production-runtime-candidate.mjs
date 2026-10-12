@@ -102,6 +102,7 @@ export function productionRuntimeCandidate({ production, test, read = p => readF
     sourceClosureSha256: combined.sha256,
     files: combined.files.map(f => ({ path: f.path, sha256: sha(f.source) })),
     externalImports: combined.external, endpoints,
+    requiredNonSecretConfiguration: { "learn-launch-status": { LEARN_STATUS_READ_MODE: "production_metadata_views" } },
     literalFunctionCalls: [...analyses].flatMap(([path, a]) => a.literalCalls.map(target => ({ path, target,
       inCandidate: PRODUCTION_RUNTIME_ENDPOINTS.some(e => e.name === target) }))),
     unresolvedCalls: [...analyses].flatMap(([path, a]) => a.unresolved.map(row => ({ path, ...row }))),

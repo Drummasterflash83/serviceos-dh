@@ -79,7 +79,7 @@
       "manifestSha256": "35f24dc79a56312b88c88db9100ad591549f2442c7ed167e5e33bd8a7ca2a00b"
     }
   ],
-  "sourceClosureSha256": "e50e6646536075ef4eb1001c0abe938a7a9df2322f1cac4876bf8861b0650ddb",
+  "sourceClosureSha256": "c529298cfe2123ea544d00327c011d2693c16614b89713c6911d694d1ecf0e82",
   "files": [
     {
       "path": "_shared/audit.ts",
@@ -883,7 +883,7 @@
     },
     {
       "path": "learn-launch-status/read-mode.ts",
-      "sha256": "90a9702ed8b125db4ad171d01d5aeca72ef5867957fd0f77746a904081419277"
+      "sha256": "2e4b8588840aac93f49210b625cfdca2bd6f0131cd1c350f98c7a6495258d453"
     },
     {
       "path": "learn-operator-phone-playback/index.ts",
@@ -1593,7 +1593,7 @@
     {
       "name": "learn-launch-status",
       "verifyJwt": true,
-      "sourceClosureSha256": "619a048ca9173964629b697a295faf7f2e4539726d104b38b85e5bafe2b2d3c2",
+      "sourceClosureSha256": "5cc56a423dcacc6a40ca87b520a03c39988f5ed0a61fbf669c480300a0323d30",
       "sourceFiles": [
         "_shared/authz.ts",
         "learn-launch-status/handler.ts",
@@ -2657,6 +2657,11 @@
       "authorizationAndCallerAcceptance": "pending"
     }
   ],
+  "requiredNonSecretConfiguration": {
+    "learn-launch-status": {
+      "LEARN_STATUS_READ_MODE": "production_metadata_views"
+    }
+  },
   "literalFunctionCalls": [
     {
       "path": "_shared/phone_pipeline.ts",
