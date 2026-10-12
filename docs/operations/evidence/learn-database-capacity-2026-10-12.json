@@ -1,0 +1,82 @@
+{
+  "version": "learn-database-capacity-investigation/1",
+  "checkedAt": "2026-10-12T01:32:12.446434+00:00",
+  "scope": "read-only diagnostics; no new export or credential refresh",
+  "database": {
+    "observedAt": "2026-10-12T01:24:07.638952+00:00",
+    "clientConnections": 14,
+    "maxConnections": 60,
+    "blockedSessions": 0,
+    "cliSessions": 0,
+    "startedAt": "2026-07-02T01:21:45.018343+00:00"
+  },
+  "metricsObservations": [
+    {
+      "observedAt": "2026-10-12T01:24:19.145000+00:00",
+      "validPrometheusObservation": true,
+      "values": {
+        "node_memory_MemAvailable_bytes": 146022400.0,
+        "node_load5": 9.82,
+        "node_load1": 7.37,
+        "node_load15": 11.36,
+        "node_memory_MemTotal_bytes": 428220416.0,
+        "pg_up": 1.0
+      }
+    },
+    {
+      "observedAt": "2026-10-12T01:26:18.878000+00:00",
+      "validPrometheusObservation": false,
+      "values": null
+    },
+    {
+      "observedAt": "2026-10-12T01:28:54.860000+00:00",
+      "validPrometheusObservation": false,
+      "values": null
+    }
+  ],
+  "rateMetrics": {
+    "cpuPercent": null,
+    "diskBusyPercent": null,
+    "majorFaultsPerSecond": null,
+    "reason": "Only one valid metrics scrape; two subsequent HTTP 500 responses cannot supply counter deltas"
+  },
+  "archivedScheduler": {
+    "snapshotAt": "2026-10-12T00:25:21.393518Z",
+    "activeJobs": 18,
+    "activeScheduleCounts": {
+      "*/30 * * * *": 1,
+      "* * * * *": 4,
+      "*/5 * * * *": 9,
+      "*/2 * * * *": 3,
+      "*/15 * * * *": 1
+    },
+    "currentConfigurationVerified": false,
+    "expensiveExecutionProven": false
+  },
+  "billing": {
+    "organizationPlan": "pro",
+    "selectedAddons": [],
+    "namedCurrentComputeTierVerified": false,
+    "proposedVariant": "ci_small",
+    "memoryGb": 2,
+    "hourlyUsd": 0.0206,
+    "computeCostAt744HoursUsd": 15.33,
+    "creditsAndTaxIncluded": false,
+    "incrementalBillAmountVerified": false
+  },
+  "decision": {
+    "proposed": "Small compute after approval; retain all source data and separately investigate overlapping workload",
+    "approved": false,
+    "applied": false,
+    "rootCause": "not_established",
+    "guaranteedFix": false
+  },
+  "productionWrites": false,
+  "archivedCommandsPublished": false,
+  "sources": [
+    "https://supabase.com/docs/guides/platform/compute-and-disk",
+    "https://supabase.com/docs/reference/api/v1-list-project-addons",
+    "https://supabase.com/docs/reference/api/v1-apply-project-addon"
+  ],
+  "liveCustomerRecordsRead": false
+}

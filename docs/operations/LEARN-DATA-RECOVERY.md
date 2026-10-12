@@ -1,5 +1,22 @@
 # LEARN data recovery coverage
 
+## Capacity gate before another capture — 12 October 2026
+
+Read-only investigation found low total memory (408 MiB), elevated load averages
+and subsequent failed metrics scrapes even after export clients were removed.
+The available SQL observation showed no blocked sessions or exhausted connection
+limit. The retained archive has 18 active cron schedules with overlapping starts.
+These findings do not establish the historical failure's single cause. Failed
+metric responses cannot be interpreted as zero CPU, I/O or page-fault activity.
+
+A [reviewable Small/2 GB compute proposal](LEARN-DATABASE-CAPACITY.md) is prepared
+and awaiting approval. Existing Pro is confirmed; provider pricing is
+US$0.0206/hour for this compute selection before credits and tax. No billing,
+compute, schedule or retained-data changes have been made. Do not repeat a native
+export simply because one SQL/health request succeeds; first resolve the capacity/
+workload decision and verify steady operation through an ordinary capture cycle.
+[Evidence](evidence/learn-database-capacity-2026-10-12.json).
+
 ## Latest capture attempt — 12 October 2026, 01:21 UTC
 
 The separate complete-capture-v2 attempt is stopped, not running or accepted.

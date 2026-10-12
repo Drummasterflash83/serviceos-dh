@@ -7,6 +7,24 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 02:29 BST — capacity evidence gathered; production resize awaiting approval.**
+Post-recovery SQL showed 14 client sessions against a limit of 60, zero blocked
+sessions and zero CLI sessions. One resource scrape showed 408 MiB total memory
+and elevated 1/5/15-minute load averages. Two later scrapes failed with HTTP 500
+with no export running; CPU/disk rates therefore remain unavailable. The retained
+archive contains 18 active cron jobs with overlapping schedules, but expensive
+execution and current scheduler configuration are not yet established.
+
+The source organization is already Pro. A concrete proposal selects Small/2 GB
+at the provider's US$0.0206/hour rate (about US$15/month for compute before credits
+and tax), with a planned interruption and post-change preservation/capture checks.
+It is awaiting Chris's approval; nothing has been resized, rescheduled or deleted.
+Limited resources and overlapping workload are investigation leads, not a proven
+root cause or promise that resizing will fix the stall. Further native exports
+remain on hold pending a safe capacity/workload decision.
+[Reviewable proposal](LEARN-DATABASE-CAPACITY.md) ·
+[Read-only evidence](evidence/learn-database-capacity-2026-10-12.json).
+
 **12 October, 02:21 BST — second native export stopped; source health recovered.**
 A fresh read-only snapshot captured the two omitted pg_net tables (2,434 response
 rows and an empty request queue), but its native dump emitted zero bytes while
