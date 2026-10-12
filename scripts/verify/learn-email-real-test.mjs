@@ -102,4 +102,4 @@ writeFileSync(file, JSON.stringify(plan, null, 2) + '\n', { flag: 'wx', mode: 0o
 console.log(JSON.stringify({ run: plan.run, state: plan.state, project: TEST_PROJECT,
   sourceBindingVerified: true, approvedCredentialDigestsMatch: true, targetEmailRecords: 0,
   preservedDatasets: before.length, limits: plan.limits, pins, providerRequests: 0,
-  productionWrites: 0, targetWrites: 0, note: 'Execution remains unprepared; no mailbox has been activated.' }, null, 2));
+  productionWrites: 0, targetWrites: 0, note: 'No mailbox has been activated.' }, null, 2));

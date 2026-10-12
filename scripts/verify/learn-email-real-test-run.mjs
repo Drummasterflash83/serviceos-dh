@@ -20,8 +20,8 @@ for (const id of [p.run, p.connection, p.mailboxId, p.account])
   check(/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(id), 'Invalid prepared identity');
 if (['capture', 'pause'].includes(mode))
   check(process.env.LEARN_REAL_EMAIL_APPROVED_RUN === p.run, 'Exact real mailbox capture approval required');
-const lock = openSync(file + '.lock', 'wx', 0o600);
 const token = savedCliToken(), q = s => readSupervisorMetadata(token, s);
+const lock = openSync(file + '.lock', 'wx', 0o600);
 const write = s => communicationQuery(token, s, { readOnly: false });
 const save = () => writeFileSync(file, JSON.stringify(p, null, 2) + '\n', { mode: 0o600 });
 async function mgmt(project, path, query) {
