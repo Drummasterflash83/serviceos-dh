@@ -1,0 +1,93 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "full_schema_rehearsed_and_rolled_back",
+  "observedAt": "2026-10-12T02:11:23.734Z",
+  "migrations": [
+    {
+      "file": "supabase/migrations/20261101180000_learn_microsoft_source_journal.sql",
+      "sha256": "8f852bf18aad93e64d3fd8192910159f2fdfea102d2807bbfdc429f5e6ab8398"
+    },
+    {
+      "file": "supabase/migrations/20261101181000_learn_microsoft_job_receipts.sql",
+      "sha256": "f91c07370d28689fcbdfdee8ead990a5dcc7ed12db710f6d709cb93f38fe9bb0"
+    },
+    {
+      "file": "supabase/migrations/20261101182000_learn_microsoft_queue_completion.sql",
+      "sha256": "2781dca88f9ad4322c8acb042e4c42559cd66cc39db96e4708c9177ac21b2cbe"
+    },
+    {
+      "file": "supabase/migrations/20261101192000_learn_microsoft_folder_dispatch.sql",
+      "sha256": "3e7fa7064b54ddc2921b318e2da384dcd7ffb6a3fab86fa0ce4e9f9522150f84"
+    },
+    {
+      "file": "supabase/migrations/20261101260000_learn_microsoft_incremental_queue.sql",
+      "sha256": "b3a30f6e3084849ef613480fa488a8c0da07efe7bcdc3161bb07764cd9a61e7c"
+    },
+    {
+      "file": "supabase/migrations/20261101280000_learn_microsoft_message_projection.sql",
+      "sha256": "121fcd1cd4569b4fe6b72ba818892802e46cc592de936039c64a70214c891e62"
+    },
+    {
+      "file": "supabase/migrations/20261101350000_learn_microsoft_recurring_discovery.sql",
+      "sha256": "ffad2f09f0f6c960b80222c95bf86aeb99447be03051b3b860a797aa8408d643"
+    },
+    {
+      "file": "supabase/migrations/20261101470000_learn_microsoft_credentials.sql",
+      "sha256": "e68b461739f347de2d1aad7e196b618102b237bef4a878c38a9e144598fcccab"
+    },
+    {
+      "file": "supabase/migrations/20261101480000_learn_microsoft_worker_failures.sql",
+      "sha256": "e4d961ae83228a253de9fa668d788b12b3529c3eb33fa13a5d0dd784cf11e4ab"
+    }
+  ],
+  "probes": [
+    {
+      "file": "scripts/verify/learn-microsoft-hosted-probe.mjs",
+      "sourceSha256": "707407889973548cce657071e0c6d912699e2721144cc31fa578cc8b2a7e5fab",
+      "sqlSha256": "fb5922e5429041a7b02d767a60832c1c6e42782ea1715678f165253bef3d2eb4"
+    },
+    {
+      "file": "scripts/verify/learn-microsoft-projection-probe.mjs",
+      "sourceSha256": "6755255b7a44b202d83b6894fa83326af05e02ba7a97a0a9fb46de624bc47438",
+      "sqlSha256": "6bb78dacd6f8197fd3fc6bcdda33d6f381d11c3d3552b1ec08dfb729f6bd192a"
+    },
+    {
+      "file": "scripts/verify/learn-microsoft-card-probe.mjs",
+      "sourceSha256": "fd00888365387fe8c0e74a04a4c829305c77fa8a4dc7d649ba94daec06bf8816",
+      "sqlSha256": "8c3fffefef6bde64f0d3fda3050a8cd25546c87ded189dfb09c8fef29f9035a6"
+    },
+    {
+      "file": "scripts/verify/learn-microsoft-discovery-probe.mjs",
+      "sourceSha256": "5dde99410dcd9fcfe388dd7ccbcf224b47cffd13e54c0fb7a4c28422d86cbe8e",
+      "sqlSha256": "fc86f8dd1c0ea44558406b176d0e2e0ec1f54623482bdad97cf0b30d501568a8"
+    },
+    {
+      "file": "scripts/verify/learn-microsoft-worker-hosted-probe.mjs",
+      "sourceSha256": "094fcab86b82879004ff805939c3d1fb589229f989d07fd6d11a742ff597a8ee",
+      "sqlSha256": "5791d153876010ba92d063a4c5e62d28114a88d22faa2c95808f6794e3de262c"
+    }
+  ],
+  "sqlSha256": "bba5e21ed18fe2dbbcc82c99f60e09b892f814bc5c78d2593728daefdb51b3af",
+  "assertionsConfirmed": true,
+  "preservedDatasets": 140,
+  "originalCatalogRestored": true,
+  "fixturesAndMicrosoftObjectsRemoved": true,
+  "retainedCredentials": 0,
+  "newSessions": 0,
+  "newPlatformGrants": 0,
+  "providerRequests": 0,
+  "productionChanged": false,
+  "limitations": [
+    "Synthetic source pages and credentials, SQL roles, complete hosted TEST schema. No Microsoft network, deployed worker or signed-in browser acceptance.",
+    "Microsoft schema, tokens and fixtures roll back. Existing TEST worker remains unchanged. Mailbox coverage remains unverified."
+  ],
+  "verifiedBehaviors": [
+    "Synthetic folder and message pages reach canonical email, interaction and customer-card records; a later version updates the same card.",
+    "Recurring discovery preserves prior dispatch and dispatches a newly observed folder once.",
+    "Credential refresh saves rotated tokens; stale refresh cannot overwrite newer credentials.",
+    "Wrong application, wrong worker, paused capture, authenticated and anonymous credential access are rejected.",
+    "Provider delay schedules retry; an exact repeated failure returns historical evidence.",
+    "Capture pause defers a fresh job without consuming a retry; saved pages remain recoverable after pause and account revocation.",
+    "Completed jobs cannot be overwritten by late failures; stop evidence is private and immutable."
+  ]
+}

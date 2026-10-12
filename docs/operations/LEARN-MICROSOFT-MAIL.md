@@ -1,13 +1,24 @@
 # Microsoft 365 mail input
 
-## Current status — worker registered and verified locally; connector not enabled
+## Current status — hosted schema rehearsal passed; connector not enabled
 
 On 12 October, the server-side credential port and refresh RPCs were added and
 verified against isolated PostgreSQL with synthetic credentials. The complete
 Microsoft suite now has **68 passing tests**, plus actual SQL/reader/settlement checks
 and strict worker/Microsoft TypeScript checks. This extends the earlier hosted
-projection rehearsal below; the new credential and worker migrations have **not** had a hosted
-full-schema rehearsal or persistent deployment.
+projection rehearsal below. At **02:11 UTC on 12 October**, all nine Microsoft
+migrations and five probes passed together against the complete hosted TEST 077
+schema, then rolled back. All **140 existing dataset counts and hashes** and the
+original catalog were restored. Credential rotation and stale-write protection,
+role/claim denial, retry delays, pause without consuming a retry, and retained-page
+completion after pause/revocation passed alongside canonical projection, recurring
+discovery and same-card refresh. No Microsoft tokens, fixtures or schema remain
+installed; there were no real provider requests or production changes.
+[Hosted worker evidence](evidence/learn-microsoft-worker-hosted-2026-10-12.json).
+
+Persistent TEST installation and hosted RPC/worker acceptance are the next gates.
+Consent/identity provisioning, controller coverage and real-mailbox acceptance
+remain required; a successful synthetic rollback does not establish live capture.
 
 `microsoft_capture_handler.ts` is now registered for `email.microsoft_discovery`
 and `email.microsoft_sync`. Its completion, failure, retry and pause handling

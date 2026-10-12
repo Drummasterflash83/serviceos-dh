@@ -7,6 +7,24 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 03:11 BST — Microsoft credentials and worker outcomes pass hosted full-schema rehearsal.**
+All nine Microsoft migrations and five synthetic probes passed against current
+TEST 077 in one rolled-back transaction. This joins the credential refresh and
+retry/pause/recovery checks to the existing folder discovery, canonical email,
+interaction and same-card update checks on the complete hosted schema. Wrong-app,
+wrong-worker and ordinary-user credential access were denied. Pausing fresh work
+did not consume a retry; a saved page still completed after pause and revocation.
+All **140 existing dataset counts and hashes** and the original schema fingerprint
+were unchanged afterwards. No Microsoft objects, tokens or fixtures remained;
+no provider requests, new sessions, platform grants or production changes occurred.
+
+This closes the full-schema rehearsal gate for these source versions. Persistent
+TEST installation, hosted RPC/worker acceptance, consent/identity provisioning,
+controller coverage and an authorized real-mailbox journey remain open. Microsoft
+is still not presented as a working adapter; Drummonds' Google credential upload
+approval remains a separate dependency.
+[Hosted evidence](evidence/learn-microsoft-worker-hosted-2026-10-12.json).
+
 **12 October — Microsoft worker retry/pause/recovery verified locally.**
 Both Microsoft job types are now registered in source. The actual handler,
 credential port, reader and isolated SQL prove retry-after delays followed by one
