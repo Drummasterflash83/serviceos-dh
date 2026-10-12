@@ -105,7 +105,7 @@ export function OperatorClientInformation({
         ? JSON.stringify(value)
         : String(value);
   return (
-    <section className="cp-root space-y-5" aria-labelledby="client-information-heading">
+    <section className="op-embedded cp-root min-w-0 space-y-5" aria-labelledby="client-information-heading">
       <header>
         <p className="op-eyebrow">OPENFOLK · CLIENT INFORMATION</p>
         <h1 id="client-information-heading" className="text-2xl font-semibold">
