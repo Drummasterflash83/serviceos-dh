@@ -1,0 +1,3295 @@
+{
+  "version": "learn-production-runtime-candidate/1",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "state": "prepared_not_approved_or_deployed",
+  "database": [
+    {
+      "path": "supabase/release/learn-production/001_launch_metadata_views.sql",
+      "sha256": "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+      "manifestSha256": "0b752c5694dfac4619ffa0e204d8c4e53493a6eb38e6d94b3c7d9b4a6d46eef4"
+    },
+    {
+      "path": "supabase/release/learn-production/002_foundation_rules.sql",
+      "sha256": "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+      "manifestSha256": "b4cca272862caefbbf93ab53f2dcf06ad90d8b6fc1d8f5e6bdfa424c99895d2d"
+    },
+    {
+      "path": "supabase/release/learn-production/003_measurements_work.sql",
+      "sha256": "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+      "manifestSha256": "df0a5e4cc1c77eefddbdfe1285161f4da55898ea5d4a9b5860ee616b9e742a85"
+    },
+    {
+      "path": "supabase/release/learn-production/004_governed_work_actions.sql",
+      "sha256": "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+      "manifestSha256": "ae0be39c2d841609d21aa7b1d6e9d4130587fd80c3a07830deb28430086e152a"
+    },
+    {
+      "path": "supabase/release/learn-production/005_scoring_working_time.sql",
+      "sha256": "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+      "manifestSha256": "d2aaa4890d34c61949305ec58718b81c367953c847c2e5df8bfb9f16259b0d04"
+    },
+    {
+      "path": "supabase/release/learn-production/006_slack_intake.sql",
+      "sha256": "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+      "manifestSha256": "e8fe9b03067ed51036c1ce162347b136c4333d78eb1c23ce6add90e5173504d5"
+    },
+    {
+      "path": "supabase/release/learn-production/007_capture_controls.sql",
+      "sha256": "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+      "manifestSha256": "e5725eb88fbc19e2d606d60e672250d74ef4c960936f04b9c70872662a6eb865"
+    },
+    {
+      "path": "supabase/release/learn-production/008_governed_imports.sql",
+      "sha256": "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+      "manifestSha256": "1660d17c2975dc81ce278e805eae5ee0d2cfe52638eabf806283801253bde51f"
+    },
+    {
+      "path": "supabase/release/learn-production/009_commusoft_api.sql",
+      "sha256": "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+      "manifestSha256": "7b47185ec24747f6be4628b602d10d44d5d4d71aa133c8637fd8bc9a813af269"
+    },
+    {
+      "path": "supabase/release/learn-production/010_email_capture.sql",
+      "sha256": "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+      "manifestSha256": "6f7f4b8fb6af47434598a53c871a0097adca210743a3cea38d8b9df38e4143db"
+    },
+    {
+      "path": "supabase/release/learn-production/011_phone_capture.sql",
+      "sha256": "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+      "manifestSha256": "3a3d7d4eeaaa97d0da178507ca43fa3e5d624dad62b55bc70a1f4fa2c96620e5"
+    },
+    {
+      "path": "supabase/release/learn-production/012_communication_cards.sql",
+      "sha256": "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+      "manifestSha256": "b90d7fecc4eb673eb9896bc249ba201ea2bbfa87867f00885d0179031fc2b5d2"
+    },
+    {
+      "path": "supabase/release/learn-production/013_voicemail_capture.sql",
+      "sha256": "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+      "manifestSha256": "fae5dd536f628aa64b44e99c88bc0366e7e6e10b72158792dab4054879ecdd90"
+    },
+    {
+      "path": "supabase/release/learn-production/014_microsoft_capture.sql",
+      "sha256": "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba",
+      "manifestSha256": "66bb56b23f4c88aba8e2030bb430e03bc8f52220624510b320b82c875e681a6f"
+    },
+    {
+      "path": "supabase/release/learn-production/015_operator_context.sql",
+      "sha256": "f4413fe47a9eaa1eb7774e35e22f10f78bf94a55345f4fbe19fe690b4e7d8556",
+      "manifestSha256": "35f24dc79a56312b88c88db9100ad591549f2442c7ed167e5e33bd8a7ca2a00b"
+    }
+  ],
+  "sourceClosureSha256": "e50e6646536075ef4eb1001c0abe938a7a9df2322f1cac4876bf8861b0650ddb",
+  "files": [
+    {
+      "path": "_shared/audit.ts",
+      "sha256": "a62d9e1100fe1209778a076e24df46e9bf524ff9df39e10c0baea51f3efbafcc"
+    },
+    {
+      "path": "_shared/authz.ts",
+      "sha256": "9b2e59bfca3e4dbb1db6b21f0637d48fa711f19851793d570eaa2200f50bdcc3"
+    },
+    {
+      "path": "_shared/automation_execution_enqueue.ts",
+      "sha256": "667ef0bee766605a5b03983d9c7269304016447bb7ea7ef92f88fcead9e83304"
+    },
+    {
+      "path": "_shared/birchills_voicemail_email.ts",
+      "sha256": "16563facd8fd43ca87d3b57b91bf4a076b6bb218efa9af6fa71d6e6ffd0a5474"
+    },
+    {
+      "path": "_shared/business_graph.ts",
+      "sha256": "19369ee309837f68053732e6a52d87a4d5c586213b0caa82bad28896c65a8b0d"
+    },
+    {
+      "path": "_shared/commusoft/bound_page.ts",
+      "sha256": "1b2b9fdbab2863d1b22cac4591885fcfdae0acce67980c597699c88ee3d8a87d"
+    },
+    {
+      "path": "_shared/commusoft/page_store.ts",
+      "sha256": "4538a90df66acb1f515e018a38454e1f5b6c200e5028400dbec0475fc4f0ec93"
+    },
+    {
+      "path": "_shared/commusoft/permit_server.ts",
+      "sha256": "69ef97910fe7d4d2ab50ceac0237edf2a9a37ea2c9fb21d2154359e0d8e02e89"
+    },
+    {
+      "path": "_shared/commusoft/read_page.ts",
+      "sha256": "4628aa909f6f09c346e3900dc1d8e67a2cd6f8e8e9e33e1fe35f78e80fbb35e7"
+    },
+    {
+      "path": "_shared/commusoft/stored_scope.ts",
+      "sha256": "8f0b9349ce3d844e09b67acbc269579d422e314c44a0626e772507fc6acd5412"
+    },
+    {
+      "path": "_shared/commusoft/verification_contract.ts",
+      "sha256": "0bda1ad4541f311b56d01c3e185a0e450124e83ca989d19205c177fc276f2243"
+    },
+    {
+      "path": "_shared/commusoft/verification_http.ts",
+      "sha256": "6862e08cde64e86539987b25b1b512e81ccc71b699e1c310c8e18649ddbdc9df"
+    },
+    {
+      "path": "_shared/commusoft/verify_connection.ts",
+      "sha256": "9dbd0a26e38b0bbe217c785fb335dda8099740c5c6081efbf2a8a0e21c971492"
+    },
+    {
+      "path": "_shared/commusoft/worker.ts",
+      "sha256": "d0992d583a171bd716bf475b8d0d6fba4ff0590c4ae13362c53390d9656ba331"
+    },
+    {
+      "path": "_shared/connectors/controlled_test.ts",
+      "sha256": "1df4aed4bbc636b84853db043c3a926cdcfdef42dfaeb3cf03a7166d92e7ad3a"
+    },
+    {
+      "path": "_shared/connectors/email_reply_draft.ts",
+      "sha256": "1860cd277743bcc27ef66dcd43c241924581794567f270dc862aa11ecbfeca82"
+    },
+    {
+      "path": "_shared/connectors/index.ts",
+      "sha256": "212c6aa50c44187be6b076a28fb1f9f3bdf406d2dd5cc3acb0469aa1d5650cfb"
+    },
+    {
+      "path": "_shared/connectors/internal_note.ts",
+      "sha256": "436838990e76e3eabb2709fda777be8eebbc2b0ea7416a3b57ce9e2367c3e65e"
+    },
+    {
+      "path": "_shared/connectors/marketing_actions.ts",
+      "sha256": "02a1cb9a492456eb93bd37b8174ba0632ffaf0088d3b2353cd7497c1903d5f40"
+    },
+    {
+      "path": "_shared/connectors/marketing_ai_draft.ts",
+      "sha256": "f5c104858726d8ce30051ed816dadc46d29f3a9fc73d74bbecd0a440aecd0f58"
+    },
+    {
+      "path": "_shared/connectors/marketing_email.ts",
+      "sha256": "0e5d2673e8860e698a09ee47c0e1c957bbaaa23296aac68d83a9fc1c2e10dcab"
+    },
+    {
+      "path": "_shared/connectors/resend_transport.ts",
+      "sha256": "9ac7daa6821034d1c80aed5eecdee78fcafb944303a281bd46154a65a48c65f1"
+    },
+    {
+      "path": "_shared/controlplane/authz.ts",
+      "sha256": "a07d10256abf684f1d0097fe58cb12aa5b60e489dfbbc57719fa7590c4a053d5"
+    },
+    {
+      "path": "_shared/controlplane/comm_relevance.ts",
+      "sha256": "634176db1e95cdd4af57e7b3d711a873f6fef27e46f0cb2a6785fc3ef8803a7b"
+    },
+    {
+      "path": "_shared/controlplane/connection_inventory.ts",
+      "sha256": "b8d2947c0aa82acfcc68c3eb41068dd9780f71b687ce681a9d2969e012ae1172"
+    },
+    {
+      "path": "_shared/controlplane/discovery_history.ts",
+      "sha256": "fcbd173d0e5da659d4dd0c270d705b3015d7e2919e92130efd56d1bebd5c2cca"
+    },
+    {
+      "path": "_shared/controlplane/discovery.ts",
+      "sha256": "7c290976817ce7ecabfd288d7981d5da5e171c06102051c0b982c2ffd7d982f6"
+    },
+    {
+      "path": "_shared/controlplane/health.ts",
+      "sha256": "8668f28371dfffe65bd76c3d5351a692dace683057f96ba72da56ce7b6d69477"
+    },
+    {
+      "path": "_shared/controlplane/identity_inventory.ts",
+      "sha256": "2399f0955fc98b69acdc714266fa2594e14307e4cf41c519d6beb777d2053b3c"
+    },
+    {
+      "path": "_shared/controlplane/identity_resolution.ts",
+      "sha256": "0a8da4246906fe7aff215bb134fffa46b79d75d9453ee65db503a4797c28241a"
+    },
+    {
+      "path": "_shared/controlplane/identity_v1.ts",
+      "sha256": "4b086d7b97bdfb4d685b5b5e868a1185db8e8e5881b597975943a967fbef2714"
+    },
+    {
+      "path": "_shared/controlplane/inventory.ts",
+      "sha256": "deca493954ee666b2c08d80559d50779d3cf540059aa78ed3fed82b9051cfc3a"
+    },
+    {
+      "path": "_shared/controlplane/learning_centre.ts",
+      "sha256": "4d8fe81797c75fae86baf7b274e48890103cdf756c573e019956da2d914a83fe"
+    },
+    {
+      "path": "_shared/controlplane/ownership_inventory.ts",
+      "sha256": "22d95565ac1fa8f05c7eda64b3d8e80e2318fc0e48202e9c3cb1c00fc4340020"
+    },
+    {
+      "path": "_shared/controlplane/projection.ts",
+      "sha256": "be25fac9aeda8fdf005568d1fce04a95cae6c5a0fb6adf92ed1471983f62a4ee"
+    },
+    {
+      "path": "_shared/controlplane/readiness.ts",
+      "sha256": "26eb27b4be75dcafa5de823aec6af8b6d7cdcfd7fc554add88e0d3673d6785bc"
+    },
+    {
+      "path": "_shared/controlplane/resolver.ts",
+      "sha256": "7737f226746807e9e8547962b3d3d7f82107aa7a981f0af2b3d3084454f0bf04"
+    },
+    {
+      "path": "_shared/controlplane/roster.ts",
+      "sha256": "520d0e2337791fbaeab7925ff915fd0d2a8bcd48e215189b650b6971ecf836e9"
+    },
+    {
+      "path": "_shared/controlplane/store.ts",
+      "sha256": "d090640f9c4301e79c80926bf9d6a1325df3a83e07339e27e196859048272b3c"
+    },
+    {
+      "path": "_shared/controlplane/telephony_discovery.ts",
+      "sha256": "2e0fd02170e6fee99ea865fc1123c02141635a57bb7507bd3031b453ee6633a8"
+    },
+    {
+      "path": "_shared/controlplane/telephony_identity.ts",
+      "sha256": "629ec9842ef7f5f9fbb1c652504ef88fe69879b967079919cc2803ec6693e50d"
+    },
+    {
+      "path": "_shared/controlplane/telephony_validation.ts",
+      "sha256": "86625ab7106ae820db3e836cb233e19d15391c1aaf044b35593bd0805e85ca30"
+    },
+    {
+      "path": "_shared/customer_card.ts",
+      "sha256": "4f3250ef6e4b83e7f5e0c572bf9239a8c53264dc661a11deb55b8a1af617f318"
+    },
+    {
+      "path": "_shared/email_capture_engine.ts",
+      "sha256": "0c8ffe0506f7db1d1ef73cc0150d08ae5d43a66810aa084582489dd097144380"
+    },
+    {
+      "path": "_shared/email_capture_handler.ts",
+      "sha256": "8c1b9b56e26283f55786c3b072a108f5fe71da609e8b6b1e69f7dc5c3375f072"
+    },
+    {
+      "path": "_shared/email_capture_ports.ts",
+      "sha256": "f0059f968ed31a0de9281499ad5fa73c409dbe4055b55d754229da1e776bc24e"
+    },
+    {
+      "path": "_shared/email_enqueue.ts",
+      "sha256": "f326fd3f68ace755c3536f6a9cb97b3ede1dfeef72177bdaec94d357efb88dbf"
+    },
+    {
+      "path": "_shared/email_ingestion_outbox.ts",
+      "sha256": "77c27b83a59a388511fc9d542ddf6eed7f266cd03cc0bcb04916b372399a3f8f"
+    },
+    {
+      "path": "_shared/email_ingestion_protocol.ts",
+      "sha256": "1cd9e7b6c942918e98dfb11776fc586378074bf014516140993826a7a4bb8c3a"
+    },
+    {
+      "path": "_shared/email_job_attempt.ts",
+      "sha256": "3344da6044bb7eec1f19d41cf5b120769e8a8493dc1f9a8398e48f96e0c4b4cb"
+    },
+    {
+      "path": "_shared/email_scheduler_health.ts",
+      "sha256": "8e3615df04f35ed558d77145a1069831e7f2a9fbc378bd5283ba8ba5e31ff04e"
+    },
+    {
+      "path": "_shared/gmail_capture_page.ts",
+      "sha256": "30a38959180866516e5ee044557bc092cdf045998171d0e3ebf07bd8d23f83c1"
+    },
+    {
+      "path": "_shared/gmail_consent.ts",
+      "sha256": "55e101f7a90811080f3add1421eaf07f26bcddcdfeacd30324fac26ae853a702"
+    },
+    {
+      "path": "_shared/gmail_message.ts",
+      "sha256": "11b973746997257d651375fdf9b27060e280e737560eb9d8685d420d2ea6bb74"
+    },
+    {
+      "path": "_shared/gmail_oauth.ts",
+      "sha256": "d6df51e4ba480f940d606add9235288031249f09ce5d327b2969b09c12ce4f7a"
+    },
+    {
+      "path": "_shared/gmail_page_store.ts",
+      "sha256": "3b180eb9db038039790d59378693c0b36808b69017208261317b27450153ea50"
+    },
+    {
+      "path": "_shared/google_workspace.ts",
+      "sha256": "dc9b4f58f89b29b4b60757745a9ee1a934928e27394b9eb1d5fedafcf1248108"
+    },
+    {
+      "path": "_shared/imports/batches.ts",
+      "sha256": "5b0ac2a71ad7ec7520b257c4121f856d0d46c058261fe8e19bd2639eba648ad9"
+    },
+    {
+      "path": "_shared/imports/job_number.ts",
+      "sha256": "baf5d9d463defaa88ea8af7006dff7fc8fcd038cea9b1e2151ca9194798e6750"
+    },
+    {
+      "path": "_shared/imports/matching.ts",
+      "sha256": "e3245f4c49442548ede0b2c555a9e0b1d89b1cba26c1734a3c429e37dcb41c24"
+    },
+    {
+      "path": "_shared/imports/profile.ts",
+      "sha256": "c7aaba78394f595d4e0f68ab71e625570d2df5fc1108497be6d094140f8e3326"
+    },
+    {
+      "path": "_shared/imports/redact.ts",
+      "sha256": "502eff78b263eb20821b8fef2f7b4b0ee1ce746b67b48af24cb8d23ae6bd43cd"
+    },
+    {
+      "path": "_shared/imports/row_failure.ts",
+      "sha256": "bfea74bebaca37a4792411fa6829bbb7bc44f1ff076da3915678149668811b48"
+    },
+    {
+      "path": "_shared/intelligence/action.ts",
+      "sha256": "d6aaf1d514898311ed341ab664e240f9d5a7d5a41876482e1535ce88680a25f3"
+    },
+    {
+      "path": "_shared/intelligence/authority.ts",
+      "sha256": "171a8cbbcf777b3c2d67b28273d4d8327299c0ea21a72f300f3bfaae2972d0f8"
+    },
+    {
+      "path": "_shared/intelligence/automation_guards.ts",
+      "sha256": "925b661657ad940ac9f9f653e1ea02f2f25144f2d481ba48a0d303543e8972bd"
+    },
+    {
+      "path": "_shared/intelligence/decision.ts",
+      "sha256": "45ef6acbfb49e5c528542546821526366454f4c7d71b74d80cd015a394672776"
+    },
+    {
+      "path": "_shared/intelligence/eligibility.ts",
+      "sha256": "954a7e4388d96178a424ce02be941924bd3761fd5d10fc2206f15fa040e78f6d"
+    },
+    {
+      "path": "_shared/intelligence/learning.ts",
+      "sha256": "cf23f14fd27013a1b5e5446959094d429dfa79df3798b2aac46479fa3f5ffcdc"
+    },
+    {
+      "path": "_shared/intelligence/modes.ts",
+      "sha256": "587e252da1c39f9e432f5707e4c93abb85d5b41dc848787c945587405fdeba84"
+    },
+    {
+      "path": "_shared/intelligence/objective_evaluation.ts",
+      "sha256": "6c57c0c227ca1e31a70db39579ab6fb4e852edfac0bd1b530cdc75dbe444ba0a"
+    },
+    {
+      "path": "_shared/intelligence/objectives.ts",
+      "sha256": "cb75ee51e1084063672791044002e020dd6ee86e1007ecc30aef3b4bb9f0bb2b"
+    },
+    {
+      "path": "_shared/intelligence/policy.ts",
+      "sha256": "ba26fa219f31f3c57a2ccfacb7981a9d1d6517dc9d4ece640206c32e13659966"
+    },
+    {
+      "path": "_shared/intelligence/profile.ts",
+      "sha256": "2275697c591d88b94ca87f5c7a5e4599a46b337bced53b71c4c7bd37917d2753"
+    },
+    {
+      "path": "_shared/intelligence/reason_codes.ts",
+      "sha256": "1bf8a4b0ea01ad4accb9064b0d5042515f708143eec5d1b4204576f34a2c3a22"
+    },
+    {
+      "path": "_shared/intelligence/types.ts",
+      "sha256": "f5550176dfbb781ab007762722e3439ae48eb5b90664761a935f9d88aa5214c9"
+    },
+    {
+      "path": "_shared/learn_capture_control.ts",
+      "sha256": "a1fabd8fc954dbb01c04d9cfe96787a178ff54102e03198bc46d10574cd68957"
+    },
+    {
+      "path": "_shared/learn-phone-playback.ts",
+      "sha256": "5b7aa339f38ab204a730444468debbd3702eacf14c7f99587d2077910cd100ce"
+    },
+    {
+      "path": "_shared/learn-processing-job.ts",
+      "sha256": "96a7ae373667fb389f95de543da10bc303b716613150df91b14474ddde15e01b"
+    },
+    {
+      "path": "_shared/learn-processing-request.ts",
+      "sha256": "2a3d113dc24cc2fb36880665e7a360d00c26696d7a88dec667bcdc33e600a541"
+    },
+    {
+      "path": "_shared/marketing_ai_prompt.ts",
+      "sha256": "e6444175fff12b00d25a5e96284a415a15e5e5fc4ac0fb2b1cb0f382ed6d5273"
+    },
+    {
+      "path": "_shared/marketing_email.ts",
+      "sha256": "d2452df2955e679b92a66264dbf9b3519b771cfdb63f7c6d48d3879504819ebf"
+    },
+    {
+      "path": "_shared/marketing_meta_adapter.ts",
+      "sha256": "a60dd3ee0b6162b9372bfde7c7f0e6d24f3ce3987a24c122a4a309c3de1a107e"
+    },
+    {
+      "path": "_shared/marketing_meta_fixtures.ts",
+      "sha256": "0dd7f12fa06a719ed92d83a888af0b12cc640f392b0c10950f2b68fbad94dea6"
+    },
+    {
+      "path": "_shared/marketing_provider_adapter_contract.ts",
+      "sha256": "fbfe9a487004c741655af3f128b373b5c6500ba17781a822ecda64c39726eac8"
+    },
+    {
+      "path": "_shared/marketing_provider_connections.ts",
+      "sha256": "155ad03dd0180c8683d68f2e7072b4350bd84356a21882b35408ff6ba95597cb"
+    },
+    {
+      "path": "_shared/marketing_test_provider.ts",
+      "sha256": "8ffeb0a4eef16ec3060d77bffd8931746ee7822ecd5f37118c2a2fb02cda0580"
+    },
+    {
+      "path": "_shared/marketing_tracking.ts",
+      "sha256": "87908cfc34a4f3b33027683666825bdfa0f38e39c89f0cedfb7b2154f13519d8"
+    },
+    {
+      "path": "_shared/microsoft_capture_engine.ts",
+      "sha256": "f3f4352909610119c925985b05811a8a096cbaeca1709990a976d4ba52df8f15"
+    },
+    {
+      "path": "_shared/microsoft_capture_handler.ts",
+      "sha256": "725b4a2de5a20180e8ef8043566109b6a71f7b884cca11380759409c73c77199"
+    },
+    {
+      "path": "_shared/microsoft_capture_job.ts",
+      "sha256": "4aefa47335fd875f0cb59e4d27cc654c5685b7b32138306f3c565a6afb6be59c"
+    },
+    {
+      "path": "_shared/microsoft_capture_ports.ts",
+      "sha256": "3c79d1668dabc21acaed8ab9812a2af962e7589834e53ebc1914df337042429d"
+    },
+    {
+      "path": "_shared/microsoft_graph_transport.ts",
+      "sha256": "924ad5540c6173dc0000f7e2184965f9af6f9cb4ef924b1b94c1d6c26ccdf420"
+    },
+    {
+      "path": "_shared/microsoft_mail_folders.ts",
+      "sha256": "d0547e23cf59812000a1633046cd9b22c17715e1a81e62367ed432997fd11740"
+    },
+    {
+      "path": "_shared/microsoft_mail_page.ts",
+      "sha256": "58906108406f4700d8b2ad370052fb0f6e7591dfd56d45f80bf2edc118254dc8"
+    },
+    {
+      "path": "_shared/microsoft_oauth.ts",
+      "sha256": "7fd359a2ca7c9c85be458e8aaf40d537913458460457ba1db1bd65a7b2199f42"
+    },
+    {
+      "path": "_shared/objective_evaluation_enqueue.ts",
+      "sha256": "070cf3983f1770128051e2605200b1d1bd90c096b51eeef15e0379517cad756c"
+    },
+    {
+      "path": "_shared/observation_ingest.ts",
+      "sha256": "92d1799abf2946406f8635bbac4c59b5272255e56bf6069eea3689cbf1622f5a"
+    },
+    {
+      "path": "_shared/openai.ts",
+      "sha256": "4758655db8e9cd8862f590db2c77fbe6ac95f5e50f86606c1b8f910ce7e30984"
+    },
+    {
+      "path": "_shared/phone_enrich.ts",
+      "sha256": "db81790909dc4b039ed08e91be4ceaec8999c332efe6698b8a22d028677fbace"
+    },
+    {
+      "path": "_shared/phone_intelligence/direction.ts",
+      "sha256": "457de006482b29ce89b5d772cccf769e6fe912ab19d2ac01e655c1e0c792bd4e"
+    },
+    {
+      "path": "_shared/phone_intelligence/loader.ts",
+      "sha256": "42ae0be6f0c2670417d21cbd2e7a0ac5308a234ea4c4830d5bec77b296f22ee1"
+    },
+    {
+      "path": "_shared/phone_intelligence/participants.ts",
+      "sha256": "4c3a14b19115b9673fcc79f69afda1355699028ddcf0104ad712e25be1c51570"
+    },
+    {
+      "path": "_shared/phone_intelligence/persist.ts",
+      "sha256": "505de575e88d748becec4736a7ea07c92b26e495b5285b6babc952c614a11b0b"
+    },
+    {
+      "path": "_shared/phone_intelligence/provider_adapter.ts",
+      "sha256": "0973e493e04bc2d338a2fc6453ad17f8ff421500c9fac1d4003d7b34a0d2e803"
+    },
+    {
+      "path": "_shared/phone_intelligence/spoken_name.ts",
+      "sha256": "f1ca5f55b73c67b724f9b8967ee34abef8c49cd7a1776fc4af07beaf621e2745"
+    },
+    {
+      "path": "_shared/phone_intelligence/vocabulary.ts",
+      "sha256": "c7707092cd7e35b1c89d10136d95aaeae0a65ee5467fa40adb2d9fa9202836a8"
+    },
+    {
+      "path": "_shared/phone_pipeline.ts",
+      "sha256": "742d8feb36f4ba6a141015c778d113e8a51290e593834f9ef19249ab70f08840"
+    },
+    {
+      "path": "_shared/phone-capture-guard.ts",
+      "sha256": "f766de6673e1d66d3b2421ea7163230876de80d1ec4e8556bcf249b8acef777b"
+    },
+    {
+      "path": "_shared/phone-derived-version.ts",
+      "sha256": "953edeb36c69e47845194c14543cd65b542d5f82fe270edb3c3631b60e1ea6ef"
+    },
+    {
+      "path": "_shared/phone-download-version.ts",
+      "sha256": "a6daf2d6fdd5e983281bb94e8c3a9107974b9a5e1d628d22fe385efb3f31c47b"
+    },
+    {
+      "path": "_shared/phone-import-completion.ts",
+      "sha256": "54b2ad6c2d5083697e9bdfd4c6390d49d512c3e357134f3dec35c9572ccae79e"
+    },
+    {
+      "path": "_shared/phone-insight-normalization.ts",
+      "sha256": "a18b142b2480cf1842623a6f75913ff5b38f58a3ec5c6b8a96b92186804dc2c4"
+    },
+    {
+      "path": "_shared/phone-page-publication.ts",
+      "sha256": "7d59fbfb1457127ab52c7eb5d18d88ba88264e2728b894c4a6b0c77f1eeae449"
+    },
+    {
+      "path": "_shared/phone-pipeline-completion.ts",
+      "sha256": "c8f7ba43c298b53ee2e2284066dbae172b7343682e0489533c173e758fe55c2b"
+    },
+    {
+      "path": "_shared/phone-recovery-job.ts",
+      "sha256": "0bf2013b4c30feb7c2570ea775750798926fba81c7e8a6e7339980219b261854"
+    },
+    {
+      "path": "_shared/phone-schedule-settlement.ts",
+      "sha256": "fd734e982a7d191fc2d995193cdc2f19d298a287f5a81ae1ca6d4b63b3ae8b55"
+    },
+    {
+      "path": "_shared/phone-sync-completeness.ts",
+      "sha256": "ba02cb0916e3c4988b7292a7cdaa46fe8a44f674caffc9829ac531ab619e994d"
+    },
+    {
+      "path": "_shared/platform_jobs.ts",
+      "sha256": "6c499709a650a3bb9a3fdec197606d4316fd46d58f2b5396dc3678bdf6561c53"
+    },
+    {
+      "path": "_shared/platform_queue.ts",
+      "sha256": "306f06edb96efff4d803999443cc21d884ddd73d9f552dea6e9c0fbd9dd31cd4"
+    },
+    {
+      "path": "_shared/recommendations.ts",
+      "sha256": "35bb427a49cffd7245207b59c4624d3a24f27eedec7452a837dc57a7f614b6b4"
+    },
+    {
+      "path": "_shared/reply_draft.ts",
+      "sha256": "430680765bca686b4f4243edbc7b3a58e9627bd4a97dc5469eae15c845ad53dc"
+    },
+    {
+      "path": "_shared/response_assistant.ts",
+      "sha256": "3e65d35842da8d2aba9aaabf3e9d4acda078dfa7ec905a3522a1004c3611d865"
+    },
+    {
+      "path": "_shared/response_context.ts",
+      "sha256": "81f8840e2c208fc27502b3f2ad498eea26892ba87fea7c8b33bdd917cf867323"
+    },
+    {
+      "path": "_shared/response_draft.ts",
+      "sha256": "bb28b3b3f1dc0d626c358835f4b8dd65cf370edd06bcea99f2b1b8971526168c"
+    },
+    {
+      "path": "_shared/response_proposal.ts",
+      "sha256": "ddbe5156384530cc8a32a942e81f905160b85d77138eba395c185e479e44f239"
+    },
+    {
+      "path": "_shared/response_refinement.ts",
+      "sha256": "a4a61ebfa764268f1d6f101b69abb07401a2a4ce0abd6c639cfd144923ee8ce1"
+    },
+    {
+      "path": "_shared/review_approval.ts",
+      "sha256": "98aab1671d63706818ea330bef8d3d074a013d348b398def7f6fc204bb3ce372"
+    },
+    {
+      "path": "_shared/simwood-account.ts",
+      "sha256": "7c2f2765fff18fbad677412499bf599d49959c6d262231f6587ea5f46a8051a0"
+    },
+    {
+      "path": "_shared/simwood.ts",
+      "sha256": "cebaeb015a988776991a273d2c6623a008c6ed01185d23298110aa6da66ac88b"
+    },
+    {
+      "path": "_shared/slack/slack_history_batch.ts",
+      "sha256": "1e4bf056e5d319c30445da1f1cf4bc7fbdb6a35684f382a330ab859bc9486702"
+    },
+    {
+      "path": "_shared/slack/slack_history_binding.ts",
+      "sha256": "678a3eb71cb538285d6350548730246c137d048c74ff5e7c514a68cd78a6a690"
+    },
+    {
+      "path": "_shared/slack/slack_history_errors.ts",
+      "sha256": "3afd89649418a8ac8ec0f9e6f57288358673c3e09faf29968a8bbc8b1c63a630"
+    },
+    {
+      "path": "_shared/slack/slack_history_persist.ts",
+      "sha256": "81b4dcd5a2efe728b403cfd2d2fa36b18d64569b0cbacb034ff809f808038f65"
+    },
+    {
+      "path": "_shared/slack/slack_history_request.ts",
+      "sha256": "8c5cd970ed1cc6627b4477851386900cb8032c2cc3ce6c2c749d88588df991d9"
+    },
+    {
+      "path": "_shared/slack/slack_history_server.ts",
+      "sha256": "0060d2ca8c3ed1c3261a8eaaed39a16aa623230f6053e6207b5a54899ca45b88"
+    },
+    {
+      "path": "_shared/slack/slack_history.ts",
+      "sha256": "d20101f8d320b4e82a462260685185065ec8d42e601e85c68747cba253201d1f"
+    },
+    {
+      "path": "_shared/slack/slack_recurring.ts",
+      "sha256": "d7dbad0f619e00aaf1d78d6c042545cec7593719207b1cbfafad727d03d64414"
+    },
+    {
+      "path": "_shared/slack/slack_thread_history.ts",
+      "sha256": "999e7c34266200ca8c349fe787268b1e511a9099ca9630c6321cdae0b5f5f531"
+    },
+    {
+      "path": "_shared/slack/slack_worker_http.ts",
+      "sha256": "ca5974311f14bdefa1ae9d778cdf2d5c905e5c916f638749ffd1b17aceeba77b"
+    },
+    {
+      "path": "_shared/slack/slack_worker.ts",
+      "sha256": "523ffafc258999257e75d5e3874b0b23e42a5cc50bcc7a232eefd6df0f21f382"
+    },
+    {
+      "path": "_shared/system_health.ts",
+      "sha256": "f50bd6aa7be86fbed2278627ea54418d2cd9ed2596d6b3f2962f338052d029ab"
+    },
+    {
+      "path": "_shared/telephony/caller_id_labels.ts",
+      "sha256": "de2b9d7fe65b215855b959365e61d2dd2a07181372e38537738b970f8fbeddf3"
+    },
+    {
+      "path": "_shared/telephony/capabilities.ts",
+      "sha256": "bc4aae502ea95496fa6c3ee59282edfa9e15dcd20d29a3591ff5de236a108acd"
+    },
+    {
+      "path": "_shared/transcription-errors.ts",
+      "sha256": "4864d0281b7536dbc0b4a084cfc26c9f2fd1312b6f461bf6a944ca69ab6d5364"
+    },
+    {
+      "path": "_shared/voicemail/bounded-json.ts",
+      "sha256": "08fa572b3768f604ec346c0c7c5cbd4f57707dc5f2194674ab139fdb9ad302c4"
+    },
+    {
+      "path": "_shared/voicemail/decode-audio.js",
+      "sha256": "7a85b89bf1f803573f86c7702e2fda6c0de9b6df097eb4a6a20484cada1fc7a3"
+    },
+    {
+      "path": "_shared/voicemail/discovery-tick.ts",
+      "sha256": "5209f5fe7d9d2b55672d638515914ce780ed2c5c33c57ba6496a6941ca316190"
+    },
+    {
+      "path": "_shared/voicemail/edge.js",
+      "sha256": "6f0740c6b4d71b0f92d089a2784f15171fc172170cab7cec9ac1f16bf22403cc"
+    },
+    {
+      "path": "_shared/voicemail/import-http.ts",
+      "sha256": "bbc154d881bc6af506642cb41c6f0b61cfe86276221984cbce9edc5fd456abf0"
+    },
+    {
+      "path": "_shared/voicemail/playback-http.ts",
+      "sha256": "1799e320843b59d1fe82fb096eaa3af16338f4f018983ff90ca5b4ddb9ee0edb"
+    },
+    {
+      "path": "_shared/voicemail/private-import.js",
+      "sha256": "23c8283f7467848e49dde08d12717624b1e6843724672b392294068796b20831"
+    },
+    {
+      "path": "_shared/voicemail/provider-keys.js",
+      "sha256": "6741731369a66d6d0d3cfbacc3fc299bf4dd5c073b8e489b189db49aef29eb53"
+    },
+    {
+      "path": "_shared/voicemail/queue.ts",
+      "sha256": "6bc853a52a71ef94a2fa370d0544ddff864e7ad527d5e4ffb3c2c60c1443bcbe"
+    },
+    {
+      "path": "_shared/voicemail/signed-source.js",
+      "sha256": "a357d261fe8536d156edd8f9de0e5c64e014bee464d66c510a5d188d900d29a5"
+    },
+    {
+      "path": "_shared/voicemail/workspace-import.ts",
+      "sha256": "dd6e3b398c7e63592f49fc5bb21b04004ebbffacdf98579d36eb2386500a5ea4"
+    },
+    {
+      "path": "_shared/work_authority.ts",
+      "sha256": "0d226cba2be589331ed77d64f4f60966113c3c37f34128ea471b68d040aafca2"
+    },
+    {
+      "path": "_shared/work_transition.ts",
+      "sha256": "58dd07c918a04f5448a003395a41d5eec713ea7841fd7a4bfc7d57145f3423eb"
+    },
+    {
+      "path": "_shared/worker_contract.ts",
+      "sha256": "20d18d70f9903ce0f68f07501cd219ff393fe749e5f96468bd3661dd82ab99ca"
+    },
+    {
+      "path": "_shared/worker_handlers/automation_execute.ts",
+      "sha256": "5998a9495d773efc01185d49eb54610d5630a79172b34c61f82b120613e3596b"
+    },
+    {
+      "path": "_shared/worker_handlers/business_graph_sync.ts",
+      "sha256": "15041e9a35e3a3bb0e44a517485ffc5fbab983b4561e0cd91c947f7226290e9f"
+    },
+    {
+      "path": "_shared/worker_handlers/customer_card_sync.ts",
+      "sha256": "a890fc3b1816a303aaf0b9e13aedfd74a4e3a4421c56be4f7768367b850a9a33"
+    },
+    {
+      "path": "_shared/worker_handlers/email_sync.ts",
+      "sha256": "8777b979ab2019345f8a017f769856d6d9bc8ea457c74ee3d43d068fae782b00"
+    },
+    {
+      "path": "_shared/worker_handlers/identity_resolve.ts",
+      "sha256": "03086947c939f579516e4171808b0cfddbceabdadff59142daa36a5d623f3e79"
+    },
+    {
+      "path": "_shared/worker_handlers/index.ts",
+      "sha256": "8641ad498f687856299dba75cb1dacf23cb99e97661737af6424b8c54a25bce7"
+    },
+    {
+      "path": "_shared/worker_handlers/intelligence_evaluate.ts",
+      "sha256": "5ac699573c49347d5e87149b67ba7cceb104b3c8482eb9720538a4178a4871d5"
+    },
+    {
+      "path": "_shared/worker_handlers/intelligence_ingest.ts",
+      "sha256": "98f5253dea3e1977b58f61affb958b4a82a954eb60a2945b4adc6e5be64514e3"
+    },
+    {
+      "path": "_shared/worker_handlers/intelligence_observe.ts",
+      "sha256": "92888719bc16e09856fbadcd5e230022cd14ee779522d6d0e90142771273122d"
+    },
+    {
+      "path": "_shared/worker_handlers/intelligence_review_resolve.ts",
+      "sha256": "d0a55ed2148e44062c2507a327611181a9f59f5df7608fca7cb5b2f7bee2b4cd"
+    },
+    {
+      "path": "_shared/worker_handlers/interactions_sync.ts",
+      "sha256": "21f8bb17a10d5fb04d3427401d8b1de8bd5be2728b05d6d87499c730a69ab8bd"
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_ad_lead.ts",
+      "sha256": "6b1e4311c0591ea51ba6a47156d813df491a1f1124c47f5bd5d0db8524bbe16b"
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_broadcast_dispatch.ts",
+      "sha256": "639a3e497ecc54fe18ee652a5093e7165ea79317a6b9646878f7398cdd38b810"
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_delivery_sync.ts",
+      "sha256": "c60090e88abe8de926d35e424316e196f4a091fcc90412b3449ac5febd18a0df"
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_provider_connect.ts",
+      "sha256": "9e2b0ef9d407927324372de596e4bd16153bf1fdd9242778bee30dc21e89a23c"
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_provider_sync.ts",
+      "sha256": "345b13b7fa91f01ae5a5958e17142bf7ff8683740f28c0f6b4e6996768b320da"
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_sequence_advance.ts",
+      "sha256": "059474bdadfd211c96ffa7e3b5c0732d73f0da4d026afe62aafa98aa231126c1"
+    },
+    {
+      "path": "_shared/worker_handlers/objective_evaluate.ts",
+      "sha256": "74d3d7156c359d940b61ad39a01faa124dfa1ad9e42fcd95474523600b290d56"
+    },
+    {
+      "path": "_shared/worker_handlers/phone_process_pending.ts",
+      "sha256": "6cf8d06e30d4ae205245f79cb62c5b9f707f6bebf1beffe01c3128d517b3a108"
+    },
+    {
+      "path": "_shared/worker_handlers/recommendation_sync.ts",
+      "sha256": "d59d17a21888b9a373057b8238f275e02740ada113ac16673bd97c90c06a87bf"
+    },
+    {
+      "path": "_shared/worker_handlers/slack_history.ts",
+      "sha256": "cc323858be18f22ceb1f289719f4e85dff728754b822eb43bc6d371de6661882"
+    },
+    {
+      "path": "customer-card-scheduled-sync/index.ts",
+      "sha256": "24ea41e32266175a272cb6b334f49f12fc46468b217ae5689f98fe5c3968007c"
+    },
+    {
+      "path": "customer-card-sync/index.ts",
+      "sha256": "69e24081201c5255f4cec79ecb26e4a9bfde4070746e7f9d34a597861c4c6580"
+    },
+    {
+      "path": "data-import/handler.ts",
+      "sha256": "b52c92cafbe123f083e9ccae94d8a34ca5d05756667f7a58897905018034ac6c"
+    },
+    {
+      "path": "email-scheduled-sync/index.ts",
+      "sha256": "2ae0361d318e86c8c4f2d8545cf8a464e8dedee925f1647b80c767ff8c69d2e8"
+    },
+    {
+      "path": "email-workspace-backfill-scheduled-sync/index.ts",
+      "sha256": "4aebacd71b73347d71881615997cc4be6c7087f9327b03042699e9d30442a99a"
+    },
+    {
+      "path": "email-workspace-scheduled-sync/index.ts",
+      "sha256": "e1ff9b1e82b876a3754b36e7381f98c55c7f4e1dd565d245035d0a7de1df9efd"
+    },
+    {
+      "path": "gmail-sync-messages/index.ts",
+      "sha256": "e1a044913e8c9016e9a12e3e2cdbdbd851c3393f1d267baf85218c1274eca88b"
+    },
+    {
+      "path": "gmail-workspace-backfill-messages/index.ts",
+      "sha256": "0ca979ca096e8efdeab6f3dd0cc958b616bf16a0b17127415650bcec715b6b8a"
+    },
+    {
+      "path": "gmail-workspace-sync-messages/index.ts",
+      "sha256": "7cf565077eff3fce0a775a0d1dc57bc0c8f45014cb89c5a796bd7fced4e92129"
+    },
+    {
+      "path": "google-workspace-discover-mailboxes/index.ts",
+      "sha256": "c6fd69b906603908a1aab73f8c2a25fd1e8c109a891c8a59cb110ccbdce20e3c"
+    },
+    {
+      "path": "identity-resolve/index.ts",
+      "sha256": "30dcdd5d43cee0163b47b8cf0c87792170538c38f59720c51079e6543e4d4e0e"
+    },
+    {
+      "path": "identity-scheduled-sync/index.ts",
+      "sha256": "0a03d5c6a0e881da0f46f9294a4beab6b99cf7409d93a41b31ebc223f46b072b"
+    },
+    {
+      "path": "interactions-scheduled-sync/index.ts",
+      "sha256": "8553674892e1dd94d58751833be513d6ff812618fd3ddd010553b12e5049ac15"
+    },
+    {
+      "path": "interactions-sync/index.ts",
+      "sha256": "7f0897e893d7286c9f8fc2fc7101f21bd2ef2268868f1a076b417fbfafc89b09"
+    },
+    {
+      "path": "learn-commusoft-verify/index.ts",
+      "sha256": "5cd273c2daf753be2c95ba099c0527b45df7e001575e8da0d1a7063b0ffb3950"
+    },
+    {
+      "path": "learn-commusoft-worker/index.ts",
+      "sha256": "ea31b5dc306ab0c74494fdbea9e63bf9b2ac19015c1585f0e4fca390151f17c6"
+    },
+    {
+      "path": "learn-data-import/index.ts",
+      "sha256": "d7625386b7b3046a35efe92e5439a549f4f946431605cb396fd07a3a6cb2436a"
+    },
+    {
+      "path": "learn-launch-status/handler.ts",
+      "sha256": "9d5d9488750cbc0c3d3439fd627e56d221a3469bfb4705dbb714e1db597991a6"
+    },
+    {
+      "path": "learn-launch-status/index.ts",
+      "sha256": "2d3abbe3d9d1097118e9bee36bfecd7244ddfc3a19c0de1001de1bc500522609"
+    },
+    {
+      "path": "learn-launch-status/linked-recordings.ts",
+      "sha256": "f53499b22c581d0489c1f42186a561b1942e97c49888d86291ebf9c196d39062"
+    },
+    {
+      "path": "learn-launch-status/read-mode.ts",
+      "sha256": "90a9702ed8b125db4ad171d01d5aeca72ef5867957fd0f77746a904081419277"
+    },
+    {
+      "path": "learn-operator-phone-playback/index.ts",
+      "sha256": "4a3797061e704afd1110025756a47a5a51d0355af5b7bdc866eb5f0c0f797ec6"
+    },
+    {
+      "path": "learn-phone-playback/index.ts",
+      "sha256": "da51976beebc700ff3817abab4ad7c1478fea2ad03e63aa9c42bf79fbf8e5ffb"
+    },
+    {
+      "path": "learn-slack-schedule/index.ts",
+      "sha256": "e53fef4413d9d9994af7e9b386299fec2a233b4d35a8d05284b4df3e1c99563d"
+    },
+    {
+      "path": "learn-slack-worker/index.ts",
+      "sha256": "32923324ccd7acbc6904a8fd7d91795e3f2c3659d4ad20145319b097af726f9d"
+    },
+    {
+      "path": "learn-voicemail-import/index.ts",
+      "sha256": "5a5729f3e8707fce3149b3b5b5fce237b527605fa555c3e856ce16560ac10fa4"
+    },
+    {
+      "path": "openfolk-control-plane/index.ts",
+      "sha256": "ed122f5d9c1fc4d135b18a2b3c2a61164c697626ab7eb21369de9ce41f4220fc"
+    },
+    {
+      "path": "phone-analyse-transcript/index.ts",
+      "sha256": "c3b24bca60482a0b731c086a6391734c158f22ba696af1c51200bd16f59c1f86"
+    },
+    {
+      "path": "phone-call-detail/index.ts",
+      "sha256": "3da41a5cc430e8a6cc505aa5cabc8ba523cf6b60a81751908b23d12ee6b44607"
+    },
+    {
+      "path": "phone-process-pending/index.ts",
+      "sha256": "79c4818e97b1a401006a9d3a5b23c7a47172c6e91aa151f13e88eda5848b3333"
+    },
+    {
+      "path": "phone-process-pipeline/index.ts",
+      "sha256": "983859165cf0255d8fefff70275f38773074e2867de302b5278c921170c142a4"
+    },
+    {
+      "path": "phone-processing-scheduled-sync/index.ts",
+      "sha256": "f1782149866e62e2b3c4f178d30e1cfd3843636d2607da2645d024b9da63b978"
+    },
+    {
+      "path": "phone-scheduled-sync/index.ts",
+      "sha256": "bdeff30bb931eb3b9722aec27d35ce64b19e771418865ad7e64298a9065417f6"
+    },
+    {
+      "path": "phone-transcribe-recording/index.ts",
+      "sha256": "9dcf70baa9b89b2193b87e3080395a67629ec783d9b566b7808b77a83ec9dc9d"
+    },
+    {
+      "path": "platform-worker/index.ts",
+      "sha256": "9598ba125001b1638ee50e3ac7a947ec4dfd425ea40cb3fced46ffbb65404c1e"
+    },
+    {
+      "path": "receptionist-voicemail-recording/index.ts",
+      "sha256": "764c7d4ad93a771b5439e5417e147475f5e05ba149fd5428395ebd66decdb879"
+    },
+    {
+      "path": "simwood-download-recording/index.ts",
+      "sha256": "45102b6bbc0723e7f80dd009836492b9daaab7bc9d79d77a90254d43bb1594f2"
+    },
+    {
+      "path": "simwood-sync-calls/index.ts",
+      "sha256": "f63fdf59e974cf31d9d4a5c25c2f2dbbf031d761504f7073dd4812d9bd051967"
+    },
+    {
+      "path": "simwood-sync-recordings/index.ts",
+      "sha256": "c55ca5013103396015c246550021c1f4a2d340d9847e4b7a0fb93ec79e15594a"
+    },
+    {
+      "path": "simwood-test-connection/index.ts",
+      "sha256": "93aee1d4f3c4ef459096efbfb83e6b64ed92dbd2ad5cfc834ea3be26e3a42e27"
+    },
+    {
+      "path": "work-transition/index.ts",
+      "sha256": "2529b78002403e8aa99d7f11d2208bc78246a609a6981919f0747442408313fb"
+    }
+  ],
+  "externalImports": [
+    "https://esm.sh/@supabase/supabase-js@2.45.4",
+    "jsr:@std/csv@1/parse",
+    "node:buffer",
+    "node:crypto",
+    "node:dns/promises",
+    "npm:mailauth@7.3.0/lib/dkim/verify.js",
+    "npm:mpg123-decoder@1.0.3",
+    "npm:postal-mime@4.0.5"
+  ],
+  "endpoints": [
+    {
+      "name": "customer-card-scheduled-sync",
+      "verifyJwt": false,
+      "sourceClosureSha256": "258574f8e08ecc1ece0787e614cc3689266b59b4a5d99b3f2e299a132f8779a3",
+      "sourceFiles": [
+        "_shared/learn_capture_control.ts",
+        "_shared/platform_queue.ts",
+        "_shared/simwood.ts",
+        "customer-card-scheduled-sync/index.ts"
+      ],
+      "environmentNames": [
+        "CARD_SYNC_SECRET",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "platform_jobs_claim",
+        "voicemail_queue_recover"
+      ],
+      "beforeProduction": {
+        "name": "customer-card-scheduled-sync",
+        "id": "9f0ebbe5-801f-4016-96af-82cab12d7112",
+        "version": 36,
+        "hash": "ad756e6ff60ff28af746b5717511efb10108a6d023b17bda76a888f856ef013f",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": null,
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "customer-card-sync",
+      "verifyJwt": true,
+      "sourceClosureSha256": "42ede5f1b009c926f7b15aa0f39137f892fd29531a11d872a5699bb9a0179778",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/customer_card.ts",
+        "_shared/platform_jobs.ts",
+        "_shared/simwood.ts",
+        "_shared/worker_contract.ts",
+        "_shared/worker_handlers/customer_card_sync.ts",
+        "customer-card-sync/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_card_projection_inputs"
+      ],
+      "beforeProduction": {
+        "name": "customer-card-sync",
+        "id": "73157669-33e2-4936-b7cc-17341b1ad6ec",
+        "version": 38,
+        "hash": "8c9a52977fdf4aba4dffc5e019943c03ad01df1e086e3e53db107dcf95d6f264",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "customer-card-sync",
+        "id": "2a8ef8c4-dfc5-4812-b973-0d24dab4d96e",
+        "version": 4,
+        "hash": "460279956deb366bdefcab9ace2c50e19f0f0f563318328bb7e831b4b8b8d452",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "email-scheduled-sync",
+      "verifyJwt": false,
+      "sourceClosureSha256": "f65ee83351ae43975ded416155e91180d5e24acccb67add9f4f5874692b8b9bb",
+      "sourceFiles": [
+        "_shared/email_scheduler_health.ts",
+        "_shared/learn_capture_control.ts",
+        "_shared/platform_queue.ts",
+        "email-scheduled-sync/index.ts"
+      ],
+      "environmentNames": [
+        "EMAIL_SCHEDULE_SECRET",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "platform_jobs_claim",
+        "voicemail_queue_recover"
+      ],
+      "beforeProduction": {
+        "name": "email-scheduled-sync",
+        "id": "bf06316b-2b54-4365-b095-9b08a9cb7e36",
+        "version": 46,
+        "hash": "7367f78977e0348ee8a7e9b79d57efa401ff41daf9c43350684b32858a4ea321",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "email-scheduled-sync",
+        "id": "ffa927b5-31d6-468c-8479-683562487c5d",
+        "version": 3,
+        "hash": "2d28ef020027a38fbdb57c9122e66fa9cefdbb201e6cf003ac28408f13765da5",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "email-workspace-backfill-scheduled-sync",
+      "verifyJwt": false,
+      "sourceClosureSha256": "faca9ac113f9abe469cf142b78f9c61cff3a430f0f943f7ba4ca71704ecabdc7",
+      "sourceFiles": [
+        "_shared/email_scheduler_health.ts",
+        "_shared/learn_capture_control.ts",
+        "_shared/platform_queue.ts",
+        "email-workspace-backfill-scheduled-sync/index.ts"
+      ],
+      "environmentNames": [
+        "EMAIL_WORKSPACE_BACKFILL_SECRET",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "platform_jobs_claim",
+        "voicemail_queue_recover"
+      ],
+      "beforeProduction": {
+        "name": "email-workspace-backfill-scheduled-sync",
+        "id": "e8270d4a-b9a0-40be-b372-0670b9cd016b",
+        "version": 41,
+        "hash": "f25590da4b82311cf74c8b0f64acec3256c77e707f3a6c994a99a88d4ca307d2",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "email-workspace-backfill-scheduled-sync",
+        "id": "e8e3cd9f-a246-41e0-9ec4-abd64820f131",
+        "version": 3,
+        "hash": "9a70199f3c8d0a60259044d34bb247589652f4bd65e382be42c8129a992cdeb2",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "email-workspace-scheduled-sync",
+      "verifyJwt": false,
+      "sourceClosureSha256": "3110b2d8af290f50f2f63a725e5c8fafe675de3612c9fcd5f5d4cfa32a5ee00a",
+      "sourceFiles": [
+        "_shared/email_scheduler_health.ts",
+        "_shared/learn_capture_control.ts",
+        "_shared/platform_queue.ts",
+        "email-workspace-scheduled-sync/index.ts"
+      ],
+      "environmentNames": [
+        "EMAIL_WORKSPACE_SCHEDULE_SECRET",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "platform_jobs_claim",
+        "voicemail_queue_recover"
+      ],
+      "beforeProduction": {
+        "name": "email-workspace-scheduled-sync",
+        "id": "eca37797-5496-46ea-9e95-622b256b50bc",
+        "version": 47,
+        "hash": "8244c6a94ff163391b4190e69fa05a721ed808b3e7dfc74e86d8e44fbfd4d216",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "email-workspace-scheduled-sync",
+        "id": "65b07f86-e45e-486d-ac1d-1ddb255bd717",
+        "version": 3,
+        "hash": "e6ca325a751617940bb493b8f19163cfa870fb79f8c86f2f212d5d38dbc0406d",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "gmail-sync-messages",
+      "verifyJwt": true,
+      "sourceClosureSha256": "55aea85adc386421b21e9841511041cd0b473b6ee157c252d962edbca476438b",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/email_enqueue.ts",
+        "gmail-sync-messages/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_email_enqueue"
+      ],
+      "beforeProduction": {
+        "name": "gmail-sync-messages",
+        "id": "2bec3b5a-c49f-49b9-86dd-7dd3834c7294",
+        "version": 46,
+        "hash": "ae60c396e74954a0a98ae462fefe141ab6ff371dff9524601dec1a23c0b6f92e",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "gmail-sync-messages",
+        "id": "9c569b87-e2a5-4b39-b2f8-21b529010b91",
+        "version": 6,
+        "hash": "471a62101bc8e61999a10911b9e98c3269a84570ebc827901667551d244c8f03",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "gmail-workspace-backfill-messages",
+      "verifyJwt": true,
+      "sourceClosureSha256": "ec0fe299c92c261695f6351b48120e402177330ebf1a9e95ab71e20048613058",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/email_enqueue.ts",
+        "gmail-workspace-backfill-messages/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_email_enqueue"
+      ],
+      "beforeProduction": {
+        "name": "gmail-workspace-backfill-messages",
+        "id": "555ee68f-f302-465b-84b6-24f1699a6b19",
+        "version": 37,
+        "hash": "d5015726556c6200aea40578eded776f45983629b14c5eca1e55d7f47d67dc9b",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "gmail-workspace-backfill-messages",
+        "id": "bc8c02cc-7cf7-45d0-84d6-3c655c96d2f9",
+        "version": 6,
+        "hash": "cfaed66a2d8596715b1adabede308877a84da5a805fdf7140eb95c812d4a7814",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "gmail-workspace-sync-messages",
+      "verifyJwt": true,
+      "sourceClosureSha256": "355fae2cf94c10852bd123dde7f19cae612bdde3be065a403dfad1eb41dbf50d",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/email_enqueue.ts",
+        "gmail-workspace-sync-messages/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_email_enqueue"
+      ],
+      "beforeProduction": {
+        "name": "gmail-workspace-sync-messages",
+        "id": "4dd1aec2-2a78-44d7-af39-999dec151acb",
+        "version": 45,
+        "hash": "251f4dd4503ac4d1ea0692f11e10f584093fbb175007216f431397f802d0f7ce",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "gmail-workspace-sync-messages",
+        "id": "e2e01269-ff54-433b-8321-1bd8793d2b82",
+        "version": 6,
+        "hash": "a88aadd4060883e7011d922a04f78afb60a5007f8da56a77cd1734b4f2b56bf9",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "google-workspace-discover-mailboxes",
+      "verifyJwt": true,
+      "sourceClosureSha256": "67d3a4192c4494b3994c6e34045fdc50c552ab8131d0080588e8d13366cbe1b0",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/google_workspace.ts",
+        "_shared/learn_capture_control.ts",
+        "google-workspace-discover-mailboxes/index.ts"
+      ],
+      "environmentNames": [
+        "GOOGLE_WORKSPACE_CLIENT_EMAIL",
+        "GOOGLE_WORKSPACE_CLIENT_ID",
+        "GOOGLE_WORKSPACE_PRIVATE_KEY",
+        "SERVICEOS_INTERNAL_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job"
+      ],
+      "beforeProduction": {
+        "name": "google-workspace-discover-mailboxes",
+        "id": "f37def0b-2345-439b-af2e-29b439a2ee44",
+        "version": 44,
+        "hash": "be17fa6b5554585450b030998a0263c09d692c5dd0d3c0d8a5a0e6efd04c944b",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "google-workspace-discover-mailboxes",
+        "id": "1cce877b-3e92-492e-8a33-7bb276c1d802",
+        "version": 5,
+        "hash": "3a29c2bcd3a8d9dc182a9d3e8f82e9814bfc0a70b72dd0bb418000bf73228847",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "identity-resolve",
+      "verifyJwt": true,
+      "sourceClosureSha256": "1fcdad1c7d878736d467e147d6568b2210518b8136be6cf33656682290bbba24",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/learn-processing-request.ts",
+        "_shared/platform_jobs.ts",
+        "_shared/simwood.ts",
+        "identity-resolve/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [],
+      "beforeProduction": {
+        "name": "identity-resolve",
+        "id": "f9fc05ea-f21d-4001-ba85-34ae7f26ba20",
+        "version": 39,
+        "hash": "19b21b794c1525d909c739ccf49d32911a642e5bc5c0591de055fa0f4b010a35",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "identity-resolve",
+        "id": "145d45a5-e0df-4d40-9683-a40ca7ca5374",
+        "version": 3,
+        "hash": "784939b03247f88696b4ca960a519341733ed725c72ec4d1dd10b11237e42397",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "identity-scheduled-sync",
+      "verifyJwt": false,
+      "sourceClosureSha256": "c031c4087b1071a9c13f40fd5c745d422f581d8d81c8539473a2ab5d032c684b",
+      "sourceFiles": [
+        "_shared/learn_capture_control.ts",
+        "_shared/platform_queue.ts",
+        "_shared/simwood.ts",
+        "identity-scheduled-sync/index.ts"
+      ],
+      "environmentNames": [
+        "IDENTITY_SYNC_SECRET",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "platform_jobs_claim",
+        "voicemail_queue_recover"
+      ],
+      "beforeProduction": {
+        "name": "identity-scheduled-sync",
+        "id": "a6517c1f-3c19-4407-be11-54e80b70b4fd",
+        "version": 37,
+        "hash": "1384bff27c2ee023785c062d16284ea9d8e205ab2755006641d8e3dd7ecb71a3",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": null,
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "interactions-scheduled-sync",
+      "verifyJwt": false,
+      "sourceClosureSha256": "e57b2be5979ce74736bd34051ff2cd3bc3280e9c3854918ad95923498d69363d",
+      "sourceFiles": [
+        "_shared/learn_capture_control.ts",
+        "_shared/platform_queue.ts",
+        "_shared/simwood.ts",
+        "interactions-scheduled-sync/index.ts"
+      ],
+      "environmentNames": [
+        "SIGNAL_SYNC_SECRET",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "platform_jobs_claim",
+        "voicemail_queue_recover"
+      ],
+      "beforeProduction": {
+        "name": "interactions-scheduled-sync",
+        "id": "1e06d6b2-5d2d-4118-a9f9-bab05a181d6e",
+        "version": 38,
+        "hash": "a001d92e0ec8ccf21c7d3236217b3ae82e2272497217e549ced730e8f57b1023",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": null,
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "interactions-sync",
+      "verifyJwt": true,
+      "sourceClosureSha256": "d2e5127803f469f6913143d652c0ab4a635a8da25afcbb8d1074df1ce413946a",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/learn-processing-request.ts",
+        "_shared/platform_jobs.ts",
+        "_shared/simwood.ts",
+        "interactions-sync/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [],
+      "beforeProduction": {
+        "name": "interactions-sync",
+        "id": "55dc99dc-5d94-4aef-9a3b-bc2d270781e8",
+        "version": 37,
+        "hash": "607f5a7ff02557850182edb46c5f2a428749705fb5031e6c6f131e189bf0efbe",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "interactions-sync",
+        "id": "9014a82d-b3be-4c3a-a19e-1ecd85e20386",
+        "version": 3,
+        "hash": "b05a5887a12953922ceb8d59240f180f5bef57617b743b978479c8a1572ce809",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "learn-commusoft-verify",
+      "verifyJwt": true,
+      "sourceClosureSha256": "ad593549ffa4917272c0dadcfe201a31a76605e59745c5682b613f233e22c785",
+      "sourceFiles": [
+        "_shared/commusoft/read_page.ts",
+        "_shared/commusoft/verification_contract.ts",
+        "_shared/commusoft/verification_http.ts",
+        "_shared/commusoft/verify_connection.ts",
+        "learn-commusoft-verify/index.ts"
+      ],
+      "environmentNames": [
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_commusoft_verify_acquire",
+        "learn_commusoft_verify_authorized",
+        "learn_commusoft_verify_finish",
+        "learn_commusoft_verify_request"
+      ],
+      "beforeProduction": null,
+      "hostedTestReference": {
+        "name": "learn-commusoft-verify",
+        "id": "1c60f3b8-eeda-4c3b-9743-74eabb9dda61",
+        "version": 6,
+        "hash": "3d21e74c55190a4b332a818a2e66b064701a38c5ccca7109be1eea1dce01e194",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": null,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "learn-commusoft-worker",
+      "verifyJwt": true,
+      "sourceClosureSha256": "09aa4349380bfbea7fbd38b484ede717b308433f36f3063eeea42ee57edb1d0e",
+      "sourceFiles": [
+        "_shared/commusoft/bound_page.ts",
+        "_shared/commusoft/page_store.ts",
+        "_shared/commusoft/permit_server.ts",
+        "_shared/commusoft/read_page.ts",
+        "_shared/commusoft/stored_scope.ts",
+        "_shared/commusoft/worker.ts",
+        "_shared/slack/slack_worker_http.ts",
+        "learn-commusoft-worker/index.ts"
+      ],
+      "environmentNames": [
+        "LEARN_COMMUSOFT_WORKER_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_commusoft_acquire_page",
+        "learn_commusoft_claim_jobs",
+        "learn_commusoft_commit_page",
+        "learn_commusoft_committed_page",
+        "learn_commusoft_defer_page",
+        "learn_commusoft_finish_job"
+      ],
+      "beforeProduction": null,
+      "hostedTestReference": {
+        "name": "learn-commusoft-worker",
+        "id": "c37a06f6-3939-4e68-bdbf-2bd78f6869c2",
+        "version": 8,
+        "hash": "c07750cef88ffb84ee5107592c42fe920eb011daef1f8a5286c7fe22b7803961",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": null,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "learn-data-import",
+      "verifyJwt": true,
+      "sourceClosureSha256": "7d48f3d602b04d08939902ed3e93cd7b8c173d82d3d7d9d431f2f49fd0ca5e36",
+      "sourceFiles": [
+        "_shared/audit.ts",
+        "_shared/authz.ts",
+        "_shared/imports/batches.ts",
+        "_shared/imports/job_number.ts",
+        "_shared/imports/matching.ts",
+        "_shared/imports/profile.ts",
+        "_shared/imports/redact.ts",
+        "_shared/imports/row_failure.ts",
+        "_shared/simwood.ts",
+        "data-import/handler.ts",
+        "learn-data-import/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "import_row_outcome",
+        "import_run_finalize",
+        "learn_import_apply_batch",
+        "learn_import_match_batch",
+        "marketing_effective_permissions",
+        "marketing_event_append",
+        "marketing_import_contact_row",
+        "marketing_import_finalize",
+        "marketing_import_match_contact",
+        "marketing_import_row_outcome"
+      ],
+      "beforeProduction": null,
+      "hostedTestReference": {
+        "name": "learn-data-import",
+        "id": "c21e3607-5680-4b67-9c51-0567a100f899",
+        "version": 7,
+        "hash": "08f44653b8cadc1bde8c68ef57440e76d818fb486fd325dd86bf1d54becfe1df",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": null,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "learn-launch-status",
+      "verifyJwt": true,
+      "sourceClosureSha256": "619a048ca9173964629b697a295faf7f2e4539726d104b38b85e5bafe2b2d3c2",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "learn-launch-status/handler.ts",
+        "learn-launch-status/index.ts",
+        "learn-launch-status/linked-recordings.ts",
+        "learn-launch-status/read-mode.ts"
+      ],
+      "environmentNames": [
+        "LEARN_STATUS_READ_MODE",
+        "SERVICEOS_INTERNAL_KEY",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [],
+      "beforeProduction": null,
+      "hostedTestReference": {
+        "name": "learn-launch-status",
+        "id": "76b95b44-411c-4844-ad3d-92933e73ee52",
+        "version": 6,
+        "hash": "854d6165869638b1c3c97c8e02f14e14b2719f770c2045ee68bf85c03f8257af",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": null,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "learn-operator-phone-playback",
+      "verifyJwt": true,
+      "sourceClosureSha256": "df69851b8f3951876cd00895473dfda0cb240cfc1cf72f95889f7d4d52f9e55e",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/learn-phone-playback.ts",
+        "learn-operator-phone-playback/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [],
+      "beforeProduction": null,
+      "hostedTestReference": {
+        "name": "learn-operator-phone-playback",
+        "id": "ecc4b635-903d-4bbf-86e4-81ff901467f3",
+        "version": 1,
+        "hash": "29891d0f2d943ac14e08312c9a050827cc068790d1bc333540f77d35a6e4ddcf",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": null,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "learn-phone-playback",
+      "verifyJwt": true,
+      "sourceClosureSha256": "eb099679075ff8d57f222d4f7a79e7bc4d71df8d955d2f09a59420fb76ca4b0c",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/learn-phone-playback.ts",
+        "learn-phone-playback/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [],
+      "beforeProduction": null,
+      "hostedTestReference": {
+        "name": "learn-phone-playback",
+        "id": "055ff348-2024-4f1a-acaf-0d97b2dc60b2",
+        "version": 3,
+        "hash": "7f7ec5738cf6845b8e4ffbcb4ec45ee0ce25020742a6bf9efecb54fd8c591f67",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": null,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "learn-slack-schedule",
+      "verifyJwt": true,
+      "sourceClosureSha256": "bb84ca48755520f67b50b6ec1b7dac01119212b61428c79240735d62dcae679b",
+      "sourceFiles": [
+        "_shared/slack/slack_recurring.ts",
+        "_shared/slack/slack_worker_http.ts",
+        "learn-slack-schedule/index.ts"
+      ],
+      "environmentNames": [
+        "LEARN_SLACK_WORKER_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_slack_schedule_recurring"
+      ],
+      "beforeProduction": null,
+      "hostedTestReference": {
+        "name": "learn-slack-schedule",
+        "id": "355e705d-987c-400f-bba4-fe5d24dff450",
+        "version": 3,
+        "hash": "f95c2be6426996861434006c7cb964e862ce9653a24e41a274b31dd23dac3e1f",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": null,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "learn-slack-worker",
+      "verifyJwt": true,
+      "sourceClosureSha256": "2933be3b2419cc65d1b1125a37a33ec22d532ae53a36302b59deac3df469bb94",
+      "sourceFiles": [
+        "_shared/learn_capture_control.ts",
+        "_shared/slack/slack_history_batch.ts",
+        "_shared/slack/slack_history_binding.ts",
+        "_shared/slack/slack_history_errors.ts",
+        "_shared/slack/slack_history_persist.ts",
+        "_shared/slack/slack_history_request.ts",
+        "_shared/slack/slack_history_server.ts",
+        "_shared/slack/slack_history.ts",
+        "_shared/slack/slack_thread_history.ts",
+        "_shared/slack/slack_worker_http.ts",
+        "_shared/slack/slack_worker.ts",
+        "_shared/worker_contract.ts",
+        "_shared/worker_handlers/slack_history.ts",
+        "learn-slack-worker/index.ts"
+      ],
+      "environmentNames": [
+        "LEARN_SLACK_WORKER_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "learn_slack_claim_jobs",
+        "learn_slack_recurring_thread_allowed"
+      ],
+      "beforeProduction": null,
+      "hostedTestReference": {
+        "name": "learn-slack-worker",
+        "id": "bd55f2b9-77da-4427-92bf-59d2e27d744e",
+        "version": 10,
+        "hash": "5285ad03e91016eaf8111964e2094e85072608ac81fa21499faa1d61bf0feb35",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": null,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "learn-voicemail-import",
+      "verifyJwt": false,
+      "sourceClosureSha256": "79ccc7012ecaa8e2f33558869e04812e2c0a2c77f7254eb10d712e944d58415a",
+      "sourceFiles": [
+        "_shared/birchills_voicemail_email.ts",
+        "_shared/email_capture_engine.ts",
+        "_shared/email_capture_ports.ts",
+        "_shared/email_ingestion_outbox.ts",
+        "_shared/email_ingestion_protocol.ts",
+        "_shared/email_job_attempt.ts",
+        "_shared/gmail_capture_page.ts",
+        "_shared/gmail_consent.ts",
+        "_shared/gmail_message.ts",
+        "_shared/gmail_oauth.ts",
+        "_shared/gmail_page_store.ts",
+        "_shared/google_workspace.ts",
+        "_shared/learn_capture_control.ts",
+        "_shared/marketing_email.ts",
+        "_shared/simwood.ts",
+        "_shared/voicemail/bounded-json.ts",
+        "_shared/voicemail/decode-audio.js",
+        "_shared/voicemail/edge.js",
+        "_shared/voicemail/import-http.ts",
+        "_shared/voicemail/private-import.js",
+        "_shared/voicemail/provider-keys.js",
+        "_shared/voicemail/signed-source.js",
+        "_shared/voicemail/workspace-import.ts",
+        "learn-voicemail-import/index.ts"
+      ],
+      "environmentNames": [
+        "GMAIL_OAUTH_SCOPE_MODE",
+        "GMAIL_OAUTH_STATE_SECRET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GOOGLE_REDIRECT_URI",
+        "GOOGLE_WORKSPACE_CLIENT_EMAIL",
+        "GOOGLE_WORKSPACE_CLIENT_ID",
+        "GOOGLE_WORKSPACE_PRIVATE_KEY",
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "email_ingestion_transition_result_v2",
+        "email_ingestion_transition_v2",
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "learn_email_job_attempt",
+        "learn_email_transition_apply",
+        "learn_email_transition_pending",
+        "learn_email_transition_prepare",
+        "platform_jobs_complete_email_v1",
+        "voicemail_intake_route"
+      ],
+      "beforeProduction": null,
+      "hostedTestReference": {
+        "name": "learn-voicemail-import",
+        "id": "5934333d-5c9a-425a-90f7-255e77cf1578",
+        "version": 4,
+        "hash": "187a6572512e75b7bd18c7596c698496f67edf6209e466965f4baa9797eb4075",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": null,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "openfolk-control-plane",
+      "verifyJwt": false,
+      "sourceClosureSha256": "2ae3d36d9ab0c8e371febcf9490f6ed429363f61ca4a8bc303181d9b9cb7f9c1",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/controlplane/authz.ts",
+        "_shared/controlplane/comm_relevance.ts",
+        "_shared/controlplane/connection_inventory.ts",
+        "_shared/controlplane/discovery_history.ts",
+        "_shared/controlplane/discovery.ts",
+        "_shared/controlplane/health.ts",
+        "_shared/controlplane/identity_inventory.ts",
+        "_shared/controlplane/identity_resolution.ts",
+        "_shared/controlplane/identity_v1.ts",
+        "_shared/controlplane/inventory.ts",
+        "_shared/controlplane/learning_centre.ts",
+        "_shared/controlplane/ownership_inventory.ts",
+        "_shared/controlplane/projection.ts",
+        "_shared/controlplane/readiness.ts",
+        "_shared/controlplane/resolver.ts",
+        "_shared/controlplane/roster.ts",
+        "_shared/controlplane/store.ts",
+        "_shared/controlplane/telephony_discovery.ts",
+        "_shared/controlplane/telephony_identity.ts",
+        "_shared/controlplane/telephony_validation.ts",
+        "_shared/telephony/caller_id_labels.ts",
+        "_shared/telephony/capabilities.ts",
+        "openfolk-control-plane/index.ts"
+      ],
+      "environmentNames": [
+        "IDENTITY_CONFIRMATION_ENABLED",
+        "OPENFOLK_CONTROLPLANE_KEY",
+        "SERVICEOS_INTERNAL_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "cp_upsert_endpoint",
+        "delegated_task_issue",
+        "delegated_task_revoke"
+      ],
+      "beforeProduction": {
+        "name": "openfolk-control-plane",
+        "id": "3326897e-9099-4836-a576-f3e65a0a9a79",
+        "version": 25,
+        "hash": "c39aade1fae8211a9e444ca90b73c35be34eafa3c52d5fee26dea576f2c42368",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "openfolk-control-plane",
+        "id": "786126c1-55e8-4fe4-b079-b197063ae6a2",
+        "version": 10,
+        "hash": "1fd6bd45343864ff44be1036a671f9381fad9cbb5b69f3db5847e4bd1be6f332",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "phone-analyse-transcript",
+      "verifyJwt": true,
+      "sourceClosureSha256": "6cd8c1dd0eacfe3ff8fb3b10fa41ed89e776f78ae2d883ef5fe5c7aa4e182622",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/openai.ts",
+        "_shared/phone_intelligence/direction.ts",
+        "_shared/phone_intelligence/loader.ts",
+        "_shared/phone_intelligence/participants.ts",
+        "_shared/phone_intelligence/persist.ts",
+        "_shared/phone_intelligence/provider_adapter.ts",
+        "_shared/phone_intelligence/spoken_name.ts",
+        "_shared/phone_intelligence/vocabulary.ts",
+        "_shared/phone-derived-version.ts",
+        "_shared/phone-insight-normalization.ts",
+        "_shared/simwood.ts",
+        "_shared/system_health.ts",
+        "_shared/transcription-errors.ts",
+        "phone-analyse-transcript/index.ts"
+      ],
+      "environmentNames": [
+        "OPENAI_ANALYSIS_MODEL",
+        "OPENAI_API_KEY",
+        "OPENAI_TRANSCRIPTION_MODEL",
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_phone_derived_attempt",
+        "serviceos_record_health_check"
+      ],
+      "beforeProduction": {
+        "name": "phone-analyse-transcript",
+        "id": "a6c2c239-bbe5-4cad-82c4-ed35da839577",
+        "version": 51,
+        "hash": "9547ca00d0a0c02105804a7c51a7f1a275c68897d7e365e8d4d1b229088433fa",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "phone-analyse-transcript",
+        "id": "55dcf101-bbb9-45d7-8a30-cbf9da5e1823",
+        "version": 3,
+        "hash": "b9c91ecbbc96f9bf78e072d30781d5ae9b94a8c02a75923889fd84d1654f7885",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "phone-call-detail",
+      "verifyJwt": true,
+      "sourceClosureSha256": "d5c27a9361382a955b4683c90c908174a9ace11e33c2de61d9ee133bbce115c5",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/simwood.ts",
+        "phone-call-detail/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [],
+      "beforeProduction": {
+        "name": "phone-call-detail",
+        "id": "90920775-1b84-466c-a0a3-0ed545d9223b",
+        "version": 14,
+        "hash": "163fce48361973028b38a488d02ef7c7b2689c079c6c462f748a4c46a4d8795b",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "phone-call-detail",
+        "id": "a21d1085-8e0e-4135-a180-c939710f6f25",
+        "version": 3,
+        "hash": "3c25da4df4ede6d58d6b6c6fbed2732f3af66deb90e282d10be66eca2d38dbdc",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "phone-process-pending",
+      "verifyJwt": true,
+      "sourceClosureSha256": "24b3660357493a667ee013f8782e59428207b0a0b1e69d24cfef046df92e447c",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/learn_capture_control.ts",
+        "_shared/phone_pipeline.ts",
+        "_shared/phone-recovery-job.ts",
+        "_shared/platform_jobs.ts",
+        "_shared/platform_queue.ts",
+        "_shared/simwood.ts",
+        "_shared/worker_contract.ts",
+        "_shared/worker_handlers/phone_process_pending.ts",
+        "phone-process-pending/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "phone_select_pending",
+        "platform_jobs_claim",
+        "voicemail_queue_recover"
+      ],
+      "beforeProduction": {
+        "name": "phone-process-pending",
+        "id": "78ca2b3d-f24a-41a5-964b-e8eb4a666c44",
+        "version": 41,
+        "hash": "9d4f610217f8454c3a9737d2ffeac4b47f9edc335775ffb28f3459e3fac45840",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "phone-process-pending",
+        "id": "71a485e4-cd77-464c-a722-dd398a6b0f07",
+        "version": 4,
+        "hash": "02355e917a82448ec62f2508b9a4bcac5fc78594bf663cf506cfdc6356e34dc1",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "phone-process-pipeline",
+      "verifyJwt": true,
+      "sourceClosureSha256": "376e63f6670a57de381d9e0c2d1c204d1bb0c3749e7f084bd58f2d7016dee4a2",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/learn_capture_control.ts",
+        "_shared/phone_enrich.ts",
+        "_shared/phone_pipeline.ts",
+        "_shared/phone-pipeline-completion.ts",
+        "_shared/simwood.ts",
+        "phone-process-pipeline/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "learn_phone_handoff"
+      ],
+      "beforeProduction": {
+        "name": "phone-process-pipeline",
+        "id": "eccef4b8-a33d-4ab5-b90f-77bd903a41dc",
+        "version": 56,
+        "hash": "3b9d9ca3f12b4a819a15647d234cdf1e4f6f1599c28996b565c18bdff8c03614",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "phone-process-pipeline",
+        "id": "a98fd995-2845-4c21-99e2-181c42a6b144",
+        "version": 4,
+        "hash": "cf5a5180ede36159acf78d02517655bd6a117d41d879f48ee79d815c5dc3f253",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "phone-processing-scheduled-sync",
+      "verifyJwt": false,
+      "sourceClosureSha256": "4728b0c01ea79401f2cd271ec3a58785234aca1bc50b6b817ce1cbde42d6969b",
+      "sourceFiles": [
+        "_shared/learn_capture_control.ts",
+        "_shared/platform_queue.ts",
+        "_shared/simwood.ts",
+        "phone-processing-scheduled-sync/index.ts"
+      ],
+      "environmentNames": [
+        "PHONE_PROCESSING_SECRET",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "platform_jobs_claim",
+        "voicemail_queue_recover"
+      ],
+      "beforeProduction": {
+        "name": "phone-processing-scheduled-sync",
+        "id": "d63ced7d-3657-4e8b-9106-6fd35a8ebeef",
+        "version": 39,
+        "hash": "c738df80adf79674081bfc9a9df6c649c59cee5f7162a176a272570a1ef8a9f4",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": null,
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "phone-scheduled-sync",
+      "verifyJwt": false,
+      "sourceClosureSha256": "427143988a5b49b03c48b1a5cb32290241cfc8bec15365f98401f8f816d08786",
+      "sourceFiles": [
+        "_shared/learn_capture_control.ts",
+        "_shared/phone_pipeline.ts",
+        "_shared/phone-schedule-settlement.ts",
+        "_shared/phone-sync-completeness.ts",
+        "_shared/platform_jobs.ts",
+        "_shared/simwood.ts",
+        "phone-scheduled-sync/index.ts"
+      ],
+      "environmentNames": [
+        "PHONE_SCHEDULE_SECRET",
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "learn_phone_settle_schedule"
+      ],
+      "beforeProduction": {
+        "name": "phone-scheduled-sync",
+        "id": "31bd7a05-ddc7-4798-9731-2bb4f952b912",
+        "version": 49,
+        "hash": "cc53415ae17dda34e1a63b16c22cd76386e202ea3f4a61be148a8aebd4fee107",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "phone-scheduled-sync",
+        "id": "864ce202-d5a3-43aa-8e7a-52428891d695",
+        "version": 3,
+        "hash": "5edd50721e802aec39a50f85c80146aa5bfa6a37d1340f7d7285b77b5ccc4964",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "phone-transcribe-recording",
+      "verifyJwt": true,
+      "sourceClosureSha256": "9e016ec0ecdcb9ab0ac402d9a45579d171ed032248dbd9415be0500b0b5be71c",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/openai.ts",
+        "_shared/phone-derived-version.ts",
+        "_shared/simwood.ts",
+        "_shared/transcription-errors.ts",
+        "phone-transcribe-recording/index.ts"
+      ],
+      "environmentNames": [
+        "OPENAI_ANALYSIS_MODEL",
+        "OPENAI_API_KEY",
+        "OPENAI_TRANSCRIPTION_MODEL",
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_phone_derived_attempt"
+      ],
+      "beforeProduction": {
+        "name": "phone-transcribe-recording",
+        "id": "2499c67b-593e-4910-a1a6-481a6a682a86",
+        "version": 50,
+        "hash": "b9be4a49d4aeab0128cb6f053121d68417e5a7bf39c1a0480f6eb0c8ed547d64",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "phone-transcribe-recording",
+        "id": "74474e8b-cdd6-44c6-a7ef-324ed60f34e0",
+        "version": 3,
+        "hash": "b1918796e85453c5c6b9f8d209b7f39bc7b19cb6854d90ccb4f9ed6695cec02d",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "platform-worker",
+      "verifyJwt": false,
+      "sourceClosureSha256": "d63276fd0c5e330d64c31f0fd9261a3e717bb24aca9d6772cd2a22967b4a3d8b",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/automation_execution_enqueue.ts",
+        "_shared/birchills_voicemail_email.ts",
+        "_shared/business_graph.ts",
+        "_shared/connectors/controlled_test.ts",
+        "_shared/connectors/email_reply_draft.ts",
+        "_shared/connectors/index.ts",
+        "_shared/connectors/internal_note.ts",
+        "_shared/connectors/marketing_actions.ts",
+        "_shared/connectors/marketing_ai_draft.ts",
+        "_shared/connectors/marketing_email.ts",
+        "_shared/connectors/resend_transport.ts",
+        "_shared/customer_card.ts",
+        "_shared/email_capture_engine.ts",
+        "_shared/email_capture_handler.ts",
+        "_shared/email_capture_ports.ts",
+        "_shared/email_ingestion_outbox.ts",
+        "_shared/email_ingestion_protocol.ts",
+        "_shared/email_job_attempt.ts",
+        "_shared/gmail_capture_page.ts",
+        "_shared/gmail_consent.ts",
+        "_shared/gmail_message.ts",
+        "_shared/gmail_oauth.ts",
+        "_shared/gmail_page_store.ts",
+        "_shared/google_workspace.ts",
+        "_shared/intelligence/action.ts",
+        "_shared/intelligence/authority.ts",
+        "_shared/intelligence/automation_guards.ts",
+        "_shared/intelligence/decision.ts",
+        "_shared/intelligence/eligibility.ts",
+        "_shared/intelligence/learning.ts",
+        "_shared/intelligence/modes.ts",
+        "_shared/intelligence/objective_evaluation.ts",
+        "_shared/intelligence/objectives.ts",
+        "_shared/intelligence/policy.ts",
+        "_shared/intelligence/profile.ts",
+        "_shared/intelligence/reason_codes.ts",
+        "_shared/intelligence/types.ts",
+        "_shared/learn_capture_control.ts",
+        "_shared/learn-processing-job.ts",
+        "_shared/marketing_ai_prompt.ts",
+        "_shared/marketing_email.ts",
+        "_shared/marketing_meta_adapter.ts",
+        "_shared/marketing_meta_fixtures.ts",
+        "_shared/marketing_provider_adapter_contract.ts",
+        "_shared/marketing_provider_connections.ts",
+        "_shared/marketing_test_provider.ts",
+        "_shared/marketing_tracking.ts",
+        "_shared/microsoft_capture_engine.ts",
+        "_shared/microsoft_capture_handler.ts",
+        "_shared/microsoft_capture_job.ts",
+        "_shared/microsoft_capture_ports.ts",
+        "_shared/microsoft_graph_transport.ts",
+        "_shared/microsoft_mail_folders.ts",
+        "_shared/microsoft_mail_page.ts",
+        "_shared/microsoft_oauth.ts",
+        "_shared/objective_evaluation_enqueue.ts",
+        "_shared/observation_ingest.ts",
+        "_shared/openai.ts",
+        "_shared/phone_pipeline.ts",
+        "_shared/phone-recovery-job.ts",
+        "_shared/platform_queue.ts",
+        "_shared/recommendations.ts",
+        "_shared/reply_draft.ts",
+        "_shared/response_assistant.ts",
+        "_shared/response_context.ts",
+        "_shared/response_draft.ts",
+        "_shared/response_proposal.ts",
+        "_shared/response_refinement.ts",
+        "_shared/review_approval.ts",
+        "_shared/simwood.ts",
+        "_shared/slack/slack_history_batch.ts",
+        "_shared/slack/slack_history_binding.ts",
+        "_shared/slack/slack_history_errors.ts",
+        "_shared/slack/slack_history_persist.ts",
+        "_shared/slack/slack_history_request.ts",
+        "_shared/slack/slack_history_server.ts",
+        "_shared/slack/slack_history.ts",
+        "_shared/slack/slack_thread_history.ts",
+        "_shared/system_health.ts",
+        "_shared/transcription-errors.ts",
+        "_shared/voicemail/bounded-json.ts",
+        "_shared/voicemail/decode-audio.js",
+        "_shared/voicemail/discovery-tick.ts",
+        "_shared/voicemail/edge.js",
+        "_shared/voicemail/private-import.js",
+        "_shared/voicemail/provider-keys.js",
+        "_shared/voicemail/queue.ts",
+        "_shared/voicemail/signed-source.js",
+        "_shared/voicemail/workspace-import.ts",
+        "_shared/worker_contract.ts",
+        "_shared/worker_handlers/automation_execute.ts",
+        "_shared/worker_handlers/business_graph_sync.ts",
+        "_shared/worker_handlers/customer_card_sync.ts",
+        "_shared/worker_handlers/email_sync.ts",
+        "_shared/worker_handlers/identity_resolve.ts",
+        "_shared/worker_handlers/index.ts",
+        "_shared/worker_handlers/intelligence_evaluate.ts",
+        "_shared/worker_handlers/intelligence_ingest.ts",
+        "_shared/worker_handlers/intelligence_observe.ts",
+        "_shared/worker_handlers/intelligence_review_resolve.ts",
+        "_shared/worker_handlers/interactions_sync.ts",
+        "_shared/worker_handlers/marketing_ad_lead.ts",
+        "_shared/worker_handlers/marketing_broadcast_dispatch.ts",
+        "_shared/worker_handlers/marketing_delivery_sync.ts",
+        "_shared/worker_handlers/marketing_provider_connect.ts",
+        "_shared/worker_handlers/marketing_provider_sync.ts",
+        "_shared/worker_handlers/marketing_sequence_advance.ts",
+        "_shared/worker_handlers/objective_evaluate.ts",
+        "_shared/worker_handlers/phone_process_pending.ts",
+        "_shared/worker_handlers/recommendation_sync.ts",
+        "_shared/worker_handlers/slack_history.ts",
+        "platform-worker/index.ts"
+      ],
+      "environmentNames": [
+        "GMAIL_OAUTH_SCOPE_MODE",
+        "GMAIL_OAUTH_STATE_SECRET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GOOGLE_REDIRECT_URI",
+        "GOOGLE_WORKSPACE_CLIENT_EMAIL",
+        "GOOGLE_WORKSPACE_CLIENT_ID",
+        "GOOGLE_WORKSPACE_PRIVATE_KEY",
+        "MARKETING_TEST_PROVIDER",
+        "MICROSOFT_MAIL_CLIENT_ID",
+        "MICROSOFT_MAIL_CLIENT_SECRET",
+        "OPENAI_ANALYSIS_MODEL",
+        "OPENAI_API_KEY",
+        "OPENAI_TRANSCRIPTION_MODEL",
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL",
+        "WORKER_SECRET"
+      ],
+      "literalRpcNames": [
+        "approve_response_intent_atomic",
+        "automation_claim_and_start",
+        "automation_finalize_execution",
+        "automation_recover_expired_execution",
+        "automation_resolve_unknown_execution",
+        "email_ingestion_transition_result_v2",
+        "email_ingestion_transition_v2",
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "learn_card_projection_inputs",
+        "learn_email_job_attempt",
+        "learn_email_job_fail",
+        "learn_email_transition_apply",
+        "learn_email_transition_pending",
+        "learn_email_transition_prepare",
+        "learn_identity_deliver",
+        "learn_identity_pending",
+        "learn_identity_review_count",
+        "learn_microsoft_credential_read",
+        "learn_microsoft_credential_refresh",
+        "learn_microsoft_job_settle",
+        "learn_microsoft_job_stop",
+        "learn_processing_publish",
+        "learn_processing_settle",
+        "learn_project_interaction",
+        "learn_projection_pending",
+        "learn_projection_review_count",
+        "learn_slack_recurring_thread_allowed",
+        "marketing_ad_claim_events",
+        "marketing_ad_lead_process",
+        "marketing_ai_provider_state",
+        "marketing_ai_record_proposal",
+        "marketing_broadcast_claim_batch",
+        "marketing_broadcast_create_lineage",
+        "marketing_broadcast_recipient_bundle",
+        "marketing_classify_contact",
+        "marketing_delivery_reconcile",
+        "marketing_effective_permissions",
+        "marketing_provider_account_connect_result",
+        "marketing_provider_fact_record",
+        "marketing_provider_sync_claim",
+        "marketing_provider_sync_complete",
+        "marketing_sender_readiness",
+        "marketing_sequence_authority_core",
+        "marketing_sequence_claim_batch",
+        "marketing_sequence_create_action_lineage",
+        "marketing_sequence_create_email_lineage",
+        "marketing_sequence_create_follow_up",
+        "marketing_sequence_due",
+        "marketing_sequence_reconcile_execution",
+        "marketing_sequence_step_bundle",
+        "marketing_tag_mutate",
+        "phone_select_pending",
+        "platform_jobs_claim",
+        "platform_jobs_complete_email_v1",
+        "provider_secret_read",
+        "record_response_revision_atomic",
+        "serviceos_record_health_check",
+        "voicemail_intake_route",
+        "voicemail_queue_recover",
+        "voicemail_queue_step",
+        "voicemail_schedule_tick"
+      ],
+      "beforeProduction": {
+        "name": "platform-worker",
+        "id": "d4a0b71f-262d-4ede-9485-2621893b6c90",
+        "version": 54,
+        "hash": "b2e93e85a43993941d755ae445e880dbd7dbba807c6fbb3101cae6f41049653c",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "platform-worker",
+        "id": "e7abc6aa-7341-4cbc-9a54-ea1c9c907503",
+        "version": 22,
+        "hash": "126ee9d9a672efd3579740380d6fab2e89df15338b9e83d6250b990b1258a072",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "receptionist-voicemail-recording",
+      "verifyJwt": true,
+      "sourceClosureSha256": "869e36a205cd3e4a8a6e9c3ae44978d9e5e63a162bced52d21649ae8f8f54fa2",
+      "sourceFiles": [
+        "_shared/voicemail/playback-http.ts",
+        "receptionist-voicemail-recording/index.ts"
+      ],
+      "environmentNames": [
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [],
+      "beforeProduction": {
+        "name": "receptionist-voicemail-recording",
+        "id": "346c8b06-e34f-4ce7-b687-52eb90ad4bdf",
+        "version": 1,
+        "hash": "53ee28ae60cee79be050ce2a59e915ccaf20d8cb9295c1478cbfe321c86f979e",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "receptionist-voicemail-recording",
+        "id": "05a97f9c-af68-44c7-bfdb-48785337c19b",
+        "version": 3,
+        "hash": "17dcecbe64cacfb115b64b662165b8ce0efb5428d260eb83d406069e3b7036ce",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "simwood-download-recording",
+      "verifyJwt": true,
+      "sourceClosureSha256": "15de69b72bdb291aa924e55a7e9d1fbb52024d4ec015baee885c185cdfa4d12f",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/learn_capture_control.ts",
+        "_shared/phone-download-version.ts",
+        "_shared/phone-pipeline-completion.ts",
+        "_shared/simwood-account.ts",
+        "_shared/simwood.ts",
+        "simwood-download-recording/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "learn_phone_download_attempt"
+      ],
+      "beforeProduction": {
+        "name": "simwood-download-recording",
+        "id": "d48e99cd-c6f5-4e2b-ad9a-8139bf0999f1",
+        "version": 59,
+        "hash": "d85133e443eb901fbb555c0fd5f45b47bd9ade997e4903cf6422701dacb0f0ef",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "simwood-download-recording",
+        "id": "f61e96a9-80d7-4476-90d4-d10b2976a00c",
+        "version": 6,
+        "hash": "fd969492674db932d1c60473bac0eb9385adb84bea6d7292714c7869b5ece29b",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "simwood-sync-calls",
+      "verifyJwt": true,
+      "sourceClosureSha256": "0dfc558396fba9e7f8c45a4a9023e63a8592bbb6ad91d66ab4badece7f65eebe",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/learn_capture_control.ts",
+        "_shared/phone-capture-guard.ts",
+        "_shared/phone-import-completion.ts",
+        "_shared/phone-page-publication.ts",
+        "_shared/phone-sync-completeness.ts",
+        "_shared/simwood-account.ts",
+        "_shared/simwood.ts",
+        "simwood-sync-calls/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "learn_phone_complete_import",
+        "learn_phone_publish_page"
+      ],
+      "beforeProduction": {
+        "name": "simwood-sync-calls",
+        "id": "c19069e4-9b6c-4e78-89ad-bd875a57919e",
+        "version": 60,
+        "hash": "5a976d5bb2946bf4f2c820603ec1eb5a68d9bd37aa889251512bb95da5dbe462",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "simwood-sync-calls",
+        "id": "46b816e2-13d0-4d7c-924a-a40698c0277e",
+        "version": 8,
+        "hash": "b08f50d037c8924183e207fc6dec0e1a4e235218bee4b5e29a728abe3622be5c",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "simwood-sync-recordings",
+      "verifyJwt": true,
+      "sourceClosureSha256": "5117e782024bef28864926251c9656fb21e2abc09e4fc54e1d36bd6089a56457",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/learn_capture_control.ts",
+        "_shared/phone_pipeline.ts",
+        "_shared/phone-capture-guard.ts",
+        "_shared/phone-import-completion.ts",
+        "_shared/phone-page-publication.ts",
+        "_shared/phone-sync-completeness.ts",
+        "_shared/simwood-account.ts",
+        "_shared/simwood.ts",
+        "simwood-sync-recordings/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_capture_admission",
+        "learn_capture_defer_job",
+        "learn_phone_complete_import",
+        "learn_phone_publish_page"
+      ],
+      "beforeProduction": {
+        "name": "simwood-sync-recordings",
+        "id": "40cb0a49-1e26-4fa4-ade0-a26647339228",
+        "version": 63,
+        "hash": "43f7172579491b7d10b522ba5e043bb567e05896bdc78a2227cb3c020c77fd04",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "simwood-sync-recordings",
+        "id": "0d980de4-9f6f-489c-8b29-103da9342a42",
+        "version": 9,
+        "hash": "b644d8f2f4e762ffcf827fb04a8621ac962067f4909b3ca3047ca7f03367d5d9",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "simwood-test-connection",
+      "verifyJwt": true,
+      "sourceClosureSha256": "416fd865ab08fd0247f67ed82db47e72d72e9b5514fb2a5658e7c1d9ec7058d0",
+      "sourceFiles": [
+        "_shared/authz.ts",
+        "_shared/simwood-account.ts",
+        "simwood-test-connection/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SIMWOOD_PASSWORD",
+        "SIMWOOD_USERNAME",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [],
+      "beforeProduction": {
+        "name": "simwood-test-connection",
+        "id": "f68bd679-8ca8-4c2b-8e8e-4bd757428fc2",
+        "version": 57,
+        "hash": "ad198fe0c4e4b600c14cea47d7f9c530e2f38758e9c8f992158d424dbe94ed0f",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "simwood-test-connection",
+        "id": "928f60bd-d277-41c1-95af-42cf584fc6dc",
+        "version": 5,
+        "hash": "8930ec6ce003000f1daa2f520da50083b145ef2978376799820add6221c776fe",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": false,
+      "authorizationAndCallerAcceptance": "pending"
+    },
+    {
+      "name": "work-transition",
+      "verifyJwt": true,
+      "sourceClosureSha256": "0c46b78c1af195cacbd5e18870db5394d58251778f75562dd53847607427395f",
+      "sourceFiles": [
+        "_shared/audit.ts",
+        "_shared/authz.ts",
+        "_shared/work_authority.ts",
+        "_shared/work_transition.ts",
+        "work-transition/index.ts"
+      ],
+      "environmentNames": [
+        "SERVICEOS_INTERNAL_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "literalRpcNames": [
+        "learn_work_authority",
+        "work_transition_apply"
+      ],
+      "beforeProduction": {
+        "name": "work-transition",
+        "id": "7b47816f-4398-459d-a537-586034dc1a98",
+        "version": 14,
+        "hash": "743fe95066d0d81049bef28cd89123440fb3b93b7fed175abf6e177845414556",
+        "jwt": false,
+        "status": "ACTIVE"
+      },
+      "hostedTestReference": {
+        "name": "work-transition",
+        "id": "71902874-28fe-42fc-a011-52c8876a81a6",
+        "version": 6,
+        "hash": "2bc2ec603c7d6825b7dc0289e62618c563c391623e9bcc012d1b381411332506",
+        "jwt": true,
+        "status": "ACTIVE"
+      },
+      "gatewayChange": true,
+      "authorizationAndCallerAcceptance": "pending"
+    }
+  ],
+  "literalFunctionCalls": [
+    {
+      "path": "_shared/phone_pipeline.ts",
+      "target": "phone-analyse-transcript",
+      "inCandidate": true
+    },
+    {
+      "path": "_shared/phone_pipeline.ts",
+      "target": "phone-process-pipeline",
+      "inCandidate": true
+    },
+    {
+      "path": "_shared/phone_pipeline.ts",
+      "target": "phone-transcribe-recording",
+      "inCandidate": true
+    },
+    {
+      "path": "_shared/phone_pipeline.ts",
+      "target": "simwood-download-recording",
+      "inCandidate": true
+    },
+    {
+      "path": "_shared/worker_handlers/email_sync.ts",
+      "target": "google-workspace-discover-mailboxes",
+      "inCandidate": true
+    },
+    {
+      "path": "_shared/worker_handlers/phone_process_pending.ts",
+      "target": "phone-process-pipeline",
+      "inCandidate": true
+    },
+    {
+      "path": "phone-scheduled-sync/index.ts",
+      "target": "simwood-sync-calls",
+      "inCandidate": true
+    },
+    {
+      "path": "phone-scheduled-sync/index.ts",
+      "target": "simwood-sync-recordings",
+      "inCandidate": true
+    }
+  ],
+  "unresolvedCalls": [
+    {
+      "path": "_shared/connectors/marketing_email.ts",
+      "kind": "rpc",
+      "line": 321
+    },
+    {
+      "path": "_shared/gmail_page_store.ts",
+      "kind": "rpc",
+      "line": 58
+    },
+    {
+      "path": "_shared/learn-phone-playback.ts",
+      "kind": "rpc",
+      "line": 53
+    },
+    {
+      "path": "_shared/learn-phone-playback.ts",
+      "kind": "rpc",
+      "line": 92
+    },
+    {
+      "path": "_shared/learn-processing-job.ts",
+      "kind": "rpc",
+      "line": 73
+    },
+    {
+      "path": "_shared/microsoft_capture_engine.ts",
+      "kind": "rpc",
+      "line": 200
+    },
+    {
+      "path": "_shared/slack/slack_history_persist.ts",
+      "kind": "rpc",
+      "line": 9
+    },
+    {
+      "path": "_shared/slack/slack_history_server.ts",
+      "kind": "rpc",
+      "line": 99
+    },
+    {
+      "path": "_shared/slack/slack_worker.ts",
+      "kind": "rpc",
+      "line": 89
+    },
+    {
+      "path": "_shared/slack/slack_worker.ts",
+      "kind": "rpc",
+      "line": 105
+    },
+    {
+      "path": "_shared/voicemail/private-import.js",
+      "kind": "rpc",
+      "line": 18
+    },
+    {
+      "path": "_shared/voicemail/queue.ts",
+      "kind": "rpc",
+      "line": 125
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_sequence_advance.ts",
+      "kind": "rpc",
+      "line": 66
+    },
+    {
+      "path": "data-import/handler.ts",
+      "kind": "rpc",
+      "line": 635
+    },
+    {
+      "path": "data-import/handler.ts",
+      "kind": "rpc",
+      "line": 1267
+    },
+    {
+      "path": "learn-commusoft-verify/index.ts",
+      "kind": "rpc",
+      "line": 23
+    },
+    {
+      "path": "learn-commusoft-verify/index.ts",
+      "kind": "rpc",
+      "line": 34
+    },
+    {
+      "path": "learn-operator-phone-playback/index.ts",
+      "kind": "rpc",
+      "line": 74
+    },
+    {
+      "path": "openfolk-control-plane/index.ts",
+      "kind": "rpc",
+      "line": 181
+    }
+  ],
+  "productionEndpointsOutsideCandidate": [
+    {
+      "name": "phone-pipeline-status",
+      "id": "662fd5b0-6f0b-4eaa-b60d-04535470b03f",
+      "version": 52,
+      "hash": "d62f22bb638fe901cff9d228a7df20f456cc163b846feea0fb17eaa2f3e992f8",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "gmail-oauth-start",
+      "id": "fea26587-2e5a-4807-aaaa-baccfaa38580",
+      "version": 44,
+      "hash": "ed7c28f23a9e569240575d403d20b9b45077feecb73927bb8c4e3c8b7e62ab9c",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "gmail-oauth-callback",
+      "id": "d738c022-5405-4054-bbcd-7ec11210fc11",
+      "version": 44,
+      "hash": "7c23b47ad267bd18d7bbe6dace5ea5f670bf51ed42794bb9f6a9afdd42bf3920",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "google-workspace-enable-mailboxes",
+      "id": "887da879-22da-40ea-8dbf-4a700048eaa4",
+      "version": 41,
+      "hash": "362fd1951ea38d7f3afae31003e0547b3ca74c8a92cee80aafcc13a053a4e269",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "google-workspace-test-connection",
+      "id": "c8aea244-05e0-4150-bb54-c0b811c0a18b",
+      "version": 40,
+      "hash": "79b2e07d7b0b965b73eef0f7ffd13cc50916d7d1105f6282a96b37868ca26d15",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "google-workspace-save-connection",
+      "id": "19086733-6620-4287-a682-ba89629dc8d1",
+      "version": 38,
+      "hash": "23dcbb511eb9c8f0a79f33e6b4dd4cf6612bdafb7f2a5926f57108d55164b972",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "google-workspace-update-mailboxes",
+      "id": "1768d12c-d165-44ef-879f-b6faa3d3397e",
+      "version": 36,
+      "hash": "8a4ede0cae00346ac06c1a833e6c9f433503142501a7cf59fb836903fe7b4d50",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "simwood-call-webhook",
+      "id": "4bf208c6-88e5-4145-98bb-9e30342e1c16",
+      "version": 35,
+      "hash": "cc4cf563bdb0ddd6a76a89b568cbfa6d5d9ef70a4bb6d92d4c50bdfa8b755922",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "voice-endpoints-manage",
+      "id": "563712cf-7dac-4470-949d-ae074967fdf0",
+      "version": 34,
+      "hash": "b2f6d18aa7487527a1bce68b9700c67a3f6054fcd577f0d65b09f7204b90e903",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "live-call-session-update",
+      "id": "4cbb81b8-cfb8-486c-bed0-96858d212eed",
+      "version": 34,
+      "hash": "9c3a86d194f59a43dbde8b16b98b13e70b117370e18ea540e46144d0b9971529",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "business-graph-sync",
+      "id": "717323ba-e0d3-49ed-bae8-4c09ed87a529",
+      "version": 35,
+      "hash": "fe6b93b1e849577f73e29cae2da80075684bd4fb40268861d1d6bad8ff3c061b",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "business-graph-scheduled-sync",
+      "id": "59e32339-298a-4003-8593-65ea9be7909c",
+      "version": 36,
+      "hash": "c5367cdf0b035ae9ea72b17acac2b2aec079153020d2588d5608bb06ef13ef93",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "recommendation-sync",
+      "id": "c5bb8b78-1e97-41cc-87d5-2cbb87006645",
+      "version": 35,
+      "hash": "d2395c9b22a0aff75c0f93d464f34c75bcf3f831900aa47214449514faa5afd3",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "recommendation-scheduled-sync",
+      "id": "0d5b96e4-176d-405f-8f55-c66382f7335c",
+      "version": 36,
+      "hash": "cde71584006bf84010536f5beb6296a284bfb9aa7e19fa5d89583dd1e55cc6b9",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "email-connector-status",
+      "id": "ddd668d6-c275-4503-a0da-86c9d6f17fb9",
+      "version": 24,
+      "hash": "38677558e819a16c1d9f4dc87c46ee3ece7171f503de4f6438656d37fa67b58b",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "objective-evaluate",
+      "id": "64b1c8b8-d894-4c02-965b-fe4378b0f7b5",
+      "version": 20,
+      "hash": "d50cfef017361de47a67e7175294fb3949af6e4505b96c79b82d16d81d62326b",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "objective-evaluation-scheduled-sync",
+      "id": "808859b2-1850-42cd-9fbf-0d49f1f124b6",
+      "version": 20,
+      "hash": "69d5d1fda9d70f8e35d7c7acc2a346c32b31846818deeddd34d0eb9b169021fa",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "automation-execute",
+      "id": "f5dc0431-e652-41db-8034-d90fb4aa9feb",
+      "version": 21,
+      "hash": "025a5c3d37eda941939622f0c57500dcc78ff0270d2f9722378b77b4cb600955",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "automation-execution-scheduled-sync",
+      "id": "9d906979-cfb3-4a46-92b2-0a146b3e47c6",
+      "version": 20,
+      "hash": "aadb33bc5a6225485659e80c4c4dae902b9bf3cbc943c36b7aa43364a68ee0b7",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "intelligence-review-action",
+      "id": "532c47cc-aa7f-4eef-a7b0-823000d3a32d",
+      "version": 16,
+      "hash": "e8c35fce61c7197f73033e1aad3da38ef4e5ce4084546d5c44090f7b34c89c82",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "intelligence-ingestion-scheduled-sync",
+      "id": "b6ef8ce7-a4ad-4d4d-9449-89a31ae87a0c",
+      "version": 15,
+      "hash": "e9cc39bea8fec62768c09e8577ea6e1c26830ebb84b01fa20430db910cc38ede",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "telephony-mapping",
+      "id": "a7206076-e292-41c0-83f3-40461280a7e2",
+      "version": 15,
+      "hash": "90776614ace6d5abd3d693b217012b6afeb00386fd92c0b68a4f2494a7f076f7",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "telephony-onboarding",
+      "id": "e580586c-d304-4321-bdc3-c4a62aace453",
+      "version": 16,
+      "hash": "8f03eec2519e6bd1de4d91e34d5cfc66c5293e2846a20ad4ae3e640ba020605e",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "provider-oauth-callback",
+      "id": "6d0701ef-4e5a-42eb-b2b2-abad6f9555eb",
+      "version": 14,
+      "hash": "67348171b689e0d2aa3299ca4d2934c734360ac6e4d391a1567dc80dfdd74d7e",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "user-ownership",
+      "id": "2958107d-c774-449c-9e39-c396f36006e3",
+      "version": 14,
+      "hash": "c1443e71b18978e16c229e4c331f2c4e6fad00080f51d9e4151e2ef58d1d08fd",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "work-projection",
+      "id": "d53a55ab-6d06-4cd6-a9ba-b3d23c2eec4e",
+      "version": 17,
+      "hash": "b6cd5662869be9dc04db59e21db93242d2e54e16c8641a7f1d97341762508765",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "view-as",
+      "id": "7f4ec9a8-3152-4c86-84f9-dff73809fdc5",
+      "version": 14,
+      "hash": "87d54f1f6e6a89908fb939ebf968622fb45683be8b7edd37dd5cef0bddf9abb9",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "customer-health-shadow",
+      "id": "fa57aee6-c676-4e8d-abd5-8a9395edb77d",
+      "version": 14,
+      "hash": "28fd4c4b285422e33480205a201d45c5fbd1ecbefa785db5f1e5f9e00b9a4c2b",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "ownership-projection",
+      "id": "14e4becb-7eed-4eea-bf7f-70f0764f8df9",
+      "version": 14,
+      "hash": "9ee3c47c00be4e5f7d07d9f3a035cbc89852d0bb7ae941aacfb8421f49a6b644",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "phone-operations",
+      "id": "130f5333-f232-483d-940a-c2eb8773ff1c",
+      "version": 10,
+      "hash": "3253bb7078b9d4e7fa445b96b34e04a4f0c47a8dcd4512b4bf361c82def0d1bd",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-access",
+      "id": "e2d0411d-9473-4fd1-96ed-154bfa271302",
+      "version": 5,
+      "hash": "7af1c23604b4f1e483148bc960f4d5b8e0a2899a64ef609accfcec4f9c1bd734",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-ad-webhook",
+      "id": "04de77db-dbb7-4011-8d76-c69b7617e984",
+      "version": 5,
+      "hash": "7a432b8e4441ce8e26024ee6ad200a6c8c49140bce918b25ff080ad6aca9b6ec",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-admin",
+      "id": "723a33ce-e378-4083-9f64-a33d0099ff37",
+      "version": 5,
+      "hash": "0c25abab5a34f593da50de60a634fc36144397e0a0f22605131e9fe8641cc880",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-ads",
+      "id": "c1f5ff1c-52c8-4ca8-8738-050cd8ca99ee",
+      "version": 5,
+      "hash": "ef6c511579a084f598b90f502c3e5747267b6d0a8d166c2539f3285ea8e76949",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-ai-drafts",
+      "id": "0285673d-8946-4f69-9d07-cc0a2b8a8775",
+      "version": 5,
+      "hash": "e523eef86706ce59f0251426bb5124cdaf6eb4d93d959ebfe8456f9c4fa57165",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-broadcast-scheduled-sync",
+      "id": "651dff1d-bf92-4ee1-9601-4ee6f2c94955",
+      "version": 5,
+      "hash": "21e32374a0fbde0b9897513e7d3119db9291fb3076c241e1b92e5f6d20d14076",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-campaigns",
+      "id": "8edcbe36-3878-464f-9fac-1f75aebbfa2c",
+      "version": 5,
+      "hash": "526a7d2081bdf7706e7083392015f15d3bc9373e4c95e784013a3fd8baa05cd1",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-contacts",
+      "id": "ac40890d-7379-4680-b0fe-6ded625eeda6",
+      "version": 5,
+      "hash": "d95051bcd16b3408c1152e6e73c9bc2d3728dd5737b853ceea45d169700ea9ac",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-provider-connections",
+      "id": "d1ca6fb3-a865-4081-8052-a660c72c8661",
+      "version": 5,
+      "hash": "1523a40b2bf46483970f3a1ff98bcc83d088d53a6bb53da6cf61f0f2405c49ef",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-reporting",
+      "id": "cdc208bd-e174-435b-9987-1d5ac007e7ec",
+      "version": 5,
+      "hash": "ad61519d5ece9bb06ddd465d17a047f9d8df955a86f4615c243acf0ac8d68a7a",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-segments",
+      "id": "09ca5af7-e008-452b-bc26-7fb058ada002",
+      "version": 5,
+      "hash": "14159c9ce7edf97a6b98f2db03a7b41e72a94c0e990868355d8edbbbd7ef5050",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-senders",
+      "id": "2cc893a2-7bfc-4443-88a7-a118c813dcd9",
+      "version": 5,
+      "hash": "943b397822e3d43b7b313b2ff89278040a3956c6b985485aa7909210e00899c9",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-sequence-scheduled-sync",
+      "id": "18c47a48-28fc-4195-b63f-4be5036f30cd",
+      "version": 5,
+      "hash": "15414dd1e955091631ed2a5ec4bdb059753d28c0bcd863275c58db46793381ab",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-sequences",
+      "id": "2f6f4721-1261-42d5-ad2a-a5b50186874c",
+      "version": 5,
+      "hash": "0d64b8b0ee6f565563293a6081f622a430a9aa5ea4719c533dacafb3ad92003c",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-templates",
+      "id": "474212d1-3fa5-4f10-8cdf-7a1785b0992d",
+      "version": 5,
+      "hash": "4b72507c8faedf4a571c169c0e7ecbb6accaf74ce3907e333422d81ef808b9fa",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-track",
+      "id": "3dcd6c54-9838-472e-acdb-fd5905656277",
+      "version": 5,
+      "hash": "afe88a44927feeb98d74b0cb3d7aafcf38f750bb6cd07a1285b3d23244fcbc4b",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "marketing-unsubscribe",
+      "id": "3216850e-d177-426d-bea7-8151030faa72",
+      "version": 5,
+      "hash": "ee75a486572b8ccdbfde0c6d192f4509360b67b7a79cd1bd03747af2ddba8681",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "receptionist-calls",
+      "id": "96a0937b-492a-4bee-922e-ed0ec9bce158",
+      "version": 8,
+      "hash": "75d2029bdcf0abc805b0964039276ce71f753b36fc9f04f7241a463d1f2a9b52",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "client-notifications",
+      "id": "58a070f5-3e0f-41a9-be19-a1aaf094978e",
+      "version": 13,
+      "hash": "e29e9b6433f8eb019e04f110d008adcb2f1ef74a43c2b5331a211fffe51485c5",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "receptionist-practice",
+      "id": "a269a664-ac83-4657-92e3-543c9d30e5bb",
+      "version": 10,
+      "hash": "9063aec31728d6b074e00a2c9a5732399e98b66aa04346e9ec220c4bd322c7a4",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "operator-notifications",
+      "id": "af3f6f68-6b02-42b2-9bca-f5581953cbcd",
+      "version": 3,
+      "hash": "6e74f54bb401707b9d0f89dd80beb8e06a03ba834163fb8693cb8dcf35f2cde0",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "receptionist-task-review",
+      "id": "3a9d932d-acd6-4df4-8743-24af79b56241",
+      "version": 5,
+      "hash": "a96e33fa0a1057204f28f46fab9712cd634c8c06d284493ed96e34d3ff7999ac",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "receptionist-rehearsal",
+      "id": "e103e15e-d0a3-4379-b8d2-ddf1938da226",
+      "version": 2,
+      "hash": "cfa3eb5190be51f3ef1bd00fe453b4661d5dbf95fdfde2a199256b6a3f0267c9",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "receptionist-release",
+      "id": "58755676-ab55-4262-819b-6d2005d66efe",
+      "version": 4,
+      "hash": "65acadf4a56dd4898ef17bb3128810adff51eda4bdec00a123ea74870ac82d21",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "customer-notifications",
+      "id": "0bda4255-6f99-400a-a3ec-90ad536c9794",
+      "version": 1,
+      "hash": "59c5d3577b5c6584403cd1b9735810f936872848b6fbc7b4d9fc08d7cccdbc11",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "receptionist-testing",
+      "id": "6548a3d7-ad62-4454-ac52-d27a5af5a25a",
+      "version": 45,
+      "hash": "ee8508d66929373f0977d93a209d3095ce07c18bfc903e1066e8828e2bced515",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "receptionist-test-collector",
+      "id": "cffa3e7c-2693-4200-a9fa-1fb8b278f777",
+      "version": 4,
+      "hash": "8ad32323b6a9e2bbd2430b9ac4bfe048672802bcbb3a82ce2bd3bda798c96a91",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "phone-capture-coverage",
+      "id": "9df0a03f-93ae-4988-b88f-25828915fbc6",
+      "version": 3,
+      "hash": "661618917b655d16f8898e614c7f977ca012712a261d7a41671f8237d632b05f",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "receptionist-review-collector",
+      "id": "9828bfd7-84eb-4eca-ac78-da8ac62987ed",
+      "version": 3,
+      "hash": "f05e78cb777f43f959df3d1034df52d7ce2e96d6f5c0540ee64414a473057486",
+      "jwt": false,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "receptionist-greeting-verify",
+      "id": "4e8fb8d0-e303-4945-8e49-1fa80451f269",
+      "version": 5,
+      "hash": "d24cf0d1deb2064fa7a36205da573905131902921aecfcddb08d19d81d4834f8",
+      "jwt": false,
+      "status": "ACTIVE"
+    }
+  ],
+  "releaseGates": [
+    "Review dynamic dispatch and existing non-LEARN handlers in the shared worker.",
+    "Verify deployed source provenance, caller/auth compatibility and required secret availability; names are not values or proof of configuration.",
+    "Stage and verify the exact dependency closure in the Edge runtime; an import inventory is not an executable bundle or runtime test.",
+    "Re-read current production schema, endpoint versions, schedules and preservation baseline before any approval/execution.",
+    "Pin the matching frontend artifact, production environment and sign-in/tenant journeys.",
+    "Prepare journaled deployment, schedule pause/resume and rollback before requesting production promotion approval."
+  ],
+  "limitations": [
+    "Static literal calls are supporting review evidence, not complete data-flow analysis.",
+    "Hosted ezbr hashes and source-closure hashes use different representations and are not comparable.",
+    "External imports are recorded verbatim, not resolved, vendored or integrity-verified by this preparation.",
+    "No database, provider, credential, access grant, schedule or deployed function is changed."
+  ]
+}

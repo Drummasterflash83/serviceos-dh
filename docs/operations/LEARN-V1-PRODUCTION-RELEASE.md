@@ -10,6 +10,29 @@ runtime/frontend release and live acceptance are still unfinished. Source backup
 are on `codex/learn-v1-test`.
 
 
+## Matching processing candidate — 12 October
+
+The [offline runtime manifest](../../supabase/release/learn-production/runtime-candidate.manifest.json)
+binds all fifteen SQL packages to 37 proposed endpoints and 221 local dependency
+files. The source closure hash is
+`e50e6646536075ef4eb1001c0abe938a7a9df2322f1cac4876bf8861b0650ddb`.
+It retains observed production/TEST endpoint metadata and inventories environment
+names, literal RPCs, external imports and unresolved dispatch for review. Metadata
+hashes from deployed Edge bundles are not interchangeable with local source hashes.
+
+Four existing callers absent from TEST are included: customer-card, interaction,
+identity and phone-processing schedulers. Thirteen candidate gateway flags differ
+from current production. Explicit caller/authorization acceptance is required;
+do not deploy using stale `config.toml` defaults or assume TEST flags prove all
+production callers compatible. Shared worker dependencies include non-LEARN
+handlers whose behavior must be retained. The manifest is not deployment code,
+approval, a resolved executable bundle or proof that secrets are configured.
+
+Twenty-seven focused local candidate/queue/capture/Slack tests passed. One old
+queue fixture lacked valid admission; the fixture was corrected and denial
+checks added without changing runtime. The production login page loads and
+redirects correctly for an absent session; signed-in acceptance is still pending.
+
 ## Latest production preparation — 12 October, 14:52 UTC
 
 Package [015_operator_context.sql](../../supabase/release/learn-production/015_operator_context.sql)

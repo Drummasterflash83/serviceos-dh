@@ -34,7 +34,14 @@ test("provider retry minimum never shortens queue backoff, and terminal errors s
 });
 test("scheduled continuation time survives enqueue", async () => {
   let row: any;
+  const tenant = "11111111-1111-4111-8111-111111111111";
   const db: any = {
+    rpc: async (name: string, args: any) => {
+      assert.equal(name, "learn_capture_admission");
+      assert.deepEqual(args, { p_tenant: tenant, p_source: "slack" });
+      return { data: { version: "learn-capture-admission/1", tenant_id: tenant,
+        source: "slack", allowed: true, checked_at: new Date().toISOString() }, error: null };
+    },
     from: () => ({
       insert: (value: any) => {
         row = value;
@@ -44,11 +51,29 @@ test("scheduled continuation time survives enqueue", async () => {
       },
     }),
   };
-  await enqueueJob(db, {
-    tenantId: "fixture-tenant",
+  const result = await enqueueJob(db, {
+    tenantId: tenant,
     jobType: "slack.history_sync",
     jobKey: "fixture",
     availableAt: "2026-10-09T12:01:00.000Z",
   });
+  assert.deepEqual(result, { id: "fixture", duplicate: false });
   assert.equal(row.available_at, "2026-10-09T12:01:00.000Z");
+});
+
+test("paused and unavailable Slack admission never insert a continuation", async () => {
+  const tenant = "11111111-1111-4111-8111-111111111111";
+  for (const unavailable of [false, true]) {
+    let inserts = 0;
+    const db: any = {
+      rpc: async () => ({ data: unavailable ? null : { version: "learn-capture-admission/1",
+        tenant_id: tenant, source: "slack", allowed: false, checked_at: new Date().toISOString() },
+        error: unavailable ? { message: "unavailable" } : null }),
+      from: () => { inserts++; throw Error("must not insert"); },
+    };
+    assert.deepEqual(await enqueueJob(db, { tenantId: tenant, jobType: "slack.history_sync",
+      jobKey: "fixture", availableAt: "2026-10-09T12:01:00.000Z" }),
+    { id: null, duplicate: false, captureWaiting: unavailable ? "unavailable" : "paused" });
+    assert.equal(inserts, 0);
+  }
 });

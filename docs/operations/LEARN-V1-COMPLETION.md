@@ -7,6 +7,27 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — production processing inventory and historical Slack scope prepared.**
+The [runtime candidate](../../supabase/release/learn-production/runtime-candidate.manifest.json)
+pins 37 endpoint source closures (221 files) against the fifteen production SQL
+packages. It includes four legacy scheduled callers absent from TEST and records
+thirteen proposed gateway changes for explicit caller/authorization review.
+This is preparation, not deployment or approval: executable runtime validation,
+dynamic dispatch, secret availability, current drift and the matching frontend
+still need acceptance. Twenty-seven local queue/capture/Slack and candidate checks
+pass. An obsolete queue test fixture lacked required capture admission; it was
+corrected and pause/unavailable no-insert checks added. Runtime source is unchanged.
+
+The live site redirected a signed-out browser to its production login screen.
+An existing live session is still needed for signed-in Drummonds verification;
+the login page alone is not acceptance. No login, grant or reset was created.
+
+Chris requires **all available authorised Slack history**, including replies,
+followed by ongoing capture. Bounded public-channel windows alone do not meet
+that requirement. The [historical coverage contract](LEARN-SLACK-HISTORICAL-COVERAGE.md)
+records inventory, private/shared-channel, backfill, file and evidence-to-job work.
+No real Slack capture or new permission was enabled.
+
 **12 October, 14:52 UTC — latest operator/customer-context production candidate rehearsed.**
 The fifteen-package database candidate now includes the latest audited OpenFolk
 client information/review, linked customer context and recording authorization.
@@ -2481,6 +2502,8 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   and awaiting its selection. No TEST OpenAI secret has been provisioned yet.
   [Latest evidence](evidence/learn-phone-processing-test-release-2026-10-11.json).
 - [ ] **Slack:** verify authorised workspace/channel scope, history plus replies,
+  all available history across the agreed channel inventory (including archived
+  channels), durable backfill and explicit inaccessible/retention gaps,
   files/unsupported-content limits, incremental schedule, revocation/recovery and
   source-to-card visibility. Local synthetic history and deployed worker status
   alone are insufficient. [Slack work](LEARN-SLACK-INGESTION.md).
