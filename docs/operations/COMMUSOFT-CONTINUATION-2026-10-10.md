@@ -1,4 +1,48 @@
-# Drummonds TEST continuation — partial import retained, access retired
+# Drummonds TEST import continuations and remaining coverage
+
+## Current operator continuation and refresh gap — 12 October
+
+The retired temporary run below is retained evidence, not the current access route.
+Chris's existing ongoing TEST operator session is now verified. The subsequent
+operator-approved traversal completed all 871 sites; the refreshed customer-contact
+pass reached 900 of 1,550 at 17:30 UTC and resumed under its original request
+ceiling and expiry. That terminal batch verified all 194 protected datasets.
+Do not reset its counters, start a competing worker, or replace its checkpoint.
+[Verified checkpoint](evidence/learn-commusoft-contact-checkpoint-900-2026-10-12.json).
+
+The completed-collection worker currently stops at `collection_exhausted`. The new
+infrastructure tick dispatches already-approved work but does not create an ongoing
+Commusoft refresh. This remains a delivery gap.
+
+The official [core API patterns](https://developer.commusoft.com/core-concepts-and-patterns-1985393m0)
+document numeric ID cursors and date comparison operators. The saved property
+schema describes a `lastUpdatedOnDateTime` range; jobs expose that filter too.
+The [contact endpoint](https://developer.commusoft.com/list-property-contacts-28546275e0)
+requires a property scope. Advancing only the highest imported ID would miss edits
+to older records. Date-filter behaviour still needs bounded real-provider evidence.
+
+Implementation requirements derived from the current queue and source contracts:
+
+- Store each refresh's fixed lower/upper update bounds in its approved scope,
+  credential permit and retained page. Start its pagination at the beginning;
+  never reuse a historical traversal's final ID as an update watermark.
+- Advance the successful refresh boundary only after the bounded traversal is
+  durably exhausted. Retain failed/partial windows, use overlap for reconciliation,
+  and disclose provider timestamp/timezone uncertainty.
+- Keep contact parent plans based on a **complete unfiltered property traversal**.
+  A completed changed-property window is not a complete list of customer/site IDs.
+  Existing scope validation and the contact-plan query must change together.
+- Preserve versioned raw observations. Existing canonical projections hold changed
+  sources for reconciliation; an import alone must not claim customer cards are current.
+- Add logged operator controls, recurring-window state and tenant/module admission
+  before enabling a schedule. No new approval, provider request or hosted change
+  was made during this review.
+
+[Commusoft webhooks](https://developer.commusoft.com/webhooks-2114965m0) can signal
+property and job changes, but the listed objects do not include contacts. Their
+notifications carry resource IDs and require authenticated follow-up reads. A
+future webhook route needs signature verification, event deduplication and recovery
+for delivery gaps; it cannot replace contact reconciliation or historical coverage.
 
 ## Latest result — 12 October, 09:56 UTC
 

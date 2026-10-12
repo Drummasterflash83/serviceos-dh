@@ -7,6 +7,28 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 17:30 UTC — refreshed contact checkpoint verified and resumed.**
+The current TEST customer-contact pass completed 900 of 1,550 parent checks with
+all 194 protected datasets preserved, no pending invocation and one queued successor.
+It retains 2,962 contact records, 2,421 properties and 12,611 jobs; all 871 site
+checks remain complete. The next batch resumes that exact checkpoint, with the
+same 19:58 UTC expiry and original cumulative 4,000-request ceiling (2,964 used
+at the verified checkpoint). No production data changed.
+[Checkpoint evidence](evidence/learn-commusoft-contact-checkpoint-900-2026-10-12.json).
+
+The approved recording backup refresh is running against a fresh inventory of
+2,950 files. This is **not yet a verified backup**; the morning's 2,893-file
+manifest remains the last successful coverage. Do not restart the live runner
+or accept its inventory alone as destination verification.
+
+The recurring Commusoft gap is now traced to completed imports having no next
+refresh window, not merely a missing infrastructure trigger. The
+[implementation requirements](COMMUSOFT-CONTINUATION-2026-10-10.md) identify update
+bounds, durable watermark advancement and preservation of full contact parent
+coverage. Provider filter acceptance, recurring controls and canonical update
+reconciliation remain unfinished. Drummonds Slack sign-in is requested; only the
+OpenFolk workspace is currently signed in.
+
 **12 October — recurring worker dispatch implemented and rebuilt locally.**
 The existing authenticated platform-worker tick can now call the dedicated
 Commusoft worker, Slack recurring-window scheduler and Slack worker. It sends

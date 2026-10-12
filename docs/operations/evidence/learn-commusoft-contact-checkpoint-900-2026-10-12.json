@@ -1,0 +1,38 @@
+{
+  "version": "learn-commusoft-customer-contact-checkpoint/1",
+  "observedAt": "2026-10-12T17:30:22.101745+00:00",
+  "state": "partial_traversal_preserved",
+  "environment": "TEST",
+  "customersChecked": 900,
+  "customersPlanned": 1550,
+  "sitesChecked": 871,
+  "sourceCollections": [
+    {
+      "records": 12611,
+      "versions": 12611,
+      "collection": "jobs"
+    },
+    {
+      "records": 2421,
+      "versions": 2421,
+      "collection": "properties"
+    },
+    {
+      "records": 2962,
+      "versions": 2962,
+      "collection": "propertyContacts"
+    }
+  ],
+  "protectedDatasets": 194,
+  "protectedDatasetsPreserved": true,
+  "cumulativeProviderRequests": 2964,
+  "providerRequestLimit": 4000,
+  "invocations": 2969,
+  "approvalExpiresAt": "2026-10-12T19:58:57.077+00:00",
+  "complete": false,
+  "productionChanges": 0,
+  "limitations": [
+    "The refreshed contact pass is incomplete. Raw input coverage does not establish complete relationships, canonical card publication or recurring refresh.",
+    "The next batch uses the same journal, saved checkpoint, approval and original cumulative request ceiling."
+  ]
+}
