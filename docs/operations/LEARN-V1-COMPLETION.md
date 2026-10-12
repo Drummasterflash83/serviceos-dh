@@ -23,15 +23,17 @@ override a later release observation. No requirement is silently deferred.
   forward for identical bytes. All 31 release tests pass; fresh read-only
   configuration preflight matches the 88 existing production definitions.
 - The operator controls passed local browser, application-to-SQL, type and build
-  checks. The matching hosted frontend is the next verification step.
+  checks. The matching Git `d6068af` is now on stable `test.openfolk.ai`; the
+  existing signed-in operator can read and refresh the new controls. Capture is
+  correctly shown as not enabled; no approval or provider request was submitted.
 
 ### Needs finishing
 
-- Deploy and verify the latest operator controls in hosted TEST, verify provider
-  date filters and the intended real recurring capture journey.
-- Refresh the production frontend candidate: its current protected preview is
-  still Git `04f7f8e` and lacks the newest controls. Complete sign-in, integrated
-  release gates, matched installation and initial live observation.
+- Verify provider date filters and the intended real recurring capture journey
+  through the hosted controls and worker.
+- The matching protected production preview is ready with its rendered production
+  backend verified. Complete sign-in, integrated release gates, matched
+  installation and initial live observation.
 - Broader history, source-to-card acceptance, scoring and operational requirements
   below remain open. Paused bounded imports do not establish ongoing capture.
 
@@ -40,7 +42,8 @@ override a later release observation. No requirement is silently deferred.
 - Live-login credential lookup still awaits owner Touch ID. Other release and
   connector work can continue independently.
 
-[Database and runtime evidence](evidence/learn-production-commusoft-recurring-2026-10-12.json).
+[Database and runtime evidence](evidence/learn-production-commusoft-recurring-2026-10-12.json) ·
+[Hosted TEST evidence](evidence/learn-test-commusoft-recurring-hosted-2026-10-12.json).
 
 ## Earlier checkpoints
 

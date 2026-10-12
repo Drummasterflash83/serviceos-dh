@@ -24,7 +24,9 @@ approval handling. It is in the twenty-package production candidate; production
 is not changed. The dedicated worker calls recurring scheduling through
 `learn_commusoft_claim_jobs` after installation.
 
-Matching hosted controls, provider date-filter verification, real ongoing capture
+The matching controls are deployed on stable TEST at Git `d6068af`. The existing
+operator session read and refreshed them successfully with capture not enabled.
+Provider date-filter verification, real ongoing capture
 and changed-source canonical reconciliation remain required. Existing approvals
 bind their approving operator; transfer/recovery under another operator remains
 unfinished.

@@ -16,7 +16,7 @@ const wire = read(join(wireRoot,'report.json'));
 const backupRoot = '.verification-results/production-runtime-compiled-backup-20261012';
 const backup = read(join(backupRoot,'report.json'));
 const schedules = read(base+'schedule-transition.manifest.json');
-const frontend = read('docs/operations/evidence/learn-production-frontend-slack-setup-2026-10-12.json');
+const frontend = read('docs/operations/evidence/learn-production-frontend-commusoft-recurring-2026-10-12.json');
 if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!==20 || candidate.endpoints.length!==37 ||
     wire.projectRef!==candidate.projectRef || wire.candidateManifestSha256!==candidateSha256 ||
     wire.state!=='prepared_not_uploaded' || schedules.runtime.sha256!==candidateSha256 ||
@@ -77,7 +77,7 @@ for(const e of candidate.endpoints) {
     verified(join(backupRoot,e.name+'.ezbr'),b.ezbrSha256);
   }
 }
-if(frontend.id!=='dpl_tZasPdqxDNGDk8JGQ4v7WzsTy5Ea' || frontend.gitSha!=='04f7f8edd8e3d55637ce0376698a746191a403b2' ||
+if(frontend.id!=='dpl_8UfEYjtsQVNmd1iuVXjrxqsqQfJT' || frontend.gitSha!=='d6068af4db92d4efbcba364f195d75616b135200' ||
    frontend.state!=='protected_production_configured_preview_ready') throw Error('Reviewed frontend artifact required');
 const operations=[];
 function add(id,kind,contract) { operations.push({id,kind,contract,pinSha256:sha(JSON.stringify(contract))}); }

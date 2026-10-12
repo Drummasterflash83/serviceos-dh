@@ -1,0 +1,55 @@
+{
+  "observedAt": "2026-10-12T21:59:08.617Z",
+  "state": "signed_in_operator_read_verified_capture_not_activated",
+  "gitSha": "d6068af4db92d4efbcba364f195d75616b135200",
+  "deploymentId": "dpl_98wf2T86VTkt8ueCPo37onYE8wyP",
+  "aliases": [
+    {
+      "name": "test.openfolk.ai",
+      "target": "dpl_98wf2T86VTkt8ueCPo37onYE8wyP"
+    },
+    {
+      "name": "serviceos-learn-test-allkin.vercel.app",
+      "target": "dpl_98wf2T86VTkt8ueCPo37onYE8wyP"
+    }
+  ],
+  "productionBefore": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "productionAfter": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "protection": [
+    {
+      "route": "/",
+      "status": 302,
+      "redirectOrigin": "https://vercel.com"
+    },
+    {
+      "route": "/login",
+      "status": 302,
+      "redirectOrigin": "https://vercel.com"
+    },
+    {
+      "route": "/client?section=learn",
+      "status": 302,
+      "redirectOrigin": "https://vercel.com"
+    },
+    {
+      "route": "/openfolk",
+      "status": 302,
+      "redirectOrigin": "https://vercel.com"
+    }
+  ],
+  "browser": {
+    "signedInAs": "existing Chris TEST operator",
+    "tenant": "existing Drummonds Commusoft TEST",
+    "ongoingControlsVisible": true,
+    "status": "Not enabled",
+    "refreshReadSucceeded": true,
+    "approvalDisabled": true,
+    "alerts": [],
+    "captureActivated": false,
+    "providerRequests": 0
+  },
+  "limitations": [
+    "Read-only hosted verification; approval, worker capture and provider incremental filters still require real acceptance.",
+    "Production sign-in remains outstanding."
+  ]
+}

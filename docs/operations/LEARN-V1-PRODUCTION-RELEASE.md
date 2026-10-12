@@ -7,7 +7,7 @@ preview is not a replacement design. This approval supersedes older pending
 ordinary-promotion approval statements below; it does not prove the package,
 runtime, signed-in acceptance or preservation gates passed. The
 [completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
-The current hosted TEST frontend is Git `e847a52`; TEST Slack packages 080–083,
+The current hosted TEST frontend is Git `d6068af`; TEST Slack packages 080–083,
 worker v11 and Commusoft package 084 are installed. Package 084 preserves all 195
 existing datasets and leaves capture paused. The production candidate includes
 packages 001–020, 37 exact runtime artifacts and a 71-step release sequence.
@@ -18,17 +18,18 @@ The runtime bytes are unchanged from the scheduler fix; their compile/boot and
 28 caller checks are explicitly carried forward, not newly executed. All 31
 release adapter/journal/candidate tests pass. Hosted gateway and real positive
 caller acceptance remain separate unfinished gates. The latest operator frontend
-still needs deployment and hosted acceptance.
+is deployed to stable TEST; its signed-in read and refresh passed with capture
+shown as not enabled. Approval and real worker acceptance remain separate.
 
-The current protected production preview is Git `04f7f8e`, deployment
-`dpl_tZasPdqxDNGDk8JGQ4v7WzsTy5Ea`, at
-[the production-configured preview](https://serviceos-pgtk1tzt4-allkin.vercel.app/login).
+The current protected production preview is Git `d6068af`, deployment
+`dpl_8UfEYjtsQVNmd1iuVXjrxqsqQfJT`, at
+[the production-configured preview](https://serviceos-bapstxhgk-allkin.vercel.app/login).
 Its rendered auth target is verified as production; sign-in acceptance is still
 pending. The preview is protected and the live deployment remains
 `dpl_DXueDsax146gdtyFoniXRaW3dzMM`. No production backend or alias was changed.
 [Database rehearsal evidence](evidence/learn-production-commusoft-recurring-2026-10-12.json),
 [current runtime evidence](evidence/learn-production-scheduler-callers-2026-10-12.json)
-and [frontend evidence](evidence/learn-production-frontend-slack-setup-2026-10-12.json)
+and [frontend evidence](evidence/learn-production-frontend-commusoft-recurring-2026-10-12.json)
 supersede older candidate pins below. Real-provider completeness, positive caller
 acceptance, current recovery/drain gates and live activation remain open.
 
