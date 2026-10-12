@@ -1,17 +1,17 @@
 {
   "version": "learn-production-release-sequence/1",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "candidateSha256": "afca8dcb12acfdb8f05f0f0e1a7779e0a94272226376045f78380ee9e104c708",
+  "candidateSha256": "cb4c84ca0612074a3e715188570beebbb2805aaac5a7b96d62dc068ac7c2dcb3",
   "steps": [
     {
       "id": "fresh-release-preflight",
       "kind": "check",
-      "pinSha256": "1766670abb254ba3a41bbe5c62645a76b473fffbaf3792b3c76a8d9184ffd4df"
+      "pinSha256": "a00266da00f37a9a50f1f89db4be6f5593cd87793497f3edab336aa4e0dbe687"
     },
     {
       "id": "pause-existing-schedules",
       "kind": "schedule",
-      "pinSha256": "f898a6747e06e34bd5e87a1afcb855d9d19a298855e5b632dd2d3c62410aa03b"
+      "pinSha256": "eb236273da3277861a4219e991f59e0898f11bae676ec8bb635edbdf95ecee91"
     },
     {
       "id": "verify-in-flight-drain",
@@ -106,7 +106,7 @@
     {
       "id": "matching-server-configuration",
       "kind": "configuration",
-      "pinSha256": "a9a6cc0a6eec026377c85623b464db1ef62c55cef52559968d23484a7ca62580"
+      "pinSha256": "11b904d08d9905f0ac44cd7190175eeea6f49f53f73f3c80fbaae1b2a45b6050"
     },
     {
       "id": "runtime-customer-card-scheduled-sync",
@@ -261,7 +261,7 @@
     {
       "id": "runtime-platform-worker",
       "kind": "runtime",
-      "pinSha256": "895cabb97036f499aef597d5072547583cf504bbdc525761705318a6e0620a84"
+      "pinSha256": "57e1d733a751ee88dcc45067b706f96c00494864cf1f303e727e4037fd050b32"
     },
     {
       "id": "runtime-receptionist-voicemail-recording",
@@ -296,7 +296,7 @@
     {
       "id": "publish-runtime-metadata",
       "kind": "runtime",
-      "pinSha256": "0ab0f6633777b88ba47ca772bcfd34a2b405bc0ebffbd0d530aa42429a0ed55d"
+      "pinSha256": "18dd2a32d46e5a733204ca6a64918bf19b5ddb34cd4e448275ae005bad8018ca"
     },
     {
       "id": "runtime-publication-readback",
@@ -319,9 +319,14 @@
       "pinSha256": "332c7346bb2f212151efd890be315406f0327ef152d95dc2a1654b70e2aaf4ce"
     },
     {
+      "id": "activate-reviewed-input-dispatch",
+      "kind": "configuration",
+      "pinSha256": "c55ba8a989da75e2691c1696c523807ddbf37dd1b09d5eb35b9d2d6ae2b96a62"
+    },
+    {
       "id": "restore-existing-schedules",
       "kind": "schedule",
-      "pinSha256": "7ba9a6f39fa5a6fea93cdfa93966ed376dc12ed84dc449a5e8a28acefea119fb"
+      "pinSha256": "1b742a1604de7914b8f50114be20891f70d35020b69f59b12514b670157bec9d"
     },
     {
       "id": "observe-initial-live-capture",

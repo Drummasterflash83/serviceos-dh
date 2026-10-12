@@ -8,6 +8,7 @@ import {
   deferCaptureJob,
 } from "../_shared/learn_capture_control.ts";
 import { getBearerToken } from "../_shared/authz.ts";
+import { runLearnInputTick } from "../_shared/learn_input_tick.ts";
 // ServiceOS — Edge Function: platform-worker (Async Worker Queue v1)
 //
 // The generic queue worker. Invoked on a 1-minute cron (secret-gated), it:
@@ -119,6 +120,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const background = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } })
     .EdgeRuntime;
   background?.waitUntil?.(discoveryWork);
+  const inputWork = runLearnInputTick({
+    enabled: Deno.env.get("LEARN_INPUT_DISPATCH_ENABLED"),
+    url: Deno.env.get("SUPABASE_URL"),
+    serviceKey,
+    commusoftKey: Deno.env.get("LEARN_COMMUSOFT_WORKER_KEY"),
+    slackKey: Deno.env.get("LEARN_SLACK_WORKER_KEY"),
+  }, jobTypes);
+  background?.waitUntil?.(inputWork);
   const discovery = await discoveryWork;
 
   // 1) reclaim dead workers' jobs, then 2) claim a batch atomically.
@@ -412,6 +421,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .EdgeRuntime;
   if (er?.waitUntil) er.waitUntil(work);
   await work;
+  const inputs = await inputWork;
 
   const failed =
     counts.claimed -
@@ -424,7 +434,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
     success:
       failed === 0 &&
       counts.unconfirmed === 0 &&
+      Object.values(inputs).every(result => !["attention", "unconfirmed"].includes(result.state)) &&
       !["unconfirmed", "attention"].includes(discovery.state),
+    input_dispatch: inputs,
     voicemail_discovery: discovery,
     claimed: counts.claimed,
     succeeded: counts.succeeded,

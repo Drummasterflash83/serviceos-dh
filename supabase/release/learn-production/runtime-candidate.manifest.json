@@ -84,7 +84,7 @@
       "manifestSha256": "4c6d63e876ef5f7ad9c5ca4e74c19a66f1e7ca983b8f3b5cde74088730f9e37b"
     }
   ],
-  "sourceClosureSha256": "c529298cfe2123ea544d00327c011d2693c16614b89713c6911d694d1ecf0e82",
+  "sourceClosureSha256": "9686f47f4e2ff39b877e8291a5e73d4c8d92807c1329f2fcba5fe1ed716a1843",
   "files": [
     {
       "path": "_shared/audit.ts",
@@ -393,6 +393,10 @@
     {
       "path": "_shared/learn_capture_control.ts",
       "sha256": "a1fabd8fc954dbb01c04d9cfe96787a178ff54102e03198bc46d10574cd68957"
+    },
+    {
+      "path": "_shared/learn_input_tick.ts",
+      "sha256": "2dcc2aa56888ddac14673d38f6a49a340c7bb37dc47e545a88716459e02d8054"
     },
     {
       "path": "_shared/learn-phone-playback.ts",
@@ -944,7 +948,7 @@
     },
     {
       "path": "platform-worker/index.ts",
-      "sha256": "9598ba125001b1638ee50e3ac7a947ec4dfd425ea40cb3fced46ffbb65404c1e"
+      "sha256": "d81b47de2ed52d5a51d2cbcd869c98ddbb376c81905245ee337678f28d98eba0"
     },
     {
       "path": "receptionist-voicemail-recording/index.ts",
@@ -2193,7 +2197,7 @@
     {
       "name": "platform-worker",
       "verifyJwt": false,
-      "sourceClosureSha256": "d63276fd0c5e330d64c31f0fd9261a3e717bb24aca9d6772cd2a22967b4a3d8b",
+      "sourceClosureSha256": "cbed51e973e500ed27865eb4c224aba904a2f430efab66e792af8fffa7c00b8a",
       "sourceFiles": [
         "_shared/authz.ts",
         "_shared/automation_execution_enqueue.ts",
@@ -2234,6 +2238,7 @@
         "_shared/intelligence/reason_codes.ts",
         "_shared/intelligence/types.ts",
         "_shared/learn_capture_control.ts",
+        "_shared/learn_input_tick.ts",
         "_shared/learn-processing-job.ts",
         "_shared/marketing_ai_prompt.ts",
         "_shared/marketing_email.ts",
@@ -2318,6 +2323,9 @@
         "GOOGLE_WORKSPACE_CLIENT_EMAIL",
         "GOOGLE_WORKSPACE_CLIENT_ID",
         "GOOGLE_WORKSPACE_PRIVATE_KEY",
+        "LEARN_COMMUSOFT_WORKER_KEY",
+        "LEARN_INPUT_DISPATCH_ENABLED",
+        "LEARN_SLACK_WORKER_KEY",
         "MARKETING_TEST_PROVIDER",
         "MICROSOFT_MAIL_CLIENT_ID",
         "MICROSOFT_MAIL_CLIENT_SECRET",
@@ -2665,6 +2673,9 @@
   "requiredNonSecretConfiguration": {
     "learn-launch-status": {
       "LEARN_STATUS_READ_MODE": "production_metadata_views"
+    },
+    "platform-worker": {
+      "LEARN_INPUT_DISPATCH_ENABLED": "true"
     }
   },
   "literalFunctionCalls": [

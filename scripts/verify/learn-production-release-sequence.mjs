@@ -11,7 +11,7 @@ const read = p => JSON.parse(readFileSync(p));
 const base = 'supabase/release/learn-production/';
 const runtimeBytes = readFileSync(base+'runtime-candidate.manifest.json');
 const candidate = JSON.parse(runtimeBytes), candidateSha256 = sha(runtimeBytes);
-const wireRoot = '.verification-results/production-runtime-wire-20261012-v2';
+const wireRoot = '.verification-results/production-runtime-wire-20261012-input-dispatch';
 const wire = read(join(wireRoot,'report.json'));
 const backupRoot = '.verification-results/production-runtime-compiled-backup-20261012';
 const backup = read(join(backupRoot,'report.json'));
@@ -23,12 +23,14 @@ if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!=
     backup.projectRef!==candidate.projectRef || backup.state!=='compiled_artifacts_retained_with_unchanged_deployment_metadata')
   throw Error('Exact production artifact set required');
 const verified = (path,expected) => { if(sha(readFileSync(path))!==expected) throw Error('Pinned file changed: '+path); };
-const binding=read('docs/operations/evidence/learn-production-runtime-roster-binding-2026-10-12.json');
-const originalRoot='.verification-results/production-runtime-bundle-20261012-v3';
-verified(join(originalRoot,'report.json'),binding.originalBundleReportSha256);
-verified(join(originalRoot,'boot-eszip-v1/report.json'),binding.originalBootReportSha256);
-const bundled=read(join(originalRoot,'report.json')), boot=read(join(originalRoot,'boot-eszip-v1/report.json'));
-if(binding.currentManifestSha256!==candidateSha256 || bundled.sourceClosureSha256!==candidate.sourceClosureSha256 ||
+const binding=read('docs/operations/evidence/learn-production-input-dispatch-2026-10-12.json');
+const originalRoot='.verification-results/production-runtime-bundle-20261012-input-dispatch';
+verified(join(originalRoot,'report.json'),binding.bundleReportSha256);
+verified(join(originalRoot,'boot-input-dispatch/report.json'),binding.bootReportSha256);
+const bundled=read(join(originalRoot,'report.json')), boot=read(join(originalRoot,'boot-input-dispatch/report.json'));
+if(binding.candidateManifestSha256!==candidateSha256 || bundled.manifestSha256!==candidateSha256 ||
+   boot.manifestSha256!==candidateSha256 || bundled.sourceClosureSha256!==candidate.sourceClosureSha256 ||
+   boot.sourceClosureSha256!==candidate.sourceClosureSha256 ||
    boot.state!=='all_endpoints_booted_and_rejected_missing_auth' || !boot.containerRemoved)
   throw Error('Original exact-artifact acceptance binding differs');
 const recovery=read('docs/operations/evidence/learn-production-runtime-recovery-2026-10-12.json');
@@ -85,7 +87,7 @@ add('fresh-preservation-checkpoint','check',{requires:['consistent_source_ids_an
   'existing_relationships_and_storage_pointers','complete_schema_roles_receipts_schedules_and_runtime_baseline']});
 for(const d of candidate.database) add('database-'+d.path.split('/').at(-1).slice(0,3),'database',d);
 add('matching-server-configuration','configuration',{
-  nonSecret:candidate.requiredNonSecretConfiguration,
+  nonSecret:{...candidate.requiredNonSecretConfiguration,'platform-worker':{LEARN_INPUT_DISPATCH_ENABLED:'false'}},
   requiredNewSecretNames:['LEARN_COMMUSOFT_WORKER_KEY','LEARN_SLACK_WORKER_KEY'],
   requires:['existing_credentials_preserved','reviewed_secure_provisioning','verified_matching_caller_bindings'],
   captureActivation:false,secretValuesIncluded:false,
@@ -108,6 +110,14 @@ add('promote-matching-frontend','frontend',{project:frontend.project,id:frontend
   gitSha:frontend.gitSha,previousProductionDeployment:frontend.productionDeploymentUnchanged});
 add('signed-in-live-acceptance','check',{requires:['actual_openfolk_ai_deployment_and_production_backend',
   'drummonds_branding','client_learn_inputs_context_cards_and_operator_controls','source_preservation']});
+add('activate-reviewed-input-dispatch','configuration',{
+  nonSecret:{'platform-worker':candidate.requiredNonSecretConfiguration['platform-worker']},
+  requires:['current_exact_release_approval','reviewed_queued_import_and_recurring_channel_scope',
+    'matching_server_trigger_keys','positive_empty_body_worker_acceptance','matching_queue_schema_and_runtime',
+    'no_unapproved_test_capture_or_new_provider_permissions'],
+  captureActivation:'dispatch_previously_approved_queue_work_only',createsImportApprovals:false,
+  createsRecurringChannelApprovals:false,secretValuesIncluded:false,
+});
 add('restore-existing-schedules','schedule',schedules.outputs.find(v=>v.mode==='restore'));
 add('observe-initial-live-capture','check',{requires:['original_schedule_states','real_new_provider_inputs',
   'durable_source_to_card_processing','coverage_and_failure_diagnostics','no_unapproved_capture_activation']});

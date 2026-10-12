@@ -2,13 +2,13 @@
   "version": "learn-production-release-operations/1",
   "state": "prepared_not_approved_or_executed",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "planSha256": "7ad9efb95b27154d89c7b32a498b27c3fde92b24bbc1fbc33a6f770d5797fbfa",
+  "planSha256": "3ac10bc0563f65fb78c6a753293e4f7c89c5e3f0cd1d422e4a943a53c943fdde",
   "operations": [
     {
       "id": "fresh-release-preflight",
       "kind": "check",
       "contract": {
-        "candidateSha256": "afca8dcb12acfdb8f05f0f0e1a7779e0a94272226376045f78380ee9e104c708",
+        "candidateSha256": "cb4c84ca0612074a3e715188570beebbb2805aaac5a7b96d62dc068ac7c2dcb3",
         "requires": [
           "explicit_exact_release_approval",
           "fresh_production_schema_and_runtime_match",
@@ -19,7 +19,7 @@
           "manual_and_external_caller_coordination"
         ]
       },
-      "pinSha256": "1766670abb254ba3a41bbe5c62645a76b473fffbaf3792b3c76a8d9184ffd4df"
+      "pinSha256": "a00266da00f37a9a50f1f89db4be6f5593cd87793497f3edab336aa4e0dbe687"
     },
     {
       "id": "pause-existing-schedules",
@@ -27,9 +27,9 @@
       "contract": {
         "mode": "pause",
         "path": "supabase/release/learn-production/schedules-pause.sql",
-        "sha256": "164f4438dd3fb6c5d135e95a6fc70762e9d8e6d0474eeae1eca63c095a3da536"
+        "sha256": "69ee921e615c5086c53f74aaee35dc0fa791ba48a364994c60f9a68f6adb77d3"
       },
-      "pinSha256": "f898a6747e06e34bd5e87a1afcb855d9d19a298855e5b632dd2d3c62410aa03b"
+      "pinSha256": "eb236273da3277861a4219e991f59e0898f11bae676ec8bb635edbdf95ecee91"
     },
     {
       "id": "verify-in-flight-drain",
@@ -228,6 +228,9 @@
         "nonSecret": {
           "learn-launch-status": {
             "LEARN_STATUS_READ_MODE": "production_metadata_views"
+          },
+          "platform-worker": {
+            "LEARN_INPUT_DISPATCH_ENABLED": "false"
           }
         },
         "requiredNewSecretNames": [
@@ -242,7 +245,7 @@
         "captureActivation": false,
         "secretValuesIncluded": false
       },
-      "pinSha256": "a9a6cc0a6eec026377c85623b464db1ef62c55cef52559968d23484a7ca62580"
+      "pinSha256": "11b904d08d9905f0ac44cd7190175eeea6f49f53f73f3c80fbaae1b2a45b6050"
     },
     {
       "id": "runtime-customer-card-scheduled-sync",
@@ -945,16 +948,16 @@
           "status": "ACTIVE"
         },
         "verifyJwt": false,
-        "eszipSha256": "a3267bfb8f1e2c05ac2769055811a5b2e1ccfbc80b2573da3fd834077ab99112",
-        "ezbrSha256": "e128c87b49aabf112b25da5e12f5633fff665dbe56cdfd86092fe804122db521",
+        "eszipSha256": "f145bd7dcb8818853a3c4ac41232a496749fbc169ca9c8b752aa51bd7f9c84e9",
+        "ezbrSha256": "0a28ca4b1bcd2ca9d3f08cf7c3d95d25b5d632326c2d5ec35c2831e8a5fb88f3",
         "request": {
           "method": "PATCH",
-          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/platform-worker?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fplatform-worker%2Findex.ts&ezbr_sha256=e128c87b49aabf112b25da5e12f5633fff665dbe56cdfd86092fe804122db521",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/platform-worker?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fplatform-worker%2Findex.ts&ezbr_sha256=0a28ca4b1bcd2ca9d3f08cf7c3d95d25b5d632326c2d5ec35c2831e8a5fb88f3",
           "contentType": "application/vnd.denoland.eszip",
           "bodyFile": "platform-worker.ezbr"
         }
       },
-      "pinSha256": "895cabb97036f499aef597d5072547583cf504bbdc525761705318a6e0620a84"
+      "pinSha256": "57e1d733a751ee88dcc45067b706f96c00494864cf1f303e727e4037fd050b32"
     },
     {
       "id": "runtime-receptionist-voicemail-recording",
@@ -1267,7 +1270,7 @@
           {
             "name": "platform-worker",
             "verifyJwt": false,
-            "ezbrSha256": "e128c87b49aabf112b25da5e12f5633fff665dbe56cdfd86092fe804122db521"
+            "ezbrSha256": "0a28ca4b1bcd2ca9d3f08cf7c3d95d25b5d632326c2d5ec35c2831e8a5fb88f3"
           },
           {
             "name": "receptionist-voicemail-recording",
@@ -1302,7 +1305,7 @@
         ],
         "reference": "https://supabase.com/docs/reference/api/v1-bulk-update-functions"
       },
-      "pinSha256": "0ab0f6633777b88ba47ca772bcfd34a2b405bc0ebffbd0d530aa42429a0ed55d"
+      "pinSha256": "18dd2a32d46e5a733204ca6a64918bf19b5ddb34cd4e448275ae005bad8018ca"
     },
     {
       "id": "runtime-publication-readback",
@@ -1357,14 +1360,38 @@
       "pinSha256": "332c7346bb2f212151efd890be315406f0327ef152d95dc2a1654b70e2aaf4ce"
     },
     {
+      "id": "activate-reviewed-input-dispatch",
+      "kind": "configuration",
+      "contract": {
+        "nonSecret": {
+          "platform-worker": {
+            "LEARN_INPUT_DISPATCH_ENABLED": "true"
+          }
+        },
+        "requires": [
+          "current_exact_release_approval",
+          "reviewed_queued_import_and_recurring_channel_scope",
+          "matching_server_trigger_keys",
+          "positive_empty_body_worker_acceptance",
+          "matching_queue_schema_and_runtime",
+          "no_unapproved_test_capture_or_new_provider_permissions"
+        ],
+        "captureActivation": "dispatch_previously_approved_queue_work_only",
+        "createsImportApprovals": false,
+        "createsRecurringChannelApprovals": false,
+        "secretValuesIncluded": false
+      },
+      "pinSha256": "c55ba8a989da75e2691c1696c523807ddbf37dd1b09d5eb35b9d2d6ae2b96a62"
+    },
+    {
       "id": "restore-existing-schedules",
       "kind": "schedule",
       "contract": {
         "mode": "restore",
         "path": "supabase/release/learn-production/schedules-restore.sql",
-        "sha256": "9440d984b632a0c5d9dc74c4bd11d0937bad4494e66365168b57093541f9739d"
+        "sha256": "4673cd25b7c87ad3a446012552da7336e751a6955753be9472db479a701a9568"
       },
-      "pinSha256": "7ba9a6f39fa5a6fea93cdfa93966ed376dc12ed84dc449a5e8a28acefea119fb"
+      "pinSha256": "1b742a1604de7914b8f50114be20891f70d35020b69f59b12514b670157bec9d"
     },
     {
       "id": "observe-initial-live-capture",

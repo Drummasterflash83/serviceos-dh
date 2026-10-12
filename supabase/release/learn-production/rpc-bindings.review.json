@@ -1,6 +1,6 @@
 {
   "version": "learn-production-rpc-bindings/1",
-  "sourceClosureSha256": "c529298cfe2123ea544d00327c011d2693c16614b89713c6911d694d1ecf0e82",
+  "sourceClosureSha256": "9686f47f4e2ff39b877e8291a5e73d4c8d92807c1329f2fcba5fe1ed716a1843",
   "baselineSchemaSha256": "fa26c9d3745664b26e5391757dec9995aadf4c9bd1d9bd870394159d2b16b39f",
   "sites": [
     {
@@ -403,5 +403,5 @@
     "Catalog presence and execute privileges are checked against the rehearsed archive candidate; named argument semantics and end-to-end execution need their separate journey evidence.",
     "The generic proxy passthroughs must be reviewed again if their production handler bindings change."
   ],
-  "catalogScope": "Actual isolated production archive catalog after packages 001\u2013016; roster journey and original-source preservation passed."
+  "catalogScope": "Actual isolated production archive catalog after packages 001–016; roster journey and original-source preservation passed."
 }

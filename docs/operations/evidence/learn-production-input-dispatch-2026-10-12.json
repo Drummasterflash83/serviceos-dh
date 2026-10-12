@@ -1,0 +1,45 @@
+{
+  "version": "learn-production-input-dispatch/1",
+  "observedAt": "2026-10-12T17:22:02.087Z",
+  "state": "locally_verified_not_deployed",
+  "candidateManifestSha256": "cb4c84ca0612074a3e715188570beebbb2805aaac5a7b96d62dc068ac7c2dcb3",
+  "sourceClosureSha256": "9686f47f4e2ff39b877e8291a5e73d4c8d92807c1329f2fcba5fe1ed716a1843",
+  "bundleReportSha256": "7a252af4aaf685f61bb1dec8cfa598e4d85913887b64ccb94bc0316666df87b8",
+  "bootReportSha256": "2a8d51306dfc70d6b1fad0824706fc0dcd649f77bdb588869cd7c2523def1d49",
+  "endpoints": 37,
+  "bootChecks": 37,
+  "containerRemoved": true,
+  "productionChanges": 0,
+  "hostedTestChanges": 0,
+  "providerRequests": 0,
+  "localGuardAndDispatchChecks": 8,
+  "dispatch": {
+    "caller": "existing authenticated unfiltered platform-worker tick",
+    "defaultEnabled": false,
+    "endpoints": [
+      "learn-commusoft-worker",
+      "learn-slack-schedule",
+      "learn-slack-worker"
+    ],
+    "newCronJobs": 0,
+    "newQueueCredentials": 0,
+    "newImportApprovals": 0,
+    "requestsPerTick": 3,
+    "automaticHttpRetries": false
+  },
+  "scheduleRebinding": {
+    "onlyRuntimeManifestPinChanged": true,
+    "priorManifestSha256": "afca8dcb12acfdb8f05f0f0e1a7779e0a94272226376045f78380ee9e104c708",
+    "priorRehearsal": "learn-production-schedule-transition-2026-10-12.json",
+    "newArchiveRehearsal": false
+  },
+  "databasePackagesUnchanged": true,
+  "limitations": [
+    "Not hosted positive caller acceptance. The local guard check uses synthetic credentials and does not exercise the hosted JWT gateway.",
+    "Dispatch is separate from import approvals and recurring channel approvals. It does not implement Commusoft incremental refresh or expand Slack history coverage.",
+    "Keep the dispatch flag false during staging; activate only after scoped production release acceptance.",
+    "Existing production scheduler credential handling is unchanged; no privileged bearer or new trigger key is added to pg_net."
+  ],
+  "localReleaseAndDispatchChecks": 31,
+  "preparedReleaseSteps": 67
+}

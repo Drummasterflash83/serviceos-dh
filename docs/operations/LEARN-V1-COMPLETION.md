@@ -7,6 +7,37 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — recurring worker dispatch implemented and rebuilt locally.**
+The existing authenticated platform-worker tick can now call the dedicated
+Commusoft worker, Slack recurring-window scheduler and Slack worker. It sends
+the existing gateway credential and separate trigger keys directly server-to-server,
+with no request body. No new cron jobs or credentials in pg_net are introduced.
+Filtered runs skip this dispatch; the new switch defaults off. A failed connector
+does not stop the other one, and uncertain/retrying outcomes are not reported as
+successful capture. Existing queue approvals, tenant admission and pacing remain
+authoritative. No hosted runtime, switch, credential or production data changed.
+
+Thirty-one local dispatch/guard and release-adapter checks pass. All 37 updated
+artifacts compiled and booted in the network-disabled Edge runtime; all rejected
+missing authentication. These are local checks, not positive hosted acceptance.
+The 16 SQL packages are unchanged. Schedule transition SQL differs only in its
+runtime-manifest pin; its prior archive rehearsal remains the behavioural evidence.
+The release is now **67 steps**: configuration keeps dispatch off during staging,
+then a separate reviewed activation follows signed-in acceptance and precedes
+restoration of the existing schedules.
+[Dispatch and artifact evidence](evidence/learn-production-input-dispatch-2026-10-12.json).
+
+Still needed: positive hosted dispatch verification, secure production configuration,
+recurring Commusoft incremental refresh (dispatch alone does not create refresh
+approvals), durable operator visibility of dispatch failures, and Drummonds Slack
+connection/history coverage. The new code does not expand an approved import or
+make an unconnected Slack workspace live. Production promotion remains unapproved.
+
+The signed-in TEST operator page was verified again as Chris and showed 784 of
+1,550 refreshed customer-contact checks at 17:20 UTC. The bounded runner continues;
+the last completed batch at 700 preserved all 194 protected datasets. All 871
+site checks are complete. No further TEST sign-in is needed for this continuation.
+
 **12 October — database and schedule execution adapters connected.**
 The release journal can now use the exact 16 package statements and the two
 rehearsed schedule transitions through a fixed production management endpoint.
