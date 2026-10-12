@@ -1,8 +1,8 @@
 {
   "scope": "TEST only",
   "run": "eb260c9d-e1ee-48cf-8cc4-179375b50613",
-  "observedAt": "2026-10-12T12:00:27.804896+00:00",
-  "pages": 641,
+  "observedAt": "2026-10-12T12:23:52.281725+00:00",
+  "pages": 896,
   "parentsPlanned": 1547,
   "complete": false,
   "sources": [
@@ -15,7 +15,7 @@
       "collection": "properties"
     },
     {
-      "records": 1208,
+      "records": 1552,
       "collection": "propertyContacts"
     }
   ],
@@ -24,11 +24,11 @@
       "error": null,
       "status": "queued",
       "attempt": 0,
-      "availableAt": "2026-10-12T12:00:27.32319+00:00",
+      "availableAt": "2026-10-12T12:23:53.177488+00:00",
       "leaseExpiresAt": null
     }
   ],
-  "requests": 256,
+  "requests": 511,
   "maxProviderRequests": 4000,
   "newAccounts": 0,
   "newGrants": 0,

@@ -9,7 +9,12 @@ UTC. The last 200 sync records report successful calls/recordings through 11:25
 UTC and processing through 11:05 UTC. Every retained recording has a storage
 pointer and passes account/URL binding; metadata matched across both audit reads.
 
-Production has both Simwood secret names; TEST still has neither. This audit
+Production had both Simwood secret names; TEST had neither at that observation.
+The existing credential was subsequently verified against the provider account
+and, with Chris's explicit approval, saved in TEST at 12:20 UTC. Digest verification,
+unchanged phone records/settings and inactive routes passed. See
+[credential evidence](evidence/learn-phone-test-credential-2026-10-12.json).
+The earlier production inventory audit
 made no provider requests or writes. It proves fresh retained production evidence,
 not provider-wide coverage, playable bytes for every recording, or the new V1
 provider-to-card journey. The older counts and password-manager observations below

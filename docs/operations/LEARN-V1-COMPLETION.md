@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 12:24 UTC — deployed linked customer records accepted by the operator.**
+The protected stable TEST alias serves `efc3d11`. Chris's existing operator session
+opened the real reviewed customer card and viewed its linked job, site and contact.
+Source provenance, incomplete-coverage wording and the unconfirmed completion-time
+exclusion were visible. Refresh re-read the contact; closing the card removed its
+details. All four result audits matched the selected tenant, real actor, card and
+record IDs. No account or grant was added. Ordinary-owner browser acceptance and
+communication/summary/scoring enrichment remain open.
+[Evidence](evidence/learn-customer-business-context-test-2026-10-12.json).
+
+**12 October, 12:23 UTC — customer-contact import continues.**
+The same supervised run reached 896 of 1,547 customer properties, retaining 1,552
+contacts alongside 2,418 properties and 12,611 jobs. All 194 protected datasets
+match the reviewed baseline. Customer contacts and site-contact traversal are
+not complete. [Observation](evidence/learn-commusoft-operator-continuation-2026-10-12.json).
+
+**12 October, 12:20 UTC — approved phone credential provisioned in TEST.**
+Both Simwood server-secret digests match the existing 1Password login; other secret
+metadata and protected phone records/settings are unchanged. No phone route was
+activated, provider request made or production changed. The next acceptance slice
+must establish the real TEST account/capture scope, recording storage limits and
+provider-to-card/audio journey; paid AI verification still needs the TEST key.
+[Evidence](evidence/learn-phone-test-credential-2026-10-12.json).
+
 **12 October, 12:12 UTC — customer business-context reader installed in TEST.**
 The same provider-neutral reader now supplies linked jobs, sites and contacts to
 customer cards and the audited OpenFolk card view. It shows canonical counts,

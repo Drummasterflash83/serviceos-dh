@@ -43,7 +43,34 @@
   "clientContractTests": 4,
   "strictTypecheck": "passed",
   "frontendBuild": "passed",
-  "frontendAcceptance": "pending",
+  "frontendAcceptance": {
+    "state": "signed_in_operator_browser_verified",
+    "observedAt": "2026-10-12T12:23:51.860Z",
+    "gitSha": "efc3d1185e88eba88e3b099c07373c7b9a1f507c",
+    "deploymentId": "dpl_Hm1accwx7Uh4os8GWEXbdKDmfdDH",
+    "stableAlias": "serviceos-learn-test-allkin.vercel.app",
+    "deploymentProtectionVerified": true,
+    "realLinkedRows": {
+      "jobs": 1,
+      "sites": 1,
+      "contacts": 1
+    },
+    "checks": [
+      "Existing operator session and selected TEST client",
+      "Real linked job/site/contact tabs",
+      "Historical source reference and provider-coverage disclaimer",
+      "Unconfirmed completion timezone visibly excluded from performance calculations",
+      "Refresh re-read verified",
+      "Closing card removed linked details"
+    ],
+    "matchedAuditReads": 4,
+    "auditActorAndTenantMatch": true,
+    "auditedRecordsMatchSelectedTenant": true,
+    "ordinaryOwnerHostedBrowserAcceptance": "pending",
+    "newAccounts": 0,
+    "newGrants": 0,
+    "productionChanged": false
+  },
   "checks": [
     "Company and individual customer links",
     "Alternative business-system source references",
