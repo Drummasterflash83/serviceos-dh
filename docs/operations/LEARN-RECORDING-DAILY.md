@@ -1,5 +1,13 @@
 # Drummonds daily recording backup operations
 
+**12 October update:** the manual daily follow-up at 08:05 UTC stopped at
+08:11:32 UTC because source listings or references changed during inventory. It
+used 2,934 source requests, saved no inventory, retained the previous successful
+manifest and removed its lock. The scan now checks metadata in batches of at most
+four, draining each batch before propagating failure; both complete before/after
+comparisons remain mandatory. All 83 backup tests pass. A live retry is still
+required. [Failure and candidate evidence](evidence/learn-recording-inventory-concurrency-2026-10-12.json).
+
 Status on 11 October 2026: the corrected real daily run **succeeded at 11:53:07
 UTC**, verifying 2,888 files / 601,004,261 bytes and all 2,882 recording references.
 Six unlinked objects were retained; there were no missing file references or null

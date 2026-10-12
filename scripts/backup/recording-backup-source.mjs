@@ -348,13 +348,23 @@ export function createRecordingSource(
           ids.push(row.id);
           idsByPath.set(row.storagePath, ids);
         }
-      for (const object of before) {
-        const details = await info(object.key);
-        requireValue(
-          canonical({ ...details, version: undefined }) === canonical(object),
-          "source_changed",
+      // Shorten the non-atomic observation window without weakening either
+      // complete listing/reference comparison. Drain each bounded batch before
+      // propagating failure; no requests may outlive the inventory attempt.
+      for (let offset = 0; offset < before.length; offset += 4) {
+        const batch = await Promise.allSettled(
+          before.slice(offset, offset + 4).map(async (object) => {
+            const details = await info(object.key);
+            requireValue(
+              canonical({ ...details, version: undefined }) === canonical(object),
+              "source_changed",
+            );
+            return identity(details, idsByPath.get(object.key) ?? []);
+          }),
         );
-        entries.push(identity(details, idsByPath.get(object.key) ?? []));
+        const failure = batch.find((r) => r.status === "rejected");
+        if (failure) throw failure.reason;
+        entries.push(...batch.map((r) => r.value));
       }
       const after = await listAll(),
         afterRefs = await references();

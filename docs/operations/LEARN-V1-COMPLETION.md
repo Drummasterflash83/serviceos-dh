@@ -7,6 +7,15 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 08:11 UTC — recording refresh stopped on source change.**
+The manual daily run detected changed listings/references during its metadata
+inventory and failed closed after 2,934 requests. No new inventory or backup
+completion was published; the 11 October verified manifest remains intact and
+the lock was removed. Metadata scanning now uses batches of at most four reads,
+retaining both full consistency passes and draining failures. All 83 backup tests
+pass. A successful fresh live run is still needed before newer coverage is claimed.
+[Failure and candidate evidence](evidence/learn-recording-inventory-concurrency-2026-10-12.json).
+
 **12 October, 08:09 UTC — Connections correction deployed to protected TEST.**
 Vercel remotely built Git `f7718dd0d35c161fdf6c77d9744de449bb24baca` to READY in
 the separate TEST project. Its stable alias points to that exact deployment;

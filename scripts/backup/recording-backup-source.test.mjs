@@ -98,7 +98,8 @@ function fixture(options = {}) {
     const key = decodeURIComponent(u.pathname.slice((isInfo ? info : download).length));
     const f = files.get(key);
     if (!f) return new Response("missing", { status: 404 });
-    if (isInfo)
+    if (isInfo) {
+      await options.beforeInfo?.(key);
       return json({
         id: f.id,
         name: key,
@@ -108,6 +109,7 @@ function fixture(options = {}) {
         etag: f.etag,
         last_modified: f.updated,
       });
+    }
     assert.ok(u.pathname.startsWith(download));
     assert.equal(request.method, "GET");
     assert.equal(request.headers["If-Match"], `"${f.etag}"`);
@@ -306,4 +308,74 @@ test("Supabase source through official AWS SDK retains every listed file and res
   } finally {
     aws.close();
   }
+});
+
+test("inventory limits metadata reads to four and preserves listing order despite reversed completion", async () => {
+  let active = 0,
+    peak = 0,
+    calls = 0,
+    releaseBatch;
+  const pending = [];
+  const firstBatch = new Promise((resolve) => {
+    releaseBatch = resolve;
+  });
+  const f = fixture({
+    beforeInfo: async () => {
+      active++;
+      peak = Math.max(peak, active);
+      calls++;
+      if (calls <= 4)
+        await new Promise((resolve) => {
+          pending.push(resolve);
+          if (pending.length === 4) releaseBatch();
+        });
+      active--;
+    },
+  });
+  for (let n = 4; n <= 9; n++) f.add(`${tenant}/batch-${n}.wav`, n);
+  const running = f.source.inventory();
+  await firstBatch;
+  assert.equal(calls, 4);
+  assert.equal(active, 4);
+  for (const release of pending.reverse()) release();
+  const { inventory } = await running;
+  assert.equal(peak, 4);
+  assert.equal(active, 0);
+  assert.equal(inventory.objects.length, 9);
+  assert.deepEqual(
+    inventory.objects.map((o) => o.objectId),
+    Array.from({ length: 9 }, (_, n) => id(n + 1)),
+  );
+});
+
+test("failed metadata batch drains existing reads and never starts the next batch", async () => {
+  let calls = 0,
+    arrived;
+  const pending = [];
+  const firstBatch = new Promise((resolve) => {
+    arrived = resolve;
+  });
+  const f = fixture({
+    beforeInfo: async () => {
+      calls++;
+      if (calls === 1) throw Error("PRIVATE provider detail");
+      await new Promise((resolve) => {
+        pending.push(resolve);
+        if (pending.length === 3) arrived();
+      });
+    },
+  });
+  for (let n = 4; n <= 9; n++) f.add(`${tenant}/batch-${n}.wav`, n);
+  let settled = false;
+  const running = f.source.inventory().finally(() => {
+    settled = true;
+  });
+  const rejected = assert.rejects(running, code("source_request_unconfirmed"));
+  await firstBatch;
+  assert.equal(calls, 4);
+  assert.equal(settled, false);
+  for (const release of pending) release();
+  await rejected;
+  assert.equal(settled, true);
+  assert.equal(calls, 4);
 });
