@@ -22,7 +22,8 @@ import { resolveSimwoodAccount } from "../_shared/simwood-account.ts";
 //     "to": "ISO date?",                   // optional; defaults to now
 //     "call_id": "string?",                // optional; API `callId` filter
 //     "linked_id": "string?",              // optional; API `linkedId` filter
-//     "limit": number?                     // optional; max records to process
+//     "limit": number?,                    // optional; max records to process
+//     "process_new_recordings": boolean?   // defaults true; false retains metadata only
 //   }
 //
 // NOTE: the request's `from`/`to` are the DATE WINDOW and map to the API's
@@ -89,6 +90,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return failResponse("invalid_json", "Request body must be valid JSON", 400);
   }
   const body = (parsed ?? {}) as Record<string, unknown>;
+  if (body.process_new_recordings !== undefined && typeof body.process_new_recordings !== "boolean") {
+    return failResponse("invalid_processing_scope", "process_new_recordings must be a boolean", 400);
+  }
+  const processNewRecordings = body.process_new_recordings !== false;
 
   const limit = toInt(body.limit);
   if (body.limit !== undefined && (limit === null || limit <= 0)) {
@@ -135,6 +140,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     linked_id: linkedIdFilter,
     limit,
     provider_customer_id_supplied: suppliedCustomerId !== null,
+    process_new_recordings: processNewRecordings,
   };
 
   // Open a sync run (status running) so even a mid-run failure is auditable.
@@ -385,7 +391,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       },
     );
 
-  const toTrigger = pipelineToken ? newRecordingIds.slice(0, MAX_AUTO_PIPELINE) : [];
+  const toTrigger = pipelineToken && processNewRecordings ? newRecordingIds.slice(0, MAX_AUTO_PIPELINE) : [];
 
   // --- success -------------------------------------------------------------
   const metadata = {

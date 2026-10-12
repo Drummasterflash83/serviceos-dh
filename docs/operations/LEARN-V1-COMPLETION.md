@@ -7,6 +7,19 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 13:04 UTC — bounded real phone capture prepared.**
+TEST recording importer v9 supports explicit metadata-only capture, preserving
+its normal automatic processing default. All 73 local checks, strict TypeScript,
+ten downloaded executable-file comparisons and three downloaded behaviour checks
+pass; 194 datasets, SQL and other endpoints are preserved. No capture was enabled.
+The prepared real run covers a fixed 15-minute Drummonds window, up to 20 calls/
+20 recording records, one metadata replay and at most one retained audio file.
+Its existing bucket remains private and capped at 1 MiB. Capture pauses after each
+stage; no identity/grant, schedule, AI call or production change is included.
+The goal requires approval for the real recording's TEST destination before copying.
+[Exact prepared scope](LEARN-PHONE-REAL-TEST.md) and
+[runtime evidence](evidence/learn-phone-metadata-only-test-2026-10-12.json).
+
 **12 October, 12:53 UTC — operator retained-audio browser acceptance verified.**
 Protected TEST frontend `e2d51fa` played the existing synthetic eight-second
 recording through 0:08 under Chris's existing operator identity. Closing the

@@ -1,0 +1,36 @@
+{
+  "scope": "TEST only",
+  "runtime": {
+    "state": "deployed_needs_hosted_acceptance",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T13:00:01.829Z",
+    "sourceBundleSha256": "5117e782024bef28864926251c9656fb21e2abc09e4fc54e1d36bd6089a56457",
+    "cliExitStatus": 0,
+    "endpoint": {
+      "id": "0d980de4-9f6f-489c-8b29-103da9342a42",
+      "name": "simwood-sync-recordings",
+      "version": 9,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "bundleSha256": "b644d8f2f4e762ffcf827fb04a8621ac962067f4909b3ca3047ca7f03367d5d9"
+    },
+    "preservedDatasets": 194,
+    "schemaUnchanged": true,
+    "otherEndpointsUnchanged": true,
+    "providerRequests": 0,
+    "newAccounts": 0,
+    "newGrants": 0,
+    "productionChanged": false
+  },
+  "downloadedRuntime": {
+    "state": "passed",
+    "observedAt": "2026-10-12T13:02:19.068Z",
+    "sourceBundleSha256": "5117e782024bef28864926251c9656fb21e2abc09e4fc54e1d36bd6089a56457",
+    "executableFilesMatched": 10,
+    "downloadedHandlerTests": 3
+  },
+  "localHandlerTests": 73,
+  "strictTypecheck": "passed",
+  "captureActivated": false,
+  "realProviderAcceptance": "prepared, awaiting recording-copy scope approval"
+}

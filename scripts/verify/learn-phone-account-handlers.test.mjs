@@ -1651,3 +1651,35 @@ test("actual pipeline and finaliser bind the atomic receipt to the exact complet
   assert.equal(h.requests.length,3);assert.ok(!h.writes.some(w=>w.table==="interactions"||w.table==="platform_events"));
  }
 });
+
+test("recording metadata-only capture retains sources and completion without starting audio or AI", async () => {
+  for (const enabled of [false, true]) {
+    const h = await harness("simwood-sync-recordings", {
+      providerPage: () => ({ items: [{ id: "new-provider-id" }] }),
+      publicationResponse: (a) => ({ data: {
+        version: "learn-phone-page/1", tenantId: a.p_tenant, runId: a.p_run,
+        page: a.p_page, kind: a.p_kind, recordsProcessed: 1, newRecordingIds: [id(8)],
+      }, error: null }),
+      childResponses: { "phone-process-pipeline": { body: { success: true } } },
+    });
+    const response = await h.run({ process_new_recordings: enabled });
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).window_complete, true);
+    const completion = h.writes.find(w => w.table === "learn_phone_complete_import");
+    assert.equal(completion.v.p_records, 1);
+    assert.equal(completion.v.p_metadata.process_new_recordings, enabled);
+    assert.equal(completion.v.p_metadata.auto_pipeline_eligible, enabled ? 1 : 0);
+    assert.equal(h.requests.filter(r => r.url.includes("phone-process-pipeline")).length, enabled ? 1 : 0);
+    assert.equal(h.uploads.length, 0);
+  }
+});
+test("recording processing scope rejects ambiguous values before capture", async () => {
+  for (const value of [null, "false", 0, {}, []]) {
+    const h = await harness("simwood-sync-recordings");
+    const response = await h.run({ process_new_recordings: value });
+    assert.equal(response.status, 400);
+    assert.equal((await response.json()).error.code, "invalid_processing_scope");
+    assert.equal(h.requests.length, 0);
+    assert.equal(h.writes.length, 0);
+  }
+});
