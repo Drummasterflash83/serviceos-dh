@@ -7,6 +7,28 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 12:53 UTC — operator retained-audio browser acceptance verified.**
+Protected TEST frontend `e2d51fa` played the existing synthetic eight-second
+recording through 0:08 under Chris's existing operator identity. Closing the
+recording removed the player. Both operator information/review panels now use the
+embedded layout and were visually verified after deployment. Six control-plane
+receipts and two matching playback receipts across two checks match the exact
+actor, synthetic tenant, recording and reason. Original audit rows are unchanged;
+only these additions differ across 194 protected datasets. The stopped import
+journal was precisely reconciled for those receipts, retaining its prior hashes.
+No identities/grants/provider calls were added by this playback check. Real phone
+capture, AI processing and card linkage remain open.
+[Evidence](evidence/learn-operator-phone-playback-test-2026-10-12.json).
+
+**12 October, 12:53 UTC — contacts at checkpoint 1,130.**
+The last completed supervised batch retained 1,865 contacts, 2,418 properties and
+12,611 jobs. Its next job reported `commusoft_request_window_expired`; no pending invocation or lease remained.
+A continuation startup timed out before dispatch; inspection at 12:54 UTC confirmed
+no invocation increase, no pending request and all 194 datasets matching. The
+same bounded approval resumes after the above exact audit reconciliation;
+customer and site-contact coverage remain incomplete.
+
+
 **12 October, 12:36 UTC — audited operator audio path installed in TEST.**
 OpenFolk's selected-client call/recording view now has a prepared playback control.
 The additive SQL and new endpoint use the existing operator grant and real user JWT,

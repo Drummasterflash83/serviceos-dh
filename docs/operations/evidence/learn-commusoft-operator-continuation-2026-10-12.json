@@ -1,8 +1,8 @@
 {
   "scope": "TEST only",
   "run": "eb260c9d-e1ee-48cf-8cc4-179375b50613",
-  "observedAt": "2026-10-12T12:23:52.281725+00:00",
-  "pages": 896,
+  "observedAt": "2026-10-12T12:53:58.83842+00:00",
+  "pages": 1130,
   "parentsPlanned": 1547,
   "complete": false,
   "sources": [
@@ -15,20 +15,20 @@
       "collection": "properties"
     },
     {
-      "records": 1552,
+      "records": 1865,
       "collection": "propertyContacts"
     }
   ],
   "jobs": [
     {
-      "error": null,
-      "status": "queued",
-      "attempt": 0,
-      "availableAt": "2026-10-12T12:23:53.177488+00:00",
+      "error": "commusoft_request_window_expired",
+      "status": "retrying",
+      "attempt": 1,
+      "availableAt": "2026-10-12T12:51:53.477325+00:00",
       "leaseExpiresAt": null
     }
   ],
-  "requests": 511,
+  "requests": 747,
   "maxProviderRequests": 4000,
   "newAccounts": 0,
   "newGrants": 0,
@@ -38,7 +38,12 @@
     "matchingReviewedBaseline": true,
     "changedDatasets": [],
     "authReconciliation": "Retains original aggregate checksum; reviewed baseline excludes only existing operator updated_at. Historical field-level evidence was unavailable.",
-    "canonicalReconciliation": true
+    "canonicalReconciliation": true,
+    "operatorAudioReconciliation": {
+      "controlReceipts": 6,
+      "playbackReceipts": 2,
+      "originalAuditRowsPreserved": true
+    }
   },
   "runtime": {
     "version": 7,

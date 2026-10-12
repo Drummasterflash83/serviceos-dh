@@ -30,7 +30,18 @@ The new endpoint is ACTIVE v1 with JWT verification. Its three downloaded
 executable files match the reviewed source; four handler tests pass against the
 download. Fifteen protocol/client/handler tests, strict frontend and endpoint
 typechecks, and the frontend build pass. Other endpoints and schema are unchanged.
-Frontend deployment and signed-in acceptance remain next.
+Protected frontend `e2d51fa` is READY at the stable TEST alias. On 12 October at
+12:52 UTC, the existing operator session played the retained eight-second
+synthetic recording to 0:08; closing its details removed the player. The earlier
+view expiry also cleared records. Visual inspection found and corrected a shared
+client-root layout conflict in both operator information/review panels.
+
+Two browser reads produced six control-plane receipts and two matching playback
+receipts. Exact actor, tenant, recording, reason and source-pointer digest match;
+every original audit row is unchanged, and all other protected datasets match
+across 194 collections. The stopped Commusoft supervisor's private baseline was
+reconciled only for these exact additions, retaining original hashes and receipts.
+No production data, identities or grants changed.
 
 [Sanitized evidence](evidence/learn-operator-phone-playback-test-2026-10-12.json).
 

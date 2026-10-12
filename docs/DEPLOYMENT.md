@@ -67,25 +67,27 @@ hostnames, and no custom domain or automatic Git linkage was added.
 The stable staging entry is
 [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
 It points to immutable preview
-[serviceos-learn-test-es7o779en-allkin.vercel.app](https://serviceos-learn-test-es7o779en-allkin.vercel.app),
-built remotely from GitHub commit `efc3d1185e88eba88e3b099c07373c7b9a1f507c`
-and observed READY at **12:16 UTC on 12 October**. The stable alias, TEST backend
-binding and both hostnames' protection were verified. This adds linked customer
-jobs, sites and contacts to the client card and audited operator view, retaining
-the earlier business review, source reader and password-reset fix. Full TypeScript,
-four customer-context contract tests and the frontend build (47 prebuild checks)
-passed before deployment. The installed backend passed full-schema rollback checks.
+[serviceos-learn-test-qrg6bnh9y-allkin.vercel.app](https://serviceos-learn-test-qrg6bnh9y-allkin.vercel.app),
+built remotely from GitHub commit `e2d51fa2b106a6fa56c1ddba67238c3ab6e7317d`
+and observed READY at **12:50 UTC on 12 October**. The stable alias, TEST backend
+binding and both hostnames' protection were verified. This adds audited operator
+recording playback and fixes the information/business-review panels to use the
+existing embedded layout. The build and its 47 prebuild checks pass.
 
-Chris's existing signed-in operator session verified the real linked customer job,
-site and contact tabs at 12:22 UTC. Four result audits matched the actor, tenant,
-card and returned records. Source references, the unconfirmed timing exclusion,
-refresh and clearing on close were verified. One real source-to-card chain had
-already been published and checked. This does not establish whole-account
-publication, ordinary-owner browser acceptance, real phone/email acceptance or
-enriched summaries and scoring.
-See [customer-context evidence](operations/evidence/learn-customer-business-context-test-2026-10-12.json),
-[business-review evidence](operations/evidence/openfolk-business-review-test-2026-10-12.json),
-[earlier source-reader evidence](operations/evidence/openfolk-client-information-test-2026-10-12.json)
+Chris's existing operator session played the retained eight-second synthetic
+recording to its end and closed the player. Six control-plane receipts and two
+matching playback receipts from the two browser checks match the actor, selected
+synthetic tenant, recording and reason. All original audit rows remain unchanged;
+only those reviewed audit additions differ across 194 protected datasets. Both
+panels' deployed layout was visually checked. No new identity/grant was created.
+Real Phone provider capture, processing and card acceptance remain outstanding.
+
+The preceding deployment verified one real linked customer job/site/contact chain
+through the operator browser. Whole-account publication, ordinary-owner browser
+acceptance, real email acceptance and enriched summaries/scoring remain open.
+See [operator audio evidence](operations/evidence/learn-operator-phone-playback-test-2026-10-12.json),
+[customer-context evidence](operations/evidence/learn-customer-business-context-test-2026-10-12.json),
+[business-review evidence](operations/evidence/openfolk-business-review-test-2026-10-12.json)
 and [reset evidence](operations/evidence/learn-password-reset-test-2026-10-12.json).
 
 The deployment retains the prior Connections status distinctions and navigation

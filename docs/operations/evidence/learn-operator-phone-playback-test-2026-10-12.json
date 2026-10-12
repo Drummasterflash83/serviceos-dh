@@ -79,7 +79,37 @@
   "frontendTypecheck": "passed",
   "runtimeTypecheck": "passed",
   "frontendBuild": "passed",
-  "frontendAcceptance": "pending",
+  "frontendAcceptance": {
+    "state": "signed_in_operator_synthetic_playback_verified",
+    "observedAt": "2026-10-12T12:53:40.547Z",
+    "gitSha": "e2d51fa2b106a6fa56c1ddba67238c3ab6e7317d",
+    "deploymentId": "dpl_sc6HhikYF5yZQytPw6d9WqYHT2sF",
+    "stableAlias": "serviceos-learn-test-allkin.vercel.app",
+    "protectionVerified": true,
+    "syntheticRecordingSeconds": 8,
+    "browserElapsedSeconds": 8,
+    "checks": [
+      "Existing operator identity and synthetic tenant; no login/grant created",
+      "Retained recording list and private audio open",
+      "Native media control progressed to 0:08 and returned to play",
+      "Closing recording removed audio player and details",
+      "Earlier view expiry cleared records",
+      "Both information and business-review panels visually verified after embedded-layout correction"
+    ],
+    "audit": {
+      "controlReceipts": 6,
+      "playbackReceipts": 2,
+      "actorTenantRecordingReasonMatch": true,
+      "originalAuditRowsPreserved": true,
+      "protectedDatasets": 194,
+      "onlyChangedDatasets": [
+        "public.controlplane_change_log",
+        "public.learn_phone_playback_audit"
+      ]
+    },
+    "realProviderAcceptance": "pending",
+    "productionChanged": false
+  },
   "limitations": [
     "No new users, platform grants, provider calls or production changes.",
     "Uses existing operator authority; ordinary tenant audio path is unchanged.",
