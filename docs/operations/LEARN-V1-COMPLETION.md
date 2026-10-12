@@ -7,6 +7,42 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 01:00 BST — matching production Learning database/runtime rehearsed.**
+
+### Working and verified
+
+- Prepared production package 022 for atomic observation delivery, audited source
+  reads and retained-input totals. The full 22-package install passed against the
+  network-isolated production archive, with original rows/sequences preserved.
+- Wrong target, missing prerequisite, duplicate installation, running work and late
+  failure are rejected. Synthetic observation, audit, tenant isolation, stale-source,
+  reader and totals journeys passed and rolled back. Their new work-capture sequence
+  advances are recorded; no hosted rows, accounts, grants or providers were touched.
+- All 37 matching runtime artifacts compiled and booted; missing-auth rejection and
+  28 scheduler caller cases passed in isolated containers. The exact upload files
+  are prepared, not uploaded. Fresh metadata shows production definitions unchanged.
+
+### Needs finishing
+
+- Match the production frontend and refresh release-operation pins. The prior
+  21-package plan is obsolete and must not be executed against the new candidate.
+- Live aggregate inspection found 14 historical unleased running jobs: 13 phone
+  synchronisations and one graph sync. Retain their history and resolve safely;
+  an empty HTTP queue is not proof that live work has drained. Nine recent request
+  timeouts also need diagnosis. No production schedules or jobs were changed.
+- Offline rehearsal temporarily simulated a drained queue and restored every
+  archived job row. This does not close the live drain/recovery gate.
+- All broader input, relevance, client-workspace, AI, scoring and launch requirements
+  remain open; the full goal is unchanged.
+
+### Blocked externally
+
+- Signed-in production acceptance and TEST AI credential access remain unresolved.
+
+Evidence: [production Learning candidate](evidence/learn-production-learning-2026-10-13.json).
+
+### Previous hosted TEST milestone
+
 **13 October, 00:52 BST — TEST Learning workspace repaired, deployed and signed-in verified.**
 
 ### Working and verified

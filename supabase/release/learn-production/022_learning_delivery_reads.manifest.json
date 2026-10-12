@@ -1,0 +1,43 @@
+{
+  "version": "learn-production-learning/1",
+  "status": "prepared_requires_matching_release_verification",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "217a1d5eea6b0c632b2e4fa7d3b5ae251bfb388053a3d59f0283714c6f4e5ead",
+  "priorSha256": "59c5dc3edfc0a893e1a44e8624fadda74a31a6e3e945eab55492aef594bebc67",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101610000_learn_observation_delivery.sql",
+      "sha256": "9a82ad0e8471bc5971f185c163ffc6ea8cfb0931d300417d3d236f354d68d60b"
+    },
+    {
+      "path": "supabase/migrations/20261101620000_openfolk_learning_information.sql",
+      "sha256": "da693b03982c9a21b86918b874a1baf4b2c006b3fc9f56ba2ac17a1150318ffa"
+    },
+    {
+      "path": "supabase/migrations/20261101630000_learn_learning_retained_counts.sql",
+      "sha256": "81f1c083ccd07a8ac4d1bf3913d4120c985b757b02a51f92e439fb20e4d36652"
+    }
+  ],
+  "newFunctions": [
+    "learn_learning_retained_counts",
+    "learn_observation_deliver"
+  ],
+  "changedFunctions": [
+    "openfolk_client_information"
+  ],
+  "newTables": [
+    "learn_observation_receipts"
+  ],
+  "changedViews": [],
+  "newSequences": [],
+  "extendedTables": {},
+  "limitations": [
+    "Requires fresh production baseline and matched worker/control-plane/frontend.",
+    "No accounts, grants, credentials, provider calls or capture activation.",
+    "Preserves existing source and observation history; source revision reconciliation remains separate."
+  ]
+}

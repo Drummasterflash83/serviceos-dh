@@ -1,0 +1,178 @@
+{
+  "state": "production_learning_rehearsed_offline",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "offlineDrainSimulation": {
+    "archivedRunningRows": 14,
+    "runningGuardRejected": true,
+    "hostedChanges": false,
+    "liveDrainProven": false,
+    "archivedRowsRestored": true
+  },
+  "negativeChecks": [
+    "wrong_target",
+    "missing_prerequisite",
+    "late_failure"
+  ],
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 387,
+    "rows": 1591594,
+    "sequences": 7,
+    "comparisonSha256": "4b19db18a8d0eef6659ae47c59650491e64ce9b6ab4dcad5a731283c4db75cd5",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "duplicateRejected": true,
+  "journey": {
+    "passed": true,
+    "probeSha256": "dd147a77c94677273e5197eee8b3495d7c2335962d044e2ab3e1c96f0191ff1d",
+    "sources": [
+      {
+        "path": "scripts/verify/learn-observation-delivery.assert.sql",
+        "sha256": "78c1db0c77f7e223e58531922ba81fa27a5dbbdd5022c567f973d122604e87d5"
+      },
+      {
+        "path": "scripts/verify/openfolk-client-information.assert.sql",
+        "sha256": "5a9d428962e7631ea14f6c91b058500fef39d90dc9a5284f05c563edd2acdae6"
+      },
+      {
+        "path": "scripts/verify/openfolk-learning-information.assert.sql",
+        "sha256": "973ccf41bb3cb84de0953243202bf68bf619f2adc0f6e03e17205324e595222d"
+      },
+      {
+        "path": "scripts/verify/learn-learning-counts.assert.sql",
+        "sha256": "4d0e5df0a18d8d3b4b58fb734985e4b32447265de9beb4bd6b5621acb4379ce1"
+      }
+    ]
+  },
+  "syntheticSequenceAdvance": [
+    {
+      "before": {
+        "name": "public.learn_work_capture_sequence",
+        "lastValue": 1,
+        "isCalled": false
+      },
+      "after": {
+        "name": "public.learn_work_capture_sequence",
+        "lastValue": 5,
+        "isCalled": true
+      }
+    }
+  ],
+  "postJourneyRetainedTablesPreserved": true,
+  "originalArchivePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "packages": [
+    "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+    "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+    "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+    "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+    "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+    "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+    "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+    "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+    "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+    "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+    "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+    "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+    "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba",
+    "f4413fe47a9eaa1eb7774e35e22f10f78bf94a55345f4fbe19fe690b4e7d8556",
+    "b877e70fa1cc946ba0c9c8a66f28b6603f99dc8484fefd1411bf30beed325998",
+    "ab4cef1752c520a13047fb287d63931068f7e7468d0014ba955df75a49a9dd56",
+    "304b2e84f822b703a882b184ee490268f2b3802c817dee5f7953c7180a8962d2",
+    "f5fe1265961b713a338c3bfa650cd8744e2bfeaf04778f90e83f5dc9352e51c0",
+    "e1be0657e8da44ad1def758c29a782f4f0bfd224b7a8b2a3587e9e53122266ee",
+    "59c5dc3edfc0a893e1a44e8624fadda74a31a6e3e945eab55492aef594bebc67",
+    "217a1d5eea6b0c632b2e4fa7d3b5ae251bfb388053a3d59f0283714c6f4e5ead"
+  ],
+  "newFunctions": 2,
+  "changedFunctions": 1,
+  "newTables": 1,
+  "existingTablesViewsRolesStorageUnchanged": true,
+  "existingViewsRolesStorageUnchanged": true,
+  "priorReceiptsUnchanged": true,
+  "addedReleaseReceipts": 1,
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "version": "learn-production-learning/1",
+  "observedAt": "2026-10-12T23:59:19.201830+00:00",
+  "candidateManifestSha256": "e617ba0dceb927aa8829a340bcb119371419a25b9efeaef0e709c3cb302e1c20",
+  "sourceClosureSha256": "ce791351e7bb4c0a4f874e59383d4eca364b0dd51310c1a3af40b32623f7b89c",
+  "bundleReportSha256": "342addb70d93cf86832270b98718616cf1bcda73379eb7c865ac6ace67062e8b",
+  "bootReportSha256": "aa2ba2a1c1ce07bc2325b7b885bb7e798b859373cd76e50a63bf2e6282ae3f1d",
+  "runtimeWireReportSha256": "f7ddbf721783c9839a693a71bd5a3e1bf60e4e0ca302c970a94191735906b50d",
+  "callerReportSha256": "7eee04a4990d8eed564d76fb7f578058ee84eaef7a3714c832b87b7388615a13",
+  "callerManifestSha256": "e617ba0dceb927aa8829a340bcb119371419a25b9efeaef0e709c3cb302e1c20",
+  "runtimeEvidenceCarriedForward": false,
+  "newRuntimeBootExecution": true,
+  "runtimeEndpoints": 37,
+  "callerChecks": 28,
+  "sourceFiles": 226,
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-scheduler-callers.mjs",
+      "sha256": "a2abbc1d7ae2b16b07256465b7bc205c19156ce765d5881b07b93561dc101791"
+    },
+    {
+      "path": "scripts/verify/learn-production-scheduler-caller.fixture.ts",
+      "sha256": "60b5bf47bfa5372a1f49bd4d3feebebb52745e1dd2b7a97a2dc6e6e9790706f7"
+    },
+    {
+      "path": "scripts/backup/rehearse_production_learning.py",
+      "sha256": "7bcb9de3d016e3fb289333142c98a4da3a154ae00c1228925bbf2f6e161b3678"
+    },
+    {
+      "path": "scripts/verify/learn-production-learning-candidate.mjs",
+      "sha256": "9c192da6c1d07cebc585630375b9ab53ab9d548a7b5bf1ed44f4b803d931ea41"
+    }
+  ],
+  "remainingGates": [
+    "Matching production frontend and signed-in acceptance.",
+    "Refresh release operation pins; old 21-package plan is obsolete.",
+    "Resolve 14 historical unleased running jobs, pause and prove real in-flight drain.",
+    "Positive hosted caller acceptance, fresh independent recovery, provider coverage and monitored activation."
+  ]
+}

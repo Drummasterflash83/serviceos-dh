@@ -107,9 +107,14 @@
       "path": "supabase/release/learn-production/021_slack_work_context.sql",
       "sha256": "59c5dc3edfc0a893e1a44e8624fadda74a31a6e3e945eab55492aef594bebc67",
       "manifestSha256": "cb4b3b317fd19e8faed6ea213a0fdff6f4cbdad7336dbde077b1184c8534732c"
+    },
+    {
+      "path": "supabase/release/learn-production/022_learning_delivery_reads.sql",
+      "sha256": "217a1d5eea6b0c632b2e4fa7d3b5ae251bfb388053a3d59f0283714c6f4e5ead",
+      "manifestSha256": "e678ac81048eea66db7da4badab9bb4174c334726290eeb2ae2518b323d6a890"
     }
   ],
-  "sourceClosureSha256": "21eb8361f395bcd3d828e4890f78060cfc2c8aedaf4b007d5c66842e55c55893",
+  "sourceClosureSha256": "ce791351e7bb4c0a4f874e59383d4eca364b0dd51310c1a3af40b32623f7b89c",
   "files": [
     {
       "path": "_shared/audit.ts",
@@ -245,7 +250,7 @@
     },
     {
       "path": "_shared/controlplane/learning_centre.ts",
-      "sha256": "4d8fe81797c75fae86baf7b274e48890103cdf756c573e019956da2d914a83fe"
+      "sha256": "704d1858cee286b36d68deb0d509e4570f4f02548b79db2a11880625010b3eae"
     },
     {
       "path": "_shared/controlplane/ownership_inventory.ts",
@@ -385,7 +390,7 @@
     },
     {
       "path": "_shared/intelligence/eligibility.ts",
-      "sha256": "954a7e4388d96178a424ce02be941924bd3761fd5d10fc2206f15fa040e78f6d"
+      "sha256": "254ec1de4d1d872da003bbd77cf52faab1d3a9d414a9a85bb914c97c918d4822"
     },
     {
       "path": "_shared/intelligence/learning.ts",
@@ -426,6 +431,10 @@
     {
       "path": "_shared/learn_input_tick.ts",
       "sha256": "2dcc2aa56888ddac14673d38f6a49a340c7bb37dc47e545a88716459e02d8054"
+    },
+    {
+      "path": "_shared/learn_work_context.ts",
+      "sha256": "5c23d9e2f1851c593286794afbe7a5e5b1f72c33eb20cf79aa19011dad045d99"
     },
     {
       "path": "_shared/learn-phone-playback.ts",
@@ -509,7 +518,7 @@
     },
     {
       "path": "_shared/observation_ingest.ts",
-      "sha256": "92d1799abf2946406f8635bbac4c59b5272255e56bf6069eea3689cbf1622f5a"
+      "sha256": "67fa929617708a591ff01a43ac8504cf5805aec784e138e9218c01809d3efc0c"
     },
     {
       "path": "_shared/openai.ts",
@@ -789,11 +798,11 @@
     },
     {
       "path": "_shared/worker_handlers/intelligence_ingest.ts",
-      "sha256": "98f5253dea3e1977b58f61affb958b4a82a954eb60a2945b4adc6e5be64514e3"
+      "sha256": "df8d25de4acacbfdb8aef2a117be5773bbd13325ec4d050e54f3104db7591a54"
     },
     {
       "path": "_shared/worker_handlers/intelligence_observe.ts",
-      "sha256": "92888719bc16e09856fbadcd5e230022cd14ee779522d6d0e90142771273122d"
+      "sha256": "cf807ca33d13adaae4c5f8a7e12233b27bca879fff4f152469cca23bf0ced43e"
     },
     {
       "path": "_shared/worker_handlers/intelligence_review_resolve.ts",
@@ -802,6 +811,10 @@
     {
       "path": "_shared/worker_handlers/interactions_sync.ts",
       "sha256": "21f8bb17a10d5fb04d3427401d8b1de8bd5be2728b05d6d87499c730a69ab8bd"
+    },
+    {
+      "path": "_shared/worker_handlers/learn_observation.ts",
+      "sha256": "5ffb3c3dba5d545fb7884d3c97b6b1446868c133a7b66bdd8a337bef8a8dd103"
     },
     {
       "path": "_shared/worker_handlers/marketing_ad_lead.ts",
@@ -1868,7 +1881,7 @@
     {
       "name": "openfolk-control-plane",
       "verifyJwt": false,
-      "sourceClosureSha256": "2ae3d36d9ab0c8e371febcf9490f6ed429363f61ca4a8bc303181d9b9cb7f9c1",
+      "sourceClosureSha256": "c1f5e4802dccf305ba180c0bd8367c36963d2dbb7ea39bfe4c843372fc9dfb27",
       "sourceFiles": [
         "_shared/authz.ts",
         "_shared/controlplane/authz.ts",
@@ -1905,7 +1918,8 @@
       "literalRpcNames": [
         "cp_upsert_endpoint",
         "delegated_task_issue",
-        "delegated_task_revoke"
+        "delegated_task_revoke",
+        "learn_learning_retained_counts"
       ],
       "beforeProduction": {
         "name": "openfolk-control-plane",
@@ -1918,8 +1932,8 @@
       "hostedTestReference": {
         "name": "openfolk-control-plane",
         "id": "786126c1-55e8-4fe4-b079-b197063ae6a2",
-        "version": 10,
-        "hash": "1fd6bd45343864ff44be1036a671f9381fad9cbb5b69f3db5847e4bd1be6f332",
+        "version": 11,
+        "hash": "e8f3c0a7abd0d723fe12482ff0ed693c84dab2bfc5dfa37a16dc9d9d16ba4461",
         "jwt": false,
         "status": "ACTIVE"
       },
@@ -2237,7 +2251,7 @@
     {
       "name": "platform-worker",
       "verifyJwt": false,
-      "sourceClosureSha256": "457dc4585d7a456ca7bc78d9b914f379ed8285a19ad792c9a344635378437df3",
+      "sourceClosureSha256": "ed4311bb6389e050b7a0103ed516d5b6bae86850ba845a8daeb7c28a186548a1",
       "sourceFiles": [
         "_shared/authz.ts",
         "_shared/automation_execution_enqueue.ts",
@@ -2279,6 +2293,7 @@
         "_shared/intelligence/types.ts",
         "_shared/learn_capture_control.ts",
         "_shared/learn_input_tick.ts",
+        "_shared/learn_work_context.ts",
         "_shared/learn-processing-job.ts",
         "_shared/marketing_ai_prompt.ts",
         "_shared/marketing_email.ts",
@@ -2343,6 +2358,7 @@
         "_shared/worker_handlers/intelligence_observe.ts",
         "_shared/worker_handlers/intelligence_review_resolve.ts",
         "_shared/worker_handlers/interactions_sync.ts",
+        "_shared/worker_handlers/learn_observation.ts",
         "_shared/worker_handlers/marketing_ad_lead.ts",
         "_shared/worker_handlers/marketing_broadcast_dispatch.ts",
         "_shared/worker_handlers/marketing_delivery_sync.ts",
@@ -2403,6 +2419,7 @@
         "learn_microsoft_credential_refresh",
         "learn_microsoft_job_settle",
         "learn_microsoft_job_stop",
+        "learn_observation_deliver",
         "learn_processing_publish",
         "learn_processing_settle",
         "learn_project_interaction",
@@ -2455,8 +2472,8 @@
       "hostedTestReference": {
         "name": "platform-worker",
         "id": "e7abc6aa-7341-4cbc-9a54-ea1c9c907503",
-        "version": 22,
-        "hash": "126ee9d9a672efd3579740380d6fab2e89df15338b9e83d6250b990b1258a072",
+        "version": 23,
+        "hash": "b68e225050884077d1fb57b5ecc16d4d7f240bd74ed8fc7abad6ff292f3b7f5b",
         "jwt": false,
         "status": "ACTIVE"
       },

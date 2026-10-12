@@ -1,5 +1,12 @@
 # LEARN V1 production release plan
 
+> 13 October 01:00 BST: packages 001–022 and 37 freshly compiled runtime artifacts
+> passed isolated database, boot and scheduler checks. Production remains unchanged.
+> The older 21-package operation plan below is obsolete; matching frontend and
+> operation pins are being refreshed. Live unleased-job reconciliation, drain,
+> authenticated acceptance and recovery gates remain open.
+> [Current evidence](evidence/learn-production-learning-2026-10-13.json).
+
 > 13 October 00:10 BST: atomic observation delivery and reviewed Slack context
 > are now verified in hosted TEST (worker v23, packages 086/087). Production still
 > needs a matching new package and runtime proof. TEST 087 fills old foundation
