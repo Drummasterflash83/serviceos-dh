@@ -1,0 +1,70 @@
+{
+  "version": "learn-production-governed-work/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+  "priorSha256": "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/release/learn-test/008_governed_work_actions.sql",
+      "sha256": "4f27681d0f6786b04374cb409fdea61babff40452f263ce8e3c9d43966f215f8"
+    }
+  ],
+  "existingTables": [
+    "authority_grants",
+    "authority_permissions",
+    "domain_object_types",
+    "intelligence_objects",
+    "object_classes",
+    "object_state_history",
+    "objective_links",
+    "objectives",
+    "org_units",
+    "profiles",
+    "responsibility_assignments",
+    "state_definitions",
+    "state_transitions",
+    "team_members",
+    "tenants",
+    "view_as_context"
+  ],
+  "newFunctions": [
+    "learn_work_cover_day",
+    "learn_work_authority",
+    "work_transition_apply",
+    "learn_work_authority_input_lock",
+    "learn_work_registry_input_lock"
+  ],
+  "newTables": [],
+  "newSequences": [],
+  "registryTables": [
+    "object_classes",
+    "domain_object_types",
+    "state_definitions",
+    "state_transitions",
+    "authority_permissions"
+  ],
+  "authorityTables": [
+    "tenants",
+    "profiles",
+    "team_members",
+    "org_units",
+    "responsibility_assignments",
+    "authority_grants",
+    "view_as_context"
+  ],
+  "existingChanges": [
+    "Nineteen added triggers serialize roster, preview and registry changes against work actions.",
+    "Existing work registries, table definitions, policies, grants and functions are retained; no seeds or source backfill.",
+    "New service-only transition RPC validates actor, current authority, verb, state, ownership and evidence atomically."
+  ],
+  "limitations": [
+    "Offline database acceptance is distinct from signed-in acceptance and provider integration.",
+    "Later work-history and authority fixes still need inclusion in the complete production release.",
+    "No hosted execution or production promotion approval."
+  ]
+}

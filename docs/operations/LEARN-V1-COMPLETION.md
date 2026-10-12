@@ -7,6 +7,23 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — governed work passes the combined offline production rehearsal.**
+The first four production-specific packages install together on the retained full
+archive. The new action checks validate ownership, assignment scope, temporary
+cover, evidence, state changes and atomic attribution. Two-session checks prove
+that revocations and registry edits cannot slip through an in-flight action;
+an unrelated tenant can still act. View-As and stale transaction snapshots are
+rejected. Measurement and work-history regressions also passed.
+
+All 1,591,576 original archived rows and five original sequence states match.
+Existing work classifications, transitions, permission vocabulary, policies and
+table grants remain intact. Synthetic journeys roll back in the comparison DB;
+concurrency fixtures exist only in a second offline clone. Both are removed with
+the disposable container. No hosted environment changed. This is prerequisite
+acceptance; remaining packages, current-provider coverage, signed-in journeys,
+recovery and production approval remain required.
+[Governed-work evidence](evidence/learn-production-actions-rehearsal-2026-10-12.json).
+
 **12 October — measurement and work-history prerequisites pass combined production-archive rehearsal.**
 The first three production-specific packages now install together offline. Tests
 on the real restored schema passed validated measurement append/replay/correction,

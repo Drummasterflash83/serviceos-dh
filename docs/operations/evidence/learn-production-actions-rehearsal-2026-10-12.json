@@ -1,0 +1,131 @@
+{
+  "version": "learn-production-actions-rehearsal/1",
+  "observedAt": "2026-10-12T03:34:18.107988+00:00",
+  "result": {
+    "state": "production_governed_work_rehearsed_offline",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "fullReleaseAccepted": false,
+    "signedInAcceptance": false,
+    "packages": [
+      "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+      "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+      "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+      "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f"
+    ],
+    "containmentBefore": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "negativeChecks": [
+      "wrong_target",
+      "catalog_drift",
+      "registry_drift",
+      "late_failure"
+    ],
+    "legacyColumnsAndCatalogPreserved": true,
+    "noInventedHistoricalEvidence": true,
+    "probeSources": [
+      {
+        "path": "scripts/verify/learn-actions-release.assert.sql",
+        "sha256": "596766683dc6852e13d357d14c17e857d9c13f2969abdfa45649a3abbbf46d79"
+      }
+    ],
+    "generatedProbeSha256": "440076fbbf2414f8c5e002cced1248ee3813bef133daadc63bb1f0f8d72d3e77",
+    "regressionSources": [
+      {
+        "path": "scripts/verify/learn-measurements-release.assert.sql",
+        "sha256": "e277855cb5f58688548317f90874a444b082817f98c87369e76e65b8f4b0f28c"
+      },
+      {
+        "path": "scripts/verify/learn-work-release.assert.sql",
+        "sha256": "c202083417dcf302607113ab7cf78226c6b07259b06d36f05178b4fa274cab7b"
+      }
+    ],
+    "regressionProbeSha256": "ea6751ff0af94bda4f7b83ea888119c2ab87faf19612000933812043b58f8add",
+    "measurementAndWorkRegressionVerified": true,
+    "governedWorkJourneysVerified": true,
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299,
+      "rows": 1591576,
+      "sequences": 5,
+      "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+      "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+    },
+    "duplicateRejected": true,
+    "concurrencyVerifierSha256": "c5f092bfd97a60ebc82c4db1f2116949d851b2f4d488856d5cd0284eb6191823",
+    "authorityConcurrencyVerified": true,
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true,
+    "elapsedSeconds": 38.82
+  },
+  "registryCountsPreserved": {
+    "object_classes": 6,
+    "domain_object_types": 29,
+    "state_definitions": 32,
+    "state_transitions": 48,
+    "authority_permissions": 19
+  },
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-actions-candidate.mjs",
+      "sha256": "b4f06be4229e80d040dc885c5b6155ca5793abbea9ed7ff179a3330885d94611"
+    },
+    {
+      "path": "scripts/backup/inspect_production_actions.py",
+      "sha256": "ad47bbebe9877d4d3c651c9b64a5fe0f741992cbd3959c119eb70d4a09189b15"
+    },
+    {
+      "path": "scripts/backup/rehearse_production_actions.py",
+      "sha256": "fbed2f58b2a549454c2a22a5587364e41383a9f942bd69c3a68ff54ddc53773d"
+    },
+    {
+      "path": "supabase/release/learn-production/004_governed_work_actions.sql",
+      "sha256": "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f"
+    }
+  ],
+  "verifiedJourneys": [
+    "Actor, tenant and scoped assignment checks; expired grants and cover denied.",
+    "View-As denies writes; claiming needs confirmed staff membership.",
+    "Verb, transition guard, evidence and patch validation; stale versions rejected.",
+    "Actions and attribution commit atomically; injected attribution failure rolls everything back.",
+    "Canonical work-history counts exclude duplicate action annotations.",
+    "Two-session races cover authority revocation, actor changes, registry conditions and roster/preview mutations in both applicable orderings.",
+    "An unrelated tenant proceeds while an action holds its own tenant lock.",
+    "Stale repeatable-read snapshots cannot establish authority."
+  ],
+  "fixtureCorrections": [
+    "Use public,pg_catalog consistently for baseline catalog rendering and candidate guard comparison.",
+    "Reuse profiles created by the production Auth trigger; preserve original production registries and verify all archived data separately.",
+    "Scope the second concurrency connection search path to its disposable clone database."
+  ],
+  "limitations": [
+    "Four prerequisites only; later authority/work fixes and remaining production packages are not yet reconciled.",
+    "Synthetic SQL journeys on a production archive are not live provider or signed-in acceptance.",
+    "The native archive omits pg_net queue/response data; full service/Vault recovery is not proven.",
+    "No hosted changes or production promotion approval."
+  ]
+}

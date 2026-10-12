@@ -167,6 +167,42 @@ See [measurement/work evidence](evidence/learn-production-measurements-rehearsal
 Later collector, calendar, corrections, authority and receipt fixes must still
 be included before any full release or current-behavior acceptance claim.
 
+### Governed work rehearsed offline
+
+The fourth package, [004_governed_work_actions.sql](../../supabase/release/learn-production/004_governed_work_actions.sql),
+adds five functions and nineteen authority/registry serialization triggers. Its
+SHA-256 is `f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f`.
+Production already contains the required Action vocabulary. The package preserves
+all six classes, 29 object types, 32 states, 48 transitions and nineteen permission
+entries; it does not replay TEST seeds, replace existing functions, change table
+policies/grants or backfill history. A changed required Action edge fails closed
+for review instead of overwriting the configuration.
+
+The combined 001–004 archive rehearsal passed scoped assignment, cover and expired
+access, View-As denial, claiming, verb/state/evidence validation, stale versions,
+atomic attribution failure and canonical history counts. Existing measurement,
+review and work collectors also passed their regression journeys. Controlled
+second connections verified cover revocation and action orderings, actor-role
+changes, guarded transitions, roster/preview mutations and rejection of stale
+repeatable-read snapshots. Work in a different company proceeds concurrently.
+
+All original archived rows/columns and five sequences match after rolled-back
+journeys. The second database commits synthetic fixtures solely for concurrency
+checks; it is removed with the network-isolated container. Wrong target, schema
+and registry drift, late transaction failure and duplicate rejection passed.
+The initial rehearsal exposed inconsistent schema search paths in catalog
+rendering and the second test connection; both were fixed in the rehearsal setup.
+No production configuration was weakened to pass a test.
+
+Reproduce the baseline using `scripts/backup/inspect_production_actions.py`, build
+with `node scripts/verify/learn-production-actions-candidate.mjs`, then rehearse
+with `python3 scripts/backup/rehearse_production_actions.py`. These use exclusive
+private output directories: inspect prior terminal results and choose a new run
+suffix before deliberately rerunning. Do not delete or reuse completed journals.
+See [governed-work evidence](evidence/learn-production-actions-rehearsal-2026-10-12.json).
+Later work/authority fixes and remaining operator/connector packages still need
+reconciliation before complete-release acceptance or promotion.
+
 ### Outstanding release gates
 
 - Resolve existing TEST access approvals and verify signed-in customer and
