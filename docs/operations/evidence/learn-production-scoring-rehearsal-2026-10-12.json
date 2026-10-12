@@ -1,0 +1,199 @@
+{
+  "version": "learn-production-scoring-rehearsal/1",
+  "observedAt": "2026-10-12T03:45:45.186442+00:00",
+  "result": {
+    "state": "production_scoring_working_time_rehearsed_offline",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "fullReleaseAccepted": false,
+    "signedInAcceptance": false,
+    "packages": [
+      "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+      "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+      "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+      "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+      "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066"
+    ],
+    "containmentBefore": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "negativeChecks": [
+      "wrong_target",
+      "catalog_drift",
+      "late_failure"
+    ],
+    "legacyColumnsAndCatalogPreserved": true,
+    "noInventedHistoricalEvidence": true,
+    "accessProbes": [
+      {
+        "path": "scripts/verify/learn-assessment-recovery-hosted.assert.sql",
+        "sha256": "e00edd8112369bbed573fe419729e4072c6fda3e9796de462107cd9082348a53"
+      },
+      {
+        "path": "scripts/verify/learn-team-work-hosted.assert.sql",
+        "sha256": "997dc2bccf479453761c14b61f2c472dc335fd2cd3e19ed7422b87737f2822d1"
+      },
+      {
+        "path": "scripts/verify/learn-resumable-work-hosted.assert.sql",
+        "sha256": "69fa24978e64a9de79c1a3723fc3d0181255777d5e8fc4b2377bb7576ca7044e"
+      },
+      {
+        "path": "scripts/verify/learn-working-release-hosted.assert.sql",
+        "sha256": "9b49fdc2f239f8ef19f1835a7d736485bc857311e30f49065917d4110144f69c"
+      },
+      {
+        "path": "scripts/verify/learn-receipt-guards-hosted.assert.sql",
+        "sha256": "5be9fa2b8585cee05a4921ce150b8ea0155245d7687b2482b84cd8033c6b0007"
+      },
+      {
+        "path": "scripts/verify/learn-correction-recovery-hosted.assert.sql",
+        "sha256": "4cd0d8a5ac90567279571c25b9c883a0966a817190734bcabf83f8fb5465ae69"
+      }
+    ],
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299,
+      "rows": 1591576,
+      "sequences": 5,
+      "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+      "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+    },
+    "duplicateRejected": true,
+    "journeys": [
+      {
+        "path": "scripts/verify/learn-work-residence.assert.sql",
+        "sourceSha256": "920ce216aa429d9cfa0e93b57ce6f5fb60c78127a69ae02a8d317d3a314a8b8f",
+        "probeSha256": "7b3bb45401d6564b8a9403679487afc853041f9a80febce89f386473644d592e"
+      },
+      {
+        "path": "scripts/verify/learn-team-work-residence.assert.sql",
+        "sourceSha256": "aa56eec5c0688e85031c88ec1f41e3d7805a8b8242af9119a2e5db96615ee8d0",
+        "probeSha256": "cd9dc542b209d7909c403659d2928851ca46d2b97f440ffd826be6386f8becb7"
+      },
+      {
+        "path": "scripts/verify/learn-resumable-work.assert.sql",
+        "sourceSha256": "6667e5e9e38f45f746c73aa108dd154bf615f526037f10d9a81003a7fb39c4d4",
+        "probeSha256": "373f65c4ba92b491af72e4394d8d655315ec24c4c0eb1806f8615d1ab9365a46"
+      },
+      {
+        "path": "scripts/verify/learn-work-calendars.assert.sql",
+        "sourceSha256": "91ac1cfa46a8eac0500e5accaa4846193f2866d7e9d439335ed7271b7417f2f4",
+        "probeSha256": "32336297e2d53f9cb844b24319ffb35b3be02b1c4cdcd7ce313e5bd664f2317c"
+      },
+      {
+        "path": "scripts/verify/learn-work-calendar-recovery.assert.sql",
+        "sourceSha256": "4b881579b80d58a5ed99d662d47a6e95c2eb6d14ce519b8c24d32708f38d1b4e",
+        "probeSha256": "169ebd0196d23414ec39bd2ffba4c2b7d38ed98505fa661b575eec272f37bb45"
+      },
+      {
+        "path": "scripts/verify/learn-work-delays.assert.sql",
+        "sourceSha256": "dbec6ba875ee4fe4a435861db08cc6278648696e8e877ec7e54a15dd921bf9a2",
+        "probeSha256": "c8efa05edc2507cecd24e8127566c184a955d1b4543a62dedd7329bc84ccc380"
+      },
+      {
+        "path": "scripts/verify/learn-working-time.assert.sql",
+        "sourceSha256": "8ef64a69157d34fdec64bf6058cfae3449bef7d68a1693975cea1c529a9da249",
+        "probeSha256": "54d22c606b785e7c6e56f890fd88508e535106e539a63b2429e49497e9df06a3"
+      },
+      {
+        "path": "scripts/verify/learn-working-collection.assert.sql",
+        "sourceSha256": "f8ca72c4be4e9c525484c7e6f4c2d137a4e91d80fc225cff42a46c9ec6cfd9f2",
+        "probeSha256": "09b233f7caaaeff100c61572b9886d9c51c7d2cf6b3d66df7562c8d24f22dde4"
+      },
+      {
+        "path": "scripts/verify/learn-working-rule-change.assert.sql",
+        "sourceSha256": "bf3e4d73510d3f8d811c62dd7d03b7f290c0fc99e29feb8146e32f55121c372c",
+        "probeSha256": "bf3e4d73510d3f8d811c62dd7d03b7f290c0fc99e29feb8146e32f55121c372c"
+      },
+      {
+        "path": "scripts/verify/learn-working-corrections.assert.sql",
+        "sourceSha256": "d7dc2a75e7d0e3a7e0cecae82bdea21eb14953d2ed7031aecfde87a6e4073fb4",
+        "probeSha256": "d7dc2a75e7d0e3a7e0cecae82bdea21eb14953d2ed7031aecfde87a6e4073fb4"
+      },
+      {
+        "path": "scripts/verify/learn-working-correction-recovery.assert.sql",
+        "sourceSha256": "b976bb443d45655367c51f723a83246602c235758b4a82a8ae30733815c3d4a6",
+        "probeSha256": "b976bb443d45655367c51f723a83246602c235758b4a82a8ae30733815c3d4a6"
+      },
+      {
+        "path": "scripts/verify/learn-production-scoring.assert.sql",
+        "sourceSha256": "ea8eed8df06185613b868d1631683162d3e191376c5bd49c9f0944fa56e66462",
+        "probeSha256": "ea8eed8df06185613b868d1631683162d3e191376c5bd49c9f0944fa56e66462"
+      }
+    ],
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true,
+    "elapsedSeconds": 46.96
+  },
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-scoring-candidate.mjs",
+      "sha256": "71cb0795a99cf32ea19425b2f83048c103da29c5cebdf5c813fa54c545b47e2b"
+    },
+    {
+      "path": "scripts/verify/learn-production-scoring.assert.sql",
+      "sha256": "ea8eed8df06185613b868d1631683162d3e191376c5bd49c9f0944fa56e66462"
+    },
+    {
+      "path": "scripts/backup/inspect_production_scoring.py",
+      "sha256": "0767300444ed8ccb1dd049fc8b29b11ded3a45dcf771f3efd7af43b2a92e5e19"
+    },
+    {
+      "path": "scripts/backup/rehearse_production_scoring.py",
+      "sha256": "4ce263ad71ff7a7f76d419cdddfcc430e1fe79239c779443cb4f163430d139f3"
+    },
+    {
+      "path": "supabase/release/learn-production/005_scoring_working_time.sql",
+      "sha256": "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066"
+    }
+  ],
+  "coverage": [
+    "Individual and team residence with ownership changes, incomplete population and owner-only authority.",
+    "Frozen resumable collection at 14,500 items, exact batch retry, changed inputs, cancellation and failure rollback.",
+    "Versioned working calendars, exceptions, DST transitions, exact recovery and cancellation.",
+    "Approved delays, reversal, temporal evidence and frozen working-time inputs.",
+    "Selected work states, earlier-rule preservation and individual/team working-time collection.",
+    "Numerical withholding and correction retain source time, evidence and receipts; cancelled requests cannot apply late.",
+    "Malformed receipt subject, period, value, policy, coverage, count, contract, reference and forged correction are rejected at transaction completion.",
+    "Publish rules, collect actual work evidence, confirm, retain and replay an assessment; reject altered snapshot value.",
+    "Assessment recovery returns recorded, pending or cancelled; cancellation blocks a late save."
+  ],
+  "fixtureAdaptations": [
+    "Keep existing production Action registry rows instead of inserting legacy fixture seeds.",
+    "Use current PT409 conflict codes in the older collector assertions.",
+    "Preserve every original tenant measurement in the team baseline comparison.",
+    "Order historical rows by capture sequence and ID because archived pre-capture rows have null sequences.",
+    "Include the new referencing working-evidence table in the truncate probe so it reaches the immutable trigger.",
+    "No old mismatched work-score row is fabricated in this production archive; the new receipt failures and valid saved-assessment journey are tested directly."
+  ],
+  "limitations": [
+    "Production and hosted TEST unchanged; no real provider requests or signed-in checks.",
+    "The first five packages are not the entire release; card-input, operator, connector and queue reconciliation remains.",
+    "Calculation tests use synthetic work in an offline clone, not real Drummonds performance or pay decisions.",
+    "Source preservation covers the native archive; pg_net omissions and full service/Vault recovery remain open.",
+    "Current combined run does not repeat earlier authority concurrency or prove hosted scheduler operation."
+  ]
+}

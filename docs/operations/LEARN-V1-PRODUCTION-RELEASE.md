@@ -203,6 +203,49 @@ See [governed-work evidence](evidence/learn-production-actions-rehearsal-2026-10
 Later work/authority fixes and remaining operator/connector packages still need
 reconciliation before complete-release acceptance or promotion.
 
+### Scoring, recovery and working-time group rehearsed offline
+
+The fifth package, [005_scoring_working_time.sql](../../supabase/release/learn-production/005_scoring_working_time.sql),
+groups twelve pinned source migrations for corrections, assessment retention and
+recovery, team residence, resumable collection, calendars, approved delays,
+working-time calculation, input bounds and deferred receipt validation. SHA-256:
+`d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066`.
+It adds fourteen tables and 49 functions, extends the existing append evidence
+allowlist and scorecard draft validation, and adds deferred insert receipt guards
+to measurements/reviews. Existing source columns, table policies/grants and other
+functions remain unchanged. No real calendar, staff grant or score is created.
+
+All five packages passed ordered installation on the full retained archive.
+Wrong target, catalog drift, late rollback and duplicate rejection passed, as did
+six application-role access probes. All 1,591,576 original archived rows and five
+original sequences match after installation. New scoring tables are empty in
+that database. A second network-isolated clone then passed twelve synthetic SQL
+journeys using actual collectors, including a 14,500-item frozen population,
+individual/team attribution, batch replay, missing evidence, working calendars,
+DST and exceptions, approved-delay reversal, rule changes, corrections and exact
+request recovery. It also passed rule publication through collection, review,
+saved assessment and assessment recovery. Altered receipt scope/value/coverage/
+contract and forged correction references were rejected; cancellation prevents
+late writes. The disposable container and both databases were removed.
+
+Production-aware fixture adaptations retain the archive's Action registry, use
+the current PT409 conflict contract, include all existing tenant measurements in
+preservation checks, and deterministically order pre-capture history by ID when
+its sequence is null. The truncate test includes its newly referencing evidence
+table so the immutability trigger is exercised. No source guard was removed or
+weakened. PostgreSQL represents each deferred constraint trigger in both trigger
+and constraint catalogs; the exact declared entries are accounted for.
+
+Baseline: `scripts/backup/inspect_production_scoring.py`; generator:
+`node scripts/verify/learn-production-scoring-candidate.mjs`; rehearsal:
+`python3 scripts/backup/rehearse_production_scoring.py`. Each inspection/rehearsal
+has an exclusive private journal; select a new run suffix only after inspecting
+the previous terminal result. Do not overwrite completed journals.
+[Combined scoring evidence](evidence/learn-production-scoring-rehearsal-2026-10-12.json)
+records source/probe checksums and limitations. These are synthetic SQL results
+on a production archive, not hosted provider, browser or pay acceptance. Remaining
+card-input/operator/connector/queue packages and complete-release checks are open.
+
 ### Outstanding release gates
 
 - Resolve existing TEST access approvals and verify signed-in customer and

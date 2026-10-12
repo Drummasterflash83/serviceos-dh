@@ -1,0 +1,168 @@
+{
+  "version": "learn-production-scoring-working-time/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+  "priorSha256": "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261031020000_learn_performance_corrections.sql",
+      "sha256": "4914c58f4fef0b88fab739c63b3866e1890de5c6d18979aef532c99b9961b223"
+    },
+    {
+      "path": "supabase/migrations/20261031040000_learn_saved_assessments.sql",
+      "sha256": "be262c0001dbd1b8ca5b99b0fbe331e6942048a348959711a9357a53a5b61227"
+    },
+    {
+      "path": "supabase/migrations/20261101060000_learn_assessment_recovery.sql",
+      "sha256": "cf9afb35113bb7db565a6ec6618621511d3398df0963ddba72623d24f5e066f0"
+    },
+    {
+      "path": "supabase/migrations/20261101080000_learn_team_work_residence.sql",
+      "sha256": "dc5b889428f07c8d40d9788116ba03ac796a9ce04a36668780c8dd6a6a276ef1"
+    },
+    {
+      "path": "supabase/migrations/20261101090000_learn_resumable_work_collection.sql",
+      "sha256": "6dcc66b01f802c6312c16916c3dd788a624579cbd483c527e24cdee367b94688"
+    },
+    {
+      "path": "supabase/migrations/20261101100000_learn_work_calendars.sql",
+      "sha256": "01ecf776740369ff14f30a207678b65049b065b49596c87022e59038fe04ef81"
+    },
+    {
+      "path": "supabase/migrations/20261101110000_learn_work_delays.sql",
+      "sha256": "2317137b438c2b6d1f3003d9b235e4f29b150b7a8f98da59c4c427d91973bd91"
+    },
+    {
+      "path": "supabase/migrations/20261101120000_learn_working_time_calculation.sql",
+      "sha256": "bf89b1cfcc9a7b2c909212a1420b423d73ee6b1d544ce668f0f44a507044fd0f"
+    },
+    {
+      "path": "supabase/migrations/20261101130000_learn_working_time_collection.sql",
+      "sha256": "3ff14495fab91b5b7826b4e7a8bf4fc3113a03c368f002a76c445f7e72dcb984"
+    },
+    {
+      "path": "supabase/migrations/20261101140000_learn_working_collection_input_bounds.sql",
+      "sha256": "eef4047164686fa4a97d5f20e25abf1bd3cf4e68b8d6d0ae781fd759d90a31af"
+    },
+    {
+      "path": "supabase/migrations/20261101160000_learn_measurement_receipt_guards.sql",
+      "sha256": "a991911c0f83c8bfb46b30d8848a1379bbf8b920d7bb8f9cddc7c3758a392165"
+    },
+    {
+      "path": "supabase/migrations/20261101170000_learn_correction_recovery.sql",
+      "sha256": "daed0808006b6506556f8226dcf1444f411e0b635096c3efeba1b12b6f3997e4"
+    }
+  ],
+  "existingTables": [
+    "tenants",
+    "profiles",
+    "team_members",
+    "org_units",
+    "view_as_context",
+    "config_versions",
+    "operating_profile_entries",
+    "learn_scorecard_publications",
+    "learn_member_history",
+    "measurements",
+    "learn_performance_reviews",
+    "learn_work_measurement_runs",
+    "intelligence_objects",
+    "object_state_history",
+    "interactions",
+    "email_messages",
+    "phone_calls",
+    "phone_recordings",
+    "jobs",
+    "customer_cards"
+  ],
+  "newTables": [
+    "learn_performance_corrections",
+    "learn_assessments",
+    "learn_assessment_cancellations",
+    "learn_team_work_measurement_runs",
+    "learn_work_collection_runs",
+    "learn_work_collection_items",
+    "learn_work_calendar_versions",
+    "learn_work_calendar_publications",
+    "learn_work_calendar_cancellations",
+    "learn_work_delay_events",
+    "learn_work_delay_cancellations",
+    "learn_working_collection_runs",
+    "learn_working_collection_items",
+    "learn_correction_cancellations"
+  ],
+  "newFunctions": [
+    "learn_performance_correct",
+    "learn_assessment_immutable",
+    "learn_assessment_save",
+    "learn_assessment_resolve",
+    "learn_team_work_residence_collect",
+    "learn_work_collection_immutable",
+    "learn_work_collection_access",
+    "learn_work_collection_history",
+    "learn_work_frozen_owner",
+    "learn_work_collection_calculate",
+    "learn_work_collection_result",
+    "learn_work_collection_cell_lock",
+    "learn_work_collection_begin",
+    "learn_work_collection_step",
+    "learn_work_collection_abandon",
+    "learn_work_collection_status",
+    "learn_work_collection_evidence",
+    "learn_work_calendar_immutable",
+    "learn_work_calendar_validate",
+    "learn_work_calendar_expand",
+    "learn_work_calendar_version_result",
+    "learn_work_calendar_request",
+    "learn_work_calendar_resolve",
+    "learn_work_calendar_save",
+    "learn_work_calendar_publish",
+    "learn_work_calendar_read",
+    "learn_work_calendar_preview",
+    "learn_work_calendar_snapshot",
+    "learn_work_delay_immutable",
+    "learn_work_delay_request",
+    "learn_work_delay_entry",
+    "learn_work_delay_record",
+    "learn_work_delay_resolve",
+    "learn_work_delay_read",
+    "learn_work_delay_evidence",
+    "learn_work_delay_snapshot",
+    "learn_working_time_ranges",
+    "learn_working_time_windows",
+    "learn_working_time_micros",
+    "learn_working_time_calculate",
+    "learn_working_collection_immutable",
+    "learn_working_rule_states",
+    "learn_working_calendar_freeze",
+    "learn_working_delay_freeze",
+    "learn_work_measurement_receipt_check",
+    "learn_measurement_receipt_constraint",
+    "learn_review_receipt_constraint",
+    "learn_assessment_receipt_constraint",
+    "learn_performance_correction_resolve"
+  ],
+  "changedFunctions": [
+    "learn_performance_append",
+    "learn_scorecard_save_draft"
+  ],
+  "newSequences": [],
+  "newExistingTriggers": {
+    "measurements": [
+      "learn_measurement_receipt_guard"
+    ],
+    "learn_performance_reviews": [
+      "learn_review_receipt_guard"
+    ]
+  },
+  "limitations": [
+    "Full provider and signed-in acceptance remain required.",
+    "No production activation, calendar publication, staff grant or historical scoring.",
+    "Remaining operator, card-input and connector packages are not included."
+  ]
+}

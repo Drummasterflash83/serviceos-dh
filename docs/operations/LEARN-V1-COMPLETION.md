@@ -7,6 +7,24 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — combined scoring and working-time release passes offline acceptance.**
+The first five production-specific packages now install together. The fifth groups
+corrections, saved assessments and recovery with individual/team collectors,
+resumable collection, calendars, approved delays and receipt checks. Twelve real
+SQL journeys on synthetic work passed on the production archive, including a
+14,500-item population, working-hour/DST calculations, exact retries, cancellation,
+rule changes, source-preserving corrections and assessment save/recovery. Forged
+calculation receipts and altered assessment values were rejected.
+
+All 1,591,576 archived rows and five original sequence states match after install;
+new scoring ledgers remain empty in the preservation database. Journeys use a
+second offline clone, removed with the container. Existing table policies/grants
+remain unchanged; two existing helpers gain reviewed evidence/state handling and
+two existing ledgers gain deferred receipt checks. No hosted environment changed.
+Remaining card-input/operator/connector/queue reconciliation, real coverage,
+signed-in acceptance, complete recovery and production approval remain open.
+[Combined scoring evidence](evidence/learn-production-scoring-rehearsal-2026-10-12.json).
+
 **12 October — governed work passes the combined offline production rehearsal.**
 The first four production-specific packages install together on the retained full
 archive. The new action checks validate ownership, assignment scope, temporary
