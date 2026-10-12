@@ -1,0 +1,169 @@
+{
+  "state": "production_slack_setup_rehearsed_offline",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "negativeChecks": [
+    "wrong_target",
+    "function_acl_drift",
+    "late_failure"
+  ],
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 381,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "e5ac1cbeb5006fb6e7764235ba493bc1ae826c39aca433269574faf4083e94f8",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "originalArchivePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "duplicateRejected": true,
+  "journey": {
+    "passed": true,
+    "probeSha256": "0c595a3c311ce443497172e6dfd01db5a9ac379cdef0f12ec4c36b650ef6d2fe",
+    "sources": [
+      {
+        "path": "scripts/verify/learn-production-slack-setup.assert.sql",
+        "sha256": "2cfb069ec109df6ef5fcbba85c39639c7a531f65cc69949be70a0ed20781e45f"
+      }
+    ]
+  },
+  "legacyBotJourneys": [
+    {
+      "path": "scripts/verify/learn-production-slack.assert.sql",
+      "sourceSha256": "f3487eba7d010845e6abb86bcd332da2a25e19a65c6311269b7bc55b1d563d88",
+      "probeSha256": "f3487eba7d010845e6abb86bcd332da2a25e19a65c6311269b7bc55b1d563d88"
+    },
+    {
+      "path": "scripts/verify/learn-production-slack-threads.assert.sql",
+      "sourceSha256": "650ba2d9b2d7b326ae66ea2d9d39655bde4e8d84e7c44deede37744c24c649de",
+      "probeSha256": "650ba2d9b2d7b326ae66ea2d9d39655bde4e8d84e7c44deede37744c24c649de"
+    }
+  ],
+  "postJourneyPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 382,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "6a28f3b9796c114e9fa014fa454d47db6d93e9154d23f901e74a5e68d9ac3b8c",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "packages": [
+    "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+    "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+    "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+    "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+    "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+    "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+    "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+    "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+    "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+    "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+    "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+    "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+    "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba",
+    "f4413fe47a9eaa1eb7774e35e22f10f78bf94a55345f4fbe19fe690b4e7d8556",
+    "b877e70fa1cc946ba0c9c8a66f28b6603f99dc8484fefd1411bf30beed325998",
+    "ab4cef1752c520a13047fb287d63931068f7e7468d0014ba955df75a49a9dd56",
+    "304b2e84f822b703a882b184ee490268f2b3802c817dee5f7953c7180a8962d2"
+  ],
+  "newFunctions": 5,
+  "changedFunctions": 15,
+  "newPrivateTables": 1,
+  "existingTableDataAndPrivilegesUnchanged": true,
+  "scopedSlackReferenceTriggersChanged": 2,
+  "viewsRolesStorageUnchanged": true,
+  "priorReceiptsUnchanged": true,
+  "addedReleaseReceipts": 1,
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "version": "learn-production-slack-setup/1",
+  "scope": "Offline production-archive rehearsal, exact worker compilation/boot and hosted TEST attribution fix",
+  "candidateManifestSha256": "b12ec3b401f1340ef9d57161370383698e288a8bfdba6601922c1ba4d9b73900",
+  "bundleReportSha256": "75b8ffdad7421c6336a9a0d011af5a0be6c8e0f87a465cbb0d5aa7431b890f9a",
+  "bootReportSha256": "7bf049ff8358d990a80fc6f15944e2835637aae921ebcae55ea9f18dd426c979",
+  "runtimeWireReportSha256": "880e5ab2deb47fd0f48a9ea64ad28fb2dd7abe527a5282e4abed94fa9f7373ed",
+  "runtimeCompiled": 37,
+  "runtimeUnauthenticatedDenials": 37,
+  "sourceClosureSha256": "8ade602531ba85bba639cc5c30c8a9c964c9680274c54d970778f49aaa9712fb",
+  "hostedTestFix": {
+    "state": "installed_verified",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T20:28:26.615Z",
+    "packageSha256": "32d7e2fc250798af7da2f4f804b0c9235dee06840e53c07f2b9d88b9ca09b2eb",
+    "expected": {
+      "marker": "slack_operator_reference_installed",
+      "fingerprint": "91bfd6d2a42d0ac2d24d9ec6c3276e5d"
+    },
+    "afterFingerprint": "91bfd6d2a42d0ac2d24d9ec6c3276e5d",
+    "preservedDatasets": 195,
+    "newAccounts": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "credentialsUploaded": 0,
+    "productionChanged": false
+  },
+  "knownLimitations": [
+    "No real Slack messages or hosted credential have been copied; separate approval remains pending.",
+    "Current channel transport excludes private/shared channels and DMs; historical orchestration is incomplete.",
+    "Compilation and unauthenticated boot checks do not prove positive hosted provider or signed-in production acceptance.",
+    "Production remains unmodified. Full matched release, recurring operation, credential/provider checks and operational ownership remain open."
+  ],
+  "issueFoundAndFixed": "Generic tenant reference enforcement rejected cross-client operator approved_by on Slack imports. A guard scoped to two Slack approval tables validates the authenticated operator and retains same-client checks for account, job and message references.",
+  "releaseSequence": {
+    "steps": 69,
+    "databasePackages": 18,
+    "runtimeFunctions": 37,
+    "localAdapterAndJournalTestsPassed": 23,
+    "executed": false
+  },
+  "frontendEvidence": "learn-production-frontend-slack-setup-2026-10-12.json",
+  "dynamicRpcReview": {
+    "sites": 19,
+    "uniqueTargets": 51,
+    "failures": 0
+  }
+}

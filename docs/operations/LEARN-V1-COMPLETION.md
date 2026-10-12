@@ -7,6 +7,34 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 20:33 UTC — matching eighteen-package production candidate rehearsed; TEST operator attribution repaired.**
+A full production-schema journey caught a real gap: the generic reference trigger
+rejected a Slack approval attributed to an OpenFolk operator from another client.
+The correction is scoped to the two Slack approval tables. New cross-client
+attribution requires the authenticated operator's existing admin authority;
+account/job/message references remain tenant-bound. Impersonated approvers and
+foreign source references are rejected. Operator profiles are not moved.
+
+All eighteen production packages now pass the isolated retained-archive rehearsal,
+including credential configuration/recovery using the real synthetic encrypted
+Vault, logged operator channel/thread approvals and recovery, and legacy bot
+source/reply journeys. The original 299 archive tables (1,591,576 rows) and their
+sequences match; this is retained-archive evidence, not a fresh live preservation
+claim. The same fix is installed as TEST package 082 after rollback rehearsal,
+with all 195 TEST datasets unchanged and no account/grant/credential/capture change.
+
+The matching 37 workers compile and boot without network, rejecting missing auth.
+Nineteen reviewed dynamic-call sites resolve to 51 available authorised RPC targets.
+The 69-step release sequence pins all eighteen SQL packages and exact worker bytes;
+23 adapter/journal checks pass, including uncertain outcomes and duplicate writes.
+A new protected production-configured preview, Git `04f7f8e`, renders the correct
+production auth origin and existing login design. Signed-in production acceptance,
+positive hosted processing, release execution and input completeness remain open.
+Live is unchanged; real Slack credential/message approval is still pending.
+[Package/runtime evidence](evidence/learn-production-slack-setup-2026-10-12.json) ·
+[Production preview evidence](evidence/learn-production-frontend-slack-setup-2026-10-12.json).
+
+
 **12 October, 20:16 UTC — Slack connection form deployed and visible in signed-in TEST.**
 Git `e847a52` is READY on deployment `dpl_6GXNj12kz22mHG25MPm284sK6tuM`;
 both permanent TEST aliases resolve to it and preview protection remains enabled.

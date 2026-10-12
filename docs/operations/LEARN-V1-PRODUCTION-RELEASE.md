@@ -7,17 +7,24 @@ preview is not a replacement design. This approval supersedes older pending
 ordinary-promotion approval statements below; it does not prove the package,
 runtime, signed-in acceptance or preservation gates passed. The
 [completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
-The current hosted TEST frontend is Git `e847a52` (12 October, 20:06 UTC),
-including the Slack operator connection form. TEST Slack packages 080/081 and
-worker v11 are newer than the production candidate below and must be incorporated
-and rehearsed before promotion.
-The database candidate now includes production-specific packages 001–017. Package
-017 adds fixed Commusoft update periods without activating capture; all seventeen
-packages and the synthetic refresh journey passed on the isolated retained
-production archive. The paired runtime contains 37 compiled artifacts. The current
-protected frontend candidate is Git `254db78`; its login screen loads, but signed-in
-acceptance and actual served backend binding remain pending. Source backups are
-on `codex/learn-v1-test`.
+The current hosted TEST frontend is Git `e847a52`; TEST Slack packages 080–082
+and worker v11 are installed. The production candidate includes packages 001–018,
+37 exact compiled/boot-tested runtime artifacts and a matching 69-step release
+sequence. Package 018 includes Slack user credentials, logged operator setup and
+the scoped cross-client approval attribution fix discovered by full-schema testing.
+All eighteen packages preserve the retained archive and pass the Slack operator /
+legacy bot journeys. Twenty-three local release adapter/journal checks pass.
+
+The current protected production preview is Git `04f7f8e`, deployment
+`dpl_tZasPdqxDNGDk8JGQ4v7WzsTy5Ea`, at
+[the production-configured preview](https://serviceos-pgtk1tzt4-allkin.vercel.app/login).
+Its rendered auth target is verified as production; sign-in acceptance is still
+pending. The preview is protected and the live deployment remains
+`dpl_DXueDsax146gdtyFoniXRaW3dzMM`. No production backend or alias was changed.
+[Current package/runtime evidence](evidence/learn-production-slack-setup-2026-10-12.json)
+and [frontend evidence](evidence/learn-production-frontend-slack-setup-2026-10-12.json)
+supersede older candidate pins below. Real-provider completeness, positive caller
+acceptance, current recovery/drain gates and live activation remain open.
 
 
 ## Matching processing candidate — 12 October

@@ -1,7 +1,7 @@
 {
   "version": "learn-production-rpc-bindings/1",
-  "sourceClosureSha256": "efbda048c93e11112a024e21af41766c29daaaca17c4af7a7c2121e490ebf24a",
-  "baselineSchemaSha256": "40046f9007acf26fc97a44d94c1622d2376283aa1aee8f9df9ef8bd5ebd970a0",
+  "sourceClosureSha256": "8ade602531ba85bba639cc5c30c8a9c964c9680274c54d970778f49aaa9712fb",
+  "baselineSchemaSha256": "266f8ff777500e0e7be7786e858cff594bc57534e0961e2b4131a0ffe7724fe7",
   "sites": [
     {
       "path": "_shared/connectors/marketing_email.ts",
@@ -141,8 +141,8 @@
     {
       "path": "_shared/slack/slack_history_server.ts",
       "kind": "rpc",
-      "line": 99,
-      "sourceSha256": "0060d2ca8c3ed1c3261a8eaaed39a16aa623230f6053e6207b5a54899ca45b88",
+      "line": 100,
+      "sourceSha256": "18e6baab0210ff3b9f755bae86882ce2b0bb3a976f815a00f29757ae958d41a5",
       "targets": [
         {
           "name": "learn_slack_read_thread_credential",
@@ -403,5 +403,5 @@
     "Catalog presence and execute privileges are checked against the rehearsed archive candidate; named argument semantics and end-to-end execution need their separate journey evidence.",
     "The generic proxy passthroughs must be reviewed again if their production handler bindings change."
   ],
-  "catalogScope": "Actual isolated production archive catalog after packages 001–016; roster journey and original-source preservation passed."
+  "catalogScope": "Actual isolated production archive catalog after packages 001\u2013018; operator Slack setup, real synthetic Vault, legacy bot journeys and original-source preservation passed."
 }

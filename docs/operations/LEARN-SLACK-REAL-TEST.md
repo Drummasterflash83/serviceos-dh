@@ -98,3 +98,10 @@ datasets. Every retained row digest reconciles with its initial full-table
 fingerprint. The private baseline contains no raw source records or credentials.
 Earlier failed attempts did not save or replace a baseline. No Slack credential
 or message import has yet occurred; approval remains pending.
+
+**Operator attribution fix installed at 20:28 UTC.** Full production-schema
+rehearsal uncovered and corrected a generic tenant-reference check that rejected
+cross-client operator approvals. TEST package 082 installs the same scoped fix,
+with all 195 datasets unchanged. No credential or message was copied. The existing
+run ID, retained baseline, requested scope and tighter twelve-invocation limit
+remain unchanged; do not recreate or reset the run.

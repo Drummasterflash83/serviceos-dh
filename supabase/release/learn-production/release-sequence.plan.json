@@ -1,17 +1,17 @@
 {
   "version": "learn-production-release-sequence/1",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "candidateSha256": "1c33876b498b0d79d1a9ba954c91ff23b87ca883197504523b1e68e3cb0a279a",
+  "candidateSha256": "b12ec3b401f1340ef9d57161370383698e288a8bfdba6601922c1ba4d9b73900",
   "steps": [
     {
       "id": "fresh-release-preflight",
       "kind": "check",
-      "pinSha256": "9feec16839c301ef722420fa809d5d052b2dee669999f0cd5968c9955d052773"
+      "pinSha256": "f7dd560d644ed3ca421789c88caee725181522fb092746d63086bd7e238e9d46"
     },
     {
       "id": "pause-existing-schedules",
       "kind": "schedule",
-      "pinSha256": "c6184597d06bf275594eb377b7db85972fc6a0d8b7532c66b032cdd1db2163c5"
+      "pinSha256": "7d969c38681111360d5b7b355c8d0d4b9ebfa8eabd8e6d641ca775a0c276d3b5"
     },
     {
       "id": "verify-in-flight-drain",
@@ -107,6 +107,11 @@
       "id": "database-017",
       "kind": "database",
       "pinSha256": "21f25697334d12996a903511183df19e564ed04fa83c0ad0512c97d3f566ef48"
+    },
+    {
+      "id": "database-018",
+      "kind": "database",
+      "pinSha256": "70fd99aeb28473ca013f14d8c5764c6639836f478470bc7942e1652ff821259e"
     },
     {
       "id": "matching-server-configuration",
@@ -216,7 +221,7 @@
     {
       "id": "runtime-learn-slack-worker",
       "kind": "runtime",
-      "pinSha256": "60978d71139ca57b57d0472b3d464b43fba7dfd0aa744d6819c26281c2614578"
+      "pinSha256": "a2c2aee44ad74cbb7f5d6a54b67c8da513b74f080b9a574afcc0ccbaed9f24e4"
     },
     {
       "id": "runtime-learn-voicemail-import",
@@ -266,7 +271,7 @@
     {
       "id": "runtime-platform-worker",
       "kind": "runtime",
-      "pinSha256": "57e1d733a751ee88dcc45067b706f96c00494864cf1f303e727e4037fd050b32"
+      "pinSha256": "860c54002a874a7aa64220a1893cbe28bfa7fb09745704bc7e0759025f174c17"
     },
     {
       "id": "runtime-receptionist-voicemail-recording",
@@ -301,7 +306,7 @@
     {
       "id": "publish-runtime-metadata",
       "kind": "runtime",
-      "pinSha256": "58bf2c5322feda0e2bd6a42e1e37ac656da77f6febc8c40ea6a1e226bb7b7c0a"
+      "pinSha256": "a8034f99829ccff5c6daa7683c6937a7977190cb3170ccde89187a922d0df84a"
     },
     {
       "id": "runtime-publication-readback",
@@ -316,7 +321,7 @@
     {
       "id": "promote-matching-frontend",
       "kind": "frontend",
-      "pinSha256": "dd315febf3ce8e8f58dd6c7423e12f4758728a99f9f3cf980d3bd41d4c121555"
+      "pinSha256": "5efa89b53352888d82ec573764918d0bf471fe02e1f1776154359b88c0b32b58"
     },
     {
       "id": "signed-in-live-acceptance",
@@ -331,7 +336,7 @@
     {
       "id": "restore-existing-schedules",
       "kind": "schedule",
-      "pinSha256": "56150bfe2b270a2313dc3ceb74f7d2754c0f77d7525f0bb71791d8b80a3f8c1d"
+      "pinSha256": "d6caeb8338225bffb5939048fdb0d19356e6e4666b5f2d5bf8e42c5b57c692b8"
     },
     {
       "id": "observe-initial-live-capture",

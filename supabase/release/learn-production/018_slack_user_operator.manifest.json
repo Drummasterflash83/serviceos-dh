@@ -1,0 +1,64 @@
+{
+  "version": "learn-production-slack-user-operator/1",
+  "status": "prepared_requires_matching_release_verification",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "304b2e84f822b703a882b184ee490268f2b3802c817dee5f7953c7180a8962d2",
+  "priorSha256": "ab4cef1752c520a13047fb287d63931068f7e7468d0014ba955df75a49a9dd56",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101560000_learn_slack_user_credential.sql",
+      "sha256": "1056d08e79df294f63aeb11a44c31714ee177f38fcd10b47d90834bb56c21652"
+    },
+    {
+      "path": "supabase/migrations/20261101570000_learn_slack_operator_setup.sql",
+      "sha256": "3f91c0a72337b104139f363cd8e1b3d6ca02ed8eafd28e96e7a753f4ff35e41d"
+    },
+    {
+      "path": "supabase/migrations/20261101580000_learn_slack_operator_reference.sql",
+      "sha256": "b414ab671439e69fd3042770b2af998dc7243130df97208dfeff476b41f061ff"
+    }
+  ],
+  "newFunctions": [
+    "learn_slack_configure",
+    "learn_slack_connections_read",
+    "learn_slack_control_access",
+    "learn_slack_credential_field",
+    "learn_slack_reference_guard"
+  ],
+  "changedFunctions": [
+    "learn_slack_accounts_read",
+    "learn_slack_history_read",
+    "learn_slack_history_state",
+    "learn_slack_queue_recurring_threads",
+    "learn_slack_read_credential",
+    "learn_slack_read_thread_credential",
+    "learn_slack_recurring_control",
+    "learn_slack_resume_history",
+    "learn_slack_resume_thread",
+    "learn_slack_schedule_recurring",
+    "learn_slack_start_import",
+    "learn_slack_start_thread_import",
+    "learn_slack_thread_recovery_read",
+    "learn_slack_thread_recovery_state",
+    "learn_slack_threads_read"
+  ],
+  "newTables": [
+    "learn_slack_connection_requests"
+  ],
+  "changedTriggerTables": [
+    "slack_history_imports",
+    "slack_thread_imports"
+  ],
+  "changedViews": [],
+  "newSequences": [],
+  "extendedTables": {},
+  "limitations": [
+    "No credential, access grant, provider request, module activation or capture is created by installation.",
+    "Matching runtime and frontend, signed-in acceptance and source preservation remain release requirements.",
+    "Private-channel visibility and whole-history orchestration remain unfinished; DMs are excluded."
+  ]
+}

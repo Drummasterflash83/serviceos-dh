@@ -87,9 +87,14 @@
       "path": "supabase/release/learn-production/017_commusoft_update_windows.sql",
       "sha256": "ab4cef1752c520a13047fb287d63931068f7e7468d0014ba955df75a49a9dd56",
       "manifestSha256": "8590954e4971b432a5b9a0e6e1ea6cc225e88c10fc69e5a1cfba5dcf8124f8f2"
+    },
+    {
+      "path": "supabase/release/learn-production/018_slack_user_operator.sql",
+      "sha256": "304b2e84f822b703a882b184ee490268f2b3802c817dee5f7953c7180a8962d2",
+      "manifestSha256": "03ba3983f36f89e0ba06d677ce0f4097dc348d0a53cbf07bfd60d09b9b281154"
     }
   ],
-  "sourceClosureSha256": "efbda048c93e11112a024e21af41766c29daaaca17c4af7a7c2121e490ebf24a",
+  "sourceClosureSha256": "8ade602531ba85bba639cc5c30c8a9c964c9680274c54d970778f49aaa9712fb",
   "files": [
     {
       "path": "_shared/audit.ts",
@@ -620,12 +625,16 @@
       "sha256": "cebaeb015a988776991a273d2c6623a008c6ed01185d23298110aa6da66ac88b"
     },
     {
+      "path": "_shared/slack/slack_credential_binding.ts",
+      "sha256": "e08a530ee462dfca08d17b20b117b59bbc12f443dc313a790e5ced2bd95c9536"
+    },
+    {
       "path": "_shared/slack/slack_history_batch.ts",
       "sha256": "1e4bf056e5d319c30445da1f1cf4bc7fbdb6a35684f382a330ab859bc9486702"
     },
     {
       "path": "_shared/slack/slack_history_binding.ts",
-      "sha256": "678a3eb71cb538285d6350548730246c137d048c74ff5e7c514a68cd78a6a690"
+      "sha256": "2216e128ce1322d1fe753f81b2dfab5fca75f8d29a1c02f9ae05116ef3d0aab9"
     },
     {
       "path": "_shared/slack/slack_history_errors.ts",
@@ -637,11 +646,11 @@
     },
     {
       "path": "_shared/slack/slack_history_request.ts",
-      "sha256": "8c5cd970ed1cc6627b4477851386900cb8032c2cc3ce6c2c749d88588df991d9"
+      "sha256": "c7ba8f84a9f2022c6a46b4c50e9c5100b0bcf1936d091b6e8a218b1844cdef3e"
     },
     {
       "path": "_shared/slack/slack_history_server.ts",
-      "sha256": "0060d2ca8c3ed1c3261a8eaaed39a16aa623230f6053e6207b5a54899ca45b88"
+      "sha256": "18e6baab0210ff3b9f755bae86882ce2b0bb3a976f815a00f29757ae958d41a5"
     },
     {
       "path": "_shared/slack/slack_history.ts",
@@ -1728,9 +1737,10 @@
     {
       "name": "learn-slack-worker",
       "verifyJwt": true,
-      "sourceClosureSha256": "2933be3b2419cc65d1b1125a37a33ec22d532ae53a36302b59deac3df469bb94",
+      "sourceClosureSha256": "44475398c30996f3766c6e3d02f4c0e061c96d17cf5d3d84634ab22e464d137a",
       "sourceFiles": [
         "_shared/learn_capture_control.ts",
+        "_shared/slack/slack_credential_binding.ts",
         "_shared/slack/slack_history_batch.ts",
         "_shared/slack/slack_history_binding.ts",
         "_shared/slack/slack_history_errors.ts",
@@ -1760,8 +1770,8 @@
       "hostedTestReference": {
         "name": "learn-slack-worker",
         "id": "bd55f2b9-77da-4427-92bf-59d2e27d744e",
-        "version": 10,
-        "hash": "5285ad03e91016eaf8111964e2094e85072608ac81fa21499faa1d61bf0feb35",
+        "version": 11,
+        "hash": "e7114e127976f7d002b68c3e07e6533ca53e4269013eda41c4099bcc2fc6f29f",
         "jwt": true,
         "status": "ACTIVE"
       },
@@ -2208,7 +2218,7 @@
     {
       "name": "platform-worker",
       "verifyJwt": false,
-      "sourceClosureSha256": "cbed51e973e500ed27865eb4c224aba904a2f430efab66e792af8fffa7c00b8a",
+      "sourceClosureSha256": "457dc4585d7a456ca7bc78d9b914f379ed8285a19ad792c9a344635378437df3",
       "sourceFiles": [
         "_shared/authz.ts",
         "_shared/automation_execution_enqueue.ts",
@@ -2282,6 +2292,7 @@
         "_shared/response_refinement.ts",
         "_shared/review_approval.ts",
         "_shared/simwood.ts",
+        "_shared/slack/slack_credential_binding.ts",
         "_shared/slack/slack_history_batch.ts",
         "_shared/slack/slack_history_binding.ts",
         "_shared/slack/slack_history_errors.ts",
@@ -2770,7 +2781,7 @@
     {
       "path": "_shared/slack/slack_history_server.ts",
       "kind": "rpc",
-      "line": 99
+      "line": 100
     },
     {
       "path": "_shared/slack/slack_worker.ts",

@@ -59,6 +59,20 @@ These are explicit coverage gaps, not channels with no activity. The current
 15-message/60-second policy is conservative; do not promise a full import by
 tomorrow before measuring the workspace and permitted throughput.
 
+### Full-schema correction — 12 October, 20:28 UTC
+
+A restored-production rehearsal found that the generic tenant-reference trigger
+rejected cross-client operator approval attribution. The same trigger exists in
+TEST. Package 082 now replaces only the two Slack approval reference triggers with
+a scoped guard: an authenticated, authorised operator may record their own identity;
+foreign account/job/message references and impersonated approvers remain blocked.
+Workers retain existing approval attribution on checkpoint updates. The generic
+foundation guard and unrelated tables are unchanged. All 195 TEST datasets match
+before and after installation. The eighteen-package production rehearsal verifies
+the actual permission functions and encrypted synthetic Vault, plus legacy bot
+storage/thread behaviour. Production and real message capture remain unchanged.
+[Evidence](evidence/learn-production-slack-setup-2026-10-12.json).
+
 ### OpenFolk operator setup — 12 October, 19:56 UTC
 
 Hosted TEST package 081 adds `learn_slack_configure` for existing OpenFolk admins,

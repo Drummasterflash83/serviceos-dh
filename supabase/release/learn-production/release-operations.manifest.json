@@ -2,13 +2,13 @@
   "version": "learn-production-release-operations/1",
   "state": "prepared_not_approved_or_executed",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "planSha256": "a1986168c1f03c2327357f19e37d4018dfbf45d103990697349e583dac31de2b",
+  "planSha256": "c1ad32d8cd644cf0f506035f52a08503bb2698d22cadf33f1ee0b6e12765660e",
   "operations": [
     {
       "id": "fresh-release-preflight",
       "kind": "check",
       "contract": {
-        "candidateSha256": "1c33876b498b0d79d1a9ba954c91ff23b87ca883197504523b1e68e3cb0a279a",
+        "candidateSha256": "b12ec3b401f1340ef9d57161370383698e288a8bfdba6601922c1ba4d9b73900",
         "requires": [
           "explicit_exact_release_approval",
           "fresh_production_schema_and_runtime_match",
@@ -20,7 +20,7 @@
           "matching_frontend_with_update_window_controls_verified"
         ]
       },
-      "pinSha256": "9feec16839c301ef722420fa809d5d052b2dee669999f0cd5968c9955d052773"
+      "pinSha256": "f7dd560d644ed3ca421789c88caee725181522fb092746d63086bd7e238e9d46"
     },
     {
       "id": "pause-existing-schedules",
@@ -28,9 +28,9 @@
       "contract": {
         "mode": "pause",
         "path": "supabase/release/learn-production/schedules-pause.sql",
-        "sha256": "583342da2cd1daae80a2db15a77a487af5d8424f2682f68f4711a81151c3e6ad"
+        "sha256": "37b94e3a377c5057dc6935ef1f7667a28b21390e10ba52efa37358038d3546ce"
       },
-      "pinSha256": "c6184597d06bf275594eb377b7db85972fc6a0d8b7532c66b032cdd1db2163c5"
+      "pinSha256": "7d969c38681111360d5b7b355c8d0d4b9ebfa8eabd8e6d641ca775a0c276d3b5"
     },
     {
       "id": "verify-in-flight-drain",
@@ -231,6 +231,16 @@
         "manifestSha256": "8590954e4971b432a5b9a0e6e1ea6cc225e88c10fc69e5a1cfba5dcf8124f8f2"
       },
       "pinSha256": "21f25697334d12996a903511183df19e564ed04fa83c0ad0512c97d3f566ef48"
+    },
+    {
+      "id": "database-018",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/018_slack_user_operator.sql",
+        "sha256": "304b2e84f822b703a882b184ee490268f2b3802c817dee5f7953c7180a8962d2",
+        "manifestSha256": "03ba3983f36f89e0ba06d677ce0f4097dc348d0a53cbf07bfd60d09b9b281154"
+      },
+      "pinSha256": "70fd99aeb28473ca013f14d8c5764c6639836f478470bc7942e1652ff821259e"
     },
     {
       "id": "matching-server-configuration",
@@ -716,16 +726,16 @@
         "name": "learn-slack-worker",
         "before": null,
         "verifyJwt": true,
-        "eszipSha256": "6c622b0eb2c4c77819488293046c004145ea6d35d3984ef7b6bc9ef0a5969446",
-        "ezbrSha256": "f43eecf4a1da576522f74bc14b3f14ac0f03255b2ef9c17d3a0db9b69bd2a790",
+        "eszipSha256": "00f345aede724c6f86ba30ded47892fce409817b7b2d80c8bacf71b0c1dbf81b",
+        "ezbrSha256": "809e0d4b5127dd42a382fc0f6bca26424670669d289804e393bb4eadc8b230a1",
         "request": {
           "method": "POST",
-          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Flearn-slack-worker%2Findex.ts&ezbr_sha256=f43eecf4a1da576522f74bc14b3f14ac0f03255b2ef9c17d3a0db9b69bd2a790&slug=learn-slack-worker&name=learn-slack-worker",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Flearn-slack-worker%2Findex.ts&ezbr_sha256=809e0d4b5127dd42a382fc0f6bca26424670669d289804e393bb4eadc8b230a1&slug=learn-slack-worker&name=learn-slack-worker",
           "contentType": "application/vnd.denoland.eszip",
           "bodyFile": "learn-slack-worker.ezbr"
         }
       },
-      "pinSha256": "60978d71139ca57b57d0472b3d464b43fba7dfd0aa744d6819c26281c2614578"
+      "pinSha256": "a2c2aee44ad74cbb7f5d6a54b67c8da513b74f080b9a574afcc0ccbaed9f24e4"
     },
     {
       "id": "runtime-learn-voicemail-import",
@@ -959,16 +969,16 @@
           "status": "ACTIVE"
         },
         "verifyJwt": false,
-        "eszipSha256": "f145bd7dcb8818853a3c4ac41232a496749fbc169ca9c8b752aa51bd7f9c84e9",
-        "ezbrSha256": "0a28ca4b1bcd2ca9d3f08cf7c3d95d25b5d632326c2d5ec35c2831e8a5fb88f3",
+        "eszipSha256": "e2325296996a0acf6d652c5d0cc72549fb264015a0c9ed3432d087569beb25c2",
+        "ezbrSha256": "eca674cd74a7badce261425ab15912e16c6a4f547ad3fcefef0006483858bc63",
         "request": {
           "method": "PATCH",
-          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/platform-worker?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fplatform-worker%2Findex.ts&ezbr_sha256=0a28ca4b1bcd2ca9d3f08cf7c3d95d25b5d632326c2d5ec35c2831e8a5fb88f3",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/platform-worker?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fplatform-worker%2Findex.ts&ezbr_sha256=eca674cd74a7badce261425ab15912e16c6a4f547ad3fcefef0006483858bc63",
           "contentType": "application/vnd.denoland.eszip",
           "bodyFile": "platform-worker.ezbr"
         }
       },
-      "pinSha256": "57e1d733a751ee88dcc45067b706f96c00494864cf1f303e727e4037fd050b32"
+      "pinSha256": "860c54002a874a7aa64220a1893cbe28bfa7fb09745704bc7e0759025f174c17"
     },
     {
       "id": "runtime-receptionist-voicemail-recording",
@@ -1231,7 +1241,7 @@
           {
             "name": "learn-slack-worker",
             "verifyJwt": true,
-            "ezbrSha256": "f43eecf4a1da576522f74bc14b3f14ac0f03255b2ef9c17d3a0db9b69bd2a790"
+            "ezbrSha256": "809e0d4b5127dd42a382fc0f6bca26424670669d289804e393bb4eadc8b230a1"
           },
           {
             "name": "learn-voicemail-import",
@@ -1281,7 +1291,7 @@
           {
             "name": "platform-worker",
             "verifyJwt": false,
-            "ezbrSha256": "0a28ca4b1bcd2ca9d3f08cf7c3d95d25b5d632326c2d5ec35c2831e8a5fb88f3"
+            "ezbrSha256": "eca674cd74a7badce261425ab15912e16c6a4f547ad3fcefef0006483858bc63"
           },
           {
             "name": "receptionist-voicemail-recording",
@@ -1316,7 +1326,7 @@
         ],
         "reference": "https://supabase.com/docs/reference/api/v1-bulk-update-functions"
       },
-      "pinSha256": "58bf2c5322feda0e2bd6a42e1e37ac656da77f6febc8c40ea6a1e226bb7b7c0a"
+      "pinSha256": "a8034f99829ccff5c6daa7683c6937a7977190cb3170ccde89187a922d0df84a"
     },
     {
       "id": "runtime-publication-readback",
@@ -1350,12 +1360,12 @@
       "kind": "frontend",
       "contract": {
         "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
-        "id": "dpl_4Ri5YLNTdH4JPDMbKtXJYaxYSjUA",
-        "url": "https://serviceos-yhfbegxeo-allkin.vercel.app",
-        "gitSha": "254db7860447dc54b900635437fbd8cc0e21e1ef",
+        "id": "dpl_tZasPdqxDNGDk8JGQ4v7WzsTy5Ea",
+        "url": "https://serviceos-pgtk1tzt4-allkin.vercel.app",
+        "gitSha": "04f7f8edd8e3d55637ce0376698a746191a403b2",
         "previousProductionDeployment": "dpl_DXueDsax146gdtyFoniXRaW3dzMM"
       },
-      "pinSha256": "dd315febf3ce8e8f58dd6c7423e12f4758728a99f9f3cf980d3bd41d4c121555"
+      "pinSha256": "5efa89b53352888d82ec573764918d0bf471fe02e1f1776154359b88c0b32b58"
     },
     {
       "id": "signed-in-live-acceptance",
@@ -1400,9 +1410,9 @@
       "contract": {
         "mode": "restore",
         "path": "supabase/release/learn-production/schedules-restore.sql",
-        "sha256": "dc53b0ff0e59af60a5387a921225c54c6045c2194efb16d85cf0a9a3cb1d8a9d"
+        "sha256": "44c3f545de68ecba132deacaad0aa5c027c266b1a41ee9d7d0bbe0b2a92c93eb"
       },
-      "pinSha256": "56150bfe2b270a2313dc3ceb74f7d2754c0f77d7525f0bb71791d8b80a3f8c1d"
+      "pinSha256": "d6caeb8338225bffb5939048fdb0d19356e6e4666b5f2d5bf8e42c5b57c692b8"
     },
     {
       "id": "observe-initial-live-capture",
