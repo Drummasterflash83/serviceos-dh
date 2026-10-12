@@ -1,0 +1,134 @@
+<div id="dh-learn-showcase">
+  <style>
+    #dh-learn-showcase { --dh-bg:light-dark(#f7f8f6,#171c19); --dh-panel:light-dark(#ffffff,#202722); --dh-ink:light-dark(#20372c,#eef4ef); --dh-muted:light-dark(#627068,#b0c0b5); --dh-line:light-dark(#e0e6df,#38473d); --dh-soft:light-dark(#eaf0e8,#2c3c30); --dh-green:light-dark(#245c40,#a6d8b5); --dh-selected:light-dark(#234d36,#b4d9bd); --dh-onselected:light-dark(#ffffff,#14261a); --dh-amber:light-dark(#785512,#edcd89); --dh-amberbg:light-dark(#faf1da,#3d3523); font-family:Arial,sans-serif; font-size:14px; line-height:1.5; color:var(--dh-ink); background:var(--dh-bg); border:1px solid var(--dh-line); border-radius:16px; overflow:hidden; }
+    #dh-learn-showcase * { box-sizing:border-box; }
+    #dh-learn-showcase h1, #dh-learn-showcase h2, #dh-learn-showcase h3, #dh-learn-showcase p { margin:0; }
+    #dh-learn-showcase h1 { font-size:30px; line-height:1.2; font-weight:500; letter-spacing:-1px; }
+    #dh-learn-showcase h2 { font-size:18px; font-weight:500; }
+    #dh-learn-showcase h3 { font-size:14px; font-weight:500; }
+    #dh-learn-showcase button { font:inherit; color:inherit; }
+    #dh-learn-showcase .dh-top { display:flex; align-items:center; gap:22px; padding:18px 116px 18px 24px; background:var(--dh-panel); border-bottom:1px solid var(--dh-line); flex-wrap:wrap; }
+    #dh-learn-showcase .dh-brand { font-size:20px; font-weight:500; letter-spacing:-.6px; }
+    #dh-learn-showcase .dh-brand small { display:block; font-size:10px; letter-spacing:2.7px; font-weight:400; }
+    #dh-learn-showcase .dh-wordmark { padding-left:22px; border-left:1px solid var(--dh-line); color:var(--dh-muted); }
+    #dh-learn-showcase .dh-shell { display:grid; grid-template-columns:135px minmax(0,1fr); }
+    #dh-learn-showcase .dh-side { background:var(--dh-panel); border-right:1px solid var(--dh-line); padding:23px 12px; display:flex; flex-direction:column; gap:10px; }
+    #dh-learn-showcase .dh-nav { display:flex; align-items:center; gap:9px; padding:10px; border-radius:9px; color:var(--dh-muted); }
+    #dh-learn-showcase .dh-nav-current { background:var(--dh-soft); color:var(--dh-ink); }
+    #dh-learn-showcase .dh-side-label { font-size:11px; letter-spacing:1.2px; margin:20px 10px 0; color:var(--dh-muted); }
+    #dh-learn-showcase .dh-main { padding:26px; min-width:0; }
+    #dh-learn-showcase .dh-title { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+    #dh-learn-showcase .dh-eyebrow { text-transform:uppercase; letter-spacing:1.4px; font-size:11px; color:var(--dh-muted); margin-bottom:8px; }
+    #dh-learn-showcase .dh-muted { color:var(--dh-muted); }
+    #dh-learn-showcase .dh-small { font-size:12px; }
+    #dh-learn-showcase .dh-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 9px; border-radius:6px; font-size:11px; background:var(--dh-soft); color:var(--dh-green); white-space:nowrap; }
+    #dh-learn-showcase .dh-preview { background:var(--dh-amberbg); color:var(--dh-amber); }
+    #dh-learn-showcase .dh-intro { margin-top:8px; color:var(--dh-muted); }
+    #dh-learn-showcase .dh-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:22px 0; }
+    #dh-learn-showcase .dh-metric { background:var(--dh-panel); border:1px solid var(--dh-line); border-radius:12px; padding:15px; }
+    #dh-learn-showcase .dh-number { display:block; font-size:29px; letter-spacing:-1px; font-variant-numeric:tabular-nums; }
+    #dh-learn-showcase .dh-columns { display:grid; grid-template-columns:minmax(0,.95fr) minmax(0,1.2fr); gap:18px; align-items:start; }
+    #dh-learn-showcase .dh-panel { background:var(--dh-panel); border:1px solid var(--dh-line); border-radius:12px; padding:18px; min-width:0; }
+    #dh-learn-showcase .dh-panel-head { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+    #dh-learn-showcase .dh-source { width:100%; display:flex; align-items:center; gap:12px; text-align:left; border:1px solid var(--dh-line); border-radius:9px; padding:12px; background:var(--dh-panel); margin-top:8px; }
+    #dh-learn-showcase .dh-source[aria-pressed="true"] { background:var(--dh-soft); border-color:var(--dh-green); }
+    #dh-learn-showcase .dh-source-text { flex:1; min-width:0; }
+    #dh-learn-showcase .dh-source-text span { display:block; }
+    #dh-learn-showcase .dh-source-note { font-size:12px; color:var(--dh-muted); }
+    #dh-learn-showcase .dh-source-detail { margin-top:14px; padding-top:14px; border-top:1px solid var(--dh-line); min-height:105px; }
+    #dh-learn-showcase .dh-detail-status { color:var(--dh-green); margin-bottom:5px; }
+    #dh-learn-showcase .dh-questions { display:flex; gap:7px; flex-wrap:wrap; margin:14px 0; }
+    #dh-learn-showcase .dh-question { background:var(--dh-panel); border:1px solid var(--dh-line); padding:7px 10px; border-radius:7px; font-size:12px; }
+    #dh-learn-showcase .dh-question[aria-pressed="true"] { background:var(--dh-selected); color:var(--dh-onselected); border-color:var(--dh-selected); }
+    #dh-learn-showcase .dh-finding { background:var(--dh-soft); border-radius:9px; padding:15px; }
+    #dh-learn-showcase .dh-finding h3 { font-size:17px; margin:4px 0 8px; }
+    #dh-learn-showcase .dh-evidence { padding:13px 0 0; display:grid; gap:10px; }
+    #dh-learn-showcase .dh-evidence-row { display:grid; grid-template-columns:20px minmax(0,1fr); gap:8px; font-size:12px; }
+    #dh-learn-showcase .dh-next { border-top:1px solid var(--dh-line); padding-top:12px; margin-top:13px; font-size:12px; }
+    #dh-learn-showcase .dh-footer { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:18px; font-size:11px; color:var(--dh-muted); }
+    #dh-learn-showcase [hidden] { display:none; }
+    @media (max-width:760px) { #dh-learn-showcase .dh-shell { grid-template-columns:1fr; } #dh-learn-showcase .dh-side { display:none; } #dh-learn-showcase .dh-main { padding:20px; } }
+    @media (max-width:580px) { #dh-learn-showcase .dh-columns { grid-template-columns:1fr; } #dh-learn-showcase .dh-metrics { gap:6px; } #dh-learn-showcase .dh-metric { padding:10px; } #dh-learn-showcase .dh-number { font-size:23px; } #dh-learn-showcase .dh-wordmark { display:none; } #dh-learn-showcase h1 { font-size:26px; } #dh-learn-showcase .dh-main { padding:15px; } }
+    @media (pointer:coarse) { #dh-learn-showcase button { min-height:44px; } }
+  </style>
+  <header class="dh-top"><div class="dh-brand">DRUMMONDS<small>HEATING · PLUMBING</small></div><div class="dh-wordmark">Your workspace, powered by OpenFolk</div></header>
+  <div class="dh-shell">
+    <aside class="dh-side" aria-label="Workspace navigation preview"><div class="dh-nav"><i data-lucide="house" aria-hidden="true"></i>Overview</div><div class="dh-nav dh-nav-current" aria-current="page"><i data-lucide="layers" aria-hidden="true"></i>LEARN</div><div class="dh-nav"><i data-lucide="contact" aria-hidden="true"></i>People</div><div class="dh-side-label">COMING NEXT</div><div class="dh-nav"><i data-lucide="sparkles" aria-hidden="true"></i>Third brain</div></aside>
+    <main class="dh-main">
+      <div class="dh-title"><div><div class="dh-eyebrow">LEARN / Company knowledge</div><h1>A clearer picture of Drummonds.</h1></div><span class="dh-pill dh-preview">Showcase preview</span></div>
+      <p class="dh-intro">Your jobs, people and conversations. Brought together in one place.</p>
+      <div class="dh-metrics" aria-label="Verified Commusoft source records retained in TEST">
+        <div class="dh-metric"><span class="dh-small dh-muted">Jobs</span><span class="dh-number">12,611</span><span class="dh-small dh-muted">Retained in TEST</span></div>
+        <div class="dh-metric"><span class="dh-small dh-muted">Properties</span><span class="dh-number">2,421</span><span class="dh-small dh-muted">Retained in TEST</span></div>
+        <div class="dh-metric"><span class="dh-small dh-muted">Contacts</span><span class="dh-number">2,965</span><span class="dh-small dh-muted">Retained in TEST</span></div>
+      </div>
+      <div class="dh-columns">
+        <section class="dh-panel" aria-labelledby="dh-input-heading">
+          <div class="dh-panel-head"><h2 id="dh-input-heading">Your inputs</h2><span class="dh-small dh-muted">Verified so far</span></div>
+          <button type="button" class="dh-source cursor-interaction" data-source="commusoft" aria-pressed="true"><i data-lucide="wrench" aria-hidden="true"></i><span class="dh-source-text"><span>Commusoft</span><span class="dh-source-note">Jobs, properties and contacts</span></span><span class="dh-pill">TEST</span></button>
+          <button type="button" class="dh-source cursor-interaction" data-source="email" aria-pressed="false"><i data-lucide="mail" aria-hidden="true"></i><span class="dh-source-text"><span>Email</span><span class="dh-source-note">20 messages · 19 threads</span></span><span class="dh-pill">TEST</span></button>
+          <button type="button" class="dh-source cursor-interaction" data-source="phone" aria-pressed="false"><i data-lucide="phone" aria-hidden="true"></i><span class="dh-source-text"><span>Phone</span><span class="dh-source-note">1 call + recording captured</span></span><span class="dh-pill">TEST</span></button>
+          <button type="button" class="dh-source cursor-interaction" data-source="slack" aria-pressed="false"><i data-lucide="hash" aria-hidden="true"></i><span class="dh-source-text"><span>Slack</span><span class="dh-source-note">315 accessible channels identified</span></span><span class="dh-pill dh-preview">Pending</span></button>
+          <div class="dh-source-detail" aria-live="polite"><h3 class="dh-detail-status" id="dh-source-status">Read-only import verified in TEST</h3><p class="dh-small dh-muted" id="dh-source-detail">Customer and site contact passes completed. Records are retained; capture is paused. Ongoing production processing is still to finish.</p></div>
+          <p class="dh-small dh-muted">Individual and group DMs excluded.</p>
+        </section>
+        <section class="dh-panel" aria-labelledby="dh-brain-heading">
+          <div class="dh-panel-head"><h2 id="dh-brain-heading">Meet your third brain</h2><span class="dh-pill dh-preview">Illustrative demo</span></div>
+          <p class="dh-small dh-muted">The next module: turn connected evidence into useful questions and actions.</p>
+          <div class="dh-questions" role="group" aria-label="Explore example insights"><button type="button" class="dh-question cursor-interaction" data-insight="stalled" aria-pressed="true">What’s stuck?</button><button type="button" class="dh-question cursor-interaction" data-insight="handover" aria-pressed="false">Where is time lost?</button><button type="button" class="dh-question cursor-interaction" data-insight="revenue" aria-pressed="false">What could earn more?</button></div>
+          <div aria-live="polite">
+            <div class="dh-finding"><span class="dh-small dh-muted">EXAMPLE · NOT A DRUMMONDS FINDING</span><h3 id="dh-insight-title">A job is waiting for an answer already given.</h3><p class="dh-small" id="dh-insight-description">The customer confirmed access by email, but the job still shows “awaiting customer”. A conversation and a job record have drifted apart.</p></div>
+            <div class="dh-evidence" aria-label="Synthetic evidence trail">
+              <div class="dh-evidence-row"><i data-lucide="wrench" aria-hidden="true"></i><span id="dh-evidence-job">Example job · Awaiting customer confirmation</span></div>
+              <div class="dh-evidence-row"><i data-lucide="mail" aria-hidden="true"></i><span id="dh-evidence-email">Example email · Customer confirms access</span></div>
+              <div class="dh-evidence-row"><i data-lucide="hash" aria-hidden="true"></i><span id="dh-evidence-slack">Example channel reply · Team asks whether to book</span></div>
+            </div>
+            <p class="dh-next"><span id="dh-next-action">Suggested next step: ask the job owner to confirm the evidence and move the booking forward.</span></p>
+          </div>
+        </section>
+      </div>
+      <footer class="dh-footer"><span>Preview only · Real TEST totals, synthetic insight examples</span><span>Production release and full learning acceptance pending</span></footer>
+    </main>
+  </div>
+  <script>
+    (() => {
+      const root = document.getElementById('dh-learn-showcase');
+      const sources = {
+        commusoft: ['Read-only import verified in TEST', 'Customer and site contact passes completed. Records are retained; capture is paused. Ongoing production processing is still to finish.'],
+        email: ['Real mailbox capture verified in TEST', 'Heidi’s bounded check retained 20 messages across 19 threads. TEST capture is paused. This is a verification sample, not the total company email history.'],
+        phone: ['Real call and recording copied into TEST', 'The bounded check retained one call and one recording. Capture is paused; complete recording playback and ongoing production acceptance remain to finish.'],
+        slack: ['Read-only access verified; history import pending', '180 public and 135 accessible private channels identified, including archived channels. No message history imported yet. Individual and group DMs are excluded.']
+      };
+      const insights = {
+        stalled: ['A job is waiting for an answer already given.', 'The customer confirmed access by email, but the job still shows “awaiting customer”. A conversation and a job record have drifted apart.', 'Example job · Awaiting customer confirmation', 'Example email · Customer confirms access', 'Example channel reply · Team asks whether to book', 'Suggested next step: ask the job owner to confirm the evidence and move the booking forward.'],
+        handover: ['The same handover is happening twice.', 'An engineer’s update is repeated in email and a channel while the office waits for the same detail. The next module would show where the handover loses time.', 'Example job · Visit complete; office review pending', 'Example email · Office requests the visit outcome', 'Example channel reply · Engineer has already shared the outcome', 'Suggested next step: review the handover with the team and agree one place to record the outcome.'],
+        revenue: ['Completed work may be waiting to be invoiced.', 'A completion record and a customer confirmation could help identify work that needs an invoice review. Any value would be checked against the underlying job evidence.', 'Example job · Work marked complete; invoice review needed', 'Example email · Customer confirms work is complete', 'Example channel reply · Office asks for final paperwork', 'Suggested next step: have the office verify the paperwork and invoice status. No invoice is sent automatically.']
+      };
+      let selectedSource = 'commusoft';
+      let selectedInsight = 'stalled';
+      function render() {
+        root.querySelectorAll('[data-source]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.source === selectedSource)));
+        root.querySelectorAll('[data-insight]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.insight === selectedInsight)));
+        const source = sources[selectedSource];
+        root.querySelector('#dh-source-status').textContent = source[0];
+        root.querySelector('#dh-source-detail').textContent = source[1];
+        const keys = ['dh-insight-title', 'dh-insight-description', 'dh-evidence-job', 'dh-evidence-email', 'dh-evidence-slack', 'dh-next-action'];
+        keys.forEach((key, index) => root.querySelector('#' + key).textContent = insights[selectedInsight][index]);
+      }
+      function restore(state) {
+        const saved = state && state.modelContent;
+        if (saved && Object.hasOwn(sources, saved.source)) selectedSource = saved.source;
+        if (saved && Object.hasOwn(insights, saved.insight)) selectedInsight = saved.insight;
+        render();
+      }
+      root.querySelectorAll('[data-source], [data-insight]').forEach(button => button.addEventListener('click', () => {
+        if (button.dataset.source) selectedSource = button.dataset.source;
+        if (button.dataset.insight) selectedInsight = button.dataset.insight;
+        render();
+        if (window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{source:selectedSource, insight:selectedInsight},privateContent:null}).catch(() => {});
+      }));
+      restore(window.openai?.widgetState);
+      window.addEventListener('openai:set_globals', event => { if (event.detail?.globals?.widgetState) restore(event.detail.globals.widgetState); });
+    })();
+  </script>
+</div>
