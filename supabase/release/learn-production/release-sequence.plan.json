@@ -1,17 +1,17 @@
 {
   "version": "learn-production-release-sequence/1",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "candidateSha256": "cb4c84ca0612074a3e715188570beebbb2805aaac5a7b96d62dc068ac7c2dcb3",
+  "candidateSha256": "1c33876b498b0d79d1a9ba954c91ff23b87ca883197504523b1e68e3cb0a279a",
   "steps": [
     {
       "id": "fresh-release-preflight",
       "kind": "check",
-      "pinSha256": "a00266da00f37a9a50f1f89db4be6f5593cd87793497f3edab336aa4e0dbe687"
+      "pinSha256": "9feec16839c301ef722420fa809d5d052b2dee669999f0cd5968c9955d052773"
     },
     {
       "id": "pause-existing-schedules",
       "kind": "schedule",
-      "pinSha256": "eb236273da3277861a4219e991f59e0898f11bae676ec8bb635edbdf95ecee91"
+      "pinSha256": "c6184597d06bf275594eb377b7db85972fc6a0d8b7532c66b032cdd1db2163c5"
     },
     {
       "id": "verify-in-flight-drain",
@@ -104,6 +104,11 @@
       "pinSha256": "c4e9a57c67b9449670082cd6a7008714ca85d68a8c22b859bdb04b584b7d0f89"
     },
     {
+      "id": "database-017",
+      "kind": "database",
+      "pinSha256": "21f25697334d12996a903511183df19e564ed04fa83c0ad0512c97d3f566ef48"
+    },
+    {
       "id": "matching-server-configuration",
       "kind": "configuration",
       "pinSha256": "11b904d08d9905f0ac44cd7190175eeea6f49f53f73f3c80fbaae1b2a45b6050"
@@ -176,12 +181,12 @@
     {
       "id": "runtime-learn-commusoft-verify",
       "kind": "runtime",
-      "pinSha256": "202e01b9e8237ba8eeb15902c81ba0e4f8b17de39658176d2b766fd5911a207c"
+      "pinSha256": "1d8384ced9cdb6db8d4d045e5888fad068983a941be774a76df727be01fd310c"
     },
     {
       "id": "runtime-learn-commusoft-worker",
       "kind": "runtime",
-      "pinSha256": "a8cb1a6c583cdadcdd43246a278da31cb2a3f1b0d107397fa67b297da33a39e4"
+      "pinSha256": "aa1e4533b67176a879db0ed801cec0355b94891bb7f525b14bef2c8ab8c59232"
     },
     {
       "id": "runtime-learn-data-import",
@@ -296,7 +301,7 @@
     {
       "id": "publish-runtime-metadata",
       "kind": "runtime",
-      "pinSha256": "18dd2a32d46e5a733204ca6a64918bf19b5ddb34cd4e448275ae005bad8018ca"
+      "pinSha256": "58bf2c5322feda0e2bd6a42e1e37ac656da77f6febc8c40ea6a1e226bb7b7c0a"
     },
     {
       "id": "runtime-publication-readback",
@@ -326,7 +331,7 @@
     {
       "id": "restore-existing-schedules",
       "kind": "schedule",
-      "pinSha256": "1b742a1604de7914b8f50114be20891f70d35020b69f59b12514b670157bec9d"
+      "pinSha256": "56150bfe2b270a2313dc3ceb74f7d2754c0f77d7525f0bb71791d8b80a3f8c1d"
     },
     {
       "id": "observe-initial-live-capture",

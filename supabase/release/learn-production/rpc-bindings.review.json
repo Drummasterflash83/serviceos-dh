@@ -1,7 +1,7 @@
 {
   "version": "learn-production-rpc-bindings/1",
-  "sourceClosureSha256": "9686f47f4e2ff39b877e8291a5e73d4c8d92807c1329f2fcba5fe1ed716a1843",
-  "baselineSchemaSha256": "fa26c9d3745664b26e5391757dec9995aadf4c9bd1d9bd870394159d2b16b39f",
+  "sourceClosureSha256": "efbda048c93e11112a024e21af41766c29daaaca17c4af7a7c2121e490ebf24a",
+  "baselineSchemaSha256": "40046f9007acf26fc97a44d94c1622d2376283aa1aee8f9df9ef8bd5ebd970a0",
   "sites": [
     {
       "path": "_shared/connectors/marketing_email.ts",

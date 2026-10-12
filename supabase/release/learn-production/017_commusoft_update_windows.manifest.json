@@ -1,0 +1,36 @@
+{
+  "version": "learn-production-commusoft-update-windows/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "ab4cef1752c520a13047fb287d63931068f7e7468d0014ba955df75a49a9dd56",
+  "priorSha256": "b877e70fa1cc946ba0c9c8a66f28b6603f99dc8484fefd1411bf30beed325998",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101540000_learn_commusoft_update_windows.sql",
+      "sha256": "8ceadd455d655c44f4939f4bbddd2143d7b0c575e8c9bf09690462baa8b63f36"
+    }
+  ],
+  "newFunctions": [
+    "learn_commusoft_update_window"
+  ],
+  "changedFunctions": [
+    "learn_commusoft_acquire_page",
+    "learn_commusoft_commit_page",
+    "learn_commusoft_finish_job",
+    "learn_operator_input_request",
+    "learn_operator_inputs"
+  ],
+  "newTables": [],
+  "changedViews": [],
+  "newSequences": [],
+  "extendedTables": {},
+  "limitations": [
+    "Fixed windows require operator approval; no recurring refresh schedule or watermark is created.",
+    "Matching worker and frontend, real-provider date-filter acceptance and canonical update reconciliation remain required.",
+    "No source history, customer records, credentials, permissions or capture activation changes."
+  ]
+}

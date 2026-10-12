@@ -148,13 +148,60 @@ test("scope comes from tenant-scoped durable rows, never queued payload", async 
     assert.ok(read.filters.some(([k, v]) => k === "tenant_id" && v === id(1)));
 });
 
+test("refresh bounds come from stored approval and cannot be supplied by queued payload", async () => {
+  const f = fixture();
+  const window = {
+    updatedFrom: "2026-10-09T00:00:00.000Z",
+    updatedBefore: "2026-10-10T00:00:00.000Z",
+  };
+  Object.assign(f.cfg, window);
+  Object.assign(f.rows.platform_jobs[0].payload, { updatedFrom: "1970-01-01T00:00:00.000Z" });
+  const scope = await f.read();
+  assert.ok(scope);
+  assert.equal(scope.request.updatedFrom, window.updatedFrom);
+  assert.equal(scope.request.updatedBefore, window.updatedBefore);
+  await f.run();
+  assert.deepEqual(f.counts(), { acquisitions: 1, fetches: 1 });
+});
+
+test("partial durable refresh windows fail before credentials or provider access", async () => {
+  for (const change of [
+    { updatedFrom: "2026-10-09T00:00:00.000Z" },
+    { updatedBefore: "2026-10-10T00:00:00.000Z" },
+    { updatedFrom: "2026-10-10T00:00:00.000Z", updatedBefore: "2026-10-09T00:00:00.000Z" },
+  ]) {
+    const f = fixture();
+    Object.assign(f.cfg, change);
+    assert.equal(await f.read(), null);
+    await assert.rejects(f.run(), (error: any) => error.code === "authority_unavailable");
+    assert.deepEqual(f.counts(), { acquisitions: 0, fetches: 0 });
+  }
+});
+
+test("changed durable refresh bounds invalidate an acquired credential before any provider request", async () => {
+  const f = fixture();
+  Object.assign(f.cfg, {
+    updatedFrom: "2026-10-09T00:00:00.000Z",
+    updatedBefore: "2026-10-10T00:00:00.000Z",
+  });
+  const acquire = f.ports.acquire;
+  f.ports.acquire = async (...args) => {
+    const permit = await acquire(...args);
+    Object.assign(f.cfg, { updatedFrom: "2026-10-08T00:00:00.000Z" });
+    return permit;
+  };
+  await assert.rejects(f.run(), (error: any) => error.code === "authority_unavailable");
+  assert.deepEqual(f.counts(), { acquisitions: 1, fetches: 0 });
+});
+
 test("authority transport failures at every read boundary stop provider work and remain retryable", async () => {
   for (const failAt of [1, 8, 15, 22, 29]) {
     const f = fixture();
     const from = f.ctx.supabaseAdmin.from;
     let count = 0;
     f.ctx.supabaseAdmin.from = (table) => {
-      const query = from(table), read = query.maybeSingle;
+      const query = from(table),
+        read = query.maybeSingle;
       query.maybeSingle = async () => {
         const result = await read();
         return ++count === failAt
@@ -174,7 +221,9 @@ test("authority transport failures at every read boundary stop provider work and
 
 test("failed credential acquisition transport never sends a provider request", async () => {
   const f = fixture();
-  f.ports.acquire = async () => { throw new CommusoftReadError("authority_transport_unavailable"); };
+  f.ports.acquire = async () => {
+    throw new CommusoftReadError("authority_transport_unavailable");
+  };
   await assert.rejects(f.run(), (error: any) => error.code === "authority_transport_unavailable");
   assert.equal(f.counts().fetches, 0);
 });

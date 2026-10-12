@@ -2,6 +2,7 @@
  * The worker must bind credentials, reserve shared quota and commit pages under its
  * current tenant/connection authority. This module does not provide that authority.
  */
+import { commusoftUpdateWindow } from "./update_window.ts";
 export type CommusoftResource = "properties" | "propertyContacts" | "jobs";
 export type CommusoftRegion = "uk" | "us";
 export type CommusoftFailure =
@@ -45,6 +46,8 @@ export interface CommusoftReadRequest {
   contactType?: "customer" | "workaddress";
   // Required by the provider: contacts are a collection under ONE property.
   propertyId?: number;
+  updatedFrom?: string;
+  updatedBefore?: string;
 }
 export interface CommusoftPage {
   records: Record<string, unknown>[];
@@ -87,6 +90,15 @@ function requestUrl(request: CommusoftReadRequest): string {
   if (request.contactType) url.searchParams.set("type", request.contactType);
   if (request.propertyId !== undefined)
     url.searchParams.set("propertyID", String(request.propertyId));
+  try {
+    const window = commusoftUpdateWindow(request);
+    if (window.updatedFrom) {
+      url.searchParams.set("lastUpdatedOnDateTime[gte]", window.updatedFrom);
+      url.searchParams.set("lastUpdatedOnDateTime[lt]", window.updatedBefore);
+    }
+  } catch {
+    fail("invalid_request");
+  }
   return url.href;
 }
 

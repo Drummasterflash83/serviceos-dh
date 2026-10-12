@@ -11,23 +11,23 @@ const read = p => JSON.parse(readFileSync(p));
 const base = 'supabase/release/learn-production/';
 const runtimeBytes = readFileSync(base+'runtime-candidate.manifest.json');
 const candidate = JSON.parse(runtimeBytes), candidateSha256 = sha(runtimeBytes);
-const wireRoot = '.verification-results/production-runtime-wire-20261012-input-dispatch';
+const wireRoot = '.verification-results/production-runtime-wire-20261012-update-windows';
 const wire = read(join(wireRoot,'report.json'));
 const backupRoot = '.verification-results/production-runtime-compiled-backup-20261012';
 const backup = read(join(backupRoot,'report.json'));
 const schedules = read(base+'schedule-transition.manifest.json');
 const frontend = read('docs/operations/evidence/learn-production-frontend-preview-2026-10-12.json');
-if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!==16 || candidate.endpoints.length!==37 ||
+if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!==17 || candidate.endpoints.length!==37 ||
     wire.projectRef!==candidate.projectRef || wire.candidateManifestSha256!==candidateSha256 ||
     wire.state!=='prepared_not_uploaded' || schedules.runtime.sha256!==candidateSha256 ||
     backup.projectRef!==candidate.projectRef || backup.state!=='compiled_artifacts_retained_with_unchanged_deployment_metadata')
   throw Error('Exact production artifact set required');
 const verified = (path,expected) => { if(sha(readFileSync(path))!==expected) throw Error('Pinned file changed: '+path); };
-const binding=read('docs/operations/evidence/learn-production-input-dispatch-2026-10-12.json');
-const originalRoot='.verification-results/production-runtime-bundle-20261012-input-dispatch';
+const binding=read('docs/operations/evidence/learn-production-update-windows-2026-10-12.json');
+const originalRoot='.verification-results/production-runtime-bundle-20261012-update-windows';
 verified(join(originalRoot,'report.json'),binding.bundleReportSha256);
-verified(join(originalRoot,'boot-input-dispatch/report.json'),binding.bootReportSha256);
-const bundled=read(join(originalRoot,'report.json')), boot=read(join(originalRoot,'boot-input-dispatch/report.json'));
+verified(join(originalRoot,'boot-update-windows/report.json'),binding.bootReportSha256);
+const bundled=read(join(originalRoot,'report.json')), boot=read(join(originalRoot,'boot-update-windows/report.json'));
 if(binding.candidateManifestSha256!==candidateSha256 || bundled.manifestSha256!==candidateSha256 ||
    boot.manifestSha256!==candidateSha256 || bundled.sourceClosureSha256!==candidate.sourceClosureSha256 ||
    boot.sourceClosureSha256!==candidate.sourceClosureSha256 ||
@@ -77,7 +77,7 @@ add('fresh-release-preflight','check',{
   candidateSha256,requires:['explicit_exact_release_approval','fresh_production_schema_and_runtime_match',
     'current_independent_recovery_checkpoint','reviewed_client_and_module_activation_scope',
     'positive_caller_contracts_including_changed_gateway_flags','production_frontend_served_binding',
-    'manual_and_external_caller_coordination'],
+    'manual_and_external_caller_coordination','matching_frontend_with_update_window_controls_verified'],
 });
 add('pause-existing-schedules','schedule',schedules.outputs.find(v=>v.mode==='pause'));
 add('verify-in-flight-drain','check',{requires:['pause_readback','no_active_worker_leases',
@@ -131,6 +131,7 @@ writeFileSync(base+'release-operations.manifest.json',JSON.stringify({version:'l
   planSha256:sha(JSON.stringify(plan)),operations,
   limitations:['Journal mechanics are locally tested; production execution adapters and acceptance gates remain unfinished.',
     'Exact artifact pins do not prove current hosted state, approval, signed-in access or provider completeness.',
+    'The retained frontend preview predates update-window controls; rebuild, verify and replace its pin before requesting promotion.',
     'Do not restore old runtimes over new checkpoints without reviewed compatibility or forward repair.'],
 },null,2)+'\n');
-console.log(JSON.stringify({state:'prepared_not_executed',steps:plan.steps.length,database:16,runtime:37}));
+console.log(JSON.stringify({state:'prepared_not_executed',steps:plan.steps.length,database:17,runtime:37}));

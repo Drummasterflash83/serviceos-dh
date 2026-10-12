@@ -7,6 +7,37 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — bounded Commusoft refresh implemented and rehearsed locally.**
+Operators can prepare a fixed UTC update period. Its lower-inclusive and
+upper-exclusive bounds remain attached to the approval, credential permit,
+pagination and resumed job. Invalid/partial periods cannot silently become full
+imports. Updated source versions preserve earlier history, and a filtered property
+pass cannot replace the complete customer/site list used for contact coverage.
+The customer/operator status distinguishes a finished update period from a full
+collection traversal. New controls stay hidden against the older hosted backend.
+
+All **90** connector/operator checks and **23** release checks pass, and the app
+build passes. The 17-package production candidate was applied to an isolated copy
+of the retained archive: all 1,591,576 original rows and original sequences match;
+all 381 post-prerequisite datasets also match. The real-schema synthetic operator
+journey, permission-drift rejection, rollback and duplicate-apply checks pass.
+All 37 matching server artifacts compiled and rejected missing authentication in
+the network-disabled runtime. [Evidence](evidence/learn-production-update-windows-2026-10-12.json).
+
+The prepared sequence now has **68 steps**. These checks are local, not hosted
+or real-provider acceptance. The retained frontend preview predates the new
+controls and must be rebuilt and verified before promotion. Date-filter provider
+acceptance, recurring windows/watermarks, canonical update reconciliation,
+production configuration, signed-in acceptance and release approval remain open.
+No production or hosted TEST migration/runtime was changed by this work.
+
+The ongoing TEST contact run reached **1,080 of 1,550** customer checks at 17:46 UTC.
+Its original limits and expiry remain in force. The recording refresh copied 57
+new recordings but an AWS request failed during whole-inventory verification.
+Recovery is reusing the retained receipts and verifying all 2,950 files; do not
+mark the refreshed backup successful yet. The morning manifest remains the last
+verified backup. Drummonds Slack sign-in remains pending.
+
 **12 October, 17:30 UTC — refreshed contact checkpoint verified and resumed.**
 The current TEST customer-contact pass completed 900 of 1,550 parent checks with
 all 194 protected datasets preserved, no pending invocation and one queued successor.

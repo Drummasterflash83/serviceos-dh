@@ -17,10 +17,10 @@ export const SQL_OBSERVATIONS={
 export function createProductionSqlAdapter({candidate,operations,scheduleBaseline,query,read=readFileSync,
   allowWrite=false,assertApprovedRelease}) {
   candidate=structuredClone(candidate);operations=structuredClone(operations);scheduleBaseline=structuredClone(scheduleBaseline);
-  check(candidate.projectRef===project&&candidate.database.length===16&&operations.projectRef===project&&typeof query==='function',
+  check(candidate.projectRef===project&&candidate.database.length===17&&operations.projectRef===project&&typeof query==='function',
     'Reviewed production SQL scope required');
   const selected=operations.operations.filter(o=>['database','schedule'].includes(o.kind));
-  check(selected.length===18&&selected.filter(o=>o.kind==='database').length===16&&
+  check(selected.length===19&&selected.filter(o=>o.kind==='database').length===17&&
     selected.every(o=>o.pinSha256===hashObject(o.contract)), 'SQL operation pins differ');
   check(scheduleBaseline.schedules.length===9&&new Set(scheduleBaseline.schedules.map(s=>s.jobid)).size===9,
     'Exact schedule scope required');
@@ -90,7 +90,7 @@ export function createProductionSqlAdapter({candidate,operations,scheduleBaselin
       const rows=await receipts(),schedules=await scheduleState('pause');
       const firstMissing=rows.length;
       return {project,state:'read_only_sql_preflight',receiptCount:rows.length,
-        receiptPrefixValid:firstMissing<=expected.length&&receiptState(rows,Math.min(firstMissing,15))!=='drift',
+        receiptPrefixValid:firstMissing<=expected.length&&receiptState(rows,Math.min(firstMissing,expected.length-1))!=='drift',
         schedules:schedules.state,scheduleCount:schedules.rows.length,productionChanges:0,executionApproved:false};
     },
     async apply(step) {

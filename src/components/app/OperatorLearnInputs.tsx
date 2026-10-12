@@ -53,6 +53,9 @@ export function OperatorLearnInputs({
     [hours, setHours] = useState(1),
     [reason, setReason] = useState(""),
     [approved, setApproved] = useState(false);
+  const [updatedOnly, setUpdatedOnly] = useState(false),
+    [updatedFrom, setUpdatedFrom] = useState(""),
+    [updatedBefore, setUpdatedBefore] = useState("");
   const generation = useRef(0),
     working = useRef(false);
   const db = () => client ?? getSupabaseClient();
@@ -120,6 +123,9 @@ export function OperatorLearnInputs({
     setPending(null);
     setReason("");
     setApproved(false);
+    setUpdatedOnly(false);
+    setUpdatedFrom("");
+    setUpdatedBefore("");
     restore();
     void operation(refresh);
     const changed = (event: StorageEvent) => {
@@ -211,6 +217,17 @@ export function OperatorLearnInputs({
     );
   }
   const selected = data?.connections.find((c) => c.id === connection);
+  const updateWindowsAvailable =
+    data?.accounts.some((a) => Object.hasOwn(a, "updated_window")) === true;
+  const fromTime = Date.parse(updatedFrom + "Z"),
+    beforeTime = Date.parse(updatedBefore + "Z");
+  const updateWindowValid =
+    updateWindowsAvailable &&
+    Number.isFinite(fromTime) &&
+    fromTime >= 0 &&
+    Number.isFinite(beforeTime) &&
+    fromTime < beforeTime &&
+    beforeTime <= Date.now();
   const unfinished = data?.accounts.some(
     (a) =>
       a.connection_id === selected?.id &&
@@ -480,6 +497,61 @@ export function OperatorLearnInputs({
                     />
                   </label>
                 </fieldset>
+                {updateWindowsAvailable && (
+                  <fieldset className="space-y-3">
+                    <legend className="font-semibold">Refresh existing records</legend>
+                    <label className="flex items-start gap-2">
+                      <input
+                        type="checkbox"
+                        checked={updatedOnly}
+                        onChange={(e) => {
+                          setUpdatedOnly(e.target.checked);
+                          setApproved(false);
+                        }}
+                      />
+                      Read only records updated during a fixed period
+                    </label>
+                    {updatedOnly && (
+                      <>
+                        <label className="block">
+                          Updated from (UTC, inclusive)
+                          <input
+                            className="cp-input w-full"
+                            type="datetime-local"
+                            value={updatedFrom}
+                            onChange={(e) => {
+                              setUpdatedFrom(e.target.value);
+                              setApproved(false);
+                            }}
+                          />
+                        </label>
+                        <label className="block">
+                          Updated before (UTC, exclusive)
+                          <input
+                            className="cp-input w-full"
+                            type="datetime-local"
+                            value={updatedBefore}
+                            onChange={(e) => {
+                              setUpdatedBefore(e.target.value);
+                              setApproved(false);
+                            }}
+                          />
+                        </label>
+                        <p className="text-sm">
+                          Use a past period and overlap the previous successful refresh. Saved
+                          history stays available. This does not check deletions or start an
+                          automatic schedule.
+                        </p>
+                        {!updateWindowValid && (
+                          <p className="text-sm">
+                            Choose two valid UTC times, with the end after the start and no later
+                            than now.
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </fieldset>
+                )}
                 <p className="text-sm">
                   The worker reads one collection within these limits. An incomplete earlier import
                   must be reviewed before a new one can start. Captured contacts are available for
@@ -496,6 +568,7 @@ export function OperatorLearnInputs({
                   disabled={
                     disabled ||
                     !canStart ||
+                    (updatedOnly && !updateWindowValid) ||
                     !approved ||
                     !reason.trim() ||
                     !Number.isInteger(hours) ||
@@ -509,7 +582,7 @@ export function OperatorLearnInputs({
                     pageSize > 100
                   }
                   onClick={() => {
-                    if (selected)
+                    if (selected && (!updatedOnly || updateWindowValid))
                       submit({
                         kind: "start_commusoft",
                         reason: reason.trim(),
@@ -523,6 +596,12 @@ export function OperatorLearnInputs({
                           : {}),
                         max_pages: pages,
                         page_size: pageSize,
+                        ...(updatedOnly && updateWindowValid
+                          ? {
+                              updatedFrom: new Date(fromTime).toISOString(),
+                              updatedBefore: new Date(beforeTime).toISOString(),
+                            }
+                          : {}),
                         expires_at: new Date(Date.now() + hours * 3600000).toISOString(),
                       });
                   }}
@@ -569,6 +648,13 @@ export function OperatorLearnInputs({
               <article key={a.id} className="rounded-xl border p-4 space-y-1">
                 <h4 className="font-semibold">{a.resource ?? "Commusoft"}</h4>
                 <p>{inputAccountStatus(a, data.flags)}</p>
+                {a.updated_window && (
+                  <p className="text-sm">
+                    Changed-record window: {stamp(a.updated_window.updatedFrom)} to{" "}
+                    {stamp(a.updated_window.updatedBefore)} (end excluded). This covers the selected
+                    period, not the full collection.
+                  </p>
+                )}
                 <p className="text-sm">
                   {a.checkpoint.pages ?? 0} pages retained · approval expires {stamp(a.expires_at)}
                 </p>

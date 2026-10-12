@@ -82,9 +82,14 @@
       "path": "supabase/release/learn-production/016_roster_support.sql",
       "sha256": "b877e70fa1cc946ba0c9c8a66f28b6603f99dc8484fefd1411bf30beed325998",
       "manifestSha256": "4c6d63e876ef5f7ad9c5ca4e74c19a66f1e7ca983b8f3b5cde74088730f9e37b"
+    },
+    {
+      "path": "supabase/release/learn-production/017_commusoft_update_windows.sql",
+      "sha256": "ab4cef1752c520a13047fb287d63931068f7e7468d0014ba955df75a49a9dd56",
+      "manifestSha256": "8590954e4971b432a5b9a0e6e1ea6cc225e88c10fc69e5a1cfba5dcf8124f8f2"
     }
   ],
-  "sourceClosureSha256": "9686f47f4e2ff39b877e8291a5e73d4c8d92807c1329f2fcba5fe1ed716a1843",
+  "sourceClosureSha256": "efbda048c93e11112a024e21af41766c29daaaca17c4af7a7c2121e490ebf24a",
   "files": [
     {
       "path": "_shared/audit.ts",
@@ -120,11 +125,15 @@
     },
     {
       "path": "_shared/commusoft/read_page.ts",
-      "sha256": "4628aa909f6f09c346e3900dc1d8e67a2cd6f8e8e9e33e1fe35f78e80fbb35e7"
+      "sha256": "53bddfcc2f1377c66d1f40049a4bb066fd120c33713896ea99ba55167e994d21"
     },
     {
       "path": "_shared/commusoft/stored_scope.ts",
-      "sha256": "8f0b9349ce3d844e09b67acbc269579d422e314c44a0626e772507fc6acd5412"
+      "sha256": "429f8acc961c2fb9a4849c7ca37a0075f95ce341bb35087ae8ab8bfcc1135d20"
+    },
+    {
+      "path": "_shared/commusoft/update_window.ts",
+      "sha256": "67108062482c7bd0b028bebcaff6f4402684da8e188ecf09dd802dea8c971307"
     },
     {
       "path": "_shared/commusoft/verification_contract.ts",
@@ -1481,9 +1490,10 @@
     {
       "name": "learn-commusoft-verify",
       "verifyJwt": true,
-      "sourceClosureSha256": "ad593549ffa4917272c0dadcfe201a31a76605e59745c5682b613f233e22c785",
+      "sourceClosureSha256": "9e325c684269bfbc17d225973a5f9aeacc0603ac817218d88ee7293cd082f0d3",
       "sourceFiles": [
         "_shared/commusoft/read_page.ts",
+        "_shared/commusoft/update_window.ts",
         "_shared/commusoft/verification_contract.ts",
         "_shared/commusoft/verification_http.ts",
         "_shared/commusoft/verify_connection.ts",
@@ -1515,13 +1525,14 @@
     {
       "name": "learn-commusoft-worker",
       "verifyJwt": true,
-      "sourceClosureSha256": "09aa4349380bfbea7fbd38b484ede717b308433f36f3063eeea42ee57edb1d0e",
+      "sourceClosureSha256": "8ecb47bbfab5a0b1b50719e5c21e9769c6bd78f060497bd040ad87e322886b14",
       "sourceFiles": [
         "_shared/commusoft/bound_page.ts",
         "_shared/commusoft/page_store.ts",
         "_shared/commusoft/permit_server.ts",
         "_shared/commusoft/read_page.ts",
         "_shared/commusoft/stored_scope.ts",
+        "_shared/commusoft/update_window.ts",
         "_shared/commusoft/worker.ts",
         "_shared/slack/slack_worker_http.ts",
         "learn-commusoft-worker/index.ts"

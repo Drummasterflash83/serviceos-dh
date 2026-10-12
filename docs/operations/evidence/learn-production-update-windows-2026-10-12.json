@@ -1,0 +1,136 @@
+{
+  "version": "learn-production-update-windows/1",
+  "observedAt": "2026-10-12T17:47:12.926Z",
+  "state": "locally_rehearsed_not_deployed",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "candidateManifestSha256": "1c33876b498b0d79d1a9ba954c91ff23b87ca883197504523b1e68e3cb0a279a",
+  "sourceClosureSha256": "efbda048c93e11112a024e21af41766c29daaaca17c4af7a7c2121e490ebf24a",
+  "databasePackages": 17,
+  "package": {
+    "path": "supabase/release/learn-production/017_commusoft_update_windows.sql",
+    "sha256": "ab4cef1752c520a13047fb287d63931068f7e7468d0014ba955df75a49a9dd56",
+    "manifestSha256": "8590954e4971b432a5b9a0e6e1ea6cc225e88c10fc69e5a1cfba5dcf8124f8f2"
+  },
+  "archiveRehearsalReportSha256": "7674471d8ea9f912a3c1574840bffe6dd64464d39fe0a4e0408c68c1fb9542f3",
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 381,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "a55ea2571d84f955c00a7771c649a2eb85ca1c2018cff580ce7bc24b4387dead",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "originalArchivePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "postJourneyPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 381,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "a55ea2571d84f955c00a7771c649a2eb85ca1c2018cff580ce7bc24b4387dead",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "negativeChecks": [
+    "wrong_target",
+    "function_acl_drift",
+    "late_failure"
+  ],
+  "duplicateRejected": true,
+  "journey": {
+    "passed": true,
+    "probeSha256": "a99e640eb037ac6c9c18622e017d33d153e15cc327eae45de4d65f3008f720ed",
+    "sources": [
+      {
+        "path": "scripts/verify/learn-production-commusoft.fixture.sql",
+        "sha256": "fdcf5ee08f2e10ed490daf601cf2b59652d64b4ef5b797154eeed004fbab83ae"
+      },
+      {
+        "path": "scripts/verify/learn-commusoft-contact-traversal.assert.sql",
+        "sha256": "3957047c85032f2543b2dab2534a514cf7a60da3993e0ad54b46f87320652be2"
+      },
+      {
+        "path": "scripts/verify/learn-commusoft-update-windows.assert.sql",
+        "sha256": "de67083fbef78b3c62106ba17f09a9e9309cc3550ffceab51032ce0a9a70cd5b"
+      }
+    ]
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "bundleReportSha256": "4bb067bb41bd8044b9255667ce9c55074a007c93bb8d081c62a613d0e30d98c7",
+  "bootReportSha256": "d4f4fd06d33ad07182754200b8bfb7ff92e1498b38f3dedd80e768df07e2fac6",
+  "runtime": {
+    "endpoints": 37,
+    "missingAuthRejected": 37,
+    "sourceFiles": 223,
+    "networkDuringBoot": "none",
+    "credentials": "synthetic_only"
+  },
+  "localTests": {
+    "command": "node --test supabase/functions/_shared/commusoft/*.test.ts src/lib/learn-operator-inputs.test.ts src/lib/learn-operator-input-outbox.test.ts",
+    "passed": 90,
+    "failed": 0,
+    "logSha256": "1260818d317f32f7b64d2ca69322bbb1b6dfeaca400eb33c8f07f892cafa323c"
+  },
+  "frontend": {
+    "build": "passed",
+    "newControlsBrowserVerification": "pending",
+    "newControlsHostedPreview": "pending",
+    "retainedReleasePreview": "older_candidate_requires_rebuild_before_promotion",
+    "buildLogSha256": "aae8e094122179bed56d704bc8002472b7dea0604927cd557a88aaed4aee1ada"
+  },
+  "scheduleRebinding": {
+    "onlyManifestPinChanged": true,
+    "priorRuntimeSha256": "cb4c84ca0612074a3e715188570beebbb2805aaac5a7b96d62dc068ac7c2dcb3",
+    "newRuntimeSha256": "1c33876b498b0d79d1a9ba954c91ff23b87ca883197504523b1e68e3cb0a279a",
+    "newArchiveScheduleExecution": false
+  },
+  "limitations": [
+    "No real-provider acceptance of date filters yet. Local provider responses are synthetic.",
+    "No recurring Commusoft schedule, watermark advancement, deletion reconciliation or full canonical publication is implemented by this package.",
+    "The current TEST contact import runs its earlier installed worker; this candidate has not changed it.",
+    "Production promotion, fresh preflight/drain and signed-in acceptance remain required. The retained frontend preview predates the new controls."
+  ],
+  "releaseTests": {
+    "passed": 23,
+    "failed": 0,
+    "logSha256": "52eba61de165c857e23075abd06c865bc0c7fa04421d087df67fcea1b389dc2e"
+  },
+  "releaseSteps": 68,
+  "changedRuntimeArtifacts": [
+    "learn-commusoft-verify",
+    "learn-commusoft-worker"
+  ],
+  "runtimeBindingCheck": {
+    "sites": 19,
+    "targets": 51,
+    "missingOrUnpermitted": 0,
+    "reportSha256": "cbf928d1713147a703cf52ac2d87d33f3bdda6c8392fe8e346afa00748eb7a3e"
+  }
+}

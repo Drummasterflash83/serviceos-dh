@@ -171,6 +171,39 @@ test("overview rejects foreign company, malformed flags and unbounded metadata",
       ),
     );
 });
+
+test("operator refresh definitions keep exact UTC bounds through saved-request recovery", () => {
+  const r: OperatorInputRequest = {
+    ...request,
+    definition: {
+      kind: "start_commusoft",
+      reason: "Reviewed refresh",
+      connection_id: id(4),
+      revision: "2026-10-10T00:00:00Z",
+      resource: "properties",
+      max_pages: 20,
+      page_size: 100,
+      expires_at: "2026-10-11T00:00:00Z",
+      updatedFrom: "2026-10-09T00:00:00.000Z",
+      updatedBefore: "2026-10-10T00:00:00.000Z",
+    },
+  };
+  assert.doesNotThrow(() => validateInputRequest(JSON.parse(JSON.stringify(r))));
+  for (const change of [
+    { updatedFrom: undefined },
+    { updatedBefore: undefined },
+    { updatedFrom: "2026-10-10T00:00:00.000Z" },
+    { updatedFrom: "2026-02-30T00:00:00.000Z" },
+    { updatedBefore: null },
+    { updatedFrom: "2026-10-09T00:00:00Z" },
+  ])
+    assert.throws(() =>
+      validateInputRequest({
+        ...r,
+        definition: { ...r.definition, ...change },
+      } as OperatorInputRequest),
+    );
+});
 test("operator status distinguishes retained pages, finished traversals, expiration and interrupted claims", () => {
   const a: InputAccount = {
     id: id(4),
@@ -202,6 +235,20 @@ test("operator status distinguishes retained pages, finished traversals, expirat
     /review coverage/,
   );
   assert.match(inputAccountStatus(a, { ...enabled, "learn.enabled": false }), /Paused/);
+  assert.match(
+    inputAccountStatus(
+      {
+        ...a,
+        updated_window: {
+          updatedFrom: "2026-10-09T00:00:00.000Z",
+          updatedBefore: "2026-10-10T00:00:00.000Z",
+        },
+        latest_job: { ...a.latest_job!, stop_reason: "collection_exhausted" },
+      },
+      enabled,
+    ),
+    /Selected update period finished/,
+  );
   assert.match(
     inputAccountStatus(
       { ...a, latest_job: { ...a.latest_job!, status: "running" } },

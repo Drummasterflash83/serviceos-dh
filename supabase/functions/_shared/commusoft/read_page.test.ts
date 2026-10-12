@@ -49,6 +49,73 @@ const errorCode = (code: string) => (error: unknown) => {
   return true;
 };
 
+test("refresh requests retain both fixed date bounds while the numeric page cursor advances", async () => {
+  const window = {
+    updatedFrom: "2026-10-09T00:00:00.000Z",
+    updatedBefore: "2026-10-10T00:00:00.000Z",
+  };
+  for (const resource of ["properties", "jobs", "propertyContacts"] as const) {
+    for (const after of [null, 20]) {
+      const f = fixture(envelope([], false, null));
+      await f.run({
+        ...request,
+        resource,
+        after,
+        ...window,
+        ...(resource === "propertyContacts"
+          ? { contactType: "customer" as const, propertyId: 42 }
+          : {}),
+      });
+      const url = new URL(f.calls[0].url);
+      assert.equal(url.searchParams.get("lastUpdatedOnDateTime[gte]"), window.updatedFrom);
+      assert.equal(url.searchParams.get("lastUpdatedOnDateTime[lt]"), window.updatedBefore);
+      assert.equal(url.searchParams.get("after"), after === null ? null : String(after));
+      assert.equal(url.searchParams.has("lastUpdatedOnDateTime[lte]"), false);
+    }
+  }
+});
+
+test("partial, reversed and invalid-calendar refresh windows cannot become unfiltered traffic", async () => {
+  const window = {
+    updatedFrom: "2026-10-09T00:00:00.000Z",
+    updatedBefore: "2026-10-10T00:00:00.000Z",
+  };
+  for (const change of [
+    { updatedFrom: window.updatedFrom },
+    { updatedBefore: window.updatedBefore },
+    { ...window, updatedFrom: null },
+    { ...window, updatedBefore: window.updatedFrom },
+    { ...window, updatedFrom: "2026-02-30T00:00:00.000Z" },
+    { ...window, updatedFrom: "2026-10-09T00:00:00+00:00" },
+    { ...window, updatedFrom: "1969-12-31T23:59:59.000Z" },
+  ]) {
+    const f = fixture();
+    await assert.rejects(
+      f.run({ ...request, ...change } as CommusoftReadRequest),
+      errorCode("invalid_request"),
+    );
+    assert.equal(f.calls.length, 0);
+  }
+});
+
+test("caller mutation during authority lookup cannot widen a refresh window", async () => {
+  const r = {
+    ...request,
+    updatedFrom: "2026-10-09T00:00:00.000Z",
+    updatedBefore: "2026-10-10T00:00:00.000Z",
+  };
+  const f = fixture();
+  f.ports.stillAuthorized = async () => {
+    r.updatedFrom = "1970-01-01T00:00:00.000Z";
+    return true;
+  };
+  await f.run(r);
+  assert.equal(
+    new URL(f.calls[0].url).searchParams.get("lastUpdatedOnDateTime[gte]"),
+    "2026-10-09T00:00:00.000Z",
+  );
+});
+
 test("GET binds UK endpoint, verified Bearer header and honest application identity; retains unknown fields without following links", async () => {
   const raw = envelope(
     [{ id: 1, links: { self: "https://untrusted.example" }, extra: { retained: true } }],

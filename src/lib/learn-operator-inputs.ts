@@ -1,4 +1,8 @@
 /** Operator control metadata only; no credentials or raw source records. */
+import {
+  commusoftUpdateWindow,
+  type CommusoftUpdateWindow,
+} from "../../supabase/functions/_shared/commusoft/update_window.ts";
 export type InputFlags = {
   "learn.enabled": boolean | null;
   "learn.inputs.commusoft.enabled": boolean | null;
@@ -23,6 +27,8 @@ export type OperatorInputDefinition =
       max_pages: number;
       page_size: number;
       expires_at: string;
+      updatedFrom?: string;
+      updatedBefore?: string;
     }
   | {
       kind: "resume_commusoft";
@@ -72,6 +78,7 @@ export type InputAccount = {
   approval_id: string | null;
   expires_at: string | null;
   max_pages: number | null;
+  updated_window?: CommusoftUpdateWindow | null;
   contact_target_count?: number | null;
   checkpoint: InputCheckpoint;
   latest_job: null | {
@@ -175,6 +182,7 @@ export function validateInputRequest(r: unknown): asserts r is OperatorInputRequ
     )
       throw Error("Choose explicit module settings.");
   } else if (d.kind === "start_commusoft") {
+    commusoftUpdateWindow(d);
     if (
       !uuid(d.connection_id) ||
       !date(d.revision) ||
@@ -201,6 +209,8 @@ export function validateInputRequest(r: unknown): asserts r is OperatorInputRequ
             "contact_type",
             "max_pages",
             "page_size",
+            "updatedFrom",
+            "updatedBefore",
           ].includes(k),
       )
     )
@@ -281,6 +291,9 @@ export async function readOperatorInputs(
         !nullable(a.resource, string) ||
         !nullable(a.expires_at, date) ||
         !nullable(a.max_pages, integer) ||
+        (a.updated_window != null &&
+          (!object(a.updated_window) ||
+            Object.keys(commusoftUpdateWindow(a.updated_window)).length !== 2)) ||
         !checkpoint(a.checkpoint) ||
         (a.contact_target_count !== undefined && !nullable(a.contact_target_count, integer)) ||
         (a.latest_job !== null &&
@@ -389,7 +402,9 @@ export function inputAccountStatus(a: InputAccount, f: InputFlags, now = Date.no
   if (!j) return "No import has been recorded";
   if (j.status === "succeeded")
     return a.checkpoint.complete === true && j.stop_reason === "collection_exhausted"
-      ? "Collection traversal finished — review coverage"
+      ? a.updated_window
+        ? "Selected update period finished — review coverage"
+        : "Collection traversal finished — review coverage"
       : "Page saved — more work or review may be needed";
   if (j.status === "dead_letter") return "Operator review needed — history retained";
   if (a.expires_at && Date.parse(a.expires_at) <= now)

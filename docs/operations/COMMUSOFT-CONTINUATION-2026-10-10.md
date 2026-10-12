@@ -1,5 +1,27 @@
 # Drummonds TEST import continuations and remaining coverage
 
+## Fixed update periods — implemented locally, 12 October
+
+Migration `20261101540000_learn_commusoft_update_windows.sql` and prepared
+production package `017_commusoft_update_windows.sql` now bind canonical UTC
+`updatedFrom`/`updatedBefore` values through operator approval, durable worker
+scope, credential permit, page commit and resume. The transport sends the
+documented `lastUpdatedOnDateTime[gte]`/`[lt]` filters. Full imports remain
+unfiltered; partial, malformed and reversed ranges are rejected, and new
+approvals cannot select a future end time.
+
+Operator controls describe UTC bounds and retained history. Completion is labelled
+as one update period. Contact planning continues to use the latest completed
+**unfiltered** property traversal, even after a changed-property window completes.
+The archive rehearsal proves old versions, pages, targets and all original data
+remain preserved. [Local acceptance](evidence/learn-production-update-windows-2026-10-12.json).
+
+This is the manual bounded-refresh foundation. No recurring approval, successful
+watermark advancement, deletion reconciliation or automatic canonical update is
+implemented by it. No real-provider filtered request or hosted install has occurred.
+The current TEST customer-contact traversal continues on its previously installed
+runtime; do not replace that runtime while its preservation-bound batch is running.
+
 ## Current operator continuation and refresh gap — 12 October
 
 The retired temporary run below is retained evidence, not the current access route.

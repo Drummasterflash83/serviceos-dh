@@ -1,4 +1,5 @@
 import type { CommusoftReadRequest } from "./read_page.ts";
+import { commusoftUpdateWindow } from "./update_window.ts";
 import { checkAuthorityTransport, CommusoftReadError } from "./read_page.ts";
 
 // Structural port keeps the source adapter independent of the full worker registry.
@@ -261,6 +262,7 @@ export async function readStoredCommusoftScope(
       resource: cfg.resource,
       after: checkpoint.after,
       limit: cfg.pageSize,
+      ...commusoftUpdateWindow(cfg),
       ...(cfg.contactType ? { contactType: cfg.contactType } : {}),
       ...(contactTarget ? { propertyId: contactTarget.propertyId } : {}),
     };
