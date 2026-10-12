@@ -7,7 +7,10 @@ preview is not a replacement design. This approval supersedes older pending
 ordinary-promotion approval statements below; it does not prove the package,
 runtime, signed-in acceptance or preservation gates passed. The
 [completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
-The current hosted TEST frontend is Git `e2d51fa` (12 October, 12:50 UTC).
+The current hosted TEST frontend is Git `e847a52` (12 October, 20:06 UTC),
+including the Slack operator connection form. TEST Slack packages 080/081 and
+worker v11 are newer than the production candidate below and must be incorporated
+and rehearsed before promotion.
 The database candidate now includes production-specific packages 001–017. Package
 017 adds fixed Commusoft update periods without activating capture; all seventeen
 packages and the synthetic refresh journey passed on the isolated retained

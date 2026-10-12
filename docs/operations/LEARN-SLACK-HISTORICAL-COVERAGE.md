@@ -70,8 +70,10 @@ provider path succeeds. It changes no module flag, queue or account grant.
 Channel/thread setup, recovery and status readers now use logged operator access
 for cross-client support, preserving ordinary client isolation and preview-write
 restrictions. Connection metadata uses a safe RPC rather than broadening table
-RLS. The existing OpenFolk input panel exposes the existing Slack controls in local
-source. The frontend and signed-in journey have not yet been deployed/accepted.
+RLS. At 20:16 UTC, the existing OpenFolk input panel and new connection form are
+deployed at `test.openfolk.ai` from `e847a52`; the signed-in empty form is verified.
+Positive credential submission and real channel/thread capture remain unverified.
+[Frontend evidence](evidence/learn-slack-connection-frontend-2026-10-12.json).
 Hosted installation preserved all 194 original datasets; its new request table is
 empty. [Evidence](evidence/learn-slack-operator-setup-2026-10-12.json).
 

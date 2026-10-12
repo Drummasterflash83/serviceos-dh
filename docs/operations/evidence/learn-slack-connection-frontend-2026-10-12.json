@@ -1,0 +1,43 @@
+{
+  "version": "learn-slack-connection-frontend/1",
+  "observedAt": "2026-10-12T20:16:28Z",
+  "scope": "Hosted TEST frontend and signed-in empty connection form; no credential submission",
+  "sourceCommit": "e847a52509661df2329ae6ebc7c6b15a21619fa5",
+  "deployment": "dpl_6GXNj12kz22mHG25MPm284sK6tuM",
+  "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+  "backend": "saatxzwxvdvqevbnskxy",
+  "aliases": [
+    "test.openfolk.ai",
+    "serviceos-learn-test-allkin.vercel.app"
+  ],
+  "verification": {
+    "deploymentReady": true,
+    "aliasesReadBack": true,
+    "previewProtection": "all",
+    "externalRoutesRedirectToVercel": 4,
+    "signedInEmptyConnectionForm": true,
+    "saveDisabledWithoutRequiredFields": true,
+    "cachedOlderBrowserResolvedByFreshNavigation": true,
+    "clientTestsPassed": 10,
+    "applicationTypeScript": "passed",
+    "productionBuild": "passed"
+  },
+  "newAccounts": 0,
+  "newGrants": 0,
+  "credentialsUploaded": 0,
+  "providerMessageRequests": 0,
+  "productionChanged": false,
+  "liveDeploymentBeforeAndAfter": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "preparedAcceptanceRun": "315c7d05-deb3-4869-9895-1622d5d70403",
+  "limitations": [
+    "Real credential save and message capture await separate requested approval.",
+    "Private-channel visibility and whole-history orchestration unfinished.",
+    "Matching production release and signed-in acceptance unfinished."
+  ],
+  "preservationBaseline": {
+    "observedAt": "2026-10-12T20:18:13.565Z",
+    "datasets": 195,
+    "eachRowDigestValidatedAgainstFullTable": true,
+    "rawRecordsExported": false
+  }
+}

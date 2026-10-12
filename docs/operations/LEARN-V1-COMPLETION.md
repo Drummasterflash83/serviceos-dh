@@ -7,6 +7,27 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 20:16 UTC — Slack connection form deployed and visible in signed-in TEST.**
+Git `e847a52` is READY on deployment `dpl_6GXNj12kz22mHG25MPm284sK6tuM`;
+both permanent TEST aliases resolve to it and preview protection remains enabled.
+Chris's existing operator session shows the empty connection form and channel
+controls in the existing OpenFolk design. An older cached browser view was resolved
+by fresh navigation. Ten focused client tests, TypeScript and build passed.
+The live alias remains unchanged; this is not a production release.
+
+The connection form retains only secret-free recovery metadata and clears the token
+input before submission. Positive hosted credential save and real capture remain
+unverified. The [bounded real acceptance](LEARN-SLACK-REAL-TEST.md) is prepared and
+its separate hosted-credential/message-copy approval has been requested. No new
+accounts, grants, hosted Slack credential or messages were created. The pre-copy
+preservation baseline initially hit response-size and management rate limits.
+After reducing request volume and waiting, the bounded reader completed: all 195
+datasets have retained row digests validated against their full-table fingerprint,
+without exporting raw records. Full authorised history,
+private-channel visibility and matching production promotion remain unfinished.
+[Frontend evidence](evidence/learn-slack-connection-frontend-2026-10-12.json).
+
+
 **12 October, 19:56 UTC — OpenFolk Slack setup and import controls installed in TEST.**
 Package 081 adds operator-governed user-credential configuration with durable
 request/check/cancel receipts. It binds tenant, workspace and consenting user,
