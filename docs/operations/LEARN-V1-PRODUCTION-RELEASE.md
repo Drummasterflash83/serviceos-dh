@@ -55,6 +55,46 @@ remain; no full service/Vault recovery is claimed. The next release step is an
 explicit additive production candidate and its offline rehearsal with retained
 source fingerprints and real production constraints. No candidate has been applied.
 
+## First production candidate rehearsed offline — 12 October
+
+The draft [metadata migration](../../supabase/release/learn-production/001_launch_metadata_views.sql)
+and its [manifest](../../supabase/release/learn-production/001_launch_metadata_views.manifest.json)
+are production-specific. Their pinned SHA-256 is
+`d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d`.
+They add eight restricted LEARN metadata views and a private release ledger, with
+an exact guard on the nine source-table catalogs from the archived baseline.
+The TEST target, an altered catalog and a duplicate submission are rejected.
+An injected failure after receipt insertion rolls the whole transaction back.
+
+Production has existing policies that apply to PUBLIC. The candidate therefore
+adds restrictive policies for the new reader role alongside its permissive grants;
+existing policies cannot widen the views beyond the current owner/admin's tenant.
+Original source permissions and writers remain intact. The new role cannot log in,
+bypass RLS or create schema objects; applications gain no role membership or access
+to the release ledger. The deployer's temporary SET/INHERIT access is absent after
+installation.
+
+The final rehearsal used a fresh offline restore of the real archive. Owner/admin
+SQL-role reads returned the retained tenant's 18,598 emails, 4,328 calls and 2,882
+recordings. Viewer, unknown-actor, no-actor and anonymous checks passed, as did view
+write denial and email-label/provider-error redaction. All original public tables,
+functions, views and application column privileges were preserved, except the
+explicitly added reader policies. All **1,591,576 rows across 299 archived tables
+and five sequence states** matched before/after. The single new release receipt
+was accounted for separately. The disposable container was removed.
+
+The initial verification attempt exposed unqualified search-path assumptions in
+the rehearsal queries; those were corrected and exact expected failure reasons
+were checked before accepting the later runs. The candidate SQL itself did not
+change between these runs. See [rehearsal evidence](evidence/learn-production-launch-rehearsal-2026-10-12.json).
+
+**This is only the first metadata prerequisite.** Remaining foundation, scoring,
+operator, ingestion, queue and recovery changes still need production-specific
+packages and a complete combined rehearsal. Existing production source grants
+have not been tightened by this step; later access review must distinguish legacy
+service requirements from new LEARN access. SQL claims in an isolated database do
+not prove signed-in HTTP/browser acceptance. Nothing has been deployed live.
+
 ## Required evidence before requesting promotion
 
 - Resolve existing TEST access approvals and verify signed-in customer and

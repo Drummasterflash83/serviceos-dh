@@ -14,6 +14,28 @@ from restore_production_database import ROOT, IMAGE, PINNED_IMAGE, ident, litera
 OUT = Path('.verification-results/production-release-baseline-v1')
 
 
+def prepare_archive_roles(target, inventory):
+    existing = set(json.loads(target.query('select json_agg(rolname) from pg_roles;')))
+    for role in inventory['roles']:
+        name = ident(role['rolname'])
+        if role['rolname'] not in existing:
+            target.query('create role ' + name + ' nologin;')
+        attrs = []
+        for field, token in [('rolsuper','SUPERUSER'),('rolinherit','INHERIT'),
+            ('rolcreaterole','CREATEROLE'),('rolcreatedb','CREATEDB'),
+            ('rolcanlogin','LOGIN'),('rolreplication','REPLICATION'),('rolbypassrls','BYPASSRLS')]:
+            attrs.append(token if role[field] else 'NO' + token)
+        target.query('alter role ' + name + ' with ' + ' '.join(attrs) + ' connection limit '
+            + str(int(role['rolconnlimit'])) + ' valid until ' + literal(role['rolvaliduntil'] or 'infinity') + ';')
+        for setting in role.get('rolconfig') or []:
+            key, value = setting.split('=', 1)
+            target.query('alter role ' + name + ' set ' + ident(key) + ' to ' + literal(value) + ';')
+    for m in inventory['memberships'] or []:
+        target.query('grant ' + ident(m['role']) + ' to ' + ident(m['member'])
+            + ' with admin ' + str(m['admin']).lower() + ', inherit ' + str(m['inherit']).lower()
+            + ', set ' + str(m['set']).lower() + ' granted by ' + ident(m['grantor']) + ';')
+
+
 def main():
     OUT.mkdir(mode=0o700, exist_ok=False)
     report = {'state': 'preflight', 'productionChanged': False,
@@ -37,25 +59,7 @@ def main():
             if target.image_id != PINNED_IMAGE:
                 raise RecoveryError('Reviewed image pin differs')
             report['containmentBefore'] = target.verify_boundary()
-            existing = set(json.loads(target.query('select json_agg(rolname) from pg_roles;')))
-            for role in inventory['roles']:
-                name = ident(role['rolname'])
-                if role['rolname'] not in existing:
-                    target.query('create role ' + name + ' nologin;')
-                attrs = []
-                for field, token in [('rolsuper','SUPERUSER'),('rolinherit','INHERIT'),
-                    ('rolcreaterole','CREATEROLE'),('rolcreatedb','CREATEDB'),
-                    ('rolcanlogin','LOGIN'),('rolreplication','REPLICATION'),('rolbypassrls','BYPASSRLS')]:
-                    attrs.append(token if role[field] else 'NO' + token)
-                target.query('alter role ' + name + ' with ' + ' '.join(attrs) + ' connection limit '
-                    + str(int(role['rolconnlimit'])) + ' valid until ' + literal(role['rolvaliduntil'] or 'infinity') + ';')
-                for setting in role.get('rolconfig') or []:
-                    key, value = setting.split('=', 1)
-                    target.query('alter role ' + name + ' set ' + ident(key) + ' to ' + literal(value) + ';')
-            for m in inventory['memberships'] or []:
-                target.query('grant ' + ident(m['role']) + ' to ' + ident(m['member'])
-                    + ' with admin ' + str(m['admin']).lower() + ', inherit ' + str(m['inherit']).lower()
-                    + ', set ' + str(m['set']).lower() + ' granted by ' + ident(m['grantor']) + ';')
+            prepare_archive_roles(target, inventory)
             report['state'] = 'restoring_offline_archive'
             write_private(OUT / 'report.json', report)
             print(json.dumps({'state': report['state']}), flush=True)

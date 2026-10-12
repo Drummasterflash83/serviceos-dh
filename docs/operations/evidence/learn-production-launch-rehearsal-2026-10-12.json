@@ -1,0 +1,134 @@
+{
+  "version": "learn-production-launch-rehearsal/1",
+  "observedAt": "2026-10-12T03:04:00.617128+00:00",
+  "scope": "First production-specific metadata candidate, disposable offline production-archive restore only",
+  "result": {
+    "state": "first_production_candidate_rehearsed_offline",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "fullReleaseAccepted": false,
+    "signedInHttpVerified": false,
+    "packageSha256": "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "containmentBefore": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "negativeChecks": [
+      {
+        "case": "wrong_target",
+        "rejected": true,
+        "schemaRestored": true
+      },
+      {
+        "case": "catalog_drift",
+        "rejected": true,
+        "schemaRestored": true
+      },
+      {
+        "case": "late_failure",
+        "rejected": true,
+        "schemaRestored": true
+      }
+    ],
+    "existingPublicCatalogPreserved": true,
+    "existingApplicationColumnPrivilegesPreserved": true,
+    "restrictedReaderAndLedgerAuthorityVerified": true,
+    "sqlRoleChecks": {
+      "existingProfileRoles": [
+        "owner",
+        "admin",
+        "viewer"
+      ],
+      "unsignedDenied": true,
+      "unknownActorDenied": true,
+      "anonymousDenied": true,
+      "viewWritesDenied": true,
+      "emailAndErrorRedactionVerified": true,
+      "retainedTenantCounts": {
+        "email_accounts": 30,
+        "email_messages": 18598,
+        "email_sync_runs": 162591,
+        "google_workspace_mailboxes": 43,
+        "phone_calls": 4328,
+        "phone_recordings": 2882,
+        "phone_sync_runs": 82191,
+        "phone_transcripts": 2882
+      }
+    },
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299,
+      "rows": 1591576,
+      "sequences": 5,
+      "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "duplicateSubmissionRejected": true,
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true,
+    "elapsedSeconds": 35.17
+  },
+  "sources": [
+    {
+      "path": "scripts/backup/rehearse_production_launch.py",
+      "sha256": "a6a62f0945aaf81976e67dab7f973600c3564d4840fcce306f949807b918cb3c"
+    },
+    {
+      "path": "scripts/backup/inspect_production_release_baseline.py",
+      "sha256": "1df6bc7842263e11b692ec4b265a867571a819a2586b7a9a76b5f26f8361eb9e"
+    },
+    {
+      "path": "scripts/verify/learn-production-launch-candidate.mjs",
+      "sha256": "a412e5b7b26754374ceb0e84c2ad8567d7c5f25b6a5777f9f0592ae296016f40"
+    },
+    {
+      "path": "supabase/release/learn-production/001_launch_metadata_views.sql",
+      "sha256": "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d"
+    },
+    {
+      "path": "supabase/release/learn-production/001_launch_metadata_views.manifest.json",
+      "sha256": "0b752c5694dfac4619ffa0e204d8c4e53493a6eb38e6d94b3c7d9b4a6d46eef4"
+    }
+  ],
+  "priorAttempts": [
+    {
+      "run": "v1",
+      "state": "candidate_applied_but_role_checks_stopped",
+      "reason": "Verification queries used an unqualified search path; one negative case also failed for the wrong reason. Corrected before acceptance.",
+      "containerRemoved": true
+    },
+    {
+      "run": "v2",
+      "state": "passed",
+      "followup": "v3 additionally verifies every existing application column privilege and the new reader/ledger authority."
+    }
+  ],
+  "limitations": [
+    "The complete LEARN production migration/runtime/frontend combination is not yet prepared or rehearsed.",
+    "SQL role/claim checks are not signed-in browser or HTTP/JWT acceptance. Roles changed only inside rolled-back transactions on an offline copy; no hosted account or access was created.",
+    "Preservation covers all rows and sequences present in the archive, not omitted pg_net rows or current live data.",
+    "Full service/Vault recovery and live promotion remain unproven and unapproved."
+  ]
+}

@@ -7,6 +7,21 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — first production-specific metadata migration rehearsed offline.**
+The candidate adds eight restricted metadata views and a private release ledger,
+with production catalog guards and reader-only restrictive policies that coexist
+with legacy policies. A fresh restore of the real archive passed owner/admin
+counts, viewer/no-actor/unknown-actor/anonymous denial, redaction and write denial.
+Original catalog and application column privileges were preserved; all 1,591,576
+archived rows and five sequence values matched after the candidate and rolled-back
+role checks. Wrong target, catalog drift, duplicate submission and late-failure
+rollback were verified. The disposable database was removed.
+
+This closes an offline rehearsal of the first release prerequisite only. The rest
+of the production candidate, combined acceptance, live recovery, signed-in checks
+and promotion approval remain open. No hosted system was changed.
+[Candidate and rehearsal details](LEARN-V1-PRODUCTION-RELEASE.md#first-production-candidate-rehearsed-offline--12-october).
+
 **12 October, 03:52 BST — production release baseline restored and compared with TEST.**
 A new disposable offline restore of the pinned production archive succeeded with
 network/schedules/background workers disabled and was removed after inspection.
