@@ -7,6 +7,23 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 06:06–06:09 UTC — existing Workspace access can reach the revoked-token mailbox.**
+Its already-enabled Workspace mailbox, tenant/domain and stored service-account
+identity match. One read-only token and one profile request succeeded with exact
+mailbox identity; Google reported 78,124 messages. No new sign-in or credential
+is presently needed to prove this alternative access. The account remains routed
+through revoked individual OAuth, so live capture is not repaired yet.
+
+The production archive passed an offline account-routing change and reversal,
+preserving other account fields. Current downloaded worker/scheduler code confirms
+the proposed Workspace route; backfill is idle and would remain idle. A second offline rehearsal checked all 299 archived tables (1,591,576 rows)
+and five sequences: apart from the account routing/timestamps, only a connector
+timestamp changed; sending permissions and other source data were preserved.
+Fresh live preflight and approval remain required before applying this repair. No production mutation was made. This verifies access and a recovery
+option, not complete messages-to-cards coverage or V1 acceptance.
+[Prepared recovery](LEARN-MAILBOX-RECOVERY.md) and
+[sanitised evidence](evidence/learn-mailbox-workspace-recovery-2026-10-12.json).
+
 **12 October, 06:04 UTC — production email failure narrowed to one OAuth account.**
 A read-only follow-up joined bounded queue failures to account metadata. All seven
 sampled `refresh_token_revoked` failures belong to one account, spanning 11 October
