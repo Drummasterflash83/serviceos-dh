@@ -67,9 +67,13 @@ hostnames, and no custom domain or automatic Git linkage was added.
 The stable staging entry is
 [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
 It points to immutable preview
-[serviceos-learn-test-91257jzge-allkin.vercel.app](https://serviceos-learn-test-91257jzge-allkin.vercel.app),
-built remotely from GitHub commit `9cbf56280f9b3eb561a67a15d26943b137222178`
-and observed READY at **02:48 UTC on 12 October**. It includes password recovery,
+[serviceos-learn-test-mbyf9aogk-allkin.vercel.app](https://serviceos-learn-test-mbyf9aogk-allkin.vercel.app),
+built remotely from GitHub commit `f7718dd0d35c161fdf6c77d9744de449bb24baca`
+and observed READY at **08:09 UTC on 12 October**. This update adds corrected
+Connections status distinctions and navigation to existing LEARN input controls.
+The exact TEST binding and stable-alias target were verified; both hostnames
+remain protected. Positive signed-in acceptance is still pending. See the
+[latest frontend evidence](operations/evidence/learn-connections-frontend-test-2026-10-12.json). It includes password recovery,
 snapshot freshness, projection/identity review, queued processing messages, draft
 advice and bounded card-evidence explanation. Compatible dependency-lock updates
 passed TypeScript/build; production-dependency audit is clear, with nine development
@@ -122,8 +126,8 @@ discovery; 076 added bounded dispatch and operator status. These releases did no
 activate real voicemail routes or a TEST schedule. Hosted positive scheduled import
 and signed-in operator/owner acceptance remain outstanding. The current frontend
 passed full-project TypeScript; its stable alias and immutable hostname were both
-verified protected at **02:48 UTC on 12 October**. See the
-[current frontend evidence](operations/evidence/learn-microsoft-status-frontend-2026-10-12.json),
+verified protected at **08:09 UTC on 12 October**. See the
+[earlier Microsoft frontend evidence](operations/evidence/learn-microsoft-status-frontend-2026-10-12.json),
 [historical inbox evidence](operations/evidence/learn-voicemail-inbox-history-2026-10-12.json)
 and [dispatcher evidence](operations/evidence/learn-voicemail-dispatch-2026-10-12.json).
 Release 067 added directory-verified alias identities; 068 adds mailbox-wide recent

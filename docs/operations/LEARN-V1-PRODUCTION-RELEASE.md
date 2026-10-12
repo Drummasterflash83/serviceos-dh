@@ -2,7 +2,8 @@
 
 Status: **preparation only; not approved or ready to execute**. The
 [completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
-The current hosted TEST frontend is Git `9cbf562`, schema package 079 and worker
+The current hosted TEST frontend is Git `f7718dd` (Connections status correction,
+12 October 08:09 UTC), schema package 079 and worker
 v20. That combination has synthetic processing acceptance, not full launch
 acceptance. Source backups are on `codex/learn-v1-test`.
 

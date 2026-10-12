@@ -1,0 +1,88 @@
+{
+  "contract": "learn-connections-frontend-test/1",
+  "scope": "isolated hosted TEST only",
+  "deployment": {
+    "observedAt": "2026-10-12T08:09:07.548Z",
+    "id": "dpl_GHG4eGQBS3T9F6zciZDkTEqCHWa1",
+    "url": "serviceos-learn-test-mbyf9aogk-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "f7718dd0d35c161fdf6c77d9744de449bb24baca"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x"
+  },
+  "stableAlias": {
+    "observedAt": "2026-10-12T08:09:51.047Z",
+    "alias": "serviceos-learn-test-allkin.vercel.app",
+    "deploymentId": "dpl_GHG4eGQBS3T9F6zciZDkTEqCHWa1",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "immutableProtection": {
+    "observedAt": "2026-10-12T08:09:49.211Z",
+    "base": "https://serviceos-learn-test-mbyf9aogk-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/openfolk",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "backendProject": "saatxzwxvdvqevbnskxy",
+  "checks": {
+    "typescript": "passed",
+    "connectionProjectionTests": 12,
+    "remoteInstallAndBuild": "READY"
+  },
+  "changes": [
+    "Connection unknown/failure states distinguished",
+    "Available adapter does not imply authorised or capturing account",
+    "Inventory counts disclose directory-only scope",
+    "Connections links to existing LEARN input controls"
+  ],
+  "signedInAcceptance": false,
+  "realProviderAcceptance": false,
+  "productionChanged": false,
+  "limitations": [
+    "Protected-route checks verify access gating, not signed-in navigation or rendered provider state.",
+    "No account, grant, credential or capture setting was created or changed."
+  ]
+}

@@ -7,6 +7,17 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 08:09 UTC — Connections correction deployed to protected TEST.**
+Vercel remotely built Git `f7718dd0d35c161fdf6c77d9744de449bb24baca` to READY in
+the separate TEST project. Its stable alias points to that exact deployment;
+both hostnames retain Vercel protection. The backend binding remains TEST
+`saatxzwxvdvqevbnskxy`. Twelve projection checks and application TypeScript passed.
+The controller now exposes the corrected distinction between available adapters,
+observed connections and unknown status, with navigation to LEARN input controls.
+Signed-in navigation and real account/capture acceptance remain pending. This
+frontend-only deployment changed no source data, capture, credentials or grants.
+[Hosted TEST evidence](evidence/learn-connections-frontend-test-2026-10-12.json).
+
 **12 October — supervised database backup operator prepared and verified locally.**
 The new operator command reads an exact 1Password item, requires successful local
 package/database/Vault verification before upload, separates Writer and Restore
@@ -2064,8 +2075,9 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   of this additional compatibility fix still requires its own reviewed rehearsal.
 - [ ] **Connections catalogue acceptance:** the older adapter labels and unsupported
   inactive/disconnected claims are corrected locally (12 October). Twelve projection
-  tests, TypeScript, build and the synthetic browser pass. Hosted deployment and
-  signed-in controller navigation/status verification remain open; available adapter
+  tests, TypeScript, build and the synthetic browser pass. Hosted deployment is
+  verified at 08:09 UTC on 12 October; signed-in controller navigation/status
+  verification remains open; available adapter
   code is not proof of authorised accounts, active capture or complete coverage.
 - [ ] **Performance inputs:** finish source-backed response-time, job progression,
   repeat-visit and driving adapters where sources exist. Establish staff identity,
