@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-12T21:28:51.726079+00:00",
+  "state": "configuration_adapter_verified_locally_production_read_only",
+  "candidateManifestSha256": "5aa869b0c96cb8123aee02eab5db895ea72bb29a35ac8a7bc57c2e04237a21b7",
+  "production": {
+    "runtimeDefinitionsMatchBaseline": 88,
+    "configurationPrecondition": "ready",
+    "configurationNamesToSet": [
+      "LEARN_COMMUSOFT_WORKER_KEY",
+      "LEARN_INPUT_DISPATCH_ENABLED",
+      "LEARN_SLACK_WORKER_KEY",
+      "LEARN_STATUS_READ_MODE"
+    ],
+    "existingServiceCredentialReused": true,
+    "secretValuesRetained": false,
+    "releaseReceiptCount": 0,
+    "targetScheduleDefinitionsMatch": true,
+    "totalSchedulesObserved": 18,
+    "changes": 0
+  },
+  "localTests": {
+    "passed": 28,
+    "includes": [
+      "exact configuration staging with dispatch false",
+      "separate dispatch activation after matched runtime",
+      "all 37 uploads plus publication between configuration steps",
+      "lost-response readback without duplicate writes",
+      "partial writes and credential/runtime drift rejected",
+      "existing SQL, runtime and durable journal acceptance"
+    ]
+  },
+  "sourceFiles": [
+    {
+      "path": "scripts/verify/learn-production-configuration-adapter.mjs",
+      "sha256": "01664d00338003d48b5947b0c0d7c803d81721a88dbdecb9442fd9dc46633309"
+    },
+    {
+      "path": "scripts/verify/learn-production-configuration-preflight.mjs",
+      "sha256": "44ec0f7fcb92a4b18a17abe4fcc722341e2b3952f1c4e8e3aceecbc642e6d2ef"
+    },
+    {
+      "path": "scripts/verify/learn-production-runtime-adapter.mjs",
+      "sha256": "44b3df803c3b202c639245c5bde45b677ea2b62fc8094e9f809c20ea0c542cea"
+    }
+  ],
+  "limitations": [
+    "Configuration not applied to production; metadata does not prove worker environment propagation",
+    "Positive scheduled/user callers, current recovery/drain/preservation and signed-in production checks remain open",
+    "Existing live deployment and source data unchanged; no provider requests"
+  ],
+  "references": [
+    "https://supabase.com/docs/reference/api/v1-list-all-secrets",
+    "https://supabase.com/docs/reference/api/v1-bulk-create-secrets"
+  ]
+}

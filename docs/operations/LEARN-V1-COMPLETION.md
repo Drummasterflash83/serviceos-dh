@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — production configuration execution prepared; live remains unchanged.**
+
+### Working and verified
+
+- The missing server-configuration adapter is implemented and locally verified.
+  It preserves existing credentials, stages input dispatch off and supports a
+  separate activation step after the matching runtime. Configuration-induced
+  function version changes are reconciled using an exact receipt.
+- Twenty-eight local tests pass, including the combined configuration → 37 runtime
+  uploads → publication → activation sequence and interruption handling.
+- Fresh production reads match all 88 existing function definitions and original
+  target schedules. Zero release-package receipts are present. These are read-only
+  observations; no production release or provider operation has occurred.
+
+### Needs finishing
+
+- Complete and execute the integrated release gates: current recovery and source
+  preservation, worker/caller coordination, in-flight completion, positive callers,
+  backend installation, production sign-in and live activation/observation.
+- The previously verified Slack sample remains retained and paused. Full input
+  coverage, replies, source-to-card processing, scoring and operational requirements
+  remain part of the full launch goal; none are deferred by this checkpoint.
+
+### Blocked externally
+
+- Production preview is still signed out. The authorised lookup for a saved live
+  login reached 1Password's Touch ID prompt and timed out without item access.
+  The request for owner authentication is pending; independent work continues.
+
+[Configuration execution evidence](evidence/learn-production-configuration-2026-10-12.json).
+
+## Earlier checkpoints
+
 **12 October, 21:14 UTC — approved historical Slack TEST sample and duplicate check passed.**
 
 ### Working and verified
@@ -42,8 +75,6 @@ override a later release observation. No requirement is silently deferred.
   historical-date approval request is resolved. DMs remain excluded.
 
 [Historical sample and preservation evidence](evidence/learn-slack-real-history-2026-10-12.json).
-
-## Earlier checkpoints
 
 **12 October, 21:03 UTC — real Slack TEST access verified; approved windows empty; matching recurring fix installed.**
 

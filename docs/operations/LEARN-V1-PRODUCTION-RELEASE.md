@@ -29,6 +29,45 @@ and [frontend evidence](evidence/learn-production-frontend-slack-setup-2026-10-1
 supersede older candidate pins below. Real-provider completeness, positive caller
 acceptance, current recovery/drain gates and live activation remain open.
 
+## Server configuration execution — 12 October
+
+The configuration adapter now implements both pinned configuration steps. Setup
+reuses the existing production service credential for the two explicit internal
+worker bindings, sets the production metadata reader and leaves input dispatch
+false. A separate step changes only dispatch to true after the matched runtime
+and the release's acceptance gates. Secrets are project-wide: caller and worker
+read the same named binding. Values travel in memory, never in evidence or Git.
+
+The adapter compares all existing secret digests and runtime definitions before
+and after one exact POST. It rejects unrelated changes, partial writes and
+unexpected version jumps. A configuration refresh may preserve a version or
+increment it once while retaining code, identity and gateway settings. Its exact
+receipt supplies the runtime uploader's new version baseline; it is not a blanket
+permission to ignore drift. The outer durable release journal must retain that
+applied-step evidence before the receipt is used. Unknown submissions are read
+back, never automatically repeated. Live propagation still needs positive caller
+checks, even when management metadata matches.
+
+Twenty-eight local adapter/journal tests pass, including a composed setup → 37
+uploads → publication → activation simulation. The runtime loader also now uses
+the current recurring-release wire directory. Fresh production reads found all 88
+existing runtime definitions unchanged, zero release receipts and the original
+nine target schedules intact among eighteen schedules. No configuration, schedule,
+database, runtime or frontend write was performed. The configuration adapter's
+`ready` state is a metadata precondition, not whole-release readiness.
+
+The read-only preflight is
+`scripts/verify/learn-production-configuration-preflight.mjs`; its private output
+retains only credential digests and deployment metadata. Before execution, bind
+its exact candidate and step pins into the release journal and revalidate the
+current approval, database receipts, coordination/drain and recovery evidence.
+Signed-in production acceptance remains pending. The existing 1Password lookup
+requires owner Touch ID; the latest attempt timed out without reading the item.
+
+[Sanitised evidence](evidence/learn-production-configuration-2026-10-12.json) ·
+[Supabase secret inventory API](https://supabase.com/docs/reference/api/v1-list-all-secrets) ·
+[Supabase secret configuration API](https://supabase.com/docs/reference/api/v1-bulk-create-secrets).
+
 
 ## Matching processing candidate — 12 October
 

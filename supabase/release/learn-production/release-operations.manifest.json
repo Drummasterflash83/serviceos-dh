@@ -1,6 +1,6 @@
 {
   "version": "learn-production-release-operations/1",
-  "state": "prepared_not_approved_or_executed",
+  "state": "deployment_authorised_execution_gates_incomplete",
   "projectRef": "tgbnakbxwcqjeimygroz",
   "planSha256": "7118dc71ff15cdc307c587b28095bde466c4ad956eeefda4f26867cd707cdaa1",
   "operations": [
@@ -1453,9 +1453,9 @@
     }
   ],
   "limitations": [
-    "Journal mechanics are locally tested; production execution adapters and acceptance gates remain unfinished.",
+    "SQL, configuration and runtime adapters are locally tested; integrated production execution and acceptance gates remain unfinished.",
     "Exact artifact pins do not prove current hosted state, approval, signed-in access or provider completeness.",
-    "The current protected frontend preview is built, but served backend binding and signed-in acceptance remain unverified.",
+    "The current protected frontend preview and its production backend binding are verified; signed-in acceptance remains unverified.",
     "Do not restore old runtimes over new checkpoints without reviewed compatibility or forward repair."
   ]
 }

@@ -5,6 +5,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { configurationRuntimeRefresh } from './learn-production-configuration-adapter.mjs';
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const hashObject=o=>sha(JSON.stringify(o));
 const project='tgbnakbxwcqjeimygroz';
@@ -13,8 +14,21 @@ const fields=['name','id','version','hash','jwt','status'];
 const same=(a,b)=>a&&b&&fields.every(k=>a[k]===b[k]);
 const check=(v,message)=>{if(!v)throw Error(message);};
 
-export function createProductionRuntimeAdapter({candidate,operations,readBody,api,allowWrite=false,assertApprovedAndDrained}) {
+export function createProductionRuntimeAdapter({candidate,operations,readBody,api,allowWrite=false,assertApprovedAndDrained,configurationRefresh}) {
   candidate=structuredClone(candidate);operations=structuredClone(operations);
+  if(configurationRefresh) {
+    const receipt=structuredClone(configurationRefresh),setup=operations.operations.find(o=>o.id==='matching-server-configuration');
+    const original=[...candidate.endpoints.flatMap(e=>e.beforeProduction?[e.beforeProduction]:[]),...candidate.productionEndpointsOutsideCandidate];
+    const ordered=rows=>[...rows].sort((a,b)=>a.name.localeCompare(b.name));
+    check(/^[a-f0-9]{64}$/.test(candidate.manifestSha256??'')&&receipt.projectRef===project&&receipt.candidateSha256===candidate.manifestSha256&&
+      receipt.stepId===setup?.id&&receipt.stepPinSha256===setup.pinSha256&&
+      hashObject(ordered(receipt.before))===hashObject(ordered(original))&&
+      configurationRuntimeRefresh(receipt.before,receipt.after),'Configuration refresh receipt differs');
+    // Only exact code/identity/auth-preserving configuration refreshes may adjust
+    // the version baseline. The outer journal binds this to the applied step.
+    for(const e of candidate.endpoints)if(e.beforeProduction)e.beforeProduction=receipt.after.find(r=>r.name===e.name);
+    candidate.productionEndpointsOutsideCandidate=candidate.productionEndpointsOutsideCandidate.map(e=>receipt.after.find(r=>r.name===e.name));
+  }
   const endpoints=candidate.endpoints;
   check(candidate.projectRef===project && endpoints.length===37 && new Set(endpoints.map(e=>e.name)).size===37 &&
     operations.projectRef===project && typeof readBody==='function' && typeof api==='function','Invalid production runtime scope');
@@ -163,6 +177,6 @@ export function loadRuntimeAdapter(api, options={}) {
   check(operations.planSha256===hashObject(plan) && plan.candidateSha256===sha(candidateBytes) &&
     JSON.stringify(plan.steps)===JSON.stringify(operations.operations.map(({id,kind,pinSha256})=>({id,kind,pinSha256}))),
     'Release plan, operations or candidate binding differs');
-  return createProductionRuntimeAdapter({candidate:JSON.parse(candidateBytes),operations,
-    readBody:name=>readFileSync(join('.verification-results/production-runtime-wire-20261012-slack-setup',name)),api,...options});
+  return createProductionRuntimeAdapter({candidate:{...JSON.parse(candidateBytes),manifestSha256:sha(candidateBytes)},operations,
+    readBody:name=>readFileSync(join('.verification-results/production-runtime-wire-20261012-slack-recurring',name)),api,...options});
 }

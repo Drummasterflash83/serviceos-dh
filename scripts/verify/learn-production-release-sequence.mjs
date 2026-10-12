@@ -127,11 +127,11 @@ const plan=validateReleasePlan({version:'learn-production-release-sequence/1',pr
   candidateSha256,steps:operations.map(({id,kind,pinSha256})=>({id,kind,pinSha256}))});
 writeFileSync(base+'release-sequence.plan.json',JSON.stringify(plan,null,2)+'\n');
 writeFileSync(base+'release-operations.manifest.json',JSON.stringify({version:'learn-production-release-operations/1',
-  state:'prepared_not_approved_or_executed',projectRef:candidate.projectRef,
+  state:'deployment_authorised_execution_gates_incomplete',projectRef:candidate.projectRef,
   planSha256:sha(JSON.stringify(plan)),operations,
-  limitations:['Journal mechanics are locally tested; production execution adapters and acceptance gates remain unfinished.',
+  limitations:['SQL, configuration and runtime adapters are locally tested; integrated production execution and acceptance gates remain unfinished.',
     'Exact artifact pins do not prove current hosted state, approval, signed-in access or provider completeness.',
-    'The current protected frontend preview is built, but served backend binding and signed-in acceptance remain unverified.',
+    'The current protected frontend preview and its production backend binding are verified; signed-in acceptance remains unverified.',
     'Do not restore old runtimes over new checkpoints without reviewed compatibility or forward repair.'],
 },null,2)+'\n');
 console.log(JSON.stringify({state:'prepared_not_executed',steps:plan.steps.length,database:19,runtime:37}));
