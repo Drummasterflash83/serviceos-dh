@@ -1,0 +1,49 @@
+{
+  "version": "learn-production-gateway-probe/1",
+  "observedAt": "2026-10-12T16:37:21.334Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "state": "existing_service_jwt_gateway_verified_read_only",
+  "candidateManifestSha256": "afca8dcb12acfdb8f05f0f0e1a7779e0a94272226376045f78380ee9e104c708",
+  "endpoint": {
+    "name": "simwood-test-connection",
+    "id": "f68bd679-8ca8-4c2b-8e8e-4bd757428fc2",
+    "version": 57,
+    "hash": "ad198fe0c4e4b600c14cea47d7f9c530e2f38758e9c8f992158d424dbe94ed0f",
+    "jwt": true,
+    "status": "ACTIVE"
+  },
+  "retainedEntrypointSha256": "1d9135453e7cb6d7a34f9821b5b0ac90faacf90ee768f090ac032b608e39ae9b",
+  "method": "GET",
+  "checks": [
+    {
+      "variant": "missing",
+      "status": 401,
+      "passed": true
+    },
+    {
+      "variant": "invalid",
+      "status": 401,
+      "passed": true
+    },
+    {
+      "variant": "existing_service",
+      "status": 405,
+      "passed": true
+    }
+  ],
+  "deploymentUnchanged": true,
+  "credential": {
+    "existing": true,
+    "role": "service_role",
+    "algorithm": "HS256",
+    "projectMatches": true,
+    "valuesRetained": false
+  },
+  "productionDataChanges": 0,
+  "providerRequests": 0,
+  "limitations": [
+    "Verifies the current production gateway accepts its existing service JWT and rejects absent/invalid bearers on one unchanged protected endpoint.",
+    "GET exits before application authorization. This does not verify tenant/user roles, candidate POST behavior, the thirteen proposed gateway changes or signed-in acceptance.",
+    "Retained source hashes and before/after deployment metadata bound the method guard review. No deployment, credentials or permissions were changed."
+  ]
+}

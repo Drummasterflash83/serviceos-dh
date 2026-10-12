@@ -12,6 +12,18 @@ are on `codex/learn-v1-test`.
 
 ## Matching processing candidate — 12 October
 
+**12 October, 16:37 UTC — existing production service JWT accepted by the gateway.**
+Three GET probes on the retained, unchanged `simwood-test-connection` deployment
+returned 401 for missing/invalid bearers and the exact 405 method guard for the
+existing production service credential. The reviewed guard precedes application
+authorization, database and provider work. Endpoint identity, version, artifact
+hash and JWT setting matched before and after. No credentials were retained,
+permissions changed or customer/provider work performed.
+[Gateway evidence](evidence/learn-production-gateway-probe-2026-10-12.json).
+This verifies current gateway compatibility only. Positive candidate POST calls,
+the thirteen proposed gateway changes and signed-in tenant/operator journeys
+remain open; a 405 response does not prove application authorization.
+
 **Roster dependencies are now included.** Reviewing all 19 dynamic RPC sites
 found six missing OpenFolk roster actions. Package
 [016_roster_support.sql](../../supabase/release/learn-production/016_roster_support.sql)

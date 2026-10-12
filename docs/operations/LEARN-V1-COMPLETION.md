@@ -7,6 +7,18 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 16:37 UTC — existing production service JWT accepted by the gateway.**
+Three GET probes on the retained, unchanged `simwood-test-connection` deployment
+returned 401 for missing/invalid bearers and the exact 405 method guard for the
+existing production service credential. The reviewed guard precedes application
+authorization, database and provider work. Endpoint identity, version, artifact
+hash and JWT setting matched before and after. No credentials were retained,
+permissions changed or customer/provider work performed.
+[Gateway evidence](evidence/learn-production-gateway-probe-2026-10-12.json).
+This verifies current gateway compatibility only. Positive candidate POST calls,
+the thirteen proposed gateway changes and signed-in tenant/operator journeys
+remain open; a 405 response does not prove application authorization.
+
 **12 October — missing production roster dependencies repaired and rehearsed.**
 The dynamic-call review found six OpenFolk roster actions missing from the
 fifteen-package candidate. Additive package 016 supplies those audited writers,
@@ -31,9 +43,10 @@ deployment is claimed.
 [RPC bindings](evidence/learn-production-rpc-bindings-2026-10-12.json) and
 [unchanged runtime evidence](evidence/learn-production-runtime-roster-binding-2026-10-12.json).
 
-The refreshed Commusoft customer-contact pass completed its first 100 checks with
-all 194 datasets preserved and resumed a second bounded batch under the same
-approval and global request cap. Site contacts remain complete. Full contact
+The refreshed Commusoft customer-contact pass reached 300 of 1,550 customers
+at 16:32 UTC, with all 194 protected datasets preserved. It found one additional
+contact (2,962 retained contacts), and resumed the next bounded batch under the
+same approval and global request cap. Site contacts remain complete. Full contact
 coverage, publication/enrichment, signed-in live acceptance and Drummonds Slack
 remain unfinished.
 
