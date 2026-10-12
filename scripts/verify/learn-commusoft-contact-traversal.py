@@ -11,9 +11,10 @@ root = Path(__file__).resolve().parents[2]
 docker = shutil.which('docker') or '/usr/local/bin/docker'
 name = 'serviceos-contact-traversal-' + uuid.uuid4().hex[:8]
 created = False
-if sys.argv[1:] not in ([], ["--legacy-resume"], ["--update-windows"]): raise SystemExit("Unexpected mode")
+if sys.argv[1:] not in ([], ["--legacy-resume"], ["--update-windows"], ["--recurring"]): raise SystemExit("Unexpected mode")
 legacy = sys.argv[1:] == ["--legacy-resume"]
-update_windows = sys.argv[1:] == ["--update-windows"]
+recurring = sys.argv[1:] == ["--recurring"]
+update_windows = sys.argv[1:] in (["--update-windows"], ["--recurring"])
 
 def sql(text):
     r = subprocess.run([docker, 'exec', '-i', name, 'psql', '-h', '127.0.0.1', '-X', '-qAt', '-U', 'postgres', '-v', 'ON_ERROR_STOP=1'], input=text, text=True, capture_output=True, timeout=40)
@@ -65,6 +66,15 @@ try:
         sql(window_migration)
         print(sql(source('scripts/verify/learn-commusoft-update-windows.assert.sql')),flush=True)
         print('Update-window migration and rollback passed; existing definitions and grants restored by rollback.',flush=True)
+    if recurring:
+        recurring_migration = source('supabase/migrations/20261101550000_learn_commusoft_recurring.sql')
+        original = sql("select md5(string_agg(pg_get_functiondef(p.oid)||coalesce(p.proacl::text,''),'' order by p.oid)) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'")
+        sql(recurring_migration.replace('\ncommit;', '\nrollback;'))
+        assert sql("select to_regclass('learn_commusoft_recurring') is null") == 't'
+        assert original == sql("select md5(string_agg(pg_get_functiondef(p.oid)||coalesce(p.proacl::text,''),'' order by p.oid)) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'")
+        sql(recurring_migration)
+        print(sql(source('scripts/verify/learn-commusoft-recurring.assert.sql')),flush=True)
+        print('Recurring installation rollback restores all definitions and grants; no hosted changes.',flush=True)
     overview = sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000180';set role authenticated;select learn_operator_inputs(fixture_id(100));")
     path=root/('.verification-results/commusoft-contact-traversal-overview-legacy.json' if legacy else '.verification-results/commusoft-contact-traversal-overview.json')
     path.write_text(overview+'\n')

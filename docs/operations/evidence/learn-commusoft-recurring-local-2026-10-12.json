@@ -1,0 +1,38 @@
+{
+  "version": "commusoft-recurring-local/1",
+  "observedAt": "2026-10-12T18:52:19.714789+00:00",
+  "state": "isolated_synthetic_sql_passed",
+  "migration": "supabase/migrations/20261101550000_learn_commusoft_recurring.sql",
+  "migrationSha256": "91bac15dbfbe01815cff436fcc4e08639030ffc0104f94b03b9a74e109fa9c27",
+  "assertions": "scripts/verify/learn-commusoft-recurring.assert.sql",
+  "assertionsSha256": "dfd40ae245bb578409933472299f5d9aec2a73373af1289745598c3d1bf42795",
+  "command": "python3 scripts/verify/learn-commusoft-contact-traversal.py --recurring",
+  "checks": [
+    "installation rollback restores prior functions and grants",
+    "full unfiltered bootstrap across properties, jobs, customer contacts and site contacts",
+    "watermark advances only after all four durable page receipts and succeeded jobs",
+    "subsequent cycles retain full parent inventory and use fixed update bounds",
+    "page-level pause and approver revocation fence",
+    "paused and revoked jobs consume no retry attempts",
+    "paused account does not occupy another client's single-job claim slot",
+    "duplicate scheduler tick queues no duplicate work",
+    "request cancellation blocks a late apply",
+    "wrong tenant request rejected",
+    "original synthetic pages and source versions unchanged",
+    "existing operator projection parser accepts results"
+  ],
+  "network": "disabled for disposable PostgreSQL container",
+  "providerCalls": 0,
+  "hostedChanges": false,
+  "scheduledCaptureActivated": false,
+  "containerRemoved": true,
+  "limitations": [
+    "Production-archive/full-schema rehearsal still required.",
+    "Operator UI and hosted release/activation remain unfinished.",
+    "An empty contact-parent kind currently holds for review rather than claiming completed coverage.",
+    "Empty-parent handling, interrupted/expired cycle recovery and concurrent schedule acceptance require further work.",
+    "Initial automatic cycle intentionally repeats all four unfiltered traversals; activation must approve that provider budget.",
+    "The existing dedicated worker caller must be verified for ongoing wake-ups.",
+    "Captured source changes still require downstream canonical publication/enrichment acceptance."
+  ]
+}

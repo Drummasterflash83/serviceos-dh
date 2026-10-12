@@ -7,6 +7,28 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — ongoing Commusoft cycle backend implemented; isolated SQL acceptance passes.**
+The new migration introduces explicit operator-approved subscriptions, immutable
+control/step receipts and a four-stage cycle: full properties, jobs, customer
+contacts and site contacts. Bootstrap is unfiltered. Later cycles retain a full
+parent inventory and freeze update bounds with a five-minute overlap. The watermark
+moves only after all four retained completion receipts and succeeded jobs.
+
+The existing dedicated worker claim path wakes the scheduler. Pause/revocation
+fences credential/page admission and skips queued recurring work without spending
+retries or starving another client. Local PostgreSQL tests cover the real setup,
+permit, page, finish and scheduler SQL with synthetic source data and no network;
+installation rollback restores previous function definitions/grants. This is not
+hosted acceptance or active capture. No client approval, schedule, credential or
+provider request was installed. [Evidence](evidence/learn-commusoft-recurring-local-2026-10-12.json).
+
+Remaining work for this feature: empty-parent handling, deeper interrupted/expired
+cycle and concurrency acceptance, operator controls, full production-archive
+rehearsal, release packaging and hosted verification/activation. The first cycle
+repeats all four unfiltered traversals, so its provider budget must be explicit.
+Source ingestion remains separate from canonical publication/enrichment acceptance.
+
+
 **12 October, 18:43 UTC — operator login fix deployed and verified on permanent TEST.**
 The protected TEST deployment now serves `3089ee4`. Both stable aliases point to
 the same READY deployment; four unauthenticated route checks remain protected,
