@@ -62,6 +62,9 @@ const OperatorVoicemailStatus = lazy(() =>
     default: module.OperatorVoicemailStatus,
   })),
 );
+const OperatorMicrosoftStatus = lazy(() =>
+  import("./OperatorMicrosoftStatus").then((module) => ({ default: module.OperatorMicrosoftStatus })),
+);
 const tabs: { view: ReceptionistView; label: string }[] = [
   { view: "testing", label: "Automated voice tests" },
   { view: "improvements", label: "Feedback & responses" },
@@ -186,6 +189,11 @@ function OperatorModuleContent({
               />
               <OperatorVoicemailStatus
                 key={`voicemail:${tenantId}:${user.id}:${captureRevision}`}
+                tenantId={tenantId}
+                actorId={user.id}
+              />
+              <OperatorMicrosoftStatus
+                key={`microsoft:${tenantId}:${user.id}:${captureRevision}`}
                 tenantId={tenantId}
                 actorId={user.id}
               />

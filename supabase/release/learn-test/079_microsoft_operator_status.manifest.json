@@ -1,0 +1,18 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "7df317acc5bbe98084ae368e5d4296d349a7c98f56c7f8401fed0742a9bbebda",
+  "priorFingerprint": "eed0d2261da216333a705c4b00f54bd5",
+  "priorInboxFingerprint": "f7589b88ee9d1725e6ae590d4f335022",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101490000_learn_microsoft_operator_status.sql",
+      "sha256": "2a38f722651dfd569718963f82d539fbd01b8ba9cd5a111db55b880124c6d9ec"
+    },
+    {
+      "path": "scripts/verify/learn-microsoft-status.assert.sql",
+      "sha256": "03c35b5ec52a07112463a875bf87171e0e0a1481fa687a11bfb29ef01560289e",
+      "generatedSqlSha256": "2e1fccafa01f02ce305b5dc3bafb5d20a11e6b5a25ad90a2456e85a5cd09f348"
+    }
+  ],
+  "preservedDatasets": 148
+}

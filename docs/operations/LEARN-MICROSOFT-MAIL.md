@@ -2,6 +2,18 @@
 
 ## Current status — TEST worker recovery-to-card verified; connector not enabled
 
+TEST **079** adds `learn_operator_microsoft_status` behind existing OpenFolk view
+authority. At **02:41 UTC on 12 October**, installation and HTTP denial checks
+preserved all 148 datasets. Full-schema positive SQL-role checks verified scoped
+counts, pagination, revocation and sanitization; all banned/passwordless actors and
+temporary grants rolled back. The frontend status reader and operator panel pass
+three new tests, full TypeScript and the frontend build but are **not deployed or
+signed-in verified**. Progress counts describe retained observations, not unique
+emails or current mailbox coverage. Raw tokens, message content and provider
+continuations remain private. Guidance identifies reconnect, provider delay,
+checkpoint review and capture-pause cases without offering unimplemented resets.
+[Operator diagnostics evidence](evidence/learn-microsoft-status-2026-10-12.json).
+
 Worker **v20** was deployed at **02:25 UTC on 12 October**. All 148 datasets and
 other endpoints were preserved; downloaded-source checks matched 110 runtime
 modules and 177 emitted imports. Twenty control-flow tests passed against both
@@ -555,8 +567,8 @@ they do not establish an Edge deployment or real network execution.
    complete revocation and read-only mail content
    permissions. Transport UUID validation is not authorization. Revalidate the
    company/module/account permission and capture switch at execution time.
-2. Integrate the implemented durable discovery and repeat scans with
-   operator progress and message-capture eligibility. Prove nested/hidden/search
+2. Deploy and verify the implemented operator progress panel against TEST 079,
+   then complete coverage reconciliation and message-capture eligibility. Prove nested/hidden/search
    behavior on an authorized real mailbox. Discovery and explicit exclusions must
    be visible to OpenFolk. The local traversal does not prove real mailbox coverage.
    Its traversal follows Microsoft's
@@ -573,8 +585,9 @@ they do not establish an Edge deployment or real network execution.
    version ordering, retained removals and original bodies already pass synthetic
    SQL/RPC acceptance; prove them on real inputs. Define attachment, inline content and unsupported-folder
    handling; `hasAttachments` alone cannot prove attachment capture.
-5. Integrate durable jobs, bounded historical ingestion, incremental schedules,
-   operator health/recovery and company switches. Stop future work on disable or
+5. Complete historical/incremental scheduling acceptance and safe operator
+   recovery actions. Read-only progress/diagnostics are installed in TEST 079;
+   fresh-work pause exclusion is verified on worker v20. Stop future work on disable or
    revocation. Keep customer-facing progress calm and truthful about missing/stale
    inputs, while providing diagnostic detail in OpenFolk.
 6. Extend verified isolated storage/retry/concurrency and hosted TEST access/recovery

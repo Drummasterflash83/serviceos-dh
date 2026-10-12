@@ -1,0 +1,149 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "schemaRelease": 79,
+  "initialRehearsal": {
+    "state": "rehearsal_unconfirmed_rollback_verified",
+    "preservedDatasets": 148,
+    "originalCatalogRestored": true,
+    "assertionsConfirmed": false
+  },
+  "initialRehearsalCorrection": "The synthetic error diagnostic test now targets the greatest job ID when transaction timestamps tie; the operator SQL was unchanged. A fresh v2 rehearsal passed.",
+  "fullSchemaRehearsal": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "full_schema_rehearsed_and_rolled_back",
+    "observedAt": "2026-10-12T02:37:26.670Z",
+    "migrations": [
+      {
+        "file": "supabase/migrations/20261101490000_learn_microsoft_operator_status.sql",
+        "sha256": "2a38f722651dfd569718963f82d539fbd01b8ba9cd5a111db55b880124c6d9ec"
+      }
+    ],
+    "probes": [
+      {
+        "file": "scripts/verify/learn-microsoft-hosted-probe.mjs",
+        "sourceSha256": "707407889973548cce657071e0c6d912699e2721144cc31fa578cc8b2a7e5fab",
+        "sqlSha256": "e541bddc887cfd5e4953a76ade381eadc95baabafde464dc49f381cf883960cc"
+      },
+      {
+        "file": "scripts/verify/learn-microsoft-projection-probe.mjs",
+        "sourceSha256": "6755255b7a44b202d83b6894fa83326af05e02ba7a97a0a9fb46de624bc47438",
+        "sqlSha256": "6bb78dacd6f8197fd3fc6bcdda33d6f381d11c3d3552b1ec08dfb729f6bd192a"
+      },
+      {
+        "file": "scripts/verify/learn-microsoft-card-probe.mjs",
+        "sourceSha256": "fd00888365387fe8c0e74a04a4c829305c77fa8a4dc7d649ba94daec06bf8816",
+        "sqlSha256": "8c3fffefef6bde64f0d3fda3050a8cd25546c87ded189dfb09c8fef29f9035a6"
+      },
+      {
+        "file": "scripts/verify/learn-microsoft-discovery-probe.mjs",
+        "sourceSha256": "5dde99410dcd9fcfe388dd7ccbcf224b47cffd13e54c0fb7a4c28422d86cbe8e",
+        "sqlSha256": "23179b8e8e974955997c05f58912cf07cf6de6bbdb6dfe352eca82841036ab37"
+      },
+      {
+        "file": "scripts/verify/learn-microsoft-worker-hosted-probe.mjs",
+        "sourceSha256": "094fcab86b82879004ff805939c3d1fb589229f989d07fd6d11a742ff597a8ee",
+        "sqlSha256": "cf601a9ef7d71516d20c3c73de498e146571a2d1b852cee126d70a854951024f"
+      },
+      {
+        "file": "scripts/verify/learn-microsoft-status.assert.sql",
+        "sourceSha256": "03c35b5ec52a07112463a875bf87171e0e0a1481fa687a11bfb29ef01560289e",
+        "sqlSha256": "03c35b5ec52a07112463a875bf87171e0e0a1481fa687a11bfb29ef01560289e"
+      }
+    ],
+    "sqlSha256": "f4450780728a1aa2509f3a795c729be9698128587231d694c66072b1a1eadf80",
+    "assertionsConfirmed": true,
+    "preservedDatasets": 148,
+    "originalCatalogRestored": true,
+    "fixturesAndNewStatusFunctionRemoved": true,
+    "retainedCredentials": 0,
+    "retainedOperatorGrants": 0,
+    "newSessions": 0,
+    "newPlatformGrants": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Complete hosted TEST schema and actual SQL roles; one banned/passwordless synthetic actor and temporary view grant exist only inside the rolled-back transaction. No real session or browser acceptance.",
+      "New status function and all fixtures roll back. Installed Microsoft schema and worker remain unchanged; mailbox coverage stays unverified."
+    ]
+  },
+  "installation": {
+    "state": "installed_microsoft_status_verified",
+    "observedAt": "2026-10-12T02:41:03.945Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "packageSha256": "7df317acc5bbe98084ae368e5d4296d349a7c98f56c7f8401fed0742a9bbebda",
+    "expected": {
+      "marker": "microsoft-status-installed/1",
+      "fingerprint": "e9243d82b156c9ab535d7abf601a9aae"
+    },
+    "afterFingerprint": "e9243d82b156c9ab535d7abf601a9aae",
+    "preservedDatasets": 148,
+    "usersRetained": 0,
+    "grantsRetained": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Real SQL roles and complete TEST schema; no actual signed-in browser or positive authenticated HTTP acceptance. Transaction-local banned/passwordless fixtures and operator grant rolled back."
+    ]
+  },
+  "httpBoundaries": {
+    "state": "http_denials_verified",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "role": "anon",
+        "name": "Microsoft operator status",
+        "status": 401,
+        "code": "42501",
+        "passed": true
+      },
+      {
+        "role": "service_role",
+        "name": "Microsoft operator status",
+        "status": 403,
+        "code": "42501",
+        "passed": true
+      }
+    ],
+    "observedAt": "2026-10-12T02:41:36.527Z",
+    "schemaFingerprint": "e9243d82b156c9ab535d7abf601a9aae",
+    "preservedDataSets": 148,
+    "newUsers": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "positiveSignedInAcceptance": false
+  },
+  "frontendValidation": {
+    "newStatusTestsPassed": 3,
+    "combinedMicrosoftAndVoicemailStatusTestsPassed": 7,
+    "fullProjectTypeScript": true,
+    "productionBuild": true,
+    "deployed": false,
+    "signedInAcceptance": false
+  },
+  "sources": [
+    {
+      "path": "src/lib/learn-microsoft-status.ts",
+      "sha256": "7d353814141b3d4e2886dc6665977ca14b8036d7feed8983b1cfe4c74a2267f0"
+    },
+    {
+      "path": "src/lib/learn-microsoft-status.test.ts",
+      "sha256": "5169b4592688b6daeaf61929b1633b46db89e371df0618737956ead0be27281c"
+    },
+    {
+      "path": "src/components/app/OperatorMicrosoftStatus.tsx",
+      "sha256": "1d17d50a72d8b8706da7f3cf2b33d7d3fc07416fb183dec56639852902b47e8a"
+    },
+    {
+      "path": "src/components/app/OperatorModules.tsx",
+      "sha256": "2e985716bba1033780dba9f3ae0964fde6e76599325d984727d463086629ce16"
+    },
+    {
+      "path": "supabase/migrations/20261101490000_learn_microsoft_operator_status.sql",
+      "sha256": "2a38f722651dfd569718963f82d539fbd01b8ba9cd5a111db55b880124c6d9ec"
+    }
+  ],
+  "limitations": [
+    "Operator access verified with real SQL roles and rolled-back banned/passwordless fixtures, not a real signed-in user.",
+    "Frontend is implemented and built locally, not yet deployed. No real Microsoft provider traffic, consent or mailbox-coverage acceptance."
+  ]
+}

@@ -59,8 +59,16 @@ snapshot freshness, projection/identity review, queued processing messages, draf
 advice and bounded card-evidence explanation. Compatible dependency-lock updates
 passed TypeScript/build; production-dependency audit is clear, with nine development
 tool findings retained for review.
-The backend now has release **078**, worker **v20**, voicemail importer **v2**, private playback **v1**,
-card refresh **v2**, and Workspace discovery **v3**. Release 078 installed the nine
+The backend now has release **079**, worker **v20**, voicemail importer **v2**, private playback **v1**,
+card refresh **v2**, and Workspace discovery **v3**. Release 079 installed a
+read-only Microsoft operator-status RPC at **02:41 UTC on 12 October**, preserving
+all 148 datasets. Existing OpenFolk view authority is required; anonymous and service
+HTTP calls are denied. Positive counts/pagination/redaction/authority checks used
+rolled-back synthetic SQL fixtures. The new status panel is built locally but is
+**not included in the current hosted frontend**. No new human access or capture was
+enabled. See [operator status evidence](operations/evidence/learn-microsoft-status-2026-10-12.json).
+
+Release 078 installed the nine
 Microsoft schema migrations at **02:17 UTC on 12 October**, after an exact rollback
 rehearsal, preserving all 140 existing datasets. It activated no mailbox, worker
 or schedule. A subsequent 16-request synthetic hosted RPC run verified actual

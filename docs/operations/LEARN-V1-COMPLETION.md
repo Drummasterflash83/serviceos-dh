@@ -7,6 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 03:41 BST — Microsoft operator diagnostics installed in TEST 079; panel built locally.**
+The new read-only RPC uses existing OpenFolk view authority to expose account
+configuration, saved/settled pages, retained publication/hold/exclusion counts,
+discovery passes, queue state and fixed recovery guidance. It returns no tokens,
+source bodies, provider URLs or arbitrary errors; coverage and attachment capture
+remain explicitly unverified/not captured. The first synthetic latest-error
+assertion needed a deterministic tie-break fixture; its rollback preserved all
+148 datasets. The corrected full-schema and exact-package rehearsals passed,
+including owner/revoked/unsigned denial, entitled reads, pagination and redaction.
+
+TEST installation and anonymous/service HTTP denials preserved all 148 datasets.
+No users, grants or fixtures remain from the transaction probes; worker v20 and
+production are unchanged. The OpenFolk panel is wired into LEARN controls and
+clears displayed data across actor/company changes. Three new status tests, seven
+combined status tests, full TypeScript and the frontend build passed. **The panel
+is not deployed or signed-in verified yet.** Consent, fresh Graph capture,
+coverage reconciliation and actionable checkpoint recovery remain unfinished.
+[Operator diagnostics evidence](evidence/learn-microsoft-status-2026-10-12.json).
+
 **12 October, 03:27 BST — deployed TEST worker completes Microsoft recovery-to-card journey.**
 Worker **v20** is ACTIVE on TEST 078. Deployment preserved all 148 datasets, the
 database schema and every other endpoint. Downloaded-source comparison matched
