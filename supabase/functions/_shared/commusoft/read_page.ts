@@ -7,6 +7,7 @@ export type CommusoftRegion = "uk" | "us";
 export type CommusoftFailure =
   | "invalid_request"
   | "authority_unavailable"
+  | "authority_transport_unavailable"
   | "request_window_expired"
   | "transport_unavailable"
   | "authentication_required"
@@ -26,6 +27,13 @@ export class CommusoftReadError extends Error {
     this.code = code;
     this.retryAt = retryAt;
   }
+}
+
+/** A failed authority read grants nothing. Preserve only a bounded transport
+ * classification so the queue can recheck authority on a later attempt. */
+export function checkAuthorityTransport(result: { status?: number; error?: unknown }): void {
+  if (result.error && [0, 502, 503, 504].includes(result.status ?? -1))
+    throw new CommusoftReadError("authority_transport_unavailable");
 }
 
 export interface CommusoftReadRequest {
@@ -243,8 +251,10 @@ export async function readCommusoftPage(
           controller.signal.addEventListener("abort", stop, { once: true });
         }),
       ]);
-    } catch {
+    } catch (error) {
       if (controller.signal.aborted) fail("transport_unavailable");
+      if (error instanceof CommusoftReadError && error.code === "authority_transport_unavailable")
+        throw error;
       fail("authority_unavailable");
     } finally {
       if (stop) controller.signal.removeEventListener("abort", stop);

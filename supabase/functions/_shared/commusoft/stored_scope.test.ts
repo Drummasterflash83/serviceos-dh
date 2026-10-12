@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readStoredCommusoftScope } from "./stored_scope.ts";
+import { CommusoftReadError } from "./read_page.ts";
 import { readApprovedCommusoftPage } from "./bound_page.ts";
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const now = Date.parse("2026-10-10T12:00:00Z");
@@ -145,6 +146,37 @@ test("scope comes from tenant-scoped durable rows, never queued payload", async 
   assert.equal(scope.pages, 0);
   for (const read of f.reads.filter((r) => r.table !== "tenants"))
     assert.ok(read.filters.some(([k, v]) => k === "tenant_id" && v === id(1)));
+});
+
+test("authority transport failures at every read boundary stop provider work and remain retryable", async () => {
+  for (const failAt of [1, 8, 15, 22, 29]) {
+    const f = fixture();
+    const from = f.ctx.supabaseAdmin.from;
+    let count = 0;
+    f.ctx.supabaseAdmin.from = (table) => {
+      const query = from(table), read = query.maybeSingle;
+      query.maybeSingle = async () => {
+        const result = await read();
+        return ++count === failAt
+          ? { data: null, error: { message: "private database response" }, status: 503 }
+          : result;
+      };
+      return query;
+    };
+    await assert.rejects(f.run(), (error: any) => {
+      assert.equal(error.message.includes("private"), false);
+      return error.code === "authority_transport_unavailable";
+    });
+    assert.equal(f.counts().fetches, failAt <= 15 ? 0 : 1);
+    assert.equal(count, failAt);
+  }
+});
+
+test("failed credential acquisition transport never sends a provider request", async () => {
+  const f = fixture();
+  f.ports.acquire = async () => { throw new CommusoftReadError("authority_transport_unavailable"); };
+  await assert.rejects(f.run(), (error: any) => error.code === "authority_transport_unavailable");
+  assert.equal(f.counts().fetches, 0);
 });
 
 function contactFixture() {

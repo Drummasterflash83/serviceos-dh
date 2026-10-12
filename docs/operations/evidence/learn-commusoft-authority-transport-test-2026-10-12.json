@@ -1,0 +1,103 @@
+{
+  "version": "commusoft-authority-transport/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceBundleSha256": "09aa4349380bfbea7fbd38b484ede717b308433f36f3063eeea42ee57edb1d0e",
+  "observedAt": "2026-10-12T11:56:38.482Z",
+  "state": "deployed_readback_and_real_continuation_verified",
+  "attempts": [
+    {
+      "name": "learn-commusoft-worker",
+      "cliExitStatus": 0
+    }
+  ],
+  "writeAttempted": true,
+  "priorSchemaAndEndpointsPreserved": true,
+  "preservedDataSets": 52,
+  "endpoints": [
+    {
+      "id": "c37a06f6-3939-4e68-bdbf-2bd78f6869c2",
+      "slug": "learn-commusoft-worker",
+      "name": "learn-commusoft-worker",
+      "status": "ACTIVE",
+      "version": 7,
+      "created_at": 1791625693801,
+      "updated_at": 1791806196363,
+      "verify_jwt": true,
+      "import_map": false,
+      "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_c37a06f6-3939-4e68-bdbf-2bd78f6869c2_7/source/supabase/functions/learn-commusoft-worker/index.ts",
+      "ezbr_sha256": "c07750cef88ffb84ee5107592c42fe920eb011daef1f8a5286c7fe22b7803961"
+    }
+  ],
+  "dependencyFiles": 8,
+  "fullPreservation": true,
+  "fullPreservedDatasets": 194,
+  "downloadedVerification": {
+    "version": "commusoft-authority-transport-readback/1",
+    "observedAt": "2026-10-12T11:57:10.804Z",
+    "state": "passed",
+    "endpoints": [
+      {
+        "name": "learn-commusoft-worker",
+        "executableStructureMatches": true,
+        "files": [
+          {
+            "path": "_shared/commusoft/bound_page.ts",
+            "sha256": "254ac5f71e7c858621b89d77daa794b170ee8424fa81178146c87b141d7348df"
+          },
+          {
+            "path": "_shared/commusoft/page_store.ts",
+            "sha256": "e37df6cbbb8c9b0d2d0e8ed0b5f5d66d740f95e0ed654ee87fd520664e0a1365"
+          },
+          {
+            "path": "_shared/commusoft/permit_server.ts",
+            "sha256": "18ae302e42cb4b4142d7d011c91d7fa8d5591cb2a56314ef7da4d9128a513807"
+          },
+          {
+            "path": "_shared/commusoft/read_page.ts",
+            "sha256": "64e0c4fe81b61726068ed34062f23d277e7dd735825710c88696a2d90cb294de"
+          },
+          {
+            "path": "_shared/commusoft/stored_scope.ts",
+            "sha256": "49e18a7be376c7629f32e7561be65861fcdc08105a27579b34f35824c00edd31"
+          },
+          {
+            "path": "_shared/commusoft/worker.ts",
+            "sha256": "47aa4dd3a84a01e8cbbd7aa7065f623e46a4e2ef2c6bacaa315b619dd02b10c0"
+          },
+          {
+            "path": "_shared/slack/slack_worker_http.ts",
+            "sha256": "8745cbef9c980a1cb52c7f84c0d1ef0032c09a708498152f8cea89ad68b4e6c8"
+          },
+          {
+            "path": "learn-commusoft-worker/index.ts",
+            "sha256": "399e7bec653f653124522966a45528e1b9b83655bd7a7cd20381c53459b45007"
+          }
+        ],
+        "testsPassed": 53,
+        "repositoryTestSupport": []
+      }
+    ],
+    "limits": [
+      "Downloaded code with synthetic ports; not a signed-in hosted operator or real provider request from Edge."
+    ]
+  },
+  "localTestsPassed": 78,
+  "strictTypecheck": "passed",
+  "productionChanges": false,
+  "trigger": {
+    "jobState": "dead_letter",
+    "code": "commusoft_authority_unavailable",
+    "providerPermits": 0,
+    "retainedPages": 0,
+    "checkpointPages": 619,
+    "rootCause": "The old generic error cannot identify which authority read failed. Transport classification is now preserved for status 0/502/503/504 only; no claim that the historical cause is proven."
+  },
+  "realContinuation": {
+    "observedAt": "2026-10-12T12:00:27.804896+00:00",
+    "fromPage": 619,
+    "currentPage": 641,
+    "contacts": 1208,
+    "preservationMatchingReviewedBaseline": true,
+    "limitations": "Real successful reads after deployment; a naturally occurring transport-failure retry has not yet been observed."
+  }
+}

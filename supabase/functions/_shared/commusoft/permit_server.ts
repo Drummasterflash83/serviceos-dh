@@ -1,11 +1,12 @@
 import type { CommusoftPagePermitPorts } from "./bound_page.ts";
 import type { CommusoftWorkerScope } from "./stored_scope.ts";
+import { checkAuthorityTransport, CommusoftReadError } from "./read_page.ts";
 
 interface RpcClient {
   rpc: (
     name: string,
     args: Record<string, unknown>,
-  ) => PromiseLike<{ data: unknown; error: unknown }>;
+  ) => PromiseLike<{ data: unknown; error: unknown; status?: number }>;
 }
 const uuid = (value: unknown): value is string =>
   typeof value === "string" && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value);
@@ -53,10 +54,12 @@ export function createCommusoftPermitPorts(
       )
         return null;
       try {
-        const { data, error } = await db.rpc("learn_commusoft_acquire_page", {
+        const result = await db.rpc("learn_commusoft_acquire_page", {
           ...claimArgs(),
           p_expected: structuredClone(scope),
         });
+        checkAuthorityTransport(result);
+        const { data, error } = result;
         if (error || !object(data)) return null;
         if (
           data.state === "wait" &&
@@ -84,7 +87,9 @@ export function createCommusoftPermitPorts(
           };
         }
         return null;
-      } catch {
+      } catch (error) {
+        if (error instanceof CommusoftReadError && error.code === "authority_transport_unavailable")
+          throw error;
         return null;
       }
     },

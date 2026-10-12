@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   SCOPE,
   preservationQuery,
+  readSupervisorMetadata,
   assertDispatch,
   acceptWorkerReply,
   unclaimedInvocationSettled,
@@ -158,4 +159,35 @@ test("auth reconciliation excludes only the reviewed operator timestamp", () => 
   );
   assert(sql.includes("from auth.identities s where true"));
   assert(!sql.includes("-'last_sign_in_at'"));
+});
+
+test("transient metadata retries stay read-only and bounded; denied/malformed reads stop", async () => {
+  let attempts = 0;
+  const waits = [];
+  const query = async (token, sql, options) => {
+    assert.equal(token, "test");
+    assert.equal(sql, "select 1");
+    assert.deepEqual(options, { readOnly: true });
+    if (++attempts < 3) throw Error("TEST communication metadata/operation failed HTTP 503");
+    return [{ n: 1 }];
+  };
+  assert.deepEqual(
+    await readSupervisorMetadata("test", "select 1", { query, wait: async (ms) => waits.push(ms) }),
+    [{ n: 1 }],
+  );
+  assert.equal(attempts, 3);
+  assert.deepEqual(waits, [1000, 4000]);
+  for (const status of [400, 401, 403, 429, 500, 503]) {
+    let calls = 0;
+    await assert.rejects(
+      readSupervisorMetadata("test", "select 1", {
+        query: async () => {
+          calls++;
+          throw Error(`TEST communication metadata/operation failed HTTP ${status}`);
+        },
+        wait: async () => {},
+      }),
+    );
+    assert.equal(calls, status === 503 ? 3 : 1);
+  }
 });

@@ -1,8 +1,8 @@
 {
   "scope": "TEST only",
   "run": "eb260c9d-e1ee-48cf-8cc4-179375b50613",
-  "observedAt": "2026-10-12T11:22:55.598971+00:00",
-  "pages": 551,
+  "observedAt": "2026-10-12T12:00:27.804896+00:00",
+  "pages": 641,
   "parentsPlanned": 1547,
   "complete": false,
   "sources": [
@@ -15,22 +15,21 @@
       "collection": "properties"
     },
     {
-      "records": 1090,
+      "records": 1208,
       "collection": "propertyContacts"
     }
   ],
   "jobs": [
     {
       "error": null,
-      "status": "running",
-      "attempt": 1,
-      "availableAt": "2026-10-12T11:22:53.953574+00:00",
-      "leaseExpiresAt": "2026-10-12T11:25:54.460199+00:00"
+      "status": "queued",
+      "attempt": 0,
+      "availableAt": "2026-10-12T12:00:27.32319+00:00",
+      "leaseExpiresAt": null
     }
   ],
-  "requests": 166,
+  "requests": 256,
   "maxProviderRequests": 4000,
-  "existingOperatorApproval": true,
   "newAccounts": 0,
   "newGrants": 0,
   "productionChanged": false,
@@ -38,22 +37,23 @@
     "protectedDatasets": 194,
     "matchingReviewedBaseline": true,
     "changedDatasets": [],
-    "authReconciliation": "Original aggregate checksum has no field-level baseline. Current auth timestamp coincides with existing-session refresh; original profile/grant and all 193 other datasets match. This reviewed new auth baseline excludes only the existing operator updated_at timestamp; no database state changed."
+    "authReconciliation": "Retains original aggregate checksum; reviewed baseline excludes only existing operator updated_at. Historical field-level evidence was unavailable.",
+    "canonicalReconciliation": true
   },
   "runtime": {
-    "version": 6,
-    "sourceBundleSha256": "280e5f5d385f5f6b6885db0f1761da47df11fa680fc9262364f716d0b0f2efc2",
-    "deployedBundleSha256": "1377144760549d582c9290ed7500b61cffb06cc0683b075ef3ce6ca1d17f7a8e",
+    "version": 7,
+    "sourceBundleSha256": "09aa4349380bfbea7fbd38b484ede717b308433f36f3063eeea42ee57edb1d0e",
+    "deployedBundleSha256": "c07750cef88ffb84ee5107592c42fe920eb011daef1f8a5286c7fe22b7803961",
     "allDatasetsPreservedAtDeployment": true,
     "downloadedExecutableMatch": true,
-    "downloadedTests": 50,
-    "localCommusoftTests": 68,
-    "supervisorTests": 6,
+    "downloadedTests": 53,
+    "localTests": 78,
     "strictTypecheck": "passed"
   },
   "limits": [
     "Customer contacts and site contacts are not complete.",
-    "No real canonical publication or production release.",
-    "The prior generic authority error did not prove an expired request window; the new classification is specific."
+    "One real customer/site/job/contact card chain verified separately; whole-account publication and enriched card acceptance remain open.",
+    "Generic historical authority failures do not identify their precise cause.",
+    "Production release remains separate."
   ]
 }

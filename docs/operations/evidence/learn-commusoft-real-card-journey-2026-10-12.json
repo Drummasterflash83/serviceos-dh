@@ -1,0 +1,97 @@
+{
+  "observedAt": "2026-10-12T11:50:26.32729+00:00",
+  "scope": "TEST only",
+  "state": "real_chain_verified",
+  "originalsPreserved": true,
+  "unexpectedTables": [],
+  "protectedDatasets": 194,
+  "newRecords": [
+    {
+      "name": "public.companies",
+      "count": 1
+    },
+    {
+      "name": "public.people",
+      "count": 1
+    },
+    {
+      "name": "public.customer_cards",
+      "count": 1
+    },
+    {
+      "name": "public.sites",
+      "count": 1
+    },
+    {
+      "name": "public.jobs",
+      "count": 1
+    },
+    {
+      "name": "public.contact_points",
+      "count": 2
+    },
+    {
+      "name": "public.graph_nodes",
+      "count": 2
+    },
+    {
+      "name": "public.graph_edges",
+      "count": 1
+    },
+    {
+      "name": "public.graph_events",
+      "count": 1
+    },
+    {
+      "name": "public.learn_business_input_links",
+      "count": 4
+    },
+    {
+      "name": "public.learn_business_input_projection_attempts",
+      "count": 3
+    },
+    {
+      "name": "public.learn_business_input_projection_batches",
+      "count": 3
+    }
+  ],
+  "sourceLinks": [
+    {
+      "kind": "job",
+      "external": "428"
+    },
+    {
+      "kind": "customer",
+      "external": "1"
+    },
+    {
+      "kind": "site",
+      "external": "114"
+    },
+    {
+      "kind": "contact",
+      "external": "120"
+    }
+  ],
+  "sameCard": true,
+  "cards": 1,
+  "siteJobRelationship": true,
+  "contactRelationship": true,
+  "newAccounts": 0,
+  "newGrants": 0,
+  "providerCalls": 0,
+  "productionChanges": false,
+  "browser": {
+    "signedInOperator": true,
+    "customerReviewSaved": true,
+    "siteJobContactReceipts": "one linked each; zero held",
+    "publishedCardRead": true,
+    "observedAt": "2026-10-12T11:57:22Z",
+    "timezoneLimitationVisible": true
+  },
+  "limitations": [
+    "One real TEST customer/site/job/contact chain; not whole-account reconciliation.",
+    "Published card identity is visible, but summary, owner, next action and communication enrichment are not populated by this business-source review.",
+    "No production release or real communication-to-card acceptance."
+  ]
+}

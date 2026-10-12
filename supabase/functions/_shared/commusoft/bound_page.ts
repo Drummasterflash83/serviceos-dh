@@ -47,7 +47,9 @@ export async function readApprovedCommusoftPage(
   let permit;
   try {
     permit = await ports.acquire(structuredClone(scope), { ...ctx.claim! });
-  } catch {
+  } catch (error) {
+    if (error instanceof CommusoftReadError && error.code === "authority_transport_unavailable")
+      throw error;
     throw new CommusoftReadError("authority_unavailable");
   }
   if (!permit) throw new CommusoftReadError("authority_unavailable");

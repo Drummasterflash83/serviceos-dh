@@ -6,10 +6,11 @@ const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")
 const now = Date.parse("2026-10-10T12:00:00Z");
 function fixture() {
   const calls: { name: string; args: Record<string, unknown> }[] = [];
-  const state: { data: unknown; error: unknown; throws: boolean } = {
+  const state: { data: unknown; error: unknown; throws: boolean; status: number } = {
     data: { state: "ready", apiKey: "synthetic-key", permitId: id(8), sendBefore: now + 5000 },
     error: null,
     throws: false,
+    status: 200,
   };
   const controller = new AbortController();
   const ctx = {
@@ -25,7 +26,7 @@ function fixture() {
       async rpc(name: string, args: Record<string, unknown>) {
         calls.push({ name, args });
         if (state.throws) throw Error("synthetic secret error");
-        return { data: state.data, error: state.error };
+        return { data: state.data, error: state.error, status: state.status };
       },
     },
   };
@@ -105,6 +106,18 @@ test("expired well-formed permits reach the bound handler for retry classificati
   assert.equal(result?.state, "ready");
   assert.equal(result && "sendBefore" in result && result.sendBefore, now);
   assert.equal(f.calls.length, 1);
+});
+test("acquisition gateway failures remain distinct from denied or malformed authority", async () => {
+  for (const status of [0, 400, 401, 403, 404, 409, 500, 502, 503, 504]) {
+    const f = fixture();
+    f.state.status = status;
+    f.state.error = { message: "private credential response" };
+    if ([0, 502, 503, 504].includes(status))
+      await assert.rejects(f.ports.acquire(f.scope, f.ctx.claim), (error: any) =>
+        error.code === "authority_transport_unavailable" && !error.message.includes("private"));
+    else assert.equal(await f.ports.acquire(f.scope, f.ctx.claim), null);
+    assert.equal(f.calls.length, 1);
+  }
 });
 test("defer is exact-permit scoped and can extend a gate after caller cancellation", async () => {
   const f = fixture();

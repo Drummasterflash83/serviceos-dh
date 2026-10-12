@@ -1,5 +1,20 @@
 # LEARN phone account binding — TEST acceptance, 10 October 2026
 
+
+## Current production observation — 12 October, 11:26 UTC
+
+Existing capture is active: 4,360 calls, 2,912 recordings and 2,906 completed
+transcripts are retained; six transcripts are failed. Latest stored call: 11:20
+UTC. The last 200 sync records report successful calls/recordings through 11:25
+UTC and processing through 11:05 UTC. Every retained recording has a storage
+pointer and passes account/URL binding; metadata matched across both audit reads.
+
+Production has both Simwood secret names; TEST still has neither. This audit
+made no provider requests or writes. It proves fresh retained production evidence,
+not provider-wide coverage, playable bytes for every recording, or the new V1
+provider-to-card journey. The older counts and password-manager observations below
+are historical. [Current evidence](evidence/learn-phone-retained-readiness-2026-10-12.json).
+
 Call and recording sync, connection tests and recording downloads previously
 accepted an arbitrary requested provider customer or fell back to the first
 customer visible through the shared Simwood credentials. A signed-in company
@@ -940,3 +955,17 @@ in durable TEST state. All 117 non-fixture datasets remained unchanged. This doe
 not verify Birchills credentials, voicemail coverage, real processing, signed-in
 review or operator resolution of held legacy records. Those gates remain open.
 [Evidence](evidence/learn-interaction-projection-test-2026-10-11.json).
+
+
+## Existing credential verified — 12 October, 11:51 UTC
+
+The authorised 1Password CLI read found the existing Birchills login. One bounded
+GET of the official account identity endpoint returned HTTP 200 and the same
+account 3950 as Drummonds' active production registry. No secret values or raw
+account contents were logged. No provider write, source import, audio read,
+credential change or production change occurred. This supersedes the earlier
+credential-location uncertainty; it does not prove source coverage or real V1
+processing. TEST still has no phone credentials. The additional hosted secret
+destination is [prepared for decision](LEARN-PHONE-TEST-CREDENTIAL.md).
+
+[Sanitised account evidence](evidence/learn-phone-account-verification-2026-10-12.json).

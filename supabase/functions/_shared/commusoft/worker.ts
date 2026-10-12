@@ -32,6 +32,7 @@ export function createCommusoftPageHandler(ports: CommusoftPageWorkerPorts) {
               "transport_unavailable",
               "provider_unavailable",
               "request_window_expired",
+              "authority_transport_unavailable",
             ].includes(error.code),
             retryAfterSeconds:
               error.retryAt === null

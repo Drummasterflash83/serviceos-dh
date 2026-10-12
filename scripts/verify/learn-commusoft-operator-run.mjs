@@ -143,12 +143,36 @@ export function preservationQuery(p) {
     })
     .join(" union all ");
 }
+/** Metadata reads may retry transient gateway failures; worker POSTs never use this. */
+export async function readSupervisorMetadata(
+  token,
+  sql,
+  {
+    query = communicationQuery,
+    wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  } = {},
+) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await query(token, sql, { readOnly: true });
+    } catch (error) {
+      if (
+        attempt >= 2 ||
+        !/^TEST communication metadata\/operation failed HTTP (502|503|504)$/.test(
+          error?.message ?? "",
+        )
+      )
+        throw error;
+      await wait([1000, 4000][attempt]);
+    }
+  }
+}
 export async function run(mode) {
   check(process.env.LEARN_TEST_ALLOW_PROJECT_REF === TEST_PROJECT, "Explicit TEST target required");
   const lock = openSync(stem + ".lock", "wx", 0o600);
   try {
     const token = savedCliToken(),
-      sql = (s) => communicationQuery(token, s);
+      sql = (s) => readSupervisorMetadata(token, s);
     const save = (p, exclusive = false) =>
       writeFileSync(file, JSON.stringify(p, null, 2) + "\n", {
         mode: 0o600,
@@ -239,7 +263,7 @@ export async function run(mode) {
         matches.length === 1 &&
           matches[0].id === "c37a06f6-3939-4e68-bdbf-2bd78f6869c2" &&
           matches[0].ezbr_sha256 ===
-            "1377144760549d582c9290ed7500b61cffb06cc0683b075ef3ce6ca1d17f7a8e" &&
+            "c07750cef88ffb84ee5107592c42fe920eb011daef1f8a5286c7fe22b7803961" &&
           matches[0].status === "ACTIVE" &&
           matches[0].verify_jwt === true,
         "Worker runtime changed",

@@ -7,6 +7,64 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 12:00 UTC — continued real import observed.**
+Worker v7 has advanced beyond the prior stop to 641 of 1,547 customer properties,
+with 1,208 contacts retained alongside 2,418 properties and 12,611 jobs. The
+supervised process is active and the latest exact job is queued; this is progress,
+not completed coverage. All 194 datasets match the reviewed preservation baseline,
+including the verified new card chain. [Latest observation](evidence/learn-commusoft-operator-continuation-2026-10-12.json).
+
+**12 October, 11:57 UTC — real Commusoft source-to-card chain verified in TEST.**
+Chris's existing signed-in OpenFolk operator reviewed one retained customer, site,
+completed job and contact. All four link to the same new customer card; the job
+references the reviewed site, and the contact has the matching customer relation.
+Every original row in the 12 affected tables was unchanged; the other protected
+collections also matched across the 194-dataset inventory. New rows belong only
+to Drummonds TEST. The operator then loaded and expanded the published card.
+The UI correctly disclosed unzoned completion/closure timestamps and excluded
+those times from duration/performance calculations. This proves one real business
+source chain, not all records or a finished enriched card: summary, owner, next
+action and communication enrichment remain unpopulated in this reviewed card.
+[Real journey evidence](evidence/learn-commusoft-real-card-journey-2026-10-12.json).
+
+**12 October, 11:57 UTC — TEST contact recovery improved after a safe stop.**
+The supervised import reached 619 of 1,547 customer properties and 1,178 retained
+contacts, then stopped with `commusoft_authority_unavailable`. The exact failed job
+had zero permits and zero pages; no checkpoint was reset. The historical generic
+code cannot prove which check failed. Worker v7 now distinguishes identifiable
+authority transport failures (status 0/502/503/504) from permission denials or
+invalid scope. Transport failure still stops the current request/publication;
+the existing bounded queue policy may recheck all authority on another attempt.
+The supervisor also retries only read-only metadata gateway failures, never an
+uncertain worker POST. Seventy-eight local checks, strict TypeScript and 53 tests
+against eight downloaded executable files pass. Deployment preserved all 194
+datasets, schema and other endpoints. The same operator continuation has been
+recorded from page 619; full contacts and site-contact traversal remain open.
+[Release evidence](evidence/learn-commusoft-authority-transport-test-2026-10-12.json).
+
+**12 October, 11:51 UTC — existing Birchills credential verified.**
+The saved 1Password login made one successful read-only API identity request.
+The returned account matches Drummonds' active registered production account.
+No credential was displayed, reset or copied to TEST; no call/audio data was read
+by this check. Copying the existing credential to TEST's two server secrets is
+prepared and awaiting Chris's destination decision. Real V1 capture, playback,
+processing and coverage acceptance still need completion.
+[Account evidence](evidence/learn-phone-account-verification-2026-10-12.json).
+
+
+**12 October, 11:26 UTC — existing production phone capture is active today.**
+Read-only inventory found 4,360 retained calls (latest stored 11:20 UTC), 2,912
+recordings with valid registered-account URLs and storage pointers, and 2,906
+completed / six failed transcripts. The latest 200 sync records report successful
+call/recording capture through 11:25 UTC and successful download/transcription/
+analysis pipeline activity through 11:05 UTC. This is fresh evidence for the
+existing live input, not acceptance of the replacement LEARN V1 pipeline. All
+retained recording/registry metadata matched across two reads. TEST still lacks
+both Simwood secrets; credential reuse and real V1 provider-to-card/playback
+acceptance remain open. No provider request or production write was made by this
+audit. [Evidence](evidence/learn-phone-retained-readiness-2026-10-12.json).
+
+
 **12 October, 11:21 UTC — request-window fix deployed; contacts resumed.**
 The TEST worker now distinguishes an expired five-second send window from an
 actual authority denial. Only the expired window uses the existing bounded retry
@@ -2122,9 +2180,9 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   verify bounded real historical/incremental capture through the installed V1
   engine into interactions/cards, and verify pause, credential expiry, resume,
   duplicate suppression and schedule/expired-lease recovery. Exercise matching UI.
-  Existing Workspace key availability in TEST is a current dependency; the live
-  four-account `invalid_grant` issue requires a bounded diagnostic with a safe
-  cause category, not a guessed Google-admin change.
+  The existing Workspace credential is now provisioned in TEST. Heidi’s live
+  mailbox recovery is verified separately; TEST mailbox activation, remaining
+  mailbox reconciliation and real V1 capture-to-card acceptance are still open.
 - [ ] **Commusoft:** jobs traversal now reaches 127 pages / 12,611 unique jobs;
   finish customer/site contacts, reconcile
   missing customer/property references and unzoned timestamps; publish valid
@@ -2227,24 +2285,13 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
 
 ## Missing or externally blocked — no silent exclusions
 
-- [ ] **Commusoft continuation access:** original bounded real TEST grant is
-  retired. The prepared continuation needs its own approval; earlier approvals
-  must not be reused. Provider data-shape questions remain an explicit diagnostic
-  task, not permission to assume timestamps or missing relationships.
-  At 12:07 UTC on 11 October, the same prepared run passed fresh read-only schema,
-  Auth, runtime, credential-binding, paused-capture and retained-checkpoint checks.
-  All 78 original source fingerprints matched after isolating the two documented
-  synthetic Phone fixtures; a preserved one-time baseline refresh now protects
-  those additions too. Exact release-055 transcript additions are accepted by the
-  Auth checker without removing the old guards. Twenty focused tests pass.
-  No user, grant or provider request was created; the original approval remains
-  pending. [Readiness evidence](evidence/learn-commusoft-continuation-refresh-2026-10-11.json).
-  A second exact reconciliation at 12:38 UTC proved the original 78 hashes after
-  the approved playback fixtures and release 058; previous journals and both
-  original baselines remain retained. Twenty-one checks pass. Full read-only
-  preflight now passes on 058 with no active grant or provider request, preserving
-  the original account, 100-page checkpoint, duration and budget.
-  [Latest readiness](evidence/learn-commusoft-continuation-playback-refresh-2026-10-11.json).
+- [x] **Commusoft continuation access resolved:** Chris’s approved ongoing TEST
+  operator login now supplies the continuation authority. The temporary run was
+  retired, and the current bounded run retains its original cursor and request
+  ceiling without a new login or grant. Customer/site contact completion,
+  reconciliation, incremental updates and real card publication remain open;
+  see the latest entries above. Earlier temporary-grant readiness entries are
+  historical evidence, not a current approval request.
 - [ ] **Voicemail:** the signed Birchills-email/audio route has real read-only
   evidence, and the importer/queue now has local plus hosted synthetic acceptance.
   Still required: verified historical mailbox access, authorised real source capture,

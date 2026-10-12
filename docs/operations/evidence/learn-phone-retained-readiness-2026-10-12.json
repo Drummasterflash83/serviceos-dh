@@ -1,0 +1,102 @@
+{
+  "state": "retained_phone_metadata_audited",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "observedAt": "2026-10-12T11:26:22.25085+00:00",
+  "completedAt": "2026-10-12T11:26:22.820264+00:00",
+  "uniqueActiveRegisteredAccount": true,
+  "registeredAccounts": 1,
+  "recordingUrlCompatibility": {
+    "recordings": 2912,
+    "withStoragePointer": 2912,
+    "acceptedStoredUri": 2912,
+    "acceptedMissingUriFallback": 0,
+    "accountUnverified": 0,
+    "rejectedUri": 0
+  },
+  "metadataStableAcrossReads": true,
+  "metadataSha256": "4a0d564af96a0c78da9f5397b3043f97a39daacecec91c9569e9122b7081e5ee",
+  "calls": {
+    "count": 4360,
+    "latestStored": "2026-10-12T11:20:02.459424+00:00",
+    "latestStarted": "2026-10-12T11:15:58+00:00"
+  },
+  "transcripts": [
+    {
+      "status": "completed",
+      "records": 2906
+    },
+    {
+      "status": "failed",
+      "records": 6
+    }
+  ],
+  "recentRuns": [
+    {
+      "runs": 24,
+      "status": "success",
+      "sync_type": "ai_analysis",
+      "latest_started": "2026-10-12T11:05:16.45006+00:00",
+      "latest_completed": "2026-10-12T11:05:19.626+00:00"
+    },
+    {
+      "runs": 35,
+      "status": "success",
+      "sync_type": "calls",
+      "latest_started": "2026-10-12T11:25:01.092084+00:00",
+      "latest_completed": "2026-10-12T11:25:01.331+00:00"
+    },
+    {
+      "runs": 24,
+      "status": "success",
+      "sync_type": "pipeline",
+      "latest_started": "2026-10-12T11:05:05.148163+00:00",
+      "latest_completed": "2026-10-12T11:05:19.828+00:00"
+    },
+    {
+      "runs": 24,
+      "status": "success",
+      "sync_type": "recording_download",
+      "latest_started": "2026-10-12T11:05:05.405509+00:00",
+      "latest_completed": "2026-10-12T11:05:05.961+00:00"
+    },
+    {
+      "runs": 35,
+      "status": "success",
+      "sync_type": "recordings",
+      "latest_started": "2026-10-12T11:25:01.732027+00:00",
+      "latest_completed": "2026-10-12T11:25:06.3+00:00"
+    },
+    {
+      "runs": 34,
+      "status": "success",
+      "sync_type": "scheduled_sync",
+      "latest_started": "2026-10-12T11:25:00.854921+00:00",
+      "latest_completed": "2026-10-12T11:25:06.442+00:00"
+    },
+    {
+      "runs": 24,
+      "status": "success",
+      "sync_type": "transcription",
+      "latest_started": "2026-10-12T11:05:06.227617+00:00",
+      "latest_completed": "2026-10-12T11:05:16.061+00:00"
+    }
+  ],
+  "credentialNames": {
+    "production": {
+      "SIMWOOD_USERNAME": true,
+      "SIMWOOD_PASSWORD": true
+    },
+    "test": {
+      "SIMWOOD_USERNAME": false,
+      "SIMWOOD_PASSWORD": false
+    }
+  },
+  "providerRequests": 0,
+  "recordingsDownloaded": 0,
+  "productionWrites": 0,
+  "limitations": [
+    "Full retained recording URI/registered-account compatibility only; storage pointers are not a byte, playback or provider-availability check.",
+    "Secret names confirm configuration presence, not valid credentials or access to their values.",
+    "Latest 200 sync runs are a bounded sample, not proof of provider history or voicemail coverage."
+  ]
+}

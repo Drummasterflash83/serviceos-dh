@@ -1,4 +1,5 @@
 import type { CommusoftReadRequest } from "./read_page.ts";
+import { checkAuthorityTransport, CommusoftReadError } from "./read_page.ts";
 
 // Structural port keeps the source adapter independent of the full worker registry.
 export interface CommusoftWorkerScope {
@@ -66,6 +67,7 @@ export async function readStoredCommusoftScope(
       let query = db.from(table).select(columns);
       for (const [field, value] of filters) query = query.eq(field, value);
       const result = await query.maybeSingle();
+      checkAuthorityTransport(result);
       if (result.error || !obj(result.data)) throw Error("scope_unavailable");
       return result.data;
     };
@@ -297,7 +299,9 @@ export async function readStoredCommusoftScope(
       scopeKey,
       ...(contactTarget ? { contactTarget } : {}),
     };
-  } catch {
+  } catch (error) {
+    if (error instanceof CommusoftReadError && error.code === "authority_transport_unavailable")
+      throw error;
     return null;
   }
 }
