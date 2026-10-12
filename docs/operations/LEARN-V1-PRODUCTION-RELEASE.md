@@ -246,6 +246,46 @@ records source/probe checksums and limitations. These are synthetic SQL results
 on a production archive, not hosted provider, browser or pay acceptance. Remaining
 card-input/operator/connector/queue packages and complete-release checks are open.
 
+### Slack intake and recovery group rehearsed offline
+
+The sixth package, [006_slack_intake.sql](../../supabase/release/learn-production/006_slack_intake.sql),
+uses ten pinned sources for channel storage, durable workers, thread storage,
+operator reads, workspace pacing, history/thread recovery and recurring capture.
+SHA-256: `ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91`.
+It adds nine tables and 32 functions. The generic job claimant excludes Slack jobs
+so the dedicated paced claimant owns them; its existing authority is unchanged.
+
+Production already has shared connector tables. The candidate retains their
+columns, policies and grants instead of replaying TEST's replacements. It adds
+same-tenant references and source/audit retention guards. Existing shared metadata
+can no longer be deleted/truncated; provider event records cannot be overwritten.
+All other original functions, views and table definitions remain unchanged.
+
+All six packages install together on the pinned archive. Wrong-target, catalog
+drift, late rollback and duplicate rejection passed. Every original archived row
+and sequence matches; nine new Slack tables remain empty in the preservation DB.
+A separate offline clone verifies owner-approved channel import, worker ownership,
+exact page retry, source/version/interaction creation, isolation, ongoing approval
+and paused recurring admission. A second journey verifies bounded thread capture,
+incomplete coverage, retained-cursor continuation, original-approval preservation,
+reply deduplication, stale-review rejection and completed-window denial. Fixture
+pacing clocks advance only for the synthetic workspace; no provider calls occur.
+
+Baseline: `scripts/backup/inspect_production_slack.py`; generator:
+`node scripts/verify/learn-production-slack-candidate.mjs`; rehearsal:
+`python3 scripts/backup/rehearse_production_slack.py`. Completed exclusive journals
+v1 and v2 are retained privately; v2 adds thread recovery. No product migration
+change was needed between these rehearsals. The disposable container was removed.
+[Slack evidence](evidence/learn-production-slack-rehearsal-2026-10-12.json) includes
+source/probe hashes and exact limits.
+
+**Not complete Slack acceptance:** real workspace authorization, credentials,
+provider paging/rate limits, card delivery, signed-in controls and unattended
+operation remain unverified. The capture predicate gates recurring admission in
+this package, but manual approvals and worker paths still need the later operator
+capture-control reconciliation. Do not deploy or present this as a complete
+module-disable implementation. No hosted schema or schedule changed.
+
 ### Outstanding release gates
 
 - Resolve existing TEST access approvals and verify signed-in customer and

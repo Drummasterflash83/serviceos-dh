@@ -7,6 +7,24 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — Slack intake and thread recovery pass the production-archive rehearsal.**
+The first six production-specific packages install together. Slack adds protected
+source/version/import records, durable claims, thread imports, recovery and
+recurring state while preserving existing Phone/Email connector permissions.
+Synthetic journeys pass owner approval through stored messages/interactions,
+exact retries, foreign-company denial, retained audit/source protection and
+recurring pause. An incomplete thread resumes from its retained cursor without
+duplicate replies; stale recovery and completed-window continuation are rejected.
+
+All 1,591,576 archived rows and five original sequence states match after install.
+Shared table policies/grants remain unchanged; tenant-reference and retention
+guards are additive. No hosted environment changed. Real Slack authorization,
+provider/credential acceptance, source-to-card delivery and unattended capture
+remain open. This package gates recurring admission only: manual/worker capture
+controls still require reconciliation before release. Both offline databases and
+their container were removed.
+[Slack rehearsal evidence](evidence/learn-production-slack-rehearsal-2026-10-12.json).
+
 **12 October — combined scoring and working-time release passes offline acceptance.**
 The first five production-specific packages now install together. The fifth groups
 corrections, saved assessments and recovery with individual/team collectors,

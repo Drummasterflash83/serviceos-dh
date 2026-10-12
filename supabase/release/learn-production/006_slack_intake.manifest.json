@@ -1,0 +1,157 @@
+{
+  "version": "learn-production-slack-intake/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+  "priorSha256": "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/release/learn-test/009_slack_storage_setup.sql",
+      "sha256": "d4b762ace7c9ccecba29890649e40d7e1501aa5f6e1c2b711970fb55368d305e"
+    },
+    {
+      "path": "supabase/release/learn-test/010_slack_durable_worker.sql",
+      "sha256": "74bfa2f96e5ad2b40fb40b1e6b03f1cdd6f605f3d8d57a598a541222f8a1955e"
+    },
+    {
+      "path": "supabase/release/learn-test/011_slack_threads.sql",
+      "sha256": "c476f687762c1bb648c7ecdd7bd9bdb054b1d7f5ccc9cb43af17468991edf5ce"
+    },
+    {
+      "path": "supabase/release/learn-test/012_slack_operator.sql",
+      "sha256": "e37839d9be63ff9ee9db8b0ada2c25c676546cb108a3882c57d1ec58aa8300b1"
+    },
+    {
+      "path": "supabase/release/learn-test/013_slack_pacing.sql",
+      "sha256": "7191b47ec926094b2118d957cddccf6ebec6c62e10e2d04670db327d23c223a5"
+    },
+    {
+      "path": "supabase/release/learn-test/014_slack_recovery.sql",
+      "sha256": "0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc"
+    },
+    {
+      "path": "supabase/release/learn-test/021_slack_thread_recovery.sql",
+      "sha256": "16d639506c5a7626b6cc3563798b44303e8cf922c9d776e6752c1c80fcd03344"
+    },
+    {
+      "path": "supabase/migrations/20261031230000_learn_capture_controls.sql",
+      "sha256": "51265e71ef999ecbf27673220ea04ef6cc1711fd81cc1848bb74513a10c73067"
+    },
+    {
+      "path": "supabase/migrations/20261101003000_learn_slack_recurring.sql",
+      "sha256": "a97f894a53f39acadff7ee5fe3a576da82dbedc81704df4e7faa79a13e91a48f"
+    },
+    {
+      "path": "supabase/migrations/20261101005000_learn_slack_recurring_threads.sql",
+      "sha256": "251f9c8cc1fd2ff32a80d9780b0605880cfee5259f9dbfa02e47452709f9fce6"
+    }
+  ],
+  "existingTables": [
+    "tenants",
+    "profiles",
+    "team_members",
+    "view_as_context",
+    "platform_authority_grants",
+    "feature_flags",
+    "tenant_connectors",
+    "connector_accounts",
+    "provider_connections",
+    "provider_connection_events",
+    "platform_jobs",
+    "interactions"
+  ],
+  "newTables": [
+    "slack_messages",
+    "slack_message_versions",
+    "slack_history_imports",
+    "slack_thread_imports",
+    "slack_workspace_pacing",
+    "slack_recurring_channels",
+    "slack_recurring_requests",
+    "slack_recurring_thread_windows",
+    "slack_recurring_thread_members"
+  ],
+  "newFunctions": [
+    "slack_version_immutable",
+    "slack_history_commit_page",
+    "learn_slack_start_import",
+    "learn_slack_claim_jobs",
+    "learn_slack_finish_job",
+    "learn_slack_read_credential",
+    "learn_slack_thread_immutable",
+    "learn_slack_start_thread_import",
+    "slack_thread_commit_page",
+    "learn_slack_read_thread_credential",
+    "learn_slack_finish_thread_job",
+    "learn_slack_accounts_read",
+    "learn_slack_threads_read",
+    "learn_slack_history_state",
+    "learn_slack_history_read",
+    "learn_slack_resume_history",
+    "learn_slack_thread_recovery_state",
+    "learn_slack_thread_recovery_read",
+    "learn_slack_resume_thread",
+    "learn_capture_allowed",
+    "learn_slack_recurring_access",
+    "learn_slack_recurring_control",
+    "learn_slack_schedule_recurring",
+    "learn_slack_recurring_read",
+    "learn_slack_recurring_threads_control",
+    "learn_slack_recurring_thread_allowed",
+    "learn_slack_recurring_thread_window_progress",
+    "learn_slack_recurring_thread_window_complete",
+    "learn_slack_recurring_threads_status",
+    "learn_slack_queue_recurring_threads",
+    "learn_slack_commit_page_private",
+    "learn_slack_store_records"
+  ],
+  "changedFunctions": [
+    "platform_jobs_claim"
+  ],
+  "newSequences": [],
+  "newExistingConstraints": {
+    "tenant_connectors": [
+      "learn_connector_tenant_fk"
+    ],
+    "connector_accounts": [
+      "learn_connector_tenant_fk"
+    ],
+    "provider_connections": [
+      "learn_connector_tenant_fk"
+    ],
+    "provider_connection_events": [
+      "learn_provider_event_tenant_fk"
+    ]
+  },
+  "newExistingTriggers": {
+    "tenant_connectors": [
+      "learn_connector_reference_guard",
+      "learn_connector_retain",
+      "learn_connector_retain_truncate"
+    ],
+    "connector_accounts": [
+      "learn_connector_reference_guard",
+      "learn_connector_retain",
+      "learn_connector_retain_truncate"
+    ],
+    "provider_connections": [
+      "learn_connector_reference_guard",
+      "learn_connector_retain",
+      "learn_connector_retain_truncate"
+    ],
+    "provider_connection_events": [
+      "learn_provider_events_retain",
+      "learn_provider_events_retain_truncate"
+    ]
+  },
+  "limitations": [
+    "No real Slack authorization, provider requests, credentials or schedule activation.",
+    "Capture predicate is included for recurring admission; remaining OpenFolk controls and worker capture gates still require reconciliation.",
+    "Shared connector deletions/truncation and audit updates are retained, not erased; unrelated row updates retain existing authority.",
+    "Remaining source-to-card and full signed-in/provider acceptance are required."
+  ]
+}

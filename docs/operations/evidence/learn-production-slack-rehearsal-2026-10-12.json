@@ -1,0 +1,127 @@
+{
+  "version": "learn-production-slack-rehearsal/1",
+  "observedAt": "2026-10-12T03:58:46.346751+00:00",
+  "result": {
+    "state": "production_slack_intake_rehearsed_offline",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "fullReleaseAccepted": false,
+    "signedInAcceptance": false,
+    "packages": [
+      "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+      "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+      "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+      "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+      "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+      "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91"
+    ],
+    "containmentBefore": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "negativeChecks": [
+      "wrong_target",
+      "catalog_drift",
+      "late_failure"
+    ],
+    "legacyColumnsAndCatalogPreserved": true,
+    "noInventedHistoricalEvidence": true,
+    "accessProbes": [
+      {
+        "path": "scripts/verify/learn-slack-recurring-hosted.assert.sql",
+        "sha256": "89e29326cdc857c2195348aa1a83c487535dcadd55c6606cf1dfc9fed4ebec0c"
+      },
+      {
+        "path": "scripts/verify/learn-slack-auto-threads-hosted.assert.sql",
+        "sha256": "bde40108f39abafa2d1b3520c2a5120a04624a01b8bce98b005e0506c9ece43d"
+      }
+    ],
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299,
+      "rows": 1591576,
+      "sequences": 5,
+      "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+      "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+    },
+    "duplicateRejected": true,
+    "journeys": [
+      {
+        "path": "scripts/verify/learn-production-slack.assert.sql",
+        "sourceSha256": "f3487eba7d010845e6abb86bcd332da2a25e19a65c6311269b7bc55b1d563d88",
+        "probeSha256": "f3487eba7d010845e6abb86bcd332da2a25e19a65c6311269b7bc55b1d563d88"
+      },
+      {
+        "path": "scripts/verify/learn-production-slack-threads.assert.sql",
+        "sourceSha256": "0c0a8a18f3f06f53a5702628b58ad145a8056fb717668415759cf06cc2b85f45",
+        "probeSha256": "0c0a8a18f3f06f53a5702628b58ad145a8056fb717668415759cf06cc2b85f45"
+      }
+    ],
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true,
+    "elapsedSeconds": 37.82
+  },
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-slack-candidate.mjs",
+      "sha256": "27c061f488245b0f94c2d1da99812afc0f3490a9b8ca0bfed948f0bf4a765d86"
+    },
+    {
+      "path": "scripts/verify/learn-production-slack.assert.sql",
+      "sha256": "f3487eba7d010845e6abb86bcd332da2a25e19a65c6311269b7bc55b1d563d88"
+    },
+    {
+      "path": "scripts/verify/learn-production-slack-threads.assert.sql",
+      "sha256": "0c0a8a18f3f06f53a5702628b58ad145a8056fb717668415759cf06cc2b85f45"
+    },
+    {
+      "path": "scripts/backup/inspect_production_slack.py",
+      "sha256": "e18bb83a934d7b74ce5ccd2b67f765364cbbe09b1c043b167d14be0144856b4d"
+    },
+    {
+      "path": "scripts/backup/rehearse_production_slack.py",
+      "sha256": "4c3cddf682f5e6586f042df4d25ebbe649339cbc197255cfb1c8ae17920aa2b0"
+    },
+    {
+      "path": "supabase/release/learn-production/006_slack_intake.sql",
+      "sha256": "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91"
+    }
+  ],
+  "coverage": [
+    "Ordered install of all six production candidates with exact pre-existing catalog and data preservation.",
+    "Wrong target, shared-table drift, late transactional failure and duplicate application are rejected.",
+    "Owner-approved synthetic channel window through worker claim, source/version/interaction storage, exact page retry and durable completion.",
+    "Foreign-company reads/approvals and unowned publication rejected; retained source deletion and provider audit overwrites rejected.",
+    "Explicit recurring approval and module disable prevent new recurring job admission while retaining history.",
+    "Thread page budget exhaustion reports incomplete coverage; reviewed continuation retains cursor and original approval, deduplicates repeated replies, rejects stale review and completed-window continuation."
+  ],
+  "limitations": [
+    "No production or hosted TEST changes, real Slack requests, credential verification, signed-in acceptance or schedule activation.",
+    "Only recurring admission is gated here; remaining OpenFolk controls and manual/worker capture gates require reconciliation before release.",
+    "Synthetic thread pacing timestamps are advanced only in the disposable fixture; rate-limit and concurrency acceptance are not newly claimed.",
+    "Remaining source-to-card delivery and complete-release acceptance are required.",
+    "Preservation covers retained archive rows; pg_net omissions and full runtime/Vault recovery remain open."
+  ]
+}
