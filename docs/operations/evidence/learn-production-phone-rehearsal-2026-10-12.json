@@ -69,7 +69,9 @@
     {
       "path": "scripts/verify/learn-production-phone-operator.assert.sql",
       "sourceSha256": "36e02a8cf2dc99d9d898268cab954403e722cddb90fd5eb5e33d5a6e045aad09",
-      "probeSha256": "b6c1aab34fa5f668fa0222166fabfb2ce2746a8a64c5096199a28d2ea26c2f3b"
+      "probeSha256": "b6c1aab34fa5f668fa0222166fabfb2ce2746a8a64c5096199a28d2ea26c2f3b",
+      "workingTreeSha256": "727a8de2c62dec04e29ceb12501b4ed3300d72cf9b2788b5c37aadecf274b3c4",
+      "postAcceptanceChange": "Trailing file whitespace removed; before.rstrip() == after.rstrip() verified. sourceSha256 and probeSha256 identify the exact executed fixture."
     },
     {
       "path": "scripts/verify/learn-production-phone-download.assert.sql",

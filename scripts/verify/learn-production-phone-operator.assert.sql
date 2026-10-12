@@ -309,6 +309,3 @@ do $$begin
 end$$;
 drop trigger fixture_operator_audit_failure on learn_phone_operator_reconciliations;
 set local role authenticated;select learn_operator_phone_reconcile(pg_temp.fixture_id(1),pg_temp.fixture_id(906),pg_temp.fixture_id(800),pg_temp.fixture_id(110),'Atomic audit');reset role;
-
-
- 
