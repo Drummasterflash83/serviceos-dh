@@ -8,6 +8,7 @@ import {
   type PhoneRecordingSource,
   type PhonePlaybackClient,
   type RetainedRecording,
+  type PhoneOperatorAccess,
 } from "@/lib/learn-phone-playback";
 export function LearnPhoneAudio(props: {
   tenantId: string;
@@ -33,16 +34,24 @@ type ViewerProps = {
   sourceId: string;
   client: PhonePlaybackClient;
   backend: string;
+  operator?: PhoneOperatorAccess;
 };
 export function PhoneAudioViewer(props: ViewerProps) {
   return (
     <ScopedPhoneAudioViewer
-      key={`${props.backend}:${props.tenantId}:${props.table}:${props.sourceId}`}
+      key={`${props.backend}:${props.tenantId}:${props.table}:${props.sourceId}:${props.operator?.actor ?? ""}:${props.operator?.reason ?? ""}`}
       {...props}
     />
   );
 }
-function ScopedPhoneAudioViewer({ tenantId, table, sourceId, client, backend }: ViewerProps) {
+function ScopedPhoneAudioViewer({
+  tenantId,
+  table,
+  sourceId,
+  client,
+  backend,
+  operator,
+}: ViewerProps) {
   const [rows, setRows] = useState<RetainedRecording[]>([]),
     [cursor, setCursor] = useState<string | null>(null),
     [loaded, setLoaded] = useState(false),
@@ -84,6 +93,21 @@ function ScopedPhoneAudioViewer({ tenantId, table, sourceId, client, backend }: 
       stop();
     };
   }, [tenantId, table, sourceId, client, backend]);
+  useEffect(() => {
+    const hide = () => {
+      if (!document.hidden) return;
+      generation.current++;
+      working.current = false;
+      setBusy(false);
+      stop();
+      setPlaying(null);
+      setRows([]);
+      setCursor(null);
+      setLoaded(false);
+    };
+    document.addEventListener("visibilitychange", hide);
+    return () => document.removeEventListener("visibilitychange", hide);
+  }, []);
   async function load(after: string | null = null) {
     if (working.current) return;
     working.current = true;
@@ -93,9 +117,12 @@ function ScopedPhoneAudioViewer({ tenantId, table, sourceId, client, backend }: 
     if (after === null) {
       stop();
       setPlaying(null);
+      setRows([]);
+      setCursor(null);
+      setLoaded(false);
     }
     try {
-      const p = await readRetainedRecordings(client, tenantId, table, sourceId, after);
+      const p = await readRetainedRecordings(client, tenantId, table, sourceId, after, operator);
       if (ticket !== generation.current) return;
       setRows((old) =>
         after ? [...old, ...p.rows.filter((r) => !old.some((o) => o.id === r.id))] : p.rows,
@@ -103,7 +130,12 @@ function ScopedPhoneAudioViewer({ tenantId, table, sourceId, client, backend }: 
       setCursor(p.next_cursor);
       setLoaded(true);
     } catch {
-      if (ticket === generation.current) setError("Recordings could not be checked. Try again.");
+      if (ticket === generation.current) {
+        setRows([]);
+        setCursor(null);
+        setLoaded(false);
+        setError("Recordings could not be checked. Try again.");
+      }
     } finally {
       if (ticket === generation.current) {
         working.current = false;
@@ -120,7 +152,7 @@ function ScopedPhoneAudioViewer({ tenantId, table, sourceId, client, backend }: 
     setPlaying(null);
     const ticket = generation.current;
     try {
-      const link = await openRetainedRecording(client, tenantId, id, backend);
+      const link = await openRetainedRecording(client, tenantId, id, backend, Date.now, operator);
       if (ticket === generation.current) setPlaying({ id, url: link.url });
     } catch {
       if (ticket === generation.current)
@@ -181,7 +213,9 @@ function ScopedPhoneAudioViewer({ tenantId, table, sourceId, client, backend }: 
               className="max-w-full"
             />
           )}
-          <LearnPhoneSavedResults tenantId={tenantId} recordingId={r.id} client={client} />
+          {!operator && (
+            <LearnPhoneSavedResults tenantId={tenantId} recordingId={r.id} client={client} />
+          )}
         </div>
       ))}
       {cursor && (

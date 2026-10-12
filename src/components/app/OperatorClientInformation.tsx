@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
+import { PhoneAudioViewer } from "@/components/client-portal/learn/LearnPhoneAudio";
 import { LearnCustomerBusinessContext } from "@/components/client-portal/learn/LearnCustomerBusinessContext";
 import {
   clientInformationCollections,
@@ -164,7 +165,8 @@ export function OperatorClientInformation({
           </p>
           {collection === "recordings" && (
             <p>
-              Recording metadata is available here. Operator audio playback still needs completion.
+              Open a recording to check saved audio. Each playback access is recorded with your
+              reason.
             </p>
           )}
           {visible.rows.length === 0 && (
@@ -183,6 +185,17 @@ export function OperatorClientInformation({
                 <p className="text-xs text-muted-foreground">Record {row.id}</p>
                 {selected === row.id && (
                   <>
+                    {(collection === "recordings" || collection === "calls") && (
+                      <PhoneAudioViewer
+                        key={`${tenantId}:${actorId}:${row.id}`}
+                        tenantId={tenantId}
+                        table={collection === "calls" ? "phone_calls" : "phone_recordings"}
+                        sourceId={row.id}
+                        client={getSupabaseClient()}
+                        backend={supabaseConfig.url}
+                        operator={{ actor: actorId, reason: loadedReason }}
+                      />
+                    )}
                     {collection === "customers" && (
                       <LearnCustomerBusinessContext
                         key={`${tenantId}:${actorId}:${row.id}`}

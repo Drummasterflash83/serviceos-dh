@@ -12,7 +12,13 @@ const uuid = (v: unknown): v is string =>
   typeof v === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(v);
 export async function retainedPhonePlayback(
   db: PlaybackDb,
-  scope: { tenant: string; actor: string; recording: string; backend: string },
+  scope: {
+    tenant: string;
+    actor: string;
+    recording: string;
+    backend: string;
+    operatorReason?: string;
+  },
   now = Date.now,
 ) {
   if (![scope.tenant, scope.actor, scope.recording].every(uuid))
@@ -27,11 +33,28 @@ export async function retainedPhonePlayback(
     backend.hash
   )
     throw Error("playback_unavailable");
-  const args = { p_tenant: scope.tenant, p_actor: scope.actor, p_recording: scope.recording };
-  const target = await db.rpc("learn_phone_playback_authorize", args),
+  const operator = scope.operatorReason !== undefined;
+  if (
+    operator &&
+    (typeof scope.operatorReason !== "string" ||
+      scope.operatorReason.trim().length < 3 ||
+      scope.operatorReason.trim().length > 500)
+  )
+    throw Error("playback_unavailable");
+  const rpc = operator
+    ? "learn_operator_phone_playback_authorize"
+    : "learn_phone_playback_authorize";
+  const args = {
+    p_tenant: scope.tenant,
+    p_actor: scope.actor,
+    p_recording: scope.recording,
+    ...(operator ? { p_reason: scope.operatorReason!.trim() } : {}),
+  };
+  const target = await db.rpc(rpc, args),
     t = target.data;
   if (
     target.error ||
+    (operator && (t?.operator_mode !== true || t?.actor_id !== scope.actor)) ||
     t?.version !== "learn-phone-playback-target/1" ||
     t.tenant_id !== scope.tenant ||
     t.recording_id !== scope.recording ||
@@ -66,13 +89,15 @@ export async function retainedPhonePlayback(
   )
     throw Error("playback_unavailable");
   const request = crypto.randomUUID();
-  const audited = await db.rpc("learn_phone_playback_authorize", {
+  const audited = await db.rpc(rpc, {
     ...args,
     p_source_digest: t.source_digest,
     p_request: request,
   });
   if (
     audited.error ||
+    (operator &&
+      (audited.data?.operator_mode !== true || audited.data?.actor_id !== scope.actor)) ||
     audited.data?.version !== "learn-phone-playback-target/1" ||
     audited.data.request_id !== request ||
     audited.data.source_digest !== t.source_digest ||
@@ -88,6 +113,7 @@ export async function retainedPhonePlayback(
     tenant_id: scope.tenant,
     recording_id: scope.recording,
     request_id: request,
+    ...(operator ? { operator_mode: true, actor_id: scope.actor } : {}),
     url: url.href,
     expires_at: new Date(started + 55000).toISOString(),
   };

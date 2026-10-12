@@ -1,0 +1,88 @@
+{
+  "installation": {
+    "state": "installed_verified",
+    "project": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T12:34:10.970Z",
+    "sourceSha256": "840b9166926bedaadc5e3df78a9955a6c0ad5cba7e17ea858fcc2195fc13f0b1",
+    "preservedDatasets": 194,
+    "installed": [
+      {
+        "fingerprint": "fbe25ace96e7385baa9057576b2a65bb",
+        "authenticated": true,
+        "anon": false,
+        "service": false
+      },
+      {
+        "fingerprint": "bae822deebdea9706c21a1b8ee0dbf01",
+        "authenticated": true,
+        "anon": false,
+        "service": false
+      }
+    ],
+    "newAccounts": 0,
+    "newGrants": 0,
+    "providerCalls": 0,
+    "productionChanged": false
+  },
+  "rehearsal": {
+    "state": "passed_rolled_back",
+    "project": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T12:32:17.025Z",
+    "sources": [
+      {
+        "path": "supabase/migrations/20261101530000_learn_operator_phone_playback.sql",
+        "sha256": "840b9166926bedaadc5e3df78a9955a6c0ad5cba7e17ea858fcc2195fc13f0b1"
+      },
+      {
+        "path": "scripts/verify/learn-operator-phone-playback.assert.sql",
+        "sha256": "503b4eb53dba07e9b3f91bc74008e4468e8165161f15cafab3c4692b39eaf133"
+      }
+    ],
+    "preservedDatasets": 194,
+    "priorCatalogRestored": true,
+    "newAccountsRetained": 0,
+    "newGrantsRetained": 0,
+    "providerCalls": 0,
+    "productionChanged": false
+  },
+  "runtime": {
+    "state": "deployed_needs_hosted_acceptance",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T12:35:47.784Z",
+    "sourceBundleSha256": "df69851b8f3951876cd00895473dfda0cb240cfc1cf72f95889f7d4d52f9e55e",
+    "cliExitStatus": 0,
+    "endpoint": {
+      "id": "ecc4b635-903d-4bbf-86e4-81ff901467f3",
+      "name": "learn-operator-phone-playback",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "bundleSha256": "29891d0f2d943ac14e08312c9a050827cc068790d1bc333540f77d35a6e4ddcf"
+    },
+    "preservedDatasets": 194,
+    "schemaUnchanged": true,
+    "otherEndpointsUnchanged": true,
+    "providerRequests": 0,
+    "newAccounts": 0,
+    "newGrants": 0,
+    "productionChanged": false
+  },
+  "downloadedRuntime": {
+    "state": "passed",
+    "observedAt": "2026-10-12T12:36:41.206Z",
+    "sourceBundleSha256": "df69851b8f3951876cd00895473dfda0cb240cfc1cf72f95889f7d4d52f9e55e",
+    "executableFilesMatched": 3,
+    "downloadedHandlerTests": 4
+  },
+  "scope": "TEST only",
+  "localTests": 15,
+  "frontendTypecheck": "passed",
+  "runtimeTypecheck": "passed",
+  "frontendBuild": "passed",
+  "frontendAcceptance": "pending",
+  "limitations": [
+    "No new users, platform grants, provider calls or production changes.",
+    "Uses existing operator authority; ordinary tenant audio path is unchanged.",
+    "Real phone capture, AI processing and source-to-card acceptance remain outstanding."
+  ]
+}

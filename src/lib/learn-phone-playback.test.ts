@@ -61,6 +61,61 @@ const link = {
     "/a.wav?token=synthetic",
   expires_at: "2026-10-11T12:00:55Z",
 };
+test("operator listing requires audited actor-bound replies and keeps the real actor out of request authority", async () => {
+  const operator = { actor: id(7), reason: " Review selected client " };
+  const good = { ...page, actor_id: id(7), audit_id: id(8), operator_mode: true };
+  const seen: any[] = [];
+  const client = {
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      seen.push({ name, args });
+      return { data: good, error: null };
+    },
+  };
+  assert.equal(
+    (await readRetainedRecordings(client, id(1), "phone_calls", id(2), null, operator)).rows.length,
+    1,
+  );
+  assert.equal(seen[0].name, "learn_operator_phone_recordings_read");
+  assert.equal(seen[0].args.p_reason, "Review selected client");
+  assert.equal(seen[0].args.p_actor, undefined);
+  for (const data of [
+    page,
+    { ...good, actor_id: id(9) },
+    { ...good, audit_id: null },
+    { ...good, operator_mode: false },
+  ])
+    await assert.rejects(() =>
+      readRetainedRecordings(db(data), id(1), "phone_calls", id(2), null, operator),
+    );
+});
+test("operator playback selects the operator endpoint and rejects an ordinary or mismatched actor response", async () => {
+  const operator = { actor: id(7), reason: "Review selected client" },
+    good = { ...link, actor_id: id(7), operator_mode: true };
+  const client = db(good);
+  client.functions.invoke = async (name, options) => {
+    assert.equal(name, "learn-operator-phone-playback");
+    assert.deepEqual(options.body, {
+      tenant_id: id(1),
+      recording_id: id(3),
+      reason: operator.reason,
+    });
+    return { data: good, error: null };
+  };
+  assert.equal(
+    (await openRetainedRecording(client, id(1), id(3), "https://test.example", now, operator)).url,
+    link.url,
+  );
+  for (const data of [link, { ...good, actor_id: id(9) }, { ...good, operator_mode: false }])
+    await assert.rejects(() =>
+      openRetainedRecording(db(data), id(1), id(3), "https://test.example", now, operator),
+    );
+  await assert.rejects(() =>
+    openRetainedRecording(client, id(1), id(3), "https://test.example", now, {
+      ...operator,
+      reason: "",
+    }),
+  );
+});
 test("playback accepts only scoped short lived links from the configured backend", async () => {
   assert.equal(
     (await openRetainedRecording(db(link), id(1), id(3), "https://test.example", now)).url,

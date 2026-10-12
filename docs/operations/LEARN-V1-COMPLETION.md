@@ -7,6 +7,17 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 12:36 UTC — audited operator audio path installed in TEST.**
+OpenFolk's selected-client call/recording view now has a prepared playback control.
+The additive SQL and new endpoint use the existing operator grant and real user JWT,
+with a required reason and atomic playback/operator audit. No tenant impersonation,
+new identities, grants or capture. Full-schema rollback checks, 15 local tests,
+strict typechecks and build pass; all three downloaded endpoint files match and
+four downloaded handler tests pass. All 194 datasets, schema and other endpoints
+are preserved. Frontend deployment and signed-in acceptance are next; real phone
+capture, processing and card linkage are still open.
+[Evidence](evidence/learn-operator-phone-playback-test-2026-10-12.json).
+
 **12 October, 12:24 UTC — deployed linked customer records accepted by the operator.**
 The protected stable TEST alias serves `efc3d11`. Chris's existing operator session
 opened the real reviewed customer card and viewed its linked job, site and contact.

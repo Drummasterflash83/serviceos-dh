@@ -1,5 +1,17 @@
 import type { LearnCommunicationClient } from "./learn-card-communications.ts";
 export type PhoneRecordingSource = "phone_calls" | "phone_recordings";
+export type PhoneOperatorAccess = { actor: string; reason: string };
+function operatorArgs(operator?: PhoneOperatorAccess) {
+  if (operator === undefined) return {};
+  if (
+    !uuid(operator.actor) ||
+    typeof operator.reason !== "string" ||
+    operator.reason.trim().length < 3 ||
+    operator.reason.trim().length > 500
+  )
+    throw Error("Operator recording access unavailable");
+  return { p_reason: operator.reason.trim() };
+}
 export type RetainedRecording = {
   id: string;
   started_at: string | null;
@@ -27,6 +39,7 @@ export async function readRetainedRecordings(
   table: PhoneRecordingSource,
   id: string,
   after: string | null = null,
+  operator?: PhoneOperatorAccess,
 ): Promise<RecordingPage> {
   if (
     !uuid(tenant) ||
@@ -35,14 +48,21 @@ export async function readRetainedRecordings(
     (after !== null && !uuid(after))
   )
     throw Error("Recording source unavailable");
-  const { data: p, error } = (await db.rpc("learn_phone_recordings_read", {
-    p_tenant: tenant,
-    p_table: table,
-    p_id: id,
-    p_after: after,
-  })) as { data: any; error: unknown };
+  const reason = operatorArgs(operator);
+  const { data: p, error } = (await db.rpc(
+    operator ? "learn_operator_phone_recordings_read" : "learn_phone_recordings_read",
+    {
+      p_tenant: tenant,
+      p_table: table,
+      p_id: id,
+      p_after: after,
+      ...reason,
+    },
+  )) as { data: any; error: unknown };
   if (
     error ||
+    (operator &&
+      (p?.operator_mode !== true || p?.actor_id !== operator.actor || !uuid(p?.audit_id))) ||
     p?.version !== "learn-phone-recordings/1" ||
     p.tenant_id !== tenant ||
     p.table !== table ||
@@ -81,13 +101,23 @@ export async function openRetainedRecording(
   recording: string,
   backend: string,
   now = Date.now,
+  operator?: PhoneOperatorAccess,
 ): Promise<{ url: string; expiresAt: string }> {
   if (!uuid(tenant) || !uuid(recording)) throw Error("Recording unavailable");
-  const { data: r, error } = await db.functions.invoke("learn-phone-playback", {
-    body: { tenant_id: tenant, recording_id: recording },
-  });
+  operatorArgs(operator);
+  const { data: r, error } = await db.functions.invoke(
+    operator ? "learn-operator-phone-playback" : "learn-phone-playback",
+    {
+      body: {
+        tenant_id: tenant,
+        recording_id: recording,
+        ...(operator ? { reason: operator.reason.trim() } : {}),
+      },
+    },
+  );
   if (
     error ||
+    (operator && (r?.operator_mode !== true || r?.actor_id !== operator.actor)) ||
     r?.version !== "learn-phone-playback/1" ||
     r.tenant_id !== tenant ||
     r.recording_id !== recording ||
