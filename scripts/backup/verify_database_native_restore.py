@@ -5,7 +5,7 @@ import tempfile
 import time
 from pathlib import Path
 from database_restore_sandbox import RecoveryError, RestoreSandbox
-from native_copy_fingerprints import archive_fingerprints, restored_fingerprints, compare_native_data
+from native_copy_fingerprints import archive_fingerprints, restored_fingerprints, compare_native_data, compare_network_supplement
 from verify_database_restore_isolation import SCHEMA, FINGERPRINT
 
 IMAGE = 'public.ecr.aws/supabase/postgres:17.6.1.141'
@@ -27,8 +27,16 @@ with tempfile.TemporaryDirectory(prefix='serviceos-native-recovery-') as folder:
         source_roles = json.loads(source.query('select json_agg(rolname) from pg_roles;'))
         # pg_dump omits non-configuration extension-owned table data even with
         # --table. Use PostgreSQL's native COPY protocol for this explicit table.
-        queued_rows = source._run(source._psql(), data=b'COPY net.http_request_queue TO STDOUT;')
-        supplement.write_bytes(b'COPY net.http_request_queue FROM STDIN;\n' + queued_rows + b'\\.\n')
+        supplement_data = b''
+        for table in ['_http_response', 'http_request_queue']:
+            columns = json.loads(source.query("select json_agg(attname order by attnum) from pg_attribute "
+                "where attrelid='net." + table + "'::regclass and attnum>0 and not attisdropped;"))
+            queued_rows = source._run(source._psql(), data=('COPY net.' + table + ' TO STDOUT;').encode())
+            supplement_data += ('COPY net.' + table + ' (' + ', '.join(columns) + ') FROM stdin;\n').encode() + queued_rows + b'\\.\n'
+        sequence = json.loads(source.query("select json_build_object('lastValue',last_value,'isCalled',is_called) from net.http_request_queue_id_seq;"))
+        supplement_data += ("SELECT pg_catalog.setval('net.http_request_queue_id_seq', " + str(sequence['lastValue'])
+            + ', ' + str(sequence['isCalled']).lower() + ');\n').encode()
+        supplement.write_bytes(supplement_data)
         supplement.chmod(0o600)
         data = source._run(['exec', source.name, 'pg_dump', '-h', '127.0.0.1',
                             '-U', 'supabase_admin', '-d', 'postgres', '--format=custom'])
@@ -44,6 +52,7 @@ with tempfile.TemporaryDirectory(prefix='serviceos-native-recovery-') as folder:
         archived_data = archive_fingerprints(archive, docker=target.docker, image=target.image_id)
         native_comparison = compare_native_data(archived_data, restored_fingerprints(target))
         target.restore_sql_files([supplement])
+        network_comparison = compare_network_supplement(supplement, target)
         time.sleep(3)
         restored_queue = target.query('select count(*) from net.http_request_queue;')
         assert restored_queue == '1', {'restoredQueue': restored_queue,
@@ -65,10 +74,18 @@ with tempfile.TemporaryDirectory(prefix='serviceos-native-recovery-') as folder:
             tamper_detected = True
         else:
             raise AssertionError('Native comparison accepted a changed archived row')
+        target.query("update net.http_request_queue set url='https://example.invalid/changed';")
+        try:
+            compare_network_supplement(supplement, target)
+        except RecoveryError:
+            network_tamper_detected = True
+        else:
+            raise AssertionError('Network supplement comparison accepted a changed row')
     assert source.cleaned and target.cleaned
     print(json.dumps({'scope': 'synthetic-native-whole-database-restore',
                       'sourceAndTargetRemoved': True, 'fingerprintsMatch': True,
                       'tenantRlsVerified': True, 'enabledCronDidNotRun': True,
                       'queuedNetworkRequestDidNotRun': True,
                       'nativeComparison': native_comparison, 'changedRowDetected': tamper_detected,
+                      'networkComparison': network_comparison, 'changedNetworkRowDetected': network_tamper_detected,
                       'archive': receipt, 'containment': containment}))

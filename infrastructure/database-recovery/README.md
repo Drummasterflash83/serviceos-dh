@@ -103,3 +103,41 @@ This proves restoration fidelity to the archive without another production scan;
 it cannot establish capture of the two omitted pg_net tables or recover Vault's
 external encryption key. See the
 [sanitized evidence](../../docs/operations/evidence/learn-native-archive-comparison-2026-10-12.json).
+
+## Capture with omitted operational tables included
+
+The separately journaled `--export-complete-capture-v2` run uses
+`.verification-results/production-database-complete-capture-v2-2026-10-12`.
+It captures the two pg_net tables through native COPY with an explicit column
+inventory inside the same read-only snapshot as the archive. The queue sequence
+is recorded separately and explicitly remains nontransactional. It skips the
+expensive live aggregate fingerprint pass; fidelity is verified offline.
+
+`restore_production_database.py --complete-capture-v2` verifies both file digests,
+compares all native archive rows, applies and compares both supplemental tables,
+and checks that the union covers every physical table in the source inventory.
+It does not run restored jobs or queued HTTP requests. Synthetic verification
+covers actual queued data and rejects tampering in both ordinary and pg_net rows.
+Vault decryption and application/Auth startup remain separate acceptance gates.
+
+After export, `check-production-recovery-cleanup.mjs --check-complete-capture-v2`
+reads only health, CLI expiration/membership/session counts and local export
+container counts. Each observation is retained separately. A healthy query is
+not proof of credential expiration: inspect `cliExpired` and `cliExpiresAt`.
+No automatic credential refresh, reset, session termination or mutation retry is
+performed by this check. Completed/uncertain run directories must never be removed
+to retry; inspect the specific stage and authoritative process state first.
+
+**Actual v2 outcome:** stopped after the native dump emitted zero bytes and
+Management SQL timed out. Both clients were removed. The two operational tables
+were captured, but there is no complete matching native archive. SQL cleanup and
+Auth health subsequently passed without a restart. Diagnose the health/connection
+issue before a new capture. Do not retry the retained v2 directory or combine
+its supplement with the earlier archive as if they shared one snapshot.
+[Attempt evidence](../../docs/operations/evidence/learn-complete-capture-attempt-2026-10-12.json).
+
+Provider diagnostics used the documented [service-health endpoint](https://supabase.com/docs/reference/api/v1-get-services-health),
+[metrics endpoint](https://supabase.com/docs/reference/api/v1-scrape-project-metrics)
+and [bounded log queries](https://supabase.com/docs/guides/observability/advanced-log-filtering).
+Project-level `ACTIVE_HEALTHY` alone did not establish Auth health; query the named
+service and verify actual database access separately.

@@ -13,7 +13,10 @@ import { savedCliToken } from '../verify/learn-test-readiness.mjs';
 
 const project = 'tgbnakbxwcqjeimygroz';
 const image = 'sha256:28f0e16a019e648089fc1a6d333549a55548f6019c15ae4bd7cd58b989027518';
-const root = '.verification-results/production-database-export-2026-10-12';
+const completeCapture = process.argv.slice(2).join(' ') === '--export-complete-capture-v2';
+const root = completeCapture
+  ? '.verification-results/production-database-complete-capture-v2-2026-10-12'
+  : '.verification-results/production-database-export-2026-10-12';
 const docker = '/usr/local/bin/docker';
 const report = { version: 'production-database-export/1', project,
   startedAt: new Date().toISOString(), state: 'preflight', customerDataDestination: 'private_local_only',
@@ -44,7 +47,7 @@ function clientArgs(name, app, command) {
 }
 
 try {
-  check(process.argv.slice(2).join(' ') === '--export-production-for-isolated-restore',
+  check(completeCapture || process.argv.slice(2).join(' ') === '--export-production-for-isolated-restore',
     'Explicit production export mode required');
   execFileSync('git', ['check-ignore', '-q', root + '/database.dump']);
   // Do not reuse a directory/marker after an uncertain previous run.
@@ -148,13 +151,19 @@ try {
   let supplement = '';
   for (const table of netTables) {
     const qualified = ident('net') + '.' + ident(table);
+    const columnLines = await sql(`select json_agg(attname order by attnum) from pg_attribute
+      where attrelid=${literal(qualified)}::regclass and attnum>0 and not attisdropped;`);
+    const columns = JSON.parse(columnLines[0]);
+    check(Array.isArray(columns) && columns.length > 0 && columns.every(c => typeof c === 'string'),
+      'Network COPY column inventory missing');
     const rows = await sql(`copy ${qualified} to stdout;`);
-    supplement += `COPY ${qualified} FROM STDIN;\n` + rows.map(row => row + '\n').join('') + '\\.\n';
+    supplement += `COPY ${qualified} (${columns.map(ident).join(', ')}) FROM stdin;\n`
+      + rows.map(row => row + '\n').join('') + '\\.\n';
   }
   const sequenceState = await sql("select json_build_object('lastValue',last_value,'isCalled',is_called) from net.http_request_queue_id_seq;");
   const sequence = JSON.parse(sequenceState[0]);
   check(Number.isSafeInteger(sequence.lastValue) && typeof sequence.isCalled === 'boolean', 'Network sequence metadata invalid');
-  supplement += `SELECT pg_catalog.setval('net.http_request_queue_id_seq',${sequence.lastValue},${sequence.isCalled});\n`;
+  supplement += `SELECT pg_catalog.setval('net.http_request_queue_id_seq', ${sequence.lastValue}, ${sequence.isCalled});\n`;
   writeFileSync(root + '/net-tables.sql', supplement, { flag: 'wx', mode: 0o600 });
   report.netSupplement = { format: 'native-postgresql-copy', tables: netTables,
     bytes: Buffer.byteLength(supplement), sha256: createHash('sha256').update(supplement).digest('hex'),
@@ -182,28 +191,40 @@ try {
   check(archiveBytes > 0 && archiveBytes <= 3 * 1024 * 1024 * 1024, 'Native archive size outside bound');
   renameSync(root + '/database.dump.partial', root + '/database.dump');
   report.archive = { bytes: archiveBytes, sha256: archiveHash.digest('hex') };
-  report.state = 'fingerprinting_source_snapshot'; save();
-  const fingerprints = [];
-  for (const table of inventory.tables) {
-    // ONLY avoids counting child rows twice; partitioned parents are retained
-    // in the schema but have no physical rows of their own.
-    const qualified = ident(table.schema) + '.' + ident(table.name);
-    report.currentComparisonTable = table.schema + '.' + table.name; save();
-    const lines = await sql(`select json_build_object('schema',${literal(table.schema)},'table',${literal(table.name)},
-      'rows',count(*),'fingerprint',md5(coalesce(string_agg(md5(to_jsonb(t)::text),'' order by md5(to_jsonb(t)::text)),'')))
-      from only ${qualified} t;`);
-    check(lines.length === 1, 'Source fingerprint missing');
-    fingerprints.push(JSON.parse(lines[0]));
-    // A timeout must not discard already completed comparisons. This partial
-    // file is deliberately distinct from the complete acceptance baseline.
-    privateJson('source-fingerprints.partial.json', fingerprints);
-    if (fingerprints.length % 25 === 0) console.log(JSON.stringify({ stage: report.state, tablesComplete: fingerprints.length }));
+  if (completeCapture) {
+    // Avoid repeating the expensive live aggregate/hash pass. Restoration
+    // fidelity is checked against native archive + supplemental COPY offline.
+    await sql('rollback;'); keeper.stdin.end('\\q\n');
+    report.state = 'export_complete_restore_unverified';
+    report.comparisonMode = 'native_archive_and_supplement_offline';
+    report.sourceHashScanPerformed = false;
+    report.completedAt = new Date().toISOString(); save();
+    console.log(JSON.stringify({ stage: report.state, tables: inventory.tables.length,
+      supplementalTables: netTables.length, archiveBytes }));
+  } else {
+    report.state = 'fingerprinting_source_snapshot'; save();
+    const fingerprints = [];
+    for (const table of inventory.tables) {
+      // ONLY avoids counting child rows twice; partitioned parents are retained
+      // in the schema but have no physical rows of their own.
+      const qualified = ident(table.schema) + '.' + ident(table.name);
+      report.currentComparisonTable = table.schema + '.' + table.name; save();
+      const lines = await sql(`select json_build_object('schema',${literal(table.schema)},'table',${literal(table.name)},
+        'rows',count(*),'fingerprint',md5(coalesce(string_agg(md5(to_jsonb(t)::text),'' order by md5(to_jsonb(t)::text)),'')))
+        from only ${qualified} t;`);
+      check(lines.length === 1, 'Source fingerprint missing');
+      fingerprints.push(JSON.parse(lines[0]));
+      // A timeout must not discard already completed comparisons. This partial
+      // file is deliberately distinct from the complete acceptance baseline.
+      privateJson('source-fingerprints.partial.json', fingerprints);
+      if (fingerprints.length % 25 === 0) console.log(JSON.stringify({ stage: report.state, tablesComplete: fingerprints.length }));
+    }
+    privateJson('source-fingerprints.json', fingerprints);
+    await sql('rollback;'); keeper.stdin.end('\\q\n');
+    report.state = 'export_complete_restore_unverified';
+    report.tablesFingerprinted = fingerprints.length; report.completedAt = new Date().toISOString(); save();
+    console.log(JSON.stringify({ stage: report.state, tables: fingerprints.length, archiveBytes }));
   }
-  privateJson('source-fingerprints.json', fingerprints);
-  await sql('rollback;'); keeper.stdin.end('\\q\n');
-  report.state = 'export_complete_restore_unverified';
-  report.tablesFingerprinted = fingerprints.length; report.completedAt = new Date().toISOString(); save();
-  console.log(JSON.stringify({ stage: report.state, tables: fingerprints.length, archiveBytes }));
 } catch (error) {
   report.failure = 'Native recovery export stopped; inspect stage and private evidence before retry';
   // Keep diagnostic text private; never print the original exception or SQL.

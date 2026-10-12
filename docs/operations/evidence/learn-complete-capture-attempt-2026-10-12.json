@@ -1,0 +1,81 @@
+{
+  "version": "learn-complete-capture-attempt/1",
+  "checkedAt": "2026-10-12T01:22:21.598764+00:00",
+  "state": "stopped_incomplete_source_health_recovered",
+  "capture": {
+    "snapshotAt": "2026-10-12T01:10:44.255255+00:00",
+    "readOnly": "on",
+    "sourceHashScanPerformed": false,
+    "nativeArchiveCompleted": false,
+    "nativeArchiveBytes": 0,
+    "networkSupplement": {
+      "format": "native-postgresql-copy",
+      "tables": [
+        "_http_response",
+        "http_request_queue"
+      ],
+      "bytes": 2674825,
+      "sha256": "e0a1035802379403ca0701ed33c2b9609225efad21e1ee96daa7366256e4b54c",
+      "rowsUseExportedSnapshot": true,
+      "sequenceIsNonTransactional": true
+    },
+    "supplementRows": {
+      "net._http_response": 2434,
+      "net.http_request_queue": 0
+    },
+    "combinedSnapshotRecoveryProven": false
+  },
+  "originalVerifiedArchive": {
+    "unchanged": true,
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "observedIncident": {
+    "managementSqlHttpStatus": 544,
+    "authUnhealthyObservedAt": "2026-10-12T01:16:57.690Z",
+    "metricsHttpStatus": 500,
+    "rootCause": "not_established",
+    "exportStoppedByAgent": true,
+    "noAutomaticRetry": true
+  },
+  "cleanup": {
+    "healthy": true,
+    "checkedAt": "2026-10-12T01:19:16.657486+00:00",
+    "cliExpired": true,
+    "cliExpiresAt": "2026-10-12T01:15:34.943252+00:00",
+    "remainingCliSessions": 0,
+    "remainingLocalExportContainers": 0,
+    "unchangedRoleMembership": true,
+    "productionDataWrites": false
+  },
+  "authRecovery": {
+    "checkedAt": "2026-10-12T01:21:22.231Z",
+    "http": 200,
+    "services": [
+      {
+        "name": "auth",
+        "status": "ACTIVE_HEALTHY",
+        "healthy": true,
+        "errorPresent": false,
+        "errorClass": null
+      }
+    ]
+  },
+  "productionDataWrites": false,
+  "newRoleGrants": false,
+  "ownerPasswordReset": false,
+  "productionRestart": false,
+  "externalDataUploads": 0,
+  "tests": {
+    "parserTestsPassed": 5,
+    "syntheticNativeAndNetworkRestorePassed": true,
+    "ordinaryAndNetworkTamperingRejected": true,
+    "restoredCronAndHttpPrevented": true
+  },
+  "limits": [
+    "No complete native archive exists for the later snapshot",
+    "Supplement must not be merged with the earlier archive and described as a single consistent recovery point",
+    "Source connection/service-health degradation needs diagnosis before another capture",
+    "Vault decryption, application restart and durable independent database backup still required"
+  ]
+}

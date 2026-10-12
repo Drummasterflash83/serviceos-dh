@@ -7,6 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 02:21 BST — second native export stopped; source health recovered.**
+A fresh read-only snapshot captured the two omitted pg_net tables (2,434 response
+rows and an empty request queue), but its native dump emitted zero bytes while
+Management SQL returned HTTP 544. The attempt was stopped and both local clients
+removed. Auth was separately observed unhealthy. At 01:19 UTC SQL health passed,
+the temporary credential was expired, grants were unchanged and no CLI sessions
+remained; at 01:21 UTC Auth returned `ACTIVE_HEALTHY`. No production restart,
+owner-password reset, application-data write or external upload occurred.
+
+The original 196,872,981-byte archive is unchanged and its earlier verified
+restore remains valid. **The later supplement is not a complete consistent
+backup** and must not be presented as one combined snapshot with the older archive.
+The revised complete-capture/restore path passes synthetic native/COPY and tamper
+checks, but real acceptance remains open. Diagnose the source connection/service
+health issue before another capture; do not automatically restart this run or
+refresh credentials. Provider portal verification also remains unavailable: Arc
+returned a blank page and 1Password has not exposed its vault list.
+[Attempt, cleanup and recovery evidence](evidence/learn-complete-capture-attempt-2026-10-12.json).
+
 **12 October, 02:05 BST — all archived database rows verified against a fresh offline restore.**
 Native COPY comparison matched **1,591,576 rows in 299 tables and all five archived
 sequence values**, including row contents and duplicates while allowing physical

@@ -1,5 +1,28 @@
 # LEARN data recovery coverage
 
+## Latest capture attempt — 12 October 2026, 01:21 UTC
+
+The separate complete-capture-v2 attempt is stopped, not running or accepted.
+Its 01:10:44 read-only snapshot captured 2,434 `net._http_response` rows and zero
+`net.http_request_queue` rows in a private 2,674,825-byte native COPY supplement.
+The native dump emitted zero bytes. Management SQL returned HTTP 544 while the
+dump was pending; the agent stopped its dump container and the runner removed
+both clients. Auth health was observed unhealthy afterward. The cause is not
+established; temporal overlap does not establish a specific resource failure.
+
+At 01:19:16 SQL health passed, existing CLI membership remained unchanged, the
+temporary password was expired, and zero CLI sessions/local export containers
+remained. At 01:21:22 Auth was healthy. No restart, credential reset, new grants,
+production data writes or external upload occurred. Error logs remain private.
+The original archive's size and SHA-256 were rechecked and are unchanged.
+
+Do not merge the later supplemental rows with the older archive and claim one
+consistent snapshot. The revised path is synthetically verified, including exact
+restoration and tamper detection for both operational tables, but no complete
+real second capture or restore exists. Diagnose connection/service-health
+degradation before preparing any new run; retain the stopped journal and files.
+[Sanitized evidence](evidence/learn-complete-capture-attempt-2026-10-12.json).
+
 ## Latest database recovery state — 12 October 2026, 01:05 UTC
 
 The existing native archive was restored again into a fresh offline database.

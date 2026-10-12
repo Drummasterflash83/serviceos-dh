@@ -5,6 +5,7 @@ duplicates while ignoring physical row order. Only hashes/counts leave this modu
 Unknown data formats, truncated COPY, duplicate tables and bounds fail closed.
 """
 import hashlib
+import io
 import json
 import re
 import subprocess
@@ -161,3 +162,41 @@ def compare_native_data(expected, actual):
             'sequences': len(expected['sequences']),
             'comparisonSha256': hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()).hexdigest(),
             'scope': 'all COPY table data present in the native archive; omitted source objects are not covered'}
+
+
+def compare_network_supplement(path, target):
+    """Check the two reviewed pg_net tables which pg_dump does not export."""
+    raw = path.read_bytes()
+    if len(raw) > 16 * 1024 * 1024:
+        raise RecoveryError('Network supplement exceeds private comparison bound')
+    expected = copy_fingerprints(io.BytesIO(raw))
+    if [(t['schema'], t['table']) for t in expected['tables']] != [
+            ('net', '_http_response'), ('net', 'http_request_queue')]:
+        raise RecoveryError('Unreviewed network supplement table identity')
+    if len(expected['sequences']) != 1 or expected['sequences'][0]['name'] != 'net.http_request_queue_id_seq':
+        raise RecoveryError('Unreviewed network supplement sequence identity')
+    target.verify_boundary()
+    def ident(value):
+        return '"' + value.replace('"', '""') + '"'
+    chunks = []
+    for table in expected['tables']:
+        qualified = ident(table['schema']) + '.' + ident(table['table'])
+        literal = "'" + qualified.replace("'", "''") + "'"
+        columns = json.loads(target.query('select json_agg(attname order by attnum) from pg_attribute '
+            'where attrelid=' + literal + '::regclass and attnum>0 and not attisdropped;'))
+        if columns != table['columns']:
+            raise RecoveryError('Restored network table columns differ')
+        rows = target._run(target._psql(), data=("set timezone='UTC';set datestyle='ISO, MDY';"
+            "set extra_float_digits=3;set bytea_output='hex';COPY " + qualified + ' TO STDOUT;').encode())
+        if len(rows) > 8 * 1024 * 1024:
+            raise RecoveryError('Restored network rows exceed comparison bound')
+        chunks.append(('COPY ' + qualified + ' (' + ', '.join(map(ident, columns))
+            + ') FROM stdin;\n').encode() + rows + b'\\.\n')
+    sequence = json.loads(target.query("select json_build_object('lastValue',last_value,"
+        "'isCalled',is_called) from net.http_request_queue_id_seq;"))
+    chunks.append(("SELECT pg_catalog.setval('net.http_request_queue_id_seq', "
+        + str(sequence['lastValue']) + ', ' + str(sequence['isCalled']).lower() + ');\n').encode())
+    result = compare_native_data(expected, copy_fingerprints(io.BytesIO(b''.join(chunks))))
+    target.verify_boundary()
+    result['scope'] = 'two explicitly captured pg_net COPY tables and separately observed nontransactional sequence'
+    return result

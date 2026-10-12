@@ -11,7 +11,7 @@ import sys
 import time
 from pathlib import Path
 from database_restore_sandbox import RecoveryError, RestoreSandbox
-from native_copy_fingerprints import archive_fingerprints, restored_fingerprints, compare_native_data
+from native_copy_fingerprints import archive_fingerprints, restored_fingerprints, compare_native_data, compare_network_supplement
 
 ROOT = Path('.verification-results/production-database-export-2026-10-12')
 IMAGE = 'public.ecr.aws/supabase/postgres:17.6.1.141'
@@ -119,6 +119,14 @@ def run(*, combined_audio=False, compare_native=False):
                 if len(raw) != proof['bytes'] or hashlib.sha256(raw).hexdigest() != proof['sha256']:
                     raise RecoveryError('Network table supplement integrity mismatch')
                 target.restore_sql_files([supplement])
+                if compare_native:
+                    report['networkSupplementComparison'] = compare_network_supplement(supplement, target)
+                    captured = {(t['schema'], t['table']) for t in archived_data['tables']}
+                    captured.update({('net', '_http_response'), ('net', 'http_request_queue')})
+                    physical = {(t['schema'], t['name']) for t in inventory['tables'] if t['kind'] == 'r'}
+                    if captured != physical:
+                        raise RecoveryError('Native capture does not cover the physical table inventory')
+                    report['allInventoriedPhysicalTablesCaptured'] = True
                 report['knownArchiveOmissions'] = []
             report['state'] = 'verifying_all_table_fingerprints'
             write_private(report_path, report)
@@ -219,6 +227,9 @@ def run(*, combined_audio=False, compare_native=False):
 
 
 if __name__ == '__main__':
-    if sys.argv[1:] not in ([], ['--combined-audio'], ['--compare-native']):
+    if sys.argv[1:] not in ([], ['--combined-audio'], ['--compare-native'], ['--complete-capture-v2']):
         raise SystemExit('Unsupported restore option')
-    run(combined_audio=sys.argv[1:] == ['--combined-audio'], compare_native=sys.argv[1:] == ['--compare-native'])
+    if sys.argv[1:] == ['--complete-capture-v2']:
+        ROOT = Path('.verification-results/production-database-complete-capture-v2-2026-10-12')
+    run(combined_audio=sys.argv[1:] == ['--combined-audio'],
+        compare_native=sys.argv[1:] in (['--compare-native'], ['--complete-capture-v2']))
