@@ -7,6 +7,56 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+
+**12 October, 21:03 UTC — real Slack TEST access verified; approved windows empty; matching recurring fix installed.**
+
+### Working and verified
+
+- Chris approved the existing channel-only credential in Drummonds TEST and the
+  bounded two-channel import. The operator form stored it in encrypted Vault;
+  both exact 12 October 00:00–19:00 UTC windows completed in one page each.
+  Slack returned **zero messages**. Two worker calls were acknowledged, then
+  capture was paused; there are no active Slack jobs or recurring subscriptions.
+- The complete offline operator journey now verifies ongoing channel windows,
+  observed replies, encrypted credential binding, page replay, pause/resume and
+  revoked authority. It exposed and fixed both cross-client approval attribution
+  and paused reply jobs consuming attempts. TEST package 083 installed with all
+  195 datasets unchanged before the separate approved real run.
+- All nineteen production packages pass the isolated archive rehearsal, preserving
+  all original archived rows/sequences. The exact unchanged 37 runtime artifacts
+  retain their prior boot evidence; no new boot execution is claimed. The matching
+  70-step release plan and 23 adapter/journal tests pass. Live remains unchanged.
+- Post-run reconciliation checks all 195 baseline datasets: 184 are identical;
+  ten others preserve every original row and contain expected new setup/audit/job
+  records. One existing TEST operator Auth row changed during the browser session.
+  It is the expected operator, but whole-row baseline hashes cannot prove its exact
+  changed columns. Existing source communications, profiles, grants and other
+  retained records match. Do not describe all Auth rows as unchanged.
+
+### Needs finishing
+
+- Positive real message storage, observed replies, deduplication and source-to-card
+  acceptance are **not proved by empty successful windows**. Full history,
+  private-channel visibility and ongoing provider capture remain open.
+- Complete the production release gates and signed-in production journeys, then
+  promote the matched release using the existing live UX/Drummonds branding.
+  Deployment to live and TEST is already authorised; no repeat approval is needed.
+- One browser date-entry mistake was retired before execution (zero attempts).
+  The original approval/settings remain recorded. Native input changes produced
+  and verified the correct dates before either provider call. This did not reset
+  or increase the run's request/message budgets.
+
+### Blocked externally
+
+- A concrete date-window amendment is awaiting Chris's decision: discover at most
+  one latest available message per same public channel, then capture its bounded
+  UTC day within the original cumulative limits. The initial permission named
+  12 October only. No older discovery/import has started. DMs remain excluded.
+
+[Recurring release evidence](evidence/learn-production-slack-recurring-2026-10-12.json) ·
+[Real empty-window evidence](evidence/learn-slack-real-empty-windows-2026-10-12.json) ·
+[Exact amendment](LEARN-SLACK-REAL-TEST.md#prepared-date-window-amendment--not-yet-approved).
+
 **12 October, 20:33 UTC — matching eighteen-package production candidate rehearsed; TEST operator attribution repaired.**
 A full production-schema journey caught a real gap: the generic reference trigger
 rejected a Slack approval attributed to an OpenFolk operator from another client.

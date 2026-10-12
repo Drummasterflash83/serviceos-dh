@@ -1,0 +1,133 @@
+-- Full production schema in a disposable offline clone. Real Auth, authority and encrypted Vault.
+set search_path=public,pg_catalog;
+begin;
+create schema verify;
+grant usage on schema verify to authenticated,service_role;
+create function verify.id(n integer) returns uuid language sql immutable as $$select ('00000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid$$;
+grant execute on function verify.id(integer) to authenticated,anon,service_role;
+create table verify.setup(definition jsonb,receipt jsonb);
+grant select,update on verify.setup to authenticated;
+insert into tenants(id,slug,display_name,status) values(verify.id(200),'slack-operator-probe','Synthetic Slack','active'),(verify.id(201),'slack-operator-other','Synthetic Other','active');
+insert into auth.users(id,banned_until) values(verify.id(210),'infinity'),(verify.id(211),'infinity'),(verify.id(212),'infinity'),(verify.id(213),'infinity');
+update profiles set tenant_id=verify.id(200),role='owner' where id=verify.id(210);
+update profiles set tenant_id=verify.id(200),role='viewer' where id=verify.id(211);
+update profiles set tenant_id=verify.id(201),role='viewer' where id in(verify.id(212),verify.id(213));
+insert into platform_authority_grants(profile_id,permission,granted_by) values(verify.id(212),'platform.controlplane.admin','offline synthetic fixture'),(verify.id(213),'platform.controlplane.view','offline synthetic fixture');
+insert into verify.setup values('{"kind":"configure_slack","reason":"Synthetic authorised channel import","team_id":"TOPERATOR","authorized_user_id":"UOPERATOR","expected_revision":null,"credential_mode":"replace","same_account_confirmed":true}',null);
+grant select,update on verify.setup to service_role;
+create table verify.ongoing(account_id uuid,first_job uuid,recurring_job uuid,thread_id uuid);
+grant select,insert,update on verify.ongoing to authenticated,service_role;
+set request.jwt.claim.sub='00000000-0000-4000-8000-000000000212';set request.jwt.claim.role='authenticated';set role authenticated;
+do $$declare c jsonb;r jsonb;begin
+ c:=learn_slack_configure(verify.id(200),verify.id(260),verify.id(212),(select definition from verify.setup),'apply','xoxp-synthetic-only');
+ update verify.setup set receipt=c;
+ r:=learn_slack_start_import(verify.id(200),verify.id(261),(c->>'connection_id')::uuid,c->>'revision','COPERATOR','2026-01-01 00:00Z','2026-01-01 00:15Z',2,'Initial window for ongoing approval');
+ insert into verify.ongoing(account_id,first_job) values((r->>'accountId')::uuid,(r->>'jobId')::uuid);
+end$$;
+reset role;
+create function verify.publish_history(expected_job uuid,has_replies boolean) returns void language plpgsql as $$
+declare j public.platform_jobs%rowtype;a public.connector_accounts%rowtype;c public.provider_connections%rowtype;cp jsonb;n jsonb;stamp text;records jsonb;begin
+ select * into strict j from learn_slack_claim_jobs(verify.id(270),1);
+ assert j.id=expected_job and j.tenant_id=verify.id(200),'Wrong history work claimed';
+ select * into strict a from connector_accounts where id=(j.payload->>'connector_account_id')::uuid;
+ select * into strict c from provider_connections where id=(a.settings->'slack_history'->>'connectionId')::uuid;
+ assert learn_slack_read_credential(a.tenant_id,j.id,j.claimed_by,j.attempt_count,c.id,c.updated_at,(c.secret_refs->>'user_token')::uuid)='xoxp-synthetic-only','User credential not bound to claimed history';
+ cp:=jsonb_build_object('scopeKey',jsonb_build_array(a.tenant_id::text,a.settings#>>'{slack_history,teamId}',a.settings#>>'{slack_history,channelId}',a.settings#>>'{slack_history,oldest}',a.settings#>>'{slack_history,latest}',a.settings#>>'{slack_history,consentReference}')::text,'cursor',null,'pages',0,'complete',false);
+ n:=cp||'{"pages":1,"complete":true}';stamp:=((a.settings#>>'{slack_history,oldest}')::numeric+60.000001)::text;
+ records:=jsonb_build_array(jsonb_build_object('tenant_id',a.tenant_id,'channel_id','COPERATOR','source_external_id','TOPERATOR:COPERATOR:'||stamp,'provider_timestamp',stamp,'thread_timestamp',null,'text','Synthetic recurring root','provider_payload',jsonb_build_object('ts',stamp,'text','Synthetic recurring root','reply_count',case when has_replies then 1 else 0 end)));
+ assert slack_history_commit_page(a.tenant_id,j.id,a.id,j.claimed_by,j.attempt_count,cp,n,records);
+ assert slack_history_commit_page(a.tenant_id,j.id,a.id,j.claimed_by,j.attempt_count,cp,n,records),'Exact history replay failed';
+ perform learn_slack_finish_job(a.tenant_id,j.id,j.claimed_by,j.attempt_count,'{"success":true}');
+end$$;
+grant execute on function verify.publish_history(uuid,boolean) to service_role;
+set request.jwt.claim.role='service_role';set role service_role;
+select verify.publish_history((select first_job from verify.ongoing),false);
+reset role;set request.jwt.claim.role='authenticated';set role authenticated;
+do $$declare a uuid;r jsonb;begin
+ select account_id into a from verify.ongoing;
+ r:=learn_slack_recurring_control(verify.id(200),verify.id(262),a,0,true,'Operator ongoing channel approval');
+ assert r->>'state'='recorded' and r->>'revision'='1';
+ assert learn_slack_recurring_control(verify.id(200),verify.id(262),a,0,true,'Operator ongoing channel approval')=r;
+ r:=learn_slack_recurring_threads_control(verify.id(200),verify.id(263),a,1,true,'Operator ongoing observed replies');
+ assert r->>'state'='recorded' and r->>'revision'='2';
+ assert learn_slack_recurring_read(verify.id(200))->>'canWrite'='true';
+end$$;
+reset role;set request.jwt.claim.role='service_role';set role service_role;
+do $$declare r jsonb;begin
+ r:=learn_slack_schedule_recurring(10);
+ assert r->>'queued'='1','Recurring history was not queued';
+ update verify.ongoing set recurring_job=(select job_id from slack_history_imports where tenant_id=verify.id(200) and definition ? 'recurringAccountId');
+ assert (select approved_by=verify.id(212) from slack_history_imports where job_id=(select recurring_job from verify.ongoing));
+ assert (select tenant_id=verify.id(201) from profiles where id=verify.id(212)),'Operator profile was moved';
+end$$;
+reset role;
+update slack_workspace_pacing set next_allowed_at='-infinity',blocked_until='-infinity',active_job_id=null where team_id='TOPERATOR';
+set role service_role;
+select verify.publish_history((select recurring_job from verify.ongoing),true);
+reset role;
+update slack_recurring_channels set next_check_at='-infinity' where tenant_id=verify.id(200);
+set role service_role;
+do $$declare r jsonb;begin
+ r:=learn_slack_schedule_recurring(10);
+ assert r->>'queued'='0','Channel advanced before observed replies';
+ update verify.ongoing set thread_id=(select id from slack_thread_imports where tenant_id=verify.id(200));
+ assert (select thread_id is not null from verify.ongoing),'Observed reply import missing';
+ assert (select approved_by=verify.id(212) from slack_thread_imports where id=(select thread_id from verify.ongoing));
+end$$;
+reset role;
+-- A service caller cannot manufacture a different approval or a different scope.
+do $$declare h jsonb;t jsonb;begin
+ select to_jsonb(i) into h from slack_history_imports i where job_id=(select recurring_job from verify.ongoing);
+ select to_jsonb(i) into t from slack_thread_imports i where id=(select thread_id from verify.ongoing);
+ assert learn_slack_recurring_attribution_allowed('slack_thread_imports',t),'Actual recorded thread approval rejected';
+ assert not learn_slack_recurring_attribution_allowed('slack_history_imports',h||jsonb_build_object('approved_by',verify.id(213)));
+ assert not learn_slack_recurring_attribution_allowed('slack_thread_imports',jsonb_set(t,'{scope,channelId}','"COTHER"'));
+ assert not learn_slack_recurring_attribution_allowed('slack_thread_imports',jsonb_set(t,'{definition,recurringRevision}','999'));
+ assert not learn_slack_recurring_attribution_allowed('slack_thread_imports',jsonb_set(t,'{scope,parentTimestamp}','"0.1"'));
+ assert not learn_slack_recurring_attribution_allowed('unrelated_table',t);
+ assert not has_function_privilege('service_role','learn_slack_recurring_attribution_allowed(text,jsonb)','execute');
+ assert not has_function_privilege('authenticated','learn_slack_recurring_attribution_allowed(text,jsonb)','execute');
+end$$;
+set request.jwt.claim.role='authenticated';set role authenticated;
+select learn_slack_recurring_control(verify.id(200),verify.id(264),(select account_id from verify.ongoing),2,false,'Pause recurring source');
+reset role;
+update slack_workspace_pacing set next_allowed_at='-infinity',blocked_until='-infinity',active_job_id=null where team_id='TOPERATOR';
+set request.jwt.claim.role='service_role';set role service_role;
+do $$begin
+ assert (select count(*) from learn_slack_claim_jobs(verify.id(271),1))=0,'Paused recurring replies were claimed';
+ assert (select status='queued' and attempt_count=0 from platform_jobs where id=(select initial_job_id from slack_thread_imports where id=(select thread_id from verify.ongoing))),'Pause consumed a reply attempt';
+ assert (select count(*) from slack_messages where tenant_id=verify.id(200))=2,'Pause changed retained roots';
+end$$;
+reset role;set request.jwt.claim.role='authenticated';set role authenticated;
+select learn_slack_recurring_control(verify.id(200),verify.id(265),(select account_id from verify.ongoing),3,true,'Resume retained recurring source');
+reset role;set request.jwt.claim.role='service_role';set role service_role;
+do $$declare j public.platform_jobs%rowtype;t public.slack_thread_imports%rowtype;c public.provider_connections%rowtype;cp jsonb;n jsonb;stamp text;records jsonb;begin
+ select * into strict j from learn_slack_claim_jobs(verify.id(272),1);
+ select * into strict t from slack_thread_imports where id=(select thread_id from verify.ongoing);
+ assert j.id=t.initial_job_id;
+ select * into strict c from provider_connections where id=(t.scope->>'connectionId')::uuid;
+ assert learn_slack_read_thread_credential(t.tenant_id,j.id,j.claimed_by,j.attempt_count,c.id,c.updated_at,(c.secret_refs->>'user_token')::uuid)='xoxp-synthetic-only';
+ cp:=jsonb_build_object('scopeKey',array_to_json(array[t.tenant_id::text,t.scope->>'teamId',t.scope->>'channelId',t.scope->>'oldest',t.scope->>'latest',t.scope->>'consentReference',t.scope->>'parentTimestamp'])::text,'cursor',null,'pages',0,'complete',false);
+ n:=cp||'{"pages":1,"complete":true}';stamp:=((t.scope->>'parentTimestamp')::numeric+1)::text;
+ records:=jsonb_build_array(jsonb_build_object('tenant_id',t.tenant_id,'channel_id','COPERATOR','source_external_id','TOPERATOR:COPERATOR:'||stamp,'provider_timestamp',stamp,'thread_timestamp',t.scope->>'parentTimestamp','text','Synthetic recurring reply','provider_payload',jsonb_build_object('ts',stamp,'thread_ts',t.scope->>'parentTimestamp','text','Synthetic recurring reply')));
+ assert slack_thread_commit_page(t.tenant_id,j.id,t.id,j.claimed_by,j.attempt_count,cp,n,records);
+ assert slack_thread_commit_page(t.tenant_id,j.id,t.id,j.claimed_by,j.attempt_count,cp,n,records);
+ perform learn_slack_finish_thread_job(t.tenant_id,j.id,j.claimed_by,j.attempt_count,'{"success":true}');
+ assert (select count(*) from slack_messages where tenant_id=verify.id(200))=3;
+ assert (select count(*) from slack_message_versions where tenant_id=verify.id(200))=3;
+ assert (select count(*) from interactions where tenant_id=verify.id(200) and source_table='slack_messages')=3;
+end$$;
+reset role;
+update platform_authority_grants set effective_to='epoch' where profile_id=verify.id(212);
+update slack_recurring_channels set next_check_at='-infinity' where tenant_id=verify.id(200);
+set role service_role;
+do $$declare before_count bigint;r jsonb;begin
+ select count(*) into before_count from platform_jobs where tenant_id=verify.id(200);
+ r:=learn_slack_schedule_recurring(10);
+ assert r->>'queued'='0' and r->>'held'='1','Revoked operator authority scheduled work';
+ assert (select count(*) from platform_jobs where tenant_id=verify.id(200))=before_count;
+ assert (select count(*) from slack_messages where tenant_id=verify.id(200))=3;
+end$$;
+reset role;
+rollback;
+select 'PASS: real-schema operator recurring history and replies, Vault binding, replay, pause/resume, revoked authority and tenant-bound attribution';

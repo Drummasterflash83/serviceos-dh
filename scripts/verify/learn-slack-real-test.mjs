@@ -34,7 +34,7 @@ const token = savedCliToken(),
 const state = await q(`select jsonb_build_object(
  'cronCatalogPresent',to_regclass('cron.job') is not null,
  'slackJobs',(select coalesce(jsonb_agg(jsonb_build_object('id',id,'tenant',tenant_id,'status',status,'type',job_type,'attempt',attempt_count,'maxAttempts',max_attempts,'account',payload->>'connector_account_id','thread',payload->>'thread_import_id')),'[]') from platform_jobs where job_type in('slack.history_sync','slack.thread_sync') and status in('queued','running','retrying')),
- 'history',(select coalesce(jsonb_agg(jsonb_build_object('id',id,'account',account_id,'definition',definition)),'[]') from slack_history_imports where tenant_id='${tenant}'),
+ 'history',(select coalesce(jsonb_agg(jsonb_build_object('id',i.id,'account',i.account_id,'definition',i.definition,'jobId',j.id,'jobStatus',j.status,'attempt',j.attempt_count,'claimedBy',j.claimed_by,'lease',j.lease_expires_at,'correctedRun',j.metadata->'scopeCorrection'->>'runId','pageCommitted',coalesce(j.metadata ? 'slack_page_v1',false))),'[]') from slack_history_imports i join platform_jobs j on j.id=i.job_id where i.tenant_id='${tenant}'),
  'threads',(select coalesce(jsonb_agg(jsonb_build_object('id',id,'account',account_id,'definition',definition,'scope',scope)),'[]') from slack_thread_imports where tenant_id='${tenant}'),
  'accounts',(select coalesce(jsonb_agg(jsonb_build_object('id',id,'scope',settings->'slack_history')),'[]') from connector_accounts where tenant_id='${tenant}' and settings ? 'slack_history'),
  'connection',(select jsonb_build_object('id',id,'team',non_secret_config->>'team_id','kind',non_secret_config->>'credential_kind','user',non_secret_config->>'authorized_user_id','status',status,'revoked',revoked_at,'field',configured_fields) from provider_connections where tenant_id='${tenant}' and provider='slack'),
@@ -226,6 +226,18 @@ if (mode === "prepare") {
       JSON.stringify(c.field) === JSON.stringify(["user_token"]),
     "Expected channel user connection required",
   );
+  // Preserve one observed browser date-entry mistake as a cancelled audit record.
+  // It was retired before any worker invocation, so it consumes no provider or
+  // message budget. Never exclude an executed or ambiguous approval.
+  const retired = current.history.find(r=>r.id==='36c9acfb-e111-48f4-ae38-5148b88bb0cd');
+  if (retired) {
+    check(retired.jobId==='54b6621a-359c-4b00-b7a8-de340b458ad8' &&
+      retired.account==='563e1183-d1e0-4c62-bce1-302b26d8fe7a' &&
+      retired.jobStatus==='cancelled' && retired.attempt===0 && retired.claimedBy===null &&
+      retired.lease===null && retired.correctedRun===p.runId && retired.pageCommitted===false,
+      "Retired date-entry approval changed or was executed");
+    current.history=current.history.filter(r=>r.id!==retired.id);
+  }
   check(
     current.history.length > 0 && current.history.length <= 3 && current.threads.length <= 3,
     "Approval count exceeds the bounded run",

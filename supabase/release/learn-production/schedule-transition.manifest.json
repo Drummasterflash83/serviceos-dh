@@ -8,18 +8,18 @@
   },
   "runtime": {
     "path": "supabase/release/learn-production/runtime-candidate.manifest.json",
-    "sha256": "b12ec3b401f1340ef9d57161370383698e288a8bfdba6601922c1ba4d9b73900"
+    "sha256": "5aa869b0c96cb8123aee02eab5db895ea72bb29a35ac8a7bc57c2e04237a21b7"
   },
   "outputs": [
     {
       "mode": "pause",
       "path": "supabase/release/learn-production/schedules-pause.sql",
-      "sha256": "37b94e3a377c5057dc6935ef1f7667a28b21390e10ba52efa37358038d3546ce"
+      "sha256": "de69df0bf493b7325adc9cea33c20c75b83fad4a09ef6d39c231d32b079d3ba2"
     },
     {
       "mode": "restore",
       "path": "supabase/release/learn-production/schedules-restore.sql",
-      "sha256": "44c3f545de68ecba132deacaad0aa5c027c266b1a41ee9d7d0bbe0b2a92c93eb"
+      "sha256": "27e2a701baa60f43264b908804fd722b14c32cdce9c33a2d015e4cd848e8014b"
     }
   ],
   "limitations": [

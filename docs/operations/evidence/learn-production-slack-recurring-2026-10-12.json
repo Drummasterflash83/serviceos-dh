@@ -1,0 +1,154 @@
+{
+  "state": "production_slack_recurring_rehearsed_offline",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "negativeChecks": [
+    "wrong_target",
+    "function_acl_drift",
+    "late_failure"
+  ],
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 382,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "35f96ba8060eb1e096cbdf0c3d2c4a0df7979dd1eb0518a19b892059297b28e4",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "originalArchivePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "duplicateRejected": true,
+  "journey": {
+    "passed": true,
+    "probeSha256": "e40d087d42fc9609d7c851f91f53fd944cdbe8ffd96f68de43677196429b4e73",
+    "sources": [
+      {
+        "path": "scripts/verify/learn-production-slack-recurring-operator.assert.sql",
+        "sha256": "9e0a69032fa886cf7daf96f4b43c64ed86a258f919729bb525fe4b5a1d9c1cd1"
+      }
+    ]
+  },
+  "postJourneyPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 382,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "35f96ba8060eb1e096cbdf0c3d2c4a0df7979dd1eb0518a19b892059297b28e4",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "packages": [
+    "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+    "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+    "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+    "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+    "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+    "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+    "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+    "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+    "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+    "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+    "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+    "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+    "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba",
+    "f4413fe47a9eaa1eb7774e35e22f10f78bf94a55345f4fbe19fe690b4e7d8556",
+    "b877e70fa1cc946ba0c9c8a66f28b6603f99dc8484fefd1411bf30beed325998",
+    "ab4cef1752c520a13047fb287d63931068f7e7468d0014ba955df75a49a9dd56",
+    "304b2e84f822b703a882b184ee490268f2b3802c817dee5f7953c7180a8962d2",
+    "f5fe1265961b713a338c3bfa650cd8744e2bfeaf04778f90e83f5dc9352e51c0"
+  ],
+  "newFunctions": 1,
+  "changedFunctions": 2,
+  "existingTablesViewsRolesStorageUnchanged": true,
+  "priorReceiptsUnchanged": true,
+  "addedReleaseReceipts": 1,
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "version": "learn-production-slack-recurring/1",
+  "scope": "Offline production-schema recurring operator journey and exact unchanged runtime evidence",
+  "candidateManifestSha256": "5aa869b0c96cb8123aee02eab5db895ea72bb29a35ac8a7bc57c2e04237a21b7",
+  "bundleReportSha256": "49e589f031f53617f0855d729affe648a715f405c2ebdfbcf6464eedd914b7ae",
+  "bootReportSha256": "6e057d35d13fd1bc587276363edca88b5533a8864879713ed2e6cac92971cc3e",
+  "runtimeWireReportSha256": "fa80fb15a24d8cb67dc31823c3498fa1352573b6ccfad92f6136fe757e69235a",
+  "runtimeEvidenceCarriedForward": true,
+  "newRuntimeBootExecution": false,
+  "sourceClosureSha256": "8ade602531ba85bba639cc5c30c8a9c964c9680274c54d970778f49aaa9712fb",
+  "dynamicRpcReview": {
+    "sites": 19,
+    "uniqueTargets": 51,
+    "failures": 0
+  },
+  "knownLimitations": [
+    "No production release executed.",
+    "Synthetic recurring journey is not positive real-provider acceptance.",
+    "Approved real Slack TEST windows completed empty; positive message/reply/deduplication acceptance still pending.",
+    "Full history, private-channel visibility, real recurring capture and signed-in production acceptance remain open."
+  ],
+  "hostedTestFix": {
+    "state": "installed_verified",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T20:49:46.933Z",
+    "packageSha256": "5de2ae4783f97ca7976299a8897f34da40ff942a38e580170ea09fa9e3b00263",
+    "expected": {
+      "marker": "slack_recurring_attribution_installed",
+      "fingerprint": "2eeee4143d6ed7e422939375ad73e24c"
+    },
+    "afterFingerprint": "2eeee4143d6ed7e422939375ad73e24c",
+    "preservedDatasets": 195,
+    "newAccounts": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "credentialsUploaded": 0,
+    "productionChanged": false
+  },
+  "releaseSequence": {
+    "steps": 70,
+    "databasePackages": 19,
+    "runtimeFunctions": 37,
+    "localAdapterAndJournalTestsPassed": 23,
+    "executed": false
+  },
+  "realProviderEvidence": "learn-slack-real-empty-windows-2026-10-12.json"
+}

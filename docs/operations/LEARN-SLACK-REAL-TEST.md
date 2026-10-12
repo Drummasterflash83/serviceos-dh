@@ -1,4 +1,4 @@
-# Drummonds Slack TEST acceptance — prepared, awaiting approval
+# Drummonds Slack TEST acceptance — approved run completed; date amendment pending
 
 Run `315c7d05-deb3-4869-9895-1622d5d70403` targets existing Drummonds TEST tenant
 `f8c114fa-fee7-4983-8970-f6e7f5fd3129` in Supabase `saatxzwxvdvqevbnskxy`,
@@ -105,3 +105,50 @@ cross-client operator approvals. TEST package 082 installs the same scoped fix,
 with all 195 datasets unchanged. No credential or message was copied. The existing
 run ID, retained baseline, requested scope and tighter twelve-invocation limit
 remain unchanged; do not recreate or reset the run.
+
+## Approved execution — 12 October, 20:58 UTC
+
+Chris approved the exact credential and bounded TEST import in this chat. The
+existing channel-only credential was saved through the signed-in operator form.
+TEST package 083 was installed first, with all 195 datasets unchanged; the full
+production-schema ongoing channel/reply and pause/resume rehearsal passed offline.
+No production change or new account/grant was made.
+
+Both authorised 00:00–19:00 UTC channel windows completed in one page each, but
+returned zero messages. Two worker invocations were acknowledged; no observed
+parents existed, so no reply or duplicate-message acceptance can be claimed.
+Capture was paused after the run. Provider access and empty-window settlement are
+proven; actual message storage, replies and deduplication still need real evidence.
+
+One browser date-entry attempt initially retained the form's default 24-hour
+window. It was caught before dispatch: its job had zero attempts, no lease and no
+source records. With capture paused, that exact job was cancelled and its original
+settings retained in its audit metadata; its immutable approval was preserved.
+The corrected request then used the approved UTC window. The acceptance runner
+recognises only that exact unexecuted cancelled record as excluded from execution;
+its existing provider/message budgets were not reset or increased.
+
+### Prepared date-window amendment — not yet approved
+
+To find actual conversations without expanding destinations or message budgets:
+
+- Reuse this same TEST tenant, encrypted credential and existing operator login.
+- Make at most one read-only latest-message discovery request per already-approved
+  public channel (two total), limit one message each, ending at 12 October 19:00
+  UTC. Keep only the returned timestamp/channel/retention metadata for choosing a
+  window; do not log the message body or copy it to a new location.
+- For each channel with an available message, import one past UTC calendar day
+  containing that observed timestamp, bounded to at most 24 hours and ending no
+  later than 12 October 19:00 UTC, at most two pages. Record exact selected windows
+  before queuing. Do not guess a parent or silently expand an empty result.
+- Include at most two parents observed in those captured messages, and one channel
+  / one parent replay only if the original cumulative budgets permit it.
+- Preserve the original cumulative caps: 180 message observations, 201 read-only
+  Slack requests, and 12 total worker invocations including the two already used.
+  The two one-message discovery responses count against message observations.
+  Retain the two completed empty windows and the cancelled unexecuted approval.
+- Pause capture afterwards. No DMs, private/shared channels, files, paid AI,
+  recurring schedules, new grants or production changes.
+
+This changes the approved date selection, not access permissions or destination.
+Wait for Chris's decision before the latest-message discovery or older imports.

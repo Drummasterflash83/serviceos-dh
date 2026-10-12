@@ -1,0 +1,160 @@
+{
+  "version": "learn-slack-real-test/1",
+  "runId": "315c7d05-deb3-4869-9895-1622d5d70403",
+  "observedAt": "2026-10-12T21:02:07.983Z",
+  "state": "completed_empty_windows_paused",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "productionChanged": false,
+  "credentialStoredInApprovedTestVault": true,
+  "newAccounts": 0,
+  "newGrants": 0,
+  "workerInvocations": 2,
+  "providerRequestsUpperBound": 6,
+  "messageObservations": 0,
+  "flags": {
+    "learn.enabled": true,
+    "learn.inputs.email.enabled": false,
+    "learn.inputs.phone.enabled": false,
+    "learn.inputs.slack.enabled": false,
+    "learn.inputs.commusoft.enabled": false
+  },
+  "windows": [
+    {
+      "end": "2026-10-12T19:00:00+00:00",
+      "pages": 1,
+      "start": "2026-10-12T00:00:00+00:00",
+      "status": "succeeded",
+      "channel": "C07V0V0UKHN",
+      "attempts": 1,
+      "complete": true,
+      "maxPages": 2
+    },
+    {
+      "end": "2026-10-12T19:00:00+00:00",
+      "pages": 1,
+      "start": "2026-10-12T00:00:00+00:00",
+      "status": "succeeded",
+      "channel": "CEJ0026TW",
+      "attempts": 1,
+      "complete": true,
+      "maxPages": 2
+    }
+  ],
+  "messages": 0,
+  "versions": 0,
+  "recurring": 0,
+  "interactions": 0,
+  "activeSlackJobs": 0,
+  "replyCaptureVerified": false,
+  "messageStorageVerified": false,
+  "duplicateMessageHandlingVerified": false,
+  "preservation": {
+    "runId": "315c7d05-deb3-4869-9895-1622d5d70403",
+    "at": "2026-10-12T21:00:14.266Z",
+    "datasets": 195,
+    "unchanged": 184,
+    "changed": [
+      {
+        "name": "auth.users",
+        "before": 130,
+        "after": 130,
+        "retainedRows": 129,
+        "changedOrMissingOriginalRows": 1,
+        "addedOrChangedRows": 1
+      },
+      {
+        "name": "public.connector_accounts",
+        "before": 27,
+        "after": 29,
+        "retainedRows": 27,
+        "changedOrMissingOriginalRows": 0,
+        "addedOrChangedRows": 2
+      },
+      {
+        "name": "public.learn_capture_control_requests",
+        "before": 3,
+        "after": 7,
+        "retainedRows": 3,
+        "changedOrMissingOriginalRows": 0,
+        "addedOrChangedRows": 4
+      },
+      {
+        "name": "public.learn_slack_connection_requests",
+        "before": 0,
+        "after": 1,
+        "retainedRows": 0,
+        "changedOrMissingOriginalRows": 0,
+        "addedOrChangedRows": 1
+      },
+      {
+        "name": "public.platform_jobs",
+        "before": 4246,
+        "after": 4249,
+        "retainedRows": 4246,
+        "changedOrMissingOriginalRows": 0,
+        "addedOrChangedRows": 3
+      },
+      {
+        "name": "public.provider_connection_events",
+        "before": 9,
+        "after": 37,
+        "retainedRows": 9,
+        "changedOrMissingOriginalRows": 0,
+        "addedOrChangedRows": 28
+      },
+      {
+        "name": "public.provider_connections",
+        "before": 20,
+        "after": 21,
+        "retainedRows": 20,
+        "changedOrMissingOriginalRows": 0,
+        "addedOrChangedRows": 1
+      },
+      {
+        "name": "public.slack_history_imports",
+        "before": 26,
+        "after": 29,
+        "retainedRows": 26,
+        "changedOrMissingOriginalRows": 0,
+        "addedOrChangedRows": 3
+      },
+      {
+        "name": "public.slack_workspace_pacing",
+        "before": 7,
+        "after": 8,
+        "retainedRows": 7,
+        "changedOrMissingOriginalRows": 0,
+        "addedOrChangedRows": 1
+      },
+      {
+        "name": "public.tenant_connectors",
+        "before": 23,
+        "after": 24,
+        "retainedRows": 23,
+        "changedOrMissingOriginalRows": 0,
+        "addedOrChangedRows": 1
+      },
+      {
+        "name": "vault.secrets",
+        "before": 4,
+        "after": 5,
+        "retainedRows": 4,
+        "changedOrMissingOriginalRows": 0,
+        "addedOrChangedRows": 1
+      }
+    ],
+    "rawRecordsExported": false
+  },
+  "authenticationException": {
+    "changedExistingRows": 1,
+    "onlyExistingOperator": true,
+    "limitation": "Full pre-run authentication row not retained; exact changed columns cannot be proven from whole-row digests alone."
+  },
+  "dateEntryCorrection": {
+    "unexecutedJobCancelled": true,
+    "attempts": 0,
+    "originalApprovalAndSettingsRetained": true,
+    "budgetsReset": false
+  },
+  "historicalWindowAmendment": "awaiting_user_decision"
+}

@@ -92,6 +92,11 @@
       "path": "supabase/release/learn-production/018_slack_user_operator.sql",
       "sha256": "304b2e84f822b703a882b184ee490268f2b3802c817dee5f7953c7180a8962d2",
       "manifestSha256": "03ba3983f36f89e0ba06d677ce0f4097dc348d0a53cbf07bfd60d09b9b281154"
+    },
+    {
+      "path": "supabase/release/learn-production/019_slack_recurring_attribution.sql",
+      "sha256": "f5fe1265961b713a338c3bfa650cd8744e2bfeaf04778f90e83f5dc9352e51c0",
+      "manifestSha256": "f82a6f15cf862ffe948f85555334647df602702b41c4d1895707d046caed5268"
     }
   ],
   "sourceClosureSha256": "8ade602531ba85bba639cc5c30c8a9c964c9680274c54d970778f49aaa9712fb",

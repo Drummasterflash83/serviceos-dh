@@ -1,0 +1,33 @@
+{
+  "version": "learn-production-slack-recurring-attribution/1",
+  "status": "prepared_requires_matching_release_verification",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "f5fe1265961b713a338c3bfa650cd8744e2bfeaf04778f90e83f5dc9352e51c0",
+  "priorSha256": "304b2e84f822b703a882b184ee490268f2b3802c817dee5f7953c7180a8962d2",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101590000_learn_slack_recurring_attribution.sql",
+      "sha256": "30844ee09336d20b2d8f71c4e4d6e5e62a5bd359feb1db4c5e5f266926b9a325"
+    }
+  ],
+  "newFunctions": [
+    "learn_slack_recurring_attribution_allowed"
+  ],
+  "changedFunctions": [
+    "learn_slack_claim_jobs",
+    "learn_slack_reference_guard"
+  ],
+  "newTables": [],
+  "changedViews": [],
+  "newSequences": [],
+  "extendedTables": {},
+  "limitations": [
+    "No subscription, credential, grant, job or hosted provider request is created by installation.",
+    "Existing operator authority and exact enabled subscription, connection, source and queued job must match.",
+    "Real-provider ongoing capture, complete history and private-channel visibility remain separate acceptance requirements."
+  ]
+}
