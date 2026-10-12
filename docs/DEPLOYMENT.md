@@ -47,8 +47,10 @@ archive rehearsal preserves every original row/sequence, existing storage owners
 and private voicemail access. The latest suites pass synthetic Microsoft source-to-card
 processing, token rotation with legacy Marketing compatibility, actual queue pause/resume,
 private voicemail and the existing email/Phone-to-card journey. Real source capture,
-audio bytes, signed-in acceptance and managed production storage-policy configuration
-remain unverified. The extra Marketing compatibility patch is local only.
+audio bytes and signed-in acceptance remain unverified. After the approved Small
+compute recovery, production read-only settings confirm the managed Storage helper
+and policy grant; no live LEARN policy installation has occurred. The extra Marketing
+compatibility patch is local only.
 These are reviewed release inputs, **not live migrations or promotion approval**.
 Install only as part of the eventual matched schema/worker/frontend release; never
 run the TEST bundles against production. See the

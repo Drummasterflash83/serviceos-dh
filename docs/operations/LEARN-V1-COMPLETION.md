@@ -7,6 +7,36 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 05:51 UTC — approved production Small upgrade completed; service health recovered.**
+Chris approved Small compute and the brief interruption. One journaled request at
+05:41:54 UTC selected 2 GB Small at US$0.0206/hour; Pro is unchanged. Supabase was
+first observed healthy at 05:46:46 UTC. SQL, Auth, database, REST and Storage now
+respond successfully; metrics confirm the larger memory and 90 database connections.
+The live frontend returns HTTP 200. No schema, worker, frontend, grants or schedules
+were deployed by this action.
+
+Fresh pre-change SQL timed out, with Auth/Storage already unhealthy and metrics
+HTTP 500. Post-change and post-cycle record identities match the verified 00:25 UTC
+archive: 18,598 emails, 4,328 calls, 2,882 recordings, 2,882 transcripts, 3,170 cards
+and 2,897 Storage metadata rows. Connector, flag, mailbox/account and cron hashes
+also match. This selected-source check does not replace full content/file recovery
+or invent a successful fresh pre-change snapshot.
+
+The normal five-minute cycle resumed Phone and Workspace discovery. Two mailbox
+jobs succeeded; 27 were still queued at the final observation, and no new messages
+or calls were stored by the sampled successful runs. One Gmail job failed with
+`refresh_token_revoked`; older Workspace `invalid_grant` failures need attention.
+All 35 observed post-boot HTTP calls succeeded, but this is not complete capture
+coverage or LEARN launch acceptance. The export stall still needs a separately
+bounded retest. The previous capacity approval blocker is resolved. The general
+Connections catalogue work was investigated but remains unfinished.
+The recovered read-only API also confirms the managed Storage helper is loaded
+through `session_preload_libraries=supautils`, with the `postgres` policy grant on
+`storage.objects`. The earlier configuration-read blocker is resolved; production
+policy mutation, fresh release preflight and promotion still require their own gates.
+[Capacity execution evidence](evidence/learn-production-small-compute-2026-10-12.json)
+and [capacity/recovery record](LEARN-DATABASE-CAPACITY.md).
+
 **12 October — Microsoft release passes combined offline acceptance.**
 All fourteen production-specific packages install together. Synthetic Graph pages
 travel through the actual reader, durable journal, email/interaction projection,

@@ -698,6 +698,14 @@ production configuration remains unverified. Do not widen production grants or
 change storage ownership to make a release pass. Verify the managed installer
 capability and fresh catalog before requesting promotion.
 
+Update after the approved Small compute recovery: the production read-only API
+now confirms `session_preload_libraries=supautils` and the registered
+`supautils.policy_grants` configuration grants `postgres` policy management on
+`storage.objects` and `storage.buckets`. The earlier HTTP 544 configuration-read
+blocker is resolved. This is configuration evidence only; no production Storage
+policy was changed, and fresh catalog/preflight and promotion approval still apply.
+[Recovery evidence](evidence/learn-production-small-compute-2026-10-12.json).
+
 The terminal v6 combined rehearsal passes four suites in 51.07 seconds. Actual
 v4 email storage feeds candidate discovery, a genuinely claimed queue job, private
 publication and the original owner's inbox. Reassignment, new-owner denial,

@@ -1,0 +1,689 @@
+{
+  "version": "learn-production-small-compute/1",
+  "state": "small_active_health_recovered_capture_attention_remains",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "productionChanged": true,
+  "changeScope": "compute_instance ci_small only",
+  "schemaChanged": false,
+  "frontendChanged": false,
+  "organizationPlanChanged": false,
+  "plan": "pro",
+  "priceUsdPerHour": 0.0206,
+  "approvedMemoryGb": 2,
+  "request": {
+    "requestedAt": "2026-10-12T05:41:54.804Z",
+    "method": "PATCH",
+    "path": "/v1/projects/tgbnakbxwcqjeimygroz/billing/addons",
+    "body": {
+      "addon_type": "compute_instance",
+      "addon_variant": "ci_small"
+    },
+    "approval": "User approved Small compute and the brief interruption in this thread",
+    "preResizeSqlUnavailable": true,
+    "automaticRetry": false
+  },
+  "providerResponse": {
+    "http": 200,
+    "receivedAt": "2026-10-12T05:41:59.455Z"
+  },
+  "firstObservedHealthyAt": "2026-10-12T05:46:46.349Z",
+  "databaseStartedAt": "2026-10-12T05:46:29.935744+00:00",
+  "operationObservationSeconds": 291.545,
+  "preciseServiceDowntimeMeasured": false,
+  "beforeSql": {
+    "http": null,
+    "timeoutMs": 45000
+  },
+  "beforeMetricsHttp": 500,
+  "beforeHealth": {
+    "checkedAt": "2026-10-12T05:41:31.762Z",
+    "http": 200,
+    "services": [
+      {
+        "name": "auth",
+        "status": "UNHEALTHY",
+        "healthy": false,
+        "errorPresent": true
+      },
+      {
+        "name": "db",
+        "status": "ACTIVE_HEALTHY",
+        "healthy": true,
+        "errorPresent": false
+      },
+      {
+        "name": "rest",
+        "status": "ACTIVE_HEALTHY",
+        "healthy": true,
+        "errorPresent": false
+      },
+      {
+        "name": "storage",
+        "status": "UNHEALTHY",
+        "healthy": false,
+        "errorPresent": true
+      }
+    ]
+  },
+  "afterHealth": {
+    "checkedAt": "2026-10-12T05:47:12.685Z",
+    "http": 200,
+    "services": [
+      {
+        "name": "auth",
+        "status": "ACTIVE_HEALTHY",
+        "healthy": true,
+        "errorPresent": false
+      },
+      {
+        "name": "db",
+        "status": "ACTIVE_HEALTHY",
+        "healthy": true,
+        "errorPresent": false
+      },
+      {
+        "name": "rest",
+        "status": "ACTIVE_HEALTHY",
+        "healthy": true,
+        "errorPresent": false
+      },
+      {
+        "name": "storage",
+        "status": "ACTIVE_HEALTHY",
+        "healthy": true,
+        "errorPresent": false
+      }
+    ]
+  },
+  "cycleHealth": {
+    "checkedAt": "2026-10-12T05:50:35.259Z",
+    "http": 200,
+    "services": [
+      {
+        "name": "auth",
+        "status": "ACTIVE_HEALTHY",
+        "healthy": true,
+        "errorPresent": false
+      },
+      {
+        "name": "db",
+        "status": "ACTIVE_HEALTHY",
+        "healthy": true,
+        "errorPresent": false
+      },
+      {
+        "name": "rest",
+        "status": "ACTIVE_HEALTHY",
+        "healthy": true,
+        "errorPresent": false
+      },
+      {
+        "name": "storage",
+        "status": "ACTIVE_HEALTHY",
+        "healthy": true,
+        "errorPresent": false
+      }
+    ]
+  },
+  "metrics": {
+    "node_load1": 0.03,
+    "node_load5": 0.14,
+    "node_load15": 0.08,
+    "node_memory_MemAvailable_bytes": 1308200960.0,
+    "node_memory_MemTotal_bytes": 1924177920.0
+  },
+  "maxConnections": "90",
+  "frontend": {
+    "checkedAt": "2026-10-12T05:47:22.699Z",
+    "http": 200,
+    "host": "www.openfolk.ai",
+    "scope": "Frontend HTTP availability only; not a signed-in or backend acceptance check"
+  },
+  "preservation": {
+    "baselineAt": "2026-10-12T00:25:21.393518+00:00",
+    "archive": {
+      "bytes": 196872981,
+      "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+    },
+    "scope": "Counts and record identities for selected retained sources and Storage metadata; hashes of connector enablement, flags, account state, mailbox capture settings and complete cron configuration. Not full message-content or file-byte verification.",
+    "sourceCounts": {
+      "phone_calls": {
+        "ids": "d2a5370b8eca34fd54e426c7ca05edd2",
+        "rows": 4328
+      },
+      "customer_cards": {
+        "ids": "11ebe3e97a9745cdfed6e7b91c6d3e79",
+        "rows": 3170
+      },
+      "email_messages": {
+        "ids": "08978cf07ed4de9dea2f3ef9ee36deb0",
+        "rows": 18598
+      },
+      "phone_recordings": {
+        "ids": "e077df0206b3126477d2b139fec9e9e5",
+        "rows": 2882
+      },
+      "phone_transcripts": {
+        "ids": "b02a82cead4d5eafa876406038f4339e",
+        "rows": 2882
+      }
+    },
+    "storage": {
+      "ids": "cf781ad5b107b5795ed9c26205a51054",
+      "rows": 2897
+    },
+    "recordIdentitiesMatch": true,
+    "configurationMatchesArchiveAndAcrossCycle": true,
+    "freshPreChangeInventoryAvailable": false,
+    "offlineContainersRemoved": true
+  },
+  "captureObservation": {
+    "checkedAt": "2026-10-12T05:51:28.314711+00:00",
+    "responses": [
+      {
+        "count": 35,
+        "latest": "2026-10-12T05:51:00.600591+00:00",
+        "has_error": false,
+        "timed_out": false,
+        "status_code": 200
+      }
+    ],
+    "schedules": [
+      {
+        "id": 34,
+        "name": "provider-oauth-state-cleanup",
+        "active": true,
+        "schedule": "*/30 * * * *"
+      },
+      {
+        "id": 35,
+        "name": "serviceos-worker",
+        "active": true,
+        "schedule": "* * * * *"
+      },
+      {
+        "id": 36,
+        "name": "serviceos-phone-sync",
+        "active": true,
+        "schedule": "*/5 * * * *"
+      },
+      {
+        "id": 37,
+        "name": "serviceos-phone-processing",
+        "active": true,
+        "schedule": "*/2 * * * *"
+      },
+      {
+        "id": 38,
+        "name": "serviceos-email-sync",
+        "active": true,
+        "schedule": "*/5 * * * *"
+      },
+      {
+        "id": 39,
+        "name": "serviceos-email-workspace",
+        "active": true,
+        "schedule": "*/5 * * * *"
+      },
+      {
+        "id": 40,
+        "name": "serviceos-email-wksp-backfill",
+        "active": true,
+        "schedule": "*/15 * * * *"
+      },
+      {
+        "id": 41,
+        "name": "serviceos-interactions",
+        "active": true,
+        "schedule": "*/5 * * * *"
+      },
+      {
+        "id": 42,
+        "name": "serviceos-identity",
+        "active": true,
+        "schedule": "*/5 * * * *"
+      },
+      {
+        "id": 43,
+        "name": "serviceos-business-graph",
+        "active": true,
+        "schedule": "*/5 * * * *"
+      },
+      {
+        "id": 44,
+        "name": "serviceos-customer-cards",
+        "active": true,
+        "schedule": "*/5 * * * *"
+      },
+      {
+        "id": 45,
+        "name": "serviceos-recommendations",
+        "active": true,
+        "schedule": "*/5 * * * *"
+      },
+      {
+        "id": 46,
+        "name": "serviceos-intelligence-ingest",
+        "active": true,
+        "schedule": "*/5 * * * *"
+      },
+      {
+        "id": 47,
+        "name": "serviceos-marketing-broadcast",
+        "active": true,
+        "schedule": "* * * * *"
+      },
+      {
+        "id": 48,
+        "name": "serviceos-marketing-sequence",
+        "active": true,
+        "schedule": "* * * * *"
+      },
+      {
+        "id": 49,
+        "name": "openfolk-client-notifications",
+        "active": true,
+        "schedule": "* * * * *"
+      },
+      {
+        "id": 50,
+        "name": "openfolk-receptionist-test-results",
+        "active": true,
+        "schedule": "*/2 * * * *"
+      },
+      {
+        "id": 51,
+        "name": "openfolk-emma-call-reviews",
+        "active": true,
+        "schedule": "*/2 * * * *"
+      }
+    ],
+    "sinceBoot": [
+      {
+        "count": 5,
+        "jobid": 35,
+        "status": "succeeded",
+        "jobname": "serviceos-worker",
+        "latest_start": "2026-10-12T05:51:00.073163+00:00",
+        "latest_finish": "2026-10-12T05:51:00.080517+00:00"
+      },
+      {
+        "count": 1,
+        "jobid": 36,
+        "status": "succeeded",
+        "jobname": "serviceos-phone-sync",
+        "latest_start": "2026-10-12T05:50:00.191027+00:00",
+        "latest_finish": "2026-10-12T05:50:00.222653+00:00"
+      },
+      {
+        "count": 2,
+        "jobid": 37,
+        "status": "succeeded",
+        "jobname": "serviceos-phone-processing",
+        "latest_start": "2026-10-12T05:50:00.164786+00:00",
+        "latest_finish": "2026-10-12T05:50:00.187603+00:00"
+      },
+      {
+        "count": 1,
+        "jobid": 38,
+        "status": "succeeded",
+        "jobname": "serviceos-email-sync",
+        "latest_start": "2026-10-12T05:50:00.256396+00:00",
+        "latest_finish": "2026-10-12T05:50:00.272252+00:00"
+      },
+      {
+        "count": 1,
+        "jobid": 39,
+        "status": "succeeded",
+        "jobname": "serviceos-email-workspace",
+        "latest_start": "2026-10-12T05:50:00.210718+00:00",
+        "latest_finish": "2026-10-12T05:50:00.237926+00:00"
+      },
+      {
+        "count": 1,
+        "jobid": 41,
+        "status": "succeeded",
+        "jobname": "serviceos-interactions",
+        "latest_start": "2026-10-12T05:50:00.177331+00:00",
+        "latest_finish": "2026-10-12T05:50:00.20128+00:00"
+      },
+      {
+        "count": 1,
+        "jobid": 42,
+        "status": "succeeded",
+        "jobname": "serviceos-identity",
+        "latest_start": "2026-10-12T05:50:00.260435+00:00",
+        "latest_finish": "2026-10-12T05:50:00.27666+00:00"
+      },
+      {
+        "count": 1,
+        "jobid": 43,
+        "status": "succeeded",
+        "jobname": "serviceos-business-graph",
+        "latest_start": "2026-10-12T05:50:00.283017+00:00",
+        "latest_finish": "2026-10-12T05:50:00.292458+00:00"
+      },
+      {
+        "count": 1,
+        "jobid": 44,
+        "status": "succeeded",
+        "jobname": "serviceos-customer-cards",
+        "latest_start": "2026-10-12T05:50:00.251963+00:00",
+        "latest_finish": "2026-10-12T05:50:00.265998+00:00"
+      },
+      {
+        "count": 1,
+        "jobid": 45,
+        "status": "succeeded",
+        "jobname": "serviceos-recommendations",
+        "latest_start": "2026-10-12T05:50:00.26168+00:00",
+        "latest_finish": "2026-10-12T05:50:00.281477+00:00"
+      },
+      {
+        "count": 1,
+        "jobid": 46,
+        "status": "succeeded",
+        "jobname": "serviceos-intelligence-ingest",
+        "latest_start": "2026-10-12T05:50:00.194458+00:00",
+        "latest_finish": "2026-10-12T05:50:00.226653+00:00"
+      },
+      {
+        "count": 5,
+        "jobid": 47,
+        "status": "succeeded",
+        "jobname": "serviceos-marketing-broadcast",
+        "latest_start": "2026-10-12T05:51:00.059931+00:00",
+        "latest_finish": "2026-10-12T05:51:00.069957+00:00"
+      },
+      {
+        "count": 5,
+        "jobid": 48,
+        "status": "succeeded",
+        "jobname": "serviceos-marketing-sequence",
+        "latest_start": "2026-10-12T05:51:00.063337+00:00",
+        "latest_finish": "2026-10-12T05:51:00.068037+00:00"
+      },
+      {
+        "count": 5,
+        "jobid": 49,
+        "status": "succeeded",
+        "jobname": "openfolk-client-notifications",
+        "latest_start": "2026-10-12T05:51:00.036485+00:00",
+        "latest_finish": "2026-10-12T05:51:00.054159+00:00"
+      },
+      {
+        "count": 2,
+        "jobid": 50,
+        "status": "succeeded",
+        "jobname": "openfolk-receptionist-test-results",
+        "latest_start": "2026-10-12T05:50:00.206445+00:00",
+        "latest_finish": "2026-10-12T05:50:00.236401+00:00"
+      },
+      {
+        "count": 2,
+        "jobid": 51,
+        "status": "succeeded",
+        "jobname": "openfolk-emma-call-reviews",
+        "latest_start": "2026-10-12T05:50:00.199569+00:00",
+        "latest_finish": "2026-10-12T05:50:00.23065+00:00"
+      }
+    ],
+    "pendingHttp": 0,
+    "jobsSinceBoot": [
+      {
+        "count": 1,
+        "latest": "2026-10-12T05:50:01.397383+00:00",
+        "status": "queued",
+        "job_type": "customer_card.sync"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-12T05:50:02.009186+00:00",
+        "status": "dead_letter",
+        "job_type": "email.gmail_sync"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-12T05:50:02.352014+00:00",
+        "status": "succeeded",
+        "job_type": "email.mailbox_discovery"
+      },
+      {
+        "count": 27,
+        "latest": "2026-10-12T05:50:02.340144+00:00",
+        "status": "queued",
+        "job_type": "email.workspace_sync"
+      },
+      {
+        "count": 2,
+        "latest": "2026-10-12T05:51:01.724102+00:00",
+        "status": "succeeded",
+        "job_type": "email.workspace_sync"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-12T05:51:00.957175+00:00",
+        "status": "succeeded",
+        "job_type": "identity.resolve"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-12T05:50:01.693592+00:00",
+        "status": "queued",
+        "job_type": "interactions.sync"
+      },
+      {
+        "count": 3,
+        "latest": "2026-10-12T05:50:01.54213+00:00",
+        "status": "succeeded",
+        "job_type": "phone.process_pending"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-12T05:50:02.709784+00:00",
+        "status": "succeeded",
+        "job_type": "phone.scheduled_sync"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-12T05:50:01.410286+00:00",
+        "status": "queued",
+        "job_type": "recommendation.sync"
+      }
+    ],
+    "latestEmailRuns": [
+      {
+        "status": "success",
+        "provider": "gmail",
+        "started_at": "2026-10-12T05:51:01.15+00:00",
+        "completed_at": "2026-10-12T05:51:01.58+00:00",
+        "records_processed": 0
+      },
+      {
+        "status": "success",
+        "provider": "gmail",
+        "started_at": "2026-10-12T05:51:01.071+00:00",
+        "completed_at": "2026-10-12T05:51:01.657+00:00",
+        "records_processed": 0
+      },
+      {
+        "status": "success",
+        "provider": "gmail",
+        "started_at": "2026-10-12T05:50:02.348+00:00",
+        "completed_at": "2026-10-12T05:50:02.348+00:00",
+        "records_processed": 29
+      },
+      {
+        "status": "failed",
+        "provider": "gmail",
+        "started_at": "2026-10-12T05:50:01.728+00:00",
+        "completed_at": "2026-10-12T05:50:01.932+00:00",
+        "records_processed": 0
+      },
+      {
+        "status": "success",
+        "provider": "google_workspace",
+        "started_at": "2026-10-12T05:50:01.634+00:00",
+        "completed_at": "2026-10-12T05:50:02.254+00:00",
+        "records_processed": 29
+      },
+      {
+        "status": "success",
+        "provider": "gmail",
+        "started_at": "2026-10-12T05:50:01.092+00:00",
+        "completed_at": "2026-10-12T05:50:01.092+00:00",
+        "records_processed": 1
+      },
+      {
+        "status": "success",
+        "provider": "gmail",
+        "started_at": "2026-10-12T04:16:40.626+00:00",
+        "completed_at": "2026-10-12T04:16:48.266+00:00",
+        "records_processed": 0
+      },
+      {
+        "status": "failed",
+        "provider": "gmail",
+        "started_at": "2026-10-12T04:08:35.551+00:00",
+        "completed_at": "2026-10-12T04:10:11.043+00:00",
+        "records_processed": 0
+      }
+    ],
+    "latestPhoneRuns": [
+      {
+        "status": "success",
+        "provider": "simwood",
+        "started_at": "2026-10-12T05:50:02.064556+00:00",
+        "completed_at": "2026-10-12T05:50:02.542+00:00",
+        "records_processed": 0
+      },
+      {
+        "status": "success",
+        "provider": "simwood",
+        "started_at": "2026-10-12T05:50:01.691292+00:00",
+        "completed_at": "2026-10-12T05:50:01.796+00:00",
+        "records_processed": 0
+      },
+      {
+        "status": "success",
+        "provider": "simwood",
+        "started_at": "2026-10-12T05:50:01.439183+00:00",
+        "completed_at": "2026-10-12T05:50:02.613+00:00",
+        "records_processed": 0
+      },
+      {
+        "status": "success",
+        "provider": "simwood",
+        "started_at": "2026-10-12T00:30:10.436923+00:00",
+        "completed_at": "2026-10-12T00:30:10.882+00:00",
+        "records_processed": 0
+      },
+      {
+        "status": "success",
+        "provider": "simwood",
+        "started_at": "2026-10-12T00:30:09.931677+00:00",
+        "completed_at": "2026-10-12T00:30:10.102+00:00",
+        "records_processed": 0
+      },
+      {
+        "status": "success",
+        "provider": "simwood",
+        "started_at": "2026-10-12T00:30:09.47938+00:00",
+        "completed_at": "2026-10-12T00:30:11.016+00:00",
+        "records_processed": 0
+      },
+      {
+        "status": "success",
+        "provider": "simwood",
+        "started_at": "2026-10-12T00:25:02.065745+00:00",
+        "completed_at": "2026-10-12T00:25:02.741+00:00",
+        "records_processed": 0
+      },
+      {
+        "status": "success",
+        "provider": "simwood",
+        "started_at": "2026-10-12T00:25:01.5665+00:00",
+        "completed_at": "2026-10-12T00:25:01.692+00:00",
+        "records_processed": 0
+      }
+    ],
+    "databaseStartedAt": "2026-10-12T05:46:29.935744+00:00"
+  },
+  "captureIssues": {
+    "checkedAt": "2026-10-12T05:50:57.969354+00:00",
+    "jobErrors": [
+      {
+        "code": "refresh_token_revoked",
+        "status": "dead_letter",
+        "job_type": "email.gmail_sync",
+        "updated_at": "2026-10-12T05:50:02.009186+00:00",
+        "max_attempts": 5,
+        "attempt_count": 1
+      }
+    ],
+    "failedEmail": [
+      {
+        "status": "failed",
+        "sync_type": "messages",
+        "started_at": "2026-10-12T05:50:01.728+00:00",
+        "failure_class": "credential_refresh_failed"
+      },
+      {
+        "status": "failed",
+        "sync_type": "workspace_messages",
+        "started_at": "2026-10-12T04:08:35.551+00:00",
+        "failure_class": "invalid_grant"
+      },
+      {
+        "status": "failed",
+        "sync_type": "workspace_messages",
+        "started_at": "2026-10-12T03:46:59.328+00:00",
+        "failure_class": "invalid_grant"
+      },
+      {
+        "status": "failed",
+        "sync_type": "workspace_messages",
+        "started_at": "2026-10-12T03:12:28.223+00:00",
+        "failure_class": "invalid_grant"
+      },
+      {
+        "status": "failed",
+        "sync_type": "workspace_messages",
+        "started_at": "2026-10-12T01:46:51.999+00:00",
+        "failure_class": "invalid_grant"
+      },
+      {
+        "status": "failed",
+        "sync_type": "workspace_messages",
+        "started_at": "2026-10-12T01:46:51.999+00:00",
+        "failure_class": "invalid_grant"
+      }
+    ]
+  },
+  "newFullExportStarted": false,
+  "fullLearnReleaseAccepted": false,
+  "limitations": [
+    "Fresh pre-resize SQL inventory was unavailable; preservation comparisons use the earlier verified archive.",
+    "No precise outage measurement: Auth and Storage were unhealthy before the resize.",
+    "Phone runs and two Workspace mailbox jobs succeeded with zero new source records; 27 mailbox jobs remained queued at the final capture observation. This is recovery evidence, not complete provider coverage.",
+    "Gmail OAuth job failed with refresh_token_revoked; earlier Workspace invalid_grant failures also remain relevant. They need connector investigation, not another compute change.",
+    "The native export stall has not been retested and cannot be declared fixed.",
+    "The general Connections catalogue correction was investigated but not implemented when this approved production task took priority."
+  ],
+  "managedStorageConfiguration": {
+    "readOnlyUser": "supabase_read_only_user",
+    "sessionPreloadLibraries": "supautils",
+    "postgresPolicyTables": [
+      "storage.buckets",
+      "storage.buckets_analytics",
+      "storage.objects",
+      "storage.prefixes",
+      "storage.s3_multipart_uploads",
+      "storage.s3_multipart_uploads_parts"
+    ],
+    "registeredSettingType": "string",
+    "readOnlyConfigurationVerified": true,
+    "policyMutationPerformed": false,
+    "productionReleaseAccepted": false
+  }
+}
