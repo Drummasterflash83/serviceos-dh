@@ -1,0 +1,106 @@
+{
+  "scope": "Isolated restore of retained production archive; no hosted deployment",
+  "state": "operator_context_rehearsed_offline",
+  "package": "015_operator_context",
+  "sha256": "f4413fe47a9eaa1eb7774e35e22f10f78bf94a55345f4fbe19fe690b4e7d8556",
+  "prerequisitePackages": [
+    "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+    "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+    "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+    "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+    "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+    "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+    "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+    "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+    "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+    "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+    "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+    "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+    "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba"
+  ],
+  "sourcePinsChecked": 109,
+  "sourcePinMismatches": 0,
+  "archivePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+  },
+  "operatorPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 381,
+    "sequences": 7,
+    "comparisonSha256": "4126a222fd7d7ae167fca277b9185465cec38c7f30d772fcf36ecf7146a53996",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "postJourneyPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 381,
+    "sequences": 7,
+    "comparisonSha256": "4126a222fd7d7ae167fca277b9185465cec38c7f30d772fcf36ecf7146a53996",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "rowCountNote": "Operator comparisons exclude the separately checked release ledger; aggregate row counts from the initial runner included that ledger and are omitted here. Subsequent runner reporting derives counts from compared tables.",
+  "negativeChecks": [
+    "wrong_target",
+    "catalog_drift",
+    "helper_drift",
+    "late_failure"
+  ],
+  "duplicateRejected": true,
+  "journeys": [
+    {
+      "name": "openfolk-client-information.assert.sql",
+      "sourceSha256": "5a9d428962e7631ea14f6c91b058500fef39d90dc9a5284f05c563edd2acdae6",
+      "probeSha256": "39925597316295d2c74b37d48f654c671969d626b5e394f03cbcec233e2402ea"
+    },
+    {
+      "name": "openfolk-business-review.assert.sql",
+      "sourceSha256": "6424793913a3f2be3a036c821cce082a8f8c15eb387ef391773d335b1ae983e9",
+      "probeSha256": "cf955e328b178cbc92c0a42ffa7c26f8ba145d53a1309448991573ae86dbfbae"
+    },
+    {
+      "name": "learn-customer-business-context.assert.sql",
+      "sourceSha256": "1eb9973fc34391608565beef2afbd4b45458b40bb2fbebb494c7b04a533a5c95",
+      "probeSha256": "f7f0475c6366265babbdbe0552061c2afc9ec4468166ddae13c762799ac891a2"
+    },
+    {
+      "name": "learn-operator-phone-playback.assert.sql",
+      "sourceSha256": "503b4eb53dba07e9b3f91bc74008e4468e8165161f15cafab3c4692b39eaf133",
+      "probeSha256": "8e3185abfbb8f89a79a0c356d0db904fb57ec5a4ef1baf9505bd2524ab4db56f"
+    }
+  ],
+  "existingTablesViewsRolesStorageUnchanged": true,
+  "priorReleaseReceiptsUnchanged": true,
+  "addedReleaseReceipts": 1,
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "initialRehearsalIssue": "Verifier used definitionHash instead of catalog field hash; corrected before successful second run. Candidate SQL unchanged.",
+  "limitations": [
+    "Database-only rehearsal against retained archive; current runtime/frontend combination and signed-in production acceptance remain open.",
+    "No real operator grant, capture, customer projection, credential copy or schedule was created.",
+    "Four current Marketing check-constraint catalog differences from the archive remain to review; none of the production candidates targets those tables.",
+    "No production promotion approval or completed LEARN V1 acceptance implied."
+  ]
+}

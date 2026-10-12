@@ -1,0 +1,79 @@
+{
+  "version": "learn-production-operator-context/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "f4413fe47a9eaa1eb7774e35e22f10f78bf94a55345f4fbe19fe690b4e7d8556",
+  "priorSha256": "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101500000_openfolk_client_information.sql",
+      "sha256": "43fcdd47a25f102b62ae0fbc01ff991613be2eaef93c9cf8d874846023bae86c"
+    },
+    {
+      "path": "supabase/migrations/20261101510000_openfolk_business_review.sql",
+      "sha256": "d0228be8d72a04bef8e5d64db705b0cc96bc745916462f437192b436921ab5f9"
+    },
+    {
+      "path": "supabase/migrations/20261101520000_learn_customer_business_context.sql",
+      "sha256": "4ffe78cc25aeaf33dc0fef4078af1fa3b59bfcc991392a0d8bf4b6cb4699df90"
+    },
+    {
+      "path": "supabase/migrations/20261101530000_learn_operator_phone_playback.sql",
+      "sha256": "840b9166926bedaadc5e3df78a9955a6c0ad5cba7e17ea858fcc2195fc13f0b1"
+    }
+  ],
+  "existingTables": [
+    "companies",
+    "controlplane_change_log",
+    "customer_cards",
+    "email_messages",
+    "graph_edges",
+    "graph_nodes",
+    "interactions",
+    "jobs",
+    "learn_business_input_links",
+    "learn_business_input_versions",
+    "learn_phone_playback_audit",
+    "people",
+    "phone_calls",
+    "phone_recordings",
+    "phone_transcripts",
+    "sites"
+  ],
+  "newTables": [],
+  "newFunctions": [
+    "openfolk_client_information",
+    "learn_business_review_authority",
+    "openfolk_business_review",
+    "learn_customer_business_context",
+    "learn_operator_phone_recordings_read",
+    "learn_operator_phone_playback_authorize"
+  ],
+  "changedFunctions": [
+    "learn_business_input_review_access",
+    "learn_commusoft_review_customer",
+    "learn_commusoft_work_batch",
+    "learn_commusoft_work_batch_result"
+  ],
+  "changedViews": [],
+  "newRole": null,
+  "newSequences": [],
+  "extendedTables": {},
+  "newExistingConstraints": {},
+  "newExistingIndexes": {},
+  "newExistingTriggers": {},
+  "newExistingPolicies": {},
+  "newStoragePolicies": {},
+  "newBuckets": [],
+  "limitations": [
+    "No users, operator grants, source projections, credential copies, capture or schedules are created on installation.",
+    "Adds audited selected-client information, existing-grant business review, linked customer context and operator recording authorization.",
+    "Keeps ordinary client authority and all source records unchanged; operator reads require an existing effective admin grant and a reason.",
+    "Requires matching frontend and operator-audio endpoint, current production baseline verification and signed-in real-data acceptance.",
+    "Does not complete whole-account publication, summaries, scoring or remaining connector coverage."
+  ]
+}

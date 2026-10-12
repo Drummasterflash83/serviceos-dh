@@ -2,11 +2,45 @@
 
 Status: **preparation only; not approved or ready to execute**. The
 [completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
-The current hosted TEST frontend is Git `f7718dd` (Connections status correction,
-12 October 08:09 UTC), schema package 079 and worker
-v20. That combination has synthetic processing acceptance, not full launch
-acceptance. Source backups are on `codex/learn-v1-test`.
+The current hosted TEST frontend is Git `e2d51fa` (12 October, 12:50 UTC).
+The database candidate now includes production-specific packages 001–015. Package
+015 brings forward the latest operator information/review, customer context and
+recording access; its archive rehearsal passed. The complete paired production
+runtime/frontend release and live acceptance are still unfinished. Source backups
+are on `codex/learn-v1-test`.
 
+
+## Latest production preparation — 12 October, 14:52 UTC
+
+Package [015_operator_context.sql](../../supabase/release/learn-production/015_operator_context.sql)
+adds six functions and updates four existing Commusoft review authority bodies.
+The exact production prerequisite schema and all 109 source-file pins match.
+Four rolled-back journeys cover audited client information, real-actor business
+review, provider-neutral linked customer context and recording authorization.
+Wrong target, table/helper drift, late failure and duplicate installation fail
+safely. The rehearsal preserves the archive's 299 original tables / 1,591,576 rows
+and five original sequences, followed by exact comparison of 381 post-prerequisite
+tables and seven sequences around package 015 and its journeys. Existing tables,
+views, role memberships and Storage remain unchanged; one release receipt is added.
+No hosted system or provider was changed. The first verifier used the wrong catalog
+hash field; the corrected verifier passed with unchanged candidate SQL.
+[Rehearsal evidence](evidence/learn-production-operator-rehearsal-2026-10-12.json).
+
+A fresh production read confirms live deployment `13b5543` on `main`, with
+`openfolk.ai` redirecting to `www.openfolk.ai`; the served client bundle contains
+only the production Supabase host. At 14:45 UTC Drummonds retained 18,986 emails,
+13,119 threads, 4,392 calls and 2,939 recordings with storage pointers. Recent
+capture successes do not establish every mailbox is healthy. A current Directory
+read confirms four configured addresses are absent from its user/alias inventory,
+matching the observed `invalid_grant` failures. Two other configured addresses
+are aliases. Retain their histories and reconcile their current capture routing
+before claiming complete mailbox coverage; no mailbox was changed by this check.
+
+The current public catalog has four check-constraint differences from the archive,
+on Marketing tables outside every candidate's referenced-table list. No function
+or view difference was observed. Their exact definitions and preservation still
+need review before execution; they must not be replaced from TEST.
+[Live metadata and directory evidence](evidence/learn-production-live-readiness-2026-10-12.json).
 
 ## Complete candidate schema rehearsal — 12 October, latest scope
 

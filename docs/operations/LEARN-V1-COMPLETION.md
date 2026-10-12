@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 14:52 UTC — latest operator/customer-context production candidate rehearsed.**
+The fifteen-package database candidate now includes the latest audited OpenFolk
+client information/review, linked customer context and recording authorization.
+Its four journeys passed in an isolated production-archive restore. Existing
+sources, roles, tables/views and Storage were preserved; no hosted change or
+provider request occurred. The complete production runtime/frontend combination,
+current-baseline review, real acceptance and production approval remain open.
+[Production candidate evidence](evidence/learn-production-operator-rehearsal-2026-10-12.json).
+
+The current live frontend is still `13b5543`; the public client bundle verifies
+its production backend binding. A 14:45 UTC inventory found 18,986 emails,
+13,119 threads, 4,392 calls and 2,939 recordings with stored paths. Google Directory
+verification at 14:51 confirms four configured mailbox addresses are absent from
+the current user/alias inventory and match current delegation failures. Two other
+configured addresses are aliases. Do not call all configured mailboxes healthy;
+retain history while resolving present-day routing and capture configuration.
+[Read-only live evidence](evidence/learn-production-live-readiness-2026-10-12.json).
+
+The approved Heidi email additions were exactly reconciled into the stopped
+Commusoft preservation journal, retaining the old hashes. Its next completed
+batch reached 321 of 871 sites and 2,568 retained contacts with all 194 datasets
+preserved. The same bounded import has resumed from that checkpoint.
+
+
 **12 October, 14:35 UTC — approved real Heidi email capture passed in TEST.**
 The existing Workspace credential captured 20 messages across 19 threads through
 one successful durable worker attempt. The email flag, mailbox, account and
