@@ -7,6 +7,23 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — production metadata and foundation/scoring rules pass combined offline rehearsal.**
+The second production-specific candidate retains the existing foundation and
+View-As tables and audits declared tenant relationships before adding guards and
+history. All existing references passed on the retained archive. Real-schema SQL
+checks cover configurable 50/100-point rules, publish/replay/conflicts, historical
+periods, membership coverage, retention, foreign-tenant denial, View-As denial
+and same-session owner revocation. All original catalog objects are preserved
+apart from explicitly declared additions; all 1,591,576 archived rows and five
+original sequences match. Synthetic rows rolled back and the disposable database
+was removed. No hosted system was changed.
+
+The next production-candidate work is measurement/collector and governed-work
+compatibility, followed by the remaining operator/connector/queue packages and
+the full combined release. Real performance scoring, provider coverage, signed-in
+acceptance, complete recovery and promotion approval remain open.
+[Combined rules rehearsal](evidence/learn-production-rules-rehearsal-2026-10-12.json).
+
 **12 October — first production-specific metadata migration rehearsed offline.**
 The candidate adds eight restricted metadata views and a private release ledger,
 with production catalog guards and reader-only restrictive policies that coexist

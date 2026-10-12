@@ -1,0 +1,124 @@
+{
+  "version": "learn-production-rules-rehearsal/1",
+  "observedAt": "2026-10-12T03:12:42.734469+00:00",
+  "result": {
+    "state": "production_metadata_and_rules_rehearsed_offline",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "fullReleaseAccepted": false,
+    "signedInAcceptance": false,
+    "packages": [
+      {
+        "name": "metadata",
+        "sha256": "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d"
+      },
+      {
+        "name": "foundation_rules",
+        "sha256": "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4"
+      }
+    ],
+    "containmentBefore": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "negativeChecks": [
+      {
+        "case": "wrong_target",
+        "expectedFailure": true,
+        "schemaRestored": true
+      },
+      {
+        "case": "catalog_drift",
+        "expectedFailure": true,
+        "schemaRestored": true
+      },
+      {
+        "case": "late_failure",
+        "expectedFailure": true,
+        "schemaRestored": true
+      }
+    ],
+    "existingReferencesAccepted": true,
+    "existingCatalogPreservedExceptDeclaredAdditions": true,
+    "addedTriggers": 39,
+    "addedIndexes": 2,
+    "ruleJourneyVerified": true,
+    "probeSha256": "86a462d6b860f5bf5a3b09b546286f18db5c75315edfe3ea964700ccdcaeb385",
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299,
+      "rows": 1591576,
+      "sequences": 5,
+      "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "duplicateRejected": true,
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true,
+    "elapsedSeconds": 34.07
+  },
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-rules-candidate.mjs",
+      "sha256": "0235ac0abbd308bc975830acd780e60e6f46f373ee965384dc1ae60ba4e557d4"
+    },
+    {
+      "path": "scripts/verify/learn-production-rules.assert.sql",
+      "sha256": "86a462d6b860f5bf5a3b09b546286f18db5c75315edfe3ea964700ccdcaeb385"
+    },
+    {
+      "path": "scripts/backup/rehearse_production_rules.py",
+      "sha256": "9d696864c489a2ce885ab6c2a5b86638e40e41e0da268489976af2be9490f06b"
+    },
+    {
+      "path": "supabase/release/learn-production/002_foundation_rules.sql",
+      "sha256": "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4"
+    },
+    {
+      "path": "supabase/release/learn-production/002_foundation_rules.manifest.json",
+      "sha256": "b4cca272862caefbbf93ab53f2dcf06ad90d8b6fc1d8f5e6bdfa424c99895d2d"
+    }
+  ],
+  "verifiedJourney": [
+    "Save 50-point rule draft and reject a stale editor and invalid scale.",
+    "Publish with exact request replay; reject changed replay and foreign-tenant write.",
+    "Save/publish 100-point revision; retain the earlier period definition and reject a mixed-rule period.",
+    "Capture new membership changes without inventing earlier observed coverage.",
+    "Reject rule/member deletion or rewriting, publication truncation and card tenant reassignment.",
+    "Deny View-As writes and deny draft/history reads after revoking the owner role within the same SQL session."
+  ],
+  "priorAttempt": {
+    "run": "v1",
+    "result": "verification_failed_container_removed",
+    "reason": "Membership probe passed clock_timestamp() later than the completed-period boundary; changed to statement_timestamp(). Candidate SQL unchanged."
+  },
+  "limitations": [
+    "Production and hosted TEST are unchanged. The production-specific candidate is not approved for deployment.",
+    "Existing grants/policies and View-As behavior are preserved; compatibility of every legacy writer and the combined release remains unverified.",
+    "SQL-role tests on an offline archive are not live HTTP/JWT or browser acceptance. Temporary role changes and synthetic rules/memberships rolled back.",
+    "Only metadata and foundation/rules prerequisites; measurements, collectors, connectors, queue, operator controls and the matching full release remain to be reconciled.",
+    "Preservation covers data in the retained archive; pg_net omissions, current live state and full service/Vault recovery remain separate gates."
+  ]
+}

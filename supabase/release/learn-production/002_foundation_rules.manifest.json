@@ -1,0 +1,89 @@
+{
+  "version": "learn-production-foundation-rules/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+  "priorSha256": "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/release/learn-test/002_card_work_foundations.sql",
+      "sha256": "be6f2e94a8691469b82b45dce0c3c2011a68731fc8ae339e4a1ff11dfc3d5233"
+    },
+    {
+      "path": "supabase/release/learn-test/004_rules_membership.sql",
+      "sha256": "37d1673acdc896d182b41e6e079475ef69da1d0cfc5c4fbc4017b9546be98562"
+    },
+    {
+      "path": "supabase/release/learn-test/005_scorecard_conflict_codes.sql",
+      "sha256": "554a7020f1ae8370f730016d10cfdd9a40b5fe08250974165de67f25802d3479"
+    }
+  ],
+  "existingTables": [
+    "authority_grants",
+    "authority_permissions",
+    "companies",
+    "config_versions",
+    "corrections",
+    "customer_cards",
+    "data_imports",
+    "decision_log",
+    "domain_entity_types",
+    "domain_object_types",
+    "effective_profiles",
+    "graph_edges",
+    "graph_events",
+    "graph_nodes",
+    "import_profiles",
+    "import_row_provenance",
+    "intelligence_objects",
+    "interaction_match_suggestions",
+    "job_number_aliases",
+    "jobs",
+    "object_state_history",
+    "operating_profile_entries",
+    "org_unit_members",
+    "org_units",
+    "ownership_assignments",
+    "people",
+    "policies",
+    "recommendations",
+    "responsibility_assignments",
+    "review_tasks",
+    "sites",
+    "state_definitions",
+    "state_transitions",
+    "team_members",
+    "view_as_context"
+  ],
+  "newTables": [
+    "learn_member_history",
+    "learn_scorecard_publications"
+  ],
+  "newFunctions": [
+    "learn_foundation_reference_guard",
+    "learn_scorecard_save_draft",
+    "learn_member_snapshot",
+    "learn_member_history_immutable",
+    "learn_capture_member_change",
+    "learn_member_capture_baseline",
+    "learn_member_history_read",
+    "learn_scorecard_revision_immutable",
+    "learn_scorecard_publish",
+    "learn_scorecard_policy_for_period",
+    "learn_scorecard_read_draft"
+  ],
+  "selections": [
+    "Foundation reference guard and triggers only; all 33 production foundation tables already exist.",
+    "Rule drafts, membership history, immutable publication and draft reader; existing View-As table/policies/grants retained.",
+    "Reviewed conflict-code replacements merged into the same transaction."
+  ],
+  "limitations": [
+    "No legacy source grants or policies are narrowed here; combined permission and existing-writer acceptance remain required.",
+    "No retrospective membership history, rule publication, measurement or pay decision is seeded.",
+    "Only the foundation/rules prerequisite; full combined release and live approval remain outstanding."
+  ]
+}

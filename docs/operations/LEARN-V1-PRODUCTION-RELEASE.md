@@ -97,6 +97,44 @@ not prove signed-in HTTP/browser acceptance. Nothing has been deployed live.
 
 ## Required evidence before requesting promotion
 
+The first two production-specific packages now pass an ordered offline rehearsal:
+
+1. `001_launch_metadata_views.sql`: the restricted metadata surface described above.
+2. [002_foundation_rules.sql](../../supabase/release/learn-production/002_foundation_rules.sql):
+   existing-table reference guards, forward membership capture and immutable
+   scorecard rule drafts/publications, including the reviewed conflict codes.
+
+The second package hash is
+`1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4`.
+It reuses all 33 existing foundation tables and retains their original policies,
+grants, columns, constraints and indexes, including production-only fields. The
+existing View-As table and its behavior are preserved. Exact catalog/helper and
+prior-receipt guards precede a read-only audit of declared tenant references.
+That audit passed on the restored archive; no historical relationships were
+rewritten. The package adds two empty history tables, eleven functions, 39 triggers
+and two indexes. New guards affect future writes; compatibility with every legacy
+writer still needs combined acceptance.
+
+The scoring-rule journey passed on that real restored schema: save/publish/replay,
+50-to-100-point revision, period-specific history, changed/stale request denial,
+foreign-tenant denial, membership capture with honest coverage, retention guards,
+View-As write denial and same-session owner revocation. Synthetic rules and a
+temporary member rolled back. All original 1,591,576 rows and five sequences
+matched; only two deployment receipts remained in the disposable database, with
+the two new history tables empty. The new history sequence is accounted for
+separately. The database was then removed. Wrong target, catalog drift, late
+failure rollback and duplicate rejection passed as well.
+
+The first attempt stopped on a verification timestamp later than the history
+reader's completed-period boundary. The corrected probe uses statement time;
+the candidate SQL did not change. See
+[combined rules evidence](evidence/learn-production-rules-rehearsal-2026-10-12.json).
+This is rule configuration/publication acceptance, not proof of real performance
+measurements or pay decisions. Measurement collectors, governed work, operator
+and connector packages still need production reconciliation and combined rehearsal.
+
+### Remaining acceptance requirements
+
 - Resolve existing TEST access approvals and verify signed-in customer and
   OpenFolk journeys on the matching protected frontend: reset/sign-in, source
   inspection, card evidence/audio, operator review, module controls and scoring.
