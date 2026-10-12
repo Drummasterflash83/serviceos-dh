@@ -1,0 +1,50 @@
+{
+  "version": "learn-production-release-journal-rehearsal/1",
+  "observedAt": "2026-10-12T16:55:13.447207+00:00",
+  "state": "offline_sequence_and_journal_checks_passed",
+  "productionChanges": 0,
+  "hostedTestChanges": 0,
+  "providerRequests": 0,
+  "sequenceSteps": 65,
+  "databasePackages": 16,
+  "runtimeEndpoints": 37,
+  "testsPassed": 8,
+  "verificationCommand": "node --test scripts/verify/learn-production-release-journal.test.mjs",
+  "cases": [
+    "durable_intent_before_each_of_65_operations",
+    "lost_successful_response_reconciles_without_replay",
+    "unknown_before_state_does_not_trigger_retry",
+    "http_success_without_verified_after_state_blocks_progress",
+    "missing_approval_or_drift_stops_before_submission",
+    "journal_write_failure_prevents_submission",
+    "changed_plan_modified_event_missing_sequence_rejected",
+    "concurrent_writer_and_concurrent_operation_rejected"
+  ],
+  "files": [
+    {
+      "path": "scripts/verify/learn-production-release-journal.mjs",
+      "sha256": "ef494a79e10b9f6d7061cc41c6cbf0df834eb2b19f050b71061084bae4336ba9"
+    },
+    {
+      "path": "scripts/verify/learn-production-release-journal.test.mjs",
+      "sha256": "6dff4cd9a54d09c0039bebcedcea7e894203619823839cd741810d6d15f52468"
+    },
+    {
+      "path": "scripts/verify/learn-production-release-sequence.mjs",
+      "sha256": "ac0de9fb083d5246ff778d93575a43786cb991a7062143379c003f9638e6fe41"
+    },
+    {
+      "path": "supabase/release/learn-production/release-sequence.plan.json",
+      "sha256": "406c7711b195a38d53474b76b1a7e4cf54c32c9b560b936d43f243437faea119"
+    },
+    {
+      "path": "supabase/release/learn-production/release-operations.manifest.json",
+      "sha256": "f1d0a482e4fdb5eab4eb80cb06ec4263bf1bc64b12bc130f231d4529c328a421"
+    }
+  ],
+  "limitations": [
+    "Uses synthetic operation ports and a real private filesystem journal. No production execution adapter was invoked.",
+    "Production adapters, current approval/gates, in-flight drain and full live acceptance remain unfinished.",
+    "An old writer lock requires confirmation that its process stopped before removal; elapsed time is not that evidence."
+  ]
+}

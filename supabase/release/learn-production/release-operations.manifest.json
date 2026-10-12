@@ -1,0 +1,1204 @@
+{
+  "version": "learn-production-release-operations/1",
+  "state": "prepared_not_approved_or_executed",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "planSha256": "fd8cf869f2fe5be299adb7ff60ab94dfe563d348b73c56ce73f93ca42474dcde",
+  "operations": [
+    {
+      "id": "fresh-release-preflight",
+      "kind": "check",
+      "contract": {
+        "candidateSha256": "afca8dcb12acfdb8f05f0f0e1a7779e0a94272226376045f78380ee9e104c708",
+        "requires": [
+          "explicit_exact_release_approval",
+          "fresh_production_schema_and_runtime_match",
+          "current_independent_recovery_checkpoint",
+          "reviewed_client_and_module_activation_scope",
+          "positive_caller_contracts_including_changed_gateway_flags",
+          "production_frontend_served_binding",
+          "manual_and_external_caller_coordination"
+        ]
+      },
+      "pinSha256": "1766670abb254ba3a41bbe5c62645a76b473fffbaf3792b3c76a8d9184ffd4df"
+    },
+    {
+      "id": "pause-existing-schedules",
+      "kind": "schedule",
+      "contract": {
+        "mode": "pause",
+        "path": "supabase/release/learn-production/schedules-pause.sql",
+        "sha256": "164f4438dd3fb6c5d135e95a6fc70762e9d8e6d0474eeae1eca63c095a3da536"
+      },
+      "pinSha256": "f898a6747e06e34bd5e87a1afcb855d9d19a298855e5b632dd2d3c62410aa03b"
+    },
+    {
+      "id": "verify-in-flight-drain",
+      "kind": "check",
+      "contract": {
+        "requires": [
+          "pause_readback",
+          "no_active_worker_leases",
+          "no_current_runtime_or_downstream_execution",
+          "manual_and_external_callers_fenced"
+        ],
+        "forbiddenSubstitutes": [
+          "empty_http_queue_only",
+          "cron_completion_only",
+          "deletion_of_stale_run_records"
+        ]
+      },
+      "pinSha256": "ca5145c754a2c4e77f28983995347bdf2d5c8a6d953aebaa70ec77193deb9083"
+    },
+    {
+      "id": "fresh-preservation-checkpoint",
+      "kind": "check",
+      "contract": {
+        "requires": [
+          "consistent_source_ids_and_content_fingerprints",
+          "existing_relationships_and_storage_pointers",
+          "complete_schema_roles_receipts_schedules_and_runtime_baseline"
+        ]
+      },
+      "pinSha256": "97568417fdac7158cd8d56369e9110ff6e6d735f7d62aea7a24073e6cdd64f2c"
+    },
+    {
+      "id": "database-001",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/001_launch_metadata_views.sql",
+        "sha256": "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+        "manifestSha256": "0b752c5694dfac4619ffa0e204d8c4e53493a6eb38e6d94b3c7d9b4a6d46eef4"
+      },
+      "pinSha256": "adfe792c093c1b64458d237098ffc443150160055295f8d0a42d136bd900cc5c"
+    },
+    {
+      "id": "database-002",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/002_foundation_rules.sql",
+        "sha256": "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+        "manifestSha256": "b4cca272862caefbbf93ab53f2dcf06ad90d8b6fc1d8f5e6bdfa424c99895d2d"
+      },
+      "pinSha256": "df3c84cd586dd3ebfc8aa86c0db25403a338bf8dbe42dda24721d47ca91093b0"
+    },
+    {
+      "id": "database-003",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/003_measurements_work.sql",
+        "sha256": "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+        "manifestSha256": "df0a5e4cc1c77eefddbdfe1285161f4da55898ea5d4a9b5860ee616b9e742a85"
+      },
+      "pinSha256": "89f02c7ba523ef8644105774c46e550c75734f4561e8bf3d2302c6ca4ab85b23"
+    },
+    {
+      "id": "database-004",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/004_governed_work_actions.sql",
+        "sha256": "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+        "manifestSha256": "ae0be39c2d841609d21aa7b1d6e9d4130587fd80c3a07830deb28430086e152a"
+      },
+      "pinSha256": "6279bf4af382ed3bb6c81ebacae28f1f4aa891bcea025cf924beecc31b40b42f"
+    },
+    {
+      "id": "database-005",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/005_scoring_working_time.sql",
+        "sha256": "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+        "manifestSha256": "d2aaa4890d34c61949305ec58718b81c367953c847c2e5df8bfb9f16259b0d04"
+      },
+      "pinSha256": "b185d7fcca2d01a0fecd5db3add31dc81e4026f32433067f6f8b9504fe496d9f"
+    },
+    {
+      "id": "database-006",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/006_slack_intake.sql",
+        "sha256": "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+        "manifestSha256": "e8fe9b03067ed51036c1ce162347b136c4333d78eb1c23ce6add90e5173504d5"
+      },
+      "pinSha256": "eda310ae7d6e8bb91b8806a6231215f36eae7b492534daa7b17a4670357f1c32"
+    },
+    {
+      "id": "database-007",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/007_capture_controls.sql",
+        "sha256": "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+        "manifestSha256": "e5725eb88fbc19e2d606d60e672250d74ef4c960936f04b9c70872662a6eb865"
+      },
+      "pinSha256": "a754e76d1c109ede7932581bb5488c3f9c25e613b087521f3e4fcac30b88bec1"
+    },
+    {
+      "id": "database-008",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/008_governed_imports.sql",
+        "sha256": "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+        "manifestSha256": "1660d17c2975dc81ce278e805eae5ee0d2cfe52638eabf806283801253bde51f"
+      },
+      "pinSha256": "352982029688752321aa1fdba5686a0d92121d7c8002f4db005a35ee34f7df85"
+    },
+    {
+      "id": "database-009",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/009_commusoft_api.sql",
+        "sha256": "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+        "manifestSha256": "7b47185ec24747f6be4628b602d10d44d5d4d71aa133c8637fd8bc9a813af269"
+      },
+      "pinSha256": "d7d14e3d2cc131ff42a26d708340f4cc82752bf54867adcee59ae7ae5db5724e"
+    },
+    {
+      "id": "database-010",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/010_email_capture.sql",
+        "sha256": "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+        "manifestSha256": "6f7f4b8fb6af47434598a53c871a0097adca210743a3cea38d8b9df38e4143db"
+      },
+      "pinSha256": "31c96e342e5e0718ad728836c3e984f09a603d91eb7557d42dbf291d9f754683"
+    },
+    {
+      "id": "database-011",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/011_phone_capture.sql",
+        "sha256": "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+        "manifestSha256": "3a3d7d4eeaaa97d0da178507ca43fa3e5d624dad62b55bc70a1f4fa2c96620e5"
+      },
+      "pinSha256": "1eb303fa2590df54aa7e2f11966ee4459e5fae98a9777528967eb2dab8351d0b"
+    },
+    {
+      "id": "database-012",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/012_communication_cards.sql",
+        "sha256": "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+        "manifestSha256": "b90d7fecc4eb673eb9896bc249ba201ea2bbfa87867f00885d0179031fc2b5d2"
+      },
+      "pinSha256": "0e32734cb91abb1ddc91488a4bc020d3f0080292a912cff658bfada325d83f68"
+    },
+    {
+      "id": "database-013",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/013_voicemail_capture.sql",
+        "sha256": "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+        "manifestSha256": "fae5dd536f628aa64b44e99c88bc0366e7e6e10b72158792dab4054879ecdd90"
+      },
+      "pinSha256": "a3ca3bfdb75aba5efcc04287d9ddc87d6069987672f8370555a6a843cd122237"
+    },
+    {
+      "id": "database-014",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/014_microsoft_capture.sql",
+        "sha256": "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba",
+        "manifestSha256": "66bb56b23f4c88aba8e2030bb430e03bc8f52220624510b320b82c875e681a6f"
+      },
+      "pinSha256": "2d28d47c9589af59221bea4414e3724b6300529a4ab9cd5a0eb6402fe2efc934"
+    },
+    {
+      "id": "database-015",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/015_operator_context.sql",
+        "sha256": "f4413fe47a9eaa1eb7774e35e22f10f78bf94a55345f4fbe19fe690b4e7d8556",
+        "manifestSha256": "35f24dc79a56312b88c88db9100ad591549f2442c7ed167e5e33bd8a7ca2a00b"
+      },
+      "pinSha256": "5fab540554a3c185074fe88bc420ba6dab3bb0fbb6b0244e8af553c6df4dc583"
+    },
+    {
+      "id": "database-016",
+      "kind": "database",
+      "contract": {
+        "path": "supabase/release/learn-production/016_roster_support.sql",
+        "sha256": "b877e70fa1cc946ba0c9c8a66f28b6603f99dc8484fefd1411bf30beed325998",
+        "manifestSha256": "4c6d63e876ef5f7ad9c5ca4e74c19a66f1e7ca983b8f3b5cde74088730f9e37b"
+      },
+      "pinSha256": "c4e9a57c67b9449670082cd6a7008714ca85d68a8c22b859bdb04b584b7d0f89"
+    },
+    {
+      "id": "matching-server-configuration",
+      "kind": "configuration",
+      "contract": {
+        "nonSecret": {
+          "learn-launch-status": {
+            "LEARN_STATUS_READ_MODE": "production_metadata_views"
+          }
+        },
+        "requiredNewSecretNames": [
+          "LEARN_COMMUSOFT_WORKER_KEY",
+          "LEARN_SLACK_WORKER_KEY"
+        ],
+        "requires": [
+          "existing_credentials_preserved",
+          "reviewed_secure_provisioning",
+          "verified_matching_caller_bindings"
+        ],
+        "captureActivation": false,
+        "secretValuesIncluded": false
+      },
+      "pinSha256": "a9a6cc0a6eec026377c85623b464db1ef62c55cef52559968d23484a7ca62580"
+    },
+    {
+      "id": "runtime-customer-card-scheduled-sync",
+      "kind": "runtime",
+      "contract": {
+        "name": "customer-card-scheduled-sync",
+        "before": {
+          "name": "customer-card-scheduled-sync",
+          "id": "9f0ebbe5-801f-4016-96af-82cab12d7112",
+          "version": 36,
+          "hash": "ad756e6ff60ff28af746b5717511efb10108a6d023b17bda76a888f856ef013f",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": false,
+        "eszipSha256": "535c2327ece1c9e38083b40717097b3a93b31a2754d72fbd1424e431fe92a73c",
+        "ezbrSha256": "bd9978687dde0860e89849642cd5f05372a23027fb0183c039722088ed63ad59",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/customer-card-scheduled-sync?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fcustomer-card-scheduled-sync%2Findex.ts&ezbr_sha256=bd9978687dde0860e89849642cd5f05372a23027fb0183c039722088ed63ad59",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "customer-card-scheduled-sync.ezbr"
+        }
+      },
+      "pinSha256": "cb98c8dbf3ac2927d61beb7318ae3bd6ad11099439f74feff2d8c04e72cd2768"
+    },
+    {
+      "id": "runtime-customer-card-sync",
+      "kind": "runtime",
+      "contract": {
+        "name": "customer-card-sync",
+        "before": {
+          "name": "customer-card-sync",
+          "id": "73157669-33e2-4936-b7cc-17341b1ad6ec",
+          "version": 38,
+          "hash": "8c9a52977fdf4aba4dffc5e019943c03ad01df1e086e3e53db107dcf95d6f264",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "00dd047c0b6b3e257b7ba3db9d8e97f0da63f9b3b3e527d91a44a2b52946a417",
+        "ezbrSha256": "ebd8a2d83e279d0fa70c6c6c6f497868db540b7a8ce1e91378f474c6a7289da4",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/customer-card-sync?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fcustomer-card-sync%2Findex.ts&ezbr_sha256=ebd8a2d83e279d0fa70c6c6c6f497868db540b7a8ce1e91378f474c6a7289da4",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "customer-card-sync.ezbr"
+        }
+      },
+      "pinSha256": "001c3f502237c0b52bffd89fd48a2d93658032590e0894697ff0edb465bcae00"
+    },
+    {
+      "id": "runtime-email-scheduled-sync",
+      "kind": "runtime",
+      "contract": {
+        "name": "email-scheduled-sync",
+        "before": {
+          "name": "email-scheduled-sync",
+          "id": "bf06316b-2b54-4365-b095-9b08a9cb7e36",
+          "version": 46,
+          "hash": "7367f78977e0348ee8a7e9b79d57efa401ff41daf9c43350684b32858a4ea321",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": false,
+        "eszipSha256": "4e3b59f05ffc8db0703aca0d93a5b87b603043a8e77cfe3235160a13a84dd4dc",
+        "ezbrSha256": "36722ed184e6545973c2dae18de62d61f30cd818bdb1cf5c67cda63c5daa1c70",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/email-scheduled-sync?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Femail-scheduled-sync%2Findex.ts&ezbr_sha256=36722ed184e6545973c2dae18de62d61f30cd818bdb1cf5c67cda63c5daa1c70",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "email-scheduled-sync.ezbr"
+        }
+      },
+      "pinSha256": "60e05e8436bb28d86757368a1287e548978b3f2fff20a46e1e03d57a970c8a22"
+    },
+    {
+      "id": "runtime-email-workspace-backfill-scheduled-sync",
+      "kind": "runtime",
+      "contract": {
+        "name": "email-workspace-backfill-scheduled-sync",
+        "before": {
+          "name": "email-workspace-backfill-scheduled-sync",
+          "id": "e8270d4a-b9a0-40be-b372-0670b9cd016b",
+          "version": 41,
+          "hash": "f25590da4b82311cf74c8b0f64acec3256c77e707f3a6c994a99a88d4ca307d2",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": false,
+        "eszipSha256": "e262488321969229b3c9b8673b1efb2d1b9f4a0662e1d2263b69579474abad76",
+        "ezbrSha256": "a3c2366c01cdac6474fe7a1a618f9ea3e89be3efabf043e21a73f5bead253240",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/email-workspace-backfill-scheduled-sync?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Femail-workspace-backfill-scheduled-sync%2Findex.ts&ezbr_sha256=a3c2366c01cdac6474fe7a1a618f9ea3e89be3efabf043e21a73f5bead253240",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "email-workspace-backfill-scheduled-sync.ezbr"
+        }
+      },
+      "pinSha256": "b498145a8caf74675bc70766ba3784bfb46bf0a0d5b58c0caa30f30a649feefc"
+    },
+    {
+      "id": "runtime-email-workspace-scheduled-sync",
+      "kind": "runtime",
+      "contract": {
+        "name": "email-workspace-scheduled-sync",
+        "before": {
+          "name": "email-workspace-scheduled-sync",
+          "id": "eca37797-5496-46ea-9e95-622b256b50bc",
+          "version": 47,
+          "hash": "8244c6a94ff163391b4190e69fa05a721ed808b3e7dfc74e86d8e44fbfd4d216",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": false,
+        "eszipSha256": "de79583ab288d22a03a4bfbfb414f09f28bcce1f2a992ecf8aed8bda06abb1ce",
+        "ezbrSha256": "d947568344f20d9e7e50e83da5e1c46896bf3ddf8cb7948dd2a8f23785805381",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/email-workspace-scheduled-sync?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Femail-workspace-scheduled-sync%2Findex.ts&ezbr_sha256=d947568344f20d9e7e50e83da5e1c46896bf3ddf8cb7948dd2a8f23785805381",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "email-workspace-scheduled-sync.ezbr"
+        }
+      },
+      "pinSha256": "fae9c5b04294cd55c464b8ad63834921cd4d17361eaa957debd227418c97effe"
+    },
+    {
+      "id": "runtime-gmail-sync-messages",
+      "kind": "runtime",
+      "contract": {
+        "name": "gmail-sync-messages",
+        "before": {
+          "name": "gmail-sync-messages",
+          "id": "2bec3b5a-c49f-49b9-86dd-7dd3834c7294",
+          "version": 46,
+          "hash": "ae60c396e74954a0a98ae462fefe141ab6ff371dff9524601dec1a23c0b6f92e",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "6f246f7d944028135313f9f4742c943c627392bc9665f84dc5d55096152e2cb9",
+        "ezbrSha256": "8790bcded25894286914571365040eb13ecba9f30280893b1678be543c38f45a",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/gmail-sync-messages?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fgmail-sync-messages%2Findex.ts&ezbr_sha256=8790bcded25894286914571365040eb13ecba9f30280893b1678be543c38f45a",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "gmail-sync-messages.ezbr"
+        }
+      },
+      "pinSha256": "2f8e6279f7759918497875348d9e6fddd37b107a95b14e010a37eaee8226325c"
+    },
+    {
+      "id": "runtime-gmail-workspace-backfill-messages",
+      "kind": "runtime",
+      "contract": {
+        "name": "gmail-workspace-backfill-messages",
+        "before": {
+          "name": "gmail-workspace-backfill-messages",
+          "id": "555ee68f-f302-465b-84b6-24f1699a6b19",
+          "version": 37,
+          "hash": "d5015726556c6200aea40578eded776f45983629b14c5eca1e55d7f47d67dc9b",
+          "jwt": true,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "90eb17414c9057ec7b08cdf4468c9addd45b930d804b81554950dffa75110cf4",
+        "ezbrSha256": "acc55d9bda355bab8cde4b2c058dd881acf5da7e7cc914555444ce8c1a5aa0f0",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/gmail-workspace-backfill-messages?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fgmail-workspace-backfill-messages%2Findex.ts&ezbr_sha256=acc55d9bda355bab8cde4b2c058dd881acf5da7e7cc914555444ce8c1a5aa0f0",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "gmail-workspace-backfill-messages.ezbr"
+        }
+      },
+      "pinSha256": "c5b8852a4bb329ccc38fe5909221668c3a8757ea3b3466acaeb9df5005490a2f"
+    },
+    {
+      "id": "runtime-gmail-workspace-sync-messages",
+      "kind": "runtime",
+      "contract": {
+        "name": "gmail-workspace-sync-messages",
+        "before": {
+          "name": "gmail-workspace-sync-messages",
+          "id": "4dd1aec2-2a78-44d7-af39-999dec151acb",
+          "version": 45,
+          "hash": "251f4dd4503ac4d1ea0692f11e10f584093fbb175007216f431397f802d0f7ce",
+          "jwt": true,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "f9ce0c964f5f719a2e537697224db183adc044c55690bb795446fd8f3c25b446",
+        "ezbrSha256": "c5c7ba64e1d09a6eb3f1049fcbe48aa8cf2f621d75c17d1c4af895c07cf3ab36",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/gmail-workspace-sync-messages?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fgmail-workspace-sync-messages%2Findex.ts&ezbr_sha256=c5c7ba64e1d09a6eb3f1049fcbe48aa8cf2f621d75c17d1c4af895c07cf3ab36",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "gmail-workspace-sync-messages.ezbr"
+        }
+      },
+      "pinSha256": "90f838793e9f8f0e9209548316466320e10251b1f510c7d5be58e5fa07bfb9c6"
+    },
+    {
+      "id": "runtime-google-workspace-discover-mailboxes",
+      "kind": "runtime",
+      "contract": {
+        "name": "google-workspace-discover-mailboxes",
+        "before": {
+          "name": "google-workspace-discover-mailboxes",
+          "id": "f37def0b-2345-439b-af2e-29b439a2ee44",
+          "version": 44,
+          "hash": "be17fa6b5554585450b030998a0263c09d692c5dd0d3c0d8a5a0e6efd04c944b",
+          "jwt": true,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "c6ce2492d8577f816939391797350116d7e675c9240605712b1aa468fa93a10c",
+        "ezbrSha256": "0697e5842ac4ba50ce407ef06f355308105ec9a33636ed73f38b61cdd7331f95",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/google-workspace-discover-mailboxes?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fgoogle-workspace-discover-mailboxes%2Findex.ts&ezbr_sha256=0697e5842ac4ba50ce407ef06f355308105ec9a33636ed73f38b61cdd7331f95",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "google-workspace-discover-mailboxes.ezbr"
+        }
+      },
+      "pinSha256": "151001c5adf695305ab07f0ab4d0b99c8c843ba9cfc1c52d99ca9d4b7138c99c"
+    },
+    {
+      "id": "runtime-identity-resolve",
+      "kind": "runtime",
+      "contract": {
+        "name": "identity-resolve",
+        "before": {
+          "name": "identity-resolve",
+          "id": "f9fc05ea-f21d-4001-ba85-34ae7f26ba20",
+          "version": 39,
+          "hash": "19b21b794c1525d909c739ccf49d32911a642e5bc5c0591de055fa0f4b010a35",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "6d5dc5b0980d4f0248ac4b8d8f0237d95e5220f25450f999c08c04d4816267e9",
+        "ezbrSha256": "0db03cd9e8f12b479a6fa838568d5d40f907985b6a564b3ef38bf929c677f951",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/identity-resolve?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fidentity-resolve%2Findex.ts&ezbr_sha256=0db03cd9e8f12b479a6fa838568d5d40f907985b6a564b3ef38bf929c677f951",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "identity-resolve.ezbr"
+        }
+      },
+      "pinSha256": "c5e8ccd26816e3221382c3e260d8f87d5e332b1bb2092efa1511ab6d04a16db0"
+    },
+    {
+      "id": "runtime-identity-scheduled-sync",
+      "kind": "runtime",
+      "contract": {
+        "name": "identity-scheduled-sync",
+        "before": {
+          "name": "identity-scheduled-sync",
+          "id": "a6517c1f-3c19-4407-be11-54e80b70b4fd",
+          "version": 37,
+          "hash": "1384bff27c2ee023785c062d16284ea9d8e205ab2755006641d8e3dd7ecb71a3",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": false,
+        "eszipSha256": "b9ec80a61030fddf98172a33d258cbb4516e8a50cb67bdb237b3ae70e952b7bf",
+        "ezbrSha256": "6a63553582dd3b67dd3ee940ed6ac4a1e6796ac900364b497321cee077f9615b",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/identity-scheduled-sync?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fidentity-scheduled-sync%2Findex.ts&ezbr_sha256=6a63553582dd3b67dd3ee940ed6ac4a1e6796ac900364b497321cee077f9615b",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "identity-scheduled-sync.ezbr"
+        }
+      },
+      "pinSha256": "655b5332bb7f00e7c8a9f4ba92c08852393a528980de5814a7e26974fcb3f2bf"
+    },
+    {
+      "id": "runtime-interactions-scheduled-sync",
+      "kind": "runtime",
+      "contract": {
+        "name": "interactions-scheduled-sync",
+        "before": {
+          "name": "interactions-scheduled-sync",
+          "id": "1e06d6b2-5d2d-4118-a9f9-bab05a181d6e",
+          "version": 38,
+          "hash": "a001d92e0ec8ccf21c7d3236217b3ae82e2272497217e549ced730e8f57b1023",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": false,
+        "eszipSha256": "350c5421678d53bd3efa016695031ec7a4e3aff025bab5a525eab2d31dfbd5be",
+        "ezbrSha256": "c6d6eb38ee6299bd525424679b710a964942e7cd7d3b69fccf4dd89bb4212345",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/interactions-scheduled-sync?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Finteractions-scheduled-sync%2Findex.ts&ezbr_sha256=c6d6eb38ee6299bd525424679b710a964942e7cd7d3b69fccf4dd89bb4212345",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "interactions-scheduled-sync.ezbr"
+        }
+      },
+      "pinSha256": "3ff51f5dec32e770cdb9235fc5766f177539477112a54e45cdcc343fafe86653"
+    },
+    {
+      "id": "runtime-interactions-sync",
+      "kind": "runtime",
+      "contract": {
+        "name": "interactions-sync",
+        "before": {
+          "name": "interactions-sync",
+          "id": "55dc99dc-5d94-4aef-9a3b-bc2d270781e8",
+          "version": 37,
+          "hash": "607f5a7ff02557850182edb46c5f2a428749705fb5031e6c6f131e189bf0efbe",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "821dbd4a6ffd8e930956633008faaa8b2fbb891c4250b0c9f6cf6b352d46d0e1",
+        "ezbrSha256": "82f0bc758f44424c4e25644dc1963736df7bd814e476a3ba34dd8bd58931a45a",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/interactions-sync?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Finteractions-sync%2Findex.ts&ezbr_sha256=82f0bc758f44424c4e25644dc1963736df7bd814e476a3ba34dd8bd58931a45a",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "interactions-sync.ezbr"
+        }
+      },
+      "pinSha256": "1b13d1319f37407493c3f2c0d87589d3f2fcfe00f39c7febc42cdb96ff8d184b"
+    },
+    {
+      "id": "runtime-learn-commusoft-verify",
+      "kind": "runtime",
+      "contract": {
+        "name": "learn-commusoft-verify",
+        "before": null,
+        "verifyJwt": true,
+        "eszipSha256": "f5d3b182b902a5187a57cd2685c34845fe85648214cfa9b2e72d6d63b041fca0",
+        "ezbrSha256": "804f41a5476ae7a3bde325b823bf1441e1aa6538c4f267bf6639529b936d44a3",
+        "request": {
+          "method": "POST",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Flearn-commusoft-verify%2Findex.ts&ezbr_sha256=804f41a5476ae7a3bde325b823bf1441e1aa6538c4f267bf6639529b936d44a3&slug=learn-commusoft-verify&name=learn-commusoft-verify",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "learn-commusoft-verify.ezbr"
+        }
+      },
+      "pinSha256": "202e01b9e8237ba8eeb15902c81ba0e4f8b17de39658176d2b766fd5911a207c"
+    },
+    {
+      "id": "runtime-learn-commusoft-worker",
+      "kind": "runtime",
+      "contract": {
+        "name": "learn-commusoft-worker",
+        "before": null,
+        "verifyJwt": true,
+        "eszipSha256": "b91378e018b27e7461f252b893776cff509c11fd6508118f6b140b73287ea091",
+        "ezbrSha256": "e4324f60da816f53880c46cd75c72eac917740c084289112474fb816309bc814",
+        "request": {
+          "method": "POST",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Flearn-commusoft-worker%2Findex.ts&ezbr_sha256=e4324f60da816f53880c46cd75c72eac917740c084289112474fb816309bc814&slug=learn-commusoft-worker&name=learn-commusoft-worker",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "learn-commusoft-worker.ezbr"
+        }
+      },
+      "pinSha256": "a8cb1a6c583cdadcdd43246a278da31cb2a3f1b0d107397fa67b297da33a39e4"
+    },
+    {
+      "id": "runtime-learn-data-import",
+      "kind": "runtime",
+      "contract": {
+        "name": "learn-data-import",
+        "before": null,
+        "verifyJwt": true,
+        "eszipSha256": "9ba5155ad91def28335d9472a8b7c4745c420ebb7ce2d5a39d6209c0d09f99f1",
+        "ezbrSha256": "3f846657c5b33dbc4626e3fb7168e1c13e7948a3dc699ae49b99e93fb8fac892",
+        "request": {
+          "method": "POST",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Flearn-data-import%2Findex.ts&ezbr_sha256=3f846657c5b33dbc4626e3fb7168e1c13e7948a3dc699ae49b99e93fb8fac892&slug=learn-data-import&name=learn-data-import",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "learn-data-import.ezbr"
+        }
+      },
+      "pinSha256": "191554408bc40df1b1882e5de550d7a0d91d85735443571bfdfa70027b6abf2f"
+    },
+    {
+      "id": "runtime-learn-launch-status",
+      "kind": "runtime",
+      "contract": {
+        "name": "learn-launch-status",
+        "before": null,
+        "verifyJwt": true,
+        "eszipSha256": "b66cd6e40f185d0839155a1e4b65908fe371432a5814d09816aeef8ae9a314e7",
+        "ezbrSha256": "94ef5acf8bca88494687b1d58159dfa7d65fa5ffead130a74681291c677274eb",
+        "request": {
+          "method": "POST",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Flearn-launch-status%2Findex.ts&ezbr_sha256=94ef5acf8bca88494687b1d58159dfa7d65fa5ffead130a74681291c677274eb&slug=learn-launch-status&name=learn-launch-status",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "learn-launch-status.ezbr"
+        }
+      },
+      "pinSha256": "3c945f6606fba51af3d2047ab0c0574e112f1177304b92fd5ebb3daf254da5a7"
+    },
+    {
+      "id": "runtime-learn-operator-phone-playback",
+      "kind": "runtime",
+      "contract": {
+        "name": "learn-operator-phone-playback",
+        "before": null,
+        "verifyJwt": true,
+        "eszipSha256": "2918f5c6ecaa9773538cf59b2843b9321644dedf23b8ddb77e75fe5759adacb7",
+        "ezbrSha256": "4961ad64123387a5ab4fb45d8207ba27fa84d77f03c9316f8d1bc3a875ae2dd7",
+        "request": {
+          "method": "POST",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Flearn-operator-phone-playback%2Findex.ts&ezbr_sha256=4961ad64123387a5ab4fb45d8207ba27fa84d77f03c9316f8d1bc3a875ae2dd7&slug=learn-operator-phone-playback&name=learn-operator-phone-playback",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "learn-operator-phone-playback.ezbr"
+        }
+      },
+      "pinSha256": "4653beb5f9630bb7df36c310b9179d022e6f6f9c70294c0cee5d0db5d1a458b8"
+    },
+    {
+      "id": "runtime-learn-phone-playback",
+      "kind": "runtime",
+      "contract": {
+        "name": "learn-phone-playback",
+        "before": null,
+        "verifyJwt": true,
+        "eszipSha256": "d988d2f39fd7b641bdcd71d86900db94d2759409b26f8e1d5d8efcc6de6ad09d",
+        "ezbrSha256": "0379173e772c93f711894f84daf08b0311c5f0e1b10b8fbab457f2d37e42aaad",
+        "request": {
+          "method": "POST",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Flearn-phone-playback%2Findex.ts&ezbr_sha256=0379173e772c93f711894f84daf08b0311c5f0e1b10b8fbab457f2d37e42aaad&slug=learn-phone-playback&name=learn-phone-playback",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "learn-phone-playback.ezbr"
+        }
+      },
+      "pinSha256": "8d7244005e68d5b9b1ea9030b1964c2e642e9b32b2de0cbe50f08fa491330a2f"
+    },
+    {
+      "id": "runtime-learn-slack-schedule",
+      "kind": "runtime",
+      "contract": {
+        "name": "learn-slack-schedule",
+        "before": null,
+        "verifyJwt": true,
+        "eszipSha256": "32475cb37ee1262f29f022c909a89059601f98b3b7d30d3e5e594090361e0327",
+        "ezbrSha256": "441af36e5ac8c6507b93b3a864d44e1ff1a7f853502882928906a1972c0798a8",
+        "request": {
+          "method": "POST",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Flearn-slack-schedule%2Findex.ts&ezbr_sha256=441af36e5ac8c6507b93b3a864d44e1ff1a7f853502882928906a1972c0798a8&slug=learn-slack-schedule&name=learn-slack-schedule",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "learn-slack-schedule.ezbr"
+        }
+      },
+      "pinSha256": "29ad6612fe102d9e2ac8ec3d13c9d3d3038081c7c213207987d8fb3b00deb89b"
+    },
+    {
+      "id": "runtime-learn-slack-worker",
+      "kind": "runtime",
+      "contract": {
+        "name": "learn-slack-worker",
+        "before": null,
+        "verifyJwt": true,
+        "eszipSha256": "6c622b0eb2c4c77819488293046c004145ea6d35d3984ef7b6bc9ef0a5969446",
+        "ezbrSha256": "f43eecf4a1da576522f74bc14b3f14ac0f03255b2ef9c17d3a0db9b69bd2a790",
+        "request": {
+          "method": "POST",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Flearn-slack-worker%2Findex.ts&ezbr_sha256=f43eecf4a1da576522f74bc14b3f14ac0f03255b2ef9c17d3a0db9b69bd2a790&slug=learn-slack-worker&name=learn-slack-worker",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "learn-slack-worker.ezbr"
+        }
+      },
+      "pinSha256": "60978d71139ca57b57d0472b3d464b43fba7dfd0aa744d6819c26281c2614578"
+    },
+    {
+      "id": "runtime-learn-voicemail-import",
+      "kind": "runtime",
+      "contract": {
+        "name": "learn-voicemail-import",
+        "before": null,
+        "verifyJwt": false,
+        "eszipSha256": "23643e29c2294db1dc20c0fcba55806d468f8bf1e7196b29c2118884fed62267",
+        "ezbrSha256": "9f3bec3a5772981aad9b82a523e6ef2d9ee89d95e5ce3d2ab2a96ac25e6bc81e",
+        "request": {
+          "method": "POST",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Flearn-voicemail-import%2Findex.ts&ezbr_sha256=9f3bec3a5772981aad9b82a523e6ef2d9ee89d95e5ce3d2ab2a96ac25e6bc81e&slug=learn-voicemail-import&name=learn-voicemail-import",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "learn-voicemail-import.ezbr"
+        }
+      },
+      "pinSha256": "716e433c802016a99c40ddaf69b1471a2045378f233fb60270611869afe55408"
+    },
+    {
+      "id": "runtime-openfolk-control-plane",
+      "kind": "runtime",
+      "contract": {
+        "name": "openfolk-control-plane",
+        "before": {
+          "name": "openfolk-control-plane",
+          "id": "3326897e-9099-4836-a576-f3e65a0a9a79",
+          "version": 25,
+          "hash": "c39aade1fae8211a9e444ca90b73c35be34eafa3c52d5fee26dea576f2c42368",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": false,
+        "eszipSha256": "7e70134ec7ceb34b55ebdce1944532779865067b7b418840d78d82e44ef6a1fa",
+        "ezbrSha256": "efe5d729ba4d53bcc188563da1ca9e35c47a9416fa183f4beb7c53282f61d5c7",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/openfolk-control-plane?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fopenfolk-control-plane%2Findex.ts&ezbr_sha256=efe5d729ba4d53bcc188563da1ca9e35c47a9416fa183f4beb7c53282f61d5c7",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "openfolk-control-plane.ezbr"
+        }
+      },
+      "pinSha256": "feae9252c5e20a9ed2ba1811d90690fdb0c42faa95498a735bedff8f39599d57"
+    },
+    {
+      "id": "runtime-phone-analyse-transcript",
+      "kind": "runtime",
+      "contract": {
+        "name": "phone-analyse-transcript",
+        "before": {
+          "name": "phone-analyse-transcript",
+          "id": "a6c2c239-bbe5-4cad-82c4-ed35da839577",
+          "version": 51,
+          "hash": "9547ca00d0a0c02105804a7c51a7f1a275c68897d7e365e8d4d1b229088433fa",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "638bfa9b6026a5e7e6ce6e8fc3aa0b60fca0b306d150497acc277c0f8c603dc1",
+        "ezbrSha256": "2f3da3c896aeaca6a2fb1dd2ac4018588fe17bc4ae4573c396b3b2432a1fca62",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/phone-analyse-transcript?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fphone-analyse-transcript%2Findex.ts&ezbr_sha256=2f3da3c896aeaca6a2fb1dd2ac4018588fe17bc4ae4573c396b3b2432a1fca62",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "phone-analyse-transcript.ezbr"
+        }
+      },
+      "pinSha256": "172b3b68818a731723aacc2bcdee7ef140398c370f8ae8172ab4212294270274"
+    },
+    {
+      "id": "runtime-phone-call-detail",
+      "kind": "runtime",
+      "contract": {
+        "name": "phone-call-detail",
+        "before": {
+          "name": "phone-call-detail",
+          "id": "90920775-1b84-466c-a0a3-0ed545d9223b",
+          "version": 14,
+          "hash": "163fce48361973028b38a488d02ef7c7b2689c079c6c462f748a4c46a4d8795b",
+          "jwt": true,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "fb24eb6a97c936a27bc5b425ca9252c051b1c08a2c54a9ec93adc49d1dd9dec3",
+        "ezbrSha256": "38602cb442190cb9a2f848c218c38adbe5c4a092a88d90cfda32baac6d3809a5",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/phone-call-detail?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fphone-call-detail%2Findex.ts&ezbr_sha256=38602cb442190cb9a2f848c218c38adbe5c4a092a88d90cfda32baac6d3809a5",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "phone-call-detail.ezbr"
+        }
+      },
+      "pinSha256": "3e87cfc0a8116172bcf917054eb6fa76f4a8e1d811352c3aa8dd9de0898a5d25"
+    },
+    {
+      "id": "runtime-phone-process-pending",
+      "kind": "runtime",
+      "contract": {
+        "name": "phone-process-pending",
+        "before": {
+          "name": "phone-process-pending",
+          "id": "78ca2b3d-f24a-41a5-964b-e8eb4a666c44",
+          "version": 41,
+          "hash": "9d4f610217f8454c3a9737d2ffeac4b47f9edc335775ffb28f3459e3fac45840",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "3b7d4073c960191891152577f4d4cb71e58f9c4e72eb81e7b86ad805ac37363a",
+        "ezbrSha256": "60c05b0205d68261410b814cb737fcd075a0c22294de95159266624cdf34d6f0",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/phone-process-pending?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fphone-process-pending%2Findex.ts&ezbr_sha256=60c05b0205d68261410b814cb737fcd075a0c22294de95159266624cdf34d6f0",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "phone-process-pending.ezbr"
+        }
+      },
+      "pinSha256": "12a03f9d22a6bffb88d69959b7e51c66760924fe67e12171dd20d3af984aef9c"
+    },
+    {
+      "id": "runtime-phone-process-pipeline",
+      "kind": "runtime",
+      "contract": {
+        "name": "phone-process-pipeline",
+        "before": {
+          "name": "phone-process-pipeline",
+          "id": "eccef4b8-a33d-4ab5-b90f-77bd903a41dc",
+          "version": 56,
+          "hash": "3b9d9ca3f12b4a819a15647d234cdf1e4f6f1599c28996b565c18bdff8c03614",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "8cd59144ee62dbf8c8c8e1d9d1d3cf0f80c27a62be6851b511020184d0a051fc",
+        "ezbrSha256": "dce74091e4f03d5776c6f0eab788ffad5552f4a53dc12f1bc0b40c96ea1dbb5a",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/phone-process-pipeline?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fphone-process-pipeline%2Findex.ts&ezbr_sha256=dce74091e4f03d5776c6f0eab788ffad5552f4a53dc12f1bc0b40c96ea1dbb5a",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "phone-process-pipeline.ezbr"
+        }
+      },
+      "pinSha256": "8edef272a0fdc9fdf31d318ebe51905f69fa2286eadbc41568175661b0b15d21"
+    },
+    {
+      "id": "runtime-phone-processing-scheduled-sync",
+      "kind": "runtime",
+      "contract": {
+        "name": "phone-processing-scheduled-sync",
+        "before": {
+          "name": "phone-processing-scheduled-sync",
+          "id": "d63ced7d-3657-4e8b-9106-6fd35a8ebeef",
+          "version": 39,
+          "hash": "c738df80adf79674081bfc9a9df6c649c59cee5f7162a176a272570a1ef8a9f4",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": false,
+        "eszipSha256": "07d141f0772cbd43b0051debaa2bfbd00fcf629c5e8deb004aad5534c4c1019f",
+        "ezbrSha256": "13e0f5337e720526da0982abe8bff1d7d5a7eec25131224d5874c312747b0e66",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/phone-processing-scheduled-sync?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fphone-processing-scheduled-sync%2Findex.ts&ezbr_sha256=13e0f5337e720526da0982abe8bff1d7d5a7eec25131224d5874c312747b0e66",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "phone-processing-scheduled-sync.ezbr"
+        }
+      },
+      "pinSha256": "013b7875d2092c04523d8b2662c0c4a5c5a9bd94b50f47bcca8a1c9531c84d17"
+    },
+    {
+      "id": "runtime-phone-scheduled-sync",
+      "kind": "runtime",
+      "contract": {
+        "name": "phone-scheduled-sync",
+        "before": {
+          "name": "phone-scheduled-sync",
+          "id": "31bd7a05-ddc7-4798-9731-2bb4f952b912",
+          "version": 49,
+          "hash": "cc53415ae17dda34e1a63b16c22cd76386e202ea3f4a61be148a8aebd4fee107",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": false,
+        "eszipSha256": "eb72bd5749089d391a66c8a44f2dc93d99e62e28ea4b599b6c5d828defc0beb1",
+        "ezbrSha256": "b0e78a5e29eb0f9fadfe124f52b84ecc757b587f5e8a4541f640a23abb0b12a8",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/phone-scheduled-sync?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fphone-scheduled-sync%2Findex.ts&ezbr_sha256=b0e78a5e29eb0f9fadfe124f52b84ecc757b587f5e8a4541f640a23abb0b12a8",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "phone-scheduled-sync.ezbr"
+        }
+      },
+      "pinSha256": "a42f79437069921d1429ba58080bffc64d46b743a51ef510ecff177190ea7687"
+    },
+    {
+      "id": "runtime-phone-transcribe-recording",
+      "kind": "runtime",
+      "contract": {
+        "name": "phone-transcribe-recording",
+        "before": {
+          "name": "phone-transcribe-recording",
+          "id": "2499c67b-593e-4910-a1a6-481a6a682a86",
+          "version": 50,
+          "hash": "b9be4a49d4aeab0128cb6f053121d68417e5a7bf39c1a0480f6eb0c8ed547d64",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "71b49b106f283191b8075f4f06052c7fa48bafd9747d94548e4102b4cb0c0bf9",
+        "ezbrSha256": "1d2be240c6a71023cab85088feb288279f9798656ed308c7e81b5f38691c5f0d",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/phone-transcribe-recording?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fphone-transcribe-recording%2Findex.ts&ezbr_sha256=1d2be240c6a71023cab85088feb288279f9798656ed308c7e81b5f38691c5f0d",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "phone-transcribe-recording.ezbr"
+        }
+      },
+      "pinSha256": "689b8b6a05d2c3ea5c232f7273bfdcc12595e5776324871bca25ed9ec5b57f82"
+    },
+    {
+      "id": "runtime-platform-worker",
+      "kind": "runtime",
+      "contract": {
+        "name": "platform-worker",
+        "before": {
+          "name": "platform-worker",
+          "id": "d4a0b71f-262d-4ede-9485-2621893b6c90",
+          "version": 54,
+          "hash": "b2e93e85a43993941d755ae445e880dbd7dbba807c6fbb3101cae6f41049653c",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": false,
+        "eszipSha256": "a3267bfb8f1e2c05ac2769055811a5b2e1ccfbc80b2573da3fd834077ab99112",
+        "ezbrSha256": "e128c87b49aabf112b25da5e12f5633fff665dbe56cdfd86092fe804122db521",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/platform-worker?verify_jwt=false&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fplatform-worker%2Findex.ts&ezbr_sha256=e128c87b49aabf112b25da5e12f5633fff665dbe56cdfd86092fe804122db521",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "platform-worker.ezbr"
+        }
+      },
+      "pinSha256": "895cabb97036f499aef597d5072547583cf504bbdc525761705318a6e0620a84"
+    },
+    {
+      "id": "runtime-receptionist-voicemail-recording",
+      "kind": "runtime",
+      "contract": {
+        "name": "receptionist-voicemail-recording",
+        "before": {
+          "name": "receptionist-voicemail-recording",
+          "id": "346c8b06-e34f-4ce7-b687-52eb90ad4bdf",
+          "version": 1,
+          "hash": "53ee28ae60cee79be050ce2a59e915ccaf20d8cb9295c1478cbfe321c86f979e",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "53e434fe4e6106b493475748ed91a7e45804b055cbd1e8b6e5afd978a441ab0b",
+        "ezbrSha256": "49106359927aa3ff3b42b30acdadeb33dfdd64fa5cec3615f07045d89f85cbcc",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/receptionist-voicemail-recording?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Freceptionist-voicemail-recording%2Findex.ts&ezbr_sha256=49106359927aa3ff3b42b30acdadeb33dfdd64fa5cec3615f07045d89f85cbcc",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "receptionist-voicemail-recording.ezbr"
+        }
+      },
+      "pinSha256": "65377fe6842164f71c214e721948a6fd2fa0899223adfe0567a6a656debaea74"
+    },
+    {
+      "id": "runtime-simwood-download-recording",
+      "kind": "runtime",
+      "contract": {
+        "name": "simwood-download-recording",
+        "before": {
+          "name": "simwood-download-recording",
+          "id": "d48e99cd-c6f5-4e2b-ad9a-8139bf0999f1",
+          "version": 59,
+          "hash": "d85133e443eb901fbb555c0fd5f45b47bd9ade997e4903cf6422701dacb0f0ef",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "397563fda71e7fc9a8a1b21e9817ada9b027ec0fcf101afb233902aad56bae01",
+        "ezbrSha256": "4aeb7b42bbb3507e843a51918babf34873d172fb209c0b760527ef1990c5b032",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/simwood-download-recording?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fsimwood-download-recording%2Findex.ts&ezbr_sha256=4aeb7b42bbb3507e843a51918babf34873d172fb209c0b760527ef1990c5b032",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "simwood-download-recording.ezbr"
+        }
+      },
+      "pinSha256": "3ba99f8749efee3bcf9f6427e9092e97d7be7ee91bff83921feb9328bc143c3a"
+    },
+    {
+      "id": "runtime-simwood-sync-calls",
+      "kind": "runtime",
+      "contract": {
+        "name": "simwood-sync-calls",
+        "before": {
+          "name": "simwood-sync-calls",
+          "id": "c19069e4-9b6c-4e78-89ad-bd875a57919e",
+          "version": 60,
+          "hash": "5a976d5bb2946bf4f2c820603ec1eb5a68d9bd37aa889251512bb95da5dbe462",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "5cdde3057fc757e53f8195797c262fd169c18e63ad01d470a5040c56841aede8",
+        "ezbrSha256": "8bce2d529b4046fd9bf35421d16ff924e5b528a9012d31a22e1a17cdf0e29923",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/simwood-sync-calls?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fsimwood-sync-calls%2Findex.ts&ezbr_sha256=8bce2d529b4046fd9bf35421d16ff924e5b528a9012d31a22e1a17cdf0e29923",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "simwood-sync-calls.ezbr"
+        }
+      },
+      "pinSha256": "033c5b77824bd573c3e1b0ea3b7d1f653b7a8302bd01b73bb6c1aa1752db6cad"
+    },
+    {
+      "id": "runtime-simwood-sync-recordings",
+      "kind": "runtime",
+      "contract": {
+        "name": "simwood-sync-recordings",
+        "before": {
+          "name": "simwood-sync-recordings",
+          "id": "40cb0a49-1e26-4fa4-ade0-a26647339228",
+          "version": 63,
+          "hash": "43f7172579491b7d10b522ba5e043bb567e05896bdc78a2227cb3c020c77fd04",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "db26763b8b40376dd65dbc7755a06a7dbe1f2918e33b1bebe99073f12315f3af",
+        "ezbrSha256": "1de8ba48b66df00bd2674ff2f1e0591dbdcdee732bd8e4f85b22f4053587016a",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/simwood-sync-recordings?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fsimwood-sync-recordings%2Findex.ts&ezbr_sha256=1de8ba48b66df00bd2674ff2f1e0591dbdcdee732bd8e4f85b22f4053587016a",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "simwood-sync-recordings.ezbr"
+        }
+      },
+      "pinSha256": "d3dc2a3fe9cf161d4057917c43eb4a63a7ac5f11a5dd5612de665ee28ed4afb3"
+    },
+    {
+      "id": "runtime-simwood-test-connection",
+      "kind": "runtime",
+      "contract": {
+        "name": "simwood-test-connection",
+        "before": {
+          "name": "simwood-test-connection",
+          "id": "f68bd679-8ca8-4c2b-8e8e-4bd757428fc2",
+          "version": 57,
+          "hash": "ad198fe0c4e4b600c14cea47d7f9c530e2f38758e9c8f992158d424dbe94ed0f",
+          "jwt": true,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "8d5b263caf3f6c75814e9d059cad4df7cde120095f6f5a3e0d5c6ad5542784a1",
+        "ezbrSha256": "1bc1f24015fbe289d7721442a3dff2bf20f01d2979dd9c2ae082b5eac067e9c3",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/simwood-test-connection?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fsimwood-test-connection%2Findex.ts&ezbr_sha256=1bc1f24015fbe289d7721442a3dff2bf20f01d2979dd9c2ae082b5eac067e9c3",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "simwood-test-connection.ezbr"
+        }
+      },
+      "pinSha256": "f19ecae799dfc15c44bf375f465e4c3fe52340cd3270e56cb9f87c1f998f1213"
+    },
+    {
+      "id": "runtime-work-transition",
+      "kind": "runtime",
+      "contract": {
+        "name": "work-transition",
+        "before": {
+          "name": "work-transition",
+          "id": "7b47816f-4398-459d-a537-586034dc1a98",
+          "version": 14,
+          "hash": "743fe95066d0d81049bef28cd89123440fb3b93b7fed175abf6e177845414556",
+          "jwt": false,
+          "status": "ACTIVE"
+        },
+        "verifyJwt": true,
+        "eszipSha256": "2f6239269b3b68355d8eb6a526ed5ad7687438ccb58cddb5ab5a6805e2730f4a",
+        "ezbrSha256": "9b0e1ccbd9508767f9fe91899ed101850f26d69987cc9dd4b16a5289d15271df",
+        "request": {
+          "method": "PATCH",
+          "path": "/v1/projects/tgbnakbxwcqjeimygroz/functions/work-transition?verify_jwt=true&entrypoint_path=file%3A%2F%2F%2Fwork%2Fsupabase%2Ffunctions%2Fwork-transition%2Findex.ts&ezbr_sha256=9b0e1ccbd9508767f9fe91899ed101850f26d69987cc9dd4b16a5289d15271df",
+          "contentType": "application/vnd.denoland.eszip",
+          "bodyFile": "work-transition.ezbr"
+        }
+      },
+      "pinSha256": "1a357db1ad1ba85e164309da5aad25926ef0daa2cbae410ba08dd56aeb3d2dae"
+    },
+    {
+      "id": "runtime-publication-readback",
+      "kind": "check",
+      "contract": {
+        "requires": [
+          "all_37_exact_artifacts_and_gateway_flags",
+          "provider_publication_metadata_confirmed",
+          "unchanged_endpoints_outside_release"
+        ]
+      },
+      "pinSha256": "9a1b51cc7ad0e2ae08761315ab87f4ee34eec2886e3dd39efab6e495815cf871"
+    },
+    {
+      "id": "paired-runtime-acceptance",
+      "kind": "check",
+      "contract": {
+        "requires": [
+          "positive_scheduled_and_user_callers",
+          "tenant_isolation",
+          "production_metadata_reader",
+          "matched_database_receipts",
+          "source_preservation",
+          "protected_preview_journeys"
+        ]
+      },
+      "pinSha256": "63918b8c68eddfd970adac7877670061e8b630cfbc55882d21ddaa7b24f02136"
+    },
+    {
+      "id": "promote-matching-frontend",
+      "kind": "frontend",
+      "contract": {
+        "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+        "id": "dpl_J8BHu5qhjRgeJ3uLQehkot1Fej9k",
+        "url": "https://serviceos-6wpg9beg9-allkin.vercel.app",
+        "gitSha": "e7431669e254d83d8afc2da07e6d7d6a9bc7eba3",
+        "previousProductionDeployment": "dpl_DXueDsax146gdtyFoniXRaW3dzMM"
+      },
+      "pinSha256": "431df89b76cc41fc81361d7be8d0eb9e0d14ae5e626382ddd6b91d0d0f5eeda4"
+    },
+    {
+      "id": "signed-in-live-acceptance",
+      "kind": "check",
+      "contract": {
+        "requires": [
+          "actual_openfolk_ai_deployment_and_production_backend",
+          "drummonds_branding",
+          "client_learn_inputs_context_cards_and_operator_controls",
+          "source_preservation"
+        ]
+      },
+      "pinSha256": "332c7346bb2f212151efd890be315406f0327ef152d95dc2a1654b70e2aaf4ce"
+    },
+    {
+      "id": "restore-existing-schedules",
+      "kind": "schedule",
+      "contract": {
+        "mode": "restore",
+        "path": "supabase/release/learn-production/schedules-restore.sql",
+        "sha256": "9440d984b632a0c5d9dc74c4bd11d0937bad4494e66365168b57093541f9739d"
+      },
+      "pinSha256": "7ba9a6f39fa5a6fea93cdfa93966ed376dc12ed84dc449a5e8a28acefea119fb"
+    },
+    {
+      "id": "observe-initial-live-capture",
+      "kind": "check",
+      "contract": {
+        "requires": [
+          "original_schedule_states",
+          "real_new_provider_inputs",
+          "durable_source_to_card_processing",
+          "coverage_and_failure_diagnostics",
+          "no_unapproved_capture_activation"
+        ]
+      },
+      "pinSha256": "dcf75d57491305d13da6e4bdda08942477cbe83d4b63d13ad895c1123a502c7e"
+    },
+    {
+      "id": "release-acceptance-record",
+      "kind": "check",
+      "contract": {
+        "requires": [
+          "all_agreed_goal_requirements_evidenced",
+          "recovery_and_operational_handover",
+          "known_limits_disclosed"
+        ],
+        "completeGoalAutomatically": false
+      },
+      "pinSha256": "3b3813814291d0bc43d2e8d4cf2b5a87a4a19e00538f45a14c439403681ce6e9"
+    }
+  ],
+  "limitations": [
+    "Journal mechanics are locally tested; production execution adapters and acceptance gates remain unfinished.",
+    "Exact artifact pins do not prove current hosted state, approval, signed-in access or provider completeness.",
+    "Do not restore old runtimes over new checkpoints without reviewed compatibility or forward repair."
+  ]
+}

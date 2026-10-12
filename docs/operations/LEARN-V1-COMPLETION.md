@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — release sequence and durable journal verified locally.**
+The prepared sequence pins 16 database packages, 37 exact compiled runtime
+artifacts, the rehearsed schedule transitions and the production-configured
+frontend candidate. Its 65 steps keep preflight, in-flight drain, source
+preservation, runtime/configuration, frontend promotion, signed-in acceptance,
+schedule restoration and live observation in order. Transport bytes are checked
+against the original pinned boot/bundle evidence, not only a report's status label.
+
+Eight local checks pass using synthetic operation ports and a real private
+filesystem journal. Intent is flushed before submission; after-state is required
+to advance. A lost response remains uncertain until read-only reconciliation
+confirms the result. Observing the old state does not automatically resend a
+request that may still finish. Concurrent writers/operations, missing approval,
+drift, changed journal files and failed persistence are rejected. Raw errors,
+credentials and API bodies are excluded from the journal.
+[Journal evidence](evidence/learn-production-release-journal-2026-10-12.json) and
+[prepared sequence](../../supabase/release/learn-production/release-sequence.plan.json).
+This completes the journal mechanics, not a hosted release. The actual production
+execution/observation adapters, current approval and remaining acceptance gates
+are still required. No production operation was submitted.
+
+The refreshed customer-contact traversal reached 500 of 1,550 at 16:52 UTC,
+with all 194 protected datasets preserved. It retains 2,962 contacts, 2,421
+properties and 12,611 jobs; all 871 site checks remain complete. The next bounded
+batch continues under the same approval and original 4,000-request cap.
+
 **12 October — scheduler pause and restoration rehearsed against the archive.**
 The exact nine-schedule transaction now passes with the existing production
 `postgres` scheduler permissions. It pauses only the reviewed jobs, preserves
