@@ -1,0 +1,35 @@
+{
+  "version": "learn-production-sql-adapter-rehearsal/1",
+  "observedAt": "2026-10-12T17:11:53.708740+00:00",
+  "state": "offline_sql_adapter_and_journal_checks_passed",
+  "testsPassed": 20,
+  "sqlStatements": 18,
+  "productionChanges": 0,
+  "hostedTestChanges": 0,
+  "providerRequests": 0,
+  "verificationCommand": "node --test scripts/verify/learn-production-sql-adapter.test.mjs scripts/verify/learn-production-runtime-adapter.test.mjs scripts/verify/learn-production-release-journal.test.mjs",
+  "checks": [
+    "sixteen_pinned_database_packages_and_two_schedule_transitions",
+    "out_of_order_and_duplicate_packages_rejected",
+    "wrong_duplicate_or_extra_receipts_rejected",
+    "changed_or_missing_schedules_and_changed_sql_rejected",
+    "lost_database_and_schedule_commit_responses_reconcile_without_resubmission",
+    "read_only_and_exact_sql_transport_allowlists",
+    "fourteen_existing_runtime_and_journal_checks"
+  ],
+  "files": [
+    {
+      "path": "scripts/verify/learn-production-sql-adapter.mjs",
+      "sha256": "9c9d7f76bb4016a2c5e9354b59a8636a41ce342e3274c4dc42d003524002c662"
+    },
+    {
+      "path": "scripts/verify/learn-production-sql-adapter.test.mjs",
+      "sha256": "3249b53c8fb36c7f587bb230b0623ec6e4403da58dfe002d2800247874acd25a"
+    }
+  ],
+  "limitations": [
+    "Operation ports are synthetic in these unit tests; exact underlying SQL packages and schedule transactions retain their separate full-archive rehearsal evidence.",
+    "Only hosted read-only metadata inspection was performed. No migration, capture pause, permission change or production promotion occurred.",
+    "Configuration, automatic Commusoft/Slack dispatch, current approval/drain gates, frontend promotion and live acceptance remain unfinished."
+  ]
+}

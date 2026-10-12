@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — database and schedule execution adapters connected.**
+The release journal can now use the exact 16 package statements and the two
+rehearsed schedule transitions through a fixed production management endpoint.
+Read-only is the default. Writes require the separate current scoped release
+authorization and an exact-statement transport allowlist. Before submission,
+package bytes and ordered receipt names/hashes are checked; no generic SQL, retries
+or new permissions are introduced. A committed operation with a lost response is
+reconciled from its receipt or schedule state before the journal advances.
+
+Twenty local SQL/runtime/journal checks pass, including wrong/duplicate/out-of-order
+receipts, changed schedules and SQL bytes, and interrupted database/schedule commits.
+These use synthetic operation ports; the underlying unchanged SQL retains its
+separate production-archive rehearsal evidence.
+[Adapter checks](evidence/learn-production-sql-adapter-rehearsal-2026-10-12.json).
+The hosted read-only preflight confirms zero new production receipts and all 18
+schedules present, with the nine target schedules at their original active states.
+[Hosted observation](evidence/learn-production-sql-adapter-preflight-2026-10-12.json).
+
+Server configuration and automatic Commusoft/Slack dispatch still need finishing.
+The dedicated workers require a gateway bearer plus `x-serviceos-worker-key` and
+an empty POST body; the shared platform worker does not currently dispatch them.
+Provisioning their key names alone would not establish ongoing capture. Prepare
+and verify the matching trigger route as part of the concrete production release,
+while preserving the reviewed activation scope. Current approval/drain gates,
+frontend promotion and signed-in live acceptance remain open.
+
 **12 October — runtime deployment adapter connected; hosted use remains read-only.**
 The adapter now supports the exact 28 updates, nine new function uploads and
 Supabase's final metadata publication operation. It verifies database receipts,

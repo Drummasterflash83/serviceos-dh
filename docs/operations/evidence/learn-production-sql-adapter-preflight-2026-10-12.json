@@ -1,0 +1,15 @@
+{
+  "project": "tgbnakbxwcqjeimygroz",
+  "state": "read_only_sql_preflight",
+  "receiptCount": 0,
+  "receiptPrefixValid": true,
+  "schedules": "ready",
+  "scheduleCount": 18,
+  "productionChanges": 0,
+  "executionApproved": false,
+  "observedAt": "2026-10-12T17:08:17.796Z",
+  "limitations": [
+    "Read-only receipt and schedule metadata only; no SQL or schedule operation was submitted.",
+    "Ready schedule state means the reviewed nine schedules match their original active state, not that execution is approved or in-flight work drained."
+  ]
+}
