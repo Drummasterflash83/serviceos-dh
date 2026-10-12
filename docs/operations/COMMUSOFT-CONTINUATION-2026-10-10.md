@@ -1,6 +1,35 @@
 # Drummonds TEST continuation — prepared, not activated
 
-## Latest readiness — 11 October, 13:17 UTC
+## Latest readiness — 12 October, 08:56 UTC
+
+The same prepared run passes full read-only preflight on TEST 079. The 100-page
+jobs checkpoint, existing encrypted Commusoft credential and paused capture are
+unchanged; no login, grant or provider request has been created.
+
+All 78 original dataset fingerprints were reproduced after excluding only 14
+exact recorded synthetic tenants and four exact synthetic voicemail objects,
+and reading the 35 original interactions in their prior column shape. The two
+columns added by TEST 061 remain null for all those original interactions.
+Every fixture tenant is archived, its marker is exact, related fixture logins
+are inactive, and both voicemail buckets remain private. Unknown changes reject
+the reconciliation. Two original and two current scans match; the refreshed
+baseline now includes and protects all additions. Original journal bytes and
+older baselines are retained separately. Do not rerun the one-shot refresh.
+
+The Auth compatibility check accepts precisely the TEST 071 source-version
+retention trigger, then applies the complete earlier Auth/authority contract.
+Both Commusoft endpoints are revision 5 with the exact executable bundle hashes
+previously verified at revision 4, ACTIVE status and JWT verification. Revision
+counters alone are no longer treated as code changes; endpoint identity, bundle
+bytes, minimum reviewed revision, import-map state and JWT enforcement are pinned.
+Thirty-two focused tests pass, including changed original rows, unknown additions,
+OR-predicate grouping, private storage, fixture authority and runtime code drift.
+
+**Chris approved this continuation on 12 October after the 08:56 preflight.**
+Activation is the next step. The identity, 60-minute duration
+and 4,000-request budget below remain unchanged. [Readiness evidence](evidence/learn-commusoft-continuation-079-2026-10-12.json).
+
+## Earlier readiness — 11 October, 13:17 UTC
 
 Release 059 changes only the job review projection and preserves every source
 row. The same prepared continuation passed its full read-only preflight at

@@ -2,7 +2,8 @@
 
 12 October 2026. Chris has approved the described destination, scoped access,
 key escrow and bounded first copy/restore. The separate 1Password CLI integration
-decision remains pending; no resources, keys or database copy have been created.
+was also approved on 12 October and its checked setting verified in the app. No resources,
+keys or database copy have been created.
 
 This is the remaining database recovery work, alongside the
 already established recordings bucket. The native database and all 16 Vault
@@ -112,7 +113,7 @@ all six original files stayed unchanged, and the offline container was removed.
 It used no recovery key and made no production connection; real Vault decryption
 remains proven by the earlier rehearsal, not by this path-separation regression.
 
-## 1Password access preparation — awaiting access decision
+## 1Password access preparation — approved and enabled
 
 On 12 October, the desktop app was unlocked and the **Openfolk ServiceOS** item
 was visible in the Allkin Group Ltd account. Its CLI page showed **Enable
@@ -127,7 +128,9 @@ Apple certificate chain. Binary SHA-256:
 Only version/help commands have run; no authenticated account request has occurred.
 Distribution: [official release history](https://app-updates.agilebits.com/product_history/CLI2).
 
-An explicit request to enable the CLI route is pending. As documented by
+Chris explicitly approved enabling the CLI route on 12 October. After native window-control errors, Chris enabled the setting; read-back confirmed
+“Integrate with 1Password CLI” checked. Account metadata is readable; exact-note
+authentication is verified after Chris completed Touch ID. As documented by
 [1Password](https://www.1password.dev/cli/app-integration-security), terminal
 authorisation is account-wide, not restricted technically to the named item.
 Scripts must target only Openfolk ServiceOS, fail on ambiguous identity and keep

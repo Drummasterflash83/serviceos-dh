@@ -9,13 +9,45 @@ import { TEST_PROJECT, savedCliToken } from "./learn-test-readiness.mjs";
 import { communicationQuery } from "./learn-card-communication-catalog.mjs";
 import { readPhoneHealthCatalog, PHONE_HEALTH_PRESERVED } from "./learn-phone-health-catalog.mjs";
 import { AUTH_CONTRACT_QUERY } from "./learn-test-auth-contract.mjs";
-import { phoneProcessingAuthContractMatches } from "./learn-phone-processing-auth-contract.mjs";
+import { currentCommusoftAuthContractMatches } from "./learn-commusoft-current-auth-contract.mjs";
 import { readOperatorInputs, resolveOperatorInput } from "../../src/lib/learn-operator-inputs.ts";
 const base = `https://${TEST_PROJECT}.supabase.co`;
 const file = ".verification-results/commusoft-continuation-session.json";
 const priorFile = ".verification-results/commusoft-real-test-session.json";
-export const CONTINUATION_SCHEMA = "82977420c719b7fc923e028e7ba83776";
+export const CONTINUATION_SCHEMA = "d4d0351f8aea6769d477c6495af43df8";
 const schema = CONTINUATION_SCHEMA;
+// Secret updates can advance a deployment revision without changing executable
+// code. Pin the reviewed bundle bytes and endpoint identity, not that counter.
+export const CONTINUATION_RUNTIMES = {
+  "learn-commusoft-worker": {
+    id: "c37a06f6-3939-4e68-bdbf-2bd78f6869c2",
+    hash: "4edd7fdb0a38bde6a0d3feec2cc45bd2d002dc1525246ae4fbf7996dc43ca28d",
+  },
+  "learn-commusoft-verify": {
+    id: "1c60f3b8-eeda-4c3b-9743-74eabb9dda61",
+    hash: "3d21e74c55190a4b332a818a2e66b064701a38c5ccca7109be1eea1dce01e194",
+  },
+};
+export function continuationRuntimeMatches(endpoints) {
+  return (
+    Array.isArray(endpoints) &&
+    Object.entries(CONTINUATION_RUNTIMES).every(([slug, wanted]) => {
+      const matches = endpoints.filter((e) => e.slug === slug);
+      const e = matches[0];
+      return (
+        matches.length === 1 &&
+        e.id === wanted.id &&
+        e.ezbr_sha256 === wanted.hash &&
+        Number.isSafeInteger(e.version) &&
+        e.version >= 4 &&
+        e.status === "ACTIVE" &&
+        e.verify_jwt === true &&
+        e.import_map === false
+      );
+    })
+  );
+}
+
 const origin = "ef5a92ff-b2de-4dbf-ba21-1c2e0a3f7c6d";
 const tenant = "f8c114fa-fee7-4983-8970-f6e7f5fd3129";
 const connection = "59484382-d380-4362-b031-19db133e6d3a";
@@ -318,16 +350,13 @@ export async function runContinuation(
     check((await catalog()).fingerprint === schema, "TEST release changed");
     const rows = await sql(AUTH_CONTRACT_QUERY);
     check(
-      rows.length === 1 && phoneProcessingAuthContractMatches(rows[0].contract),
+      rows.length === 1 && currentCommusoftAuthContractMatches(rows[0].contract),
       "Auth contract changed",
     );
     const endpoints = await req(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/functions`, {
       Authorization: `Bearer ${token}`,
     });
-    for (const slug of ["learn-commusoft-worker", "learn-commusoft-verify"]) {
-      const e = endpoints.find((e) => e.slug === slug);
-      check(e?.version === 4 && e.status === "ACTIVE" && e.verify_jwt === true, "Runtime changed");
-    }
+    check(continuationRuntimeMatches(endpoints), "Runtime changed");
     const state = await sql(`select clock_timestamp() as cutoff,
    (select count(*)::int from public.tenants where id=${q(tenant)} and status='active' and metadata->>'learn_real_commusoft_session'=${q(origin)}) as tenant_count,
    (select count(*)::int from auth.users where id=${q(p.user)} or lower(email)=${q(p.email)}) as users,

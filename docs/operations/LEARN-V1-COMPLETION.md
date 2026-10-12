@@ -7,6 +7,29 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 08:56 UTC — Commusoft continuation readiness restored.**
+Full read-only TEST 079 preflight passes: original source preservation, current
+Auth, exact runtime bundles, encrypted credential binding, paused capture and
+retained 100-page jobs checkpoint. All 78 original dataset fingerprints match
+through the reviewed reconciliation; the new baseline additionally protects
+later synthetic fixtures. Thirty-two focused tests pass. Chris has now approved the exact continuation; activation is next. No further
+provider data has been imported at this checkpoint. [Readiness evidence](evidence/learn-commusoft-continuation-079-2026-10-12.json).
+
+**12 October, 08:45 UTC — approved Google credential provisioned in TEST.**
+The three existing Workspace values are now in TEST server-side secret storage.
+Read-back digests match the approved local credential; all other secrets, the
+catalog and all 113 checked datasets are unchanged. No new Google key, provider
+request, mailbox connection, capture schedule or production change occurred.
+TEST still has zero active Workspace connections and zero active DWD accounts.
+The credential-destination blocker is resolved; real input-to-card acceptance
+and activation remain open. [Provisioning evidence](evidence/learn-workspace-test-credential-2026-10-12.json).
+
+Chris also approved 1Password desktop CLI integration for the already-approved
+database recovery setup. Chris enabled the setting and native UI read-back confirms “Integrate with
+1Password CLI” is checked. Account metadata is readable; exact-note authenticated
+access is now verified after the owner completed Touch ID. No keys have
+yet been written to the note.
+
 **12 October, 08:30–08:31 UTC — fresh recording backup and linked restore verified.**
 The retried manual daily run verified **2,893 files / 602,476,551 bytes**, including
 **five newly copied files / 1,472,290 bytes** and all **2,887 recording references**.
@@ -33,7 +56,7 @@ a substitute for completing LEARN. No requirement or release approval is waived.
 bucket, scoped Writer/Restore identities and keys, 1Password recovery material,
 one bounded encrypted snapshot copy and independent restore. No database
 resources or keys have yet been created. The separate 1Password CLI access
-request remains pending. Production promotion is not included.
+request is now approved; enablement is not yet verified. Production promotion is not included.
 
 **12 October — full archive references prepared for fresh file-backup reconciliation.**
 A new offline restore preserved all 1,594,994 native rows and 711 operational rows,

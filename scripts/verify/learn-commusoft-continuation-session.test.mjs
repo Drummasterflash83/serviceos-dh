@@ -7,6 +7,8 @@ import {
   continuationDefinition,
   publicContinuationSummary,
   runContinuation,
+  CONTINUATION_RUNTIMES,
+  continuationRuntimeMatches,
 } from "./learn-commusoft-continuation-session.mjs";
 import { validateInputRequest, resolveOperatorInput } from "../../src/lib/learn-operator-inputs.ts";
 const id = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -337,4 +339,29 @@ test("public output never includes password, key fingerprint, source data or pre
   const out = JSON.stringify(publicContinuationSummary(p));
   assert.ok(!out.includes("NEVER_PRINT"));
   assert.ok(!out.includes(p.keyFingerprint));
+});
+
+test("runtime revision changes require unchanged reviewed bundle, identity and JWT enforcement", () => {
+  const rows = Object.entries(CONTINUATION_RUNTIMES).map(([slug, x]) => ({
+    slug,
+    id: x.id,
+    ezbr_sha256: x.hash,
+    version: 5,
+    status: "ACTIVE",
+    verify_jwt: true,
+    import_map: false,
+  }));
+  assert.equal(continuationRuntimeMatches(rows), true);
+  for (const patch of [
+    { version: 3 },
+    { version: 5.1 },
+    { id: id(6) },
+    { ezbr_sha256: "f".repeat(64) },
+    { status: "INACTIVE" },
+    { verify_jwt: false },
+    { import_map: true },
+  ])
+    assert.equal(continuationRuntimeMatches([{ ...rows[0], ...patch }, rows[1]]), false);
+  assert.equal(continuationRuntimeMatches([rows[0]]), false);
+  assert.equal(continuationRuntimeMatches([...rows, rows[0]]), false);
 });
