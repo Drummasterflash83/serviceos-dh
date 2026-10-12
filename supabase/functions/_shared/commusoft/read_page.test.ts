@@ -330,7 +330,7 @@ test("delayed authority reads cannot use an expired quota reservation", async ()
   };
   await assert.rejects(
     readCommusoftPage(request, key, { ...f.ports, clock: () => time, sendBefore: now + 5000 }),
-    errorCode("authority_unavailable"),
+    errorCode("request_window_expired"),
   );
   assert.equal(f.calls.length, 0);
 });

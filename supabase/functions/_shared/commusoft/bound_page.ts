@@ -60,12 +60,12 @@ export async function readApprovedCommusoftPage(
   if (
     permit.state !== "ready" ||
     !Number.isSafeInteger(permit.sendBefore) ||
-    permit.sendBefore <= clock() ||
     typeof permit.permitId !== "string" ||
     !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(permit.permitId)
   ) {
     throw new CommusoftReadError("authority_unavailable");
   }
+  if (permit.sendBefore <= clock()) throw new CommusoftReadError("request_window_expired");
   const defer = async (retryAt: number) => {
     try {
       if (await ports.defer(permit.permitId, retryAt)) return;

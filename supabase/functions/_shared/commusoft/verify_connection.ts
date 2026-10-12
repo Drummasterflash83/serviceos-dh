@@ -67,6 +67,9 @@ export async function verifyCommusoftConnection(
       // it is not an import, account-identity proof or collection coverage claim.
     } catch (error) {
       code = error instanceof CommusoftReadError ? error.code : "transport_unavailable";
+      // Preserve the existing one-shot verification receipt contract. Import
+      // workers use the more specific retryable request-window outcome.
+      if (code === "request_window_expired") code = "transport_unavailable";
       retryAt = error instanceof CommusoftReadError ? error.retryAt : null;
     }
     const finished = await ports.rpc("learn_commusoft_verify_finish", {

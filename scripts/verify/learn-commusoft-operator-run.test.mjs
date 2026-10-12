@@ -1,8 +1,43 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SCOPE, assertDispatch, acceptWorkerReply } from "./learn-commusoft-operator-run.mjs";
+import {
+  SCOPE,
+  preservationQuery,
+  assertDispatch,
+  acceptWorkerReply,
+  unclaimedInvocationSettled,
+} from "./learn-commusoft-operator-run.mjs";
 const now = Date.parse("2026-10-12T11:00:00Z");
 const job = "00000000-0000-4000-8000-000000000001";
+test("unclaimed recovery needs exact untouched DB state beyond the endpoint lease window", () => {
+  const pending = { job, startedAt: new Date(now - 181000).toISOString() };
+  const state = {
+    id: job,
+    status: "queued",
+    attempt_count: 0,
+    lease_expires_at: null,
+    permits: 0,
+    pages: 0,
+  };
+  assert.equal(unclaimedInvocationSettled(pending, state, now), true);
+  for (const changed of [
+    { ...state, id: SCOPE.tenant },
+    { ...state, attempt_count: 1 },
+    { ...state, status: "running" },
+    { ...state, permits: 1 },
+    { ...state, pages: 1 },
+    { ...state, lease_expires_at: new Date(now).toISOString() },
+  ])
+    assert.equal(unclaimedInvocationSettled(pending, changed, now), false);
+  assert.equal(
+    unclaimedInvocationSettled(
+      { ...pending, startedAt: new Date(now - 1000).toISOString() },
+      state,
+      now,
+    ),
+    false,
+  );
+});
 function fixture() {
   return [
     { scope: SCOPE, state: "prepared", invocations: 1, initialJob: job },
@@ -105,4 +140,22 @@ test("worker acknowledgement must identify exactly the dispatched job", () => {
     },
   ])
     assert.throws(() => acceptWorkerReply(reply, job));
+});
+
+test("auth reconciliation excludes only the reviewed operator timestamp", () => {
+  const plan = { tables: ["auth.users", "auth.identities"], cutoff: new Date(now).toISOString() };
+  assert(!preservationQuery(plan).includes("-'updated_at'"));
+  assert(
+    !preservationQuery({ ...plan, authSessionReconciliation: { actor: job } }).includes(
+      "-'updated_at'",
+    ),
+  );
+  const sql = preservationQuery({ ...plan, authSessionReconciliation: { actor: SCOPE.actor } });
+  assert(
+    sql.includes(
+      `case when s.id='${SCOPE.actor}'::uuid then to_jsonb(s)-'updated_at' else to_jsonb(s) end`,
+    ),
+  );
+  assert(sql.includes("from auth.identities s where true"));
+  assert(!sql.includes("-'last_sign_in_at'"));
 });

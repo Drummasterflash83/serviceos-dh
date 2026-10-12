@@ -74,8 +74,7 @@ export function createCommusoftPermitPorts(
           typeof data.apiKey === "string" &&
           /^[\x21-\x7e]{1,4096}$/.test(data.apiKey) &&
           uuid(data.permitId) &&
-          Number.isSafeInteger(data.sendBefore) &&
-          Number(data.sendBefore) > clock()
+          Number.isSafeInteger(data.sendBefore)
         ) {
           return {
             state: "ready",

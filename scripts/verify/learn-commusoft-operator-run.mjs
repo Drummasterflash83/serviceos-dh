@@ -89,6 +89,21 @@ export function acceptWorkerReply(reply, jobId) {
   );
   return reply.result;
 }
+export function unclaimedInvocationSettled(pending, job, now = Date.now()) {
+  // After the endpoint deadline and lease window, an untouched queued job is
+  // positive DB evidence that this invocation never claimed or contacted a provider.
+  return (
+    !!pending &&
+    job?.id === pending.job &&
+    job.status === "queued" &&
+    job.attempt_count === 0 &&
+    job.lease_expires_at === null &&
+    job.permits === 0 &&
+    job.pages === 0 &&
+    Number.isFinite(Date.parse(pending.startedAt)) &&
+    now - Date.parse(pending.startedAt) > 180000
+  );
+}
 export function preservationQuery(p) {
   const tenant = quote(SCOPE.tenant),
     cutoff = quote(p.cutoff);
@@ -117,7 +132,14 @@ export function preservationQuery(p) {
         predicate = `exists(select 1 from public.learn_business_input_pages r where r.id=s.page_id and (r.tenant_id<>${tenant} or r.committed_at<=${cutoff}::timestamptz))`;
       if (t === "public.learn_commusoft_contact_targets")
         predicate = `s.tenant_id<>${tenant} or exists(select 1 from public.learn_operator_input_requests r where r.id=s.approval_id and r.created_at<=${cutoff}::timestamptz)`;
-      return `select '${t}' name,count(*)::int count,md5(coalesce(string_agg(md5(to_jsonb(s)::text),'' order by md5(to_jsonb(s)::text)),'')) fingerprint from ${t} s where ${predicate}`;
+      // An existing browser session refresh updates the operator's timestamp.
+      // Only a separately inspected reconciliation can establish this projection;
+      // every other auth field and every other user's full row remain protected.
+      const row =
+        t === "auth.users" && p.authSessionReconciliation?.actor === SCOPE.actor
+          ? `case when s.id=${quote(SCOPE.actor)}::uuid then to_jsonb(s)-'updated_at' else to_jsonb(s) end`
+          : "to_jsonb(s)";
+      return `select '${t}' name,count(*)::int count,md5(coalesce(string_agg(md5((${row})::text),'' order by md5((${row})::text)),'')) fingerprint from ${t} s where ${predicate}`;
     })
     .join(" union all ");
 }
@@ -178,7 +200,10 @@ export async function run(mode) {
     if (mode === "inspect") {
       if (p.pending) {
         const r = await sql(
-          `select id,status,attempt_count,error_code from public.platform_jobs where id=${quote(p.pending.job)} and tenant_id=${quote(SCOPE.tenant)}`,
+          `select j.id,j.status,j.attempt_count,j.error_code,j.lease_expires_at,
+            (select count(*)::int from public.learn_business_input_request_permits p where p.job_id=j.id) permits,
+            (select count(*)::int from public.learn_business_input_pages p where p.job_id=j.id) pages
+           from public.platform_jobs j where j.id=${quote(p.pending.job)} and j.tenant_id=${quote(SCOPE.tenant)}`,
         );
         p.pendingObservation = r;
         // Keep the uncertain invocation bound to its exact job until a terminal DB result exists.
@@ -187,6 +212,13 @@ export async function run(mode) {
           ["succeeded", "dead_letter", "failed", "cancelled"].includes(r[0].status)
         ) {
           p.history.push({ ...p.pending, recovered: r[0] });
+          delete p.pending;
+        } else if (r.length === 1 && unclaimedInvocationSettled(p.pending, r[0])) {
+          p.history.push({
+            ...p.pending,
+            recoveredUnclaimed: r[0],
+            observedAt: new Date().toISOString(),
+          });
           delete p.pending;
         }
       }
@@ -207,7 +239,7 @@ export async function run(mode) {
         matches.length === 1 &&
           matches[0].id === "c37a06f6-3939-4e68-bdbf-2bd78f6869c2" &&
           matches[0].ezbr_sha256 ===
-            "4edd7fdb0a38bde6a0d3feec2cc45bd2d002dc1525246ae4fbf7996dc43ca28d" &&
+            "1377144760549d582c9290ed7500b61cffb06cc0683b075ef3ce6ca1d17f7a8e" &&
           matches[0].status === "ACTIVE" &&
           matches[0].verify_jwt === true,
         "Worker runtime changed",

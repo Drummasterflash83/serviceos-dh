@@ -380,6 +380,18 @@ test("module disable or checkpoint change during provider request discards retur
   }
 });
 
+test("expired send window remains retryable without contacting the provider", async () => {
+  const f = fixture();
+  f.ports.acquire = async () => ({
+    state: "ready",
+    apiKey: "synthetic-key",
+    permitId: id(8),
+    sendBefore: now,
+  });
+  await assert.rejects(f.run(), (e: any) => e.code === "request_window_expired");
+  assert.equal(f.counts().fetches, 0);
+});
+
 test("shared permit wait issues no request; throttling persists shared deferral", async () => {
   const f = fixture();
   f.ports.acquire = async () => ({ state: "wait", retryAt: now + 120000 });

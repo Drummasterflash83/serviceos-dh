@@ -114,7 +114,10 @@ test("invalid scope, expired send permit and revoked authority cannot contact pr
     else (f.state.acquisition as any).sendBefore = now;
     await f.run();
     assert.equal(f.network.length, 0);
-    assert.equal(f.calls.at(-1)?.args.p_code, "authority_unavailable");
+    assert.equal(
+      f.calls.at(-1)?.args.p_code,
+      revoke ? "authority_unavailable" : "transport_unavailable",
+    );
   }
 });
 test("provider authentication, permissions, malformed data and throttling never become success", async () => {

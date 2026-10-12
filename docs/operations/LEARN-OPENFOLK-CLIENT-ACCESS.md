@@ -145,3 +145,14 @@ still apply. The full-schema synthetic customer-to-card relationship journey and
 negative-access checks passed. No real canonical records were published.
 Frontend deployment and real signed-in review remain unverified at this checkpoint.
 See [evidence](evidence/openfolk-business-review-test-2026-10-12.json).
+
+
+### 12 October, 11:06 UTC — signed-in business review
+
+Protected TEST frontend `e2ac2d3` now exposes the installed business-review facade.
+Chris's existing operator session browsed real customer/site/job/contact pages,
+paginated customers and opened job details. Eight result audits match the actor
+and selected client. Closing review clears retained rows; the existing profile
+and grant remain unchanged. No real canonical publication occurred. This supersedes
+the earlier frontend-unverified status; full cards/scoring/audio acceptance remains
+open. See [browser evidence](evidence/openfolk-business-review-test-2026-10-12.json).

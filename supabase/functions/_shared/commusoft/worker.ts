@@ -27,9 +27,12 @@ export function createCommusoftPageHandler(ports: CommusoftPageWorkerPorts) {
           success: false,
           error: {
             code: `commusoft_${error.code}`,
-            retryable: ["rate_limited", "transport_unavailable", "provider_unavailable"].includes(
-              error.code,
-            ),
+            retryable: [
+              "rate_limited",
+              "transport_unavailable",
+              "provider_unavailable",
+              "request_window_expired",
+            ].includes(error.code),
             retryAfterSeconds:
               error.retryAt === null
                 ? 0

@@ -1,0 +1,59 @@
+{
+  "scope": "TEST only",
+  "run": "eb260c9d-e1ee-48cf-8cc4-179375b50613",
+  "observedAt": "2026-10-12T11:22:55.598971+00:00",
+  "pages": 551,
+  "parentsPlanned": 1547,
+  "complete": false,
+  "sources": [
+    {
+      "records": 12611,
+      "collection": "jobs"
+    },
+    {
+      "records": 2418,
+      "collection": "properties"
+    },
+    {
+      "records": 1090,
+      "collection": "propertyContacts"
+    }
+  ],
+  "jobs": [
+    {
+      "error": null,
+      "status": "running",
+      "attempt": 1,
+      "availableAt": "2026-10-12T11:22:53.953574+00:00",
+      "leaseExpiresAt": "2026-10-12T11:25:54.460199+00:00"
+    }
+  ],
+  "requests": 166,
+  "maxProviderRequests": 4000,
+  "existingOperatorApproval": true,
+  "newAccounts": 0,
+  "newGrants": 0,
+  "productionChanged": false,
+  "preservation": {
+    "protectedDatasets": 194,
+    "matchingReviewedBaseline": true,
+    "changedDatasets": [],
+    "authReconciliation": "Original aggregate checksum has no field-level baseline. Current auth timestamp coincides with existing-session refresh; original profile/grant and all 193 other datasets match. This reviewed new auth baseline excludes only the existing operator updated_at timestamp; no database state changed."
+  },
+  "runtime": {
+    "version": 6,
+    "sourceBundleSha256": "280e5f5d385f5f6b6885db0f1761da47df11fa680fc9262364f716d0b0f2efc2",
+    "deployedBundleSha256": "1377144760549d582c9290ed7500b61cffb06cc0683b075ef3ce6ca1d17f7a8e",
+    "allDatasetsPreservedAtDeployment": true,
+    "downloadedExecutableMatch": true,
+    "downloadedTests": 50,
+    "localCommusoftTests": 68,
+    "supervisorTests": 6,
+    "strictTypecheck": "passed"
+  },
+  "limits": [
+    "Customer contacts and site contacts are not complete.",
+    "No real canonical publication or production release.",
+    "The prior generic authority error did not prove an expired request window; the new classification is specific."
+  ]
+}

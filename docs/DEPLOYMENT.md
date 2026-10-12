@@ -67,17 +67,23 @@ hostnames, and no custom domain or automatic Git linkage was added.
 The stable staging entry is
 [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
 It points to immutable preview
-[serviceos-learn-test-484vmv6yv-allkin.vercel.app](https://serviceos-learn-test-484vmv6yv-allkin.vercel.app),
-built remotely from GitHub commit `c323e911d586726ecc819597f8c31cf0bf2604c3`
-and observed READY at **10:36 UTC on 12 October**. This adds the audited operator
-Client information screen and retains the password-reset URL fix. The stable
-alias, TEST backend binding and both hostnames' protection were verified.
-Full TypeScript and 18 focused reader/navigation tests pass. Signed-in browser
-acceptance at 10:38 UTC loaded two real Drummonds source pages, inspected source
-detail, and switched to a second client with no stale records; three read audits
-matched actor/client/reason. Playback, scoring and full card journeys remain open.
-See [client-information evidence](operations/evidence/openfolk-client-information-test-2026-10-12.json)
-and [earlier reset evidence](operations/evidence/learn-password-reset-test-2026-10-12.json).
+[serviceos-learn-test-lrygbp0mc-allkin.vercel.app](https://serviceos-learn-test-lrygbp0mc-allkin.vercel.app),
+built remotely from GitHub commit `e2ac2d358839b8b5a038ad250f59fc06436b8d46`
+and observed READY at **11:02 UTC on 12 October**. The stable alias, TEST backend
+binding and both hostnames' protection were verified. This adds the audited
+operator business-review workflow and retains the earlier source reader and
+password-reset fix. Full TypeScript and 55 focused navigation, branding, review
+and supervisor checks passed before deployment.
+
+Chris's existing signed-in operator session loaded real Drummonds customer,
+site, job and contact pages, paginated customers and opened job details at
+11:04–11:06 UTC. Eight result audits matched the actor and tenant; closing review
+cleared its source rows. No real customer/card links were published. Synthetic
+full-schema source-to-card linking, replay and isolation checks passed separately.
+Playback, scoring and real card publication remain open.
+See [business-review evidence](operations/evidence/openfolk-business-review-test-2026-10-12.json),
+[earlier source-reader evidence](operations/evidence/openfolk-client-information-test-2026-10-12.json)
+and [reset evidence](operations/evidence/learn-password-reset-test-2026-10-12.json).
 
 The deployment retains the prior Connections status distinctions and navigation
 to LEARN input controls, snapshot freshness, projection/identity review, queued

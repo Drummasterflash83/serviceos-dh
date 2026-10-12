@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 11:21 UTC — request-window fix deployed; contacts resumed.**
+The TEST worker now distinguishes an expired five-second send window from an
+actual authority denial. Only the expired window uses the existing bounded retry
+policy; no request is sent after expiry and no access gate is relaxed. Worker v6
+read-back matches all eight executable files and passes 50 behavior tests;
+68 local Commusoft tests and six supervisor checks pass. Deployment preserved all
+194 datasets, the schema and other endpoints. The earlier generic error cannot
+prove which authority condition failed; the new code makes that distinction explicit.
+
+The existing operator continuation resumed from page 522 without resetting the
+cursor. One real read retained two contacts (1,046 total) at page 523. The supervisor
+then stopped on an auth checksum change: only the existing operator was recently
+updated, within one second of its existing browser-session refresh, with the same
+profile/grant and all other 193 datasets matching. The original aggregate checksum
+has no field-level baseline; this is a documented reconciliation, not proof that
+every original auth field was unchanged. Its original checksum is retained, and
+the reviewed new baseline excludes only that operator's `updated_at` timestamp.
+No database row was edited for this reconciliation. The same bounded run has now
+resumed; contacts are not yet complete. [Continuation evidence](evidence/learn-commusoft-operator-continuation-2026-10-12.json).
+
+**12 October, 11:06 UTC — real operator business-review browsing verified.**
+The protected stable TEST frontend now serves `e2ac2d3`. Chris's existing session
+browsed retained real customers, sites, jobs and contacts, paginated customers and
+opened job details. Eight result audits matched the selected client and actor;
+closing the review cleared its rows. Synthetic publication/replay/isolation were
+verified separately. No real canonical links were created; completing that journey,
+phone/email acceptance and scoring remain open. [Evidence](evidence/openfolk-business-review-test-2026-10-12.json).
+
+
 **12 October, 10:59 UTC — operator source-to-card review backend verified in TEST.**
 The reviewed customer/site/job/contact path now has an audited OpenFolk facade
 using the real operator identity and existing admin grant. A full-schema rollback

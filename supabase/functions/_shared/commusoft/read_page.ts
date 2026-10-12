@@ -7,6 +7,7 @@ export type CommusoftRegion = "uk" | "us";
 export type CommusoftFailure =
   | "invalid_request"
   | "authority_unavailable"
+  | "request_window_expired"
   | "transport_unavailable"
   | "authentication_required"
   | "access_denied"
@@ -253,11 +254,10 @@ export async function readCommusoftPage(
   };
   try {
     await authorized();
-    if (
-      ports.sendBefore !== undefined &&
-      (!Number.isSafeInteger(ports.sendBefore) || (ports.clock ?? Date.now)() >= ports.sendBefore)
-    )
-      fail("authority_unavailable");
+    if (ports.sendBefore !== undefined) {
+      if (!Number.isSafeInteger(ports.sendBefore)) fail("authority_unavailable");
+      if ((ports.clock ?? Date.now)() >= ports.sendBefore) fail("request_window_expired");
+    }
     const response = await (ports.fetcher ?? fetch)(url, {
       method: "GET",
       redirect: "error",

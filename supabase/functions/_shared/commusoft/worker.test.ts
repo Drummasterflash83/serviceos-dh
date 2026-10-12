@@ -105,6 +105,7 @@ test("provider throttle retains its minimum delay; invalid authority is not retr
     [new CommusoftReadError("rate_limited", now + 90000), true, 90],
     [new CommusoftReadError("authentication_required"), false, 0],
     [new CommusoftReadError("authority_unavailable"), false, 0],
+    [new CommusoftReadError("request_window_expired"), true, 0],
   ] as const) {
     const handler = createCommusoftPageHandler({
       clock: () => now,

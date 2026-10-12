@@ -87,7 +87,7 @@ test("missing RPC, malformed results and private errors fail closed without fall
     { state: "wait", retryAt: now },
     { state: "wait", retryAt: now + 60000, apiKey: "unexpected" },
     { state: "ready", apiKey: "bad\nheader", permitId: id(8) },
-    { state: "ready", apiKey: "synthetic-key", permitId: id(8), sendBefore: now },
+    { state: "ready", apiKey: "synthetic-key", permitId: id(8), sendBefore: NaN },
   ]) {
     f.state.data = data;
     assert.equal(await f.ports.acquire(f.scope, f.ctx.claim), null);
@@ -97,6 +97,14 @@ test("missing RPC, malformed results and private errors fail closed without fall
   f.state.throws = true;
   assert.equal(await f.ports.acquire(f.scope, f.ctx.claim), null);
   assert.ok(f.calls.every((c) => c.name === "learn_commusoft_acquire_page"));
+});
+test("expired well-formed permits reach the bound handler for retry classification, never a fallback secret read", async () => {
+  const f = fixture();
+  f.state.data = { state: "ready", apiKey: "synthetic-key", permitId: id(8), sendBefore: now };
+  const result = await f.ports.acquire(f.scope, f.ctx.claim);
+  assert.equal(result?.state, "ready");
+  assert.equal(result && "sendBefore" in result && result.sendBefore, now);
+  assert.equal(f.calls.length, 1);
 });
 test("defer is exact-permit scoped and can extend a gate after caller cancellation", async () => {
   const f = fixture();
