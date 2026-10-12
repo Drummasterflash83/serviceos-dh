@@ -1,6 +1,6 @@
 {
-  "state": "test_runtime_browser_verified_frontend_pending",
-  "observedAt": "2026-10-12T23:46:30.112758+00:00",
+  "state": "hosted_test_browser_verified",
+  "observedAt": "2026-10-12T23:52:01.053084+00:00",
   "projectRef": "saatxzwxvdvqevbnskxy",
   "packages": [
     {
@@ -43,7 +43,13 @@
       "observations": 17
     },
     "captureInference": "not_verified",
-    "impersonation": false
+    "impersonation": false,
+    "signedInQueueDrill": {
+      "queue": "intel_no_owner",
+      "recordsReturned": 17,
+      "sourceEvidenceVisible": true
+    },
+    "remoteBuild": "passed"
   },
   "providerRequests": 0,
   "newAccounts": 0,
@@ -52,7 +58,16 @@
   "limitations": [
     "Bounded retained TEST sample only; capture/coverage not established.",
     "TEST foundation enables read models, not legacy configuration mutations.",
-    "Matching frontend deployment pending.",
-    "Client programme, relevance quality, AI, wider capture and production release remain open."
-  ]
+    "Client programme, relevance quality, AI, wider capture and production release remain open.",
+    "Separate legacy relevance reader still needs fail-closed pagination and revision-aware counting."
+  ],
+  "frontend": {
+    "gitSha": "94f5e87f278d5f65b8e268d7703419fc4187502a",
+    "deploymentId": "dpl_Dnbb7GFjiFP9KosozXrz75fxdsVB",
+    "stableUrl": "https://test.openfolk.ai",
+    "protection": "all",
+    "aliasesVerified": true,
+    "productionDeploymentUnchanged": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+    "browserVerification": "signed_in_clean_stable_url_verified"
+  }
 }

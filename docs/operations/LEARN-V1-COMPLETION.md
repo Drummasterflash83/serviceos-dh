@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October, 00:48 BST — legacy TEST Learning route repaired and signed-in read verified.**
+**13 October, 00:52 BST — TEST Learning workspace repaired, deployed and signed-in verified.**
 
 ### Working and verified
 
@@ -21,16 +21,20 @@ override a later release observation. No requirement is silently deferred.
   Visible retained totals: 20 emails, 19 email interactions, one call/recording,
   two Slack messages, 17,997 Commusoft input versions and one published job;
   21 interactions and 17 observations overall. These are the bounded TEST sample.
-- Failed or truncated reads now fail visibly instead of becoming zeros. Saved dates
+- Failed or truncated core metric/queue reads now fail visibly instead of becoming zeros. Saved dates
   never establish an active schedule; no synthetic themes or fallback profile counts.
   Commusoft job totals include connection-scoped API records. Different processing
   stages retain separate units. 23 unit tests, targeted/full TypeScript and build passed.
+- Stable `test.openfolk.ai` now serves Git `94f5e87`, deployment
+  `dpl_Dnbb7GFjiFP9KosozXrz75fxdsVB`. The clean URL shows the corrected capture
+  labels and per-source totals; the 17-record observation queue opens with evidence.
+  Both TEST aliases retain protection. Live deployment remains unchanged.
 
 ### Needs finishing
 
-- Frontend wording/error recovery is prepared locally; the stable TEST frontend still
-  needs its matching deployment and browser check. The hosted backend read is verified.
 - New foundation tables enable reads only; legacy configuration writes are not accepted.
+  The separate legacy relevance panel still needs fail-closed pagination and
+  revision-aware counting; core metric repair does not fix that reader.
   Client-programme setup, relevant analysis, wider history/ongoing capture, AI,
   full business publication, scoring and matching live release remain open.
 - This overview does not prove capture health; authoritative connector controls remain
