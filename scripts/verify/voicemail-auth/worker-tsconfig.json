@@ -21,6 +21,7 @@
   "files": [
     "worker-types.d.ts",
     "../../../supabase/functions/learn-voicemail-import/index.ts",
-    "../../../supabase/functions/platform-worker/index.ts"
+    "../../../supabase/functions/platform-worker/index.ts",
+    "../../../supabase/functions/receptionist-voicemail-recording/index.ts"
   ]
 }

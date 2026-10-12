@@ -59,7 +59,7 @@ snapshot freshness, projection/identity review, queued processing messages, draf
 advice and bounded card-evidence explanation. Compatible dependency-lock updates
 passed TypeScript/build; production-dependency audit is clear, with nine development
 tool findings retained for review.
-The backend now has release **077**, worker **v19**, voicemail importer **v2**,
+The backend now has release **077**, worker **v19**, voicemail importer **v2**, private playback **v1**,
 card refresh **v2**, and Workspace discovery **v3**. The new frontend exposes the
 operator-only voicemail aggregate status and a direct LEARN entry to the existing
 private owner/manager inbox. Its scoped response reader rejects unknown counts and
@@ -69,8 +69,12 @@ signed-in acceptance remain open. Release 077 adds a paginated caller-RLS inbox
 reader that keeps old owners' existing message access discoverable after mailbox
 reassignment, without disclosing current mailbox configuration. The full-schema
 rehearsal and install preserved all 140 datasets. The corresponding frontend is
-deployed here. The TEST private playback endpoint is currently absent and must be
-installed and verified before successful audio acceptance. Release 073 added private voicemail
+deployed here. `receptionist-voicemail-recording` v1 is ACTIVE with JWT verification,
+observed at **00:01 UTC on 12 October**. Its two installed modules match the pinned
+source; six hosted HTTP boundaries deny unauthorised playback and preserve all
+140 datasets. Eight behavioural tests also pass against downloaded code. Positive
+signed-in playback remains unverified. See [playback deployment evidence](operations/evidence/learn-voicemail-playback-test-2026-10-12.json).
+Release 073 added private voicemail
 storage/intake; 074 added durable queue settlement; 075 added retained-email
 discovery; 076 added bounded dispatch and operator status. These releases did not
 activate real voicemail routes or a TEST schedule. Hosted positive scheduled import

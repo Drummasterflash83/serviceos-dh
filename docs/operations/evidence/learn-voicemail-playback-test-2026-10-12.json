@@ -1,0 +1,130 @@
+{
+  "observedAt": "2026-10-12T00:03:18.190484+00:00",
+  "scope": "Hosted TEST authenticated playback runtime and denied HTTP boundaries",
+  "deployment": {
+    "version": "learn-voicemail-playback-runtime/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "869e36a205cd3e4a8a6e9c3ae44978d9e5e63a162bced52d21649ae8f8f54fa2",
+    "observedAt": "2026-10-12T00:00:58.255Z",
+    "state": "deployed_needs_http_acceptance",
+    "attempts": [
+      {
+        "name": "receptionist-voicemail-recording",
+        "cliExitStatus": 0
+      }
+    ],
+    "writeAttempted": true,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 52,
+    "endpoints": [
+      {
+        "id": "05a97f9c-af68-44c7-bfdb-48785337c19b",
+        "slug": "receptionist-voicemail-recording",
+        "name": "receptionist-voicemail-recording",
+        "status": "ACTIVE",
+        "version": 1,
+        "created_at": 1791763256306,
+        "updated_at": 1791763256306,
+        "verify_jwt": true,
+        "import_map": false,
+        "ezbr_sha256": "17dcecbe64cacfb115b64b662165b8ce0efb5428d260eb83d406069e3b7036ce"
+      }
+    ],
+    "dependencyFiles": 2,
+    "fullPreservedDatasets": 140,
+    "fullSchemaUnchanged": true,
+    "routesCreated": 0,
+    "credentialsUploaded": 0,
+    "schedulesActivated": 0,
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "readback": {
+    "observedAt": "2026-10-12T00:01:32.480Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "downloaded_runtime_source_verified",
+    "sourceBundleSha256": "869e36a205cd3e4a8a6e9c3ae44978d9e5e63a162bced52d21649ae8f8f54fa2",
+    "reports": [
+      {
+        "endpoint": "receptionist-voicemail-recording",
+        "version": 1,
+        "matchingRuntimeModules": 2,
+        "omittedModules": [],
+        "emittedImportsChecked": 1,
+        "omittedModulesHaveNoEmittedImporters": true,
+        "differentRuntimeModules": []
+      }
+    ],
+    "method": "Transpiled syntax-tree comparison normalizes comments, redundant parentheses, associative logical operators and a sole for-of block; emitted imports are checked separately. Review aid, not formal proof.",
+    "limitations": [
+      "Syntax/import comparison; does not verify real provider or Storage transport."
+    ],
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "http": {
+    "observedAt": "2026-10-12T00:01:42.548Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "name": "missing_session",
+        "status": 401,
+        "passed": true,
+        "cacheControl": null
+      },
+      {
+        "name": "anonymous_session",
+        "status": 401,
+        "passed": true,
+        "cacheControl": "no-store"
+      },
+      {
+        "name": "service_impersonation",
+        "status": 401,
+        "passed": true,
+        "cacheControl": "no-store"
+      },
+      {
+        "name": "forged_session",
+        "status": 401,
+        "passed": true,
+        "cacheControl": null
+      },
+      {
+        "name": "unsupported_method",
+        "status": 405,
+        "passed": true,
+        "cacheControl": "no-store"
+      },
+      {
+        "name": "preflight",
+        "status": 200,
+        "passed": true,
+        "cacheControl": "no-store"
+      }
+    ],
+    "preservedDatasets": 140,
+    "positiveSignedInAcceptance": false,
+    "productionChanged": false
+  },
+  "local": {
+    "regressions": 25,
+    "downloadedHandlerTests": 8,
+    "strictEndpointTypes": "passed",
+    "fullProjectTypes": "passed",
+    "checks": [
+      "RLS read precedes privileged audit and signing",
+      "missing/invalid sessions do not read messages",
+      "actual streamed body size bounded",
+      "foreign/inconsistent paths denied",
+      "audit failures never sign",
+      "unexpected signed destinations denied"
+    ]
+  },
+  "limitations": [
+    "No actual signed-in positive HTTP/browser audio playback acceptance.",
+    "No new account, mailbox grant, provider request or production change.",
+    "Existing frontend unchanged; routes, credentials and recording sources unchanged.",
+    "Previously issued playback URLs remain usable until their short expiry."
+  ]
+}

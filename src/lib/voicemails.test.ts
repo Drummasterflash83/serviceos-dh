@@ -50,15 +50,8 @@ test("client navigation places voicemails immediately after about your reception
   assert.match(nav, /id: "details"[\s\S]*?\},\s*\{ id: "voicemails"/);
   assert.match(read("../components/app/OperatorModules.tsx"), /view: "voicemails"/);
 });
-test("audio uses user RLS before creating a signed link, never accepts a URL or path from browser", () => {
-  const fn = read("../../supabase/functions/receptionist-voicemail-recording/index.ts");
-  assert.ok(fn.indexOf("userDb.auth.getUser()") < fn.indexOf('.from("receptionist_voicemails")'));
-  assert.ok(fn.indexOf("error || !message") < fn.indexOf("const admin"));
-  assert.match(fn, /\.eq\("tenant_id", body.tenantId\)/);
-  assert.match(fn, /message.recording_path !== expectedPath/);
-  assert.match(fn, /createSignedUrl\(expectedPath, 60\)/);
-  assert.doesNotMatch(fn, /body\.(url|path|recording_path)|fetch\(/);
-});
+// Playback auth, RLS, audit ordering and object signing are exercised by
+// supabase/functions/_shared/voicemail/playback-http.test.ts.
 test("there is no blanket operator access or browser writes", () => {
   const sql = read("../../supabase/migrations/20261023210000_receptionist_voicemails.sql");
   assert.doesNotMatch(sql, /care_desk_operator\(|current_user_is_openfolk_operator\(/);

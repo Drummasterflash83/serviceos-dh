@@ -1,0 +1,16 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "bundleSha256": "869e36a205cd3e4a8a6e9c3ae44978d9e5e63a162bced52d21649ae8f8f54fa2",
+  "fullSchema": "6993886b70c352d13bae0800ffb39f08",
+  "runtimeSchema": "0d0f6716c91afe66932be63ddb262ddf",
+  "endpoints": [
+    {
+      "name": "receptionist-voicemail-recording",
+      "verifyJwt": true
+    }
+  ],
+  "modules": 2,
+  "external": [
+    "https://esm.sh/@supabase/supabase-js@2.45.4"
+  ]
+}

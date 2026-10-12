@@ -1,5 +1,35 @@
 # Birchills voicemail: discovery before capture
 
+## Private playback deployed — TEST, 12 October 01:01 BST
+
+`receptionist-voicemail-recording` v1 is deployed with JWT verification. The handler
+also calls Auth `getUser`, then selects the requested company/message using that
+user's client and existing RLS. It accepts only the two UUIDs, reads at most 4,096
+body bytes and never accepts an audio path or URL from the browser. A message must
+match the requested scope and its canonical private storage path. Missing, denied
+and inconsistent message reads do not reach privileged operations.
+
+The server must save `playback_link_requested` for the actual actor before signing
+the object in `receptionist-voicemails` for 60 seconds. It validates the signed
+destination against the configured Supabase origin and exact object. Audit or
+signing failure returns no link. Responses from the handler use `Cache-Control:
+no-store`. A granted URL is a short-lived capability; the endpoint does not revoke
+an already issued URL when later mailbox permissions change.
+
+Pinned bundle `869e36a205cd3e4a8a6e9c3ae44978d9e5e63a162bced52d21649ae8f8f54fa2`
+contains two modules; both match downloaded deployed code. Twenty-five local
+regressions and strict types pass; the eight actual-handler tests also pass against
+downloaded code. Six hosted HTTP probes verify absent/anonymous/forged/service
+denial and method/CORS behaviour, with all 140 datasets preserved. No human account,
+mailbox permission, source file or provider call was created. The TEST frontend's
+existing inbox already invokes the endpoint; no frontend deployment was needed.
+
+This closes the missing-endpoint gap, not positive playback acceptance. Still
+required: an authorised signed-in owner/manager opens a retained recording, the
+audit entry matches their actual user, audio loads/plays, a different unentitled
+user is denied, and real provider/ownership/backup acceptance is completed.
+[Evidence](evidence/learn-voicemail-playback-test-2026-10-12.json).
+
 ## Historical inbox visibility — TEST 077, 12 October
 
 The original message policy snapshots the owner, but the mailbox summary starts

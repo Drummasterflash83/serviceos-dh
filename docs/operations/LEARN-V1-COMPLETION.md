@@ -7,6 +7,20 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 01:01 BST — private playback endpoint installed and boundaries verified in TEST.**
+`receptionist-voicemail-recording` v1 is ACTIVE with JWT verification. It authenticates
+the user, reads the exact message through caller RLS, records the access request,
+then signs only that private audio object for 60 seconds. Oversized/malformed input,
+foreign/missing messages, audit failure and unexpected signed destinations return no
+link. All 140 datasets, the schema and unrelated endpoints were preserved. Both
+installed modules match the pinned source; 25 local regressions, strict endpoint
+types, full-project types and eight tests against downloaded code pass. Six hosted
+HTTP checks deny missing/anonymous/forged/service sessions and verify method/CORS
+handling. **Successful signed-in audio playback remains unproven**; no login,
+mailbox grant, recording or provider request was created by this release. The
+existing TEST frontend already calls this endpoint and was not redeployed.
+[Evidence](evidence/learn-voicemail-playback-test-2026-10-12.json).
+
 **12 October, 00:56 BST — historical inbox frontend deployed; playback endpoint gap confirmed.**
 The matching frontend from `7fae7468581655192a9a2f13846fe52103cc53a6` is READY
 in TEST; its immutable and stable hostnames remain Vercel protected. The installed
