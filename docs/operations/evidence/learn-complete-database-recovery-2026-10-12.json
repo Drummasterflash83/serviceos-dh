@@ -1,0 +1,167 @@
+{
+  "schema": "learn-complete-database-recovery/1",
+  "scope": "Private local native database restore, operational supplement and Vault plaintext equality; full service recovery not yet accepted",
+  "sourceSnapshotAt": "2026-10-12T06:37:26.256528+00:00",
+  "exportCompletedAt": "2026-10-12T06:44:21.860Z",
+  "archive": {
+    "bytes": 197303039,
+    "sha256": "bdb6be1f2cb934247949d6443305550888e6b4e62f5c55dac419a432616bd3db"
+  },
+  "netSupplement": {
+    "format": "native-postgresql-copy",
+    "tables": [
+      "_http_response",
+      "http_request_queue"
+    ],
+    "bytes": 587743,
+    "sha256": "ec5db3bcd4dfb100be5c6e0ab3a00eb7495ce2666c537b71c387167d503c050e",
+    "rowsUseExportedSnapshot": true,
+    "sequenceIsNonTransactional": true
+  },
+  "nativeDataComparison": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1594994,
+    "sequences": 5,
+    "comparisonSha256": "2d746e1448a455807a64651312c7e2cb3840651de0fb819a646a8491351d47d4",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "networkSupplementComparison": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 2,
+    "rows": 711,
+    "sequences": 1,
+    "comparisonSha256": "944033a82ddc233131cf6ee5854b9328712b4f3bb0d3fad693ce331b7b848d3f",
+    "scope": "two explicitly captured pg_net COPY tables and separately observed nontransactional sequence"
+  },
+  "allInventoriedPhysicalTablesCaptured": true,
+  "tableCatalogMatched": true,
+  "extensionVersionsMatched": true,
+  "noActorRows": {
+    "emails": 0,
+    "recordings": 0
+  },
+  "recordingRelationships": {
+    "recordings": 2883,
+    "withObjectPath": 2883,
+    "missingStorageMetadata": 0
+  },
+  "containmentBefore": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "restoreContainerRemoved": true,
+  "restoreElapsedSeconds": 67.18,
+  "vaultRecovery": {
+    "version": "production-vault-recovery/1",
+    "productionWrites": false,
+    "keyPersistedOnHost": false,
+    "decryptedValuesPersisted": false,
+    "externalUpload": false,
+    "archive": {
+      "bytes": 197303039,
+      "sha256": "bdb6be1f2cb934247949d6443305550888e6b4e62f5c55dac419a432616bd3db"
+    },
+    "state": "all_archived_vault_secrets_decrypt_and_match_live",
+    "vaultSecretsVerified": 16,
+    "ciphertextMatchesLive": true,
+    "plaintextComparisonMatches": true,
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true
+  },
+  "sourceCleanup": {
+    "healthy": true,
+    "checkedAt": "2026-10-12T06:44:56.500144+00:00",
+    "cliExpired": true,
+    "cliExpiresAt": "2026-10-12T06:42:25.643453+00:00",
+    "remainingCliSessions": 0,
+    "remainingLocalExportContainers": 0,
+    "unchangedRoleMembership": true,
+    "productionDataWrites": false
+  },
+  "fullApplicationRecoveryAccepted": false,
+  "independentDatabaseBackupAccepted": false,
+  "limitations": [
+    "No live aggregate fingerprint scan repeated; native rows are compared archive-to-restored database. All inventoried physical table coverage is checked.",
+    "Operational sequence observation is nontransactional.",
+    "Storage metadata is restored; this run does not restore file bytes. Existing independent recording backup is separately verified.",
+    "Encryption key was retrieved through the source platform API; independent key escrow remains unverified.",
+    "Auth/application/worker recovery and controlled capture resumption remain open."
+  ],
+  "officialKeyDocumentation": "https://supabase.com/docs/reference/api/v1-get-pgsodium-config",
+  "syntheticVaultRecovery": {
+    "state": "synthetic_vault_recovery_verified",
+    "sameKeyDecrypts": true,
+    "wrongKeyRejected": true,
+    "keyAbsentFromDockerMetadata": true,
+    "allContainersRemoved": true,
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pgsodium",
+        "supabase_vault"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": false,
+      "containerLogging": "none"
+    }
+  },
+  "verificationSources": [
+    {
+      "path": "scripts/backup/database_restore_sandbox.py",
+      "sha256": "bf84c51018a87352494b07d3918aa7b23c0bbe08f572ab656ce95c22a2e298bf"
+    },
+    {
+      "path": "scripts/backup/verify_vault_recovery_key.py",
+      "sha256": "06214585d5c2ba9fe7fa89a84643367031ce51770cfa04caccc112ab054f9061"
+    },
+    {
+      "path": "scripts/backup/check-production-vault-recovery.mjs",
+      "sha256": "26defe7323a418c6d831f6244fb9bed0f191949e5a4b70c37c555e9c05a20ab2"
+    },
+    {
+      "path": "scripts/backup/verify_production_vault_recovery.py",
+      "sha256": "8aa1623764c8ca498d56c2c9ecc863d3b07f508072d48d7c6afed6eaf887eff6"
+    }
+  ]
+}

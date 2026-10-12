@@ -23,15 +23,19 @@ class RecoveryError(RuntimeError):
 
 class RestoreSandbox:
     def __init__(self, *, image=IMAGE, private_diagnostics=None, network_extension=False,
-                 synthetic_vault=False, storage_policy_hook=False):
+                 synthetic_vault=False, storage_policy_hook=False, root_key=None):
         if image not in (IMAGE, 'public.ecr.aws/supabase/postgres:17.6.1.141'):
             raise RecoveryError('Unreviewed recovery image')
         self.image = image
         self.network_extension = network_extension
         self.preloaded_libraries = 'pg_cron,pg_net' if network_extension else 'pg_cron'
-        # The pinned image generates its own key inside this disposable container.
-        # This enables synthetic round trips, not recovery of source Vault secrets.
-        if synthetic_vault:
+        # Without a supplied recovery key the pinned image generates a local key.
+        # That mode proves synthetic round trips only.
+        if root_key is not None and (not isinstance(root_key, bytes) or len(root_key) != 64
+                                    or any(c not in b'0123456789abcdefABCDEF' for c in root_key)):
+            raise RecoveryError('Expected an in-memory hexadecimal recovery key')
+        self._root_key = bytearray(root_key) if root_key is not None else None
+        if synthetic_vault or root_key is not None:
             self.preloaded_libraries += ',pgsodium,supabase_vault'
         self.storage_policy_hook = storage_policy_hook
         if storage_policy_hook:
@@ -113,6 +117,14 @@ class RestoreSandbox:
             self.image_id = image['Id']
             if image['Config'].get('Volumes'):
                 raise RecoveryError('Image would introduce persistent volumes')
+            keyed = self._root_key is not None
+            if keyed and image['Config'].get('Entrypoint') != ['docker-entrypoint.sh']:
+                raise RecoveryError('Recovery key bootstrap entrypoint differs')
+            bootstrap = (['--entrypoint', '/bin/bash'] if keyed else [])
+            command = (['-c', 'set -eu; n=0; '
+                        'while [ ! -f /etc/postgresql-custom/.serviceos-key-ready ]; do '
+                        'n=$((n+1)); [ "$n" -le 300 ] || exit 1; sleep 0.1; done; '
+                        'exec docker-entrypoint.sh "$@"', '--'] if keyed else [])
             # Use the resolved installed image ID, not a mutable tag at launch.
             # Flags are server arguments from first startup, before any SQL loads.
             self._run([
@@ -120,7 +132,7 @@ class RestoreSandbox:
                 '--name', self.name, '--label', LABEL + '=' + self.run_id,
                 '--log-driver', 'none', '--security-opt', 'no-new-privileges',
                 '--memory', '2g', '--cpus', '2', '--pids-limit', '256',
-                '-e', 'POSTGRES_HOST_AUTH_METHOD=trust', self.image_id,
+                '-e', 'POSTGRES_HOST_AUTH_METHOD=trust', *bootstrap, self.image_id, *command,
                 'postgres', '-D', '/etc/postgresql',
                 '-c', 'shared_preload_libraries=' + self.preloaded_libraries,
                 '-c', 'max_worker_processes=0',
@@ -131,6 +143,20 @@ class RestoreSandbox:
                   if self.storage_policy_hook else []),
                 '-c', 'log_min_error_statement=panic'])
             self.created = True
+            if keyed:
+                try:
+                    # Key bytes enter only stdin and this disposable container's
+                    # private file, never Docker metadata, arguments or host files.
+                    self._run(['exec', '-i', self.name, '/bin/bash', '-c',
+                               'set -eu; umask 077; '
+                               'cat > /etc/postgresql-custom/.serviceos-root-key; '
+                               '[ "$(wc -c < /etc/postgresql-custom/.serviceos-root-key)" -eq 64 ]; '
+                               'chown postgres:postgres /etc/postgresql-custom/.serviceos-root-key; '
+                               'mv /etc/postgresql-custom/.serviceos-root-key /etc/postgresql-custom/pgsodium_root.key; '
+                               'touch /etc/postgresql-custom/.serviceos-key-ready'], data=bytes(self._root_key))
+                finally:
+                    self._root_key[:] = b'\0' * len(self._root_key)
+                    self._root_key = None
             # TCP waits for final startup, not the image's temporary init server.
             for attempt in range(120):
                 try:
@@ -243,6 +269,9 @@ class RestoreSandbox:
             return receipt
 
     def close(self):
+        if self._root_key is not None:
+            self._root_key[:] = b'\0' * len(self._root_key)
+            self._root_key = None
         # Handle even an uncertain `docker run` reply by checking the exact nonce.
         found = self._run(['ps', '-aq', '--filter', 'name=^/' + self.name + '$'])
         if found.strip():

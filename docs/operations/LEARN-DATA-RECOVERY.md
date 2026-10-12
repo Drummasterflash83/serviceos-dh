@@ -1,28 +1,44 @@
 # LEARN data recovery coverage
 
-## Small upgrade and bounded export retry — 12 October, latest state
+## Complete native capture, restore and Vault check — 12 October, latest state
 
-The approved production Small/2 GB upgrade is complete. SQL, Auth, database, REST
-and Storage remained healthy through ordinary capture cycles and a new bounded
-read-only export. At 06:31 UTC there were no blocked sessions, 11 client sessions
-against a 90-connection limit, about 1 GB available memory and low observed load.
-The older capacity gate below is resolved; full recovery acceptance is not.
+The 06:37:26 UTC snapshot completed export at 06:44:21 UTC: 197,303,039 bytes,
+SHA-256 `bdb6be1f2cb934247949d6443305550888e6b4e62f5c55dac419a432616bd3db`.
+Both operational pg_net tables were captured using native COPY in the same
+read-only snapshot. The prior archives and diagnostic partial file remain intact.
+No production source writes, external upload or schedule changes occurred.
 
-The 06:32:08 UTC snapshot captured both operational pg_net tables and transferred
-50,032,640 bytes before the three-minute diagnostic bound stopped the dump.
-Service health remained good during that interval. This is a retained partial
-file, not a usable new archive. At 06:35:57 UTC cleanup confirmed zero CLI sessions,
-zero local export containers and unchanged CLI membership. The short-lived
-credential expires at 06:37:07 UTC; do not refresh while it is still active.
-The original 196,872,981-byte archive and its SHA-256 are unchanged.
+A fresh offline restore matched all 1,594,994 archived rows across 299 data tables
+and five sequence values, plus 711 rows in the two supplemental operational tables
+and their separately observed nontransactional sequence. Every inventoried physical
+table is covered; table ownership/RLS flags and extension versions match. All
+2,883 recording references resolve to restored Storage metadata. Readers without
+actor context see zero emails/recordings. The container was removed after 67.18
+seconds; this is a measured database rehearsal, not a full-service recovery time.
 
-At 06:37:12 UTC the old credential was confirmed expired. A new private full
-export began at 06:37 UTC and is transferring data, using a
-30-minute maximum and a three-minute no-progress cutoff, followed by an isolated
-native restore/comparison. It keeps previous attempts in separate directories.
-No production source writes, schedule changes or database upload are authorised
-by this recovery path. Vault key portability and full service recovery remain open.
-[Diagnostic evidence](evidence/learn-recovery-small-export-probe-2026-10-12.json).
+All **16 archived Vault secrets** also decrypted in a second disposable offline
+restore and matched live keyed aggregate comparisons. Encrypted rows matched too.
+The key came from Supabase's [documented read-only key endpoint](https://supabase.com/docs/reference/api/v1-get-pgsodium-config)
+and travelled through stdin into the private container file. It was not put in
+host files, command arguments, Docker environment metadata or reports; no decrypted
+values were persisted. The container was removed. A synthetic rehearsal separately
+proves correct-key recovery, wrong-key rejection and absent key material in Docker
+metadata. Initial source comparison attempts encountered the restricted query
+role's Vault denial; the existing administrator then performed the comparison
+inside an explicit READ ONLY transaction. No permission or credential was changed.
+
+Production stayed healthy throughout capture. Post-export checks confirm the
+short-lived CLI credential expired, no CLI sessions/export containers remain and
+role membership is unchanged. The earlier three-minute diagnostic captured
+50,032,640 bytes before its limit; it was never accepted as a complete backup.
+The successful run used a 30-minute maximum and three-minute no-progress cutoff.
+
+Still open: independently stored database backups and root-key escrow; actual
+Auth/application/runtime recovery; controlled capture resumption; recording-byte
+coverage for newly arriving files and voicemail; dependable daily operation.
+This does not repeat a live aggregate row scan: fidelity is archive-to-restored
+rows, with source inventory coverage verified. Storage metadata is not file bytes.
+[Sanitised acceptance evidence](evidence/learn-complete-database-recovery-2026-10-12.json).
 
 ## Latest capture attempt — 12 October 2026, 01:21 UTC
 

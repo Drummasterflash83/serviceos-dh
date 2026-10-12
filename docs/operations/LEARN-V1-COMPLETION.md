@@ -7,16 +7,19 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**12 October, 06:35 UTC — Small export diagnostic transfers data; recovery remains open.**
-Production stayed healthy during a bounded read-only export. The new snapshot
-included both operational pg_net tables and transferred 50,032,640 bytes before
-the three-minute diagnostic limit. It is partial and not accepted as a backup.
-Cleanup found no remaining CLI sessions or local export containers; previous
-archives are intact. A separately journaled full transfer started at 06:37 UTC and is producing bytes,
-with a 30-minute maximum and three-minute no-progress cutoff. Offline restore and
-comparison remain pending.
-[Recovery record](LEARN-DATA-RECOVERY.md).
-
+**12 October — fresh complete database capture, isolated restore and Vault decryption passed.**
+The 06:37:26 UTC read-only snapshot produced a 197.3 MB archive plus both operational
+pg_net tables. Offline comparison matched 1,594,994 archived rows across 299 data
+tables, plus 711 supplemental operational rows; all inventoried physical tables
+are covered. Catalog/RLS ownership, extensions and 2,883 recording-metadata links
+passed. All 16 Vault secrets decrypted in a separate offline restore and matched
+live keyed comparisons without exposing or persisting keys/decrypted values.
+Both containers were removed. Production stayed healthy; export sessions were
+closed, the short-lived credential expired and role membership was preserved.
+Independent database/key backup storage, full application recovery, new audio-file
+coverage and dependable recurrence remain open; this is not live V1 acceptance.
+[Recovery record](LEARN-DATA-RECOVERY.md) and
+[sanitised evidence](evidence/learn-complete-database-recovery-2026-10-12.json).
 
 **12 October, 06:37–06:39 UTC — approved mailbox repair verified in scheduled capture.**
 The existing Workspace route completed its first scheduled attempt: 49 messages
