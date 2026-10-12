@@ -218,6 +218,10 @@ export async function readSupervisorMetadata(
 }
 export async function run(mode) {
   check(process.env.LEARN_TEST_ALLOW_PROJECT_REF === TEST_PROJECT, "Explicit TEST target required");
+  // Short batches provide settled boundaries for other approved acceptance work.
+  // This can only reduce one invocation's work; global request limits stay fixed.
+  const batchLimit = process.env.LEARN_COMMUSOFT_BATCH_LIMIT ?? "1500";
+  check(/^[1-9][0-9]{0,3}$/.test(batchLimit) && Number(batchLimit) <= 1500, "Invalid batch limit");
   const lock = openSync(stem + ".lock", "wx", 0o600);
   try {
     const token = savedCliToken(),
@@ -341,7 +345,7 @@ export async function run(mode) {
         claims.ref === TEST_PROJECT && claims.role === "service_role",
         "Wrong worker credential",
       );
-      for (let i = 0; i < (mode === "step" ? 1 : 1500); i++) {
+      for (let i = 0; i < (mode === "step" ? 1 : Number(batchLimit)); i++) {
         let current = await state();
         if (current.jobs.length === 0) break;
         const next = current.jobs[0];

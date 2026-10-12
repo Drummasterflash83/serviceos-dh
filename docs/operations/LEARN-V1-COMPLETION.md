@@ -7,6 +7,23 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 14:14 UTC — real email capture prepared; full-schema rehearsal passed.**
+Heidi's current production account is active through the existing Workspace
+connection, and all three approved TEST credential digests match that identity.
+The exact one-mailbox registration and 20-message queue request passed inside a
+rolled-back TEST transaction; all 194 original datasets remained unchanged and
+no provider was contacted. A fresh read confirms no TEST email account, messages,
+threads, attempts or email jobs exist for this tenant; email remains paused.
+
+The prepared runner pins the runtime/credentials and rehearsed SQL, invokes only
+one bounded email worker, retains uncertain outcomes without automatic replay,
+and pauses the mailbox afterwards. Chris's decision on mailbox activation and
+message copying is pending; the earlier approval covered credentials only.
+Commusoft site contacts reached a preserved checkpoint of 132 sites and resumed
+in short batches under the same approval and global budget.
+[Prepared email scope](LEARN-EMAIL-REAL-TEST.md) and
+[preflight/rehearsal evidence](evidence/learn-email-real-test-preflight-2026-10-12.json).
+
 **12 October, 13:58 UTC — original customer contacts and refreshed properties complete in TEST.**
 The original frozen customer-contact plan completed all 1,547 parents and retained
 2,395 contacts. A fresh operator-approved property pass completed all 25 pages,
