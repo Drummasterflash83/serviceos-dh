@@ -31,7 +31,7 @@ create table public.learn_commusoft_recurring_steps (
  cycle_end timestamptz not null,
  phase integer not null check(phase between 1 and 4),
  definition jsonb not null,
- job_id uuid not null,
+ job_id uuid,
  created_at timestamptz not null default clock_timestamp()
 );
 create table public.learn_commusoft_recurring_requests (
@@ -155,6 +155,28 @@ begin
  return receipt;
 end $$;
 
+-- Zero parents is a positive statement backed by this cycle's completed,
+-- unfiltered inventory. Unknown property kinds cannot establish an empty set.
+create function public.learn_commusoft_recurring_empty_parent(p_account uuid,p_end timestamptz,p_kind text)
+returns boolean language plpgsql security definer set search_path=pg_catalog as $$
+declare r public.learn_commusoft_recurring_steps%rowtype;c uuid;begin
+ if p_kind is null or p_kind not in('customer','workaddress') then return false;end if;
+ select * into r from public.learn_commusoft_recurring_steps where account_id=p_account and cycle_end=p_end and phase=1;
+ if not found or r.job_id is null or r.definition ?| array['updatedFrom','updatedBefore'] then return false;end if;
+ c:=(r.definition->>'connection_id')::uuid;
+ if not exists(select 1 from public.learn_business_input_pages p join public.platform_jobs j on j.id=p.job_id
+  where p.tenant_id=r.tenant_id and p.connection_id=c and p.collection='properties'
+   and p.checkpoint_after->>'approvalId'=r.request_id::text and p.checkpoint_after->'complete'='true'::jsonb
+   and j.status='succeeded' and j.metadata->'commusoft_page_v1'->>'pageId'=p.id::text) then return false;end if;
+ return not exists(select 1 from public.learn_business_input_pages p
+  join public.learn_business_input_observations o on o.page_id=p.id
+  join public.learn_business_input_versions v on v.id=o.version_id and v.tenant_id=p.tenant_id and v.connection_id=p.connection_id
+  where p.tenant_id=r.tenant_id and p.connection_id=c and p.collection='properties'
+   and p.checkpoint_after->>'approvalId'=r.request_id::text
+   and (v.payload->>'type'=p_kind or coalesce(v.payload->>'type','') not in('customer','workaddress')));
+end $$;
+revoke all on function public.learn_commusoft_recurring_empty_parent(uuid,timestamptz,text) from public,anon,authenticated,service_role;
+
 create function public.learn_commusoft_schedule_recurring(p_batch integer default 10) returns jsonb
 language plpgsql security definer set search_path=pg_catalog as $$
 declare s public.learn_commusoft_recurring%rowtype;a public.connector_accounts%rowtype;c public.provider_connections%rowtype;
@@ -176,7 +198,10 @@ begin
   if public.learn_operator_input_flags(s.tenant_id) is distinct from '{"learn.enabled":true,"learn.inputs.commusoft.enabled":true}'::jsonb then state:='capture_paused';end if;
   if state='ready' and exists(select 1 from public.platform_jobs where tenant_id=s.tenant_id and job_type='commusoft.source_sync' and payload->>'connector_account_id'=s.account_id::text and status in('queued','running','retrying')) then state:='window_active';end if;
   if state='ready' and s.current_request is not null then
-   if a.settings->'commusoft_import'->>'approvalId' is distinct from s.current_request::text then state:='window_changed';
+   if s.phase>=3 and exists(select 1 from public.learn_commusoft_recurring_steps r where r.request_id=s.current_request
+     and r.account_id=s.account_id and r.tenant_id=s.tenant_id and r.phase=s.phase and r.cycle_end=s.cycle_end and r.job_id is null)
+     and public.learn_commusoft_recurring_empty_parent(s.account_id,s.cycle_end,case s.phase when 3 then 'customer' else 'workaddress' end) then null;
+   elsif a.settings->'commusoft_import'->>'approvalId' is distinct from s.current_request::text then state:='window_changed';
    elsif a.sync_cursor->'complete' is distinct from 'true'::jsonb then state:='window_incomplete';
    elsif not exists(select 1 from public.learn_business_input_pages p join public.platform_jobs j on j.id=p.job_id
     where p.tenant_id=s.tenant_id and p.connection_id=s.connection_id and p.checkpoint_after=a.sync_cursor
@@ -206,14 +231,19 @@ begin
      'updatedBefore',to_char(end_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'));end if;
     begin
      update public.learn_commusoft_recurring set current_request=rid,current_definition=definition,phase=stage,cycle_start=start_at,cycle_end=end_at where account_id=s.account_id;
+     if stage>=3 and public.learn_commusoft_recurring_empty_parent(s.account_id,end_at,definition->>'contact_type') then
+      insert into public.learn_commusoft_recurring_steps values(rid,s.account_id,s.tenant_id,s.approved_by,start_at,end_at,stage,definition,null,clock_timestamp());
+      state:='empty_parent_set_verified';
+     else
      receipt:=public.learn_commusoft_recurring_start(s.tenant_id,rid,s.approved_by,definition,'apply');
      if receipt->>'account_id' is distinct from s.account_id::text then raise exception 'commusoft_recurring_account_changed' using errcode='PT409';end if;
      insert into public.learn_commusoft_recurring_steps values(rid,s.account_id,s.tenant_id,s.approved_by,start_at,end_at,stage,definition,(receipt->>'job_id')::uuid,clock_timestamp());
      queued:=queued+1;state:='window_queued';
+     end if;
     exception when sqlstate '55000' or sqlstate 'PT409' or insufficient_privilege then state:='setup_needs_review';end;
    end if;
   end if;
-  if state not in('window_queued','window_active','caught_up') then held:=held+1;end if;
+  if state not in('window_queued','window_active','caught_up','empty_parent_set_verified') then held:=held+1;end if;
   update public.learn_commusoft_recurring set last_state=state,next_check_at=clock_timestamp()+interval '60 seconds',updated_at=clock_timestamp() where account_id=s.account_id;
  end loop;
  return jsonb_build_object('checked',checked,'queued',queued,'held',held);

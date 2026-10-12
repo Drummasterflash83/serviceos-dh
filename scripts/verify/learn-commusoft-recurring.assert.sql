@@ -94,4 +94,54 @@ update platform_authority_grants set effective_to=null where profile_id=fixture_
 set request.jwt.claim.role='authenticated';set role authenticated;
 select learn_commusoft_recurring_read(fixture_id(100))->'accounts'->0->>'last_state';
 reset role;
+set request.jwt.claim.role='service_role';
+-- Finish the second cycle, then exercise inventories with no parents. Retained
+-- properties from previous cycles must not become this cycle's contact targets.
+select fixture_contact_capture('[]',false,null);
+update learn_commusoft_recurring set next_check_at=clock_timestamp();
+select learn_commusoft_schedule_recurring();
+select fixture_contact_capture('[]',false,null);
+select fixture_contact_capture('[]',false,null);
+update learn_commusoft_recurring set next_check_at=clock_timestamp();
+select learn_commusoft_schedule_recurring();
+select fixture_contact_capture('[]',false,null);
+update learn_commusoft_recurring set next_check_at=clock_timestamp();
+select learn_commusoft_schedule_recurring();
+do $$declare inventory jsonb;s learn_commusoft_recurring%rowtype;pages_before bigint;jobs_before bigint;begin
+ foreach inventory in array array['[{"id":101,"type":"customer"}]'::jsonb,'[]'::jsonb] loop
+  update learn_commusoft_recurring set next_check_at=clock_timestamp(),watermark=watermark-interval '1 hour';
+  perform learn_commusoft_schedule_recurring();
+  perform fixture_contact_capture(inventory,false,null);
+  select * into s from learn_commusoft_recurring;
+  if not learn_commusoft_recurring_empty_parent(s.account_id,s.cycle_end,'workaddress')
+   or learn_commusoft_recurring_empty_parent(s.account_id,s.cycle_end,'customer') is distinct from (inventory='[]'::jsonb)
+   or learn_commusoft_recurring_empty_parent(s.account_id,s.cycle_end,'unknown') then raise exception 'Empty-parent proof incorrect';end if;
+  update learn_commusoft_recurring set next_check_at=clock_timestamp();perform learn_commusoft_schedule_recurring();
+  perform fixture_contact_capture('[]',false,null);
+  update learn_commusoft_recurring set next_check_at=clock_timestamp();perform learn_commusoft_schedule_recurring();
+  if inventory<>'[]'::jsonb then perform fixture_contact_capture('[]',false,null);end if;
+  update learn_commusoft_recurring set next_check_at=clock_timestamp();perform learn_commusoft_schedule_recurring();
+  select * into s from learn_commusoft_recurring;
+  if s.phase<>4 or s.last_state<>'empty_parent_set_verified' then raise exception 'No-site cycle did not verify empty phase';end if;
+  if (select count(*) from learn_commusoft_recurring_steps where account_id=s.account_id and cycle_end=s.cycle_end and job_id is null)
+    <>(case when inventory='[]'::jsonb then 2 else 1 end) then raise exception 'Wrong empty-step receipts';end if;
+  select count(*) into pages_before from learn_business_input_pages;
+  select count(*) into jobs_before from platform_jobs;
+  update learn_commusoft_recurring set next_check_at=clock_timestamp();perform learn_commusoft_schedule_recurring();
+  if (select watermark<>s.cycle_end or phase<>0 or last_state<>'cycle_complete' from learn_commusoft_recurring)
+   or (select count(*) from learn_business_input_pages)<>pages_before or (select count(*) from platform_jobs)<>jobs_before then
+   raise exception 'Empty completion fabricated a provider page/job or failed to advance';end if;
+ end loop;
+end$$;
+-- An unfamiliar kind is not proof that a category is empty.
+update learn_commusoft_recurring set next_check_at=clock_timestamp(),watermark=watermark-interval '1 hour';
+select learn_commusoft_schedule_recurring();
+select fixture_contact_capture('[{"id":404,"type":"unknown"}]',false,null);
+do $$declare s learn_commusoft_recurring%rowtype;begin select * into s from learn_commusoft_recurring;
+ if learn_commusoft_recurring_empty_parent(s.account_id,s.cycle_end,'customer')
+  or learn_commusoft_recurring_empty_parent(s.account_id,s.cycle_end,'workaddress') then raise exception 'Unknown kind accepted as empty';end if;
+ if exists(select * from recurring_original_pages except select * from learn_business_input_pages)
+  or exists(select * from recurring_original_versions except select * from learn_business_input_versions) then raise exception 'Empty cycle changed history';end if;
+end$$;
 select 'Full bootstrap, four-stage receipt gating, pause/resume, immutable history, duplicate tick, revocation and incremental window checks passed';
+select 'Current-cycle empty customer/site sets verified without fabricated pages; unknown kinds and retained old parents cannot establish empty coverage';

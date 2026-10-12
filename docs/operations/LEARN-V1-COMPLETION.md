@@ -7,12 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — DH Slack authentication and access boundaries verified.**
+Heidi's authenticated DH session now works. Read-only administration inspection
+confirms Business+, indefinite message retention for public/private channels and
+DMs, no saved edit history, and disabled retention overrides. The export page
+currently permits public-channel export and requires an application for broader
+private/DM export. No such application, app installation, membership change or
+Slack import has been performed. Existing-app ownership and exact read-only
+connection permissions remain to be established. See
+[Slack coverage](LEARN-SLACK-HISTORICAL-COVERAGE.md).
+
 **12 October — ongoing Commusoft cycle backend implemented; isolated SQL acceptance passes.**
 The new migration introduces explicit operator-approved subscriptions, immutable
 control/step receipts and a four-stage cycle: full properties, jobs, customer
 contacts and site contacts. Bootstrap is unfiltered. Later cycles retain a full
 parent inventory and freeze update bounds with a five-minute overlap. The watermark
-moves only after all four retained completion receipts and succeeded jobs.
+moves only after all four phases are verified. A contact category with no parents
+can now complete using that cycle's full inventory as evidence; no provider page
+or job is fabricated. Unknown property kinds cannot prove an empty category.
+Nonempty phases still require retained completion receipts and succeeded jobs.
 
 The existing dedicated worker claim path wakes the scheduler. Pause/revocation
 fences credential/page admission and skips queued recurring work without spending
@@ -22,7 +35,7 @@ installation rollback restores previous function definitions/grants. This is not
 hosted acceptance or active capture. No client approval, schedule, credential or
 provider request was installed. [Evidence](evidence/learn-commusoft-recurring-local-2026-10-12.json).
 
-Remaining work for this feature: empty-parent handling, deeper interrupted/expired
+Remaining work for this feature: deeper interrupted/expired
 cycle and concurrency acceptance, operator controls, full production-archive
 rehearsal, release packaging and hosted verification/activation. The first cycle
 repeats all four unfiltered traversals, so its provider budget must be explicit.

@@ -5,6 +5,34 @@ Slack communications are essential to understanding jobs. The delivery target is
 all available, authorised history plus ongoing capture, including thread replies.
 A sample page, today's messages or one completed channel window does not satisfy it.
 
+## Verified workspace access — 12 October
+
+Read-only browser inspection after Heidi completed authentication confirmed the
+DH workspace, `drummonds.slack.com` (`T0CC5V4D7`), on **Business+**. Its current
+workspace settings say **Never delete messages — don't save edits** for public
+channels, private channels and DMs, with retention overrides disabled. These
+settings support a historical import but do not prove that every past message
+still exists or that previous edit versions can be recovered.
+
+The workspace's Export Data page currently offers a **Standard Export** of public
+channel messages/file links and app activity. It explicitly excludes private
+channels, DMs, and editing/deletion logs. It offers an application for broader
+export access; that application has **not** been submitted. Do not claim that
+Business+ or Heidi's admin role alone grants company-wide DM API access.
+
+The developer-app page still lists the existing Openfolk apps, not a confirmed DH
+ingestion app. The DH installed-app page was inspected, but its filter did not
+produce a reliable filtered result, so absence of an existing app is not proven.
+No app was created/installed, channel membership changed, credential provisioned,
+export requested or Slack source data imported during this inspection.
+
+Next: establish an app owned/authorised in DH and prepare its exact read-only
+scopes and destinations for review. A user-token route can avoid joining every
+public channel; private conversations remain bounded by that user's access.
+Broader private/DM coverage needs a separately supported and authorised route.
+The current bot-only transport must be extended and tested before using a user
+credential. Preserve archived-channel coverage and disclose missing edit history.
+
 ## Current implementation and gaps
 
 The worker uses a tenant-bound Vault bot credential, verifies workspace and channel
