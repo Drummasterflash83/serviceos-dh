@@ -1,6 +1,8 @@
 # Bounded real Google Workspace TEST acceptance
 
-Prepared on 12 October 2026. No real email has been captured by this run yet.
+Completed on 12 October 2026 at 14:35 UTC after explicit approval. The run retained
+20 real messages across 19 threads and then paused capture. All 194 original
+datasets were preserved. See [acceptance evidence](evidence/learn-email-real-test-2026-10-12.json).
 
 ## Exact scope
 

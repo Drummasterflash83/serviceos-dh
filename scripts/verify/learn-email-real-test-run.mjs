@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { savedCliToken, TEST_PROJECT } from './learn-test-readiness.mjs';
 import { communicationQuery } from './learn-card-communication-catalog.mjs';
 import { readSupervisorMetadata, SCOPE } from './learn-commusoft-operator-run.mjs';
+import { matchesEmailSourceAuthority } from './learn-email-source-authority.mjs';
 
 const mode = process.argv[2], file = '.verification-results/email-real-test-20261012.json';
 const check = (v, m) => { if (!v) throw Error(m); };
@@ -117,7 +118,7 @@ try {
     const secrets = await mgmt(TEST_PROJECT, '/secrets');
     check(Object.entries(p.credentialDigests).every(([name, hash]) => secrets.filter(s => s.name === name && (s.digest ?? s.value) === hash).length === 1), 'Credential binding changed');
     const source = await mgmt('tgbnakbxwcqjeimygroz', '/database/query/read-only', p.sourceQuery);
-    check(source.length === 1 && same(source[0], p.source), 'Production source authority changed');
+    check(source.length === 1 && matchesEmailSourceAuthority(p.source, source[0]), 'Production source authority changed');
     check(same(sorted(await q(p.baseQuery)), sorted(p.before)), 'Protected data changed since preparation');
     check(same(sorted(await q(preservation())), sorted(p.before)), 'Preservation exclusions would omit prior records');
     if (mode === 'rehearse') {

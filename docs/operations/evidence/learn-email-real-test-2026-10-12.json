@@ -1,0 +1,22 @@
+{
+  "scope": "Bounded real Drummonds TEST email capture",
+  "run": "b93b3a2f-dceb-4027-8c0d-819f38d70249",
+  "observedAt": "2026-10-12T14:34:54.946571+00:00",
+  "messages": 20,
+  "threads": 19,
+  "successfulSyncRuns": 1,
+  "workerAttempts": 1,
+  "capturePaused": true,
+  "originalDatasetsPreserved": 194,
+  "aiRequests": 0,
+  "attachmentsDownloaded": 0,
+  "productionChanges": 0,
+  "newHumanAccess": 0,
+  "retainedSuccessorDispatched": false,
+  "limits": [
+    "One recent page only; full history and recurring capture remain unverified.",
+    "Real email attribution and useful card enrichment remain open.",
+    "No production promotion implied."
+  ],
+  "verificationTimestampCorrection": "A newer verification is accepted only when every other prepared authority field matches; older or invalid verification is rejected."
+}

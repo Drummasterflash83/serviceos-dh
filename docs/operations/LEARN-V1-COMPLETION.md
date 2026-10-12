@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 14:35 UTC — approved real Heidi email capture passed in TEST.**
+The existing Workspace credential captured 20 messages across 19 threads through
+one successful durable worker attempt. The email flag, mailbox, account and
+connection are paused; the retained successor was not dispatched. All 194 original
+datasets are preserved. No attachments, AI, new human access or production changes.
+An initial pre-dispatch check stopped because production's verification timestamp
+had advanced. The runner now accepts a newer verification only when every other
+identity/authority field is unchanged; three focused checks pass. The exact
+previously rehearsed registration SQL and provider bounds were unchanged.
+[Real email evidence](evidence/learn-email-real-test-2026-10-12.json).
+
+Commusoft is stopped at 221 of 871 sites, with 2,521 retained contacts. Before
+resuming, reconcile only the reviewed email additions into its preservation journal,
+retaining the original hashes. The customer inventory contains 1,550 customers;
+52 records share email addresses, so email alone must not merge customers.
+Whole-account card publication and communication/summary enrichment remain open.
+
+Chris has requested the showcase on the live site. Prioritise the production
+release path, with a current baseline, matching schema/runtime/frontend and
+signed-in acceptance. This request does not establish readiness: the complete
+release combination and final production checks remain unfinished. No production
+promotion has occurred and no full-goal requirement has been deferred.
+
+
 **12 October, 14:14 UTC — real email capture prepared; full-schema rehearsal passed.**
 Heidi's current production account is active through the existing Workspace
 connection, and all three approved TEST credential digests match that identity.
