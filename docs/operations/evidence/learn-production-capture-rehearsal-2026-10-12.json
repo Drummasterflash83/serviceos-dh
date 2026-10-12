@@ -1,0 +1,124 @@
+{
+  "version": "learn-production-capture-rehearsal/1",
+  "observedAt": "2026-10-12T04:05:14.126966+00:00",
+  "result": {
+    "state": "production_capture_controls_rehearsed_offline",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "fullReleaseAccepted": false,
+    "signedInAcceptance": false,
+    "packages": [
+      "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+      "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+      "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+      "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+      "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+      "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+      "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947"
+    ],
+    "containmentBefore": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "negativeChecks": [
+      "wrong_target",
+      "catalog_drift",
+      "late_failure"
+    ],
+    "legacyColumnsAndCatalogPreserved": true,
+    "noInventedHistoricalEvidence": true,
+    "accessProbes": [],
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299,
+      "rows": 1591576,
+      "sequences": 5,
+      "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+      "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+    },
+    "duplicateRejected": true,
+    "journeys": [
+      {
+        "path": "scripts/verify/learn-production-capture.assert.sql",
+        "sourceSha256": "d0ba56e62e6819d98acfc1612c189eb25a7f4fd63bdd6c9764ffbe1e89977e53",
+        "probeSha256": "d0ba56e62e6819d98acfc1612c189eb25a7f4fd63bdd6c9764ffbe1e89977e53"
+      }
+    ],
+    "pauseAdmissionRace": {
+      "operatorTransactionObserved": true,
+      "waitingAdmissionDenied": true,
+      "scope": "Offline synthetic tenant; actual operator request and admission functions."
+    },
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true,
+    "elapsedSeconds": 40.51
+  },
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-capture-candidate.mjs",
+      "sha256": "04fd9333240f4ddb4a61fa6d4e4616cc8c87997efa7dccda092496b2e27d97d9"
+    },
+    {
+      "path": "scripts/verify/learn-production-capture.assert.sql",
+      "sha256": "d0ba56e62e6819d98acfc1612c189eb25a7f4fd63bdd6c9764ffbe1e89977e53"
+    },
+    {
+      "path": "scripts/backup/inspect_production_capture.py",
+      "sha256": "875ceca2861b9e893c5d5383034f5f391a51807f8f9fdfa890083b15191ef3ca"
+    },
+    {
+      "path": "scripts/backup/rehearse_production_capture.py",
+      "sha256": "91dde8d3f73e58d99013f1420a3d0b8e9b906c3b5703b4fbb515a2db0744ba1c"
+    },
+    {
+      "path": "supabase/release/learn-production/007_capture_controls.sql",
+      "sha256": "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947"
+    }
+  ],
+  "coverage": [
+    "All seven production packages install in order with exact original table, view, helper authority and data preservation.",
+    "Wrong target, table drift, late failure rollback and duplicate migration rejected.",
+    "Existing effective-dated OpenFolk grant permits control; ordinary tenant owner, anonymous role and View-As do not.",
+    "Control receipts replay exactly, reject stale edits, retain cancellation tombstones and roll back flags when receipt storage fails.",
+    "Malformed flags block admission without leaking raw values. Master disable governs Email, Phone and Slack.",
+    "Paused email and Slack queue work retains its attempt allowance; retained Slack pages remain eligible for settlement.",
+    "Claimed work defers without burning a retry; foreign-tenant deferral and deferral of an already saved page are rejected.",
+    "Real phone pipeline view selects retained-audio processing ahead of paused downloads.",
+    "Two-session actual operator request holds the control lock; waiting admission observes the committed pause instead of its earlier state."
+  ],
+  "fixtureAdaptations": [
+    "Actual auth.users profile creation, existing operator permission registry and production View-As shape replace stub fixtures.",
+    "Only synthetic queued jobs receive highest priority (lower numeric value) and a one-job claim; no source jobs are pre-cleared.",
+    "Synthetic phone_recordings feed the actual pipeline view instead of inserting into a stub table.",
+    "First terminal rehearsal preserved the archive but exposed reversed fixture priority; v2 corrects that ordering and adds concurrency. Candidate SQL is unchanged."
+  ],
+  "limitations": [
+    "No production/hosted TEST changes, real grants, provider requests or signed-in checks.",
+    "This is database-side control acceptance; matching worker deployment and real provider-boundary acceptance remain required.",
+    "Commusoft controls and later voicemail/Microsoft extensions remain part of the unfinished full release.",
+    "An already admitted bounded provider batch may finish after a pause; subsequent admission must stop. Retained source records are never deleted by a pause.",
+    "Archive preservation excludes known pg_net omissions; full runtime/Vault recovery remains unproven."
+  ]
+}

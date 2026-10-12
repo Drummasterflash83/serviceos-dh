@@ -7,6 +7,23 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — OpenFolk capture controls pass the production-archive rehearsal.**
+The first seven production packages install together. Database-side Email/Phone/
+Slack controls use the existing OpenFolk authority model, retain audit receipts,
+reject ordinary-owner and View-As access, and preserve retries while capture is
+paused. Saved Slack pages remain eligible for settlement; the actual phone view
+continues selecting retained audio for processing ahead of paused downloads.
+A two-session check proves a waiting admission sees an operator's committed pause.
+
+All 1,591,576 archived rows and five original sequence states match. Existing
+operator grants, table policies, source columns and views remain unchanged.
+The shared/dedicated queue claimants and phone selector gain capture filters.
+No hosted environment changed. Matching worker deployment, real provider-boundary
+acceptance, signed-in controls and later Commusoft/voicemail/Microsoft extensions
+remain required. A bounded batch already admitted may finish after a pause;
+new admission must stop. The disposable container was removed.
+[Capture-control evidence](evidence/learn-production-capture-rehearsal-2026-10-12.json).
+
 **12 October — Slack intake and thread recovery pass the production-archive rehearsal.**
 The first six production-specific packages install together. Slack adds protected
 source/version/import records, durable claims, thread imports, recovery and

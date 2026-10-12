@@ -1,0 +1,59 @@
+{
+  "version": "learn-production-capture-controls/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+  "priorSha256": "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261031160000_learn_operator_inputs.sql",
+      "sha256": "58bf52b1bd1ce8ef220c52cdf927571dc7f06cc3a7c95b5a9978dae2b7be7f9b"
+    },
+    {
+      "path": "supabase/migrations/20261031230000_learn_capture_controls.sql",
+      "sha256": "51265e71ef999ecbf27673220ea04ef6cc1711fd81cc1848bb74513a10c73067"
+    }
+  ],
+  "existingTables": [
+    "tenants",
+    "profiles",
+    "view_as_context",
+    "platform_authority_grants",
+    "feature_flags",
+    "platform_jobs",
+    "slack_workspace_pacing",
+    "phone_recordings",
+    "phone_sync_runs"
+  ],
+  "newTables": [
+    "learn_capture_control_requests"
+  ],
+  "newFunctions": [
+    "learn_operator_input_immutable",
+    "learn_operator_input_access",
+    "learn_capture_control_state",
+    "learn_operator_capture_controls",
+    "learn_operator_capture_control_request",
+    "learn_capture_admission",
+    "learn_capture_job_allowed",
+    "learn_capture_defer_job"
+  ],
+  "changedFunctions": [
+    "platform_jobs_claim",
+    "learn_slack_claim_jobs",
+    "phone_select_pending"
+  ],
+  "newSequences": [],
+  "newExistingConstraints": {},
+  "newExistingTriggers": {},
+  "limitations": [
+    "No real operator grant, flag change, provider work or hosted deployment.",
+    "Worker admission code must be deployed and verified with these SQL controls.",
+    "Commusoft and later voicemail/Microsoft operator extensions remain in the full release scope.",
+    "Existing in-flight work may settle retained pages; pauses govern new provider admission, not deletion of prior data."
+  ]
+}

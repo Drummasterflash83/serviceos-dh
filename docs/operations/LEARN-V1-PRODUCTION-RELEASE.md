@@ -286,6 +286,46 @@ this package, but manual approvals and worker paths still need the later operato
 capture-control reconciliation. Do not deploy or present this as a complete
 module-disable implementation. No hosted schema or schedule changed.
 
+### OpenFolk capture controls rehearsed offline
+
+The seventh package, [007_capture_controls.sql](../../supabase/release/learn-production/007_capture_controls.sql),
+adds one receipt table and eight control/authority helpers. SHA-256:
+`178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947`.
+It preserves the existing effective-dated OpenFolk authority resolver and grants,
+and reuses package 006's capture predicate. Shared operator access/immutability
+helpers are brought forward from their pinned source; the remaining Commusoft
+operator request/read functions must follow their connector prerequisites.
+
+Only three existing function bodies change: the generic job claimant, paced Slack
+claimant and phone pending selector gain capture filters. Existing function
+ownership/authority, source tables, table policies/grants, columns and views are
+unchanged. The candidate guards the actual phone view and each helper's baseline;
+it creates no real operator grant, flag, job or activation.
+
+All seven packages pass ordered install, wrong-target/catalog drift rejection,
+late rollback and duplicate denial. Every original archived row and sequence
+matches. The actual-schema synthetic journey verifies OpenFolk-only controls,
+View-As denial, stale revisions, exact receipts, cancellation, malformed-flag
+withholding and atomic receipt failure. Paused queues keep their attempt budget;
+owned pre-admission work can defer without burning retries, while saved Slack
+pages cannot be deferred away. Actual phone records feed the real pipeline view,
+which selects retained audio ahead of paused downloads. Two sessions verify a
+waiting admission blocks on the operator transaction and then observes its pause.
+
+Baseline: `scripts/backup/inspect_production_capture.py`; generator:
+`node scripts/verify/learn-production-capture-candidate.mjs`; rehearsal:
+`python3 scripts/backup/rehearse_production_capture.py`. Private terminal journal
+v1 found the fixture used reversed queue priority; v2 uses the correct lower-value
+priority and adds concurrency. Candidate SQL did not change. Both disposable
+containers were removed. [Evidence](evidence/learn-production-capture-rehearsal-2026-10-12.json)
+records the source hashes, fixture adaptations and limits.
+
+This proves database controls locally, not hosted provider or browser acceptance.
+Existing worker admission code still needs matched deployment and end-to-end
+verification. A previously admitted bounded batch may complete after a pause;
+the next batch must check again. Commusoft controls and later voicemail/Microsoft
+extensions remain required. No live system changed.
+
 ### Outstanding release gates
 
 - Resolve existing TEST access approvals and verify signed-in customer and
