@@ -404,6 +404,7 @@ function TenantWorkspace({ tenantId, tenantName }: { tenantId: string; tenantNam
           onSelectPerson={setPerson}
           delegatedActions={delegatedActions}
           discoveryHistory={discoveryHistory}
+          onOpenLearnInputs={() => setModule("modules")}
         />
       </Suspense>
     </OperatorShell>

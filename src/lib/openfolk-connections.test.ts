@@ -3,7 +3,7 @@
  * Run: node --test src/lib/openfolk-connections.test.ts
  *
  * Guards the truthfulness contract: no fabricated connections/capabilities; real provider
- * limitations preserved; tenant boundaries surfaced; placeholders for unimplemented adapters.
+ * limitations preserved; tenant boundaries surfaced; absent observations remain unknown.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -112,29 +112,45 @@ test("connected telephony retains its own typed inventory readiness", () => {
   assert.equal(v.inventoryCount, 1);
 });
 
-test("Slack shows truthful not-connected note, no fabricated capability", () => {
-  const v = projectConnections(CONNECTIONS)!.find((x) => x.family === "slack")!;
-  assert.equal(v.connected, false);
-  assert.equal(v.adapterImplemented, false);
-  assert.match(v.notConnectedReason ?? "", /ingestion not connected/i);
+test("available adapters with no observed account status stay unknown", () => {
+  for (const family of ["slack", "commusoft", "microsoft_365"]) {
+    const v = projectConnections(CONNECTIONS).find((x) => x.family === family)!;
+    assert.equal(v.adapterImplemented, true);
+    assert.equal(v.connectionObserved, false);
+    assert.equal(v.connected, false);
+    assert.equal(v.lifecycle, "status_unavailable");
+    assert.equal(v.authorisation, "unknown");
+    assert.equal(v.verification, "unknown");
+    assert.equal(v.readiness, "unknown");
+    assert.equal(v.health, "unknown");
+    assert.match(v.notConnectedReason ?? "", /LEARN input controls/);
+  }
 });
 
-test("Commusoft + Microsoft 365 are truthful placeholders, never fabricated as working", () => {
-  const views = projectConnections(CONNECTIONS)!;
-  const commusoft = views.find((x) => x.family === "commusoft")!;
-  const m365 = views.find((x) => x.family === "microsoft_365")!;
-  assert.equal(commusoft.connected, false);
-  assert.equal(commusoft.notConnectedReason, "Setup required");
-  assert.equal(m365.connected, false);
-  assert.equal(m365.adapterImplemented, false);
-  assert.equal(m365.notConnectedReason, "Adapter not yet implemented");
+test("static Slack status cannot establish authorisation or capture", () => {
+  for (const status of ["connected", "not_connected", "revoked"]) {
+    const v = projectConnections({
+      ...CONNECTIONS,
+      slack: { status, note: "Capture healthy" },
+    }).find((x) => x.family === "slack")!;
+    assert.equal(v.connectionObserved, false);
+    assert.equal(v.authorisation, "unknown");
+    assert.equal(v.health, "unknown");
+    assert.doesNotMatch(v.notConnectedReason ?? "", /Capture healthy/);
+  }
 });
 
-test("with NO connections payload, nothing is reported as connected", () => {
+test("missing payload does not claim disconnection, failed setup or healthy capture", () => {
   const views = projectConnections(undefined);
   assert.equal(views.length, PROVIDER_TEMPLATES.length);
-  assert.ok(views.every((v) => v.connected === false));
-  assert.ok(views.every((v) => v.health === "not_connected" || v.health === "unknown"));
+  for (const v of views) {
+    assert.equal(v.connectionObserved, false);
+    assert.equal(v.connected, false);
+    assert.equal(v.lifecycle, "status_unavailable");
+    assert.equal(v.health, "unknown");
+    assert.equal(v.readiness, "unknown");
+    assert.equal(v.authorisation, "unknown");
+  }
 });
 
 test("connection state vocabulary is the explicit lifecycle, not collapsed", () => {
@@ -153,6 +169,7 @@ test("retained mailboxes never reactivate disabled, revoked or failed connection
     assert.equal(v.externalRead, false);
     assert.equal(v.readiness, "not_ready");
     assert.equal(v.inventoryCount, 32);
+    assert.equal(v.connectionObserved, true);
   }
 });
 test("credential text and manual inventory do not prove connection, verification or healthy capture", () => {

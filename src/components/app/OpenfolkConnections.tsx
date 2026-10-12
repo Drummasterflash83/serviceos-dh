@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Plug,
+  CircleHelp,
   ShieldCheck,
   XCircle,
 } from "lucide-react";
@@ -98,6 +99,7 @@ export function OpenfolkConnections({
   onSelect,
   delegated,
   history,
+  onOpenLearnInputs,
 }: {
   connections?: Connections;
   workspace: Pick<Workspace, "endpoints" | "identities">;
@@ -105,6 +107,7 @@ export function OpenfolkConnections({
   onSelect: (id: string | null) => void;
   delegated?: DelegatedActions;
   history?: HistoryLoader;
+  onOpenLearnInputs?: () => void;
 }) {
   const views = useMemo(() => projectConnections(connections, workspace), [connections, workspace]);
   const selected = views.find((v) => v.id === selectedId) ?? null;
@@ -116,15 +119,23 @@ export function OpenfolkConnections({
           <Plug className="h-4 w-4 text-accent" />
           <h3 className="text-sm font-semibold text-display">Connections</h3>
           <span className="ml-auto text-[11px] text-muted-foreground">
-            {views.filter((v) => v.connected).length}/{views.length} connected
+            {views.filter((v) => v.connected).length} reported connected ·{" "}
+            {views.filter((v) => !v.connectionObserved).length} status unavailable
           </span>
         </header>
         <p className="mb-3 text-xs text-muted-foreground">
-          Every integration flows through one generic lifecycle: Connection → Authorisation →
-          Verification → Discovery → Canonical inventory → Identity review → Ownership → Readiness →
-          Shadow → Production. Capability states reflect real provider limitations; credentials are
-          never displayed.
+          Adapter features describe this release. They do not confirm account authorisation or
+          active capture. Check LEARN input controls for capture status, coverage and recovery.
         </p>
+        {onOpenLearnInputs && (
+          <button
+            type="button"
+            onClick={onOpenLearnInputs}
+            className="mb-3 rounded-md border border-accent/40 px-3 py-2 text-xs font-medium text-accent hover:bg-accent/10"
+          >
+            Open LEARN input controls
+          </button>
+        )}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {views.map((v) => (
             <ConnectionCard
@@ -496,7 +507,9 @@ function ConnectionCard({
     >
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-display">{v.providerLabel}</span>
-        {v.connected ? (
+        {!v.connectionObserved ? (
+          <CircleHelp className="h-3.5 w-3.5 text-muted-foreground" />
+        ) : v.connected ? (
           <CheckCircle2 className="h-3.5 w-3.5 text-success" />
         ) : (
           <XCircle className="h-3.5 w-3.5 text-muted-foreground/60" />
@@ -511,7 +524,9 @@ function ConnectionCard({
       <div className="flex flex-wrap items-center gap-1.5">
         <Pill cls={lc.cls}>{humanize(v.lifecycle)}</Pill>
         <Pill>{humanize("readiness: " + v.readiness)}</Pill>
-        {v.externalWrite ? (
+        {!v.connectionObserved ? (
+          <Pill>access unverified</Pill>
+        ) : v.externalWrite ? (
           <Pill cls="border-amber-500/30 bg-amber-500/5 text-amber-700">write enabled</Pill>
         ) : (
           <Pill>read-only</Pill>
@@ -592,7 +607,7 @@ function Row({ k, v }: { k: string; v: ReactNode }) {
 function NotAvailable() {
   return (
     <span className="italic text-muted-foreground">
-      Not available from the current backend projection
+      Not reported here — check LEARN input controls
     </span>
   );
 }
@@ -607,7 +622,10 @@ function renderTab(tab: DetailTab, v: ConnectionView): ReactNode {
           <Row k="Account / organisation ref" v={v.accountRef ?? "—"} />
           <Row k="Lifecycle" v={humanize(v.lifecycle)} />
           <Row k="Readiness" v={humanize(v.readiness)} />
-          <Row k="Adapter implemented" v={v.adapterImplemented ? "yes" : "no"} />
+          <Row
+            k="Adapter support"
+            v={v.adapterImplemented ? "Available in this release" : "Not implemented"}
+          />
           {v.notConnectedReason && (
             <Row
               k="Status detail"
@@ -623,10 +641,21 @@ function renderTab(tab: DetailTab, v: ConnectionView): ReactNode {
           <Row k="Auth mode" v={v.lifecycleDetail?.auth_mode ?? <NotAvailable />} />
           <Row k="Authorisation" v={humanize(v.authorisation)} />
           <Row k="Verification" v={humanize(v.verification)} />
-          <Row k="External read" v={v.externalRead ? "enabled" : "disabled"} />
+          <Row
+            k="External read"
+            v={!v.connectionObserved ? <NotAvailable /> : v.externalRead ? "enabled" : "disabled"}
+          />
           <Row
             k="External write / provisioning"
-            v={v.externalWrite ? <span className="text-amber-700">enabled</span> : "disabled"}
+            v={
+              !v.connectionObserved ? (
+                <NotAvailable />
+              ) : v.externalWrite ? (
+                <span className="text-amber-700">enabled</span>
+              ) : (
+                "disabled"
+              )
+            }
           />
           <Row k="Last verified" v={v.lifecycleDetail?.verified_at ?? <NotAvailable />} />
           <Row
@@ -672,18 +701,26 @@ function renderTab(tab: DetailTab, v: ConnectionView): ReactNode {
       return v.capabilities.length === 0 ? (
         <p className="italic text-muted-foreground">No capabilities declared.</p>
       ) : (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="space-y-2">
+          <p className="text-muted-foreground">
+            Adapter features and provider limitations; these are not evidence of enabled capture or
+            complete history.
+          </p>
           {v.capabilities.map((c) => (
-            <Pill key={c.key} cls={CAP_META[c.state]}>
-              {humanize(c.key)}: {humanize(c.state)}
-            </Pill>
+            <div key={c.key}>
+              <Pill cls={CAP_META[c.state]}>
+                {humanize(c.key)}: {humanize(c.state)}
+              </Pill>
+              {c.note && <p className="mt-1 text-[11px] text-muted-foreground">{c.note}</p>}
+            </div>
           ))}
         </div>
       );
     case "Boundaries":
       return v.boundaries.length === 0 ? (
         <p className="text-amber-700">
-          No explicit tenant boundary — default deny. Nothing is imported without an approved scope.
+          Scope is not reported here. Check LEARN input controls for the authorised account and
+          capture scope.
         </p>
       ) : (
         <dl>
@@ -726,11 +763,11 @@ function renderTab(tab: DetailTab, v: ConnectionView): ReactNode {
               )
             }
           />
+          <Row k="Discovery mode" v={<NotAvailable />} />
           <Row
-            k="Discovery mode"
-            v={v.connected ? "manual, read-only, idempotent" : "unavailable until connected"}
+            k="Raw evidence records"
+            v={v.connectionObserved ? String(v.evidenceCount) : <NotAvailable />}
           />
-          <Row k="Raw evidence records" v={String(v.evidenceCount)} />
           <p className="mt-2 text-[11px] text-muted-foreground">
             Recorded runs are shown in the discovery and sync history panel when available.
           </p>
@@ -739,14 +776,26 @@ function renderTab(tab: DetailTab, v: ConnectionView): ReactNode {
     case "Inventory":
       return (
         <dl>
-          <Row k="Canonical records (this connection)" v={String(v.inventoryCount)} />
-          <Row k="Raw evidence (non-canonical)" v={String(v.evidenceCount)} />
+          <Row
+            k="Retained directory inventory"
+            v={
+              v.connectionObserved || v.family === "slack" ? (
+                String(v.inventoryCount)
+              ) : (
+                <NotAvailable />
+              )
+            }
+          />
+          <Row
+            k="Raw evidence (non-canonical)"
+            v={v.connectionObserved ? String(v.evidenceCount) : <NotAvailable />}
+          />
           <Row
             k="Note"
             v={
               <span className="text-muted-foreground">
-                Discovery feeds existing canonical models (endpoints / identities); provider
-                payloads remain raw evidence/provenance.
+                These counts cover endpoints and identities in this view, not captured
+                communications, customers, jobs or complete provider history.
               </span>
             }
           />
@@ -756,7 +805,18 @@ function renderTab(tab: DetailTab, v: ConnectionView): ReactNode {
       return (
         <dl>
           <Row k="Health" v={humanize(v.health)} />
-          <Row k="Warnings" v={v.warnings.length ? String(v.warnings.length) : "none"} />
+          <Row
+            k="Warnings"
+            v={
+              !v.connectionObserved ? (
+                <NotAvailable />
+              ) : v.warnings.length ? (
+                String(v.warnings.length)
+              ) : (
+                "none reported here"
+              )
+            }
+          />
           {v.warnings.map((w, i) => (
             <div key={i} className="flex items-start gap-1 py-0.5 text-amber-700">
               <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
@@ -769,9 +829,15 @@ function renderTab(tab: DetailTab, v: ConnectionView): ReactNode {
       return (
         <dl>
           <Row k="Secret storage" v="server-side broker (Vault) — references only" />
-          <Row k="External write" v={v.externalWrite ? "enabled" : "disabled"} />
-          <Row k="Boundary" v={v.boundaries.length ? "scoped" : "default deny"} />
-          <Row k="Processing source" v="inactive" />
+          <Row
+            k="External write"
+            v={!v.connectionObserved ? <NotAvailable /> : v.externalWrite ? "enabled" : "disabled"}
+          />
+          <Row
+            k="Boundary"
+            v={v.boundaries.length ? "See reported boundaries" : <NotAvailable />}
+          />
+          <Row k="Capture status" v="Check LEARN input controls" />
         </dl>
       );
     case "Audit":

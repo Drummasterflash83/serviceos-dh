@@ -9,7 +9,7 @@
  * This module is a PROJECTION over data the Control Plane already returns (the `connections`
  * payload from the openfolk-control-plane Edge Function) plus a static provider-template
  * registry. It NEVER fabricates a connection or a capability: a provider with no live data
- * is shown from its template as not-connected / setup-required / adapter-not-implemented,
+ * has an unavailable status until a relevant backend reports its connection,
  * and capability states reflect real provider limitations (e.g. Birchills DDI discovery is
  * "planned", extensions are "manual"). No secret values ever appear here — secrets live in
  * the server-side secret broker and are referenced, never returned.
@@ -20,6 +20,7 @@ import type { Connections, ConnectionLifecycle, Workspace } from "./openfolk";
 
 // ── Lifecycle / discovery / readiness states (kept DISTINCT — never collapsed) ──
 export const CONNECTION_STATES = [
+  "status_unavailable",
   "not_configured",
   "setup_required",
   "authorisation_requested",
@@ -46,6 +47,7 @@ export const DISCOVERY_STATES = [
 export type DiscoveryState = (typeof DISCOVERY_STATES)[number];
 
 export const CONNECTION_READINESS = [
+  "unknown",
   "not_ready",
   "connected",
   "inventory_ready",
@@ -57,8 +59,8 @@ export const CONNECTION_READINESS = [
 export type ConnectionReadiness = (typeof CONNECTION_READINESS)[number];
 
 export type AuthorisationState =
-  "not_authorised" | "authorised" | "awaiting_customer_admin" | "expired" | "revoked";
-export type VerificationState = "never_verified" | "verified" | "failed" | "stale";
+  "unknown" | "not_authorised" | "authorised" | "awaiting_customer_admin" | "expired" | "revoked";
+export type VerificationState = "unknown" | "never_verified" | "verified" | "failed" | "stale";
 export type HealthState = "unknown" | "healthy" | "degraded" | "failed" | "not_connected";
 
 // ── Provider-neutral capability registry ──
@@ -83,6 +85,10 @@ export const CAPABILITY_KEYS = [
   "files",
   "chat_users",
   "chat_channels",
+  "chat_messages",
+  "contacts",
+  "sites",
+  "email_attachments",
   "jobs",
   "customers",
   "invoices",
@@ -132,6 +138,8 @@ export interface ConnectionView {
   underlyingProvider: string | null;
   accountRef: string | null;
   connected: boolean;
+  /** False means this projection does not observe connection status, not disconnected. */
+  connectionObserved: boolean;
   adapterImplemented: boolean;
   lifecycle: ConnectionState;
   authorisation: AuthorisationState;
@@ -152,17 +160,15 @@ export interface ConnectionView {
   lifecycleDetail: ConnectionLifecycle | null; // real backend lifecycle (present once enriched)
 }
 
-// ── Provider template registry (§13) — declares each provider's expected shape. Placeholders
-// state "Not connected" / "Adapter not yet implemented" truthfully; they never fabricate a
-// working integration. ──
+// Adapter support describes this source release, not deployment, consent or capture.
+// Missing backend observations must never become a disconnected/healthy claim.
 export interface ProviderTemplate {
   family: ProviderFamily;
   providerLabel: string;
   adapterImplemented: boolean;
-  /** Capability expectations when this provider IS connected (may be overridden by live data). */
+  /** Features implemented by the adapter, not proof of deployment or active capture. */
   declaredCapabilities: CapabilityView[];
-  /** Shown when no live connection data exists. */
-  placeholderLifecycle: ConnectionState;
+  /** Fallback explanation for an observed connection requiring setup. */
   placeholderReason: string;
 }
 
@@ -183,25 +189,37 @@ export const PROVIDER_TEMPLATES: ProviderTemplate[] = [
       cap("aliases", "read_only"),
       cap("groups", "read_only"),
       cap("email_metadata", "read_only"),
-      cap("email_content", "planned", "not enabled — no content ingestion active"),
+      cap(
+        "email_content",
+        "read_only",
+        "LEARN capture requires authorised mailboxes and enabled capture; check LEARN controls for current status",
+      ),
       cap("calendar", "unsupported"),
       cap("files", "unsupported"),
     ],
-    placeholderLifecycle: "setup_required",
     placeholderReason: "Setup required",
   },
   {
     family: "microsoft_365",
     providerLabel: "Microsoft 365",
-    adapterImplemented: false,
+    adapterImplemented: true,
     declaredCapabilities: [
       cap("directory_users", "planned"),
-      cap("mailboxes", "planned"),
+      cap(
+        "mailboxes",
+        "read_only",
+        "Explicit mailbox bindings; tenant-wide directory discovery is not implemented",
+      ),
       cap("groups", "planned"),
-      cap("email_metadata", "planned"),
+      cap("email_metadata", "read_only"),
+      cap(
+        "email_content",
+        "read_only",
+        "Authorised mailbox pages and deltas; complete mailbox coverage remains unverified",
+      ),
+      cap("email_attachments", "unsupported", "Attachment files are not captured"),
     ],
-    placeholderLifecycle: "not_configured",
-    placeholderReason: "Adapter not yet implemented",
+    placeholderReason: "Microsoft capture status is available in LEARN controls.",
   },
   {
     family: "telephony",
@@ -217,27 +235,38 @@ export const PROVIDER_TEMPLATES: ProviderTemplate[] = [
       cap("call_recordings", "read_only"),
       cap("provisioning", "unsupported", "external provisioning disabled"),
     ],
-    placeholderLifecycle: "setup_required",
     placeholderReason: "Setup required",
   },
   {
     family: "slack",
     providerLabel: "Slack",
-    adapterImplemented: false,
-    declaredCapabilities: [cap("chat_users", "planned"), cap("chat_channels", "planned")],
-    placeholderLifecycle: "setup_required",
-    placeholderReason: "Identity model ready — ingestion not connected",
+    adapterImplemented: true,
+    declaredCapabilities: [
+      cap("chat_users", "planned", "User-directory discovery is not implemented"),
+      cap(
+        "chat_channels",
+        "manual",
+        "An authorised workspace and explicit channel scope are required",
+      ),
+      cap(
+        "chat_messages",
+        "read_only",
+        "Approved history and thread ranges; unavailable history remains incomplete",
+      ),
+    ],
+    placeholderReason: "Slack capture status is available in LEARN controls.",
   },
   {
     family: "commusoft",
     providerLabel: "Commusoft",
-    adapterImplemented: false,
+    adapterImplemented: true,
     declaredCapabilities: [
-      cap("jobs", "planned"),
-      cap("customers", "planned"),
+      cap("jobs", "read_only"),
+      cap("customers", "read_only"),
+      cap("contacts", "read_only"),
+      cap("sites", "read_only"),
       cap("invoices", "planned"),
     ],
-    placeholderLifecycle: "setup_required",
     placeholderReason: "Setup required",
   },
 ];
@@ -349,18 +378,20 @@ function buildView(
     underlyingProvider: null,
     accountRef: null,
     connected: false,
+    connectionObserved: false,
     adapterImplemented: tpl.adapterImplemented,
-    lifecycle: tpl.placeholderLifecycle,
-    authorisation: "not_authorised",
-    verification: "never_verified",
-    health: "not_connected",
-    readiness: "not_ready",
+    lifecycle: "status_unavailable",
+    authorisation: "unknown",
+    verification: "unknown",
+    health: "unknown",
+    readiness: "unknown",
     externalRead: false,
     externalWrite: false,
     capabilities: tpl.declaredCapabilities,
     boundaries: [],
     warnings: [],
-    notConnectedReason: tpl.placeholderReason,
+    notConnectedReason:
+      "Connection status is not reported here. Open LEARN input controls to verify setup, capture and coverage.",
     lastVerified: null,
     lastDiscovery: null,
     inventoryCount: 0,
@@ -397,6 +428,7 @@ function buildView(
       commercialProvider: "Google Workspace",
       underlyingProvider: "Google Directory / Gmail API",
       ...state,
+      connectionObserved: true,
       health: state.health === "unknown" && g.excluded > 0 ? "degraded" : state.health,
       readiness: connected ? (g.imported > 0 ? "inventory_ready" : "connected") : "not_ready",
       externalRead: connected,
@@ -445,6 +477,7 @@ function buildView(
       underlyingProvider: t.underlying_provider,
       accountRef: t.account_ref,
       ...state,
+      connectionObserved: true,
       readiness: connected ? (typedPhone > 0 ? "inventory_ready" : "connected") : "not_ready",
       externalRead: connected,
       externalWrite: connected && t.external_write === "enabled",
@@ -472,18 +505,18 @@ function buildView(
   }
 
   if (tpl.family === "slack") {
-    const note = connections?.slack?.note ?? tpl.placeholderReason;
+    // The legacy Slack payload is a static placeholder, not a capture observation.
     const slackIdentities = identities.filter((i) => i.provider === "slack").length;
     return {
       ...base,
       commercialProvider: "Slack",
-      notConnectedReason: note,
       warnings: [],
       inventoryCount: slackIdentities,
     };
   }
 
-  // microsoft_365, commusoft, and any other unconfigured provider → truthful placeholder.
+  // Microsoft and Commusoft have separate LEARN status readers. This legacy
+  // projection has no evidence of their deployment or current connection state.
   return base;
 }
 

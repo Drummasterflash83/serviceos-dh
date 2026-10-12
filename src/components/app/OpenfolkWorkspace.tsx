@@ -257,6 +257,7 @@ export function OpenfolkWorkspace({
   onSelectPerson,
   delegatedActions,
   discoveryHistory,
+  onOpenLearnInputs,
 }: {
   tenantName: string;
   workspace: Workspace;
@@ -278,6 +279,7 @@ export function OpenfolkWorkspace({
   onSelectPerson?: (memberId: string | null) => void;
   delegatedActions?: DelegatedActions;
   discoveryHistory?: HistoryLoader;
+  onOpenLearnInputs?: () => void;
 }) {
   const [localSection, setLocalSection] = useState<Section>(controlledSection ?? "overview");
   const section = controlledSection ?? localSection;
@@ -433,7 +435,12 @@ export function OpenfolkWorkspace({
   const connectionIssues = useMemo(() => {
     const out: { kind: string; detail: string }[] = [];
     for (const c of connViews) {
-      if (c.adapterImplemented && !c.connected)
+      if (!c.connectionObserved)
+        out.push({
+          kind: "connection_status_unavailable",
+          detail: `${c.providerLabel} status is not reported here; verify in LEARN input controls`,
+        });
+      else if (c.adapterImplemented && !c.connected)
         out.push({
           kind: "connection_not_authorised",
           detail: `${c.providerLabel} is not connected`,
@@ -646,6 +653,7 @@ export function OpenfolkWorkspace({
             onSelect={setSelectedConn}
             delegated={delegatedActions}
             history={discoveryHistory}
+            onOpenLearnInputs={onOpenLearnInputs}
           />
         )}
 
@@ -955,15 +963,21 @@ export function OpenfolkWorkspace({
           <div className="space-y-4">
             <Card title="Connection security posture">
               <dl className="grid grid-cols-1 gap-y-1.5 text-xs sm:grid-cols-2">
-                <ConnRowsInline k="Active connections" v={String(connectedCount)} />
+                <ConnRowsInline k="Reported connected" v={String(connectedCount)} />
                 <ConnRowsInline k="Connections needing action" v={String(connActionCount)} />
                 <ConnRowsInline
                   k="External write / provisioning"
-                  v={connViews.some((c) => c.externalWrite) ? "enabled on some" : "disabled"}
+                  v={
+                    connViews.some((c) => c.externalWrite)
+                      ? "enabled on some"
+                      : connViews.some((c) => !c.connectionObserved)
+                        ? "Not reported for all inputs"
+                        : "disabled"
+                  }
                 />
                 <ConnRowsInline k="Secret storage" v="server-side broker (references only)" />
-                <ConnRowsInline k="Customer-admin invitations" v="0" />
-                <ConnRowsInline k="Processing source" v="inactive" />
+                <ConnRowsInline k="Customer-admin invitations" v="See Connections setup requests" />
+                <ConnRowsInline k="Capture status" v="Check LEARN input controls" />
               </dl>
               <p className="mt-3 text-[11px] text-muted-foreground">
                 Raw credentials are never displayed. Revocation / disable are operator-only controls

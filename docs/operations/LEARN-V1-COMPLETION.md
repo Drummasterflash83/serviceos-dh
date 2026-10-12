@@ -7,6 +7,26 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — Connections catalogue correction verified locally.**
+The legacy catalogue now distinguishes unavailable observations from known
+connection failures. Microsoft, Slack and Commusoft adapter availability no longer
+implies deployment, authorisation or active capture. Static Slack placeholder text
+cannot override this distinction. Known Google/Phone failure and revocation states
+and retained inventory remain visible. Capability notes disclose Microsoft mailbox
+binding, attachment and directory limitations; inventory counts explicitly exclude
+communication/customer/job coverage. Unsupported status cannot become an asserted
+inactive processing source, disabled access or a zero customer-admin invitation count.
+The actual tenant route now links Connections to its existing LEARN input controls.
+
+Twelve projection tests, application TypeScript and `npm run build` passed. The
+build retained its existing `inlineDynamicImports` warning. Local synthetic browser
+checks verified the catalogue, Microsoft capability notes and unknown security
+status with zero observed browser errors. This does **not** prove hosted signed-in
+navigation, account consent, active capture, complete coverage or production
+acceptance. No provider, production, account or credential mutation occurred.
+GitHub TEST is a source checkpoint; automatic deployment for that branch is disabled.
+
+
 **12 October, 05:51 UTC — approved production Small upgrade completed; service health recovered.**
 Chris approved Small compute and the brief interruption. One journaled request at
 05:41:54 UTC selected 2 GB Small at US$0.0206/hour; Pro is unchanged. Supabase was
@@ -29,7 +49,7 @@ or calls were stored by the sampled successful runs. One Gmail job failed with
 All 35 observed post-boot HTTP calls succeeded, but this is not complete capture
 coverage or LEARN launch acceptance. The export stall still needs a separately
 bounded retest. The previous capacity approval blocker is resolved. The general
-Connections catalogue work was investigated but remains unfinished.
+Connections catalogue correction is recorded in the newer local-only entry above.
 The recovered read-only API also confirms the managed Storage helper is loaded
 through `session_preload_libraries=supautils`, with the `postgres` policy grant on
 `storage.objects`. The earlier configuration-read blocker is resolved; production
