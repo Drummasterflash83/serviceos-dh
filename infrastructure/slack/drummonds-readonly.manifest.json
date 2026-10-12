@@ -1,0 +1,25 @@
+{
+  "display_information": {
+    "name": "OpenFolk LEARN - Drummonds",
+    "description": "Read-only communication input for Drummonds ServiceOS LEARN."
+  },
+  "oauth_config": {
+    "scopes": {
+      "user": [
+        "channels:read",
+        "channels:history",
+        "groups:read",
+        "groups:history",
+        "users:read",
+        "users:read.email",
+        "files:read"
+      ]
+    }
+  },
+  "settings": {
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": false,
+    "is_hosted": false,
+    "token_rotation_enabled": false
+  }
+}

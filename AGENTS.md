@@ -33,6 +33,14 @@
   not the production branch; `vercel.json` disables its automatic Git deployments.
   Keep real credentials and private runtime manifests excluded. Do not rewrite
   published history. Production promotion remains a separate verified release.
+- On 12 October Chris explicitly authorised deployment to both `openfolk.ai` and
+  `test.openfolk.ai`, retaining the existing live UX and Drummonds branding. The
+  one-page showcase in `outputs/` is an illustrative conversation preview, not a
+  replacement product design. Carry the release through its verification and
+  preservation gates; do not ask again for the same deployment permission.
+- Individual and group Slack DMs are explicitly deferred and must stay private.
+  Channel history and replies remain in scope, including authorised private
+  channels with appropriate visibility controls.
 
 ## Build-progress reports (Chris, 10 October 2026)
 

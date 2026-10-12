@@ -20,18 +20,27 @@ channels, DMs, and editing/deletion logs. It offers an application for broader
 export access; that application has **not** been submitted. Do not claim that
 Business+ or Heidi's admin role alone grants company-wide DM API access.
 
-The developer-app page still lists the existing Openfolk apps, not a confirmed DH
-ingestion app. The DH installed-app page was inspected, but its filter did not
-produce a reliable filtered result, so absence of an existing app is not proven.
-No app was created/installed, channel membership changed, credential provisioned,
-export requested or Slack source data imported during this inspection.
+The approved **OpenFolk LEARN - Drummonds** app (`A0C8G0STUKV`) is now installed
+in DH as Heidi. Fourteen read-only API requests verified identity and traversed
+the accessible conversation metadata in 12 pages. This identified **180 public
+and 135 private channels**, including archived channels. These are accessible
+channels, not a claim of every private channel in the company. No message reads,
+file downloads, membership changes, export request or hosted capture occurred.
 
-Next: establish an app owned/authorised in DH and prepare its exact read-only
-scopes and destinations for review. A user-token route can avoid joining every
-public channel; private conversations remain bounded by that user's access.
-Broader private/DM coverage needs a separately supported and authorised route.
-The current bot-only transport must be extended and tested before using a user
-credential. Preserve archived-channel coverage and disclose missing edit history.
+Chris subsequently excluded **individual and group DMs**. Their metadata was
+present in the initial authorised inventory, but no DM messages were fetched.
+All four DM scopes have now been removed from the app configuration. Because
+[Slack retains removed scopes on existing tokens](https://docs.slack.dev/app-management/distribution/),
+the original token was revoked and replaced with the narrower channel grant.
+At 19:28 UTC, two additional `auth.test` requests verified the old token is
+rejected and the replacement matches the previously verified DH/Heidi identity.
+The granted scopes exactly match the seven manifest scopes plus Slack's
+`identify` scope. Individual/group DM scopes are absent.
+
+Next: extend and verify the bot-only transport for the explicit user identity,
+prepare hosted storage and channel capture, and implement private-channel
+visibility controls. Preserve archived-channel coverage and disclose missing edit
+history. Do not enumerate or ingest DMs with the replacement credential.
 
 ## Current implementation and gaps
 
@@ -49,6 +58,36 @@ These are explicit coverage gaps, not channels with no activity. The current
 tomorrow before measuring the workspace and permitted throughput.
 
 ## Connection preparation
+
+### Installed DH app — channels only
+
+The reviewed configuration is
+[`drummonds-readonly.manifest.json`](../../infrastructure/slack/drummonds-readonly.manifest.json),
+named **OpenFolk LEARN - Drummonds**, for DH (`T0CC5V4D7`). It requests a **user**
+credential authorised by Heidi, with read-only scopes for public channels,
+accessible private channels, workspace people/email
+identity and accessible files. Exact scopes are in the manifest. It has no bot,
+message-writing, joining, invitation, deletion, administration or webhook scopes.
+It cannot read conversations between other people merely because Heidi is admin.
+
+Installation grants persistent access until revoked; token rotation is initially
+disabled because automatic refresh is not implemented. The replacement credential
+is verified in this Mac's Keychain and the already-authorised **Openfolk ServiceOS** 1Password
+item. No token belongs in Git, browser storage, public frontend configuration or
+the existing `bot_token` field. A hosted `user_token` destination and capture
+activation must be explicit and supported by the corresponding tested backend.
+
+Identity, exact scopes and metadata verification are complete, with private
+journals in `.verification-results/slack-dh-inventory-20261012.json` and
+`.verification-results/slack-dh-channel-credential-receipt.json`. Neither journal
+belongs in Git. The replacement matches both stored copies, the private transfer
+file was removed, and unrelated 1Password fields were preserved. The original
+credential is invalid. Rotation review remains due by 10 January 2027.
+
+These checks do not establish message, thread, attachment or job-link acceptance.
+Unsupported paths remain inactive. No all-conversations export application has
+been submitted. Hosted credential storage and activation are still separate from
+the approved local installation/metadata work.
 
 1. Verify the authorised workspace, installed app, credential identity, scopes,
    membership and retention. Keep progress notifications separate from ingestion.

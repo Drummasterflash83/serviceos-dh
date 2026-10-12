@@ -1,6 +1,11 @@
 # LEARN V1 production release plan
 
-Status: **preparation only; not approved or ready to execute**. The
+Status: **deployment authorised by Chris on 12 October; technical release gates
+still incomplete, no production promotion executed**. Keep the existing live UX
+and Drummonds branding on both `openfolk.ai` and `test.openfolk.ai`. The showcase
+preview is not a replacement design. This approval supersedes older pending
+ordinary-promotion approval statements below; it does not prove the package,
+runtime, signed-in acceptance or preservation gates passed. The
 [completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
 The current hosted TEST frontend is Git `e2d51fa` (12 October, 12:50 UTC).
 The database candidate now includes production-specific packages 001–017. Package

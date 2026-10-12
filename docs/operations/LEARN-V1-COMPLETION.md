@@ -7,6 +7,27 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 19:28 UTC — Slack channel-only credential verified; live deployment authorised.**
+Chris explicitly authorised deployment to `openfolk.ai` and `test.openfolk.ai`
+using the existing live UX and Drummonds branding. The conversation showcase is
+not the intended product redesign. This supersedes older statements that ordinary
+production promotion awaits his permission; technical release, preservation and
+signed-in acceptance gates still apply. No production promotion has occurred.
+
+The DH app `A0C8G0STUKV` is installed as Heidi. After Chris deferred individual and
+group DMs, all four DM scopes were removed, the broader token revoked, and a
+replacement authorised with the seven channel/identity/file scopes. Two read-only
+API checks proved the old token is rejected and the new token matches the original
+DH/Heidi identity with no DM scopes. Keychain and the existing 1Password recovery
+field both match the new credential; unrelated note content is preserved.
+
+The earlier metadata-only inventory identified 180 public and 135 accessible
+private channels, including archived channels. No messages or files were fetched.
+Channel import, thread history, private-channel visibility and full-history
+orchestration remain unfinished; the currently implemented worker is bot-only.
+No Slack credential has been provisioned to hosted TEST or production, and no
+Slack capture has been activated. [Current scope and evidence](LEARN-SLACK-HISTORICAL-COVERAGE.md).
+
 **12 October — DH Slack authentication and access boundaries verified.**
 Heidi's authenticated DH session now works. Read-only administration inspection
 confirms Business+, indefinite message retention for public/private channels and
