@@ -7,6 +7,17 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — production rollback artifacts and transport prepared.** All 28
+existing production endpoints have retained source and compiled backups, with
+unchanged deployment metadata. All 37 new tested artifacts now have upload-format
+bytes whose decompression exactly matches the verified executables. No production
+change occurred. The four Marketing constraint differences were compared directly
+against the original archive and match exactly; no replacement is needed.
+[Runtime recovery](evidence/learn-production-runtime-recovery-2026-10-12.json) and
+[constraint review](evidence/learn-production-constraint-review-2026-10-12.json).
+Coordinated release execution, caller configuration, current preservation,
+matching production frontend and positive signed-in acceptance remain open.
+
 **12 October — matching processing artifacts compile and boot offline.**
 All 37 compiled candidates start in the actual pinned Supabase runtime, with no
 network, source/cache mounts, real credentials or customer records, and reject

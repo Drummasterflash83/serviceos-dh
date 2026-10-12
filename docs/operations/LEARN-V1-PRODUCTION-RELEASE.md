@@ -12,6 +12,25 @@ are on `codex/learn-v1-test`.
 
 ## Matching processing candidate — 12 October
 
+**Rollback artifacts and upload bytes are now prepared.** Read-only download
+retained all 28 existing production endpoints as both source (227 files) and
+compiled artifacts, with unchanged deployment metadata before/after each set.
+The new 37 tested artifacts were encoded in the official CLI's EZBR transport
+format; decompression reproduces every tested artifact exactly. Total upload
+bytes are 10,970,518. Nothing was uploaded or deployed. Re-encoded rollback
+compression hashes need not equal the provider's original compressed hashes;
+the retained ESZIP bytes and observed version metadata are recorded separately.
+[Recovery and transport evidence](evidence/learn-production-runtime-recovery-2026-10-12.json).
+Rollback compatibility after new checkpoint formats still requires a coordinated
+capture pause and compatible runtime or forward repair; restoring code alone
+must not reset or discard newly retained inputs.
+
+The four Marketing check-constraint differences are resolved: current definitions
+match the original archive text exactly. The earlier comparison used the restored
+and reparsed catalog. No production definition needs replacement. This is a
+specific four-constraint reconciliation, not permission to normalise future drift.
+[Definition comparison](evidence/learn-production-constraint-review-2026-10-12.json).
+
 **Executable packaging and offline startup now pass.** All 37 exact candidate
 artifacts bundle with the pinned Supabase Edge Runtime v1.74.3 and start without
 network access, source/cache mounts, real credentials or customer data. Every

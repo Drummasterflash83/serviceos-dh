@@ -1,0 +1,41 @@
+{
+  "observedAt": "2026-10-12T15:46:42.512Z",
+  "state": "four_current_definitions_exactly_match_retained_archive",
+  "archiveSha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd",
+  "checks": [
+    {
+      "name": "marketing_ad_events_provider_event_id_check",
+      "table": "marketing_ad_events",
+      "archiveDefinitionMatchesCurrent": true,
+      "definitionSha256": "381ac30884e0e81c956c92daec6657b8cf8ec3c5fc1c0dc98a31ed0147a28fab",
+      "validated": true
+    },
+    {
+      "name": "marketing_ad_sources_name_check",
+      "table": "marketing_ad_sources",
+      "archiveDefinitionMatchesCurrent": true,
+      "definitionSha256": "4e0e0d3e49845c7ef6ce49747b2470d5795bddb9c599beac8f9b8aca00b59db2",
+      "validated": true
+    },
+    {
+      "name": "marketing_email_tracking_unique_evidence_ck",
+      "table": "marketing_email_tracking",
+      "archiveDefinitionMatchesCurrent": true,
+      "definitionSha256": "ef5bdd6bc52e7fb3e6f22cedccd20db9bc3a0462aed94c84c5927988ec095b9b",
+      "validated": true
+    },
+    {
+      "name": "marketing_templates_name_check",
+      "table": "marketing_templates",
+      "archiveDefinitionMatchesCurrent": true,
+      "definitionSha256": "4e0e0d3e49845c7ef6ce49747b2470d5795bddb9c599beac8f9b8aca00b59db2",
+      "validated": true
+    }
+  ],
+  "productionChanged": false,
+  "method": "Extracted four table definitions from the original archive with pinned pg_restore, compared exact constraint text to current production pg_get_constraintdef. Earlier hashes were from the restored/reparsed catalog.",
+  "limits": [
+    "This resolves the four named differences; a fresh full release preflight remains required.",
+    "Does not normalise arbitrary future schema drift."
+  ]
+}
