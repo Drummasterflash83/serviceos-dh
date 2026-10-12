@@ -42,16 +42,17 @@ Cloudflare-flavoured.
 
 ## Preview deployments
 
-The production-specific LEARN candidates now include packages 001–013. The combined
+The production-specific LEARN candidates now include packages 001–014. The combined
 archive rehearsal preserves every original row/sequence, existing storage owners
-and private voicemail access. Four latest suites pass synthetic email-to-private-inbox
-processing, bounded voicemail dispatch/recovery, historical inbox access and the
-existing email/Phone-to-card journey. Real source capture, audio bytes, signed-in
-acceptance and the managed production storage-policy configuration remain unverified.
+and private voicemail access. The latest suites pass synthetic Microsoft source-to-card
+processing, token rotation with legacy Marketing compatibility, actual queue pause/resume,
+private voicemail and the existing email/Phone-to-card journey. Real source capture,
+audio bytes, signed-in acceptance and managed production storage-policy configuration
+remain unverified. The extra Marketing compatibility patch is local only.
 These are reviewed release inputs, **not live migrations or promotion approval**.
 Install only as part of the eventual matched schema/worker/frontend release; never
 run the TEST bundles against production. See the
-[release plan](operations/LEARN-V1-PRODUCTION-RELEASE.md#private-voicemail-intake-and-inbox-candidate)
+[release plan](operations/LEARN-V1-PRODUCTION-RELEASE.md#microsoft-capture-and-compatibility-candidate)
 and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
 ### Isolated LEARN TEST project (10 October 2026)

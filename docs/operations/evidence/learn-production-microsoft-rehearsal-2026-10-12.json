@@ -1,0 +1,177 @@
+{
+  "state": "production_microsoft_capture_rehearsed_offline",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "fullReleaseAccepted": false,
+  "signedInAcceptance": false,
+  "packages": [
+    "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+    "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+    "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+    "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+    "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+    "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+    "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+    "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+    "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+    "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+    "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+    "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+    "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba"
+  ],
+  "containmentBefore": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "negativeChecks": [
+    "wrong_target",
+    "catalog_drift",
+    "storage_drift",
+    "bucket_drift",
+    "late_failure"
+  ],
+  "roleAttributesAndMembershipsUnchanged": true,
+  "storageCatalogAndPrivateBucketPreserved": true,
+  "localManagedStoragePolicyHook": {
+    "library": "supautils",
+    "policyGrants": {
+      "postgres": [
+        "storage.objects"
+      ]
+    },
+    "productionConfigurationVerified": false,
+    "roleGrantsAdded": false,
+    "storageOwnershipChanged": false
+  },
+  "protocolRoleGrantsExact": true,
+  "privateReaderNoLoginNoApplicationMembership": true,
+  "legacyColumnsAndCatalogPreserved": true,
+  "noInventedHistoricalEvidence": true,
+  "accessProbes": [],
+  "addedPrivateBuckets": 1,
+  "addedImportTemplates": 3,
+  "sourcePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+  },
+  "duplicateRejected": true,
+  "journeys": [
+    {
+      "name": "microsoft-capture-to-card-and-operator",
+      "sources": [
+        {
+          "path": "scripts/verify/learn-microsoft-hosted-probe.mjs",
+          "sourceSha256": "707407889973548cce657071e0c6d912699e2721144cc31fa578cc8b2a7e5fab",
+          "generatedSqlSha256": "bb4f5de5c5e25951ee74b5a13e2de0aa4b5f7c37313db596729df7b74b132551"
+        },
+        {
+          "path": "scripts/verify/learn-microsoft-projection-probe.mjs",
+          "sourceSha256": "6755255b7a44b202d83b6894fa83326af05e02ba7a97a0a9fb46de624bc47438",
+          "generatedSqlSha256": "1b2f4c156b33a058fd9743c011c14a875b863ceecea9fd70514c3733b7d66ef3"
+        },
+        {
+          "path": "scripts/verify/learn-microsoft-card-probe.mjs",
+          "sourceSha256": "fd00888365387fe8c0e74a04a4c829305c77fa8a4dc7d649ba94daec06bf8816",
+          "generatedSqlSha256": "5093860b34d981098ec1f28a0ccc971bd56324d07a6584f51ae4960b4e5f96df"
+        },
+        {
+          "path": "scripts/verify/learn-microsoft-discovery-probe.mjs",
+          "sourceSha256": "5dde99410dcd9fcfe388dd7ccbcf224b47cffd13e54c0fb7a4c28422d86cbe8e",
+          "generatedSqlSha256": "022338f546f86ef75f44d4b68580b6288f8873587d59aa3e099d4e06e11e6aec"
+        },
+        {
+          "path": "scripts/verify/learn-production-microsoft-worker-probe.mjs",
+          "sourceSha256": "337dba4931360f00974182d982ef97f494c7ad3cfd76a1c07fa4157b490c803e",
+          "generatedSqlSha256": "3ff99305984e32cc0cdb3d8b0aa8ae0391ec1873b77be57f2c3ec8379d8a3b39"
+        },
+        {
+          "path": "scripts/verify/learn-microsoft-status.assert.sql",
+          "sourceSha256": "03c35b5ec52a07112463a875bf87171e0e0a1481fa687a11bfb29ef01560289e",
+          "generatedSqlSha256": "03c35b5ec52a07112463a875bf87171e0e0a1481fa687a11bfb29ef01560289e"
+        },
+        {
+          "path": "scripts/verify/learn-production-microsoft-claim.assert.sql",
+          "sourceSha256": "e341a1cabc49e567290f1daa46c494aed82a7cc5b664ce1864212ed2fa3f2f8a",
+          "generatedSqlSha256": "e341a1cabc49e567290f1daa46c494aed82a7cc5b664ce1864212ed2fa3f2f8a"
+        }
+      ],
+      "probeSha256": "2f3442e016106460c3b21a545141bede7f37f6991c6b42d36d04ad6937a0553b"
+    },
+    {
+      "name": "learn-production-voicemail-journey.assert.sql",
+      "sources": [
+        {
+          "path": "scripts/verify/learn-production-voicemail-journey.assert.sql",
+          "sourceSha256": "95ef90aa6c758a07edca1b4ef2b1d01cf82edbe114fa68b6dd693be15781d335"
+        }
+      ],
+      "probeSha256": "a2c4dad2cd5403ffe95e41e969fd72ae08a53bd128b246cd8ca876030bc406a4"
+    },
+    {
+      "name": "learn-production-input-to-card.assert.sql",
+      "sources": [
+        {
+          "path": "scripts/verify/learn-production-input-to-card.assert.sql",
+          "sourceSha256": "840019909e9082479f6c8112c92f9bac7f297a12b39ece2244d375e7e79d19f2"
+        }
+      ],
+      "probeSha256": "a2f57f061087095116e2cd29970856eac376f6dbb34c89e0b9afacaa1674e203"
+    }
+  ],
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "elapsedSeconds": 50.26,
+  "scopeNotes": [
+    "All fourteen production candidates installed together in the pinned offline production archive; no hosted environment changed.",
+    "Graph reader fixtures use synthetic Response objects, not provider requests; coverage and attachments remain unverified.",
+    "Microsoft source-to-card, token refresh, stale refresh rejection, retry, retained-page completion and operator restrictions are exercised in one clone.",
+    "Actual shared-queue admission refuses paused Microsoft work, resumes after enablement and returns an owned paused job without consuming its failure budget.",
+    "The legacy Marketing token-trigger dependency chain failed on changed OAuth scopes before the fix. Qualified invoker functions preserve readiness and privileges, verified with no sender and with a ready Gmail sender losing send scope.",
+    "Existing voicemail and email/Phone-to-card journeys also pass. No original source rows, Storage objects, role attributes or memberships change.",
+    "The source fixture named hosted was run locally; real consent, provider transport, signed-in acceptance and production promotion remain required.",
+    "The local managed Storage policy hook remains explicitly configured; production configuration is unverified."
+  ],
+  "reproducedDefect": {
+    "state": "fixed_in_production_candidate_only",
+    "failedRehearsal": "production-microsoft-rehearsal-v3",
+    "reason": "OAuth scope change invoked legacy Marketing trigger with an unqualified relation under the restricted credential writer search path.",
+    "changedExistingFunctions": [
+      "platform_jobs_claim",
+      "marketing_source_capability_sync",
+      "marketing_sender_capability_sync",
+      "marketing_sender_readiness"
+    ],
+    "securityDefinerOrGrantChanges": false
+  },
+  "runnerSha256": "1e2108ba164534bde626c4344b6a0ea24a9649de972459a53de58b62d0578fb6",
+  "sandboxSha256": "8a49796902c3e6baccae3047ad28d24ba2e8d8bd26a5fffd1c8bda0877fec5af"
+}

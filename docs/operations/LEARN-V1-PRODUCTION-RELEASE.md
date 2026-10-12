@@ -613,6 +613,59 @@ No capture, processing schedule or hosted environment is activated by this packa
 Generator: `node scripts/verify/learn-production-cards-candidate.mjs`.
 Rehearsal: `python3 scripts/backup/rehearse_production_cards.py`.
 
+### Microsoft capture and compatibility candidate
+
+The fourteenth package, [014_microsoft_capture.sql](../../supabase/release/learn-production/014_microsoft_capture.sql),
+follows the pinned voicemail receipt. Its draft hash is
+`9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba`.
+Ten pinned Microsoft migrations and one production compatibility patch add eight
+protected tables and eighteen function names. The shared claim filter gains
+Microsoft admission; three existing Marketing invoker functions gain qualified
+schema references and `pg_catalog` search paths. Existing function grants,
+security authority, source columns, indexes, triggers, policies and Storage remain
+unchanged. No credentials, bindings, accounts, consent or schedules are seeded.
+
+The scope-changing OAuth refresh fixture initially failed because
+`marketing_source_capability_sync` resolved an unqualified table under the
+credential writer's restricted search path. The patch preserves the exact installed
+function bodies except for qualified dependencies and search paths; enclosing
+preflight pins their original definitions and authority. Its full readiness chain
+is verified with no Marketing sender, a ready Gmail sender, and removal of the
+Gmail send scope. Do not skip the trigger or suppress its exception. This extra
+compatibility fix has not been installed in hosted TEST.
+
+The terminal v5 combined rehearsal passes three suites in 50.26 seconds: one
+integrated synthetic Microsoft source/card/discovery/worker/status/actual-claim
+suite, the private voicemail journey and the existing email/Phone-to-card journey.
+Actual Graph readers consume mock responses; no provider transport is exercised.
+Token rotation, stale worker/refresh refusal, rate-limit delay, paused credentials,
+retained-page completion, operator denial/pagination, and hidden raw data are
+covered. A real `platform_jobs_claim` call refuses paused work, claims it after
+reenabling, and owned pause settlement restores the attempt budget.
+
+All 299 original COPY tables, 1,591,576 rows and five sequences match. Earlier
+import templates and the private EML bucket are accounted for separately; new
+operational tables remain empty outside disposable clones. Table/function/view,
+Storage, bucket and role checks pass; wrong target, catalog/policy/bucket drift,
+late failure and duplicate installation fail safely. All containers were removed.
+[Sanitised evidence](evidence/learn-production-microsoft-rehearsal-2026-10-12.json).
+
+Install only with matching Microsoft handlers and reviewed tenant/mailbox/client
+consent bindings. Verify real token lifecycle, initial and incremental capture,
+source-to-card permissions, operator controls and signed-in use before acceptance.
+Saved pages are not complete mailbox coverage; attachments are not captured.
+No Drummonds Microsoft mailbox is currently identified. Reconcile the older general
+Connections catalogue labels separately from actual account/capture state.
+
+For rollback, pause new capture and preserve pages, bindings, receipts and projected
+source history. Restore compatible workers, not older credential code with the
+known trigger failure. Do not drop tables or erase source data to repeat imports.
+Production configuration, fresh catalog checks and explicit promotion approval
+remain prerequisites; no live migration executor is supplied here.
+
+Generator: `node scripts/verify/learn-production-microsoft-candidate.mjs`.
+Rehearsal: `python3 scripts/backup/rehearse_production_microsoft.py`.
+
 ### Private voicemail intake and inbox candidate
 
 The thirteenth package, [013_voicemail_capture.sql](../../supabase/release/learn-production/013_voicemail_capture.sql),

@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — Microsoft release passes combined offline acceptance.**
+All fourteen production-specific packages install together. Synthetic Graph pages
+travel through the actual reader, durable journal, email/interaction projection,
+identity processing and company cards. Token renewal, stale refresh refusal,
+recurring folder discovery, retry, retained-page completion and restricted operator
+status pass. An actual shared-queue check proves paused work cannot be claimed,
+resumes after enablement, and defers again without spending its failure budget.
+Existing private voicemail and email/Phone-to-card journeys also pass.
+
+A stronger scope-change fixture reproduced a production compatibility bug: the
+restricted Microsoft credential writer triggered old Marketing functions that used
+unqualified table names. Package 014 qualifies that existing dependency chain,
+retaining invoker authority, grants and readiness rules. Tests cover tenants with
+no sender and an enabled Gmail sender, including withdrawal of its send permission.
+The fix is prepared locally; it is not installed in hosted TEST or production.
+
+All 1,591,576 original archived rows and five sequences match. Existing Storage,
+private buckets, role attributes/memberships and restricted email/card roles remain
+intact. Five failure/rollback cases and duplicate rejection pass; all containers
+were removed. No provider requests or live changes occurred. Real Microsoft consent
+and mailbox capture, coverage, paired deployment and signed-in acceptance remain
+required. No Drummonds Microsoft mailbox has yet been identified.
+[Microsoft rehearsal evidence](evidence/learn-production-microsoft-rehearsal-2026-10-12.json).
+
 **12 October — private voicemail release passes combined offline acceptance.**
 All thirteen production-specific packages install together. Four synthetic suites
 pass actual email storage → discovery → claimed queue job → private inbox,
@@ -1859,6 +1883,17 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   pending event does not prove customer-card delivery. No Microsoft installation
   or live activation occurred.
   [Projection evidence](evidence/learn-microsoft-projection-2026-10-11.json).
+  **Current release status, 12 October:** TEST 079 and worker v20 contain the
+  Microsoft schema/handler; the earlier “nothing installed” observations above
+  describe their historical checkpoints. No real Microsoft mailbox is authorised
+  or capturing. Production package 014 adds combined-archive compatibility,
+  including the legacy Marketing OAuth-trigger dependency fix; hosted deployment
+  of this additional compatibility fix still requires its own reviewed rehearsal.
+- [ ] **Connections catalogue accuracy:** reconcile the general OpenFolk Connections
+  panel's older “adapter not implemented”/“planned” labels with deployed adapter
+  availability, while keeping account authorisation, active capture and measured
+  coverage separate. The dedicated Microsoft status panel does not by itself
+  correct the general catalogue. Verify these states in the signed-in controller.
 - [ ] **Performance inputs:** finish source-backed response-time, job progression,
   repeat-visit and driving adapters where sources exist. Establish staff identity,
   team membership, calendars and reviewable calculation rules using Drummonds data.

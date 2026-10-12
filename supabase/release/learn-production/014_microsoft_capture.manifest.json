@@ -1,0 +1,126 @@
+{
+  "version": "learn-production-microsoft-capture/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba",
+  "priorSha256": "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101180000_learn_microsoft_source_journal.sql",
+      "sha256": "8f852bf18aad93e64d3fd8192910159f2fdfea102d2807bbfdc429f5e6ab8398"
+    },
+    {
+      "path": "supabase/migrations/20261101181000_learn_microsoft_job_receipts.sql",
+      "sha256": "f91c07370d28689fcbdfdee8ead990a5dcc7ed12db710f6d709cb93f38fe9bb0"
+    },
+    {
+      "path": "supabase/migrations/20261101182000_learn_microsoft_queue_completion.sql",
+      "sha256": "2781dca88f9ad4322c8acb042e4c42559cd66cc39db96e4708c9177ac21b2cbe"
+    },
+    {
+      "path": "supabase/migrations/20261101192000_learn_microsoft_folder_dispatch.sql",
+      "sha256": "3e7fa7064b54ddc2921b318e2da384dcd7ffb6a3fab86fa0ce4e9f9522150f84"
+    },
+    {
+      "path": "supabase/migrations/20261101260000_learn_microsoft_incremental_queue.sql",
+      "sha256": "b3a30f6e3084849ef613480fa488a8c0da07efe7bcdc3161bb07764cd9a61e7c"
+    },
+    {
+      "path": "supabase/migrations/20261101280000_learn_microsoft_message_projection.sql",
+      "sha256": "121fcd1cd4569b4fe6b72ba818892802e46cc592de936039c64a70214c891e62"
+    },
+    {
+      "path": "supabase/migrations/20261101350000_learn_microsoft_recurring_discovery.sql",
+      "sha256": "ffad2f09f0f6c960b80222c95bf86aeb99447be03051b3b860a797aa8408d643"
+    },
+    {
+      "path": "supabase/migrations/20261101470000_learn_microsoft_credentials.sql",
+      "sha256": "e68b461739f347de2d1aad7e196b618102b237bef4a878c38a9e144598fcccab"
+    },
+    {
+      "path": "supabase/migrations/20261101480000_learn_microsoft_worker_failures.sql",
+      "sha256": "e4d961ae83228a253de9fa668d788b12b3529c3eb33fa13a5d0dd784cf11e4ab"
+    },
+    {
+      "path": "supabase/migrations/20261101490000_learn_microsoft_operator_status.sql",
+      "sha256": "2a38f722651dfd569718963f82d539fbd01b8ba9cd5a111db55b880124c6d9ec"
+    },
+    {
+      "path": "supabase/release/learn-production/patches/marketing_source_capability_schema.sql",
+      "sha256": "a38ff38c9c0eb598e355b92fe945b2799edd73d2a83881168d9e9e9a4119e0e5"
+    }
+  ],
+  "existingTables": [
+    "email_accounts",
+    "email_messages",
+    "email_oauth_tokens",
+    "email_threads",
+    "google_workspace_connections",
+    "google_workspace_mailboxes",
+    "interactions",
+    "jobs",
+    "marketing_sender_profiles",
+    "outcomes",
+    "platform_events",
+    "platform_jobs",
+    "profiles",
+    "tenant_connector_capabilities",
+    "tenant_connectors"
+  ],
+  "newTables": [
+    "learn_microsoft_mailbox_bindings",
+    "learn_microsoft_capture_streams",
+    "learn_microsoft_source_pages",
+    "learn_microsoft_job_completions",
+    "learn_microsoft_folder_dispatches",
+    "learn_microsoft_projection_receipts",
+    "learn_microsoft_discovery_rounds",
+    "learn_microsoft_job_stops"
+  ],
+  "newFunctions": [
+    "learn_microsoft_journal_immutable",
+    "learn_microsoft_binding_guard",
+    "learn_microsoft_checkpoint_valid",
+    "learn_microsoft_journal_guard",
+    "learn_microsoft_journal_open",
+    "learn_microsoft_journal_commit",
+    "learn_microsoft_journal_job",
+    "learn_microsoft_job_settle",
+    "learn_microsoft_dispatch_folders",
+    "learn_microsoft_projection_time",
+    "learn_microsoft_projection_fields_valid",
+    "learn_microsoft_page_project",
+    "learn_microsoft_job_settle_before_projection",
+    "learn_microsoft_credential_read",
+    "learn_microsoft_credential_refresh",
+    "learn_microsoft_job_stop",
+    "learn_microsoft_job_claimable",
+    "learn_operator_microsoft_status"
+  ],
+  "changedFunctions": [
+    "platform_jobs_claim",
+    "marketing_source_capability_sync",
+    "marketing_sender_capability_sync",
+    "marketing_sender_readiness"
+  ],
+  "changedViews": [],
+  "newSequences": [],
+  "newRole": null,
+  "extendedTables": {},
+  "newExistingConstraints": {},
+  "newExistingIndexes": {},
+  "newExistingTriggers": {},
+  "newExistingPolicies": {},
+  "newStoragePolicies": {},
+  "newBuckets": [],
+  "limitations": [
+    "Preserves existing email, OAuth, marketing and queue structures and source rows; adds Microsoft claim admission and qualifies the existing Marketing token-trigger dependency chain without changing authority or readiness rules.",
+    "No accounts, credential bindings, consent, tokens, jobs or schedules are seeded.",
+    "Requires matching Microsoft worker, real delegated consent/identity binding, provider capture and coverage, source-to-card and signed-in acceptance.",
+    "Retained Graph pages, folder removals and sparse messages are not proof of mailbox coverage; attachments are not captured by this adapter."
+  ]
+}
