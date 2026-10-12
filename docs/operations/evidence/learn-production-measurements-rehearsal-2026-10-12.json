@@ -1,0 +1,138 @@
+{
+  "version": "learn-production-measurements-rehearsal/1",
+  "observedAt": "2026-10-12T03:21:46.557488+00:00",
+  "result": {
+    "state": "production_measurement_work_prerequisites_rehearsed_offline",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "fullReleaseAccepted": false,
+    "signedInAcceptance": false,
+    "packages": [
+      "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+      "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+      "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27"
+    ],
+    "containmentBefore": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "negativeChecks": [
+      "wrong_target",
+      "catalog_drift",
+      "late_failure"
+    ],
+    "legacyColumnsAndCatalogPreserved": true,
+    "noInventedHistoricalEvidence": true,
+    "probeSources": [
+      {
+        "path": "scripts/verify/learn-measurements-release.assert.sql",
+        "sha256": "e277855cb5f58688548317f90874a444b082817f98c87369e76e65b8f4b0f28c"
+      },
+      {
+        "path": "scripts/verify/learn-work-release.assert.sql",
+        "sha256": "c202083417dcf302607113ab7cf78226c6b07259b06d36f05178b4fa274cab7b"
+      }
+    ],
+    "generatedProbeSha256": "ea6751ff0af94bda4f7b83ea888119c2ab87faf19612000933812043b58f8add",
+    "measurementAndWorkJourneysVerified": true,
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299,
+      "rows": 1591576,
+      "sequences": 5,
+      "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+      "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+    },
+    "duplicateRejected": true,
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true,
+    "elapsedSeconds": 35.01
+  },
+  "extendedOriginalTables": [
+    {
+      "table": "measurements",
+      "originalRows": 3
+    },
+    {
+      "table": "metric_definitions",
+      "originalRows": 9
+    },
+    {
+      "table": "object_state_history",
+      "originalRows": 14452
+    }
+  ],
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-measurements-candidate.mjs",
+      "sha256": "bf8b26891e751ad77211ec3630e8e63d81590bd61f88692a1e03af8cb4fddfda"
+    },
+    {
+      "path": "scripts/backup/rehearse_production_measurements.py",
+      "sha256": "fbc667ae71f01839ec714a44ff438e4b3619f2b40ac9ae77c3e6b689a6d122f4"
+    },
+    {
+      "path": "supabase/release/learn-production/003_measurements_work.sql",
+      "sha256": "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27"
+    },
+    {
+      "path": "supabase/release/learn-production/003_measurements_work.manifest.json",
+      "sha256": "df0a5e4cc1c77eefddbdfe1285161f4da55898ea5d4a9b5860ee616b9e742a85"
+    }
+  ],
+  "verifiedSyntheticJourneys": [
+    "Validated adapter append, idempotent replay, changed-request denial and correction-chain conflict.",
+    "Human confirmation/dispute remains separate from raw observations; stale reviews are denied.",
+    "Earlier team coverage survives later transfer; unobserved or mixed-team periods are rejected.",
+    "Handoff collector distinguishes an identity alias from a real transfer; ownership-time collector matches captured intervals.",
+    "Unresolved ownership produces a null value and incomplete coverage.",
+    "Viewer, foreign-owner and foreign-OpenFolk profiles cannot read the new staff facts or collection proofs.",
+    "Direct service-role self-confirmed staff facts are denied; existing company-wide measurement writes remain permitted.",
+    "Captured evidence cannot be rewritten, deleted or truncated through the tested paths."
+  ],
+  "fixtureAdaptations": [
+    "Use profiles created by the existing production Auth trigger instead of inserting duplicates.",
+    "Scope new-performance denial assertions to subject_kind <> tenant; existing authorised company-wide objective reads remain intact.",
+    "Replace tiny legacy-fixture comparisons with full archived-row/original-column comparison and explicit no-backfill assertions."
+  ],
+  "priorAttempts": [
+    {
+      "run": "v1",
+      "result": "fixture_duplicate_profile",
+      "containerRemoved": true
+    },
+    {
+      "run": "v2",
+      "result": "fixture_count_included_existing_authorised_company_measurements",
+      "containerRemoved": true
+    }
+  ],
+  "limitations": [
+    "No hosted changes, actual provider requests, real staff scoring, pay decision or signed-in acceptance.",
+    "The first three production prerequisites are rehearsed; later calendar, correction, collector, authority, receipt, operator and connector changes still require inclusion and combined acceptance.",
+    "Preservation covers original archived columns/rows and sequence values; the pg_net omissions and current production state remain separate recovery gates.",
+    "Only declared historical defaults were added: existing measures remain tenant-scoped and old work snapshots remain unknown."
+  ]
+}

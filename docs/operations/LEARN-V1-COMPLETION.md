@@ -7,6 +7,22 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — measurement and work-history prerequisites pass combined production-archive rehearsal.**
+The first three production-specific packages now install together offline. Tests
+on the real restored schema passed validated measurement append/replay/correction,
+human review, team-transfer coverage, handoff identity handling, ownership-time
+calculation and incomplete evidence. Unresolved ownership stays unavailable rather
+than becoming a low score. New staff facts deny viewer and foreign-owner/operator
+access while retaining existing company-wide objective behavior.
+
+All original values in 1,591,576 rows and five sequence states match, including
+the 14,452 old work-history rows. Added columns retain old tenant-wide measurement
+scope and leave historical work snapshots unknown. Synthetic fixtures rolled back
+and the disposable database was removed. No hosted system changed. Remaining
+calendar/correction/collector/authority/receipt updates and operator/connector
+packages still need production reconciliation and complete release acceptance.
+[Combined measurement/work evidence](evidence/learn-production-measurements-rehearsal-2026-10-12.json).
+
 **12 October — production metadata and foundation/scoring rules pass combined offline rehearsal.**
 The second production-specific candidate retains the existing foundation and
 View-As tables and audits declared tenant relationships before adding guards and

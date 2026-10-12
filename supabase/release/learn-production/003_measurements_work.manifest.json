@@ -1,0 +1,102 @@
+{
+  "version": "learn-production-measurements-work/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+  "priorSha256": "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/release/learn-test/006_measurements_reviews.sql",
+      "sha256": "8a1b32fd0a1896946a7a6f79dd3598eabfec237ca418a4fab6d3b7ee155a15e8"
+    },
+    {
+      "path": "supabase/release/learn-test/007_work_capture_collectors.sql",
+      "sha256": "d70e2cab5866488310f0907c203fb11796dc175ad3223640d3a2ecd437f64ff5"
+    }
+  ],
+  "existingTables": [
+    "contribution_states",
+    "intelligence_objects",
+    "measurements",
+    "metric_definitions",
+    "metric_directions",
+    "object_state_history",
+    "objective_constraints",
+    "objective_health",
+    "objective_health_statuses",
+    "objective_link_relations",
+    "objective_links",
+    "objective_metrics",
+    "objective_reason_codes",
+    "objective_statuses",
+    "objective_types",
+    "objective_verification_states",
+    "objectives"
+  ],
+  "newFunctions": [
+    "learn_metric_scope_guard",
+    "learn_performance_append",
+    "learn_performance_review",
+    "learn_performance_insert_guard",
+    "learn_member_group_covers",
+    "learn_work_history_immutable",
+    "learn_work_snapshot",
+    "learn_capture_work_change",
+    "learn_work_capture_baseline",
+    "learn_work_history_read",
+    "learn_work_handoffs_collect",
+    "learn_handoff_owner",
+    "learn_work_residence_collect"
+  ],
+  "newTables": [
+    "learn_performance_reviews",
+    "learn_work_measurement_runs"
+  ],
+  "newSequences": [
+    "learn_work_capture_sequence"
+  ],
+  "extendedTables": {
+    "metric_definitions": [
+      "measurement_scope"
+    ],
+    "measurements": [
+      "subject_kind",
+      "subject_id",
+      "policy_version_id",
+      "policy_id",
+      "policy_revision",
+      "metric_key",
+      "sample_count",
+      "covered_count",
+      "eligible_count",
+      "source_through",
+      "review_state",
+      "exclusions",
+      "supersedes",
+      "group_ids",
+      "request_payload",
+      "change_reason"
+    ],
+    "object_state_history": [
+      "work_before",
+      "work_after",
+      "transition_verb",
+      "capture_kind",
+      "capture_sequence"
+    ]
+  },
+  "privilegeChanges": [
+    "Existing tenant-wide objective reads and writes retain their original grants/policies.",
+    "New staff-performance rows have owner/admin same-tenant read restrictions and validated adapter-only writes.",
+    "Direct public/anonymous/authenticated work-history mutations and service-role truncation are revoked; existing service DML is retained."
+  ],
+  "limitations": [
+    "This captures forward observations only; existing history receives no invented ownership snapshots.",
+    "Later collector, calendar, corrections, authority and receipt fixes still need inclusion in the full production candidate.",
+    "No hosted execution, historical scoring, real-source measurement or promotion approval."
+  ]
+}

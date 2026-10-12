@@ -133,7 +133,41 @@ This is rule configuration/publication acceptance, not proof of real performance
 measurements or pay decisions. Measurement collectors, governed work, operator
 and connector packages still need production reconciliation and combined rehearsal.
 
-### Remaining acceptance requirements
+### Measurement and work prerequisites rehearsed offline
+
+The third package, [003_measurements_work.sql](../../supabase/release/learn-production/003_measurements_work.sql),
+now passes an ordered offline rehearsal after packages 001 and 002. Its SHA-256 is
+`d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27`.
+It preserves the existing objective schema/registry rows/guards, extends three
+tables for performance evidence and forward work capture, and adds review and
+collection receipts. Existing company-wide objective access remains unchanged;
+new staff-performance reads are restricted to the same tenant's owners/admins.
+Direct browser work-history writes and privileged truncation are removed so the
+captured ledger can remain evidence. Existing service-role history DML remains.
+
+Synthetic journeys on the real restored schema passed append/replay/conflict,
+correction and human review, team-transfer coverage, alias-aware handoffs,
+ownership-time calculation and insufficient-evidence handling. An unresolved
+owner produces a null measure with incomplete coverage. Direct service-role
+self-confirmation and viewer/foreign-owner/foreign-OpenFolk staff access were
+denied. The original fixtures needed two production-aware corrections: reusing
+profiles created by the Auth trigger and distinguishing existing authorised
+company measurements from newly restricted staff facts. Production code and
+triggers were not bypassed to make the fixtures pass.
+
+All original columns/values in 1,591,576 rows and five original sequences matched.
+The comparison explicitly projects original columns for the three extended tables:
+three measurements, nine metric definitions and 14,452 work-history rows. Old
+measurements retain tenant scope; old work rows receive no fabricated snapshots
+or capture sequence. Synthetic data rolled back; only the three candidate receipts
+remained in the offline database before it was removed. Wrong target, catalog drift,
+late-failure rollback and duplicate rejection also passed.
+
+See [measurement/work evidence](evidence/learn-production-measurements-rehearsal-2026-10-12.json).
+Later collector, calendar, corrections, authority and receipt fixes must still
+be included before any full release or current-behavior acceptance claim.
+
+### Outstanding release gates
 
 - Resolve existing TEST access approvals and verify signed-in customer and
   OpenFolk journeys on the matching protected frontend: reset/sign-in, source
