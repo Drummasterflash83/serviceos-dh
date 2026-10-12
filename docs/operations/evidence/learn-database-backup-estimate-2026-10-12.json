@@ -1,0 +1,63 @@
+{
+  "contract": "learn-database-backup-estimate/1",
+  "calculatedAt": "2026-10-12T07:06:25.503Z",
+  "currency": "USD",
+  "region": "eu-west-2",
+  "pricing": {
+    "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3/current/eu-west-2/index.json",
+    "observedAt": "2026-10-12T07:06:25.503Z",
+    "publicationDate": "2026-09-28T23:04:16Z",
+    "version": "20260928230416",
+    "rates": {
+      "storage": {
+        "sku": "DV3FSFEQ3QM4J6VP",
+        "usage": "EUW2-TimedStorage-ByteHrs",
+        "unit": "GB-Mo",
+        "usd": 0.024,
+        "effectiveDate": "2026-09-01T00:00:00Z"
+      },
+      "put": {
+        "sku": "CXT6934AJ2W6U8P9",
+        "usage": "EUW2-Requests-Tier1",
+        "unit": "Requests",
+        "usd": 0.0000053,
+        "effectiveDate": "2026-09-01T00:00:00Z"
+      },
+      "get": {
+        "sku": "3D99223WSVTX96UP",
+        "usage": "EUW2-Requests-Tier2",
+        "unit": "Requests",
+        "usd": 4.2e-7,
+        "effectiveDate": "2026-09-01T00:00:00Z"
+      }
+    }
+  },
+  "sourceSnapshotAt": "2026-10-12T06:37:26.256528+00:00",
+  "measured": {
+    "archive": 197303039,
+    "netSupplement": 587743,
+    "sourceInventory": 62654,
+    "exportReport": 1349,
+    "totalBytes": 197954785,
+    "gib": 0.1843597600236535
+  },
+  "planning": {
+    "bytesPerSnapshot": 268435456,
+    "snapshotsPerDay": 1,
+    "storageRateAt30RetainedSnapshotsPerMonth": 0.18,
+    "storageRateAt365RetainedSnapshotsPerMonth": 2.19,
+    "putListAllowance1000PerMonth": 0.0053,
+    "getHeadAllowance1000PerMonth": 0.00042,
+    "sourceEgress30ExportsGB": 8.05306368,
+    "sourceEgressIfEntirelyOverQuota": 0.7247757311999999
+  },
+  "egressSource": "https://supabase.com/docs/guides/platform/manage-your-usage/egress",
+  "assumptions": [
+    "Storage figures are monthly run rates at the stated retained volume, not first-month invoices. No automatic expiry; cost accumulates.",
+    "256 MiB includes planning headroom, not measured encrypted output or a guaranteed growth bound.",
+    "Uncached Supabase egress uses $0.09/GB only above shared quota; remaining quota is unverified.",
+    "Excludes restore-download network charges, hosted runner/monitoring, existing subscriptions, taxes, conversion and engineering. No free credits assumed.",
+    "Initial proposal provisions storage and bounded backup/restore only. Dependable unattended daily scheduling needs separate verified runtime.",
+    "Existing account-wide $5 alert is not a spending cap; delivery must still be verified."
+  ]
+}

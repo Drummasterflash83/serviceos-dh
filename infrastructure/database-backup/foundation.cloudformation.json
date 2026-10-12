@@ -1,0 +1,364 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "PROPOSAL: OpenFolk London encrypted database backup and two scoped machine users. No keys, scheduler, source grants or data transfer.",
+  "Metadata": {
+    "Scope": "Whole production project, not a tenant-filtered export. Operator-only recovery.",
+    "ClientEncryption": "Runner must use age public-recipient encryption before upload; S3 cannot validate this.",
+    "Retention": "30-day governance lock; no automatic deletion. Privileged administrators may bypass governance.",
+    "Activation": "Requires owner approval before deploying this stack or creating machine keys."
+  },
+  "Rules": {
+    "Destination": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::AccountId"
+              },
+              "235099643372"
+            ]
+          },
+          "AssertDescription": "Verified OpenFolk account only."
+        },
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::Region"
+              },
+              "eu-west-2"
+            ]
+          },
+          "AssertDescription": "London only."
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "Database": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "BucketName": "openfolk-serviceos-database-235099643372-eu-west-2",
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "IgnorePublicAcls": true,
+          "BlockPublicPolicy": true,
+          "RestrictPublicBuckets": true
+        },
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "ObjectLockEnabled": true,
+        "ObjectLockConfiguration": {
+          "ObjectLockEnabled": "Enabled",
+          "Rule": {
+            "DefaultRetention": {
+              "Mode": "GOVERNANCE",
+              "Days": 30
+            }
+          }
+        },
+        "Tags": [
+          {
+            "Key": "OpenFolkPurpose",
+            "Value": "database-backup"
+          },
+          {
+            "Key": "SourceProject",
+            "Value": "tgbnakbxwcqjeimygroz"
+          }
+        ]
+      }
+    },
+    "DatabasePolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Bucket": {
+          "Ref": "Database"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "RequireTLS",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2",
+                "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2/*"
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            },
+            {
+              "Sid": "RequireSSES3OnWrites",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:PutObject",
+              "Resource": "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2/*",
+              "Condition": {
+                "StringNotEquals": {
+                  "s3:x-amz-server-side-encryption": "AES256"
+                }
+              }
+            },
+            {
+              "Sid": "RequireCreateOnlyWrites",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:PutObject",
+              "Resource": "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2/*",
+              "Condition": {
+                "Null": {
+                  "s3:if-none-match": "true"
+                },
+                "Bool": {
+                  "s3:ObjectCreationOperation": "true"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "WriterPolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "Description": "Create and verify encrypted project snapshots; no deletion or retention bypass.",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetBucketVersioning",
+                "s3:GetEncryptionConfiguration",
+                "s3:GetBucketObjectLockConfiguration",
+                "s3:GetBucketPublicAccessBlock",
+                "s3:GetBucketPolicy",
+                "s3:GetBucketOwnershipControls"
+              ],
+              "Resource": "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:ListBucket",
+                "s3:ListBucketVersions"
+              ],
+              "Resource": "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2",
+              "Condition": {
+                "StringLike": {
+                  "s3:prefix": "projects/tgbnakbxwcqjeimygroz/*"
+                }
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:GetObjectVersion",
+                "s3:GetObjectRetention",
+                "s3:PutObject"
+              ],
+              "Resource": "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2/projects/tgbnakbxwcqjeimygroz/*"
+            },
+            {
+              "Effect": "Deny",
+              "Action": [
+                "s3:Delete*",
+                "s3:BypassGovernanceRetention",
+                "s3:PutObjectRetention",
+                "s3:PutObjectLegalHold",
+                "s3:PutBucket*",
+                "s3:PutEncryptionConfiguration",
+                "s3:PutLifecycleConfiguration"
+              ],
+              "Resource": [
+                "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2",
+                "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2/*"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "RestorePolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "Description": "Read encrypted project snapshots only; no writes or retention bypass.",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetBucketVersioning",
+                "s3:GetEncryptionConfiguration",
+                "s3:GetBucketObjectLockConfiguration",
+                "s3:GetBucketPublicAccessBlock",
+                "s3:GetBucketPolicy",
+                "s3:GetBucketOwnershipControls"
+              ],
+              "Resource": "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:ListBucket",
+                "s3:ListBucketVersions"
+              ],
+              "Resource": "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2",
+              "Condition": {
+                "StringLike": {
+                  "s3:prefix": "projects/tgbnakbxwcqjeimygroz/*"
+                }
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:GetObjectVersion",
+                "s3:GetObjectRetention"
+              ],
+              "Resource": "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2/projects/tgbnakbxwcqjeimygroz/*"
+            },
+            {
+              "Effect": "Deny",
+              "Action": [
+                "s3:Put*",
+                "s3:Delete*",
+                "s3:BypassGovernanceRetention",
+                "s3:RestoreObject"
+              ],
+              "Resource": [
+                "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2",
+                "arn:aws:s3:::openfolk-serviceos-database-235099643372-eu-west-2/*"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "Writer": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "Path": "/serviceos/database-backup/",
+        "ManagedPolicyArns": [
+          {
+            "Ref": "WriterPolicy"
+          }
+        ],
+        "PermissionsBoundary": {
+          "Ref": "WriterPolicy"
+        },
+        "Tags": [
+          {
+            "Key": "OpenFolkPurpose",
+            "Value": "database-backup"
+          },
+          {
+            "Key": "SourceProject",
+            "Value": "tgbnakbxwcqjeimygroz"
+          },
+          {
+            "Key": "AccessPurpose",
+            "Value": "writer"
+          }
+        ]
+      }
+    },
+    "Restore": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "Path": "/serviceos/database-backup/",
+        "ManagedPolicyArns": [
+          {
+            "Ref": "RestorePolicy"
+          }
+        ],
+        "PermissionsBoundary": {
+          "Ref": "RestorePolicy"
+        },
+        "Tags": [
+          {
+            "Key": "OpenFolkPurpose",
+            "Value": "database-backup"
+          },
+          {
+            "Key": "SourceProject",
+            "Value": "tgbnakbxwcqjeimygroz"
+          },
+          {
+            "Key": "AccessPurpose",
+            "Value": "restore"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "BucketName": {
+      "Value": {
+        "Ref": "Database"
+      }
+    },
+    "ProjectPrefix": {
+      "Value": "projects/tgbnakbxwcqjeimygroz/"
+    },
+    "WriterUserName": {
+      "Value": {
+        "Ref": "Writer"
+      }
+    },
+    "RestoreUserName": {
+      "Value": {
+        "Ref": "Restore"
+      }
+    },
+    "WriterUserArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Writer",
+          "Arn"
+        ]
+      }
+    },
+    "RestoreUserArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Restore",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

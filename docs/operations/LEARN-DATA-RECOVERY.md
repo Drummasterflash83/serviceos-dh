@@ -1,5 +1,11 @@
 # LEARN data recovery coverage
 
+The remaining independent database destination, key escrow, access, cost and
+restore sequence are specified in the
+[database backup proposal](../../infrastructure/database-backup/README.md).
+Its infrastructure is validated locally; activation, package/transfer verification
+and dependable recurrence remain incomplete. No new destination has received data.
+
 ## Complete native capture, restore and Vault check — 12 October, latest state
 
 The 06:37:26 UTC snapshot completed export at 06:44:21 UTC: 197,303,039 bytes,

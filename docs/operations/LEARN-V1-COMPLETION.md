@@ -7,6 +7,17 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — independent database backup infrastructure prepared locally.**
+A separate OpenFolk London project-scoped bucket and bounded Writer/Restore
+identities are specified in a generated CloudFormation template. Local policy
+checks and CloudFormation lint pass. The proposal specifies encryption before
+upload, separate 1Password key escrow, 30-day governance retention with no
+automatic deletion, measured size and freshly checked public pricing. No resource,
+credential, upload or schedule has been created. Executable package encryption,
+transfer and independent restore still need verification before the combined
+activation approval request. Dependable daily operation and full-service recovery
+remain open. [Exact proposal](../../infrastructure/database-backup/README.md).
+
 **12 October — fresh complete database capture, isolated restore and Vault decryption passed.**
 The 06:37:26 UTC read-only snapshot produced a 197.3 MB archive plus both operational
 pg_net tables. Offline comparison matched 1,594,994 archived rows across 299 data
