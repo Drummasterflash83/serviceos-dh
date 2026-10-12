@@ -99,3 +99,12 @@ in the same authenticated Arc session; “Choose a new password” and both pass
 fields were visibly confirmed. Chris must enter/submit his password and save it
 in 1Password. No second email was sent. Password-update completion and operator
 navigation remain pending; the numeric-link correction still needs TEST deployment.
+
+At 10:25 UTC the correction was deployed to the protected stable TEST alias from
+Git commit `e8d1690e0255bd0364c855f8e603f487f4b65e54`. Chris confirmed completing
+his password update; Arc visibly showed his OpenFolk client directory and the
+Drummonds TEST controller. The corrected numeric reset URL was also checked in
+that session and showed the password form; no second update was submitted.
+The report-status refresh on Drummonds' controller failed with a visible warning
+and remains to diagnose. Full business-information access is still unfinished.
+[Latest verified evidence](evidence/learn-password-reset-test-2026-10-12.json).

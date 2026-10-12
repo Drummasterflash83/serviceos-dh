@@ -7,6 +7,20 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 10:25 UTC — TEST operator sign-in and reset-link fix verified.**
+Chris received the recovery email, completed his password update and reached the
+OpenFolk client directory. Arc confirmed the real operator identity and navigation
+into Drummonds' TEST controller. Fixed a route-validation bug that treated numeric
+`reset=1` as ordinary sign-in and skipped password selection. Eight recovery tests,
+TypeScript and the remote build pass. The protected stable TEST alias now serves
+`e8d1690`; its numeric reset URL was visibly verified to show the password form.
+No second email or agent-submitted password change occurred.
+
+Cross-client business-information readers remain unfinished. The Drummonds
+controller also disclosed a failed open-report refresh; this still needs diagnosis.
+Neither finding is hidden by the successful sign-in. Production is unchanged.
+[Recovery and browser evidence](evidence/learn-password-reset-test-2026-10-12.json).
+
 **12 October, 10:14 UTC — approved ongoing TEST operator account active.**
 Chris's existing TEST login is unbanned with one non-expiring
 `platform.controlplane.admin` grant and an exact audit record. Its original

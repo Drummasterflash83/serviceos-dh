@@ -67,17 +67,22 @@ hostnames, and no custom domain or automatic Git linkage was added.
 The stable staging entry is
 [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
 It points to immutable preview
-[serviceos-learn-test-mbyf9aogk-allkin.vercel.app](https://serviceos-learn-test-mbyf9aogk-allkin.vercel.app),
-built remotely from GitHub commit `f7718dd0d35c161fdf6c77d9744de449bb24baca`
-and observed READY at **08:09 UTC on 12 October**. This update adds corrected
-Connections status distinctions and navigation to existing LEARN input controls.
-The exact TEST binding and stable-alias target were verified; both hostnames
-remain protected. Positive signed-in acceptance is still pending. See the
-[latest frontend evidence](operations/evidence/learn-connections-frontend-test-2026-10-12.json). It includes password recovery,
-snapshot freshness, projection/identity review, queued processing messages, draft
-advice and bounded card-evidence explanation. Compatible dependency-lock updates
-passed TypeScript/build; production-dependency audit is clear, with nine development
-tool findings retained for review.
+[serviceos-learn-test-jxwq3z1qz-allkin.vercel.app](https://serviceos-learn-test-jxwq3z1qz-allkin.vercel.app),
+built remotely from GitHub commit `e8d1690e0255bd0364c855f8e603f487f4b65e54`
+and observed READY at **10:23 UTC on 12 October**. This update fixes password-reset
+URL validation (`reset=1` is parsed as a number by the router). The stable alias,
+TEST backend binding and both hostnames' protection were verified. Eight recovery
+tests and full TypeScript checks passed. Chris completed his password update;
+Arc confirmed his operator directory and Drummonds TEST controller. The corrected
+numeric URL visibly rendered the password form. Full client-information access
+and the controller's failed open-report refresh remain unfinished.
+See [reset and signed-in evidence](operations/evidence/learn-password-reset-test-2026-10-12.json).
+
+The deployment retains the prior Connections status distinctions and navigation
+to LEARN input controls, snapshot freshness, projection/identity review, queued
+processing messages, draft advice and bounded card-evidence explanation. Compatible
+dependency-lock updates passed TypeScript/build; production-dependency audit is
+clear, with nine development tool findings retained for review.
 The backend now has release **079**, worker **v20**, voicemail importer **v2**, private playback **v1**,
 card refresh **v2**, and Workspace discovery **v3**. Release 079 installed a
 read-only Microsoft operator-status RPC at **02:41 UTC on 12 October**, preserving
