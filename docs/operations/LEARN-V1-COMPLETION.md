@@ -7,6 +7,24 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 02:05 BST — all archived database rows verified against a fresh offline restore.**
+Native COPY comparison matched **1,591,576 rows in 299 tables and all five archived
+sequence values**, including row contents and duplicates while allowing physical
+row order to differ. The original archive SHA-256 was verified first. All 302
+table definitions' owner/RLS flags and extension versions also matched; no-actor
+reads returned zero emails/recordings and all 2,882 recording paths resolved.
+The offline destination was removed. No production requests or external uploads
+were made. Five parser tests and an actual synthetic archive/restore check passed;
+deliberately altering a restored row was correctly rejected.
+
+This closes archive-to-restored-row fidelity, **not source capture completeness or
+full service recovery**. The original source hash scan remains incomplete and the
+two omitted pg_net operational tables remain uncaptured. Vault decryption,
+application/Auth restart, controlled capture resumption and durable independent
+database backup operation remain open. The prior combined AWS audio sample stays
+valid with its separate snapshot-time limits.
+[Evidence](evidence/learn-native-archive-comparison-2026-10-12.json).
+
 **12 October, 01:53 BST — restored database and independent recording backup reconciled.**
 All 2,882 restored recording references match the AWS manifest by tenant, object ID,
 path, size, version and recording ID; six unreferenced files remain retained.
@@ -1427,7 +1445,14 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   recording-copy scope under OpenFolk ownership; implement encrypted independent files plus database recovery.
   Verify bytes and isolated restore/playback, record duration and recovery point.
   [Recovery plan](LEARN-DATA-RECOVERY.md). The complete observed file inventory and one manifest-selected
-  audio restore are verified; database restore and recurring operation remain open.
+  audio restore are verified. As of 12 October, the real native database archive
+  restores offline and all 1,591,576 archived rows/five sequence values compare
+  successfully. All 2,882 audio references match the independent manifest and one
+  linked AWS file fully decodes. Remaining: complete source capture (two pg_net
+  tables omitted), Vault decryption, application/Auth recovery, durable independent
+  database backups and verified recurring operation.
+  [Real archive comparison](evidence/learn-native-archive-comparison-2026-10-12.json).
+  Earlier synthetic preparation:
   At 13:51 UTC, a reusable offline logical-restore destination passed a separate
   synthetic PostgreSQL dump/restore: retained row/pointer fingerprints, tenant RLS,
   cross-tenant foreign keys, an imported active cron job prevented from running,

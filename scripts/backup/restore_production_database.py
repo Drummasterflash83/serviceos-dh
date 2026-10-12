@@ -11,6 +11,7 @@ import sys
 import time
 from pathlib import Path
 from database_restore_sandbox import RecoveryError, RestoreSandbox
+from native_copy_fingerprints import archive_fingerprints, restored_fingerprints, compare_native_data
 
 ROOT = Path('.verification-results/production-database-export-2026-10-12')
 IMAGE = 'public.ecr.aws/supabase/postgres:17.6.1.141'
@@ -34,8 +35,8 @@ def write_private(path, value):
     os.replace(tmp, path)
 
 
-def run(*, combined_audio=False):
-    run_name = 'restore-combined' if combined_audio else 'restore-v3'
+def run(*, combined_audio=False, compare_native=False):
+    run_name = 'restore-native-comparison' if compare_native else ('restore-combined' if combined_audio else 'restore-v3')
     report_path = ROOT / (run_name + '-report.json')
     # An interrupted prior restore must be inspected, not silently restarted.
     fd = os.open(ROOT / (run_name + '-started'), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
@@ -102,6 +103,15 @@ def run(*, combined_audio=False):
             write_private(report_path, report)
             print(json.dumps({'stage': report['state']}), flush=True)
             report['restoreReceipt'] = target.restore_native_archive(archive)
+            if compare_native:
+                report['state'] = 'comparing_native_archive_rows'
+                write_private(report_path, report)
+                print(json.dumps({'stage': report['state']}), flush=True)
+                archived_data = archive_fingerprints(archive, docker=target.docker, image=target.image_id)
+                restored_data = restored_fingerprints(target)
+                write_private(ROOT / 'native-archive-fingerprints.json', archived_data)
+                write_private(ROOT / 'native-restored-fingerprints.json', restored_data)
+                report['nativeDataComparison'] = compare_native_data(archived_data, restored_data)
             if export.get('netSupplement'):
                 supplement = ROOT / 'net-tables.sql'
                 raw = supplement.read_bytes()
@@ -209,6 +219,6 @@ def run(*, combined_audio=False):
 
 
 if __name__ == '__main__':
-    if sys.argv[1:] not in ([], ['--combined-audio']):
+    if sys.argv[1:] not in ([], ['--combined-audio'], ['--compare-native']):
         raise SystemExit('Unsupported restore option')
-    run(combined_audio=sys.argv[1:] == ['--combined-audio'])
+    run(combined_audio=sys.argv[1:] == ['--combined-audio'], compare_native=sys.argv[1:] == ['--compare-native'])

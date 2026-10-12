@@ -1,6 +1,30 @@
 # LEARN data recovery coverage
 
-## Latest recovery state — 11 October 2026, 11:53 UTC
+## Latest database recovery state — 12 October 2026, 01:05 UTC
+
+The existing native archive was restored again into a fresh offline database.
+Streaming PostgreSQL COPY comparison matched **all 1,591,576 archived rows across
+299 tables and five sequence values**. Row contents, duplicates, table identity
+and column order are compared; physical row order is ignored. Source rows remain
+opaque in memory and only private hash/count metadata is retained. The archive's
+SHA-256, all 302 table definitions' ownership/RLS flags and extension versions
+also passed. Unauthenticated-context readers returned zero retained inputs and
+all 2,882 recording paths resolved. The disposable database was removed.
+
+Five parser tests and a separate actual synthetic archive/restore verify the
+comparison, including rejection of a deliberately altered row. This run made no
+production requests or external uploads. It took 65.89 seconds, which is an
+offline verification time, not a full-service recovery-time commitment.
+
+**Scope:** archive-to-restored-row fidelity is verified. The original source
+fingerprint pass remains incomplete; the archive omits two operational pg_net
+tables. This does not prove complete source capture, Vault decryption, application/
+Auth restart, controlled capture resumption or durable independent database backup
+operation. The earlier independent-audio sample proved all manifest relationships
+and one fully decoded recording at separate snapshot times.
+[Comparison evidence](evidence/learn-native-archive-comparison-2026-10-12.json).
+
+## Latest recording recurrence state — 11 October 2026, 11:53 UTC
 
 The revised daily runner completed a fresh observed inventory: all **2,888 files /
 601,004,261 bytes**, 2,882 recording references, no missing pointers, and six

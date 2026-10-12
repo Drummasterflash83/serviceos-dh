@@ -80,3 +80,26 @@ different database/file snapshot times, not an atomic recovery point. The script
 do not invoke production, create accounts, load the Writer credential or send
 recordings to another service. See the
 [combined evidence](../../docs/operations/evidence/learn-combined-database-audio-restore-2026-10-12.json).
+
+## Offline archive-content comparison
+
+`restore_production_database.py --compare-native` has a separate exclusive
+`restore-native-comparison-started` journal. The completed 12 October run must not
+be repeated by deleting its marker. It verifies the archive digest, restores into
+the existing offline boundary, then compares original `pg_restore --data-only`
+COPY output with a fresh `pg_dump --data-only` of that restored database.
+
+`native_copy_fingerprints.py` streams opaque native row bytes, sorts per-row SHA-256
+hashes within each table (preserving duplicates), and compares table names, column
+order, row counts, hashes and sequence values. It rejects unknown framing,
+truncation, duplicate tables and exceeded bounds. SQL-looking row content remains
+data and is never executed by this parser. Raw row output is not logged or saved;
+hash/count metadata stays in private ignored files. PostgreSQL stderr is privately
+drained and discarded, with safe fixed failure messages.
+
+All 299 archived tables/1,591,576 rows and five sequence values matched. A real
+synthetic native restore also passed and a deliberately altered row was rejected.
+This proves restoration fidelity to the archive without another production scan;
+it cannot establish capture of the two omitted pg_net tables or recover Vault's
+external encryption key. See the
+[sanitized evidence](../../docs/operations/evidence/learn-native-archive-comparison-2026-10-12.json).

@@ -4,7 +4,8 @@ import os
 import tempfile
 import time
 from pathlib import Path
-from database_restore_sandbox import RestoreSandbox
+from database_restore_sandbox import RecoveryError, RestoreSandbox
+from native_copy_fingerprints import archive_fingerprints, restored_fingerprints, compare_native_data
 from verify_database_restore_isolation import SCHEMA, FINGERPRINT
 
 IMAGE = 'public.ecr.aws/supabase/postgres:17.6.1.141'
@@ -40,6 +41,8 @@ with tempfile.TemporaryDirectory(prefix='serviceos-native-recovery-') as folder:
             if role not in target_roles:
                 target.query('create role "' + role.replace('"', '""') + '" nologin;')
         receipt = target.restore_native_archive(archive)
+        archived_data = archive_fingerprints(archive, docker=target.docker, image=target.image_id)
+        native_comparison = compare_native_data(archived_data, restored_fingerprints(target))
         target.restore_sql_files([supplement])
         time.sleep(3)
         restored_queue = target.query('select count(*) from net.http_request_queue;')
@@ -55,9 +58,17 @@ with tempfile.TemporaryDirectory(prefix='serviceos-native-recovery-') as folder:
         assert target.query('set role recovery_reader;'
                             'select count(*) from recovery_fixture.recordings;') == '0'
         containment = target.verify_boundary()
+        target.query("update recovery_fixture.recordings set transcript_state='tampered' where id=11;")
+        try:
+            compare_native_data(archived_data, restored_fingerprints(target))
+        except RecoveryError:
+            tamper_detected = True
+        else:
+            raise AssertionError('Native comparison accepted a changed archived row')
     assert source.cleaned and target.cleaned
     print(json.dumps({'scope': 'synthetic-native-whole-database-restore',
                       'sourceAndTargetRemoved': True, 'fingerprintsMatch': True,
                       'tenantRlsVerified': True, 'enabledCronDidNotRun': True,
                       'queuedNetworkRequestDidNotRun': True,
+                      'nativeComparison': native_comparison, 'changedRowDetected': tamper_detected,
                       'archive': receipt, 'containment': containment}))

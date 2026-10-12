@@ -1,0 +1,64 @@
+{
+  "version": "learn-native-archive-row-comparison/1",
+  "checkedAt": "2026-10-12T01:06:14.307209+00:00",
+  "scope": "all native archived COPY rows and sequence values compared with a fresh isolated restore",
+  "sourceArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "comparison": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "tableCatalogMatched": true,
+  "extensionVersionsMatched": true,
+  "noActorRows": {
+    "emails": 0,
+    "recordings": 0
+  },
+  "recordingRelationships": {
+    "recordings": 2882,
+    "withObjectPath": 2882,
+    "missingStorageMetadata": 0
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "elapsedSeconds": 65.89,
+  "productionRequests": 0,
+  "productionWrites": false,
+  "externalDataUploads": 0,
+  "sourceComparisonBaselineAvailable": false,
+  "knownArchiveOmissions": [
+    "net._http_response",
+    "net.http_request_queue"
+  ],
+  "tests": {
+    "parserTestsPassed": 5,
+    "syntheticNativeArchiveComparisonPassed": true,
+    "deliberatelyChangedRowRejected": true,
+    "syntheticContainersRemoved": true
+  },
+  "limits": [
+    "Comparison proves fidelity to the completed archive, not completeness of every source object",
+    "Two operational pg_net tables were omitted by the original capture",
+    "Live source full-fingerprint baseline was not completed; no new production scan was run",
+    "Vault decryption, application/Auth restart and capture resumption remain unverified",
+    "Durable independent encrypted database backup operation remains unfinished"
+  ]
+}
