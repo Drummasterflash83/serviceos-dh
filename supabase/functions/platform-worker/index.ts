@@ -150,6 +150,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       "email.gmail_sync",
       "email.workspace_sync",
       "email.workspace_backfill",
+      "email.microsoft_discovery",
+      "email.microsoft_sync",
     ].includes(jobType);
     const captureClaim = { tenantId, jobId: id, claimedBy: job.claimed_by as string, attempt };
     if (captureSource && !durableEmail) {
@@ -270,7 +272,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (
           !durableEmail ||
           q.jobId !== id ||
-          !["completed", "failed"].includes(q.state) ||
+          !["completed", "failed", "waiting", "retrying"].includes(q.state) ||
           (q.state === "completed") !== r.success
         ) {
           counts.unconfirmed += 1;
@@ -286,9 +288,21 @@ Deno.serve(async (req: Request): Promise<Response> => {
               status: "healthy",
               metadata: { job_type: jobType, records: r.recordsProcessed ?? 0 },
             });
+        } else if (q.state === "waiting") {
+          counts.waiting += 1;
+        } else if (q.state === "retrying") {
+          counts.retrying += 1;
+          if (component && q.historicalReceipt !== true)
+            await recordHealthCheck(admin, {
+              tenantId,
+              component,
+              status: "degraded",
+              error: r.error?.message ?? "Email capture is waiting to retry.",
+              metadata: { job_type: jobType, code: r.error?.code ?? "capture_retrying" },
+            });
         } else {
           counts.dead_lettered += 1;
-          if (component)
+          if (component && q.historicalReceipt !== true)
             await recordHealthCheck(admin, {
               tenantId,
               component,

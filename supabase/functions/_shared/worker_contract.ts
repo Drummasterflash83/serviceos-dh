@@ -51,7 +51,7 @@ export interface WorkerHandlerResult {
   /** Durable email engine outcome. Never run generic completion/failure again;
    * unknown acknowledgement leaves the lease available for later recovery. */
   queueOutcome?: {
-    state: "completed" | "failed" | "unconfirmed";
+    state: "completed" | "failed" | "waiting" | "retrying" | "unconfirmed";
     jobId: string;
     historicalReceipt?: boolean;
   };

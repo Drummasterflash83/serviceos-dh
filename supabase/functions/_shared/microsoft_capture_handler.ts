@@ -1,11 +1,10 @@
 import { createMicrosoftCapturePorts } from "./microsoft_capture_ports.ts";
 import { runMicrosoftCaptureJob } from "./microsoft_capture_job.ts";
-import { MicrosoftMailError, uuid } from "./microsoft_graph_transport.ts";
+import { MicrosoftMailError, object, uuid } from "./microsoft_graph_transport.ts";
 import { MicrosoftCredentialError } from "./microsoft_oauth.ts";
 import type { WorkerHandlerContext, WorkerHandlerResult } from "./worker_contract.ts";
 
-/** Prepared, not registered: lease-fenced failure/pause settlement is still needed.
- * The engine settles completion and successor creation atomically. Unknown
+/** The engine settles completion and successor creation atomically. Unknown
  * commit/settlement acknowledgements must never be overwritten by the worker. */
 export async function handleMicrosoftCapture(
   ctx: WorkerHandlerContext,
@@ -60,27 +59,64 @@ export async function handleMicrosoftCapture(
       },
     };
   } catch (error) {
-    if (error instanceof MicrosoftMailError)
+    let code: string =
+      error instanceof MicrosoftMailError
+        ? error.code
+        : error instanceof MicrosoftCredentialError && error.code !== "credential_save_unconfirmed"
+          ? error.code
+          : "capture_unconfirmed";
+    let retryAfter = error instanceof MicrosoftMailError ? error.retryAfterSeconds : null;
+    if (
+      retryAfter !== null &&
+      (!Number.isSafeInteger(retryAfter) || retryAfter < 0 || retryAfter > 31536000)
+    ) {
+      // Never shorten an unsupported provider delay or allow lease recovery to
+      // issue another request early. Hold this job for an operator instead.
+      code = "retry_delay_requires_review";
+      retryAfter = null;
+    }
+    try {
+      const { data, error: stopError } = await ctx.supabaseAdmin.rpc("learn_microsoft_job_stop", {
+        p_tenant: ctx.tenantId,
+        p_job: ctx.jobId,
+        p_worker: ctx.claim.claimedBy,
+        p_claim: ctx.claim.attemptCount,
+        p_code: code,
+        p_retry_after: retryAfter,
+      });
+      if (
+        stopError ||
+        !object(data) ||
+        data.contract !== "microsoft-job-stop/1" ||
+        data.tenantId !== ctx.tenantId ||
+        data.jobId !== ctx.jobId ||
+        !["waiting", "retrying", "failed"].includes(data.state) ||
+        data.code !== (data.state === "waiting" ? "capture_paused" : code) ||
+        data.attemptCount !== ctx.claim.attemptCount - (data.state === "waiting" ? 1 : 0) ||
+        typeof data.historicalReceipt !== "boolean" ||
+        (data.state === "failed"
+          ? data.availableAt !== null
+          : typeof data.availableAt !== "string" || !Number.isFinite(Date.parse(data.availableAt)))
+      )
+        throw Error();
       return {
         success: false,
+        queueOutcome: {
+          state: data.state,
+          jobId: ctx.jobId,
+          historicalReceipt: data.historicalReceipt,
+        },
+        result: { available_at: data.availableAt, coverage_complete: false },
         error: {
-          code: `microsoft_${error.code}`,
-          message: error.message,
-          retryable: ["fetch_failed", "throttled", "provider_unavailable"].includes(error.code),
-          ...(error.retryAfterSeconds !== null
-            ? { retryAfterSeconds: error.retryAfterSeconds }
-            : {}),
+          code: `microsoft_${data.code}`,
+          message: `Microsoft mail capture: ${data.code}.`,
+          retryable: data.state === "retrying",
+          ...(retryAfter !== null ? { retryAfterSeconds: retryAfter } : {}),
         },
       };
-    if (error instanceof MicrosoftCredentialError && error.code !== "credential_save_unconfirmed")
-      return {
-        success: false,
-        error: {
-          code: `microsoft_${error.code}`,
-          message: error.message,
-          retryable: error.code === "refresh_failed",
-        },
-      };
+    } catch {
+      /* A missing/ambiguous stop receipt leaves the lease for recovery. */
+    }
     return {
       success: false,
       queueOutcome: { state: "unconfirmed", jobId: ctx.jobId },

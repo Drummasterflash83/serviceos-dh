@@ -20,6 +20,7 @@
 import type { WorkerHandler, WorkerHandlerError } from "../worker_contract.ts";
 
 import { handleSlackHistorySync } from './slack_history.ts';
+import { handleMicrosoftCapture } from "../microsoft_capture_handler.ts";
 import { handlePhoneProcessPending } from "./phone_process_pending.ts";
 import { handleInteractionsSync } from "./interactions_sync.ts";
 import { handleIdentityResolve } from "./identity_resolve.ts";
@@ -53,6 +54,8 @@ export type { WorkerHandlerContext, WorkerHandlerError, WorkerHandlerContinuatio
  * connector registers here with no worker change.
  */
 export const WORKER_HANDLERS: Record<string, WorkerHandler> = {
+  "email.microsoft_discovery": handleMicrosoftCapture,
+  "email.microsoft_sync": handleMicrosoftCapture,
   "slack.history_sync": handleSlackHistorySync,
   "phone.process_pending": handlePhoneProcessPending,
   "interactions.sync": handleInteractionsSync,

@@ -65,6 +65,8 @@ export const captureSourceForJob = (jobType: string): CaptureSource | null =>
     "email.workspace_sync",
     "email.workspace_backfill",
     "email.mailbox_discovery",
+    "email.microsoft_discovery",
+    "email.microsoft_sync",
   ].includes(jobType)
     ? "email"
     : ["slack.history_sync", "slack.thread_sync"].includes(jobType)

@@ -265,13 +265,27 @@ test("revocation after refresh blocks returning a credential and omitted replace
     safe("credential_unavailable"),
   );
 });
-test("prepared handler preserves unknown settlements, retry delays and explicit incomplete coverage", async () => {
+test("handler preserves unknown settlements, retry delays and explicit incomplete coverage", async () => {
   const ctx: any = {
     tenantId: claim.tenantId,
     jobId: claim.jobId,
     claim: { claimedBy: claim.claimedBy, attemptCount: 1 },
     jobType: "email.microsoft_discovery",
-    supabaseAdmin: {},
+    supabaseAdmin: {
+      rpc: async (_name: string, args: any) => ({
+        data: {
+          contract: "microsoft-job-stop/1",
+          tenantId: claim.tenantId,
+          jobId: claim.jobId,
+          state: args.p_code === "throttled" ? "retrying" : "recover",
+          code: args.p_code,
+          attemptCount: 1,
+          availableAt: new Date(now + 120000).toISOString(),
+          historicalReceipt: false,
+        },
+        error: null,
+      }),
+    },
     payload: { accessToken: "PRIVATE-untrusted" },
   };
   const deps: any = {
@@ -305,4 +319,78 @@ test("prepared handler preserves unknown settlements, retry delays and explicit 
     throw Error("PRIVATE-provider");
   };
   assert.equal(JSON.stringify(await handleMicrosoftCapture(ctx, deps)).includes("PRIVATE"), false);
+});
+test("foreign or malformed stop receipts cannot be reported as settled by the Microsoft worker", async () => {
+  const base = {
+    contract: "microsoft-job-stop/1",
+    tenantId: claim.tenantId,
+    jobId: claim.jobId,
+    state: "retrying",
+    code: "throttled",
+    attemptCount: 1,
+    availableAt: new Date(now + 120000).toISOString(),
+    historicalReceipt: false,
+  };
+  for (const patch of [
+    { tenantId: uid(99) },
+    { jobId: uid(99) },
+    { attemptCount: 0 },
+    { state: "completed" },
+    { code: "PRIVATE" },
+    { availableAt: null },
+    { historicalReceipt: "false" },
+  ]) {
+    const ctx: any = {
+      tenantId: claim.tenantId,
+      jobId: claim.jobId,
+      claim,
+      jobType: "email.microsoft_sync",
+      payload: {},
+      supabaseAdmin: { rpc: async () => ({ data: { ...base, ...patch }, error: null }) },
+    };
+    const r = await handleMicrosoftCapture(ctx, {
+      ports: () => ({ accessToken: async () => "unused" }),
+      run: async () => {
+        throw new MicrosoftMailError("throttled", 120);
+      },
+    });
+    assert.equal(r.queueOutcome?.state, "unconfirmed");
+    assert.equal(JSON.stringify(r).includes("PRIVATE"), false);
+  }
+});
+test("unsupported provider retry delays are held for review rather than shortened", async () => {
+  const ctx: any = {
+    tenantId: claim.tenantId,
+    jobId: claim.jobId,
+    claim,
+    jobType: "email.microsoft_sync",
+    payload: {},
+    supabaseAdmin: {
+      rpc: async (_name: string, args: any) => {
+        assert.equal(args.p_code, "retry_delay_requires_review");
+        assert.equal(args.p_retry_after, null);
+        return {
+          data: {
+            contract: "microsoft-job-stop/1",
+            tenantId: claim.tenantId,
+            jobId: claim.jobId,
+            state: "failed",
+            code: args.p_code,
+            attemptCount: 1,
+            availableAt: null,
+            historicalReceipt: false,
+          },
+          error: null,
+        };
+      },
+    },
+  };
+  const result = await handleMicrosoftCapture(ctx, {
+    ports: () => ({ accessToken: async () => "unused" }),
+    run: async () => {
+      throw new MicrosoftMailError("throttled", 31536001);
+    },
+  });
+  assert.equal(result.queueOutcome?.state, "failed");
+  assert.equal(result.error?.retryable, false);
 });

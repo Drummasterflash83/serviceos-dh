@@ -3,7 +3,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
-import { webcrypto } from "node:crypto";
+import { webcrypto, createHash } from "node:crypto";
+import { Buffer } from "node:buffer";
 import vm from "node:vm";
 import ts from "typescript";
 const tenant = "00000000-0000-4000-8000-000000000001";
@@ -31,6 +32,21 @@ async function run({
   const db = {
     rpc: async (name, args) => {
       calls.push({ name, args });
+      if (name === "voicemail_schedule_tick")
+        return {
+          data: {
+            state: "idle",
+            coverage_complete: false,
+            historical_receipt: false,
+            routes_attempted: 0,
+            routes_failed: 0,
+            pages: 0,
+            rows_examined: 0,
+            jobs_enqueued: 0,
+            observed_at: new Date().toISOString(),
+          },
+          error: null,
+        };
       if (name === "platform_jobs_claim")
         return {
           data: [
@@ -95,13 +111,25 @@ async function run({
       throw Error("Unexpected RPC " + name);
     },
     from: () => {
+      let currentWrite;
       const q = {
         update: (v) => {
-          writes.push(v);
+          currentWrite = { ...v, filters: [] };
+          writes.push(currentWrite);
           return q;
         },
-        eq: () => q,
-        lt: () => q,
+        eq: (key, value) => {
+          currentWrite?.filters.push(["eq", key, value]);
+          return q;
+        },
+        neq: (key, value) => {
+          currentWrite?.filters.push(["neq", key, value]);
+          return q;
+        },
+        lt: (key, value) => {
+          currentWrite?.filters.push(["lt", key, value]);
+          return q;
+        },
         gt: () => q,
         maybeSingle: async () => ({
           data: phoneSettlementMissing ? null : { id: "job" },
@@ -116,6 +144,10 @@ async function run({
   const context = vm.createContext({
     URL,
     URLSearchParams,
+    TextEncoder,
+    TextDecoder,
+    atob,
+    btoa,
     Headers,
     Request,
     Response,
@@ -193,17 +225,29 @@ async function run({
     );
     cache.set(file, m);
     await m.link((spec, parent) =>
-      spec === "https://esm.sh/@supabase/supabase-js@2.45.4"
-        ? synthetic("supabase", { createClient: () => db })
-        : spec.startsWith(".")
-          ? load(
-              process.env.WORKER_HANDLER_READBACK_ROOT &&
-                parent.identifier === entry &&
-                spec.startsWith("../_shared/")
-                ? resolve(dirname(parent.identifier), "functions", spec.slice(3))
-                : resolve(dirname(parent.identifier), spec),
-            )
-          : Promise.reject(Error("Unexpected dependency")),
+      spec === "node:buffer"
+        ? synthetic("node:buffer", { Buffer })
+        : spec === "node:crypto"
+          ? synthetic("node:crypto", { createHash })
+          : spec === "node:dns/promises"
+            ? synthetic("node:dns/promises", {
+                Resolver: class {
+                  constructor() {
+                    throw Error("Unexpected DNS in worker control test");
+                  }
+                },
+              })
+            : spec === "https://esm.sh/@supabase/supabase-js@2.45.4"
+              ? synthetic("supabase", { createClient: () => db })
+              : spec.startsWith(".")
+                ? load(
+                    process.env.WORKER_HANDLER_READBACK_ROOT &&
+                      parent.identifier === entry &&
+                      spec.startsWith("../_shared/")
+                      ? resolve(dirname(parent.identifier), "functions", spec.slice(3))
+                      : resolve(dirname(parent.identifier), spec),
+                  )
+                : Promise.reject(Error("Unexpected dependency: " + spec)),
     );
     return m;
   }
@@ -368,6 +412,44 @@ test("settled email failure is counted without a second generic failure update",
     r.writes.some((w) => w.status === "dead_letter"),
     false,
   );
+});
+test("Microsoft owned completion, waiting, retry and unknown outcomes never invoke generic queue writes", async () => {
+  for (const jobType of ["email.microsoft_discovery", "email.microsoft_sync"]) {
+    for (const [state, counter] of [
+      ["completed", "succeeded"],
+      ["waiting", "waiting"],
+      ["retrying", "retrying"],
+      ["failed", "dead_lettered"],
+      ["unconfirmed", "unconfirmed"],
+    ]) {
+      const r = await run({ allowed: false, jobType, queueOutcome: { state, jobId: "job" } });
+      assert.equal(r.result[counter], 1);
+      assert.equal(r.work, 1);
+      assert.equal(
+        r.calls.some(
+          (c) => c.name === "learn_capture_admission" || c.name === "learn_capture_defer_job",
+        ),
+        false,
+      );
+      assert.equal(
+        r.writes.some((w) =>
+          w.filters.some(([op, key, value]) => op === "eq" && key === "id" && value === "job"),
+        ),
+        false,
+      );
+      assert.equal(r.health.length, ["retrying", "failed"].includes(state) ? 1 : 0);
+    }
+  }
+});
+test("historical Microsoft retry or failure receipts do not claim new health evidence", async () => {
+  for (const state of ["retrying", "failed"]) {
+    const r = await run({
+      jobType: "email.microsoft_sync",
+      queueOutcome: { state, jobId: "job", historicalReceipt: true },
+    });
+    assert.equal(r.health.length, 0);
+    assert.equal(r.result.unconfirmed, 0);
+  }
 });
 test("an email engine pause still defers its owned lease without failure accounting", async () => {
   const r = await run({ jobType: "email.workspace_sync", childPaused: true });

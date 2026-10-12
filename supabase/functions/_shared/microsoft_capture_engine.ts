@@ -1,5 +1,5 @@
-/** One journaled source page per queue job. The credential path is verified
- * locally; worker failure settlement and hosted acceptance precede registration. */
+/** One journaled source page per queue job. Local worker registration uses the
+ * credential and owned settlement paths; hosted/real-mailbox acceptance is separate. */
 import { object, uuid, id, MicrosoftMailError } from "./microsoft_graph_transport.ts";
 import { MicrosoftCredentialError } from "./microsoft_oauth.ts";
 import {

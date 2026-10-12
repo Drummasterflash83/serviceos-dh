@@ -1,17 +1,19 @@
 # Microsoft 365 mail input
 
-## Current status — credential path verified locally; connector not enabled
+## Current status — worker registered and verified locally; connector not enabled
 
 On 12 October, the server-side credential port and refresh RPCs were added and
 verified against isolated PostgreSQL with synthetic credentials. The complete
-local suite now has **66 passing tests**, plus actual SQL/reader/settlement checks
+Microsoft suite now has **68 passing tests**, plus actual SQL/reader/settlement checks
 and strict worker/Microsoft TypeScript checks. This extends the earlier hosted
-projection rehearsal below; the new credential migration has **not** had a hosted
+projection rehearsal below; the new credential and worker migrations have **not** had a hosted
 full-schema rehearsal or persistent deployment.
 
-The prepared `microsoft_capture_handler.ts` is deliberately **not registered**:
-lease-fenced failure/retry/pause settlement and worker integration remain to be
-completed. No credentials, consent, accounts or schedules were created or enabled.
+`microsoft_capture_handler.ts` is now registered for `email.microsoft_discovery`
+and `email.microsoft_sync`. Its completion, failure, retry and pause handling
+passed isolated actual-SQL acceptance; 20 actual generic-worker control-flow tests
+also pass. This is a source-code registration, **not a hosted worker deployment**.
+No real credentials, consent, accounts or schedules were created or enabled.
 
 On 11 October 2026, the first Microsoft Graph mail delta reader was implemented in
 `supabase/functions/_shared/microsoft_mail_page.ts`. Folder discovery and resumable traversal are now implemented in
@@ -223,11 +225,12 @@ verify input mutation isolation and error redaction. The other 38 transport and
 folder tests remain passing.
 
 This page engine does not itself settle queue rows or enqueue successors. The job
-wrapper below now provides that boundary. It is not registered in `WORKER_HANDLERS`:
-live credential resolution, worker registration and recurring scheduling remain open.
+wrapper below provides that boundary; the 12 October credential and failure paths
+now connect it to `WORKER_HANDLERS`. Hosted release and real consent remain open.
 The locally verified folder-to-message dispatch below completes the initial fan-out.
 The supplied token port must revalidate account/binding/credential authority
-immediately before token acquisition. No real Microsoft token port exists yet.
+immediately before token acquisition. The implemented port is verified with synthetic
+credentials, not an authorized real Microsoft mailbox.
 
 ## Atomic queue completion — locally verified, not deployed
 
@@ -451,8 +454,43 @@ The isolated database exercises actual SQL, credential port, reader and queue
 settlement together, including paused/revoked access, cross-company/client/mailbox
 denial, stale writes and revocation during refresh. This is synthetic provider
 acceptance with minimal database dependencies. Real consent, hosted schema/HTTP
-acceptance, controller credential health and worker failure settlement are open.
+acceptance and controller credential health are open. Worker failure settlement
+is now implemented as described below.
 [Local evidence](evidence/learn-microsoft-credentials-local-2026-10-12.json).
+
+## Worker retry, pause and recovery — local only, 12 October
+
+`20261101480000_learn_microsoft_worker_failures.sql` adds private immutable stop
+receipts and `learn_microsoft_job_stop`. Only the exact current worker, attempt,
+live lease and Microsoft job definition may change an unsettled queue row.
+Responses and persisted errors contain bounded codes, never provider bodies.
+An exact already-saved stop can be read back as historical evidence; a late worker
+cannot replace a completed outcome or act for a newer claim.
+
+Temporary failures use the existing attempt budget and backoff, respecting longer
+provider `Retry-After` delays. Unsupported delays exceeding the queue's one-year
+bound are held for review instead of silently shortened. Permanent failures and
+exhausted retries stop for review while preserving all checkpoints and source data.
+Expired deltas are **not** automatically reset; operator resynchronization remains
+to be implemented. Pausing after claim returns the attempt and queues a later check.
+The additive claim filter prevents fresh paused work from consuming an attempt,
+while retained pages can still be claimed for completion.
+
+A saved source page always takes precedence over a proposed failure or pause.
+An uncertain page acknowledgement leaves that row available for its original
+completion/recovery path. An uncertain stop acknowledgement is reported as
+unconfirmed. The generic worker consumes the confirmed durable outcome without
+calling its generic completion/failure updater a second time. Historical receipts
+do not create new health observations, and Microsoft completion does not claim
+mailbox-wide coverage or fresh whole-Email health.
+
+Actual isolated SQL/handler/credential/reader acceptance covers provider retry then
+canonical email publication, lost stop replies, pause without provider calls,
+same-worker resume, permanent errors, exhausted retries, source-page recovery while
+paused/revoked, stale claims, rollback and receipt access boundaries. The VM tests
+execute the generic worker's real control flow with synthetic handler/queue ports;
+they do not establish an Edge deployment or real network execution.
+[Worker evidence](evidence/learn-microsoft-worker-local-2026-10-12.json).
 
 ## Remaining work to deliver the connector
 
@@ -468,11 +506,11 @@ acceptance, controller credential health and worker failure settlement are open.
    Its traversal follows Microsoft's
    [root folder listing](https://learn.microsoft.com/en-us/graph/api/user-list-mailfolders?view=graph-rest-1.0)
    and [child folder listing](https://learn.microsoft.com/en-us/graph/api/mailfolder-list-childfolders?view=graph-rest-1.0).
-3. Complete the worker lifecycle around the implemented recurring message queue: revalidated
-   hosted acceptance of the server-side credential ports, lease-fenced failure/retry
-   and pause settlement, then registration and module-aware scheduling around
-   the implemented settlement and physical-folder dispatch. The full-schema rollback
-   rehearsal passes; HTTP RPC/worker acceptance and persistent release remain pending. Complete expired-delta and deleted-folder recovery without discarding old
+3. Rehearse the credential and worker-failure migrations against the full hosted
+   schema, then verify HTTP RPC/worker behavior and persistently release the complete
+   worker with module-aware scheduling. Earlier projection/discovery full-schema
+   rehearsals passed; they do not cover the new credential and failure migrations.
+   Complete expired-delta and deleted-folder recovery without discarding old
    source evidence. Repeat discovery is implemented and rehearsed, but not installed
    or activated in a hosted worker.
 4. Materialize shared email/interaction evidence by mailbox plus immutable message
@@ -498,6 +536,7 @@ node --test supabase/functions/_shared/microsoft_mail_page.test.ts \
   supabase/functions/_shared/microsoft_capture_job.test.ts \
   supabase/functions/_shared/microsoft_credentials.test.ts
 node scripts/verify/learn-worker-typecheck.mjs
+node --experimental-vm-modules --test scripts/verify/learn-capture-queue-handler.test.mjs
 ```
 
 Tests exercise the exported reader with synthetic provider responses, including

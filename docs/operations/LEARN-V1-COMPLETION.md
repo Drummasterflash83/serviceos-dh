@@ -7,6 +7,26 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — Microsoft worker retry/pause/recovery verified locally.**
+Both Microsoft job types are now registered in source. The actual handler,
+credential port, reader and isolated SQL prove retry-after delays followed by one
+canonical email, pause without token/provider access or retry consumption, and
+replacement completion of a retained page while capture is paused and the account
+revoked. Stop receipts are private and immutable; late workers and stale claims
+cannot overwrite a newer result. Unknown acknowledgements stay unconfirmed.
+The generic worker consumes durable outcomes without a second queue mutation or
+fresh health claims from historical evidence. Local verification comprises 76
+focused email/Microsoft/control tests, 20 generic-worker tests, strict TypeScript
+and the actual isolated PostgreSQL harness.
+
+No hosted worker or schema was changed. The next integration gate is full-schema
+TEST rehearsal of the new credential and worker-failure migrations, then hosted
+RPC/worker acceptance. Consent/identity provisioning, controller coverage and
+authorized real-mailbox testing remain; Microsoft is not shown as a working
+adapter. Drummonds' applicable email source remains Google, with its existing
+credential-destination approval unresolved.
+[Worker evidence](evidence/learn-microsoft-worker-local-2026-10-12.json).
+
 **12 October — Microsoft credential-to-email path verified locally.**
 The new server credential RPCs enforce company, mailbox, client application,
 current job/lease, enabled binding and capture permission. The refresh port saves
@@ -1474,7 +1494,7 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   tenant-wide cards without preserving its owner/manager access rules.
   [Discovery and acceptance evidence](LEARN-VOICEMAIL-DISCOVERY.md).
 - [ ] **Microsoft:** authorised tenant/mailbox setup and token lifecycle;
-  persistent hosted release; real canonical/card acceptance; worker/controller registration,
+  persistent hosted worker release; real canonical/card acceptance; controller integration,
   recurring folder discovery activation, expiry recovery and real-mailbox acceptance.
   At 13:31 UTC, all five source-journal/dispatch/recurring-queue migrations passed
   a full-schema hosted TEST rollback rehearsal, preserving all 113 datasets and
@@ -1484,8 +1504,11 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   Microsoft mailbox has been identified for Drummonds.
   On 12 October the credential port/refresh RPCs passed local actual-SQL synthetic
   acceptance through canonical email and interactions; 66 focused tests and strict
-  type checks pass. Consent identity provisioning, hosted credential rehearsal,
-  failure/retry/pause settlement and worker registration remain open.
+  type checks passed. The subsequent worker checkpoint registered both job types,
+  verified owned failure/retry/pause settlement and brought the Microsoft suite to
+  68 tests plus 20 generic-worker tests. Consent identity provisioning and hosted
+  credential/worker rehearsal remain open.
+  [Worker evidence](evidence/learn-microsoft-worker-local-2026-10-12.json).
   [Credential evidence](evidence/learn-microsoft-credentials-local-2026-10-12.json).
   [Evidence](evidence/learn-microsoft-incremental-2026-10-11.json).
   At 14:59 UTC, the canonical message projection also passed a full-schema TEST

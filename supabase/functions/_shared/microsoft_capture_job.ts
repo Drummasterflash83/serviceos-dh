@@ -1,5 +1,5 @@
-/** Durable completion around the page engine. Registration awaits real credential
- * ports, recurring scheduling/controller integration and hosted acceptance. */
+/** Durable completion around the page engine, used by the registered worker
+ * handler. Hosted credential/worker release and real-mailbox acceptance are separate. */
 import { uuid, object } from "./microsoft_graph_transport.ts";
 import {
   runMicrosoftCapturePage,

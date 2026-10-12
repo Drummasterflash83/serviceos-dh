@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-12",
+  "state": "passed",
+  "scope": "Local Microsoft handler/SQL integration and generic-worker control flow; not hosted acceptance",
+  "migration": "20261101480000_learn_microsoft_worker_failures.sql",
+  "registeredJobTypes": ["email.microsoft_discovery", "email.microsoft_sync"],
+  "checks": {
+    "microsoftFocusedTests": 68,
+    "gmailAndSharedCaptureRegressionTests": 8,
+    "genericWorkerControlFlowTests": 20,
+    "strictWorkerAndMicrosoftTypecheck": "passed",
+    "actualIsolatedPostgresIntegration": "passed"
+  },
+  "verified": [
+    "Migration rollback removes new stop objects and restores the prior queue claim function",
+    "Claim filtering is additive and retains the existing queue definition",
+    "Actual handler retries a temporary provider failure after Retry-After and subsequently publishes one canonical email",
+    "A failed stop acknowledgement stays unconfirmed; exact receipt replay is historical",
+    "Pause after claim obtains no credential or provider page and restores the retry attempt",
+    "Fresh paused queued work is not claimed; same-worker resume is distinct from an earlier pause receipt",
+    "Permanent provider faults, exhausted retries and unsupported provider delays are held for review",
+    "Existing checkpoints are retained after failures",
+    "A stored source page takes precedence over a failure; replacement completion works while paused/revoked without another token or provider request",
+    "Wrong company, human roles and expired/replaced claims cannot settle a job",
+    "Late transaction failure rolls back the queue transition and receipt together",
+    "Stop receipts are private and immutable",
+    "Generic worker counts owned completion/wait/retry/failure/unknown outcomes without a second per-job mutation",
+    "Historical receipts and partial Microsoft completion do not claim new whole-Email health evidence"
+  ],
+  "limitations": [
+    "Database integration uses minimal dependencies in network-isolated PostgreSQL with synthetic credentials and Graph responses",
+    "Generic-worker VM checks execute real control flow using synthetic queue/handler/health ports",
+    "Credential and worker-failure migrations still require hosted full-schema and HTTP acceptance",
+    "Consent identity provisioning, controller coverage, real mailbox acceptance and release are incomplete",
+    "Expired delta recovery stops for review; automated resynchronization is not implemented"
+  ],
+  "hostedChanges": false,
+  "productionChanges": false,
+  "realProviderRequests": 0,
+  "credentialsCreated": false,
+  "adapterImplemented": false,
+  "mailboxCoverage": "unverified"
+}

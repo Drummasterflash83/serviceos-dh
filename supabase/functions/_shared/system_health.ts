@@ -30,6 +30,8 @@ const JOB_COMPONENT: Record<string, HealthComponent> = {
   "email.gmail_sync": "email_gmail",
   "email.workspace_sync": "email_sync",
   "email.workspace_backfill": "email_sync",
+  "email.microsoft_discovery": "email_sync",
+  "email.microsoft_sync": "email_sync",
   "email.mailbox_discovery": "email_sync",
   "intelligence.observe": "intelligence_processing",
   "intelligence.ingest_interaction": "intelligence_processing",
