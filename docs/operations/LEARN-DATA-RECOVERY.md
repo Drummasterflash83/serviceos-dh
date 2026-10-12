@@ -200,6 +200,56 @@ approval boundary.
 
 ## Verified observation — 11 October 2026
 
+### Real native database restore — 12 October, 00:44 UTC
+
+**Actual production records restored locally; full service recovery is not yet
+accepted.** A native custom-format pg_dump completed against a read-only
+repeatable-read snapshot observed at 00:25:21 UTC. The archive is 196,872,981 bytes,
+SHA-256 `b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd`.
+It remains in an ignored mode-0700 local recovery directory with mode-0600 files;
+it was not uploaded to GitHub or an independent backup destination.
+
+The archive restored without ignored SQL errors into a fresh container using
+production's exact PostgreSQL 17.6.1.141 image. Role attributes/memberships were
+recreated locally without database-role passwords. All 302 table definitions'
+owner/RLS flags and extension versions matched. Restored counts: 18,598 emails,
+4,328 calls, 2,882 recordings, 2,882 transcript rows, 3,170 cards and zero canonical
+jobs. Every recording path resolves to restored Storage metadata. No-actor reads
+returned zero emails/recordings. Counts describe this restored snapshot, not
+complete historical provider coverage.
+
+The source comparison pass hit a statement timeout after the archive completed.
+It did not finish the source fingerprint baseline; no all-row equality claim is
+made. Management SQL temporarily returned HTTP 544/timeouts, then recovered.
+At 00:44:25 UTC health passed, the temporary credential was expired, no CLI sessions
+remained, and all export/restore containers were absent. Review production load
+before repeating a full fingerprint scan. The exporter now checkpoints completed
+comparisons and the current table privately instead of losing that evidence on
+failure.
+
+The archive has 299 table-data entries. It omits `net._http_response` and
+`net.http_request_queue`; the partitioned `realtime.messages` parent has no separate
+physical rows. Explicit pg_dump table selection also omits these extension-owned
+rows. The supplemental attempt stopped before credential refresh when Management
+SQL timed out. Future export code uses native COPY in the same snapshot for both
+tables and records the queue sequence separately (sequences are non-transactional).
+**That improved production capture has not run.** This archive's two omissions
+remain explicit.
+
+pg_net requires preloading to restore its schema. The destination now loads
+`pg_cron,pg_net`, but sets `max_worker_processes=0`, keeps cron launch disabled,
+points pg_net at an absent database, and retains Docker network `none`, no mounts
+or ports and disabled logs. Synthetic tests prove restored active cron/queued HTTP
+work does not run. The existing isolation suite also passes tenant RLS, cross-tenant
+foreign keys, failure redaction and cleanup. The real restore/checks took 53.24
+seconds; that is not a full-service recovery-time measurement.
+
+Remaining: complete source comparison and network-table capture; Vault root-key
+and decryption recovery; matching and playing independently restored audio against
+this database; application/Auth startup and controlled capture resumption; and
+independently retained encrypted database backups with scheduled restore checks.
+[Sanitized evidence](evidence/learn-real-native-restore-2026-10-12.json).
+
 ### Recovery authentication investigation — 12 October 2026
 
 **00:19 UTC: authenticated read-only production connection verified.** The

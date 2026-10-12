@@ -7,6 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 01:44 BST — real production database archive restored offline; full recovery acceptance remains open.**
+A native 196,872,981-byte archive from a read-only production snapshot restored
+successfully into the matching PostgreSQL 17.6.1.141 image. All 302 table definitions'
+ownership/RLS flags and extension versions matched the captured inventory.
+Restored data includes 18,598 emails, 4,328 calls, 2,882 recordings and 3,170 cards;
+every recording path has matching restored Storage metadata. Without an
+authenticated actor, email/recording readers returned zero rows. The target had
+no network, mounts or published ports, zero worker slots and cron disabled; it
+was removed after checks. Production health passed afterward, the temporary
+credential expired and no CLI sessions remained.
+
+**Limits:** the full source-fingerprint pass hit a statement timeout, so all-row
+source/restore equality is unproven. This archive omitted two operational pg_net
+tables. Future export code captures them through native COPY before slower checks,
+but that improvement was not applied to this snapshot. Vault decryption, combined
+database/audio recovery, application restart and durable independent database
+backups remain open. No production promotion occurred.
+[Evidence](evidence/learn-real-native-restore-2026-10-12.json).
+
 **12 October, 01:19 BST — production recovery login verified without resetting the owner password.**
 Read-only metadata showed an existing expired Supabase CLI role. A bounded refresh
 of that same role enabled a fully verified TLS client connection and an explicit

@@ -31,7 +31,7 @@ separately because it does not terminate pre-existing sessions.
 The completed 12 October run verified client-to-pooler TLS and read-only SQL.
 The PostgreSQL `pg_stat_ssl` field separately reported no TLS on the pooler's
 upstream connection. Do not conflate these two boundaries or claim both were
-encrypted. A native export and offline restore have not yet been executed.
+encrypted. The later native export/restore result is described below.
 
 Private journals under `.verification-results/database-login-preflight/` use
 exclusive creation. **Do not remove an existing journal merely to retry.** Read
@@ -41,5 +41,26 @@ attempts are retained; a later reviewed run must use a separate journal.
 
 See [the recovery runbook](../../docs/operations/LEARN-DATA-RECOVERY.md). Passing
 this connection check is not a database restore, recording restore, or release
-approval. Actual database export and isolated restore still need their own
-integrity, relationship and application checks.
+approval. Export, restore, integrity and application checks are separate gates.
+
+## Native archive and offline restore
+
+The real 12 October production archive restored in a disposable local database.
+See the [result and remaining gaps](../../docs/operations/evidence/learn-real-native-restore-2026-10-12.json).
+
+- `export-production-database.mjs` pins production, refreshes its existing temporary
+  CLI login and uses a verified TLS client/read-only snapshot. Archive and comparison
+  files stay private. Native COPY handling for pg_net's omitted table data is
+  prepared, but that improvement has not yet run against production.
+- `restore_production_database.py` validates the archive digest, recreates role
+  metadata without role passwords and restores into a new offline container
+  matching production. An incomplete source comparison is reported explicitly.
+- `verify_database_native_restore.py` exercises native archive/COPY restore with
+  synthetic tenant records, an active cron job and a queued HTTP request. Neither
+  scheduled action runs: all worker slots, cron launch and networking are disabled.
+
+Completed runs retain exclusive private journals. Do not remove markers to rerun
+them. A new capture needs a reviewed new run directory, bounded production load,
+complete comparison evidence and separate credential/session cleanup. The local
+archive is not the independently retained backup service. Vault decryption,
+external audio recovery and application resumption remain separate requirements.

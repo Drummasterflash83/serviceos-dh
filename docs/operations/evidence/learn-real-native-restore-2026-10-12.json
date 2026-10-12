@@ -1,0 +1,75 @@
+{
+  "version": "learn-real-native-restore/1",
+  "completedAt": "2026-10-12T00:44:25.301361+00:00",
+  "scope": "real production native archive restored into a disposable offline local database; full recovery acceptance remains incomplete",
+  "sourceProject": "tgbnakbxwcqjeimygroz",
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sourceSnapshotObservedAt": "2026-10-12T00:25:21.393518+00:00",
+  "sourceTransactionReadOnly": true,
+  "nativeDumpTableDataEntries": 299,
+  "restoredTableCatalogCount": 302,
+  "tableCatalogMatched": true,
+  "extensionVersionsMatched": true,
+  "sourceComparisonBaselineAvailable": false,
+  "sourceFingerprintsMatched": 0,
+  "restoredInputCounts": {
+    "customer_cards": 3170,
+    "email_messages": 18598,
+    "jobs": 0,
+    "phone_calls": 4328,
+    "phone_recordings": 2882,
+    "phone_transcripts": 2882
+  },
+  "recordingRelationships": {
+    "recordings": 2882,
+    "withObjectPath": 2882,
+    "missingStorageMetadata": 0
+  },
+  "noActorRows": {
+    "emails": 0,
+    "recordings": 0
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "imageId": "sha256:ba10e934f0a59990379f78ab9ed93926f1c291dd61a12fe4026f4202f1b89770",
+  "containerRemoved": true,
+  "restoreAndChecksElapsedSeconds": 53.24,
+  "productionCleanup": {
+    "observedAt": "2026-10-12T00:44:25.301361+00:00",
+    "healthy": true,
+    "cliExpired": true,
+    "remainingCliSessions": 0
+  },
+  "verification": {
+    "syntheticNativeArchiveRestore": true,
+    "syntheticTenantRls": true,
+    "restoredActiveCronDidNotRun": true,
+    "restoredQueuedHttpDidNotRun": true,
+    "existingSyntheticIsolationSuitePassed": true
+  },
+  "openGates": [
+    "Full source-snapshot comparison stopped after a statement timeout; native archive completed before this failure",
+    "This captured archive omits net._http_response and net.http_request_queue; prepared native COPY supplement was not executed in this capture",
+    "Vault root-key recovery and decryptability",
+    "Combined restored database and independently restored playable audio acceptance",
+    "Application/Auth service restart and controlled ingestion resumption",
+    "Durable independent database backup scheduling and operational ownership"
+  ],
+  "productionApplicationDataWritten": false,
+  "productionPromotion": false,
+  "privateDataCommittedToGit": false
+}

@@ -22,7 +22,14 @@ class RecoveryError(RuntimeError):
 
 
 class RestoreSandbox:
-    def __init__(self):
+    def __init__(self, *, image=IMAGE, private_diagnostics=None, network_extension=False):
+        if image not in (IMAGE, 'public.ecr.aws/supabase/postgres:17.6.1.141'):
+            raise RecoveryError('Unreviewed recovery image')
+        self.image = image
+        self.network_extension = network_extension
+        self.preloaded_libraries = 'pg_cron,pg_net' if network_extension else 'pg_cron'
+        self.private_diagnostics = private_diagnostics
+        self.failed_command_count = 0
         self.docker = shutil.which('docker') or '/usr/local/bin/docker'
         self.run_id = uuid.uuid4().hex
         self.name = 'serviceos-db-recovery-' + self.run_id
@@ -39,6 +46,14 @@ class RestoreSandbox:
         except (OSError, subprocess.TimeoutExpired):
             raise RecoveryError('Recovery container command unavailable or timed out') from None
         if result.returncode:
+            if self.private_diagnostics is not None:
+                self.failed_command_count += 1
+                # Optional caller-owned private file, never included in raised
+                # errors or console output. Each failure gets an exclusive file.
+                path = str(self.private_diagnostics) + '-' + self.run_id + '-' + str(self.failed_command_count) + '.log'
+                fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                with os.fdopen(fd, 'wb') as log:
+                    log.write(result.stderr)
             raise RecoveryError('Recovery container command failed; raw output withheld')
         return result.stdout
 
@@ -67,15 +82,23 @@ class RestoreSandbox:
         settings = self.query("select current_setting('cron.launch_active_jobs') || '|' || "
                               "current_setting('shared_preload_libraries') || '|' || "
                               "current_setting('listen_addresses');")
-        if settings != 'off|pg_cron|127.0.0.1':
+        if settings != 'off|' + self.preloaded_libraries + '|127.0.0.1':
             raise RecoveryError('Recovery scheduler or listener configuration changed')
+        if self.query("show max_worker_processes;") != '0':
+            raise RecoveryError('Recovery background worker slots are not disabled')
+        if self.network_extension and self.query(
+                "select current_setting('pg_net.database_name') || '|' || "
+                "exists(select 1 from pg_database where datname='serviceos_network_disabled')::text;") != 'serviceos_network_disabled|false':
+            raise RecoveryError('Network extension is not isolated from the restored database')
         return {'network': 'none', 'hostMounts': 0, 'publishedPorts': 0,
-                'cronLaunchActiveJobs': False, 'preloadedWorkers': ['pg_cron'],
+                'cronLaunchActiveJobs': False, 'preloadedLibraries': self.preloaded_libraries.split(','),
+                'maxWorkerProcesses': 0,
+                'networkWorkerDatabaseAbsent': self.network_extension,
                 'containerLogging': 'none'}
 
     def __enter__(self):
         try:
-            image = json.loads(self._run(['image', 'inspect', IMAGE]))[0]
+            image = json.loads(self._run(['image', 'inspect', self.image]))[0]
             self.image_id = image['Id']
             if image['Config'].get('Volumes'):
                 raise RecoveryError('Image would introduce persistent volumes')
@@ -88,7 +111,9 @@ class RestoreSandbox:
                 '--memory', '2g', '--cpus', '2', '--pids-limit', '256',
                 '-e', 'POSTGRES_HOST_AUTH_METHOD=trust', self.image_id,
                 'postgres', '-D', '/etc/postgresql',
-                '-c', 'shared_preload_libraries=pg_cron',
+                '-c', 'shared_preload_libraries=' + self.preloaded_libraries,
+                '-c', 'max_worker_processes=0',
+                '-c', 'pg_net.database_name=serviceos_network_disabled',
                 '-c', 'cron.launch_active_jobs=off',
                 '-c', 'listen_addresses=127.0.0.1',
                 '-c', 'log_min_error_statement=panic'])
@@ -167,6 +192,42 @@ class RestoreSandbox:
         if data_only:
             args.append('--data-only')
         return self._run(args, timeout=120)
+
+    def restore_native_archive(self, path):
+        """Replace only this newly created offline container's bootstrap DB.
+
+        The original native archive recreates its database and all contents.
+        No existing/external destination can be supplied. Failures are fatal;
+        the context manager removes the entire disposable destination.
+        """
+        self.verify_boundary()
+        with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as source:
+            before = os.fstat(source.fileno())
+            if not stat.S_ISREG(before.st_mode) or before.st_mode & 0o077:
+                raise RecoveryError('Native archive must be a private regular file (0600)')
+            if source.read(5) != b'PGDMP':
+                raise RecoveryError('Expected a native PostgreSQL custom archive')
+            source.seek(0)
+            digest = hashlib.sha256()
+            for chunk in iter(lambda: source.read(1024 * 1024), b''):
+                digest.update(chunk)
+            source.seek(0)
+            # Only the nonce-labelled, isolated container can reach this command.
+            self._run(['exec', self.name, 'psql', '-X', '-h', '127.0.0.1',
+                       '-U', 'supabase_admin', '-d', 'template1',
+                       '-v', 'ON_ERROR_STOP=1', '-c',
+                       'DROP DATABASE postgres WITH (FORCE);'])
+            self._run(['exec', '-i', self.name, 'pg_restore', '--exit-on-error',
+                       '--create', '-h', '127.0.0.1', '-U', 'supabase_admin',
+                       '-d', 'template1'], stdin=source, timeout=900)
+            after = os.fstat(source.fileno())
+            if (before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (
+                    after.st_size, after.st_mtime_ns, after.st_ctime_ns):
+                raise RecoveryError('Native archive changed during restore')
+            self.verify_boundary()
+            receipt = {'bytes': before.st_size, 'sha256': digest.hexdigest()}
+            self.restore_receipts.append(receipt)
+            return receipt
 
     def close(self):
         # Handle even an uncertain `docker run` reply by checking the exact nonce.
