@@ -1,0 +1,39 @@
+{
+  "version": "learn-commusoft-refresh-browser/1",
+  "observedAt": "2026-10-12T17:56:12.864Z",
+  "state": "synthetic_browser_flow_verified",
+  "hostedTestChanged": false,
+  "productionChanged": false,
+  "providerRequests": 0,
+  "sourceFiles": [
+    {
+      "path": "src/components/app/OperatorLearnInputs.tsx",
+      "sha256": "25e8ab75b16894ded795179c500f282f513932e1f43a26dcd17294c63ea3c310"
+    },
+    {
+      "path": "src/lib/learn-operator-inputs.ts",
+      "sha256": "b15b0910698f52fb87c2b786439a22a0da421ffe0e3905d50b536a6af93fb35e"
+    }
+  ],
+  "checks": {
+    "populatedReversedPeriodBlocked": true,
+    "scopeChangeClearsConfirmation": true,
+    "exactUtcBoundsRetained": true,
+    "lostReplyRetainsSavedRequest": true,
+    "receiptReadDoesNotResubmit": true,
+    "recordedApplyCalls": 1,
+    "olderBackendHidesUnsupportedControls": true,
+    "localDisplayTimeLabel": true
+  },
+  "fixture": {
+    "externalConnectionsBlockedByCsp": true,
+    "realData": false,
+    "credentials": false
+  },
+  "screenshotSha256": "f04d7f8a6a0be7f8f4f31aca1ce3eb78c3196d0e9ab44a23229cc7a688684ec5",
+  "limitations": [
+    "Uses actual React components with synthetic RPC responses; does not prove hosted SQL or real provider acceptance.",
+    "Native keyboard date changes were used because browser fill alone did not trigger the controlled date field.",
+    "Provider refresh completion in this fixture is synthetic, not a real import result."
+  ]
+}

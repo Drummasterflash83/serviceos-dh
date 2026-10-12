@@ -7,6 +7,24 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 17:54 UTC — recording refresh verified; browser recovery checked.**
+The approved backup now verifies all **2,950 files / 616,063,866 bytes** from the
+17:40 UTC inventory, with **2,944 recording references**, no missing referenced
+objects and no recording rows without storage pointers. Six unreferenced files
+remain retained. Recovery found all 2,950 immutable receipts and verified every
+destination byte and source reference before publishing its successful manifest.
+This is current file-backup evidence, not a new playback/database-restore test or
+proof of an always-on backup host. [Backup evidence](evidence/learn-recording-backup-refresh-2026-10-12.json).
+
+The actual Commusoft operator components passed an isolated browser flow:
+populated reversed date bounds stay blocked; changing bounds clears confirmation;
+exact UTC values survive a lost response and receipt recovery with **one** apply
+call. The older backend hides unsupported refresh controls. The observed local-time
+display is now labelled, and thrown transport errors produce a calm recovery
+instruction without exposing raw transport details. Thirteen input/outbox tests
+pass. These are synthetic browser checks, not a hosted date-filter acceptance.
+[Browser evidence](evidence/learn-commusoft-refresh-browser-2026-10-12.json).
+
 **12 October — bounded Commusoft refresh implemented and rehearsed locally.**
 Operators can prepare a fixed UTC update period. Its lower-inclusive and
 upper-exclusive bounds remain attached to the approval, credential permit,

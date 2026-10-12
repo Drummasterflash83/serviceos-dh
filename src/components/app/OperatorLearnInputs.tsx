@@ -650,9 +650,9 @@ export function OperatorLearnInputs({
                 <p>{inputAccountStatus(a, data.flags)}</p>
                 {a.updated_window && (
                   <p className="text-sm">
-                    Changed-record window: {stamp(a.updated_window.updatedFrom)} to{" "}
-                    {stamp(a.updated_window.updatedBefore)} (end excluded). This covers the selected
-                    period, not the full collection.
+                    Changed-record window (your local time): {stamp(a.updated_window.updatedFrom)}{" "}
+                    to {stamp(a.updated_window.updatedBefore)} (end excluded). This covers the
+                    selected period, not the full collection.
                   </p>
                 )}
                 <p className="text-sm">

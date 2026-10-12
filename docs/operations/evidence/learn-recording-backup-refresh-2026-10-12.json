@@ -1,0 +1,46 @@
+{
+  "version": "learn-recording-backup-refresh/1",
+  "observedAt": "2026-10-12T17:56:12.863Z",
+  "state": "inventory_verified",
+  "runId": "37eafbec-3bbc-4f1e-9a41-84185cf55f54",
+  "inventoryObservedAt": "2026-10-12T17:40:19.678Z",
+  "verifiedAt": "2026-10-12T17:54:01.131Z",
+  "inventorySha256": "453d01c08541022628328a74b78ef016e37dc261195aeafb5db0e563734c150e",
+  "objects": 2950,
+  "totalBytes": 616063866,
+  "recordingReferences": 2944,
+  "newObjectsCopied": 0,
+  "newBytesConsidered": 0,
+  "recoveredObjects": 0,
+  "existingReceipts": 2950,
+  "recoveredManifest": false,
+  "coverage": "verified_inventory_only",
+  "sourceSnapshot": "non_atomic",
+  "playback": "not_verified",
+  "databaseRestore": "not_verified",
+  "backupComplete": false,
+  "sourceReconciliation": {
+    "recordingRows": 2944,
+    "rowsWithoutStoragePointer": 0,
+    "unreferencedObjects": 6,
+    "missingObjectReferences": 0
+  },
+  "sourceUsage": {
+    "requests": 20726,
+    "requestBudget": 100000
+  },
+  "previousAttempt": {
+    "outcome": "unconfirmed_s3_request_during_whole_inventory_verification",
+    "newRecordingsCopied": 57,
+    "verificationRestartedFromExistingReceipts": true
+  },
+  "sourceChanged": false,
+  "newDestination": false,
+  "newCredentials": false,
+  "limitations": [
+    "Non-atomic inventory observed at the stated time; later arrivals are outside this manifest.",
+    "This run verifies bytes and source references, not a new playback or database-restore rehearsal.",
+    "Six unreferenced objects are retained; no file was deleted.",
+    "Daily runner still requires this computer to be awake."
+  ]
+}

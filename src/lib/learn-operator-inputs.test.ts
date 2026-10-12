@@ -97,12 +97,13 @@ test("lost responses never cause automatic resubmission; pending checks and canc
       {
         rpc: async () => {
           calls++;
-          throw Error("Lost reply");
+          throw Error("Private transport details must not appear in the operator notice");
         },
       },
       request,
       "apply",
     ),
+    /^Error: The request was not confirmed\. Keep it saved and check its receipt before making another change\.$/,
   );
   assert.equal(calls, 1);
   for (const state of ["pending", "cancelled"]) {
