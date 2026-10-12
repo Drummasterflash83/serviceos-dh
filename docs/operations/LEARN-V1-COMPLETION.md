@@ -7,6 +7,29 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — encrypted package now restores an actual synthetic database and Vault.**
+The native archive, operational supplement and recovery evidence passed age
+encryption, a synthetic AWS SDK transfer/download, stdin-only key delivery and a
+fresh offline PostgreSQL restore. All source package files remained unchanged.
+The correct root key decrypted the stored sentinel; a wrong root key failed and
+its container was removed. All five synthetic containers were removed. This is
+local end-to-end recovery, not an actual S3 or 1Password recovery observation.
+
+The refactored runner also restored the retained real archive into another offline
+container: 1,594,994 native rows and 711 supplemental rows matched, catalog/RLS and
+extensions passed, and all 2,883 recording-metadata references resolved. The six
+original source files were unchanged and the container was removed after 69.52
+seconds. This regression made no production connection and did not repeat the real
+Vault-key check, encrypt the archive or upload data.
+
+The 1Password desktop app is currently available, but its CLI integration is
+disabled. The official signed CLI has been prepared without account access.
+Approval to enable this new account-wide terminal access route is pending; scripts
+will target only Openfolk ServiceOS. No recovery key, AWS identity or bucket has
+been created. Operator/escrow integration and real independent copy/restore remain
+open. [Recovery evidence](evidence/learn-encrypted-database-restore-local-2026-10-12.json)
+and [access scope](../../infrastructure/database-backup/README.md#1password-access-preparation--awaiting-access-decision).
+
 **12 October — encrypted database package and transfer protocol verified synthetically.**
 The pinned age implementation preserved every snapshot file through encryption,
 the actual AWS SDK with a synthetic request handler, download and decryption.

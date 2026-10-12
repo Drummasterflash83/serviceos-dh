@@ -8,8 +8,9 @@ backup identity, key escrow or recurring database runner is established yet.
 The foundation template is prepared and locally validated. Real age encryption,
 strict package recovery and the AWS SDK transfer protocol pass a combined
 synthetic round trip. The existing real snapshot passes package admission only;
-it has not been encrypted or uploaded. The operator activation/secret-store
-integration and independent database restore still need completion before the
+it has not been encrypted or uploaded. The encrypted package now also passes a
+full synthetic PostgreSQL/Vault restore through the stdin-only recovery command.
+The operator activation/secret-store integration still needs completion before the
 combined activation request is presented. **This document is not an approval or
 evidence that an independent database backup exists.**
 
@@ -87,6 +88,56 @@ scope stay at their existing values. The package descriptor and transfer receipt
 contain only project/snapshot bindings, public recipient, hashes and storage
 version metadata; the source manifest remains inside the encrypted package.
 Transfer success explicitly does not claim database restore acceptance.
+
+`restore_database_package.py` accepts an encrypted package descriptor, the age
+identity and Vault root key through stdin. It does not call Supabase or any secret
+store. It verifies/extracts the package, then invokes the native database checker
+with the supplied root key in a fresh offline container. Every archived COPY row,
+sequence, table owner/RLS flag, extension version, operational supplement and
+recording relationship is checked. Counting decrypted expressions forces Vault
+to authenticate every secret; a wrong key fails. New verification files go into
+a separate directory, and every original package file is rehashed afterward.
+Keys and raw errors are not printed. Its result explicitly leaves independent
+storage provenance, 1Password provenance and full application recovery unproven;
+the outer operator workflow must supply those observations.
+
+A separate regression restored the existing real archive with the new source/
+evidence path separation: 1,594,994 native rows and 711 operational rows matched,
+all six original files stayed unchanged, and the offline container was removed.
+It used no recovery key and made no production connection; real Vault decryption
+remains proven by the earlier rehearsal, not by this path-separation regression.
+
+## 1Password access preparation — awaiting access decision
+
+On 12 October, the desktop app was unlocked and the **Openfolk ServiceOS** item
+was visible in the Allkin Group Ltd account. Its CLI page showed **Enable
+integration**, so the CLI integration was not enabled. No item contents were
+retrieved or changed during this check.
+
+The official stable macOS arm64 CLI **2.40.0** is prepared only at
+`/private/tmp/serviceos-op-2.40.0/op`. Signature verification passed:
+`com.1password.op`, Developer ID Application **AgileBits Inc. (2BUA8C4S2C)**,
+Apple certificate chain. Binary SHA-256:
+`7dff93952c49d25133c8a2487ab7072e656368d4e7089f055f119bc8d1066ae2`.
+Only version/help commands have run; no authenticated account request has occurred.
+Distribution: [official release history](https://app-updates.agilebits.com/product_history/CLI2).
+
+An explicit request to enable the CLI route is pending. As documented by
+[1Password](https://www.1password.dev/cli/app-integration-security), terminal
+authorisation is account-wide, not restricted technically to the named item.
+Scripts must target only Openfolk ServiceOS, fail on ambiguous identity and keep
+all secret-bearing command output inside protected processes. The owner must
+complete biometric authentication; do not bypass that prompt. Sessions expire
+after inactivity or when the app locks, so this is suitable for supervised key
+setup/recovery, not a dependable unattended daily key source.
+
+For a subsequent separately approved escrow write, use an in-memory JSON template
+on stdin to `op item edit`; sensitive field assignments must never go into command
+arguments. Preserve all existing fields and stop on conflicting prior recovery
+values. The CLI warns that templates do not preserve passkeys: verify that the
+target item has none before using this path. Read back the saved recovery fields
+and prove decryption with those retrieved values. Do not accept an in-memory key
+generated earlier as proof that 1Password saved it correctly.
 
 Save the private age identity and the existing production pgsodium/Vault root key
 in separate labelled fields in **Openfolk ServiceOS** in 1Password. Preserve the
@@ -184,8 +235,8 @@ copy the existing Supabase administrator token into a hosted runner.
 ## Activation and acceptance sequence
 
 1. Synthetic packaging/encryption/tamper and bounded SDK transfer checks now pass.
-   Complete the operator runner, key-escrow integration and independent database
-   restore wiring, then present the exact combined storage/access/key-escrow/copy
+   The full offline database/Vault restore command is also verified synthetically.
+   Complete the operator runner and key-escrow integration, then present the exact combined storage/access/key-escrow/copy
    proposal for approval. Do not deploy from this document alone.
 2. Reconfirm account/region and empty-or-expected destination, show the resource
    change set, deploy the approved template, create only the two approved keys,
@@ -215,6 +266,7 @@ node --test scripts/backup/database-backup-template.test.mjs
 cfn-lint infrastructure/database-backup/foundation.cloudformation.json
 node scripts/verify/learn-database-backup-estimate.mjs
 python3 -B -m unittest discover -s scripts/backup -p test_database_backup_package.py -v
+python3 -B scripts/backup/verify_encrypted_database_restore.py
 node --test scripts/backup/*.test.mjs
 ```
 

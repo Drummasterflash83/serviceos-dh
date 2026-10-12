@@ -35,11 +35,19 @@ def write_private(path, value):
     os.replace(tmp, path)
 
 
-def run(*, combined_audio=False, compare_native=False):
+def run(*, combined_audio=False, compare_native=False, source_root=None,
+        evidence_root=None, vault_root_key=None, expected_vault_count=None):
+    source = Path(source_root) if source_root is not None else ROOT
+    evidence = Path(evidence_root) if evidence_root is not None else source
+    if combined_audio and (source_root is not None or evidence_root is not None):
+        raise RecoveryError('Legacy audio helper is bound to its original source path')
+    if vault_root_key is not None and (not compare_native
+            or type(expected_vault_count) is not int or expected_vault_count < 0):
+        raise RecoveryError('Vault recovery requires native comparison and expected count')
     run_name = 'restore-native-comparison' if compare_native else ('restore-combined' if combined_audio else 'restore-v3')
-    report_path = ROOT / (run_name + '-report.json')
+    report_path = evidence / (run_name + '-report.json')
     # An interrupted prior restore must be inspected, not silently restarted.
-    fd = os.open(ROOT / (run_name + '-started'), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    fd = os.open(evidence / (run_name + '-started'), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     os.close(fd)
     report = {'version': 'production-native-restore/1', 'state': 'preflight',
               'destination': 'new_offline_container', 'productionWrites': False,
@@ -47,17 +55,17 @@ def run(*, combined_audio=False, compare_native=False):
     started = time.monotonic()
     target = None
     try:
-        export = json.loads((ROOT / 'report.json').read_text())
+        export = json.loads((source / 'report.json').read_text())
         if export['state'] not in ('export_complete_restore_unverified', 'fingerprinting_source_snapshot') or 'archive' not in export:
             raise RecoveryError('Native source archive is incomplete')
-        inventory = json.loads((ROOT / 'source-inventory.json').read_text())
-        baseline = ROOT / 'source-fingerprints.json'
+        inventory = json.loads((source / 'source-inventory.json').read_text())
+        baseline = source / 'source-fingerprints.json'
         expected = json.loads(baseline.read_text()) if baseline.exists() else None
         report['sourceComparisonBaselineAvailable'] = expected is not None
         report['knownArchiveOmissions'] = ['net._http_response', 'net.http_request_queue']
         if expected is not None and len(expected) != len(inventory['tables']):
             raise RecoveryError('Source comparison baseline incomplete')
-        archive = ROOT / 'database.dump'
+        archive = source / 'database.dump'
         h = hashlib.sha256()
         with archive.open('rb') as f:
             for chunk in iter(lambda: f.read(1024 * 1024), b''):
@@ -66,7 +74,8 @@ def run(*, combined_audio=False, compare_native=False):
             raise RecoveryError('Source archive integrity mismatch')
         report['sourceArchive'] = export['archive']
         report['sourceSnapshot'] = export['snapshot']
-        target = RestoreSandbox(image=IMAGE, private_diagnostics=ROOT / 'restore-private-error', network_extension=True)
+        target = RestoreSandbox(image=IMAGE, private_diagnostics=evidence / 'restore-private-error',
+                                network_extension=True, root_key=vault_root_key)
         with target:
             if target.image_id != PINNED_IMAGE:
                 raise RecoveryError('Production-matching image pin differs')
@@ -109,11 +118,11 @@ def run(*, combined_audio=False, compare_native=False):
                 print(json.dumps({'stage': report['state']}), flush=True)
                 archived_data = archive_fingerprints(archive, docker=target.docker, image=target.image_id)
                 restored_data = restored_fingerprints(target)
-                write_private(ROOT / 'native-archive-fingerprints.json', archived_data)
-                write_private(ROOT / 'native-restored-fingerprints.json', restored_data)
+                write_private(evidence / 'native-archive-fingerprints.json', archived_data)
+                write_private(evidence / 'native-restored-fingerprints.json', restored_data)
                 report['nativeDataComparison'] = compare_native_data(archived_data, restored_data)
             if export.get('netSupplement'):
-                supplement = ROOT / 'net-tables.sql'
+                supplement = source / 'net-tables.sql'
                 raw = supplement.read_bytes()
                 proof = export['netSupplement']
                 if len(raw) != proof['bytes'] or hashlib.sha256(raw).hexdigest() != proof['sha256']:
@@ -144,13 +153,13 @@ def run(*, combined_audio=False, compare_native=False):
                 observed = json.loads(target.query(query))
                 actual.append(observed)
                 if expected is not None and observed != table:
-                    write_private(ROOT / 'restore-fingerprints.json', actual)
+                    write_private(evidence / 'restore-fingerprints.json', actual)
                     report['mismatch'] = {'schema': table['schema'], 'table': table['table'],
                                           'expectedRows': table['rows'], 'actualRows': observed['rows']}
                     raise RecoveryError('Source snapshot and restored table differ')
                 if len(actual) % 25 == 0:
                     print(json.dumps({'stage': report['state'], 'tablesRead': len(actual)}), flush=True)
-            write_private(ROOT / 'restore-fingerprints.json', actual)
+            write_private(evidence / 'restore-fingerprints.json', actual)
             report['tablesMatched'] = len(actual) if expected is not None else 0
             report['tablesRead'] = len(actual)
             # Read back schema boundaries, owners and extension versions.
@@ -180,6 +189,19 @@ def run(*, combined_audio=False, compare_native=False):
                 "'missingStorageMetadata',count(*) filter(where storage_path is not null and not exists "
                 "(select 1 from storage.objects o where o.bucket_id='phone-recordings' and o.name=r.storage_path))) "
                 "from public.phone_recordings r;"))
+            if vault_root_key is not None:
+                report['state'] = 'verifying_archived_vault_decryption'
+                write_private(report_path, report)
+                # COUNT(expression) forces authenticated decryption of every row;
+                # COUNT(*) alone could skip evaluating the decrypted secret.
+                vault = json.loads(target.query("select json_build_object("
+                    "'stored',(select count(*) from vault.secrets),"
+                    "'decrypted',count(decrypted_secret)) from vault.decrypted_secrets;"))
+                if vault != {'stored': expected_vault_count, 'decrypted': expected_vault_count}:
+                    raise RecoveryError('Archived Vault decryption count differs')
+                report['vaultDecryptionProven'] = True
+                report['vaultSecretsVerified'] = vault['decrypted']
+                report['vaultRecoveryScope'] = 'Archived ciphertext authenticated locally; no live provider comparison'
             if combined_audio:
                 # Extract only relationship/version metadata from the restored
                 # database; no phone numbers, transcripts or communications.
@@ -194,7 +216,7 @@ def run(*, combined_audio=False, compare_native=False):
                     "from public.phone_recordings r left join storage.objects o "
                     "on o.bucket_id='phone-recordings' and o.name=r.storage_path "
                     "where r.tenant_id='00000000-0000-0000-0000-000000000001';"))
-                write_private(ROOT / 'restored-recording-links.json', {
+                write_private(evidence / 'restored-recording-links.json', {
                     'tenantId': '00000000-0000-0000-0000-000000000001',
                     'sourceProjectRef': 'tgbnakbxwcqjeimygroz',
                     'databaseSnapshotAt': export['snapshot']['observedAt'], 'rows': rows})
@@ -208,7 +230,7 @@ def run(*, combined_audio=False, compare_native=False):
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=240)
                 if result.returncode:
                     raise RecoveryError('Independent audio relationship check did not complete; private evidence retained')
-                report['combinedAudio'] = json.loads((ROOT / 'combined-audio-report.json').read_text())
+                report['combinedAudio'] = json.loads((evidence / 'combined-audio-report.json').read_text())
             report['containmentAfter'] = target.verify_boundary()
             report['state'] = ('native_archive_restored_full_recovery_unverified' if expected is None
                                else 'native_records_restore_verified_application_recovery_incomplete')
@@ -217,6 +239,7 @@ def run(*, combined_audio=False, compare_native=False):
         write_private(report_path, report)
         print(json.dumps({k: report[k] for k in ('state', 'tablesMatched', 'tableCatalogMatched',
             'extensionVersionsMatched', 'noActorRows', 'recordingRelationships', 'containerRemoved', 'elapsedSeconds')}))
+        return report
     except Exception as error:
         report['failure'] = str(error) if isinstance(error, RecoveryError) else 'Restore stopped; raw error withheld'
         report['containerRemoved'] = bool(target and target.cleaned)

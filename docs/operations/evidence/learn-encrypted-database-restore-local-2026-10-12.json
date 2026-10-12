@@ -1,0 +1,120 @@
+{
+  "state": "synthetic_encrypted_database_restore_verified",
+  "realAWSRequests": false,
+  "productionRequests": false,
+  "wrongVaultKeyRejected": true,
+  "allContainersRemoved": true,
+  "encryptedBytes": 102616,
+  "recovery": {
+    "contract": "database-package-restore/1",
+    "state": "encrypted_package_database_and_vault_restored",
+    "sourceAPIRequests": false,
+    "independentStorageVerified": false,
+    "keyEscrowVerified": false,
+    "fullApplicationRecoveryVerified": false,
+    "productionWrites": false,
+    "snapshotAt": "2026-10-12 07:32:35.350828+00",
+    "nativeDataComparison": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 9,
+      "rows": 11,
+      "sequences": 1,
+      "comparisonSha256": "3028858bceae11e8dcb5f63adb08a62fe110b9beb44c76ee14e0e0232a4900fb",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "networkSupplementComparison": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 2,
+      "rows": 1,
+      "sequences": 1,
+      "comparisonSha256": "fba6371c2e7b20fc66d47e0abe44ea31c5821394a053afb28d86c827df1a8d21",
+      "scope": "two explicitly captured pg_net COPY tables and separately observed nontransactional sequence"
+    },
+    "recordingRelationships": {
+      "recordings": 1,
+      "withObjectPath": 1,
+      "missingStorageMetadata": 0
+    },
+    "vaultSecretsVerified": 1,
+    "allPhysicalTablesCovered": true,
+    "tableCatalogMatched": true,
+    "extensionVersionsMatched": true,
+    "noActorRows": {
+      "emails": 0,
+      "recordings": 0
+    },
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "originalPackageFilesUnchanged": true,
+    "containerRemoved": true
+  },
+  "contract": "learn-encrypted-database-restore-local/1",
+  "observedAt": "2026-10-12T07:38:48.231144+00:00",
+  "scope": "Synthetic encrypted package, SDK transport and real isolated PostgreSQL recovery; no external accounts",
+  "syntheticContainers": 5,
+  "sourceSha256": {
+    "scripts/backup/restore_database_package.py": "3a8fdcbe6a2956c0d7867a60b2a1c3dd5441d4ca6eec1032588ec969a6351eec",
+    "scripts/backup/restore_production_database.py": "612b15fb0a0c23ee30598a60c5dead46197b042dd15e6c754df4b302331c13c8",
+    "scripts/backup/verify_encrypted_database_restore.py": "68a07ec517a850ce7497d392e8db1ace516388ad3fd81a127ad234add3b59f65"
+  },
+  "remaining": [
+    "1Password route approval and actual key escrow/readback",
+    "operator activation runner",
+    "approved real AWS bucket/access/copy and independent restore",
+    "dependable recurrence and full service recovery"
+  ],
+  "realArchiveRegression": {
+    "sourceArchive": {
+      "bytes": 197303039,
+      "sha256": "bdb6be1f2cb934247949d6443305550888e6b4e62f5c55dac419a432616bd3db"
+    },
+    "nativeDataComparison": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299,
+      "rows": 1594994,
+      "sequences": 5,
+      "comparisonSha256": "2d746e1448a455807a64651312c7e2cb3840651de0fb819a646a8491351d47d4",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "networkSupplementComparison": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 2,
+      "rows": 711,
+      "sequences": 1,
+      "comparisonSha256": "944033a82ddc233131cf6ee5854b9328712b4f3bb0d3fad693ce331b7b848d3f",
+      "scope": "two explicitly captured pg_net COPY tables and separately observed nontransactional sequence"
+    },
+    "allInventoriedPhysicalTablesCaptured": true,
+    "tableCatalogMatched": true,
+    "extensionVersionsMatched": true,
+    "recordingRelationships": {
+      "recordings": 2883,
+      "withObjectPath": 2883,
+      "missingStorageMetadata": 0
+    },
+    "noActorRows": {
+      "emails": 0,
+      "recordings": 0
+    },
+    "containerRemoved": true,
+    "elapsedSeconds": 69.52,
+    "originalSnapshotFilesUnchanged": true,
+    "vaultCheckedThisRun": false,
+    "productionConnection": false,
+    "encryptedThisRun": false,
+    "uploaded": false
+  }
+}
