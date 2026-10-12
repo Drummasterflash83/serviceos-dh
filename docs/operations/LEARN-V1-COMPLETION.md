@@ -7,6 +7,28 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — Phone and operator health pass production-archive acceptance.**
+All eleven production-specific packages install together. Ten synthetic journey
+suites on actual archived production structures pass page publication, replay,
+paused admission, schedule settlement, confirmed capture evidence, download retry,
+processing/result preservation, operator reconciliation, saved-result reads,
+scheduler diagnostics, Email retention/failure reporting, atomic interaction/event
+handoff and playback authorization. Ordinary owner, foreign-tenant, View-As,
+revoked-operator and stale-pointer refusals are covered where applicable.
+
+All 1,591,576 original archived rows and five sequences still match; only the three
+earlier import templates are added. Original table authority and source columns
+remain intact, including legacy source grants broader than TEST. Five new phone
+provenance columns remain null on existing rows. No historical evidence is invented.
+The new ledgers are empty outside the synthetic clones, and all disposable databases
+were removed. The earlier Email protocol role still has its exact restricted grants.
+
+No hosted environment changed and no provider request was made. Phone workers,
+real capture/coverage, signed-in audio, customer-card projection, remaining production
+packages and final live approval are still required. The TEST-only fixture permission
+assumptions and direct email-run insertion were corrected without weakening guards.
+[Phone rehearsal evidence](evidence/learn-production-phone-rehearsal-2026-10-12.json).
+
 **12 October — durable email capture passes production-archive acceptance.**
 All ten production-specific packages install together. Production's archived schema
 had retained mail but no v2 checkpoint/transition protocol. The new candidate adds

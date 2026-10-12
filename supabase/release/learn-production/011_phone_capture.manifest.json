@@ -1,0 +1,173 @@
+{
+  "version": "learn-production-phone-capture/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+  "priorSha256": "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261031210000_learn_operator_capture_health.sql",
+      "sha256": "33c93527c055d0951a041e9b035ef2a1778f273356c5ad7c0439e57c5fab397c"
+    },
+    {
+      "path": "supabase/migrations/20261031220000_learn_email_capture_evidence.sql",
+      "sha256": "a9ee85ea529dc169e2af7a28be1cb481e1d881d6649eba918270675c2f8fe8ec"
+    },
+    {
+      "path": "supabase/migrations/20261101006000_learn_phone_page_publication.sql",
+      "sha256": "9f5d1d66667212cb148ceb30020da3fbd1ff3e3769da7f9f3ca5718f7bac24aa"
+    },
+    {
+      "path": "supabase/migrations/20261101008000_learn_phone_import_completion.sql",
+      "sha256": "aeb2841df72067c8909ce7661d116e3dabed385822dd4c43707f85d04262893a"
+    },
+    {
+      "path": "supabase/migrations/20261101009000_learn_phone_schedule_settlement.sql",
+      "sha256": "90db0cb4756dc11964d4c01c8e9ee741bb81d140b9007fcb6cf3449281d86be9"
+    },
+    {
+      "path": "supabase/migrations/20261101010000_learn_phone_operator_evidence.sql",
+      "sha256": "59429a28c3cee3f5010877a61fd99815ddfa481170d75f1efa0770724cafc1e5"
+    },
+    {
+      "path": "supabase/migrations/20261101200000_learn_phone_download_attempts.sql",
+      "sha256": "f18cd524860ce9f9df987d61415f108f2c11805970ea930a06272043499fafd3"
+    },
+    {
+      "path": "supabase/migrations/20261101210000_learn_phone_derived_versions.sql",
+      "sha256": "3330679e3f4028af98026ffe886dae576c38256476c546145110aa085b8ac459"
+    },
+    {
+      "path": "supabase/migrations/20261101220000_learn_phone_operator_attempts.sql",
+      "sha256": "74c13bb6713a1fb44e53067762da20467092dec3cca7ee9ebbac244227c09383"
+    },
+    {
+      "path": "supabase/migrations/20261101230000_learn_phone_playback.sql",
+      "sha256": "2c08721acb41ea61403690e9030c87f4a10bf2a401c514fb43d8d6cbc11a3068"
+    },
+    {
+      "path": "supabase/migrations/20261101240000_learn_phone_saved_results.sql",
+      "sha256": "cba74342dbc2a853307732dfc59079e41275da93a663c39afb9eea8231e3fac4"
+    },
+    {
+      "path": "supabase/migrations/20261101270000_learn_scheduler_health.sql",
+      "sha256": "97714ef7dd50c5d514b9483047656d8b6e1f8d51fda953725908dd3c9dac6457"
+    },
+    {
+      "path": "supabase/migrations/20261101290000_learn_phone_atomic_handoff.sql",
+      "sha256": "b0073764aedf6a95d1ba76f30c769efc8ebedc3db81bed5c8baf5556e727783d"
+    },
+    {
+      "path": "supabase/migrations/20261101410000_learn_email_retention_health.sql",
+      "sha256": "2d9af67e0363ab53f1e4817b14efcf4e66d7234c368a5a5e2828722bdd04f708"
+    }
+  ],
+  "existingTables": [
+    "call_directions",
+    "call_participants",
+    "call_transcript_normalisations",
+    "connector_accounts",
+    "corrections",
+    "email_accounts",
+    "email_messages",
+    "email_sync_runs",
+    "feature_flags",
+    "graph_nodes",
+    "interactions",
+    "learn_email_source_versions",
+    "phone_ai_insights",
+    "phone_calls",
+    "phone_recordings",
+    "phone_sync_runs",
+    "phone_transcripts",
+    "platform_events",
+    "platform_jobs",
+    "profiles",
+    "telephony_directory",
+    "tenant_connectors",
+    "tenant_vocabulary",
+    "tenants",
+    "view_as_context"
+  ],
+  "newTables": [
+    "learn_phone_capture_pages",
+    "learn_phone_import_completions",
+    "learn_phone_schedule_settlements",
+    "learn_phone_processing_attempts",
+    "learn_phone_result_versions",
+    "learn_phone_operator_reconciliations",
+    "learn_phone_playback_audit",
+    "learn_phone_handoff_receipts"
+  ],
+  "newFunctions": [
+    "learn_operator_capture_health",
+    "learn_phone_capture_flag_lock",
+    "learn_phone_publish_page",
+    "learn_phone_complete_import",
+    "learn_phone_settle_schedule",
+    "learn_phone_account_evidence",
+    "learn_phone_processing_evidence",
+    "learn_phone_download_attempt",
+    "learn_phone_apply_intelligence",
+    "learn_phone_derived_attempt",
+    "learn_operator_phone_attempts",
+    "learn_operator_phone_reconcile",
+    "learn_phone_recordings_read",
+    "learn_phone_playback_authorize",
+    "learn_phone_saved_results_read",
+    "learn_scheduler_health_read",
+    "learn_phone_handoff"
+  ],
+  "changedFunctions": [
+    "phone_pending_readiness",
+    "phone_projection_version"
+  ],
+  "changedViews": [
+    "phone_recording_pipeline_state"
+  ],
+  "newSequences": [],
+  "extendedTables": {
+    "phone_transcripts": [
+      "source_storage_path",
+      "source_sha256",
+      "processing_run_id"
+    ],
+    "phone_ai_insights": [
+      "source_transcript_sha256",
+      "processing_run_id"
+    ]
+  },
+  "newExistingConstraints": {
+    "phone_transcripts": [
+      "phone_transcripts_processing_run_id_fkey"
+    ],
+    "phone_ai_insights": [
+      "phone_ai_insights_processing_run_id_fkey"
+    ]
+  },
+  "newExistingIndexes": {
+    "email_sync_runs": [
+      "learn_email_capture_run_lookup",
+      "learn_email_scheduler_latest_idx"
+    ],
+    "phone_sync_runs": [
+      "learn_phone_schedule_health_lookup",
+      "learn_phone_scheduler_latest_idx"
+    ]
+  },
+  "newExistingTriggers": {
+    "feature_flags": [
+      "learn_phone_capture_flags"
+    ]
+  },
+  "newExistingPolicies": {},
+  "limitations": [
+    "No source rewrite, historical provenance backfill, provider activation, schedule or new credential.",
+    "Existing production intelligence/directory/platform schemas and permissions are preserved, not replaced with TEST defaults.",
+    "Matched phone workers, real provider coverage, customer-card processing and signed-in audio acceptance remain required."
+  ]
+}

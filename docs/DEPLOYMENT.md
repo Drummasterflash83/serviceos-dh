@@ -42,6 +42,15 @@ Cloudflare-flavoured.
 
 ## Preview deployments
 
+The production-specific LEARN candidates now include packages 001–011. The combined
+archive rehearsal preserves every original row/sequence and passes ten Phone and
+operator-health journeys, using synthetic data in isolated restored databases.
+These are reviewed release inputs, **not live migrations or promotion approval**.
+Install only as part of the eventual matched schema/worker/frontend release; never
+run the TEST bundles against production. See the
+[release plan](operations/LEARN-V1-PRODUCTION-RELEASE.md#phone-capture-processing-and-operator-health-candidate)
+and [completion checklist](operations/LEARN-V1-COMPLETION.md).
+
 ### Isolated LEARN TEST project (10 October 2026)
 
 **serviceos-learn-test** (`prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs`, Allkin) is separate

@@ -1,0 +1,134 @@
+{
+  "state": "production_phone_capture_rehearsed_offline",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "fullReleaseAccepted": false,
+  "signedInAcceptance": false,
+  "packages": [
+    "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+    "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+    "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+    "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+    "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+    "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+    "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+    "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+    "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+    "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc"
+  ],
+  "containmentBefore": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "negativeChecks": [
+    "wrong_target",
+    "catalog_drift",
+    "late_failure"
+  ],
+  "protocolRoleGrantsExact": true,
+  "legacyColumnsAndCatalogPreserved": true,
+  "noInventedHistoricalEvidence": true,
+  "accessProbes": [],
+  "addedImportTemplates": 3,
+  "sourcePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+  },
+  "duplicateRejected": true,
+  "journeys": [
+    {
+      "path": "scripts/verify/learn-phone-publication-hosted.assert.sql",
+      "sourceSha256": "71771ccc27f2afe8eeefb837b92d8e61f4c2bf6443a6db7f73ae6a409d296ed7",
+      "probeSha256": "1309abc09f78b23f116faf313643287dd5d9964557f9ad7361284a01c9284647"
+    },
+    {
+      "path": "scripts/verify/learn-phone-settlement-hosted.assert.sql",
+      "sourceSha256": "96059fb4366c77f5b3f8daf9e1b3c98aefe601590997d5d8b48c749a2ccc8ef7",
+      "probeSha256": "e1df2d4a3f7c0d9141b81cf4e82d27490656b22930dcc09973e76edd0371d604"
+    },
+    {
+      "path": "scripts/verify/learn-phone-health-hosted.assert.sql",
+      "sourceSha256": "49a40049da3d354892c112faddbcdd95d04c2b45cc6c99cad809321a61d9ca3b",
+      "probeSha256": "c3679a8f8109d4a072c85d93b153e975192e344b81d597c9af73d1ea83b675d1"
+    },
+    {
+      "path": "scripts/verify/learn-production-phone-operator.assert.sql",
+      "sourceSha256": "36e02a8cf2dc99d9d898268cab954403e722cddb90fd5eb5e33d5a6e045aad09",
+      "probeSha256": "b6c1aab34fa5f668fa0222166fabfb2ce2746a8a64c5096199a28d2ea26c2f3b"
+    },
+    {
+      "path": "scripts/verify/learn-production-phone-download.assert.sql",
+      "sourceSha256": "a5ca939e09391548484c98904f657ed7b26dab933037e11129e8a7a48b905b48",
+      "probeSha256": "ac2fe9483daab2d3e4094bee98ca7c91be8724eac51e4f7bb94736fd5c26f742"
+    },
+    {
+      "path": "scripts/verify/learn-production-phone-saved-results.assert.sql",
+      "sourceSha256": "303cf511a7dbf86d1fb510b12c815ce4bf8596436803cbb72cd0a13d0ee06604",
+      "probeSha256": "41e56df5710b4ea1400ececdeb3ac91d1f4a6052a9fcda448620e57c49cf08bb"
+    },
+    {
+      "path": "scripts/verify/learn-production-scheduler-health.assert.sql",
+      "sourceSha256": "fe77ba750f166ed422bb1ef665160df36935f7cffc3359811842082760658bc9",
+      "probeSha256": "ae65df76f95bacb928ed894a687e23b4c5e62eb8675d734e5c99b4c190a6e2d3"
+    },
+    {
+      "path": "scripts/verify/learn-production-capture-health.assert.sql",
+      "sourceSha256": "7f2ee0e9aa9fcb97eb76c0660f55d617e201927edc85c320c0bd1b87d4f6d675",
+      "probeSha256": "5923fbe0206fcf27ba747528845fe9f8672f372c453430f4c26929968583c7f7"
+    },
+    {
+      "path": "scripts/verify/learn-production-phone-handoff.assert.sql",
+      "sourceSha256": "9ea34891c5003ea52752e7ac84d78e7548c91f8e28e08b38f4c15847a3e1dda3",
+      "probeSha256": "c9063992a932a17501141d11cec2645840ea918c19ad175557a1bc86c26f5866"
+    },
+    {
+      "path": "scripts/verify/learn-production-phone-playback.assert.sql",
+      "sourceSha256": "2fc50efa211258bbc8169f3a1e4d02ca10807f6f7ad58e785bef5ea928278656",
+      "probeSha256": "19e8c47260e9dd11f13fd7101ead102b101c63fdcde8d9b65ede566a7936a614"
+    }
+  ],
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "elapsedSeconds": 60.99,
+  "version": "learn-production-phone-rehearsal/1",
+  "observedDate": "2026-10-12",
+  "rehearsalVersion": 4,
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "limitations": [
+    "Offline archive and synthetic journeys only; no real provider, hosted runtime or signed-in acceptance.",
+    "Existing production source permissions are preserved, including legacy grants broader than TEST.",
+    "No new schedule, credential, capture activation or historical provenance backfill.",
+    "Customer-card projection, voicemail/Microsoft production reconciliation, real coverage and explicit production promotion approval remain required.",
+    "Known pg_net archive omissions remain; this is not full runtime/Vault recovery."
+  ]
+}

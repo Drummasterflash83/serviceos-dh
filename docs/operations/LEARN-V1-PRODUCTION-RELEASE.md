@@ -502,6 +502,61 @@ remain explicit later dependencies; this package proves capture/storage only.
 Microsoft integration, real mailbox coverage, browser acceptance and production
 approval are still required. No live environment changed.
 
+### Phone capture, processing and operator-health candidate
+
+The eleventh package, [011_phone_capture.sql](../../supabase/release/learn-production/011_phone_capture.sql),
+uses the inspected production archive after packages 001–010. Its pinned SHA-256 is
+`f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc`.
+Fourteen pinned migrations supply eight protected tables, 17 new function names,
+five nullable provenance columns and bounded health readers. It updates only the
+existing pending-readiness helper, the projection-version helper's search path and
+the recording pipeline view. Table catalogs, referenced helpers, the pipeline view,
+the prior package receipt and the production target are guarded before installation.
+
+Production already contains the intelligence, directory, endpoint and platform
+projection structures. Their old migrations are deliberately not replayed: doing
+so would risk changing existing grants or backfilling endpoint mappings. Existing
+source-table owners, RLS policies, grants and columns remain intact. This includes
+legacy source permissions broader than TEST; the package does not claim to have
+hardened all pre-existing application access. New receipt tables and entry points
+have their own explicit access restrictions.
+
+The candidate adds atomic page publication, import/schedule settlement, durable
+processing attempts and retained prior results. Operator review can settle saved
+output without blindly repeating uncertain processing. Playback authorization
+checks the current actor, tenant and storage-pointer revision and writes an audit
+receipt. Atomic handoff links verified audio/transcript/analysis provenance to a
+canonical interaction and pending event; downstream customer-card completion is
+still a separate acceptance requirement. Scheduler and capture-health readers
+report missing/failed observations honestly and exclude raw provider errors,
+message bodies and storage paths from their summaries.
+
+No source row is rewritten at installation; historical provenance starts null.
+No credential, capture flag or schedule is enabled. Matching phone endpoint and
+worker deployment must precede activation. During rollback, pause new capture,
+retain receipts, saved outputs and version history, and use compatible recovery
+workers. Do not revert to direct legacy processing writes or remove populated
+provenance columns as a rollback shortcut. A production execution also needs a
+fresh catalog/source baseline, full combined runtime acceptance and explicit
+promotion approval.
+
+Generator: `node scripts/verify/learn-production-phone-candidate.mjs`.
+Rehearsal: `python3 scripts/backup/rehearse_production_phone.py`.
+The initial six-suite rehearsal passed, preserving all 1,591,576 original archived
+rows and five sequences. An expanded rehearsal stopped on two TEST-only raw-table
+privilege assertions; production already had those grants. The production fixture
+now retains the grants and checks exact catalog preservation rather than silently
+revoking legacy access. A subsequent fixture attempted to insert a completed email
+run directly; the new protocol guard correctly rejected it. The health fixture now
+uses the actual failure transition before reading operator status. The terminal
+expanded v4 rehearsal passes all ten suites in 60.99 seconds. All 299 archived
+COPY tables, 1,591,576 original rows and five sequences still match; all disposable
+databases are removed. Existing provenance columns are unchanged and the five new
+phone columns remain null. New receipt tables are empty in the preservation copy.
+The package SQL was unchanged across these fixture adaptations. See
+[sanitised evidence](evidence/learn-production-phone-rehearsal-2026-10-12.json).
+No hosted environment has changed.
+
 ## Build the production-specific release candidate
 
 1. Read production's current migration ledger, schema/catalog, deployed function
