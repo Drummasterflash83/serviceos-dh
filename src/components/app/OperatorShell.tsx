@@ -7,6 +7,7 @@ import {
   Headphones,
   LayoutDashboard,
   Layers,
+  Database,
   Receipt,
   Menu,
   X,
@@ -24,6 +25,7 @@ import "@/styles/operator-workspace.css";
 const modules = [
   { key: "home", label: "Client overview", Icon: LayoutDashboard },
   { key: "receptionist", label: "AI receptionist", Icon: Headphones },
+  { key: "information", label: "Client information", Icon: Database },
   { key: "modules", label: "Modules", Icon: Layers },
   { key: "invoices", label: "Invoices", Icon: Receipt },
 ] as const;

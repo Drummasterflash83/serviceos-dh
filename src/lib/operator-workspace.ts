@@ -1,5 +1,11 @@
-export type OperatorModule = "home" | "receptionist" | "modules" | "invoices";
-export const operatorModules = ["home", "receptionist", "modules", "invoices"] as const;
+export type OperatorModule = "home" | "receptionist" | "modules" | "invoices" | "information";
+export const operatorModules = [
+  "home",
+  "receptionist",
+  "modules",
+  "invoices",
+  "information",
+] as const;
 export function operatorModule(value: unknown): OperatorModule {
   if (value === "programme" || value === "outcomes") return "modules";
   return operatorModules.find((item) => item === value) ?? "home";

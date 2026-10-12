@@ -7,6 +7,17 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 10:34 UTC — audited client-information reader installed in TEST.**
+The initial fixed-collection operator RPC is installed after full-schema rollback
+rehearsal, preserving 194 datasets. Selected-client pagination, ordinary-client
+isolation, admin-only authority, revocation, View-As denial, explicit field
+projection and failure to return data when auditing fails passed. No new accounts,
+grants, provider requests or production changes occurred. Its new operator screen
+still needs deployment and signed-in acceptance; recording playback, complete
+source details, card relationships and performance evidence remain unfinished.
+The care-report error is a missing TEST dependency package, not a failed login.
+[Reader evidence](evidence/openfolk-client-information-test-2026-10-12.json).
+
 **12 October, 10:25 UTC — TEST operator sign-in and reset-link fix verified.**
 Chris received the recovery email, completed his password update and reached the
 OpenFolk client directory. Arc confirmed the real operator identity and navigation

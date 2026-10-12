@@ -28,13 +28,34 @@ owner/admin checks and RLS. Therefore an operator grant alone is **not evidence
 that all client information is accessible**. No broad source-table grants or
 production changes have been made to address this gap.
 
-Implement an explicit client support context bound to the real signed-in operator
-and selected client, with logged entry/exit, effective grant checks, expiry and
-immediate denial after revocation. Carry that context through read APIs, RLS and
-playback. Preserve existing client permissions and tenant write checks. The UI
-must identify the client and operator support mode, clear stale data on a switch,
-and fail visibly when access expires. Verify two client workspaces, ordinary
-client isolation, forged/foreign contexts, revocation and retained source data.
+The initial implementation uses a request-scoped selected-client context. Every
+read verifies the real signed-in actor's effective admin grant, denies View-As,
+fences revocation, and records the selected client, record IDs and access reason
+in the append-only controller audit before returning content. Ordinary client RLS
+and profile roles remain unchanged. Requests cannot select arbitrary tables or
+columns. Anonymous, machine/service and view-only grants are denied.
+
+The new `openfolk_client_information` RPC uses fixed collections and explicit
+columns for customer cards, contacts, companies, sites, jobs, emails, calls,
+recording metadata, transcripts, processed communications and retained business
+input versions. Pages contain at most 25 records; text excerpts disclose truncation.
+It excludes credentials, raw metadata, provider recording URLs and storage paths.
+Responses use `no-store`. The UI clears content on account/client/collection
+changes, backgrounding and five-minute expiry; every reload rechecks authority.
+This does not yet supply operator playback or full scoring/card relationships.
+
+Full-schema TEST rehearsal passed with two synthetic companies, pagination,
+foreign record rejection, denied ordinary/view-only/revoked/unsigned/machine
+access, View-As denial, failed-audit denial and source redaction. All fixtures
+rolled back. Installed at 10:34 UTC on 12 October with all 194 datasets preserved,
+including Auth users and identities. No new user or grant was retained. Frontend
+and actual signed-in record browsing remain to verify.
+[Initial reader evidence](evidence/openfolk-client-information-test-2026-10-12.json).
+
+The failed care-report refresh was traced to missing TEST `care_health_snapshot`
+and its care-issue/task-review/call-review tables. The existing operator authority
+function is present. Do not replace the failure with zero counts; bring in the
+matched care package after its dependency and preservation checks.
 
 The work is not complete until real signed-in operator navigation, source detail,
 recording playback and card/performance evidence work across clients. A session

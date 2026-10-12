@@ -63,7 +63,12 @@ const OperatorVoicemailStatus = lazy(() =>
   })),
 );
 const OperatorMicrosoftStatus = lazy(() =>
-  import("./OperatorMicrosoftStatus").then((module) => ({ default: module.OperatorMicrosoftStatus })),
+  import("./OperatorMicrosoftStatus").then((module) => ({
+    default: module.OperatorMicrosoftStatus,
+  })),
+);
+const OperatorClientInformation = lazy(() =>
+  import("./OperatorClientInformation").then((m) => ({ default: m.OperatorClientInformation })),
 );
 const tabs: { view: ReceptionistView; label: string }[] = [
   { view: "testing", label: "Automated voice tests" },
@@ -100,6 +105,17 @@ function OperatorModuleContent({
   const health = useOperatorHealth(tenantId);
   const data = health.isError ? undefined : health.data;
   const signal = healthSignal(data);
+  if (module === "information")
+    return user ? (
+      <Suspense fallback={<p role="status">Opening client information…</p>}>
+        <OperatorClientInformation
+          key={`${tenantId}:${user.id}`}
+          tenantId={tenantId}
+          actorId={user.id}
+          company={company}
+        />
+      </Suspense>
+    ) : null;
   if (module === "receptionist")
     return (
       <>

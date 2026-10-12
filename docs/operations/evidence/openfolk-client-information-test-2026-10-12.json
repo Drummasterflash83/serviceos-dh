@@ -1,0 +1,49 @@
+{
+  "contract": "openfolk-client-information-test/1",
+  "rehearsal": {
+    "state": "passed_rolled_back",
+    "project": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T10:32:56.595Z",
+    "sources": [
+      {
+        "path": "supabase/migrations/20261101500000_openfolk_client_information.sql",
+        "sha256": "43fcdd47a25f102b62ae0fbc01ff991613be2eaef93c9cf8d874846023bae86c"
+      },
+      {
+        "path": "scripts/verify/openfolk-client-information.assert.sql",
+        "sha256": "5a9d428962e7631ea14f6c91b058500fef39d90dc9a5284f05c563edd2acdae6"
+      }
+    ],
+    "preservedDatasets": 194,
+    "priorCatalogRestored": true,
+    "newAccountsRetained": 0,
+    "newGrantsRetained": 0,
+    "providerCalls": 0,
+    "productionChanged": false
+  },
+  "install": {
+    "state": "installed_verified",
+    "project": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T10:34:46.728Z",
+    "sourceSha256": "43fcdd47a25f102b62ae0fbc01ff991613be2eaef93c9cf8d874846023bae86c",
+    "preservedDatasets": 194,
+    "installed": [
+      {
+        "fingerprint": "155954ff232b629ce86dc35267cf66a9",
+        "authenticated": true,
+        "anon": false,
+        "service": false
+      }
+    ],
+    "newAccounts": 0,
+    "newGrants": 0,
+    "providerCalls": 0,
+    "productionChanged": false
+  },
+  "browserAcceptance": false,
+  "limitations": [
+    "Initial fixed collections and bounded text fields only; provider input coverage is separate.",
+    "Operator recording playback, full performance evidence, complete source detail and cross-linked card journeys remain unfinished.",
+    "No production promotion or existing client RLS changes."
+  ]
+}
