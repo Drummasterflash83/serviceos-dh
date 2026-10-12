@@ -1,8 +1,8 @@
 {
-  "observedAt": "2026-10-12T18:18:25.110Z",
+  "observedAt": "2026-10-12T18:41:00Z",
   "domain": "test.openfolk.ai",
   "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
-  "deployment": "dpl_sc6HhikYF5yZQytPw6d9WqYHT2sF",
+  "deployment": "dpl_7LuCXH4iiDDVxVPWiok3tkr9fp7g",
   "protection": "all",
   "routes": [
     {
@@ -38,10 +38,13 @@
   "dnsRecordChanged": false,
   "futureBuildsMustReassignBothAliases": true,
   "signedInVerification": {
-    "observedAt": "2026-10-12T18:34:19Z",
+    "observedAt": "2026-10-12T18:41:00Z",
     "route": "/openfolk/drummonds-commusoft-test",
     "operatorControlsVisible": true,
-    "genericClientLandingNeedsRoutingFix": true,
-    "reportPanelHealthVerified": false
-  }
+    "genericClientLandingNeedsRoutingFix": false,
+    "reportPanelHealthVerified": false,
+    "defaultLoginOpensOperatorController": true
+  },
+  "gitSha": "3089ee4bb9450936dd88384a0a45d2ab0feb5fa4",
+  "servedAuthOrigin": "https://saatxzwxvdvqevbnskxy.supabase.co"
 }

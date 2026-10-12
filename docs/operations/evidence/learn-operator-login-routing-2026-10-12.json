@@ -1,0 +1,52 @@
+{
+  "observedAt": "2026-10-12T18:39:23.479Z",
+  "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+  "target": "dpl_7LuCXH4iiDDVxVPWiok3tkr9fp7g",
+  "prior": "dpl_sc6HhikYF5yZQytPw6d9WqYHT2sF",
+  "liveBefore": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "state": "aliases_and_protection_verified",
+  "aliases": [
+    {
+      "name": "test.openfolk.ai",
+      "target": "dpl_7LuCXH4iiDDVxVPWiok3tkr9fp7g"
+    },
+    {
+      "name": "serviceos-learn-test-allkin.vercel.app",
+      "target": "dpl_7LuCXH4iiDDVxVPWiok3tkr9fp7g"
+    }
+  ],
+  "liveAfter": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "routes": [
+    {
+      "route": "/",
+      "status": 302,
+      "redirectOrigin": "https://vercel.com"
+    },
+    {
+      "route": "/login",
+      "status": 302,
+      "redirectOrigin": "https://vercel.com"
+    },
+    {
+      "route": "/client?section=learn",
+      "status": 302,
+      "redirectOrigin": "https://vercel.com"
+    },
+    {
+      "route": "/openfolk",
+      "status": 302,
+      "redirectOrigin": "https://vercel.com"
+    }
+  ],
+  "version": "learn-operator-login-routing/1",
+  "deployedGitSha": "3089ee4bb9450936dd88384a0a45d2ab0feb5fa4",
+  "servedBackendVerified": "saatxzwxvdvqevbnskxy",
+  "existingOperatorSessionRedirectedFromLoginTo": "/openfolk",
+  "existingGrantUsed": true,
+  "newAccountsOrGrants": false,
+  "localRecoveryAndRoutingTests": 12,
+  "buildPassed": true,
+  "productionChanged": false,
+  "passwordChangePerformed": false,
+  "customerWorkspaceAndReportHealthNotCovered": true
+}

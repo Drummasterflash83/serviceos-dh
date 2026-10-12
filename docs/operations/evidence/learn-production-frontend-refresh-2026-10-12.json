@@ -50,6 +50,9 @@
     "gitSha": "ee42178aa76fd1fa3c4a75d270ef351e9d58c953",
     "state": "READY",
     "target": null,
-    "browserBindingVerified": false
+    "browserBindingVerified": true,
+    "servedAuthOrigin": "https://tgbnakbxwcqjeimygroz.supabase.co",
+    "signedInAcceptance": false,
+    "currentGitHeadHasLaterLoginFix": true
   }
 }

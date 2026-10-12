@@ -7,6 +7,27 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 18:43 UTC — operator login fix deployed and verified on permanent TEST.**
+The protected TEST deployment now serves `3089ee4`. Both stable aliases point to
+the same READY deployment; four unauthenticated route checks remain protected,
+and the served auth origin is the isolated TEST backend. Chris's existing signed-in
+session navigated from `/login` to `/openfolk` automatically, then opened Drummonds.
+No account/grant or production changes. Twelve local recovery/routing checks pass.
+[Deployment evidence](evidence/learn-operator-login-routing-2026-10-12.json).
+The report panel and generic client workspace provisioning remain separate gaps.
+
+The corrected normal production preview's actual login DOM now confirms
+`tgbnakbxwcqjeimygroz`; its production sign-in remains unverified and it predates
+the latest login fix. The rejected custom-staging preview must never be promoted.
+Slack Google sign-in identifies Heidi and the existing **DH / 22-member** workspace,
+but DH requires a separate phone authentication code. The correct prompt is open;
+no Slack app, permission, credential or real capture has been changed.
+
+The final Commusoft import remains paused with zero active jobs. The auth preservation
+review cannot yet explain its entire difference by reversing the known sign-in
+timestamp alone. Its original baseline remains intact and no further dispatch was
+made. All 193 non-auth-user datasets match; full acceptance remains qualified.
+
 **12 October, 18:36 UTC — TEST sign-in confirmed; operator landing fix prepared.**
 Chris is signed in on `test.openfolk.ai`; the Drummonds TEST controller and
 module controls are visible with the existing grant. Default login incorrectly
