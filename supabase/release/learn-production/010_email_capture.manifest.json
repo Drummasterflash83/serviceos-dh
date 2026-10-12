@@ -1,0 +1,152 @@
+{
+  "version": "learn-production-email-capture/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+  "priorSha256": "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/reference/learn-email-ingestion-test-2026-10-10.json",
+      "sha256": "8070cf839267c323b60a677b94e5a92cb553b43edaa59d16dcb0fb3b8ee8d062"
+    },
+    {
+      "path": "supabase/migrations/20261031233000_learn_email_transition_outbox.sql",
+      "sha256": "8ba449af5bbd7334c683ca37780fe307c9f36228678f83ed2c7eb07901716e2a"
+    },
+    {
+      "path": "supabase/migrations/20261031234500_learn_email_job_attempts.sql",
+      "sha256": "fae443075e7f1ff3d5a4ca3add9908fefb8a3e36bc126106ba3714d4defbc4cf"
+    },
+    {
+      "path": "supabase/migrations/20261031235500_learn_email_page_store.sql",
+      "sha256": "021c1c4e7f83cf80a5cba8f7ddb685d06d20446c2bed3be2597d95439765c799"
+    },
+    {
+      "path": "supabase/migrations/20261031235900_learn_email_job_failure.sql",
+      "sha256": "7cc57cf900f017a0dbf5c17899bad746f2d8ea7334d665271c5c2564b16148cb"
+    },
+    {
+      "path": "supabase/migrations/20261101000500_learn_email_paused_recovery.sql",
+      "sha256": "9b5cc76035d17889fc2a01ea10c091478e7b69711c94c2770f870c249f9c6ebb"
+    },
+    {
+      "path": "supabase/migrations/20261101001500_learn_email_enqueue.sql",
+      "sha256": "7fb1ffa5955a20b03963416c49dc1cf4264c5b662cce9c2ffb9fc134c42b114e"
+    },
+    {
+      "path": "supabase/migrations/20261101190000_learn_email_safe_failures.sql",
+      "sha256": "82a333c36dc510bda5051c2eaa1ff1fc3645c659d3678fc198a2eb6639b21ee6"
+    },
+    {
+      "path": "supabase/migrations/20261101360000_learn_workspace_mailbox_identity.sql",
+      "sha256": "2f457d516618fcd2dd55e97b6f8175f22ebc5fb304d9ef9e95ee82540a2e71a3"
+    },
+    {
+      "path": "supabase/migrations/20261101370000_learn_email_mailbox_coverage.sql",
+      "sha256": "606941dc7372690ea871f265ce3371dcebd2ddbc2debe7bc68fa764e48faf0c9"
+    },
+    {
+      "path": "supabase/migrations/20261101400000_learn_email_mailbox_changes.sql",
+      "sha256": "d8f6d39dd10a88acb3f46024ffd9c71bbba706fef0566b9f6e118f1232e4814e"
+    }
+  ],
+  "existingTables": [
+    "email_accounts",
+    "email_messages",
+    "email_sync_runs",
+    "email_threads",
+    "google_workspace_mailboxes",
+    "platform_jobs",
+    "tenants"
+  ],
+  "newTables": [
+    "email_ingestion_checkpoints",
+    "email_ingestion_transitions",
+    "learn_email_transition_requests",
+    "learn_email_transition_settlements",
+    "learn_email_job_attempts",
+    "learn_email_source_versions"
+  ],
+  "newFunctions": [
+    "email_ingestion_account_guard_v2",
+    "email_ingestion_checkpoint_json_v2",
+    "email_ingestion_count_v2",
+    "email_ingestion_evidence_v2",
+    "email_ingestion_keys_v2",
+    "email_ingestion_payload_v2",
+    "email_ingestion_recovery_v2",
+    "email_ingestion_run_guard_v2",
+    "email_ingestion_transition_result_v2",
+    "email_ingestion_transition_v2",
+    "platform_jobs_complete_email_v1",
+    "learn_email_transition_immutable",
+    "learn_email_transition_prepare",
+    "learn_email_transition_pending",
+    "learn_email_transition_apply",
+    "learn_email_job_attempt",
+    "learn_email_attempt_lease",
+    "learn_email_store_guard",
+    "learn_email_store_existing",
+    "learn_email_store_page",
+    "learn_email_job_fail",
+    "learn_email_enqueue",
+    "learn_workspace_identity_guard",
+    "learn_email_preserve_source_version",
+    "learn_email_store_unavailable"
+  ],
+  "changedFunctions": [
+    "platform_jobs_claim",
+    "learn_capture_job_allowed"
+  ],
+  "newSequences": [],
+  "newRole": "email_ingestion_protocol_owner",
+  "extendedTables": {
+    "google_workspace_mailboxes": [
+      "directory_primary_email",
+      "directory_identity_conflict"
+    ]
+  },
+  "newExistingConstraints": {
+    "google_workspace_mailboxes": [
+      "google_workspace_directory_primary_email_valid"
+    ]
+  },
+  "newExistingIndexes": {
+    "email_sync_runs": [
+      "email_sync_runs_tenant_id_id_v2"
+    ]
+  },
+  "newExistingTriggers": {
+    "email_accounts": [
+      "email_ingestion_account_guard_v2"
+    ],
+    "email_sync_runs": [
+      "email_ingestion_run_guard_v2"
+    ],
+    "google_workspace_mailboxes": [
+      "learn_workspace_identity_guard"
+    ],
+    "email_messages": [
+      "learn_email_preserve_source_version"
+    ]
+  },
+  "newExistingPolicies": {
+    "email_accounts": [
+      "email_account_protocol_select_v2",
+      "email_account_protocol_update_v2"
+    ],
+    "email_sync_runs": [
+      "email_run_protocol_select_v2",
+      "email_run_protocol_update_v2"
+    ]
+  },
+  "limitations": [
+    "No seeded account, cursor, feature activation, credential or provider work.",
+    "Protocol guards require matching email workers; never install independently while incompatible legacy writers are active.",
+    "Communication projection/card draft eligibility, phone-aware operator health, real mailbox coverage and signed-in acceptance remain required."
+  ]
+}

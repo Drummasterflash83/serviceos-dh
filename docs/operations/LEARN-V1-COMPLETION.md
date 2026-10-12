@@ -7,6 +7,27 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — durable email capture passes production-archive acceptance.**
+All ten production-specific packages install together. Production's archived schema
+had retained mail but no v2 checkpoint/transition protocol. The new candidate adds
+that restricted protocol, durable requests, worker attempt binding, v4 mailbox-wide
+reconciliation, retained source versions and Workspace alias ownership guards.
+Synthetic suites pass draft storage, provider-absence observations without deletion,
+newer sent revisions, exact retry without duplicate history, continuation between
+workers, paused settlement, stale-worker/foreign-tenant refusal and safe failure
+receipts. Alias conflicts stay latched; existing bindings are not invented.
+
+All 1,591,576 original archived rows and five sequences match. The private protocol
+role has the exact reviewed table/column grants, cannot log in or bypass RLS, and
+cannot read OAuth tokens or message bodies. Temporary installer SET/INHERIT and
+schema CREATE are removed. Existing source permissions and production-only email
+origin fields remain intact. Four suites pass and all disposable databases were
+removed. No hosted environment changed. Matching worker cutover is mandatory:
+legacy direct progress writers are incompatible with the new guards. Communication
+projection/cards, phone-aware health, Microsoft, real capture and signed-in release
+acceptance remain required.
+[Email rehearsal evidence](evidence/learn-production-email-rehearsal-2026-10-12.json).
+
 **12 October — Commusoft capture-to-card journey passes production-archive acceptance.**
 All nine production-specific packages install together. Actual-schema synthetic
 checks cover encrypted connection setup/reuse, scoped credential permits,

@@ -1,0 +1,161 @@
+{
+  "version": "learn-production-email-rehearsal/1",
+  "observedAt": "2026-10-12T04:41:37.448855+00:00",
+  "result": {
+    "state": "production_email_capture_rehearsed_offline",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "fullReleaseAccepted": false,
+    "signedInAcceptance": false,
+    "packages": [
+      "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+      "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+      "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+      "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+      "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+      "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+      "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+      "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+      "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+      "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6"
+    ],
+    "containmentBefore": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "negativeChecks": [
+      "wrong_target",
+      "catalog_drift",
+      "late_failure"
+    ],
+    "protocolRoleGrantsExact": true,
+    "legacyColumnsAndCatalogPreserved": true,
+    "noInventedHistoricalEvidence": true,
+    "accessProbes": [],
+    "addedImportTemplates": 3,
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299,
+      "rows": 1591576,
+      "sequences": 5,
+      "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+      "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+    },
+    "duplicateRejected": true,
+    "journeys": [
+      {
+        "path": "scripts/verify/learn-production-email.assert.sql",
+        "sourceSha256": "7ff5aa604611b38b152849b2e69968a424f5a4486b6c24f1ce7580dcee2dbc49",
+        "probeSha256": "16531a6aa335aa2bdd6198d754b3b4c704f829bbb58a3190729743122e0b6f23"
+      },
+      {
+        "path": "scripts/verify/learn-production-email-coverage.assert.sql",
+        "sourceSha256": "3ba7d9b6aedd25eb392825612b2f4c0db2a1907eb9cbdc9aed8b950aa6f8f4df",
+        "probeSha256": "cebdd058852565d5755d73301e8fc820f14a69919864f1ad16d46530785e609b"
+      },
+      {
+        "path": "scripts/verify/learn-production-email-recovery.assert.sql",
+        "sourceSha256": "d63be0a389b28f3fae801022610a0157c09cc515b4890aba0a4ba274cc0776d3",
+        "probeSha256": "88cab4e43a854caf598f683238194afaa1d9268e0d5f244d05efa2478ab8da8e"
+      },
+      {
+        "path": "scripts/verify/learn-workspace-identity-probe.sql",
+        "sourceSha256": "eaffb5c93a9859fb1edf5eb505b00a379364dfa53ad06945d1aded35488e4c44",
+        "probeSha256": "8ed9dde0c072b06a58badf249c327ca97dc21b271387d09a81988210d013a12b"
+      }
+    ],
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true,
+    "elapsedSeconds": 45.62
+  },
+  "sources": [
+    {
+      "path": "scripts/backup/inspect_production_email.py",
+      "sha256": "cbb60a343139a9d4fb60a8c1a986b95f8d4f18f952774aabb173e5136cc134c2"
+    },
+    {
+      "path": "scripts/backup/rehearse_production_email.py",
+      "sha256": "a2e4a6b4fbb3af6e5a9975d4e2fe8206e91b8884a5aa9a964b47bc6b3c62fe5e"
+    },
+    {
+      "path": "scripts/verify/learn-production-email-candidate.mjs",
+      "sha256": "30e462b9cdf3340b13390fd20ff5072dca1331b12a6d2d2ac163f01574150e40"
+    },
+    {
+      "path": "scripts/verify/learn-production-email.assert.sql",
+      "sha256": "7ff5aa604611b38b152849b2e69968a424f5a4486b6c24f1ce7580dcee2dbc49"
+    },
+    {
+      "path": "scripts/verify/learn-production-email-coverage.assert.sql",
+      "sha256": "3ba7d9b6aedd25eb392825612b2f4c0db2a1907eb9cbdc9aed8b950aa6f8f4df"
+    },
+    {
+      "path": "scripts/verify/learn-production-email-recovery.assert.sql",
+      "sha256": "d63be0a389b28f3fae801022610a0157c09cc515b4890aba0a4ba274cc0776d3"
+    },
+    {
+      "path": "supabase/release/learn-production/010_email_capture.sql",
+      "sha256": "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6"
+    },
+    {
+      "path": "supabase/release/learn-production/010_email_capture.manifest.json",
+      "sha256": "6f7f4b8fb6af47434598a53c871a0097adca210743a3cea38d8b9df38e4143db"
+    }
+  ],
+  "protocolReference": {
+    "path": "supabase/reference/learn-email-ingestion-test-2026-10-10.json",
+    "sha256": "8070cf839267c323b60a677b94e5a92cb553b43edaa59d16dcb0fb3b8ee8d062"
+  },
+  "fixtureAdaptations": [
+    "Four synthetic suites run in separate clones of the complete archived production schema plus packages 001\u2013010, each rolled back.",
+    "Mailbox continuation probe uses current v4 rather than the original v3 assertion.",
+    "Storage probe exercises the storage portion of the TEST mailbox-change acceptance; communication-to-card projection remains an explicit later package dependency.",
+    "Recovery probe models the worker releaseExpiredLeases transition only on its synthetic job before invoking the actual claimant. It does not claim HTTP/runtime reaper acceptance."
+  ],
+  "failedRehearsals": [
+    {
+      "version": 1,
+      "finding": "Explicit ADMIN grant conflicted with managed PostgreSQL creator grant; wrong drift fixture targeted an unrelated table.",
+      "resolution": "Use temporary SET/INHERIT only, revoke executable access and schema CREATE; drift the guarded email_accounts table."
+    },
+    {
+      "version": 2,
+      "finding": "Storage probe extraction ended before its execution body.",
+      "resolution": "Include the complete lease-fenced storage body and verify retained versions."
+    },
+    {
+      "version": 4,
+      "finding": "Queue fixture omitted the worker lease-release step before claim.",
+      "resolution": "Model the exact guarded retry transition on the synthetic job, then test actual claimant/attempt/outbox recovery."
+    }
+  ],
+  "limitations": [
+    "No production/TEST changes, credential reads, real provider requests or mailbox activation.",
+    "Original source preservation covers the retained archive; pg_net omissions remain. No fresh live snapshot or full service recovery is claimed.",
+    "This migration must be deployed with matching email workers; new protocol guards intentionally reject legacy direct cursor/run-completion writes.",
+    "Communication projection/card draft eligibility, phone-aware operator health, Microsoft integration and signed-in acceptance remain required.",
+    "Real Google Workspace credential installation and representative capture acceptance remain blocked by pending access approval."
+  ]
+}

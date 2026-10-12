@@ -442,6 +442,66 @@ This remains offline release preparation. Real provider coverage and reconciliat
 remaining release packages, worker deployment, signed-in acceptance and explicit
 production promotion approval are still required. No live environment changed.
 
+### Email protocol, durable capture and retained mailbox changes rehearsed offline
+
+The tenth package, [010_email_capture.sql](../../supabase/release/learn-production/010_email_capture.sql),
+adds six protected tables, 25 new function names, a private protocol owner, two
+Workspace identity columns and related guards. SHA-256:
+`c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6`.
+The archived production schema had no ingestion checkpoint/transition tables or
+protocol functions. Their pinned TEST reference supplies the exact protocol table,
+helper, owner and privilege contracts; existing production email tables are not
+replaced. Later pinned migrations supply lease-bound requests, page persistence,
+safe failures, v4 mailbox changes and alias identity protection.
+
+The new owner cannot log in, bypass RLS, create roles/databases or read credentials
+or email content. Its table/column grants compare exactly with the restricted
+reference. Temporary schema CREATE and deployer SET/INHERIT access are revoked;
+only PostgreSQL's automatic ADMIN-only creator grant may remain. Existing table
+owners, policies, grants, columns, constraints and source rows are retained. New
+protocol policies apply only to the new role, with two progress guards on existing
+account/run tables. Message updates append private prior versions. The generic
+claimant retains Slack/Commusoft exclusions and can settle saved email work while
+new capture is paused.
+
+All ten packages install together; wrong target, guarded-table drift, late failure
+and duplicate submission are rejected. The 299 archived COPY tables retain all
+1,591,576 original rows and five sequences, with only the three earlier import
+seed templates added. New email ledgers remain empty. Existing mailbox identity
+columns initialise to null/false; no primary owner is guessed from an alias.
+
+Four synthetic suites use the actual production schema and grants. Storage checks
+cover unsent drafts, invalid draft-as-sent refusal, provider absence retaining the
+body/source ID, a newer sent revision, older-boundary refusal and exact retry
+without duplicate source history. The v4 coverage probe withholds the history cursor
+until every page is exhausted and resumes across attempts. Durable recovery tests
+real enqueue/deduplication, request preparation/application/replay, saved-work
+settlement after pause, replacement leases, stale-worker refusal and allowlisted
+failure receipts. The fixture models the worker's lease-release update before
+calling the actual claimant; runtime HTTP/reaper acceptance remains separate.
+Alias checks preserve first ownership, latch later conflicts and reject unauthorised
+scope changes. All clones and their isolated container were removed.
+
+Generator: `node scripts/verify/learn-production-email-candidate.mjs`;
+rehearsal: `python3 scripts/backup/rehearse_production_email.py`.
+The terminal v5 journal is successful. Earlier failures exposed a managed-role
+installation mismatch and fixture extraction/reaper omissions; neither application
+scope nor guards were weakened. [Sanitised evidence](evidence/learn-production-email-rehearsal-2026-10-12.json).
+
+**Coordinated cutover is required.** The new protocol guards intentionally refuse
+legacy direct account-cursor and protected run-completion writes. Pause affected
+old capture, deploy matching protocol-aware email endpoints/worker and verify the
+paired runtime before activating new capture. Never install this package alone
+while incompatible old writers remain active. An old worker is not a safe rollback
+after this installation; retain durable receipts/source versions and recover with
+a compatible worker or reviewed forward fix. No cursor reset or source overwrite
+is part of this package.
+
+Communication projection/card draft eligibility and phone-aware operator health
+remain explicit later dependencies; this package proves capture/storage only.
+Microsoft integration, real mailbox coverage, browser acceptance and production
+approval are still required. No live environment changed.
+
 ## Build the production-specific release candidate
 
 1. Read production's current migration ledger, schema/catalog, deployed function
