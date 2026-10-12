@@ -1,0 +1,46 @@
+{
+  "observedAt": "2026-10-12T15:55:38.047Z",
+  "state": "protected_production_configured_preview_ready",
+  "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+  "id": "dpl_J8BHu5qhjRgeJ3uLQehkot1Fej9k",
+  "url": "https://serviceos-6wpg9beg9-allkin.vercel.app",
+  "gitSha": "e7431669e254d83d8afc2da07e6d7d6a9bc7eba3",
+  "target": "staging",
+  "productionDeploymentUnchanged": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "protection": [
+    {
+      "path": "/",
+      "status": 302,
+      "protectedByVercel": true
+    },
+    {
+      "path": "/login",
+      "status": 302,
+      "protectedByVercel": true
+    },
+    {
+      "path": "/client?section=learn",
+      "status": 302,
+      "protectedByVercel": true
+    },
+    {
+      "path": "/openfolk",
+      "status": 302,
+      "protectedByVercel": true
+    }
+  ],
+  "browser": {
+    "loginScreenLoaded": true,
+    "existingProductionSession": false,
+    "signedInAcceptance": false
+  },
+  "configuration": "Preview inherits the same existing public environment entries as production; no values changed.",
+  "actualServedBackendBinding": "pending authenticated asset or signed-in verification",
+  "productionBackendChanged": false,
+  "productionPromotion": false,
+  "limitations": [
+    "Ready build and login screen do not prove signed-in LEARN journeys.",
+    "New production SQL/runtime/configuration candidate remains undeployed.",
+    "Unauthenticated asset request remains protected; Git source deployments have no file tree through the attempted API."
+  ]
+}

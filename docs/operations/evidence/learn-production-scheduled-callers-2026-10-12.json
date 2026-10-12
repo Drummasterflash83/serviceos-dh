@@ -1,0 +1,158 @@
+{
+  "version": "learn-production-scheduled-callers/1",
+  "observedAt": "2026-10-12T16:07:43.105Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "state": "existing_schedule_bindings_match",
+  "manifestSha256": "86c6135717cb2056c08c694861d25ac1de44144f47f6cb4114f296a200c2875a",
+  "checks": [
+    {
+      "jobId": 35,
+      "jobName": "serviceos-worker",
+      "endpoint": "platform-worker",
+      "secretName": "WORKER_SECRET",
+      "schedule": "* * * * *",
+      "commandHash": "8db9215dcb087977d71c2c66aec49e45",
+      "scheduleUnchanged": true,
+      "credentialBindingMatches": true,
+      "runtimeUnchanged": true,
+      "currentGatewayAcceptsScheduleHeader": true,
+      "candidateGatewayAcceptsScheduleHeader": true
+    },
+    {
+      "jobId": 36,
+      "jobName": "serviceos-phone-sync",
+      "endpoint": "phone-scheduled-sync",
+      "secretName": "PHONE_SCHEDULE_SECRET",
+      "schedule": "*/5 * * * *",
+      "commandHash": "00dca0017140144a8f5e7bd6e73d8f0a",
+      "scheduleUnchanged": true,
+      "credentialBindingMatches": true,
+      "runtimeUnchanged": true,
+      "currentGatewayAcceptsScheduleHeader": true,
+      "candidateGatewayAcceptsScheduleHeader": true
+    },
+    {
+      "jobId": 37,
+      "jobName": "serviceos-phone-processing",
+      "endpoint": "phone-processing-scheduled-sync",
+      "secretName": "PHONE_PROCESSING_SECRET",
+      "schedule": "*/2 * * * *",
+      "commandHash": "386681c2cf264ee0c8b4b522ec615146",
+      "scheduleUnchanged": true,
+      "credentialBindingMatches": true,
+      "runtimeUnchanged": true,
+      "currentGatewayAcceptsScheduleHeader": true,
+      "candidateGatewayAcceptsScheduleHeader": true
+    },
+    {
+      "jobId": 38,
+      "jobName": "serviceos-email-sync",
+      "endpoint": "email-scheduled-sync",
+      "secretName": "EMAIL_SCHEDULE_SECRET",
+      "schedule": "*/5 * * * *",
+      "commandHash": "ad8c01be92875be65ca2410bab51de12",
+      "scheduleUnchanged": true,
+      "credentialBindingMatches": true,
+      "runtimeUnchanged": true,
+      "currentGatewayAcceptsScheduleHeader": true,
+      "candidateGatewayAcceptsScheduleHeader": true
+    },
+    {
+      "jobId": 39,
+      "jobName": "serviceos-email-workspace",
+      "endpoint": "email-workspace-scheduled-sync",
+      "secretName": "EMAIL_WORKSPACE_SCHEDULE_SECRET",
+      "schedule": "*/5 * * * *",
+      "commandHash": "d2a80e20aa7e37cd01fd6dac3e06b7ab",
+      "scheduleUnchanged": true,
+      "credentialBindingMatches": true,
+      "runtimeUnchanged": true,
+      "currentGatewayAcceptsScheduleHeader": true,
+      "candidateGatewayAcceptsScheduleHeader": true
+    },
+    {
+      "jobId": 40,
+      "jobName": "serviceos-email-wksp-backfill",
+      "endpoint": "email-workspace-backfill-scheduled-sync",
+      "secretName": "EMAIL_WORKSPACE_BACKFILL_SECRET",
+      "schedule": "*/15 * * * *",
+      "commandHash": "8354a109177bffb9c7e55a8bfd62e5cf",
+      "scheduleUnchanged": true,
+      "credentialBindingMatches": true,
+      "runtimeUnchanged": true,
+      "currentGatewayAcceptsScheduleHeader": true,
+      "candidateGatewayAcceptsScheduleHeader": true
+    },
+    {
+      "jobId": 41,
+      "jobName": "serviceos-interactions",
+      "endpoint": "interactions-scheduled-sync",
+      "secretName": "SIGNAL_SYNC_SECRET",
+      "schedule": "*/5 * * * *",
+      "commandHash": "d3390d06393559972307772e33699bb7",
+      "scheduleUnchanged": true,
+      "credentialBindingMatches": true,
+      "runtimeUnchanged": true,
+      "currentGatewayAcceptsScheduleHeader": true,
+      "candidateGatewayAcceptsScheduleHeader": true
+    },
+    {
+      "jobId": 42,
+      "jobName": "serviceos-identity",
+      "endpoint": "identity-scheduled-sync",
+      "secretName": "IDENTITY_SYNC_SECRET",
+      "schedule": "*/5 * * * *",
+      "commandHash": "6326fa9be696289c8af2560cfc54f26b",
+      "scheduleUnchanged": true,
+      "credentialBindingMatches": true,
+      "runtimeUnchanged": true,
+      "currentGatewayAcceptsScheduleHeader": true,
+      "candidateGatewayAcceptsScheduleHeader": true
+    },
+    {
+      "jobId": 44,
+      "jobName": "serviceos-customer-cards",
+      "endpoint": "customer-card-scheduled-sync",
+      "secretName": "CARD_SYNC_SECRET",
+      "schedule": "*/5 * * * *",
+      "commandHash": "1c53a8faba626782ee8c2d503443b16b",
+      "scheduleUnchanged": true,
+      "credentialBindingMatches": true,
+      "runtimeUnchanged": true,
+      "currentGatewayAcceptsScheduleHeader": true,
+      "candidateGatewayAcceptsScheduleHeader": true
+    }
+  ],
+  "productionChanges": 0,
+  "functionInvocations": 0,
+  "providerRequests": 0,
+  "credentialValuesRetained": false,
+  "limitations": [
+    "Confirms the current Vault-to-runtime credential fingerprints and header/gateway compatibility; does not invoke a scheduler or prove candidate execution.",
+    "Nine statically observed candidate schedule targets verified. Two additional collector schedules are outside the candidate; external/manual callers and in-flight requests still need release review.",
+    "Does not close signed-in acceptance, thirteen changed function gateway flags, new Slack/Commusoft worker provisioning or release approval."
+  ],
+  "initialProbe": "The restricted read-only API role could not decrypt Vault. The successful comparison used an explicitly READ ONLY transaction through the existing management connection; no privilege change.",
+  "additionalScheduleReview": {
+    "observedAt": "2026-10-12T16:10:17.158Z",
+    "knownScheduleCount": 18,
+    "directCandidateTargets": 9,
+    "additionalCollectors": [
+      {
+        "jobId": 50,
+        "jobName": "openfolk-receptionist-test-results",
+        "commandHash": "0b3415877ea715f4b19b7f414c91f5ec",
+        "target": "receptionist-test-collector",
+        "outsideRuntimeCandidate": true
+      },
+      {
+        "jobId": 51,
+        "jobName": "openfolk-emma-call-reviews",
+        "commandHash": "236d303a4a9c933d7111bc4c53796dab",
+        "target": "receptionist-review-collector",
+        "outsideRuntimeCandidate": true
+      }
+    ],
+    "limitation": "Collector target substrings and unchanged command hashes verified; not a positive execution check or proof that no external/manual caller exists."
+  }
+}

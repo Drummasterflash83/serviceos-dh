@@ -1,13 +1,13 @@
 {
   "scope": "TEST only",
   "run": "eb260c9d-e1ee-48cf-8cc4-179375b50613",
-  "observedAt": "2026-10-12T13:58:09.310845+00:00",
+  "observedAt": "2026-10-12T15:53:21.663548+00:00",
   "resource": "propertyContacts",
   "contactType": "workaddress",
   "approvalId": "48409f2c-20b3-48af-82c5-3c7f20dc0278",
-  "pages": 0,
+  "pages": 871,
   "parentsPlanned": 871,
-  "complete": false,
+  "complete": true,
   "traversals": [
     {
       "pages": 127,
@@ -34,6 +34,14 @@
       "planned_parents": 0
     },
     {
+      "pages": 871,
+      "complete": true,
+      "collection": "propertyContacts",
+      "approval_id": "48409f2c-20b3-48af-82c5-3c7f20dc0278",
+      "contact_type": "workaddress",
+      "planned_parents": 871
+    },
+    {
       "pages": 1547,
       "complete": true,
       "collection": "propertyContacts",
@@ -52,20 +60,12 @@
       "collection": "properties"
     },
     {
-      "records": 2395,
+      "records": 2961,
       "collection": "propertyContacts"
     }
   ],
-  "jobs": [
-    {
-      "error": null,
-      "status": "queued",
-      "attempt": 0,
-      "availableAt": "2026-10-12T13:57:57.021541+00:00",
-      "leaseExpiresAt": null
-    }
-  ],
-  "requests": 1192,
+  "jobs": [],
+  "requests": 2064,
   "maxProviderRequests": 4000,
   "newAccounts": 0,
   "newGrants": 0,
@@ -104,17 +104,18 @@
     }
   },
   "runtime": {
-    "version": 7,
+    "version": 8,
     "sourceBundleSha256": "09aa4349380bfbea7fbd38b484ede717b308433f36f3063eeea42ee57edb1d0e",
     "deployedBundleSha256": "c07750cef88ffb84ee5107592c42fe920eb011daef1f8a5286c7fe22b7803961",
     "allDatasetsPreservedAtDeployment": true,
     "downloadedExecutableMatch": true,
     "downloadedTests": 53,
     "localTests": 78,
-    "strictTypecheck": "passed"
+    "strictTypecheck": "passed",
+    "observedAt": "2026-10-12T15:54:35.617Z"
   },
   "limits": [
-    "The original 1,547-customer contact plan completed; contacts for the refreshed customer list and site contacts remain outstanding.",
+    "The original 1,547-customer plan and all 871 planned sites completed. Refreshed 1,550-customer coverage still requires reconciliation; do not equate completed site traversal with complete contact coverage.",
     "One real customer/site/job/contact card chain verified separately; whole-account publication and enriched card acceptance remain open.",
     "Generic historical authority failures do not identify their precise cause.",
     "Production release remains separate."

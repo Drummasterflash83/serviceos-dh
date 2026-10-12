@@ -7,6 +7,44 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 16:08 UTC — TEST sign-in restored and customer contacts running.**
+Chris signed in with the existing TEST operator account. The logged OpenFolk
+control queued the refreshed 1,550-customer contact traversal, approval
+`1d42ce05-406d-406b-be7a-5837afa25480`, with 1,800 pages and expiry 19:58 UTC.
+The supervisor retains its original total 4,000-request limit; it was not reset.
+The pre-dispatch authentication difference was proven to be only the operator's
+known `last_sign_in_at` change: substituting its previously observed value exactly
+reproduced the retained checksum. All other 193 datasets matched. The original
+and reconciled fingerprints remain in the private journal; no auth row changed
+through this reconciliation. The first short worker batch is running.
+
+All nine existing production cron callers targeting candidate functions have
+matching Vault/runtime credential fingerprints, unchanged schedules and unchanged
+header-compatible gateway settings. This removes the uncertainty about those
+existing credential bindings. It does not prove candidate execution, the thirteen
+other proposed gateway changes, or new Slack/Commusoft callers. No production
+function was invoked and nothing was deployed or paused.
+[Scheduled caller evidence](evidence/learn-production-scheduled-callers-2026-10-12.json).
+
+**12 October, 15:53 UTC — site contacts complete; production-configured preview built.**
+All 871 planned sites completed their contact traversal. Retained business inputs
+now include 2,961 contacts, 2,421 properties and 12,611 jobs. No pending Commusoft
+job remains; all 194 protected datasets match the reviewed original baseline.
+The run used 2,064 of its 4,000 provider-request budget. The original 1,547-customer
+pass completed earlier; the refreshed 1,550-customer set still needs reconciliation.
+Whole-account publication/enrichment is not accepted. The required TEST sign-in
+and next logged customer-contact approval were subsequently completed above.
+[Contact evidence](evidence/learn-commusoft-operator-continuation-2026-10-12.json).
+
+The protected production-project preview is READY from Git `e743166`; its login
+screen loads and four unauthenticated routes remain Vercel-protected. It inherits
+the same public environment entries as production. Actual served backend binding,
+signed-in LEARN/operator journeys and live branding acceptance remain pending.
+The production domain/deployment remains unchanged. The matching production SQL,
+runtime and configuration have not been installed.
+[Preview evidence](evidence/learn-production-frontend-preview-2026-10-12.json).
+Drummonds Slack login is still missing; the observed Slack session is OpenFolk only.
+
 **12 October — production rollback artifacts and transport prepared.** All 28
 existing production endpoints have retained source and compiled backups, with
 unchanged deployment metadata. All 37 new tested artifacts now have upload-format

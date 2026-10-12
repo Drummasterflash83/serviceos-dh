@@ -12,6 +12,39 @@ are on `codex/learn-v1-test`.
 
 ## Matching processing candidate — 12 October
 
+**Existing scheduler credential bindings verified, read-only.** All nine observed
+production cron callers targeting candidate endpoints still match their command,
+schedule and runtime baselines. Their Vault values hash to the deployed runtime
+secret fingerprints; the candidate retains their `verify_jwt=false` setting and
+application-level `x-schedule-secret` authentication. No credential values were
+returned or retained. The restricted metadata role cannot decrypt Vault, so the
+successful comparison used the existing management connection inside an explicit
+READ ONLY transaction. No role or permission changed.
+[Caller evidence](evidence/learn-production-scheduled-callers-2026-10-12.json) and
+[pinned schedule baseline](../../supabase/release/learn-production/scheduled-callers.manifest.json).
+
+The release must coordinate these nine schedules with in-flight HTTP calls and
+worker leases. Pausing the shared platform worker also delays other queued work,
+including Marketing; do not describe that pause as affecting LEARN only. Keep the
+original commands and schedules, record prior active states, and resume only after
+the compatible runtime/configuration and acceptance checks are confirmed. The
+two additional collector schedules target functions outside the candidate; the
+18 known schedules are accounted for. External/manual callers and in-flight
+requests still need review. This
+inventory is not a pause command or release approval. Positive candidate caller
+checks, the thirteen changed gateway flags and new Slack/Commusoft caller bindings
+remain separate gates.
+
+The production-project **protected preview** is now built from verified GitHub
+checkpoint `e7431669e254d83d8afc2da07e6d7d6a9bc7eba3`:
+[release preview](https://serviceos-6wpg9beg9-allkin.vercel.app/login).
+It inherits the existing production/preview public configuration and leaves the
+production deployment and custom domains unchanged. Its login screen loads; all
+four unauthenticated routes remain protected. Actual served backend binding and
+signed-in acceptance remain pending. Do not promote this preview before the
+matching database/runtime/configuration and the concrete release approval.
+[Preview evidence](evidence/learn-production-frontend-preview-2026-10-12.json).
+
 **Rollback artifacts and upload bytes are now prepared.** Read-only download
 retained all 28 existing production endpoints as both source (227 files) and
 compiled artifacts, with unchanged deployment metadata before/after each set.
@@ -120,10 +153,10 @@ matching the observed `invalid_grant` failures. Two other configured addresses
 are aliases. Retain their histories and reconcile their current capture routing
 before claiming complete mailbox coverage; no mailbox was changed by this check.
 
-The current public catalog has four check-constraint differences from the archive,
+The 14:52 public-catalog comparison had four check-constraint differences from the archive,
 on Marketing tables outside every candidate's referenced-table list. No function
-or view difference was observed. Their exact definitions and preservation still
-need review before execution; they must not be replaced from TEST.
+or view difference was observed. The subsequent direct archive comparison above
+resolved these four differences without replacing any production definition.
 [Live metadata and directory evidence](evidence/learn-production-live-readiness-2026-10-12.json).
 
 ## Complete candidate schema rehearsal — 12 October, latest scope
