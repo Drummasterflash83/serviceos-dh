@@ -51,6 +51,7 @@ try:
     print(sql(source(assertions)), flush=True)
     if not legacy: subprocess.run(['node','scripts/verify/learn-commusoft-contact-traversal-bridge.mjs',docker,name],cwd=root,check=True,timeout=60)
     if not legacy:
+        print(sql("begin;\n"+source('scripts/verify/learn-commusoft-property-refresh.assert.sql')+"\nrollback;"),flush=True)
         sql("alter table tenants alter column status set default 'active',add column slug text,add column display_name text,add column metadata jsonb default '{}';alter table provider_connections alter column updated_at set default clock_timestamp();")
         sql("begin;\n"+source('scripts/verify/learn-commusoft-contact-traversal-hosted.assert.sql')+"\nrollback;")
         print('Hosted rollback probe also passed against the disposable database.',flush=True)

@@ -7,6 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 13:24 UTC — property freshness gap measured; refresh rehearsed locally.**
+Four bounded read-only provider requests found 2,421 currently available properties
+against 2,418 retained. All nine dormant properties are already retained; the tail
+contains three additional active customers. This does not explain the separate
+169 missing property parents referenced by retained jobs or establish deletion history.
+Both diagnostic checks preserved all 194 protected datasets.
+[Totals](evidence/learn-commusoft-property-totals-2026-10-12.json) and
+[new-customer tail](evidence/learn-commusoft-property-tail-2026-10-12.json).
+
+A disposable PostgreSQL rehearsal now verifies a complete property refresh retains
+old pages, plans and source versions, deduplicates unchanged properties, versions
+changed properties, and discovers a new customer in the next contact plan. It also
+rejects starting contacts from an unfinished refresh and does not treat omitted
+properties as deletions. The actual worker/transport/SQL bridge and overview parser
+pass alongside this rehearsal. This is local evidence, not a hosted refresh.
+Finish the current customer-contact traversal without changing its frozen plan,
+refresh properties through the operator workflow, then traverse site contacts and
+the refreshed customer list. New-customer contact coverage remains outstanding.
+
 **12 October, 13:07 UTC — customer-contact import advancing.**
 The existing supervised run reached 1,268 of 1,547 customer properties and retained
 2,036 contacts alongside 2,418 properties and 12,611 jobs. Its exact next worker

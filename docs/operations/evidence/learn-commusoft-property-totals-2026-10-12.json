@@ -1,0 +1,57 @@
+{
+  "startedAt": "2026-10-12T13:14:14.211Z",
+  "state": "totals_observed",
+  "maximumRequests": 3,
+  "requests": 3,
+  "checks": [
+    {
+      "filter": "unfiltered",
+      "status": 200,
+      "json": true,
+      "total": 2421,
+      "returned": 1,
+      "hasMore": true,
+      "returnedStatus": "active",
+      "observedAt": "2026-10-12T13:14:14.653Z"
+    },
+    {
+      "filter": "active",
+      "status": 200,
+      "json": true,
+      "total": 2412,
+      "returned": 1,
+      "hasMore": true,
+      "returnedStatus": "active",
+      "observedAt": "2026-10-12T13:14:16.912Z"
+    },
+    {
+      "filter": "dormant",
+      "status": 200,
+      "json": true,
+      "total": 9,
+      "returned": 1,
+      "hasMore": true,
+      "returnedStatus": "dormant",
+      "observedAt": "2026-10-12T13:14:19.083Z"
+    }
+  ],
+  "stored": [
+    {
+      "status": "active",
+      "n": 2409
+    },
+    {
+      "status": "dormant",
+      "n": 9
+    }
+  ],
+  "providerWrites": 0,
+  "databaseWrites": 0,
+  "limits": [
+    "Point-in-time available-property totals; no deletion or missing-parent cause inferred.",
+    "Separate three-request diagnostic, not part of the contact import permit count."
+  ],
+  "preservedDatasets": 194,
+  "matchesStored": false,
+  "completedAt": "2026-10-12T13:14:23.765Z"
+}

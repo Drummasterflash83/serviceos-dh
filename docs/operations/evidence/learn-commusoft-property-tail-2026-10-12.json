@@ -1,0 +1,36 @@
+{
+  "startedAt": "2026-10-12T13:15:37.798Z",
+  "state": "totals_observed",
+  "maximumRequests": 1,
+  "requests": 1,
+  "checks": [
+    {
+      "status": 200,
+      "returned": 3,
+      "hasMore": false,
+      "total": 2421,
+      "types": {
+        "customer": 3,
+        "workaddress": 0
+      },
+      "states": {
+        "active": 3,
+        "dormant": 0
+      },
+      "observedAt": "2026-10-12T13:15:38.301Z"
+    }
+  ],
+  "retained": [
+    {
+      "records": 2418
+    }
+  ],
+  "providerWrites": 0,
+  "databaseWrites": 0,
+  "limits": [
+    "Point-in-time available-property totals; no deletion or missing-parent cause inferred.",
+    "Separate one-request diagnostic, not part of the contact import permit count."
+  ],
+  "preservedDatasets": 194,
+  "completedAt": "2026-10-12T13:15:41.688Z"
+}
