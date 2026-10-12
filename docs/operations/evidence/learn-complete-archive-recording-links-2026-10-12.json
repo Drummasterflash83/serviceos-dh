@@ -1,0 +1,64 @@
+{
+  "contract": "learn-complete-archive-recording-links/1",
+  "observedAt": "2026-10-12T08:21:34.268813+00:00",
+  "state": "complete_archive_links_recovered_locally",
+  "databaseSnapshotAt": "2026-10-12T06:37:26.256528+00:00",
+  "sourceArchive": {
+    "bytes": 197303039,
+    "sha256": "bdb6be1f2cb934247949d6443305550888e6b4e62f5c55dac419a432616bd3db"
+  },
+  "nativeDataComparison": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1594994,
+    "sequences": 5,
+    "comparisonSha256": "2d746e1448a455807a64651312c7e2cb3840651de0fb819a646a8491351d47d4",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "networkSupplementComparison": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 2,
+    "rows": 711,
+    "sequences": 1,
+    "comparisonSha256": "944033a82ddc233131cf6ee5854b9328712b4f3bb0d3fad693ce331b7b848d3f",
+    "scope": "two explicitly captured pg_net COPY tables and separately observed nontransactional sequence"
+  },
+  "allPhysicalTablesCaptured": true,
+  "recordingRelationships": {
+    "recordings": 2883,
+    "withObjectPath": 2883,
+    "missingStorageMetadata": 0
+  },
+  "tableCatalogMatched": true,
+  "extensionVersionsMatched": true,
+  "noActorRows": {
+    "emails": 0,
+    "recordings": 0
+  },
+  "containerRemoved": true,
+  "elapsedSeconds": 66.73,
+  "originalSixSnapshotFilesUnchanged": true,
+  "metadataSavedPrivately": true,
+  "vaultDecryptionCheckedThisRun": false,
+  "providerRequests": false,
+  "backupTestsPassed": 85,
+  "laterManifestChecks": [
+    "Strict exact-match behaviour remains the default",
+    "Explicit archived-coverage check requires a same-time or later manifest",
+    "Additional references disclosed, not claimed recovered in database",
+    "Missing files and changed source versions remain failures"
+  ],
+  "freshAWSManifestCompared": false,
+  "freshAudioRestored": false,
+  "remaining": [
+    "Complete running daily backup verification",
+    "Compare fresh AWS manifest and restore/decode one linked file",
+    "Independent database escrow/copy, full application recovery and dependable recurring operation"
+  ],
+  "sourceSha256": {
+    "scripts/backup/restore_production_database.py": "211cb7cbb4eded2ba958f23ba3cb4d551267b32d3c6befb36d31f32c9b57f170",
+    "scripts/backup/recording-database-recovery.mjs": "98d1cd148bbb22b990590c10e174192e31e0f579c5b694b426c4ca688ed94796",
+    "scripts/backup/recording-database-recovery.test.mjs": "294390e9dff6ca61407acbdd8dad583d2361dacb6b1abe4ebc75adba6c854f7a",
+    "scripts/backup/check-complete-database-audio.mjs": "71ef7376b087d8757f4b5eebc86fa833c1f4b2586ea09d55253aa0737eea3082"
+  }
+}

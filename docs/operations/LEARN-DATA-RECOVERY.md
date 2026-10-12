@@ -1,5 +1,23 @@
 # LEARN data recovery coverage
 
+**12 October — complete archive recording metadata recovered.** The retained
+06:37 UTC snapshot restored into an offline container; all 1,594,994 native rows,
+711 operational rows, catalog/RLS and extensions matched. Its 2,883 recording
+references were extracted to private local evidence, the six original files
+stayed unchanged, and the container was removed after 66.73 seconds. This run did
+not repeat Vault decryption or contact production/AWS.
+
+The fresh daily file scan observed 2,893 files and 2,887 references with no missing
+pointers; its destination verification is still running. An explicit archived
+coverage comparison now supports a later manifest while reporting additional
+references as absent from the database snapshot. Strict exact-reference checks
+remain unchanged for existing callers. All 85 backup tests pass. The prepared
+`node scripts/backup/check-complete-database-audio.mjs --check-complete-archive`
+command waits for a successful daily result, uses only the separate Restore
+identity, checks the downloaded manifest, restores one bounded linked file and
+removes temporary audio after decoding. Its actual fresh AWS/audio result remains
+unverified. [Local archive evidence](evidence/learn-complete-archive-recording-links-2026-10-12.json).
+
 The remaining independent database destination, key escrow, access, cost and
 restore sequence are specified in the
 [database backup proposal](../../infrastructure/database-backup/README.md).

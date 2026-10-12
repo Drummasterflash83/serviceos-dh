@@ -36,7 +36,8 @@ def write_private(path, value):
 
 
 def run(*, combined_audio=False, compare_native=False, source_root=None,
-        evidence_root=None, vault_root_key=None, expected_vault_count=None):
+        evidence_root=None, vault_root_key=None, expected_vault_count=None,
+        export_recording_links=False):
     source = Path(source_root) if source_root is not None else ROOT
     evidence = Path(evidence_root) if evidence_root is not None else source
     if combined_audio and (source_root is not None or evidence_root is not None):
@@ -202,7 +203,7 @@ def run(*, combined_audio=False, compare_native=False, source_root=None,
                 report['vaultDecryptionProven'] = True
                 report['vaultSecretsVerified'] = vault['decrypted']
                 report['vaultRecoveryScope'] = 'Archived ciphertext authenticated locally; no live provider comparison'
-            if combined_audio:
+            if combined_audio or export_recording_links:
                 # Extract only relationship/version metadata from the restored
                 # database; no phone numbers, transcripts or communications.
                 rows = json.loads(target.query("select json_agg(json_build_object("
@@ -220,6 +221,8 @@ def run(*, combined_audio=False, compare_native=False, source_root=None,
                     'tenantId': '00000000-0000-0000-0000-000000000001',
                     'sourceProjectRef': 'tgbnakbxwcqjeimygroz',
                     'databaseSnapshotAt': export['snapshot']['observedAt'], 'rows': rows})
+                report['recordingLinksExported'] = True
+            if combined_audio:
                 report['state'] = 'checking_independent_audio_backup'
                 write_private(report_path, report)
                 print(json.dumps({'stage': report['state']}), flush=True)

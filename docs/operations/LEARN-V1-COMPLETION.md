@@ -7,6 +7,17 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — full archive references prepared for fresh file-backup reconciliation.**
+A new offline restore preserved all 1,594,994 native rows and 711 operational rows,
+exported 2,883 private recording links and removed the container after 66.73 seconds.
+The source archive and its five companion files stayed unchanged. Later file
+inventories can be checked for every archived reference while separately reporting
+additional references absent from that database snapshot; exact-match callers
+retain their stricter contract. All 85 backup tests pass. The current daily retry
+observed 2,893 files and 2,887 references without missing pointers, but destination
+verification and the subsequent AWS-only linked-audio restore remain in progress
+or pending. [Evidence](evidence/learn-complete-archive-recording-links-2026-10-12.json).
+
 **12 October, 08:11 UTC — recording refresh stopped on source change.**
 The manual daily run detected changed listings/references during its metadata
 inventory and failed closed after 2,934 requests. No new inventory or backup
