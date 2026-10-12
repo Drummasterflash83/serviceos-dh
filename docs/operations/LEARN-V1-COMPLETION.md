@@ -7,6 +7,28 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — private voicemail release passes combined offline acceptance.**
+All thirteen production-specific packages install together. Four synthetic suites
+pass actual email storage → discovery → claimed queue job → private inbox,
+1,100-row bounded dispatch, recovery, historical inbox pagination and the existing
+email/Phone-to-card journey. Original owners retain historical messages after
+reassignment; new owners, unrelated tenants and revoked managers are denied.
+Operator aggregate health does not grant message access. Paused/failed processing
+never becomes reported success or complete provider coverage.
+
+All 1,591,576 original archived rows and five sequences match, including Storage
+rows. The private audio bucket, existing policies, role attributes/memberships
+and source history remain intact. One private EML bucket and the earlier three
+import templates are separately accounted for. All containers were removed.
+No production or hosted TEST changes were made. The local Supabase storage-policy
+hook is explicit; a small read-only production configuration query returned
+HTTP 544, so production installer capability still needs verification.
+
+Real voicemail routing/ownership, provider/DKIM checks, audio/EML byte readback,
+signed-in playback, independent backups of both voicemail buckets, Microsoft
+release reconciliation, paired runtime and live approval remain required.
+[Voicemail rehearsal evidence](evidence/learn-production-voicemail-rehearsal-2026-10-12.json).
+
 **12 October — communication-to-card release passes production-archive acceptance.**
 All twelve production-specific packages install together. Eleven synthetic suites
 pass source projection, identity/card delivery, operator review, fenced job

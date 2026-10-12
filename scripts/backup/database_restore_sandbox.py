@@ -23,7 +23,7 @@ class RecoveryError(RuntimeError):
 
 class RestoreSandbox:
     def __init__(self, *, image=IMAGE, private_diagnostics=None, network_extension=False,
-                 synthetic_vault=False):
+                 synthetic_vault=False, storage_policy_hook=False):
         if image not in (IMAGE, 'public.ecr.aws/supabase/postgres:17.6.1.141'):
             raise RecoveryError('Unreviewed recovery image')
         self.image = image
@@ -33,6 +33,9 @@ class RestoreSandbox:
         # This enables synthetic round trips, not recovery of source Vault secrets.
         if synthetic_vault:
             self.preloaded_libraries += ',pgsodium,supabase_vault'
+        self.storage_policy_hook = storage_policy_hook
+        if storage_policy_hook:
+            self.preloaded_libraries += ',supautils'
         self.private_diagnostics = private_diagnostics
         self.failed_command_count = 0
         self.docker = shutil.which('docker') or '/usr/local/bin/docker'
@@ -91,6 +94,9 @@ class RestoreSandbox:
             raise RecoveryError('Recovery scheduler or listener configuration changed')
         if self.query("show max_worker_processes;") != '0':
             raise RecoveryError('Recovery background worker slots are not disabled')
+        if self.storage_policy_hook and json.loads(self.query(
+                "show supautils.policy_grants;")) != {'postgres': ['storage.objects']}:
+            raise RecoveryError('Local storage policy hook differs')
         if self.network_extension and self.query(
                 "select current_setting('pg_net.database_name') || '|' || "
                 "exists(select 1 from pg_database where datname='serviceos_network_disabled')::text;") != 'serviceos_network_disabled|false':
@@ -121,6 +127,8 @@ class RestoreSandbox:
                 '-c', 'pg_net.database_name=serviceos_network_disabled',
                 '-c', 'cron.launch_active_jobs=off',
                 '-c', 'listen_addresses=127.0.0.1',
+                *(['-c', 'supautils.policy_grants={"postgres":["storage.objects"]}']
+                  if self.storage_policy_hook else []),
                 '-c', 'log_min_error_statement=panic'])
             self.created = True
             # TCP waits for final startup, not the image's temporary init server.

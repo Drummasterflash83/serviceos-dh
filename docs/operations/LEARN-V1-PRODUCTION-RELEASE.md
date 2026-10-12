@@ -613,6 +613,76 @@ No capture, processing schedule or hosted environment is activated by this packa
 Generator: `node scripts/verify/learn-production-cards-candidate.mjs`.
 Rehearsal: `python3 scripts/backup/rehearse_production_cards.py`.
 
+### Private voicemail intake and inbox candidate
+
+The thirteenth package, [013_voicemail_capture.sql](../../supabase/release/learn-production/013_voicemail_capture.sql),
+preserves the existing voicemail foundation after packages 001–012. Its draft hash
+is `d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7`.
+Five pinned migrations add nine protected intake/queue/discovery tables, thirteen
+functions and one retained-email scan index. No existing function, source column,
+mailbox owner snapshot, manager grant or private audio bucket is replaced.
+
+The package adds a private `learn-voicemail-sources` bucket for original EMLs, with
+a 1 MiB limit and `message/rfc822` type, and an anonymous/authenticated restrictive
+Storage policy. It does not seed routes, accounts, human grants, credentials,
+provider requests or scheduled jobs. The audio bucket remains private with its
+existing 25 MiB limit. Source email discovery is only a bounded candidate scan;
+it never establishes complete provider coverage or verified sender/ownership.
+
+Storage metadata is now part of the preflight and rollback guard, alongside public
+tables/functions and the preceding receipt. Capture the catalog under the same
+`public,pg_catalog` search path used by the installer: policy-expression hashes
+can differ when the inspector's search path is different. Preserve all existing
+Storage owners, grants, policies and rows; account for the one new bucket separately.
+
+The offline runner explicitly enables the pinned image's documented
+[supautils storage-policy hook](https://github.com/supabase/supautils#table-ownership-bypass)
+for `postgres` on `storage.objects`, from container startup. It adds no role
+membership and does not transfer storage ownership. This reproduces a managed-host
+capability, not evidence that the production host currently supplies it. A small
+read-only production configuration request returned HTTP 544 on 12 October;
+production configuration remains unverified. Do not widen production grants or
+change storage ownership to make a release pass. Verify the managed installer
+capability and fresh catalog before requesting promotion.
+
+The terminal v6 combined rehearsal passes four suites in 51.07 seconds. Actual
+v4 email storage feeds candidate discovery, a genuinely claimed queue job, private
+publication and the original owner's inbox. Reassignment, new-owner denial,
+explicit manager access/revocation, foreign tenant and expired operator checks
+pass; operator health grants do not reveal private content. Incomplete uploads,
+paused publication and a failed receipt roll back without losing retained inputs.
+A 1,100-email fixture proves 500/500/100 bounded dispatch, draft exclusion,
+per-route failure isolation, minute replay, provider retry, pause without consuming
+the failure budget, interrupted-worker recovery and stale-worker rejection.
+Historical inbox pagination and the prior email/phone-to-card journey also pass.
+
+All 299 archived COPY tables, 1,591,576 original rows and five sequences match.
+Only the earlier three import templates and one declared private bucket are added;
+all new operational tables are empty in the preservation copy. Public and Storage
+catalogs, original bucket metadata, role attributes and memberships are preserved.
+Wrong target, table/policy/bucket drift, injected late failure and duplicate
+submission are rejected. Every disposable database was removed. See
+[sanitised evidence](evidence/learn-production-voicemail-rehearsal-2026-10-12.json).
+Storage metadata fixtures do not prove real EML/audio bytes or signed-in playback.
+The candidate does not change production or hosted TEST.
+
+Install with matching voicemail importer, shared queue worker, dispatcher and
+private playback handler. Before activation, prove real Gmail delegation,
+Birchills signature/recipient verification, historical recipient-to-owner routes,
+original EML/audio byte readback, paused capture, signed-in playback and independent
+backup/restore of both private buckets. The existing call-recording backup does
+not automatically cover voicemail audio or EMLs. Do not widen general LEARN card
+access to private mailbox contents through this release.
+
+For rollback, pause affected voicemail routes and new capture, retain immutable
+intake/source/job evidence and both private buckets, and recover with a compatible
+worker. Never delete retained attachments or receipts to reset a failed import.
+A completed retained-email pass must continue reporting provider coverage as
+unproven. Operator status exposes aggregate health, without granting message access.
+
+Generator: `node scripts/verify/learn-production-voicemail-candidate.mjs`.
+Rehearsal: `python3 scripts/backup/rehearse_production_voicemail.py`.
+
 ## Build the production-specific release candidate
 
 1. Read production's current migration ledger, schema/catalog, deployed function

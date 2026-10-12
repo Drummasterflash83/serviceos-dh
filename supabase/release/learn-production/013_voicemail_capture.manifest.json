@@ -1,0 +1,108 @@
+{
+  "version": "learn-production-voicemail-capture/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+  "priorSha256": "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101420000_learn_voicemail_private_intake.sql",
+      "sha256": "157e2c6b0ec864a6d4e331ab2d7a7aa25388d1e04c2c1e0df14ff27c3d9e7cae"
+    },
+    {
+      "path": "supabase/migrations/20261101430000_learn_voicemail_queue.sql",
+      "sha256": "770292cbdcdb063871d3d532393b0cbac16c0ecf6b01047dc250af659f9ab965"
+    },
+    {
+      "path": "supabase/migrations/20261101440000_learn_voicemail_discovery.sql",
+      "sha256": "422e0b85672320314d6ee6540a7022786ff5f593e9673126f53b097890676e8b"
+    },
+    {
+      "path": "supabase/migrations/20261101450000_learn_voicemail_dispatch.sql",
+      "sha256": "337d14741d4e244531aa8778103ac211bfa8910404d3dc002bd321160980d672"
+    },
+    {
+      "path": "supabase/migrations/20261101460000_learn_voicemail_inbox_history.sql",
+      "sha256": "7ea9237b8adc4fdcd70f8616254e8ccd5f50fb048cce1316621a28b6ce364457"
+    }
+  ],
+  "existingTables": [
+    "email_accounts",
+    "email_messages",
+    "jobs",
+    "people",
+    "platform_jobs",
+    "profiles",
+    "receptionist_mailbox_managers",
+    "receptionist_mailboxes",
+    "receptionist_voicemail_access_log",
+    "receptionist_voicemails",
+    "tenants"
+  ],
+  "newTables": [
+    "receptionist_voicemail_email_routes",
+    "receptionist_voicemail_intakes",
+    "receptionist_voicemail_sources",
+    "receptionist_voicemail_jobs",
+    "receptionist_voicemail_job_receipts",
+    "receptionist_voicemail_scans",
+    "receptionist_voicemail_candidates",
+    "receptionist_voicemail_scan_receipts",
+    "receptionist_voicemail_dispatch_receipts"
+  ],
+  "newFunctions": [
+    "voicemail_intake_immutable",
+    "voicemail_intake_route",
+    "voicemail_intake_prepare",
+    "voicemail_intake_publish",
+    "voicemail_job_immutable",
+    "voicemail_queue_step",
+    "voicemail_queue_recover",
+    "voicemail_discover_page",
+    "voicemail_discovery_status",
+    "voicemail_schedule_tick",
+    "voicemail_discovery_status_data",
+    "learn_operator_voicemail_status",
+    "learn_voicemail_mailboxes"
+  ],
+  "changedFunctions": [],
+  "changedViews": [],
+  "newSequences": [],
+  "newRole": null,
+  "extendedTables": {},
+  "newExistingConstraints": {},
+  "newExistingIndexes": {
+    "email_messages": [
+      "email_messages_voicemail_scan_idx"
+    ]
+  },
+  "newExistingTriggers": {},
+  "newExistingPolicies": {},
+  "newStoragePolicies": {
+    "objects": [
+      "voicemail_source_no_direct_storage_access"
+    ]
+  },
+  "newBuckets": [
+    {
+      "id": "learn-voicemail-sources",
+      "name": "learn-voicemail-sources",
+      "public": false,
+      "file_size_limit": 1048576,
+      "allowed_mime_types": [
+        "message/rfc822"
+      ]
+    }
+  ],
+  "limitations": [
+    "Managed-host storage policy authority must be verified before production execution; the offline rehearsal explicitly supplies the documented supautils hook.",
+    "Preserves existing voicemail foundation, owner snapshots, manager grants and private audio bucket.",
+    "Adds private raw-email storage; does not seed routes, user access, credentials, scheduled jobs or provider requests.",
+    "Requires matched workers, verified recipient/ownership routes, real provider capture, audio readback/playback, independent audio/EML backup and signed-in acceptance.",
+    "Discovery of retained emails is not complete provider coverage."
+  ]
+}

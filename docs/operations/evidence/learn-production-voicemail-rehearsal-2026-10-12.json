@@ -1,0 +1,126 @@
+{
+  "state": "production_voicemail_capture_rehearsed_offline",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "fullReleaseAccepted": false,
+  "signedInAcceptance": false,
+  "packages": [
+    "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+    "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+    "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+    "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+    "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+    "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+    "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+    "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+    "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+    "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+    "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+    "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7"
+  ],
+  "containmentBefore": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "negativeChecks": [
+    "wrong_target",
+    "catalog_drift",
+    "storage_drift",
+    "bucket_drift",
+    "late_failure"
+  ],
+  "roleAttributesAndMembershipsUnchanged": true,
+  "storageCatalogAndPrivateBucketPreserved": true,
+  "localManagedStoragePolicyHook": {
+    "library": "supautils",
+    "policyGrants": {
+      "postgres": [
+        "storage.objects"
+      ]
+    },
+    "productionConfigurationVerified": false,
+    "roleGrantsAdded": false,
+    "storageOwnershipChanged": false
+  },
+  "protocolRoleGrantsExact": true,
+  "privateReaderNoLoginNoApplicationMembership": true,
+  "legacyColumnsAndCatalogPreserved": true,
+  "noInventedHistoricalEvidence": true,
+  "accessProbes": [],
+  "addedPrivateBuckets": 1,
+  "addedImportTemplates": 3,
+  "sourcePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+  },
+  "duplicateRejected": true,
+  "journeys": [
+    {
+      "path": "scripts/verify/learn-production-voicemail-journey.assert.sql",
+      "sourceSha256": "95ef90aa6c758a07edca1b4ef2b1d01cf82edbe114fa68b6dd693be15781d335",
+      "probeSha256": "a2c4dad2cd5403ffe95e41e969fd72ae08a53bd128b246cd8ca876030bc406a4"
+    },
+    {
+      "path": "scripts/verify/learn-production-voicemail-recovery.assert.sql",
+      "sourceSha256": "d593c820d0ea600952b590319d5e3db64e617e35570c36f478a62b2bd277537f",
+      "probeSha256": "c76dab2f83b396945aeef8c4c687ad79a31652be5a3a8702d78a732a18171404"
+    },
+    {
+      "path": "scripts/verify/learn-voicemail-inbox-hosted.assert.sql",
+      "sourceSha256": "8a99436526089b6a9c6520fe5a7503edb230043266c29748f755b1df46462834",
+      "probeSha256": "65c79678b5d46aa806cca7d973b9fc59402f917a97943912a1c0eac23d9b751f"
+    },
+    {
+      "path": "scripts/verify/learn-production-input-to-card.assert.sql",
+      "sourceSha256": "840019909e9082479f6c8112c92f9bac7f297a12b39ece2244d375e7e79d19f2",
+      "probeSha256": "a2f57f061087095116e2cd29970856eac376f6dbb34c89e0b9afacaa1674e203"
+    }
+  ],
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "elapsedSeconds": 51.07,
+  "scopeNotes": [
+    "All thirteen production candidates installed into a network-isolated restore of the pinned archive.",
+    "Synthetic SQL storage metadata is not actual audio byte-readback, DKIM, provider coverage or signed-in playback proof.",
+    "Existing voicemail foundation and permissions were preserved; no private messages were exposed through general LEARN cards.",
+    "The documented Supabase policy hook was explicitly configured locally; production configuration remains unverified after a single read-only Management request returned HTTP 544.",
+    "The historical inbox fixture has hosted in its filename but was executed locally in this run."
+  ],
+  "fixtureCorrections": [
+    "Capture storage policy metadata under the same public,pg_catalog search path as the release.",
+    "Configure the managed policy hook at container startup; do not grant storage ownership or new role membership.",
+    "Queued work created inside a transaction wrapper must be marked due to represent the later committed worker request.",
+    "Synthetic clock advancement clears both dispatch and page replay receipts; real successive minutes use distinct request IDs."
+  ],
+  "runnerSha256": "ca1c31561b576a08d86a580ed0464f04a74631d09b8b4c5fde792ec2304a83a6",
+  "sandboxSha256": "8a49796902c3e6baccae3047ad28d24ba2e8d8bd26a5fffd1c8bda0877fec5af"
+}

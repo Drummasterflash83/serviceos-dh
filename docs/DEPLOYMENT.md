@@ -42,14 +42,16 @@ Cloudflare-flavoured.
 
 ## Preview deployments
 
-The production-specific LEARN candidates now include packages 001–012. The combined
-archive rehearsal preserves every original row/sequence. Eleven communication/card
-suites now pass, including actual email storage and Phone handoff through queued
-identity processing to owner-visible cards, using synthetic offline inputs.
+The production-specific LEARN candidates now include packages 001–013. The combined
+archive rehearsal preserves every original row/sequence, existing storage owners
+and private voicemail access. Four latest suites pass synthetic email-to-private-inbox
+processing, bounded voicemail dispatch/recovery, historical inbox access and the
+existing email/Phone-to-card journey. Real source capture, audio bytes, signed-in
+acceptance and the managed production storage-policy configuration remain unverified.
 These are reviewed release inputs, **not live migrations or promotion approval**.
 Install only as part of the eventual matched schema/worker/frontend release; never
 run the TEST bundles against production. See the
-[release plan](operations/LEARN-V1-PRODUCTION-RELEASE.md#communication-cards-attribution-review-and-queued-processing-candidate)
+[release plan](operations/LEARN-V1-PRODUCTION-RELEASE.md#private-voicemail-intake-and-inbox-candidate)
 and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
 ### Isolated LEARN TEST project (10 October 2026)
