@@ -7,6 +7,24 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 18:19 UTC — permanent TEST address established.**
+`https://test.openfolk.ai` now serves the exact existing TEST deployment under
+Vercel authentication on all TEST URLs. HTTPS and four protected entry routes
+pass, and the application login is visible after Vercel authentication. TEST Auth
+now returns reset links to this address, preserving older allowed return URLs.
+The production site, Auth settings, grants and data were not changed by this setup.
+Signed-in acceptance on the new origin and an end-to-end reset remain pending.
+[Domain evidence](evidence/learn-stable-test-domain-2026-10-12.json).
+
+The separate production-preview password reset remains under investigation:
+a direct recovery request was accepted and a production session was established,
+but the user encountered an expired link. Neither a valid user-held session nor
+a changed password is proven. No more recovery requests are queued. A local
+login-page diagnostic now exposes only the configured public auth origin, so the
+next candidate can prove its served backend without exposing credentials. The app
+build passes; that diagnostic is not yet deployed. Recurring Commusoft capture
+remains unfinished; its design work did not install or activate a scheduler.
+
 **12 October, 17:57 UTC — current frontend built as a protected preview.**
 Vercel built Git `254db78` to READY in the existing production project as a
 staging preview. All four unauthenticated entry routes remain protected and the

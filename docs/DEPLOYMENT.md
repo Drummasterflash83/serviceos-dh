@@ -68,14 +68,35 @@ run the TEST bundles against production. See the
 [release plan](operations/LEARN-V1-PRODUCTION-RELEASE.md#microsoft-capture-and-compatibility-candidate)
 and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
-### Isolated LEARN TEST project (10 October 2026)
+### Isolated LEARN TEST project (updated 12 October 2026)
 
 **serviceos-learn-test** (`prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs`, Allkin) is separate
 from the production project above. Its preview-only public configuration targets
-Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
-hostnames, and no custom domain or automatic Git linkage was added.
+Supabase TEST `saatxzwxvdvqevbnskxy`. The permanent human-facing entry is
+**[test.openfolk.ai](https://test.openfolk.ai)**. On 12 October its existing
+Cloudflare DNS record was attached to this TEST project and assigned to the exact
+current TEST deployment. Vercel authentication now protects **all** deployments
+and domains of this TEST project (`ssoProtection.deploymentType = all`). All four
+entry routes redirect unauthenticated visitors to Vercel; the authenticated browser
+loads the application sign-in page. No live-domain or production-project setting
+changed. [Verified setup](operations/evidence/learn-stable-test-domain-2026-10-12.json).
 
-The stable staging entry is
+TEST Auth's default return is `https://test.openfolk.ai/login?reset=1`; that exact
+address was added while preserving previously allowed TEST return addresses.
+Existing accounts and passwords remain unchanged. New origins require a fresh
+application sign-in; browser sessions do not transfer between hostnames.
+A successful Auth request is not proof of email delivery or a completed reset.
+Open the protected site in the receiving browser before following recovery links.
+
+Use this permanent address in user instructions and 1Password. For every future
+TEST deployment, verify its TEST backend and READY status, then update **both**
+`test.openfolk.ai` and the compatibility alias
+`serviceos-learn-test-allkin.vercel.app` to that exact deployment. Read back both
+aliases and the TEST project's `all` protection; verify HTTPS and sign-in routes.
+Do not change the live project's protection or promote to the live project.
+Git checkpoint pushes still do not automatically deploy this TEST branch.
+
+The compatibility staging entry remains
 [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
 It points to immutable preview
 [serviceos-learn-test-qrg6bnh9y-allkin.vercel.app](https://serviceos-learn-test-qrg6bnh9y-allkin.vercel.app),

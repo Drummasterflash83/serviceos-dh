@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
 import { friendlySignInError } from "@/lib/auth-errors";
+import { publicAuthTarget } from "@/lib/auth-public-target";
+import { supabaseConfig } from "@/lib/supabase";
 import "@/styles/openfolk-home.css";
 
 // Public signup is OFF unless explicitly enabled. Access is invite-only.
@@ -136,7 +138,7 @@ function LoginPage() {
   }
 
   return (
-    <div className="of-minimal-home of-client-login">
+    <div className="of-minimal-home of-client-login" data-auth-target={publicAuthTarget(supabaseConfig.url)}>
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
           <a href="/" className="of-login-wordmark" aria-label="OpenFolk home">

@@ -1,0 +1,40 @@
+{
+  "observedAt": "2026-10-12T18:18:25.110Z",
+  "domain": "test.openfolk.ai",
+  "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+  "deployment": "dpl_sc6HhikYF5yZQytPw6d9WqYHT2sF",
+  "protection": "all",
+  "routes": [
+    {
+      "path": "/",
+      "http": 302,
+      "redirectOrigin": "https://vercel.com"
+    },
+    {
+      "path": "/login",
+      "http": 302,
+      "redirectOrigin": "https://vercel.com"
+    },
+    {
+      "path": "/client?section=learn",
+      "http": 302,
+      "redirectOrigin": "https://vercel.com"
+    },
+    {
+      "path": "/openfolk",
+      "http": 302,
+      "redirectOrigin": "https://vercel.com"
+    }
+  ],
+  "productionUnchanged": true,
+  "version": "learn-stable-test-domain/1",
+  "authProject": "saatxzwxvdvqevbnskxy",
+  "authSiteUrl": "https://test.openfolk.ai/login?reset=1",
+  "previousAuthReturnAddressesPreserved": true,
+  "browserLoginObserved": true,
+  "signedInOnNewDomain": false,
+  "passwordRecoveryEndToEndVerified": false,
+  "dataOrGrantChanges": false,
+  "dnsRecordChanged": false,
+  "futureBuildsMustReassignBothAliases": true
+}
