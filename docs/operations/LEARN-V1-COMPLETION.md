@@ -7,6 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — Commusoft capture-to-card journey passes production-archive acceptance.**
+All nine production-specific packages install together. Actual-schema synthetic
+checks cover encrypted connection setup/reuse, scoped credential permits,
+property discovery, customer/work-address contact traversal, empty pages, interrupted
+continuation, exact replay and late-failure rollback. A captured customer, site,
+contact and completed job reach one card after owner review. Stale parent evidence
+is held for review; contact endpoints and graph relationships retain provenance.
+Ambiguous local timestamps retain an explicit limitation rather than an invented instant.
+
+The rehearsal found and fixed an existing production marketing trigger's unqualified
+table references, which failed inside the restricted Commusoft writer. Its tenant
+checks and invoker authority remain intact; a temporary-table impersonation test
+still rejects a foreign-company person. All 1,591,576 original archived rows and
+five sequences match, with only the three explicitly checked import templates added.
+Seven synthetic journey suites pass and all disposable databases were removed.
+No hosted environment changed. Real Commusoft coverage/reconciliation, runtime
+integration, signed-in acceptance and production approval remain required.
+[Commusoft rehearsal evidence](evidence/learn-production-commusoft-rehearsal-2026-10-12.json).
+
 **12 October — governed customer/site/job imports pass production-archive acceptance.**
 All eight production-specific packages install together. The new import framework
 retains durable external identity, per-row outcomes and review conflicts, and

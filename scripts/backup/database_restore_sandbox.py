@@ -22,12 +22,17 @@ class RecoveryError(RuntimeError):
 
 
 class RestoreSandbox:
-    def __init__(self, *, image=IMAGE, private_diagnostics=None, network_extension=False):
+    def __init__(self, *, image=IMAGE, private_diagnostics=None, network_extension=False,
+                 synthetic_vault=False):
         if image not in (IMAGE, 'public.ecr.aws/supabase/postgres:17.6.1.141'):
             raise RecoveryError('Unreviewed recovery image')
         self.image = image
         self.network_extension = network_extension
         self.preloaded_libraries = 'pg_cron,pg_net' if network_extension else 'pg_cron'
+        # The pinned image generates its own key inside this disposable container.
+        # This enables synthetic round trips, not recovery of source Vault secrets.
+        if synthetic_vault:
+            self.preloaded_libraries += ',pgsodium,supabase_vault'
         self.private_diagnostics = private_diagnostics
         self.failed_command_count = 0
         self.docker = shutil.which('docker') or '/usr/local/bin/docker'

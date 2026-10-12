@@ -1,0 +1,191 @@
+{
+  "version": "learn-production-commusoft-api/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+  "priorSha256": "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261031090000_learn_commusoft_page_permits.sql",
+      "sha256": "cbe88a735c42cde97109276f4d7cfe28045d1216a4d6adcb0bcc9d30f4abf40b"
+    },
+    {
+      "path": "supabase/migrations/20261031100000_learn_business_input_pages.sql",
+      "sha256": "53edab006759da5563005b074f8901a4b8a4d00da31865d4680bcb237250aed9"
+    },
+    {
+      "path": "supabase/migrations/20261031110000_learn_commusoft_worker.sql",
+      "sha256": "f3db9fb8b3568df85316be6a4cc6314dc9d49b239039799e5961bcb1887e0259"
+    },
+    {
+      "path": "supabase/migrations/20261031120000_learn_business_input_customers.sql",
+      "sha256": "f5f6854fe430fe8eae9c49948cbdb9dd2feee8f9376b30ab3f3326704ef329a9"
+    },
+    {
+      "path": "supabase/migrations/20261031130000_learn_business_input_review.sql",
+      "sha256": "92f239d56e7ec44737003f6c8e1d976e8da25f95aaf3e605960f173aba9399f6"
+    },
+    {
+      "path": "supabase/migrations/20261031140000_learn_business_input_work.sql",
+      "sha256": "cda019260dc0e176b8ae35dd1281bf2bc5ed52f481599cd6555aaf822dff46be"
+    },
+    {
+      "path": "supabase/migrations/20261031150000_learn_business_input_work_batches.sql",
+      "sha256": "7d0e323f1dc2d3faad527f75ccc6e910f728a0b90be5ed3cbfcadc35eff9c7ec"
+    },
+    {
+      "path": "supabase/migrations/20261031160000_learn_operator_inputs.sql",
+      "sha256": "58bf52b1bd1ce8ef220c52cdf927571dc7f06cc3a7c95b5a9978dae2b7be7f9b"
+    },
+    {
+      "path": "supabase/migrations/20261031170000_learn_commusoft_connection_setup.sql",
+      "sha256": "a847fcb67e725f113bf1aff87822c5cb764f88fbaffac32aa66b19e15a70847f"
+    },
+    {
+      "path": "supabase/migrations/20261031180000_learn_commusoft_connection_verification.sql",
+      "sha256": "1f76f2bd7a4704e8cb9c25eee8890f5ac1199d867803928285a09ea93129e7c0"
+    },
+    {
+      "path": "supabase/migrations/20261031190000_learn_business_input_contacts.sql",
+      "sha256": "e7420165ed7a86b10997c15ddc2b0ec37e720d90d66f2da4e335e331e2ae0e4c"
+    },
+    {
+      "path": "supabase/migrations/20261031200000_learn_commusoft_resume.sql",
+      "sha256": "78ac03c85d11fc11f513679ffdc8b7eed942bbe28664ab7c854cfdd34168f70a"
+    },
+    {
+      "path": "supabase/migrations/20261101020000_learn_commusoft_contact_traversal.sql",
+      "sha256": "aa1a0e0ce952bed84ea0c1f3f623b2d982ae6f8c760084ba76fe0ac59e10d960"
+    },
+    {
+      "path": "supabase/migrations/20261101030000_learn_customer_candidate_endpoints.sql",
+      "sha256": "057d45a14c878f31b4b573a1ddb0d1cb8b621c0050900039e6a3e5bbe8270b89"
+    },
+    {
+      "path": "supabase/migrations/20261101040000_learn_commusoft_job_lifecycle.sql",
+      "sha256": "4ceaa51b0941bac69a446b4061c7b7ea11e0130fa74f4c9e67023e1c5158e510"
+    },
+    {
+      "path": "supabase/migrations/20261101050000_learn_commusoft_review_search.sql",
+      "sha256": "54dfa149c700244ba5a6427d339cc7cad0c1883953ff3764232b4a4ff5517f40"
+    },
+    {
+      "path": "supabase/migrations/20261101070000_learn_commusoft_job_details.sql",
+      "sha256": "a8a64f632653a989a737d84211e8d06cd09c60f8a8f38c0cc504b281a185ba30"
+    },
+    {
+      "path": "supabase/migrations/20261101250000_learn_commusoft_partial_job_times.sql",
+      "sha256": "95ca7fd3ef48c2d76ed73998019018d6f429978077f48c00aa03a161a44ea60f"
+    },
+    {
+      "path": "supabase/release/learn-production/patches/marketing_tenant_guard.sql",
+      "sha256": "269735dbabc6a432ce416fe4f61bfb1e635fa05d37d04c5295c0dafe372cefc2"
+    }
+  ],
+  "existingTables": [
+    "tenants",
+    "profiles",
+    "view_as_context",
+    "config_versions",
+    "connector_accounts",
+    "provider_connections",
+    "provider_connection_events",
+    "tenant_connectors",
+    "platform_jobs",
+    "feature_flags",
+    "people",
+    "companies",
+    "contact_points",
+    "customer_cards",
+    "sites",
+    "jobs",
+    "platform_authority_grants",
+    "data_imports",
+    "import_entity_links",
+    "import_row_results",
+    "import_profiles",
+    "graph_nodes",
+    "graph_edges",
+    "graph_events",
+    "marketing_tags",
+    "marketing_segments",
+    "marketing_lifecycle_stages"
+  ],
+  "newTables": [
+    "learn_business_input_request_gates",
+    "learn_business_input_request_permits",
+    "learn_business_input_pages",
+    "learn_business_input_versions",
+    "learn_business_input_observations",
+    "learn_business_input_links",
+    "learn_business_input_projection_attempts",
+    "learn_business_input_projection_batches",
+    "learn_operator_input_requests",
+    "learn_commusoft_connection_requests",
+    "learn_commusoft_verification_requests",
+    "learn_commusoft_verification_permits",
+    "learn_commusoft_verification_results",
+    "learn_commusoft_contact_targets"
+  ],
+  "newFunctions": [
+    "learn_commusoft_acquire_page",
+    "learn_commusoft_defer_page",
+    "learn_business_input_retain",
+    "learn_commusoft_commit_page",
+    "learn_commusoft_committed_page",
+    "learn_commusoft_claim_jobs",
+    "learn_commusoft_finish_job",
+    "learn_commusoft_review_customer",
+    "learn_business_input_review_access",
+    "learn_business_input_text",
+    "learn_business_customer_summary",
+    "learn_commusoft_review_connections",
+    "learn_commusoft_review_page",
+    "learn_commusoft_customer_candidates",
+    "learn_commusoft_confirm_customer",
+    "learn_business_input_latest",
+    "learn_commusoft_property_owner",
+    "learn_business_input_projection_result",
+    "learn_commusoft_confirm_work_record",
+    "learn_commusoft_work_batch",
+    "learn_commusoft_work_batch_result",
+    "learn_commusoft_work_review_page",
+    "learn_operator_input_flags",
+    "learn_operator_input_request",
+    "learn_operator_inputs",
+    "learn_commusoft_configure",
+    "learn_commusoft_verification_binding",
+    "learn_commusoft_verification_authority",
+    "learn_commusoft_verification_receipt",
+    "learn_commusoft_verify_request",
+    "learn_commusoft_verify_acquire",
+    "learn_commusoft_verify_authorized",
+    "learn_commusoft_verify_finish",
+    "learn_business_contact_phone",
+    "learn_commusoft_confirm_contact",
+    "learn_commusoft_contact_candidates",
+    "learn_operator_resume_commusoft",
+    "learn_commusoft_contact_target",
+    "learn_commusoft_source_matches",
+    "learn_commusoft_review_search",
+    "learn_commusoft_work_review_search",
+    "learn_business_input_time_detail",
+    "learn_commusoft_job_details"
+  ],
+  "changedFunctions": [
+    "platform_jobs_claim",
+    "marketing_tenant_guard"
+  ],
+  "newSequences": [],
+  "newExistingConstraints": {},
+  "newExistingTriggers": {},
+  "limitations": [
+    "No hosted configuration, real grant, credential read, provider request or import activation.",
+    "Synthetic full-schema acceptance does not prove current real coverage or runtime deployment.",
+    "Complete real Commusoft customer/contact/job reconciliation and signed-in acceptance remain required."
+  ]
+}

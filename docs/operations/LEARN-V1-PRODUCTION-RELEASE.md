@@ -391,6 +391,57 @@ source coverage and signed-in acceptance remain required; no hosted work occurre
   explicit scope decision from Chris. Present specific unresolved limitations;
   never interpret absence of objections as approval.
 
+
+### Commusoft API, operator setup and capture-to-card recovery rehearsed offline
+
+The ninth package, [009_commusoft_api.sql](../../supabase/release/learn-production/009_commusoft_api.sql),
+adds 14 protected tables and 43 functions for connection setup/verification,
+request permits, durable pages/versions, customer/site/job/contact review, fixed
+contact traversal plans and operator continuation. SHA-256:
+`02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253`.
+Existing Vault storage and OpenFolk authority helpers are reused; no credential,
+operator grant, feature activation or customer import is seeded. The generic
+queue claimant excludes Commusoft work while retaining prior Slack/capture gates.
+
+Actual-schema contact projection uncovered a production-only dependency: the
+existing `marketing_tenant_guard` used unqualified table names and failed under
+the restricted writer search path. The package checks its exact installed hash,
+qualifies its seven table references and fixes its path to `pg_catalog`. Its
+invoker status, owner, execution grants and every tenant check remain intact.
+The guard rejects a cross-company person even when a caller supplies a misleading
+temporary `people` table. Existing table catalogs, policies and privileges remain
+unchanged; only this guard and the generic claimant change among prior functions.
+
+All nine packages install together. Wrong target, catalog drift, late failure and
+duplicate submission checks pass. All 1,591,576 original archived rows and five
+original sequences match. The only seeded application additions remain package
+008's three exact import templates; new Commusoft tables stay empty in the
+preservation database.
+
+Seven suites run in separate offline clones, with actual auth profile creation,
+existing operator authority and encrypted Vault using a disposable local key.
+They prove setup/reuse and verification receipts, scoped worker credential release,
+property discovery, empty contact pages, immutable traversal plans, interrupted
+continuation, exact replay and atomic publication failures. The captured sources
+continue through the client's owner review into a single card with customer,
+site, contact and completed-job links. Endpoint deduplication, existing-person
+preservation, graph relationships, held ambiguous identities, cancellation,
+permission boundaries and partial timestamp handling pass. Source versions stay
+unchanged through projection. The synthetic setup does not recover production
+Vault encryption or make real provider requests.
+
+Generator: `node scripts/verify/learn-production-commusoft-candidate.mjs`;
+rehearsal: `python3 scripts/backup/rehearse_production_commusoft.py`.
+The terminal v4 journal records the successful run. V1 lacked disposable Vault
+preloads; v2 put all worker steps in one transaction and collapsed job timestamps;
+v3 exposed the actual marketing-trigger incompatibility corrected above. No guard
+was weakened to pass. All containers and their cloned databases were removed.
+[Sanitised evidence](evidence/learn-production-commusoft-rehearsal-2026-10-12.json).
+
+This remains offline release preparation. Real provider coverage and reconciliation,
+remaining release packages, worker deployment, signed-in acceptance and explicit
+production promotion approval are still required. No live environment changed.
+
 ## Build the production-specific release candidate
 
 1. Read production's current migration ledger, schema/catalog, deployed function

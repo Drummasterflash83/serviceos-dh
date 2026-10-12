@@ -1,0 +1,198 @@
+{
+  "version": "learn-production-commusoft-rehearsal/1",
+  "observedAt": "2026-10-12T04:26:39.303553+00:00",
+  "result": {
+    "state": "production_commusoft_api_rehearsed_offline",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "fullReleaseAccepted": false,
+    "signedInAcceptance": false,
+    "packages": [
+      "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+      "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+      "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+      "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+      "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+      "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+      "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+      "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+      "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253"
+    ],
+    "containmentBefore": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "negativeChecks": [
+      "wrong_target",
+      "catalog_drift",
+      "late_failure"
+    ],
+    "legacyColumnsAndCatalogPreserved": true,
+    "noInventedHistoricalEvidence": true,
+    "accessProbes": [],
+    "addedImportTemplates": 3,
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299,
+      "rows": 1591576,
+      "sequences": 5,
+      "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+      "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+    },
+    "duplicateRejected": true,
+    "journeys": [
+      {
+        "path": "scripts/verify/learn-commusoft-setup-projection.assert.sql",
+        "sourceSha256": "2ead3537c6cbe9ca7e46a4eb42aad79ca9f27ae6ac98e8821f4c6d7c11dfb8a4",
+        "probeSha256": "871b653feab0affa1bcc11b26b1dc723307060c6f9cdc64120d51458c240e4e4",
+        "additionalSources": []
+      },
+      {
+        "path": "scripts/verify/learn-commusoft-contact-traversal.assert.sql",
+        "sourceSha256": "3957047c85032f2543b2dab2534a514cf7a60da3993e0ad54b46f87320652be2",
+        "probeSha256": "1ba356b3222492c0f794b5235e4a336c8421dcbda08331954ed14a3091653bab",
+        "additionalSources": [
+          {
+            "path": "scripts/verify/learn-production-commusoft.fixture.sql",
+            "sha256": "fdcf5ee08f2e10ed490daf601cf2b59652d64b4ef5b797154eeed004fbab83ae"
+          },
+          {
+            "path": "scripts/verify/learn-production-commusoft-card.assert.sql",
+            "sha256": "9997271bb074cccfc75143ca0cef7c4e7db5ec7464ac66bead6aa056eb294370"
+          }
+        ]
+      },
+      {
+        "path": "scripts/verify/learn-commusoft-contact-traversal-hosted.assert.sql",
+        "sourceSha256": "4092bb9f3e752bef53102d48f009fbc23bbbab93367e2183d30714be05b02106",
+        "probeSha256": "375587ae31f6c1d0faeac130c1e42dd4fae519faeb7eb489927af823e34340d3",
+        "additionalSources": []
+      },
+      {
+        "path": "scripts/verify/learn-commusoft-mapping-hosted.assert.sql",
+        "sourceSha256": "778f89f1f14cd53e419105f88e01df59963e1354315996b51d7a5cd8d98d6041",
+        "probeSha256": "0fc0d633c49dc3b95a9eb1e0032d74ac0533656b7a2761494bd6ba98f2376fd1",
+        "additionalSources": []
+      },
+      {
+        "path": "scripts/verify/learn-commusoft-partial-times-hosted.assert.sql",
+        "sourceSha256": "99d13a5151f95613fa4308c22f1befa1f9b5ad5b489f2dade2e9a73c9cdc274e",
+        "probeSha256": "bdfd6d1fec025f4a5583b586711e82e70d06527892c85e6755f6b6622f99f838",
+        "additionalSources": []
+      },
+      {
+        "path": "scripts/verify/learn-commusoft-contacts-projection.assert.sql",
+        "sourceSha256": "a49e2b81e2433ffc5a026bdacb7f5eb27823157709951e22c90797df8d79bb69",
+        "probeSha256": "df0474999d6f61ca19d69f565eb505e6b67bd07057f0ff2ae5bdb689d29dae1c",
+        "additionalSources": []
+      },
+      {
+        "path": "scripts/verify/learn-production-commusoft-guard.assert.sql",
+        "sourceSha256": "6ac34aaf484d71358ced1c59b4679815314be61d483e39484725dec1c0ddc87f",
+        "probeSha256": "d446388235d23ce4c186629b39cacd0c471c1ee1d751c1960d17637d75cb23d0",
+        "additionalSources": []
+      }
+    ],
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true,
+    "elapsedSeconds": 53.37
+  },
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-commusoft-candidate.mjs",
+      "sha256": "bfa9e08091ff9e3d450b1cae842ce253c185f8f1ffbb91a29ae47a76bc1620c7"
+    },
+    {
+      "path": "scripts/backup/inspect_production_commusoft.py",
+      "sha256": "55119f9e803786f14e79d7eefbefa069ec1784c12d924de18346730c9ea9ed46"
+    },
+    {
+      "path": "scripts/backup/rehearse_production_commusoft.py",
+      "sha256": "508dc331495a7fac20a5599916e6b0b4ddae271ee75b5e5a3cd0043915a18ec1"
+    },
+    {
+      "path": "scripts/backup/database_restore_sandbox.py",
+      "sha256": "a0d036f21ab0548d335c80361440902703169edb9ec6f8f9099a98f5943e4d3c"
+    },
+    {
+      "path": "scripts/verify/learn-production-commusoft.fixture.sql",
+      "sha256": "fdcf5ee08f2e10ed490daf601cf2b59652d64b4ef5b797154eeed004fbab83ae"
+    },
+    {
+      "path": "scripts/verify/learn-production-commusoft-card.assert.sql",
+      "sha256": "9997271bb074cccfc75143ca0cef7c4e7db5ec7464ac66bead6aa056eb294370"
+    },
+    {
+      "path": "scripts/verify/learn-production-commusoft-guard.assert.sql",
+      "sha256": "6ac34aaf484d71358ced1c59b4679815314be61d483e39484725dec1c0ddc87f"
+    },
+    {
+      "path": "supabase/release/learn-production/patches/marketing_tenant_guard.sql",
+      "sha256": "269735dbabc6a432ce416fe4f61bfb1e635fa05d37d04c5295c0dafe372cefc2"
+    },
+    {
+      "path": "supabase/release/learn-production/009_commusoft_api.sql",
+      "sha256": "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253"
+    },
+    {
+      "path": "supabase/release/learn-production/009_commusoft_api.manifest.json",
+      "sha256": "7b47185ec24747f6be4628b602d10d44d5d4d71aa133c8637fd8bc9a813af269"
+    }
+  ],
+  "fixtureAdaptations": [
+    "Use actual auth.users profile trigger, existing authority model and actual encrypted Vault with a disposable container key.",
+    "Run each journey in a separate clone of the complete archived schema plus packages 001\u2013009. Traversal preserves separate worker transactions; other probes roll back.",
+    "Scope setup no-capture assertion to the synthetic tenant rather than all pre-existing jobs and flags.",
+    "Add synthetic names/address to captured property fixtures and continue through owner-reviewed contact/job/card links."
+  ],
+  "failedRehearsals": [
+    {
+      "version": 1,
+      "finding": "Disposable server lacked encryption preload; no source key was used.",
+      "resolution": "Enable pinned-image pgsodium and Vault libraries with disposable local key."
+    },
+    {
+      "version": 2,
+      "finding": "One outer transaction collapsed job creation timestamps, invalidating fixture ordering.",
+      "resolution": "Separate traversal transactions in a dedicated disposable clone."
+    },
+    {
+      "version": 3,
+      "finding": "Production marketing tenant trigger used unqualified tables and failed under restricted Commusoft writer search_path.",
+      "resolution": "Qualify seven installed table references and fix trigger search_path; preserve invoker authority and every tenant check."
+    }
+  ],
+  "limitations": [
+    "Offline synthetic SQL acceptance only; no provider HTTP request or hosted configuration change.",
+    "Original archive preservation covers 299 archived COPY tables and five original sequences, plus exact validation of three intentional import templates. Known pg_net archive omissions remain.",
+    "Synthetic Vault round trips do not prove recovery of the production Vault key or production secret decryption.",
+    "All nine packages remain drafts requiring current-live preflight, remaining release integration and explicit production approval.",
+    "Real Commusoft property/contact/job coverage, reconciliation, runtime deployment and signed-in customer/operator acceptance remain incomplete."
+  ]
+}
