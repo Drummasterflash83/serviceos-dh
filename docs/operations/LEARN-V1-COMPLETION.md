@@ -7,6 +7,38 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — real retained emails delivered to cards in hosted TEST.**
+
+### Working and verified
+
+- Nineteen eligible real emails passed through the installed queue worker into
+  nineteen acknowledged card deliveries. Source/person/card links and receipts
+  match. The twentieth email is an unsent draft: preserved and excluded from
+  customer activity.
+- The existing signed-in OpenFolk operator loaded nineteen customer cards on
+  stable TEST and opened the detail fields without alerts.
+- All original source, credential, account and queue records, other tenants and
+  unscoped datasets were preserved. Email capture is paused again. No provider,
+  AI, new access or production change was involved.
+
+### Needs finishing
+
+- Two Slack interactions remain explicitly held for unverified direction. Their
+  identity job reports review required, not complete success. Internal channel
+  conversations need appropriate company/job context; they must not be forced
+  into customer-email attribution.
+- Customer-facing card UX, full history, ongoing capture, phone AI processing,
+  scoring, business-graph delivery and matched production release remain open.
+
+### Blocked externally
+
+- Production-login credential lookup still awaits owner Touch ID; independent
+  work continues.
+
+[Actual worker, preservation and browser evidence](evidence/learn-real-email-cards-2026-10-12.json).
+
+## Previous current checkpoint
+
 **12 October — recurring Commusoft backend installed in TEST; complete production package rehearsed.**
 
 ### Working and verified
@@ -3150,7 +3182,9 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   duplicate suppression and schedule/expired-lease recovery. Exercise matching UI.
   The existing Workspace credential is now provisioned in TEST. Heidi’s live
   mailbox recovery is verified separately; TEST mailbox activation, remaining
-  mailbox reconciliation and real V1 capture-to-card acceptance are still open.
+  mailbox reconciliation remain open. The 12 October retained TEST sample now
+  proves nineteen real email-to-card deliveries; it does not prove full history
+  or recurring capture.
 - [ ] **Commusoft:** jobs traversal reaches 127 pages / 12,611 unique jobs;
   the original 1,547-customer contact plan and refreshed 2,421-property traversal
   are complete. Finish the 871-site contact plan and refreshed 1,550-customer

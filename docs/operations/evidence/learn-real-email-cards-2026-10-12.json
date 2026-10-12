@@ -1,0 +1,131 @@
+{
+  "state": "real_retained_email_to_cards_verified_with_slack_holds",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "startedAt": "2026-10-12T22:08:08.645Z",
+  "workerVersion": 22,
+  "runs": [
+    {
+      "type": "interactions.sync",
+      "status": 403,
+      "settlement": {
+        "status": "queued",
+        "records_processed": 0,
+        "error_code": null,
+        "result": {}
+      }
+    },
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "deadLettered": 0,
+      "retrying": 0,
+      "unconfirmed": 0,
+      "settlement": {
+        "status": "succeeded",
+        "records_processed": 19,
+        "error_code": null,
+        "result": {
+          "failed": 0,
+          "skipped": 0,
+          "continued": false,
+          "email_created": 19,
+          "email_updated": 0,
+          "phone_created": 0,
+          "phone_skipped": 0,
+          "phone_updated": 0,
+          "email_selected": 19,
+          "phone_selected": 0,
+          "email_processed": 19,
+          "phone_processed": 0,
+          "review_required": 0,
+          "interactions_upserted": 19
+        }
+      }
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 0,
+      "deadLettered": 1,
+      "retrying": 0,
+      "unconfirmed": 0,
+      "settlement": {
+        "status": "dead_letter",
+        "records_processed": 19,
+        "error_code": "identity_review_required",
+        "result": {
+          "failed": 0,
+          "resolved": 19,
+          "continued": false,
+          "cards_enriched": 19,
+          "people_created": 18,
+          "events_consumed": 19,
+          "recommendations": 19,
+          "review_required": 2,
+          "companies_created": 1,
+          "suggestions_created": 17
+        }
+      }
+    }
+  ],
+  "providerRequests": 0,
+  "aiRequests": 0,
+  "newAccounts": 0,
+  "newGrants": 0,
+  "productionChanged": false,
+  "foreignAndUnscopedPreserved": true,
+  "changedDatasets": [
+    "public.companies",
+    "public.customer_cards",
+    "public.interaction_match_suggestions",
+    "public.interactions",
+    "public.learn_identity_delivery_receipts",
+    "public.learn_interaction_projection_receipts",
+    "public.learn_processing_publications",
+    "public.learn_processing_settlements",
+    "public.people",
+    "public.platform_events",
+    "public.platform_jobs",
+    "public.recommendations"
+  ],
+  "onlyExpectedDerivedDatasetsChanged": true,
+  "existingJobsPreserved": true,
+  "readback": {
+    "paused": true,
+    "cards": 19,
+    "email_interactions": 19,
+    "held_interactions": 2,
+    "emails": 20,
+    "running": 0
+  },
+  "finishedAt": "2026-10-12T22:08:29.090Z",
+  "chain": {
+    "retained_drafts": 1,
+    "draft_interactions": 0,
+    "complete_email_card_links": 19,
+    "acknowledged_email_events": 19,
+    "committed_identity_receipts": 19,
+    "unverified_direction_holds": 2
+  },
+  "browser": {
+    "signedInOperatorRead": true,
+    "visibleCards": 19,
+    "cardExpanded": true,
+    "detailFieldsVerified": [
+      "summary",
+      "status",
+      "priority",
+      "latest activity at",
+      "recommended action"
+    ],
+    "alerts": 0
+  },
+  "limitations": [
+    "TEST retained sample only; no production change, new capture or AI processing.",
+    "Two Slack direction holds remain; their identity job is deliberately not recorded as fully successful.",
+    "Customer-facing card UX, full history, continuous capture and business-graph delivery remain unverified."
+  ]
+}
