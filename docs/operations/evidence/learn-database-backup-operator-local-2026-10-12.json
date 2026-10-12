@@ -1,0 +1,113 @@
+{
+  "contract": "learn-database-backup-operator-local/1",
+  "observedAt": "2026-10-12T08:03:39.552346+00:00",
+  "state": "supervised_operator_verified_locally_only",
+  "scope": "Synthetic escrow/Keychain and AWS SDK handler; actual local age encryption and isolated PostgreSQL/Vault recovery",
+  "javascriptTests": {
+    "passed": 81,
+    "failed": 0,
+    "skipped": 0,
+    "command": "node --test scripts/backup/*.test.mjs"
+  },
+  "pythonPackageTests": {
+    "passed": 9,
+    "failed": 0,
+    "command": "python3 -B -m unittest discover -s scripts/backup -p test_database_backup_package.py -q"
+  },
+  "operatorChecks": [
+    "Exact item identity and field preservation",
+    "Conflicting escrow values refused",
+    "Uncertain edit reply requires readback",
+    "Separate Writer and Restore Keychain records",
+    "Preparation format and snapshot binding checked before credentials",
+    "Lost upload reply retry verifies original object",
+    "Uncertain database stage preserves inspection lock",
+    "Acceptance excludes unrecognised fields and does not claim daily/full-service readiness"
+  ],
+  "postgresRehearsal": {
+    "state": "synthetic_encrypted_database_restore_verified",
+    "realAWSRequests": false,
+    "productionRequests": false,
+    "wrongVaultKeyRejected": true,
+    "allContainersRemoved": true,
+    "encryptedBytes": 102616,
+    "recovery": {
+      "contract": "database-package-restore/1",
+      "state": "encrypted_package_database_and_vault_restored",
+      "sourceAPIRequests": false,
+      "independentStorageVerified": false,
+      "keyEscrowVerified": false,
+      "fullApplicationRecoveryVerified": false,
+      "productionWrites": false,
+      "snapshotAt": "2026-10-12 07:53:02.205843+00",
+      "nativeDataComparison": {
+        "state": "all_archived_copy_rows_and_sequences_match",
+        "tables": 9,
+        "rows": 11,
+        "sequences": 1,
+        "comparisonSha256": "9da1aed70112681d41f58c1de310051df64f2e27b8839361589a712f6db2c823",
+        "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+      },
+      "networkSupplementComparison": {
+        "state": "all_archived_copy_rows_and_sequences_match",
+        "tables": 2,
+        "rows": 1,
+        "sequences": 1,
+        "comparisonSha256": "fba6371c2e7b20fc66d47e0abe44ea31c5821394a053afb28d86c827df1a8d21",
+        "scope": "two explicitly captured pg_net COPY tables and separately observed nontransactional sequence"
+      },
+      "recordingRelationships": {
+        "recordings": 1,
+        "withObjectPath": 1,
+        "missingStorageMetadata": 0
+      },
+      "vaultSecretsVerified": 1,
+      "allPhysicalTablesCovered": true,
+      "tableCatalogMatched": true,
+      "extensionVersionsMatched": true,
+      "noActorRows": {
+        "emails": 0,
+        "recordings": 0
+      },
+      "containment": {
+        "network": "none",
+        "hostMounts": 0,
+        "publishedPorts": 0,
+        "cronLaunchActiveJobs": false,
+        "preloadedLibraries": [
+          "pg_cron",
+          "pg_net",
+          "pgsodium",
+          "supabase_vault"
+        ],
+        "maxWorkerProcesses": 0,
+        "networkWorkerDatabaseAbsent": true,
+        "containerLogging": "none"
+      },
+      "originalPackageFilesUnchanged": true,
+      "containerRemoved": true
+    }
+  },
+  "syntheticContainers": 6,
+  "rehearsalScopeNote": "PostgreSQL rehearsal exercised preparation and recovery helpers with real age and synthetic SDK wire transfer. Operator control-flow tests inject synthetic escrow, Keychain and recovery results; no single live service run is claimed. Subsequent helper edits remove unused imports and clarify a report field; preparation-format guards are covered by JavaScript tests.",
+  "sourceSha256": {
+    "scripts/backup/onepassword-database-recovery.mjs": "a9e3fff036bcc9ef2106097a1cbf218f33b58786b0b7ccd366f49a0a925a4c47",
+    "scripts/backup/onepassword-database-recovery.test.mjs": "70e55c08e210b6cacf25cd76fcb383dab7ebaf0b1bf94d40550e4c697f954f5a",
+    "scripts/backup/serviceos-database-backup-access.mjs": "8faeedaea00d516e5bab01a736a675019007336bcaaa30348cc150304a3688a7",
+    "scripts/backup/run-serviceos-database-backup.mjs": "e3622a3c8ff16c27f89ef1716939a29ca7bd85046dd733225181a1acd5f9c79b",
+    "scripts/backup/run-serviceos-database-backup.test.mjs": "6d86b5d378b2e1115e2750383bc93b3e8f348f0737931db50ff431bb99616496",
+    "scripts/backup/prepare_database_package.py": "ba9a6738427f53f734d3979398deb122bd7b31538b7f0c69268022ea6c4bca8d",
+    "scripts/backup/verify_encrypted_database_restore.py": "e6f68be8db15a59aa92a668d4b50481205429123dac93448b3374575c933692c"
+  },
+  "realOnePasswordAccess": false,
+  "realAWSRequests": false,
+  "productionRequests": false,
+  "independentDatabaseBackupEstablished": false,
+  "remaining": [
+    "Owner decision for 1Password CLI access and biometric authentication",
+    "Live exact-item binding and approved recovery-key escrow/readback",
+    "Approved database bucket, scoped machine identities and their credential storage/recovery copies",
+    "Real initial encrypted copy and independent restore",
+    "Dependable scheduled runtime, missed-run alert and full application/audio recovery"
+  ]
+}

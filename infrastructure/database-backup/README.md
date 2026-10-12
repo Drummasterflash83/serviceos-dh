@@ -10,8 +10,9 @@ strict package recovery and the AWS SDK transfer protocol pass a combined
 synthetic round trip. The existing real snapshot passes package admission only;
 it has not been encrypted or uploaded. The encrypted package now also passes a
 full synthetic PostgreSQL/Vault restore through the stdin-only recovery command.
-The operator activation/secret-store integration still needs completion before the
-combined activation request is presented. **This document is not an approval or
+The supervised operator runner and exact-item 1Password adapter now pass local
+synthetic checks. Live access, escrow, infrastructure provisioning and the first
+real copy still require the distinct approvals and verification below. **This document is not an approval or
 evidence that an independent database backup exists.**
 
 ## Exact proposed destination and contents
@@ -25,7 +26,7 @@ evidence that an independent database backup exists.**
 | Initial snapshot | Production, 12 October 06:37:26 UTC; completed 06:44:21 UTC |
 | Measured base payload | 197,954,785 bytes, about 198 MB, before packaging/encryption |
 | Initial copy bound | One complete encrypted snapshot package, maximum 1 GiB; oversize fails without truncation |
-| Recovery keys | Separate fields in the existing Openfolk ServiceOS 1Password note; never in S3, Git or reports |
+| Recovery keys | A concealed structured recovery field in the existing Openfolk ServiceOS note; never in S3, Git or reports |
 
 This is a **whole-project** recovery archive, not a tenant-filtered export. It
 contains customer communications, contacts, authentication state, encrypted Vault
@@ -140,7 +141,8 @@ and prove decryption with those retrieved values. Do not accept an in-memory key
 generated earlier as proof that 1Password saved it correctly.
 
 Save the private age identity and the existing production pgsodium/Vault root key
-in separate labelled fields in **Openfolk ServiceOS** in 1Password. Preserve the
+as named values in the concealed **ServiceOS database recovery** field of
+**Openfolk ServiceOS** in 1Password. Preserve the
 existing note. Record the non-secret recipient and source-project binding in the
 private manifest. Verify retrieval and decryption from the saved item, including
 a wrong-key/tampered-package rejection, before accepting the upload. The root key
@@ -154,6 +156,73 @@ retrieval is therefore required. Keys travel through protected process input,
 not command arguments, environment variables, clipboard history or diagnostic
 output. Any necessary temporary file must be private and removed afterward;
 ordinary file deletion is not a guarantee of physical secure erasure.
+
+## Supervised initial-copy commands — prepared, not run against real services
+
+`run-serviceos-database-backup.mjs` supports only the already retained production
+snapshot specified above. It does not export fresh source data, create resources,
+provision keys, save escrow values or schedule work. Those are distinct setup
+steps. Use CloudFormation stack name **openfolk-serviceos-database-backup**;
+credential validation requires its generated Writer/Restore principal names.
+
+After the corresponding approvals and setup, create a 0600 binding file within
+this checkout's 0700 `.verification-results` directory. It contains only the exact
+1Password account, vault and item IDs plus the exact title, not secret values:
+
+```json
+{
+  "accountId": "<26-character account ID>",
+  "vaultId": "<26-character vault ID>",
+  "itemId": "<26-character item ID>",
+  "title": "Openfolk ServiceOS"
+}
+```
+
+Resolve those IDs from the authorised account and named item; do not select a
+similarly named item automatically. `onepassword-database-recovery.mjs` pins the
+CLI binary and checks item identity, secure-note category and field uniqueness.
+It rejects attachments/passkeys and conflicting existing recovery material.
+`saveIfAbsent` accepts the dedicated age identity/recipient and existing Vault
+root key in memory, sends JSON through stdin and verifies saved values and prior
+fields afterward. An immediate pre-write re-read catches concurrent edits but
+is not an atomic compare-and-swap guarantee: keep this item closed to concurrent
+editing during setup. An uncertain write must be read back before retrying.
+The adapter only handles the recovery-material field; save and verify the two
+AWS machine credential recovery copies separately during approved provisioning.
+
+Run from a clean, committed checkout, with the verified age and 1Password
+binaries at the pinned paths, an approved authenticated desktop session, the
+saved recovery field and the pinned offline PostgreSQL image available:
+
+```sh
+node scripts/backup/run-serviceos-database-backup.mjs --prepare-initial <new-run-uuid> .verification-results/database-escrow-binding.json
+node scripts/backup/run-serviceos-database-backup.mjs --copy-and-restore-initial <same-run-uuid> .verification-results/database-escrow-binding.json
+```
+
+The first command reads escrow, packages/encrypts the retained snapshot and
+performs a full offline database/Vault restore before recording preparation.
+It creates a new private run directory and never overwrites a prior run. Recovery
+keys are passed through stdin, not host files or arguments. The offline database
+container temporarily needs its private root-key file and is removed afterward.
+Plaintext database staging exists privately and is removed after a successful
+preparation; failed preparation requires inspection and may retain evidence.
+
+The second command requires that successful preparation, exact archive hash,
+format and snapshot binding. It loads Writer from its dedicated Keychain item,
+verifies upload/readback, closes Writer, loads the separate Restore item and
+verifies a version-specific download. It reads recovery material from 1Password
+again, then restores the downloaded package in an offline container. Only the
+whitelisted restore summary is recorded as acceptance. Its result explicitly
+leaves daily operation and full-service recovery unverified.
+
+Each transfer has a ten-minute deadline and each Python recovery stage a
+twenty-minute interrupt deadline. Failed attempts retain sanitised evidence. An
+uncertain database restore retains `active.lock`; inspect the attempt report and
+actual Docker container state, complete cleanup, and document the outcome before
+removing that lock. Never delete a lock merely because it is old. Transfer-only
+failures release the lock and can retry against the same immutable object.
+Preserve earlier receipts and failed-run evidence. No command accepts a recovery
+key as a CLI argument; never print CLI item contents or Keychain values.
 
 ## Access created by activation
 
@@ -236,8 +305,9 @@ copy the existing Supabase administrator token into a hosted runner.
 
 1. Synthetic packaging/encryption/tamper and bounded SDK transfer checks now pass.
    The full offline database/Vault restore command is also verified synthetically.
-   Complete the operator runner and key-escrow integration, then present the exact combined storage/access/key-escrow/copy
-   proposal for approval. Do not deploy from this document alone.
+   The supervised operator runner and recovery-material adapter also pass local
+   synthetic checks. Present the combined storage/access/key-escrow/copy proposal
+   for approval before activation. Do not deploy from this document alone.
 2. Reconfirm account/region and empty-or-expected destination, show the resource
    change set, deploy the approved template, create only the two approved keys,
    and verify their allowed/denied scope. Save keys and recovery material safely.

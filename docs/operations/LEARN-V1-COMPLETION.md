@@ -7,6 +7,22 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — supervised database backup operator prepared and verified locally.**
+The new operator command reads an exact 1Password item, requires successful local
+package/database/Vault verification before upload, separates Writer and Restore
+Keychain identities, downloads the retained object version, re-reads escrow and
+restores it offline. Synthetic tests cover lost upload acknowledgements, uncertain
+restore cleanup, conflicting escrow values and wrong preparation bindings. The
+real age/PostgreSQL rehearsal now includes the preparation command; all six
+synthetic containers were removed. No real 1Password or AWS access was used.
+
+The command is ready for supervised activation after the outstanding decisions;
+it does not provision infrastructure or establish daily operation. Exact-item
+IDs, live escrow/readback, separate AWS credential recovery copies, approved
+bucket/access creation and the real independent copy/restore remain unverified.
+[Operator evidence](evidence/learn-database-backup-operator-local-2026-10-12.json)
+and [operating steps](../../infrastructure/database-backup/README.md#supervised-initial-copy-commands--prepared-not-run-against-real-services).
+
 **12 October — encrypted package now restores an actual synthetic database and Vault.**
 The native archive, operational supplement and recovery evidence passed age
 encryption, a synthetic AWS SDK transfer/download, stdin-only key delivery and a
@@ -26,8 +42,8 @@ The 1Password desktop app is currently available, but its CLI integration is
 disabled. The official signed CLI has been prepared without account access.
 Approval to enable this new account-wide terminal access route is pending; scripts
 will target only Openfolk ServiceOS. No recovery key, AWS identity or bucket has
-been created. Operator/escrow integration and real independent copy/restore remain
-open. [Recovery evidence](evidence/learn-encrypted-database-restore-local-2026-10-12.json)
+been created for database backup. Local operator/escrow integration is now covered
+by the newer entry above; real independent copy/restore remains open. [Recovery evidence](evidence/learn-encrypted-database-restore-local-2026-10-12.json)
 and [access scope](../../infrastructure/database-backup/README.md#1password-access-preparation--awaiting-access-decision).
 
 **12 October — encrypted database package and transfer protocol verified synthetically.**

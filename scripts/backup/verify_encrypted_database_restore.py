@@ -6,9 +6,10 @@ import subprocess
 import tempfile
 from pathlib import Path
 from database_restore_sandbox import RestoreSandbox
-from database_backup_package import package_snapshot, describe, canonical, write_private, PackageError
+from database_backup_package import describe, canonical, write_private, PackageError
 from restore_production_database import run as restore_database
 from restore_database_package import recover_database_package
+from prepare_database_package import prepare
 
 IMAGE = 'public.ecr.aws/supabase/postgres:17.6.1.141'
 AGE = Path('/private/tmp/serviceos-age-1.3.2/age')
@@ -104,9 +105,14 @@ def main():
         identity = generated.stdout
         recipient = subprocess.run([str(KEYGEN), '-y'], input=identity,
             capture_output=True, timeout=10, check=True).stdout.decode().strip()
-        encrypted = root / 'snapshot.age'
-        descriptor = package_snapshot(snapshot_dir, encrypted, recipient=recipient,
-                                      revision='a' * 40, age=AGE)
+        prepared = root / 'prepared'
+        prepared.mkdir(mode=0o700)
+        proof = prepare({'directory': str(prepared), 'source': str(snapshot_dir),
+            'ageIdentity': identity.decode('ascii'), 'rootKey': key.decode('ascii'),
+            'ageRecipient': recipient, 'revision': 'a' * 40, 'agePath': str(AGE)})
+        assert proof['localDatabaseRestoreVerified'] is True
+        encrypted = prepared / 'snapshot.age'
+        descriptor = proof['descriptor']
         write_private(root / 'descriptor.json', canonical(descriptor))
         node = """
 import { readFile } from 'node:fs/promises';
