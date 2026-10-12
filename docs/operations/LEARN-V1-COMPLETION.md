@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**12 October — Slack company/job context backend installed in TEST.**
+**12 October — real Slack company context verified through hosted TEST operator controls.**
 
 ### Working and verified
 
@@ -18,13 +18,20 @@ override a later release observation. No requirement is silently deferred.
   idempotent replay, cancellation, tenant isolation and revoked operator access.
   All 386 prerequisite tables and seven sequences were preserved. Exact production
   package 021 rollback also passed; production itself is unchanged.
-- Six client recovery/validation tests, type checking and the frontend build pass.
-  Nineteen real email-to-card deliveries remain verified in hosted TEST.
+- The existing signed-in TEST operator saved and freshly read back both retained
+  public Slack messages as company context. Original directions are unchanged;
+  no customer/person/job identity was guessed. All 196 other datasets match their
+  prior fingerprints; only review history, audit and derived interactions changed.
+- Git `f06cfb8` is deployed on protected `test.openfolk.ai` with production aliases
+  unchanged. The published-job picker reads successfully. Six client tests, type
+  checking and build pass. Nineteen real email-to-card deliveries remain verified.
 
 ### Needs finishing
 
-- Deploy and verify the signed-in review screen and real retained Slack context.
-  The two Slack holds have not yet been reviewed; no history/capture is activated.
+- Connect reviewed Slack context into the graph/AI journey, verify real job and
+  person attribution where supported, and complete history/ongoing capture.
+  The previous failed identity run remains historical evidence, not a success.
+  These reviews do not prove AI analysis or complete channel coverage.
 - Integrate package 021 into the complete matched production candidate. Complete
   full history, ongoing capture, phone processing, graph/AI and scoring acceptance,
   then verify and promote the matched release.

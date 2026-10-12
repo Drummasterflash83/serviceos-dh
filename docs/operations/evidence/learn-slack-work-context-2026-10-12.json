@@ -1,5 +1,5 @@
 {
-  "state": "backend_installed_test_frontend_pending",
+  "state": "signed_in_test_real_slack_company_context_verified",
   "local": {
     "state": "slack_work_context_full_schema_rehearsed",
     "productionChanged": false,
@@ -63,9 +63,74 @@
     "buildPassed": true
   },
   "limitations": [
-    "No retained message review submitted yet.",
-    "No provider request, new account, grant or capture activation.",
-    "Production 021 prepared and rollback rehearsed; full candidate manifest and sign-in acceptance still pending.",
-    "Company/job context is human-reviewed evidence, not AI insights or scoring."
-  ]
+    "Only the two existing retained public-channel messages were reviewed; no additional history or ongoing capture was enabled.",
+    "Company context does not establish customer, person or job attribution. One technical message was reviewed using its available excerpt, with that limitation in its audit reason.",
+    "The previous identity-job failure remains in history; the new reviews do not relabel that run as successful.",
+    "Production 021 is prepared and rollback rehearsed but is not yet integrated into the full candidate manifest, release plan or signed-in preview.",
+    "Graph/AI delivery and scoring are still open.",
+    "The old open tab initially loaded the prior build; fresh navigation on the stable TEST hostname loaded the new screen."
+  ],
+  "frontend": {
+    "gitSha": "f06cfb8459fb507bb833d28c0967e81c301b9367",
+    "deploymentId": "dpl_3Zu9yW9BJXiRV4symXiA7SoYqzYi",
+    "aliases": [
+      {
+        "name": "test.openfolk.ai",
+        "target": "dpl_3Zu9yW9BJXiRV4symXiA7SoYqzYi"
+      },
+      {
+        "name": "serviceos-learn-test-allkin.vercel.app",
+        "target": "dpl_3Zu9yW9BJXiRV4symXiA7SoYqzYi"
+      }
+    ],
+    "protection": [
+      {
+        "route": "/",
+        "status": 302,
+        "redirectOrigin": "https://vercel.com"
+      },
+      {
+        "route": "/login",
+        "status": 302,
+        "redirectOrigin": "https://vercel.com"
+      },
+      {
+        "route": "/client?section=learn",
+        "status": 302,
+        "redirectOrigin": "https://vercel.com"
+      },
+      {
+        "route": "/openfolk",
+        "status": 302,
+        "redirectOrigin": "https://vercel.com"
+      }
+    ],
+    "productionBefore": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+    "productionAfter": "dpl_DXueDsax146gdtyFoniXRaW3dzMM"
+  },
+  "realAcceptance": {
+    "scope": "two previously retained public-channel messages in the existing Drummonds TEST tenant",
+    "operator": "existing authenticated TEST operator",
+    "savedReviews": 2,
+    "reviewScope": "company",
+    "newJobLinks": 0,
+    "newPersonLinks": 0,
+    "originalDirectionPreserved": true,
+    "freshReadAfterSave": true,
+    "publishedJobPickerRead": true,
+    "alerts": [],
+    "unchangedDatasets": 196,
+    "changedDatasets": [
+      "public.controlplane_change_log",
+      "public.interactions",
+      "public.learn_slack_context_reviews"
+    ],
+    "providerRequests": 0,
+    "newAccounts": 0,
+    "newGrants": 0,
+    "aiRequests": 0,
+    "captureActivated": false,
+    "productionChanged": false,
+    "screenshot": ".verification-results/slack-context-hosted-20261012.jpg"
+  }
 }
