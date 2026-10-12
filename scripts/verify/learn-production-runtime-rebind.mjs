@@ -13,7 +13,7 @@ const {database:priorDb,...priorRuntime}=old,{database:currentDb,...currentRunti
 if(JSON.stringify(priorRuntime)!==JSON.stringify(currentRuntime)||currentDb.length!==priorDb.length+1||
  JSON.stringify(currentDb.slice(0,-1))!==JSON.stringify(priorDb))throw Error('Only one additive SQL package may differ');
 const rehearsal=parse(rehearsalPath);
-if(rehearsal.state!=='production_commusoft_recurring_rehearsed_offline'||!rehearsal.containerRemoved||
+if(!['production_commusoft_recurring_rehearsed_offline','production_slack_context_rehearsed_offline'].includes(rehearsal.state)||!rehearsal.containerRemoved||
  !rehearsal.journey?.passed||JSON.stringify(rehearsal.packages)!==JSON.stringify(currentDb.map(p=>p.sha256))||
  rehearsal.originalArchivePreservation?.state!=='all_archived_copy_rows_and_sequences_match'||
  rehearsal.preservation?.state!=='all_archived_copy_rows_and_sequences_match')throw Error('Matching successful SQL rehearsal required');
@@ -43,7 +43,7 @@ const derivation={state:'unchanged_runtime_evidence_carried_forward',observedAt:
  originalBundleReportSha256:sha(bundleBytes),originalBootReportSha256:sha(bootBytes),
  sqlRehearsalReportSha256:sha(readFileSync(rehearsalPath)),
  runtimeInputsUnchanged:true,artifactBytesUnchanged:true,newBootExecution:false,productionChanged:false,
- explanation:'Only the ordered SQL package set changed. All endpoint metadata, source bytes, entrypoints and JWT settings remain identical. These exact retained executable bytes passed the original offline boot; package 020 passed a separate full-schema recurring capture rehearsal.'};
+ explanation:'Only the ordered SQL package set changed. All endpoint metadata, source bytes, entrypoints and JWT settings remain identical. These exact retained executable bytes passed the original offline boot; the added package passed its separate full-schema journey.', addedDatabasePackage:currentDb.at(-1).path};
 for(const file of current.files){const path=join(destination,'stage/supabase/functions',file.path);mkdirSync(dirname(path),{recursive:true,mode:0o700});copyFileSync(join(bundleDir,'stage/supabase/functions',file.path),path);}
 for(const e of current.endpoints)copyFileSync(join(bundleDir,'artifacts',e.name+'.eszip'),join(destination,'artifacts',e.name+'.eszip'));
 const save=(name,value)=>writeFileSync(join(destination,name),JSON.stringify(value,null,2)+'\n',{flag:'wx',mode:0o600});

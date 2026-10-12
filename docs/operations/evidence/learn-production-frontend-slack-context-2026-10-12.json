@@ -1,0 +1,25 @@
+{
+  "observedAt": "2026-10-12T22:33:59.294Z",
+  "state": "protected_production_configured_preview_ready",
+  "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+  "id": "dpl_HAuQP1P52UzyXXSyGo5pWWEKVioa",
+  "url": "https://serviceos-o1jy1xq2t-allkin.vercel.app",
+  "gitSha": "d42987ee88c5859b748cafa027d9e038fecd39fb",
+  "target": null,
+  "productionDeploymentUnchanged": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "productionPromotion": false,
+  "browser": {
+    "loginScreenLoaded": true,
+    "actualServedAuthOrigin": "https://tgbnakbxwcqjeimygroz.supabase.co",
+    "bindingEvidence": "Rendered login data-auth-target attribute observed through browser",
+    "signedInAcceptance": false
+  },
+  "protection": {
+    "loginStatus": 302,
+    "redirectOrigin": "https://vercel.com"
+  },
+  "limitations": [
+    "Existing live UX retained; no production backend installation or alias promotion.",
+    "Positive signed-in production and provider acceptance remains pending."
+  ]
+}

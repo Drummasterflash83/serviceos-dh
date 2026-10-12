@@ -102,6 +102,11 @@
       "path": "supabase/release/learn-production/020_commusoft_recurring.sql",
       "sha256": "e1be0657e8da44ad1def758c29a782f4f0bfd224b7a8b2a3587e9e53122266ee",
       "manifestSha256": "9cbdab15fad083884b6c09f28d00a551007e7022cbb98699af24459d8d145106"
+    },
+    {
+      "path": "supabase/release/learn-production/021_slack_work_context.sql",
+      "sha256": "59c5dc3edfc0a893e1a44e8624fadda74a31a6e3e945eab55492aef594bebc67",
+      "manifestSha256": "cb4b3b317fd19e8faed6ea213a0fdff6f4cbdad7336dbde077b1184c8534732c"
     }
   ],
   "sourceClosureSha256": "21eb8361f395bcd3d828e4890f78060cfc2c8aedaf4b007d5c66842e55c55893",

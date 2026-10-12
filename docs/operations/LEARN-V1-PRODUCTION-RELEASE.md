@@ -7,31 +7,39 @@ preview is not a replacement design. This approval supersedes older pending
 ordinary-promotion approval statements below; it does not prove the package,
 runtime, signed-in acceptance or preservation gates passed. The
 [completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
-The current hosted TEST frontend is Git `d6068af`; TEST Slack packages 080–083,
-worker v11 and Commusoft package 084 are installed. Package 084 preserves all 195
-existing datasets and leaves capture paused. The production candidate includes
-packages 001–020, 37 exact runtime artifacts and a 71-step release sequence.
-Package 020 adds recurring Commusoft controls and four-stage checkpointed cycles.
-All twenty packages passed the retained full-schema archive rehearsal, including
-complete inventory traversal, pause/resume and revoked-authority handling.
-The runtime bytes are unchanged from the scheduler fix; their compile/boot and
-28 caller checks are explicitly carried forward, not newly executed. All 31
-release adapter/journal/candidate tests pass. Hosted gateway and real positive
-caller acceptance remain separate unfinished gates. The latest operator frontend
-is deployed to stable TEST; its signed-in read and refresh passed with capture
-shown as not enabled. Approval and real worker acceptance remain separate.
+The current hosted TEST frontend is Git `f06cfb8`; package 085 adds audited
+Slack company/job context review without enabling capture. Both retained real
+public-channel messages were reviewed through the signed-in operator UI. Original
+source records were preserved. Nineteen real email-to-card deliveries are also
+verified in TEST. These bounded results do not establish complete history or AI.
 
-The current protected production preview is Git `d6068af`, deployment
-`dpl_8UfEYjtsQVNmd1iuVXjrxqsqQfJT`, at
-[the production-configured preview](https://serviceos-bapstxhgk-allkin.vercel.app/login).
-Its rendered auth target is verified as production; sign-in acceptance is still
-pending. The preview is protected and the live deployment remains
-`dpl_DXueDsax146gdtyFoniXRaW3dzMM`. No production backend or alias was changed.
-[Database rehearsal evidence](evidence/learn-production-commusoft-recurring-2026-10-12.json),
-[current runtime evidence](evidence/learn-production-scheduler-callers-2026-10-12.json)
-and [frontend evidence](evidence/learn-production-frontend-commusoft-recurring-2026-10-12.json)
-supersede older candidate pins below. Real-provider completeness, positive caller
-acceptance, current recovery/drain gates and live activation remain open.
+The production candidate now includes packages **001–021**, 37 exact runtime
+artifacts and a **72-step** release sequence. All 21 packages passed the isolated
+retained archive install, with original rows/sequences preserved. Slack source-edit,
+review/replay/cancellation, revocation, isolation and package rollback checks pass.
+No runtime source changed; retained exact-artifact startup and 28 scheduler checks
+are explicitly carried forward, not newly executed. All 31 release tests pass.
+
+Fresh read-only production checks found all 88 expected server definitions, zero
+new release receipts and original target schedule states among 18 schedules.
+The schema comparison matches after the four previously documented Marketing
+constraint-deparsing differences were checked against their original archive
+hashes again. No production definition was replaced or normalised.
+
+The current protected production preview is Git `d42987e`, deployment
+`dpl_HAuQP1P52UzyXXSyGo5pWWEKVioa`, at
+[the production-configured preview](https://serviceos-o1jy1xq2t-allkin.vercel.app/login).
+Its rendered auth target is verified as production; signed-in acceptance is still
+pending. 1Password is currently locked. The live deployment remains
+`dpl_DXueDsax146gdtyFoniXRaW3dzMM`; no backend, configuration, schedule or live alias
+was changed in this release-preparation step.
+
+[Matched release evidence](evidence/learn-production-slack-context-2026-10-12.json),
+[real Slack TEST acceptance](evidence/learn-slack-work-context-2026-10-12.json) and
+[frontend evidence](evidence/learn-production-frontend-slack-context-2026-10-12.json)
+supersede older candidate pins below. Positive hosted caller acceptance, current
+recovery and drain evidence, signed-in live journeys, complete provider coverage
+and initial live operation remain open.
 
 ## Server configuration execution — 12 October
 

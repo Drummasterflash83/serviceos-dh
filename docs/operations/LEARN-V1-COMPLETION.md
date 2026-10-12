@@ -7,6 +7,43 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — matched production candidate now includes Slack work context.**
+
+### Working and verified
+
+- All 21 database packages installed in order in the isolated retained production
+  restore. The Slack journey, duplicate rejection and rollback checks pass.
+  All 299 original archive tables, 1,591,576 rows and five sequences are preserved.
+- The matched release plan has 72 steps and 37 exact runtime artifacts. Runtime
+  bytes are unchanged; earlier startup and 28 scheduler checks are carried forward
+  explicitly. All 31 release adapter/journal/candidate tests pass.
+- Fresh production metadata reads match 88 server functions, zero new release
+  receipts and the original target schedule states among 18 schedules. Public
+  schema matches the archived baseline after rechecking the four specifically
+  documented constraint-deparsing differences against original archive hashes.
+- Protected production preview `dpl_HAuQP1P52UzyXXSyGo5pWWEKVioa` is ready at Git
+  `d42987e`; its rendered auth target is verified as production. Live remains unchanged.
+  Stable TEST retains the previously verified real email/card and Slack reviews.
+
+### Needs finishing
+
+- Positive hosted caller acceptance, current independent recovery checkpoint,
+  coordinated pause/drain, matched installation, signed-in live journeys and
+  initial capture observation. A matching manifest is not a launched service.
+- Full history, ongoing capture, phone processing, customer/job attribution,
+  graph/AI learning, scoring and remaining goal acceptance stay in scope.
+
+### Blocked externally
+
+- 1Password was checked directly and is locked after inactivity. Owner unlock is
+  needed for the existing live-login credential lookup. No repeated CLI prompt
+  was started; independent release work continues.
+
+[Matched release evidence](evidence/learn-production-slack-context-2026-10-12.json) ·
+[Production preview evidence](evidence/learn-production-frontend-slack-context-2026-10-12.json).
+
+## Previous current checkpoint
+
 **12 October — real Slack company context verified through hosted TEST operator controls.**
 
 ### Working and verified

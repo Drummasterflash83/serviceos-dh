@@ -1,0 +1,264 @@
+{
+  "state": "production_slack_context_rehearsed_offline",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "negativeChecks": [
+    "wrong_target",
+    "missing_prerequisite",
+    "late_failure"
+  ],
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 385,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "de2d9059a1d891418b6dfad31ce1bca90a2bd7d626d9eeee3f9788623012db9e",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "originalArchivePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "duplicateRejected": true,
+  "journey": {
+    "passed": true,
+    "probeSha256": "732c34f15cf5254366cdd53b2dad4aecdf4933362e8bc6833bc6534cbfdc4143",
+    "sources": [
+      {
+        "path": "scripts/verify/learn-slack-work-context.assert.sql",
+        "sha256": "52190a5044c7c238b177c96e0303554bfe39f0f0d65087a2144dbacb9e2e27d5"
+      }
+    ]
+  },
+  "postJourneyPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 386,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "46e76ee5d6d839a5ff75992c275b5f0eda3a97677b5d43b0fdc0ef7173158a3d",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "packages": [
+    "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+    "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+    "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+    "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+    "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+    "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+    "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+    "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+    "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+    "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+    "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+    "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+    "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba",
+    "f4413fe47a9eaa1eb7774e35e22f10f78bf94a55345f4fbe19fe690b4e7d8556",
+    "b877e70fa1cc946ba0c9c8a66f28b6603f99dc8484fefd1411bf30beed325998",
+    "ab4cef1752c520a13047fb287d63931068f7e7468d0014ba955df75a49a9dd56",
+    "304b2e84f822b703a882b184ee490268f2b3802c817dee5f7953c7180a8962d2",
+    "f5fe1265961b713a338c3bfa650cd8744e2bfeaf04778f90e83f5dc9352e51c0",
+    "e1be0657e8da44ad1def758c29a782f4f0bfd224b7a8b2a3587e9e53122266ee",
+    "59c5dc3edfc0a893e1a44e8624fadda74a31a6e3e945eab55492aef594bebc67"
+  ],
+  "newFunctions": 4,
+  "changedFunctions": 0,
+  "newTables": 1,
+  "existingTablesUnchangedExceptReviewedInteractionTrigger": true,
+  "existingViewsRolesStorageUnchanged": true,
+  "priorReceiptsUnchanged": true,
+  "addedReleaseReceipts": 1,
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "version": "learn-production-slack-context/1",
+  "candidateManifestSha256": "b554445ce842aa867653a0d44f38d6cd77d3db115164236999cf847987b43646",
+  "sourceClosureSha256": "21eb8361f395bcd3d828e4890f78060cfc2c8aedaf4b007d5c66842e55c55893",
+  "bundleReportSha256": "0056a02626e131ae7424982cd787a59d8b5639168bb9ce796f3decc5fa6c9cad",
+  "bootReportSha256": "8fe33a969bb767eb0b4231c672705356310f1eba36e84eaf24de675c718e2a10",
+  "runtimeWireReportSha256": "cec378bf12fe59356da9a9e1075d6e9623a642929d6a03a9e9ab3b6f1daa9005",
+  "callerReportSha256": "497d5699433bcfe2d0fa68954b512295dfd0712029f4043aec0f8e0ce90af304",
+  "callerManifestSha256": "eb7175becf0dd851b9aa5f557f64ef4f142f2580df189472d09fc7565b88a86a",
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-scheduler-callers.mjs",
+      "sha256": "a2abbc1d7ae2b16b07256465b7bc205c19156ce765d5881b07b93561dc101791"
+    },
+    {
+      "path": "scripts/verify/learn-production-scheduler-caller.fixture.ts",
+      "sha256": "60b5bf47bfa5372a1f49bd4d3feebebb52745e1dd2b7a97a2dc6e6e9790706f7"
+    }
+  ],
+  "runtimeEvidenceCarriedForward": true,
+  "newRuntimeBootExecution": false,
+  "runtimeDerivation": {
+    "state": "unchanged_runtime_evidence_carried_forward",
+    "observedAt": "2026-10-12T22:32:49.808Z",
+    "priorManifestSha256": "cac713503926aa8eb4b6e6e59241b1694f731a81057b55fbe2902734c8bbbf6b",
+    "currentManifestSha256": "b554445ce842aa867653a0d44f38d6cd77d3db115164236999cf847987b43646",
+    "originalBundleReportSha256": "df4f37efe91b8a50ea5b545c22324670a39adbaccdcb968a07d0a2da85ea3e5b",
+    "originalBootReportSha256": "91338410db9829adc7a20a278e5584fd90a67ccb9ee8d95824158e378c8de25d",
+    "sqlRehearsalReportSha256": "a38ee802c1fe3c41a6827bd5cee0eab7ad3aedecae1aa36574f82128ba38e0bb",
+    "runtimeInputsUnchanged": true,
+    "artifactBytesUnchanged": true,
+    "newBootExecution": false,
+    "productionChanged": false,
+    "explanation": "Only the ordered SQL package set changed. All endpoint metadata, source bytes, entrypoints and JWT settings remain identical. These exact retained executable bytes passed the original offline boot; the added package passed its separate full-schema journey.",
+    "addedDatabasePackage": "supabase/release/learn-production/021_slack_work_context.sql"
+  },
+  "dynamicRpcReview": {
+    "sites": 19,
+    "uniqueTargets": 51,
+    "failures": 0
+  },
+  "knownLimitations": [
+    "Production is unchanged; these are isolated database and retained runtime checks.",
+    "Positive live caller acceptance, fresh recovery/drain, signed-in production and matched installation remain outstanding.",
+    "TEST real Slack reviews are separately verified; full history and ongoing capture remain open."
+  ],
+  "releaseChecks": {
+    "testsPassed": 31,
+    "databasePackages": 21,
+    "runtimeEndpoints": 37,
+    "planSteps": 72,
+    "configurationPreflight": {
+      "observedAt": "2026-10-12T22:34:34.999Z",
+      "inspection": {
+        "projectRef": "tgbnakbxwcqjeimygroz",
+        "state": "ready",
+        "changedNames": [
+          "LEARN_COMMUSOFT_WORKER_KEY",
+          "LEARN_INPUT_DISPATCH_ENABLED",
+          "LEARN_SLACK_WORKER_KEY",
+          "LEARN_STATUS_READ_MODE"
+        ],
+        "runtimeCount": 88,
+        "productionChanges": 0,
+        "secretValuesIncluded": false,
+        "executionReady": false
+      },
+      "productionChanges": 0
+    },
+    "sqlPreflight": {
+      "observedAt": "2026-10-12T22:36:05.466Z",
+      "project": "tgbnakbxwcqjeimygroz",
+      "state": "read_only_sql_preflight",
+      "receiptCount": 0,
+      "receiptPrefixValid": true,
+      "schedules": "ready",
+      "scheduleCount": 18,
+      "productionChanges": 0,
+      "executionApproved": false
+    },
+    "schemaPreflight": {
+      "observedAt": "2026-10-12T22:36:39.116Z",
+      "projectRef": "tgbnakbxwcqjeimygroz",
+      "state": "schema_differences_need_review",
+      "changes": {
+        "tables": [
+          {
+            "name": "marketing_ad_events",
+            "arguments": null,
+            "state": "changed"
+          },
+          {
+            "name": "marketing_ad_sources",
+            "arguments": null,
+            "state": "changed"
+          },
+          {
+            "name": "marketing_email_tracking",
+            "arguments": null,
+            "state": "changed"
+          },
+          {
+            "name": "marketing_templates",
+            "arguments": null,
+            "state": "changed"
+          }
+        ],
+        "functions": [],
+        "views": []
+      },
+      "objectCounts": {
+        "views": 5,
+        "tables": 251,
+        "functions": 366
+      },
+      "productionChanges": 0,
+      "sourceRowsRead": 0
+    },
+    "namedConstraintReconciliation": {
+      "state": "fresh_four_definition_hashes_match_original_archive_evidence",
+      "observedAt": "2026-10-12T22:37:29.828Z",
+      "checks": [
+        {
+          "name": "marketing_ad_events_provider_event_id_check",
+          "table": "marketing_ad_events",
+          "definitionSha256": "381ac30884e0e81c956c92daec6657b8cf8ec3c5fc1c0dc98a31ed0147a28fab",
+          "validated": true
+        },
+        {
+          "name": "marketing_ad_sources_name_check",
+          "table": "marketing_ad_sources",
+          "definitionSha256": "4e0e0d3e49845c7ef6ce49747b2470d5795bddb9c599beac8f9b8aca00b59db2",
+          "validated": true
+        },
+        {
+          "name": "marketing_email_tracking_unique_evidence_ck",
+          "table": "marketing_email_tracking",
+          "definitionSha256": "ef5bdd6bc52e7fb3e6f22cedccd20db9bc3a0462aed94c84c5927988ec095b9b",
+          "validated": true
+        },
+        {
+          "name": "marketing_templates_name_check",
+          "table": "marketing_templates",
+          "definitionSha256": "4e0e0d3e49845c7ef6ce49747b2470d5795bddb9c599beac8f9b8aca00b59db2",
+          "validated": true
+        }
+      ],
+      "productionChanged": false,
+      "sourceRowsRead": 0
+    },
+    "unresolvedSchemaDifferences": 0
+  }
+}
