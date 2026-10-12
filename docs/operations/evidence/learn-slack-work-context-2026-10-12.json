@@ -1,0 +1,71 @@
+{
+  "state": "backend_installed_test_frontend_pending",
+  "local": {
+    "state": "slack_work_context_full_schema_rehearsed",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "archive": {
+      "bytes": 196872981,
+      "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+    },
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "packageRollbackVerified": true,
+    "packageSha256": "59c5dc3edfc0a893e1a44e8624fadda74a31a6e3e945eab55492aef594bebc67",
+    "migrationSha256": "2ce6ee792ae1966bb3020835bdf6aa815bb3b9a434b54d80ac7faaff1b276d46",
+    "preservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 386,
+      "rows": 1591600,
+      "sequences": 7,
+      "comparisonSha256": "6a397c8e93b11800f1976acf5ce7f34da2b4d85b94021ac18caed2dea1a02597",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "migrationRollbackVerified": true,
+    "journeyRollbackVerified": true,
+    "containerRemoved": true
+  },
+  "hostedTest": {
+    "state": "installed_verified",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T22:23:52.476Z",
+    "packageSha256": "b4991f10a02563e7f3c20ff36112466dc788e2a68531c7fb24634feb8094dce9",
+    "expected": {
+      "marker": "slack_context_installed",
+      "fingerprint": "43d87cdba00ae28c3f6910c7eaa2869a"
+    },
+    "afterFingerprint": "43d87cdba00ae28c3f6910c7eaa2869a",
+    "preservedDatasets": 198,
+    "newAccounts": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "credentialsUploaded": 0,
+    "productionChanged": false
+  },
+  "clientChecks": {
+    "testsPassed": 6,
+    "typecheckPassed": true,
+    "buildPassed": true
+  },
+  "limitations": [
+    "No retained message review submitted yet.",
+    "No provider request, new account, grant or capture activation.",
+    "Production 021 prepared and rollback rehearsed; full candidate manifest and sign-in acceptance still pending.",
+    "Company/job context is human-reviewed evidence, not AI insights or scoring."
+  ]
+}

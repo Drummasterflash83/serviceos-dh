@@ -7,6 +7,37 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — Slack company/job context backend installed in TEST.**
+
+### Working and verified
+
+- TEST package 085 installed with all 198 retained datasets unchanged. It adds
+  audited operator review of retained Slack conversations as company context or
+  a verified job link, without inventing customer identity or direction.
+- The isolated full-schema journey covers source edits, stale review rejection,
+  idempotent replay, cancellation, tenant isolation and revoked operator access.
+  All 386 prerequisite tables and seven sequences were preserved. Exact production
+  package 021 rollback also passed; production itself is unchanged.
+- Six client recovery/validation tests, type checking and the frontend build pass.
+  Nineteen real email-to-card deliveries remain verified in hosted TEST.
+
+### Needs finishing
+
+- Deploy and verify the signed-in review screen and real retained Slack context.
+  The two Slack holds have not yet been reviewed; no history/capture is activated.
+- Integrate package 021 into the complete matched production candidate. Complete
+  full history, ongoing capture, phone processing, graph/AI and scoring acceptance,
+  then verify and promote the matched release.
+
+### Blocked externally
+
+- Production-login credential lookup still awaits owner Touch ID; independent
+  delivery continues.
+
+[Slack context evidence](evidence/learn-slack-work-context-2026-10-12.json).
+
+## Previous current checkpoint
+
 **12 October — real retained emails delivered to cards in hosted TEST.**
 
 ### Working and verified

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { OperatorSlackWorkContext } from "./OperatorSlackWorkContext";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import { PhoneAudioViewer } from "@/components/client-portal/learn/LearnPhoneAudio";
 import { LearnCustomerBusinessContext } from "@/components/client-portal/learn/LearnCustomerBusinessContext";
@@ -105,7 +106,10 @@ export function OperatorClientInformation({
         ? JSON.stringify(value)
         : String(value);
   return (
-    <section className="op-embedded cp-root min-w-0 space-y-5" aria-labelledby="client-information-heading">
+    <section
+      className="op-embedded cp-root min-w-0 space-y-5"
+      aria-labelledby="client-information-heading"
+    >
       <header>
         <p className="op-eyebrow">OPENFOLK · CLIENT INFORMATION</p>
         <h1 id="client-information-heading" className="text-2xl font-semibold">
@@ -161,7 +165,7 @@ export function OperatorClientInformation({
         <>
           <p className="text-sm">
             {visible.rows.length} records in this page · checked{" "}
-            {new Date(visible.observed_at).toLocaleString()} · read-only operator access
+            {new Date(visible.observed_at).toLocaleString()} · audited operator access
           </p>
           {collection === "recordings" && (
             <p>
@@ -205,6 +209,16 @@ export function OperatorClientInformation({
                         operatorReason={loadedReason}
                       />
                     )}
+                    {collection === "communications" &&
+                      row.fields.source_table === "slack_messages" && (
+                        <OperatorSlackWorkContext
+                          key={`${tenantId}:${actorId}:${row.id}`}
+                          tenantId={tenantId}
+                          actorId={actorId}
+                          interactionId={row.id}
+                          accessReason={loadedReason}
+                        />
+                      )}
                     <dl className="mt-3 space-y-2">
                       {Object.entries(row.fields).map(([key, value]) => (
                         <div key={key}>

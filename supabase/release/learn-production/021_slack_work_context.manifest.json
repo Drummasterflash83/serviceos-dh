@@ -1,0 +1,35 @@
+{
+  "version": "learn-production-slack-work-context/1",
+  "status": "prepared_requires_matching_release_verification",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "59c5dc3edfc0a893e1a44e8624fadda74a31a6e3e945eab55492aef594bebc67",
+  "priorSha256": "e1be0657e8da44ad1def758c29a782f4f0bfd224b7a8b2a3587e9e53122266ee",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101600000_learn_slack_work_context.sql",
+      "sha256": "2ce6ee792ae1966bb3020835bdf6aa815bb3b9a434b54d80ac7faaff1b276d46"
+    }
+  ],
+  "newFunctions": [
+    "learn_operator_slack_context",
+    "learn_operator_slack_context_review",
+    "learn_slack_context_source_changed",
+    "learn_slack_context_state"
+  ],
+  "changedFunctions": [],
+  "newTables": [
+    "learn_slack_context_reviews"
+  ],
+  "changedViews": [],
+  "newSequences": [],
+  "extendedTables": {},
+  "limitations": [
+    "Installation creates no reviews, accounts, grants, credentials or capture.",
+    "Only a reviewed retained Slack interaction changes; original direction and source evidence remain.",
+    "Job/company review is not proof of AI insight, scoring or complete Slack history."
+  ]
+}
