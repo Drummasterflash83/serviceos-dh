@@ -1,0 +1,119 @@
+{
+  "state": "retained_inputs_to_observations_verified",
+  "observedAt": "2026-10-12T23:09:53.789Z",
+  "environment": "hosted TEST",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sample": {
+    "retainedInteractions": 21,
+    "observed": 17,
+    "skipped": 4,
+    "reusedOnRepeat": 17
+  },
+  "lineage": {
+    "reasons": [
+      {
+        "count": 2,
+        "status": "skipped",
+        "eligibility_reason": "automated_notification"
+      },
+      {
+        "count": 13,
+        "status": "observed",
+        "eligibility_reason": "customer_context"
+      },
+      {
+        "count": 1,
+        "status": "observed",
+        "eligibility_reason": "customer_risk"
+      },
+      {
+        "count": 2,
+        "status": "skipped",
+        "eligibility_reason": "marketing"
+      },
+      {
+        "count": 2,
+        "status": "observed",
+        "eligibility_reason": "reviewed_work_context"
+      },
+      {
+        "count": 1,
+        "status": "observed",
+        "eligibility_reason": "sales_opportunity"
+      }
+    ],
+    "channels": [
+      {
+        "source_type": "chat",
+        "observations": 2,
+        "reviewed_context": 2,
+        "unknown_direction": 2
+      },
+      {
+        "source_type": "email",
+        "observations": 15,
+        "reviewed_context": 0,
+        "unknown_direction": 0
+      }
+    ],
+    "receipts": 17,
+    "decisions": 17,
+    "new_graph_interactions": 17,
+    "foreign_graph_endpoints": 0
+  },
+  "sourcePreservation": {
+    "datasetsCompared": 204,
+    "otherTenantsAndUnscopedPreserved": true,
+    "existingJobsPreserved": true,
+    "onlyExpectedDerivedDataChanged": true
+  },
+  "worker": {
+    "version": 23,
+    "ezbrSha256": "b68e225050884077d1fb57b5ecc16d4d7f240bd74ed8fc7abad6ff292f3b7f5b",
+    "sourceClosureSha256": "ed4311bb6389e050b7a0103ed516d5b6bae86850ba845a8daeb7c28a186548a1"
+  },
+  "packages": [
+    "4bd5a138ae22c971563aec17f9b51c755ee058dc4f21ef61cf4ccc241378e158",
+    "af4b0b8500bdc6ca3511e7b8431655e4f1cf8f9b672d79518a3a79567dee61dd"
+  ],
+  "localChecks": {
+    "unitAndInProcessChecks": 69,
+    "typescriptCheckPassed": true,
+    "fullSchemaJourneyPassed": true,
+    "retainedDataPreserved": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 387,
+      "rows": 1591601,
+      "sequences": 7,
+      "comparisonSha256": "4c7c0c92786575ba6b39d68474bb0ae7543ce68e058e6c3aef47a502edad759a",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "rollbackSequenceEffect": [
+      {
+        "before": {
+          "name": "public.learn_work_capture_sequence",
+          "lastValue": 1,
+          "isCalled": false
+        },
+        "after": {
+          "name": "public.learn_work_capture_sequence",
+          "lastValue": 2,
+          "isCalled": true
+        }
+      }
+    ]
+  },
+  "providerRequests": 0,
+  "paidAIRequests": 0,
+  "newLogins": 0,
+  "newOperatorGrants": 0,
+  "capturePaused": true,
+  "productionChanged": false,
+  "limitations": [
+    "Deterministic observations and policy decisions; no paid AI extraction or synthesis acceptance.",
+    "Retained sample only; full historical and ongoing coverage remain open.",
+    "Source edits after delivery need explicit revision-aware reconciliation.",
+    "Legacy Learning screen rejects the current operator; Client view shows workspace being prepared. Saved observations are not yet browser-accepted in the current client journey.",
+    "Production requires a matched release including the new observation migration and runtime; previous 21-package runtime proof does not cover this change."
+  ]
+}

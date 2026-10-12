@@ -1,5 +1,11 @@
 # LEARN V1 production release plan
 
+> 13 October 00:10 BST: atomic observation delivery and reviewed Slack context
+> are now verified in hosted TEST (worker v23, packages 086/087). Production still
+> needs a matching new package and runtime proof. TEST 087 fills old foundation
+> columns already present in production; do not replay it against production.
+> UI acceptance and all remaining launch requirements are still open.
+
 > 12 October 22:45 UTC: local intelligence-ingestion reliability changes postdate
 > the pinned 21-package candidate below. They have not been deployed. Regenerate
 > and verify matching runtime artifacts before promoting the new source. See

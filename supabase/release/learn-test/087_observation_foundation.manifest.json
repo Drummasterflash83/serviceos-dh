@@ -1,0 +1,32 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "af4b0b8500bdc6ca3511e7b8431655e4f1cf8f9b672d79518a3a79567dee61dd",
+  "sources": [
+    {
+      "path": "supabase/migrations/20260718120000_decision_engine.sql",
+      "sha256": "00603a4b19ce0bbcbda9ac27d8d0eac86c0078f66032f9bbf043136b922d1b01"
+    }
+  ],
+  "preservedDatasets": 201,
+  "addedColumns": {
+    "decision_log": [
+      "decision",
+      "next_owner_kind",
+      "engine_version",
+      "operating_profile_version",
+      "learning_version_ids",
+      "reason_codes",
+      "correlation_id",
+      "output_hash",
+      "supersedes",
+      "decision_package",
+      "operational_mode"
+    ],
+    "platform_events": [
+      "actor",
+      "occurred_at",
+      "domain",
+      "correlation_id"
+    ]
+  }
+}

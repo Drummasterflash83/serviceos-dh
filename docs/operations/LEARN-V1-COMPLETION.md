@@ -7,6 +7,53 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 00:10 BST — retained real inputs now reach durable TEST observations.**
+
+### Working and verified
+
+- Hosted worker v23 processed the existing 21-interaction sample: 15 emails and both
+  reviewed Slack messages now have saved observations, decision packages and durable
+  receipts. Four messages have audited skip reasons (two marketing, two automated).
+- All 17 decisions are observe-only. Repeating ingestion reused all 17 existing
+  observations; there are no remaining analysis jobs from this run. Both Slack
+  messages retain unknown direction and their reviewed company context.
+- Atomic delivery also created 17 interaction graph nodes and verified related
+  person/company/job references. No graph edges cross tenant boundaries. This is
+  targeted projection for the sample, not a full company-graph history sweep.
+- TEST packages 086 and 087 and the matching worker are installed. The first real
+  attempt exposed missing legacy decision/event columns in TEST; no partial
+  observations persisted. After a hosted synthetic rollback rehearsal and the
+  prerequisite install, the same 17 jobs completed on their second attempt.
+- Full-schema rollback, stale-source, wrong-claim, cross-tenant and duplicate tests
+  passed. 69 local unit/in-process checks and the targeted TypeScript check passed.
+  Source fields and other tenants are preserved across the 204-dataset comparison;
+  capture stayed paused, with zero provider requests, paid AI calls or new logins.
+
+### Needs finishing
+
+- **Browser acceptance remains open.** The signed-in operator's legacy Learning
+  screen rejects access; Client view shows "workspace being prepared". The audited
+  Client information screen works, but has no observation collection yet. Fix the
+  authorised read/display journey without changing Chris's profile or impersonating
+  client staff. Saved backend records do not establish a usable customer showcase.
+- Add revision-aware reconciliation for changed sources and reviewed context; the
+  current mapper gives one observation per interaction/version. Retained historical
+  observations must not silently masquerade as analysis of later edits.
+- The new path is deterministic, observe-only processing. Paid AI extraction,
+  synthesis, full history/ongoing capture, phone/voicemail acceptance, business
+  publication, scoring, operational recovery and the remaining launch gates stay open.
+- Prepare the matching production package/runtime and verify the release. The prior
+  21-package candidate below remains historical evidence, not acceptance of v23.
+
+### Blocked externally
+
+- Existing live credential access and the outstanding TEST AI key remain unresolved.
+  The UI and release work above can proceed independently.
+
+Evidence: [retained input → observation acceptance](evidence/learn-retained-observations-2026-10-13.json).
+
+### Previous learning diagnostic
+
 **12 October, 22:45 UTC — retained input to learning diagnostic and local hand-off fix.**
 
 ### Working and verified

@@ -1,3 +1,4 @@
+import { handleLearnObservation } from "./learn_observation.ts";
 // ServiceOS — Worker handler: intelligence.observe
 //
 // The reference Intelligence Loop shell, now driven by the Universal Decision
@@ -70,6 +71,12 @@ export async function handleIntelligenceObserve(
       },
     };
   }
+
+  if (
+    (draft.attributes?.ingest as { mapper_version?: string } | undefined)?.mapper_version ===
+    "obs-ingest/2"
+  )
+    return handleLearnObservation(ctx);
 
   // 1) resolve inputs (the engine never queries anything itself)
   const { data: tenantRow } = await db

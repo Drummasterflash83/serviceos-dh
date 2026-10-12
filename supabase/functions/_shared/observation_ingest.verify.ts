@@ -137,7 +137,7 @@ check(
   ingestKey(T, "int-email", MAPPER_VERSION) === `ingest:${T}:int-email:${MAPPER_VERSION}` &&
     observeJobKey(T, "int-email", MAPPER_VERSION) ===
       `${OBSERVE_JOB_TYPE}:${T}:int-email:${MAPPER_VERSION}` &&
-    ingestKey(T, "int-email", "obs-ingest/2") !== ingestKey(T, "int-email", MAPPER_VERSION),
+    ingestKey(T, "int-email", "obs-ingest/1") !== ingestKey(T, "int-email", MAPPER_VERSION),
 );
 
 // Evidence + source references preserved.

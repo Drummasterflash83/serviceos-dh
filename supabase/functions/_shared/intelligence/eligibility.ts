@@ -1,3 +1,4 @@
+import { reviewedWorkContext } from "../learn_work_context.ts";
 // ServiceOS — Intelligence Eligibility (PURE decision layer).
 //
 // "Should this interaction become intelligence?" — a deliberate, deterministic, channel-
@@ -8,7 +9,7 @@
 // records in the ledger for audit. No I/O, no LLM, no channel branching: same inputs →
 // same verdict. A future model-based classifier can replace the body behind this contract.
 
-export const ELIGIBILITY_VERSION = "eligibility/1";
+export const ELIGIBILITY_VERSION = "eligibility/2";
 
 export type EligibilityReason =
   // eligible
@@ -16,6 +17,7 @@ export type EligibilityReason =
   | "sales_opportunity"
   | "supplier_risk"
   | "customer_context"
+  | "reviewed_work_context"
   | "unclassified_inbound"
   // ineligible
   | "empty"
@@ -34,6 +36,8 @@ export interface EligibilityDecision {
 
 /** The interaction facts the decision reads (a subset of IngestInteraction). */
 export interface EligibilityInput {
+  metadata?: unknown;
+  related_job_id?: string | null;
   direction: string | null;
   interaction_type: string | null;
   subject: string | null;
@@ -86,6 +90,10 @@ export function shouldCreateIntelligence(i: EligibilityInput): EligibilityDecisi
 
   // ── ignore gates ────────────────────────────────────────────────────────────
   if (!text || text === "(no content)") return decide(false, "empty", 1, ["no_content"]);
+  // A recorded operator review can retain technical guidance or internal feedback
+  // even when keyword filtering would mistake it for outbound chatter/newsletters.
+  if (reviewedWorkContext(i))
+    return decide(true, "reviewed_work_context", 0.66, ["operator_reviewed_context"]);
   if (NOREPLY_ADDR.test(i.from_address ?? "") || AUTOMATED.test(text))
     return decide(false, "automated_notification", 0.9, ["automated"]);
   if (MARKETING.test(text)) return decide(false, "marketing", 0.9, ["marketing"]);

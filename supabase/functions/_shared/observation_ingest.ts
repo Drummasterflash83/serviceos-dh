@@ -1,3 +1,4 @@
+import { reviewedWorkContext } from "./learn_work_context.ts";
 // ServiceOS — Observation Ingest (PURE core of the interaction → intelligence bridge).
 //
 // The channel-neutral seam between the canonical `interactions` projection and the
@@ -21,7 +22,7 @@
 // The mapper version is part of every idempotency key: one interaction maps to at
 // most one logical Observation PER mapper version. Bump this only when the mapping
 // changes in a way that should legitimately produce a new logical Observation.
-export const MAPPER_VERSION = "obs-ingest/1";
+export const MAPPER_VERSION = "obs-ingest/2";
 
 // The horizontal default domain. `interactions` carry no domain; the bridge stays
 // channel- and customer-neutral by defaulting to the universal "core" domain pack
@@ -41,6 +42,9 @@ export const OBSERVE_JOB_TYPE = "intelligence.observe";
 /** The connector-agnostic interaction facts the mapper needs. Channel lives in
  *  `source_type` and is provenance ONLY. */
 export interface IngestInteraction {
+  updated_at?: string;
+  metadata?: unknown;
+  related_job_id?: string | null;
   id: string;
   tenant_id: string;
   source_type: string | null; // phone | email | chat | form | … (provenance only)
@@ -174,7 +178,15 @@ export function buildObservationDraft(input: IngestBuildInput): ObservationDraft
   const line = i.subject || i.summary || i.body_preview || "(no content)";
   // Subject is channel-labelled provenance around channel-neutral content; the
   // *shape* is identical across channels.
-  const subject = `Inbound ${channel} from ${who}: ${truncate(line, 140)}`;
+  const directionLabel =
+    i.direction === "inbound"
+      ? "Inbound"
+      : i.direction === "outbound"
+        ? "Outbound"
+        : i.direction === "internal"
+          ? "Internal"
+          : "Direction unknown —";
+  const subject = `${directionLabel} ${channel} from ${who}: ${truncate(line, 140)}`;
 
   // Scores derived from PRESENCE only — no channel branch, no fabricated signal.
   // A card confidence, when present, is preserved over the derived value (req 10).
@@ -220,6 +232,7 @@ export function buildObservationDraft(input: IngestBuildInput): ObservationDraft
       resolved,
       person_id: i.related_person_id,
       company_id: i.related_company_id,
+      job_id: i.related_job_id ?? null,
     },
     // Business context — null (not {}) when unresolved, so absence is explicit.
     customer_context: input.customerCardContext
@@ -231,6 +244,7 @@ export function buildObservationDraft(input: IngestBuildInput): ObservationDraft
           priority_score: input.customerCardContext.priority_score,
         }
       : null,
+    work_context: reviewedWorkContext(i),
     graph_context: { entity_node_count: input.graphNodeRefs.length },
     // Domain-neutral authority block: an inbound observation requests no delegated
     // financial authority and needs no explicit customer approval to be evaluated.
@@ -238,6 +252,7 @@ export function buildObservationDraft(input: IngestBuildInput): ObservationDraft
     // Ingestion lineage for provenance/audit.
     ingest: {
       mapper_version: input.mapperVersion,
+      source_updated_at: i.updated_at ?? null,
       ingest_key: ingestKey(input.tenantId, i.id, input.mapperVersion),
       source_type: i.source_type,
     },
