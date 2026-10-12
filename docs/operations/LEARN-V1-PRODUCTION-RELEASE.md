@@ -2,9 +2,58 @@
 
 Status: **preparation only; not approved or ready to execute**. The
 [completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
-The current hosted TEST frontend is Git `1af32a4`, schema package 066 and worker
-v12. That combination has synthetic processing acceptance, not full launch
+The current hosted TEST frontend is Git `9cbf562`, schema package 079 and worker
+v20. That combination has synthetic processing acceptance, not full launch
 acceptance. Source backups are on `codex/learn-v1-test`.
+
+## Production archive reconciliation — 12 October, 02:52 UTC
+
+A fresh isolated restore of the existing 00:25 UTC production archive now supplies
+the release-planning baseline. The pinned archive and PostgreSQL image matched;
+network access, published ports, background workers and scheduled execution were
+disabled throughout. The disposable container was removed after metadata capture.
+No production or hosted TEST data was changed. A separate read-only TEST query
+captured the matching public-schema inventory and all 80 deployment receipts.
+
+| Public objects | Production archive | Current TEST | TEST-only | Production-only to preserve | Shared but different |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Tables | 251 | 183 | 82 | 150 | 93 |
+| Functions/signatures | 366 | 330 | 295 | 331 | 30 |
+| Views | 5 | 9 | 8 | 4 | 1 |
+
+All 79 numbered TEST SQL packages match a hosted deployment receipt; all 67 with
+companion manifests also match their declared hash. The remaining 12 have no
+companion manifest, so their receipt/file hashes establish only their recorded
+TEST provenance. None is a production migration package.
+
+The first production-specific compatibility requirements are now concrete:
+
+- Preserve the five production-only email origin columns and their campaign,
+  delivery, intent and person constraints. TEST does not exercise those writers.
+- Preserve the three marketing capability triggers on `email_oauth_tokens` and
+  its account/tenant foreign key. Rehearse LEARN token refresh alongside them.
+- Preserve production-only correlation, decision, objective-health, campaign,
+  event and receptionist fields. Do not replace those tables with TEST versions.
+- Reconcile existing tenant/profile/source policies and privileges individually.
+  Ninety-three shared tables differ in at least one catalog facet; this does not
+  mean all 93 require the TEST definition. Prove both existing-service access and
+  the new restricted LEARN readers after each relevant change.
+- Add the missing journal/receipt tables and supported columns in dependency
+  order. Review shared triggers and indexes before adding or replacing names.
+  Preserve existing uniqueness and same-tenant constraints.
+
+The [machine-readable reconciliation](evidence/learn-production-release-reconciliation-2026-10-12.json)
+lists additions, production-only objects, changed facets and pinned TEST packages.
+Its classifier has four passing checks covering production-only preservation,
+type/authority changes, overloaded signatures, duplicate metadata and package pin
+drift. Raw source records and credentials are not in that report.
+
+**This is a planning baseline, not migration acceptance.** It compares the retained
+archive with TEST, not the current live database. It covers public-schema metadata,
+not every cross-schema dependency or runtime. The archive's known pg_net omissions
+remain; no full service/Vault recovery is claimed. The next release step is an
+explicit additive production candidate and its offline rehearsal with retained
+source fingerprints and real production constraints. No candidate has been applied.
 
 ## Required evidence before requesting promotion
 
@@ -37,7 +86,7 @@ acceptance. Source backups are on `codex/learn-v1-test`.
    baseline of source IDs, relationships, counts and fingerprints. Record the
    currently serving frontend and production environment binding.
 2. Derive an additive, ordered production migration manifest from that actual
-   state. The 066 TEST packages include TEST-specific guards and assumptions;
+   state. The numbered TEST packages include TEST-specific guards and assumptions;
    **do not execute TEST bundles on production, copy the TEST database, or run an
    unreviewed blanket database push**. Keep schema and source hash pins immutable.
 3. Rehearse the exact candidate against an isolated restored full production

@@ -7,6 +7,24 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 03:52 BST — production release baseline restored and compared with TEST.**
+A new disposable offline restore of the pinned production archive succeeded with
+network/schedules/background workers disabled and was removed after inspection.
+Fresh read-only TEST metadata shows 82 TEST-only and 150 production-only public
+tables, with 93 shared tables differing in catalog facets. All 79 numbered TEST
+SQL packages match hosted deployment receipt hashes; 67 companion manifest pins
+also match. Four reconciliation checks pass, including preserving production-only
+objects/columns and detecting authority/type changes and package drift.
+
+This identifies production-specific compatibility work: preserve email origin
+constraints, marketing token triggers, correlation/event/receptionist fields and
+existing service policies while adding LEARN. It does not establish migration
+compatibility or change either hosted environment. The next release task is an
+additive candidate rehearsed against the restored production schema/data; the
+archive baseline must be refreshed before execution. Real-provider, signed-in,
+recovery and approval gates remain open.
+[Release reconciliation and next steps](LEARN-V1-PRODUCTION-RELEASE.md#production-archive-reconciliation--12-october-0252-utc).
+
 **12 October, 03:48 BST — Microsoft operator diagnostics installed in TEST 079 and frontend deployed.**
 The new read-only RPC uses existing OpenFolk view authority to expose account
 configuration, saved/settled pages, retained publication/hold/exclusion counts,

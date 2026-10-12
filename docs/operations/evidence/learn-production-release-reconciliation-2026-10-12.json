@@ -1,0 +1,3939 @@
+{
+  "version": "learn-production-release-reconciliation/1",
+  "observedAt": "2026-10-12T02:54:33.167Z",
+  "state": "planning_baseline_only",
+  "productionSnapshotAt": "2026-10-12T00:25:21.393518Z",
+  "productionArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "testObservedAt": "2026-10-12T02:52:36.969Z",
+  "inventorySqlSha256": "0fdf68283793e6392bc2864862ef56a9c20d168382a6b38f7708477abd8e8e42",
+  "sourceArtifacts": {
+    "productionSchemaSha256": "b8038d8c60af95294103430270d88bd44fbf20452f698c28b9cd4ba36baf321c",
+    "testSchemaSha256": "9ea02184d64e8cda42ef1febacd3950880212f0f29f4d69c16c0c7c471d3fd51"
+  },
+  "baselineCounts": {
+    "production": {
+      "views": 5,
+      "tables": 251,
+      "functions": 366
+    },
+    "test": {
+      "views": 9,
+      "tables": 183,
+      "functions": 330
+    }
+  },
+  "summary": {
+    "tables": {
+      "additions": 82,
+      "preserveProductionOnly": 150,
+      "changed": 93,
+      "unchanged": 8
+    },
+    "functions": {
+      "additions": 295,
+      "preserveProductionOnly": 331,
+      "changed": 30,
+      "unchanged": 5
+    },
+    "views": {
+      "additions": 8,
+      "preserveProductionOnly": 4,
+      "changed": 1,
+      "unchanged": 0
+    }
+  },
+  "differences": {
+    "tables": {
+      "additions": [
+        "email_ingestion_checkpoints",
+        "email_ingestion_transitions",
+        "import_conflicts",
+        "import_entity_links",
+        "import_row_results",
+        "learn_assessment_cancellations",
+        "learn_assessments",
+        "learn_business_input_links",
+        "learn_business_input_observations",
+        "learn_business_input_pages",
+        "learn_business_input_projection_attempts",
+        "learn_business_input_projection_batches",
+        "learn_business_input_request_gates",
+        "learn_business_input_request_permits",
+        "learn_business_input_versions",
+        "learn_capture_control_requests",
+        "learn_commusoft_connection_requests",
+        "learn_commusoft_contact_targets",
+        "learn_commusoft_verification_permits",
+        "learn_commusoft_verification_requests",
+        "learn_commusoft_verification_results",
+        "learn_correction_cancellations",
+        "learn_email_job_attempts",
+        "learn_email_source_versions",
+        "learn_email_transition_requests",
+        "learn_email_transition_settlements",
+        "learn_identity_delivery_receipts",
+        "learn_identity_operator_reviews",
+        "learn_interaction_projection_receipts",
+        "learn_member_history",
+        "learn_microsoft_capture_streams",
+        "learn_microsoft_discovery_rounds",
+        "learn_microsoft_folder_dispatches",
+        "learn_microsoft_job_completions",
+        "learn_microsoft_job_stops",
+        "learn_microsoft_mailbox_bindings",
+        "learn_microsoft_projection_receipts",
+        "learn_microsoft_source_pages",
+        "learn_operator_input_requests",
+        "learn_performance_corrections",
+        "learn_performance_reviews",
+        "learn_phone_capture_pages",
+        "learn_phone_handoff_receipts",
+        "learn_phone_import_completions",
+        "learn_phone_operator_reconciliations",
+        "learn_phone_playback_audit",
+        "learn_phone_processing_attempts",
+        "learn_phone_result_versions",
+        "learn_phone_schedule_settlements",
+        "learn_processing_publications",
+        "learn_processing_settlements",
+        "learn_projection_operator_reviews",
+        "learn_scorecard_publications",
+        "learn_team_work_measurement_runs",
+        "learn_work_calendar_cancellations",
+        "learn_work_calendar_publications",
+        "learn_work_calendar_versions",
+        "learn_work_collection_items",
+        "learn_work_collection_runs",
+        "learn_work_delay_cancellations",
+        "learn_work_delay_events",
+        "learn_work_measurement_runs",
+        "learn_working_collection_items",
+        "learn_working_collection_runs",
+        "receptionist_voicemail_candidates",
+        "receptionist_voicemail_dispatch_receipts",
+        "receptionist_voicemail_email_routes",
+        "receptionist_voicemail_intakes",
+        "receptionist_voicemail_job_receipts",
+        "receptionist_voicemail_jobs",
+        "receptionist_voicemail_scan_receipts",
+        "receptionist_voicemail_scans",
+        "receptionist_voicemail_sources",
+        "slack_history_imports",
+        "slack_message_versions",
+        "slack_messages",
+        "slack_recurring_channels",
+        "slack_recurring_requests",
+        "slack_recurring_thread_members",
+        "slack_recurring_thread_windows",
+        "slack_thread_imports",
+        "slack_workspace_pacing"
+      ],
+      "preserveProductionOnly": [
+        "automation_approvals",
+        "automation_capability_contracts",
+        "automation_connector_capabilities",
+        "automation_event_types",
+        "automation_execution_attempts",
+        "automation_execution_guard_decisions",
+        "automation_intent_states",
+        "automation_intent_transitions",
+        "automation_intent_types",
+        "automation_intents",
+        "automation_reason_codes",
+        "client_invoices",
+        "communication_endpoints",
+        "communication_preferences",
+        "contact_relationships",
+        "contact_suppressions",
+        "contact_tag_assignments",
+        "customer_notification_outbox",
+        "customer_notification_routes",
+        "customer_slack_connections",
+        "decision_destinations",
+        "decision_owner_kinds",
+        "delegated_setup_events",
+        "delegated_setup_tasks",
+        "domain_packs",
+        "domain_terminology",
+        "endpoint_identity_reviews",
+        "endpoint_ownership_assignments",
+        "health_assessments",
+        "health_commitment_proposals",
+        "health_commitment_types",
+        "health_decision_types",
+        "health_driver_codes",
+        "health_objects",
+        "health_proposal_decisions",
+        "health_proposal_sources",
+        "health_proposal_states",
+        "health_source_kinds",
+        "health_states",
+        "health_subject_types",
+        "health_trends",
+        "health_types",
+        "inbound_webhook_quarantine",
+        "intelligence_ingestions",
+        "live_call_events",
+        "live_call_sessions",
+        "marketing_access_grants",
+        "marketing_ad_event_conflicts",
+        "marketing_ad_events",
+        "marketing_ad_metric_facts",
+        "marketing_ad_source_versions",
+        "marketing_ad_sources",
+        "marketing_ad_sync_runs",
+        "marketing_ad_touchpoints",
+        "marketing_ai_proposals",
+        "marketing_ai_requests",
+        "marketing_ai_revisions",
+        "marketing_audience_members",
+        "marketing_audience_snapshots",
+        "marketing_broadcast_dispatches",
+        "marketing_campaign_approvals",
+        "marketing_campaign_events",
+        "marketing_campaign_objective_history",
+        "marketing_campaign_revisions",
+        "marketing_campaigns",
+        "marketing_deliveries",
+        "marketing_delivery_events",
+        "marketing_email_tracking",
+        "marketing_enrolment_batches",
+        "marketing_enrolment_candidates",
+        "marketing_identity_conflicts",
+        "marketing_import_row_results",
+        "marketing_launch_confirmations",
+        "marketing_lifecycle_stages",
+        "marketing_permission_requests",
+        "marketing_permissions",
+        "marketing_provider_account_versions",
+        "marketing_provider_accounts",
+        "marketing_provider_facts",
+        "marketing_provider_sync_runs",
+        "marketing_request_keys",
+        "marketing_role_defaults",
+        "marketing_segment_versions",
+        "marketing_segments",
+        "marketing_sender_authorities",
+        "marketing_sender_profiles",
+        "marketing_sequence_approvals",
+        "marketing_sequence_confirmations",
+        "marketing_sequence_enrolments",
+        "marketing_sequence_executions",
+        "marketing_sequence_revisions",
+        "marketing_sequence_steps",
+        "marketing_settings",
+        "marketing_settings_history",
+        "marketing_tags",
+        "marketing_template_revisions",
+        "marketing_template_usages",
+        "marketing_templates",
+        "marketing_unsubscribe_tokens",
+        "member_integration_identities",
+        "module_alert_routes",
+        "object_links",
+        "objective_contribution_assessments",
+        "objective_event_types",
+        "operational_modes",
+        "operator_notification_routes",
+        "operator_slack_connection",
+        "outcome_layers",
+        "outcome_statuses",
+        "outcome_types",
+        "outcome_verification_states",
+        "outcomes",
+        "phone_alert_events",
+        "phone_alert_policies",
+        "phone_on_call_assignments",
+        "phone_operations_audit",
+        "provider_oauth_states",
+        "reason_codes",
+        "receptionist_approved_voice_tests",
+        "receptionist_auto_review_attempts",
+        "receptionist_auto_review_queue",
+        "receptionist_call_reviews",
+        "receptionist_care_events",
+        "receptionist_care_issues",
+        "receptionist_intake_decisions",
+        "receptionist_intake_installation",
+        "receptionist_launch_promotions",
+        "receptionist_practice_sessions",
+        "receptionist_rehearsals",
+        "receptionist_release_snapshots",
+        "receptionist_releases",
+        "receptionist_review_settings",
+        "receptionist_task_reviews",
+        "receptionist_test_candidates",
+        "receptionist_test_launch_allowances",
+        "receptionist_test_runs",
+        "receptionist_test_settings",
+        "receptionist_test_suite_setups",
+        "response_approval_snapshots",
+        "response_proposals",
+        "response_revisions",
+        "responsibility_handoffs",
+        "scheduler_config",
+        "subscriptions",
+        "telephony_inventory",
+        "telephony_onboarding",
+        "tenant_connector_capabilities",
+        "tenant_domain_packs",
+        "user_voice_endpoints",
+        "verification_locks"
+      ],
+      "changed": [
+        {
+          "identity": "audit_logs",
+          "changedFacets": [
+            "acl",
+            "policies"
+          ],
+          "policies": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "audit_logs_select_admin"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "authority_grants",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard",
+              "learn_work_authority_input_lock",
+              "learn_work_authority_truncate_lock"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "authority_permissions",
+          "changedFacets": [
+            "acl",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_work_registry_input_lock"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "call_directions",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "call_participants",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "call_transcript_normalisations",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "client_notification_outbox",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "constraints"
+          ],
+          "columns": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "notification_route",
+              "slack_channel",
+              "slack_phase",
+              "slack_ts"
+            ],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "client_notification_outbox_slack_phase_check"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "client_programme_notes",
+          "changedFacets": [
+            "policies"
+          ],
+          "policies": {
+            "additions": [
+              "programme_note_preview_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "client_programmes",
+          "changedFacets": [
+            "policies"
+          ],
+          "policies": {
+            "additions": [
+              "programme_preview_insert_guard",
+              "programme_preview_update_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "companies",
+          "changedFacets": [
+            "acl",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "companies_tenant_id_uk"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "config_versions",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_scorecard_revision_immutable",
+              "learn_scorecard_revisions_no_truncate"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "config_versions_select"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "connector_accounts",
+          "changedFacets": [
+            "acl",
+            "constraints",
+            "triggers"
+          ],
+          "constraints": {
+            "additions": [
+              "learn_connector_tenant_fk"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_connector_reference_guard",
+              "learn_connector_retain",
+              "learn_connector_retain_truncate"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "contact_points",
+          "changedFacets": [
+            "acl",
+            "constraints",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "constraints": {
+            "additions": [
+              "contact_points_person_tenant_fk"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "contact_points_tenant_id_uk"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "contact_points_tenant_guard"
+            ],
+            "changed": []
+          },
+          "policies": {
+            "additions": [],
+            "preserveProductionOnly": [],
+            "changed": [
+              {
+                "identity": "contact_points_select_tenant",
+                "changedFacets": [
+                  "usingHash"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "identity": "contribution_states",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "controlplane_change_log",
+          "changedFacets": [
+            "acl",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_delivery_audit_no_delete",
+              "learn_delivery_audit_no_truncate",
+              "learn_delivery_audit_no_update"
+            ],
+            "preserveProductionOnly": [
+              "controlplane_change_log_no_delete",
+              "controlplane_change_log_no_update"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "corrections",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "customer_cards",
+          "changedFacets": [
+            "acl",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "indexes": {
+            "additions": [
+              "learn_customer_card_company_uk",
+              "learn_customer_card_person_uk"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "data_imports",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "decision_log",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "constraints",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "columns": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "correlation_id",
+              "decision",
+              "decision_package",
+              "engine_version",
+              "learning_version_ids",
+              "next_owner_kind",
+              "operating_profile_version",
+              "operational_mode",
+              "output_hash",
+              "reason_codes",
+              "supersedes"
+            ],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "decision_log_destination_fk",
+              "decision_log_owner_kind_fk",
+              "decision_log_supersedes_fkey"
+            ],
+            "changed": []
+          },
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "decision_log_decision",
+              "decision_log_op_mode",
+              "decision_log_supersedes"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [
+              "decision_log_no_delete",
+              "decision_log_no_update"
+            ],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "domain_entity_types",
+          "changedFacets": [
+            "acl",
+            "policies"
+          ],
+          "policies": {
+            "additions": [
+              "domain_entity_types_select"
+            ],
+            "preserveProductionOnly": [
+              "det_select"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "domain_object_types",
+          "changedFacets": [
+            "acl",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_work_registry_input_lock"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "effective_profiles",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "email_accounts",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "email_ingestion_account_guard_v2"
+            ],
+            "preserveProductionOnly": [
+              "marketing_capability_sync_email_accounts"
+            ],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "email_account_protocol_select_v2",
+              "email_account_protocol_update_v2",
+              "learn_launch_metadata_select"
+            ],
+            "preserveProductionOnly": [
+              "email_accounts_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "email_ai_insights",
+          "changedFacets": [
+            "acl",
+            "policies"
+          ],
+          "policies": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "email_ai_insights_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "email_attachments",
+          "changedFacets": [
+            "acl",
+            "policies"
+          ],
+          "policies": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "email_attachments_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "email_messages",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "constraints",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "columns": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "origin",
+              "origin_automation_intent_id",
+              "origin_campaign_id",
+              "origin_delivery_id",
+              "origin_person_id"
+            ],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "email_messages_origin_campaign_fk",
+              "email_messages_origin_check",
+              "email_messages_origin_delivery_fk",
+              "email_messages_origin_intent_fk",
+              "email_messages_origin_person_fk"
+            ],
+            "changed": []
+          },
+          "indexes": {
+            "additions": [
+              "email_messages_voicemail_scan_idx"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_email_preserve_source_version"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_card_email_source_read",
+              "learn_launch_metadata_select"
+            ],
+            "preserveProductionOnly": [
+              "email_messages_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "email_oauth_tokens",
+          "changedFacets": [
+            "acl",
+            "constraints",
+            "triggers"
+          ],
+          "constraints": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "email_oauth_tokens_account_tenant_fk"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "marketing_capability_sync_tokens_del",
+              "marketing_capability_sync_tokens_ins",
+              "marketing_capability_sync_tokens_upd"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "email_sync_runs",
+          "changedFacets": [
+            "acl",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "indexes": {
+            "additions": [
+              "email_sync_runs_tenant_id_id_v2",
+              "learn_email_capture_run_lookup",
+              "learn_email_scheduler_latest_idx"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "email_ingestion_run_guard_v2"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "email_run_protocol_select_v2",
+              "email_run_protocol_update_v2",
+              "learn_launch_metadata_select"
+            ],
+            "preserveProductionOnly": [
+              "email_sync_runs_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "email_threads",
+          "changedFacets": [
+            "acl",
+            "policies"
+          ],
+          "policies": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "email_threads_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "feature_flags",
+          "changedFacets": [
+            "acl",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_phone_capture_flags"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "google_workspace_connections",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "marketing_capability_sync_ws_connections"
+            ],
+            "changed": []
+          },
+          "policies": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "google_workspace_connections_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "google_workspace_mailboxes",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "constraints",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "columns": {
+            "additions": [
+              "directory_identity_conflict",
+              "directory_primary_email"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [
+              "google_workspace_directory_primary_email_valid"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "google_workspace_mailboxes_tenant_id_uk"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_workspace_identity_guard"
+            ],
+            "preserveProductionOnly": [
+              "marketing_capability_sync_ws_mailboxes"
+            ],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_launch_metadata_select"
+            ],
+            "preserveProductionOnly": [
+              "google_workspace_mailboxes_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "graph_edges",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "graph_events",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "graph_nodes",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "import_profiles",
+          "changedFacets": [
+            "acl",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "import_profiles_platform_uk"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "import_row_provenance",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "intelligence_objects",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "policies",
+            "triggers"
+          ],
+          "columns": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "learning_applied"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_capture_work_change",
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "interaction_match_suggestions",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "interactions",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "constraints",
+            "indexes",
+            "policies"
+          ],
+          "columns": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "related_campaign_id"
+            ],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "interactions_related_campaign_fk"
+            ],
+            "changed": []
+          },
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "interactions_related_campaign_idx"
+            ],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_card_communication_read"
+            ],
+            "preserveProductionOnly": [
+              "interactions_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "job_number_aliases",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "jobs",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "measurements",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "constraints",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "columns": {
+            "additions": [
+              "change_reason",
+              "covered_count",
+              "eligible_count",
+              "exclusions",
+              "group_ids",
+              "metric_key",
+              "policy_id",
+              "policy_revision",
+              "policy_version_id",
+              "request_payload",
+              "review_state",
+              "sample_count",
+              "source_through",
+              "subject_id",
+              "subject_kind",
+              "supersedes"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [
+              "learn_measurement_receipt_guard",
+              "measurements_performance_shape",
+              "measurements_policy_version_id_fkey",
+              "measurements_subject_kind_check",
+              "measurements_supersedes_fkey"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "indexes": {
+            "additions": [
+              "measurements_one_correction",
+              "measurements_performance_series"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_measurement_receipt_guard",
+              "learn_measurement_reference_guard",
+              "learn_measurement_scope_guard",
+              "learn_measurements_no_truncate",
+              "learn_performance_insert_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_measurement_tenant_boundary",
+              "measurements_performance_read"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "metric_definitions",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "constraints",
+            "policies",
+            "triggers"
+          ],
+          "columns": {
+            "additions": [
+              "measurement_scope"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [
+              "metric_definitions_measurement_scope_check"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_measurement_reference_guard",
+              "learn_metric_scope_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_measurement_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "metric_directions",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "object_classes",
+          "changedFacets": [
+            "acl",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_work_registry_input_lock"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "object_state_history",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "constraints",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "columns": {
+            "additions": [
+              "capture_kind",
+              "capture_sequence",
+              "transition_verb",
+              "work_after",
+              "work_before"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [
+              "object_state_history_capture_kind_check",
+              "osh_capture_shape",
+              "osh_work_snapshot_pair"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "indexes": {
+            "additions": [
+              "osh_capture_read",
+              "osh_capture_sequence",
+              "osh_work_snapshot_lookup"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard",
+              "learn_work_history_immutable",
+              "learn_work_history_no_truncate"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "objective_constraints",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_measurement_reference_guard",
+              "learn_objective_constraint_scope_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_measurement_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "objective_health",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "constraints",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "columns": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "correlation_id",
+              "evaluator_version",
+              "input_hash",
+              "job_id",
+              "objective_version_id",
+              "snapshot",
+              "supersedes",
+              "triggered_by"
+            ],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "objective_health_job_id_fkey",
+              "objective_health_objective_version_id_fkey",
+              "objective_health_supersedes_fkey"
+            ],
+            "changed": []
+          },
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "objective_health_idem_uk",
+              "objective_health_job",
+              "objective_health_supersedes"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_measurement_reference_guard",
+              "learn_objective_health_no_truncate"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_measurement_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "objective_health_statuses",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "objective_link_relations",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "objective_links",
+          "changedFacets": [
+            "acl",
+            "constraints",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "constraints": {
+            "additions": [],
+            "preserveProductionOnly": [],
+            "changed": [
+              {
+                "identity": "objective_links_target_kind_check",
+                "changedFacets": [
+                  "hash"
+                ]
+              }
+            ]
+          },
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "objective_links_tenant_id_uk"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_measurement_reference_guard"
+            ],
+            "preserveProductionOnly": [
+              "objective_links_marketing_campaign_guard"
+            ],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_measurement_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "objective_metrics",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_measurement_reference_guard",
+              "learn_objective_metric_scope_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_measurement_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "objective_reason_codes",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "objective_statuses",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "objective_types",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "objective_verification_states",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "objectives",
+          "changedFacets": [
+            "acl",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "objectives_tenant_id_uk"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_measurement_reference_guard"
+            ],
+            "preserveProductionOnly": [
+              "objectives_no_parent_cycle"
+            ],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_measurement_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "operating_profile_entries",
+          "changedFacets": [
+            "acl",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "indexes": {
+            "additions": [
+              "learn_scorecard_revision_identity"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard",
+              "learn_scorecard_entries_no_truncate",
+              "learn_scorecard_revision_immutable"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "org_unit_members",
+          "changedFacets": [
+            "acl",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "org_units",
+          "changedFacets": [
+            "acl",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "org_units_id_tenant_uk"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard",
+              "learn_work_authority_input_lock",
+              "learn_work_authority_truncate_lock"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "ownership_assignments",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "people",
+          "changedFacets": [
+            "acl",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "people_tenant_name_idx"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "phone_accounts",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "phone_ai_insights",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "constraints",
+            "policies"
+          ],
+          "columns": {
+            "additions": [
+              "processing_run_id",
+              "source_transcript_sha256"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [
+              "phone_ai_insights_processing_run_id_fkey"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "phone_ai_insights_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "phone_calls",
+          "changedFacets": [
+            "acl",
+            "policies"
+          ],
+          "policies": {
+            "additions": [
+              "learn_card_call_source_read",
+              "learn_launch_metadata_select"
+            ],
+            "preserveProductionOnly": [
+              "phone_calls_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "phone_endpoints",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "phone_recordings",
+          "changedFacets": [
+            "acl",
+            "policies"
+          ],
+          "policies": {
+            "additions": [
+              "learn_card_recording_source_read",
+              "learn_launch_metadata_select"
+            ],
+            "preserveProductionOnly": [
+              "phone_recordings_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "phone_sync_runs",
+          "changedFacets": [
+            "acl",
+            "indexes",
+            "policies"
+          ],
+          "indexes": {
+            "additions": [
+              "learn_phone_schedule_health_lookup",
+              "learn_phone_scheduler_latest_idx"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_launch_metadata_select"
+            ],
+            "preserveProductionOnly": [
+              "phone_sync_runs_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "phone_transcripts",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "constraints",
+            "policies"
+          ],
+          "columns": {
+            "additions": [
+              "processing_run_id",
+              "source_sha256",
+              "source_storage_path"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [
+              "phone_transcripts_processing_run_id_fkey"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_launch_metadata_select"
+            ],
+            "preserveProductionOnly": [
+              "phone_transcripts_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "platform_authority_grants",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "platform_events",
+          "changedFacets": [
+            "acl",
+            "columns"
+          ],
+          "columns": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "actor",
+              "correlation_id",
+              "domain",
+              "occurred_at"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "platform_jobs",
+          "changedFacets": [
+            "acl",
+            "policies"
+          ],
+          "policies": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "platform_jobs_select_tenant"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "policies",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "profiles",
+          "changedFacets": [
+            "acl",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "profiles_tenant_id_uk"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_work_authority_input_lock",
+              "learn_work_authority_truncate_lock"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_card_communication_profile",
+              "learn_launch_metadata_profile"
+            ],
+            "preserveProductionOnly": [],
+            "changed": [
+              {
+                "identity": "profiles_select_own",
+                "changedFacets": [
+                  "roles",
+                  "usingHash"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "identity": "provider_connection_events",
+          "changedFacets": [
+            "acl",
+            "constraints",
+            "triggers"
+          ],
+          "constraints": {
+            "additions": [
+              "learn_provider_event_tenant_fk"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_provider_events_retain",
+              "learn_provider_events_retain_truncate"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "provider_connections",
+          "changedFacets": [
+            "acl",
+            "constraints",
+            "triggers"
+          ],
+          "constraints": {
+            "additions": [
+              "learn_connector_tenant_fk"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_connector_reference_guard",
+              "learn_connector_retain",
+              "learn_connector_retain_truncate"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "receptionist_feedback",
+          "changedFacets": [
+            "columns",
+            "constraints",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "columns": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "archived_at",
+              "practice_session_id",
+              "submission_key"
+            ],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "receptionist_feedback_practice_session_id_fkey"
+            ],
+            "changed": []
+          },
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "receptionist_feedback_submission"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "care_guard_legacy_resolution",
+              "receptionist_auto_feedback_changed",
+              "receptionist_care_received",
+              "receptionist_practice_feedback_check"
+            ],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "feedback_preview_insert_guard",
+              "feedback_preview_update_guard"
+            ],
+            "preserveProductionOnly": [
+              "active_feedback_only"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "receptionist_workspaces",
+          "changedFacets": [
+            "columns",
+            "constraints"
+          ],
+          "columns": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "phone_reference",
+              "phone_snapshot",
+              "practice_enabled"
+            ],
+            "changed": []
+          },
+          "constraints": {
+            "additions": [],
+            "preserveProductionOnly": [],
+            "changed": [
+              {
+                "identity": "receptionist_workspaces_launch_stage_check",
+                "changedFacets": [
+                  "hash"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "identity": "recommendations",
+          "changedFacets": [
+            "acl",
+            "columns",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "columns": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "due_at",
+              "impact",
+              "source_rule"
+            ],
+            "changed": []
+          },
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "recommendations_tenant_status_severity_idx"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "responsibility_assignments",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard",
+              "learn_work_authority_input_lock",
+              "learn_work_authority_truncate_lock"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "review_tasks",
+          "changedFacets": [
+            "acl",
+            "constraints",
+            "policies",
+            "triggers"
+          ],
+          "constraints": {
+            "additions": [],
+            "preserveProductionOnly": [],
+            "changed": [
+              {
+                "identity": "review_tasks_route_check",
+                "changedFacets": [
+                  "hash"
+                ]
+              }
+            ]
+          },
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "sites",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_foundation_reference_guard"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "state_definitions",
+          "changedFacets": [
+            "acl",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_work_registry_input_lock"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "state_transitions",
+          "changedFacets": [
+            "acl",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_work_registry_input_lock"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "system_health_checks",
+          "changedFacets": [
+            "acl",
+            "policies"
+          ],
+          "policies": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "shc_select"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "system_health_components",
+          "changedFacets": [
+            "acl",
+            "policies"
+          ],
+          "policies": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "shc_components_select"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "team_members",
+          "changedFacets": [
+            "acl",
+            "indexes",
+            "policies",
+            "triggers"
+          ],
+          "indexes": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "team_members_id_tenant_uk"
+            ],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_capture_member_change",
+              "learn_foundation_reference_guard",
+              "learn_member_no_delete",
+              "learn_member_no_truncate",
+              "learn_work_authority_input_lock",
+              "learn_work_authority_truncate_lock"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_foundation_tenant_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "telephony_directory",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "tenant_connectors",
+          "changedFacets": [
+            "acl",
+            "constraints",
+            "triggers"
+          ],
+          "constraints": {
+            "additions": [
+              "learn_connector_tenant_fk"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "triggers": {
+            "additions": [
+              "learn_connector_reference_guard",
+              "learn_connector_retain",
+              "learn_connector_retain_truncate"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        },
+        {
+          "identity": "tenant_vocabulary",
+          "changedFacets": [
+            "acl"
+          ]
+        },
+        {
+          "identity": "tenants",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_work_authority_input_lock",
+              "learn_work_authority_truncate_lock"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [],
+            "preserveProductionOnly": [
+              "tenants_select"
+            ],
+            "changed": []
+          }
+        },
+        {
+          "identity": "view_as_context",
+          "changedFacets": [
+            "acl",
+            "policies",
+            "triggers"
+          ],
+          "triggers": {
+            "additions": [
+              "learn_work_authority_input_lock",
+              "learn_work_authority_truncate_lock"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          },
+          "policies": {
+            "additions": [
+              "learn_view_as_actor_boundary"
+            ],
+            "preserveProductionOnly": [],
+            "changed": []
+          }
+        }
+      ],
+      "unchanged": [
+        "client_delivery_updates",
+        "client_portal_access",
+        "client_programme_revisions",
+        "receptionist_access",
+        "receptionist_mailbox_managers",
+        "receptionist_mailboxes",
+        "receptionist_voicemail_access_log",
+        "receptionist_voicemails"
+      ]
+    },
+    "functions": {
+      "additions": [
+        "client_portal_write_context()",
+        "email_ingestion_account_guard_v2()",
+        "email_ingestion_checkpoint_json_v2(c email_ingestion_checkpoints)",
+        "email_ingestion_count_v2(v jsonb, nullable boolean)",
+        "email_ingestion_evidence_v2(v jsonb, kind text)",
+        "email_ingestion_keys_v2(v jsonb, names text[])",
+        "email_ingestion_payload_v2(op text, stream text, v jsonb)",
+        "email_ingestion_recovery_v2(v jsonb)",
+        "email_ingestion_run_guard_v2()",
+        "email_ingestion_transition_result_v2(p_tenant_id uuid, p_email_account_id uuid, p_stream text, p_attempt_id uuid, p_transition_id uuid)",
+        "email_ingestion_transition_v2(p_tenant_id uuid, p_email_account_id uuid, p_stream text, p_attempt_id uuid, p_transition_id uuid, p_operation text, p_expected_generation uuid, p_expected_revision bigint, p_expected_owner_attempt_id uuid, p_payload jsonb)",
+        "import_customer_row(p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb)",
+        "import_entity_links_guard()",
+        "import_job_row(p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb)",
+        "import_match_customer(p_tenant uuid, p_source text, p_record jsonb)",
+        "import_match_job(p_tenant uuid, p_source text, p_record jsonb)",
+        "import_match_site(p_tenant uuid, p_source text, p_record jsonb)",
+        "import_normalize_address(p_value text)",
+        "import_normalize_phone_uk(p_value text)",
+        "import_normalize_postcode(p_value text)",
+        "import_person_contact_points(p_tenant uuid, p_person uuid, p_record jsonb)",
+        "import_resolve_customer(p_tenant uuid, p_source text, p_record jsonb)",
+        "import_resolve_job_site(p_tenant uuid, p_source text, p_cust_table text, p_cust_id uuid, p_postcode text, p_address text)",
+        "import_resolve_job_site_exact(p_tenant uuid, p_source text, p_cust_table text, p_cust_id uuid, p_site_external_id text)",
+        "import_resolve_job_site_v2(p_tenant uuid, p_source text, p_cust_table text, p_cust_id uuid, p_site_external_id text, p_postcode text, p_address text)",
+        "import_row_outcome(p_tenant uuid, p_import uuid, p_row_number integer, p_outcome text, p_reason text, p_fields text[])",
+        "import_row_preamble(p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb, p_entity text)",
+        "import_row_prior(p_tenant uuid, p_import uuid, p_row_number integer, OUT o_short jsonb, OUT o_attempt integer)",
+        "import_row_results_guard()",
+        "import_run_finalize(p_tenant uuid, p_import uuid)",
+        "import_site_row(p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb)",
+        "import_validate_customer_row(p_tenant uuid, p_source text, p_record jsonb)",
+        "import_validate_job_row(p_tenant uuid, p_source text, p_record jsonb)",
+        "import_validate_row_shape(p_record jsonb, p_allowed text[], p_bool_keys text[], p_num_keys text[])",
+        "import_validate_site_row(p_tenant uuid, p_source text, p_record jsonb)",
+        "learn_assessment_immutable()",
+        "learn_assessment_receipt_constraint()",
+        "learn_assessment_resolve(p_tenant uuid, p_request uuid, p_publication uuid, p_kind text, p_subject uuid, p_group uuid, p_start timestamp with time zone, p_end timestamp with time zone, p_expected jsonb, p_reason text, p_cancel boolean)",
+        "learn_assessment_save(p_tenant uuid, p_request uuid, p_publication uuid, p_kind text, p_subject uuid, p_group uuid, p_start timestamp with time zone, p_end timestamp with time zone, p_expected jsonb, p_reason text)",
+        "learn_business_contact_phone(p_value text, p_region text)",
+        "learn_business_customer_summary(p_value jsonb)",
+        "learn_business_input_latest(p_tenant uuid, p_connection uuid, p_provider text, p_collection text, p_external text)",
+        "learn_business_input_projection_result(p_tenant uuid, p_version uuid, p_request jsonb, p_result jsonb)",
+        "learn_business_input_retain()",
+        "learn_business_input_review_access(p_tenant uuid, p_connection uuid)",
+        "learn_business_input_text(p_value jsonb, p_key text)",
+        "learn_business_input_time_detail(p_value jsonb)",
+        "learn_capture_admission(p_tenant uuid, p_source text)",
+        "learn_capture_allowed(p_tenant uuid, p_source text)",
+        "learn_capture_control_state(p_tenant uuid)",
+        "learn_capture_defer_job(p_tenant uuid, p_job uuid, p_claimed_by text, p_attempt integer, p_reason text)",
+        "learn_capture_job_allowed(p_tenant uuid, p_type text, p_metadata jsonb)",
+        "learn_capture_job_allowed(p_tenant uuid, p_type text, p_metadata jsonb, p_job uuid)",
+        "learn_capture_member_change()",
+        "learn_capture_work_change()",
+        "learn_card_communications_read(p_tenant uuid, p_person uuid, p_company uuid, p_job uuid, p_ids uuid[])",
+        "learn_card_projection_inputs(p_tenant uuid, p_card uuid)",
+        "learn_card_search(p_tenant uuid, p_kind text, p_query text, p_page integer, p_group uuid)",
+        "learn_card_source_read(p_tenant uuid, p_table text, p_id uuid)",
+        "learn_commusoft_acquire_page(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_expected jsonb)",
+        "learn_commusoft_claim_jobs(p_worker uuid)",
+        "learn_commusoft_commit_page(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_permit_id uuid, p_envelope jsonb)",
+        "learn_commusoft_committed_page(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer)",
+        "learn_commusoft_configure(p_tenant uuid, p_request uuid, p_actor uuid, p_definition jsonb, p_mode text, p_api_key text)",
+        "learn_commusoft_confirm_contact(p_tenant uuid, p_version uuid, p_target uuid, p_reason text)",
+        "learn_commusoft_confirm_customer(p_tenant uuid, p_version uuid, p_kind text, p_target uuid, p_reason text)",
+        "learn_commusoft_confirm_work_record(p_tenant uuid, p_version uuid, p_target uuid, p_reason text)",
+        "learn_commusoft_contact_candidates(p_tenant uuid, p_version uuid, p_kind text, p_search text, p_after uuid, p_limit integer)",
+        "learn_commusoft_contact_target(p_tenant uuid, p_connection uuid, p_cfg jsonb, p_cp jsonb)",
+        "learn_commusoft_customer_candidates(p_tenant uuid, p_version uuid, p_kind text, p_search text, p_after uuid, p_limit integer)",
+        "learn_commusoft_defer_page(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_permit_id uuid, p_retry_at timestamp with time zone)",
+        "learn_commusoft_finish_job(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_outcome jsonb)",
+        "learn_commusoft_job_details(p_tenant uuid, p_connection uuid, p_version uuid)",
+        "learn_commusoft_property_owner(p_tenant uuid, p_connection uuid, p_external text, p_allow_site boolean)",
+        "learn_commusoft_review_connections(p_tenant uuid)",
+        "learn_commusoft_review_customer(p_tenant uuid, p_actor uuid, p_version uuid, p_kind text, p_target uuid, p_reason text)",
+        "learn_commusoft_review_page(p_tenant uuid, p_connection uuid, p_after text, p_limit integer)",
+        "learn_commusoft_review_search(p_tenant uuid, p_connection uuid, p_search text, p_after text, p_limit integer)",
+        "learn_commusoft_source_matches(p_payload jsonb, p_external text, p_kind text, p_search text)",
+        "learn_commusoft_verification_authority(r learn_commusoft_verification_requests)",
+        "learn_commusoft_verification_binding(c provider_connections)",
+        "learn_commusoft_verification_receipt(p_tenant uuid, p_request uuid)",
+        "learn_commusoft_verify_acquire(p_tenant uuid, p_request uuid)",
+        "learn_commusoft_verify_authorized(p_tenant uuid, p_request uuid, p_permit uuid)",
+        "learn_commusoft_verify_finish(p_tenant uuid, p_request uuid, p_permit uuid, p_code text, p_retry_at timestamp with time zone)",
+        "learn_commusoft_verify_request(p_tenant uuid, p_request uuid, p_actor uuid, p_definition jsonb, p_mode text)",
+        "learn_commusoft_work_batch(p_tenant uuid, p_request uuid, p_connection uuid, p_kind text, p_items jsonb, p_reason text, p_cancel boolean, p_expected_actor uuid)",
+        "learn_commusoft_work_batch_result(p_tenant uuid, p_request uuid)",
+        "learn_commusoft_work_review_page(p_tenant uuid, p_connection uuid, p_kind text, p_after text, p_limit integer)",
+        "learn_commusoft_work_review_search(p_tenant uuid, p_connection uuid, p_kind text, p_search text, p_after text, p_limit integer)",
+        "learn_delivery_audit_immutable()",
+        "learn_email_attempt_lease(p_attempt uuid, p_claimed_by text, p_claim integer)",
+        "learn_email_enqueue(p_tenant uuid, p_account uuid, p_type text, p_options jsonb)",
+        "learn_email_is_draft(m email_messages)",
+        "learn_email_job_attempt(p_tenant uuid, p_job uuid, p_claimed_by text, p_claim integer)",
+        "learn_email_job_fail(p_tenant uuid, p_job uuid, p_attempt uuid, p_claimed_by text, p_claim integer)",
+        "learn_email_preserve_source_version()",
+        "learn_email_source_fields(m email_messages)",
+        "learn_email_store_existing(p_context jsonb, p_ids jsonb, p_claimed_by text, p_claim integer)",
+        "learn_email_store_guard(p_context jsonb, p_claimed_by text, p_claim integer)",
+        "learn_email_store_page(p_context jsonb, p_threads jsonb, p_messages jsonb, p_claimed_by text, p_claim integer)",
+        "learn_email_store_unavailable(p_context jsonb, p_ids jsonb, p_claimed_by text, p_claim integer)",
+        "learn_email_transition_apply(p_tenant uuid, p_account uuid, p_stream text, p_attempt uuid, p_request uuid, p_claimed_by text, p_claim integer)",
+        "learn_email_transition_immutable()",
+        "learn_email_transition_pending(p_tenant uuid, p_account uuid, p_stream text, p_attempt uuid)",
+        "learn_email_transition_prepare(p_document jsonb, p_claimed_by text, p_claim integer)",
+        "learn_foundation_reference_guard()",
+        "learn_handoff_owner(p_tenant uuid, p_roster jsonb, p_ref jsonb, p_at timestamp with time zone)",
+        "learn_identity_deliver(p_tenant uuid, p_request uuid, p_interaction uuid, p_revision text, p_phase text)",
+        "learn_identity_deliver_internal(p_tenant uuid, p_request uuid, p_interaction uuid, p_revision text, p_phase text, p_reviewed_person uuid)",
+        "learn_identity_pending(p_tenant uuid, p_limit integer)",
+        "learn_identity_review_count(p_tenant uuid)",
+        "learn_identity_review_state(p_tenant uuid, p_interaction uuid, p_person uuid)",
+        "learn_identity_revision(p_interaction interactions)",
+        "learn_import_apply_batch(p_tenant uuid, p_import uuid, p_actor uuid, p_entity text, p_options jsonb, p_rows jsonb)",
+        "learn_import_batch_authority(p_tenant uuid, p_actor uuid)",
+        "learn_import_customer_card(p_tenant uuid, p_link uuid)",
+        "learn_import_customer_card_after_link()",
+        "learn_import_customer_cards_reconcile(p_tenant uuid, p_after uuid, p_limit integer)",
+        "learn_import_match_batch(p_tenant uuid, p_actor uuid, p_source text, p_entity text, p_rows jsonb)",
+        "learn_interaction_is_draft(p_tenant uuid, p_table text, p_source uuid)",
+        "learn_measurement_receipt_constraint()",
+        "learn_member_capture_baseline(p_tenant uuid, p_member uuid)",
+        "learn_member_group_covers(p_tenant uuid, p_member uuid, p_group uuid, p_start timestamp with time zone, p_end timestamp with time zone)",
+        "learn_member_history_immutable()",
+        "learn_member_history_read(p_tenant uuid, p_start timestamp with time zone, p_end timestamp with time zone)",
+        "learn_member_snapshot(p team_members)",
+        "learn_metric_scope_guard()",
+        "learn_microsoft_binding_guard()",
+        "learn_microsoft_checkpoint_valid(p jsonb, t uuid, a uuid, m uuid, k text, f text)",
+        "learn_microsoft_credential_read(p_tenant uuid, p_account uuid, p_mailbox uuid, p_binding uuid, p_kind text, p_folder text, p_job uuid, p_worker text, p_claim integer, p_client uuid)",
+        "learn_microsoft_credential_refresh(p_tenant uuid, p_account uuid, p_mailbox uuid, p_binding uuid, p_kind text, p_folder text, p_job uuid, p_worker text, p_claim integer, p_client uuid, p_token uuid, p_updated_at timestamp with time zone, p_old_refresh text, p_access text, p_refresh text, p_expires timestamp with time zone, p_scope text)",
+        "learn_microsoft_dispatch_folders(p_tenant uuid, p_page uuid, p_job uuid)",
+        "learn_microsoft_job_claimable(p_tenant uuid, p_type text, p_job uuid)",
+        "learn_microsoft_job_settle(p_tenant uuid, p_job uuid, p_worker text, p_claim integer, p_apply boolean)",
+        "learn_microsoft_job_settle_before_projection(p_tenant uuid, p_job uuid, p_worker text, p_claim integer, p_apply boolean)",
+        "learn_microsoft_job_stop(p_tenant uuid, p_job uuid, p_worker text, p_claim integer, p_code text, p_retry_after integer)",
+        "learn_microsoft_journal_commit(p_tenant uuid, p_stream uuid, p_request uuid, p_revision bigint, p_before jsonb, p_page jsonb, p_after jsonb, p_job uuid, p_worker text, p_claim integer)",
+        "learn_microsoft_journal_guard(t uuid, a uuid, m uuid, b uuid, k text, f text, j uuid, w text, c integer)",
+        "learn_microsoft_journal_immutable()",
+        "learn_microsoft_journal_job(p_tenant uuid, p_job uuid, p_worker text, p_claim integer)",
+        "learn_microsoft_journal_open(p_tenant uuid, p_account uuid, p_mailbox uuid, p_binding uuid, p_kind text, p_folder text, p_initial jsonb, p_job uuid, p_worker text, p_claim integer)",
+        "learn_microsoft_page_project(p_tenant uuid, p_page uuid)",
+        "learn_microsoft_projection_fields_valid(f jsonb)",
+        "learn_microsoft_projection_time(v text)",
+        "learn_operator_capture_control_request(p_tenant uuid, p_request uuid, p_actor uuid, p_definition jsonb, p_mode text)",
+        "learn_operator_capture_controls(p_tenant uuid)",
+        "learn_operator_capture_health(p_tenant uuid, p_after text)",
+        "learn_operator_identity_people(p_tenant uuid, p_search text, p_after uuid)",
+        "learn_operator_identity_review(p_tenant uuid, p_actor uuid, p_request uuid, p_interaction uuid, p_definition jsonb, p_mode text)",
+        "learn_operator_identity_review_detail(p_tenant uuid, p_interaction uuid, p_person uuid)",
+        "learn_operator_identity_reviews(p_tenant uuid, p_after uuid)",
+        "learn_operator_input_access(p_tenant uuid, p_actor uuid, p_write boolean)",
+        "learn_operator_input_flags(p_tenant uuid)",
+        "learn_operator_input_immutable()",
+        "learn_operator_input_request(p_tenant uuid, p_request uuid, p_actor uuid, p_definition jsonb, p_mode text)",
+        "learn_operator_inputs(p_tenant uuid)",
+        "learn_operator_microsoft_status(p_tenant uuid, p_after uuid)",
+        "learn_operator_phone_attempts(p_tenant uuid, p_recording uuid, p_after uuid, p_held_only boolean)",
+        "learn_operator_phone_reconcile(p_tenant uuid, p_request uuid, p_actor uuid, p_run uuid, p_reason text, p_mode text)",
+        "learn_operator_projection_review(p_tenant uuid, p_actor uuid, p_request uuid, p_hold uuid, p_definition jsonb, p_mode text)",
+        "learn_operator_projection_review_detail(p_tenant uuid, p_hold uuid)",
+        "learn_operator_projection_reviews(p_tenant uuid, p_after uuid)",
+        "learn_operator_resume_commusoft(p_tenant uuid, p_request uuid, p_actor uuid, p_definition jsonb, p_mode text)",
+        "learn_operator_voicemail_status(p_tenant uuid, p_after uuid)",
+        "learn_performance_append(p_tenant_id uuid, p_measurement jsonb, p_reason text)",
+        "learn_performance_correct(p_tenant uuid, p_measurement uuid, p_request uuid, p_expected_review_revision integer, p_value numeric, p_reason text)",
+        "learn_performance_correction_resolve(p_tenant uuid, p_measurement uuid, p_request uuid, p_expected_review_revision integer, p_value numeric, p_reason text, p_cancel boolean)",
+        "learn_performance_insert_guard()",
+        "learn_performance_review(p_tenant_id uuid, p_measurement_id uuid, p_request_id uuid, p_expected_revision integer, p_decision text, p_reason text)",
+        "learn_phone_account_evidence(p_tenant uuid, p_account uuid)",
+        "learn_phone_apply_intelligence(p_tenant uuid, p_run uuid, p_recording uuid, p_transcript uuid, p_insight uuid, p jsonb)",
+        "learn_phone_capture_flag_lock()",
+        "learn_phone_complete_import(p_tenant uuid, p_run uuid, p_account uuid, p_connector uuid, p_customer text, p_kind text, p_pages integer, p_records integer, p_metadata jsonb)",
+        "learn_phone_derived_attempt(p_tenant uuid, p_run uuid, p_recording uuid, p_stage text, p_phase text, p_data jsonb)",
+        "learn_phone_download_attempt(p_tenant uuid, p_run uuid, p_recording uuid, p_phase text, p_data jsonb)",
+        "learn_phone_handoff(p_tenant uuid, p_run uuid, p_recording uuid, p_transcript uuid, p_insight uuid, p_phase text)",
+        "learn_phone_playback_authorize(p_tenant uuid, p_actor uuid, p_recording uuid, p_source_digest text, p_request uuid)",
+        "learn_phone_processing_evidence(p_tenant uuid)",
+        "learn_phone_publish_page(p_tenant uuid, p_run uuid, p_account uuid, p_connector uuid, p_customer text, p_kind text, p_page integer, p_records jsonb)",
+        "learn_phone_recordings_read(p_tenant uuid, p_table text, p_id uuid, p_after uuid)",
+        "learn_phone_saved_results_read(p_tenant uuid, p_recording uuid, p_offset integer, p_transcript_sha256 text)",
+        "learn_phone_settle_schedule(p_tenant uuid, p_run uuid, p_calls uuid, p_recordings uuid, p_outcome text, p_errors jsonb)",
+        "learn_phone_source_fields(c phone_calls)",
+        "learn_processing_publish(p_tenant uuid, p_job uuid, p_worker text, p_attempt integer, p_request uuid, p_source text, p_source_id uuid, p_revision text, p_phase text)",
+        "learn_processing_settle(p_tenant uuid, p_job uuid, p_worker text, p_attempt integer, p_request uuid, p_definition jsonb, p_phase text)",
+        "learn_project_interaction(p_tenant uuid, p_request uuid, p_source text, p_source_id uuid, p_revision text, p_phase text)",
+        "learn_projection_pending(p_tenant uuid, p_source text, p_limit integer)",
+        "learn_projection_review_count(p_tenant uuid, p_source text)",
+        "learn_projection_review_state(p_tenant uuid, p_hold uuid)",
+        "learn_projection_revision(p_fields jsonb, p_version text)",
+        "learn_review_receipt_constraint()",
+        "learn_scheduler_health_read(p_tenant uuid)",
+        "learn_scorecard_policy_for_period(p_tenant uuid, p_kind text, p_group uuid, p_start timestamp with time zone, p_end timestamp with time zone)",
+        "learn_scorecard_publish(p_tenant uuid, p_policy uuid, p_revision integer, p_request uuid, p_reason text)",
+        "learn_scorecard_read_draft(p_tenant uuid, p_kind text, p_group uuid)",
+        "learn_scorecard_revision_immutable()",
+        "learn_scorecard_save_draft(p_tenant_id uuid, p_expected_version integer, p_definition jsonb, p_reason text)",
+        "learn_slack_accounts_read(p_tenant_id uuid, p_after_id uuid)",
+        "learn_slack_claim_jobs(p_worker uuid, p_batch integer)",
+        "learn_slack_commit_page_private(p_tenant_id uuid, p_job_id uuid, p_account_id uuid, p_expected jsonb, p_next jsonb, p_records jsonb)",
+        "learn_slack_finish_job(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_outcome jsonb)",
+        "learn_slack_finish_thread_job(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_outcome jsonb)",
+        "learn_slack_history_read(p_tenant_id uuid, p_account_id uuid)",
+        "learn_slack_history_state(p_tenant_id uuid, p_account_id uuid)",
+        "learn_slack_queue_recurring_threads(p_account uuid)",
+        "learn_slack_read_credential(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_connection_id uuid, p_revision timestamp with time zone, p_secret_id uuid)",
+        "learn_slack_read_thread_credential(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_connection_id uuid, p_revision timestamp with time zone, p_secret_id uuid)",
+        "learn_slack_recurring_access(p_tenant uuid, p_write boolean)",
+        "learn_slack_recurring_control(p_tenant uuid, p_request uuid, p_account uuid, p_revision bigint, p_enabled boolean, p_reason text, p_mode text, p_actor uuid)",
+        "learn_slack_recurring_read(p_tenant uuid, p_after uuid)",
+        "learn_slack_recurring_thread_allowed(p_tenant uuid, p_import uuid)",
+        "learn_slack_recurring_thread_window_complete(p_window uuid)",
+        "learn_slack_recurring_thread_window_progress(p_window uuid)",
+        "learn_slack_recurring_threads_control(p_tenant uuid, p_request uuid, p_account uuid, p_revision bigint, p_enabled boolean, p_reason text, p_mode text, p_actor uuid)",
+        "learn_slack_recurring_threads_status(p_account uuid)",
+        "learn_slack_resume_history(p_tenant_id uuid, p_request_id uuid, p_account_id uuid, p_expected_state_version text, p_mode text, p_max_pages integer, p_reason text)",
+        "learn_slack_resume_thread(p_tenant_id uuid, p_request_id uuid, p_import_id uuid, p_expected_state_version text, p_mode text, p_max_pages integer, p_reason text)",
+        "learn_slack_schedule_recurring(p_batch integer)",
+        "learn_slack_start_import(p_tenant_id uuid, p_request_id uuid, p_connection_id uuid, p_expected_revision text, p_channel_id text, p_start timestamp with time zone, p_end timestamp with time zone, p_max_pages integer, p_reason text)",
+        "learn_slack_start_thread_import(p_tenant_id uuid, p_request_id uuid, p_account_id uuid, p_source_message_id uuid, p_source_version text, p_connection_revision timestamp with time zone, p_start timestamp with time zone, p_end timestamp with time zone, p_max_pages integer, p_reason text)",
+        "learn_slack_store_records(p_tenant_id uuid, cfg jsonb, p_records jsonb, p_parent_timestamp text)",
+        "learn_slack_thread_immutable()",
+        "learn_slack_thread_recovery_read(p_tenant_id uuid, p_import_id uuid)",
+        "learn_slack_thread_recovery_state(p_tenant_id uuid, p_import_id uuid)",
+        "learn_slack_threads_read(p_tenant_id uuid, p_account_id uuid, p_before_parent text)",
+        "learn_team_work_residence_collect(p_tenant uuid, p_team uuid, p_policy uuid, p_revision integer, p_start timestamp with time zone, p_end timestamp with time zone, p_request uuid, p_reason text)",
+        "learn_voicemail_mailboxes(p_tenant uuid, p_after uuid)",
+        "learn_work_authority(p_tenant uuid, p_object uuid, p_actor uuid, p_target_member uuid, p_claim boolean)",
+        "learn_work_authority_input_lock()",
+        "learn_work_calendar_expand(p_definition jsonb, p_start timestamp with time zone, p_end timestamp with time zone)",
+        "learn_work_calendar_immutable()",
+        "learn_work_calendar_preview(p_tenant uuid, p_version uuid, p_start timestamp with time zone, p_end timestamp with time zone)",
+        "learn_work_calendar_publish(p_tenant uuid, p_version uuid, p_expected_publication uuid, p_request uuid, p_reason text)",
+        "learn_work_calendar_read(p_tenant uuid)",
+        "learn_work_calendar_request(p_tenant uuid, p_actor uuid, p_kind text, p_payload jsonb)",
+        "learn_work_calendar_resolve(p_tenant uuid, p_kind text, p_request uuid, p_payload jsonb, p_cancel boolean)",
+        "learn_work_calendar_save(p_tenant uuid, p_expected_revision integer, p_definition jsonb, p_request uuid, p_reason text)",
+        "learn_work_calendar_snapshot(p_tenant uuid, p_start timestamp with time zone, p_end timestamp with time zone, p_observed timestamp with time zone)",
+        "learn_work_calendar_validate(p_definition jsonb)",
+        "learn_work_calendar_version_result(v learn_work_calendar_versions)",
+        "learn_work_capture_baseline(p_tenant uuid, p_object uuid)",
+        "learn_work_collection_abandon(p_tenant uuid, p_kind text, p_subject uuid, p_policy uuid, p_revision integer, p_start timestamp with time zone, p_end timestamp with time zone, p_request uuid, p_reason text, p_end_reason text)",
+        "learn_work_collection_access(p_tenant uuid)",
+        "learn_work_collection_begin(p_tenant uuid, p_kind text, p_subject uuid, p_policy uuid, p_revision integer, p_start timestamp with time zone, p_end timestamp with time zone, p_request uuid, p_reason text)",
+        "learn_work_collection_calculate(p_kind text, p_subject uuid, p_history jsonb, p_roster jsonb, p_teams jsonb, p_start timestamp with time zone, p_end timestamp with time zone, p_first_kind text)",
+        "learn_work_collection_cell_lock(p_tenant uuid, p_kind text, p_subject uuid, p_policy uuid, p_revision integer, p_start timestamp with time zone, p_end timestamp with time zone)",
+        "learn_work_collection_evidence(p_tenant uuid, p_request uuid, p_part text, p_after bigint)",
+        "learn_work_collection_history(p_item learn_work_collection_items, p_start timestamp with time zone, p_end timestamp with time zone, p_observed timestamp with time zone)",
+        "learn_work_collection_immutable()",
+        "learn_work_collection_result(p_run learn_work_collection_runs)",
+        "learn_work_collection_status(p_tenant uuid, p_request uuid)",
+        "learn_work_collection_step(p_tenant uuid, p_request uuid, p_after integer)",
+        "learn_work_cover_day(p_mask integer, p_timezone text, p_at timestamp with time zone)",
+        "learn_work_delay_entry(r learn_work_delay_events)",
+        "learn_work_delay_evidence(p_tenant uuid, p_object uuid, p_approval uuid)",
+        "learn_work_delay_immutable()",
+        "learn_work_delay_read(p_tenant uuid, p_object uuid, p_after integer, p_through integer)",
+        "learn_work_delay_record(p_tenant uuid, p_request uuid, p_payload jsonb)",
+        "learn_work_delay_request(p_tenant uuid, p_actor uuid, p_payload jsonb)",
+        "learn_work_delay_resolve(p_tenant uuid, p_request uuid, p_payload jsonb, p_cancel boolean)",
+        "learn_work_delay_snapshot(p_tenant uuid, p_object uuid, p_start timestamp with time zone, p_end timestamp with time zone, p_observed timestamp with time zone)",
+        "learn_work_frozen_owner(p_roster jsonb, p_teams jsonb, p_ref jsonb, p_at timestamp with time zone)",
+        "learn_work_handoffs_collect(p_tenant uuid, p_member uuid, p_policy uuid, p_revision integer, p_start timestamp with time zone, p_end timestamp with time zone, p_request uuid, p_reason text)",
+        "learn_work_history_immutable()",
+        "learn_work_history_read(p_tenant uuid, p_object uuid, p_start timestamp with time zone, p_end timestamp with time zone)",
+        "learn_work_measurement_receipt_check(p_tenant uuid, p_id uuid)",
+        "learn_work_registry_input_lock()",
+        "learn_work_residence_collect(p_tenant uuid, p_member uuid, p_policy uuid, p_revision integer, p_start timestamp with time zone, p_end timestamp with time zone, p_request uuid, p_reason text)",
+        "learn_work_snapshot(p intelligence_objects)",
+        "learn_working_calendar_freeze(p_tenant uuid, p_start timestamp with time zone, p_end timestamp with time zone, p_observed timestamp with time zone, p_rows jsonb)",
+        "learn_working_collection_immutable()",
+        "learn_working_delay_freeze(p_tenant uuid, p_object uuid, p_start timestamp with time zone, p_end timestamp with time zone, p_observed timestamp with time zone, p_through integer)",
+        "learn_working_rule_states(p_rule jsonb, p_kind text)",
+        "learn_working_time_calculate(p_tenant uuid, p_kind text, p_subject uuid, p_history jsonb, p_roster jsonb, p_teams jsonb, p_start timestamp with time zone, p_end timestamp with time zone, p_observed timestamp with time zone, p_first_kind text, p_states jsonb, p_calendar jsonb, p_delay jsonb)",
+        "learn_working_time_micros(p_ranges tstzmultirange)",
+        "learn_working_time_ranges(p_windows jsonb, p_start timestamp with time zone, p_end timestamp with time zone)",
+        "learn_working_time_windows(p_ranges tstzmultirange)",
+        "learn_workspace_identity_guard()",
+        "platform_jobs_complete_email_v1(p_job_id uuid, p_tenant_id uuid, p_claimed_by text, p_attempt_count integer, p_document jsonb)",
+        "slack_history_commit_page(p_tenant_id uuid, p_job_id uuid, p_account_id uuid, p_claimed_by text, p_attempt_count integer, p_expected jsonb, p_next jsonb, p_records jsonb)",
+        "slack_thread_commit_page(p_tenant_id uuid, p_job_id uuid, p_import_id uuid, p_claimed_by text, p_attempt_count integer, p_expected jsonb, p_next jsonb, p_records jsonb)",
+        "slack_version_immutable()",
+        "voicemail_discover_page(p_tenant uuid, p_route uuid, p_request uuid)",
+        "voicemail_discovery_status(p_tenant uuid, p_route uuid)",
+        "voicemail_discovery_status_data(p_tenant uuid, p_route uuid)",
+        "voicemail_intake_immutable()",
+        "voicemail_intake_prepare(p_tenant uuid, p_route uuid, p_source jsonb, p_candidate jsonb)",
+        "voicemail_intake_publish(p_tenant uuid, p_intake uuid, p_source uuid, p_raw_sha256 text, p_audio_sha256 text)",
+        "voicemail_intake_route(p_tenant uuid, p_route uuid, p_received timestamp with time zone)",
+        "voicemail_job_immutable()",
+        "voicemail_queue_recover()",
+        "voicemail_queue_step(p_tenant uuid, p_job uuid, p_worker text, p_attempt integer, p_operation text, p_args jsonb)",
+        "voicemail_schedule_tick()",
+        "work_transition_apply(p_tenant uuid, p_object uuid, p_expected_version integer, p_to_status text, p_patch jsonb, p_history jsonb, p_objective jsonb)"
+      ],
+      "preserveProductionOnly": [
+        "approve_response_intent_atomic(p_tenant_id uuid, p_intent_id uuid, p_approver_ref text, p_approver_kind text, p_authority_basis text, p_decision text, p_evidence jsonb, p_now timestamp with time zone)",
+        "automation_append_only()",
+        "automation_claim_and_start(p_intent_id uuid, p_tenant_id uuid, p_worker text, p_lease_seconds integer, p_idempotency_key text, p_correlation_id uuid, p_engine_version text)",
+        "automation_envelope_hash(p_tenant uuid, p_intent uuid, p_decision uuid, p_capability text, p_connector text, p_parameters jsonb, p_schema_version text, p_adapter_version text, p_snapshot uuid)",
+        "automation_finalize_execution(p_tenant_id uuid, p_intent_id uuid, p_inflight_attempt_id uuid, p_worker text, p_to_state text, p_result jsonb, p_error_code text, p_attempt_status text, p_retryable boolean, p_retry_at timestamp with time zone, p_external_reference text, p_response_class text, p_outcome_type text, p_outcome_layer text, p_correlation_id uuid, p_job_id uuid)",
+        "automation_intent_envelope_hash(p_tenant uuid, p_intent uuid)",
+        "automation_intents_immutable_business()",
+        "automation_intents_transition_guard()",
+        "automation_recover_expired_execution(p_tenant_id uuid, p_intent_id uuid, p_job_id uuid)",
+        "automation_resolve_unknown_execution(p_tenant_id uuid, p_intent_id uuid, p_to_state text, p_result jsonb, p_error_code text, p_attempt_status text, p_external_reference text, p_response_class text, p_outcome_type text, p_outcome_layer text, p_correlation_id uuid, p_job_id uuid)",
+        "automation_vertical_tenant_guard()",
+        "care_auto_enqueue_feedback(p_feedback uuid)",
+        "care_auto_enqueue_practice(p_tenant uuid, p_from timestamp with time zone, p_until timestamp with time zone, p_reviewer text)",
+        "care_auto_feedback_changed()",
+        "care_auto_practice_linked()",
+        "care_auto_review_claim()",
+        "care_auto_review_counts(p_tenant uuid)",
+        "care_auto_review_reserve_ai(p_id uuid, p_lease uuid)",
+        "care_auto_review_reserve_evidence(p_id uuid, p_lease uuid, p_hash text)",
+        "care_auto_scan_claim(p_tenant uuid)",
+        "care_auto_store_review(p_queue uuid, p_lease uuid, p_hash text, p_assessment jsonb, p_model text, p_rules_version integer)",
+        "care_bind_voice_test(p_tenant uuid, p_issue uuid, p_actor uuid, p_version integer, p_session uuid, p_rehearsal uuid, p_hash text)",
+        "care_block_inflight_edit()",
+        "care_claim_release(p_id uuid, p_actor uuid, p_operation text)",
+        "care_close_accepted_report(p_tenant uuid, p_issue uuid, p_actor uuid, p_version integer, p_action text, p_reason text)",
+        "care_customer_progress(p_tenant uuid)",
+        "care_desk_publish_progress()",
+        "care_desk_reserve_review(p_tenant uuid, p_issue uuid, p_actor uuid)",
+        "care_feedback_received()",
+        "care_finish_rehearsal(p_id uuid, p_result jsonb, p_error text)",
+        "care_finish_release(p_id uuid, p_state text, p_provider_version text)",
+        "care_guard_legacy_resolution()",
+        "care_health_snapshot(p_tenant uuid)",
+        "care_issue_action(p_tenant uuid, p_issue uuid, p_version integer, p_action text, p_content jsonb)",
+        "care_prepare_release(p_tenant uuid, p_issue uuid, p_actor uuid, p_version integer, p_assistant text, p_source_version text, p_source_hash text, p_candidate_hash text, p_instruction text, p_before jsonb, p_candidate jsonb)",
+        "care_release_actor(p_actor uuid)",
+        "care_require_admin()",
+        "care_reserve_rehearsal(p_tenant uuid, p_issue uuid, p_actor uuid, p_version integer, p_assistant_version text, p_assistant_hash text, p_candidate_hash text, p_opening text, p_caller text)",
+        "care_save_alert_route(p_tenant uuid, p_kind text, p_team text, p_channel text)",
+        "care_save_settings(p_tenant uuid, p_version integer, p_rules text, p_enabled boolean)",
+        "care_store_review(p_tenant uuid, p_call uuid, p_hash text, p_reviewer text, p_assessment jsonb)",
+        "cleanup_provider_oauth_states(p_retain interval)",
+        "controlplane_append_only()",
+        "cp_archive_endpoint(p_tenant uuid, p_endpoint_id uuid, p_actor text, p_reason text, p_correlation text, p_view_as boolean)",
+        "cp_assign_ownership(p_tenant uuid, p_endpoint uuid, p_owner_kind text, p_member uuid, p_org_unit uuid, p_role text, p_assignment_role text, p_exclusive boolean, p_effective_from timestamp with time zone, p_confidence numeric, p_review_state text, p_actor text, p_reason text, p_correlation text, p_view_as boolean)",
+        "cp_end_ownership(p_tenant uuid, p_assignment uuid, p_effective_to timestamp with time zone, p_expected_updated_at timestamp with time zone, p_actor text, p_reason text, p_correlation text, p_view_as boolean)",
+        "cp_restore_endpoint(p_tenant uuid, p_endpoint_id uuid, p_actor text, p_reason text, p_correlation text, p_view_as boolean)",
+        "cp_review_identity(p_tenant uuid, p_endpoint uuid, p_decision text, p_member uuid, p_confidence text, p_evidence jsonb, p_actor text, p_reason text, p_correlation text, p_view_as boolean)",
+        "cp_update_manual_endpoint(p_tenant uuid, p_endpoint uuid, p_display text, p_provider_context text, p_metadata jsonb, p_expected_updated_at timestamp with time zone, p_actor text, p_reason text, p_correlation text, p_view_as boolean)",
+        "cp_upsert_endpoint(p_tenant uuid, p_channel text, p_endpoint_kind text, p_normalized text, p_display text, p_provider text, p_provider_ref text, p_is_shared boolean, p_source text, p_source_object_ref text, p_metadata jsonb, p_actor text, p_reason text, p_correlation text, p_view_as boolean)",
+        "cp_upsert_identity(p_tenant uuid, p_member uuid, p_provider text, p_identity_kind text, p_external_ref text, p_display text, p_primary_login text, p_verification text, p_actor text, p_reason text, p_correlation text, p_view_as boolean)",
+        "cp_upsert_member(p_tenant uuid, p_member_id uuid, p_display_name text, p_org_unit uuid, p_formal_role text, p_actor text, p_reason text, p_correlation text, p_view_as boolean)",
+        "current_user_is_tenant_superadmin()",
+        "customer_feedback_notify()",
+        "customer_feedback_stage(p_stage text)",
+        "customer_notification_actor(p_tenant uuid, p_actor uuid)",
+        "customer_notification_route_save(p_tenant uuid, p_actor uuid, p_generation uuid, p_event text, p_version integer, p_channel text, p_name text, p_test text, p_enabled boolean)",
+        "customer_notifications_claim()",
+        "customer_slack_connect(p_tenant uuid, p_actor uuid, p_expected uuid, p_team text, p_name text, p_bot text, p_token text)",
+        "customer_slack_disconnect(p_tenant uuid, p_actor uuid, p_generation uuid)",
+        "customer_slack_token(p_tenant uuid, p_generation uuid)",
+        "decision_log_reject_mutation()",
+        "delegated_event(p_task uuid, p_tenant uuid, p_event text, p_actor uuid, p_detail jsonb)",
+        "delegated_task_complete(p_token_hash text)",
+        "delegated_task_expire_stale()",
+        "delegated_task_issue(p_tenant uuid, p_task_type text, p_requested_action text, p_allowed_fields text[], p_recipient_email text, p_recipient_name text, p_provider text, p_connection_id uuid, p_token_hash text, p_token_last4 text, p_ttl_seconds integer, p_single_use boolean, p_max_uses integer, p_created_by uuid)",
+        "delegated_task_mark_opened(p_token_hash text)",
+        "delegated_task_revoke(p_task_id uuid, p_actor uuid)",
+        "delegated_task_submit(p_token_hash text, p_payload jsonb)",
+        "delegated_task_verify(p_token_hash text)",
+        "eir_append_only()",
+        "health_append_only()",
+        "ingest_live_call_webhook(p_tenant_id uuid, p_provider text, p_delivery_key text, p_provider_call_id text, p_event_type text, p_caller_number text, p_callee_number text, p_extension text, p_direction text, p_occurred_at timestamp with time zone, p_raw_payload jsonb, p_assigned_user_id uuid, p_match_status text, p_matched_person_id uuid, p_confidence numeric, p_evidence jsonb)",
+        "inherit_automation_correlation()",
+        "intelligence_select_uningested(p_tenant uuid, p_mapper_version text, p_limit integer)",
+        "marketing_access_overview(p_tenant uuid)",
+        "marketing_access_set(p_tenant uuid, p_actor uuid, p_profile uuid, p_permission text, p_mode text, p_expected text)",
+        "marketing_ad_attribution(p_tenant uuid, p_args jsonb)",
+        "marketing_ad_claim_events(p_tenant uuid, p_worker text, p_batch integer, p_lease_seconds integer)",
+        "marketing_ad_event_detail(p_tenant uuid, p_event uuid)",
+        "marketing_ad_event_guard()",
+        "marketing_ad_event_ingest(p_tenant uuid, p_source uuid, p_args jsonb)",
+        "marketing_ad_event_retry(p_tenant uuid, p_actor uuid, p_event uuid, p_args jsonb)",
+        "marketing_ad_lead_feed(p_tenant uuid, p_args jsonb)",
+        "marketing_ad_lead_process(p_tenant uuid, p_event uuid)",
+        "marketing_ad_manual_sync(p_tenant uuid, p_actor uuid, p_source uuid, p_args jsonb)",
+        "marketing_ad_metric_record(p_tenant uuid, p_source uuid, p_payload jsonb)",
+        "marketing_ad_metrics(p_tenant uuid, p_args jsonb)",
+        "marketing_ad_source_create(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_ad_source_credential_mark(p_tenant uuid, p_actor uuid, p_source uuid, p_args jsonb, p_expected_version integer)",
+        "marketing_ad_source_detail(p_tenant uuid, p_source uuid)",
+        "marketing_ad_source_guard()",
+        "marketing_ad_source_health(p_tenant uuid)",
+        "marketing_ad_source_list(p_tenant uuid, p_args jsonb)",
+        "marketing_ad_source_revise(p_tenant uuid, p_actor uuid, p_source uuid, p_args jsonb, p_expected_version integer)",
+        "marketing_ad_source_set_status(p_tenant uuid, p_actor uuid, p_source uuid, p_args jsonb, p_expected_version integer)",
+        "marketing_ad_source_snapshot(p_row marketing_ad_sources)",
+        "marketing_ad_sync_run_guard()",
+        "marketing_ad_touchpoint_guard()",
+        "marketing_ads_overview(p_tenant uuid)",
+        "marketing_ai_accept(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_ai_cancel(p_tenant uuid, p_actor uuid, p_request uuid)",
+        "marketing_ai_configure(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_ai_generation_request(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_ai_lineage_check(p_tenant uuid, p_proposal uuid, p_subject text, p_preview text, p_body text, p_fallbacks jsonb)",
+        "marketing_ai_proposal_detail(p_tenant uuid, p_proposal uuid)",
+        "marketing_ai_provider_state(p_tenant uuid)",
+        "marketing_ai_record_proposal(p_tenant uuid, p_intent uuid, p_payload jsonb)",
+        "marketing_ai_reject(p_tenant uuid, p_actor uuid, p_request uuid, p_args jsonb)",
+        "marketing_ai_request_guard()",
+        "marketing_ai_request_list(p_tenant uuid, p_args jsonb)",
+        "marketing_ai_request_status(p_tenant uuid, p_request uuid)",
+        "marketing_ai_revise(p_tenant uuid, p_actor uuid, p_proposal uuid, p_args jsonb)",
+        "marketing_audit_list(p_tenant uuid, p_args jsonb)",
+        "marketing_broadcast_authority_core(p_tenant uuid, p_campaign uuid, p_revision uuid, p_snapshot uuid, p_member uuid, p_person uuid, p_point uuid, p_destination text)",
+        "marketing_broadcast_check_completion(p_tenant uuid, p_campaign uuid)",
+        "marketing_broadcast_claim_batch(p_tenant uuid, p_worker text, p_limit integer, p_lease_seconds integer)",
+        "marketing_broadcast_create_lineage(p_tenant uuid, p_dispatch uuid, p_worker text, p_args jsonb)",
+        "marketing_broadcast_dispatch_guard()",
+        "marketing_broadcast_due(p_limit integer)",
+        "marketing_broadcast_health(p_tenant uuid)",
+        "marketing_broadcast_in_quiet_hours(p_tenant uuid)",
+        "marketing_broadcast_recipient_bundle(p_tenant uuid, p_dispatch uuid, p_worker text)",
+        "marketing_broadcast_resolve_endpoint(p_tenant uuid, p_person uuid)",
+        "marketing_broadcast_send_authority(p_tenant uuid, p_delivery uuid)",
+        "marketing_campaign_activate(p_tenant uuid, p_campaign uuid)",
+        "marketing_campaign_create(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_campaign_detail(p_tenant uuid, p_campaign uuid)",
+        "marketing_campaign_duplicate(p_tenant uuid, p_actor uuid, p_campaign uuid)",
+        "marketing_campaign_event_guard()",
+        "marketing_campaign_guard()",
+        "marketing_campaign_launch(p_tenant uuid, p_actor uuid, p_campaign uuid, p_args jsonb)",
+        "marketing_campaign_list(p_tenant uuid, p_args jsonb)",
+        "marketing_campaign_objective_context(p_tenant uuid, p_campaign uuid)",
+        "marketing_campaign_objective_link(p_tenant uuid, p_actor uuid, p_campaign uuid, p_args jsonb, p_expected_version integer)",
+        "marketing_campaign_objective_unlink(p_tenant uuid, p_actor uuid, p_campaign uuid, p_args jsonb, p_expected_version integer)",
+        "marketing_campaign_preflight(p_tenant uuid, p_actor uuid, p_campaign uuid, p_expected_version integer, p_public_base_url text)",
+        "marketing_campaign_preview_audience(p_tenant uuid, p_actor uuid, p_campaign uuid)",
+        "marketing_campaign_recipient_page(p_tenant uuid, p_campaign uuid, p_args jsonb)",
+        "marketing_campaign_report(p_tenant uuid, p_campaign uuid)",
+        "marketing_campaign_revise(p_tenant uuid, p_actor uuid, p_campaign uuid, p_args jsonb, p_expected_version integer)",
+        "marketing_campaign_revision_hash(p_sender uuid, p_segment uuid, p_segment_version integer, p_subject text, p_preview text, p_body text, p_tokens text[], p_fallbacks jsonb)",
+        "marketing_campaign_revision_lineage_guard()",
+        "marketing_campaign_seed_event_chain(p_tenant uuid, p_campaign uuid, p_actor_label text)",
+        "marketing_campaign_tracking_summary(p_tenant uuid, p_campaign uuid)",
+        "marketing_campaign_transition(p_tenant uuid, p_actor uuid, p_campaign uuid, p_action text, p_expected_version integer, p_args jsonb)",
+        "marketing_campaign_validate_content(p_subject text, p_preview text, p_body text, p_fallbacks jsonb)",
+        "marketing_campaigns_objective_ref_guard()",
+        "marketing_classify_contact(p_tenant uuid, p_person uuid, p_actor uuid, p_changes jsonb)",
+        "marketing_contact_detail(p_tenant uuid, p_person uuid)",
+        "marketing_contact_eligibility(p_tenant uuid, p_person uuid, p_channel text)",
+        "marketing_contacts_counts(p_tenant uuid)",
+        "marketing_contacts_list(p_tenant uuid, p_args jsonb)",
+        "marketing_create_contact(p_tenant uuid, p_actor uuid, p_details jsonb, p_idempotency_key uuid)",
+        "marketing_current_user_permissions()",
+        "marketing_delivery_event_guard()",
+        "marketing_delivery_guard()",
+        "marketing_delivery_reconcile(p_tenant uuid, p_delivery uuid)",
+        "marketing_effective_permissions(p_profile_id uuid)",
+        "marketing_endpoint_eligibility(p_tenant uuid, p_person uuid, p_channel text, p_contact_point uuid, p_destination text, p_topic text)",
+        "marketing_enrolment_batch_guard()",
+        "marketing_event_append(p_tenant uuid, p_type text, p_subject_type text, p_subject uuid, p_source text, p_entry jsonb)",
+        "marketing_has_permission(p_permission text)",
+        "marketing_history_append_only()",
+        "marketing_import_contact_row(p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb)",
+        "marketing_import_finalize(p_tenant uuid, p_import uuid)",
+        "marketing_import_match_contact(p_tenant uuid, p_record jsonb)",
+        "marketing_import_resolve_contact(p_tenant uuid, p_record jsonb, p_source text)",
+        "marketing_import_resolve_stage(p_tenant uuid, p_value text)",
+        "marketing_import_row_outcome(p_tenant uuid, p_import uuid, p_row_number integer, p_outcome text, p_reason text, p_fields text[])",
+        "marketing_import_row_results_guard()",
+        "marketing_import_validate_contact_row(p_tenant uuid, p_record jsonb)",
+        "marketing_launch_confirmation_guard()",
+        "marketing_lifecycle_admin(p_tenant uuid, p_actor uuid, p_op text, p_args jsonb)",
+        "marketing_materialise_defaults(p_tenant uuid, p_actor uuid)",
+        "marketing_normalise_email(p_raw text)",
+        "marketing_objective_search(p_tenant uuid, p_args jsonb)",
+        "marketing_owners_list(p_tenant uuid)",
+        "marketing_permission_history(p_tenant uuid, p_person uuid)",
+        "marketing_permission_record(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_permission_record_bulk(p_tenant uuid, p_actor uuid, p_mode text, p_args jsonb)",
+        "marketing_permission_require_actor(p_tenant uuid, p_actor uuid)",
+        "marketing_preferences_append_only()",
+        "marketing_provider_account_connect_result(p_tenant uuid, p_account uuid, p_args jsonb)",
+        "marketing_provider_account_connect_start(p_tenant uuid, p_actor uuid, p_account uuid, p_args jsonb)",
+        "marketing_provider_account_create(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_provider_account_credential_mark(p_tenant uuid, p_actor uuid, p_account uuid, p_args jsonb, p_expected_version integer)",
+        "marketing_provider_account_external_select(p_tenant uuid, p_actor uuid, p_account uuid, p_args jsonb)",
+        "marketing_provider_account_guard()",
+        "marketing_provider_account_report(p_tenant uuid, p_account uuid)",
+        "marketing_provider_account_revoke(p_tenant uuid, p_actor uuid, p_account uuid, p_args jsonb)",
+        "marketing_provider_account_snapshot(p_row marketing_provider_accounts)",
+        "marketing_provider_connection_list(p_tenant uuid, p_args jsonb)",
+        "marketing_provider_fact_record(p_tenant uuid, p_run uuid, p_args jsonb)",
+        "marketing_provider_sync_claim(p_tenant uuid, p_worker text, p_batch integer, p_lease_seconds integer)",
+        "marketing_provider_sync_complete(p_tenant uuid, p_run uuid, p_args jsonb)",
+        "marketing_provider_sync_due(p_tenant uuid)",
+        "marketing_provider_sync_enqueue_due(p_tenant uuid)",
+        "marketing_provider_sync_request(p_tenant uuid, p_actor uuid, p_account uuid, p_args jsonb)",
+        "marketing_provider_sync_run_guard()",
+        "marketing_reporting_campaign(p_tenant uuid, p_campaign uuid)",
+        "marketing_reporting_overview(p_tenant uuid, p_args jsonb)",
+        "marketing_request_fingerprint(p_request_id text, p_actor uuid, p_sender uuid, p_recipient uuid, p_content_hash text)",
+        "marketing_require_admin_actor(p_tenant uuid, p_actor uuid)",
+        "marketing_require_ads_actor(p_tenant uuid, p_actor uuid)",
+        "marketing_require_draft_actor(p_tenant uuid, p_actor uuid)",
+        "marketing_require_launch_actor(p_tenant uuid, p_actor uuid)",
+        "marketing_require_platform_operator(p_actor uuid)",
+        "marketing_require_senders_actor(p_tenant uuid, p_actor uuid)",
+        "marketing_scope_has(p_scope text, p_required text)",
+        "marketing_segment_evaluate(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_segment_match_person(p_tenant uuid, p_person uuid, p_node jsonb, p_depth integer)",
+        "marketing_segment_mutate(p_tenant uuid, p_actor uuid, p_op text, p_args jsonb)",
+        "marketing_segment_validate(p_tenant uuid, p_node jsonb, p_depth integer, p_count integer)",
+        "marketing_sender_authority_grant(p_actor uuid, p_args jsonb)",
+        "marketing_sender_authority_guard()",
+        "marketing_sender_authority_revoke(p_actor uuid, p_args jsonb)",
+        "marketing_sender_authority_state(p_tenant uuid, p_transport text, p_address text)",
+        "marketing_sender_capability_sync(p_tenant uuid)",
+        "marketing_sender_create(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_sender_create_resend(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_sender_guard()",
+        "marketing_sender_health(p_tenant uuid)",
+        "marketing_sender_readiness(p_tenant uuid, p_sender uuid)",
+        "marketing_sender_readiness_all(p_tenant uuid)",
+        "marketing_sender_record_verification(p_tenant uuid, p_sender uuid, p_state text, p_note text, p_verified_at timestamp with time zone)",
+        "marketing_sender_set_default(p_tenant uuid, p_actor uuid, p_sender uuid, p_expected timestamp with time zone)",
+        "marketing_sender_set_enabled(p_tenant uuid, p_actor uuid, p_sender uuid, p_enabled boolean, p_expected timestamp with time zone)",
+        "marketing_sender_sources(p_tenant uuid)",
+        "marketing_sender_text_guard(p_field text, p_value text, p_allow_newlines boolean)",
+        "marketing_sender_update(p_tenant uuid, p_actor uuid, p_sender uuid, p_changes jsonb, p_expected timestamp with time zone)",
+        "marketing_sequence_activate(p_tenant uuid, p_actor uuid, p_campaign uuid, p_args jsonb)",
+        "marketing_sequence_apply_lifecycle_exits(p_tenant uuid, p_limit integer)",
+        "marketing_sequence_apply_quiet_hours(p_tz text, p_start integer, p_end integer, p_at timestamp with time zone)",
+        "marketing_sequence_apply_reply_exits(p_tenant uuid, p_limit integer)",
+        "marketing_sequence_apply_suppression_exits(p_tenant uuid, p_limit integer)",
+        "marketing_sequence_authority_core(p_tenant uuid, p_enrolment uuid, p_execution uuid, p_require_email boolean)",
+        "marketing_sequence_build_revision(p_tenant uuid, p_actor uuid, p_campaign uuid, p_revision_number integer, p_sender uuid, p_args jsonb, p_source text)",
+        "marketing_sequence_capability_sync(p_tenant uuid)",
+        "marketing_sequence_check_completion(p_tenant uuid, p_campaign uuid)",
+        "marketing_sequence_claim_batch(p_tenant uuid, p_worker text, p_limit integer, p_lease_seconds integer)",
+        "marketing_sequence_confirm_enrolment(p_tenant uuid, p_actor uuid, p_campaign uuid, p_args jsonb)",
+        "marketing_sequence_confirmation_guard()",
+        "marketing_sequence_create(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_sequence_create_action_lineage(p_tenant uuid, p_execution uuid, p_worker text)",
+        "marketing_sequence_create_email_lineage(p_tenant uuid, p_execution uuid, p_worker text, p_args jsonb)",
+        "marketing_sequence_create_follow_up(p_tenant uuid, p_execution uuid, p_person uuid, p_config jsonb, p_actor uuid)",
+        "marketing_sequence_detail(p_tenant uuid, p_campaign uuid)",
+        "marketing_sequence_due(p_limit integer)",
+        "marketing_sequence_enrolment_control(p_tenant uuid, p_actor uuid, p_enrolment uuid, p_action text, p_args jsonb)",
+        "marketing_sequence_enrolment_guard()",
+        "marketing_sequence_enrolment_page(p_tenant uuid, p_campaign uuid, p_args jsonb)",
+        "marketing_sequence_execution_guard()",
+        "marketing_sequence_exit_enrolment(p_tenant uuid, p_enrolment uuid, p_reason text, p_evidence jsonb, p_actor_label text)",
+        "marketing_sequence_follow_up_available()",
+        "marketing_sequence_health(p_tenant uuid)",
+        "marketing_sequence_list(p_tenant uuid, p_args jsonb)",
+        "marketing_sequence_next_window(p_tz text, p_days jsonb, p_start integer, p_end integer, p_ambiguous text, p_from timestamp with time zone)",
+        "marketing_sequence_preflight_activation(p_tenant uuid, p_actor uuid, p_campaign uuid, p_expected_version integer, p_public_base_url text)",
+        "marketing_sequence_preflight_enrolment(p_tenant uuid, p_actor uuid, p_campaign uuid, p_args jsonb)",
+        "marketing_sequence_reconcile_execution(p_tenant uuid, p_execution uuid)",
+        "marketing_sequence_report(p_tenant uuid, p_campaign uuid)",
+        "marketing_sequence_resolve_local(p_tz text, p_local timestamp without time zone, p_ambiguous text)",
+        "marketing_sequence_revise(p_tenant uuid, p_actor uuid, p_campaign uuid, p_args jsonb, p_expected_version integer)",
+        "marketing_sequence_send_authority(p_tenant uuid, p_delivery uuid)",
+        "marketing_sequence_step_bundle(p_tenant uuid, p_execution uuid, p_worker text)",
+        "marketing_sequence_step_hash(p_type text, p_config jsonb)",
+        "marketing_sequence_step_lineage_guard()",
+        "marketing_sequence_step_summary(p_type text, p_config jsonb)",
+        "marketing_sequence_transition(p_tenant uuid, p_actor uuid, p_campaign uuid, p_action text, p_expected_version integer, p_args jsonb)",
+        "marketing_sequence_validate(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_sequence_validate_exit_rules(p_rules jsonb)",
+        "marketing_sequence_validate_step(p_tenant uuid, p_type text, p_config jsonb)",
+        "marketing_settings_default_sender_guard()",
+        "marketing_source_capability_sync()",
+        "marketing_tag_admin(p_tenant uuid, p_actor uuid, p_op text, p_args jsonb)",
+        "marketing_tag_bulk(p_tenant uuid, p_actor uuid, p_op text, p_tag uuid, p_person_ids uuid[], p_mode text, p_contract text)",
+        "marketing_tag_mutate(p_tenant uuid, p_actor uuid, p_op text, p_args jsonb)",
+        "marketing_tags_admin_list(p_tenant uuid)",
+        "marketing_template_create(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_template_detail(p_tenant uuid, p_template uuid)",
+        "marketing_template_duplicate(p_tenant uuid, p_actor uuid, p_template uuid, p_args jsonb)",
+        "marketing_template_guard()",
+        "marketing_template_lineage_check(p_tenant uuid, p_template_revision uuid, p_subject text, p_preview text, p_body text, p_fallbacks jsonb)",
+        "marketing_template_list(p_tenant uuid, p_args jsonb)",
+        "marketing_template_request_gate(p_tenant uuid, p_action text, p_request_id text, p_fp text)",
+        "marketing_template_revise(p_tenant uuid, p_actor uuid, p_template uuid, p_args jsonb, p_expected_version integer)",
+        "marketing_template_revision_hash(p_subject text, p_preview text, p_body text, p_tokens text[], p_fallbacks jsonb)",
+        "marketing_template_set_status(p_tenant uuid, p_actor uuid, p_template uuid, p_args jsonb, p_expected_version integer)",
+        "marketing_template_usage_record()",
+        "marketing_template_use_in_broadcast(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_template_use_in_sequence_step(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_tenant_guard()",
+        "marketing_test_cancel(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_test_send_request(p_tenant uuid, p_actor uuid, p_args jsonb)",
+        "marketing_test_send_status(p_tenant uuid, p_args jsonb)",
+        "marketing_track_record(p_delivery uuid, p_kind text, p_url text)",
+        "marketing_unsubscribe_apply(p_token text)",
+        "marketing_unsubscribe_token_guard()",
+        "marketing_update_contact(p_tenant uuid, p_person uuid, p_actor uuid, p_changes jsonb)",
+        "marketing_update_settings(p_tenant uuid, p_actor uuid, p_changes jsonb, p_expected_version integer)",
+        "marketing_validate_owner(p_tenant uuid, p_owner uuid)",
+        "notification_connect_slack(p_actor uuid, p_team text, p_name text, p_bot text, p_token text)",
+        "notification_require_actor(p_actor uuid)",
+        "notification_save_route(p_actor uuid, p_tenant uuid, p_event text, p_version integer, p_team text, p_channel text, p_name text, p_test_ts text)",
+        "notification_slack_token()",
+        "objective_links_marketing_campaign_guard()",
+        "objectives_no_parent_cycle()",
+        "operator_update_invoice_notes(p_tenant uuid, p_invoice uuid, p_version integer, p_outcome_note text, p_reason text)",
+        "outcomes_business_needs_verification()",
+        "outcomes_tenant_consistency()",
+        "phone_operations_set_on_call(p_tenant_id uuid, p_actor_user_id uuid, p_actor_label text, p_role_key text, p_display_label text, p_team_member_id uuid, p_destination_ref text, p_provider text, p_reason text, p_metadata jsonb)",
+        "phone_pipeline_diagnostics(p_tenant_id uuid, p_limit integer)",
+        "phone_pipeline_health(p_tenant_id uuid)",
+        "provider_secret_read(p_tenant uuid, p_provider text, p_field text)",
+        "provider_secret_revoke(p_tenant uuid, p_provider text)",
+        "quarantine_inbound_webhook(p_provider text, p_delivery_key text, p_provider_call_id text, p_provider_customer_id text, p_reason_code text, p_occurred_at timestamp with time zone, p_payload jsonb, p_payload_sha256 text)",
+        "receptionist_intake_record(p_event_key text, p_payload_hash text, p_call_id uuid, p_reason text, p_accepted boolean, p_response jsonb)",
+        "receptionist_launch_interlock()",
+        "receptionist_test_reserve(p_tenant uuid, p_actor uuid, p_hash text)",
+        "receptionist_test_reserve_launch(p_tenant uuid, p_actor uuid, p_hash text)",
+        "record_response_revision_atomic(p_tenant_id uuid, p_intent_id uuid, p_editor_ref text, p_editor_kind text, p_body text, p_change_reason text, p_now timestamp with time zone)",
+        "reserve_receptionist_practice(p_tenant uuid, p_actor uuid, p_id uuid)",
+        "serviceos_schedule_all(p_base_url text)",
+        "serviceos_set_automation_vertical(p_tenant uuid, p_enable boolean)",
+        "serviceos_set_customer_response_assistant(p_tenant uuid, p_enable boolean)",
+        "serviceos_unschedule_all()",
+        "tenant_lineage_guard()",
+        "validate_receptionist_practice_feedback()",
+        "verification_acquire_lock(p_tenant_id uuid, p_suite text, p_verification_run_id text, p_ttl_seconds integer)",
+        "verification_release_lock(p_tenant_id uuid, p_suite text, p_verification_run_id text)"
+      ],
+      "changed": [
+        {
+          "identity": "can_manage_voicemail(p_tenant uuid, p_mailbox uuid)",
+          "changedFacets": [
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "claim_client_notifications()",
+          "changedFacets": [
+            "hash"
+          ]
+        },
+        {
+          "identity": "client_programme_record_revision()",
+          "changedFacets": [
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "client_programme_stamp()",
+          "changedFacets": [
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "current_tenant_id()",
+          "changedFacets": [
+            "anonExecute",
+            "hash",
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "current_user_is_openfolk_operator(required_permission text)",
+          "changedFacets": [
+            "anonExecute",
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "current_user_role()",
+          "changedFacets": [
+            "anonExecute",
+            "hash",
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "email_connector_diagnostics(p_tenant_id uuid, p_limit integer)",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute"
+          ]
+        },
+        {
+          "identity": "email_connector_health(p_tenant_id uuid)",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute"
+          ]
+        },
+        {
+          "identity": "email_select_unprojected(p_tenant_id uuid, p_limit integer)",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute"
+          ]
+        },
+        {
+          "identity": "handle_new_user()",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute",
+            "hash",
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "is_openfolk()",
+          "changedFacets": [
+            "anonExecute",
+            "hash",
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "metric_definitions_guard()",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute",
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "objectives_append_only()",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute",
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "objectives_child_guard()",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute",
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "objectives_strategic_guard()",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute",
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "openfolk_build_investment()",
+          "changedFacets": [
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "operator_update_delivery(p_tenant uuid, p_version integer, p_content jsonb, p_reason text)",
+          "changedFacets": [
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "phone_pending_readiness(p_tenant_id uuid)",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute",
+            "hash"
+          ]
+        },
+        {
+          "identity": "phone_projection_diagnostics(p_tenant_id uuid, p_limit integer)",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute"
+          ]
+        },
+        {
+          "identity": "phone_projection_version(p_tenant_id uuid, p_call_id uuid)",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute",
+            "hash"
+          ]
+        },
+        {
+          "identity": "phone_retry_state(p_stage text, p_runs jsonb, p_now timestamp with time zone)",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute"
+          ]
+        },
+        {
+          "identity": "phone_select_pending(p_tenant_id uuid, p_limit integer, p_min_download_age_seconds integer)",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute",
+            "hash"
+          ]
+        },
+        {
+          "identity": "phone_select_projectable(p_tenant_id uuid, p_limit integer)",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute"
+          ]
+        },
+        {
+          "identity": "platform_jobs_claim(p_worker text, p_batch integer, p_lease_seconds integer, p_job_types text[])",
+          "changedFacets": [
+            "anonExecute",
+            "hash"
+          ]
+        },
+        {
+          "identity": "queue_client_feedback()",
+          "changedFacets": [
+            "hash",
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "receptionist_feedback_stamp()",
+          "changedFacets": [
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "serviceos_schedule_defs()",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute",
+            "hash",
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "set_updated_at()",
+          "changedFacets": [
+            "anonExecute",
+            "authenticatedExecute",
+            "serviceExecute"
+          ]
+        },
+        {
+          "identity": "voicemail_mailbox_summary(p_tenant uuid)",
+          "changedFacets": [
+            "serviceExecute"
+          ]
+        }
+      ],
+      "unchanged": [
+        "care_desk_operator()",
+        "marketing_normalize_endpoint(p_channel text, p_value text)",
+        "provider_secret_name(p_tenant uuid, p_provider text, p_field text)",
+        "provider_secret_store(p_tenant uuid, p_provider text, p_field text, p_secret text)",
+        "serviceos_record_health_check(p_tenant uuid, p_component text, p_status text, p_error text, p_metadata jsonb)"
+      ]
+    },
+    "views": {
+      "additions": [
+        "learn_launch_email_accounts",
+        "learn_launch_email_messages",
+        "learn_launch_email_sync_runs",
+        "learn_launch_google_workspace_mailboxes",
+        "learn_launch_phone_calls",
+        "learn_launch_phone_recordings",
+        "learn_launch_phone_sync_runs",
+        "learn_launch_phone_transcripts"
+      ],
+      "preserveProductionOnly": [
+        "controlplane_current_ownership_v",
+        "recommendation_objects",
+        "recommendations_compat",
+        "response_refinement_trail"
+      ],
+      "changed": [
+        {
+          "identity": "phone_recording_pipeline_state",
+          "changedFacets": [
+            "hash"
+          ]
+        }
+      ],
+      "unchanged": []
+    }
+  },
+  "packages": [
+    {
+      "file": "001_launch_metadata_views.sql",
+      "sha256": "5bbff33c4ece496cd6220a9beb1fc0d70cb31e205f2deaa4a10026e4a3e219aa",
+      "manifestPin": "absent",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "002_card_work_foundations.sql",
+      "sha256": "be6f2e94a8691469b82b45dce0c3c2011a68731fc8ae339e4a1ff11dfc3d5233",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "003_foundation_helper_access.sql",
+      "sha256": "16f222842b2d4d39387150edb696ffea7991daef36ffdb88c248216cf42b0647",
+      "manifestPin": "absent",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "004_rules_membership.sql",
+      "sha256": "37d1673acdc896d182b41e6e079475ef69da1d0cfc5c4fbc4017b9546be98562",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "005_scorecard_conflict_codes.sql",
+      "sha256": "554a7020f1ae8370f730016d10cfdd9a40b5fe08250974165de67f25802d3479",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "006_measurements_reviews.sql",
+      "sha256": "8a1b32fd0a1896946a7a6f79dd3598eabfec237ca418a4fab6d3b7ee155a15e8",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "007_work_capture_collectors.sql",
+      "sha256": "d70e2cab5866488310f0907c203fb11796dc175ad3223640d3a2ecd437f64ff5",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "008_governed_work_actions.sql",
+      "sha256": "4f27681d0f6786b04374cb409fdea61babff40452f263ce8e3c9d43966f215f8",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "009_slack_storage_setup.sql",
+      "sha256": "d4b762ace7c9ccecba29890649e40d7e1501aa5f6e1c2b711970fb55368d305e",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "010_slack_durable_worker.sql",
+      "sha256": "74bfa2f96e5ad2b40fb40b1e6b03f1cdd6f605f3d8d57a598a541222f8a1955e",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "011_slack_threads.sql",
+      "sha256": "c476f687762c1bb648c7ecdd7bd9bdb054b1d7f5ccc9cb43af17468991edf5ce",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "012_slack_operator.sql",
+      "sha256": "e37839d9be63ff9ee9db8b0ada2c25c676546cb108a3882c57d1ec58aa8300b1",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "013_slack_pacing.sql",
+      "sha256": "7191b47ec926094b2118d957cddccf6ebec6c62e10e2d04670db327d23c223a5",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "014_slack_recovery.sql",
+      "sha256": "0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "015_phone_service_access.sql",
+      "sha256": "f2e4706559d9a44b099126bd9bd8f364a4e5448ee3783b551a4369a188cebecb",
+      "manifestPin": "absent",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "016_card_communications.sql",
+      "sha256": "78b6871e377b3e35280769edff0f28c3ec0872208578daed958cec0b97776ebc",
+      "manifestPin": "absent",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "017_card_communication_context.sql",
+      "sha256": "87f54342bffc35c32b81434dd54fb2b662fbfcd7aefd516b511fd21c6cad6403",
+      "manifestPin": "absent",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "018_performance_corrections.sql",
+      "sha256": "da742d0a4ea5b20aa98e03fcbee02b85e9f2a0d93f3aed7dcd64a9c7205fea8d",
+      "manifestPin": "absent",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "019_card_sources.sql",
+      "sha256": "cca8c835fdf7b3e088796ecd34dae4e09b6ed615f93386ff2f03cfdea9d86e86",
+      "manifestPin": "absent",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "020_saved_assessments.sql",
+      "sha256": "728d46dcf93127cfcb917b355d86a006e46d72bb5249b784a485ba079bcd798a",
+      "manifestPin": "absent",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "021_slack_thread_recovery.sql",
+      "sha256": "16d639506c5a7626b6cc3563798b44303e8cf922c9d776e6752c1c80fcd03344",
+      "manifestPin": "absent",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "022_governed_imports.sql",
+      "sha256": "0294ba3ef802b53ad158ee98570a79dc713840496bb45d53a4263d3f26ecea9d",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "023_import_authority.sql",
+      "sha256": "8e30b2e65b43de7b39b873b3ee515dd9a44da98a5964d5ae704a66ec8ef2de86",
+      "manifestPin": "absent",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "024_import_customer_cards.sql",
+      "sha256": "8c89ff5faca8443ad45b8d16a3aa32eeb69b4dbbe2184d668cec48df9fe0f4b5",
+      "manifestPin": "absent",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "025_import_batches.sql",
+      "sha256": "fc904ebd3a7fb4ec45e6c78994ed954289c317ab15aefbbae40f3dd687cad9cd",
+      "manifestPin": "absent",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "026_commusoft_inputs.sql",
+      "sha256": "78e885c2bcb815fb7308dc1431155dab3542171abef7db9fe29c23fcd901eeee",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "027_operator_inputs.sql",
+      "sha256": "f8954339b1c5e9d86391160882f6d30081bcf53b1247e6e05d3a79866e3ed6d2",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "028_commusoft_connection.sql",
+      "sha256": "15c41fa4166c4584e768d922ed8d4a2e10a103fd2ecd003074e33cc75597437c",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "029_commusoft_contacts.sql",
+      "sha256": "ad004229c9947b805c30b3985dbcd620c3dc6c5334dd04b9e66eee9b802fe265",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "030_commusoft_resume.sql",
+      "sha256": "b9a7ec6cb4a8d26a1e89c5bfbca5b13259cf5824eddf3313f3cd99e0ecbefd51",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "031_capture_health.sql",
+      "sha256": "180d21a3befd7c97a14d7221a285873060466a9d376afb334d253a08000362c3",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "032_email_capture_evidence.sql",
+      "sha256": "4878e07309ac54650aee5d0e25b0a714e030edd23358e4b9c5b44e2e164d573c",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "033_email_runtime.sql",
+      "sha256": "7f6f701b3a7e38915bd43be895cddbc15b56eed468361b41b16ca4a26e13c100",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "034_operator_health.sql",
+      "sha256": "24ba1a152ff214e261acf717efc63e7d9686ea8e54ec60c4affe882a6b910816",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "035_slack_recurring.sql",
+      "sha256": "51f9aeb95ff9d47e4e2787285a9917b8ee1b85a912ff65bfdd6f1f9f325f25eb",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "036_delivery_progress.sql",
+      "sha256": "0eb27023d25178b07500b9cc9af344069bbc07e65703d10bfb241acd3e484955",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "037_build_investment.sql",
+      "sha256": "cbc7cf46053bb28828f798466e1976ed0107b8724cc4a5d348ec568ab3fcb663",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "038_slack_auto_threads.sql",
+      "sha256": "f5496b9fee5b889f140eb169acac622d10bae8013f513269b41a1b83fa8641ad",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "039_phone_publication.sql",
+      "sha256": "fd2625a9d31f8cf7a99d89b4915796d601ac3b8505ee7da72f03f26185585ee4",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "040_phone_recovery_metadata.sql",
+      "sha256": "1d124044e33984ec4a1ab109fe29e0dc7b73ebaf236a29c8a96804900b0f21b4",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "041_phone_settlement.sql",
+      "sha256": "1cebbbe0f05f4cee9b026663dbc0dc8e2d9f70b2b309b623267156e9bb11fe85",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "042_commusoft_contact_traversal.sql",
+      "sha256": "174dc2d5694a719a81a39488325f94824d7b563e3bcfbaec3aaee3533e6f52c8",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "043_commusoft_mapping.sql",
+      "sha256": "d712f8432c2dd9dabe3f66a316e8ec66f2cd1250a690faceb67e5970f99fa598",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "044_phone_operator_evidence.sql",
+      "sha256": "2f4ab8b1809f9227ca5978c1a136117d640bcae788444a994f0289bb86e9e5f3",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "045_commusoft_review_search.sql",
+      "sha256": "3187b15992bc7ecf8aa99563538a35434aa3920b44a7669fb63b000078f3a1bd",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "046_assessment_recovery.sql",
+      "sha256": "eec755ef0db232b7623af8024a09b55df82179b3c282ff4326fba46f0ed7313e",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "047_job_details.sql",
+      "sha256": "a707572ce30caafd402109c8055b4d7fe1d5f722cf0011a25100869f8e9c75a9",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "048_team_work.sql",
+      "sha256": "fb365f60c88ea0be343c04f2c002f3fb799c55f04384b3e3237cc7e70d9e1fd8",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "049_resumable_work.sql",
+      "sha256": "c02b8b9e3245d19216601bd45b66251d407828305c095e1dd850fdcc01addd03",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "050_working_time.sql",
+      "sha256": "7c739f7100e93669b029974e8fff94bea7e3f1fbe3c730e1ab3032b9c5bd7d83",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "051_card_search.sql",
+      "sha256": "6efd1515cc92f91af5ff67a9f3e4ba4978c1aee7deaa48b9be794f5a58079083",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "052_measurement_receipt_guards.sql",
+      "sha256": "80b346d0c402a97c188324583dcd53cc29892c62c94bfb961ab9931d299de034",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "053_correction_recovery.sql",
+      "sha256": "584948b52e0a2ca6b0c81c05f73bdc3c59b60375070903aa467d7747b47f3343",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "054_email_diagnostic.sql",
+      "sha256": "fc674dd96441f47bd2c0fdda0513591b7b56825baac12fb39248ddb46b4f4496",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "055_phone_processing.sql",
+      "sha256": "2a5b63da46ede92ec2e5c73dd3928e060e1955ae996765696e4dce540310b35c",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "056_phone_operator.sql",
+      "sha256": "aa2655881487fd36190ddb83aebf6af42e8a1bb204a8fbb4aa371a7f3001b546",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "057_phone_playback.sql",
+      "sha256": "7860023117986d2edee6bf34219e94924393ae635f0760ce0dc6890abce91454",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "058_phone_saved_results.sql",
+      "sha256": "5db1c5d77aee1c4e092e06d97d98bed6d5a0d685d769863091428d0ce9f47e9d",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "059_commusoft_partial_job_times.sql",
+      "sha256": "c5e3fbf27b6c5f07a7a96dc2693855e285c3679c8763c8c3eddc29f0959bfdac",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "060_scheduler_health.sql",
+      "sha256": "602d36fdc87514aef784ad4965160a912893ccb4b8a96eef83c13aecfcea1f84",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "061_phone_atomic_handoff.sql",
+      "sha256": "4adc5c61c1949ccff1786c2b3c5c312f78351dcd8528268287c23599ffb53e6b",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "062_identity_delivery.sql",
+      "sha256": "952603e1b8c48721ece91e904a027167c14fd6f1304992a1c545afe1e9197b30",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "063_interaction_projection.sql",
+      "sha256": "55d1422bc2433d6980e5b573501a9b7b35834f1a47f02b5412777669266fdead",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "064_projection_review.sql",
+      "sha256": "b304afabfb748823eb87f47274dcb838a653eb1a494271a51b1a47c831919c92",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "065_identity_review.sql",
+      "sha256": "c78ccc8d65cebe5428055286de0fdc6aa32043a6754b25ef246578d9c3468007",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "066_processing_queue.sql",
+      "sha256": "2357d9fb1da4bed422f812884709ae041822825ad781608addbe9987a83f1f79",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "067_workspace_identity.sql",
+      "sha256": "e7f0b8d735defaf27da1e775b57cf674f0f0a6523f5a5000be3a2adbeb14b81e",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "068_email_mailbox_coverage.sql",
+      "sha256": "ccb31394a7e482321c5a3c72dc78604692c57f5d5371617301881c763b1f4c10",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "069_email_draft_eligibility.sql",
+      "sha256": "b8866b5fbe8206246a7499399f5ab57a0dec24a6860b0e6c713f02d309d1b98d",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "070_card_projection_eligibility.sql",
+      "sha256": "08051f6a44b38f3087ef63bf71cbdaf69fad8cd49cc7f7d1474ce7b22a00ddf7",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "071_email_mailbox_changes.sql",
+      "sha256": "13052f818800ae7aa5b3df1c856a50c8885a180a40d8144e975300813449b4de",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "072_email_retention_health.sql",
+      "sha256": "5060f3f95b86feb1b49c6565029a6f971a60185de0197bff0f2931696079aa66",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "073_voicemail_private_intake.sql",
+      "sha256": "bd7e8bd175d21827b40bcc2eb511c7118f48ef0f3fe85bbf6fdc3209ce069cba",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "074_voicemail_queue.sql",
+      "sha256": "ca067f8fa8d11ef266713ec105a9064461a99258e14b0321d79e6ee542d08c15",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "075_voicemail_discovery.sql",
+      "sha256": "cfd833f9f962322a73d3d0ec516bc5e58d7d4e75d649b9c505a59f8d7c8ed868",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "076_voicemail_dispatch.sql",
+      "sha256": "3d071818ed83407c496ac6b6e25a784a6e976bf63986928d5309a3fcd5bbe355",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "077_voicemail_inbox_history.sql",
+      "sha256": "fa745292ffb7519b612877c36fd2dce83cdf8d9a7dfc0d649987ef035d0c347b",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "078_microsoft_capture.sql",
+      "sha256": "a23d06dfae950da5b63269c66b2017cbff5620edd0ba2edfb7a25b732b2e2bc9",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    },
+    {
+      "file": "079_microsoft_operator_status.sql",
+      "sha256": "7df317acc5bbe98084ae368e5d4296d349a7c98f56c7f8401fed0742a9bbebda",
+      "manifestPin": "matched",
+      "productionExecutionAllowed": false,
+      "hostedReceiptMatched": true
+    }
+  ],
+  "guards": {
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "sourceRowsPublished": 0,
+    "offlineContainerRemoved": true,
+    "productionMigrationPrepared": false,
+    "productionMigrationRehearsed": false,
+    "promotionReady": false
+  },
+  "requiredReview": [
+    "Preserve every production-only object and column; TEST is a partial schema, not a replacement target.",
+    "Review shared-table policy, ACL, trigger, constraint and index changes against existing production clients and writers.",
+    "Resolve migration ownership/dependency conflicts in a production-specific additive package; never execute TEST bundles on production.",
+    "Rehearse the exact package with source fingerprints, roles, trigger behavior and application journeys before promotion approval.",
+    "Refresh the production baseline before execution: this report describes the retained archive, not current live state."
+  ],
+  "limitations": [
+    "Public-schema structure only; this is not a complete cross-schema dependency graph.",
+    "The production archive omits pg_net response/queue rows; full service/Vault recovery remains unproven.",
+    "Function identities include argument names; signature reconciliation needs review before replacement.",
+    "Matching a TEST package hash or receipt proves provenance, not production suitability or successful real-provider acceptance."
+  ]
+}
