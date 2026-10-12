@@ -17,7 +17,21 @@ create function verify.reply(stamp text,body text) returns jsonb language sql as
  select jsonb_build_array(jsonb_build_object('tenant_id','f7000000-0000-4000-8000-000000000001','channel_id','CPROBE',
  'source_external_id','TPROBE:CPROBE:'||stamp,'provider_timestamp',stamp,'thread_timestamp','1767225700.000001','text',body,
  'provider_payload',jsonb_build_object('ts',stamp,'thread_ts','1767225700.000001','text',body))) $$;
+-- Package 007 adds claim-time pause enforcement. The preceding fixture
+-- deliberately left Slack paused; prove that guard before resuming this fixture.
 set request.jwt.claim.role='service_role';set role service_role;
+do $$begin
+ if to_regprocedure('public.learn_capture_job_allowed(uuid,text,jsonb)') is not null then
+  assert (select count(*) from learn_slack_claim_jobs('f7000000-0000-4000-8000-000000000060',1))=0;
+  assert (select j.status='queued' and j.attempt_count=0 from platform_jobs j join slack_thread_imports t on t.initial_job_id=j.id where t.id='f7000000-0000-4000-8000-000000000061');
+ end if;
+end $$;
+reset role;
+-- Synthetic configuration only; the final release requires an enabled input.
+update feature_flags set value='true' where tenant_id='f7000000-0000-4000-8000-000000000001'
+ and flag='learn.inputs.slack.enabled'
+ and to_regprocedure('public.learn_capture_job_allowed(uuid,text,jsonb)') is not null;
+set role service_role;
 do $$declare j platform_jobs%rowtype;t slack_thread_imports%rowtype;cp jsonb;n jsonb;p jsonb;begin
  select * into strict j from learn_slack_claim_jobs('f7000000-0000-4000-8000-000000000062',1);
  select * into strict t from slack_thread_imports where id='f7000000-0000-4000-8000-000000000061';

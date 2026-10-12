@@ -1,0 +1,67 @@
+{
+  "schema": "learn-mailbox-route-recovery/1",
+  "scope": "User-approved single existing Drummonds account only",
+  "transaction": {
+    "state": "applied",
+    "checkedAt": "2026-10-12T06:24:50.46382+00:00",
+    "newStatus": "active_dwd",
+    "oldStatus": "active",
+    "historicalBackfill": "idle",
+    "credentialsUnchanged": true,
+    "oauthAuthStatePreserved": "revoked",
+    "retainedSourceIdentities": {
+      "emails": {
+        "count": 18610,
+        "identityHash": "755fdb89318c0ea8b91b94b54f6e1773"
+      },
+      "threads": {
+        "count": 12862,
+        "identityHash": "9333f634bf5f1e032e6f302175c8d450"
+      }
+    },
+    "otherAccountFieldsUnchanged": true,
+    "sendingPermissionsUnchanged": true
+  },
+  "readback": {
+    "jobs": [
+      {
+        "status": "queued",
+        "job_type": "email.workspace_sync",
+        "created_at": "2026-10-12T06:25:03.634341+00:00",
+        "started_at": null,
+        "next_run_at": null,
+        "completed_at": null,
+        "attempt_count": 0,
+        "records_processed": 0
+      }
+    ],
+    "runs": [
+      {
+        "status": "failed",
+        "fetched": null,
+        "ids_seen": null,
+        "sync_type": "messages",
+        "error_code": "refresh_token_revoked",
+        "started_at": "2026-10-12T06:25:03.277+00:00",
+        "completed_at": "2026-10-12T06:25:03.435+00:00",
+        "records_processed": 0,
+        "threads_processed": null
+      }
+    ],
+    "account": {
+      "status": "active_dwd",
+      "auth_state": "revoked",
+      "backfill_status": "idle",
+      "backfill_total_fetched": 0
+    },
+    "sources": {
+      "emails": 18610,
+      "identityHash": "755fdb89318c0ea8b91b94b54f6e1773"
+    },
+    "checkedAt": "2026-10-12T06:28:56.278868+00:00"
+  },
+  "captureVerified": false,
+  "historicalBackfillStarted": false,
+  "productionReleaseApplied": false,
+  "remaining": "Observe the queued Workspace job to terminal completion. The older queued OAuth job still reported its revoked token; this does not establish failure of the new Workspace job."
+}

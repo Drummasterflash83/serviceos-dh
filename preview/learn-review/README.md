@@ -65,6 +65,18 @@ node node_modules/vite/bin/vite.js build --config preview/learn-review/vite.conf
 node node_modules/typescript/bin/tsc --project preview/learn-review/tsconfig.json --noEmit
 ```
 
+Serve the built review on its reserved port:
+
+```sh
+node node_modules/vite/bin/vite.js preview --config preview/learn-review/vite.config.mjs --host 127.0.0.1 --port 47871 --strictPort
+```
+
+Keep port **47871** for this synthetic review. The actual TEST application's server
+uses **47872** (`scripts/verify/learn-test-ui-server.mjs`). Serving the root
+application on 47871 leaves existing review tabs requesting missing hashed assets.
+After restarting or rebuilding, refresh the review tab before testing navigation.
+Modules and other out-of-scope views show a preview notice, not a live journey.
+
 Output:preview/learn-review/dist. Local evidence server is outside tracked source at /workspace/OF-LEARN-POLISHED-UX-EVIDENCE/serve.py, bound to127.0.0.1:47871 only. It serves /client?section=learn and /operator-review as SPA entries. Localhost is not a shareable URL. Proposed test.openfolk.ai is unprovisioned/unverified here. There is no Vercel config, push, external write or deploy in this candidate; production app.openfolk.ai is unchanged.
 
 Live client reference identified as libfile_115bded7f1f48191be343257fe59b2ff. Library pixel read returned unavailable and authorized materialization failed before local bytes; no alternate download or network-policy change attempted. Visual grounding uses exact13b554 source and Conductor's verified live description. Direct live pixel comparison and the admin reference remain pending. External fonts omitted; installed fallback font rendering is qualified.

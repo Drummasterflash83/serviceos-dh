@@ -1,6 +1,14 @@
 # Existing Workspace route for the revoked Gmail account
 
-Status: prepared and verified read-only; **not applied to production**.
+Status: **approved and applied to production at 06:24:50 UTC on 12 October**;
+committed route confirmed at 06:26 UTC. Scheduled provider outcome pending.
+
+The guarded transaction preserved credentials, revoked OAuth evidence, all other
+account fields and sending/connector permissions. It preserved the identities of
+18,610 emails and 12,862 threads. Backfill remains idle. The normal 06:25 scheduler
+queued a Workspace capture job for this account. Queue admission is not evidence
+of a successful provider run. The proposal and rollback below record the approved
+scope; the earlier read-only evidence remains a historical pre-change observation.
 
 One existing Drummonds Gmail account has a revoked individual OAuth refresh token.
 Its corresponding Workspace mailbox is already active and enabled under the
@@ -9,7 +17,7 @@ matches that stored connection. On 12 October at 06:06 UTC, one token request wi
 `gmail.readonly` and one Gmail profile request succeeded with an exact mailbox
 identity match. Google reported 78,124 messages. No message content was requested.
 
-## Proposed live recovery
+## Approved live recovery
 
 Change only this existing account's routing status from `active` to `active_dwd`,
 using its current tenant/account identity and a guarded transaction. Retain the
@@ -58,3 +66,5 @@ any newly captured messages and all job evidence. The old OAuth route remains
 revoked, so that rollback restores the earlier configuration, not healthy capture.
 
 [Sanitised verification evidence](evidence/learn-mailbox-workspace-recovery-2026-10-12.json).
+
+[Applied transaction and scheduled-job observation](evidence/learn-mailbox-route-applied-2026-10-12.json).

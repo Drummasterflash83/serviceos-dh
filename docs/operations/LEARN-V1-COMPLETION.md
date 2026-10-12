@@ -7,22 +7,36 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**12 October, 06:06–06:09 UTC — existing Workspace access can reach the revoked-token mailbox.**
-Its already-enabled Workspace mailbox, tenant/domain and stored service-account
-identity match. One read-only token and one profile request succeeded with exact
-mailbox identity; Google reported 78,124 messages. No new sign-in or credential
-is presently needed to prove this alternative access. The account remains routed
-through revoked individual OAuth, so live capture is not repaired yet.
+**12 October, 06:24–06:26 UTC — approved single-mailbox Workspace repair applied.**
+Chris approved the reviewed one-account recovery. One guarded production transaction
+changed its existing route from individual OAuth to Workspace (`active_dwd`).
+Credentials, revoked OAuth evidence, other account fields, sending permissions and
+all 18,610 retained email / 12,862 thread identities were preserved. Historical
+backfill remains idle. Readback confirmed the committed route, and the normal
+06:25 scheduler queued `email.workspace_sync`. Its terminal provider outcome still
+needs observation; a queued job does not establish restored capture or full history.
+No other mailbox, LEARN release, source history or credential was changed.
+[Recovery record](LEARN-MAILBOX-RECOVERY.md).
 
-The production archive passed an offline account-routing change and reversal,
-preserving other account fields. Current downloaded worker/scheduler code confirms
-the proposed Workspace route; backfill is idle and would remain idle. A second offline rehearsal checked all 299 archived tables (1,591,576 rows)
-and five sequences: apart from the account routing/timestamps, only a connector
-timestamp changed; sending permissions and other source data were preserved.
-Fresh live preflight and approval remain required before applying this repair. No production mutation was made. This verifies access and a recovery
-option, not complete messages-to-cards coverage or V1 acceptance.
-[Prepared recovery](LEARN-MAILBOX-RECOVERY.md) and
-[sanitised evidence](evidence/learn-mailbox-workspace-recovery-2026-10-12.json).
+**12 October — all fourteen candidate packages passed a combined offline rehearsal.**
+The final schema passed 54 journey invocations across Microsoft, voicemail,
+input-to-card, scoring, Slack, capture controls, imports, Commusoft, email, Phone
+and cards, including the real two-session pause/admission race. All 299 archived
+tables (1,591,576 rows) and five sequences were preserved. Negative package guards,
+roles and Storage checks passed; the network-isolated container was removed.
+The first attempt exposed a Slack fixture still paused under the later capture
+controls. The corrected fixture proves paused claims do not consume attempts,
+then explicitly resumes its synthetic source. No product guard was weakened.
+This is local synthetic acceptance against the complete candidate schema, not
+hosted sign-in, real-provider coverage or permission to promote production.
+[Sanitised combined evidence](evidence/learn-combined-release-rehearsal-2026-10-12.json).
+
+**12 October — local review Modules loading repaired.**
+The application development server had occupied port 47871, while an open synthetic
+review tab still referenced its built assets. Restored the documented review server
+and verified LEARN → Modules navigation. Modules displays its existing scope notice;
+this review does not implement the full signed-in Modules journey. Reserve 47871
+for this review and 47872 for the real TEST application. No live deployment changed.
 
 **12 October, 06:04 UTC — production email failure narrowed to one OAuth account.**
 A read-only follow-up joined bounded queue failures to account metadata. All seven
@@ -1968,11 +1982,11 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   or capturing. Production package 014 adds combined-archive compatibility,
   including the legacy Marketing OAuth-trigger dependency fix; hosted deployment
   of this additional compatibility fix still requires its own reviewed rehearsal.
-- [ ] **Connections catalogue accuracy:** reconcile the general OpenFolk Connections
-  panel's older “adapter not implemented”/“planned” labels with deployed adapter
-  availability, while keeping account authorisation, active capture and measured
-  coverage separate. The dedicated Microsoft status panel does not by itself
-  correct the general catalogue. Verify these states in the signed-in controller.
+- [ ] **Connections catalogue acceptance:** the older adapter labels and unsupported
+  inactive/disconnected claims are corrected locally (12 October). Twelve projection
+  tests, TypeScript, build and the synthetic browser pass. Hosted deployment and
+  signed-in controller navigation/status verification remain open; available adapter
+  code is not proof of authorised accounts, active capture or complete coverage.
 - [ ] **Performance inputs:** finish source-backed response-time, job progression,
   repeat-visit and driving adapters where sources exist. Establish staff identity,
   team membership, calendars and reviewable calculation rules using Drummonds data.

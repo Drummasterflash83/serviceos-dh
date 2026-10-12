@@ -52,7 +52,7 @@ def verify_journeys(target):
     return results
 
 
-def run():
+def run(*, additional_journeys=None, synthetic_vault=False):
     OUT.mkdir(mode=0o700,exist_ok=False)
     report={'state':'preflight','productionChanged':False,'hostedTestChanged':False,'providerRequests':0,
         'fullReleaseAccepted':False,'signedInAcceptance':False}
@@ -64,7 +64,7 @@ def run():
             if hashlib.sha256(s.encode()).hexdigest()!=m['sha256']:raise RecoveryError('Candidate pin differs')
             packages.append((m,s))
         report['packages']=[m['sha256'] for m,_ in packages]
-        target=RestoreSandbox(image=IMAGE,network_extension=True,storage_policy_hook=True,private_diagnostics=OUT/'private-error')
+        target=RestoreSandbox(image=IMAGE,network_extension=True,storage_policy_hook=True,synthetic_vault=synthetic_vault,private_diagnostics=OUT/'private-error')
         with target:
             if target.image_id!=PINNED_IMAGE:raise RecoveryError('Image pin differs')
             prepare_archive_roles(target,json.loads((ROOT/'source-inventory.json').read_text()))
@@ -214,6 +214,8 @@ def run():
                 report['duplicateRejected']=True
             else:raise RecoveryError('Duplicate accepted')
             report['journeys']=verify_journeys(target)
+            if additional_journeys is not None:
+                report['combinedJourneyGroups']=additional_journeys(target)
             report['containmentAfter']=target.verify_boundary()
         report['containerRemoved']=target.cleaned;report['elapsedSeconds']=round(time.monotonic()-started,2)
         report['state']='production_microsoft_capture_rehearsed_offline'

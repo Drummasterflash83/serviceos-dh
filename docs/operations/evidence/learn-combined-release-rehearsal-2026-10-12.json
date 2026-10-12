@@ -1,0 +1,536 @@
+{
+  "schema": "learn-combined-release-rehearsal/1",
+  "date": "2026-10-12",
+  "state": "passed_offline",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "fullReleaseAccepted": false,
+  "signedInAcceptance": false,
+  "journeyInvocations": 54,
+  "packages": [
+    "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+    "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+    "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+    "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+    "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+    "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+    "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+    "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+    "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+    "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+    "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+    "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+    "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba"
+  ],
+  "containmentBefore": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "negativeChecks": [
+    "wrong_target",
+    "catalog_drift",
+    "storage_drift",
+    "bucket_drift",
+    "late_failure"
+  ],
+  "roleAttributesAndMembershipsUnchanged": true,
+  "storageCatalogAndPrivateBucketPreserved": true,
+  "protocolRoleGrantsExact": true,
+  "privateReaderNoLoginNoApplicationMembership": true,
+  "legacyColumnsAndCatalogPreserved": true,
+  "noInventedHistoricalEvidence": true,
+  "sourcePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+  },
+  "duplicateRejected": true,
+  "journeys": [
+    {
+      "name": "microsoft-capture-to-card-and-operator",
+      "sources": [
+        {
+          "path": "scripts/verify/learn-microsoft-hosted-probe.mjs",
+          "sourceSha256": "707407889973548cce657071e0c6d912699e2721144cc31fa578cc8b2a7e5fab",
+          "generatedSqlSha256": "bb4f5de5c5e25951ee74b5a13e2de0aa4b5f7c37313db596729df7b74b132551"
+        },
+        {
+          "path": "scripts/verify/learn-microsoft-projection-probe.mjs",
+          "sourceSha256": "6755255b7a44b202d83b6894fa83326af05e02ba7a97a0a9fb46de624bc47438",
+          "generatedSqlSha256": "1b2f4c156b33a058fd9743c011c14a875b863ceecea9fd70514c3733b7d66ef3"
+        },
+        {
+          "path": "scripts/verify/learn-microsoft-card-probe.mjs",
+          "sourceSha256": "fd00888365387fe8c0e74a04a4c829305c77fa8a4dc7d649ba94daec06bf8816",
+          "generatedSqlSha256": "5093860b34d981098ec1f28a0ccc971bd56324d07a6584f51ae4960b4e5f96df"
+        },
+        {
+          "path": "scripts/verify/learn-microsoft-discovery-probe.mjs",
+          "sourceSha256": "5dde99410dcd9fcfe388dd7ccbcf224b47cffd13e54c0fb7a4c28422d86cbe8e",
+          "generatedSqlSha256": "022338f546f86ef75f44d4b68580b6288f8873587d59aa3e099d4e06e11e6aec"
+        },
+        {
+          "path": "scripts/verify/learn-production-microsoft-worker-probe.mjs",
+          "sourceSha256": "337dba4931360f00974182d982ef97f494c7ad3cfd76a1c07fa4157b490c803e",
+          "generatedSqlSha256": "3ff99305984e32cc0cdb3d8b0aa8ae0391ec1873b77be57f2c3ec8379d8a3b39"
+        },
+        {
+          "path": "scripts/verify/learn-microsoft-status.assert.sql",
+          "sourceSha256": "03c35b5ec52a07112463a875bf87171e0e0a1481fa687a11bfb29ef01560289e",
+          "generatedSqlSha256": "03c35b5ec52a07112463a875bf87171e0e0a1481fa687a11bfb29ef01560289e"
+        },
+        {
+          "path": "scripts/verify/learn-production-microsoft-claim.assert.sql",
+          "sourceSha256": "e341a1cabc49e567290f1daa46c494aed82a7cc5b664ce1864212ed2fa3f2f8a",
+          "generatedSqlSha256": "e341a1cabc49e567290f1daa46c494aed82a7cc5b664ce1864212ed2fa3f2f8a"
+        }
+      ],
+      "probeSha256": "2f3442e016106460c3b21a545141bede7f37f6991c6b42d36d04ad6937a0553b"
+    },
+    {
+      "name": "learn-production-voicemail-journey.assert.sql",
+      "sources": [
+        {
+          "path": "scripts/verify/learn-production-voicemail-journey.assert.sql",
+          "sourceSha256": "95ef90aa6c758a07edca1b4ef2b1d01cf82edbe114fa68b6dd693be15781d335"
+        }
+      ],
+      "probeSha256": "a2c4dad2cd5403ffe95e41e969fd72ae08a53bd128b246cd8ca876030bc406a4"
+    },
+    {
+      "name": "learn-production-input-to-card.assert.sql",
+      "sources": [
+        {
+          "path": "scripts/verify/learn-production-input-to-card.assert.sql",
+          "sourceSha256": "840019909e9082479f6c8112c92f9bac7f297a12b39ece2244d375e7e79d19f2"
+        }
+      ],
+      "probeSha256": "a2f57f061087095116e2cd29970856eac376f6dbb34c89e0b9afacaa1674e203"
+    }
+  ],
+  "combinedJourneyGroups": {
+    "groups": [
+      {
+        "group": "scoring",
+        "runnerSha256": "4ce263ad71ff7a7f76d419cdddfcc430e1fe79239c779443cb4f163430d139f3",
+        "journeys": [
+          {
+            "path": "scripts/verify/learn-work-residence.assert.sql",
+            "sourceSha256": "920ce216aa429d9cfa0e93b57ce6f5fb60c78127a69ae02a8d317d3a314a8b8f",
+            "probeSha256": "7b3bb45401d6564b8a9403679487afc853041f9a80febce89f386473644d592e"
+          },
+          {
+            "path": "scripts/verify/learn-team-work-residence.assert.sql",
+            "sourceSha256": "aa56eec5c0688e85031c88ec1f41e3d7805a8b8242af9119a2e5db96615ee8d0",
+            "probeSha256": "cd9dc542b209d7909c403659d2928851ca46d2b97f440ffd826be6386f8becb7"
+          },
+          {
+            "path": "scripts/verify/learn-resumable-work.assert.sql",
+            "sourceSha256": "6667e5e9e38f45f746c73aa108dd154bf615f526037f10d9a81003a7fb39c4d4",
+            "probeSha256": "373f65c4ba92b491af72e4394d8d655315ec24c4c0eb1806f8615d1ab9365a46"
+          },
+          {
+            "path": "scripts/verify/learn-work-calendars.assert.sql",
+            "sourceSha256": "91ac1cfa46a8eac0500e5accaa4846193f2866d7e9d439335ed7271b7417f2f4",
+            "probeSha256": "32336297e2d53f9cb844b24319ffb35b3be02b1c4cdcd7ce313e5bd664f2317c"
+          },
+          {
+            "path": "scripts/verify/learn-work-calendar-recovery.assert.sql",
+            "sourceSha256": "4b881579b80d58a5ed99d662d47a6e95c2eb6d14ce519b8c24d32708f38d1b4e",
+            "probeSha256": "169ebd0196d23414ec39bd2ffba4c2b7d38ed98505fa661b575eec272f37bb45"
+          },
+          {
+            "path": "scripts/verify/learn-work-delays.assert.sql",
+            "sourceSha256": "dbec6ba875ee4fe4a435861db08cc6278648696e8e877ec7e54a15dd921bf9a2",
+            "probeSha256": "c8efa05edc2507cecd24e8127566c184a955d1b4543a62dedd7329bc84ccc380"
+          },
+          {
+            "path": "scripts/verify/learn-working-time.assert.sql",
+            "sourceSha256": "8ef64a69157d34fdec64bf6058cfae3449bef7d68a1693975cea1c529a9da249",
+            "probeSha256": "54d22c606b785e7c6e56f890fd88508e535106e539a63b2429e49497e9df06a3"
+          },
+          {
+            "path": "scripts/verify/learn-working-collection.assert.sql",
+            "sourceSha256": "f8ca72c4be4e9c525484c7e6f4c2d137a4e91d80fc225cff42a46c9ec6cfd9f2",
+            "probeSha256": "09b233f7caaaeff100c61572b9886d9c51c7d2cf6b3d66df7562c8d24f22dde4"
+          },
+          {
+            "path": "scripts/verify/learn-working-rule-change.assert.sql",
+            "sourceSha256": "bf3e4d73510d3f8d811c62dd7d03b7f290c0fc99e29feb8146e32f55121c372c",
+            "probeSha256": "bf3e4d73510d3f8d811c62dd7d03b7f290c0fc99e29feb8146e32f55121c372c"
+          },
+          {
+            "path": "scripts/verify/learn-working-corrections.assert.sql",
+            "sourceSha256": "d7dc2a75e7d0e3a7e0cecae82bdea21eb14953d2ed7031aecfde87a6e4073fb4",
+            "probeSha256": "d7dc2a75e7d0e3a7e0cecae82bdea21eb14953d2ed7031aecfde87a6e4073fb4"
+          },
+          {
+            "path": "scripts/verify/learn-working-correction-recovery.assert.sql",
+            "sourceSha256": "b976bb443d45655367c51f723a83246602c235758b4a82a8ae30733815c3d4a6",
+            "probeSha256": "b976bb443d45655367c51f723a83246602c235758b4a82a8ae30733815c3d4a6"
+          },
+          {
+            "path": "scripts/verify/learn-production-scoring.assert.sql",
+            "sourceSha256": "ea8eed8df06185613b868d1631683162d3e191376c5bd49c9f0944fa56e66462",
+            "probeSha256": "ea8eed8df06185613b868d1631683162d3e191376c5bd49c9f0944fa56e66462"
+          }
+        ],
+        "fixtureDatabasesRemoved": [
+          "learn_scoring_journeys"
+        ]
+      },
+      {
+        "group": "slack",
+        "runnerSha256": "4c3cddf682f5e6586f042df4d25ebbe649339cbc197255cfb1c8ae17920aa2b0",
+        "journeys": [
+          {
+            "path": "scripts/verify/learn-production-slack.assert.sql",
+            "sourceSha256": "f3487eba7d010845e6abb86bcd332da2a25e19a65c6311269b7bc55b1d563d88",
+            "probeSha256": "f3487eba7d010845e6abb86bcd332da2a25e19a65c6311269b7bc55b1d563d88"
+          },
+          {
+            "path": "scripts/verify/learn-production-slack-threads.assert.sql",
+            "sourceSha256": "650ba2d9b2d7b326ae66ea2d9d39655bde4e8d84e7c44deede37744c24c649de",
+            "probeSha256": "650ba2d9b2d7b326ae66ea2d9d39655bde4e8d84e7c44deede37744c24c649de"
+          }
+        ],
+        "fixtureDatabasesRemoved": [
+          "learn_slack_journeys"
+        ]
+      },
+      {
+        "group": "capture",
+        "runnerSha256": "91dde8d3f73e58d99013f1420a3d0b8e9b906c3b5703b4fbb515a2db0744ba1c",
+        "journeys": [
+          {
+            "path": "scripts/verify/learn-production-capture.assert.sql",
+            "sourceSha256": "d0ba56e62e6819d98acfc1612c189eb25a7f4fd63bdd6c9764ffbe1e89977e53",
+            "probeSha256": "d0ba56e62e6819d98acfc1612c189eb25a7f4fd63bdd6c9764ffbe1e89977e53"
+          }
+        ],
+        "pauseAdmissionRace": {
+          "operatorTransactionObserved": true,
+          "waitingAdmissionDenied": true,
+          "scope": "Offline synthetic tenant; actual operator request and admission functions."
+        },
+        "fixtureDatabasesRemoved": [
+          "learn_capture_journeys"
+        ]
+      },
+      {
+        "group": "imports",
+        "runnerSha256": "30afc1a75a25e99e3ae442fa4dabf86e80fa8b63a5388c83aae87aaf653d1bc2",
+        "journeys": [
+          {
+            "path": "supabase/tests/commusoft_import.test.sql",
+            "sourceSha256": "662998e55202e0c77bae5f2268b4f7beb073b17e2dbd37a7c69a3d85733ce5d2",
+            "probeSha256": "c00a28da84caf3bd885a97aae179412e7acf0604f1ddc556ae7ed34e75147dde"
+          },
+          {
+            "path": "scripts/verify/learn-import-authority.assert.sql",
+            "sourceSha256": "699f01b1d6615bcc5e2c3b030aec15421bbc939c53421f1ed19166ab436e1716",
+            "probeSha256": "2bacbd10652fd9df8abdb6d7101aa09793e4d04fe8fa318ea8079e79f2ddc5f2"
+          },
+          {
+            "path": "scripts/verify/learn-import-cards.assert.sql",
+            "sourceSha256": "08ceb58cf8b96023045e89c7d135551b23c68539348b734d97a84d48af747bbd",
+            "probeSha256": "2d817294b0036f76db32a038537c8d344b6fb71c836518a8b82188d4ae03193d"
+          },
+          {
+            "path": "scripts/verify/learn-import-batches.assert.sql",
+            "sourceSha256": "e795d5a385e85f530e01353c818d8fcf85b98167d82255d3c77dffc975e4541a",
+            "probeSha256": "2e3b67ae62e6a2daa3b222d02a2f1a98996cc2f31b4e479117b7c64109d57bd7"
+          }
+        ],
+        "fixtureDatabasesRemoved": [
+          "learn_import_journeys"
+        ]
+      },
+      {
+        "group": "commusoft",
+        "runnerSha256": "508dc331495a7fac20a5599916e6b0b4ddae271ee75b5e5a3cd0043915a18ec1",
+        "journeys": [
+          {
+            "path": "scripts/verify/learn-commusoft-setup-projection.assert.sql",
+            "sourceSha256": "2ead3537c6cbe9ca7e46a4eb42aad79ca9f27ae6ac98e8821f4c6d7c11dfb8a4",
+            "probeSha256": "871b653feab0affa1bcc11b26b1dc723307060c6f9cdc64120d51458c240e4e4",
+            "additionalSources": []
+          },
+          {
+            "path": "scripts/verify/learn-commusoft-contact-traversal.assert.sql",
+            "sourceSha256": "3957047c85032f2543b2dab2534a514cf7a60da3993e0ad54b46f87320652be2",
+            "probeSha256": "1ba356b3222492c0f794b5235e4a336c8421dcbda08331954ed14a3091653bab",
+            "additionalSources": [
+              {
+                "path": "scripts/verify/learn-production-commusoft.fixture.sql",
+                "sha256": "fdcf5ee08f2e10ed490daf601cf2b59652d64b4ef5b797154eeed004fbab83ae"
+              },
+              {
+                "path": "scripts/verify/learn-production-commusoft-card.assert.sql",
+                "sha256": "9997271bb074cccfc75143ca0cef7c4e7db5ec7464ac66bead6aa056eb294370"
+              }
+            ]
+          },
+          {
+            "path": "scripts/verify/learn-commusoft-contact-traversal-hosted.assert.sql",
+            "sourceSha256": "4092bb9f3e752bef53102d48f009fbc23bbbab93367e2183d30714be05b02106",
+            "probeSha256": "375587ae31f6c1d0faeac130c1e42dd4fae519faeb7eb489927af823e34340d3",
+            "additionalSources": []
+          },
+          {
+            "path": "scripts/verify/learn-commusoft-mapping-hosted.assert.sql",
+            "sourceSha256": "778f89f1f14cd53e419105f88e01df59963e1354315996b51d7a5cd8d98d6041",
+            "probeSha256": "0fc0d633c49dc3b95a9eb1e0032d74ac0533656b7a2761494bd6ba98f2376fd1",
+            "additionalSources": []
+          },
+          {
+            "path": "scripts/verify/learn-commusoft-partial-times-hosted.assert.sql",
+            "sourceSha256": "99d13a5151f95613fa4308c22f1befa1f9b5ad5b489f2dade2e9a73c9cdc274e",
+            "probeSha256": "bdfd6d1fec025f4a5583b586711e82e70d06527892c85e6755f6b6622f99f838",
+            "additionalSources": []
+          },
+          {
+            "path": "scripts/verify/learn-commusoft-contacts-projection.assert.sql",
+            "sourceSha256": "a49e2b81e2433ffc5a026bdacb7f5eb27823157709951e22c90797df8d79bb69",
+            "probeSha256": "df0474999d6f61ca19d69f565eb505e6b67bd07057f0ff2ae5bdb689d29dae1c",
+            "additionalSources": []
+          },
+          {
+            "path": "scripts/verify/learn-production-commusoft-guard.assert.sql",
+            "sourceSha256": "6ac34aaf484d71358ced1c59b4679815314be61d483e39484725dec1c0ddc87f",
+            "probeSha256": "d446388235d23ce4c186629b39cacd0c471c1ee1d751c1960d17637d75cb23d0",
+            "additionalSources": []
+          }
+        ],
+        "fixtureDatabasesRemoved": [
+          "learn_commusoft_journey_0",
+          "learn_commusoft_journey_1",
+          "learn_commusoft_journey_2",
+          "learn_commusoft_journey_3",
+          "learn_commusoft_journey_4",
+          "learn_commusoft_journey_5",
+          "learn_commusoft_journey_6"
+        ]
+      },
+      {
+        "group": "email",
+        "runnerSha256": "a2e4a6b4fbb3af6e5a9975d4e2fe8206e91b8884a5aa9a964b47bc6b3c62fe5e",
+        "journeys": [
+          {
+            "path": "scripts/verify/learn-production-email.assert.sql",
+            "sourceSha256": "7ff5aa604611b38b152849b2e69968a424f5a4486b6c24f1ce7580dcee2dbc49",
+            "probeSha256": "16531a6aa335aa2bdd6198d754b3b4c704f829bbb58a3190729743122e0b6f23"
+          },
+          {
+            "path": "scripts/verify/learn-production-email-coverage.assert.sql",
+            "sourceSha256": "3ba7d9b6aedd25eb392825612b2f4c0db2a1907eb9cbdc9aed8b950aa6f8f4df",
+            "probeSha256": "cebdd058852565d5755d73301e8fc820f14a69919864f1ad16d46530785e609b"
+          },
+          {
+            "path": "scripts/verify/learn-production-email-recovery.assert.sql",
+            "sourceSha256": "d63be0a389b28f3fae801022610a0157c09cc515b4890aba0a4ba274cc0776d3",
+            "probeSha256": "88cab4e43a854caf598f683238194afaa1d9268e0d5f244d05efa2478ab8da8e"
+          },
+          {
+            "path": "scripts/verify/learn-workspace-identity-probe.sql",
+            "sourceSha256": "eaffb5c93a9859fb1edf5eb505b00a379364dfa53ad06945d1aded35488e4c44",
+            "probeSha256": "8ed9dde0c072b06a58badf249c327ca97dc21b271387d09a81988210d013a12b"
+          }
+        ],
+        "fixtureDatabasesRemoved": [
+          "learn_email_journey_0",
+          "learn_email_journey_1",
+          "learn_email_journey_2",
+          "learn_email_journey_3"
+        ]
+      },
+      {
+        "group": "phone",
+        "runnerSha256": "a89a88a0bb8175be907242ef443989317e68dd80fac2530862da8ef9084f8d12",
+        "journeys": [
+          {
+            "path": "scripts/verify/learn-phone-publication-hosted.assert.sql",
+            "sourceSha256": "71771ccc27f2afe8eeefb837b92d8e61f4c2bf6443a6db7f73ae6a409d296ed7",
+            "probeSha256": "1309abc09f78b23f116faf313643287dd5d9964557f9ad7361284a01c9284647"
+          },
+          {
+            "path": "scripts/verify/learn-phone-settlement-hosted.assert.sql",
+            "sourceSha256": "96059fb4366c77f5b3f8daf9e1b3c98aefe601590997d5d8b48c749a2ccc8ef7",
+            "probeSha256": "e1df2d4a3f7c0d9141b81cf4e82d27490656b22930dcc09973e76edd0371d604"
+          },
+          {
+            "path": "scripts/verify/learn-phone-health-hosted.assert.sql",
+            "sourceSha256": "49a40049da3d354892c112faddbcdd95d04c2b45cc6c99cad809321a61d9ca3b",
+            "probeSha256": "c3679a8f8109d4a072c85d93b153e975192e344b81d597c9af73d1ea83b675d1"
+          },
+          {
+            "path": "scripts/verify/learn-production-phone-operator.assert.sql",
+            "sourceSha256": "727a8de2c62dec04e29ceb12501b4ed3300d72cf9b2788b5c37aadecf274b3c4",
+            "probeSha256": "38a4114ae1f4e5bb035d13902e7c0ee24a09db6223b587369507c0bf9bab5aef"
+          },
+          {
+            "path": "scripts/verify/learn-production-phone-download.assert.sql",
+            "sourceSha256": "a5ca939e09391548484c98904f657ed7b26dab933037e11129e8a7a48b905b48",
+            "probeSha256": "ac2fe9483daab2d3e4094bee98ca7c91be8724eac51e4f7bb94736fd5c26f742"
+          },
+          {
+            "path": "scripts/verify/learn-production-phone-saved-results.assert.sql",
+            "sourceSha256": "303cf511a7dbf86d1fb510b12c815ce4bf8596436803cbb72cd0a13d0ee06604",
+            "probeSha256": "41e56df5710b4ea1400ececdeb3ac91d1f4a6052a9fcda448620e57c49cf08bb"
+          },
+          {
+            "path": "scripts/verify/learn-production-scheduler-health.assert.sql",
+            "sourceSha256": "fe77ba750f166ed422bb1ef665160df36935f7cffc3359811842082760658bc9",
+            "probeSha256": "ae65df76f95bacb928ed894a687e23b4c5e62eb8675d734e5c99b4c190a6e2d3"
+          },
+          {
+            "path": "scripts/verify/learn-production-capture-health.assert.sql",
+            "sourceSha256": "7f2ee0e9aa9fcb97eb76c0660f55d617e201927edc85c320c0bd1b87d4f6d675",
+            "probeSha256": "5923fbe0206fcf27ba747528845fe9f8672f372c453430f4c26929968583c7f7"
+          },
+          {
+            "path": "scripts/verify/learn-production-phone-handoff.assert.sql",
+            "sourceSha256": "9ea34891c5003ea52752e7ac84d78e7548c91f8e28e08b38f4c15847a3e1dda3",
+            "probeSha256": "c9063992a932a17501141d11cec2645840ea918c19ad175557a1bc86c26f5866"
+          },
+          {
+            "path": "scripts/verify/learn-production-phone-playback.assert.sql",
+            "sourceSha256": "2fc50efa211258bbc8169f3a1e4d02ca10807f6f7ad58e785bef5ea928278656",
+            "probeSha256": "19e8c47260e9dd11f13fd7101ead102b101c63fdcde8d9b65ede566a7936a614"
+          }
+        ],
+        "fixtureDatabasesRemoved": [
+          "learn_phone_journey_0",
+          "learn_phone_journey_1",
+          "learn_phone_journey_2",
+          "learn_phone_journey_3",
+          "learn_phone_journey_4",
+          "learn_phone_journey_5",
+          "learn_phone_journey_6",
+          "learn_phone_journey_7",
+          "learn_phone_journey_8",
+          "learn_phone_journey_9"
+        ]
+      },
+      {
+        "group": "cards",
+        "runnerSha256": "01f0da1bece25a25033240c2df39c7b6411b784905047efd97bf9f74fb193b8a",
+        "journeys": [
+          {
+            "path": "scripts/verify/learn-identity-delivery.assert.sql",
+            "sourceSha256": "f1032038abac2cd82798c6fa47343162218519f06ba45ff738abd1ac3d650a50",
+            "probeSha256": "976e5955898eeb3e8c3cb18ca28508ff7ec3e32f59a43e84082a7459b1cd180f"
+          },
+          {
+            "path": "scripts/verify/learn-production-interaction-projection.assert.sql",
+            "sourceSha256": "85b763f4ed6983d2c56d87877d5e46595c09ffe704b977a7c61db1e826252680",
+            "probeSha256": "aa5490764b988591176a44518e65c1d366ef68021a19d8e2ac48e5c8cfb3168e"
+          },
+          {
+            "path": "scripts/verify/learn-production-projection-review.assert.sql",
+            "sourceSha256": "f7b158ea8d72bf1eb11ebcf11d71d4669856976922c8bd792467b80236e152fa",
+            "probeSha256": "8a2c2292b6217e872b0c7af03eb54ad99d34b79e471f0ccf9d08039651f0247a"
+          },
+          {
+            "path": "scripts/verify/learn-identity-review.assert.sql",
+            "sourceSha256": "bbf05fc1c64c33a1d6c35a60ada577e990b8fbdede680b667104a3211a8acfda",
+            "probeSha256": "5dea981232c6dd44997ebc20e181c30c9275ae8c4eb80e8cedb7d462087d9004"
+          },
+          {
+            "path": "scripts/verify/learn-processing-queue.assert.sql",
+            "sourceSha256": "24957c663215128af6faf498ff8b3cb142e0c047bd8b2e77d535a22ac679b8c6",
+            "probeSha256": "a9432c70e787404d44cebb94badaa602de555de4ac67a57e813af695f8386f33"
+          },
+          {
+            "path": "scripts/verify/learn-production-email-draft.assert.sql",
+            "sourceSha256": "e375208915cdacd9f2c8d663cb4ac4e4d17d9ddf26e5163d62661ab60b4f425c",
+            "probeSha256": "3b465f8dc4915150b6d56edffe3d259726517eebf121a9098b673cb5fa989a58"
+          },
+          {
+            "path": "scripts/verify/learn-production-card-draft.assert.sql",
+            "sourceSha256": "59d391d2a036b35d7e002cc3886fb1f09b57bf89be4741301a1d556a953213fe",
+            "probeSha256": "025fa69b5584aac0c34d6cb19d41c45058890a9006704a92049b3227444c53cb"
+          },
+          {
+            "path": "scripts/verify/learn-production-card-readers.assert.sql",
+            "sourceSha256": "bc48185cafe8969b7238521b1f51c3adfae5a1b17793b433d877c3c5a391e746",
+            "probeSha256": "a7ab2bef98291538d72b9b07fb3bf288f512d6a2e446fc0a21c1ae925d208ed1"
+          },
+          {
+            "path": "scripts/verify/learn-production-card-search.assert.sql",
+            "sourceSha256": "da4ef3be6aea31f13cace63d3c30a9a6584eb768408cfc8aaf4b9f21ed3232c2",
+            "probeSha256": "f71e04880175e0c433dd77ff784172c9905e47ca39664d1bdc3a4204490bce75"
+          },
+          {
+            "path": "scripts/verify/learn-card-search-hosted.assert.sql",
+            "sourceSha256": "1ea6c8500d780bb36c414c9124f892d6c8bd9fcb5f76fb7e25dd8af7282adeeb",
+            "probeSha256": "a38e512e741a307f586573d75c3ed7a6251db3820d56668f4c52a23ad4b1b6b6"
+          },
+          {
+            "path": "scripts/verify/learn-production-input-to-card.assert.sql",
+            "sourceSha256": "840019909e9082479f6c8112c92f9bac7f297a12b39ece2244d375e7e79d19f2",
+            "probeSha256": "a2f57f061087095116e2cd29970856eac376f6dbb34c89e0b9afacaa1674e203"
+          }
+        ],
+        "fixtureDatabasesRemoved": [
+          "learn_cards_journey_0",
+          "learn_cards_journey_1",
+          "learn_cards_journey_10",
+          "learn_cards_journey_2",
+          "learn_cards_journey_3",
+          "learn_cards_journey_4",
+          "learn_cards_journey_5",
+          "learn_cards_journey_6",
+          "learn_cards_journey_7",
+          "learn_cards_journey_8",
+          "learn_cards_journey_9"
+        ]
+      }
+    ],
+    "finalComparisonDatabasePreserved": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 382,
+      "rows": 1591594,
+      "sequences": 7,
+      "comparisonSha256": "1f0834e1d567d3bb5bc30ecbac26f5e838010c44c556462c37e1f2a82dd84b88",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "scope": "Final fourteen-package schema with synthetic provider payloads; no hosted or real-provider acceptance."
+  },
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "elapsedSeconds": 171.48,
+  "fixtureCorrection": "First combined run rejected a Slack claim because the synthetic capture flag remained paused. Updated fixture proves paused claims leave attempts unchanged, then explicitly resumes the synthetic source. Second complete run passed. No product guard weakened."
+}
