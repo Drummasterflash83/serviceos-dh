@@ -1,0 +1,80 @@
+{
+  "scope": "Read-only production email access follow-up; no provider or credential mutation",
+  "checkedAt": "2026-10-12T06:04:05.414696+00:00",
+  "http": 201,
+  "accountStatusCounts": {
+    "active": 1,
+    "active_dwd": 29
+  },
+  "revokedTokenFailure": {
+    "distinctAccounts": 1,
+    "observedFailureCountInBoundedSample": 7,
+    "earliestInSample": "2026-10-11T23:13:02.860356+00:00",
+    "latestInSample": "2026-10-12T05:50:02.009186+00:00",
+    "predatesComputeUpgrade": true
+  },
+  "latestEightRuns": [
+    {
+      "status": "success",
+      "provider": "gmail",
+      "started_at": "2026-10-12T06:04:01.101+00:00",
+      "error_class": null,
+      "records_processed": 0
+    },
+    {
+      "status": "success",
+      "provider": "gmail",
+      "started_at": "2026-10-12T06:04:01.087+00:00",
+      "error_class": null,
+      "records_processed": 0
+    },
+    {
+      "status": "success",
+      "provider": "gmail",
+      "started_at": "2026-10-12T06:03:00.939+00:00",
+      "error_class": null,
+      "records_processed": 0
+    },
+    {
+      "status": "success",
+      "provider": "gmail",
+      "started_at": "2026-10-12T06:03:00.929+00:00",
+      "error_class": null,
+      "records_processed": 0
+    },
+    {
+      "status": "success",
+      "provider": "gmail",
+      "started_at": "2026-10-12T06:02:01.48+00:00",
+      "error_class": null,
+      "records_processed": 0
+    },
+    {
+      "status": "success",
+      "provider": "gmail",
+      "started_at": "2026-10-12T06:02:01.465+00:00",
+      "error_class": null,
+      "records_processed": 0
+    },
+    {
+      "status": "success",
+      "provider": "gmail",
+      "started_at": "2026-10-12T06:01:00.923+00:00",
+      "error_class": null,
+      "records_processed": 0
+    },
+    {
+      "status": "failed",
+      "provider": "gmail",
+      "started_at": "2026-10-12T06:01:00.899+00:00",
+      "error_class": "invalid_grant",
+      "records_processed": 0
+    }
+  ],
+  "limits": [
+    "Bounded sample, not full coverage",
+    "Active account flags do not prove usable credentials",
+    "Alternative authorised Workspace coverage for the OAuth account still requires verification",
+    "No sign-in, reset, new grant, provider request or production write performed"
+  ]
+}

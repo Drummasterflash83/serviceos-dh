@@ -7,6 +7,18 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 06:04 UTC — production email failure narrowed to one OAuth account.**
+A read-only follow-up joined bounded queue failures to account metadata. All seven
+sampled `refresh_token_revoked` failures belong to one account, spanning 11 October
+23:13 through 12 October 05:50 UTC: this failure predates the compute upgrade.
+The account is still flagged active, demonstrating why that flag cannot establish
+healthy capture. Account identity stays in the private investigation record.
+Existing Workspace-authorised coverage for that mailbox must be checked before
+requesting a new sign-in. Of the latest eight Gmail run records, seven succeeded
+with zero new messages and one failed with `invalid_grant`; this does not establish
+complete mailbox/history coverage. No access or credentials were changed.
+[Sanitised follow-up evidence](evidence/learn-email-access-followup-2026-10-12.json).
+
 **12 October — Connections catalogue correction verified locally.**
 The legacy catalogue now distinguishes unavailable observations from known
 connection failures. Microsoft, Slack and Commusoft adapter availability no longer
