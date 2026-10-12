@@ -23,7 +23,7 @@ def run():
                 raise RecoveryError('Image pin differs')
             prepare_archive_roles(target, json.loads((ROOT / 'source-inventory.json').read_text()))
             archive = target.restore_native_archive(ROOT / 'database.dump')
-            packages = sorted(DIRECTORY.glob('*.manifest.json'))
+            packages = sorted(DIRECTORY.glob('[0-9][0-9][0-9]_*.manifest.json'))
             packages = [p for p in packages if int(p.name[:3]) <= 14]
             if [int(p.name[:3]) for p in packages] != list(range(1, 15)):
                 raise RecoveryError('Exact fourteen prerequisite packages required')

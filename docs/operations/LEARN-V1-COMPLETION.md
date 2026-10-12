@@ -7,6 +7,36 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — missing production roster dependencies repaired and rehearsed.**
+The dynamic-call review found six OpenFolk roster actions missing from the
+fifteen-package candidate. Additive package 016 supplies those audited writers,
+their private guard and two staff fields. The isolated production-archive
+rehearsal passed create/update, lifecycle, responsibility, authority, tenant-boundary
+and permission checks. All 299 original tables / 1,591,576 rows / five sequences
+are preserved, as are all 381 prerequisite datasets around the new package.
+Existing functions, views, roles and Storage stayed unchanged; the container was
+removed. The first harness needed an original-row comparison correction for four
+additions from earlier packages; the second run passed with unchanged package SQL.
+[Roster evidence](evidence/learn-production-roster-rehearsal-2026-10-12.json).
+
+All 19 reviewed dynamic RPC sites now resolve to 51 distinct available functions
+with the required execute permission in the actual post-016 rehearsed catalog.
+This covers the pinned source bindings, not arbitrary future dispatch or positive
+hosted execution. The production runtime manifest now contains **16 SQL packages**.
+All runtime source, endpoints and JWT settings are unchanged, so the original 37
+compiled artifacts and their boot evidence are retained with an explicit derivation
+to the updated database manifest. Three negative checks reject runtime drift,
+unaccepted boot evidence and unconfirmed preservation. No new boot or production
+deployment is claimed.
+[RPC bindings](evidence/learn-production-rpc-bindings-2026-10-12.json) and
+[unchanged runtime evidence](evidence/learn-production-runtime-roster-binding-2026-10-12.json).
+
+The refreshed Commusoft customer-contact pass completed its first 100 checks with
+all 194 datasets preserved and resumed a second bounded batch under the same
+approval and global request cap. Site contacts remain complete. Full contact
+coverage, publication/enrichment, signed-in live acceptance and Drummonds Slack
+remain unfinished.
+
 **12 October, 16:08 UTC — TEST sign-in restored and customer contacts running.**
 Chris signed in with the existing TEST operator account. The logged OpenFolk
 control queued the refreshed 1,550-customer contact traversal, approval

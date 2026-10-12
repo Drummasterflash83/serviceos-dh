@@ -3,7 +3,7 @@
 Status: **preparation only; not approved or ready to execute**. The
 [completion checklist](LEARN-V1-COMPLETION.md) is the acceptance authority.
 The current hosted TEST frontend is Git `e2d51fa` (12 October, 12:50 UTC).
-The database candidate now includes production-specific packages 001–015. Package
+The database candidate now includes production-specific packages 001–016. Package
 015 brings forward the latest operator information/review, customer context and
 recording access; its archive rehearsal passed. The complete paired production
 runtime/frontend release and live acceptance are still unfinished. Source backups
@@ -11,6 +11,32 @@ are on `codex/learn-v1-test`.
 
 
 ## Matching processing candidate — 12 October
+
+**Roster dependencies are now included.** Reviewing all 19 dynamic RPC sites
+found six missing OpenFolk roster actions. Package
+[016_roster_support.sql](../../supabase/release/learn-production/016_roster_support.sql)
+adds those six service-only audited writers, a private guard and the two required
+staff fields. Its complete production-archive rehearsal passed with original
+source preservation, tenant-boundary and execute-permission checks, rollback on
+late failure and duplicate-install rejection. Existing role memberships and
+functions remain unchanged; installation creates no staff, responsibilities or
+human authority grants. Existing staff gain only the additive `proposed` title
+status default. [Rehearsal](evidence/learn-production-roster-rehearsal-2026-10-12.json).
+
+The actual post-016 catalog supplies all 51 distinct functions reached through
+the 19 manually reviewed dynamic call sites, with the required execute privileges.
+Names and privileges do not prove named-argument semantics or hosted execution;
+the separate journey checks remain applicable.
+[Binding review](evidence/learn-production-rpc-bindings-2026-10-12.json).
+
+The runtime candidate's only change is the additional SQL-package pin. The 37
+endpoint configurations and all 221 source files remain identical. Exact retained
+compiled bytes and the original offline boot evidence are carried forward with
+both manifest/report hashes recorded; no new boot test is claimed. Upload bytes
+remain 10,970,518 and have not been sent.
+[Runtime derivation](evidence/learn-production-runtime-roster-binding-2026-10-12.json).
+Use the current 16-package manifest and derived transport evidence for the release;
+the older 15-package observations below describe their original scope.
 
 **Existing scheduler credential bindings verified, read-only.** All nine observed
 production cron callers targeting candidate endpoints still match their command,

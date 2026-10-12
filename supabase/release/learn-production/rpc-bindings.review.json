@@ -1,0 +1,407 @@
+{
+  "version": "learn-production-rpc-bindings/1",
+  "sourceClosureSha256": "c529298cfe2123ea544d00327c011d2693c16614b89713c6911d694d1ecf0e82",
+  "baselineSchemaSha256": "fa26c9d3745664b26e5391757dec9995aadf4c9bd1d9bd870394159d2b16b39f",
+  "sites": [
+    {
+      "path": "_shared/connectors/marketing_email.ts",
+      "kind": "rpc",
+      "line": 321,
+      "sourceSha256": "0e5d2673e8860e698a09ee47c0e1c957bbaaa23296aac68d83a9fc1c2e10dcab",
+      "targets": [
+        {
+          "name": "marketing_broadcast_send_authority",
+          "role": "service_role"
+        },
+        {
+          "name": "marketing_sequence_send_authority",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Two literal branches selected by the validated broadcast/sequence envelope."
+    },
+    {
+      "path": "_shared/gmail_page_store.ts",
+      "kind": "rpc",
+      "line": 58,
+      "sourceSha256": "3b180eb9db038039790d59378693c0b36808b69017208261317b27450153ea50",
+      "targets": [
+        {
+          "name": "learn_email_store_existing",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_email_store_unavailable",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_email_store_page",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Private invoke helper; all three local call sites use literal names."
+    },
+    {
+      "path": "_shared/learn-phone-playback.ts",
+      "kind": "rpc",
+      "line": 53,
+      "sourceSha256": "5b7aa339f38ab204a730444468debbd3702eacf14c7f99587d2077910cd100ce",
+      "targets": [
+        {
+          "name": "learn_phone_playback_authorize",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_operator_phone_playback_authorize",
+          "role": "authenticated"
+        }
+      ],
+      "resolution": "Two constant playback RPC names; normal playback uses server credentials after user validation, operator playback uses the original user-scoped client."
+    },
+    {
+      "path": "_shared/learn-phone-playback.ts",
+      "kind": "rpc",
+      "line": 92,
+      "sourceSha256": "5b7aa339f38ab204a730444468debbd3702eacf14c7f99587d2077910cd100ce",
+      "targets": [
+        {
+          "name": "learn_phone_playback_authorize",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_operator_phone_playback_authorize",
+          "role": "authenticated"
+        }
+      ],
+      "resolution": "The second call reuses the same selected RPC with the audited source digest and request ID."
+    },
+    {
+      "path": "_shared/learn-processing-job.ts",
+      "kind": "rpc",
+      "line": 73,
+      "sourceSha256": "96a7ae373667fb389f95de543da10bc303b716613150df91b14474ddde15e01b",
+      "targets": [
+        {
+          "name": "learn_projection_pending",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_projection_review_count",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_identity_pending",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_identity_review_count",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Only interactions.sync and identity.resolve handlers enter this wrapper. Their publication calls are replaced by the literal learn_processing_publish call; four literal reader calls pass through."
+    },
+    {
+      "path": "_shared/microsoft_capture_engine.ts",
+      "kind": "rpc",
+      "line": 200,
+      "sourceSha256": "f3f4352909610119c925985b05811a8a096cbaeca1709990a976d4ba52df8f15",
+      "targets": [
+        {
+          "name": "learn_microsoft_journal_job",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_microsoft_journal_open",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_microsoft_journal_commit",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Private helper with three literal journal operations; no provider-supplied RPC name."
+    },
+    {
+      "path": "_shared/slack/slack_history_persist.ts",
+      "kind": "rpc",
+      "line": 9,
+      "sourceSha256": "81b4dcd5a2efe728b403cfd2d2fa36b18d64569b0cbacb034ff809f808038f65",
+      "targets": [
+        {
+          "name": "slack_thread_commit_page",
+          "role": "service_role"
+        },
+        {
+          "name": "slack_history_commit_page",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Two literal branches selected by the bound thread import."
+    },
+    {
+      "path": "_shared/slack/slack_history_server.ts",
+      "kind": "rpc",
+      "line": 99,
+      "sourceSha256": "0060d2ca8c3ed1c3261a8eaaed39a16aa623230f6053e6207b5a54899ca45b88",
+      "targets": [
+        {
+          "name": "learn_slack_read_thread_credential",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_slack_read_credential",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Two literal branches selected by the claimed durable job type."
+    },
+    {
+      "path": "_shared/slack/slack_worker.ts",
+      "kind": "rpc",
+      "line": 89,
+      "sourceSha256": "523ffafc258999257e75d5e3874b0b23e42a5cc50bcc7a232eefd6df0f21f382",
+      "targets": [
+        {
+          "name": "learn_slack_finish_thread_job",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_slack_finish_job",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Two constant finish names selected from the claimed job type."
+    },
+    {
+      "path": "_shared/slack/slack_worker.ts",
+      "kind": "rpc",
+      "line": 105,
+      "sourceSha256": "523ffafc258999257e75d5e3874b0b23e42a5cc50bcc7a232eefd6df0f21f382",
+      "targets": [
+        {
+          "name": "learn_slack_finish_thread_job",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_slack_finish_job",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Failure settlement reuses the same selected finish name."
+    },
+    {
+      "path": "_shared/voicemail/private-import.js",
+      "kind": "rpc",
+      "line": 18,
+      "sourceSha256": "23c8283f7467848e49dde08d12717624b1e6843724672b392294068796b20831",
+      "targets": [
+        {
+          "name": "voicemail_intake_route",
+          "role": "service_role"
+        },
+        {
+          "name": "voicemail_intake_prepare",
+          "role": "service_role"
+        },
+        {
+          "name": "voicemail_intake_publish",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Private helper with literal route, prepare and publish operations. Queue calls are intercepted by voicemail_queue_step; direct import calls retain these functions."
+    },
+    {
+      "path": "_shared/voicemail/queue.ts",
+      "kind": "rpc",
+      "line": 125,
+      "sourceSha256": "6bc853a52a71ef94a2fa370d0544ddff864e7ad527d5e4ffb3c2c60c1443bcbe",
+      "targets": [],
+      "resolution": "Production worker binds importWorkspaceVoicemail and the private importer. Their only RPC calls are route/prepare/publish, intercepted by the operations map and routed through literal voicemail_queue_step. Email credential ports use table reads, not dynamic RPCs. The generic passthrough is not reached by this production binding."
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_sequence_advance.ts",
+      "kind": "rpc",
+      "line": 66,
+      "sourceSha256": "059474bdadfd211c96ffa7e3b5c0732d73f0da4d026afe62aafa98aa231126c1",
+      "targets": [
+        {
+          "name": "marketing_sequence_apply_suppression_exits",
+          "role": "service_role"
+        },
+        {
+          "name": "marketing_sequence_apply_reply_exits",
+          "role": "service_role"
+        },
+        {
+          "name": "marketing_sequence_apply_lifecycle_exits",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Constant three-element tuple; no request-derived function name."
+    },
+    {
+      "path": "data-import/handler.ts",
+      "kind": "rpc",
+      "line": 635,
+      "sourceSha256": "b52c92cafbe123f083e9ccae94d8a34ca5d05756667f7a58897905018034ac6c",
+      "targets": [
+        {
+          "name": "import_match_customer",
+          "role": "service_role"
+        },
+        {
+          "name": "import_match_site",
+          "role": "service_role"
+        },
+        {
+          "name": "import_match_job",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Closed GOVERNED_MATCH_RPC mapping after governed entity validation."
+    },
+    {
+      "path": "data-import/handler.ts",
+      "kind": "rpc",
+      "line": 1267,
+      "sourceSha256": "b52c92cafbe123f083e9ccae94d8a34ca5d05756667f7a58897905018034ac6c",
+      "targets": [
+        {
+          "name": "import_customer_row",
+          "role": "service_role"
+        },
+        {
+          "name": "import_site_row",
+          "role": "service_role"
+        },
+        {
+          "name": "import_job_row",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Closed GOVERNED_ROW_RPC mapping from the retained import entity; no arbitrary function name."
+    },
+    {
+      "path": "learn-commusoft-verify/index.ts",
+      "kind": "rpc",
+      "line": 23,
+      "sourceSha256": "5cd273c2daf753be2c95ba099c0527b45df7e001575e8da0d1a7063b0ffb3950",
+      "targets": [
+        {
+          "name": "learn_commusoft_verify_request",
+          "role": "authenticated"
+        }
+      ],
+      "resolution": "Authenticated adapter is passed only to commusoftVerificationEndpoint; it uses the literal request RPC."
+    },
+    {
+      "path": "learn-commusoft-verify/index.ts",
+      "kind": "rpc",
+      "line": 34,
+      "sourceSha256": "5cd273c2daf753be2c95ba099c0527b45df7e001575e8da0d1a7063b0ffb3950",
+      "targets": [
+        {
+          "name": "learn_commusoft_verify_acquire",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_commusoft_verify_authorized",
+          "role": "service_role"
+        },
+        {
+          "name": "learn_commusoft_verify_finish",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Service adapter is passed only to verifyCommusoftConnection with three literal operations."
+    },
+    {
+      "path": "learn-operator-phone-playback/index.ts",
+      "kind": "rpc",
+      "line": 74,
+      "sourceSha256": "4a3797061e704afd1110025756a47a5a51d0355af5b7bdc866eb5f0c0f797ec6",
+      "targets": [
+        {
+          "name": "learn_operator_phone_playback_authorize",
+          "role": "authenticated"
+        }
+      ],
+      "resolution": "Only retainedPhonePlayback with a validated operator reason receives this original-user adapter."
+    },
+    {
+      "path": "openfolk-control-plane/index.ts",
+      "kind": "rpc",
+      "line": 181,
+      "sourceSha256": "ed122f5d9c1fc4d135b18a2b3c2a61164c697626ab7eb21369de9ce41f4220fc",
+      "targets": [
+        {
+          "name": "cp_upsert_endpoint",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_archive_endpoint",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_review_identity",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_update_manual_endpoint",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_end_ownership",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_restore_endpoint",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_upsert_member",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_roster_upsert_member",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_member_lifecycle",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_upsert_responsibility",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_end_responsibility",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_grant_authority",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_end_authority",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_upsert_identity",
+          "role": "service_role"
+        },
+        {
+          "name": "cp_assign_ownership",
+          "role": "service_role"
+        }
+      ],
+      "resolution": "Private helper with literal action-switch call sites; appends server-verified actor and reviewed reason."
+    }
+  ],
+  "limitations": [
+    "Manual binding review for this pinned source closure, not a generic data-flow proof. Any source or SQL change invalidates it.",
+    "Catalog presence and execute privileges are checked against the rehearsed archive candidate; named argument semantics and end-to-end execution need their separate journey evidence.",
+    "The generic proxy passthroughs must be reviewed again if their production handler bindings change."
+  ],
+  "catalogScope": "Actual isolated production archive catalog after packages 001\u2013016; roster journey and original-source preservation passed."
+}

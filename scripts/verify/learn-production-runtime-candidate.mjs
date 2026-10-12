@@ -81,7 +81,7 @@ export function productionRuntimeCandidate({ production, test, read = p => readF
         if (sha(read(source.path)) !== source.sha256) throw Error("SQL source pin differs: " + source.path);
       return { path: sqlPath, sha256: manifest.sha256, manifestSha256: sha(read(path)) };
     });
-  if (database.length !== 15) throw Error("Reviewed fifteen-package production candidate required");
+  if (database.length !== 16) throw Error("Reviewed sixteen-package production candidate required");
   const combined = edgeRuntimeBundle(PRODUCTION_RUNTIME_ENDPOINTS);
   const analyses = new Map(combined.files.map(f => [f.path, inspectRuntimeSource(f.path, f.source)]));
   const endpoints = PRODUCTION_RUNTIME_ENDPOINTS.map(endpoint => {

@@ -77,6 +77,11 @@
       "path": "supabase/release/learn-production/015_operator_context.sql",
       "sha256": "f4413fe47a9eaa1eb7774e35e22f10f78bf94a55345f4fbe19fe690b4e7d8556",
       "manifestSha256": "35f24dc79a56312b88c88db9100ad591549f2442c7ed167e5e33bd8a7ca2a00b"
+    },
+    {
+      "path": "supabase/release/learn-production/016_roster_support.sql",
+      "sha256": "b877e70fa1cc946ba0c9c8a66f28b6603f99dc8484fefd1411bf30beed325998",
+      "manifestSha256": "4c6d63e876ef5f7ad9c5ca4e74c19a66f1e7ca983b8f3b5cde74088730f9e37b"
     }
   ],
   "sourceClosureSha256": "c529298cfe2123ea544d00327c011d2693c16614b89713c6911d694d1ecf0e82",

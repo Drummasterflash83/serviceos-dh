@@ -1,0 +1,65 @@
+{
+  "version": "learn-production-roster-support/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "b877e70fa1cc946ba0c9c8a66f28b6603f99dc8484fefd1411bf30beed325998",
+  "priorSha256": "f4413fe47a9eaa1eb7774e35e22f10f78bf94a55345f4fbe19fe690b4e7d8556",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20260913120000_office_roster_controlplane.sql",
+      "sha256": "288f5b71cbbd954cae9cb3726931bd2cd749e641bb112281bc0674c7ec8a6d17"
+    },
+    {
+      "path": "supabase/migrations/20261029200000_learn_roster_recovery_guards.sql",
+      "sha256": "2f13d9b15eb728cd633e01d04a2bbfccfbfdf2b7baa9943fd07e994e5cc47dac"
+    }
+  ],
+  "existingTables": [
+    "authority_grants",
+    "authority_permissions",
+    "controlplane_change_log",
+    "org_units",
+    "responsibility_assignments",
+    "team_members",
+    "tenants"
+  ],
+  "newTables": [],
+  "newFunctions": [
+    "learn_roster_write_guard",
+    "cp_roster_upsert_member",
+    "cp_member_lifecycle",
+    "cp_upsert_responsibility",
+    "cp_end_responsibility",
+    "cp_grant_authority",
+    "cp_end_authority"
+  ],
+  "changedFunctions": [],
+  "changedViews": [],
+  "newRole": null,
+  "newSequences": [],
+  "extendedTables": {
+    "team_members": [
+      "formal_role_status",
+      "target_role"
+    ]
+  },
+  "newExistingConstraints": {
+    "team_members": [
+      "team_members_formal_role_status_check"
+    ]
+  },
+  "newExistingIndexes": {},
+  "newExistingTriggers": {},
+  "newExistingPolicies": {},
+  "newStoragePolicies": [],
+  "newBuckets": [],
+  "limitations": [
+    "Adds six audited service-only roster actions and one private guard. Existing operator endpoint authenticates the original actor; no login, authority grant, staff assignment or tenant data is seeded.",
+    "Existing staff receive only the additive formal_role_status default proposed; original columns and rows must remain unchanged.",
+    "Requires isolated production-archive rehearsal and explicit production release approval."
+  ]
+}

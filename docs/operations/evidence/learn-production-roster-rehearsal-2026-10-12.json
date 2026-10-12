@@ -1,0 +1,100 @@
+{
+  "state": "production_roster_support_rehearsed_offline",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "negativeChecks": [
+    "wrong_target",
+    "table_drift",
+    "late_failure"
+  ],
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 381,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "fb12ae7f991e7cba45853c11caebd783c33a28abd0fb1469d0b04489aa5b6899",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "originalArchivePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "duplicateRejected": true,
+  "journey": {
+    "name": "learn-roster-recovery.assert.sql",
+    "sourceSha256": "bfe8b3240ef1c1e106247828f88d9e75f99570e6f800ecc1ac6c30ddfeacbd25",
+    "probeSha256": "6478e368ad86ab4aa9f440a27254ee7b90327902402eb2be3eac834772865431",
+    "passed": true
+  },
+  "postJourneyPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 381,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "2b6c8dc406c73dd2c657da4180120f90bc17662e796cb9c280376fca780d7549",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "packages": [
+    "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+    "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+    "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+    "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+    "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+    "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+    "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+    "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+    "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+    "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+    "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+    "d145d65687abb1b277323295b1ee57c22a7407c33294982d681b8a2418b47fd7",
+    "9fba3e916f0e57075f32c60ad02f14c94ef7c2d75372bbff53abdea11dc37cba",
+    "f4413fe47a9eaa1eb7774e35e22f10f78bf94a55345f4fbe19fe690b4e7d8556",
+    "b877e70fa1cc946ba0c9c8a66f28b6603f99dc8484fefd1411bf30beed325998"
+  ],
+  "newFunctions": 7,
+  "newColumns": 2,
+  "existingFunctionsViewsRolesStorageUnchanged": true,
+  "priorReceiptsUnchanged": true,
+  "addedReleaseReceipts": 1,
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "observedAt": "2026-10-12T16:28:10.402769+00:00",
+  "initialAttempt": "The first harness proved all 381 prerequisite datasets preserved but compared earlier package additions as original rows. The corrected second run compared original import-profile and bucket IDs separately and completed the archive and journey checks. Package 016 was unchanged."
+}

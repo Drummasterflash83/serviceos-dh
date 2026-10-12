@@ -1,0 +1,37 @@
+{
+  "state": "unchanged_runtime_evidence_carried_forward",
+  "observedAt": "2026-10-12T16:26:28.307Z",
+  "priorManifestSha256": "86c6135717cb2056c08c694861d25ac1de44144f47f6cb4114f296a200c2875a",
+  "currentManifestSha256": "afca8dcb12acfdb8f05f0f0e1a7779e0a94272226376045f78380ee9e104c708",
+  "originalBundleReportSha256": "f1d38517962a2b136b8f77f7a4ae7b18a82eae59911b137087246240bba8a576",
+  "originalBootReportSha256": "65680a13ba017393766c3a7cfe8a4742df03dae8f615b2b9d5762b054891269c",
+  "sqlRehearsalReportSha256": "5da425a7bd4775c89e6250c2bca722ab3bb83c404f7b9612745b38965b812237",
+  "runtimeInputsUnchanged": true,
+  "artifactBytesUnchanged": true,
+  "newBootExecution": false,
+  "productionChanged": false,
+  "explanation": "Only the ordered SQL package set changed. All endpoint metadata, source bytes, entrypoints and JWT settings remain identical. These exact retained executable bytes passed the original offline boot; package 016 passed a separate full-schema rehearsal.",
+  "negativeChecks": [
+    {
+      "case": "changed-runtime",
+      "rejectedBeforeOutput": true
+    },
+    {
+      "case": "unaccepted-boot",
+      "rejectedBeforeOutput": true
+    },
+    {
+      "case": "unconfirmed-preservation",
+      "rejectedBeforeOutput": true
+    }
+  ],
+  "transport": {
+    "state": "prepared_not_uploaded",
+    "endpoints": 37,
+    "totalBytes": 10970518
+  },
+  "limitations": [
+    "No new runtime boot was claimed; unchanged artifacts retain their original offline boot evidence.",
+    "Production deployment, hosted gateway/caller acceptance and signed-in journeys remain pending."
+  ]
+}

@@ -1,0 +1,555 @@
+{
+  "version": "learn-production-rpc-bindings-check/1",
+  "observedAt": "2026-10-12T16:25:25.988Z",
+  "state": "reviewed_dynamic_rpc_targets_available",
+  "sourceClosureSha256": "c529298cfe2123ea544d00327c011d2693c16614b89713c6911d694d1ecf0e82",
+  "reviewSha256": "20aabd5dc409cbb4d2016da54d5a750581619cb02cec4dac5c65d1f25ed3e87d",
+  "baselineSchemaSha256": "fa26c9d3745664b26e5391757dec9995aadf4c9bd1d9bd870394159d2b16b39f",
+  "reviewedSites": 19,
+  "uniqueTargets": 51,
+  "checks": [
+    {
+      "path": "_shared/connectors/marketing_email.ts",
+      "line": 321,
+      "targets": [
+        {
+          "name": "marketing_broadcast_send_authority",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "marketing_sequence_send_authority",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Two literal branches selected by the validated broadcast/sequence envelope."
+    },
+    {
+      "path": "_shared/gmail_page_store.ts",
+      "line": 58,
+      "targets": [
+        {
+          "name": "learn_email_store_existing",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_email_store_unavailable",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_email_store_page",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Private invoke helper; all three local call sites use literal names."
+    },
+    {
+      "path": "_shared/learn-phone-playback.ts",
+      "line": 53,
+      "targets": [
+        {
+          "name": "learn_phone_playback_authorize",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_operator_phone_playback_authorize",
+          "role": "authenticated",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Two constant playback RPC names; normal playback uses server credentials after user validation, operator playback uses the original user-scoped client."
+    },
+    {
+      "path": "_shared/learn-phone-playback.ts",
+      "line": 92,
+      "targets": [
+        {
+          "name": "learn_phone_playback_authorize",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_operator_phone_playback_authorize",
+          "role": "authenticated",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "The second call reuses the same selected RPC with the audited source digest and request ID."
+    },
+    {
+      "path": "_shared/learn-processing-job.ts",
+      "line": 73,
+      "targets": [
+        {
+          "name": "learn_projection_pending",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_projection_review_count",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_identity_pending",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_identity_review_count",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Only interactions.sync and identity.resolve handlers enter this wrapper. Their publication calls are replaced by the literal learn_processing_publish call; four literal reader calls pass through."
+    },
+    {
+      "path": "_shared/microsoft_capture_engine.ts",
+      "line": 200,
+      "targets": [
+        {
+          "name": "learn_microsoft_journal_job",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_microsoft_journal_open",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_microsoft_journal_commit",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Private helper with three literal journal operations; no provider-supplied RPC name."
+    },
+    {
+      "path": "_shared/slack/slack_history_persist.ts",
+      "line": 9,
+      "targets": [
+        {
+          "name": "slack_thread_commit_page",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "slack_history_commit_page",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Two literal branches selected by the bound thread import."
+    },
+    {
+      "path": "_shared/slack/slack_history_server.ts",
+      "line": 99,
+      "targets": [
+        {
+          "name": "learn_slack_read_thread_credential",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_slack_read_credential",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Two literal branches selected by the claimed durable job type."
+    },
+    {
+      "path": "_shared/slack/slack_worker.ts",
+      "line": 89,
+      "targets": [
+        {
+          "name": "learn_slack_finish_thread_job",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_slack_finish_job",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Two constant finish names selected from the claimed job type."
+    },
+    {
+      "path": "_shared/slack/slack_worker.ts",
+      "line": 105,
+      "targets": [
+        {
+          "name": "learn_slack_finish_thread_job",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_slack_finish_job",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Failure settlement reuses the same selected finish name."
+    },
+    {
+      "path": "_shared/voicemail/private-import.js",
+      "line": 18,
+      "targets": [
+        {
+          "name": "voicemail_intake_route",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "voicemail_intake_prepare",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "voicemail_intake_publish",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Private helper with literal route, prepare and publish operations. Queue calls are intercepted by voicemail_queue_step; direct import calls retain these functions."
+    },
+    {
+      "path": "_shared/voicemail/queue.ts",
+      "line": 125,
+      "targets": [],
+      "resolution": "Production worker binds importWorkspaceVoicemail and the private importer. Their only RPC calls are route/prepare/publish, intercepted by the operations map and routed through literal voicemail_queue_step. Email credential ports use table reads, not dynamic RPCs. The generic passthrough is not reached by this production binding."
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_sequence_advance.ts",
+      "line": 66,
+      "targets": [
+        {
+          "name": "marketing_sequence_apply_suppression_exits",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "marketing_sequence_apply_reply_exits",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "marketing_sequence_apply_lifecycle_exits",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Constant three-element tuple; no request-derived function name."
+    },
+    {
+      "path": "data-import/handler.ts",
+      "line": 635,
+      "targets": [
+        {
+          "name": "import_match_customer",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "import_match_site",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "import_match_job",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Closed GOVERNED_MATCH_RPC mapping after governed entity validation."
+    },
+    {
+      "path": "data-import/handler.ts",
+      "line": 1267,
+      "targets": [
+        {
+          "name": "import_customer_row",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "import_site_row",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "import_job_row",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Closed GOVERNED_ROW_RPC mapping from the retained import entity; no arbitrary function name."
+    },
+    {
+      "path": "learn-commusoft-verify/index.ts",
+      "line": 23,
+      "targets": [
+        {
+          "name": "learn_commusoft_verify_request",
+          "role": "authenticated",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Authenticated adapter is passed only to commusoftVerificationEndpoint; it uses the literal request RPC."
+    },
+    {
+      "path": "learn-commusoft-verify/index.ts",
+      "line": 34,
+      "targets": [
+        {
+          "name": "learn_commusoft_verify_acquire",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_commusoft_verify_authorized",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "learn_commusoft_verify_finish",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Service adapter is passed only to verifyCommusoftConnection with three literal operations."
+    },
+    {
+      "path": "learn-operator-phone-playback/index.ts",
+      "line": 74,
+      "targets": [
+        {
+          "name": "learn_operator_phone_playback_authorize",
+          "role": "authenticated",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Only retainedPhonePlayback with a validated operator reason receives this original-user adapter."
+    },
+    {
+      "path": "openfolk-control-plane/index.ts",
+      "line": 181,
+      "targets": [
+        {
+          "name": "cp_upsert_endpoint",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_archive_endpoint",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_review_identity",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_update_manual_endpoint",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_end_ownership",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_restore_endpoint",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_upsert_member",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_roster_upsert_member",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_member_lifecycle",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_upsert_responsibility",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_end_responsibility",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_grant_authority",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_end_authority",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_upsert_identity",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        },
+        {
+          "name": "cp_assign_ownership",
+          "role": "service_role",
+          "found": true,
+          "executeAllowed": true,
+          "schemaEvidence": "rehearsed_001_to_016_catalog"
+        }
+      ],
+      "resolution": "Private helper with literal action-switch call sites; appends server-verified actor and reviewed reason."
+    }
+  ],
+  "failures": [],
+  "productionChanges": 0,
+  "hostedTestChanges": 0,
+  "limitations": [
+    "Manual binding review for this pinned source closure, not a generic data-flow proof. Any source or SQL change invalidates it.",
+    "Catalog presence and execute privileges are checked against the rehearsed archive candidate; named argument semantics and end-to-end execution need their separate journey evidence.",
+    "The generic proxy passthroughs must be reviewed again if their production handler bindings change."
+  ],
+  "initialFinding": {
+    "missingFunctions": [
+      "cp_roster_upsert_member",
+      "cp_member_lifecycle",
+      "cp_upsert_responsibility",
+      "cp_end_responsibility",
+      "cp_grant_authority",
+      "cp_end_authority"
+    ],
+    "resolution": "Additive production package 016, with two staff fields and seven functions, rehearsed after packages 001\u2013015."
+  }
+}
