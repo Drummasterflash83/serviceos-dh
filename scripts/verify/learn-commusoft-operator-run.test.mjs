@@ -7,6 +7,7 @@ import {
   assertDispatch,
   acceptWorkerReply,
   unclaimedInvocationSettled,
+  recordedImportApproval,
 } from "./learn-commusoft-operator-run.mjs";
 const now = Date.parse("2026-10-12T11:00:00Z");
 const job = "00000000-0000-4000-8000-000000000001";
@@ -89,6 +90,140 @@ test("active contacts require fresh operator approval and existing scope", () =>
     change(v);
     assert.throws(() => assertDispatch(p, v, now));
   }
+});
+test("property refresh stays within the existing tenant, operator approval and 50-page bound", () => {
+  const [p, s] = fixture();
+  Object.assign(s.account, { resource: "properties", maxPages: 50, pageSize: 100 });
+  assert.equal(assertDispatch(p, s, now).id, job);
+  for (const change of [
+    (v) => (v.operatorApproval = false),
+    (v) => (v.account.maxPages = 51),
+    (v) => (v.account.maxPages = 0),
+    (v) => (v.account.maxPages = "50"),
+    (v) => (v.account.pageSize = 50),
+    (v) => (v.account.resource = "jobs"),
+    (v) => (v.account.connectionId = job),
+  ]) {
+    const v = structuredClone(s);
+    change(v);
+    assert.throws(() => assertDispatch(p, v, now));
+  }
+});
+test("fresh starts and retained continuations bind their distinct receipt shapes to the current scope", () => {
+  const cutoff = new Date(now - 120000).toISOString();
+  const account = {
+    approvalId: job,
+    resource: "properties",
+    contactType: null,
+    maxPages: 50,
+    pageSize: 100,
+    expiresAt: new Date(now + 3600000).toISOString(),
+  };
+  const start = {
+    id: job,
+    actor: SCOPE.actor,
+    tenant: SCOPE.tenant,
+    createdAt: new Date(now - 60000).toISOString(),
+    definition: {
+      kind: "start_commusoft",
+      connection_id: SCOPE.connection,
+      resource: "properties",
+      max_pages: 50,
+      page_size: 100,
+      expires_at: account.expiresAt,
+    },
+    receipt: {
+      kind: "start_commusoft",
+      request_id: job,
+      tenant_id: SCOPE.tenant,
+      account_id: SCOPE.account,
+      state: "recorded",
+    },
+  };
+  assert.equal(recordedImportApproval(start, account, cutoff, now), true);
+  const resumeId = "00000000-0000-4000-8000-000000000002";
+  const resume = {
+    ...start,
+    id: resumeId,
+    definition: {
+      kind: "resume_commusoft",
+      account_id: SCOPE.account,
+      connection_id: SCOPE.connection,
+      approval_id: job,
+      max_pages: 50,
+      expires_at: account.expiresAt,
+    },
+    receipt: { ...start.receipt, kind: "resume_commusoft", request_id: resumeId, approval_id: job },
+  };
+  assert.equal(recordedImportApproval(resume, account, cutoff, now), true);
+  for (const original of [start, resume]) {
+    for (const change of [
+      (v) => (v.actor = job),
+      (v) => (v.tenant = job),
+      (v) => (v.receipt.tenant_id = job),
+      (v) => (v.receipt.account_id = job),
+      (v) => (v.receipt.request_id = SCOPE.account),
+      (v) => (v.receipt.state = "pending"),
+      (v) => (v.receipt.kind = "set_modules"),
+      (v) => (v.definition.connection_id = job),
+      (v) => (v.definition.max_pages = 100),
+      (v) => (v.definition.expires_at = new Date(now + 7200000).toISOString()),
+      (v) => (v.createdAt = cutoff),
+      (v) => (v.createdAt = new Date(now + 1000).toISOString()),
+    ]) {
+      const v = structuredClone(original);
+      change(v);
+      assert.equal(recordedImportApproval(v, account, cutoff, now), false);
+    }
+    assert.equal(
+      recordedImportApproval(original, { ...account, approvalId: resumeId }, cutoff, now),
+      false,
+    );
+  }
+  assert.equal(
+    recordedImportApproval(
+      { ...start, definition: { ...start.definition, resource: "jobs" } },
+      account,
+      cutoff,
+      now,
+    ),
+    false,
+  );
+  assert.equal(
+    recordedImportApproval(
+      { ...start, definition: { ...start.definition, contact_type: "customer" } },
+      account,
+      cutoff,
+      now,
+    ),
+    false,
+  );
+  const contacts = { ...account, resource: "propertyContacts", contactType: "workaddress" };
+  assert.equal(
+    recordedImportApproval(
+      {
+        ...start,
+        definition: {
+          ...start.definition,
+          resource: "propertyContacts",
+          contact_type: "workaddress",
+        },
+      },
+      contacts,
+      cutoff,
+      now,
+    ),
+    true,
+  );
+  assert.equal(
+    recordedImportApproval(
+      { ...resume, receipt: { ...resume.receipt, approval_id: resumeId } },
+      account,
+      cutoff,
+      now,
+    ),
+    false,
+  );
 });
 test("uncertain attempts, running leases, unavailable jobs and exhausted budgets do not redispatch", () => {
   const [p, s] = fixture();

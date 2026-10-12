@@ -1,8 +1,8 @@
 {
   "scope": "TEST only",
   "run": "eb260c9d-e1ee-48cf-8cc4-179375b50613",
-  "observedAt": "2026-10-12T13:07:36.151019+00:00",
-  "pages": 1268,
+  "observedAt": "2026-10-12T13:43:02.515588+00:00",
+  "pages": 1442,
   "parentsPlanned": 1547,
   "complete": false,
   "sources": [
@@ -15,20 +15,20 @@
       "collection": "properties"
     },
     {
-      "records": 2036,
+      "records": 2268,
       "collection": "propertyContacts"
     }
   ],
   "jobs": [
     {
       "error": null,
-      "status": "running",
-      "attempt": 1,
-      "availableAt": "2026-10-12T13:07:34.70194+00:00",
-      "leaseExpiresAt": "2026-10-12T13:10:35.398975+00:00"
+      "status": "queued",
+      "attempt": 0,
+      "availableAt": "2026-10-12T13:43:03.072908+00:00",
+      "leaseExpiresAt": null
     }
   ],
-  "requests": 886,
+  "requests": 1062,
   "maxProviderRequests": 4000,
   "newAccounts": 0,
   "newGrants": 0,
@@ -43,6 +43,27 @@
       "controlReceipts": 6,
       "playbackReceipts": 2,
       "originalAuditRowsPreserved": true
+    },
+    "phoneAcceptanceReconciliation": {
+      "run": "8178fbed-a35c-4de6-9228-2f4ea5279da6",
+      "originalRowsPreserved": true,
+      "counts": {
+        "calls": 1,
+        "recordings": 1,
+        "audio": 1,
+        "bytes": 417425,
+        "runs": 5,
+        "pages": 4,
+        "completions": 4,
+        "processingAttempts": 1,
+        "audits": 5
+      },
+      "capturePaused": true
+    },
+    "realPhonePlaybackAccessReconciliation": {
+      "originalAuditRowsPreserved": true,
+      "audioAccessReceipts": 1,
+      "actualPlayback": "not_started_pending_owner_approval"
     }
   },
   "runtime": {

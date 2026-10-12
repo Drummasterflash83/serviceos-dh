@@ -24,6 +24,50 @@ const check = (ok, message) => {
 const quote = (v) => "'" + String(v).replaceAll("'", "''") + "'";
 const uuid = (v) =>
   typeof v === "string" && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(v);
+/** Start receipts identify the approval by request_id; resumes name the retained
+ * approval_id. Read both using the original actor, tenant and account binding. */
+export function recordedImportApproval(receipt, account, cutoff, now = Date.now()) {
+  if (
+    !receipt ||
+    !account ||
+    !uuid(account.approvalId) ||
+    receipt.actor !== SCOPE.actor ||
+    receipt.tenant !== SCOPE.tenant ||
+    receipt.receipt?.tenant_id !== SCOPE.tenant ||
+    receipt.receipt?.account_id !== SCOPE.account ||
+    receipt.receipt?.state !== "recorded" ||
+    !uuid(receipt.id) ||
+    receipt.receipt.request_id !== receipt.id ||
+    !Number.isFinite(Date.parse(cutoff)) ||
+    !Number.isFinite(Date.parse(receipt.createdAt)) ||
+    Date.parse(receipt.createdAt) <= Date.parse(cutoff) ||
+    Date.parse(receipt.createdAt) > now
+  )
+    return false;
+  const d = receipt.definition;
+  if (d?.kind === "start_commusoft") {
+    return (
+      receipt.receipt.kind === d.kind &&
+      receipt.id === account.approvalId &&
+      d.connection_id === SCOPE.connection &&
+      d.resource === account.resource &&
+      d.contact_type === (account.contactType ?? undefined) &&
+      d.max_pages === account.maxPages &&
+      d.page_size === account.pageSize &&
+      Date.parse(d.expires_at) === Date.parse(account.expiresAt)
+    );
+  }
+  return (
+    d?.kind === "resume_commusoft" &&
+    receipt.receipt.kind === d.kind &&
+    receipt.receipt.approval_id === account.approvalId &&
+    d.approval_id === account.approvalId &&
+    d.account_id === SCOPE.account &&
+    d.connection_id === SCOPE.connection &&
+    d.max_pages === account.maxPages &&
+    Date.parse(d.expires_at) === Date.parse(account.expiresAt)
+  );
+}
 export function assertDispatch(plan, state, now = Date.now()) {
   check(JSON.stringify(plan.scope) === JSON.stringify(SCOPE), "Scope changed");
   check(plan.state === "prepared" && !plan.pending, "Unconfirmed worker must be inspected first");
@@ -54,8 +98,13 @@ export function assertDispatch(plan, state, now = Date.now()) {
   check(
     state.account?.id === SCOPE.account &&
       state.account.connectionId === SCOPE.connection &&
-      state.account.resource === "propertyContacts",
-    "Contacts-only retained account required",
+      (state.account.resource === "propertyContacts" ||
+        (state.account.resource === "properties" &&
+          Number.isSafeInteger(state.account.maxPages) &&
+          state.account.maxPages >= 1 &&
+          state.account.maxPages <= 50 &&
+          state.account.pageSize === 100)),
+    "Retained contacts or bounded property refresh required",
   );
   // The first dispatch only settles the old paused/expired queued job. No provider permit can be issued.
   const settle =
@@ -215,11 +264,18 @@ export async function run(mode) {
         'requests',(select count(*)::int from public.learn_business_input_request_permits where tenant_id=${quote(SCOPE.tenant)} and requested_at>${quote(p.cutoff)}::timestamptz),
         'flags',(select jsonb_agg(jsonb_build_object('flag',flag,'value',value)) from public.feature_flags where tenant_id=${quote(SCOPE.tenant)} and flag in('learn.enabled','learn.inputs.commusoft.enabled')),
         'jobs',(select coalesce(jsonb_agg(jsonb_build_object('id',id,'tenant',tenant_id,'account',payload->>'connector_account_id','status',status,'lease',lease_expires_at,'availableAt',available_at)),'[]') from public.platform_jobs where job_type='commusoft.source_sync' and status in('queued','running','retrying')),
-        'account',(select jsonb_build_object('id',id,'connectionId',settings->'commusoft_import'->>'connectionId','resource',settings->'commusoft_import'->>'resource','contactType',settings->'commusoft_import'->>'contactType','expiresAt',settings->'commusoft_import'->>'expiresAt','checkpoint',sync_cursor) from public.connector_accounts where id=${quote(SCOPE.account)}),
-        'operatorApproval',exists(select 1 from public.learn_operator_input_requests r join public.connector_accounts a on a.id=${quote(SCOPE.account)} where r.tenant_id=${quote(SCOPE.tenant)} and r.actor_id=${quote(SCOPE.actor)} and r.created_at>${quote(p.cutoff)}::timestamptz and r.definition->>'kind' in('resume_commusoft','start_commusoft') and r.receipt->>'state'='recorded' and r.receipt->>'approval_id'=a.settings->'commusoft_import'->>'approvalId'),
+        'account',(select jsonb_build_object('id',id,'connectionId',settings->'commusoft_import'->>'connectionId','resource',settings->'commusoft_import'->>'resource','contactType',settings->'commusoft_import'->>'contactType','expiresAt',settings->'commusoft_import'->>'expiresAt','approvalId',settings->'commusoft_import'->>'approvalId','maxPages',settings->'commusoft_import'->'maxPages','pageSize',settings->'commusoft_import'->'pageSize','checkpoint',sync_cursor) from public.connector_accounts where id=${quote(SCOPE.account)}),
+        'approvalReceipt',(select jsonb_build_object('id',r.id,'actor',r.actor_id,'tenant',r.tenant_id,'createdAt',r.created_at,'definition',r.definition,'receipt',r.receipt) from public.learn_operator_input_requests r join public.connector_accounts a on a.id=${quote(SCOPE.account)} where r.tenant_id=${quote(SCOPE.tenant)} and r.actor_id=${quote(SCOPE.actor)} and r.created_at>${quote(p.cutoff)}::timestamptz and r.definition->>'kind' in('resume_commusoft','start_commusoft') and r.receipt->>'state'='recorded' and (case when r.definition->>'kind'='start_commusoft' then r.id::text else r.receipt->>'approval_id' end)=a.settings->'commusoft_import'->>'approvalId' order by r.created_at desc,r.id desc limit 1),
         'sources',(select jsonb_agg(x) from(select collection,count(*)::int versions,count(distinct external_id)::int records from public.learn_business_input_versions where tenant_id=${quote(SCOPE.tenant)} group by collection)x)) state`);
       check(rows.length === 1, "State missing");
-      return rows[0].state;
+      const current = rows[0].state;
+      current.operatorApproval = recordedImportApproval(
+        current.approvalReceipt,
+        current.account,
+        p.cutoff,
+      );
+      delete current.approvalReceipt;
+      return current;
     };
     if (mode === "inspect") {
       if (p.pending) {

@@ -7,6 +7,29 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — bounded real phone capture, replay and stored audio verified in TEST.**
+The approved 15-minute sample retained one call and one recording. Repeating the
+metadata retained the same two identities and count. The one 417,425-byte audio
+copy passed the pinned runtime's storage readback/hash check. Four metadata runs
+and one download succeeded; capture and registry are paused, with no transcripts,
+AI processing or production changes. All original data remains preserved across
+194 datasets; only exact reviewed additions were reconciled into the stopped
+Commusoft supervisor's baseline, with original hashes retained.
+The existing signed-in operator read the real recording and obtained audio access,
+with three matching controller receipts and one audio-access receipt. Actual
+playback awaits the separately requested permission after automatic review denied
+pressing Play. The initial pre-provider authentication rejection was resolved by
+supplying the existing verified internal-key header; no access was expanded.
+Historical/voicemail coverage and AI/card enrichment remain unfinished.
+[Evidence](evidence/learn-phone-real-test-2026-10-12.json).
+
+The supervisor now validates both fresh-start and continuation receipt formats,
+binding actor, tenant, account, resource/limits and expiry. Its next property
+refresh must use a recorded operator approval, 100 records per page and at most
+50 pages; the original overall 4,000-request ceiling is unchanged. Nine supervisor
+checks pass, and read-only inspection accepted the current real continuation.
+No new property import has started.
+
 **12 October, 13:24 UTC — property freshness gap measured; refresh rehearsed locally.**
 Four bounded read-only provider requests found 2,421 currently available properties
 against 2,418 retained. All nine dormant properties are already retained; the tail

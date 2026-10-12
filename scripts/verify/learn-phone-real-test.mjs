@@ -1,13 +1,14 @@
 /** Bounded real TEST capture; prepare is read-only. Never creates login/grants. */
-import {randomUUID} from 'node:crypto';
+import {randomUUID,createHash} from 'node:crypto';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {savedCliToken,TEST_PROJECT,TEST_ORGANIZATION} from './learn-test-readiness.mjs';
 import {communicationQuery} from './learn-card-communication-catalog.mjs';
 import {preservationQuery} from './learn-commusoft-operator-run.mjs';
+import {canRecoverPhoneAuth} from './learn-phone-real-test-guard.mjs';
 const mode=process.argv[2],file='.verification-results/phone-real-test-20261012.json';
 const tenant='f8c114fa-fee7-4983-8970-f6e7f5fd3129',customer='3950';
 const check=(v,m)=>{if(!v)throw Error(m)};
-check(['prepare','capture','replay','download','pause','inspect'].includes(mode)&&process.env.LEARN_TEST_ALLOW_PROJECT_REF===TEST_PROJECT,'Explicit TEST mode required');
+check(['prepare','capture','resume-capture','replay','download','pause','inspect'].includes(mode)&&process.env.LEARN_TEST_ALLOW_PROJECT_REF===TEST_PROJECT,'Explicit TEST mode required');
 const token=savedCliToken(),q=(s,write=false)=>communicationQuery(token,s,{readOnly:!write});
 async function mgmt(path){const r=await fetch(`https://api.supabase.com/v1/projects/${TEST_PROJECT}${path}`,{headers:{Authorization:`Bearer ${token}`},redirect:'error',signal:AbortSignal.timeout(30000)});check(r.ok,'TEST management read failed');return r.json();}
 const identity=await mgmt('');check(identity.id===TEST_PROJECT&&identity.organization_id===TEST_ORGANIZATION&&identity.status==='ACTIVE_HEALTHY','Wrong TEST project');
@@ -42,12 +43,18 @@ const controls=await q(`select flag,value from public.feature_flags where tenant
 check(controls.length===4&&controls.every(x=>x.value===(x.flag==='learn.enabled')),'Prepared capture switches changed');
 await scheduleCheck();check(equal(p.before,await q(preservation(p))),'Protected data changed');
 const keyRows=await mgmt('/api-keys?reveal=true'),matches=keyRows.filter(x=>x.name==='service_role');check(matches.length===1,'Unique TEST service credential required');const key=matches[0].api_key,claims=JSON.parse(Buffer.from(key.split('.')[1],'base64url'));check(claims.ref===TEST_PROJECT&&claims.role==='service_role','Wrong existing service key');
-async function edge(name,body){p.pending={name,startedAt:new Date().toISOString()};save();const r=await fetch(`https://${TEST_PROJECT}.supabase.co/functions/v1/${name}`,{method:'POST',headers:{Authorization:`Bearer ${key}`,apikey:key,'x-internal-tenant-id':tenant,'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tenant,...body}),redirect:'error',signal:AbortSignal.timeout(105000)});const b=await r.json();if(b.success===true&&name!=='simwood-download-recording')check(b.customer_id===customer&&b.from===p.window.from&&b.to===p.window.to,'Provider receipt scope differs');const receipt={name,status:r.status,success:b.success===true,code:b.error?.code??null,run:b.sync_run_id??null,processed:b.records_processed??null,windowComplete:b.window_complete??null};p.history.push(receipt);p.pending=null;save();return receipt;}
+const binding=(await mgmt('/secrets')).filter(x=>x.name==='SERVICEOS_INTERNAL_KEY');const digest=createHash('sha256').update(key).digest('hex');check(binding.length===1&&[binding[0].digest,binding[0].value].includes(digest),'Existing internal credential binding differs; no credential change permitted');
+async function edge(name,body){p.pending={name,startedAt:new Date().toISOString()};save();const r=await fetch(`https://${TEST_PROJECT}.supabase.co/functions/v1/${name}`,{method:'POST',headers:{Authorization:`Bearer ${key}`,apikey:key,'x-serviceos-internal-key':key,'x-internal-tenant-id':tenant,'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tenant,...body}),redirect:'error',signal:AbortSignal.timeout(105000)});const b=await r.json();if(b.success===true&&name!=='simwood-download-recording')check(b.customer_id===customer&&b.from===p.window.from&&b.to===p.window.to,'Provider receipt scope differs');const receipt={name,status:r.status,success:b.success===true,code:b.error?.code??null,run:b.sync_run_id??null,processed:b.records_processed??null,windowComplete:b.window_complete??null};p.history.push(receipt);p.pending=null;save();return receipt;}
 try{
- if(mode==='capture'||mode==='replay'){
+ if(mode==='capture'||mode==='resume-capture'||mode==='replay'){
  if(mode==='capture'){
   check(p.state==='prepared','Capture already attempted');p.state='registering';save();
   await q(`begin;select pg_advisory_xact_lock(hashtextextended('learn-input-setup:${tenant}',0));insert into public.tenant_connectors(id,tenant_id,connector_id,provider,category,status,enabled) values('${p.connector}','${tenant}','simwood','simwood','communications','active',true);insert into public.connector_accounts(id,tenant_connector_id,tenant_id,account_key,display_name,status,settings) values('${p.account}','${p.connector}','${tenant}','3950','Drummonds bounded TEST acceptance','active','{"provider_customer_id":"3950"}');update public.feature_flags set value='true'::jsonb where tenant_id='${tenant}' and flag='learn.inputs.phone.enabled' and value='false'::jsonb;insert into public.controlplane_change_log(tenant_id,actor,action,resource_type,resource_id,reason,source,view_as_active,after) values('${tenant}','serviceos:phone-test-acceptance','phone_test.register','connector_accounts','${p.account}','Approved bounded real phone TEST run ${p.run}','learn-phone-real-test',false,jsonb_build_object('run','${p.run}','provider_account','3950','metadata_only',true));commit;`,true);p.state='capturing';save();
+ }else if(mode==='resume-capture'){
+  const rows=await q(emptyTables.map(t=>`select '${t}' name,count(*)::int n from public.${t} where tenant_id='${tenant}'`).join(' union all '));
+  check(canRecoverPhoneAuth(p,await observed(),rows),'Only one acknowledged pre-capture auth rejection can resume');
+  p.authRecovery={at:new Date().toISOString(),basis:'Acknowledged 401 before run creation; all six target source/run tables remain empty; existing internal-key digest matches.'};save();
+  await q(`begin;update public.connector_accounts set status='active' where id='${p.account}' and tenant_id='${tenant}';update public.tenant_connectors set enabled=true,status='active' where id='${p.connector}' and tenant_id='${tenant}';update public.feature_flags set value='true'::jsonb where tenant_id='${tenant}' and flag='learn.inputs.phone.enabled';commit;`,true);
  }else{
   check(p.state==='metadata_captured'&&!p.replayed,'One metadata replay only');p.replayed=true;save();
   p.replayBefore=await q(`select id,provider_call_id as external_id,'calls' as collection from public.phone_calls where tenant_id='${tenant}' union all select id,provider_recording_id,'recordings' from public.phone_recordings where tenant_id='${tenant}'`);save();

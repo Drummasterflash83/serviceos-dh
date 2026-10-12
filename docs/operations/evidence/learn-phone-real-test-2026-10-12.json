@@ -1,0 +1,56 @@
+{
+  "scope": "TEST only",
+  "run": "8178fbed-a35c-4de6-9228-2f4ea5279da6",
+  "observedAt": "2026-10-12T13:36:53.360842+00:00",
+  "calls": 1,
+  "recordings": 1,
+  "storedAudio": 1,
+  "audioBytes": 417425,
+  "window": {
+    "from": "2026-10-12T10:00:00.000Z",
+    "to": "2026-10-12T10:15:00.000Z",
+    "limit": 20
+  },
+  "metadataRuns": 4,
+  "completedMetadataWindows": 4,
+  "providerPages": 4,
+  "providerAudioDownloads": 1,
+  "replay": {
+    "originalIdentitiesPreserved": true,
+    "sourceCountBefore": 2,
+    "sourceCountAfter": 2
+  },
+  "download": {
+    "state": "succeeded",
+    "storageReadbackHashVerifiedByPinnedRuntime": true,
+    "privateBucket": true
+  },
+  "capturePaused": true,
+  "registryDisabled": true,
+  "aiRequests": 0,
+  "transcripts": 0,
+  "productionWrites": 0,
+  "newUsers": 0,
+  "newGrants": 0,
+  "protectedDatasets": 194,
+  "originalRowsPreserved": true,
+  "initialAuthRejection": {
+    "status": 401,
+    "code": "internal_auth_mismatch",
+    "providerRequests": 0,
+    "resolved": "Runner now supplies the existing digest-verified internal credential header."
+  },
+  "limits": [
+    "One fixed 15-minute sample only; historical and voicemail coverage remain open.",
+    "Real signed-in playback and card/AI enrichment remain unverified.",
+    "No production acceptance or release implied."
+  ],
+  "operatorBrowser": {
+    "realSignedInRecordingRead": true,
+    "savedAudioAccessGranted": true,
+    "originalAuditRowsPreserved": true,
+    "controlReceipts": 3,
+    "audioAccessReceipts": 1,
+    "actualPlayback": "Not started: automatic approval review requires explicit permission to listen."
+  }
+}

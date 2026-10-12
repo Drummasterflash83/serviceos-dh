@@ -1,11 +1,39 @@
-# Drummonds real phone TEST acceptance — prepared, not executed
+# Drummonds real phone TEST acceptance — capture, replay and copy verified
 
 Run `8178fbed-a35c-4de6-9228-2f4ea5279da6` targets only Supabase TEST
 `saatxzwxvdvqevbnskxy`, existing Drummonds tenant
 `f8c114fa-fee7-4983-8970-f6e7f5fd3129`, and verified Birchills account `3950`.
-Chris already approved the existing provider credential in TEST. This next scope
-includes copying real recording audio into TEST, which needs his decision under
-the launch goal's requirement to approve a new recording destination.
+Chris approved the existing provider credential in TEST and, on 12 October,
+explicitly approved this bounded capture and one real recording copy into TEST.
+The approval covers only the scope below. Capture, metadata replay and one audio
+copy have now passed; broader acceptance remains open. The approval does not
+authorise paid AI processing or production promotion.
+
+## Observed result — 12 October
+
+- One real call and one recording record imported from the fixed window. All four
+  metadata runs (initial capture and one replay) completed their selected windows.
+- Replay retained the same two source identities and count. One 417,425-byte
+  recording was copied into the unchanged private TEST bucket; the pinned download
+  runtime verified its stored readback hash before completing the attempt.
+- Phone capture and the new registry are disabled. Five sync runs succeeded;
+  there are no transcripts, AI results, new users/grants or production changes.
+- All 194 protected datasets preserve their original rows. The stopped Commusoft
+  journal was reconciled only for the exact reviewed phone additions, retaining
+  its earlier hashes and a separate audit record.
+- Chris's existing signed-in operator loaded this recording and opened its audio
+  player. Three exact controller receipts and one audio-access receipt were
+  verified; original audit rows are unchanged. **Actual playback has not started.**
+  Automatic approval review requires separate permission to listen to the real
+  conversation; that question is pending. Opening the player is not playback proof.
+
+The initial call was rejected with `401 internal_auth_mismatch` before a sync run
+or provider request. The runner omitted the existing internal-key header. A
+single guarded recovery confirmed all six source/run tables were still empty,
+verified the existing key digest and supplied that header. No key was created,
+replaced or given a new destination. Unknown outcomes cannot use this recovery.
+
+[Sanitised acceptance evidence](evidence/learn-phone-real-test-2026-10-12.json).
 
 ## Concrete scope
 
@@ -52,12 +80,13 @@ strict endpoint TypeScript checks pass. Deployment preserved all 194 datasets,
 other endpoints and SQL definitions, and activated no connection.
 
 Runner: `scripts/verify/learn-phone-real-test.mjs`. Modes are `prepare`, `capture`,
-`replay`, `download`, `pause` and `inspect`. Mutation modes require the exact run ID
+`resume-capture`, `replay`, `download`, `pause` and `inspect`. Mutation modes require the exact run ID
 in `LEARN_REAL_PHONE_APPROVED_RUN` after Chris's approval is recorded. Prepare and
 inspect are read-only. The private journal is
 `.verification-results/phone-real-test-20261012.json`; never recreate it or replay
 an operation marked pending. Inspect its exact sync run before further action.
 
-A separate review must reconcile this run's proven additions with the Commusoft
-supervisor's saved preservation inventory after that supervisor stops; never
-blindly replace its baseline or write its live journal while it is running.
+The exact phone additions and subsequent operator audio-access receipt have been
+reconciled with the stopped Commusoft supervisor. The original baselines remain
+in its private journal. Do not repeat these reconciliations, blindly replace a
+baseline, or write a supervisor's journal while it is running.
