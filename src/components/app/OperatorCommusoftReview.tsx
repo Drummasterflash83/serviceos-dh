@@ -54,7 +54,7 @@ export function OperatorCommusoftReview({
     [tenantId, actorId, session],
   );
   return (
-    <section className="cp-root space-y-4" aria-label="Review business inputs for cards">
+    <section className="op-embedded cp-root min-w-0 space-y-4" aria-label="Review business inputs for cards">
       <header>
         <h2 className="text-xl font-semibold">Turn retained inputs into customer context</h2>
         <p>
