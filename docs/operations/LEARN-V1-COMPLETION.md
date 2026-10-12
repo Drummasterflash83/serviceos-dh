@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October, 00:24 BST — audited observation reader installed in TEST.**
+**13 October, 00:28 BST — signed-in TEST observation → source journey verified.**
 
 ### Working and verified
 
@@ -21,16 +21,24 @@ override a later release observation. No requirement is silently deferred.
   credentials, new retained accounts/grants, capture activation or production changes.
   The synthetic rehearsal consumed three work-capture sequence values; install
   consumed none. Fixture records and temporary authority were rolled back.
-- Frontend adds clearly labelled rules-based observations and an audited source
-  communication button. Full TypeScript check, build and five reader tests pass.
+- Frontend at stable `test.openfolk.ai` (Git `9857dd1`, deployment
+  `dpl_H32JNxBfaEPBbmm7xLzztaQpsW4h`) shows 17 real retained observations. Signed-in
+  operator inspection opened both a Slack source and an email source, with matching
+  source-version status. Three corresponding audit reads retain the actual operator;
+  switching collections clears the content. Full TypeScript, build and five reader
+  tests pass. Both TEST aliases retain protection; the live deployment is unchanged.
 - The TEST client-view preparation screen is explained: there are zero
   `client_programmes` rows, including none for the selected Drummonds TEST tenant.
   This is a programme setup gap, not evidence that retained learning records are absent.
 
 ### Needs finishing
 
-- Deploy and verify this frontend at stable TEST, including a signed-in real source
-  drill-down. The legacy Learning page and client-programme setup remain open.
+- The legacy Learning page still rejects the current operator; client-programme
+  setup remains open. This milestone verifies Client information, not those routes.
+- **Relevance quality needs improvement:** the saved sample visibly includes
+  newsletters and unrelated email. The current keyword eligibility is not enough
+  to present every observation as actionable company insight. Keep source records,
+  add transparent filtering/review and do not confuse ingestion with useful analysis.
 - Match the new schema and runtime into production preparation. Source revision
   reprocessing, wider history/capture, AI, cards/scoring and full launch gates remain
   as listed below; source freshness disclosure does not complete reconciliation.

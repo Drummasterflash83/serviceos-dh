@@ -1,6 +1,6 @@
 {
-  "state": "backend_test_verified_frontend_local",
-  "observedAt": "2026-10-12T23:23:10.830Z",
+  "state": "hosted_test_browser_verified",
+  "observedAt": "2026-10-12T23:28:01.323420+00:00",
   "projectRef": "saatxzwxvdvqevbnskxy",
   "packageSha256": "8739428405f6376060f495c2cfa4d05ab25f63f35de6ae50b0c7a4c40641a1f2",
   "preservedDatasets": 204,
@@ -10,11 +10,38 @@
     "typescript": "passed",
     "build": "passed",
     "readerUnitTests": 5,
-    "browser": "pending"
+    "browser": {
+      "signedInOperator": true,
+      "observationsVisible": 17,
+      "slackSourceOpened": true,
+      "emailSourceOpened": true,
+      "sourceFreshnessVisible": true,
+      "categorySwitchClearsContent": true,
+      "auditReads": {
+        "learning_observations": 1,
+        "communications": 2
+      },
+      "impersonation": false
+    }
   },
   "productionChanged": false,
   "providerRequests": 0,
   "newAccounts": 0,
   "newGrants": 0,
-  "limitation": "Rules-based retained sample only; not AI synthesis or full coverage. Legacy Learning and client programme setup remain open."
+  "limitation": "Rules-based retained sample only; not AI synthesis or full coverage. Legacy Learning and client programme setup remain open.",
+  "frontend": {
+    "gitSha": "9857dd1ad271c69381c96d0d9ba3c7c0ff62e2e4",
+    "deploymentId": "dpl_H32JNxBfaEPBbmm7xLzztaQpsW4h",
+    "stableUrl": "https://test.openfolk.ai",
+    "protected": true,
+    "cleanStableUrlVerified": true,
+    "productionDeploymentUnchanged": "dpl_DXueDsax146gdtyFoniXRaW3dzMM"
+  },
+  "limitations": [
+    "Rules-based retained sample; not AI synthesis or full provider coverage.",
+    "Keyword eligibility admits newsletters and unrelated mail; relevance quality requires improvement.",
+    "Legacy Learning route and missing TEST client programme remain open.",
+    "Current-source disclosure does not implement source revision reconciliation.",
+    "Matching production release and signed-in production acceptance remain open."
+  ]
 }
