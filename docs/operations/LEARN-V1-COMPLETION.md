@@ -7,6 +7,18 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 12:12 UTC — customer business-context reader installed in TEST.**
+The same provider-neutral reader now supplies linked jobs, sites and contacts to
+customer cards and the audited OpenFolk card view. It shows canonical counts,
+paginates 25 records, retains source-version references and discloses unconfirmed
+job timing. Full-schema rollback checks cover company/person customers, another
+business-system provider, tenant isolation, operator audit failure, revocation and
+View-As denial. Installation and checks preserve all 194 datasets. Four client
+contract tests, strict TypeScript and the frontend build pass. The frontend is
+prepared; deployment and real signed-in acceptance remain next. This adds useful
+business context, not AI summaries, communications coverage or completed scoring.
+[Evidence](evidence/learn-customer-business-context-test-2026-10-12.json).
+
 **12 October, 12:00 UTC — continued real import observed.**
 Worker v7 has advanced beyond the prior stop to 641 of 1,547 customer properties,
 with 1,208 contacts retained alongside 2,418 properties and 12,611 jobs. The

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
+import { LearnCustomerBusinessContext } from "@/components/client-portal/learn/LearnCustomerBusinessContext";
 import {
   clientInformationCollections,
   readClientInformation,
@@ -26,6 +27,7 @@ export function OperatorClientInformation({
   const generation = useRef(0);
   const scope = `${tenantId}:${actorId}:${collection}`;
   const [loadedScope, setLoadedScope] = useState("");
+  const [loadedReason, setLoadedReason] = useState("");
   const visible = loadedScope === scope ? page : null;
   function clear() {
     generation.current++;
@@ -76,6 +78,7 @@ export function OperatorClientInformation({
       if (ticket !== generation.current) return;
       setPage(result);
       setLoadedScope(scope);
+      setLoadedReason(reason.trim());
     } catch (e) {
       if (ticket === generation.current)
         setError(e instanceof Error ? e.message : "Client information is unavailable.");
@@ -180,6 +183,15 @@ export function OperatorClientInformation({
                 <p className="text-xs text-muted-foreground">Record {row.id}</p>
                 {selected === row.id && (
                   <>
+                    {collection === "customers" && (
+                      <LearnCustomerBusinessContext
+                        key={`${tenantId}:${actorId}:${row.id}`}
+                        tenantId={tenantId}
+                        actorId={actorId}
+                        cardId={row.id}
+                        operatorReason={loadedReason}
+                      />
+                    )}
                     <dl className="mt-3 space-y-2">
                       {Object.entries(row.fields).map(([key, value]) => (
                         <div key={key}>

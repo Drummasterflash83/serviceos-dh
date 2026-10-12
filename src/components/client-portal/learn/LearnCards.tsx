@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
 import { LearnTeamGroupPicker } from "./LearnTeamGroupPicker";
 import { LearnStoredEvidence } from "./LearnStoredEvidence";
+import { LearnCustomerBusinessContext } from "./LearnCustomerBusinessContext";
 import { CARD_SOURCE_FIELDS } from "../../../lib/learn-card-sources";
 import { LearnPerformanceCard } from "./LearnPerformanceCard";
 import { LearnWorkHistory } from "./LearnWorkHistory";
@@ -500,6 +501,9 @@ function CardDetail({
             groupId={groupId}
             canReview={canReview}
           />
+          {kind === "customer" && (
+            <LearnCustomerBusinessContext tenantId={tenantId} actorId={actorId} cardId={id} />
+          )}
           <h3>Findings, commitments & blockers</h3>
           {!data.findings.length && (
             <p>

@@ -1,0 +1,63 @@
+{
+  "scope": "TEST only",
+  "installation": {
+    "state": "installed_verified",
+    "project": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T12:10:56.180Z",
+    "sourceSha256": "4ffe78cc25aeaf33dc0fef4078af1fa3b59bfcc991392a0d8bf4b6cb4699df90",
+    "preservedDatasets": 194,
+    "installed": [
+      {
+        "fingerprint": "0aca3dac49b265d26a51034b00a7ce12",
+        "authenticated": true,
+        "anon": false,
+        "service": false
+      }
+    ],
+    "newAccounts": 0,
+    "newGrants": 0,
+    "providerCalls": 0,
+    "productionChanged": false
+  },
+  "installedRollbackChecks": {
+    "state": "passed_rolled_back",
+    "project": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-12T12:12:16.421Z",
+    "sources": [
+      {
+        "path": "supabase/migrations/20261101520000_learn_customer_business_context.sql",
+        "sha256": "4ffe78cc25aeaf33dc0fef4078af1fa3b59bfcc991392a0d8bf4b6cb4699df90"
+      },
+      {
+        "path": "scripts/verify/learn-customer-business-context.assert.sql",
+        "sha256": "1eb9973fc34391608565beef2afbd4b45458b40bb2fbebb494c7b04a533a5c95"
+      }
+    ],
+    "preservedDatasets": 194,
+    "priorCatalogRestored": true,
+    "newAccountsRetained": 0,
+    "newGrantsRetained": 0,
+    "providerCalls": 0,
+    "productionChanged": false
+  },
+  "clientContractTests": 4,
+  "strictTypecheck": "passed",
+  "frontendBuild": "passed",
+  "frontendAcceptance": "pending",
+  "checks": [
+    "Company and individual customer links",
+    "Alternative business-system source references",
+    "25-row pagination and exact canonical totals",
+    "Unrelated and foreign records excluded",
+    "Existing foundation guard rejects cross-tenant relationships",
+    "Owner access, viewer denial, operator audit, revocation and View-As denial",
+    "Audit failure returns no data",
+    "Explicit field projection and visible truncation",
+    "Unzoned timestamps remain excluded from performance calculations"
+  ],
+  "limitations": [
+    "Counts refer to canonical published records, not complete provider coverage.",
+    "Up to five historical source references per row; no claim of current provider state.",
+    "Real communications, enriched summaries and production acceptance remain unfinished."
+  ]
+}
