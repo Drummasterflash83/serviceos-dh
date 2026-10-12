@@ -42,13 +42,14 @@ Cloudflare-flavoured.
 
 ## Preview deployments
 
-The production-specific LEARN candidates now include packages 001–011. The combined
-archive rehearsal preserves every original row/sequence and passes ten Phone and
-operator-health journeys, using synthetic data in isolated restored databases.
+The production-specific LEARN candidates now include packages 001–012. The combined
+archive rehearsal preserves every original row/sequence. Eleven communication/card
+suites now pass, including actual email storage and Phone handoff through queued
+identity processing to owner-visible cards, using synthetic offline inputs.
 These are reviewed release inputs, **not live migrations or promotion approval**.
 Install only as part of the eventual matched schema/worker/frontend release; never
 run the TEST bundles against production. See the
-[release plan](operations/LEARN-V1-PRODUCTION-RELEASE.md#phone-capture-processing-and-operator-health-candidate)
+[release plan](operations/LEARN-V1-PRODUCTION-RELEASE.md#communication-cards-attribution-review-and-queued-processing-candidate)
 and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
 ### Isolated LEARN TEST project (10 October 2026)

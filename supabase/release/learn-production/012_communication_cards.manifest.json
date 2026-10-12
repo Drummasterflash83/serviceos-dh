@@ -1,0 +1,150 @@
+{
+  "version": "learn-production-communication-cards/1",
+  "status": "draft_requires_rehearsal_and_production_approval",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166",
+  "priorSha256": "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/release/learn-test/016_card_communications.sql",
+      "sha256": "78b6871e377b3e35280769edff0f28c3ec0872208578daed958cec0b97776ebc"
+    },
+    {
+      "path": "supabase/release/learn-test/017_card_communication_context.sql",
+      "sha256": "87f54342bffc35c32b81434dd54fb2b662fbfcd7aefd516b511fd21c6cad6403"
+    },
+    {
+      "path": "supabase/release/learn-test/019_card_sources.sql",
+      "sha256": "cca8c835fdf7b3e088796ecd34dae4e09b6ed615f93386ff2f03cfdea9d86e86"
+    },
+    {
+      "path": "supabase/migrations/20261101150000_learn_card_search.sql",
+      "sha256": "011790af324c8db7bf03493bbbe5ee8765f74196211747883f7707f67f65f3be"
+    },
+    {
+      "path": "supabase/migrations/20261101300000_learn_identity_delivery.sql",
+      "sha256": "da3e034eef9f7b84e19673b2baee1830f4efdd0f90b8e93e635c44622b2db587"
+    },
+    {
+      "path": "supabase/migrations/20261101310000_learn_interaction_projection.sql",
+      "sha256": "1b1cfa38b70cc5b611b96496adfdb50aa920ef614ff2ae62615eaee6cb5f7f4f"
+    },
+    {
+      "path": "supabase/migrations/20261101320000_learn_projection_operator_review.sql",
+      "sha256": "57b66390fbd57d77f43dfd6390799365c5b0501557182352dba8d4a28a969a49"
+    },
+    {
+      "path": "supabase/migrations/20261101330000_learn_identity_operator_review.sql",
+      "sha256": "5944b4e61b2a6e82b1cf8f49e470a1a23afe11ba60d13d2b3dafcbcd06177e1b"
+    },
+    {
+      "path": "supabase/migrations/20261101340000_learn_processing_queue.sql",
+      "sha256": "8ed9e12e939220718f9d479b904ade80c6f426b4f7bce46b934dabda581298cb"
+    },
+    {
+      "path": "supabase/migrations/20261101380000_learn_email_draft_eligibility.sql",
+      "sha256": "44008ef0375ba74ebb72c6803e8354bfd96d9f3932799ed3240a0c4a3267b136"
+    },
+    {
+      "path": "supabase/migrations/20261101390000_learn_card_projection_eligibility.sql",
+      "sha256": "b14c9e3ec74f36d0b140d39a70fcff8d436cbd00348922f644a4efda6c9dca02"
+    }
+  ],
+  "existingTables": [
+    "companies",
+    "customer_cards",
+    "email_messages",
+    "interaction_match_suggestions",
+    "interactions",
+    "jobs",
+    "org_units",
+    "people",
+    "phone_calls",
+    "phone_recordings",
+    "phone_sync_runs",
+    "platform_events",
+    "platform_jobs",
+    "profiles",
+    "recommendations",
+    "team_members",
+    "tenants"
+  ],
+  "newTables": [
+    "learn_identity_delivery_receipts",
+    "learn_interaction_projection_receipts",
+    "learn_projection_operator_reviews",
+    "learn_identity_operator_reviews",
+    "learn_processing_publications",
+    "learn_processing_settlements"
+  ],
+  "newFunctions": [
+    "learn_card_communications_read",
+    "learn_card_source_read",
+    "learn_card_search",
+    "learn_identity_revision",
+    "learn_identity_pending",
+    "learn_identity_deliver",
+    "learn_phone_source_fields",
+    "learn_email_source_fields",
+    "learn_projection_revision",
+    "learn_projection_pending",
+    "learn_project_interaction",
+    "learn_projection_review_count",
+    "learn_projection_review_state",
+    "learn_operator_projection_reviews",
+    "learn_operator_projection_review_detail",
+    "learn_operator_projection_review",
+    "learn_identity_deliver_internal",
+    "learn_identity_review_state",
+    "learn_operator_identity_reviews",
+    "learn_operator_identity_people",
+    "learn_operator_identity_review_detail",
+    "learn_operator_identity_review",
+    "learn_identity_review_count",
+    "learn_processing_publish",
+    "learn_processing_settle",
+    "learn_email_is_draft",
+    "learn_interaction_is_draft",
+    "learn_card_projection_inputs"
+  ],
+  "changedFunctions": [],
+  "changedViews": [],
+  "newSequences": [],
+  "newRole": "learn_card_communication_reader",
+  "extendedTables": {},
+  "newExistingConstraints": {},
+  "newExistingIndexes": {},
+  "newExistingTriggers": {},
+  "newExistingPolicies": {
+    "profiles": [
+      "learn_card_communication_profile",
+      "learn_cards_production_boundary"
+    ],
+    "interactions": [
+      "learn_card_communication_read",
+      "learn_cards_production_boundary"
+    ],
+    "email_messages": [
+      "learn_card_email_source_read",
+      "learn_cards_production_boundary"
+    ],
+    "phone_calls": [
+      "learn_card_call_source_read",
+      "learn_cards_production_boundary"
+    ],
+    "phone_recordings": [
+      "learn_card_recording_source_read",
+      "learn_cards_production_boundary"
+    ]
+  },
+  "limitations": [
+    "No source rewrite, historical attribution backfill, worker activation or new credential.",
+    "Existing production source grants/policies remain; restrictive reader-only boundaries prevent PUBLIC policies widening this new reader.",
+    "Draft eligibility pieces exclude the obsolete email store; package010 v4 storage remains intact.",
+    "Paired runtime, retained draft-impact reconciliation, real source-to-card coverage and signed-in acceptance remain required."
+  ]
+}

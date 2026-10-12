@@ -557,6 +557,62 @@ The package SQL was unchanged across these fixture adaptations. See
 [sanitised evidence](evidence/learn-production-phone-rehearsal-2026-10-12.json).
 No hosted environment has changed.
 
+### Communication cards, attribution review and queued processing candidate
+
+The twelfth package, [012_communication_cards.sql](../../supabase/release/learn-production/012_communication_cards.sql),
+is built against the inspected archive after packages 001–011. SHA-256:
+`57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166`.
+Eleven pinned source files supply six protected receipt/review tables, 28 new
+function names and one restricted communication reader. Existing source columns,
+functions, views, constraints and application grants remain intact. The older
+TEST guards and deployment ledger are excluded from the generated candidate.
+
+The reader receives selected profile, interaction and source columns. Its five
+permissive policies are paired with five reader-only restrictive policies because
+production's existing PUBLIC policies must not broaden this new role. Only the
+actual owner/admin caller's tenant supplies communication excerpts and source
+metadata. There is no reader login, RLS bypass or application membership; temporary
+installer SET/INHERIT and schema CREATE are revoked. This is not a claim that all
+pre-existing production source access has been hardened.
+
+Source projection, identity/card delivery, review and processing jobs commit with
+immutable receipts. Exact retries do not repeat attribution or create duplicate
+cards; stale source revisions, expired claims and ambiguous identities remain
+explicit. Review preserves previous canonical data and requires current operator
+authority. Manual card fields and newer activity are preserved when older sources
+are processed. Customer/job/member/team search uses the caller's existing RLS.
+
+The draft-eligibility selection excludes its old `learn_email_store_page` body:
+package 010's v4 storage protocol must remain unchanged. Labelled drafts stay
+retained but are excluded before communication excerpts and bounded card activity
+windows are calculated. A later eligible source revision can be reassessed. This
+installation performs no historical card refresh, draft-impact cleanup, identity
+backfill or scoring rewrite. The previously recorded production draft-impact
+review remains an explicit launch gate, alongside real-provider and signed-in
+acceptance and any remaining source-eligibility decisions.
+
+The offline fixtures use real production same-tenant references, including a
+synthetic campaign for the pre-existing email origin foreign key. They retain the
+newer refetch policy rather than downgrading storage to fit the older draft test.
+No production constraint or permission is removed to make the fixtures pass.
+The terminal v3 combined rehearsal passes eleven suites in 64.63 seconds. One
+integrated journey passes actual v4 email storage and retained Phone handoff through
+fenced identity jobs into two owner-visible cards and readable source evidence.
+The 299 archived COPY tables retain all 1,591,576 original rows and five sequences;
+new receipt tables are empty in the preservation database. All disposable clones
+are removed. The candidate SQL remained unchanged through fixture adaptations.
+See [sanitised evidence](evidence/learn-production-cards-rehearsal-2026-10-12.json).
+
+Install this only with the matched interaction, identity, card-refresh and shared
+worker runtime as part of the reviewed production release. Pause affected work
+before an incompatible rollback; retain receipt/review history and recover with
+compatible code. Legacy writers must not overwrite reviewed attribution, use
+stale card inputs or reintroduce drafts into activity and score evidence.
+No capture, processing schedule or hosted environment is activated by this package.
+
+Generator: `node scripts/verify/learn-production-cards-candidate.mjs`.
+Rehearsal: `python3 scripts/backup/rehearse_production_cards.py`.
+
 ## Build the production-specific release candidate
 
 1. Read production's current migration ledger, schema/catalog, deployed function

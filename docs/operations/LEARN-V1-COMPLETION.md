@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October — communication-to-card release passes production-archive acceptance.**
+All twelve production-specific packages install together. Eleven synthetic suites
+pass source projection, identity/card delivery, operator review, fenced job
+publication/settlement, draft exclusion, bounded card inputs, restricted source
+readers and customer/job/member/team search. One integrated journey uses the actual
+v4 email store and Phone handoff, completes queued identity processing, and reads
+two resulting cards and their source evidence as the owning company. Replays do
+not duplicate cards; retained email, recording and transcript records are unchanged.
+
+The private card reader has no login, RLS bypass or application membership. Five
+restrictive policies prevent production's existing PUBLIC policies widening its
+owner/admin tenant boundary. Foreign-company, demoted-user, stale-revision,
+View-As and revoked-operator refusals pass where applicable. Older inputs preserve
+manual card fields and newer activity. Drafts remain stored but cannot enter card
+activity windows or attribution; a changed eligible revision can be reassessed.
+
+All 1,591,576 original archived rows and five sequences still match, with only the
+three earlier import templates added. Existing source columns, constraints,
+functions, views and application grants remain intact. All disposable clones were
+removed. No hosted environment changed or provider request was made. The earlier
+production draft-impact reconciliation, real coverage, remaining connector release
+packages, paired runtime and signed-in acceptance remain launch requirements.
+[Communication-card rehearsal evidence](evidence/learn-production-cards-rehearsal-2026-10-12.json).
+
 **12 October — Phone and operator health pass production-archive acceptance.**
 All eleven production-specific packages install together. Ten synthetic journey
 suites on actual archived production structures pass page publication, replay,

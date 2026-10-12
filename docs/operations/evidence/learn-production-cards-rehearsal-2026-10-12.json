@@ -1,0 +1,141 @@
+{
+  "state": "production_communication_cards_rehearsed_offline",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "fullReleaseAccepted": false,
+  "signedInAcceptance": false,
+  "packages": [
+    "d9870a4b1e581ea75d1b9ef84b0fffb713c8965caa9c02d8aad63b009bac745d",
+    "1ea226e5da475464b1b6ccccf3cc1e027b6a17417e99f582b81f10206459e1d4",
+    "d3a2abaccbb2542f3ec8cf92d9b48b7fd3eed9d0505d050b04828304b4fc6b27",
+    "f919f590057ccaa257c0b69b4cffb8084c9b01c4d6ba638600eac5e412373d3f",
+    "d69899c63c83bfb974282599ffa4a6183b29e8f53b652796459d2c1e235ae066",
+    "ede925a3158c48f4374c916b3cbcaf2e5345110885458833d5f9d988ca3b4a91",
+    "178edb3a1e61397ba7cac593276269ea06dfd25d91d5206844e1948473610947",
+    "33b82c3e902bf4eb1172a6f1750a43ec0b02f69551662eb1392ce4a6bb1d308d",
+    "02cd8ccd3d806eacc30976edd89bdfd30b05e90d45bbf36cab2828a8765cc253",
+    "c66f74df447fa77a2fdbd914900ae43b1ce88cd544b769ad6d6b864f071e98a6",
+    "f45c032695071204e9854a30b6b5a74f18e3ed2ddab2f690e86ae90157f429dc",
+    "57eb47d78df8352b6e24cd2d26081231381ca6e37a6ef86f51e2a9ce9584e166"
+  ],
+  "containmentBefore": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "negativeChecks": [
+    "wrong_target",
+    "catalog_drift",
+    "late_failure"
+  ],
+  "protocolRoleGrantsExact": true,
+  "privateReaderNoLoginNoApplicationMembership": true,
+  "legacyColumnsAndCatalogPreserved": true,
+  "noInventedHistoricalEvidence": true,
+  "accessProbes": [],
+  "addedImportTemplates": 3,
+  "sourcePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 299,
+    "rows": 1591576,
+    "sequences": 5,
+    "comparisonSha256": "718f910ebeff60cef170cae4ee7bc73fbccb9cb5ea7c6b7b76c0757319c623de",
+    "scope": "Every original archived column/row and sequence; added columns verified separately without invented historical evidence."
+  },
+  "duplicateRejected": true,
+  "journeys": [
+    {
+      "path": "scripts/verify/learn-identity-delivery.assert.sql",
+      "sourceSha256": "f1032038abac2cd82798c6fa47343162218519f06ba45ff738abd1ac3d650a50",
+      "probeSha256": "976e5955898eeb3e8c3cb18ca28508ff7ec3e32f59a43e84082a7459b1cd180f"
+    },
+    {
+      "path": "scripts/verify/learn-production-interaction-projection.assert.sql",
+      "sourceSha256": "85b763f4ed6983d2c56d87877d5e46595c09ffe704b977a7c61db1e826252680",
+      "probeSha256": "aa5490764b988591176a44518e65c1d366ef68021a19d8e2ac48e5c8cfb3168e"
+    },
+    {
+      "path": "scripts/verify/learn-production-projection-review.assert.sql",
+      "sourceSha256": "f7b158ea8d72bf1eb11ebcf11d71d4669856976922c8bd792467b80236e152fa",
+      "probeSha256": "8a2c2292b6217e872b0c7af03eb54ad99d34b79e471f0ccf9d08039651f0247a"
+    },
+    {
+      "path": "scripts/verify/learn-identity-review.assert.sql",
+      "sourceSha256": "bbf05fc1c64c33a1d6c35a60ada577e990b8fbdede680b667104a3211a8acfda",
+      "probeSha256": "5dea981232c6dd44997ebc20e181c30c9275ae8c4eb80e8cedb7d462087d9004"
+    },
+    {
+      "path": "scripts/verify/learn-processing-queue.assert.sql",
+      "sourceSha256": "24957c663215128af6faf498ff8b3cb142e0c047bd8b2e77d535a22ac679b8c6",
+      "probeSha256": "a9432c70e787404d44cebb94badaa602de555de4ac67a57e813af695f8386f33"
+    },
+    {
+      "path": "scripts/verify/learn-production-email-draft.assert.sql",
+      "sourceSha256": "e375208915cdacd9f2c8d663cb4ac4e4d17d9ddf26e5163d62661ab60b4f425c",
+      "probeSha256": "3b465f8dc4915150b6d56edffe3d259726517eebf121a9098b673cb5fa989a58"
+    },
+    {
+      "path": "scripts/verify/learn-production-card-draft.assert.sql",
+      "sourceSha256": "59d391d2a036b35d7e002cc3886fb1f09b57bf89be4741301a1d556a953213fe",
+      "probeSha256": "025fa69b5584aac0c34d6cb19d41c45058890a9006704a92049b3227444c53cb"
+    },
+    {
+      "path": "scripts/verify/learn-production-card-readers.assert.sql",
+      "sourceSha256": "bc48185cafe8969b7238521b1f51c3adfae5a1b17793b433d877c3c5a391e746",
+      "probeSha256": "a7ab2bef98291538d72b9b07fb3bf288f512d6a2e446fc0a21c1ae925d208ed1"
+    },
+    {
+      "path": "scripts/verify/learn-production-card-search.assert.sql",
+      "sourceSha256": "da4ef3be6aea31f13cace63d3c30a9a6584eb768408cfc8aaf4b9f21ed3232c2",
+      "probeSha256": "f71e04880175e0c433dd77ff784172c9905e47ca39664d1bdc3a4204490bce75"
+    },
+    {
+      "path": "scripts/verify/learn-card-search-hosted.assert.sql",
+      "sourceSha256": "1ea6c8500d780bb36c414c9124f892d6c8bd9fcb5f76fb7e25dd8af7282adeeb",
+      "probeSha256": "a38e512e741a307f586573d75c3ed7a6251db3820d56668f4c52a23ad4b1b6b6"
+    },
+    {
+      "path": "scripts/verify/learn-production-input-to-card.assert.sql",
+      "sourceSha256": "840019909e9082479f6c8112c92f9bac7f297a12b39ece2244d375e7e79d19f2",
+      "probeSha256": "a2f57f061087095116e2cd29970856eac376f6dbb34c89e0b9afacaa1674e203"
+    }
+  ],
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "elapsedSeconds": 64.63,
+  "version": "learn-production-communication-cards-rehearsal/1",
+  "observedDate": "2026-10-12",
+  "rehearsalVersion": 3,
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "limitations": [
+    "Offline production archive and synthetic inputs only; no real-provider, hosted runtime or signed-in browser acceptance.",
+    "Existing production source privileges remain; the new private reader has additional restrictive tenant policies.",
+    "No historical draft/card reconciliation, identity backfill or scoring rewrite occurs during installation.",
+    "Remaining voicemail/Microsoft production reconciliation, paired runtime deployment, real coverage and explicit promotion approval remain required.",
+    "Archive pg_net omissions remain; this is not full runtime/Vault recovery."
+  ]
+}
