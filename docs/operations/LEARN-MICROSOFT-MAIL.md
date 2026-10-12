@@ -7,12 +7,14 @@ authority. At **02:41 UTC on 12 October**, installation and HTTP denial checks
 preserved all 148 datasets. Full-schema positive SQL-role checks verified scoped
 counts, pagination, revocation and sanitization; all banned/passwordless actors and
 temporary grants rolled back. The frontend status reader and operator panel pass
-three new tests, full TypeScript and the frontend build but are **not deployed or
-signed-in verified**. Progress counts describe retained observations, not unique
+three new tests, full TypeScript and the frontend build. The panel was deployed
+to isolated TEST and observed READY at **02:48 UTC**, with immutable and stable
+hostnames protected by Vercel. **Signed-in acceptance remains unverified**. Progress counts describe retained observations, not unique
 emails or current mailbox coverage. Raw tokens, message content and provider
 continuations remain private. Guidance identifies reconnect, provider delay,
 checkpoint review and capture-pause cases without offering unimplemented resets.
-[Operator diagnostics evidence](evidence/learn-microsoft-status-2026-10-12.json).
+[Operator diagnostics evidence](evidence/learn-microsoft-status-2026-10-12.json) and
+[frontend deployment evidence](evidence/learn-microsoft-status-frontend-2026-10-12.json).
 
 Worker **v20** was deployed at **02:25 UTC on 12 October**. All 148 datasets and
 other endpoints were preserved; downloaded-source checks matched 110 runtime

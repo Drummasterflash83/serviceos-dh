@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**12 October, 03:41 BST — Microsoft operator diagnostics installed in TEST 079; panel built locally.**
+**12 October, 03:48 BST — Microsoft operator diagnostics installed in TEST 079 and frontend deployed.**
 The new read-only RPC uses existing OpenFolk view authority to expose account
 configuration, saved/settled pages, retained publication/hold/exclusion counts,
 discovery passes, queue state and fixed recovery guidance. It returns no tokens,
@@ -21,10 +21,13 @@ TEST installation and anonymous/service HTTP denials preserved all 148 datasets.
 No users, grants or fixtures remain from the transaction probes; worker v20 and
 production are unchanged. The OpenFolk panel is wired into LEARN controls and
 clears displayed data across actor/company changes. Three new status tests, seven
-combined status tests, full TypeScript and the frontend build passed. **The panel
-is not deployed or signed-in verified yet.** Consent, fresh Graph capture,
+combined status tests, full TypeScript and the frontend build passed. The panel is now deployed from GitHub commit `9cbf56280f9b3eb561a67a15d26943b137222178`
+on the isolated TEST frontend. Vercel reports READY, and both the immutable
+hostname and stable alias require Vercel authentication. **Signed-in panel
+acceptance remains unverified.** Consent, fresh Graph capture,
 coverage reconciliation and actionable checkpoint recovery remain unfinished.
-[Operator diagnostics evidence](evidence/learn-microsoft-status-2026-10-12.json).
+[Operator diagnostics evidence](evidence/learn-microsoft-status-2026-10-12.json) and
+[frontend deployment evidence](evidence/learn-microsoft-status-frontend-2026-10-12.json).
 
 **12 October, 03:27 BST — deployed TEST worker completes Microsoft recovery-to-card journey.**
 Worker **v20** is ACTIVE on TEST 078. Deployment preserved all 148 datasets, the

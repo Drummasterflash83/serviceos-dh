@@ -52,9 +52,9 @@ hostnames, and no custom domain or automatic Git linkage was added.
 The stable staging entry is
 [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
 It points to immutable preview
-[serviceos-learn-test-10hurtdlw-allkin.vercel.app](https://serviceos-learn-test-10hurtdlw-allkin.vercel.app),
-built remotely from GitHub commit `7fae7468581655192a9a2f13846fe52103cc53a6`
-and observed READY at **23:56 UTC on 11 October**. It includes password recovery,
+[serviceos-learn-test-91257jzge-allkin.vercel.app](https://serviceos-learn-test-91257jzge-allkin.vercel.app),
+built remotely from GitHub commit `9cbf56280f9b3eb561a67a15d26943b137222178`
+and observed READY at **02:48 UTC on 12 October**. It includes password recovery,
 snapshot freshness, projection/identity review, queued processing messages, draft
 advice and bounded card-evidence explanation. Compatible dependency-lock updates
 passed TypeScript/build; production-dependency audit is clear, with nine development
@@ -64,8 +64,8 @@ card refresh **v2**, and Workspace discovery **v3**. Release 079 installed a
 read-only Microsoft operator-status RPC at **02:41 UTC on 12 October**, preserving
 all 148 datasets. Existing OpenFolk view authority is required; anonymous and service
 HTTP calls are denied. Positive counts/pagination/redaction/authority checks used
-rolled-back synthetic SQL fixtures. The new status panel is built locally but is
-**not included in the current hosted frontend**. No new human access or capture was
+rolled-back synthetic SQL fixtures. The new status panel is included in the current hosted frontend;
+**signed-in acceptance remains unverified**. No new human access or capture was
 enabled. See [operator status evidence](operations/evidence/learn-microsoft-status-2026-10-12.json).
 
 Release 078 installed the nine
@@ -107,7 +107,8 @@ discovery; 076 added bounded dispatch and operator status. These releases did no
 activate real voicemail routes or a TEST schedule. Hosted positive scheduled import
 and signed-in operator/owner acceptance remain outstanding. The current frontend
 passed full-project TypeScript; its stable alias and immutable hostname were both
-verified protected at **23:56 UTC**. See the
+verified protected at **02:48 UTC on 12 October**. See the
+[current frontend evidence](operations/evidence/learn-microsoft-status-frontend-2026-10-12.json),
 [historical inbox evidence](operations/evidence/learn-voicemail-inbox-history-2026-10-12.json)
 and [dispatcher evidence](operations/evidence/learn-voicemail-dispatch-2026-10-12.json).
 Release 067 added directory-verified alias identities; 068 adds mailbox-wide recent

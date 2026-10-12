@@ -1,0 +1,77 @@
+{
+  "version": "learn-microsoft-status-frontend/1",
+  "scope": "isolated TEST only",
+  "deployment": {
+    "observedAt": "2026-10-12T02:48:07.201Z",
+    "id": "dpl_FoUjg69FQQEcF3urKqu2kudoUwmE",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "url": "serviceos-learn-test-91257jzge-allkin.vercel.app",
+    "gitSha": "9cbf56280f9b3eb561a67a15d26943b137222178",
+    "aliases": [
+      "serviceos-learn-test-allkin.vercel.app",
+      "serviceos-learn-test-git-codex-learn-v1-test-allkin.vercel.app"
+    ],
+    "errorCode": null
+  },
+  "immutableProtection": {
+    "observedAt": "2026-10-12T02:48:47.464Z",
+    "base": "https://serviceos-learn-test-91257jzge-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/openfolk",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "stableAlias": {
+    "observedAt": "2026-10-12T02:48:32.038Z",
+    "alias": "serviceos-learn-test-allkin.vercel.app",
+    "deploymentId": "dpl_FoUjg69FQQEcF3urKqu2kudoUwmE",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "backendProject": "saatxzwxvdvqevbnskxy",
+  "backendRelease": "079",
+  "workerVersion": 20,
+  "signedInAcceptance": false,
+  "realMicrosoftCaptureVerified": false,
+  "productionChanged": false,
+  "limitations": [
+    "Protection checks establish access gating, not rendered application behavior.",
+    "No active TEST account or operator access was created.",
+    "Microsoft consent, fresh Graph capture, coverage reconciliation and checkpoint recovery remain unfinished."
+  ]
+}
