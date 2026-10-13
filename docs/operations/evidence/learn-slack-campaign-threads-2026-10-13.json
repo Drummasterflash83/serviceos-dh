@@ -1,0 +1,110 @@
+{
+  "version": "learn-slack-campaign-threads/1",
+  "state": "verified_locally_not_deployed",
+  "recordedAt": "2026-10-13T04:37:55.862985+00:00",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101680000_learn_slack_campaign_threads.sql",
+      "sha256": "d9d9619dfc6d4954388a99dbe3636dabcd9d8dff5acf5bad674ff01fa4bf8c56"
+    },
+    {
+      "path": "scripts/verify/learn-slack-campaign-threads.assert.sql",
+      "sha256": "4df13fae69537726a358873b79e0595c270827cf6cc22c51834c4862ca87f728"
+    },
+    {
+      "path": "scripts/backup/rehearse_slack_historical_ranges.py",
+      "sha256": "2d4756a0d3a5c93d2365660e31c368a0441b09dca7835881ff0f3fdd9c7dd646"
+    }
+  ],
+  "checks": {
+    "focusedTestsPassed": 144,
+    "fullProductionSchemaRehearsal": true,
+    "existingJourneysPassed": true,
+    "boundedTwentyParentDiscovery": true,
+    "distinctObservedThreads": 21,
+    "threadPageTransactions": 31,
+    "oldParentBeforeWindowObservedThroughBroadcast": true,
+    "elevenPageThreadAutomaticContinuation": true,
+    "exactOriginalBoundsAndSavedCursorPreserved": true,
+    "canonicalWorkerScopeKey": true,
+    "crossClientOperatorAttribution": true,
+    "foreignTenantJobDenied": true,
+    "pauseAfterClaimBlocksDispatchAndPublication": true,
+    "resumeWithinSameScope": true,
+    "checkpointWithoutDurableReceiptCannotProveCompletion": true,
+    "completionFalseUntilLastThreadReceipt": true,
+    "duplicateThreadPageReplayDoesNotDuplicateSource": true,
+    "uniqueSyntheticMessagesVersionsAndInteractions": 53,
+    "channelAndThreadDispatchReservations": 297,
+    "migrationRollbackVerified": true,
+    "duplicateMigrationRejected": true,
+    "migrationSeedsNoData": true,
+    "existingFunctionAuthorityUnchanged": true
+  },
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "originalDataPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 388,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "8f8be75f16ea5648c683ae9c231c1e7c09ed5afb7381009bd7ab00c9891ec2e5",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "preThreadDataPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 392,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "39ea512a7331e371c5ed679ecfb2e89086219dc081d48e3d802b5e17f4ec7977",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "postJourneyPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 394,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "1ee31b5da73a9d12a25a767943535ba1872fde09aff651098a6b8998e33d81ab",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "newEmptyTables": [
+    "slack_history_campaign_thread_scans",
+    "slack_history_campaign_threads"
+  ],
+  "changedExistingFunctions": [
+    "learn_slack_campaign_job_allowed",
+    "learn_slack_campaign_read",
+    "learn_slack_reference_guard",
+    "learn_slack_schedule_campaigns"
+  ],
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "fullHistoryAccepted": false,
+  "limitations": [
+    "Completion covers the fixed time window and observed thread roots only; it does not prove deleted or inaccessible provider history exists.",
+    "Campaign cancellation, handoff/reapproval and OpenFolk campaign controls still need finishing.",
+    "New historical-range, message-kind, campaign and thread migrations are excluded from the current hosted/staged release; pair them with the exact worker, scheduler and frontend.",
+    "No new real import or provider request occurred; the completed two-message TEST sample remains closed.",
+    "Private/shared channel support and real-provider reply/ongoing capture acceptance remain open; DMs are excluded by the user."
+  ]
+}

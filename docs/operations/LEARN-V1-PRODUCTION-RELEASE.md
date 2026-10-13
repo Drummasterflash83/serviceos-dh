@@ -1,5 +1,12 @@
 # LEARN V1 production release plan
 
+> 13 October: observed-thread campaign traversal is now verified locally, and is
+> also excluded from this staged release. It requires the channel-campaign SQL
+> foundation and matching runtime. Four newer Slack migrations (historical ranges,
+> message kinds, campaigns and campaign threads) must be included in a newly
+> verified paired candidate. No real campaign has started.
+> [Thread evidence](evidence/learn-slack-campaign-threads-2026-10-13.json).
+
 > 13 October: the local durable Slack campaign foundation is also excluded from
 > the staged release. Its worker now requires the dispatch-reservation RPC and its
 > scheduler calls the campaign scheduler. Deploy only a newly verified paired SQL/

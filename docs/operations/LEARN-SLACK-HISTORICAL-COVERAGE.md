@@ -44,6 +44,17 @@ history. Do not enumerate or ingest DMs with the replacement credential.
 
 ## Current implementation and gaps
 
+### Local observed-thread traversal — 13 October, not deployed
+
+The campaign now discovers distinct observed thread roots and captures replies
+through the existing paced worker. Ten-page renewal retains the exact dates and
+cursor; all dispatches share the campaign budget. Completion requires durable
+channel and thread receipts, qualified as fixed-window observed-thread coverage.
+The full-schema rehearsal verified 21 roots and an 11-page thread, without changing
+existing archived data. Campaign controls/handoff, paired deployment and real-provider
+acceptance are still unfinished. The earlier two-message sample remains closed.
+[Evidence](evidence/learn-slack-campaign-threads-2026-10-13.json).
+
 ### Local campaign foundation — 13 October, not deployed
 
 Selected-channel campaigns now retain a fixed cutoff, original approval and one

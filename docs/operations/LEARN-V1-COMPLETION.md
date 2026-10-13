@@ -7,24 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October — durable Slack channel campaigns verified locally.**
+**13 October — Slack channel and observed-thread campaigns verified locally.**
 
 ### Working and verified
 
-- The local campaign records selected channels, frozen dates, approval identity,
-  expiry and one cumulative request allowance. Ten-page continuation retains the
-  exact cursor and previous approval; identity checks and retries consume budget.
-- Full-schema tests prove shared budget enforcement, concurrent last-slot exclusion,
-  pause before/after claim, explicit interrupted recovery, expiry, revoked operator/
-  credential access and tenant isolation. No existing baseline data changed.
-- All 144 focused tests, TypeScript and the build pass. No hosted deployment, real
-  campaign, provider request or new access grant occurred.
+- The local importer discovers observed thread roots, captures their replies and
+  continues threads beyond ten pages using the original date range, approver and
+  shared request allowance. Pause blocks further dispatch and publication.
+- The isolated full-schema journey verifies 21 threads / 31 reply pages, duplicate
+  replay, cross-client attribution and completion only after durable page receipts.
+  All original 1,591,603 archived rows and seven sequences remain unchanged.
+- All eight schema journeys and 144 focused tests pass. This work made no hosted
+  deployment, real campaign, provider request or new access grant.
 
 ### Needs finishing
 
-- Complete campaign-wide observed replies, cancellation/handoff and the existing-UX
-  OpenFolk controls. Channel completion explicitly leaves thread coverage unfinished.
-- Pair all three new Slack migrations with the runtime/scheduler/frontend release;
+- Campaign cancellation/handoff and reapproval, plus OpenFolk selection/status
+  controls in the existing UX. Private-channel visibility and actual provider
+  reply/ongoing-capture acceptance remain open; DMs remain excluded.
+- Pair all four new Slack migrations with the runtime/scheduler/frontend release;
   the existing staged candidate excludes them. Then verify hosted controls and prepare
   the broader authorised history import. The earlier real sample stays closed.
 - Production sign-in, fresh recovery/drain/rollout checks, full input coverage,
@@ -36,7 +37,7 @@ override a later release observation. No requirement is silently deferred.
   None blocks the next Slack implementation work.
 
 [Campaign implementation and remaining work](LEARN-SLACK-CAMPAIGNS.md).
-[Local campaign evidence](evidence/learn-slack-campaign-foundation-2026-10-13.json).
+[Local thread evidence](evidence/learn-slack-campaign-threads-2026-10-13.json).
 
 ### Previous message-handling milestone
 

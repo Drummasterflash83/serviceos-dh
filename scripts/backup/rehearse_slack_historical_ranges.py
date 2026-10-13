@@ -36,7 +36,10 @@ def run():
     parser.add_argument('--output', required=True)
     parser.add_argument('--with-message-kinds', action='store_true')
     parser.add_argument('--with-campaigns', action='store_true')
+    parser.add_argument('--with-campaign-threads', action='store_true')
     options = parser.parse_args()
+    if options.with_campaign_threads:
+        options.with_campaigns = True
     if options.with_campaigns:
         options.with_message_kinds = True
     out = Path(options.output).resolve()
@@ -196,6 +199,49 @@ def run():
                 report['campaigns'] = {'source':str(campaign_path),'sha256':hashlib.sha256(campaign_source.encode()).hexdigest(),
                   'rollbackVerified':True,'duplicateRejected':True,'newTables':sorted(expected_tables),
                   'changedFunctions':sorted(changed_campaign),'existingAuthorityUnchanged':True}
+            if options.with_campaign_threads:
+                thread_path = Path('supabase/migrations/20261101680000_learn_slack_campaign_threads.sql')
+                thread_source = thread_path.read_text()
+                target.query(thread_source.replace('\ncommit;\n', '\nrollback;\n'))
+                if schema() != after_schema:
+                    raise RecoveryError('Campaign threads rollback changed schema')
+                compare_native_data(before, restored_fingerprints(target))
+                target.query(thread_source)
+                thread_schema = schema()
+                old_tables = {t['name']:t for t in after_schema['tables']}
+                new_tables = {t['name']:t for t in thread_schema['tables']}
+                expected_tables = {'slack_history_campaign_thread_scans','slack_history_campaign_threads'}
+                if set(new_tables)-set(old_tables)!=expected_tables or any(new_tables.get(k)!=v for k,v in old_tables.items()):
+                    raise RecoveryError('Campaign threads changed existing table schema')
+                before_threads = restored_fingerprints(target)
+                added_tables = [t for t in before_threads['tables'] if t['schema']=='public' and t['table'] in expected_tables]
+                if len(added_tables)!=2 or any(t['rows']!=0 for t in added_tables):
+                    raise RecoveryError('Campaign threads migration seeded data')
+                stripped = {**before_threads,'tables':[t for t in before_threads['tables'] if t not in added_tables]}
+                report['campaignThreadDataPreservation'] = compare_native_data(before,stripped)
+                old_funcs = {(f['name'],f['arguments']):f for f in after_schema['functions']}
+                new_funcs = {(f['name'],f['arguments']):f for f in thread_schema['functions']}
+                changed_threads = []
+                for key,prior in old_funcs.items():
+                    current = new_funcs.get(key)
+                    if current is None or {k:v for k,v in prior.items() if k!='hash'}!={k:v for k,v in current.items() if k!='hash'}:
+                        raise RecoveryError('Campaign threads changed existing function authority')
+                    if current!=prior:
+                        changed_threads.append(key[0])
+                if set(changed_threads)!={'learn_slack_reference_guard','learn_slack_campaign_job_allowed','learn_slack_schedule_campaigns','learn_slack_campaign_read'} or after_schema['views']!=thread_schema['views']:
+                    raise RecoveryError('Unexpected campaign thread function/view change')
+                try:
+                    target.query(thread_source)
+                except RecoveryError:
+                    if schema()!=thread_schema:
+                        raise RecoveryError('Duplicate campaign threads migration changed schema')
+                else:
+                    raise RecoveryError('Duplicate campaign threads migration accepted')
+                before = before_threads
+                after_schema = thread_schema
+                report['campaignThreads'] = {'source':str(thread_path),'sha256':hashlib.sha256(thread_source.encode()).hexdigest(),
+                  'rollbackVerified':True,'duplicateRejected':True,'newTables':sorted(expected_tables),
+                  'changedFunctions':sorted(changed_threads),'existingAuthorityUnchanged':True}
             # Actual production helpers, both the tenant bot route and logged
             # cross-client user-token operator route. All synthetic rows are
             # contained in disposable child databases.
@@ -204,6 +250,7 @@ def run():
                 ('historical_tenant', ['learn-production-slack', 'learn-production-slack-threads', 'learn-slack-historical-recovery']),
                 ('historical_operator', ['learn-production-slack-setup']),
                 *([('campaigns', ['learn-slack-campaign'])] if options.with_campaigns else []),
+                *([('campaign_threads', ['learn-slack-campaign-threads'])] if options.with_campaign_threads else []),
                 *([('message_kinds', ['learn-production-slack', 'learn-slack-message-kinds'])] if options.with_message_kinds else []),
             ]:
                 target.query('create database '+clone+' template postgres;')
@@ -212,7 +259,10 @@ def run():
                 try:
                     for name in names:
                         path = Path('scripts/verify')/(name+'.assert.sql')
-                        probe = 'set plpgsql.check_asserts=on;\n'+(path.read_text() if name in ('learn-slack-historical-recovery', 'learn-slack-message-kinds', 'learn-slack-campaign') else historical_probe(path))
+                        probe = 'set plpgsql.check_asserts=on;\n'+(path.read_text() if name in ('learn-slack-historical-recovery', 'learn-slack-message-kinds', 'learn-slack-campaign', 'learn-slack-campaign-threads') else historical_probe(path))
+                        if options.with_campaign_threads and name == 'learn-slack-campaign':
+                            # The same retained root now queues its replies after channel completion.
+                            probe = probe.replace("state='history_captured_threads_pending'", "state='thread_queued'")
                         (out/(name+'.sql')).write_text(probe)
                         result = subprocess.run([target.docker, *args], input=probe.encode(), stdout=subprocess.PIPE,
                                                 stderr=subprocess.PIPE, timeout=300)

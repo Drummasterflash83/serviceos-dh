@@ -2,7 +2,7 @@
 
 ## Delivery state — 13 October 2026
 
-**Local foundation verified; not deployed and not ready to activate for Drummonds.**
+**Local channel and observed-thread traversal verified; not deployed or ready to activate for Drummonds.**
 The complete delivery target remains all available authorised channel history and
 observed replies, followed by ongoing capture. No real campaign or provider request
 has been created by this work. The completed two-message TEST sample remains closed.
@@ -28,6 +28,20 @@ An explicit revisioned resume can renew an interrupted approval once; it cannot
 increase the budget or expiry. Unsupported content and other permanent failures are
 held for review rather than endlessly generating fresh approvals.
 
+Observed threads now follow channel completion through the same scheduler. Each
+pass records at most twenty distinct roots from retained conversation evidence and
+queues one unfinished thread per channel. Broadcasts can identify a root older than
+the approved window; replies remain bounded to the original dates. The source
+message/version that established each root is immutable, and renewals preserve it.
+A thread exceeding ten pages continues with its saved cursor and original approver.
+
+Coverage requires matching successful page receipts for both channel history and
+all discovered threads. Queue state or a checkpoint flag alone is insufficient.
+The reader reports discovery, observed/completed thread counts and the qualified
+`fixed_window_observed_threads` coverage. This does not establish availability of
+deleted messages or hidden/inaccessible threads. A completed retained window remains
+verifiable after its capture approval has expired or been paused.
+
 ## Interfaces and limits
 
 - `learn_slack_campaign_start`: authenticated company admin/OpenFolk operator;
@@ -40,7 +54,7 @@ held for review rather than endlessly generating fresh approvals.
   request/check/cancel protocol. Cancelling a pending control request is **not**
   cancelling an already-started campaign.
 - `learn_slack_campaign_read`: tenant-scoped or logged operator summary. It reports
-  the fixed scope, budget/reservations, channels and unfinished thread coverage.
+  the fixed scope, budget/reservations, channels and evidence-backed thread coverage.
 - `learn_slack_schedule_campaigns`: service-only bounded scheduling; called by the
   existing infrastructure-authenticated Slack scheduler. No new cron is installed.
 - `learn_slack_campaign_reserve_request`: service-only, owned/unexpired job attempt;
@@ -60,29 +74,35 @@ isolation, shared budget exhaustion, two concurrent contenders for the last requ
 pause before/after claim, publication fencing, explicit recovery, revoked authority,
 revoked credentials, capture disable and real-clock expiry.
 
-The migration rolls back cleanly, rejects duplicate application and seeds no rows.
+The migrations roll back cleanly, reject duplicate application and seed no rows.
 All 388 pre-existing baseline datasets / 1,591,603 rows and seven sequences match;
-four new tables are empty outside disposable synthetic journeys. Existing function
+six new tables are empty outside disposable synthetic journeys (four campaign and
+two thread tables). Existing function
 owners/security modes/grants and table/view definitions remain unchanged. The clone
 had no network, host mounts, published ports or background workers and was removed.
 The source is the retained 12 October archive, not a fresh production backup.
 
-[Sanitised evidence](evidence/learn-slack-campaign-foundation-2026-10-13.json).
+The extended rehearsal passes eight journeys. Its dedicated thread journey discovers
+21 distinct roots across two bounded scans, processes 31 reply pages including one
+11-page thread, and verifies 53 unique synthetic messages/versions/interactions.
+All 297 channel/reply dispatch reservations share the original budget. Duplicate
+publication, foreign-tenant denial, pause/publication fencing and final-page coverage
+are exercised. A checkpoint manually marked complete without a receipt stays incomplete.
+No hosted changes or provider calls occur.
+
+[Foundation evidence](evidence/learn-slack-campaign-foundation-2026-10-13.json).
+[Observed-thread evidence](evidence/learn-slack-campaign-threads-2026-10-13.json).
 
 ## Required next work
 
-1. Add durable observed-thread discovery and traversal across the same fixed cutoff,
-   with continuation/recovery, the same cumulative budget and exact attribution.
-   Channel completion currently stops at `history_captured_threads_pending`;
-   `complete` and `threadsComplete` deliberately remain false.
-2. Complete campaign cancellation, explicit handoff to ongoing capture, and authorised
+1. Complete campaign cancellation, explicit handoff to ongoing capture, and authorised
    recovery after exhausted budget/expired approval without losing checkpoints.
-3. Add the OpenFolk campaign selection/review/status controls in the existing UX.
+2. Add the OpenFolk campaign selection/review/status controls in the existing UX.
    Preserve pending requests through uncertain replies and show coverage limitations.
-4. Package the historical-range, message-kind and campaign SQL with their exact worker,
+3. Package the historical-range, message-kind, campaign and thread SQL with their exact worker,
    scheduler and frontend dependency closure. Older staged manifests exclude this work.
-5. Verify signed-in hosted controls and prepare the concrete broader Drummonds import:
+4. Verify signed-in hosted controls and prepare the concrete broader Drummonds import:
    selected inventory, fixed dates, total requests, deadline, destination and recovery.
    Do not reuse the completed sample's unused allowance or imply full history is accepted.
-6. Finish private-channel visibility and real reply/ongoing-capture acceptance as part
+5. Finish private-channel visibility and real reply/ongoing-capture acceptance as part
    of the full LEARN goal. They are not silently deferred by this foundation.
