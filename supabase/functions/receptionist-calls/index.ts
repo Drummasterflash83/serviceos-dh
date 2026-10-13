@@ -45,7 +45,13 @@ Deno.serve(async (req) => {
         body: JSON.stringify(costQueries(now)),
       });
       if (!response.ok) {
-        console.warn("emma_cost_check", JSON.stringify({ stage: "provider", status: response.status }));
+        // The 400 response validates this static aggregate query (no customer values in it).
+        // Keep only validation messages naming our fixed request fields, never the raw body.
+        const rejected = response.status === 400 ? record(await response.json().catch(() => ({}))).message : [];
+        const validation = (Array.isArray(rejected) ? rejected : [rejected])
+          .filter((m: unknown) => typeof m === "string" && /groupBy|operations|timeRange|minutesUsed|queries|column/.test(m))
+          .map((m: string) => m.slice(0, 300));
+        console.warn("emma_cost_check", JSON.stringify({ stage: "provider", status: response.status, validation }));
         return reply({ error: "Provider costs could not be refreshed" }, 502);
       }
       const raw = await response.json();
