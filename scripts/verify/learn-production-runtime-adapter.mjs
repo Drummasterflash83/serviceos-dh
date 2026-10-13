@@ -72,7 +72,10 @@ export function createProductionRuntimeAdapter({candidate,operations,readBody,ap
        m.jwt===e.verifyJwt && (!e.beforeProduction||m.id===e.beforeProduction.id) &&
        typeof m.id==='string' && m.id.length>0 &&
        row.entrypoint_path===`file:///work/supabase/functions/${e.name}/index.ts` &&
-       row.import_map===false && !row.import_map_path) return 'applied';
+       // New compiled-function records omit import_map; existing records return
+       // false. Neither may name a map, and the exact compiled hash still binds
+       // the complete dependency bundle.
+       (row.import_map===false || row.import_map===undefined) && !row.import_map_path) return 'applied';
     return 'drift';
   }
   function review(rows) {

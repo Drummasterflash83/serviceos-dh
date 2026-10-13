@@ -49,6 +49,18 @@ function fixture({allowWrite=true,dbReady=true}={}) {
 }
 const writes=f=>f.requests.filter(r=>!r.readOnly&&r.method!=='GET');
 
+test('new compiled functions may omit import-map metadata but cannot enable or name a map',async()=>{
+  const f=fixture(),step=f.steps.find(s=>s.id==='runtime-learn-commusoft-verify');
+  await f.adapter.apply(step);
+  const row=f.rows.find(r=>r.slug==='learn-commusoft-verify');
+  delete row.import_map;delete row.import_map_path;
+  assert.equal((await f.adapter.observe(step,'after')).state,'applied');
+  row.import_map=true;
+  assert.equal((await f.adapter.observe(step,'after')).state,'drift');
+  row.import_map=false;row.import_map_path='file:///unexpected.json';
+  assert.equal((await f.adapter.observe(step,'after')).state,'drift');
+});
+
 test('all 37 exact-scoped uploads precede the 37-entry publication payload',async()=>{
   const f=fixture();
   const bulk=f.steps.at(-1);

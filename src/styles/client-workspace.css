@@ -245,6 +245,7 @@
 }
 .cp-emma-entry {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 24px;
   padding: 32px;
@@ -266,7 +267,7 @@
     0 12px 35px #6d5a9922;
 }
 .cp-emma-copy {
-  flex: 1;
+  flex: 1 1 260px;
   min-width: 0;
 }
 .cp-emma-copy h2 {
@@ -367,7 +368,7 @@
 }
 .cp-home-cards {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 18px;
 }
 .cp-home-card {
