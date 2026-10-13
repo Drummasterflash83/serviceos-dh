@@ -112,7 +112,10 @@ python3 scripts/verify/learn-quickbooks-schema.py
 1. Complete configuration and production assessment for the created Intuit app.
    The portal shows App details 17% and Compliance 0%; these are provider progress
    indicators, not percentages of ServiceOS implementation completed.
-2. Compare the current hosted schema with the OAuth/import prerequisites, then
+2. Run `scripts/verify/learn-quickbooks-preflight.sql` against each explicitly
+   selected hosted project. It returns catalog metadata and function hashes only,
+   not customer rows, credentials or function bodies. Compare the current hosted
+   schema with the OAuth/import prerequisites, then
    deploy matching SQL/endpoints to TEST. The augmented local rehearsal passed. Configure exact stable backend callbacks,
    `QUICKBOOKS_SITE_ORIGIN` and an explicitly selected `QUICKBOOKS_MINOR_VERSION`.
    Provision the app secret server-side and save its recovery copy securely.
@@ -157,9 +160,15 @@ Production keys remain locked behind the portal's tasks:
 - App assessment questionnaire (not accessible until industries are selected).
 - The basic information form also requests a 100×100 JPG/PNG logo under 1 MB.
 
-The questionnaire's inline settings link currently leads to a missing page;
-the app sidebar Settings route works. No compliance declarations have been
-submitted. Chris requested new drafts and instructed that this first setup use
+The app sidebar Settings route works. The Regulated industries tab was clipped
+outside the browser viewport; a temporary 1600px viewport made it usable, and the
+viewport was reset afterwards. Its options are Insurance, Investment / financial
+planning, Lending, Payments / money movement, and None of the above. The proposed
+selection is None of the above for this accounting-read connector. Automatic
+approval review rejected saving that declaration without explicit confirmation;
+an approval question is pending. Nothing was selected or saved. The assessment
+remains locked until this selection is saved. No compliance declarations have
+been submitted. Chris requested new drafts and instructed that this first setup use
 Drummonds' company details. The [privacy draft](../legal/SERVICEOS-PRIVACY-POLICY-DRAFT.md)
 and [end-user terms](../legal/SERVICEOS-TERMS-DRAFT.md) now cover Drummonds' deployment,
 using verified DRUMMOND HEATING LTD. details. Chris clarified that this is an
