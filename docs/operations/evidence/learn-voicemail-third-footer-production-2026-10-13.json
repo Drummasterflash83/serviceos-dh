@@ -1,0 +1,52 @@
+{
+  "version": "learn-voicemail-third-footer-production/1",
+  "observedAt": "2026-10-13T13:22:21Z",
+  "state": "production_import_and_frontend_verified",
+  "runtime": [
+    {
+      "name": "learn-voicemail-import",
+      "version": 7,
+      "sha256": "9e1ef1e7c2224e1e98a0cebd03bd1405931101c075e0c6cdd9f4912837bcb1f5"
+    },
+    {
+      "name": "platform-worker",
+      "version": 64,
+      "sha256": "fd2eb90f556fe110392b10a59cd46f774e575bca18d1b26462fd0417bb49a338"
+    }
+  ],
+  "imports": {
+    "new": 7,
+    "identityPreservingReplays": 2,
+    "retainedMessages": 255,
+    "retainedSources": 255,
+    "historicalRoutes": 13,
+    "allPaused": true
+  },
+  "preservation": {
+    "accessPreserved": true,
+    "oldSourcesPreserved": true,
+    "oldMessagesPreserved": true,
+    "oldRoutesPreserved": true,
+    "oldScanControlsRestored": true,
+    "privateBucketsPreserved": true,
+    "noDispatcherJobsAdded": true
+  },
+  "frontend": {
+    "gitSha": "333c84f6fa6be7ebc189c7a623b2a680ad8b8a45",
+    "deployment": "dpl_65cnpgFovev8FNJBXLFvU2WFkyKT",
+    "existingAliasesPromoted": true,
+    "signedInLiveTranscriptAndFullProviderTextVerified": true,
+    "recordingPlayback": {
+      "durationSeconds": 29.64,
+      "ended": true,
+      "readyState": 4,
+      "mediaError": null
+    }
+  },
+  "limits": [
+    "Provider-wide historical coverage remains incomplete.",
+    "Seven ongoing routes are prepared, not yet activated at this checkpoint.",
+    "Independent backup of voicemail audio and original-email buckets remains incomplete.",
+    "Older revoked-signing-key messages remain withheld pending independent source authentication."
+  ]
+}

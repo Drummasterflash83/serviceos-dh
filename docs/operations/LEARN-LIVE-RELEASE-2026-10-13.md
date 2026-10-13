@@ -176,3 +176,26 @@ and [voicemail](evidence/learn-voicemail-history-2026-10-13.json).
 - `LEARN_INPUT_DISPATCH_ENABLED` remains false. No new production Slack/Commusoft import approval, channel capture, login or grant was created by this release. Their production activation and complete coverage remain unfinished.
 - The original all-gates release sequence and LEARN V1 goal are **not complete**. This is a verified live frontend/backend checkpoint with original capture schedules restored, not a claim of complete provider, AI, scorecard or recovery automation acceptance.
 - Private evidence and credentials remain outside Git under `.verification-results` and the existing approved secret stores.
+
+## 14:22 BST voicemail release verification
+
+**13 October, 14:22 BST — 255 LIVE voicemail/source pairs; transcript display and playback verified.**
+
+- The final seven current-template sources imported successfully; two replays retained
+  their identities. All 248 prior messages/sources, owners/managers, route/scan controls
+  and private buckets are preserved. All 13 historical routes remain paused.
+- Matching importer v7/platform-worker v64 are published. The narrow footer parser fix
+  preserves the existing signed-source and current-key requirements and Slack proof code.
+- Frontend Git `333c84f` is live on existing aliases. Signed-in verification confirms
+  cleaner transcript display, expandable original provider text and 29.64-second
+  playback to completion with no media error. Drummonds branding is preserved.
+- An interrupted local customer-contact request was reconciled against its succeeded
+  durable job/page and queued successor. Capture resumed from 1,355 completed targets
+  under the same approval and original cap; no completed provider request was repeated.
+- Ongoing voicemail capture, complete historical coverage, voicemail file backup,
+  Slack source replay/customer acceptance and full contact coverage remain open.
+- Chris has asked us to keep pushing toward the proposed joined customer/job UX.
+  Prioritise evidence-linked customer situations and job timelines in the existing
+  live design; do not present proposals or unverified AI suggestions as delivered.
+
+Evidence: [voicemail production checkpoint](evidence/learn-voicemail-third-footer-production-2026-10-13.json).
