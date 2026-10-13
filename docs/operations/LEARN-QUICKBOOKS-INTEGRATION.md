@@ -528,3 +528,18 @@ files are excluded from this checkpoint; the local build is not a release artifa
 Do not deploy the full platform-worker from this fork without reconciling its
 current parent-workstream changes and resolving the existing Deno mailauth
 check. The standalone QuickBooks endpoints do not require that replacement.
+
+
+### Connection guide candidate — 13 October 2026
+
+The `/quickbooks` route provides connect/reconnect and disconnect guidance using
+the existing OpenFolk branding. It links to the signed-in operator controls,
+explains Intuit's broader Accounting permission and retained history, and uses
+Chris's approved Drummonds support address. It contains no company records,
+connection status, legal policy or automatic provider action.
+
+Local production build and TypeScript checks passed. Desktop and 390 px mobile
+views were inspected; both modes fit without horizontal overflow and reported
+no browser warnings/errors. Hosted verification and Intuit Development App URL
+registration remain pending. The development app remains inactive pending owner
+secret rotation; this guide does not establish OAuth or accounting acceptance.
