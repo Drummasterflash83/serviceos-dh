@@ -9,6 +9,12 @@ account initially, with an eventual move to an OpenFolk-owned app. The connector
 must be available to future ServiceOS clients. No Drummonds identity, realm,
 credential or company-specific mapping belongs in shared code.
 
+Arc shows an existing **Drummonds Dashboard** app, dated 02/03/2026 and labelled
+“In production”. Chris explicitly chose **Create a separate ServiceOS app** on
+13 October. Leave the existing app, callbacks, permissions and keys unchanged.
+Proposed new name: **OpenFolk ServiceOS**, in the Drummond Heating Dashboard
+developer workspace. No new app has yet been created.
+
 Keep these identities separate:
 
 - **App registration:** owner, Intuit client ID, environment, exact callback and
@@ -36,7 +42,11 @@ Intuit's current transfer options still need verification in its portal.
 - Pure OAuth state/URL/callback contracts: random 256-bit state with a ten-minute
   lifetime, exact app and redirect matching, duplicate-query rejection, opaque
   errors. These helpers are not a deployed authorisation endpoint.
-- 16 synthetic tests pass; strict standalone TypeScript checks pass for both
+- Token endpoint transport supports code exchange and refresh, fixed HTTPS
+  endpoint, bounded responses, replacement token pairs and provider expiry fields.
+  It never retries automatically after an uncertain exchange. Durable state
+  consumption, refresh leases and atomic Vault persistence remain unwired.
+- 21 synthetic tests pass; strict standalone TypeScript checks pass for the
   runtime modules. No real QuickBooks accounting data has been requested.
 
 Reproduce:
@@ -52,8 +62,8 @@ node --test supabase/functions/_shared/quickbooks/*.test.ts
 2. Implement audited operator connection controls and server-only state storage.
    Insert state durably before redirecting; atomically claim unused/unexpired
    state, recheck actor authority and reject callback replay before code exchange.
-3. Implement token exchange and refresh with per-connection leases and atomic
-   replacement of the token pair in Vault. App secrets and tokens must never be
+3. Wire the token exchange and refresh transport to per-connection leases and
+   atomic replacement of the token pair in Vault. App secrets and tokens must never be
    committed, put in client JavaScript, printed or included in evidence files.
 4. Verify CompanyInfo against the authorised realm and show its identity for
    connection confirmation. Never infer realm from a numeric JavaScript value.
@@ -81,11 +91,12 @@ separate payment-processing API are outside this first connection.
 
 ## Blocked externally
 
-The authenticated Intuit portal currently fails to load both **App dashboard**
-and **Workspaces** with “Sorry, something went wrong”. Dashboard retry returned
-the sign-in error page (`errorType=400`). User has been asked to confirm a working
-developer workspace. This does not establish that Drummonds accounting/API access
-is broken; no accounting request has been attempted.
+The original in-app browser failed to load **App dashboard** and **Workspaces**.
+Arc subsequently opened the correct Drummond Heating developer workspace and
+its existing app list. The app settings and later dashboard navigation then
+stalled on loading. App setup is pending a responsive portal. This does not
+establish that Drummonds accounting/API access is broken; no accounting request
+has been attempted.
 
 ## Preservation and release
 
