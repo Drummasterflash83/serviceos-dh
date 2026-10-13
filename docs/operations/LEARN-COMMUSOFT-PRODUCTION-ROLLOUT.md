@@ -316,3 +316,32 @@ as `support-draft.txt`; it has not been sent.
   scoring and unattended operational acceptance. The full goal remains active.
 
 [Contact publication evidence](evidence/learn-company-contact-publication-2026-10-13.json).
+
+## First scheduled cycle — 13 October, 21:44 BST
+
+**13 October, 21:44 BST — first complete scheduled Commusoft traversal verified LIVE.**
+
+- All four stages in the first unfiltered scheduled cycle have durable terminal
+  checkpoints backed by successful worker/page receipts. The cycle completed at
+  20:28:01 UTC and advanced its watermark to 16:02:03 UTC. Capture remains enabled;
+  the next scheduled check is 21:28:01 UTC. No job was manually restarted.
+- Properties: 25 pages, 1,552 customer records and 871 work addresses. Jobs: 127
+  pages, 12,637 records. Customer contacts: all 1,552 frozen customer targets,
+  2,402 distinct contact records. Site contacts: all 871 frozen site targets,
+  567 distinct contact records. Both contact terminal counts equal their plans.
+- This proves traversal of the authorized API inventory, not complete agreement
+  with Commusoft's UI. The previously observed 98 customer/111 site count differences
+  remain unresolved. Initial capture is not an atomic snapshot; subsequent cycles
+  must overlap the retained watermark. Canonical publication and communication
+  matching remain separate: 25 customers, 33 sites, 616 jobs and 33 contact source
+  links are currently published.
+- Slack continues: 12,321 retained sources at 20:39 UTC; 15/20 active and 103/160
+  archived channel windows complete. Thread capture has 298 active-campaign and 18
+  archived-campaign captured threads; other observed/queued threads remain unfinished.
+- The communication-reader candidate passed the 600-unrelated-job regression,
+  preserving the reviewed conversation while refusing unnecessary source traversal.
+  Full-schema acceptance is rerunning its final checks after the superseded rollback
+  correctly refused to overwrite the newly changed helper. No context patch is LIVE
+  yet; the previous visibility-helper release remains installed.
+
+[First complete cycle evidence](evidence/learn-commusoft-first-live-cycle-2026-10-13.json).
