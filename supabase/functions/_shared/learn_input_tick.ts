@@ -17,6 +17,34 @@ type Fetch = (input: string, init: RequestInit) => Promise<Response>;
 const outcome = (state: Outcome["state"]): Outcome => ({ state });
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 
+/** A tick may settle several distinct pages, never retry an uncertain page.
+ * SQL still owns admission, per-credential pacing, leases and successor creation.
+ * Keep the whole sequence below the one-minute scheduler interval. */
+export async function drainCommusoftPages(
+  invoke: (timeoutMs: number) => Promise<Outcome>,
+  clock: () => number = () => performance.now(),
+  sleep: (ms: number) => Promise<void> = ms => new Promise(resolve => setTimeout(resolve, ms)),
+): Promise<Outcome> {
+  const deadline = clock() + 45_000;
+  let progressed = false;
+  for (let page = 0; page < 10; page++) {
+    const remaining = Math.floor(deadline - clock());
+    if (remaining <= 0) break;
+    let next: Outcome;
+    try { next = await invoke(remaining); }
+    catch { return outcome("unconfirmed"); }
+    if (next.state === "idle") return outcome(progressed ? "processed" : "idle");
+    if (next.state !== "processed") return next;
+    progressed = true;
+    // The SQL successor has at least a 1,250 ms cooldown. Waiting does not grant
+    // authority: the next worker call must claim its own currently permitted job.
+    if (page === 9 || deadline - clock() <= 1_500) break;
+    try { await sleep(1_500); }
+    catch { return outcome("unconfirmed"); }
+  }
+  return outcome(progressed ? "processed" : "idle");
+}
+
 export async function runLearnInputTick(config: Config, jobTypes: string[] | null, request: Fetch = fetch) {
   const all = (state: Outcome["state"]) => ({
     commusoft: outcome(state), slackSchedule: outcome(state), slack: outcome(state),
@@ -34,13 +62,13 @@ export async function runLearnInputTick(config: Config, jobTypes: string[] | nul
       slack: outcome(slackEnabled ? "unconfirmed" : "disabled"),
     };
 
-  async function invoke(name: string, key: string | undefined, schedule = false): Promise<Outcome> {
+  async function invoke(name: string, key: string | undefined, schedule = false, timeoutMs = schedule ? 15000 : 100000): Promise<Outcome> {
     if (!key || key.length < 20) return outcome("unconfirmed");
     try {
       const response = await request(`${config.url}/functions/v1/${name}`, {
         method: "POST", redirect: "error",
         headers: { Authorization: `Bearer ${config.serviceKey}`, "x-serviceos-worker-key": key },
-        signal: AbortSignal.timeout(schedule ? 15000 : 100000),
+        signal: AbortSignal.timeout(timeoutMs),
         // Deliberately no body: even an empty JSON object is rejected by the worker.
       });
       if (response.status !== 200) { void response.body?.cancel().catch(() => {}); return outcome("unconfirmed"); }
@@ -68,7 +96,7 @@ export async function runLearnInputTick(config: Config, jobTypes: string[] | nul
     }
   }
   const [commusoft, slack] = await Promise.all([
-    commusoftEnabled ? invoke("learn-commusoft-worker", config.commusoftKey) : outcome("disabled"),
+    commusoftEnabled ? drainCommusoftPages(timeoutMs => invoke("learn-commusoft-worker", config.commusoftKey, false, timeoutMs)) : outcome("disabled"),
     (async () => {
       if (!slackEnabled) return { slackSchedule: outcome("disabled"), slack: outcome("disabled") };
       const slackSchedule = await invoke("learn-slack-schedule", config.slackKey, true);

@@ -130,3 +130,72 @@ test("Slack-only configuration errors and provider failures cannot fall back to 
   assert.equal(result.commusoft.state, "disabled");
   assert.equal(result.slack.state, "unconfirmed");
 });
+
+// Real sequence bounds; synthetic time prevents timer-heavy tests.
+import { drainCommusoftPages } from "./learn_input_tick.ts";
+test("Commusoft drains distinct successful pages within one tick and preserves SQL pacing", async () => {
+  let now = 0, calls = 0;
+  const starts: number[] = [], deadlines: number[] = [];
+  const result = await drainCommusoftPages(async timeout => {
+    starts.push(now); deadlines.push(timeout); calls++;
+    now += 250;
+    return { state: "processed" };
+  }, () => now, async ms => { now += ms; });
+  assert.equal(calls, 10);
+  assert.equal(result.state, "processed");
+  assert.ok(starts.slice(1).every((t, i) => t - starts[i] >= 1500));
+  assert.ok(deadlines.every((remaining, i) => remaining === 45_000 - starts[i]));
+  assert.ok(now < 60_000);
+});
+
+test("Commusoft never automatically repeats uncertainty, rate limits, holds or disabled capture", async () => {
+  for (const terminal of ["unconfirmed", "attention", "disabled", "skipped"] as const) {
+    let now = 0, calls = 0;
+    const result = await drainCommusoftPages(async () => ({ state: ++calls === 1 ? "processed" : terminal }),
+      () => now, async ms => { now += ms; });
+    assert.equal(calls, 2);
+    assert.equal(result.state, terminal, "earlier success must not hide a later failure or pause");
+  }
+  let calls = 0;
+  const thrown = await drainCommusoftPages(async () => { calls++; throw Error("private provider error"); });
+  assert.equal(calls, 1);
+  assert.deepEqual(thrown, { state: "unconfirmed" });
+});
+
+test("empty queue stops immediately, or reports saved work before becoming idle", async () => {
+  for (const first of ["idle", "processed"] as const) {
+    let calls = 0, now = 0;
+    const result = await drainCommusoftPages(async () => ({ state: ++calls === 1 ? first : "idle" }),
+      () => now, async ms => { now += ms; });
+    assert.equal(calls, first === "idle" ? 1 : 2);
+    assert.equal(result.state, first);
+  }
+});
+
+test("slow requests and delayed timers cannot start another call beyond the tick deadline", async () => {
+  let now = 0, calls = 0;
+  assert.deepEqual(await drainCommusoftPages(async remaining => {
+    assert.equal(remaining, 45_000); calls++; now += 44_000; return { state: "processed" };
+  }, () => now, async () => { throw Error("No time for a cooldown"); }), { state: "processed" });
+  assert.equal(calls, 1);
+  now = 0; calls = 0;
+  await drainCommusoftPages(async () => { calls++; return { state: "processed" }; },
+    () => now, async () => { now += 60_000; });
+  assert.equal(calls, 1, "an overslept timer cannot create overlapping follow-up dispatch");
+});
+
+test("a completed Commusoft page continues through the actual HTTP guard, then stops at idle", async () => {
+  let claims = 0;
+  const handler = slackWorkerEndpoint(config.commusoftKey, async () => ++claims === 1
+    ? { claimed: 1, outcomes: [{ status: "succeeded", job_id: "00000000-0000-4000-8000-000000000001" }] }
+    : idle);
+  const result = await runLearnInputTick({ ...config, slackEnabled: "false" }, null, async (url, init) => {
+    assert.ok(url.endsWith("learn-commusoft-worker"));
+    assert.equal(init.body, undefined);
+    assert.equal(init.redirect, "error");
+    assert.equal(new Headers(init.headers).get("x-serviceos-worker-key"), config.commusoftKey);
+    return handler(new Request(url, init));
+  });
+  assert.equal(claims, 2);
+  assert.deepEqual(result, { commusoft: { state: "processed" }, slackSchedule: { state: "disabled" }, slack: { state: "disabled" } });
+});
