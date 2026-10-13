@@ -7,6 +7,40 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+
+**13 October, 23:59 BST — existing customer context verified; reader fix rehearsed.**
+
+- LIVE refresh now shows two retained email timeline entries alongside two newly
+  linked Commusoft jobs on an existing customer card. The original person, card
+  and both communication rows are unchanged. This establishes one real combined
+  journey, not comprehensive client coverage. Owner resolution and the brief's
+  completed-work summary still need integration.
+- A transient LIVE communication read failed before the successful refresh. The
+  exact error remains unconfirmed. The proposed reader now materialises linked
+  candidates before source inspection. Its 5,000-record regression reproduces
+  unnecessary unrelated-source inspection in the old query and prevents it in
+  the candidate, with equivalent person/company/explicit-ID results.
+- All sixteen offline full-schema journeys pass, including drafts, foreign-tenant
+  reads, source withholding and reviewed Slack context. All 1,591,580 archived
+  rows across 403 tables and seven sequences match. Transaction rollback and
+  role-membership restoration pass. The reader change is **not installed LIVE**;
+  a guarded release and signed-in post-install verification remain necessary.
+- Slack at 22:54 UTC retained 13,857 records, with 17 active and 112 archived
+  channel windows complete. One recovered job reached a newly observed
+  `automatic_ai_huddle_notes_enabled` subtype and stopped at its checkpoint.
+  Its handling needs implementation/verification before logged recovery; another
+  recovery job remains queued. No blind retries were made. Commusoft's current
+  customer-contact pass reached 805 pages, with its watermark still held until
+  cycle completion.
+- The separate refresh frontend remains held behind its pending sign-in
+  clarification. Automatic approval review also rejected reopening that preview;
+  this does not prevent the independent reader and ingestion work above.
+
+[Existing LIVE customer context](evidence/learn-existing-customer-context-2026-10-13.json)
+· [Offline reader acceptance](evidence/learn-card-communication-candidates-2026-10-13.json)
+· [Slack follow-up](evidence/learn-slack-intake-followup-2026-10-13.json).
+
+
 **13 October, 23:40 BST — further customer/job journey verified LIVE.**
 
 - One more corroborated customer and its three explicit Commusoft jobs are published

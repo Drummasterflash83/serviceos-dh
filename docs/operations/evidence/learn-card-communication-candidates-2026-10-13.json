@@ -1,0 +1,54 @@
+{
+  "state": "verified_offline_not_deployed",
+  "source": "supabase/migrations/20261102080000_learn_card_communication_candidates.sql",
+  "sourceSha256": "d91fed0a03d16c39100f36aba12f5eb89651678e47b4649c4e97d5867a0a8ecc",
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 403,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "d711b3233dd2d695842130fd099bab7b521342d8ff1ca187ae8f9fda43638640",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "transactionRollbackVerified": true,
+  "membershipRestored": true,
+  "regression": {
+    "syntheticInteractions": 5000,
+    "genericPlan": true,
+    "personCompanyAndExplicitIdsEqualPriorReader": true,
+    "overlappingScopesDeduplicated": true,
+    "priorReaderUnrelatedSourceInspectionReproduced": true,
+    "candidateUnrelatedSourceInspectionPrevented": true
+  },
+  "journeysPassed": 16,
+  "fullReportSha256": "6448083b5eac2cb63fd8e859b49b6c8fe703fe43350f625b33ef3d3bcb3fb2e9",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "containerRemoved": true,
+  "limitations": [
+    "No production installation or post-install signed-in acceptance yet.",
+    "Observed transient LIVE read failure is not conclusively attributed to a statement timeout.",
+    "Offline preservation covers data present in the pinned archive, not a fresh LIVE checkpoint."
+  ]
+}
