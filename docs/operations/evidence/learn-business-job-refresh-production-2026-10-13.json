@@ -1,0 +1,106 @@
+{
+  "state": "verified",
+  "target": "tgbnakbxwcqjeimygroz",
+  "at": "2026-10-13T22:14:06.632336+00:00",
+  "definitionsMatch": true,
+  "membershipsRestored": true,
+  "changedTables": [],
+  "decreasedTableCounts": [],
+  "newRows": {
+    "refreshes": 0,
+    "cancellations": 0
+  },
+  "scope": {
+    "tablesCompared": 16,
+    "rowsCompared": 133019,
+    "allScopedRowDigestsUnchanged": true,
+    "newProviderRequests": 0,
+    "canonicalJobRefreshes": 0,
+    "source": "Exact guarded additive schema install; existing capture continues independently."
+  },
+  "functionCatalog": [
+    {
+      "acl": "{postgres=X/postgres,learn_card_communication_reader=X/postgres}",
+      "md5": "2adbf3b163734e7a92efff84ae140b94",
+      "name": "learn_card_slack_job_context",
+      "owner": "postgres"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "9281951f956bd9c7eec12636d27edaad",
+      "name": "learn_commusoft_confirm_work_record",
+      "owner": "postgres"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "3fe8bdb8623aafa6f71890101c71c97e",
+      "name": "learn_commusoft_job_fields",
+      "owner": "postgres"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "cd4fdf833ca4c4d6f513307ff158a49a",
+      "name": "learn_commusoft_job_refresh",
+      "owner": "postgres"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "36cb885d292a8b9a80ce467e26027ec4",
+      "name": "learn_commusoft_job_refresh_plan",
+      "owner": "postgres"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "8e2cb43fe4fda4c24926399c3ef8917b",
+      "name": "learn_commusoft_work_review_page",
+      "owner": "postgres"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "4385d308eb96da5891d0c59143fa2bd6",
+      "name": "learn_commusoft_work_review_search",
+      "owner": "postgres"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "0176020ae98545133b07c0a841f5862b",
+      "name": "learn_customer_business_context",
+      "owner": "postgres"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "c623f4b271406811f7e32b96077d07d7",
+      "name": "openfolk_business_review",
+      "owner": "postgres"
+    }
+  ],
+  "sourceSha256": "2441325c79dc575647fd567e42123f337270b2de5002b25a77f29b741cf38e4a",
+  "frontend": {
+    "observedAt": "2026-10-13T22:16:14.451Z",
+    "id": "dpl_8aNn41L5xKaZADdN1YhNtxHTnrjt",
+    "url": "serviceos-pr19i2t8a-allkin.vercel.app",
+    "readyState": "READY",
+    "gitSha": "41a22e651b5b6c41a373926cd4a84df76f81bbaf",
+    "productionTarget": "dpl_FEvZQUizXBraRu71hJtGciJTPZER",
+    "productionUnchanged": true,
+    "protection": "all_except_custom_domains",
+    "renderedAuthTarget": "https://tgbnakbxwcqjeimygroz.supabase.co",
+    "promoted": false
+  },
+  "acceptance": {
+    "testCurrentSourceReview": true,
+    "testChangedRetainedJobsAvailable": false,
+    "nativeChangedSourceJourney": true,
+    "liveChangedSourceJourney": false,
+    "autoReviewPromotionRejected": true,
+    "reason": "Real changed-source acceptance must precede LIVE alias promotion. Existing saved login is ambiguously labelled TEST while pointing to LIVE; user clarification requested. No password was copied or reset."
+  },
+  "checks": {
+    "focusedFrontendTests": 24,
+    "typescript": "passed",
+    "buildIncludingNoStoreHeaders": "passed",
+    "nativeReleaseGuardsAndBothRecoveryPaths": "passed",
+    "additionalConcurrentAndReturnToPriorContentChecks": "passed_offline",
+    "additionalEvidence": "learn-business-job-refresh-concurrency-2026-10-13.json"
+  }
+}

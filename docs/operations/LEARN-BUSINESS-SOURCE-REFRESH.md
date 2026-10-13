@@ -2,11 +2,11 @@
 
 ## Current state — 13 October 2026
 
-The job-refresh candidate and matching existing-workspace review control are
-implemented; its aligned backend is installed and verified in TEST. The matching
-TEST frontend is being prepared. It is not installed in LIVE. The live reader
-timeout fix remains the last released change. The actual completed Commusoft job
-has not yet been refreshed in production.
+The job-refresh backend is installed and preserved in both TEST and LIVE. The
+matching TEST frontend verifies an already-current source review. The protected
+LIVE frontend candidate is READY but has not been promoted: the genuine
+changed-source journey still requires the existing LIVE login. No production job
+has yet been refreshed. Current release evidence is linked below.
 
 The initial business identity link remains immutable. An append-only refresh ledger
 records actor, request, previous/current source versions and complete canonical
@@ -62,15 +62,15 @@ apply remains unverified; see the TEST evidence below.
 ## Remaining release and delivery work
 
 - Cancellation, a second source transition, stale/equal-time ambiguous previews and
-  revoked owner/module/connection checks now pass offline. Still verify a later
-  unambiguous return to prior content and real concurrent requests; serial replay
-  tests alone do not establish that acceptance.
+  revoked owner/module/connection checks now pass offline. Three controlled
+  two-session races and a later unambiguous return to prior source content now
+  pass too; the competing session was observed waiting on the database lock.
 - Exact LIVE guards, empty rollback and history-preserving pause now pass native
   rehearsal. TEST alignment and both empty rollbacks also pass; all sixteen scoped
   TEST tables (78,378 rows) are unchanged by installation. An older reader which
   ignores accepted revisions must never be restored after real refreshes exist.
-- Verify hosted TEST and browser UX, then release the scoped backend/frontend and
-  refresh the observed real job through the logged operator controls. Do not promote
+- Verify the genuine changed-source journey through the protected production
+  preview and logged operator controls before promoting its frontend. Do not promote
   unrelated QuickBooks, legal drafts or roadmap changes with this feature.
 - Extend to customer, site and contact projections and controlled unattended refresh
   of unchanged reviewed identities, holding ownership/identity/local-edit conflicts.
@@ -86,3 +86,29 @@ initially remained cached after reload; an exact release query showed `119b13d`.
 Cache origin remains under investigation. Both bounded review windows are closed
 and original module/account state is restored. No canonical refresh occurred.
 [Partial browser evidence](evidence/learn-business-job-refresh-test-2026-10-13.json).
+
+## Production backend / held frontend — 13 October, 22:24 UTC
+
+The exact backend is installed and all 133,019 compared rows across sixteen source,
+canonical and access tables are unchanged. Both ledgers are empty. Candidate
+`41a22e6` is built with the same six UI files plus no-store HTML headers and has a
+verified production auth target. It is protected and not promoted. Automatic review
+requires the real changed-source journey before moving aliases; a saved-login
+label/address conflict is awaiting Chris's clarification. Do not bypass either
+block with a synthetic session, new grant or extraction of a browser token.
+[Current evidence](evidence/learn-business-job-refresh-production-2026-10-13.json).
+
+## Concurrent requests and source recurrence — verified offline
+
+Three independent pairs of database sessions prove save/save idempotency, a committed
+cancel fencing a delayed save, and a committed save surviving a late cancel. Each
+second session was observed waiting on a real lock; both callers received the same
+receipt and exactly one durable outcome remained. Initial identities, provider
+versions and operator profiles were unchanged. A later page can re-observe an older
+content version and produce a third accepted revision without rewriting history.
+All 15 native journeys and archive preservation still pass; the container is removed.
+The helper `scripts/backup/rehearse_business_refresh_races.py` must only be called
+with a live `RestoreSandbox` after the exact schema prerequisites are installed.
+It validates containment before creating its three disposable clone databases.
+This is offline acceptance, not a substitute for the pending real preview journey.
+[Evidence](evidence/learn-business-job-refresh-concurrency-2026-10-13.json).

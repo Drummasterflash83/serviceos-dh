@@ -1,0 +1,77 @@
+{
+  "state": "passed_offline",
+  "recordedAt": "2026-10-13T22:30:21.957805+00:00",
+  "concurrentJourneys": [
+    {
+      "first": "apply",
+      "second": "apply",
+      "secondObservedWaitingOnLock": true,
+      "matchingReceipts": true,
+      "state": "committed",
+      "exactlyOneDurableOutcome": true,
+      "identitySourceAndProfilePreserved": true
+    },
+    {
+      "first": "cancel",
+      "second": "apply",
+      "secondObservedWaitingOnLock": true,
+      "matchingReceipts": true,
+      "state": "cancelled",
+      "exactlyOneDurableOutcome": true,
+      "identitySourceAndProfilePreserved": true
+    },
+    {
+      "first": "apply",
+      "second": "cancel",
+      "secondObservedWaitingOnLock": true,
+      "matchingReceipts": true,
+      "state": "committed",
+      "exactlyOneDurableOutcome": true,
+      "identitySourceAndProfilePreserved": true
+    }
+  ],
+  "laterUnambiguousReturnToPriorContent": true,
+  "nativeJourneys": 15,
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 401,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "0cf32b7c23264a9bcaf2a62eab8f07e2911b590bff79907e18d01019443d1b78",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "providerRequests": 0,
+  "hostedTestChanged": false,
+  "productionChanged": false,
+  "sources": [
+    {
+      "path": "scripts/backup/rehearse_business_refresh_races.py",
+      "sha256": "4c38307e62697c6e4407303ad7e8e40229853c6ad0be5284210561001b3cfff9"
+    },
+    {
+      "path": "scripts/verify/learn-business-job-refresh.assert.sql",
+      "sha256": "72413ee8fb6875f5330d8243825315c8367950e9f2a3712dcc5a72653988123e"
+    }
+  ],
+  "limitations": [
+    "Synthetic offline identities; this does not replace the pending signed-in real changed-source acceptance.",
+    "Archive scope covers its included COPY tables and sequences, not omitted source objects."
+  ]
+}

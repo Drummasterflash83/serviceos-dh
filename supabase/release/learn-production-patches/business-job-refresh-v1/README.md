@@ -1,4 +1,4 @@
-# Reviewed Commusoft job refresh — rehearsed, not deployed
+# Reviewed Commusoft job refresh — backend installed, frontend acceptance pending
 
 This package adds reviewed job-source refresh and durable cancellation. It retains
 initial identity links and all provider history. It updates only source-owned job
@@ -11,16 +11,24 @@ approved database deployment route. The apply wrapper checks all ten prerequisit
 function definitions, owners and ACLs and refuses existing refresh objects. Do not
 remove a guard or retry an uncertain installation; inspect the catalog first.
 
+Installed in production on 13 October at 22:14 UTC. Exact definitions, access and
+all sixteen scoped table digests were verified; no canonical refresh has occurred.
+See `docs/operations/evidence/learn-business-job-refresh-production-2026-10-13.json`.
+
 ## Acceptance still required
 
 - Recovery rehearsals pass. The aligned TEST backend is installed and preserved.
   Verify the same refresh source through its matching signed-in TEST controls.
-- Prepare the frontend from each existing deployment base, using only the six files
-  in frontend-manifest.json. Do not deploy the shared branch wholesale.
-- Take fresh production preservation and definition snapshots, install the matching
-  backend/frontend, then verify the real source-to-card journey through logged
-  operator controls. Verify current authority, scope, before/after fields and retained
-  source/link history. No actual production job has been refreshed by this package.
+- Isolated frontends are prepared from their existing deployment bases. TEST has
+  six reviewed files; the protected LIVE candidate additionally carries the HTML
+  no-store rules in vercel.json. Exact paths, revisions and patch hashes are in
+  frontend-manifest.json. Do not deploy the shared branch wholesale.
+- The backend preservation and definition checks passed in production. Complete
+  the real source-to-card journey on the protected candidate through logged
+  operator controls before frontend promotion. Verify current authority, scope,
+  before/after fields and retained source/link history. No actual production job
+  has been refreshed by this package. Candidate runtime cache headers remain
+  unverified; build/configuration evidence is not a response-header observation.
 
 ## Recovery
 
