@@ -1,6 +1,16 @@
 # LEARN live release — 13 October 2026
 
-## Latest checkpoint — 12:29 BST
+## Latest checkpoint — 12:38 BST
+
+- Voicemail candidate discovery SQL/index installed with unchanged route, ownership,
+  access and schedule fingerprints; all five routes remain paused and 71 saved
+  voicemail/source pairs retained. No runtime deployment or provider call.
+- Actual worker/full-schema tests prove indexed pagination, fairness, late-arrival
+  discovery, replay, signature/private-access invariants and guarded rollback.
+  Live ongoing acceptance remains pending verified route activation.
+- [Release evidence](evidence/learn-voicemail-candidate-discovery-2026-10-13.json).
+
+## Previous checkpoint — 12:29 BST
 
 - Active public Slack history/replies now have reviewed priority 40 ahead of archived
   priority 60. A scheduled 100-message active page succeeded while archived jobs

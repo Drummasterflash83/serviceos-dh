@@ -38,9 +38,17 @@
   "limitations": [
     "Coverage of retained notification candidates only; no claim of complete provider mailbox history.",
     "Three sources lack authenticated MIME Content-Type; four original message IDs unavailable. Retained records preserved.",
-    "Stored audio decoded and read back by importer; browser playback previously verified for Office only.",
+    "Stored audio decoded and read back by importer; representative browser playback verified for Office and Liz.",
     "Historical routes paused; ongoing voicemail intake not enabled by this run.",
     "Independent backup coverage of voicemail source and audio buckets remains to be verified."
   ],
-  "privateEvidence": ".verification-results/additional-voicemail-history-continuation-20261013.json"
+  "privateEvidence": ".verification-results/additional-voicemail-history-continuation-20261013.json",
+  "representativeBrowserPlayback": {
+    "officeVerified": true,
+    "personalMailbox102Verified": true,
+    "personalDurationSeconds": 4.68,
+    "personalPlayedToEnd": true,
+    "personalMediaError": null,
+    "privateEvidence": ".verification-results/voicemail-personal-playback-20261013.json"
+  }
 }

@@ -1,0 +1,111 @@
+{
+  "version": "learn-voicemail-provider-discovery/1",
+  "state": "bounded_metadata_discovery_complete_not_source_acceptance",
+  "at": "2026-10-13T11:24:41.763Z",
+  "rawReads": 0,
+  "audioReads": 0,
+  "productionWrites": 0,
+  "metadataCandidates": 1372,
+  "additionalCandidates": 1298,
+  "retainedAvailableCandidates": 74,
+  "previousRetainedScope": {
+    "published": 71,
+    "unsignedContentType": 3,
+    "providerUnavailable": 4
+  },
+  "truncatedMailboxes": 2,
+  "reviewAccounts": 6,
+  "routes": [
+    {
+      "recipientLabel": "anna",
+      "extension": "102",
+      "metadataCandidates": 100,
+      "additionalCandidates": 98,
+      "earliest": "2024-09-27T15:34:23.000Z",
+      "latest": "2026-07-01T10:41:24.000Z",
+      "newRouteCandidates": 98,
+      "existingRouteCandidates": 0,
+      "accessMode": "existing_managers_only"
+    },
+    {
+      "recipientLabel": "heidi",
+      "extension": "108",
+      "metadataCandidates": 2,
+      "additionalCandidates": 2,
+      "earliest": "2026-07-23T12:08:36.000Z",
+      "latest": "2026-09-22T07:32:39.000Z",
+      "newRouteCandidates": 2,
+      "existingRouteCandidates": 0,
+      "accessMode": "existing_owner_and_managers"
+    },
+    {
+      "recipientLabel": "larne",
+      "extension": "107",
+      "metadataCandidates": 1,
+      "additionalCandidates": 1,
+      "earliest": "2026-09-16T09:23:30.000Z",
+      "latest": "2026-09-16T09:23:30.000Z",
+      "newRouteCandidates": 1,
+      "existingRouteCandidates": 0,
+      "accessMode": "existing_managers_only"
+    },
+    {
+      "recipientLabel": "liz",
+      "extension": "102",
+      "metadataCandidates": 12,
+      "additionalCandidates": 3,
+      "earliest": "2026-07-13T08:04:16.000Z",
+      "latest": "2026-10-06T13:16:54.000Z",
+      "newRouteCandidates": 1,
+      "existingRouteCandidates": 2,
+      "accessMode": "existing_managers_only"
+    },
+    {
+      "recipientLabel": "office",
+      "extension": "103",
+      "metadataCandidates": 861,
+      "additionalCandidates": 815,
+      "earliest": "2023-12-15T13:19:09.000Z",
+      "latest": "2026-10-01T08:06:08.000Z",
+      "newRouteCandidates": 741,
+      "existingRouteCandidates": 74,
+      "accessMode": "existing_managers_only"
+    },
+    {
+      "recipientLabel": "office",
+      "extension": "601",
+      "metadataCandidates": 127,
+      "additionalCandidates": 118,
+      "earliest": "2023-12-18T08:14:12.000Z",
+      "latest": "2026-10-08T06:49:33.000Z",
+      "newRouteCandidates": 112,
+      "existingRouteCandidates": 6,
+      "accessMode": "existing_managers_only"
+    },
+    {
+      "recipientLabel": "rudi",
+      "extension": "106",
+      "metadataCandidates": 1,
+      "additionalCandidates": 1,
+      "earliest": "2026-07-20T10:17:02.000Z",
+      "latest": "2026-07-20T10:17:02.000Z",
+      "newRouteCandidates": 1,
+      "existingRouteCandidates": 0,
+      "accessMode": "existing_managers_only"
+    },
+    {
+      "recipientLabel": "tony",
+      "extension": "105",
+      "metadataCandidates": 268,
+      "additionalCandidates": 260,
+      "earliest": "2024-08-07T07:57:50.000Z",
+      "latest": "2026-09-30T12:49:45.000Z",
+      "newRouteCandidates": 255,
+      "existingRouteCandidates": 5,
+      "accessMode": "existing_managers_only"
+    }
+  ],
+  "preparedNewHistoricalRoutes": 8,
+  "existingRoutesReused": 4,
+  "coverageComplete": false
+}

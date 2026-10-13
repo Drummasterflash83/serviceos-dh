@@ -1,0 +1,61 @@
+{
+  "version": "learn-voicemail-candidate-discovery/1",
+  "state": "production_installed_preservation_verified",
+  "sqlSha256": "deb61d1fdac4a1a440d3337d11e4a8acb5e674dfffddeaaa9536536779cda1c5",
+  "productionWrites": 1,
+  "providerRequests": 0,
+  "fullSchemaPaginationGuardsPassed": true,
+  "migrationRollbackPassed": true,
+  "worker": {
+    "state": "passed",
+    "actualWorkerAdapter": true,
+    "actualFullSchemaSql": true,
+    "indexUsed": true,
+    "firstTickRows": 501,
+    "secondTickRows": 51,
+    "ordinaryRowsSkipped": 20000,
+    "fairThreeRoutes": true,
+    "replayNoDuplicateJobs": true,
+    "sourceRowsUnchanged": true,
+    "productionWrites": 0,
+    "providerRequests": 0
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "runtimeChangeRequired": false,
+  "guardedReleaseAndRollbackPassed": true,
+  "originalFullSchemaPrivateJourneyPassed": true,
+  "production": {
+    "completedAt": "2026-10-13T11:36:58.138Z",
+    "planSha256": "82301c85f20dbd460ad7ae872f8ea862466a226bfe13b6bb71bdee01e4892231",
+    "runtimeChanged": false,
+    "enabledRoutes": 0,
+    "retainedCounts": {
+      "emails": 22566,
+      "sources": 71,
+      "messages": 71
+    },
+    "preserved": [
+      "route_bindings",
+      "owners",
+      "managers",
+      "policies",
+      "schedules",
+      "function_privileges"
+    ],
+    "scheduledAcceptance": "pending_verified_route_activation"
+  }
+}

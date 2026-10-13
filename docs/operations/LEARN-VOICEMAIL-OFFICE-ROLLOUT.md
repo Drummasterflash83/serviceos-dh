@@ -35,8 +35,8 @@ unchanged. The latest historical continuation is complete below.
   provider signature and remain withheld; four exact Gmail source IDs return 404.
   None was deleted or counted as successfully imported.
 - The deployed importer verified original signatures, recipient/route/date
-  binding, full audio decoding and stored-byte readback. Browser playback was
-  previously verified for Office; new mailbox browser checks remain separate.
+  binding, full audio decoding and stored-byte readback. Signed-in live browser playback is verified for Office and a representative
+  Liz recording (4.68 seconds, played to the end, readyState 4, no media error).
 
 [Sanitised acceptance evidence](evidence/learn-voicemail-history-2026-10-13.json).
 Private execution journal:
@@ -203,3 +203,11 @@ that execution status.
 
 Private evidence: `.verification-results/additional-voicemail-history-preflight-20261013.json`
 and `.verification-results/additional-voicemail-signature-review-20261013.json`.
+
+## Wider provider history and ongoing capture
+
+The 78 retained candidates above are not the whole provider history. A separate
+bounded, metadata-only Gmail discovery found additional notifications outside the
+retained email set. See the [provider-history and ongoing-capture plan](LEARN-VOICEMAIL-ONGOING-PLAN.md)
+for listing limits, source-binding gaps and the proposed candidate-directed scan.
+That assessment has not enabled routes or published additional audio.

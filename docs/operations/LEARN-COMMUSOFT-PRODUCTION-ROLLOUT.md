@@ -101,3 +101,34 @@ The next logged approval covers customer contacts for the 1,552 customer targets
 in that completed property traversal, at most 2,500 pages of 100 through 14 October
 11:15 UTC. Its first supervised batch is running; site contacts have not started.
 This is source capture, not complete canonical customer/job/card coverage.
+
+## Shared customer/job context — 13 October, 12:38 BST
+
+A read-only live check confirms 1,552 customer sources, 871 work-address sources
+and 12,633 job sources. Canonical jobs, sites and source-to-canonical links are
+still zero. The completed traversals must not be described as published customer
+context. Customer-contact traversal remains active under the existing approval.
+
+The existing logged OpenFolk review path can classify/reuse customers, then publish
+their sites, contacts and jobs with source-version provenance. The next steps are:
+
+1. Verify current customer-type meanings and review person/company classifications.
+2. Inspect existing identity candidates; reuse only verified identities and retain
+   ambiguous/shared-contact cases for review rather than automatically merging them.
+3. Publish reviewed customers, then sites/jobs/contacts through the existing audited
+   operator transactions, with exact source-version/replay receipts.
+4. Reconcile unresolved parent references and prove the resulting existing cards
+   and job communication readers, tenant isolation and retained source preservation.
+5. Connect explicit Slack job references through source-bound work-context review,
+   keeping internal authors distinct from customer identity.
+
+The settings/customerTypes endpoint previously returned JSON ACCESS_DENIED on
+12 October. That response has not been retried or bypassed. The sealed historical
+customer export corroborates category clues but is not fresh account taxonomy:
+39 live customer IDs are absent from that export, and one current type ID maps to
+two historical category labels. No bulk classification policy or identity merge
+has been inferred. Private aggregate evidence is retained in
+`.verification-results/commusoft-classification-evidence-20261013.json`.
+
+This work completes the original input-to-context requirement. The proposed richer
+customer-card UX remains discussion-only, as requested.

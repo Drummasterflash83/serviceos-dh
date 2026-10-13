@@ -7,6 +7,22 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 12:38 BST — voicemail candidate discovery installed; shared job publication remains open.**
+
+- Candidate-directed voicemail discovery is installed and preservation-verified.
+  All five routes remain paused; 71 voicemail/source pairs are intact. Scheduled
+  ongoing acceptance awaits route activation after source verification.
+- LIVE Commusoft retains 1,552 customer and 871 work-address sources, plus 12,633
+  jobs, but has zero canonical jobs/sites/source links. Imports alone do not establish
+  the shared customer/job context. Contact traversal continues under its existing bound.
+- The retained historical customer export offers classification clues, with some
+  conflicts. The settings/customerTypes API previously returned ACCESS_DENIED.
+  No bulk classification, merge or canonical publication has been inferred.
+- Slack context diagnostics confirm internal messages need a separate work-context
+  path; unknown direction must not be invented as inbound/outbound. A tested pure
+  review-candidate builder is prepared, not wired or deployed.
+
+
 **13 October, 12:29 BST — active Slack history priority is live and scheduled acceptance passed.**
 
 - The existing minute scheduler saved a 100-message active-channel page after the
