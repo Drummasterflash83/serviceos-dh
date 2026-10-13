@@ -1,0 +1,144 @@
+{
+  "version": "learn-production-release-checkpoint/1",
+  "state": "fresh_local_checkpoint_verified_independent_copy_pending",
+  "project": "tgbnakbxwcqjeimygroz",
+  "snapshotAt": "2026-10-13T00:16:29.971745+00:00",
+  "exportCompletedAt": "2026-10-13T00:24:47.306Z",
+  "archive": {
+    "bytes": 201420792,
+    "sha256": "009c3236c3f73fe686c4a0f99e988c7c47776c0fa7b11c619d1fc6bf672f057e"
+  },
+  "sourceTransactionReadOnly": true,
+  "productionDataWrites": false,
+  "restore": {
+    "nativeDataComparison": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 299,
+      "rows": 1617988,
+      "sequences": 5,
+      "comparisonSha256": "b4f6f72f577d768caeac05b90f857400e75ff1c1ac325bc29e3aec8ea6b78cfc",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "networkSupplementComparison": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 2,
+      "rows": 2652,
+      "sequences": 1,
+      "comparisonSha256": "91a2b3e8c66549667a0bd3d9b49d2746347d311b9a21f8ac40acea111b25d0f7",
+      "scope": "two explicitly captured pg_net COPY tables and separately observed nontransactional sequence"
+    },
+    "allInventoriedPhysicalTablesCaptured": true,
+    "tableCatalogMatched": true,
+    "extensionVersionsMatched": true,
+    "noActorRows": {
+      "emails": 0,
+      "recordings": 0
+    },
+    "recordingRelationships": {
+      "recordings": 2944,
+      "withObjectPath": 2944,
+      "missingStorageMetadata": 0
+    },
+    "containerRemoved": true
+  },
+  "vault": {
+    "version": "production-vault-recovery/1",
+    "productionWrites": false,
+    "keyPersistedOnHost": false,
+    "decryptedValuesPersisted": false,
+    "externalUpload": false,
+    "archive": {
+      "bytes": 201420792,
+      "sha256": "009c3236c3f73fe686c4a0f99e988c7c47776c0fa7b11c619d1fc6bf672f057e"
+    },
+    "state": "all_archived_vault_secrets_decrypt_and_match_live",
+    "vaultSecretsVerified": 16,
+    "ciphertextMatchesLive": true,
+    "plaintextComparisonMatches": true,
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true
+  },
+  "audioCoverage": {
+    "state": "fresh_snapshot_matches_verified_audio_versions",
+    "productionChanges": 0,
+    "providerRequests": 0,
+    "newCopies": 0,
+    "snapshotAt": "2026-10-13T00:16:29.971745+00:00",
+    "archive": {
+      "bytes": 201420792,
+      "sha256": "009c3236c3f73fe686c4a0f99e988c7c47776c0fa7b11c619d1fc6bf672f057e"
+    },
+    "audioInventoryVerifiedAt": "2026-10-12T17:54:01.131Z",
+    "audioInventorySha256": "453d01c08541022628328a74b78ef016e37dc261195aeafb5db0e563734c150e",
+    "recordingReferences": 2944,
+    "storageObjects": 2950,
+    "unmatchedReferences": 0,
+    "mismatchedObjectVersions": 0,
+    "exactObjectSet": true,
+    "exactReferenceSet": true,
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true,
+    "limitations": [
+      "Binds current database snapshot to earlier verified audio inventory by exact object ID, version, ETag, size, path and recording references.",
+      "Does not redownload S3 bytes, prove current provider capture completeness or replace playback/operational backup monitoring."
+    ]
+  },
+  "checkpointRunnerTestsPassed": 10,
+  "sources": [
+    {
+      "path": "scripts/backup/export-production-database.mjs",
+      "sha256": "b12516a5d8b019b98a3e5210031ccb08ea73b570494987e8a80a109cf7a69638"
+    },
+    {
+      "path": "scripts/backup/check-production-vault-recovery.mjs",
+      "sha256": "4955450e33e6713cf7ea538e2c16924feb69b3acec1d736b6a1cb4115f2e23a6"
+    },
+    {
+      "path": "scripts/backup/verify_production_vault_recovery.py",
+      "sha256": "0d8b563406d95f0e2acb8e49feece071cd77987551eaa4eb1e57d78a923c5fd9"
+    },
+    {
+      "path": "scripts/backup/restore_production_database.py",
+      "sha256": "211cb7cbb4eded2ba958f23ba3cb4d551267b32d3c6befb36d31f32c9b57f170"
+    },
+    {
+      "path": "scripts/backup/verify_release_recording_coverage.py",
+      "sha256": "c1e2b65a55b4ffcfc7d326252b49f0ddf8ba17755c537a650808f04e78b18385"
+    },
+    {
+      "path": "scripts/backup/run-serviceos-database-backup.mjs",
+      "sha256": "6f3fa5188b83ad56b2227346ab494c87be95186930f32372234880ac96d084d9"
+    }
+  ],
+  "remaining": [
+    "Fresh encrypted off-site copy and independent restore await existing 1Password recovery material; app was observed locked after inactivity.",
+    "This live snapshot does not establish a controlled pause/drain or after-release preservation.",
+    "No production schema, runtime, frontend or input activation changed in this checkpoint operation."
+  ]
+}

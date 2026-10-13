@@ -403,6 +403,10 @@ length/hash bound to the preparation. It downloads and restores that exact new
 snapshot; it cannot silently substitute the original initial archive. An uncertain
 restore retains its inspection lock. No keys, resources or schedules are created.
 
-The first release-checkpoint export is in progress. The runner's ten tests pass,
-including rejection of a mismatched archive and invalid checkpoint paths. This is
-tooling readiness, not evidence that the fresh checkpoint is restored or copied.
+The first release checkpoint (13 October 00:16 UTC) exported 201,420,792 bytes
+and passed the native, operational-table and Vault restore checks. Its recording
+versions and references match the already verified audio inventory. The runner's
+ten tests pass, including mismatched archive and invalid path rejection. The fresh
+encrypted off-site copy and independent restore remain pending the existing
+1Password recovery material; this local proof does not claim those steps passed.
+[Checkpoint evidence](../../docs/operations/evidence/learn-production-release-checkpoint-2026-10-13.json).

@@ -27,9 +27,13 @@ override a later release observation. No requirement is silently deferred.
   Fresh production configuration preflight is ready; no secrets were provisioned.
 
 - Fresh read-only inspection at 00:22 UTC confirms the reviewed production public
-  schema and all 88 hosted function definitions remain unchanged. The new private
-  recovery snapshot is exporting; neither its restore nor independent copy is yet
-  verified. The existing snapshot and recovery evidence remain retained.
+  schema and all 88 hosted function definitions remain unchanged. The new 00:16 UTC
+  private snapshot exported (201,420,792 bytes) and restored offline: 1,617,988 native
+  rows, 2,652 operational rows and all 16 Vault secrets verified. All physical tables,
+  catalog/RLS and 2,944 recording relationships passed; containers were removed.
+- The fresh snapshot matches the existing verified audio inventory exactly: 2,950
+  object IDs, versions, ETags, sizes, paths and 2,944 recording references. This
+  reuses the 12 October 17:54 UTC audio verification; no new S3 byte check is claimed.
 
 ### Needs finishing
 
@@ -51,9 +55,12 @@ override a later release observation. No requirement is silently deferred.
 
 ### Blocked externally
 
+- The fresh encrypted database copy and independent restore need the existing
+  recovery keys in 1Password, observed locked after inactivity. Chris has been asked
+  to unlock it; no keys were exposed or authentication protection bypassed.
 - Signed-in production acceptance and TEST AI credential access remain unresolved.
 
-Evidence: [production Learning candidate](evidence/learn-production-learning-2026-10-13.json), [audited production job recovery](evidence/learn-production-legacy-job-recovery-2026-10-13.json).
+Evidence: [fresh local recovery checkpoint](evidence/learn-production-release-checkpoint-2026-10-13.json), [production Learning candidate](evidence/learn-production-learning-2026-10-13.json), [audited production job recovery](evidence/learn-production-legacy-job-recovery-2026-10-13.json).
 
 ### Previous hosted TEST milestone
 
