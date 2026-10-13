@@ -1,0 +1,197 @@
+# Drummonds — OpenFolk ServiceOS privacy notice
+
+**Draft for review · 13 October 2026 · Not published or effective.**
+This notice is for Drummonds’ deployment only. Bracketed fields and the decisions
+in [the publication review](SERVICEOS-LEGAL-PUBLICATION-REVIEW.md) must be resolved
+before publication. It does not describe Drummonds as the operator of OpenFolk
+for other clients or certify that planned controls are already operational.
+
+## 1. Who is responsible
+
+**DRUMMOND HEATING LTD.**, company number **07556814**, is responsible for the
+purposes of processing described in this notice. Its registered office is
+**Unit 15 Westlink Belbins Business Park, Cupernham Lane, Romsey, Hampshire,
+England, SO51 7JF**. In this notice, “Drummonds”, “we” and “us” mean that company.
+
+Contact: **office@drummondheating.co.uk**, marked “ServiceOS privacy”, or write to
+our registered office. **[Confirm that this published business mailbox will handle
+privacy requests and identify the responsible person before publication.]**
+Effective date: **[PUBLICATION DATE]**.
+
+Drummonds uses OpenFolk ServiceOS to bring together its customer, job,
+communication and business information. OpenFolk provides the software and
+technical support. **[Identify the legal entity providing OpenFolk and complete
+its data-processing agreement.]** That supplier processes our workspace records
+on our instructions; its separate business administration may have its own notice.
+
+This notice concerns our ServiceOS deployment. It supplements, rather than silently
+replaces, any existing Drummonds customer, workforce or website privacy notices.
+
+## 2. What information comes into ServiceOS
+
+Information depends on the enabled modules, source permissions and agreed import
+scope. It may include:
+
+- Customer, supplier and staff names, contact details, addresses and identifiers.
+- Customer accounts, sites, job records, appointments, progress and operational notes.
+- Emails and metadata; call details, recordings and transcripts; voicemails;
+  authorised channel messages, replies and participant details.
+- Accounting contacts and transactions, including invoices, payments, credits,
+  bills, estimates, balances and the references linking those records.
+- Account roles, support correspondence, access logs and technical diagnostics.
+- Derived summaries, linked timelines, extracted tasks and indicators based on
+  the available records.
+
+Sources include people who contact or work with us, our authorised users, and
+connected business systems such as Google Workspace, our phone provider, Slack,
+Commusoft and, once authorised, QuickBooks Online. The relevant configuration
+controls what is captured. Source retention, access restrictions and technical
+failures can limit completeness or freshness.
+
+Our current Slack rollout excludes individual and group direct messages. A
+change to that scope would require a separate decision, appropriate access and
+notice. Not every feature listed in this draft is enabled or verified today.
+
+## 3. Purposes and legal bases
+
+We use the selected information to understand customer needs and job progress,
+follow up communications, identify outstanding work, reconcile business records,
+manage operations, and investigate service problems. OpenFolk may help diagnose
+issues and improve the software supplied to us under our instructions.
+
+The proposed purpose/basis mapping is:
+
+| Purpose | Proposed basis, subject to confirmation |
+| --- | --- |
+| Deliver heating services contracted directly with an individual | Performance of that contract |
+| Coordinate business customer work, supplier relationships and operational follow-up | Legitimate interests in managing our business and service delivery |
+| Maintain financial records required by applicable law | Legal obligation; identify the relevant requirements in our processing record |
+| Secure the workspace, manage access and investigate misuse | Legitimate interests in protecting information and systems |
+| Optional processing that requires consent | Consent, where required and actually obtained |
+
+**[Before publication: confirm the purposes, applicable laws, legitimate-interest
+assessments and notices for communications capture, AI analysis and workforce
+information. Do not apply a customer contract basis to every staff member or
+third-party correspondent.]** Any special-category or criminal-offence data needs
+separate assessment and applicable conditions; its incidental presence does not
+by itself authorise new analysis.
+
+Some contact and job details are necessary to provide our services; account
+information is necessary to provide a ServiceOS login. We explain any required
+information and the consequences of not supplying it at the relevant collection
+point. An administrator can decline a connector, limiting the related insight.
+
+## 4. QuickBooks Online
+
+Once enabled, an authorised administrator connects our specific QuickBooks company
+through Intuit’s authorisation process. The connector uses access tokens rather
+than a user’s QuickBooks password. It reads the agreed accounting records to help
+understand invoices, balances, payments and their relationship to our work.
+
+The initial ServiceOS connector is designed not to create, edit or delete
+accounting transactions or initiate payments. Intuit’s Accounting permission
+includes read and write capability; ServiceOS restricts its implementation to
+reads. The separate payment-processing API and payroll are outside this initial
+connection.
+
+An authorised administrator can revoke access through Intuit’s connected-app
+controls or request disconnection through our ServiceOS support contact.
+Disconnection does not change our records in QuickBooks or automatically erase
+copies already retained in ServiceOS. Retention and deletion are handled separately.
+
+**[Release condition: verify hosted read-only behaviour and the disconnection
+procedure before presenting these functions as available.]**
+
+## 5. AI and performance analysis
+
+Enabled AI or speech features may send relevant information to the disclosed
+providers to create summaries, transcripts or other requested outputs. Such outputs
+can be inaccurate, incomplete or linked to the wrong record. Important conclusions
+must be checked against the underlying evidence.
+
+Performance indicators, if enabled, require an explanation of their measures,
+coverage, purpose and correction process. Our proposed policy requires meaningful
+human review before decisions about pay, employment or other significant outcomes.
+A score is not an automatic instruction to change someone’s pay or employment.
+**[Assess any such feature and provide appropriate workforce information before use.]**
+
+**Proposed data-use restriction:** identifiable workspace information will not be
+sold, used to train general-purpose models or reused for unrelated client datasets.
+Client-specific support and software improvement remain within the agreed purposes.
+Verify and adopt this commitment in supplier contracts and configuration before
+publication; this draft does not claim that every AI provider offers zero retention.
+
+## 6. Access and recipients
+
+Access is limited to authorised Drummonds users and permitted support personnel,
+according to their roles and relevant source permissions. Authorised OpenFolk
+operators can access relevant Drummonds information to support the service and
+improve our implementation, using explicit client selection and auditable actions.
+That access does not permit disclosure of our underlying records to another client.
+
+Service providers may process information for hosting, databases, backups,
+security and enabled AI or voice features. Repository inventory identifies
+Vercel, Supabase, AWS and Cloudflare, with OpenAI and Vapi in AI/voice components.
+**[Replace this inventory with the verified recipients/subprocessor list, including
+purposes and locations. Do not assume every listed provider receives QuickBooks data.]**
+Intuit and other connected providers also process information under their own
+terms and privacy notices.
+
+Information may be shared with professional advisers under appropriate duties,
+where legally required, or in a lawful business transfer with appropriate safeguards.
+
+## 7. Security and international processing
+
+The service uses access restrictions, protected server-side credentials, private
+storage and recovery controls. No system can promise absolute security. Users
+should protect their accounts and report suspected unauthorised access through
+our business contact, marked “ServiceOS security”. **[Confirm escalation ownership.]**
+
+Some suppliers or their support teams may process information outside the UK.
+**[Insert verified countries, applicable transfer safeguards and how to obtain
+information about them.]** London backup storage does not establish that all
+processing or support access stays in the UK.
+
+## 8. Retention and deletion
+
+We determine retention according to the purpose of each category, operational
+need and applicable legal requirements. Workspace history, financial records,
+recordings, access logs and account information need separate schedules.
+
+Disconnecting a source, deleting an original record and deleting its retained
+ServiceOS copies are different actions. A deletion request may also need to cover
+historical versions and derived records. We assess requests and explain any lawful
+reason for retaining particular information.
+
+Backups can have separate expiry and deletion-protection periods. Copies awaiting
+disposal remain restricted to recovery and authorised purposes. Applicable deletion
+instructions must be reapplied if a backup is restored.
+
+**[Publication blocker: set specific retention periods or meaningful criteria,
+exit/export timing, deletion procedures, exceptions and maximum backup retention.
+Existing 30-day backup protection is a minimum lock, not automatic deletion after
+30 days; some backups have no automatic expiry. This draft authorises no deletion.]**
+
+## 9. Your rights
+
+Depending on the processing and applicable law, you may request access,
+correction, erasure, restriction or portability of personal information. Where
+we rely on consent, you may withdraw it without affecting earlier lawful processing.
+
+**You may object to processing based on legitimate interests. You may object to
+direct marketing at any time.** Contact us using the details above. We may need
+to verify your identity; not every right applies in every circumstance.
+
+You can complain to the [UK Information Commissioner’s Office](https://ico.org.uk/make-a-complaint/)
+or another relevant supervisory authority where applicable. You do not need to
+contact us first, although we welcome the opportunity to resolve concerns.
+
+## 10. Website technologies and changes
+
+ServiceOS uses storage needed for sign-in and operation. **[Complete the actual
+cookie, browser-storage and analytics inventory, including purposes, providers,
+duration and required choices before publication.]** This notice does not assume
+that every installed technology is essential.
+
+We will date updates and provide appropriate notice of material changes. Updating
+this notice does not itself authorise a new purpose for personal information.

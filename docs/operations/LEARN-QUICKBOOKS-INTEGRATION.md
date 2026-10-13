@@ -113,8 +113,13 @@ Production keys remain locked behind the portal's tasks:
 
 The questionnaire's inline settings link currently leads to a missing page;
 the app sidebar Settings route works. No compliance declarations have been
-submitted. Repository search found no public policy/terms routes or approved
-legal documents; Chris has been asked for existing documents or draft direction.
+submitted. Chris requested new drafts and instructed that this first setup use
+Drummonds' company details. The [privacy draft](../legal/SERVICEOS-PRIVACY-POLICY-DRAFT.md)
+and [end-user terms](../legal/SERVICEOS-TERMS-DRAFT.md) now cover Drummonds' deployment,
+using verified DRUMMOND HEATING LTD. details, with OpenFolk as the separate software
+supplier. See the [publication review](../legal/SERVICEOS-LEGAL-PUBLICATION-REVIEW.md)
+for remaining factual, contractual and implementation decisions. No public routes
+or policy submissions have been made, and drafts are not effective agreements.
 Do not invent public URLs, certify unverified controls or treat the local tests
 as evidence of a working hosted integration.
 
