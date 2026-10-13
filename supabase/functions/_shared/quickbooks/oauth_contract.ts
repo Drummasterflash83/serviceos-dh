@@ -68,7 +68,9 @@ export function quickBooksAuthorizationUrl(pending: QuickBooksPendingAuthorizati
 
 /** Validation alone DOES NOT consume state or prove company access. The callback
  * must claim unused/unexpired state atomically, recheck current actor authority,
- * exchange the code, then verify CompanyInfo.Id matches realmId before storing.
+ * exchange the code, then read CompanyInfo through the exact realm-bound URL.
+ * CompanyInfo.Id is an entity identifier, not assumed to equal the OAuth realm.
+ * Confirm the returned company with the operator before starting capture.
  * Errors intentionally exclude the callback URL, code, state and provider message.
  */
 export function validateQuickBooksCallback(callbackUrl: string, pending: QuickBooksPendingAuthorization,

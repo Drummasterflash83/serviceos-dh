@@ -52,15 +52,35 @@ Intuit's current transfer options still need verification in its portal.
   errors. These helpers are not a deployed authorisation endpoint.
 - Token endpoint transport supports code exchange and refresh, fixed HTTPS
   endpoint, bounded responses, replacement token pairs and provider expiry fields.
-  It never retries automatically after an uncertain exchange. Durable state
-  consumption, refresh leases and atomic Vault persistence remain unwired.
-- 21 synthetic tests pass; strict standalone TypeScript checks pass for the
-  runtime modules. No real QuickBooks accounting data has been requested.
+  It never retries automatically after an uncertain exchange.
+- Additive SQL now stores hashed one-use state, rechecks the recorded operator's
+  active grant and login, binds callbacks to the selected tenant/app/connection,
+  and atomically saves the token pair with connection metadata. Reauthorisation
+  preserves the realm; another company cannot silently replace retained history.
+- Callback reads CompanyInfo through the exact realm-bound endpoint. Its entity
+  `Id` is not assumed to equal the OAuth realm. The operator must confirm the
+  returned company; initial capture remains paused.
+- Refresh leases fence overlapping requests. An expired uncertain exchange requires
+  reauthorisation instead of automatically resending a potentially rotated token.
+- Server start/callback endpoints and the OpenFolk QuickBooks connection panel are
+  implemented locally. The panel can connect, refresh status, confirm a company
+  and pause. No accounting import controls are available yet.
+- 33 targeted TypeScript tests pass. An isolated PostgreSQL run verifies grants,
+  tenant isolation, callback races/replays, actor revocation/bans, expired states,
+  company confirmation, pause and atomic rollback after a simulated Vault write.
+  The actual TypeScript start/callback/confirmation/refresh flow also passes against
+  those SQL RPCs with synthetic provider responses. Vault in that fixture is a
+  transactional substitute, not evidence of hosted encryption configuration.
+- Full frontend TypeScript, Deno endpoint checks, 47 existing prebuild checks and
+  the local production build pass using the existing local dependency installation.
+  No real QuickBooks accounting data has been requested. No new code is deployed.
 
 Reproduce:
 
 ```sh
 node --test supabase/functions/_shared/quickbooks/*.test.ts
+node --test src/lib/learn-quickbooks.test.ts
+python3 scripts/verify/learn-quickbooks-oauth.py
 ```
 
 ## Needs finishing
@@ -68,14 +88,16 @@ node --test supabase/functions/_shared/quickbooks/*.test.ts
 1. Complete configuration and production assessment for the created Intuit app.
    The portal shows App details 17% and Compliance 0%; these are provider progress
    indicators, not percentages of ServiceOS implementation completed.
-2. Implement audited operator connection controls and server-only state storage.
-   Insert state durably before redirecting; atomically claim unused/unexpired
-   state, recheck actor authority and reject callback replay before code exchange.
-3. Wire the token exchange and refresh transport to per-connection leases and
-   atomic replacement of the token pair in Vault. App secrets and tokens must never be
-   committed, put in client JavaScript, printed or included in evidence files.
-4. Verify CompanyInfo against the authorised realm and show its identity for
-   connection confirmation. Never infer realm from a numeric JavaScript value.
+2. Rehearse the additive OAuth migration against the actual full schema, then
+   deploy matching SQL/endpoints to TEST. Configure exact stable backend callbacks,
+   `QUICKBOOKS_SITE_ORIGIN` and an explicitly selected `QUICKBOOKS_MINOR_VERSION`.
+   Provision the app secret server-side and save its recovery copy securely.
+3. Exercise real sandbox authorisation, token rotation and signed-in operator
+   controls through TEST. Complete disconnect/provider revocation and recovery
+   behaviour. Local tests do not establish real provider acceptance.
+4. Obtain production app access and verify Drummonds' actual company identity
+   through its authorised administrator. Never infer realm from a numeric
+   JavaScript value or the developer workspace ID.
 5. Implement durable request reservations, tenant-scoped source versions, page
    receipt/checkpoint transactions, bounded capture and recovery after uncertain
    HTTP/persistence outcomes. The transport's injected callbacks are not yet
@@ -139,7 +161,21 @@ not evidence of TEST deployment or live financial capture.
 Recovery copies of real app credentials belong in the authorised **Openfolk
 ServiceOS** 1Password item, with the owner, environment, app ID, callback, secret
 location and rotation notes. The actual new credential storage/setup will be
-reviewed once the app can be created. This checkpoint contains no real keys.
+reviewed before provisioning the created app. This checkpoint contains no real keys.
+
+### OAuth candidate installation boundaries
+
+`20261102000000_learn_quickbooks_oauth.sql` creates only new QuickBooks tables and
+RPCs. It relies on the existing operator authority, tenants/profiles, Supabase Auth,
+Vault and provider-secret broker. No application registration, credential, client
+grant, import, module flag or schedule is seeded. Anonymous callers cannot invoke
+its RPCs; the callback endpoint claims state through its server-only service RPC.
+End users never receive a secret, token, claim ID or stored state hash.
+
+The operator UI is mounted on demand inside the existing LEARN input controls.
+Its data is scoped to backend, signed-in actor and selected tenant. Hosted
+signed-in/mobile verification is still required. Existing parent-workstream dirty
+files are excluded from this checkpoint; the local build is not a release artifact.
 
 ## Primary references
 

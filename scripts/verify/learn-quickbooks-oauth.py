@@ -1,0 +1,64 @@
+"""Isolated real-Postgres verification; synthetic Vault contract, no host mounts/network."""
+from pathlib import Path
+import concurrent.futures
+import os
+import shutil
+import subprocess
+import time
+import uuid
+
+root = Path(__file__).resolve().parents[2]
+docker = shutil.which('docker') or '/usr/local/bin/docker'
+name = 'serviceos-quickbooks-oauth-' + uuid.uuid4().hex[:8]
+created = False
+
+def sql(statement):
+    result = subprocess.run([docker, 'exec', '-i', name, 'psql', '-X', '-qAt', '-U', 'postgres', '-v', 'ON_ERROR_STOP=1'],
+                            input=statement, text=True, capture_output=True, timeout=40)
+    if result.returncode:
+        raise RuntimeError(result.stderr[-3000:])
+    return result.stdout.strip()
+
+def source(path):
+    return (root / path).read_text()
+
+try:
+    subprocess.run([docker, 'run', '-d', '--pull=never', '--network', 'none', '--name', name,
+                    '-e', 'POSTGRES_HOST_AUTH_METHOD=trust', 'postgres:15'], check=True, capture_output=True, timeout=30)
+    created = True
+    for _ in range(80):
+        if subprocess.run([docker, 'exec', name, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres'], capture_output=True).returncode == 0:
+            break
+        time.sleep(.25)
+    else:
+        raise RuntimeError('Synthetic database unavailable')
+    sql(source('scripts/verify/learn-quickbooks-oauth.fixture.sql'))
+    resolver = source('supabase/migrations/20260822120000_platform_authority_decoupled_from_role.sql')
+    sql(resolver[resolver.index('create or replace function current_user_is_openfolk_operator('):resolver.index('-- ── Governed record')])
+    operator = source('supabase/migrations/20261031160000_learn_operator_inputs.sql')
+    sql(operator[operator.index('create function public.learn_operator_input_immutable()'):operator.index('create trigger learn_operator_input_immutable')])
+    sql(operator[operator.index('create function public.learn_operator_input_access('):operator.index('-- Explicit booleans only.')])
+    sql(source('supabase/migrations/20260810120000_provider_secret_broker.sql'))
+    migration = source('supabase/migrations/20261102000000_learn_quickbooks_oauth.sql')
+    sql(migration.replace('\ncommit;', '\nrollback;'))
+    assert sql("select to_regclass('learn_quickbooks_apps') is null") == 't'
+    sql(migration)
+    sql(source('scripts/verify/learn-quickbooks-oauth.assert.sql'))
+    print('PASS: rollback, permissions, tenant binding, replay, company confirmation, pause, revoked/banned actors, expiry and atomic refresh.')
+    sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000010';set role authenticated;select learn_quickbooks_begin(fixture_id(1),fixture_id(32),fixture_id(20),fixture_id(43),repeat('d',64),'Concurrent callback');")
+    def claim(_):
+        try:
+            sql("set request.jwt.claim.role='service_role';set role service_role;select learn_quickbooks_claim(repeat('d',64));")
+            return 'claimed'
+        except RuntimeError as e:
+            if 'quickbooks_authorization_invalid' not in str(e):
+                raise
+            return 'denied'
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        assert sorted(pool.map(claim, range(2))) == ['claimed', 'denied']
+    print('PASS: racing callbacks release credentials exactly once.')
+    subprocess.run(['node', str(root / 'scripts/verify/learn-quickbooks-oauth-flow.mjs')], check=True,
+                   env={**os.environ, 'SERVICEOS_QB_TEST_CONTAINER': name, 'SERVICEOS_QB_TEST_DOCKER': docker}, timeout=40)
+finally:
+    if created:
+        subprocess.run([docker, 'rm', '-fv', name], check=True, capture_output=True, timeout=30)
