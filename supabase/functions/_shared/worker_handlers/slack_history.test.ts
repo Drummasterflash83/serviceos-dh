@@ -3,3 +3,12 @@ const T='11111111-1111-4111-8111-111111111111',scope={tenantId:T,teamId:'T123',c
 function fixture(){const calls:any[]=[];return {calls,ctx:{tenantId:T,jobId:'synthetic-job',claim:{claimedBy:'learn-slack:test',attemptCount:1},payload:{},supabaseAdmin:{rpc:async(n:any,a:any)=>{calls.push([n,a]);return {data:true,error:null};}}} as any};}
 test('worker closure -> authorised bounded fetch -> atomic persistence port; completion remains qualified',async()=>{const f=fixture();const h=createSlackHistoryHandler(async()=>({tenantId:T,jobId:f.ctx.jobId,accountId:'synthetic-account',channelId:'C123',scope,checkpoint,maxPages:1,authorised:async()=>true,request:async()=>({ok:true,has_more:false,messages:[{ts:'123.1',text:'synthetic'}]})}));const r=await h(f.ctx);assert.equal(r.success,true);assert.equal(r.result?.complete,true);assert.equal(r.result?.ingestion_complete,false);assert.equal(f.calls[0][0],'slack_history_commit_page');assert.equal(f.calls[0][1].p_records[0].source_external_id,'T123:C123:123.1');assert.equal(f.calls[0][1].p_expected.scopeKey,checkpoint.scopeKey);});
 test('default registered handler, untracked job, foreign binding and persistence rejection fail closed',async()=>{const f=fixture();assert.equal((await handleSlackHistorySync(f.ctx)).success,false);assert.equal((await handleSlackHistorySync({...f.ctx,jobId:null})).success,false);assert.equal(f.calls.length,0);const h=createSlackHistoryHandler(async()=>({tenantId:T,jobId:f.ctx.jobId,accountId:'synthetic',channelId:'C123',scope,checkpoint,maxPages:1,authorised:async()=>true,request:async()=>({ok:true,has_more:false,messages:[]})}));f.ctx.supabaseAdmin.rpc=async()=>({data:false,error:null});assert.equal((await h(f.ctx)).success,false);});
+
+test('unsupported history is reported by a safe actionable code without publication or provider content',async()=>{
+ for(const [subtype,code] of [['future_subtype','slack_history_message_subtype_unsupported'],['ekm_access_denied','slack_history_content_unavailable']]){
+  const f=fixture();const h=createSlackHistoryHandler(async()=>({tenantId:T,jobId:f.ctx.jobId,accountId:'synthetic-account',channelId:'C123',scope,checkpoint,maxPages:1,authorised:async()=>true,
+   request:async()=>({ok:true,has_more:false,messages:[{ts:'123.1',text:'Private provider content',subtype}]})}));
+  const r=await h(f.ctx);assert.equal(r.success,false);assert.equal(r.error?.code,code);assert.equal(r.error?.retryable,false);
+  assert.equal(f.calls.length,0);assert.equal(JSON.stringify(r).includes('Private provider content'),false);
+ }
+});

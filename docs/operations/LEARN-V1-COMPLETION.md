@@ -7,6 +7,49 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October — Slack message handling verified locally; Heidi production access remains applied.**
+
+### Working and verified
+
+- Heidi's existing production login is Drummonds `admin`, with the exact grant audit
+  and unchanged password/Auth record verified. Signed-in customer acceptance is
+  still open. [Access evidence](evidence/learn-founder-access-production-2026-10-13.json).
+- The local Slack candidate retains common channel activity and file-share messages.
+  Channel activity stays in source/version history without becoming conversation or
+  performance input. File metadata/text is retained; file bytes are not downloaded.
+- Unknown, hidden, malformed or redacted messages stop the import without advancing
+  its checkpoint. Safe support codes and recovery copy explain the incomplete window.
+- All 141 focused tests, TypeScript and the frontend build pass. The full archived
+  production-schema rehearsal covers source retention, duplicate replay, activity
+  exclusion, transaction rollback, permissions and channel/thread/operator journeys.
+  All 388 baseline datasets / 1,591,603 rows and seven sequences remain unchanged.
+- Historical ranges spanning years remain locally verified. This work made no hosted
+  changes or provider calls; the existing TEST and staged live frontend are unchanged.
+
+### Needs finishing
+
+- Build the durable whole-history campaign: channel selection, frozen cutoff,
+  cumulative request budget, automatic continuation and observed thread traversal.
+  Longer ranges still require reviewed continuation after each page allowance.
+  Private-channel visibility and any additional real message formats remain open.
+- Package both new Slack migrations, the runtime dependency closure and frontend
+  together for TEST and production. The existing 23-package/37-runtime release
+  excludes this work. Verify hosted controls and actual history/replies within a
+  concrete broader approval; the completed real sample remains closed.
+- Positive production sign-in, fresh recovery/drain/rollout checks, full input
+  coverage, processing/cards, scoring and ongoing operation remain unfinished.
+
+### Blocked externally
+
+- Existing owner-action dependencies remain: recovery-key access (1Password was
+  locked at its last check), live sign-in and TEST AI selection. None prevents
+  continuing the remaining Slack implementation.
+
+[Message handling evidence](evidence/learn-slack-message-kinds-2026-10-13.json).
+[Historical range evidence](evidence/learn-slack-historical-ranges-2026-10-13.json).
+
+### Previous historical-range and access milestone
+
 **13 October — historical Slack ranges verified locally; Heidi access applied in production.**
 
 ### Working and verified

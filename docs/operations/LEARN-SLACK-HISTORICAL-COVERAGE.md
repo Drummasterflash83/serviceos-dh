@@ -44,6 +44,31 @@ history. Do not enumerate or ingest DMs with the replacement credential.
 
 ## Current implementation and gaps
 
+### Local message handling — 13 October, not deployed
+
+The candidate readers now accept common text-bearing channel events, `/me` messages
+and file shares in both channel history and replies. The matching SQL migration
+classifies the raw provider payload independently: all accepted records retain their
+source/version evidence, but channel activity does not create conversation inputs.
+File-share text remains usable while metadata explicitly says file content was not
+downloaded. A semantic change between activity and conversation is refused, preserving
+prior evidence for review.
+
+Unknown subtypes, hidden event envelopes and EKM-redacted content stop with a safe,
+explicit support code. The checkpoint does not advance and no record is silently
+skipped. This follows the [Slack message reference](https://docs.slack.dev/reference/events/message/);
+it is not a claim that every historical format has been implemented. The recovery
+screens explain the incomplete window without exposing provider payloads.
+
+141 focused tests, TypeScript, the frontend build and the full-schema offline
+rehearsal pass. Existing archived data/sequence fingerprints and function permissions
+are unchanged. No real Slack requests, file downloads, hosted deployment or new
+approval were exercised. Campaign automation, private-channel visibility and actual
+provider history/reply acceptance remain open.
+[Evidence](evidence/learn-slack-message-kinds-2026-10-13.json).
+
+### Hosted state
+
 Hosted TEST worker v11 supports tenant-bound Vault bot or explicitly bound user
 credentials, verifies workspace and identity, and imports internal public channels
 in approved windows of at most

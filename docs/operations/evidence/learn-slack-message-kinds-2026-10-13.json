@@ -1,0 +1,73 @@
+{
+  "version": "learn-slack-message-kinds/1",
+  "state": "verified_locally_not_deployed",
+  "recordedAt": "2026-10-13T03:28:57.354769+00:00",
+  "sources": [
+    {
+      "path": "supabase/functions/_shared/slack/slack_message_kind.ts",
+      "sha256": "ef1c10078d44b0cc6396d330fdc47f0f572b89a79185df070bcdeb46b7809467"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_history.ts",
+      "sha256": "987324a8cce4fa308f87eaaf600387074dbdedc789c19a4e95eedcf96fe0dd55"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_thread_history.ts",
+      "sha256": "c0cc06149ab6f945c4daba626671d5b15a4c75f9a11df3b78a26875d32d70294"
+    },
+    {
+      "path": "supabase/migrations/20261101660000_learn_slack_message_kinds.sql",
+      "sha256": "a5611fb9b0ed8207daf71f1345b5e057e1248616378d91a8563e9f46d13db777"
+    },
+    {
+      "path": "scripts/backup/rehearse_slack_historical_ranges.py",
+      "sha256": "acc8f30c9a712410e355ac8d28714a8c8bd0202db6303081dfe602c2e092fe4d"
+    },
+    {
+      "path": "scripts/verify/learn-slack-message-kinds.assert.sql",
+      "sha256": "abecd22ffc68acf7210defad88f453dabac65895a5c1787398a0d477eced773a"
+    }
+  ],
+  "officialReference": "https://docs.slack.dev/reference/events/message/",
+  "checks": {
+    "focusedTestsPassed": 141,
+    "typecheckPassed": true,
+    "frontendBuildPassed": true,
+    "fullProductionSchemaRehearsal": true,
+    "migrationRollbackVerified": true,
+    "duplicateMigrationRejected": true,
+    "existingFunctionAuthorityUnchanged": true,
+    "sourceAndVersionRetention": true,
+    "activityExcludedFromInteractions": true,
+    "duplicatePageRecordsDoNotDuplicateSources": true,
+    "lateInvalidRecordRollsBackPage": true,
+    "unknownAndRedactedContentStopWithoutAdvancingCheckpoint": true,
+    "semanticKindChangeRejected": true,
+    "providerErrorContentNotExposed": true,
+    "containerRemoved": true
+  },
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 388,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "8698df11830c099604e9d16a5ec2a122894d3aeb80ba06440cd7a7b077108f2a",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "providerRequests": 0,
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "fullHistoryAccepted": false,
+  "limitations": [
+    "No hosted deployment or real-provider subtype acceptance in this checkpoint.",
+    "Known text-bearing history types only; unknown, hidden, redacted or malformed data stops explicitly.",
+    "File metadata and message text are retained; files are not downloaded.",
+    "Channel activity remains source evidence and is excluded from conversation/performance processing.",
+    "Historical campaign continuation, private-channel visibility, real replies and full coverage remain outstanding.",
+    "The existing 23-package/37-runtime production candidate excludes these source changes."
+  ]
+}

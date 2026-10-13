@@ -1,3 +1,4 @@
+import { slackCaptureIssue } from "@/lib/learn-slack-capture-issue";
 import { useEffect, useRef, useState } from "react";
 import { useSlackImportOutbox } from "./useSlackImportOutbox";
 import { LearnSlackThreadRecovery, type ThreadRecoveryTarget } from "./LearnSlackThreadRecovery";
@@ -289,6 +290,9 @@ export function LearnSlackThreads({
                       >
                         Review thread progress &amp; recovery
                       </button>
+                      {!t.latestImport.complete && slackCaptureIssue(t.latestImport.errorCode) && (
+                        <p>{slackCaptureIssue(t.latestImport.errorCode)}</p>
+                      )}
                       {t.latestImport.errorCode && (
                         <p>Support reference: {t.latestImport.errorCode}</p>
                       )}

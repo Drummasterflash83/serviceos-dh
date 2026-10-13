@@ -33,7 +33,9 @@ def historical_probe(path):
 def run():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', required=True)
-    out = Path(parser.parse_args().output).resolve()
+    parser.add_argument('--with-message-kinds', action='store_true')
+    options = parser.parse_args()
+    out = Path(options.output).resolve()
     if out.parent != Path('.verification-results').resolve() or out.exists():
         raise SystemExit('Fresh private output directory required')
     out.mkdir(mode=0o700)
@@ -109,6 +111,40 @@ def run():
             else:
                 raise RecoveryError('Duplicate migration accepted')
             report['duplicateRejected'] = True
+            if options.with_message_kinds:
+                kinds = Path('supabase/migrations/20261101660000_learn_slack_message_kinds.sql')
+                kinds_source = kinds.read_text()
+                target.query(kinds_source.replace('\ncommit;\n', '\nrollback;\n'))
+                if schema() != after_schema:
+                    raise RecoveryError('Message kinds rollback changed schema')
+                target.query(kinds_source)
+                kind_schema = schema()
+                old_functions = {(f['name'], f['arguments']): f for f in after_schema['functions']}
+                new_functions = {(f['name'], f['arguments']): f for f in kind_schema['functions']}
+                added = set(new_functions) - set(old_functions)
+                if len(added) != 1 or next(iter(added))[0] != 'learn_slack_message_kind' or set(old_functions)-set(new_functions):
+                    raise RecoveryError('Unexpected message-kind function inventory')
+                changed_kinds = []
+                for key, prior in old_functions.items():
+                    current = new_functions[key]
+                    if current != prior:
+                        if {k:v for k,v in prior.items() if k != 'hash'} != {k:v for k,v in current.items() if k != 'hash'}:
+                            raise RecoveryError('Message-kind authority changed')
+                        changed_kinds.append(key[0])
+                if changed_kinds != ['learn_slack_store_records'] or after_schema['tables'] != kind_schema['tables'] or after_schema['views'] != kind_schema['views']:
+                    raise RecoveryError('Unexpected message-kind schema change')
+                compare_native_data(before, restored_fingerprints(target))
+                try:
+                    target.query(kinds_source)
+                except RecoveryError:
+                    if schema() != kind_schema:
+                        raise RecoveryError('Duplicate message-kind migration changed schema')
+                else:
+                    raise RecoveryError('Duplicate message-kind migration accepted')
+                after_schema = kind_schema
+                report['messageKinds'] = {'source': str(kinds), 'sha256': hashlib.sha256(kinds_source.encode()).hexdigest(),
+                                         'rollbackVerified': True, 'duplicateRejected': True,
+                                         'existingFunctionAuthorityUnchanged': True, 'existingDataUnchanged': True}
             # Actual production helpers, both the tenant bot route and logged
             # cross-client user-token operator route. All synthetic rows are
             # contained in disposable child databases.
@@ -116,6 +152,7 @@ def run():
             for clone, names in [
                 ('historical_tenant', ['learn-production-slack', 'learn-production-slack-threads', 'learn-slack-historical-recovery']),
                 ('historical_operator', ['learn-production-slack-setup']),
+                *([('message_kinds', ['learn-production-slack', 'learn-slack-message-kinds'])] if options.with_message_kinds else []),
             ]:
                 target.query('create database '+clone+' template postgres;')
                 target.query('alter role supabase_admin in database '+clone+' set search_path=public,pg_catalog;')
@@ -123,7 +160,7 @@ def run():
                 try:
                     for name in names:
                         path = Path('scripts/verify')/(name+'.assert.sql')
-                        probe = 'set plpgsql.check_asserts=on;\n'+(path.read_text() if name == 'learn-slack-historical-recovery' else historical_probe(path))
+                        probe = 'set plpgsql.check_asserts=on;\n'+(path.read_text() if name in ('learn-slack-historical-recovery', 'learn-slack-message-kinds') else historical_probe(path))
                         (out/(name+'.sql')).write_text(probe)
                         result = subprocess.run([target.docker, *args], input=probe.encode(), stdout=subprocess.PIPE,
                                                 stderr=subprocess.PIPE, timeout=300)

@@ -1,3 +1,4 @@
+import { slackCaptureIssue } from "@/lib/learn-slack-capture-issue";
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import { loadSlackStoredChannels, type SlackStoredChannel } from "@/lib/learn-slack-threads";
@@ -295,6 +296,9 @@ export function LearnSlackRecovery({
       {progress && (
         <article className="rounded border p-3 space-y-2">
           <strong>{status(progress)}</strong>
+          {!progress.progress?.complete && slackCaptureIssue(progress.latestJob?.errorCode) && (
+            <p>{slackCaptureIssue(progress.latestJob?.errorCode)}</p>
+          )}
           {progress.window && progress.progress && (
             <>
               <p>

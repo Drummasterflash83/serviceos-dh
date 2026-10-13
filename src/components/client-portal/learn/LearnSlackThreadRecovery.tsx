@@ -1,3 +1,4 @@
+import { slackCaptureIssue } from "@/lib/learn-slack-capture-issue";
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import {
@@ -265,6 +266,9 @@ export function LearnSlackThreadRecovery({
       {progress && (
         <article className="space-y-2">
           <strong>{status(progress)}</strong>
+          {!progress.progress?.complete && slackCaptureIssue(progress.latestJob?.errorCode) && (
+            <p>{slackCaptureIssue(progress.latestJob?.errorCode)}</p>
+          )}
           <p>
             {progress.channelId} · thread started {parentDate(progress.parentTimestamp)}
           </p>

@@ -1,3 +1,4 @@
+import {slackMessageKind} from './slack_message_kind.ts';
 import {assertSlackHistoryScope} from './slack_history.ts';
 import type {SlackHistoryScope} from './slack_history.ts';
 
@@ -19,6 +20,8 @@ export async function readSlackThreadPage(scope:SlackThreadScope,tenantId:string
    ||micros(m.ts)<micros(scope.oldest)||micros(m.ts)>micros(scope.latest)||micros(m.ts)<micros(scope.parentTimestamp)
    ||m.ts===scope.parentTimestamp&&(m.thread_ts!==undefined&&m.thread_ts!==scope.parentTimestamp)
    ||m.ts!==scope.parentTimestamp&&m.thread_ts!==scope.parentTimestamp)throw Error('thread_page_integrity');
+  slackMessageKind(m);
+  if(m.subtype==='thread_broadcast' && m.ts===scope.parentTimestamp)throw Error('thread_page_integrity');
   const encoded=JSON.stringify(m);if(new TextEncoder().encode(encoded).length>262144)throw Error('thread_message_too_large');
   seen.add(micros(m.ts));return {tenant_id:tenantId,source_external_id:`${scope.teamId}:${channelId}:${m.ts}`,source_connector_id:'slack',channel_id:channelId,provider_timestamp:m.ts,thread_timestamp:typeof m.thread_ts==='string'?m.thread_ts:null,text:m.text,provider_payload:JSON.parse(encoded)};
  });

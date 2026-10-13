@@ -1,5 +1,12 @@
 # LEARN V1 production release plan
 
+> 13 October: the local Slack message-kind migration, runtime reader changes and
+> recovery explanations are also **not included** in the staged release. Pair them
+> with the historical-range work in the next candidate; do not deploy the wider
+> reader without its storage classification (channel activity must not become
+> conversation/performance input).
+> [Local evidence](evidence/learn-slack-message-kinds-2026-10-13.json).
+
 > 13 October 04:08 BST: newer local Slack historical-range and request-accounting
 > changes are verified offline but are **not included** in the staged release
 > below. They require a new paired SQL/runtime/frontend candidate and hosted

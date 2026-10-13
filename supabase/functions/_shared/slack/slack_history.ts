@@ -1,3 +1,4 @@
+import {slackMessageKind} from './slack_message_kind.ts';
 /** Source-only history reader. Caller supplies a persisted, authorised scope and
  * an existing server-side Slack request function. No token, job, grant or write here. */
 export interface SlackHistoryScope{tenantId:string;teamId:string;channelIds:readonly string[];oldest:string;latest:string;consentReference:string;parentTimestamp?:string}
@@ -11,9 +12,9 @@ export async function readSlackHistoryPage(scope:SlackHistoryScope,tenantId:stri
  const records=page.messages.map((m:any)=>{
   if(!m||typeof m.text!=='string'||m.text.length>40000||!timestamp(m.ts)
    ||micros(m.ts)<micros(scope.oldest)||micros(m.ts)>micros(scope.latest)
-   ||m.subtype&&m.subtype!=='bot_message'&&m.subtype!=='thread_broadcast'
    ||seen.has(micros(m.ts))
    ||m.thread_ts!==undefined&&(!timestamp(m.thread_ts)||micros(m.thread_ts)>micros(m.ts)))throw Error('history_page_integrity');
+  slackMessageKind(m);
   // A broadcast is a reference to an earlier thread, not proof its replies or
   // attachments were captured. Keep the provider payload, never synthesize a root.
   if(m.subtype==='thread_broadcast'&&(!timestamp(m.thread_ts)||micros(m.thread_ts)>=micros(m.ts)))throw Error('history_page_integrity');
