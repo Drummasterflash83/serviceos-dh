@@ -281,3 +281,38 @@ as `support-draft.txt`; it has not been sent.
   goal remains incomplete; this account is not a substitute for broad coverage.
 
 [Live customer/site/job evidence](evidence/learn-customer-site-job-publication-2026-10-13.json).
+
+## Company contact acceptance — 13 October, 21:26 BST
+
+**13 October, 21:26 BST — company contacts verified LIVE; card read timeout diagnosed.**
+
+- Eleven reviewed source-contact links now represent nine distinct people on the
+  previously linked company card; two site sources reuse existing people after
+  explicit name, individual-email and company/site corroboration. The LIVE client
+  view shows nine contacts. All source payloads, versions, actors and customer/site
+  ownership were checked. Reuse preserves original card/endpoint evidence; the
+  additional site relationship and immutable source link retain the newer evidence.
+- All 22 previous contact links, 4,457 identity projections, 1,552 customer source
+  heads, 25 customer links and 35 contact points remain unchanged. Nine people and
+  17 non-primary, unverified contact points were added. No permissions, capture
+  settings or provider records changed. This is scoped preservation evidence.
+- A separate named contact sharing an office phone remains held. Do not merge
+  different people because they share a reception number. Explicit shared-office
+  endpoint review and department/non-person contacts still need completion.
+- The LIVE card's findings read reproducibly times out (Postgres 57014 at 20:20:24
+  and 20:22:17 UTC). Server error context identifies `learn_slack_document_withheld`
+  through the source-visibility policy. One communication read also timed out;
+  the subsequent read succeeded but returned no linked communications. Do not
+  describe this as a complete or healthy customer timeline.
+- A semantics-preserving candidate scopes withholding dependency checks to UUID
+  references present in the requested document. It is under isolated full-schema
+  rehearsal; **not deployed**. Keep source-withholding protection and existing ACLs.
+- The two known Slack recovery handles remain queued, attempt zero, verified at
+  20:19:08 UTC. No duplicate recovery was created. LIVE UI later showed 12,249
+  retained Slack sources, 32,616 emails, 4,462 calls, 2,984 recordings and 255
+  voicemails; counts do not prove historical coverage or completed learning.
+- Next: finish/release the card-read fix with preservation and signed-in evidence,
+  extend meaningful contact/communication reconciliation, finish connector coverage,
+  scoring and unattended operational acceptance. The full goal remains active.
+
+[Contact publication evidence](evidence/learn-company-contact-publication-2026-10-13.json).
