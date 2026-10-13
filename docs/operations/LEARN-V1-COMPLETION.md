@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 03:44 BST — selected-client LEARN operator entry verified in TEST.**
+
+### Working and verified
+
+- OpenFolk operators can now open LEARN from the selected client's workspace and
+  use the existing audited reader, instead of reaching the company-profile sign-in
+  dead end. Existing client accounts retain their normal LEARN journey.
+- Signed-in TEST acceptance loaded 19 customer cards and the reviewed customer's
+  46 jobs over two pages, plus its site/contact. Seven audits match the real actor
+  and selected client. Returning from capture controls cleared private record state.
+- Fourteen focused tests, TypeScript and the full build pass. A visual layout defect
+  found during acceptance was corrected and rechecked in the final hosted build.
+- Protected `test.openfolk.ai` now serves Git `d535085`. No server permissions,
+  accounts, provider capture settings or production deployment were changed.
+
+### Needs finishing
+
+- Carry the accepted frontend into the matching production release. Its current
+  staged frontend still uses the earlier source revision; do not promote it as this fix.
+- Investigate stale open documents: a fresh browser document loaded the new build,
+  while the prior tab kept old assets after reload. Automatic recovery is unverified.
+- Customer-signed-in acceptance, broader operator scoring reads, complete inputs,
+  processing, ongoing capture and the existing live recovery/release gates remain.
+
+### Blocked externally
+
+- Existing founder access, live sign-in, TEST AI access and recovery-key unlock
+  remain pending. Browser access recovered; no new user action is needed for this fix.
+
+[TEST operator LEARN evidence](evidence/learn-operator-learn-entry-2026-10-13.json).
+
+### Previous production packaging milestone
+
 **13 October, 03:27 BST — search fix included in the matching production candidate.**
 
 ### Working and verified

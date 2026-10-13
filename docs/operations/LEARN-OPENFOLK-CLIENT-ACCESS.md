@@ -195,6 +195,17 @@ clearing and expiry remain in force. Same-company users retain the normal LEARN
 journey. Unauthorised foreign-company selections mount neither reader.
 
 Fourteen focused routing/reader tests, TypeScript and the full local build pass.
-Hosted deployment and signed-in acceptance are not yet established for this change.
+Protected TEST deployment and signed-in operator acceptance subsequently passed at
+02:43 UTC; see the latest evidence below.
 This makes existing operator reads reachable; it does not complete all operator
 performance/scoring reads or prove customer-signed-in acceptance.
+
+The final TEST deployment is `dpl_2DP3dkxEKPFkw9oXEDQLVRby1nns`, Git `d535085`.
+The real operator loaded 19 customer cards, inspected 46 jobs over two pages and
+one linked site/contact for the reviewed customer. Seven audit rows match the
+actual actor and selected tenant. The initial visual check exposed a nested-shell
+layout problem; the corrected embedded layout was deployed, visually checked,
+and rechecked against retained customer/job data. Both TEST aliases and their
+Vercel protection are verified. Production is unchanged. An old open document
+retained previous assets after reload; a fresh document loaded the new bundle.
+[Acceptance evidence](evidence/learn-operator-learn-entry-2026-10-13.json).

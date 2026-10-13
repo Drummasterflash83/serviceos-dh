@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-13T02:44:24.350016+00:00",
+  "state": "protected_test_operator_learn_entry_verified",
+  "environment": "TEST only",
+  "gitSha": "d535085cdf00938218ea158524e7b49fc78c1f19",
+  "deploymentId": "dpl_2DP3dkxEKPFkw9oXEDQLVRby1nns",
+  "url": "https://test.openfolk.ai",
+  "loadedEntryAsset": "/assets/index-gMlXVhrO.js",
+  "backendProject": "saatxzwxvdvqevbnskxy",
+  "aliases": [
+    {
+      "name": "test.openfolk.ai",
+      "target": "dpl_2DP3dkxEKPFkw9oXEDQLVRby1nns"
+    },
+    {
+      "name": "serviceos-learn-test-allkin.vercel.app",
+      "target": "dpl_2DP3dkxEKPFkw9oXEDQLVRby1nns"
+    }
+  ],
+  "protectionVerified": true,
+  "productionDeploymentUnchanged": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "productionChanges": 0,
+  "serverPermissionChanges": 0,
+  "newUsersOrGrants": 0,
+  "providerRequests": 0,
+  "localChecks": {
+    "focusedTests": 14,
+    "typecheckPassed": true,
+    "localBuildPassed": true,
+    "layoutCorrectionRoutingTests": 5,
+    "hostedBuildReady": true
+  },
+  "browser": {
+    "existingOperatorSession": true,
+    "customerCards": 19,
+    "reviewedCustomerJobs": 46,
+    "jobPages": [
+      25,
+      21
+    ],
+    "linkedSites": 1,
+    "linkedContacts": 1,
+    "finalCorrectedBuildRecheckedCustomerAndJobs": true,
+    "sameTenantCaptureControlNavigation": true,
+    "commusoftInputOff": true,
+    "privateRecordsClearedOnReturn": true,
+    "screenshotPrivate": true,
+    "screenshotSha256": "15b2ed7bb1d55c038ca5dd2b59be99660d6c9e729a8c81ff0214d24f4533c556"
+  },
+  "audit": {
+    "state": "seven_selected_client_reads_audited",
+    "observedAt": "2026-10-13T02:43:42.009Z",
+    "checks": [
+      {
+        "action": "client_information.read",
+        "resource_type": "customers",
+        "reads": 2,
+        "expected_actor": true,
+        "expected_tenant": true,
+        "no_impersonation": true
+      },
+      {
+        "action": "customer_context.read",
+        "resource_type": "contacts",
+        "reads": 1,
+        "expected_actor": true,
+        "expected_tenant": true,
+        "no_impersonation": true
+      },
+      {
+        "action": "customer_context.read",
+        "resource_type": "jobs",
+        "reads": 3,
+        "expected_actor": true,
+        "expected_tenant": true,
+        "no_impersonation": true
+      },
+      {
+        "action": "customer_context.read",
+        "resource_type": "sites",
+        "reads": 1,
+        "expected_actor": true,
+        "expected_tenant": true,
+        "no_impersonation": true
+      }
+    ]
+  },
+  "sources": [
+    {
+      "path": "src/components/client-portal/learn/LearnWorkspace.tsx",
+      "sha256": "7b2a513ca63307fbbef6dfd6719628cd1bdc30eccbc606cdadbe48e595663605"
+    },
+    {
+      "path": "src/components/client-portal/ClientPortal.tsx",
+      "sha256": "79e02c087f67bfb1ef738f69ff15736b3e4c769c7acfcb02da3eacb410749e97"
+    },
+    {
+      "path": "src/components/app/OperatorClientInformation.tsx",
+      "sha256": "47f859bcce8981e29ac1dad5e7da5bc432d04634d30bb15cf1e1a209808a6e59"
+    },
+    {
+      "path": "scripts/learn-workspace-access.test.mjs",
+      "sha256": "a2bf5d5e45afcf987c9988d765183dbfa04db963e1b33561982c837ac25750f8"
+    }
+  ],
+  "limitations": [
+    "Audited operator reader reused; this is not a customer-signed-in acceptance or complete operator scoring/performance surface.",
+    "Old browser document continued serving old assets after reload; a fresh document loaded the exact new artifact. Automatic stale-document recovery remains to investigate.",
+    "Full input history, ongoing capture, processing/scoring and production release gates remain open.",
+    "Production frontend candidate still refers to its earlier staged source; update it to the TEST-accepted source before promotion."
+  ]
+}
