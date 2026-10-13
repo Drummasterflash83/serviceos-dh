@@ -35,7 +35,7 @@ test("a real completed-job shape supplies the missing summary without requiring 
   assert.equal(result.limited, false);
   assert.equal(p.rows[0].fields.job_number, "001");
 });
-test("closed, cancelled, unknown and unverified work never become completed jobs", () => {
+test("recorded completion stays distinct from verification; closed and unknown are not completion", () => {
   const p = page([
     ["completed", false],
     ["closed", true],
@@ -46,9 +46,10 @@ test("closed, cancelled, unknown and unverified work never become completed jobs
     ["on_hold", true],
   ]);
   const result = customerJobBrief(p);
-  assert.equal(result.completed, 0);
+  assert.equal(result.completed, 1);
+  assert.equal(result.verificationPending, 1);
   assert.equal(result.closed, 1);
-  assert.equal(result.unconfirmed, 3);
+  assert.equal(result.unconfirmed, 2);
   assert.equal(result.open, 1);
   assert.equal(result.pending, 1);
   assert.equal(result.on_hold, 1);

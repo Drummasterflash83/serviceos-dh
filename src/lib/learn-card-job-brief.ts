@@ -5,17 +5,17 @@ import type { BusinessContextPage } from "./learn-customer-business-context.ts";
 export function customerJobBrief(page: BusinessContextPage) {
   if (page.collection !== "jobs") throw new Error("Job evidence required");
   const counts = { completed: 0, open: 0, pending: 0, on_hold: 0, closed: 0, unconfirmed: 0 };
+  let verificationPending = 0;
   for (const row of page.rows) {
+    if (row.fields.verified !== true) verificationPending++;
     const status = row.fields.status;
-    if (
-      row.fields.verified === true &&
-      ["completed", "open", "pending", "on_hold", "closed"].includes(status)
-    ) {
+    if (["completed", "open", "pending", "on_hold", "closed"].includes(status)) {
       counts[status as Exclude<keyof typeof counts, "unconfirmed">]++;
     } else counts.unconfirmed++;
   }
   return {
     ...counts,
+    verificationPending,
     shown: page.rows.length,
     total: page.total,
     limited: page.rows.length < page.total || page.next_after !== null,
