@@ -1,9 +1,12 @@
 # LEARN V1 production release plan
 
-> 13 October 01:46 BST: the communication-relevance read repair changes the
-> control-plane source and frontend after the pinned candidate below. Regenerate
-> matching artifacts before promotion. TEST v12 preserves all 213 datasets;
-> production is unchanged. See the completion checklist for current acceptance.
+> 13 October 01:56 BST: the current 73-step plan now includes the TEST-verified
+> relevance repair and protected preview `dpl_HPUABE8gMShxGYnopkVbgTkPAQHP`
+> (Git `bebb19c`). All 37 exact runtime artifacts passed fresh compile/boot checks;
+> 28 scheduler checks and 38 release tests pass. The 22 unchanged SQL packages
+> retain their previous full-schema rehearsal evidence. Production is unchanged;
+> concrete live gates, fresh independent recovery and signed-in acceptance remain.
+> [Current matched candidate](evidence/learn-production-relevance-2026-10-13.json).
 
 ## Current execution integration — 13 October, 01:40 BST
 

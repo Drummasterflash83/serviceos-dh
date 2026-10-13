@@ -1,6 +1,6 @@
 {
   "version": "learn-production-rpc-bindings/1",
-  "sourceClosureSha256": "ce791351e7bb4c0a4f874e59383d4eca364b0dd51310c1a3af40b32623f7b89c",
+  "sourceClosureSha256": "93f4946509cedf52cad18ae8b5fba14646de5e749e0e7ecc05d94b4f3a3902c0",
   "baselineSchemaSha256": "769453fcb4bae572db00a8ed2722047cd1b58281f2aa2dbc4bd9c3325a8735fb",
   "sites": [
     {
@@ -403,5 +403,5 @@
     "Catalog presence and execute privileges are checked against the rehearsed archive candidate; named argument semantics and end-to-end execution need their separate journey evidence.",
     "The generic proxy passthroughs must be reviewed again if their production handler bindings change."
   ],
-  "catalogScope": "Actual isolated production archive catalog after packages 001–022. All 19 previously reviewed dynamic dispatch sites have unchanged source bytes. Observation delivery, audited Learning reads and retained totals passed synthetic journeys; archived running rows were restored after an offline-only drain simulation. This is not live drain or hosted acceptance."
+  "catalogScope": "Actual isolated production archive catalog after packages 001\u2013022. All 19 previously reviewed dynamic dispatch sites have unchanged source bytes. Observation delivery, audited Learning reads and retained totals passed synthetic journeys; archived running rows were restored after an offline-only drain simulation. This is not live drain or hosted acceptance."
 }

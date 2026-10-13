@@ -1,0 +1,146 @@
+{
+  "version": "learn-production-relevance/1",
+  "state": "matching_production_release_prepared_not_executed",
+  "observedAt": "2026-10-13T00:55:55.005743+00:00",
+  "productionChanged": false,
+  "providerRequests": 0,
+  "changedRuntimeSources": [
+    "_shared/controlplane/comm_relevance.ts"
+  ],
+  "candidateManifestSha256": "7067f9f8f390cb22d0a43cb9567100cc43aeea3ed6fb9a72f7377c59a48ee84e",
+  "sourceClosureSha256": "93f4946509cedf52cad18ae8b5fba14646de5e749e0e7ecc05d94b4f3a3902c0",
+  "bundleReportSha256": "13464c70888a1fedc559955670915d90000c3d64c666384231186048e82961b9",
+  "bootReportSha256": "04a3b23954fd9f1e85e3a9d5435a82e7d60f893dcfef55f7166373693c43f6c9",
+  "runtimeWireReportSha256": "67c83b0b8696b009846301ce15c825417327c24d37fe447fb5a7cd6b471b44f3",
+  "callerReportSha256": "108f3f3e2cc7668a36c4fffd4348c3a4892d8b18eb7cd9c9acd290bed32be089",
+  "callerManifestSha256": "7067f9f8f390cb22d0a43cb9567100cc43aeea3ed6fb9a72f7377c59a48ee84e",
+  "runtimeEndpoints": 37,
+  "callerChecks": 28,
+  "sourceFiles": 226,
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-runtime-bundle.mjs",
+      "sha256": "e05602f1bc5186daac9ca5892d8024367a1f2b7d1d12e74c6c6dfba58b275061"
+    },
+    {
+      "path": "scripts/verify/learn-production-runtime-boot.mjs",
+      "sha256": "a2cae4ef3c2a5809ab9d2ed32481832ef4cfb31dc8a62f088983231f75ad5ff3"
+    },
+    {
+      "path": "scripts/verify/learn-production-scheduler-callers.mjs",
+      "sha256": "a2abbc1d7ae2b16b07256465b7bc205c19156ce765d5881b07b93561dc101791"
+    },
+    {
+      "path": "scripts/verify/learn-production-scheduler-caller.fixture.ts",
+      "sha256": "60b5bf47bfa5372a1f49bd4d3feebebb52745e1dd2b7a97a2dc6e6e9790706f7"
+    },
+    {
+      "path": "scripts/verify/learn-production-runtime-transport.mjs",
+      "sha256": "f0692b1eeec80712472d6e4dbd4d60cd6abc84be34ff9197d1da951942a330a3"
+    },
+    {
+      "path": "supabase/functions/_shared/controlplane/comm_relevance.ts",
+      "sha256": "f3b58aa2ac150f6feab23c445bd5e4dcb589174d1ce02b2b03665b8feaaabef9"
+    }
+  ],
+  "databaseEvidence": {
+    "path": "docs/operations/evidence/learn-production-learning-2026-10-13.json",
+    "sha256": "7e792c0956b08a2ec4644951c73ccb85e5b35c6e0a472845af27f3b6de3c5a87",
+    "packages": 22,
+    "allPackageAndManifestPinsUnchanged": true,
+    "newDatabaseRehearsal": false
+  },
+  "readOnlyProductionRelevance": {
+    "observedAt": "2026-10-13T00:52:14.966Z",
+    "project": "tgbnakbxwcqjeimygroz",
+    "report": {
+      "tenantId": "00000000-0000-0000-0000-000000000001",
+      "generatedAt": "2026-10-13T00:52:12.620Z",
+      "classificationScope": "historical_eligibility_consensus",
+      "ledgerRecords": 23509,
+      "reprocessedCommunications": 0,
+      "conflictingCommunications": 0,
+      "totalCommunications": 23509,
+      "byClass": {
+        "operational_customer": 13778,
+        "system_notification": 3525,
+        "internal": 4970,
+        "supplier_vendor": 512,
+        "marketing_newsletter": 685,
+        "spam_noise": 23,
+        "unknown": 16
+      },
+      "byRelevance": {
+        "relevant": 14290,
+        "not_relevant": 9203,
+        "uncertain": 16
+      },
+      "exclusion": {
+        "noiseInteractions": 9203,
+        "intelligenceObjectsExcluded": 0,
+        "recommendationsExcluded": 3785,
+        "recommendationsOpenExcluded": 678
+      },
+      "caveat": "Each communication appears once across its recorded eligibility decisions. Conflicting versions remain uncertain. These historical decisions have not been rechecked against current source revisions; they are not proof of complete capture or actionable insight. Email marketing may be under-detected. Reads are sequential, not a single database snapshot. Exclusions are estimates only: this report does not filter queues or change source data."
+    },
+    "reads": 65,
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "remainingGates": [
+    "Fresh independent backup and restore; owner unlock of existing 1Password recovery keys pending.",
+    "Concrete live recovery/drain/caller/frontend gate adapters and controlled release execution.",
+    "Signed-in production acceptance, full provider coverage, useful cards/scoring and monitored activation."
+  ],
+  "releasePreparation": {
+    "steps": 73,
+    "databasePackages": 22,
+    "runtimeEndpoints": 37,
+    "adapterAndJournalTestsPassed": 38,
+    "rpcSites": 19,
+    "uniqueRpcTargets": 51,
+    "configurationPreflight": "ready_no_changes",
+    "frontendEvidence": "learn-production-frontend-relevance-2026-10-13.json",
+    "productionChanges": 0
+  },
+  "freshHostedBaseline": {
+    "state": "reviewed_hosted_baseline_unchanged",
+    "observedAt": "2026-10-13T00:54:21.260Z",
+    "project": "tgbnakbxwcqjeimygroz",
+    "schemaMatches": true,
+    "runtimeMatches": true,
+    "differences": {
+      "tables": {
+        "added": [],
+        "missing": [],
+        "changed": []
+      },
+      "functions": {
+        "added": [],
+        "missing": [],
+        "changed": []
+      },
+      "views": {
+        "added": [],
+        "missing": [],
+        "changed": []
+      }
+    },
+    "functionCount": 88,
+    "baselineSchemaSha256": "d9668ac8e7481070280203d4a7bdd5c226d5a029bedaade876712ef6f7d22501",
+    "baselineRuntimeSha256": "cff4dde841dfe8bceaa8d3482176f3f1260f528309fc9b99a039b5a189500ec4",
+    "currentSchemaSha256": "fd008bb60705003544ae4efe518aff616010d56fa59e22e5e6b448faed4c2e98",
+    "currentRuntimeSha256": "d362dac5884f290a1ee204468c09c91e2485fea7744b6717d99812acb13de1ff",
+    "productionChanges": 0,
+    "providerRequests": 0,
+    "limitations": [
+      "Public schema and hosted runtime definitions only; not a preservation snapshot, active-work drain or signed-in acceptance.",
+      "Matches the reviewed hosted schema; earlier isolated-archive deparsing differences are not ignored or reclassified by this check."
+    ]
+  },
+  "liveSignIn": {
+    "permanentUrl": "https://www.openfolk.ai/login",
+    "state": "sign_in_screen_no_session_verified",
+    "newAccountOrGrant": false
+  }
+}

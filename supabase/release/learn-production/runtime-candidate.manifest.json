@@ -114,7 +114,7 @@
       "manifestSha256": "e678ac81048eea66db7da4badab9bb4174c334726290eeb2ae2518b323d6a890"
     }
   ],
-  "sourceClosureSha256": "ce791351e7bb4c0a4f874e59383d4eca364b0dd51310c1a3af40b32623f7b89c",
+  "sourceClosureSha256": "93f4946509cedf52cad18ae8b5fba14646de5e749e0e7ecc05d94b4f3a3902c0",
   "files": [
     {
       "path": "_shared/audit.ts",
@@ -214,7 +214,7 @@
     },
     {
       "path": "_shared/controlplane/comm_relevance.ts",
-      "sha256": "634176db1e95cdd4af57e7b3d711a873f6fef27e46f0cb2a6785fc3ef8803a7b"
+      "sha256": "f3b58aa2ac150f6feab23c445bd5e4dcb589174d1ce02b2b03665b8feaaabef9"
     },
     {
       "path": "_shared/controlplane/connection_inventory.ts",
@@ -1881,7 +1881,7 @@
     {
       "name": "openfolk-control-plane",
       "verifyJwt": false,
-      "sourceClosureSha256": "c1f5e4802dccf305ba180c0bd8367c36963d2dbb7ea39bfe4c843372fc9dfb27",
+      "sourceClosureSha256": "530160dee262224b1f8ad57f2182cab9c6c7b8d044aa3db8713442e21d4f7664",
       "sourceFiles": [
         "_shared/authz.ts",
         "_shared/controlplane/authz.ts",
@@ -1932,8 +1932,8 @@
       "hostedTestReference": {
         "name": "openfolk-control-plane",
         "id": "786126c1-55e8-4fe4-b079-b197063ae6a2",
-        "version": 11,
-        "hash": "e8f3c0a7abd0d723fe12482ff0ed693c84dab2bfc5dfa37a16dc9d9d16ba4461",
+        "version": 12,
+        "hash": "62c216641d4e896f57a585b419151d6d5749be19bded93870488fe9d63b2be85",
         "jwt": false,
         "status": "ACTIVE"
       },

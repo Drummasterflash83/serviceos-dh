@@ -7,6 +7,46 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 01:56 BST — matching production candidate includes the verified relevance repair.**
+
+### Working and verified
+
+- The revised read-only reader also succeeded on production metadata: 23,509
+  distinct recorded communication decisions, with 14,290 recorded relevant,
+  9,203 potential noise and 16 uncertain. These are historical decisions, not
+  full source coverage or fresh AI classification; no rows or queues changed.
+- All 37 fresh runtime artifacts compiled and booted in isolated containers;
+  missing-auth rejection and 28 scheduler caller checks passed. Containers were
+  removed. The exact upload files and 73-step release plan are prepared.
+- The 22 database package/manifest pins are unchanged; the existing full-schema
+  rehearsal is carried forward explicitly. The 19 unchanged dynamic dispatch
+  sites still resolve to 51 executable RPC targets. All 38 release tests pass.
+- Fresh production metadata at 00:54 UTC matches the reviewed public schema and
+  all 88 function definitions. Configuration preflight is ready without writes.
+- Protected preview `dpl_HPUABE8gMShxGYnopkVbgTkPAQHP`, Git `bebb19c`, is ready;
+  its rendered sign-in form points at production. It is not promoted or signed-in
+  accepted. The permanent live address is open for the owner's eventual sign-in.
+
+### Needs finishing
+
+- Connect concrete current recovery, drain, caller and frontend acceptance checks
+  to the release coordinator, perform controlled rollout and verify live journeys.
+  This prepared release is not a live LEARN V1 launch.
+- Full history/ongoing capture, source-revision relevance, customer-workspace setup,
+  source-to-card quality, scoring, AI/voicemail and operational ownership remain open.
+
+### Blocked externally
+
+- 1Password is still visibly locked; the fresh encrypted database copy and independent
+  restore await the existing recovery material. No repeated unlock request was sent.
+- Production sign-in remains unverified at the permanent live address and preview;
+  TEST AI credential access is unresolved. No password reset or new account was made.
+
+Evidence: [matched production candidate](evidence/learn-production-relevance-2026-10-13.json),
+[protected frontend](evidence/learn-production-frontend-relevance-2026-10-13.json).
+
+### Previous TEST relevance milestone
+
 **13 October, 01:50 BST — communication relevance repaired and signed-in verified in TEST.**
 
 ### Working and verified

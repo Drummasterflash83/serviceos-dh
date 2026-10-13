@@ -11,24 +11,24 @@ const read = p => JSON.parse(readFileSync(p));
 const base = 'supabase/release/learn-production/';
 const runtimeBytes = readFileSync(base+'runtime-candidate.manifest.json');
 const candidate = JSON.parse(runtimeBytes), candidateSha256 = sha(runtimeBytes);
-const wireRoot = '.verification-results/production-runtime-wire-20261013-learning';
+const wireRoot = '.verification-results/production-runtime-wire-20261013-relevance';
 const wire = read(join(wireRoot,'report.json'));
 const backupRoot = '.verification-results/production-runtime-compiled-backup-20261012';
 const backup = read(join(backupRoot,'report.json'));
 const schedules = read(base+'schedule-transition.manifest.json');
-const frontend = read('docs/operations/evidence/learn-production-frontend-learning-2026-10-13.json');
+const frontend = read('docs/operations/evidence/learn-production-frontend-relevance-2026-10-13.json');
 if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!==22 || candidate.endpoints.length!==37 ||
     wire.projectRef!==candidate.projectRef || wire.candidateManifestSha256!==candidateSha256 ||
     wire.state!=='prepared_not_uploaded' || schedules.runtime.sha256!==candidateSha256 ||
     backup.projectRef!==candidate.projectRef || backup.state!=='compiled_artifacts_retained_with_unchanged_deployment_metadata')
   throw Error('Exact production artifact set required');
 const verified = (path,expected) => { if(sha(readFileSync(path))!==expected) throw Error('Pinned file changed: '+path); };
-const binding=read('docs/operations/evidence/learn-production-learning-2026-10-13.json');
-const originalRoot='.verification-results/production-runtime-bundle-20261013-learning';
+const binding=read('docs/operations/evidence/learn-production-relevance-2026-10-13.json');
+const originalRoot='.verification-results/production-runtime-bundle-20261013-relevance';
 verified(join(originalRoot,'report.json'),binding.bundleReportSha256);
-verified(join(originalRoot,'boot-learning/report.json'),binding.bootReportSha256);
-const bundled=read(join(originalRoot,'report.json')), boot=read(join(originalRoot,'boot-learning/report.json'));
-const callerPath='.verification-results/production-learning-scheduler-callers-20261013/report.json';
+verified(join(originalRoot,'boot-relevance/report.json'),binding.bootReportSha256);
+const bundled=read(join(originalRoot,'report.json')), boot=read(join(originalRoot,'boot-relevance/report.json'));
+const callerPath='.verification-results/production-relevance-scheduler-callers-20261013/report.json';
 verified(callerPath,binding.callerReportSha256);
 const caller=read(callerPath);
 for(const source of binding.sources) verified(source.path,source.sha256);
@@ -77,7 +77,7 @@ for(const e of candidate.endpoints) {
     verified(join(backupRoot,e.name+'.ezbr'),b.ezbrSha256);
   }
 }
-if(frontend.id!=='dpl_8pxWB8RWQcNseSQHPExMQ3Gos354' || frontend.gitSha!=='1c3457b4a68d8a24bf48dce5eae4c63cb4c90b92' ||
+if(frontend.id!=='dpl_HPUABE8gMShxGYnopkVbgTkPAQHP' || frontend.gitSha!=='bebb19c88b0e094e0ef005e98567878e6833e796' ||
    frontend.state!=='protected_production_configured_preview_ready') throw Error('Reviewed frontend artifact required');
 const operations=[];
 function add(id,kind,contract) { operations.push({id,kind,contract,pinSha256:sha(JSON.stringify(contract))}); }
