@@ -180,6 +180,11 @@ export async function requirePlatformOperator(
     .select("id, expires_at")
     .eq("actor_user_id", userId)
     .is("ended_at", null)
+    // Expired contexts remain as history. They must not make maybeSingle fail
+    // when an operator has used View-As more than once. Any current context is
+    // sufficient to prohibit configuration, including one without an expiry.
+    .or(`expires_at.is.null,expires_at.gt.${new Date(now).toISOString()}`)
+    .limit(1)
     .maybeSingle();
   if (profileError || grantsError || viewAsError) {
     return err("authority_unavailable", "Operator authority could not be verified", 503);

@@ -93,10 +93,15 @@ const coordinator = createProductionReleaseCoordinator({ plan, operations, journ
 });
 try {
   while (coordinator.status().completed <= boundary) {
+    const startedAt = Date.now();
     const prior = coordinator.status();
     console.log(JSON.stringify({ step: prior.nextStep, phase: 'starting', completed: prior.completed }));
     const result = await coordinator.next();
     console.log(JSON.stringify(result));
     if (result.state === 'unknown_outcome' || result.completed === prior.completed) { process.exitCode = 2; break; }
+    // Each step revalidates several independent API/database observations.
+    // Pace successful steps to stay below the provider management rate limit;
+    // this never retries an uncertain mutation or treats throttling as success.
+    if (result.completed <= boundary) await new Promise(resolve => setTimeout(resolve, Math.max(0, 12000 - (Date.now() - startedAt))));
   }
 } finally { journal.close(); }
