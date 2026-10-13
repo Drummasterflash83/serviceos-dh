@@ -2,7 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {cardBrief} from './learn-card-brief.ts';
 import type {LearnCardDetail} from './learn-cards.ts';
-const detail = (findings: any[] = [], evidence: any[] = []) => ({findings,evidence,gaps:[],moreFindings:false,moreEvidence:false}) as LearnCardDetail;
+const detail = (findings: any[] = [], evidence: any[] = []): LearnCardDetail => ({
+ card: { id: 'fixture', kind: 'customer', title: 'Synthetic customer', subtitle: null, recordState: 'saved', updatedAt: null },
+ findings, evidence, gaps: [], moreFindings: false, moreEvidence: false,
+ observedAt: '2026-10-13T10:00:00Z', validUntil: '2026-10-13T10:01:00Z',
+});
 test('empty evidence does not invent an owner, next action or completed work',()=>{
  const value=cardBrief(detail());assert.equal(value.next,null);assert.equal(value.latest,null);assert.equal(value.closed.length,0);
 });

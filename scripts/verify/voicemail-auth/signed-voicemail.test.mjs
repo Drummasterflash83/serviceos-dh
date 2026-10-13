@@ -56,6 +56,19 @@ test("verified raw MIME produces exact transcript/audio with replay-stable conte
   assert.equal(later.contentFingerprint, result.contentFingerprint);
   assert.notEqual(later.candidate.emailReceivedAt, result.candidate.emailReceivedAt);
 });
+test("signed legacy footer extracts the same audio while leaving the unavailable transcript null", async () => {
+  const legacy = message().replace(
+    `Automated transcription:\r\n${transcript}\r\n\r\n`,
+    "We have attached the message to this email for your convenience. To access the mailbox, simply dial 0 from any connected handset.\r\n\r\nKind regards,\r\nBirchills Telecom Voicemail Service\r\n\r\nSent from  to \r\n",
+  );
+  const raw = await sign(legacy);
+  const result = await extract(raw);
+  assert.equal(result.signature.contentSignatureVerified, true);
+  assert.equal(result.candidate.providerTranscript, null);
+  assert.equal(result.candidate.systemReference, "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee");
+  assert.deepEqual(result.audio, new Uint8Array([1, 2, 3, 4]));
+  await assert.rejects(extract(Buffer.from(raw.toString().replace("dial 0", "dial 1"))), /signature_unverified/);
+});
 test("historical receipt verifies an expired-now signature without weakening the current-time diagnostic", async () => {
   const raw = await sign(message(), { expires: new Date(Number(internalDate) + 86400000) });
   assert.equal((await verifySignature(raw, resolver)).contentSignatureVerified, false);

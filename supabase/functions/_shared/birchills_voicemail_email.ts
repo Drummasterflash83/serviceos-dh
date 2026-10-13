@@ -63,24 +63,32 @@ export function parseBirchillsVoicemailEmail(input: {
   )
     fail("notification_identity_mismatch");
   const rest = body.slice(intro[0].length);
+  const transcriptionMarkers = (rest.match(/Automated transcription:/g) ?? []).length;
   if (
-    (rest.match(/Automated transcription:/g) ?? []).length !== 1 ||
+    transcriptionMarkers > 1 ||
     (rest.match(/System reference:/g) ?? []).length !== 1
   )
     fail("notification_sections_ambiguous");
-  const sections =
+  const transcribed =
     /^[ \t\n]*Automated transcription:[ \t]*\n([\s\S]*?)\n[ \t]*System reference:[ \t]*([^\n]+)[ \t\n]*$/.exec(
       rest,
     );
-  if (!sections || !uuid.test(sections[2].trim())) fail("notification_reference_invalid");
+  // Observed signed legacy notifications omit transcription entirely and use
+  // this fixed footer. Do not accept arbitrary text as an absent transcript or
+  // use the footer's empty "Sent from / to" placeholders for routing.
+  const untranscribed = transcriptionMarkers === 0
+    ? /^[ \t\n]*We have attached the message to this email for your convenience\. To access the mailbox, simply dial 0 from any connected handset\.\n\nKind regards,\nBirchills Telecom Voicemail Service\n\nSent from  to \nSystem reference:[ \t]*([^\n]+)[ \t\n]*$/.exec(rest)
+    : null;
+  const reference = transcribed?.[2] ?? untranscribed?.[1];
+  if (!reference || !uuid.test(reference.trim())) fail("notification_reference_invalid");
   const duration = Number(intro[4]),
-    transcript = sections[1].trim();
+    transcript = transcribed?.[1].trim() ?? "";
   if (duration > 7200 || transcript.length > 50000) fail("notification_content_limit");
   return {
     version: "birchills-voicemail-email/1",
     state: "candidate_requires_verification",
     extension: title[1],
-    systemReference: sections[2].trim().toLowerCase(),
+    systemReference: reference.trim().toLowerCase(),
     callerNumber: /^[+0-9]/.test(title[2]) ? title[2] : null,
     callerName: intro[2]?.trim() || null,
     reportedDurationSeconds: duration,

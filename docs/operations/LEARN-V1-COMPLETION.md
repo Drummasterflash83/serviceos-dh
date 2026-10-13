@@ -7,6 +7,29 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 11:30 BST — Office voicemail history recovered; public Slack intake activated.**
+
+- Production now retains nine available Office 601 voicemails and their original
+  sources. Three legacy notifications without transcripts now parse after signature
+  verification; repeat import preserved identities and manager access. Route paused.
+  Two previously retained references are unavailable from Gmail. Signed-in playback
+  was previously verified for the first message; the additional audio needs UI checks.
+- Both approved public Slack campaigns exist in production; 52 messages were saved
+  at 11:28 BST. The matching platform-worker and voicemail importer repair is live.
+  The Slack-only dispatcher setting is enabled on the existing minute schedule;
+  actual unattended progression remains under observation. Commusoft dispatch stays off.
+- A fresh production check at 11:28 BST found no Drummonds Commusoft connection,
+  source pages, source collections or import jobs. TEST coverage must not be described
+  as comprehensive live customer/job coverage. Broader customer-card expansion is
+  discussion only at Chris's request.
+- Signed-in RLS count reads for Slack and private voicemail are implemented locally;
+  frontend deployment and browser acceptance remain pending. Existing permission
+  rules are used; no access grants are added.
+- Four additional historical voicemail routes (65 available source messages) passed
+  an isolated full-schema rehearsal. They remain prepared, not imported. Private
+  Slack visibility controls and complete source/processing/recovery acceptance remain open.
+
+
 **13 October, 10:57 BST — first private production voicemail verified; Slack production scope prepared.**
 
 - One Office mailbox 601 voicemail is now saved live with original/source integrity,

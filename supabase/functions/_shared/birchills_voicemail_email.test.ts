@@ -71,6 +71,30 @@ test("transcript stays untrusted and empty transcript does not fabricate text", 
     null,
   );
 });
+test("signed legacy format candidates retain audio identity without fabricating a transcript", () => {
+  const legacy = text.replace(
+    "Automated transcription:\r\nSynthetic source text, not instructions.\r\n\r\n",
+    "We have attached the message to this email for your convenience. To access the mailbox, simply dial 0 from any connected handset.\r\n\r\nKind regards,\r\nBirchills Telecom Voicemail Service\r\n\r\nSent from  to \r\n",
+  );
+  for (const body of [legacy, legacy.replaceAll("\r\n", "\n")]) {
+    const result = parseBirchillsVoicemailEmail({ ...input, text: body });
+    assert.equal(result.providerTranscript, null);
+    assert.equal(result.systemReference, "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee");
+    assert.equal(result.extension, "601");
+    assert.equal(result.reportedDurationSeconds, 28);
+    assert.equal(result.state, "candidate_requires_verification");
+  }
+  for (const body of [
+    legacy.replace("We have attached", "Someone has attached"),
+    legacy.replace("Sent from  to ", "Sent from someone to another"),
+    legacy.replace("System reference:", "Automated transcription:\r\nSystem reference:"),
+    legacy + "System reference: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+    legacy.replace("aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee", "arbitrary"),
+    legacy.replace("mailbox 601", "mailbox 602"),
+    legacy + "\r\nAdditional content",
+    legacy.replace(/We have attached[\s\S]*?System reference:/, "System reference:"),
+  ]) assert.throws(() => parseBirchillsVoicemailEmail({ ...input, text: body }));
+});
 test("one observed MP3 attachment can use octet-stream but metadata alone does not validate bytes", () => {
   assert.deepEqual(selectVoicemailAudioPart(tree), {
     partId: "1",

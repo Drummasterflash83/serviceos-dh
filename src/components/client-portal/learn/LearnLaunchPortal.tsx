@@ -63,6 +63,27 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
     staleTime: 30_000,
     refetchInterval: 45_000,
   });
+  const savedInputs = useQuery({
+    queryKey: ["learn-visible-input-totals", user?.id, tenantId],
+    enabled: !!user,
+    retry: false,
+    gcTime: 0,
+    refetchInterval: 45_000,
+    refetchOnWindowFocus: "always",
+    queryFn: async () => {
+      // Use the signed-in client's existing RLS, especially private mailbox
+      // permissions. The launch metadata views deliberately exclude these tables.
+      const read = async (table: "slack_messages" | "receptionist_voicemails") => {
+        try {
+          const { count, error } = await getSupabaseClient().from(table)
+            .select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
+          return !error && Number.isSafeInteger(count) && count! >= 0 ? count : null;
+        } catch { return null; }
+      };
+      const [slack, voicemail] = await Promise.all([read("slack_messages"), read("receptionist_voicemails")]);
+      return { slack, voicemail, observedAt: Date.now() };
+    },
+  });
   const canConnect =
     !!user && profile?.tenant_id === tenantId && ["owner", "admin", "ops"].includes(profile.role);
   async function refresh() {
@@ -145,6 +166,8 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
     return `${v.state === "success" ? "Update completed" : "Update needs attention"} · ${display(v.records_processed)} processed · completed ${when(v.completed_at)}`;
   };
   const active = result?.scope === scope.current && Date.now() < Date.parse(result.valid_until) ? result : null;
+  const visibleInputs = savedInputs.data && Date.now() - savedInputs.data.observedAt < 60_000
+    ? savedInputs.data : null;
   return (
     <div className="lr-page">
       <div className="cp-page-heading lr-heading">
@@ -156,7 +179,7 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
         <button
           className="cp-secondary"
           disabled={state === "loading"}
-          onClick={() => void refresh()}
+          onClick={() => { void refresh(); void savedInputs.refetch(); }}
         >
           <RefreshCw size={15} />
           Refresh
@@ -179,8 +202,8 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
             { name: "Email", value: active?.counts.email.record_count, Icon: Mail, note: "Emails saved in LEARN", detail: active?.email.last_successful_message_sync_at ? `Latest capture ${when(active.email.last_successful_message_sync_at)}` : "Capture status awaiting confirmation", href: "#learn-communication-sources" },
             { name: "Phone", value: active?.counts.phone.record_count, Icon: Phone, note: "Call records saved in LEARN", detail: active?.phone.last_successful_call_sync_at ? `Latest capture ${when(active.phone.last_successful_call_sync_at)}` : "Capture status awaiting confirmation", href: "#learn-communication-sources" },
             { name: "Voice recordings", value: active?.recordings.record_count, Icon: Files, note: "Recordings saved", detail: "Audio coverage is checked separately", href: "#learn-communication-sources" },
-            { name: "Slack", value: null, Icon: MessagesSquare, note: "Message count awaiting verification", detail: "Review channel history and import progress", href: null },
-            { name: "Voicemail", value: active?.voicemails.record_count, Icon: Voicemail, note: "Saved messages visible to your account", detail: "Open your inbox to check mailbox sync", href: `/client?tenant=${encodeURIComponent(tenantId)}&section=receptionist&view=voicemails` },
+            { name: "Slack", value: visibleInputs?.slack, Icon: MessagesSquare, note: "Slack messages saved in LEARN", detail: "History imports and replies are checked separately", href: null },
+            { name: "Voicemail", value: visibleInputs?.voicemail, Icon: Voicemail, note: "Saved messages visible to your account", detail: "Open your private inbox to read and listen", href: `/client?tenant=${encodeURIComponent(tenantId)}&section=receptionist&view=voicemails` },
           ].map((c) => (
             <article className="lr-count" key={c.name}>
               <div className="lr-count-label">
@@ -517,7 +540,7 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
             not change saved communications.{" "}
             {active && (
               <>
-                Voicemails saved: {display(active.voicemails?.record_count)}. Complete voicemail
+                Voicemails saved: {display(visibleInputs?.voicemail)}. Complete voicemail
                 history and playable audio still need confirmation.
               </>
             )}
