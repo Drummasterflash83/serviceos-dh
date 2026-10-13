@@ -39,6 +39,28 @@ the old connection paused while verifying the new app reaches the same realm;
 retain source IDs/checkpoints, reconcile overlap, then retire the old access.
 Intuit's current transfer options still need verification in its portal.
 
+## Job-code authority — Chris, 13 October 2026
+
+For Drummonds, **Commusoft is the source of truth for current job codes**.
+Chris gave `001`, `008` and `016` as examples and cautioned that QuickBooks may
+still contain older codes such as `15b` and `13a`. This is a source-precedence
+rule, not a verified mapping between those examples.
+
+- Preserve codes as strings, including leading zeros. Do not convert `001` to `1`.
+- Retain QuickBooks' original codes on financial source records and their history;
+  never silently rewrite them or use them to replace current Commusoft codes.
+- Link financial records to jobs only through an explicit, evidenced,
+  tenant-scoped crosswalk. Hold missing or conflicting mappings for review.
+- Verify the field's meaning before matching: a job/service-type code is not
+  necessarily a unique individual job number. Code equality alone is insufficient
+  to merge jobs, customers or financial records.
+- Present the current Commusoft code on matched job cards and retain the original
+  QuickBooks reference as source context. Other clients' source precedence remains
+  configurable; these Drummonds examples must not become shared hard-coded rules.
+
+This records the agreed integration contract. It does not establish that a
+crosswalk has been implemented or that QuickBooks LIVE import is complete.
+
 ## Working and verified — local only
 
 - GET-only entity page transport for customers, invoices, payments, credit memos,
