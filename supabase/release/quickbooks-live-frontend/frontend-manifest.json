@@ -1,0 +1,85 @@
+{
+  "status": "prepared_not_deployed",
+  "baseLiveSha": "a11f2041b84cb572a5ce8b65c97057e005bf4da3",
+  "sourceIntegrationSha": "429a29037e15590dc50d403fac11dd363df79eaa",
+  "scope": "QuickBooks guide, existing operator connection/import controls and customer finance view; no provider access or policy publication",
+  "files": [
+    {
+      "path": "src/components/app/OperatorLearnInputs.tsx",
+      "sha256": "dae85855d8eaf1727531febdddddd912d01217cc530460aa92a3c4af3a021a3a"
+    },
+    {
+      "path": "src/components/app/OperatorQuickBooksConnection.tsx",
+      "sha256": "34437c475c2721b69a59c39e829363e9a40d94e81a2b2cfb9f5d26ce71731ab1"
+    },
+    {
+      "path": "src/components/app/OperatorQuickBooksImports.tsx",
+      "sha256": "a96b22f21cd314b4a5abafed175a7f80e048f8e8ae884b78351ba46ce011d01f"
+    },
+    {
+      "path": "src/components/client-portal/learn/LearnCustomerBusinessContext.tsx",
+      "sha256": "06014bb774bad17fc85d698705363e85a6b3a40cf5ae47b2ccf869648c900fe1"
+    },
+    {
+      "path": "src/components/client-portal/learn/LearnCustomerFinance.tsx",
+      "sha256": "296e0bcbb4891666b8d68d9a960bfd2b3a1ec6e03a98a34ceb38bc99ac329897"
+    },
+    {
+      "path": "src/lib/learn-quickbooks-finance.ts",
+      "sha256": "c49fceb6867e3aa4d7b5739389ad5f6ec8ad72e4bc7daa46d0028364bf589e38"
+    },
+    {
+      "path": "src/lib/learn-quickbooks-finance.test.ts",
+      "sha256": "93bfa896d987615eb9b5731887a65e1b14ec3ceb2a6267fa71ec06eb3dde4dd7"
+    },
+    {
+      "path": "src/lib/learn-quickbooks-import.ts",
+      "sha256": "e847d8660b70b28f92e8817143acf5538af8c9aefa65fea8da0902ab4b32807d"
+    },
+    {
+      "path": "src/lib/learn-quickbooks-import.test.ts",
+      "sha256": "4835c4048e0b4ebd6ae2595e30785f514de3eb53e85766d5fa18bb22b43b1e53"
+    },
+    {
+      "path": "src/lib/learn-quickbooks.ts",
+      "sha256": "05e6919d3c6bdb0c6b86b7a33f4dfc09de5a926a3eae04a61d85c49f5306d332"
+    },
+    {
+      "path": "src/lib/learn-quickbooks.test.ts",
+      "sha256": "b5fcf65c7bdf5f0273d5e783ace6ebacd177cc069e14e1ab386c62a29f65490d"
+    },
+    {
+      "path": "src/routes/quickbooks.tsx",
+      "sha256": "a65ae4c7b06223e07a659f6bd18f9a6ea9729e0747f267a6550059d774f5d44e"
+    },
+    {
+      "path": "src/routeTree.gen.ts",
+      "sha256": "5ce2773fed8f03e372b94ec8745153e81f2fd6f83aa680c20c9a6961bb4e13d9"
+    },
+    {
+      "path": "vercel.json",
+      "sha256": "c5bb0e79fe428139e0a716c479719296c7af6d9a03126ecf4a52ceff1a0c7d51"
+    }
+  ],
+  "excluded": [
+    "Commusoft job-refresh frontend",
+    "Slack recovery frontend",
+    "privacy and terms publication"
+  ],
+  "productionBackendEvidence": "Integration branch docs/operations/evidence/learn-quickbooks-production-runtime-2026-10-13.json and learn-quickbooks-retained-finance-2026-10-13.json",
+  "acceptanceRequired": [
+    "remote build",
+    "production authentication target",
+    "signed-in operator inactive connection status",
+    "signed-in finance read permissions",
+    "public guide HTTP and cache headers",
+    "unchanged live branding and core navigation"
+  ],
+  "localValidation": {
+    "typescript": "passed",
+    "quickbooksUnitTests": 8,
+    "repositoryPrebuild": "passed",
+    "productionBuild": "passed",
+    "diffCheck": "passed"
+  }
+}

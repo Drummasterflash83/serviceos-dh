@@ -16,6 +16,7 @@ import { Route as HealthShadowRouteImport } from './routes/health-shadow'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MarketingRouteImport } from './routes/marketing'
 import { Route as OpenfolkRouteImport } from './routes/openfolk'
+import { Route as QuickbooksRouteImport } from './routes/quickbooks'
 import { Route as ReceptionistRouteImport } from './routes/receptionist'
 import { Route as DemoCommandCentreRouteImport } from './routes/demo.command-centre'
 import { Route as DemoCustomerHealthRouteImport } from './routes/demo.customer-health'
@@ -60,6 +61,11 @@ const MarketingRoute = MarketingRouteImport.update({
 const OpenfolkRoute = OpenfolkRouteImport.update({
   id: '/openfolk',
   path: '/openfolk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuickbooksRoute = QuickbooksRouteImport.update({
+  id: '/quickbooks',
+  path: '/quickbooks',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReceptionistRoute = ReceptionistRouteImport.update({
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/openfolk': typeof OpenfolkRouteWithChildren
+  '/quickbooks': typeof QuickbooksRoute
   '/receptionist': typeof ReceptionistRoute
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
+  '/quickbooks': typeof QuickbooksRoute
   '/receptionist': typeof ReceptionistRoute
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/openfolk': typeof OpenfolkRouteWithChildren
+  '/quickbooks': typeof QuickbooksRoute
   '/receptionist': typeof ReceptionistRoute
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/marketing'
     | '/openfolk'
+    | '/quickbooks'
     | '/receptionist'
     | '/demo/command-centre'
     | '/demo/customer-health'
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/health-shadow'
     | '/login'
     | '/marketing'
+    | '/quickbooks'
     | '/receptionist'
     | '/demo/command-centre'
     | '/demo/customer-health'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/marketing'
     | '/openfolk'
+    | '/quickbooks'
     | '/receptionist'
     | '/demo/command-centre'
     | '/demo/customer-health'
@@ -237,6 +249,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MarketingRoute: typeof MarketingRoute
   OpenfolkRoute: typeof OpenfolkRouteWithChildren
+  QuickbooksRoute: typeof QuickbooksRoute
   ReceptionistRoute: typeof ReceptionistRoute
   DemoCommandCentreRoute: typeof DemoCommandCentreRoute
   DemoCustomerHealthRoute: typeof DemoCustomerHealthRoute
@@ -294,6 +307,13 @@ declare module '@tanstack/react-router' {
       path: '/openfolk'
       fullPath: '/openfolk'
       preLoaderRoute: typeof OpenfolkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quickbooks': {
+      id: '/quickbooks'
+      path: '/quickbooks'
+      fullPath: '/quickbooks'
+      preLoaderRoute: typeof QuickbooksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/receptionist': {
@@ -395,6 +415,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MarketingRoute: MarketingRoute,
   OpenfolkRoute: OpenfolkRouteWithChildren,
+  QuickbooksRoute: QuickbooksRoute,
   ReceptionistRoute: ReceptionistRoute,
   DemoCommandCentreRoute: DemoCommandCentreRoute,
   DemoCustomerHealthRoute: DemoCustomerHealthRoute,
