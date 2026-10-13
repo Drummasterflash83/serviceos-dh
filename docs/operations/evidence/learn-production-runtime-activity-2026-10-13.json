@@ -1,0 +1,512 @@
+{
+  "version": "learn-production-runtime-activity/1",
+  "project": "tgbnakbxwcqjeimygroz",
+  "start": "2026-10-13T00:53:00.000Z",
+  "end": "2026-10-13T01:08:00.000Z",
+  "state": "observed_activity_not_drain_or_capture_acceptance",
+  "invocations": [
+    {
+      "function": "recommendation-scheduled-sync",
+      "httpStatus": 200,
+      "maxDurationMs": 374,
+      "count": 1,
+      "latest": "2026-10-13T00:55:01.366000"
+    },
+    {
+      "function": "marketing-sequence-scheduled-sync",
+      "httpStatus": 200,
+      "maxDurationMs": 469,
+      "count": 5,
+      "latest": "2026-10-13T01:05:00.942000"
+    },
+    {
+      "function": "phone-scheduled-sync",
+      "httpStatus": 200,
+      "maxDurationMs": 1718,
+      "count": 1,
+      "latest": "2026-10-13T00:55:02.706000"
+    },
+    {
+      "function": "simwood-sync-recordings",
+      "httpStatus": 200,
+      "maxDurationMs": 858,
+      "count": 2,
+      "latest": "2026-10-13T01:05:02.554000"
+    },
+    {
+      "function": "gmail-workspace-sync-messages",
+      "httpStatus": 200,
+      "maxDurationMs": 1156,
+      "count": 19,
+      "latest": "2026-10-13T01:07:02.009000"
+    },
+    {
+      "function": "gmail-workspace-sync-messages",
+      "httpStatus": 502,
+      "maxDurationMs": 446,
+      "count": 1,
+      "latest": "2026-10-13T01:02:01.258000"
+    },
+    {
+      "function": "client-notifications",
+      "httpStatus": 200,
+      "maxDurationMs": 371,
+      "count": 3,
+      "latest": "2026-10-13T00:58:00.942000"
+    },
+    {
+      "function": "business-graph-scheduled-sync",
+      "httpStatus": 200,
+      "maxDurationMs": 367,
+      "count": 1,
+      "latest": "2026-10-13T00:55:01.359000"
+    },
+    {
+      "function": "marketing-broadcast-scheduled-sync",
+      "httpStatus": 200,
+      "maxDurationMs": 427,
+      "count": 6,
+      "latest": "2026-10-13T01:04:01.458000"
+    },
+    {
+      "function": "receptionist-review-collector",
+      "httpStatus": 200,
+      "maxDurationMs": 2725,
+      "count": 4,
+      "latest": "2026-10-13T01:04:01.217000"
+    },
+    {
+      "function": "intelligence-ingestion-scheduled-sync",
+      "httpStatus": 200,
+      "maxDurationMs": 404,
+      "count": 2,
+      "latest": "2026-10-13T01:05:00.952000"
+    },
+    {
+      "function": "simwood-sync-calls",
+      "httpStatus": 200,
+      "maxDurationMs": 664,
+      "count": 3,
+      "latest": "2026-10-13T01:05:01.685000"
+    },
+    {
+      "function": "receptionist-test-collector",
+      "httpStatus": 200,
+      "maxDurationMs": 288,
+      "count": 4,
+      "latest": "2026-10-13T01:04:01.442000"
+    },
+    {
+      "function": "platform-worker",
+      "httpStatus": 200,
+      "maxDurationMs": 1835,
+      "count": 2,
+      "latest": "2026-10-13T01:05:02.384000"
+    },
+    {
+      "function": "phone-processing-scheduled-sync",
+      "httpStatus": 200,
+      "maxDurationMs": 489,
+      "count": 1,
+      "latest": "2026-10-13T00:58:00.596000"
+    },
+    {
+      "function": "email-workspace-scheduled-sync",
+      "httpStatus": 200,
+      "maxDurationMs": 2193,
+      "count": 1,
+      "latest": "2026-10-13T01:00:05.306000"
+    },
+    {
+      "function": "google-workspace-discover-mailboxes",
+      "httpStatus": 200,
+      "maxDurationMs": 875,
+      "count": 1,
+      "latest": "2026-10-13T01:03:01.707000"
+    }
+  ],
+  "lifecycle": [
+    {
+      "function": "recommendation-scheduled-sync",
+      "eventType": "Boot",
+      "count": 3,
+      "latest": "2026-10-13T01:05:00.853000"
+    },
+    {
+      "function": "recommendation-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 3,
+      "latest": "2026-10-13T01:03:23.604000"
+    },
+    {
+      "function": "marketing-sequence-scheduled-sync",
+      "eventType": "Boot",
+      "count": 15,
+      "latest": "2026-10-13T01:07:01.037000"
+    },
+    {
+      "function": "marketing-sequence-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 15,
+      "latest": "2026-10-13T01:07:21.349000"
+    },
+    {
+      "function": "interactions-scheduled-sync",
+      "eventType": "Boot",
+      "count": 3,
+      "latest": "2026-10-13T01:05:00.404000"
+    },
+    {
+      "function": "interactions-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 3,
+      "latest": "2026-10-13T01:03:23.481000"
+    },
+    {
+      "function": "phone-scheduled-sync",
+      "eventType": "Boot",
+      "count": 3,
+      "latest": "2026-10-13T01:05:00.776000"
+    },
+    {
+      "function": "phone-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 3,
+      "latest": "2026-10-13T01:03:23.207000"
+    },
+    {
+      "function": "simwood-sync-recordings",
+      "eventType": "Boot",
+      "count": 3,
+      "latest": "2026-10-13T01:05:01.771000"
+    },
+    {
+      "function": "simwood-sync-recordings",
+      "eventType": "Shutdown",
+      "count": 3,
+      "latest": "2026-10-13T01:03:23.929000"
+    },
+    {
+      "function": "gmail-workspace-sync-messages",
+      "eventType": "Boot",
+      "count": 32,
+      "latest": "2026-10-13T01:07:01.319000"
+    },
+    {
+      "function": "gmail-workspace-sync-messages",
+      "eventType": "Shutdown",
+      "count": 29,
+      "latest": "2026-10-13T01:07:21.651000"
+    },
+    {
+      "function": "client-notifications",
+      "eventType": "Boot",
+      "count": 15,
+      "latest": "2026-10-13T01:07:00.764000"
+    },
+    {
+      "function": "client-notifications",
+      "eventType": "Shutdown",
+      "count": 15,
+      "latest": "2026-10-13T01:07:21.351000"
+    },
+    {
+      "function": "business-graph-scheduled-sync",
+      "eventType": "Boot",
+      "count": 3,
+      "latest": "2026-10-13T01:05:00.723000"
+    },
+    {
+      "function": "business-graph-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 3,
+      "latest": "2026-10-13T01:03:23.385000"
+    },
+    {
+      "function": "marketing-broadcast-scheduled-sync",
+      "eventType": "Boot",
+      "count": 15,
+      "latest": "2026-10-13T01:07:01.036000"
+    },
+    {
+      "function": "marketing-broadcast-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 15,
+      "latest": "2026-10-13T01:07:21.333000"
+    },
+    {
+      "function": "receptionist-review-collector",
+      "eventType": "Boot",
+      "count": 7,
+      "latest": "2026-10-13T01:06:00.861000"
+    },
+    {
+      "function": "receptionist-review-collector",
+      "eventType": "Shutdown",
+      "count": 8,
+      "latest": "2026-10-13T01:07:20.525000"
+    },
+    {
+      "function": "customer-card-scheduled-sync",
+      "eventType": "Boot",
+      "count": 3,
+      "latest": "2026-10-13T01:05:00.773000"
+    },
+    {
+      "function": "customer-card-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 3,
+      "latest": "2026-10-13T01:03:23.681000"
+    },
+    {
+      "function": "identity-scheduled-sync",
+      "eventType": "Boot",
+      "count": 3,
+      "latest": "2026-10-13T01:05:00.917000"
+    },
+    {
+      "function": "identity-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 3,
+      "latest": "2026-10-13T01:03:23.282000"
+    },
+    {
+      "function": "intelligence-ingestion-scheduled-sync",
+      "eventType": "Boot",
+      "count": 3,
+      "latest": "2026-10-13T01:05:00.800000"
+    },
+    {
+      "function": "intelligence-ingestion-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 3,
+      "latest": "2026-10-13T01:03:23.277000"
+    },
+    {
+      "function": "email-scheduled-sync",
+      "eventType": "Boot",
+      "count": 3,
+      "latest": "2026-10-13T01:05:00.778000"
+    },
+    {
+      "function": "email-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 3,
+      "latest": "2026-10-13T01:03:23.206000"
+    },
+    {
+      "function": "simwood-sync-calls",
+      "eventType": "Boot",
+      "count": 3,
+      "latest": "2026-10-13T01:05:01.382000"
+    },
+    {
+      "function": "simwood-sync-calls",
+      "eventType": "Shutdown",
+      "count": 3,
+      "latest": "2026-10-13T01:03:23.544000"
+    },
+    {
+      "function": "receptionist-test-collector",
+      "eventType": "Boot",
+      "count": 7,
+      "latest": "2026-10-13T01:06:00.774000"
+    },
+    {
+      "function": "receptionist-test-collector",
+      "eventType": "Shutdown",
+      "count": 8,
+      "latest": "2026-10-13T01:07:21.320000"
+    },
+    {
+      "function": "platform-worker",
+      "eventType": "Boot",
+      "count": 15,
+      "latest": "2026-10-13T01:07:01.040000"
+    },
+    {
+      "function": "platform-worker",
+      "eventType": "Shutdown",
+      "count": 15,
+      "latest": "2026-10-13T01:06:20.691000"
+    },
+    {
+      "function": "phone-processing-scheduled-sync",
+      "eventType": "Boot",
+      "count": 7,
+      "latest": "2026-10-13T01:06:00.395000"
+    },
+    {
+      "function": "phone-processing-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 8,
+      "latest": "2026-10-13T01:07:21.336000"
+    },
+    {
+      "function": "email-workspace-backfill-scheduled-sync",
+      "eventType": "Boot",
+      "count": 1,
+      "latest": "2026-10-13T01:00:03.412000"
+    },
+    {
+      "function": "email-workspace-backfill-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 1,
+      "latest": "2026-10-13T01:03:23.423000"
+    },
+    {
+      "function": "email-workspace-scheduled-sync",
+      "eventType": "Boot",
+      "count": 3,
+      "latest": "2026-10-13T01:05:01.137000"
+    },
+    {
+      "function": "email-workspace-scheduled-sync",
+      "eventType": "Shutdown",
+      "count": 3,
+      "latest": "2026-10-13T01:03:23.291000"
+    },
+    {
+      "function": "google-workspace-discover-mailboxes",
+      "eventType": "Boot",
+      "count": 1,
+      "latest": "2026-10-13T01:03:00.951000"
+    },
+    {
+      "function": "google-workspace-discover-mailboxes",
+      "eventType": "Shutdown",
+      "count": 1,
+      "latest": "2026-10-13T01:06:20.961000"
+    }
+  ],
+  "httpRequestCount": 57,
+  "httpErrorCount": 1,
+  "missingInvocationEvidence": false,
+  "unknownFunctions": false,
+  "inFlightWorkVerifiedStopped": false,
+  "durableCaptureVerified": false,
+  "productionChanges": 0,
+  "providerRequests": 0,
+  "limitations": [
+    "Log windows may be delayed, missing or cross execution boundaries; absence is not proof of inactivity.",
+    "Boot/Shutdown totals cannot be subtracted to count active executions: events can span the window.",
+    "HTTP 200 does not prove durable capture, complete history, authenticated user journeys or background completion.",
+    "Current schedule state, leases, downstream work and caller coordination must be checked separately."
+  ],
+  "observedAt": "2026-10-13T01:12:25.847Z",
+  "captureDatabaseObservation": {
+    "emailNew": 0,
+    "phoneNew": 0,
+    "emailRuns": [
+      {
+        "count": 3,
+        "status": "failed",
+        "sync_type": "workspace_messages",
+        "error_class": "delegation_failed",
+        "last_started": "2026-10-13T01:10:02.343+00:00",
+        "first_started": "2026-10-13T01:02:01.082+00:00",
+        "last_completed": "2026-10-13T01:10:02.442+00:00",
+        "records_processed": 0
+      },
+      {
+        "count": 2,
+        "status": "success",
+        "sync_type": "workspace_backfill_scheduled",
+        "error_class": "none",
+        "last_started": "2026-10-13T01:00:03.569+00:00",
+        "first_started": "2026-10-13T00:45:01.941+00:00",
+        "last_completed": "2026-10-13T01:00:03.569+00:00",
+        "records_processed": 0
+      },
+      {
+        "count": 1,
+        "status": "success",
+        "sync_type": "workspace_discover",
+        "error_class": "none",
+        "last_started": "2026-10-13T01:03:00.972+00:00",
+        "first_started": "2026-10-13T01:03:00.972+00:00",
+        "last_completed": "2026-10-13T01:03:01.64+00:00",
+        "records_processed": 29
+      },
+      {
+        "count": 55,
+        "status": "success",
+        "sync_type": "workspace_messages",
+        "error_class": "none",
+        "last_started": "2026-10-13T01:10:02.343+00:00",
+        "first_started": "2026-10-13T00:41:01.082+00:00",
+        "last_completed": "2026-10-13T01:10:02.785+00:00",
+        "records_processed": 0
+      },
+      {
+        "count": 6,
+        "status": "success",
+        "sync_type": "workspace_scheduled_sync",
+        "error_class": "none",
+        "last_started": "2026-10-13T01:10:03.295+00:00",
+        "first_started": "2026-10-13T00:45:03.46+00:00",
+        "last_completed": "2026-10-13T01:10:03.295+00:00",
+        "records_processed": 180
+      }
+    ],
+    "phoneRuns": [
+      {
+        "count": 6,
+        "status": "success",
+        "sync_type": "scheduled_sync",
+        "last_started": "2026-10-13T01:10:02.267232+00:00",
+        "first_started": "2026-10-13T00:45:02.313016+00:00",
+        "last_completed": "2026-10-13T01:10:03.275+00:00",
+        "records_processed": 0
+      },
+      {
+        "count": 6,
+        "status": "success",
+        "sync_type": "calls",
+        "last_started": "2026-10-13T01:10:02.461574+00:00",
+        "first_started": "2026-10-13T00:45:02.474974+00:00",
+        "last_completed": "2026-10-13T01:10:02.623+00:00",
+        "records_processed": 0
+      },
+      {
+        "count": 6,
+        "status": "success",
+        "sync_type": "recordings",
+        "last_started": "2026-10-13T01:10:02.905319+00:00",
+        "first_started": "2026-10-13T00:45:02.927976+00:00",
+        "last_completed": "2026-10-13T01:10:03.204+00:00",
+        "records_processed": 0
+      }
+    ],
+    "observedAt": "2026-10-13T01:10:42.285658+00:00",
+    "recordingNew": 0
+  },
+  "emailFailureReview": {
+    "failedAccountCount": 3,
+    "allMatchPreviouslyInvestigatedAccounts": true,
+    "classification": "delegation_failed",
+    "mailboxRetirementConfirmed": false,
+    "noAccountChanges": true
+  },
+  "logVisibility": {
+    "sameFixedWindowEarlierCount": 48,
+    "laterCount": 57,
+    "lateArrivalsObserved": true
+  },
+  "localTestsPassed": 4,
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-runtime-activity.mjs",
+      "sha256": "1e3f3760a3a74afae31b24a7cd5fb92392705d3ee5802f357ca01ff9ea8c2121"
+    },
+    {
+      "path": "scripts/verify/learn-production-runtime-activity.test.mjs",
+      "sha256": "6990ba9469ba1a7a3cf6f3a8e7773db7971b3943df16e83e3ecfb9c29ccb63f8"
+    }
+  ],
+  "references": [
+    "https://supabase.com/docs/reference/api/v1-get-project-logs",
+    "https://supabase.com/docs/guides/observability/log-field-reference",
+    "https://supabase.com/docs/guides/functions/background-tasks"
+  ]
+}

@@ -6,6 +6,38 @@
 > Browser login binding and hosted read-only frontend preflight passed; 45 local
 > release tests pass. Signed-in acceptance and the remaining execution gates are open.
 
+## Current execution observation — 13 October, 02:14 BST
+
+Use the bounded, read-only helper before and during the separately controlled drain:
+
+```sh
+LEARN_PRODUCTION_READ_ONLY_PROJECT=tgbnakbxwcqjeimygroz node \
+  scripts/verify/learn-production-runtime-activity.mjs \
+  2026-10-13T00:53:00.000Z 2026-10-13T01:08:00.000Z \
+  .verification-results/production-runtime-activity-verified-20261013.json
+```
+
+Choose a fresh minute-aligned window no longer than 30 minutes and a new private
+report path; the example is the already-completed observation. The script uses the
+current Management API `/analytics/endpoints/logs`, with ClickHouse SQL, and selects
+no raw messages, headers or request bodies. It rejects query errors, truncation and
+malformed/duplicate aggregate rows. Unknown function IDs remain explicit.
+
+The real fixed window grew from 48 to 57 HTTP events between reads: logs arrive
+late. This helper deliberately cannot satisfy `verify-in-flight-drain` by itself.
+Neither HTTP success, absence of logs, nor subtracting Boot/Shutdown totals proves
+background completion. A shutdown may belong to a boot before the window, and a
+successful HTTP response may precede detached work. Combine this evidence with
+paused schedules, no current leases, stopped downstream work and coordinated callers.
+No runtime, schedule or customer record was modified for this observation.
+
+The accompanying database check found 55 successful workspace message checks,
+three delegation failures on previously investigated accounts, six successful phone
+capture cycles, and zero newly stored communications/recordings in the preceding
+half-hour. Scheduler `records_processed` can count work dispatched; do not present
+it as new email count. HTTP logs and persisted run outcomes are separate evidence.
+[Current observation](evidence/learn-production-runtime-activity-2026-10-13.json).
+
 ## Concrete frontend promotion adapter
 
 `learn-production-frontend-adapter.mjs` plugs into the coordinator's frontend port.

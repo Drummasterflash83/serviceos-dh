@@ -7,6 +7,41 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 02:14 BST — current capture and background-execution diagnostics verified.**
+
+### Working and verified
+
+- A new bounded read-only observer uses Supabase's current logs endpoint, returning
+  only function names, response counts/timing and lifecycle totals. Four local tests
+  pass, and the real production query resolves every observed function.
+- The fixed 00:53–01:08 UTC window returned 48 HTTP events initially and 57 later.
+  Late log arrival is observed, so an empty window must not automatically pass the
+  release drain gate. Boot/Shutdown totals also cannot be subtracted into an active count.
+- Production run records at 01:10 UTC show 55 successful mailbox checks and six
+  successful cycles each for phone scheduling, calls and recordings in the preceding
+  half-hour. No new email, call or recording rows were stored in that window. These
+  are ongoing checks, not evidence of complete capture or new source-to-card delivery.
+- Three failed email checks are delegation failures on three of the four previously
+  investigated accounts. No credentials, mailbox settings or source history changed.
+
+### Needs finishing
+
+- Combine scheduler pause/readback, current leases, downstream execution and caller
+  coordination before installing the matching backend. Delayed logs cannot supply
+  this acceptance alone. The actual controlled drain has not been performed.
+- Full input coverage, processing/cards/scoring, signed-in live release and operational
+  handover remain open. The staged frontend from the previous milestone stays ready.
+
+### Blocked externally
+
+- The pending 1Password unlock still gates the fresh independent recovery proof.
+  Production sign-in and TEST AI access remain unresolved. The four unavailable
+  mailbox accounts have not been confirmed retired; their history remains intact.
+
+[Current runtime and capture evidence](evidence/learn-production-runtime-activity-2026-10-13.json).
+
+### Previous frontend release milestone
+
 **13 October, 02:07 BST — exact frontend promotion path prepared and checked.**
 
 ### Working and verified
