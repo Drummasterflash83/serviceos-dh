@@ -1,5 +1,32 @@
 # LEARN V1 production release plan
 
+## Current matched release — 13 October
+
+Package 024 includes all six Slack migrations through the campaign controller.
+The current candidate contains **24 SQL packages, 37 compiled runtimes and 75
+release steps**. Ten full-schema journeys and preservation/rollback/negative guards
+pass; all 37 boot checks, 28 scheduler checks and 45 release tests pass. The full
+rehearsal preserves 1,591,580 archived rows and seven sequences. It is not a fresh
+production checkpoint or proof of live drain.
+
+The protected production frontend is READY at deployment
+`dpl_hbUQRS9DWFqMAq24KjgdiBTvtxhg`, Git `26d1b22`. Its rendered login points to
+production, while all four live domains remain at `dpl_DXueDsax146gdtyFoniXRaW3dzMM`.
+The read-only promotion adapter reports ready. No real capture has been enabled.
+
+Chris has authorised promotion. Execution still requires current independent
+recovery, fresh production baseline checks, coordinated pause/drain, matching
+backend installation, signed-in acceptance and post-release observation. The
+1Password unlock is pending; do not equate staging with live deployment.
+
+[Production package and runtime evidence](evidence/learn-production-slack-campaigns-2026-10-13.json).
+[Staged frontend evidence](evidence/learn-production-frontend-campaign-2026-10-13.json).
+
+## Earlier preparation observations
+
+The observations below describe earlier candidates. Statements that campaign
+migrations are excluded are superseded by the current matched release above.
+
 > 13 October: all six newer Slack migrations and their matching worker/scheduler
 > now pass hosted TEST installation and idle HTTP acceptance, with preservation
 > verified. The production candidate below is still unchanged and excludes them.

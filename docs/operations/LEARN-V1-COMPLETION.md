@@ -7,6 +7,46 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October — matched production campaign release is prepared; live installation remains pending.**
+
+### Working and verified
+
+- Production package 024 now includes all six Slack campaign migrations, with the
+  matching 37 runtimes and staged frontend. The full-schema rehearsal passes ten
+  journeys, rollback and six failure guards; 1,591,580 archived rows and seven
+  sequences remain unchanged. Seven new private campaign tables are empty.
+- All 37 runtime artifacts compile and reject missing authentication. Twenty-eight
+  offline scheduler checks pass, and all 45 release adapter/coordinator tests pass.
+- The release sequence now pins 24 SQL packages, 37 runtimes and the protected
+  production frontend `26d1b22` across 75 steps. This is prepared, not executed.
+- The staged frontend is READY and its rendered login targets production. All four
+  live domains still serve the existing deployment; no production data, schedules,
+  runtimes or capture settings changed during this preparation.
+- Hosted TEST campaign verification and Heidi's applied production company-admin
+  grant remain valid previous milestones. Neither proves signed-in live acceptance.
+
+### Needs finishing
+
+- Fresh independent recovery, production preflight, coordinated pause/drain,
+  matched backend installation, frontend promotion and signed-in acceptance.
+- Real Slack historical/reply/ongoing acceptance, complete source coverage,
+  processing/cards/scoring and ongoing operational readiness remain open.
+- Do not activate a real campaign under the closed two-message TEST sample approval.
+  DMs remain excluded and no new campaign or recurring subscription was created.
+
+### Blocked externally
+
+- 1Password is currently locked after inactivity; Chris has been asked to unlock
+  it for the already-approved recovery-key access. Do not request new access grants.
+- Production customer sign-in remains unverified. TEST AI key selection was opened
+  through the secure selector and still awaits the user's selection.
+- These do not prevent independent release preparation; deployment approval exists.
+
+[Matched production evidence](evidence/learn-production-slack-campaigns-2026-10-13.json).
+[Staged production frontend](evidence/learn-production-frontend-campaign-2026-10-13.json).
+
+### Previous hosted TEST milestone
+
 **13 October — matched Slack campaign schema and runtimes are now verified in hosted TEST.**
 
 ### Working and verified

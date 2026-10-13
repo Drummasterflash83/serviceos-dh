@@ -1,6 +1,6 @@
 {
   "version": "learn-production-rpc-bindings/1",
-  "sourceClosureSha256": "93f4946509cedf52cad18ae8b5fba14646de5e749e0e7ecc05d94b4f3a3902c0",
+  "sourceClosureSha256": "46c1cc1b4f1f6daee6106c51dd43e7e9f089dcf7616fc8c84b68aae856d51d1f",
   "baselineSchemaSha256": "769453fcb4bae572db00a8ed2722047cd1b58281f2aa2dbc4bd9c3325a8735fb",
   "sites": [
     {
@@ -141,8 +141,8 @@
     {
       "path": "_shared/slack/slack_history_server.ts",
       "kind": "rpc",
-      "line": 100,
-      "sourceSha256": "18e6baab0210ff3b9f755bae86882ce2b0bb3a976f815a00f29757ae958d41a5",
+      "line": 101,
+      "sourceSha256": "e908d40c46d9c0387963296ad2fe4504703f6729d060ffb420ffd7ca9f62fb20",
       "targets": [
         {
           "name": "learn_slack_read_thread_credential",

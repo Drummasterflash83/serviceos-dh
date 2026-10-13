@@ -1,0 +1,225 @@
+{
+  "version": "learn-production-slack-campaigns/1",
+  "state": "matching_production_release_prepared_not_executed",
+  "observedAt": "2026-10-13T06:08:32.333488+00:00",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "databasePackages": 24,
+  "runtimeEndpoints": 37,
+  "sourceFiles": 228,
+  "candidateManifestSha256": "3dc2952a33f3153ad3f44f00dc3ced76e6f51b3dff69c2904fc5c5619497c121",
+  "sourceClosureSha256": "46c1cc1b4f1f6daee6106c51dd43e7e9f089dcf7616fc8c84b68aae856d51d1f",
+  "bundleReportSha256": "d17f2072249bd600b79e018be416980a0ef2e6829f2162e00b32ce1bc122587e",
+  "bootReportSha256": "7f6bb9e271ce1bd632036001e7c5c9d96dd7e329789d1e83e315e555a57f6332",
+  "runtimeWireReportSha256": "aef2212008e1624521a8849570159d9d1d35c82b69c182ea4219ab043f93730b",
+  "callerReportSha256": "373405f1f61b1c142c5b7bf03df55a003574ae76addf13fcb189bb26df64b8e9",
+  "callerManifestSha256": "3dc2952a33f3153ad3f44f00dc3ced76e6f51b3dff69c2904fc5c5619497c121",
+  "callerChecks": 28,
+  "sources": [
+    {
+      "path": "scripts/backup/rehearse_production_slack_campaigns.py",
+      "sha256": "afb7bab07996e7844bd39562c5032a7bd5e31b38d7025a73b826244118ed762e"
+    },
+    {
+      "path": "scripts/verify/learn-production-slack-campaign-candidate.mjs",
+      "sha256": "597b233adc4852a440ecf8f54245058d57431abaa039355736b5f0e3674e2328"
+    },
+    {
+      "path": "scripts/verify/learn-production-runtime-candidate.mjs",
+      "sha256": "331e207acd2105d67cf18b89b92bce07984ae252d9fe7b8eacc42398514f9c74"
+    },
+    {
+      "path": "scripts/verify/learn-production-runtime-bundle.mjs",
+      "sha256": "e05602f1bc5186daac9ca5892d8024367a1f2b7d1d12e74c6c6dfba58b275061"
+    },
+    {
+      "path": "scripts/verify/learn-production-runtime-boot.mjs",
+      "sha256": "a2cae4ef3c2a5809ab9d2ed32481832ef4cfb31dc8a62f088983231f75ad5ff3"
+    },
+    {
+      "path": "scripts/verify/learn-production-scheduler-callers.mjs",
+      "sha256": "a2abbc1d7ae2b16b07256465b7bc205c19156ce765d5881b07b93561dc101791"
+    },
+    {
+      "path": "scripts/verify/learn-production-scheduler-caller.fixture.ts",
+      "sha256": "60b5bf47bfa5372a1f49bd4d3feebebb52745e1dd2b7a97a2dc6e6e9790706f7"
+    },
+    {
+      "path": "scripts/verify/learn-production-runtime-transport.mjs",
+      "sha256": "f0692b1eeec80712472d6e4dbd4d60cd6abc84be34ff9197d1da951942a330a3"
+    },
+    {
+      "path": "scripts/verify/learn-production-rpc-bindings.mjs",
+      "sha256": "4bf783ff3f39e8b3a2f562566f3fd9d9ed3b5d2f9e4e632d3834709514bef826"
+    }
+  ],
+  "databaseRehearsal": {
+    "reportSha256": "e5268750232498050c154ea8235e2edf464f64b064122ee6b2fabee322069751",
+    "state": "production_slack_campaigns_rehearsed_offline",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "archive": {
+      "bytes": 196872981,
+      "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+    },
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "offlineDrainSimulation": {
+      "archivedRunningRows": 14,
+      "originalValuesRestored": true,
+      "liveDrainProven": false
+    },
+    "negativeChecks": [
+      "wrong_target",
+      "missing_checksum",
+      "missing_prerequisite",
+      "function_drift",
+      "preexisting_object",
+      "late_failure"
+    ],
+    "packageRollbackVerified": true,
+    "preservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 387,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "668e43af48bd9b2db0cbd94ff042d0d6863cf3d1f34d6340714a82f0ff60ea80",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "campaigns": {
+      "concurrentLastReservationVerified": true
+    },
+    "journeys": [
+      {
+        "path": "scripts/verify/learn-production-slack.assert.sql",
+        "sourceSha256": "f3487eba7d010845e6abb86bcd332da2a25e19a65c6311269b7bc55b1d563d88",
+        "probeSha256": "fe4df68722d328e9b6ad983b67958d8f61abc0977f2cf5230cec6d73b411ca5e",
+        "passed": true
+      },
+      {
+        "path": "scripts/verify/learn-production-slack-threads.assert.sql",
+        "sourceSha256": "650ba2d9b2d7b326ae66ea2d9d39655bde4e8d84e7c44deede37744c24c649de",
+        "probeSha256": "31b198d68fbf5694eaecaac8151e063ed7abb523a6159ed5bcfc690319140931",
+        "passed": true
+      },
+      {
+        "path": "scripts/verify/learn-slack-historical-recovery.assert.sql",
+        "sourceSha256": "62bb90be90baff9e593c6fdb0dd4fcfecddf37ac55b6123ffd1b69e6d917e9e3",
+        "probeSha256": "b35bfc03fefad37baea2d7a6e900c2701f19b0657cb38fb8462467dd8c8da764",
+        "passed": true
+      },
+      {
+        "path": "scripts/verify/learn-production-slack-setup.assert.sql",
+        "sourceSha256": "2cfb069ec109df6ef5fcbba85c39639c7a531f65cc69949be70a0ed20781e45f",
+        "probeSha256": "b0f0d75ec08748dec6dea6c537f4b4265ab678a5b08e0dd4cb985738aaeb2393",
+        "passed": true
+      },
+      {
+        "path": "scripts/verify/learn-slack-campaign.assert.sql",
+        "sourceSha256": "7b40afab45afb4ae4676032a8813225bf9cd7744f6f1067ac1dd2844872aa963",
+        "probeSha256": "279fafe7c77622091dea292520aba4956a4b685987977a2e801d5996465f5ef0",
+        "passed": true
+      },
+      {
+        "path": "scripts/verify/learn-slack-campaign-threads.assert.sql",
+        "sourceSha256": "4df13fae69537726a358873b79e0595c270827cf6cc22c51834c4862ca87f728",
+        "probeSha256": "b5f860882f7f91dbb88715d177c9335589bfdaf73989bb5373e401b45ca364ec",
+        "passed": true
+      },
+      {
+        "path": "scripts/verify/learn-slack-campaign-lifecycle.assert.sql",
+        "sourceSha256": "1b5416bd4a56b2dc844ea35dfb0b389e498c77922036f39d868a38e36a3a2d0c",
+        "probeSha256": "c7b20ac858f0b934c5d08160482a9c248838fe8a9b5d121aff2fa0abc65d8484",
+        "passed": true
+      },
+      {
+        "path": "scripts/verify/learn-slack-campaign-controller.assert.sql",
+        "sourceSha256": "828b8dbee6224a1a81e9f823b3a553356b717d37ef7000dc2e2f75d69cae0958",
+        "probeSha256": "ba43d216a048260d7d7ea7c072cd3b99b0276a30028dcb5ba0b4345708e7385b",
+        "passed": true
+      },
+      {
+        "path": "scripts/verify/learn-production-slack.assert.sql",
+        "sourceSha256": "f3487eba7d010845e6abb86bcd332da2a25e19a65c6311269b7bc55b1d563d88",
+        "probeSha256": "fe4df68722d328e9b6ad983b67958d8f61abc0977f2cf5230cec6d73b411ca5e",
+        "passed": true
+      },
+      {
+        "path": "scripts/verify/learn-slack-message-kinds.assert.sql",
+        "sourceSha256": "abecd22ffc68acf7210defad88f453dabac65895a5c1787398a0d477eced773a",
+        "probeSha256": "3df55272e270f5a4069b4026306fee743957147ed3ef2af7554c654ed33521bd",
+        "passed": true
+      }
+    ],
+    "postJourneyPreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 394,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "f98ed6d320181bf94bcc5276a87611b308886fc17dc685504dbf991d2d33302c",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "packages": 24,
+    "packageSha256": "49d2e0a3661a712cf20d420f93427b9e678e04a9f57867034b0e63be44d5d10d",
+    "previouslyRehearsedSchemaWithExplicitNewPostgresOwnership": true,
+    "priorReceiptsUnchanged": true,
+    "duplicateRejected": true,
+    "newEmptyTables": 7,
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true
+  },
+  "runtimeEvidence": {
+    "compiledAgain": true,
+    "bootExecutedAgain": true,
+    "missingAuthDenials": 37,
+    "schedulerChecksExecutedAgain": true,
+    "containerRemovalVerified": true
+  },
+  "limitations": [
+    "Offline release preparation, not production installation or signed-in live acceptance.",
+    "Database rehearsal uses the retained 12 October archive, not the fresh independent launch recovery checkpoint.",
+    "Four scheduler caller contracts are verified offline; other callers and Supabase gateway behaviour require separate acceptance.",
+    "Real Slack campaign coverage, observed replies, ongoing capture and remaining provider/card/processing journeys are unfinished.",
+    "No campaigns, capture, accounts, grants or credentials were created by this preparation."
+  ],
+  "releasePreparation": {
+    "steps": 75,
+    "databasePackages": 24,
+    "runtimeEndpoints": 37,
+    "localReleaseTestsPassed": 45,
+    "rpcSites": 19,
+    "uniqueRpcTargets": 51,
+    "productionChanges": 0
+  }
+}

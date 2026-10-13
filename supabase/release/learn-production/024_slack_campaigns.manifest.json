@@ -1,0 +1,91 @@
+{
+  "version": "learn-production-slack-campaigns/1",
+  "status": "prepared_requires_release_rehearsal",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "49d2e0a3661a712cf20d420f93427b9e678e04a9f57867034b0e63be44d5d10d",
+  "priorSha256": "e2345323e52908add5fa12107efaf88540bf37f609f612d12e52aea298a0760d",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101650000_learn_slack_historical_ranges.sql",
+      "sha256": "fda96765913f2fb95624d3e6d41ae01f150f4e96048e7d247b208bebd41af9c6"
+    },
+    {
+      "path": "supabase/migrations/20261101660000_learn_slack_message_kinds.sql",
+      "sha256": "a5611fb9b0ed8207daf71f1345b5e057e1248616378d91a8563e9f46d13db777"
+    },
+    {
+      "path": "supabase/migrations/20261101670000_learn_slack_history_campaigns.sql",
+      "sha256": "2f320d285a4efbadf18297779bc223c6ab437358cb91ebb3803c62a3744c7fe3"
+    },
+    {
+      "path": "supabase/migrations/20261101680000_learn_slack_campaign_threads.sql",
+      "sha256": "d9d9619dfc6d4954388a99dbe3636dabcd9d8dff5acf5bad674ff01fa4bf8c56"
+    },
+    {
+      "path": "supabase/migrations/20261101690000_learn_slack_campaign_lifecycle.sql",
+      "sha256": "378bd1525eb74898857cd290ddc1d5b1abfa2c31f5636f1bf36530a1a28b3e28"
+    },
+    {
+      "path": "supabase/migrations/20261101700000_learn_slack_campaign_controller.sql",
+      "sha256": "4b0d4f13116e43f1b63fca7e64aaf9413b29a14848d44b71478086e41f93b602"
+    }
+  ],
+  "newFunctions": [
+    "learn_slack_campaign_attribution_allowed",
+    "learn_slack_campaign_authority",
+    "learn_slack_campaign_channel_progress",
+    "learn_slack_campaign_claim_allowed",
+    "learn_slack_campaign_close",
+    "learn_slack_campaign_control",
+    "learn_slack_campaign_dispatch",
+    "learn_slack_campaign_immutable",
+    "learn_slack_campaign_job_allowed",
+    "learn_slack_campaign_list",
+    "learn_slack_campaign_read",
+    "learn_slack_campaign_reserve_request",
+    "learn_slack_campaign_start",
+    "learn_slack_campaign_thread_attribution_allowed",
+    "learn_slack_campaign_thread_immutable",
+    "learn_slack_campaign_thread_import_complete",
+    "learn_slack_campaign_threads_step",
+    "learn_slack_message_kind",
+    "learn_slack_schedule_campaigns"
+  ],
+  "changedFunctions": [
+    "learn_slack_claim_jobs",
+    "learn_slack_commit_page_private",
+    "learn_slack_history_state",
+    "learn_slack_read_credential",
+    "learn_slack_read_thread_credential",
+    "learn_slack_recurring_control",
+    "learn_slack_reference_guard",
+    "learn_slack_resume_history",
+    "learn_slack_resume_thread",
+    "learn_slack_start_import",
+    "learn_slack_start_thread_import",
+    "learn_slack_store_records",
+    "learn_slack_thread_recovery_state",
+    "slack_thread_commit_page"
+  ],
+  "newTables": [
+    "slack_history_campaign_channels",
+    "slack_history_campaign_closures",
+    "slack_history_campaign_dispatches",
+    "slack_history_campaign_requests",
+    "slack_history_campaign_thread_scans",
+    "slack_history_campaign_threads",
+    "slack_history_campaigns"
+  ],
+  "changedViews": [],
+  "newSequences": [],
+  "extendedTables": {},
+  "limitations": [
+    "Installation creates no campaign, account, credential, access grant or active capture.",
+    "Requires the matching runtime, scheduler and frontend release; original shared-worker code cannot dispatch campaigns.",
+    "Real provider history/replies and ongoing acceptance remain outstanding; DMs excluded."
+  ]
+}

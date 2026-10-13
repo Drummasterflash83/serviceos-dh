@@ -42,13 +42,13 @@ function fixture({allowWrite=true}={}) {
   return {adapter,steps,ledger,schedules,submitted,loseResponse:()=>{lost=true;},changeBytes:()=>{changed=true;}};
 }
 
-test('23 database packages and pause/restoration execute in order without touching unrelated schedule',async()=>{
+test('24 database packages and pause/restoration execute in order without touching unrelated schedule',async()=>{
   const f=fixture(),unrelated=structuredClone(f.schedules.at(-1));
   for(const step of f.steps) {
     assert.equal((await f.adapter.observe(step)).state,'ready');await f.adapter.apply(step);
     assert.equal((await f.adapter.observe(step)).state,'applied');
   }
-  assert.equal(f.submitted.length,25);assert.equal(f.ledger.length,23);
+  assert.equal(f.submitted.length,26);assert.equal(f.ledger.length,24);
   assert.deepEqual(f.schedules.at(-1),unrelated);assert.ok(f.schedules.every(s=>s.active));
   assert.equal((await f.adapter.inspect()).receiptPrefixValid,true);
 });

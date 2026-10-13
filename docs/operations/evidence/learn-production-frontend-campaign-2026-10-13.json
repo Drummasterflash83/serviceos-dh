@@ -1,0 +1,56 @@
+{
+  "observedAt": "2026-10-13T06:07:18.021Z",
+  "state": "protected_staged_production_ready",
+  "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+  "team": "team_PGUQWiaAZZkMTCM9nSHahIpG",
+  "id": "dpl_hbUQRS9DWFqMAq24KjgdiBTvtxhg",
+  "url": "https://serviceos-cc2z8b4iz-allkin.vercel.app",
+  "gitSha": "26d1b224ca763d9a012b82eda6da387a06a23083",
+  "target": "production",
+  "previousProductionDeployment": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "domains": [
+    {
+      "name": "app.openfolk.ai",
+      "redirect": null
+    },
+    {
+      "name": "openfolk.ai",
+      "redirect": "www.openfolk.ai"
+    },
+    {
+      "name": "serviceos-dh.vercel.app",
+      "redirect": null
+    },
+    {
+      "name": "www.openfolk.ai",
+      "redirect": null
+    }
+  ],
+  "autoAssignCustomDomains": false,
+  "productionDeploymentUnchanged": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "productionPromotion": false,
+  "browser": {
+    "loginScreenLoaded": true,
+    "actualServedAuthOrigin": "https://tgbnakbxwcqjeimygroz.supabase.co",
+    "bindingEvidence": "Rendered login data-auth-target attribute observed through browser",
+    "loadedEntryAsset": "/assets/index-DUm7pyWp.js",
+    "signedInAcceptance": false
+  },
+  "protection": {
+    "status": 302,
+    "redirectOrigin": "https://vercel.com"
+  },
+  "readOnlyAdapterObservation": {
+    "state": "ready",
+    "evidenceSha256": "b8fcb96ae6edf7e47d399df3e6420549ab0e96af6fa85cc744f893bf37ec63bd"
+  },
+  "limitations": [
+    "Staged production build is READY; all four existing production domains are unchanged.",
+    "Positive signed-in production acceptance and matched backend installation remain pending.",
+    "Includes the hosted TEST Slack campaign controls; no real campaign or capture is activated."
+  ],
+  "supersedesDeployment": "dpl_5j57s4SuMBQMkzKEpM2BgX4BE9m6",
+  "supersedesEvidence": "learn-production-frontend-operator-learn-2026-10-13.json",
+  "testAcceptanceEvidence": "learn-slack-campaign-hosted-2026-10-13.json",
+  "liveDomainsVerifiedUnchanged": 4
+}
