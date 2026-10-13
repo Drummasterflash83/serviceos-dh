@@ -8,6 +8,32 @@ override a later release observation. No requirement is silently deferred.
 ## Current evidence and priority
 
 
+**14 October, 00:44 BST — completed job status visible in LIVE customer summaries.**
+
+- The customer brief now combines its linked communications/actions with a scoped,
+  expiring read of published job statuses. A real LIVE customer shows two recorded
+  completed jobs alongside its two retained email entries. Both jobs' pending
+  verification remains explicit; no status, verification flag, payment or date was
+  invented. Opening a job and returning to the customer still works.
+- Twenty-seven focused tests, TypeScript and the local build pass. Both isolated
+  Git candidates built successfully on Vercel. LIVE `b3a74c4` is verified on all
+  four existing aliases; protected TEST `f783f43` is verified on both stable aliases
+  and in the existing signed-in operator session. Each retains its own previous
+  frontend features and correct backend binding. No database/runtime/access changes.
+- The initial LIVE check revealed that the source-completed jobs have a separate
+  pending verification flag. The corrected release preserves and shows both facts.
+  Completion counts describe up to 25 published linked jobs; the summary labels
+  further jobs outside that read and does not establish full provider coverage.
+- The individual job-card brief still needs its own recorded status, and unresolved
+  owner names, wider publication, findings and scorecards remain open. This does
+  not close the independent changed-job frontend acceptance gate.
+- Slack at 23:40 UTC retained 14,838 sources, with 18 active and 118 archived windows
+  complete. Recovery `fb47041d-ee55-478c-a655-6463921fdc4f` was still queued at the
+  23:39 UTC read; no duplicate submission was made.
+
+[Customer summary LIVE evidence](evidence/learn-customer-job-brief-live-2026-10-14.json).
+
+
 **14 October, 00:26 BST — Slack notification handling verified LIVE; recovery queued.**
 
 - The exact observed `automatic_ai_huddle_notes_enabled` message is now retained

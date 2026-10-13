@@ -40,31 +40,37 @@ and switches to the Vercel preset** (`λ __server`). So: build **remotely on Ver
 upload or Git push). Do **not** ship a locally-prebuilt `.output` to Vercel — it would be
 Cloudflare-flavoured.
 
-## Current live checkpoint — 13 October 2026
+## Current live checkpoint — 14 October 2026
 
-The latest verified LIVE frontend is Git
-`f03a96328924d9c6de4414143444c7f6949328e1`, deployment
-`dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR`, serving the four existing openfolk.ai aliases.
-This is the isolated QuickBooks frontend on top of the previous verified
-`a11f2041b84cb572a5ce8b65c97057e005bf4da3` contact-details release. It excludes the
-separate pending Commusoft job-refresh and Slack recovery frontend changes.
-Existing live operator sign-in, connection/import controls, audited empty finance
-reads and Drummonds customer/LEARN navigation were checked on the permanent domain.
-Actual HTML no-store headers and immutable hashed JavaScript caching are verified.
-The previous deployment `dpl_FEvZQUizXBraRu71hJtGciJTPZER` remains a rollback target.
+LIVE frontend Git `b3a74c4662dd3d3c2e51e6ef5bd874368a34d427`, deployment
+`dpl_21eztEFiDNUKj1MmZRmqy61K4Dhh`, is verified on all four existing openfolk.ai
+aliases and the production target. Its only feature change from the preceding
+QuickBooks frontend is the three-file customer job-status brief. The signed-in
+LIVE customer journey shows recorded completion, pending verification, existing
+emails, job drilldown and return. Existing source descriptions/codes remain intact.
+No backend, capture, credential, permission or source-data change is included.
 
-QuickBooks backend is installed, but no production app registration, credentials,
-company connection, accounting records or imports exist. Frontend release is not
-real-provider acceptance. Policy/Intuit confirmations and live accounting acceptance
-remain outstanding. Existing contact details are preserved; broader source coverage,
-scoring and operational acceptance remain incomplete.
-Use **https://www.openfolk.ai** for LIVE and **https://test.openfolk.ai** for TEST.
-TEST is unchanged by this release. The About panel reports the live candidate's
-build-time `preview` environment; its verified auth backend is production.
+The preceding feature baseline `f03a96328924d9c6de4414143444c7f6949328e1` /
+`dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR` remains the rollback target for removing the
+entire summary change. The first summary release `dpl_8JpXxooWUKEWdvg7RKehn9JENsRW`
+was superseded because its verification flag check hid recorded completion.
+Do not use that conservative first rendering as acceptance of the final behaviour.
 
-See [QuickBooks live frontend evidence](operations/evidence/learn-quickbooks-live-frontend-2026-10-13.json)
-and the [preceding contact-details evidence](operations/evidence/learn-contact-details-production-2026-10-13.json).
-Older preview sections below are historical preparation, not current live status.
+Protected TEST separately serves `f783f431d22696d4feac9bb7a0196939b8ad8026` /
+`dpl_EuUZso7KtiG3vaiTqxp2v7CTw92s` on both permanent aliases. Its About panel,
+existing operator sign-in and TEST backend binding are verified. TEST preserves
+its existing job-refresh controls; the LIVE release does not include that held
+frontend. No deployment protection changed.
+
+QuickBooks frontend/foundation remain preserved; actual production app registration,
+credentials, company connection and real accounting acceptance remain outstanding.
+Customer briefs cover a labelled bounded published-job read, not all provider work.
+Individual job-card status summaries, wider publication, scoring and operational
+acceptance remain incomplete. Use **https://www.openfolk.ai** for LIVE and
+**https://test.openfolk.ai** for TEST.
+
+[Customer summary release evidence](operations/evidence/learn-customer-job-brief-live-2026-10-14.json)
+· [Preserved QuickBooks release](operations/evidence/learn-quickbooks-live-frontend-2026-10-13.json).
 
 ## Preview deployments
 
