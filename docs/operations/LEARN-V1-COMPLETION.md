@@ -7,6 +7,20 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 17:20 BST — customer review evidence and monthly restore runner advanced.**
+
+- Correct title-inclusive full-name comparison corroborates1,237of1,552 latest
+  customer sources against the sealed historical ID/name/postcode export, up
+  from322. No merge or classification rule was inferred;39IDs still lack
+  historical counterparts and current customer-type access remains unavailable.
+- The reusable AWS-only monthly voicemail pair restore runner passed20offline
+  tests, including real WAV decode and verified cleanup. Its real acceptance
+  awaits the first combined backup aggregate, still running under its original
+  process. Existing schedules are unchanged.
+- Commusoft's recurring jobs stage reached92settled pages at16:17UTC. The
+  property stage had completed automatically; both contact stages remain.
+
+
 **13 October, 17:04 BST — ongoing Commusoft capture enabled.**
 
 - The bounded dispatcher is LIVE and the existing logged operator approved only

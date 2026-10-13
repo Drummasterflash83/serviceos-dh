@@ -1,0 +1,119 @@
+{
+  "state": "classification_evidence_only_not_identity_authority",
+  "observedAt": "2026-10-13T16:14:07.588Z",
+  "liveCustomers": 1552,
+  "ambiguousSourceHeads": 0,
+  "historicalCustomers": 1613,
+  "historicalCustomerFileSha256": "9cbb37fcd9d8d5d8e5dd2f3407b603a5c7f572ae40244c7090f1df7016420ece",
+  "missingHistoricalIds": 39,
+  "sameIdNameAndPostcode": 1237,
+  "groups": [
+    {
+      "typeId": 2,
+      "historicalCategory": "Company",
+      "historicalKind": "company_contact",
+      "sameId": 171,
+      "sameNameAndPostcode": 168
+    },
+    {
+      "typeId": 5,
+      "historicalCategory": "Property Management",
+      "historicalKind": "company_contact",
+      "sameId": 47,
+      "sameNameAndPostcode": 46
+    },
+    {
+      "typeId": 1,
+      "historicalCategory": "Private customer",
+      "historicalKind": "person",
+      "sameId": 1151,
+      "sameNameAndPostcode": 899
+    },
+    {
+      "typeId": 10,
+      "historicalCategory": "Private Landlord",
+      "historicalKind": "person",
+      "sameId": 25,
+      "sameNameAndPostcode": 13
+    },
+    {
+      "typeId": 11,
+      "historicalCategory": "Building Company",
+      "historicalKind": "company_contact",
+      "sameId": 5,
+      "sameNameAndPostcode": 2
+    },
+    {
+      "typeId": 7,
+      "historicalCategory": "Religious building",
+      "historicalKind": "company_contact",
+      "sameId": 12,
+      "sameNameAndPostcode": 12
+    },
+    {
+      "typeId": 4,
+      "historicalCategory": "School or College",
+      "historicalKind": "company_contact",
+      "sameId": 20,
+      "sameNameAndPostcode": 20
+    },
+    {
+      "typeId": 6,
+      "historicalCategory": "Care Home",
+      "historicalKind": "company_contact",
+      "sameId": 14,
+      "sameNameAndPostcode": 14
+    },
+    {
+      "typeId": 8,
+      "historicalCategory": "Hospitality",
+      "historicalKind": "company_contact",
+      "sameId": 22,
+      "sameNameAndPostcode": 22
+    },
+    {
+      "typeId": 9,
+      "historicalCategory": "Government Building",
+      "historicalKind": "company_contact",
+      "sameId": 34,
+      "sameNameAndPostcode": 34
+    },
+    {
+      "typeId": 3,
+      "historicalCategory": "Estate Agent",
+      "historicalKind": "company_contact",
+      "sameId": 5,
+      "sameNameAndPostcode": 5
+    },
+    {
+      "typeId": 13,
+      "historicalCategory": "Accounting Name",
+      "historicalKind": "company_contact",
+      "sameId": 5,
+      "sameNameAndPostcode": 0
+    },
+    {
+      "typeId": 14,
+      "historicalCategory": "Staff Member",
+      "historicalKind": "person",
+      "sameId": 1,
+      "sameNameAndPostcode": 1
+    },
+    {
+      "typeId": 6,
+      "historicalCategory": "Property Management",
+      "historicalKind": "company_contact",
+      "sameId": 1,
+      "sameNameAndPostcode": 1
+    }
+  ],
+  "providerRequests": 0,
+  "productionWrites": 0,
+  "limits": [
+    "Historical export is locally sealed recovered evidence, not fresh provider taxonomy.",
+    "Matching identifiers/name/postcode corroborate a candidate; they do not authorise merges or account identity.",
+    "No canonical publication, identity selection or classification rule was created.",
+    "Customer-type settings API previously returned JSON ACCESS_DENIED; no repeat request made."
+  ],
+  "method": "Latest unambiguous observed source per external ID; exact normalised company name or title/first/last full name and non-empty postcode against the sealed historical export. No fuzzy matching, merge or classification policy."
+}

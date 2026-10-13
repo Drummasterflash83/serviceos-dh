@@ -152,3 +152,21 @@ merges still require evidence. Next: verify recurring capture and reconcile the
 remaining classification/relationship gaps through the logged operator workflow.
 
 Evidence: [initial production capture](evidence/learn-commusoft-initial-live-complete-2026-10-13.json).
+
+## Customer identity corroboration — 13 October, 17:14 BST
+
+The fresh read-only audit selects only the latest unambiguous observed source
+for each customer identity. All1,552 source heads were unambiguous. The earlier
+322 exact historical ID/name/postcode matches omitted the provider title from
+individual full names; the sealed export leaves separate first/last-name columns
+blank. Including the explicit title raises exact matches to1,237, without fuzzy
+matching or changing any production record. Thirty-nine source IDs still have
+no historical counterpart. This strengthens the review evidence but establishes
+neither current taxonomy nor canonical identity authority by itself.
+
+The existing settings/customerTypes denial used the established working Bearer
+request, so repeating it with the same credential has not been attempted. The
+current official endpoint documentation still identifies that settings route.
+No provider permission, credential or customer merge changed during this audit.
+
+Evidence: [customer corroboration](evidence/learn-commusoft-customer-corroboration-2026-10-13.json).

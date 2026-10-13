@@ -275,3 +275,25 @@ automation has not yet changed. This remains Mac-dependent; always-on operation,
 monthly paired restores and daily independent database backups are separate gates.
 Changed runner files invalidate older manual source-code pins by design; prepare
 a fresh exact manifest if using those manual tools again.
+
+## Reusable monthly pair restore — 13 October, offline verified
+
+The new `run-drummonds-voicemail-monthly-restore.mjs` supports `--health` and
+`--check-drummonds`. It requires a successful three-bucket aggregate observed
+within30hours, loads its exact two immutable voicemail manifests, validates
+paired coverage, and restores one bounded original-email/audio pair through the
+existing separate Restore identity. It obtains no production source credentials
+and performs no AWS writes. The original phone restore procedure remains separate.
+
+Selection rotates away from the last sampled intake where another eligible pair
+exists. Limits are1MiB raw email,8MiB audio, five minutes for AWS and the existing
+bounded decoder. Success requires both hashes, audio decode and verified removal
+of private temporary files. Failures preserve the previous successful check date.
+Health uses calendar-month due dates and reports missing, overdue or failed checks.
+
+Twenty focused tests passed in the checkout, including real synthetic WAV decode,
+tampered manifests, cleanup failure, cancellation, source-port refusal, exclusive
+locking, sample rotation and calendar-month boundaries. First real execution
+awaits the ongoing backup aggregate; neither schedule activation nor unattended
+monthly acceptance is claimed. The prior manual pair check remains separate
+evidence, next due13November2026 at14:23:42UTC.
