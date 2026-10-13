@@ -1,0 +1,200 @@
+{
+  "version": "learn-reviewed-customer-context/1",
+  "state": "verified_live_published_context",
+  "at": "2026-10-13T18:23:43.174508+00:00",
+  "sites": 6,
+  "jobs": 10,
+  "contacts": 5,
+  "jobsWithSites": 6,
+  "accountHolderContactPoints": 2,
+  "contactRelationships": 5,
+  "checks": {
+    "sourceVersionsRetained": true,
+    "originalActor": true,
+    "siteOwnersMatch": true,
+    "jobOwnersMatch": true,
+    "accountHolderContactReused": true,
+    "accountHolderPrimaryStillUnchanged": true,
+    "unknownOccupiersUnpublished": true,
+    "singleCardForAccount": true
+  },
+  "privateEvidenceSha256": "4505f601602cd587cf112ded06b4ccefa7b4218f200ab4f3fd2d79e2711871f3",
+  "preservation": {
+    "state": "verified",
+    "at": "2026-10-13T18:23:59.175Z",
+    "preservation": {
+      "retainedVersions": 18052,
+      "retainedPages": 3697,
+      "retainedLinks": 7,
+      "retainedPeople": 3246,
+      "retainedCompanies": 1180,
+      "retainedCards": 3248,
+      "accessSchedulesConnectionsAndFlagsUnchanged": true,
+      "unrelatedFunctionsUnchanged": true
+    }
+  },
+  "sourceInventory": {
+    "at": "2026-10-13T18:17:05.609333+00:00",
+    "pipeline": [
+      {
+        "phase": 3,
+        "state": "window_active",
+        "enabled": true
+      }
+    ],
+    "customerTypes": [
+      {
+        "type": "1",
+        "total": 1181,
+        "company_named": 18
+      },
+      {
+        "type": "10",
+        "total": 25,
+        "company_named": 0
+      },
+      {
+        "type": "11",
+        "total": 5,
+        "company_named": 0
+      },
+      {
+        "type": "13",
+        "total": 5,
+        "company_named": 5
+      },
+      {
+        "type": "14",
+        "total": 1,
+        "company_named": 0
+      },
+      {
+        "type": "2",
+        "total": 176,
+        "company_named": 176
+      },
+      {
+        "type": "3",
+        "total": 5,
+        "company_named": 5
+      },
+      {
+        "type": "4",
+        "total": 21,
+        "company_named": 21
+      },
+      {
+        "type": "5",
+        "total": 47,
+        "company_named": 47
+      },
+      {
+        "type": "6",
+        "total": 16,
+        "company_named": 16
+      },
+      {
+        "type": "7",
+        "total": 12,
+        "company_named": 12
+      },
+      {
+        "type": "8",
+        "total": 23,
+        "company_named": 23
+      },
+      {
+        "type": "9",
+        "total": 35,
+        "company_named": 35
+      }
+    ],
+    "peopleOrigins": [
+      {
+        "total": 2,
+        "created_source": "business_input:commusoft"
+      },
+      {
+        "total": 1,
+        "created_source": null
+      },
+      {
+        "total": 3244,
+        "created_source": "interaction"
+      }
+    ],
+    "companyOrigins": [
+      {
+        "total": 2,
+        "created_source": "business_input:commusoft"
+      },
+      {
+        "total": 1178,
+        "created_source": "interaction"
+      }
+    ],
+    "currentSources": {
+      "jobs": 12637,
+      "properties": 2423,
+      "propertyContacts": 2969
+    },
+    "canonicalCounts": {
+      "jobs": 3,
+      "sites": 7,
+      "customers": 3249
+    },
+    "importIdentities": [],
+    "reviewedSiteJobs": 6,
+    "jobsMissingProperty": 1553,
+    "publishedSourceLinks": [
+      {
+        "total": 2,
+        "entity_kind": "customer",
+        "entity_table": "companies"
+      },
+      {
+        "total": 2,
+        "entity_kind": "customer",
+        "entity_table": "people"
+      },
+      {
+        "total": 3,
+        "entity_kind": "job",
+        "entity_table": "jobs"
+      },
+      {
+        "total": 7,
+        "entity_kind": "site",
+        "entity_table": "sites"
+      }
+    ],
+    "sitesMissingCustomer": 18,
+    "reviewedAccountContext": {
+      "sites": 6,
+      "contacts": 3,
+      "directJobs": 4
+    }
+  },
+  "browserAcceptance": {
+    "stableLiveDomain": true,
+    "existingAuditedOperator": true,
+    "jobsShown": 10,
+    "sitesShown": 6,
+    "contactsShownBeforeSiteContactPublication": 3,
+    "completeProviderCoverageClaimed": false
+  },
+  "boundaries": {
+    "providerWrites": 0,
+    "newAccessGrants": 0,
+    "schemaChanges": 0,
+    "frontendChanges": 0,
+    "paidAIRequests": 0
+  },
+  "remaining": [
+    "Four source contacts labelled only Occupier remain unpublished pending identity or role-contact handling.",
+    "Customer card contact display reads primary_email/primary_phone only: two additional saved, unverified account-holder contact points are retained but not shown in that view.",
+    "Wider customer identity reconciliation, canonical publication and communication linkage remain incomplete.",
+    "Provider API/UI gap remains: 98 exported customers absent from API traversal; sites have an unreconciled aggregate gap.",
+    "TEST matching frontend, full recurring-cycle acceptance, scoring and operational recovery gates remain unfinished."
+  ]
+}

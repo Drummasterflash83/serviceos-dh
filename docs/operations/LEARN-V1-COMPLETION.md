@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 19:25 BST — one LIVE customer now has connected sites, jobs and contacts.**
+
+- Logged operator reviews published six sites, ten jobs (four direct and six
+  through sites), and five contacts onto the previously verified account card.
+  Existing account-holder identity was reused for its matching contact; additional
+  people remain distinct and unverified. All 21 reviewed source links retain their
+  versions and original actor. There is still exactly one card for that account.
+- Read-only acceptance verifies site/job ownership, five active contact-to-card
+  relationships and two unverified, non-primary contact points for the account
+  holder. Signed-in LIVE shows ten jobs and six sites; three account contacts were
+  visually checked before the two further named site contacts were published.
+- Four contacts labelled only “Occupier” remain unpublished. The card reader also
+  exposes only primary email/phone, so it currently omits the account holder's two
+  additional saved contact points. This display gap needs fixing without changing
+  primary/verification choices. Completion timestamps without a timezone remain
+  excluded from duration and performance calculations.
+- Preservation readback retains the earlier 18,052 versions, 3,697 pages, seven
+  source links and all prior people/company/card IDs. Access, policies, schedules,
+  connections, flags and unrelated functions are unchanged. No provider writes,
+  new grants, schema changes, frontend release or paid AI work in this step.
+- This proves a connected real customer journey, **not broad card completion**.
+  The 18:17 UTC inventory contains 12,637 latest job versions and 2,969 contacts;
+  1,553 jobs reference properties absent from retained property sources, and 18
+  sites lack a retained customer parent. The scalable reconciliation path must
+  expose those gaps and the already-confirmed API/UI discrepancy rather than
+  invent relationships. Wider publication remains the next priority.
+
+[Connected customer evidence](evidence/learn-reviewed-customer-context-2026-10-13.json).
+
 **13 October, 19:06 BST — account-holder review released; one real LIVE card verified.**
 
 - The exact guarded backend is installed in TEST and production. Production
