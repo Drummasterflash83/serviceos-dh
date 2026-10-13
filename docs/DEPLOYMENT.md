@@ -90,16 +90,16 @@ and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
 ### Isolated LEARN TEST project (updated 13 October 2026)
 
-**Latest TEST deployment:** `dpl_HnmKvRxyTC79N3jBWQ4vVExpoRn5`, Git
-`3817044c4a5d2dd893769c8aa239169f4526181f`, serves both stable TEST aliases.
-It adds the responsive `/quickbooks` connection guide. Hosted connect/disconnect
-views and sign-in links are verified, with protection still `all`. Existing TEST
-QuickBooks schema/runtime remains installed. The development app is inactive
-pending owner secret rotation; an earlier OAuth start has no bound company or
-token and no imports exist. This does not establish real QuickBooks acceptance.
-Optional Slack recovery controls still follow backend capability metadata.
-The wider client overview has a check needing attention. Live production is unchanged.
-[Guide release evidence](operations/evidence/learn-quickbooks-guide-test-2026-10-13.json).
+**Latest observed TEST deployment:** `dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq`, Git
+`c7744a8b0808bfb64b737e4b9ee453782cd2efa0`, serves both stable TEST aliases
+(verified 13 October, 19:38 UTC). This shared release includes QuickBooks callback
+guidance from `91c2f3a`; protection remains `all`. The rotated development app
+is active in TEST and Intuit sandbox company authorization now succeeds.
+The company is `Sandbox Company_US_1`, not Drummonds' live accounts.
+TEST callback runtime v7 has a verified same-project gateway routing correction;
+the remaining QuickBooks endpoints retain their previously verified v2 releases.
+See [integration evidence and limits](operations/LEARN-QUICKBOOKS-INTEGRATION.md#hosted-gateway-callback-correction-and-sandbox-connection--13-october-1936-utc).
+Production QuickBooks is not installed or connected.
 Older deployment details below are historical acceptance records.
 
 

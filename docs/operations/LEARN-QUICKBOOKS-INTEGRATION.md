@@ -388,10 +388,10 @@ may appear after answers are selected.
 | --- | --- |
 | General | Regulatory complaints/investigations, legal-counsel review and sanctions history require Chris's factual answers; questions have been sent. Security-policy compliance requires an evidence review. The app is relevant to business/accounting workflows. ServiceOS includes generative AI; do not answer “no” merely because this initial connector does not send QuickBooks records to AI. |
 | App information | Custom application; server-side Web/SaaS calls; accounting reads only in this connector. Current registration is for Drummonds' internal deployment, with reusable architecture for future clients. It is not a platform that lets outside developers obtain QuickBooks API access, and clients do not need to create their own Intuit developer apps. Disclose the use of development tools accurately. Other ServiceOS inputs include Commusoft, email, telephony and Slack. Review exact available options before entering answers. |
-| Authorization | Intuit asks explicitly about sandbox/non-production connect, disconnect and reconnect testing. This has **not** yet been performed. It also asks about refresh frequency, failed auth retries, reconnect prompts, discovery-document endpoints, expired access/refresh tokens, invalid grants, CSRF and reliance on offline OAuth tools. Existing code/SQL tests support some controls, but cannot be substituted for the missing provider lifecycle run. |
+| Authorization | Intuit asks explicitly about sandbox/non-production connect, disconnect and reconnect testing. Connect and accounting reads now pass against Intuit sandbox; provider refresh, disconnect/revocation and reconnect after revocation remain unverified. It also asks about refresh frequency, failed auth retries, reconnect prompts, discovery-document endpoints, expired access/refresh tokens, invalid grants, CSRF and reliance on offline OAuth tools. Existing code/SQL tests support some controls, but cannot be substituted for the missing provider lifecycle run. |
 | API usage | API categories and per-customer call frequency. The initial connector uses Accounting entity queries and CompanyInfo; bounded imports reserve requests and pace requests per realm. No perpetual live sync schedule has been enabled. Do not invent a polling frequency or claim reports/webhooks/CDC are implemented. |
 | Error handling | API/syntax/validation error tests, `intuit_tid` capture, troubleshooting logs and in-app support. TEST v2 endpoints now record bounded `intuit_tid`, HTTP status and operation metadata in existing Edge logs; 55 tests, Deno checks and downloaded runtime comparison pass. Real provider receipt and log-retention verification remain open; this is not an indefinite diagnostic archive. Sanitised errors and bounded retry behaviour have tests. Verify support access and actual retained diagnostics before answering. |
-| Security | Notifiable breach history and who assesses risks require Chris's factual answers; questions have been sent. The development secret was provisioned in TEST Vault, then its app was disabled pending owner rotation after a diagnostic exposure; production credentials are not provisioned. MFA, CAPTCHA and WebSocket use require a current app/configuration check. Authorised OpenFolk operators can access tenant information for support: do not claim only an individual customer can ever see their information. Ordinary tenants remain isolated. |
+| Security | Notifiable breach history and who assesses risks require Chris's factual answers; questions have been sent. The exposed development secret was rotated by the owner and its replacement verified in TEST Vault, Keychain and 1Password; production credentials are not provisioned. MFA, CAPTCHA and WebSocket use require a current app/configuration check. Authorised OpenFolk operators can access tenant information for support: do not claim only an individual customer can ever see their information. Ordinary tenants remain isolated. |
 
 Next provider acceptance step is a real sandbox lifecycle run after the exact
 callback and secure development-credential destination are prepared. Production
@@ -626,6 +626,61 @@ connection guide, forwarding only a fixed `review` or `needs_check` indication,
 with no OAuth parameters and an empty fragment. Guidance explicitly requires
 signed-in status verification and company confirmation. It never asserts account
 access from a query parameter. Both outcomes pass tests; frontend build/typecheck
-and the callback Deno check pass. Hosted deployment remains the next step.
+and the callback Deno check pass. The frontend was deployed from `91c2f3a` to
+`dpl_FxxyFqJaMM4bzkRAhXScmajU1cN7`; both stable aliases were subsequently
+advanced by the shared build to `c7744a8` / `dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq`,
+which includes this fix. Protection remains `all`.
 
 Reference: https://supabase.com/docs/guides/functions/http-methods
+
+
+### Hosted gateway callback correction and sandbox connection — 13 October, 19:36 UTC
+
+The 19:17 attempt failed before any provider request. A safe routing diagnostic
+proved that the hosted gateway delivers the callback internally as HTTP on the
+same project host, with `/functions/v1` removed. The OAuth contract correctly
+required the registered public HTTPS callback, so it rejected that internal URL.
+The Edge entrypoint now maps only the exact same-project gateway route (or the
+same project's documented functions host) to the configured public callback.
+No forwarded header is trusted; state, expiry, actor authority, app revision,
+realm binding and the registered HTTPS token-exchange redirect stay enforced.
+
+Callback runtime v7 is active in TEST, artifact
+`85373b50148d06f7594059cdc48d7a4b2faabdfc8f07825c22c4942fe1c2b13e`.
+All nine runtime modules match downloaded deployed source, closure
+`f0df75ae73615f90d312b9c49c29441b539520a7233d70072c7a33297eda04e3`.
+Eighteen focused OAuth/route/HTTP tests and the Deno check pass. An empty hosted
+GET now returns the expected safe 303, without provider requests. Other endpoints,
+secret fingerprints and retained record counts were preserved during deployment.
+
+A fresh operator-initiated retry reused the owner's Intuit session and existing
+consent. Intuit token exchange and sandbox CompanyInfo both returned HTTP 200.
+TEST persisted the pair in Vault, token generation 1, and returned company
+`Sandbox Company_US_1`, realm `9341456295767559`. This is Intuit sample data,
+not Drummonds' live company. The operator confirmation explicitly records that
+sandbox-only purpose. No canonical customer links or production changes follow.
+A bounded sample run of Customer/Invoice/Payment/CreditMemo is limited to eight
+read requests, 100 records per page, minor version 75. The manual runner uses
+the exact worker with acquisition pinned to this run; no hosted worker key or
+recurring schedule is provisioned. Provider lifecycle and live acceptance remain
+separate until recorded below.
+
+
+### Sandbox import and repeat capture accepted — 13 October, 19:46 UTC
+
+Both operator-started scans completed through the exact worker implementation,
+manually invoked with a pinned run ID. Each used four of eight permitted reads
+and saved four pages containing 77 observations: 29 customers, 31 invoices,
+16 payments and one credit memo. Repeating the scan retained eight page receipts
+and 154 observations, while latest records and source versions remained 77.
+No duplicate records or new versions were introduced by unchanged provider data.
+The signed-in UI displayed the same counts and clearly labelled Sandbox.
+
+Final readback: connection paused, QuickBooks input disabled, no queued/running
+imports, no canonical customer links. Sample records and encrypted tokens remain
+in TEST; no production/accounting writes or recurring schedules were created.
+The hosted dispatcher remains unprovisioned. These checks prove actual sandbox
+OAuth and persisted accounting reads, not live Drummonds coverage, automated
+refresh, provider revocation or full accounting reconciliation.
+
+[Sanitised acceptance evidence](evidence/learn-quickbooks-sandbox-2026-10-13.json).
