@@ -33,3 +33,20 @@ test('known source holds are safe diagnostics; provider prose remains private',a
 test('missing input identity prevents any database call',async()=>{
  const f=fixture();assert.equal((await f.run({insightId:null})).ok,false);assert.deepEqual(f.phases,[]);
 });
+test('existing PostgreSQL tenant UUIDs can publish while exact tenant binding remains required',async()=>{
+ const tenantId='00000000-0000-0000-0000-000000000001';
+ for(const foreign of [false,true]){
+  const phases:string[]=[];
+  const admin:any={async rpc(name:string,args:any){
+   assert.equal(name,'learn_phone_handoff');assert.equal(args.p_tenant,tenantId);phases.push(args.p_phase);
+   return {data:{...receipt,tenantId:foreign?id(99):tenantId},error:null};
+  }};
+  const result=await finalizeInteractionForRecording({admin,...input,tenantId});
+  assert.equal(result.ok,!foreign);assert.deepEqual(phases,foreign?['publish','inspect']:['publish']);
+ }
+});
+test('malformed UUID input cannot call the handoff RPC',async()=>{
+ for(const value of ['','00000000-0000-0000-0000-00000000000z',' '+id(1),id(1)+',other']){
+  const f=fixture();assert.equal((await f.run({tenantId:value})).ok,false);assert.deepEqual(f.phases,[]);
+ }
+});

@@ -37,8 +37,11 @@ function fixture({
   locked = false,
   inputOverride,
   conflict = false,
+  size = 2,
+  graphEdges,
 } = {}) {
-  const cards = [1, 2].map((n) => ({
+  const numbers = Array.from({ length: size }, (_, i) => i + 1);
+  const cards = numbers.map((n) => ({
     id: id(n),
     tenant_id: id(100),
     person_id: id(n + 10),
@@ -56,7 +59,7 @@ function fixture({
     writes = [];
   const tables = {
     customer_cards: cards,
-    people: [1, 2]
+    people: numbers
       .filter((n) => !(missingPerson && n === 1))
       .map((n) => ({
         id: id(n + 10),
@@ -64,8 +67,8 @@ function fixture({
         primary_email: synthetic ? "test@example.invalid" : `test${n}@example.org`,
       })),
     companies: [{ id: id(30), name: "Example company" }],
-    graph_nodes: [{ id: id(40), source_id: id(11) }],
-    graph_edges: [],
+    graph_nodes: graphEdges ? numbers.map(n => ({ id: id(1000 + n), source_id: id(n + 10) })) : [{ id: id(40), source_id: id(11) }],
+    graph_edges: graphEdges ?? [],
     interactions: [
       {
         id: id(50),
@@ -115,7 +118,7 @@ function fixture({
       let eqs = [],
         filter = "",
         patch,
-        cap;
+        cap, inFilter, after;
       const q = {
         select() {
           return q;
@@ -137,10 +140,18 @@ function fixture({
           cap = n;
           return q;
         },
-        in() {
+        in(k, values) {
+          assert.ok(values.length <= 40, "bounded identity query");
+          inFilter = [k, values];
+          return q;
+        },
+        gt(k, value) {
+          assert.equal(k, "id");
+          after = value;
           return q;
         },
         or(v) {
+          assert.ok(v.length < 3500, "bounded graph URL");
           filter = v;
           return q;
         },
@@ -162,7 +173,7 @@ function fixture({
         );
         const card = eqs.find(([k]) => k === "card_id")?.[1];
         const error =
-          typeof fail === "function" ? fail({ table, filter, card, patch }) : fail === table;
+          typeof fail === "function" ? fail({ table, filter, card, patch, after }) : fail === table;
         if (error) return { data: null, error: { message: "PRIVATE DATABASE CONTENT" } };
         if (patch) {
           const key = eqs.find(([k]) => k === "id")?.[1];
@@ -175,6 +186,13 @@ function fixture({
           return { data: single ? { id: key } : null, error: null };
         }
         let rows = tables[table];
+        if (inFilter) rows = rows.filter(r => inFilter[1].includes(r[inFilter[0]]));
+        if (table === "graph_edges" && filter) {
+          const ids = filter.match(/[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}/g) ?? [];
+          rows = rows.filter(r => ids.includes(r.from_node_id) || ids.includes(r.to_node_id))
+            .sort((a, b) => a.id.localeCompare(b.id));
+          if (after) rows = rows.filter(r => r.id > after);
+        }
         if (table === "customer_cards" && eqs.some(([k]) => k === "id"))
           rows = rows.filter((r) => r.id === eqs.find(([k]) => k === "id")[1]);
         if (cap) rows = rows.slice(0, cap);
@@ -195,6 +213,24 @@ function fixture({
       }),
   };
 }
+test("maximum sweep bounds URLs, pages graph edges and counts cross-batch endpoints once", async () => {
+  const graphEdges = Array.from({length: 1001}, (_, i) => ({id: id(10000 + i), from_node_id: id(1001), to_node_id: id(1041)}));
+  graphEdges.push({id: id(20000), from_node_id: id(1001), to_node_id: id(1001)});
+  const f = fixture({size: 500, graphEdges});
+  const r = await f.run({limit: 500});
+  assert.equal(r.success, true);
+  assert.equal(r.recordsProcessed, 500);
+  assert.equal(f.cards[0].context.projection.business.relationship_count, 1003);
+  assert.equal(f.cards[40].context.projection.business.relationship_count, 1001);
+  assert.equal(f.cards[499].context.projection.business.relationship_count, 0);
+});
+test("a later graph page failure retains all saved projections", async () => {
+  const graphEdges = Array.from({length: 501}, (_, i) => ({id: id(10000 + i), from_node_id: id(1001), to_node_id: id(1041)}));
+  const f = fixture({size: 200, graphEdges, fail: q => q.table === 'graph_edges' && !!q.after});
+  assert.equal((await f.run()).success, false);
+  assert.equal(f.writes.length, 0);
+  assert.deepEqual(f.cards, f.original);
+});
 test("shared identity and graph read failures preserve every prior card and redact database prose", async () => {
   for (const table of ["customer_cards", "people", "companies", "graph_nodes", "graph_edges"]) {
     const f = fixture({ fail: table });

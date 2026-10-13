@@ -7,43 +7,53 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October, 07:22 BST — independent recovery and existing production operator sign-in verified.**
+**13 October, 09:07 BST — the matched LEARN release is live; processing fixes are prepared.**
 
 ### Working and verified
 
-- The 00:16 UTC release checkpoint is now encrypted in the approved independent
-  AWS destination and was downloaded with the separate Restore identity. Its
-  isolated restore verifies 1,617,988 native rows, 2,652 operational rows, 2,944
-  recording relationships and 16 Vault secrets. The restore container was removed.
-- Chris's existing live OpenFolk account opens the staged production frontend,
-  client list and Drummonds workspace. No account, grant or password was changed
-  by the agent. Normal user links remain openfolk.ai and test.openfolk.ai.
-- Fresh production public-schema and all 88 runtime definitions match the reviewed
-  baseline. Nine scheduler credential bindings match. Live capture stored seven
-  emails in the observed half-hour; six phone cycles completed without new calls.
+- Production has the 24 SQL packages and 37 matching runtimes. The final live
+  frontend is Git `fc5fb67` on openfolk.ai; Home, LEARN, Modules and Phone passed
+  mobile layout checks. The existing operator can enter Drummonds and read cards
+  with linked evidence. This is a live working preview, not full V1 acceptance.
+- Original release preservation matched 79,802 rows across 28 source/access/storage
+  sets, with all 2,944 pre-existing recording references resolving. Independent
+  database recovery and recording restoration remain verified earlier milestones.
+- All nine original schedules were restored. At 08:54 BST live totals were 19,267
+  emails, 4,407 calls and 2,946 recordings; new capture is occurring.
+
+### Verified locally / read-only production checks
+
+- A normal 200-card graph request failed while the same read with 40 targets
+  succeeded. The corrected handler limits identity filters and paginates graph
+  edges. A read-only production shadow prepared all 200 projections successfully
+  in about ten seconds; every write was intercepted, so this is not deployment
+  or successful saved-refresh evidence.
+- The two failed phone pipelines stopped at `phone_handoff_input_invalid` after
+  saving audio, transcripts and analysis. Their existing tenant UUID lacks RFC
+  version/variant bits. The fix accepts canonical PostgreSQL UUIDs while retaining
+  exact receipt identity matching and database ownership checks.
+- Nineteen card/handoff regressions and 73 phone-handler checks pass. The three
+  affected runtimes compile and boot offline, rejecting missing authentication.
 
 ### Needs finishing
 
-- Install the matched backend before promoting the frontend: its new LEARN
-  controls correctly show unavailable against the current production backend.
-- Complete caller acceptance, coordinated pause/drain, current preservation,
-  rollout, signed-in LEARN journeys and resumed-capture observation. Historical
-  coverage, cards/scoring and the remaining full goal are still unfinished.
-- The snapshot predates ongoing capture; independent recovery is now proved, but
-  it is not the exact preservation boundary for the later deployment.
-- Separate unattended public-key backup encryption from interactive private-key
-  restore checks. Daily database backup operation is not yet verified.
-- Five delegation failures across three accounts and 21 network timeouts were
-  observed. Other jobs succeeded in that window; per-request correlation remains
-  unverified. No failing mailbox was silently disabled.
+- Deploy and observe the three processing fixes; neither is live yet at this
+  checkpoint. Preserve existing capture, permissions and sources.
+- Activate and verify complete production Slack/Commusoft history and ongoing
+  capture, including linked canonical contacts/jobs/cards. Their TEST imports do
+  not establish production coverage; DMs remain excluded.
+- Complete input coverage, card/scoring acceptance, Heidi's own signed-in journey
+  and operational ownership. Scores and broader intelligence remain unassessed.
+- Verify unattended daily database backups; interactive recovery was proven but
+  is not an unattended operating schedule.
 
 ### Blocked externally
 
-- The 1Password recovery access and live operator sign-in blockers are resolved.
-  TEST AI selection remains pending; remaining release engineering can proceed.
-- Heidi's own signed-in acceptance remains separate from Chris's operator access.
+- Three mailbox delegation failures remain; other mailboxes are capturing.
+- TEST AI key selection and Heidi's own signed-in acceptance remain outstanding.
+  They do not prevent the current processing corrections.
 
-[Current release checks](evidence/learn-production-release-preflight-2026-10-13.json).
+[Live release evidence](LEARN-LIVE-RELEASE-2026-10-13.md).
 [Independent recovery](evidence/learn-production-release-checkpoint-2026-10-13.json).
 
 ### Previous matched release preparation

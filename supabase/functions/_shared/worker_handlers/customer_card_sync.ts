@@ -18,6 +18,15 @@ import type { WorkerHandlerContext, WorkerHandlerResult } from "../worker_contra
 const DEFAULT_LIMIT = 200;
 const MAX_LIMIT = 500;
 const TIMELINE_MAX = 10;
+// Keep URLs bounded at MAX_LIMIT; the doubled 200-UUID graph filter exceeds
+// the production gateway's request-target limit.
+const ID_BATCH = 40;
+const EDGE_PAGE = 500;
+function batches<T>(values: T[]): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < values.length; i += ID_BATCH) result.push(values.slice(i, i + ID_BATCH));
+  return result;
+}
 const URGENT_SEVERITY = new Set(["high", "critical", "emergency", "urgent"]);
 
 type Row = Record<string, unknown>;
@@ -94,22 +103,22 @@ export async function handleCustomerCardSync(
     ] as string[];
 
     const peopleById = new Map<string, Row>();
-    if (personIds.length) {
+    for (const ids of batches(personIds)) {
       const { data, error } = await admin
         .from("people")
         .select("id, display_name, first_name, last_name, primary_email, primary_phone, company_id")
         .eq("tenant_id", tenantId)
-        .in("id", personIds);
+        .in("id", ids);
       if (error) throw new Error("people_unavailable");
       for (const p of (data ?? []) as Row[]) peopleById.set(p.id as string, p);
     }
     const companyById = new Map<string, Row>();
-    if (companyIds.length) {
+    for (const ids of batches(companyIds)) {
       const { data, error } = await admin
         .from("companies")
         .select("id, name, domain, phone")
         .eq("tenant_id", tenantId)
-        .in("id", companyIds);
+        .in("id", ids);
       if (error) throw new Error("companies_unavailable");
       for (const c of (data ?? []) as Row[]) companyById.set(c.id as string, c);
     }
@@ -117,34 +126,45 @@ export async function handleCustomerCardSync(
     // Graph relationship counts for each person node (a real graph read).
     const personNodeId = new Map<string, string>(); // person_id → graph node id
     const relationshipCount = new Map<string, number>(); // graph node id → edge count
-    if (personIds.length) {
+    for (const ids of batches(personIds)) {
       const { data: nodes, error: nodesError } = await admin
         .from("graph_nodes")
         .select("id, source_id")
         .eq("tenant_id", tenantId)
         .eq("node_type", "person")
         .eq("source_table", "people")
-        .in("source_id", personIds);
+        .in("source_id", ids);
       if (nodesError) throw new Error("graph_nodes_unavailable");
-      const nodeIds: string[] = [];
       for (const n of (nodes ?? []) as Row[]) {
         personNodeId.set(n.source_id as string, n.id as string);
-        nodeIds.push(n.id as string);
       }
-      if (nodeIds.length) {
-        const { data: edges, error: edgesError } = await admin
+    }
+    for (const ids of batches([...new Set(personNodeId.values())])) {
+      const targets = new Set(ids);
+      let cursor: string | null = null;
+      while (true) {
+        let query = admin
           .from("graph_edges")
-          .select("from_node_id, to_node_id")
+          .select("id, from_node_id, to_node_id")
           .eq("tenant_id", tenantId)
-          .or(`from_node_id.in.(${nodeIds.join(",")}),to_node_id.in.(${nodeIds.join(",")})`);
+          .or(`from_node_id.in.(${ids.join(",")}),to_node_id.in.(${ids.join(",")})`)
+          .order("id", { ascending: true })
+          .limit(EDGE_PAGE);
+        if (cursor) query = query.gt("id", cursor);
+        const { data: edges, error: edgesError } = await query;
         if (edgesError) throw new Error("graph_edges_unavailable");
-        for (const e of (edges ?? []) as Row[]) {
+        const rows = (edges ?? []) as Row[];
+        for (const e of rows) {
           const f = e.from_node_id as string;
           const t = e.to_node_id as string;
-          if (personNodeId.size && nodeIds.includes(f))
-            relationshipCount.set(f, (relationshipCount.get(f) ?? 0) + 1);
-          if (nodeIds.includes(t)) relationshipCount.set(t, (relationshipCount.get(t) ?? 0) + 1);
+          // A cross-batch edge is read twice but counts once per endpoint.
+          if (targets.has(f)) relationshipCount.set(f, (relationshipCount.get(f) ?? 0) + 1);
+          if (targets.has(t)) relationshipCount.set(t, (relationshipCount.get(t) ?? 0) + 1);
         }
+        if (rows.length < EDGE_PAGE) break;
+        const next = rows[rows.length - 1]?.id;
+        if (typeof next !== "string" || (cursor && next <= cursor)) throw new Error("graph_edges_cursor_invalid");
+        cursor = next;
       }
     }
 

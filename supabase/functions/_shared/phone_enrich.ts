@@ -26,8 +26,11 @@ export interface FinalizeResult {
   alreadyEnriched: boolean;
   receipt?: PhoneHandoffReceipt;
 }
+// Match PostgreSQL's canonical UUID representation, including existing tenant
+// IDs without RFC version/variant bits. The RPC checks ownership and sources;
+// the receipt below must still match every requested identity exactly.
 const uuid = (value: unknown): value is string =>
-  typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(value);
+  typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
 const safeReasons = new Set([
   "phone_handoff_source_unverified", "phone_handoff_source_changed", "phone_handoff_call_changed",
   "phone_handoff_run_changed", "phone_handoff_conflict", "phone_handoff_superseded", "learn_capture_paused",
