@@ -1,5 +1,5 @@
 {
-  "state": "protected_test_candidate_ready_not_promoted",
+  "state": "retired_after_preview_cookie_diagnostic",
   "sha": "ed7e3669f585ebee61cdee3eb30f2692d1a413ce",
   "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
   "prior": "dpl_AFvr5njNt4hpPUqpBo413zKt3NRr",
@@ -25,5 +25,31 @@
     "This candidate contains the merged shared TEST branch. It is not a production promotion.",
     "Signed-in finance views, deployed cache headers, final policy adoption and Drummonds company acceptance remain separate checks."
   ],
-  "recordedAt": "2026-10-13T22:06:21Z"
+  "recordedAt": "2026-10-13T22:06:21Z",
+  "retirement": {
+    "state": "retired",
+    "id": "dpl_9hCMhDtwTVvCZiu8xv36dnHt5jAH",
+    "url": "serviceos-learn-test-czyfgytod-allkin.vercel.app",
+    "sha": "ed7e3669f585ebee61cdee3eb30f2692d1a413ce",
+    "at": "2026-10-13T22:14:05.767Z",
+    "reason": "Preview-only Vercel browser cookie appeared in a diagnostic; remove the unused address while preserving Git source and stable sites.",
+    "providerReportedState": "DELETED",
+    "providerReportedId": "dpl_9hCMhDtwTVvCZiu8xv36dnHt5jAH",
+    "oldAddressStatus": 302,
+    "deploymentNotFound": false,
+    "stableAliasesAfter": [
+      {
+        "alias": "test.openfolk.ai",
+        "deployment": "dpl_8oV6zsNRRRbSiUdwsxgDBLHfoqV5",
+        "preserved": true
+      },
+      {
+        "alias": "serviceos-learn-test-allkin.vercel.app",
+        "deployment": "dpl_8oV6zsNRRRbSiUdwsxgDBLHfoqV5",
+        "preserved": true
+      }
+    ],
+    "checkedAt": "2026-10-13T22:14:06.915Z",
+    "scope": "Unused temporary TEST deployment only; stable TEST aliases preserved. Provider confirms deletion; anonymous old address still redirects through protection, so public 404 was not independently established."
+  }
 }

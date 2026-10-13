@@ -912,3 +912,60 @@ retention clarification is explicitly pending Chris's decision; it does not
 waive the original verification-before-publication gate by default. The private
 agreement remains unchanged, unsigned and unpublished. Supplier/transfer checks
 and release acceptance remain open.
+
+
+## Runtime reconciliation and preview cleanup — 13 October, 22:19 UTC
+
+The earlier runtime-inventory difference is resolved. Reversing exactly one
+version-counter increment on all 97 existing endpoints reproduces the complete
+original inventory SHA-256. Their code hashes, names, JWT settings and statuses
+are unchanged; earlier secret fingerprints also match. The original failed
+journal is retained, with a separate read-only reconciliation report. Platform
+configuration propagation is a possible explanation, not a retrieved audit fact.
+Eight focused tests ensure this comparison rejects code, permission, identity,
+status and inventory changes rather than ignoring the discrepancy.
+
+The unused protected cache-header preview was retired after a preview-only Vercel
+browser cookie appeared in a DevTools diagnostic. No cookie is copied into this
+record. Vercel confirmed the deployment deleted and both stable TEST aliases were
+read back unchanged. Its Git source remains backed up. The public old address
+still redirects through protection, so an anonymous 404 is not claimed. No LIVE
+frontend or provider data was changed. The temporary browser tabs were closed.
+A new frontend candidate and application-response cache verification are still
+needed; the retired preview is not a release target.
+
+The saved Intuit questionnaire was closed at Chris's request to stop recurring
+save alerts. Reopen only for necessary batched edits and dismiss any confirmation
+promptly. No final assessment submission has occurred.
+
+
+## Permanent TEST release — 13 October, 22:29 UTC
+
+Protected TEST now serves Git `e048b49ea95c87d0eedb23881065196336275970`,
+deployment `dpl_4V1Jw7cyxwdqb6u4DdZ8eCU5zbFP`, on both stable aliases.
+Readback confirms both assignments and unchanged all-deployment protection.
+The existing signed-in operator session shows build e048b49, preview environment,
+and TEST Supabase saatxzwxvdvqevbnskxy. The 29 customers, 31 invoices, 16 payments
+and one credit memo remain; the sandbox is still revoked and input disabled.
+No new provider call, connection or grant was made. LIVE is unchanged.
+
+An earlier unaliased candidate was rejected before promotion because it used
+Production environment selection in the TEST project, whose authentication
+configuration is Preview-only. The corrected build inherits the existing Preview
+configuration; the login DOM target and signed-in build badge both verify TEST.
+Do not use the rejected deployment as a future release target.
+
+Native response inspection verified no-cache/no-store on QuickBooks and login
+in the earlier source-identical build. The corrected build contains the same
+header rules, but its actual document headers were not captured; this remains
+explicitly unverified. Temporary native cache/log settings were restored and
+verification tabs closed. Automatic approval review declined screenshots because
+they could retain private client data; no screenshot is required to substantiate
+the recorded text-only checks.
+
+The [supplier review](../legal/SERVICEOS-QUICKBOOKS-SUPPLIER-REVIEW.md) now records
+current hosting regions, verified Vercel Pro plan and the providers' published
+DPA mechanisms. Owner/account-chain and applicable transfer review remain distinct
+from those findings. No contracts were accepted or public policies published.
+
+[Stable TEST release evidence](evidence/learn-quickbooks-stable-test-cache-2026-10-13.json).

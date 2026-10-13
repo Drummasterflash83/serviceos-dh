@@ -92,6 +92,18 @@ and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
 ### Isolated LEARN TEST project (updated 13 October 2026)
 
+**QuickBooks checkpoint, 22:29 UTC:** both stable TEST aliases now serve
+`dpl_4V1Jw7cyxwdqb6u4DdZ8eCU5zbFP`, Git
+`e048b49ea95c87d0eedb23881065196336275970`. Existing-session acceptance verifies
+that build, the Preview environment, correct TEST backend, 77 retained sandbox
+records and the deliberately revoked connection. This supersedes the older TEST
+frontend identifiers below. The TEST project's public authentication settings are
+**Preview-only**: omit `target: production` when creating its Git deployments.
+No LIVE frontend promotion is implied. QuickBooks production foundation/runtime
+are installed but inert, with no Intuit production app or company connection.
+[Release evidence](operations/evidence/learn-quickbooks-stable-test-cache-2026-10-13.json).
+
+
 **Latest observed TEST deployment:** `dpl_8oV6zsNRRRbSiUdwsxgDBLHfoqV5`, Git
 `119b13d81b91f6b87cfead0a5bbd8445f671517d`, serves both stable TEST aliases
 (verified 13 October, 22:07 UTC). Protection remains `all`. This adds the six-file
