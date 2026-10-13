@@ -1,0 +1,55 @@
+{
+  "version": "learn-workspace-setup/1",
+  "observedAt": "2026-10-13T01:26:37.281206+00:00",
+  "environment": "hosted TEST",
+  "applicationCommit": "cbb310cb5813c1279d441d16fd24b5c197623dee",
+  "deployment": "dpl_AQF1S2zKebB6yoncdGa5K1zb8xRv",
+  "stableAliases": [
+    "test.openfolk.ai",
+    "serviceos-learn-test-allkin.vercel.app"
+  ],
+  "liveDeploymentUnchanged": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "verification": {
+    "localPrebuildTests": 47,
+    "localBuild": "passed",
+    "hostedBuild": "READY",
+    "syntheticDatabaseChecks": 7,
+    "signedInOperatorCreation": "passed",
+    "clientHomeOpened": "passed",
+    "programmeVersion": 1,
+    "auditRevisionCount": 1,
+    "auditActorMatchesExistingOperator": true,
+    "profilesUnchanged": true,
+    "grantsUnchanged": true,
+    "portalMembershipsUnchanged": true,
+    "notificationDispatcherDeployed": false,
+    "notificationWorkspaceConfigured": false,
+    "notificationOutboxState": "one queued programme_updated; not sent"
+  },
+  "productionAccessReadOnly": {
+    "operator": {
+      "role": "owner",
+      "tenantAssigned": true,
+      "portalMember": true,
+      "platformAdmin": true
+    },
+    "founder": {
+      "role": "viewer",
+      "tenantAssigned": false,
+      "portalMember": true,
+      "platformAdmin": false
+    },
+    "changes": 0
+  },
+  "limitations": [
+    "Initial deployment failed a formatting-sensitive source assertion; corrected deployment passed before alias update.",
+    "Signed-in stable URL initially showed old build after reload; fresh page query loaded new setup. No stale-build recovery claimed.",
+    "Synthetic database rehearsal is not full-schema production acceptance.",
+    "TEST programme contains no agreed outcomes, configured receptionist or client memberships.",
+    "TEST home care-status refresh fails and remains visibly unavailable.",
+    "One queued TEST programme notification remains: review before configuring any dispatcher or destination.",
+    "Heidi has no operational tenant binding; intended customer authority must be settled before her signed-in LEARN acceptance. No account access changed.",
+    "Production frontend remains older; this change is not in the pinned staged production release.",
+    "Source ingestion, processing, cards, scoring and full live acceptance remain incomplete."
+  ]
+}

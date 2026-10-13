@@ -156,3 +156,23 @@ and selected client. Closing review clears retained rows; the existing profile
 and grant remain unchanged. No real canonical publication occurred. This supersedes
 the earlier frontend-unverified status; full cards/scoring/audio acceptance remains
 open. See [browser evidence](evidence/openfolk-business-review-test-2026-10-12.json).
+
+## 13 October: customer workspace and founder access check
+
+Production already has its programme and two portal memberships. A read-only check
+at 01:23 UTC confirms the existing Chris account has role `owner`, the Drummonds
+operational tenant, portal membership and an active platform admin grant. Heidi’s
+existing account has role `viewer`, portal membership and **no operational tenant**.
+`requireTenantUser` rejects the missing tenant; the planned metadata reader also
+requires owner/admin. Portal membership alone cannot complete her LEARN acceptance.
+No profile, role, grant or membership changed. Define the least sufficient intended
+customer permissions, prepare a guarded change with rollback and review the access
+expansion before applying it. Do not grant cross-client OpenFolk authority to a client.
+
+The missing programme was specific to Drummonds TEST. The new operator form created
+one minimal TEST record and audited revision through the existing signed-in user.
+It does not create accounts, memberships, module settings or capture. Existing
+notification triggers queued one record; no TEST dispatcher or destination exists.
+Review the queue before any later notification enablement. Client home now opens,
+while its unavailable care status and missing receptionist are still explicit gaps.
+[Verification](evidence/learn-workspace-setup-2026-10-13.json).

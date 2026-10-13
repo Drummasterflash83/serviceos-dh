@@ -7,6 +7,52 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 02:28 BST — missing TEST workspace prepared through signed-in operator controls.**
+
+### Working and verified
+
+- An authorised operator can create a missing client programme through the existing
+  UI and RLS. Insert-only creation preserves concurrent setup; the existing revision,
+  notification and View-As restrictions apply. The minimal record makes no delivery,
+  price or health claims.
+- Signed-in TEST creation produced version 1 and one revision attributed to Chris.
+  All 130 profiles, 12 authority grants and portal memberships matched before/after
+  fingerprints. The client home now opens instead of “workspace being prepared”.
+- Local build and all 47 prebuild tests pass. Seven synthetic database checks pass;
+  this is a minimal database rehearsal, not full production-schema acceptance.
+- Protected TEST aliases now target `dpl_AQF1S2zKebB6yoncdGa5K1zb8xRv`, application
+  `cbb310c`. Live stays on `dpl_DXueDsax146gdtyFoniXRaW3dzMM`. The first hosted build
+  failed a formatting-sensitive test; the corrected build passed before alias changes.
+- Production already has Drummonds’ programme and two portal members. Its programme
+  was not changed. Read-only metadata confirms Chris has a matching operational
+  tenant and owner role; Heidi has portal membership but viewer role and no tenant.
+
+### Needs finishing
+
+- Heidi’s existing live login cannot satisfy LEARN’s operational tenant and owner/admin
+  checks. Prepare the exact customer-access scope and obtain the necessary decision
+  before any access expansion; do not silently promote her role. Chris’s signed-in
+  live verification is also outstanding.
+- TEST home opens but its care-status refresh remains unavailable and no receptionist
+  workspace is configured. This is not a fully accepted client home or LEARN journey.
+- One TEST programme notification is queued. No dispatcher is deployed and no
+  destination workspace is configured, so nothing was sent. Review this retained
+  item before enabling notifications; do not accidentally deliver a setup test later.
+- A fresh page query was needed to load the new TEST build after ordinary reloads
+  still showed its predecessor. Stable-URL stale-build recovery remains unproven.
+- The pinned staged production frontend predates this setup UI. Matching backend,
+  controlled drain, source-to-card processing, complete inputs and live release remain open.
+
+### Blocked externally
+
+- The pending 1Password unlock still gates the fresh independent recovery proof.
+  Production sign-in and TEST AI access remain unresolved; the four unavailable
+  mailbox accounts have not been confirmed retired.
+
+[Workspace and access evidence](evidence/learn-workspace-setup-2026-10-13.json).
+
+### Previous runtime diagnostics milestone
+
 **13 October, 02:14 BST — current capture and background-execution diagnostics verified.**
 
 ### Working and verified
