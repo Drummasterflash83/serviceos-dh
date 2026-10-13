@@ -607,3 +607,25 @@ tests; production build and full frontend TypeScript. The renamed Slack SQL
 also passed its isolated PostgreSQL rollback, pagination, capability and access
 checks. This is source integration acceptance, not a new hosted release or real
 QuickBooks provider acceptance.
+
+
+### Owner rotation completed — 13 October, 19:16 UTC
+
+Chris confirmed rotation of the Development client secret. The new value was
+captured without diagnostic output, verified as different from the old value,
+and saved to the existing TEST Vault app (revision 2, active), the same Mac
+Keychain entry and a concealed field in the existing Openfolk ServiceOS 1Password
+note. Existing note fields were verified unchanged. The private temporary
+transfer file was removed. Production and the separate Drummonds Dashboard app
+are unchanged; no company consent or financial import is established by this.
+
+The raw HTML reported by Chris exposed a callback presentation bug: Supabase
+rewrites GET `text/html` responses to `text/plain` on the default function domain.
+The callback candidate now issues a no-store 303 to the configured frontend
+connection guide, forwarding only a fixed `review` or `needs_check` indication,
+with no OAuth parameters and an empty fragment. Guidance explicitly requires
+signed-in status verification and company confirmation. It never asserts account
+access from a query parameter. Both outcomes pass tests; frontend build/typecheck
+and the callback Deno check pass. Hosted deployment remains the next step.
+
+Reference: https://supabase.com/docs/guides/functions/http-methods
