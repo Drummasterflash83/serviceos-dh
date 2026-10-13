@@ -1,0 +1,87 @@
+{
+  "version": "learn-production-legacy-job-recovery/1",
+  "rehearsal": {
+    "state": "legacy_job_settlement_rehearsed_offline",
+    "productionChanges": 0,
+    "providerCalls": 0,
+    "sqlSha256": "c629315f3541586be6ff2e9ec592031b62b120a543a6c832b24d53bf7e9646d4",
+    "archive": {
+      "bytes": 196872981,
+      "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+    },
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "negativeChecks": [
+      "wrong_target",
+      "changed_row",
+      "claimed_row",
+      "recent_row",
+      "duplicate_target",
+      "expired_observation",
+      "late_failure_atomic_rollback",
+      "duplicate_settlement_rejected_unchanged"
+    ],
+    "unrelatedPreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 297,
+      "rows": 1294359,
+      "sequences": 5,
+      "comparisonSha256": "2019842409ffe4c7016788d21e978f72b9a9b515be3dafd4143d68c61e9a01c1",
+      "scope": "297 original tables excluding platform_jobs/audit_logs; original jobs are separately reconstructed from audit snapshots, and existing audit rows checked exactly. All five sequence states unchanged."
+    },
+    "receipt": {
+      "jobs": 14,
+      "valid": true
+    },
+    "originalJobRowsReconstructedExactly": true,
+    "existingAuditRowsUnchanged": true,
+    "containerRemoved": true,
+    "reportClarification": "The private rehearsal helper originally displayed the full archive row count for the filtered comparison. This public count sums the 297 compared tables from the same pinned archive fingerprints; comparison and execution results are unchanged."
+  },
+  "production": {
+    "state": "historical_jobs_settled_with_audit",
+    "observedAt": "2026-10-13T00:14:05.962Z",
+    "project": "tgbnakbxwcqjeimygroz",
+    "sqlSha256": "c629315f3541586be6ff2e9ec592031b62b120a543a6c832b24d53bf7e9646d4",
+    "jobs": 14,
+    "receipts": 14,
+    "valid": true,
+    "providerRequests": 0,
+    "retriesCreated": 0,
+    "sourceRowsChanged": 0,
+    "liveDrainProven": false
+  },
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-legacy-job-settlement.sql",
+      "sha256": "c629315f3541586be6ff2e9ec592031b62b120a543a6c832b24d53bf7e9646d4"
+    },
+    {
+      "path": "scripts/verify/learn-production-legacy-job-recovery.mjs",
+      "sha256": "becba7f1bd8b10201cc160c15f3df76ac0f50300e22509b6b0b2802894b5bd49"
+    },
+    {
+      "path": "scripts/backup/rehearse_legacy_job_settlement.py",
+      "sha256": "6d89b5e99ac423328acc77200000f960dddec9b622247d44be3e7cbecf53f82a"
+    }
+  ],
+  "limitations": [
+    "Original communications, runs, counters, cursors and schedules are untouched.",
+    "Capture completeness is unproven; no successful result was manufactured.",
+    "No running platform jobs were visible in the subsequent observation, but schedules remain active: this is not a controlled live-drain proof."
+  ]
+}

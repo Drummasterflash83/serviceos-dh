@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October — matching production Learning release prepared and checked.**
+**13 October, 01:14 BST — historical production job blocker resolved; release prepared.**
 
 ### Working and verified
 
@@ -31,14 +31,14 @@ override a later release observation. No requirement is silently deferred.
 - Complete signed-in production acceptance. The matching protected frontend now
   loads with verified production authentication; the 73-step plan pins its artifact,
   22 SQL packages and 37 runtimes. It has not been executed.
-- Live aggregate inspection found 14 historical unleased running jobs: 13 phone
-  synchronisations and one graph sync. Retain their history and resolve safely;
-  the retained deployed Phone code used best-effort tracking without leases. Eleven
-  phone jobs correlate to one unfinished run each by account/window, two have no
-  match, and none has a matching completed run. This cannot be marked successful.
-  Safe interruption settlement still needs fenced execution and an audited receipt;
-  an empty HTTP queue is not proof that live work has drained. Nine recent request
-  timeouts also need diagnosis. No production schedules or jobs were changed.
+- The 14 historical unleased jobs have now been settled as interrupted in production,
+  with 14 audited original-row snapshots and exact non-status field preservation.
+  Fresh observation found no running platform jobs; all nine existing schedules
+  remain active. This removes the stale-job blocker but does not prove live drain.
+- Perform the controlled pause/drain and fresh recovery checkpoint. The separate
+  22 email / 12 phone unfinished run records remain unchanged; window correlations
+  do not justify inventing their completion. One recent request timeout remains
+  under investigation; no full capture-health claim is made.
 - Offline rehearsal temporarily simulated a drained queue and restored every
   archived job row. This does not close the live drain/recovery gate.
 - All broader input, relevance, client-workspace, AI, scoring and launch requirements
@@ -48,7 +48,7 @@ override a later release observation. No requirement is silently deferred.
 
 - Signed-in production acceptance and TEST AI credential access remain unresolved.
 
-Evidence: [production Learning candidate](evidence/learn-production-learning-2026-10-13.json).
+Evidence: [production Learning candidate](evidence/learn-production-learning-2026-10-13.json), [audited production job recovery](evidence/learn-production-legacy-job-recovery-2026-10-13.json).
 
 ### Previous hosted TEST milestone
 

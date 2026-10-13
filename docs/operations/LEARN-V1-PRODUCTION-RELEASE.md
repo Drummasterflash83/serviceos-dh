@@ -1,5 +1,11 @@
 # LEARN V1 production release plan
 
+> 13 October 01:14 BST: the 14 old unleased running jobs are now recorded as
+> interrupted in production, with all original fields preserved in audited snapshots.
+> No source data, schedules or runtime were changed. The subsequent read showed
+> no running platform jobs, but a controlled release drain is still required.
+> [Recovery evidence](evidence/learn-production-legacy-job-recovery-2026-10-13.json).
+
 > 13 October 01:00 BST: packages 001–022 and 37 freshly compiled runtime artifacts
 > passed isolated database, boot and scheduler checks. Production remains unchanged.
 > The current 73-step operation plan now pins 22 packages, 37 runtimes and the
@@ -1323,3 +1329,40 @@ rewrite manual text, accepted identity decisions or saved performance evidence
 based solely on a shared company link. See the
 [impact evidence](evidence/learn-email-draft-impact-2026-10-11.json) and
 [TEST verification](evidence/learn-card-draft-projection-2026-10-11.json).
+
+## Historical job recovery — 13 October
+
+The old production tracking helper set `running` without a lease and used
+best-effort completion writes. Thirteen Phone schedule jobs (latest 9 October)
+and one graph job (21 July) still have no claimant, lease, attempt or completion.
+The documented [hosted worker wall-clock limit](https://supabase.com/docs/guides/functions/limits)
+is at most 400 seconds; background tasks share that limit. Their ages alone do
+not establish source completeness or drain other, current executions.
+
+The scoped recovery in `scripts/verify/learn-production-legacy-job-settlement.sql`
+records these historical executions as failed with
+`legacy_execution_interrupted_capture_unverified`. It changes only status,
+failure timestamp, error label and the normal updated timestamp. Each complete
+original row is retained in a same-tenant `audit_logs` receipt. It never marks
+success, advances cursors, changes source rows, grants access or explicitly retries
+work. Existing schedules continue normally; clearing the old graph job's active
+idempotency key may allow the already-enabled graph schedule to enqueue its next
+normal run. That is not acceptance of graph completeness.
+
+The private preparation binds all 14 IDs, tenant IDs and complete-row fingerprints.
+The SQL requires a fresh observation, postgres role, the exact production target,
+no claim/lease/attempt/terminal timestamp, and records older than 24 hours. It locks
+only the reviewed rows and rejects any changed fingerprint or prior receipt. All
+updates and audit receipts are one transaction. The runner writes a durable intent
+before submission and never retries an uncertain write; `inspect` checks the same
+IDs and receipts without mutation. The normal trigger remains enabled.
+
+Before execution, rehearse on the retained networkless production archive with
+changed-row, recent-row, claimed-row, wrong-target, expired-observation, duplicate
+and late-failure cases. Verify original job snapshots, existing audit rows, other
+datasets and sequence states. No unmatched historical Phone/email run is settled
+by inference. The separate production drain and signed-in release gates remain.
+
+**Execution result:** applied once at 00:14 UTC after the exact isolated rehearsal
+passed. All 14 receipts and preserved non-status fields verified; no explicit retry
+was created. The original archive, hosted TEST and Slack import scope are unchanged.
