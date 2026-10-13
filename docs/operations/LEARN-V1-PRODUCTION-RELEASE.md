@@ -1,5 +1,12 @@
 # LEARN V1 production release plan
 
+> 13 October: permanent campaign stop and history-to-ongoing handoff now pass the
+> local full-schema rehearsal. They are also excluded from this staged release.
+> The next paired candidate must include all five newer Slack migrations through
+> `20261101690000_learn_slack_campaign_lifecycle.sql`, with the matching runtime
+> and completed controller UX. No real ongoing subscription has been enabled.
+> [Lifecycle evidence](evidence/learn-slack-campaign-lifecycle-2026-10-13.json).
+
 > 13 October: observed-thread campaign traversal is now verified locally, and is
 > also excluded from this staged release. It requires the channel-campaign SQL
 > foundation and matching runtime. Four newer Slack migrations (historical ranges,

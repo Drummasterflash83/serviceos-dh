@@ -7,37 +7,37 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October — Slack channel and observed-thread campaigns verified locally.**
+**13 October — Slack history-to-ongoing handoff and permanent stop verified locally.**
 
 ### Working and verified
 
-- The local importer discovers observed thread roots, captures their replies and
-  continues threads beyond ten pages using the original date range, approver and
-  shared request allowance. Pause blocks further dispatch and publication.
-- The isolated full-schema journey verifies 21 threads / 31 reply pages, duplicate
-  replay, cross-client attribution and completion only after durable page receipts.
-  All original 1,591,603 archived rows and seven sequences remain unchanged.
-- All eight schema journeys and 144 focused tests pass. This work made no hosted
-  deployment, real campaign, provider request or new access grant.
+- Channel and observed-reply campaigns retain their fixed dates and shared request
+  allowance. A completed campaign can now hand over to ongoing capture at its exact
+  cutoff, keeping historical coverage evidence as the next checkpoint advances.
+- Permanent stop blocks further dispatch/publication and retains messages, scope,
+  checkpoints and job evidence. Closed campaigns cannot be silently resumed.
+- Nine isolated full-schema journeys pass, including one actual synthetic ongoing
+  page after handoff. All original 1,591,603 archived rows and seven sequences match.
+  No hosted deployment, provider request or real subscription occurred.
 
 ### Needs finishing
 
-- Campaign cancellation/handoff and reapproval, plus OpenFolk selection/status
-  controls in the existing UX. Private-channel visibility and actual provider
-  reply/ongoing-capture acceptance remain open; DMs remain excluded.
-- Pair all four new Slack migrations with the runtime/scheduler/frontend release;
-  the existing staged candidate excludes them. Then verify hosted controls and prepare
+- OpenFolk campaign selection/review/status controls in the existing UX, plus explicit
+  reapproval after exhausted or expired approvals. Private-channel visibility and
+  real-provider reply/ongoing acceptance remain open; DMs remain excluded.
+- Pair all five new Slack migrations with the runtime/scheduler/frontend release;
+  the existing staged candidate excludes them. Verify hosted controls and prepare
   the broader authorised history import. The earlier real sample stays closed.
 - Production sign-in, fresh recovery/drain/rollout checks, full input coverage,
   processing/cards, scoring and ongoing operation remain open across LEARN V1.
 
 ### Blocked externally
 
-- Existing recovery-key access, live sign-in and TEST AI selection remain pending.
-  None blocks the next Slack implementation work.
+- Previously identified recovery-key access, live sign-in and TEST AI selection
+  have not been refreshed this turn. They do not block the next controller work.
 
 [Campaign implementation and remaining work](LEARN-SLACK-CAMPAIGNS.md).
-[Local thread evidence](evidence/learn-slack-campaign-threads-2026-10-13.json).
+[Local lifecycle evidence](evidence/learn-slack-campaign-lifecycle-2026-10-13.json).
 
 ### Previous message-handling milestone
 

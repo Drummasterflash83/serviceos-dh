@@ -37,7 +37,10 @@ def run():
     parser.add_argument('--with-message-kinds', action='store_true')
     parser.add_argument('--with-campaigns', action='store_true')
     parser.add_argument('--with-campaign-threads', action='store_true')
+    parser.add_argument('--with-campaign-lifecycle', action='store_true')
     options = parser.parse_args()
+    if options.with_campaign_lifecycle:
+        options.with_campaign_threads = True
     if options.with_campaign_threads:
         options.with_campaigns = True
     if options.with_campaigns:
@@ -242,6 +245,49 @@ def run():
                 report['campaignThreads'] = {'source':str(thread_path),'sha256':hashlib.sha256(thread_source.encode()).hexdigest(),
                   'rollbackVerified':True,'duplicateRejected':True,'newTables':sorted(expected_tables),
                   'changedFunctions':sorted(changed_threads),'existingAuthorityUnchanged':True}
+            if options.with_campaign_lifecycle:
+                lifecycle_path = Path('supabase/migrations/20261101690000_learn_slack_campaign_lifecycle.sql')
+                lifecycle_source = lifecycle_path.read_text()
+                target.query(lifecycle_source.replace('\ncommit;\n', '\nrollback;\n'))
+                if schema() != after_schema:
+                    raise RecoveryError('Campaign lifecycle rollback changed schema')
+                compare_native_data(before, restored_fingerprints(target))
+                target.query(lifecycle_source)
+                lifecycle_schema = schema()
+                old_tables = {t['name']:t for t in after_schema['tables']}
+                new_tables = {t['name']:t for t in lifecycle_schema['tables']}
+                expected_tables = {'slack_history_campaign_closures'}
+                if set(new_tables)-set(old_tables)!=expected_tables or any(new_tables.get(k)!=v for k,v in old_tables.items()):
+                    raise RecoveryError('Campaign lifecycle changed existing table schema')
+                before_lifecycle = restored_fingerprints(target)
+                added_tables = [t for t in before_lifecycle['tables'] if t['schema']=='public' and t['table'] in expected_tables]
+                if len(added_tables)!=1 or any(t['rows']!=0 for t in added_tables):
+                    raise RecoveryError('Campaign lifecycle migration seeded data')
+                stripped = {**before_lifecycle,'tables':[t for t in before_lifecycle['tables'] if t not in added_tables]}
+                report['campaignLifecycleDataPreservation'] = compare_native_data(before,stripped)
+                old_funcs = {(f['name'],f['arguments']):f for f in after_schema['functions']}
+                new_funcs = {(f['name'],f['arguments']):f for f in lifecycle_schema['functions']}
+                changed_lifecycle = []
+                for key,prior in old_funcs.items():
+                    current = new_funcs.get(key)
+                    if current is None or {k:v for k,v in prior.items() if k!='hash'}!={k:v for k,v in current.items() if k!='hash'}:
+                        raise RecoveryError('Campaign lifecycle changed existing function authority')
+                    if current!=prior:
+                        changed_lifecycle.append(key[0])
+                if set(changed_lifecycle)!={'learn_slack_campaign_job_allowed','learn_slack_campaign_control','learn_slack_campaign_channel_progress','learn_slack_campaign_read'} or after_schema['views']!=lifecycle_schema['views']:
+                    raise RecoveryError('Unexpected campaign lifecycle function/view change')
+                try:
+                    target.query(lifecycle_source)
+                except RecoveryError:
+                    if schema()!=lifecycle_schema:
+                        raise RecoveryError('Duplicate campaign lifecycle migration changed schema')
+                else:
+                    raise RecoveryError('Duplicate campaign lifecycle migration accepted')
+                before = before_lifecycle
+                after_schema = lifecycle_schema
+                report['campaignLifecycle'] = {'source':str(lifecycle_path),'sha256':hashlib.sha256(lifecycle_source.encode()).hexdigest(),
+                  'rollbackVerified':True,'duplicateRejected':True,'newTables':sorted(expected_tables),
+                  'changedFunctions':sorted(changed_lifecycle),'existingAuthorityUnchanged':True}
             # Actual production helpers, both the tenant bot route and logged
             # cross-client user-token operator route. All synthetic rows are
             # contained in disposable child databases.
@@ -250,7 +296,7 @@ def run():
                 ('historical_tenant', ['learn-production-slack', 'learn-production-slack-threads', 'learn-slack-historical-recovery']),
                 ('historical_operator', ['learn-production-slack-setup']),
                 *([('campaigns', ['learn-slack-campaign'])] if options.with_campaigns else []),
-                *([('campaign_threads', ['learn-slack-campaign-threads'])] if options.with_campaign_threads else []),
+                *([('campaign_threads', ['learn-slack-campaign-threads', *(['learn-slack-campaign-lifecycle'] if options.with_campaign_lifecycle else [])])] if options.with_campaign_threads else []),
                 *([('message_kinds', ['learn-production-slack', 'learn-slack-message-kinds'])] if options.with_message_kinds else []),
             ]:
                 target.query('create database '+clone+' template postgres;')
@@ -259,7 +305,7 @@ def run():
                 try:
                     for name in names:
                         path = Path('scripts/verify')/(name+'.assert.sql')
-                        probe = 'set plpgsql.check_asserts=on;\n'+(path.read_text() if name in ('learn-slack-historical-recovery', 'learn-slack-message-kinds', 'learn-slack-campaign', 'learn-slack-campaign-threads') else historical_probe(path))
+                        probe = 'set plpgsql.check_asserts=on;\n'+(path.read_text() if name in ('learn-slack-historical-recovery', 'learn-slack-message-kinds', 'learn-slack-campaign', 'learn-slack-campaign-threads', 'learn-slack-campaign-lifecycle') else historical_probe(path))
                         if options.with_campaign_threads and name == 'learn-slack-campaign':
                             # The same retained root now queues its replies after channel completion.
                             probe = probe.replace("state='history_captured_threads_pending'", "state='thread_queued'")

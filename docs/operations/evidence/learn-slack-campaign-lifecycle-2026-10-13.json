@@ -1,0 +1,110 @@
+{
+  "version": "learn-slack-campaign-lifecycle/1",
+  "state": "verified_locally_not_deployed",
+  "recordedAt": "2026-10-13T04:46:21.460257+00:00",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101690000_learn_slack_campaign_lifecycle.sql",
+      "sha256": "378bd1525eb74898857cd290ddc1d5b1abfa2c31f5636f1bf36530a1a28b3e28"
+    },
+    {
+      "path": "scripts/verify/learn-slack-campaign-lifecycle.assert.sql",
+      "sha256": "1b5416bd4a56b2dc844ea35dfb0b389e498c77922036f39d868a38e36a3a2d0c"
+    },
+    {
+      "path": "scripts/backup/rehearse_slack_historical_ranges.py",
+      "sha256": "a98ba168e684700682e66b45ec6eaf3a9fea1cebd286fe6905c7c7b1cf182f45"
+    }
+  ],
+  "checks": {
+    "fullProductionSchemaRehearsal": true,
+    "schemaJourneysPassed": 9,
+    "viewerCannotCloseCampaign": true,
+    "wrongTenantCampaignRejected": true,
+    "staleRevisionRejected": true,
+    "changedRequestRejected": true,
+    "cancelledPendingRequestCannotApply": true,
+    "appliedRequestReplayStable": true,
+    "incompleteCampaignCannotEnableOngoingCapture": true,
+    "completedCampaignEnablesChannelAndObservedReplies": true,
+    "subscriptionAttributedToActualOperator": true,
+    "ongoingFirstWindowStartsAtHistoricalCutoff": true,
+    "ongoingWindowClaimPublicationSettlementVerified": true,
+    "oldCampaignJobsDeniedAfterAccountRebinding": true,
+    "retainedCoverageSurvivesNewCheckpoint": true,
+    "permanentStopAfterClaimBlocksDispatchAndPublication": true,
+    "stoppedCheckpointAndMessagesPreserved": true,
+    "closedCampaignCannotResume": true,
+    "closureSnapshotImmutable": true,
+    "serviceRoleCannotInvokeClose": true,
+    "migrationRollbackVerified": true,
+    "duplicateMigrationRejected": true,
+    "existingFunctionAuthorityUnchanged": true,
+    "migrationSeedsNoData": true
+  },
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "originalDataPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 388,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "2d24e7f8d304a463defeec67a939e5175bd2211ce0076f898cc9b3e893a0a846",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "preLifecycleDataPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 394,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "b47fc1ecfa42a668a45df4fb472ecfb9d56c74fa9ab4360b18702d67bdcd447d",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "postJourneyPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 395,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "fd40e16b6788b55a8a3a37b18c7f93df4db6cf5a714ffce2b5abfbe43099eaa4",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "newEmptyTables": [
+    "slack_history_campaign_closures"
+  ],
+  "changedExistingFunctions": [
+    "learn_slack_campaign_channel_progress",
+    "learn_slack_campaign_control",
+    "learn_slack_campaign_job_allowed",
+    "learn_slack_campaign_read"
+  ],
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "fullHistoryAccepted": false,
+  "limitations": [
+    "OpenFolk campaign selection/review/status controls and reapproval after an exhausted or expired campaign remain unfinished.",
+    "Terminal stop retains account binding, queued/in-flight job evidence and checkpoints; it cannot be silently resumed or replaced. Transport already in flight cannot be recalled.",
+    "Closure coverage is a conservative snapshot at the terminal decision, not proof that all provider history was accessible.",
+    "All five newer Slack migrations remain outside the current staged/hosted release; no real campaign or ongoing subscription was enabled by this work.",
+    "Private/shared channel visibility and real-provider replies/ongoing acceptance remain open; DMs remain excluded."
+  ]
+}

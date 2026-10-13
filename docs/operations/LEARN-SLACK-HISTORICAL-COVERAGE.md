@@ -44,6 +44,17 @@ history. Do not enumerate or ingest DMs with the replacement credential.
 
 ## Current implementation and gaps
 
+### Local lifecycle handoff — 13 October, not deployed
+
+Permanent stop and completed-history handoff now pass the full-schema rehearsal.
+Handoff enables channel/reply subscriptions from the original cutoff and retains
+immutable historical coverage while future windows advance. Incomplete history
+cannot hand off. Stop preserves data/checkpoints and denies further requests and
+publication; old jobs cannot regain access when account scope later changes.
+Controller UI, explicit reapproval, paired deployment and real-provider acceptance
+remain open. No real campaign or ongoing subscription was enabled.
+[Evidence](evidence/learn-slack-campaign-lifecycle-2026-10-13.json).
+
 ### Local observed-thread traversal — 13 October, not deployed
 
 The campaign now discovers distinct observed thread roots and captures replies
