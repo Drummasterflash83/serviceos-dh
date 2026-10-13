@@ -89,14 +89,16 @@ read-only accounting behaviour in its transport. Do not represent the OAuth
 credential itself as a provider-enforced read-only credential. Payroll and the
 separate payment-processing API are outside this first connection.
 
-## Blocked externally
+## Pending app creation approval
 
 The original in-app browser failed to load **App dashboard** and **Workspaces**.
 Arc subsequently opened the correct Drummond Heating developer workspace and
-its existing app list. The app settings and later dashboard navigation then
-stalled on loading. App setup is pending a responsive portal. This does not
-establish that Drummonds accounting/API access is broken; no accounting request
-has been attempted.
+its existing app list. Direct browser controls reached the separate app form
+after intermittent loading delays. The name **OpenFolk ServiceOS** is filled;
+only `com.intuit.quickbooks.accounting` is checked; the separate Payments scope
+is unchecked. **Done has not been clicked.** Action-time confirmation was
+requested for app registration/development credential creation. No company
+authorisation, credential extraction/storage or accounting request has occurred.
 
 ## Preservation and release
 
