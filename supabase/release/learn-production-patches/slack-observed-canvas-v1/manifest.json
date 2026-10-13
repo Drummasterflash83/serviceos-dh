@@ -1,0 +1,27 @@
+{
+  "project": "tgbnakbxwcqjeimygroz",
+  "sourcePath": "supabase/migrations/20261101990000_learn_slack_observed_canvas_source.sql",
+  "sourceSha256": "5b1f53fa2ae21b5ef8af8862299ab8251a6fa2af483fdf763f77b7a1f4c5896f",
+  "rollbackSha256": "8cd3028dd0975d85d09229aa98afd790bee77680507811b16d0f3c850ca92af1",
+  "changedSignatures": [
+    "learn_slack_message_kind(jsonb)",
+    "learn_slack_campaign_read(uuid,uuid)"
+  ],
+  "version": "slack-observed-canvas-release/1",
+  "state": "production_applied_verified",
+  "applySha256": "3542a24fc95a4f389b10075cdf798c43912ea331d1bbc384f09c19b5033b54eb",
+  "newPermissions": false,
+  "newSchedules": false,
+  "newTables": false,
+  "runtimeChangedFiles": [
+    "_shared/slack/slack_message_kind.ts"
+  ],
+  "baselineVersions": {
+    "learn-slack-worker": 9,
+    "platform-worker": 70
+  },
+  "reviewedSubtype": "tabbed_canvas_updated",
+  "classification": "source_needs_review",
+  "rollbackLimitation": "After any observed canvas source is retained, preserve additive SQL and roll back runtime only.",
+  "productionEvidence": "docs/operations/evidence/learn-slack-observed-canvas-production-2026-10-13.json"
+}
