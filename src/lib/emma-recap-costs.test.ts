@@ -4,6 +4,7 @@ import {
   learnRecap,
   recapAssistant,
   readRecapCounts,
+  spokenCount,
 } from "../../supabase/functions/_shared/learn-recap.ts";
 import {
   londonPeriodStart,
@@ -18,8 +19,8 @@ test("recap distinguishes unavailable, zero and saved evidence, never adds costs
     slack: null,
     voicemails: 4,
   });
-  assert.match(text, /12,345 emails/);
-  assert.match(text, /0 call records/);
+  assert.match(text, /twelve thousand three hundred and forty-five emails/);
+  assert.match(text, /zero call records/);
   assert.match(text, /couldn't verify the totals for Slack/);
   assert.match(text, /not a claim/);
   assert.doesNotMatch(text, /\$|£|cost|pricing|revenue generated/i);
@@ -96,7 +97,7 @@ test("cost result exposes only the selected assistant and preserves pending cost
   assert.equal((s.periods.today as any).pending, 1);
   assert.doesNotMatch(JSON.stringify(s), /900|other/);
   assert.throws(() => scopedCostSummary([], "Emma", now));
-  assert.equal(costQueries(now).queries[0].groupBy, "assistantId");
+  assert.deepEqual(costQueries(now).queries[0].groupBy, ["assistantId"]);
   assert.throws(() =>
     scopedCostSummary(
       raw.map((q) => ({
@@ -107,4 +108,19 @@ test("cost result exposes only the selected assistant and preserves pending cost
       now,
     ),
   );
+});
+
+test("spoken totals use British whole-number phrasing, including scale boundaries", () => {
+  for (const [value, words] of [
+    [0, "zero"], [19, "nineteen"], [40, "forty"], [101, "one hundred and one"],
+    [1000, "one thousand"], [1001, "one thousand and one"],
+    [4454, "four thousand four hundred and fifty-four"],
+    [21046, "twenty-one thousand and forty-six"],
+    [1000000, "one million"], [1000100, "one million one hundred"],
+  ] as const) assert.equal(spokenCount(value), words);
+  for (const value of [-1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])
+    assert.throws(() => spokenCount(value));
+  assert.doesNotMatch(learnRecap("Drummonds", {
+    email: 21146, calls: 4454, recordings: 2955, slack: 5260, voicemails: 255,
+  }), /\d/);
 });

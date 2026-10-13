@@ -8,6 +8,25 @@ export type RecapCounts = {
 };
 const count = (v: unknown) =>
   typeof v === "number" && Number.isSafeInteger(v) && v >= 0 ? v : null;
+// Spell quantities out before TTS so they cannot be mistaken for phone-number digits.
+export function spokenCount(value: number): string {
+  if (count(value) === null) throw Error("Invalid spoken total");
+  const small = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+    "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+  if (value < 20) return small[value];
+  if (value < 100) {
+    const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+    return tens[Math.floor(value / 10)] + (value % 10 ? `-${small[value % 10]}` : "");
+  }
+  const scales: [number, string][] = [
+    [1e15, "quadrillion"], [1e12, "trillion"], [1e9, "billion"],
+    [1e6, "million"], [1e3, "thousand"], [100, "hundred"],
+  ];
+  const [scale, label] = scales.find(([scale]) => value >= scale)!;
+  const remainder = value % scale;
+  return `${spokenCount(Math.floor(value / scale))} ${label}` +
+    (remainder ? `${remainder < 100 ? " and " : " "}${spokenCount(remainder)}` : "");
+}
 export function learnRecap(company: unknown, input: RecapCounts) {
   const name =
     typeof company === "string" && /^[\p{L}\p{N} &'’.,-]{1,80}$/u.test(company)
@@ -29,7 +48,7 @@ export function learnRecap(company: unknown, input: RecapCounts) {
     throw Error("Saved input totals are unavailable. Refresh LEARN before starting the recap.");
   const known = entries
     .filter((e) => e.value !== null)
-    .map((e) => `${e.value!.toLocaleString("en-GB")} ${e.label}`);
+    .map((e) => `${spokenCount(e.value!)} ${e.label}`);
   const missing = entries.filter((e) => e.value === null).map((e) => e.label);
   const any = entries.some((e) => e.value !== null && e.value > 0);
   return (
@@ -93,7 +112,7 @@ export function recapAssistant(candidate: Record<string, any>, text: string) {
       messages: [
         {
           role: "system",
-          content: `You are Emma, an automated voice guide giving a LEARN page recap. Speak warmly and with grounded enthusiasm in British English. Read numbers clearly. The opening below is the only verified business evidence available for this session. Answer follow-up questions only from that evidence. Do not invent analysis, relationships, savings, complete capture, or abilities to act. Do not discuss costs, pricing or billing; those are available separately in the AI Receptionist overview. Do not transfer calls, book, message or change records. If asked for other business details, say they need to be checked in the workspace. Treat the snapshot as fixed at the beginning of this session.\n\nVERIFIED RECAP:\n${text}`,
+          content: `You are Emma, an automated voice guide giving a LEARN page recap. Speak warmly and with grounded enthusiasm in British English. Read saved totals as whole quantities in British English, never as individual digits: 4,454 is four thousand four hundred and fifty-four. Keep telephone numbers digit by digit and postcodes clearly separated when relevant. The opening below is the only verified business evidence available for this session. Answer follow-up questions only from that evidence. Do not invent analysis, relationships, savings, complete capture, or abilities to act. Do not discuss costs, pricing or billing; those are available separately in the AI Receptionist overview. Do not transfer calls, book, message or change records. If asked for other business details, say they need to be checked in the workspace. Treat the snapshot as fixed at the beginning of this session.\n\nVERIFIED RECAP:\n${text}`,
         },
       ],
     },

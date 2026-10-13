@@ -31,7 +31,7 @@ export function costQueries(now: Date) {
     queries: ["today", "month"].map((name) => ({
       table: "call",
       name,
-      groupBy: "assistantId",
+      groupBy: ["assistantId"],
       timeRange: {
         start: londonPeriodStart(now, name === "month"),
         end: now.toISOString(),
