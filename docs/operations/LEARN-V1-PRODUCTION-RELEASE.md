@@ -1,5 +1,13 @@
 # LEARN V1 production release plan
 
+> 13 October 03:50 BST: the current frontend is staged production deployment
+> `dpl_5j57s4SuMBQMkzKEpM2BgX4BE9m6`, Git `d535085`, including the TEST-accepted
+> operator LEARN entry and embedded layout. Its rendered login targets production,
+> the read-only promotion preflight is ready, and all four live domains are unchanged.
+> The 74-step release sequence is updated; 22 frontend/coordinator/journal tests pass.
+> Positive signed-in acceptance and all remaining live execution gates stay open.
+> [Current frontend evidence](evidence/learn-production-frontend-operator-learn-2026-10-13.json).
+
 > 13 October 03:27 BST: the current candidate includes package 023 (Commusoft
 > search planning), with 23 SQL packages, 37 unchanged runtime artifacts and a
 > refreshed 74-step release sequence. Full-schema preservation, rollback/guards,

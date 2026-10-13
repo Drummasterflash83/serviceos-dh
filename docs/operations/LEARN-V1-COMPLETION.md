@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 03:50 BST — TEST-accepted operator frontend staged for production.**
+
+### Working and verified
+
+- Git `d535085`, including the operator LEARN entry and corrected embedded layout,
+  is READY as staged production deployment `dpl_5j57s4SuMBQMkzKEpM2BgX4BE9m6`.
+  The rendered login targets the real production Supabase project. Automatic
+  custom-domain assignment is disabled; all four live domains remain unchanged.
+- The read-only promotion adapter reports ready. The 74-step release sequence now
+  references this frontend alongside the 23 SQL packages and 37 runtime artifacts.
+  All 22 relevant frontend/coordinator/journal tests pass.
+
+### Needs finishing
+
+- Positive signed-in production acceptance and the remaining live recovery,
+  current-state, drain, paired backend and monitored rollout gates remain open.
+- The Slack worker currently imports approved windows of at most 24 hours. It
+  does not orchestrate complete channel history across those windows. Building
+  that resumable history journey remains implementation work, alongside private
+  channel visibility, observed replies and ongoing capture; two sample messages
+  do not complete it. Do not classify all remaining Slack work as awaiting access.
+- Full input coverage, useful processing/cards and scoring remain unfinished.
+
+### Blocked externally
+
+- 1Password was freshly checked and is still locked after inactivity; the existing
+  recovery-key unlock request remains relevant. No unlock or new prompt was attempted.
+- Founder access, live sign-in and the TEST AI key selection remain pending.
+
+[Staged frontend evidence](evidence/learn-production-frontend-operator-learn-2026-10-13.json).
+
+### Previous TEST operator journey milestone
+
 **13 October, 03:44 BST — selected-client LEARN operator entry verified in TEST.**
 
 ### Working and verified

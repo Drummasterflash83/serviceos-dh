@@ -1,0 +1,84 @@
+{
+  "observedAt": "2026-10-13T02:48:03.720402+00:00",
+  "state": "protected_staged_production_ready",
+  "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+  "team": "team_PGUQWiaAZZkMTCM9nSHahIpG",
+  "id": "dpl_5j57s4SuMBQMkzKEpM2BgX4BE9m6",
+  "url": "https://serviceos-i1rb5kyci-allkin.vercel.app",
+  "gitSha": "d535085cdf00938218ea158524e7b49fc78c1f19",
+  "target": "production",
+  "previousProductionDeployment": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "domains": [
+    {
+      "name": "app.openfolk.ai",
+      "redirect": null
+    },
+    {
+      "name": "openfolk.ai",
+      "redirect": "www.openfolk.ai"
+    },
+    {
+      "name": "serviceos-dh.vercel.app",
+      "redirect": null
+    },
+    {
+      "name": "www.openfolk.ai",
+      "redirect": null
+    }
+  ],
+  "autoAssignCustomDomains": false,
+  "productionDeploymentUnchanged": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "productionPromotion": false,
+  "browser": {
+    "loginScreenLoaded": true,
+    "actualServedAuthOrigin": "https://tgbnakbxwcqjeimygroz.supabase.co",
+    "bindingEvidence": "Rendered login data-auth-target attribute observed through browser",
+    "loadedEntryAsset": "/assets/index-Cm4_g4tN.js",
+    "signedInAcceptance": false
+  },
+  "protection": {
+    "status": 302,
+    "redirectOrigin": "https://vercel.com"
+  },
+  "readOnlyAdapterObservation": {
+    "state": "ready",
+    "evidenceSha256": "b9e35f11c181d12c7dd7066ea87f198fb57aa12ad88f4732d343cefecb5dcd01"
+  },
+  "limitations": [
+    "Staged production build is READY; existing production domains are unchanged.",
+    "Exact frontend promotion and positive signed-in production acceptance remain pending.",
+    "CLI transport is read-only because its internal retry behaviour is unsuitable for journalled mutations.",
+    "Mutation transport uses one direct HTTP request and requires current scoped release authority.",
+    "Includes the signed-in TEST operator LEARN entry and corrected embedded layout. Founder access and customer-signed-in production acceptance remain separate."
+  ],
+  "supersedesDeployment": "dpl_FHkfcrYZQ6bVmupHvvjse5pKUrFu",
+  "supersedesEvidence": "learn-production-frontend-staged-workspace-2026-10-13.json",
+  "testAcceptanceEvidence": "learn-operator-learn-entry-2026-10-13.json",
+  "liveDomainsVerifiedUnchanged": 4,
+  "releasePlan": {
+    "state": "prepared_not_executed",
+    "steps": 74,
+    "databasePackages": 23,
+    "runtimeEndpoints": 37,
+    "localChecksPassed": 22,
+    "sources": [
+      {
+        "path": "scripts/verify/learn-production-release-sequence.mjs",
+        "sha256": "c7d76a177c17907d644a9a40a92320c1a9344db0ab2926c86dc8abdf645a25b3"
+      },
+      {
+        "path": "supabase/release/learn-production/release-sequence.plan.json",
+        "sha256": "2178b2d23a5ec665d659ea8faf3d94a15ec5df0ccbac4f1036a003b75bd2c0c6"
+      },
+      {
+        "path": "supabase/release/learn-production/release-operations.manifest.json",
+        "sha256": "66414ef38f0194c59f0b240d2400543e2ac8268889644a3673b3e1c41873e402"
+      }
+    ]
+  },
+  "recoveryAccessCheck": {
+    "appState": "1Password locked after inactivity",
+    "unlockNotAttempted": true,
+    "freshIndependentRestoreStillPending": true
+  }
+}

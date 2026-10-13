@@ -16,7 +16,7 @@ const wire = read(join(wireRoot,'report.json'));
 const backupRoot = '.verification-results/production-runtime-compiled-backup-20261012';
 const backup = read(join(backupRoot,'report.json'));
 const schedules = read(base+'schedule-transition.manifest.json');
-const frontend = read('docs/operations/evidence/learn-production-frontend-staged-workspace-2026-10-13.json');
+const frontend = read('docs/operations/evidence/learn-production-frontend-operator-learn-2026-10-13.json');
 if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!==23 || candidate.endpoints.length!==37 ||
     wire.projectRef!==candidate.projectRef || wire.candidateManifestSha256!==candidateSha256 ||
     wire.state!=='prepared_not_uploaded' || schedules.runtime.sha256!==candidateSha256 ||
@@ -77,7 +77,7 @@ for(const e of candidate.endpoints) {
     verified(join(backupRoot,e.name+'.ezbr'),b.ezbrSha256);
   }
 }
-if(frontend.id!=='dpl_FHkfcrYZQ6bVmupHvvjse5pKUrFu' || frontend.gitSha!=='cbb310cb5813c1279d441d16fd24b5c197623dee' ||
+if(frontend.id!=='dpl_5j57s4SuMBQMkzKEpM2BgX4BE9m6' || frontend.gitSha!=='d535085cdf00938218ea158524e7b49fc78c1f19' ||
    frontend.state!=='protected_staged_production_ready' || frontend.target!=='production' || frontend.autoAssignCustomDomains!==false) throw Error('Reviewed frontend artifact required');
 const operations=[];
 function add(id,kind,contract) { operations.push({id,kind,contract,pinSha256:sha(JSON.stringify(contract))}); }
