@@ -1,0 +1,321 @@
+{
+  "version": "learn-slack-campaign-hosted/1",
+  "state": "test_schema_runtime_frontend_and_signed_in_idle_read_verified",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "schema": {
+    "state": "installed_verified",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-13T05:03:19.223Z",
+    "packageSha256": "b4ce19b82064c85f6b159eb17126d5d86d35a9e51412f3f9c76d7617927878b0",
+    "expected": {
+      "marker": "slack_campaigns_installed",
+      "fingerprint": "81c9822ad91a75bce58d7eab616d08ea"
+    },
+    "afterFingerprint": "81c9822ad91a75bce58d7eab616d08ea",
+    "preservedDatasets": 213,
+    "newAccounts": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "credentialsUploaded": 0,
+    "productionChanged": false
+  },
+  "runtime": {
+    "version": "learn-slack-campaign-runtime/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "8ae1dfbd48b1069eebdb5746e66939f66f9c1534735f006e5fd7d629777e806d",
+    "observedAt": "2026-10-13T05:09:13.932Z",
+    "state": "deployed_needs_http_acceptance",
+    "attempts": [
+      {
+        "name": "learn-slack-worker",
+        "cliExitStatus": 0
+      },
+      {
+        "name": "learn-slack-schedule",
+        "cliExitStatus": 0
+      },
+      {
+        "name": "platform-worker",
+        "cliExitStatus": 0
+      }
+    ],
+    "writeAttempted": true,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 52,
+    "endpoints": [
+      {
+        "id": "355e705d-987c-400f-bba4-fe5d24dff450",
+        "slug": "learn-slack-schedule",
+        "name": "learn-slack-schedule",
+        "status": "ACTIVE",
+        "version": 4,
+        "created_at": 1791653252279,
+        "updated_at": 1791868141769,
+        "verify_jwt": true,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_355e705d-987c-400f-bba4-fe5d24dff450_4/source/supabase/functions/learn-slack-schedule/index.ts",
+        "ezbr_sha256": "fe6fa27b7cdecd5ae4342c920e2e57cddb6cdd8668eeb976e53279d1ed123ce0"
+      },
+      {
+        "id": "bd55f2b9-77da-4427-92bf-59d2e27d744e",
+        "slug": "learn-slack-worker",
+        "name": "learn-slack-worker",
+        "status": "ACTIVE",
+        "version": 12,
+        "created_at": 1791584977820,
+        "updated_at": 1791868140555,
+        "verify_jwt": true,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_bd55f2b9-77da-4427-92bf-59d2e27d744e_12/source/supabase/functions/learn-slack-worker/index.ts",
+        "ezbr_sha256": "5512d1b3a1ee8f17cbe4115c04928081c3a4b8e6be36a4041bbd76a37b8ba0a7"
+      },
+      {
+        "id": "e7abc6aa-7341-4cbc-9a54-ea1c9c907503",
+        "slug": "platform-worker",
+        "name": "platform-worker",
+        "status": "ACTIVE",
+        "version": 24,
+        "created_at": 1791646885331,
+        "updated_at": 1791868149987,
+        "verify_jwt": false,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_e7abc6aa-7341-4cbc-9a54-ea1c9c907503_24/source/supabase/functions/platform-worker/index.ts",
+        "ezbr_sha256": "0984f926999bb94dad7f7ddecab1efc95c4f6c0ab04bcf1da38390bcca491f3e"
+      }
+    ],
+    "dependencyFiles": 124,
+    "fullPreservedDatasets": 220,
+    "credentialsUploaded": 0,
+    "channelsActivated": 0,
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "http": {
+    "version": "learn-slack-campaign-hosted/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-13T05:09:54.561Z",
+    "state": "http_verified_idle_no_capture",
+    "checks": [
+      {
+        "endpoint": "learn-slack-worker",
+        "name": "missing gateway JWT",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-worker",
+        "name": "anonymous key without trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-worker",
+        "name": "service JWT without trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-worker",
+        "name": "wrong trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-worker",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-worker",
+        "name": "caller supplied work selector",
+        "status": 400,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-worker",
+        "name": "empty authorized worker",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-schedule",
+        "name": "missing gateway JWT",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-schedule",
+        "name": "anonymous key without trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-schedule",
+        "name": "service JWT without trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-schedule",
+        "name": "wrong trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-schedule",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-schedule",
+        "name": "caller supplied work selector",
+        "status": 400,
+        "passed": true
+      },
+      {
+        "endpoint": "learn-slack-schedule",
+        "name": "empty authorized worker",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "endpoint": "platform-worker",
+        "name": "missing authorization",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "platform-worker",
+        "name": "anonymous JWT",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "platform-worker",
+        "name": "wrong schedule secret",
+        "status": 403,
+        "passed": true
+      }
+    ],
+    "preservedDataSets": 220,
+    "providerRequests": 0,
+    "activatedChannels": 0,
+    "recurringTriggersCreated": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Idle hosted runtime acceptance only; no real campaign or provider coverage acceptance.",
+      "Shared platform-worker checked for boot and denied access only; no cross-input queue invoked."
+    ]
+  },
+  "recovery": {
+    "state": "compiled_artifacts_retained_with_unchanged_deployment_metadata",
+    "endpoints": [
+      {
+        "name": "learn-slack-worker",
+        "version": 11,
+        "eszipSha256": "9021ab5a6603a63544e1022d044eacb95bba07a21cefe0ce6278379bf1c6fdfc",
+        "ezbrSha256": "ea6f92e8323eeb5219543f0e16e655e77ada4994a91b523b0ffae2b9f1e33756"
+      },
+      {
+        "name": "learn-slack-schedule",
+        "version": 3,
+        "eszipSha256": "7cc8a56c782d4fe14271946f7edb19ccf4417a744a40aeeb96a741189a0702f4",
+        "ezbrSha256": "4f4c4d8d0bc8a54103b006018a32b36a58714610bbb81bcdf27ed4ff7c5a8aeb"
+      },
+      {
+        "name": "platform-worker",
+        "version": 23,
+        "eszipSha256": "e4c10a0ea0c1d325548c74a6f383cc9cdbc4e2ecfbf493cf76134447bdaf241e",
+        "ezbrSha256": "ca0c1cf9d74247bc2d81e7545d4aedea954d069e930f1a7d35807da9e58529de"
+      }
+    ],
+    "limitations": [
+      "Compiled bytes are returned by the provider while observed deployment metadata remains unchanged; re-encoded EZBR hashes may differ from the original compression.",
+      "No rollback deployment or database compatibility claim. New checkpoint formats may require capture to remain paused and a forward repair."
+    ]
+  },
+  "frontend": {
+    "observedAt": "2026-10-13T05:11:37.662Z",
+    "id": "dpl_821QqBty3MAXSeiJN8dhtDAsHQqD",
+    "url": "serviceos-learn-test-ncpn03q9v-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": null,
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "65ef71dee3d2a43bb1fab924d1120a81fe3bd5a6"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "stableAliases": {
+      "observedAt": "2026-10-13T05:12:25.010Z",
+      "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+      "target": "dpl_821QqBty3MAXSeiJN8dhtDAsHQqD",
+      "prior": "dpl_2DP3dkxEKPFkw9oXEDQLVRby1nns",
+      "liveBefore": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+      "state": "aliases_and_protection_verified",
+      "aliases": [
+        {
+          "name": "test.openfolk.ai",
+          "target": "dpl_821QqBty3MAXSeiJN8dhtDAsHQqD"
+        },
+        {
+          "name": "serviceos-learn-test-allkin.vercel.app",
+          "target": "dpl_821QqBty3MAXSeiJN8dhtDAsHQqD"
+        }
+      ],
+      "liveAfter": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+      "routes": [
+        {
+          "route": "/",
+          "status": 302,
+          "redirectOrigin": "https://vercel.com"
+        },
+        {
+          "route": "/login",
+          "status": 302,
+          "redirectOrigin": "https://vercel.com"
+        },
+        {
+          "route": "/client?section=learn",
+          "status": 302,
+          "redirectOrigin": "https://vercel.com"
+        },
+        {
+          "route": "/openfolk",
+          "status": 302,
+          "redirectOrigin": "https://vercel.com"
+        }
+      ]
+    },
+    "browser": {
+      "existingOperatorSession": true,
+      "buildBadge": "65ef71d",
+      "backendBadge": "saatxzwxvdvqevbnskxy",
+      "campaignRegionLoaded": true,
+      "emptyList": true,
+      "startScopeFormOpened": true,
+      "emptyReasonReviewRejected": true,
+      "importSubmitted": false,
+      "observedRead": {
+        "observedAt": "2026-10-13T05:16:33.224Z",
+        "state": "logged_operator_read_no_campaign_started",
+        "campaigns": 0,
+        "requests": 0,
+        "active_jobs": 0,
+        "recurring": 0,
+        "matching_reads": 1
+      },
+      "screenshotRetainedPrivately": true
+    }
+  },
+  "limitations": [
+    "No broader Slack campaign started; earlier two-message real TEST sample remains closed.",
+    "Production candidate still excludes the six newer Slack migrations and matching runtimes.",
+    "No new accounts, grants, credentials, schedules or provider requests."
+  ]
+}

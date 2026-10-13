@@ -7,36 +7,41 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October — OpenFolk Slack campaign controls now implemented and locally verified.**
+**13 October — matched Slack campaign schema and runtimes are now verified in hosted TEST.**
 
 ### Working and verified
 
-- The existing Slack setup has a Historical campaigns tab: explicit channel selection,
-  scope review, per-channel/reply progress, pause/resume, permanent stop and handoff.
-- Saved requests retain backend/actor/company identity and recover uncertain responses
-  through server receipts. The server checks the current actor and company permissions.
-- 154 focused tests, TypeScript, the frontend build and ten full-schema journeys pass.
-  Browser checks used the actual component with a synthetic client. All 1,591,603
-  archived rows and seven sequences remain unchanged; no hosted/provider work ran.
+- TEST package 092 installs all six newer Slack migrations. All 213 existing
+  datasets were preserved; the seven new campaign tables are empty.
+- The matching Slack worker, scheduler and shared platform worker are deployed.
+  All 220 datasets match before/after. Seventeen hosted HTTP checks pass, including
+  denied unauthorised access and empty worker/scheduler responses.
+- Existing compiled worker artifacts are retained for recovery. No new accounts,
+  grants, credentials, schedules, provider calls or production changes occurred.
+- Both stable TEST aliases now serve frontend `65ef71d`. The existing signed-in
+  operator opened campaign state and scope controls; the read is audited and
+  incomplete review is rejected. No campaign/request/capture job was created.
+- Heidi's previously approved company-admin access remains applied in production.
+  This does not establish her signed-in acceptance.
 
 ### Needs finishing
 
-- Provider-backed channel inventory/selection, approval reissue after exhaustion or
-  expiry, private/shared-channel visibility and real-provider reply/ongoing acceptance.
-  Current selection uses explicit public-channel IDs/links; DMs remain excluded.
-- Pair all six newer Slack migrations with the runtime/scheduler/frontend release,
-  then verify signed-in hosted controls and the broader authorised history import.
-  The current staged candidate excludes this work; the earlier real sample stays closed.
+- Provider-backed channel selection, approval reissue after exhaustion/expiry,
+  private/shared-channel visibility and real reply/ongoing capture acceptance.
+  The earlier real two-message TEST sample remains closed; DMs remain excluded.
+- Rebuild and rehearse the production candidate with these six migrations and
+  matching runtimes. The older staged candidate still excludes this work.
 - Production sign-in, fresh recovery/drain/rollout checks, full input coverage,
   processing/cards, scoring and ongoing operation remain open across LEARN V1.
 
 ### Blocked externally
 
 - Previously identified recovery-key access, live sign-in and TEST AI selection
-  were not refreshed this turn. Independent implementation remains available.
+  were not refreshed in this rollout. Independent release work remains available.
 
+[Hosted TEST evidence](evidence/learn-slack-campaign-hosted-2026-10-13.json).
 [Campaign implementation and remaining work](LEARN-SLACK-CAMPAIGNS.md).
-[Controller evidence](evidence/learn-slack-campaign-controller-2026-10-13.json).
+[Local controller evidence](evidence/learn-slack-campaign-controller-2026-10-13.json).
 
 ### Previous message-handling milestone
 

@@ -1,0 +1,61 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "bundleSha256": "8ae1dfbd48b1069eebdb5746e66939f66f9c1534735f006e5fd7d629777e806d",
+  "fullSchema": "81c9822ad91a75bce58d7eab616d08ea",
+  "runtimeSchema": "48e686602048971afb3aedf2a70b47ce",
+  "endpoints": [
+    {
+      "name": "learn-slack-worker",
+      "verifyJwt": true
+    },
+    {
+      "name": "learn-slack-schedule",
+      "verifyJwt": true
+    },
+    {
+      "name": "platform-worker",
+      "verifyJwt": false
+    }
+  ],
+  "replaceVersions": {
+    "learn-slack-worker": 11,
+    "learn-slack-schedule": 3,
+    "platform-worker": 23
+  },
+  "beforeEndpoints": [
+    {
+      "name": "learn-slack-worker",
+      "id": "bd55f2b9-77da-4427-92bf-59d2e27d744e",
+      "version": 11,
+      "hash": "e7114e127976f7d002b68c3e07e6533ca53e4269013eda41c4099bcc2fc6f29f",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "learn-slack-schedule",
+      "id": "355e705d-987c-400f-bba4-fe5d24dff450",
+      "version": 3,
+      "hash": "f95c2be6426996861434006c7cb964e862ce9653a24e41a274b31dd23dac3e1f",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "platform-worker",
+      "id": "e7abc6aa-7341-4cbc-9a54-ea1c9c907503",
+      "version": 23,
+      "hash": "b68e225050884077d1fb57b5ecc16d4d7f240bd74ed8fc7abad6ff292f3b7f5b",
+      "jwt": false,
+      "status": "ACTIVE"
+    }
+  ],
+  "modules": 124,
+  "external": [
+    "https://esm.sh/@supabase/supabase-js@2.45.4",
+    "node:buffer",
+    "node:crypto",
+    "node:dns/promises",
+    "npm:mailauth@7.3.0/lib/dkim/verify.js",
+    "npm:mpg123-decoder@1.0.3",
+    "npm:postal-mime@4.0.5"
+  ]
+}

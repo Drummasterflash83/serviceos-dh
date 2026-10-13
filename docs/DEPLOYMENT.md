@@ -72,7 +72,17 @@ run the TEST bundles against production. See the
 [release plan](operations/LEARN-V1-PRODUCTION-RELEASE.md#microsoft-capture-and-compatibility-candidate)
 and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
-### Isolated LEARN TEST project (updated 12 October 2026)
+### Isolated LEARN TEST project (updated 13 October 2026)
+
+**Latest TEST deployment:** `dpl_821QqBty3MAXSeiJN8dhtDAsHQqD`, Git
+`65ef71dee3d2a43bb1fab924d1120a81fe3bd5a6`, now serves both stable TEST aliases.
+Its build badge and actual signed-in operator screen target TEST. Matched package
+092 and worker/scheduler installation passed preservation and idle HTTP checks.
+Campaign state reads are audited; no broader import was started. Protection
+remains `all`, and live production is unchanged.
+[Current TEST evidence](operations/evidence/learn-slack-campaign-hosted-2026-10-13.json).
+Older deployment details below are historical acceptance records.
+
 
 **serviceos-learn-test** (`prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs`, Allkin) is separate
 from the production project above. Its preview-only public configuration targets

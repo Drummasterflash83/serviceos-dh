@@ -2,7 +2,16 @@
 
 ## Delivery state — 13 October 2026
 
-**Local campaign controller and channel/reply lifecycle verified; not deployed or ready to activate for Drummonds.**
+**Campaign schema and matching runtimes deployed and verified idle in TEST; real Drummonds campaigns remain unstarted.**
+
+TEST package 092 installs all six campaign-related migrations and preserves all
+213 original datasets. Matching worker v12, scheduler v4 and shared platform
+worker v24 preserve the resulting 220 datasets. Seventeen hosted access/idle
+checks pass. This is not real-provider campaign acceptance or production release.
+The stable TEST frontend is `65ef71d`; the existing operator session verified the
+empty campaign list, scope form and incomplete-review rejection. The read audit
+matches; there are still zero campaign requests, active Slack jobs or subscriptions.
+[Hosted evidence](evidence/learn-slack-campaign-hosted-2026-10-13.json).
 The complete delivery target remains all available authorised channel history and
 observed replies, followed by ongoing capture. No real campaign or provider request
 has been created by this work. The completed two-message TEST sample remains closed.

@@ -1,5 +1,12 @@
 # LEARN V1 production release plan
 
+> 13 October: all six newer Slack migrations and their matching worker/scheduler
+> now pass hosted TEST installation and idle HTTP acceptance, with preservation
+> verified. The production candidate below is still unchanged and excludes them.
+> Rebuild and rehearse the matched production package before any promotion.
+> [Hosted TEST evidence](evidence/learn-slack-campaign-hosted-2026-10-13.json).
+
+
 > 13 October: the local campaign controller now passes browser, unit, type, build
 > and full-schema checks. It requires both new controller RPCs and all five prior
 > campaign-related migrations. This staged candidate excludes all six newer SQL
