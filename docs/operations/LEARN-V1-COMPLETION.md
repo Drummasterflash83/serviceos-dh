@@ -7,6 +7,26 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 18:22 BST — Slack replies advancing; Commusoft coverage reconciled against its UI.**
+
+- The recovered Slack channel entered normal reply discovery: 20 threads found and
+  its first scheduled thread succeeded at 17:08:09 UTC. The old failed attempt is
+  not blocking it. Discovery and remaining replies continue in bounded batches.
+- Current Commusoft category IDs and labels are now corroborated by authenticated
+  provider navigation. Ambiguous customer representations still need review.
+- The API's independent counts match all 1,552 captured customers and 871 sites.
+  Its UI shows 1,650 customers and 982 sites; a fresh export confirms 98 additional
+  customer IDs. One active UI customer returns API 404. Full provider coverage is
+  therefore not established, even though the available traversal is exhausted.
+- All three published customer-card names agree with the fresh export. Wider
+  review found that API primary contacts can differ from account holders. The
+  next card implementation must retain their distinct identities and evidence
+  before broad person publication. No automatic merge or complete-card claim
+  was made.
+
+Evidence: [provider coverage reconciliation](evidence/learn-commusoft-provider-coverage-2026-10-13.json),
+[Slack scheduled discovery](evidence/learn-slack-recovery-discovery-2026-10-13.json).
+
 **13 October, 18:06 BST — LIVE Slack repair completed its real history page.**
 
 - The additive SQL and both matching workers are published and read back:
