@@ -1,0 +1,47 @@
+{
+  "version": "learn-communication-relevance/1",
+  "observedAt": "2026-10-13T00:45:58.874583+00:00",
+  "state": "test_runtime_verified_frontend_pending",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runtimeVersion": 12,
+  "runtimeHash": "62c216641d4e896f57a585b419151d6d5749be19bded93870488fe9d63b2be85",
+  "sourceClosureSha256": "530160dee262224b1f8ad57f2182cab9c6c7b8d044aa3db8713442e21d4f7664",
+  "preservedDatasets": 213,
+  "localTestsPassed": 9,
+  "typecheck": "passed",
+  "build": "passed",
+  "readOnlyRetainedSample": {
+    "tenantId": "f8c114fa-fee7-4983-8970-f6e7f5fd3129",
+    "generatedAt": "2026-10-13T00:44:53.388Z",
+    "classificationScope": "historical_eligibility_consensus",
+    "ledgerRecords": 21,
+    "reprocessedCommunications": 0,
+    "conflictingCommunications": 0,
+    "totalCommunications": 21,
+    "byClass": {
+      "operational_customer": 15,
+      "marketing_newsletter": 2,
+      "system_notification": 2,
+      "reviewed_work": 2
+    },
+    "byRelevance": {
+      "relevant": 17,
+      "not_relevant": 4
+    },
+    "exclusion": {
+      "noiseInteractions": 4,
+      "intelligenceObjectsExcluded": 0,
+      "recommendationsExcluded": 4,
+      "recommendationsOpenExcluded": 4
+    },
+    "caveat": "Each communication appears once across its recorded eligibility decisions. Conflicting versions remain uncertain. These historical decisions have not been rechecked against current source revisions; they are not proof of complete capture or actionable insight. Email marketing may be under-detected. Reads are sequential, not a single database snapshot. Exclusions are estimates only: this report does not filter queues or change source data."
+  },
+  "sampleMetadataReads": 3,
+  "productionChanges": 0,
+  "providerRequests": 0,
+  "limitations": [
+    "Signed-in frontend verification pending.",
+    "Historical verdict consensus is not source-revision reclassification or complete capture coverage.",
+    "Production candidate must be regenerated for changed control-plane source and frontend before promotion."
+  ]
+}

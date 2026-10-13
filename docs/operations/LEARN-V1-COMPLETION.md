@@ -7,6 +7,36 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 01:46 BST — communication relevance repaired in TEST; frontend verification pending.**
+
+### Working and verified
+
+- TEST control-plane v12 counts distinct communications across processing versions.
+  Conflicting historical classifications remain uncertain. Ordered pagination rejects
+  failed, truncated or inconsistent reads rather than reporting incomplete totals.
+- All 213 retained datasets were preserved during deployment. The read-only sample
+  has 21 distinct communications: 17 recorded relevant, four potential noise,
+  including the two operator-reviewed Slack messages. No source data changed.
+- Nine targeted tests, full TypeScript and the production build passed. The frontend
+  clears previous-tenant results and provides an explicit unavailable/retry state.
+
+### Needs finishing
+
+- Deploy and verify the signed-in TEST frontend. Historical eligibility is still
+  not source-revision-aware reclassification; noisy observations need review.
+- This source change postdates the pinned production runtime candidate. Regenerate
+  matching runtime/frontend artifacts before release; do not promote stale pins.
+- All remaining input, client-workspace, scoring and live release gates remain open.
+
+### Blocked externally
+
+- 1Password remains locked; fresh independent database recovery is pending.
+  Signed-in production acceptance and TEST AI credentials remain unresolved.
+
+Evidence: [communication relevance](evidence/learn-communication-relevance-2026-10-13.json).
+
+### Previous release integration milestone
+
 **13 October, 01:40 BST — release sequencing and restart integration verified locally.**
 
 ### Working and verified

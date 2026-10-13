@@ -1,0 +1,106 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceClosureSha256": "530160dee262224b1f8ad57f2182cab9c6c7b8d044aa3db8713442e21d4f7664",
+  "packageSha256": "ad9320b45a61472f724b561787e79424dfdd7ccffdc8819f77dbab17753cccfd",
+  "runtimeSchema": "5a61f0d86d160af4903db995f074d79f",
+  "replaceVersion": 11,
+  "priorEzbr": "e8f3c0a7abd0d723fe12482ff0ed693c84dab2bfc5dfa37a16dc9d9d16ba4461",
+  "files": [
+    {
+      "path": "_shared/authz.ts",
+      "sha256": "9b2e59bfca3e4dbb1db6b21f0637d48fa711f19851793d570eaa2200f50bdcc3"
+    },
+    {
+      "path": "_shared/controlplane/authz.ts",
+      "sha256": "a07d10256abf684f1d0097fe58cb12aa5b60e489dfbbc57719fa7590c4a053d5"
+    },
+    {
+      "path": "_shared/controlplane/comm_relevance.ts",
+      "sha256": "f3b58aa2ac150f6feab23c445bd5e4dcb589174d1ce02b2b03665b8feaaabef9"
+    },
+    {
+      "path": "_shared/controlplane/connection_inventory.ts",
+      "sha256": "b8d2947c0aa82acfcc68c3eb41068dd9780f71b687ce681a9d2969e012ae1172"
+    },
+    {
+      "path": "_shared/controlplane/discovery_history.ts",
+      "sha256": "fcbd173d0e5da659d4dd0c270d705b3015d7e2919e92130efd56d1bebd5c2cca"
+    },
+    {
+      "path": "_shared/controlplane/discovery.ts",
+      "sha256": "7c290976817ce7ecabfd288d7981d5da5e171c06102051c0b982c2ffd7d982f6"
+    },
+    {
+      "path": "_shared/controlplane/health.ts",
+      "sha256": "8668f28371dfffe65bd76c3d5351a692dace683057f96ba72da56ce7b6d69477"
+    },
+    {
+      "path": "_shared/controlplane/identity_inventory.ts",
+      "sha256": "2399f0955fc98b69acdc714266fa2594e14307e4cf41c519d6beb777d2053b3c"
+    },
+    {
+      "path": "_shared/controlplane/identity_resolution.ts",
+      "sha256": "0a8da4246906fe7aff215bb134fffa46b79d75d9453ee65db503a4797c28241a"
+    },
+    {
+      "path": "_shared/controlplane/identity_v1.ts",
+      "sha256": "4b086d7b97bdfb4d685b5b5e868a1185db8e8e5881b597975943a967fbef2714"
+    },
+    {
+      "path": "_shared/controlplane/inventory.ts",
+      "sha256": "deca493954ee666b2c08d80559d50779d3cf540059aa78ed3fed82b9051cfc3a"
+    },
+    {
+      "path": "_shared/controlplane/learning_centre.ts",
+      "sha256": "704d1858cee286b36d68deb0d509e4570f4f02548b79db2a11880625010b3eae"
+    },
+    {
+      "path": "_shared/controlplane/ownership_inventory.ts",
+      "sha256": "22d95565ac1fa8f05c7eda64b3d8e80e2318fc0e48202e9c3cb1c00fc4340020"
+    },
+    {
+      "path": "_shared/controlplane/projection.ts",
+      "sha256": "be25fac9aeda8fdf005568d1fce04a95cae6c5a0fb6adf92ed1471983f62a4ee"
+    },
+    {
+      "path": "_shared/controlplane/readiness.ts",
+      "sha256": "26eb27b4be75dcafa5de823aec6af8b6d7cdcfd7fc554add88e0d3673d6785bc"
+    },
+    {
+      "path": "_shared/controlplane/resolver.ts",
+      "sha256": "7737f226746807e9e8547962b3d3d7f82107aa7a981f0af2b3d3084454f0bf04"
+    },
+    {
+      "path": "_shared/controlplane/roster.ts",
+      "sha256": "520d0e2337791fbaeab7925ff915fd0d2a8bcd48e215189b650b6971ecf836e9"
+    },
+    {
+      "path": "_shared/controlplane/store.ts",
+      "sha256": "d090640f9c4301e79c80926bf9d6a1325df3a83e07339e27e196859048272b3c"
+    },
+    {
+      "path": "_shared/controlplane/telephony_discovery.ts",
+      "sha256": "2e0fd02170e6fee99ea865fc1123c02141635a57bb7507bd3031b453ee6633a8"
+    },
+    {
+      "path": "_shared/controlplane/telephony_identity.ts",
+      "sha256": "629ec9842ef7f5f9fbb1c652504ef88fe69879b967079919cc2803ec6693e50d"
+    },
+    {
+      "path": "_shared/controlplane/telephony_validation.ts",
+      "sha256": "86625ab7106ae820db3e836cb233e19d15391c1aaf044b35593bd0805e85ca30"
+    },
+    {
+      "path": "_shared/telephony/caller_id_labels.ts",
+      "sha256": "de2b9d7fe65b215855b959365e61d2dd2a07181372e38537738b970f8fbeddf3"
+    },
+    {
+      "path": "_shared/telephony/capabilities.ts",
+      "sha256": "bc4aae502ea95496fa6c3ee59282edfa9e15dcd20d29a3591ff5de236a108acd"
+    },
+    {
+      "path": "openfolk-control-plane/index.ts",
+      "sha256": "ed122f5d9c1fc4d135b18a2b3c2a61164c697626ab7eb21369de9ce41f4220fc"
+    }
+  ]
+}

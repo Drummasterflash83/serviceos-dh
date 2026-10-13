@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Radio, ListTree, Search, Loader2, Clock, ChevronRight, Filter } from "lucide-react";
 import { SectionCard, StatusPill, EmptyState } from "./openfolk-ui";
+import { communicationRelevanceForTenant } from "@/lib/communication-relevance";
 import { SourceCard, fmt } from "./LearningOverviewView";
 import {
   getLearningOverview,
@@ -234,14 +235,30 @@ function SummaryBar({ overview }: { overview: LearningOverview }) {
 
 function OverviewTab({ overview, tenantId }: { overview: LearningOverview; tenantId: string }) {
   const ei = overview.existingIntelligence;
-  const [rel, setRel] = useState<CommRelevanceReport | null>(null);
+  const [relevance, setRelevance] = useState<{
+    tenantId: string;
+    state: "loading" | "ready" | "unavailable";
+    report: CommRelevanceReport | null;
+  }>({ tenantId, state: "loading", report: null });
+  const [relevanceRevision, setRelevanceRevision] = useState(0);
+  const rel = relevance.tenantId === tenantId ? relevance.report : null;
+  const relevanceState = relevance.tenantId === tenantId ? relevance.state : "loading";
   useEffect(() => {
     let on = true;
-    getCommRelevance(tenantId).then((r) => on && r.ok && setRel(r.data));
+    setRelevance({ tenantId, state: "loading", report: null });
+    getCommRelevance(tenantId)
+      .then((r) => {
+        if (!on) return;
+        const report = r.ok ? communicationRelevanceForTenant(r.data, tenantId) : null;
+        setRelevance({ tenantId, state: report ? "ready" : "unavailable", report });
+      })
+      .catch(() => {
+        if (on) setRelevance({ tenantId, state: "unavailable", report: null });
+      });
     return () => {
       on = false;
     };
-  }, [tenantId]);
+  }, [tenantId, relevanceRevision]);
   return (
     <div className="space-y-4">
       <SummaryBar overview={overview} />
@@ -256,18 +273,36 @@ function OverviewTab({ overview, tenantId }: { overview: LearningOverview; tenan
         ))}
       </div>
 
-      {rel && (
+      {!rel && (
         <SectionCard
           title="Communication relevance"
           icon={<Filter className="h-4 w-4 text-muted-foreground" />}
-          right={`${rel.totalCommunications} classified`}
+        >
+          <p role="status" className="text-xs text-muted-foreground">
+            {relevanceState === "loading"
+              ? "Checking recorded communication relevance…"
+              : "Communication relevance could not be confirmed. Saved communications are unchanged."}
+          </p>
+          {relevanceState === "unavailable" && (
+            <button
+              className="cp-secondary mt-2"
+              onClick={() => setRelevanceRevision((v) => v + 1)}
+            >
+              Try again
+            </button>
+          )}
+        </SectionCard>
+      )}
+      {rel && (
+        <SectionCard
+          title="Recorded communication relevance"
+          icon={<Filter className="h-4 w-4 text-muted-foreground" />}
+          right={`${rel.totalCommunications} distinct communications`}
         >
           <div className="flex flex-wrap gap-2 text-xs">
-            <StatusPill tone="ok">
-              {rel.byRelevance.relevant ?? 0} operationally relevant
-            </StatusPill>
+            <StatusPill tone="ok">{rel.byRelevance.relevant ?? 0} recorded as relevant</StatusPill>
             <StatusPill tone="neutral">
-              {rel.byRelevance.not_relevant ?? 0} excluded (marketing/system/internal-noise)
+              {rel.byRelevance.not_relevant ?? 0} potential noise
             </StatusPill>
             <StatusPill tone="attention">{rel.byRelevance.uncertain ?? 0} uncertain</StatusPill>
           </div>
@@ -281,9 +316,11 @@ function OverviewTab({ overview, tenantId }: { overview: LearningOverview; tenan
               ))}
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground">
-            Applying relevance would exclude ~{rel.exclusion.recommendationsExcluded}{" "}
-            recommendations ({rel.exclusion.recommendationsOpenExcluded} open) from operational
-            queues. {rel.caveat}
+            {rel.ledgerRecords} recorded decisions; {rel.reprocessedCommunications} communications
+            have multiple decisions, including {rel.conflictingCommunications} with conflicting
+            classifications. Applying the recorded noise classifications would exclude ~
+            {rel.exclusion.recommendationsExcluded} recommendations (
+            {rel.exclusion.recommendationsOpenExcluded} open) from operational queues. {rel.caveat}
           </p>
         </SectionCard>
       )}

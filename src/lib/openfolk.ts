@@ -599,6 +599,10 @@ export interface IdentityImpact {
 }
 // ── Communication operational-relevance (WS2, read-only) ─────────────────────
 export interface CommRelevanceReport {
+  classificationScope: "historical_eligibility_consensus";
+  ledgerRecords: number;
+  reprocessedCommunications: number;
+  conflictingCommunications: number;
   tenantId: string;
   generatedAt: string;
   totalCommunications: number;

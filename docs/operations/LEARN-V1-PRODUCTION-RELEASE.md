@@ -1,5 +1,10 @@
 # LEARN V1 production release plan
 
+> 13 October 01:46 BST: the communication-relevance read repair changes the
+> control-plane source and frontend after the pinned candidate below. Regenerate
+> matching artifacts before promotion. TEST v12 preserves all 213 datasets;
+> production is unchanged. See the completion checklist for current acceptance.
+
 ## Current execution integration — 13 October, 01:40 BST
 
 The pinned 73-step sequence now has a coordinator that connects the journal to
