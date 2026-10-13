@@ -1,0 +1,59 @@
+{
+  "state": "offline_access_change_and_revert_passed",
+  "productionChanges": 0,
+  "providerRequests": 0,
+  "sqlSha256": "b1fd554ca711fd6b128845b6e2baa86d62fd9c85ad7fd3fdb3fd3304fdb58006",
+  "checks": [
+    "wrong_project",
+    "stale_profile",
+    "late_failure_atomic_rollback",
+    "grant_only_expected_profile_fields_and_audit",
+    "existing_customer_context_resolves_without_platform_authority",
+    "duplicate_rejected_unchanged",
+    "revert_restores_prior_scope_and_retains_audit"
+  ],
+  "archive": {
+    "bytes": 201420792,
+    "sha256": "009c3236c3f73fe686c4a0f99e988c7c47776c0fa7b11c619d1fc6bf672f057e"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "unrelatedPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 297,
+    "rows": 1617988,
+    "sequences": 5,
+    "comparisonSha256": "b1f1c96700e25c8c190e8741fb0c5d3bf819a62d992725e9ccf0e9d2b965a5a1",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "customerAuthority": {
+    "expectedCompanyRoleMatched": true,
+    "expectedCompanyMatched": true,
+    "platformOperator": false
+  },
+  "auditCount": 2,
+  "containerRemoved": true,
+  "version": "learn-founder-access-preparation/1",
+  "plan": "0cebff5a-8018-44d7-a444-2a6252efd641",
+  "approval": "pending",
+  "limitations": [
+    "Offline retained full-schema archive only; no hosted access changed.",
+    "Preservation comparison excludes profiles and controller audit; target profile fields and two new audits checked separately.",
+    "Network operational tables omitted by the native archive are not part of the fingerprint comparison.",
+    "No signed-in HTTP or exhaustive module permission acceptance."
+  ]
+}

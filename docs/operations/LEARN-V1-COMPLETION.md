@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 02:34 BST — founder access change and reversal rehearsed offline; decision pending.**
+
+### Working and verified
+
+- The designated customer account was checked against Auth and its existing portal
+  membership. Its current permissions explain the LEARN access gap. A guarded company-admin assignment and audited reversal are prepared.
+- The exact change passed seven checks in a network-isolated full-schema restore.
+  The other 297 archived tables and five sequences matched; expected profile fields
+  and two audit records were checked separately. The disposable container was removed.
+- No hosted account, source record, capture setting or live deployment changed.
+
+### Needs finishing
+
+- Apply the founder access plan only after its specific permission decision, then
+  verify the durable result and the customer’s signed-in journey with the matched release.
+  Company-admin access includes customer actions; it is not a read-only demo role.
+- Full input coverage, processing, cards/scoring, matched backend/frontend release,
+  initial live monitoring and operational handover remain unfinished.
+
+### Blocked externally
+
+- Founder production access needs the decision on the [prepared proposal](LEARN-FOUNDER-ACCESS.md).
+  The existing 1Password window still shows locked; fresh off-site recovery remains
+  pending the earlier unlock request. Live sign-in and TEST AI access remain unresolved.
+
+[Access preparation evidence](evidence/learn-founder-access-2026-10-13.json).
+
+### Previous workspace milestone
+
 **13 October, 02:28 BST — missing TEST workspace prepared through signed-in operator controls.**
 
 ### Working and verified
