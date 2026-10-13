@@ -1,0 +1,158 @@
+{
+  "state": "test_trace_runtime_source_and_guards_verified",
+  "project": "saatxzwxvdvqevbnskxy",
+  "gitSource": "fff1c47657c508ad6bf02b86520031a0d082d552",
+  "sourceClosureSha256": "125a396b27d240b4e7da817b34cda4804075dd3290027e2f49641a9ca1a6b333",
+  "endpoints": [
+    {
+      "name": "quickbooks-oauth-start",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": false,
+      "hash": "6baff088b904e2d6037e8d27506f0419e28bc852d0f0ee85c2ebda1a2afe67e5",
+      "state": "metadata_verified"
+    },
+    {
+      "name": "quickbooks-oauth-callback",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": false,
+      "hash": "52d48290f21872a3f908b25ef112845c21759abc70f4f600dde05ecdc17ea68c",
+      "state": "metadata_verified"
+    },
+    {
+      "name": "learn-quickbooks-worker",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": false,
+      "hash": "45b8965cca19216820c49dda6ed648995806b29823e85d3c2ac7e6c80411cec6",
+      "state": "metadata_verified"
+    },
+    {
+      "name": "quickbooks-disconnect",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": false,
+      "hash": "9ba1ffb340402490401014ab3d4f0d997364c34df2dcc382a5799d1259f8b89a",
+      "state": "metadata_verified"
+    }
+  ],
+  "checks": {
+    "nodeTestsPassed": 55,
+    "denoEndpointChecks": 4,
+    "readback": [
+      {
+        "name": "quickbooks-oauth-start",
+        "version": 2,
+        "artifactHash": "6baff088b904e2d6037e8d27506f0419e28bc852d0f0ee85c2ebda1a2afe67e5",
+        "matchingRuntimeModules": 8,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "00f68d4fd15727bf3c26ad54f02b01d1f0a93fcd02b6fb7eabb4a900be453df6"
+      },
+      {
+        "name": "quickbooks-oauth-callback",
+        "version": 2,
+        "artifactHash": "52d48290f21872a3f908b25ef112845c21759abc70f4f600dde05ecdc17ea68c",
+        "matchingRuntimeModules": 8,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "147f24d213702859c4f0f07beefebc51cf1e444fcd195d69f40137543d969e26"
+      },
+      {
+        "name": "learn-quickbooks-worker",
+        "version": 2,
+        "artifactHash": "45b8965cca19216820c49dda6ed648995806b29823e85d3c2ac7e6c80411cec6",
+        "matchingRuntimeModules": 9,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "759bbecbf6a75f3869bd92feae1c74537d3bfcc26c8380cd6e23a45f737c094f"
+      },
+      {
+        "name": "quickbooks-disconnect",
+        "version": 2,
+        "artifactHash": "9ba1ffb340402490401014ab3d4f0d997364c34df2dcc382a5799d1259f8b89a",
+        "matchingRuntimeModules": 5,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "a41d51915af9c4b5438b8e18881055898d9d7a72dca88d618d541eae58476b97"
+      }
+    ],
+    "publicGuards": [
+      {
+        "name": "quickbooks-disconnect",
+        "method": "OPTIONS",
+        "status": 204,
+        "origin": "https://test.openfolk.ai"
+      },
+      {
+        "name": "quickbooks-disconnect",
+        "method": "POST",
+        "status": 401,
+        "origin": "https://test.openfolk.ai"
+      },
+      {
+        "name": "quickbooks-disconnect",
+        "method": "POST",
+        "status": 403,
+        "origin": "https://example.invalid"
+      },
+      {
+        "name": "quickbooks-oauth-start",
+        "method": "OPTIONS",
+        "status": 204,
+        "origin": "https://test.openfolk.ai"
+      },
+      {
+        "name": "quickbooks-oauth-start",
+        "method": "POST",
+        "status": 401,
+        "origin": "https://test.openfolk.ai"
+      },
+      {
+        "name": "quickbooks-oauth-start",
+        "method": "POST",
+        "status": 403,
+        "origin": "https://example.invalid"
+      },
+      {
+        "name": "quickbooks-oauth-callback",
+        "method": "GET",
+        "status": 400,
+        "origin": null
+      },
+      {
+        "name": "learn-quickbooks-worker",
+        "method": "POST",
+        "status": 503,
+        "origin": null
+      }
+    ],
+    "otherEndpointsUnchanged": true,
+    "quickBooksCountsUnchanged": true,
+    "counts": {
+      "apps": 0,
+      "connections": 0,
+      "imports": 0,
+      "pages": 0,
+      "disconnects": 0
+    },
+    "configuredSiteOriginMatches": true,
+    "configuredMinorVersionMatches": true,
+    "workerKeyAbsent": true
+  },
+  "preservationCaveat": {
+    "originalRunState": "requires_inspection",
+    "originalFailure": "TEST preservation differs",
+    "finding": "Supabase-managed SUPABASE_* secret updated_at fields now match the deployment time; user-defined secret timestamps predate this release. Two subsequent reads have equal value fingerprints. The deployment script issued no secret writes.",
+    "limitation": "The initial aggregate included updated_at and did not retain a separate pre-deploy value fingerprint. It cannot prove exact before/after equality of every secret value; retain this limitation. Future checks now compare names/value fingerprints separately."
+  },
+  "scope": {
+    "productionChanges": 0,
+    "providerRequests": 0,
+    "credentialsProvisioned": 0,
+    "companiesAuthorized": 0,
+    "importsEnabled": 0
+  },
+  "limitations": [
+    "Real provider trace receipt and managed log retention still require a permitted sandbox request.",
+    "Existing managed Edge logs are not an indefinite audit archive.",
+    "Stable TEST frontend still awaits Slack compatibility reconciliation and signed-in acceptance."
+  ]
+}

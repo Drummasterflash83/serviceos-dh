@@ -2,8 +2,10 @@
 
 Prepared 13 October 2026 at Chris's request. These drafts are saved in the
 QuickBooks integration branch, not published, accepted or submitted to Intuit.
-They need factual completion and review by a suitably qualified UK adviser before
-use as the business's legal terms. They do not establish legal compliance.
+They need factual completion and the business's approval before publication.
+Review by a suitably qualified UK adviser is recommended for these legal terms;
+this recommendation is not an independently imposed deployment approval gate.
+The drafts do not establish legal compliance.
 
 - [Privacy policy draft](SERVICEOS-PRIVACY-POLICY-DRAFT.md)
 - [Drummonds end-user terms / EULA draft](SERVICEOS-TERMS-DRAFT.md)

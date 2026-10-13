@@ -238,6 +238,27 @@ returned an empty success body. An independent inventory confirmed those exact
 setting hashes and zero endpoints before continuation; the response parser now
 accepts empty success bodies and skips already-matching settings.
 
+### Provider diagnostics — hosted TEST, 13 October 18:03 UTC
+
+All four QuickBooks TEST endpoints are now v2 with sanitised Intuit trace logging.
+The fixed read/token/revoke transports preserve responses and retry behaviour;
+logging excludes credentials, company identifiers, URLs, query strings and bodies.
+Logging failure cannot repeat a provider request. The change follows Intuit's
+[transaction-ID troubleshooting guidance](https://github.com/intuit/oauth-jsclient#debugging-oauth-errors).
+All 55 transport/frontend-contract tests and four Deno endpoint checks pass.
+Downloaded executable closures match; all eight unauthenticated/CORS/idle probes
+pass. No QuickBooks credential, company, import or worker key is configured.
+
+The first release check reported a secret-metadata mismatch. Investigation found
+Supabase-managed `SUPABASE_*` timestamps matching the deployment time; custom
+secret timestamps predate it, configured QuickBooks values match and two later
+reads have equal value fingerprints. The script made no secret writes. Because
+its initial fingerprint included timestamps, exact before/after value equality
+for every secret is not proven. Preserve this limitation and the initial journal;
+future checks now fingerprint names/values separately. Other endpoint artifacts
+and QuickBooks counts are unchanged. No production or real provider request occurred.
+[Release evidence](evidence/learn-quickbooks-test-tracing-2026-10-13.json).
+
 ### Protected frontend candidate — 13 October
 
 The clean managed release worktree is now
@@ -346,7 +367,7 @@ may appear after answers are selected.
 | App information | Custom application; server-side Web/SaaS calls; accounting reads only in this connector. Current registration is for Drummonds' internal deployment, with reusable architecture for future clients. It is not a platform that lets outside developers obtain QuickBooks API access, and clients do not need to create their own Intuit developer apps. Disclose the use of development tools accurately. Other ServiceOS inputs include Commusoft, email, telephony and Slack. Review exact available options before entering answers. |
 | Authorization | Intuit asks explicitly about sandbox/non-production connect, disconnect and reconnect testing. This has **not** yet been performed. It also asks about refresh frequency, failed auth retries, reconnect prompts, discovery-document endpoints, expired access/refresh tokens, invalid grants, CSRF and reliance on offline OAuth tools. Existing code/SQL tests support some controls, but cannot be substituted for the missing provider lifecycle run. |
 | API usage | API categories and per-customer call frequency. The initial connector uses Accounting entity queries and CompanyInfo; bounded imports reserve requests and pace requests per realm. No perpetual live sync schedule has been enabled. Do not invent a polling frequency or claim reports/webhooks/CDC are implemented. |
-| Error handling | API/syntax/validation error tests, `intuit_tid` capture, troubleshooting logs and in-app support. The current transports discard response trace IDs; capture/persistence is still an implementation gap. Sanitised errors and bounded retry behaviour have tests. Verify support access and actual retained diagnostics before answering. |
+| Error handling | API/syntax/validation error tests, `intuit_tid` capture, troubleshooting logs and in-app support. TEST v2 endpoints now record bounded `intuit_tid`, HTTP status and operation metadata in existing Edge logs; 55 tests, Deno checks and downloaded runtime comparison pass. Real provider receipt and log-retention verification remain open; this is not an indefinite diagnostic archive. Sanitised errors and bounded retry behaviour have tests. Verify support access and actual retained diagnostics before answering. |
 | Security | Notifiable breach history and who assesses risks require Chris's factual answers; questions have been sent. Client secrets are designed for server-side Vault storage, but the real app secret has not been provisioned. MFA, CAPTCHA and WebSocket use require a current app/configuration check. Authorised OpenFolk operators can access tenant information for support: do not claim only an individual customer can ever see their information. Ordinary tenants remain isolated. |
 
 Next provider acceptance step is a real sandbox lifecycle run after the exact
