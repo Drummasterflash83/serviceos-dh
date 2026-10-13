@@ -21,7 +21,9 @@ function unsupported(message: Record<string, unknown>, code: string): never {
   });
   throw error;
 }
-export function slackMessageKind(message: Record<string, unknown>): 'conversation' | 'channel_activity' | 'source_needs_review' {
+export function slackMessageKind(message: Record<string, unknown>): 'conversation' | 'channel_activity' | 'source_needs_review' | 'source_withheld' {
+  // Exact observed provider withholding marker; never blanket-admit hidden records.
+  if (message.type === 'message' && message.subtype === 'tombstone' && message.hidden === true) return 'source_withheld';
   if (message.type !== undefined && message.type !== 'message' ||
       message.hidden !== undefined && message.hidden !== false ||
       message.subtype !== undefined && typeof message.subtype !== 'string') {

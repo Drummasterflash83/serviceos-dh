@@ -1,3 +1,4 @@
+import {SlackHistoryTransportError} from './slack_history_errors.ts';
 import {assertSlackHistoryScope,historyScopeKey} from './slack_history.ts';
 import type {SlackHistoryScope} from './slack_history.ts';
 import type {WorkerHandlerContext} from '../worker_contract.ts';
@@ -24,6 +25,7 @@ export function sourceReplayPersistence(db:WorkerHandlerContext['supabaseAdmin']
   if(!ctx.claim||next.pages!==1||!next.complete||next.cursor!==null||page.records.length>1)throw Error('slack_history_replay_window_incomplete');
   const visibility=captureVisibility?.();if(!visibility)throw Error('slack_history_replay_visibility_unavailable');
   const {data,error}=await db.rpc('learn_slack_commit_source_replay',{p_tenant:ctx.tenantId,p_job:ctx.jobId,p_claimed_by:ctx.claim.claimedBy,p_attempt:ctx.claim.attemptCount,p_records:page.records,p_visibility:visibility});
+  if(error?.message==='slack_history_withheld_card_review_required')throw new SlackHistoryTransportError('slack_history_withheld_card_review_required',false);
   if(error||data!==true)throw Error('slack_history_replay_commit_unconfirmed');
  };
 }

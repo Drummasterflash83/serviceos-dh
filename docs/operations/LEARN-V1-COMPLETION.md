@@ -7,6 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October — Slack unavailable-source handling verified locally; release pending.**
+
+- The exact observed Slack unavailable-message marker is retained without
+  becoming conversation content. Prior versions remain protected; stale replays
+  cannot restore them through ordinary context or scores. Available replies are
+  processed independently, with a separate unavailable-source count.
+- All 126 focused tests, typechecking and the production application build passed.
+  The full native-schema rehearsal ran as the production maintenance role,
+  passed 13 journeys and preserved all 1,591,580 archived rows and seven sequences.
+- This checkpoint is not deployed. The exact deployment envelope, matching two
+  runtimes, stable frontend and held-page continuation remain release work.
+  Previously published card summaries without per-field provenance require
+  explicit reconciliation; the import stops atomically in that case.
+- LIVE recurring Commusoft capture reached 290 customer-contact pages at
+  16:50 UTC, after its property and job stages. Canonical customer reconciliation
+  remains distinct from completed source imports.
+
+Evidence: [Slack candidate verification](evidence/learn-slack-withheld-candidate-2026-10-13.json).
+
 **13 October, 17:32 BST — recurring backup procedure accepted; contacts advancing.**
 
 - The combined manual backup verified 2,990 phone files and all 255 voicemail

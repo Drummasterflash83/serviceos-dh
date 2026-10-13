@@ -468,3 +468,10 @@ test('held source coverage is explicit, nonnegative, and absent for older snapsh
  assert.equal((await readCampaign(db(progress),id(1),id(3))).sourceNeedsReviewCount,undefined);
  for(const value of [-1,0.5,null,'2',Infinity])await assert.rejects(readCampaign(db({...progress,sourceNeedsReviewCount:value}),id(1),id(3)));
 });
+
+test('withheld source coverage remains separate from unclassified records and missing does not imply zero',async()=>{
+ const db=(data:any)=>({rpc:async()=>({data,error:null})});
+ assert.equal((await readCampaign(db({...progress,sourceWithheldCount:2,sourceNeedsReviewCount:3}),id(1),id(3))).sourceWithheldCount,2);
+ assert.equal((await readCampaign(db(progress),id(1),id(3))).sourceWithheldCount,undefined);
+ for(const value of [-1,0.5,null,'2',Infinity])await assert.rejects(readCampaign(db({...progress,sourceWithheldCount:value}),id(1),id(3)));
+});

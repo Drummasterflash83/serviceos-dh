@@ -52,6 +52,7 @@ export type CampaignChannel = {
 };
 export type Campaign = {
   sourceNeedsReviewCount?: number;
+  sourceWithheldCount?: number;
   tenantId: string;
   campaignId: string;
   revision: number;
@@ -275,6 +276,7 @@ export async function readCampaign(
       d.requestsReserved > d.requestBudget ||
       d.coverage !== "fixed_window_observed_threads" ||
       (d.sourceNeedsReviewCount !== undefined && !count(d.sourceNeedsReviewCount)) ||
+      (d.sourceWithheldCount !== undefined && !count(d.sourceWithheldCount)) ||
       d.requestAccounting !== "conservative_dispatch_reservations" ||
       !Array.isArray(d.channels) ||
       d.channels.length < 1 ||

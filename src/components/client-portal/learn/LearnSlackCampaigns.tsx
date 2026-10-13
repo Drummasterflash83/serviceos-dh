@@ -426,6 +426,13 @@ export function LearnSlackCampaigns({
               Available thread replies are captured separately.
             </p>
           )}
+          {campaign.sourceWithheldCount !== undefined && campaign.sourceWithheldCount > 0 && (
+            <p role="status" className="text-sm text-muted-foreground">
+              {campaign.sourceWithheldCount.toLocaleString()} Slack records are unavailable at source.
+              Their withholding markers are retained; their content is excluded from customer context and scoring.
+              Available replies are captured separately.
+            </p>
+          )}
           <div className="overflow-auto">
             <table className="w-full text-sm">
               <thead>
@@ -533,6 +540,9 @@ export function LearnSlackCampaigns({
                   Job: {recovery.jobId ?? "None"} · {recovery.status ?? "Not checked"}
                 </p>
                 <p>{recovery.errorCode ?? "No failure code recorded"}</p>
+                {recovery.errorCode === "slack_history_withheld_card_review_required" && (
+                  <p>A withheld Slack source previously supplied a customer-card summary. OpenFolk must reconcile that summary before retrying this page; no source or card content was changed.</p>
+                )}
                 {recovery.diagnostic ? (
                   <p>
                     Structure: type {recovery.diagnostic.type}; hidden {recovery.diagnostic.hidden};

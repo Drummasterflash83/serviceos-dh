@@ -66,3 +66,17 @@ test('welcome_party does not bypass hidden/type/subtype guards or admit other un
   await assert.rejects(readBoth(message),(e:any)=>e.retryable===false);
  }
 });
+
+test('only the exact hidden tombstone shape is retained as withheld, with unchanged provider evidence',async()=>{
+ const marker={...record('tombstone'),hidden:true,reply_count:1};
+ assert.equal(slackMessageKind(marker),'source_withheld');
+ for(const page of await readBoth(marker))assert.deepEqual(page.records[0].provider_payload,marker);
+ for(const m of [{...marker,hidden:false},{...marker,hidden:'true'},{...marker,hidden:null},{...marker,type:'event_callback'},
+  {...marker,type:undefined},{...marker,subtype:'message_deleted'},{...marker,subtype:'message_changed'},{...marker,subtype:'unknown_hidden'}])await assert.rejects(readBoth(m));
+});
+
+test('exact textless tombstone retains absent provider text; malformed text and unrelated omissions reject',async()=>{
+ const marker={...record('tombstone'),hidden:true};delete (marker as any).text;
+ for(const page of await readBoth(marker)){assert.equal(page.records[0].text,'');assert.deepEqual(page.records[0].provider_payload,marker);assert.equal('text' in page.records[0].provider_payload,false);}
+ for(const m of [{...marker,text:null},{...marker,text:42},{...marker,text:{}},{...marker,subtype:'bot_message'},{...marker,hidden:false}])await assert.rejects(readBoth(m));
+});
