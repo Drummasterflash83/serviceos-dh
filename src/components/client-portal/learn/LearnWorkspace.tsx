@@ -54,6 +54,7 @@ export function LearnWorkspace({
           actorId={user.id}
           company={company}
           initialCollection="customers"
+          embedded
         />
       </Suspense>
     </div>

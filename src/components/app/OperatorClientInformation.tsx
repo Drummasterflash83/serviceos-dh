@@ -16,11 +16,13 @@ export function OperatorClientInformation({
   actorId,
   company,
   initialCollection = "business_sources",
+  embedded = false,
 }: {
   tenantId: string;
   actorId: string;
   company: string;
   initialCollection?: InformationCollection;
+  embedded?: boolean;
 }) {
   const [collection, setCollection] = useState<InformationCollection>(initialCollection);
   const [reason, setReason] = useState("");
@@ -110,7 +112,7 @@ export function OperatorClientInformation({
         : String(value);
   return (
     <section
-      className="op-embedded cp-root min-w-0 space-y-5"
+      className={embedded ? "min-w-0 space-y-5" : "op-embedded cp-root min-w-0 space-y-5"}
       aria-labelledby="client-information-heading"
     >
       <header>
