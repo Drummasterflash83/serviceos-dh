@@ -233,7 +233,10 @@ test("active receptionist click only toggles its submenu without navigating or r
     /aria-expanded=\{id === "receptionist" \? receptionistExpanded : undefined\}/,
   );
   assert.match(portal, /receptionistExpanded \? "cp-nav-chevron is-open"/);
-  assert.match(portal, /section === "receptionist" \? receptionistContent : content/);
+  assert.match(
+    portal,
+    /section === "receptionist"\s*\?\s*\(?\s*receptionistContent\s*\)?\s*:\s*\(?\s*content/,
+  );
 });
 test("mobile workspaces use one persistent menu and an explicit pull refresh", () => {
   const portal = read("../components/client-portal/ClientPortal.tsx");
