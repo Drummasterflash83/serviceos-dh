@@ -1,0 +1,30 @@
+{
+  "status": "draft_not_approved_not_published",
+  "publicPolicyPaths": [
+    "/privacy/drummonds",
+    "/terms/drummonds"
+  ],
+  "privateAgreement": "agreement.html",
+  "sources": {
+    "SERVICEOS-QUICKBOOKS-APPROVAL.md": {
+      "sha256": "f629e359b01d240fdfea01a07d1ff89155708584f3e63368e561531fe542b52e",
+      "preview": "index.html"
+    },
+    "SERVICEOS-PRIVACY-POLICY-DRAFT.md": {
+      "sha256": "2709a0c96fb1fb48384cb753f9c20a4b360803c3aeff36fc409b6cdda461f12c",
+      "preview": "privacy.html"
+    },
+    "SERVICEOS-TERMS-DRAFT.md": {
+      "sha256": "163ab92db893594ee193312b3c471f8e350ee497367a05d7ac09b3c80661fc2d",
+      "preview": "terms.html"
+    },
+    "SERVICEOS-DRUMMONDS-PILOT-AGREEMENT-DRAFT.md": {
+      "sha256": "44c9586629fac60b97959f831ea983326f7c4e89bddea6946445a25d03f8bb9e",
+      "preview": "agreement.html"
+    },
+    "SERVICEOS-LEGAL-PUBLICATION-REVIEW.md": {
+      "sha256": "e5e25859320e41e1eb4ec8eb68e2bdda00b6e32f4976d9059551d78208e39e75",
+      "preview": "release-review.html"
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { quickBooksLeaseBudget } from "./lease_deadline.ts";
 import { quickBooksAuthorizationUrl, validateQuickBooksCallback } from "./oauth_contract.ts";
 import type { QuickBooksPendingAuthorization } from "./oauth_contract.ts";
 import { requestQuickBooksTokens } from "./token_transport.ts";
@@ -112,8 +113,8 @@ export async function completeQuickBooksAuthorization(
     requestId = p.requestId;
     claimId = p.claimId;
     const now = ports.clock ?? Date.now;
-    const remaining = Date.parse(p.claimUntil) - now();
-    if (!Number.isFinite(remaining) || remaining <= 0 || remaining > 120000)
+    const remaining = quickBooksLeaseBudget(p.claimUntil, now());
+    if (remaining === null)
       throw new Error("authorization_invalid");
     const signal = ports.signal
       ? AbortSignal.any([ports.signal, AbortSignal.timeout(Math.ceil(remaining))])
@@ -200,8 +201,8 @@ export async function refreshQuickBooksConnection(
       typeof a.refreshToken !== "string"
     )
       return "unconfirmed";
-    const remaining = Date.parse(a.leaseUntil) - (ports.clock ?? Date.now)();
-    if (!Number.isFinite(remaining) || remaining <= 0 || remaining > 120000) return "unconfirmed";
+    const remaining = quickBooksLeaseBudget(a.leaseUntil, (ports.clock ?? Date.now)());
+    if (remaining === null) return "unconfirmed";
     const signal = ports.signal
       ? AbortSignal.any([ports.signal, AbortSignal.timeout(Math.ceil(remaining))])
       : AbortSignal.timeout(Math.ceil(remaining));

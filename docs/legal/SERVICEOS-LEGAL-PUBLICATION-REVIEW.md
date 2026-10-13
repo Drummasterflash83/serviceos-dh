@@ -33,10 +33,11 @@ demonstrate that request-handling procedures have been tested.
 
 ## Owner clarifications — 13 October 2026
 
-Chris confirmed that legal counsel has not reviewed the use of customer data and
-that nobody is appointed to review ServiceOS security risks. His support/contact
-role is not evidence of a security review programme. He is willing to review and
-sign a separate agreement with Drummonds; no agreement has been accepted or signed.
+Chris confirmed that legal counsel has not reviewed the use of customer data.
+He initially said no security reviewer was appointed, then named himself as
+security-risk owner and Heidi as Drummonds signatory (see the update below).
+That appointment is not evidence of an established review programme. He is willing
+to review and sign the pilot agreement; no agreement has been accepted or signed.
 The internal EULA remains distinct from any Chris–Drummonds development, licence
 and data-handling agreement, whose substantive terms still need agreement.
 
@@ -60,7 +61,9 @@ still require verification before publication.
 ## Engineering and operational verification
 
 - The QuickBooks sandbox connection and two bounded imports are verified: 77
-  sample records, no duplicates on repeat, capture paused. Drummonds' live company
+  sample records, no duplicates on repeat, imports disabled. The sandbox provider
+removal and reconnection have now also been observed; token refresh and API
+revocation acceptance remain open. Drummonds' live company
   remains unconnected. Sandbox acceptance is not production compliance or coverage.
 - Confirm all actual data flows, suppliers, subprocessors, locations, support
   access, contracts and transfer safeguards. Vercel, Supabase, AWS, Cloudflare,
@@ -116,3 +119,19 @@ indefinitely by default. The [ICO controller/processor guidance](https://ico.org
 informs review of actual processor arrangements. The [ICO transfer guide](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/international-transfers/a-guide-to-international-transfers/)
 informs the need to verify locations, overseas access and safeguards. These
 references do not validate OpenFolk's current contracts or technical configuration.
+
+
+## Pilot approval update
+
+Chris approved the proposed 90-day pilot with no separate software fee, prior
+approval for third-party costs, 30-day termination notice and existing ownership
+unchanged. He named Heidi Drummond and himself in response to the proposed
+Drummonds-signatory/security-owner roles: Heidi signs for Drummonds; Chris supplies
+personally and owns security-risk review. This is not evidence of previous reviews.
+
+The [pilot agreement](SERVICEOS-DRUMMONDS-PILOT-AGREEMENT-DRAFT.md) and
+[approval pack](SERVICEOS-QUICKBOOKS-APPROVAL.md) are ready for substantive review.
+They remain unsigned. Exit/deletion targets are proposals, not current guarantees.
+The latest statement supersedes the earlier absence of an appointed security owner.
+Legal-counsel review remains No. Only the privacy and user-terms pages are intended
+for public publication; the commercial/processing agreement remains private.

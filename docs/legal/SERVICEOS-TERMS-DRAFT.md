@@ -15,7 +15,7 @@ SO51 7JF**. In these terms, “Drummonds”, “we” and “us” mean that com
 Contact **Chris Drummond, chris@drummondheating.co.uk**, marked “ServiceOS support”,
 or write to our registered office. Chris is the nominated contact for support,
 privacy and security enquiries about this deployment.
-Effective date: **[DATE]**.
+Effective date: to be set on approval and publication.
 
 This is Drummonds’ internal application, developed and supported by Chris Drummond,
 who supplies the software personally and works directly with Drummonds. OpenFolk
@@ -26,7 +26,9 @@ not transfer ownership of ServiceOS or its reusable components.
 These terms govern access by our authorised staff, contractors and other expressly
 approved users. They do not replace employment terms, customer heating-service
 contracts or any separately agreed development or software-licensing arrangements.
-**[Review the adoption/acceptance mechanism and underlying software rights before publication.]**
+Drummonds must adopt these terms for authorised users and confirm its underlying
+software rights before publication. A separate pilot agreement records the
+arrangement between Chris and Drummonds; these user terms do not replace it.
 
 ## 2. Permitted use and access
 
@@ -79,8 +81,9 @@ through our support contact. Disconnection does not delete QuickBooks records or
 automatically erase ServiceOS history. Reconnection, including migration to an
 OpenFolk-owned developer app, may require fresh authorisation.
 
-**[Release condition: verify these functions in the deployed connector before
-representing them as available. No real company is connected at draft date.]**
+The sandbox connection and imports are verified. The live Drummonds company
+remains unconnected at the draft date; live availability is subject to release
+verification. QuickBooks data must not be used for model training or fine-tuning.
 
 ## 5. AI and business judgement
 
@@ -136,8 +139,10 @@ When access ends, stop using the workspace and return or protect information as
 instructed. Authorised administrators may request exports or deletion through the
 support contact above. Individual rights requests follow the privacy notice.
 
-**[Agree a working export procedure, exit window, live-data deletion timing,
-backup maximum retention, legal exceptions and completion evidence.]** Revoking a
+The proposed pilot agreement sets a 30-day export opportunity after termination,
+active-data deletion within 30 days after return/deletion is agreed, and
+recovery-copy removal within 90 days after active deletion, with lawful exceptions.
+Those targets require approval and verification before these terms become effective. Revoking a
 connection is not the same as deleting stored history. Historical versions and
 derived records require explicit handling. Retained recovery copies must remain
 restricted, and deletion instructions must be reapplied after restoration.
@@ -152,15 +157,19 @@ outputs. Nothing in these terms excludes rights or liability that cannot lawfull
 be excluded, including applicable liability for fraud, fraudulent misrepresentation
 or death or personal injury caused by negligence.
 
-**[Obtain legal review of any proposed limits or exclusions, remedies and interaction
-with employment and supplier contracts. No new user indemnity or liability cap is
-imposed by this draft.]** These internal access terms do not set commercial fees,
+No new user indemnity or monetary liability cap is imposed by these terms.
+Existing employment and supplier agreements remain separate. These internal
+access terms do not set commercial fees,
 renewal obligations or liabilities for any separate development arrangement.
 
-**[Confirm governing law and courts; proposed for review: England and Wales.]**
+England and Wales law applies and its courts have jurisdiction, subject to
+mandatory applicable law.
 Raise concerns through the support contact above. This does not prevent urgent
 relief, complaints to a competent authority or applicable statutory rights.
 
-Material changes will be explained before taking effect through **[AGREED NOTICE
-AND ACCEPTANCE PROCESS]**. A terms update does not retrospectively expand data-use
+Drummonds will communicate material changes to authorised users through their
+registered business email, normally at least 14 days before they take effect.
+Urgent legal or security changes may take effect sooner with an explanation.
+Where a change requires agreement, Drummonds will obtain it expressly; a notice
+alone is not acceptance. A terms update does not retrospectively expand data-use
 permissions or change software ownership.

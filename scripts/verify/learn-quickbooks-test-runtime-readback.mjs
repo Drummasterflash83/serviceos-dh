@@ -56,11 +56,11 @@ function structure(source) {
   return JSON.stringify(walk(tree));
 }
 
-const args=process.argv.slice(2),all=args.includes('all'),disconnect=args.includes('disconnect'),callback=args.includes('callback');
+const args=process.argv.slice(2),all=args.includes('all'),disconnect=args.includes('disconnect'),callback=args.includes('callback'),worker=args.includes('worker');
 const versionArg=args.find(a=>/^--version=[1-9][0-9]*$/.test(a));
-if(args.length>2||args.some(a=>!['all','disconnect','callback'].includes(a)&&a!==versionArg)||([all,disconnect,callback].filter(Boolean).length>1)||new Set(args).size!==args.length)throw Error('Specify all, callback or disconnect, optionally --version=N');
+if(args.length>2||args.some(a=>!['all','disconnect','callback','worker'].includes(a)&&a!==versionArg)||([all,disconnect,callback,worker].filter(Boolean).length>1)||new Set(args).size!==args.length)throw Error('Specify all, callback, worker or disconnect, optionally --version=N');
 const expectedVersion=versionArg?Number(versionArg.slice(10)):1;
-const project='saatxzwxvdvqevbnskxy',names=callback?['quickbooks-oauth-callback']:disconnect?['quickbooks-disconnect']:['quickbooks-oauth-start','quickbooks-oauth-callback','learn-quickbooks-worker',...(all?['quickbooks-disconnect']:[])];
+const project='saatxzwxvdvqevbnskxy',names=worker?['learn-quickbooks-worker']:callback?['quickbooks-oauth-callback']:disconnect?['quickbooks-disconnect']:['quickbooks-oauth-start','quickbooks-oauth-callback','learn-quickbooks-worker',...(all?['quickbooks-disconnect']:[])];
 const token=savedCliToken(),root='.verification-results/quickbooks-runtime-readback-'+Date.now();mkdirSync(root,{recursive:true,mode:0o700});
 async function inventory(){const r=await fetch(`https://api.supabase.com/v1/projects/${project}/functions`,{headers:{Authorization:'Bearer '+token},redirect:'error',signal:AbortSignal.timeout(30000)});if(!r.ok)throw Error('TEST runtime inventory unavailable');return r.json();}
 const before=await inventory(),reports=[];

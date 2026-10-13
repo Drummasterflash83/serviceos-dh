@@ -1,9 +1,8 @@
 # Drummonds — OpenFolk ServiceOS privacy notice
 
 **Draft for review · 13 October 2026 · Not published or effective.**
-This notice is for Drummonds’ deployment only. Bracketed fields and the decisions
-in [the publication review](SERVICEOS-LEGAL-PUBLICATION-REVIEW.md) must be resolved
-before publication. It does not describe Drummonds as the operator of OpenFolk
+This notice is for Drummonds’ deployment only. The proposed commitments below need approval and operational verification
+through [the launch approval pack](SERVICEOS-QUICKBOOKS-APPROVAL.md) before publication. It does not describe Drummonds as the operator of OpenFolk
 for other clients or certify that planned controls are already operational.
 
 ## 1. Who is responsible
@@ -17,7 +16,7 @@ Contact: **Chris Drummond, chris@drummondheating.co.uk**, marked “ServiceOS pr
 or write to our registered office. Chris is the nominated contact for privacy,
 support and security enquiries about this deployment; this is not a designation
 as a statutory data protection officer.
-Effective date: **[PUBLICATION DATE]**.
+Effective date: to be set when this notice is approved and published.
 
 Drummonds uses OpenFolk ServiceOS to bring together its customer, job,
 communication and business information. This is Drummonds’ internal application,
@@ -72,10 +71,9 @@ The proposed purpose/basis mapping is:
 | Secure the workspace, manage access and investigate misuse | Legitimate interests in protecting information and systems |
 | Optional processing that requires consent | Consent, where required and actually obtained |
 
-**[Before publication: confirm the purposes, applicable laws, legitimate-interest
-assessments and notices for communications capture, AI analysis and workforce
-information. Do not apply a customer contract basis to every staff member or
-third-party correspondent.]** Any special-category or criminal-offence data needs
+**For approval:** Drummonds must adopt the purpose/basis mapping and complete
+any required assessments and workforce notices before the relevant processing.
+A customer contract does not supply the basis for every correspondent or employee. Any special-category or criminal-offence data needs
 separate assessment and applicable conditions; its incidental presence does not
 by itself authorise new analysis.
 
@@ -105,8 +103,9 @@ controls or request disconnection through our ServiceOS support contact.
 Disconnection does not change our records in QuickBooks or automatically erase
 copies already retained in ServiceOS. Retention and deletion are handled separately.
 
-**[Release condition: verify hosted read-only behaviour and the disconnection
-procedure before presenting these functions as available.]**
+**Launch check:** the sandbox read-only import is verified. Drummonds' live
+connection and the complete disconnect/reconnect lifecycle must be verified
+before this notice is published as describing an available live connection.
 
 ## 5. AI and performance analysis
 
@@ -119,7 +118,7 @@ Performance indicators, if enabled, require an explanation of their measures,
 coverage, purpose and correction process. Our proposed policy requires meaningful
 human review before decisions about pay, employment or other significant outcomes.
 A score is not an automatic instruction to change someone’s pay or employment.
-**[Assess any such feature and provide appropriate workforce information before use.]**
+Any such feature requires assessment and appropriate workforce information before use.
 
 **Proposed data-use restriction:** identifiable workspace information will not be
 sold, used to train general-purpose models or reused for unrelated client datasets.
@@ -135,11 +134,20 @@ operators can access relevant Drummonds information to support the service and
 improve our implementation, using explicit client selection and auditable actions.
 That access does not permit disclosure of our underlying records to another client.
 
-Service providers may process information for hosting, databases, backups,
-security and enabled AI or voice features. Repository inventory identifies
-Vercel, Supabase, AWS and Cloudflare, with OpenAI and Vapi in AI/voice components.
-**[Replace this inventory with the verified recipients/subprocessor list, including
-purposes and locations. Do not assume every listed provider receives QuickBooks data.]**
+The current technical provider inventory is:
+
+| Provider | Service and relevant information |
+| --- | --- |
+| Supabase | Authentication, database, private storage and server functions; QuickBooks records and encrypted connection credentials are stored here. Production database region is London; TEST is Ireland. |
+| Vercel | Hosts the ServiceOS frontend and web request handling. Authorised browsers retrieve accounting views from the backend; do not assume all accounting payloads pass through Vercel. |
+| AWS | Independent encrypted database and recording recovery storage in London, where included in approved backup scope. Database backups can contain retained accounting records. |
+| Cloudflare | Domain/DNS services; traffic-processing role and applicable logs must be confirmed for the deployed hostname. |
+| OpenAI and Vapi | Enabled AI and voice features elsewhere in ServiceOS. The current QuickBooks connector has no path sending its records to these services. |
+| Google Fonts | The existing application loads font resources from Google, which receives network request information. |
+
+**Launch check:** confirm the actual account contracts, subprocessors, supplier
+support access and transfer safeguards before adopting this inventory as the
+final recipient schedule. Connected providers retain their separate roles.
 Intuit and other connected providers also process information under their own
 terms and privacy notices.
 
@@ -154,9 +162,12 @@ should protect their accounts and report suspected unauthorised access through
 Chris Drummond at the contact above, marked “ServiceOS security”.
 
 Some suppliers or their support teams may process information outside the UK.
-**[Insert verified countries, applicable transfer safeguards and how to obtain
-information about them.]** London backup storage does not establish that all
-processing or support access stays in the UK.
+Production Supabase database storage and the independent AWS backup destination
+are in London; TEST Supabase is in Ireland. Supplier support and other services
+can involve additional countries. The final supplier schedule must identify the
+applicable UK transfer safeguard for each relevant flow before launch. Copies
+of the applicable safeguards can be requested from our privacy contact. London
+backup storage does not establish UK-only processing.
 
 ## 8. Retention and deletion
 
@@ -173,10 +184,18 @@ Backups can have separate expiry and deletion-protection periods. Copies awaitin
 disposal remain restricted to recovery and authorised purposes. Applicable deletion
 instructions must be reapplied if a backup is restored.
 
-**[Publication blocker: set specific retention periods or meaningful criteria,
-exit/export timing, deletion procedures, exceptions and maximum backup retention.
-Existing 30-day backup protection is a minimum lock, not automatic deletion after
-30 days; some backups have no automatic expiry. This draft authorises no deletion.]**
+**Proposed pilot retention for approval:** review retained copies at the end of
+the 90-day pilot. Keep records longer only where necessary for an identified
+continuing service, open job/dispute, or legal obligation, and record the reason
+and next review date. Source-system accounting records retain their separate
+retention requirements.
+
+**Proposed exit targets:** provide a 30-day export opportunity after termination,
+remove active copies within 30 days after return/deletion is agreed, and remove
+recovery copies within 90 days after active deletion, subject to documented legal
+exceptions. Current backups have minimum locks and some have no automatic expiry.
+These targets must be approved and verified across source versions, derived
+records and recovery copies before publication. This draft does not delete data.
 
 ## 9. Your rights
 
@@ -194,10 +213,18 @@ contact us first, although we welcome the opportunity to resolve concerns.
 
 ## 10. Website technologies and changes
 
-ServiceOS uses storage needed for sign-in and operation. **[Complete the actual
-cookie, browser-storage and analytics inventory, including purposes, providers,
-duration and required choices before publication.]** This notice does not assume
-that every installed technology is essential.
+ServiceOS stores its sign-in session in browser local storage and refreshes it
+while authorised. It also uses local storage for selected workspace/connection
+preferences and saved operator action drafts, session storage for a selected
+call, and a sidebar preference cookie with a seven-day lifetime. Local-storage
+items can persist until removed or browser data is cleared; closing a tab does
+not necessarily remove them. Use a trusted device and sign out when finished.
+
+The existing application requests Google-hosted fonts. Hosting/security services
+may process request logs. No optional analytics SDK was identified in the inspected
+application source, but this is not a completed network/cookie audit of every
+enabled module. The final cookie inventory and any required choices must match
+the deployed behaviour before publication.
 
 We will date updates and provide appropriate notice of material changes. Updating
 this notice does not itself authorise a new purpose for personal information.

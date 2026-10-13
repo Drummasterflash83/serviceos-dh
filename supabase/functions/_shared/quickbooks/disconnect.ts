@@ -1,3 +1,4 @@
+import { quickBooksLeaseBudget } from "./lease_deadline.ts";
 /** Server-only revocation. A durable lease releases one token once; an uncertain
  * outcome requires operator review, never an automatic second provider request.
  */
@@ -89,11 +90,9 @@ export async function disconnectQuickBooks(
       return result("check_status");
     lease = a.leaseId;
     const now = ports.clock ?? Date.now,
-      remaining = Date.parse(a.leaseUntil) - now();
+      remaining = quickBooksLeaseBudget(a.leaseUntil, now());
     if (
-      !Number.isFinite(remaining) ||
-      remaining <= 0 ||
-      remaining > 120000 ||
+      remaining === null ||
       !token(a.clientId) ||
       a.clientId.includes(":") ||
       !token(a.clientSecret) ||
