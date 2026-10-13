@@ -1,7 +1,9 @@
-# Drummonds founder access — prepared, not applied
+# Drummonds founder access — applied and verified in production
 
 Plan `0cebff5a-8018-44d7-a444-2a6252efd641` targets ServiceOS production
-`tgbnakbxwcqjeimygroz` only. It is separate from frontend/backend promotion.
+`tgbnakbxwcqjeimygroz` only. It is separate from frontend/backend promotion. Chris approved this exact plan
+in chat on 13 October, and it has now been applied and read back successfully.
+[Production evidence](evidence/learn-founder-access-production-2026-10-13.json).
 
 ## Problem and exact change
 
@@ -64,5 +66,23 @@ all five archived sequences matched before/after. The target’s other profile f
 the two expected audit entries were retained. The container was removed.
 
 This does not prove every existing module’s endpoint permissions or a signed-in hosted
-journey. Those require the matching release and real signed-in acceptance. Production
-has not been changed. [Sanitised rehearsal evidence](evidence/learn-founder-access-2026-10-13.json).
+journey. Those require the matching release and real signed-in acceptance. The rehearsal itself made no production changes. [Sanitised rehearsal evidence](evidence/learn-founder-access-2026-10-13.json).
+
+## Approved production result — 13 October
+
+Fresh read-only preflight matched the prepared profile fingerprint, confirmed
+identity, portal membership and table/trigger/permission contract. No audit for
+this run existed. The unchanged, checksum-verified SQL was submitted once after
+recording durable execution intent, and its result was read back independently.
+
+Heidi's existing `heidi@drummondheating.co.uk` profile is now `admin` for Drummonds
+with no automatic expiry. Exactly one matching `customer.access.grant` audit
+records the previous viewer/no-tenant state and the new company-admin state.
+No active OpenFolk platform grant exists for the account.
+
+Before/after fingerprints match for all other profiles, the target profile's
+other fields, its complete Auth row, portal memberships and platform-grant rows.
+The schema/trigger contract still matches. No password change, reset email,
+new login, provider request, capture change, schedule change or release occurred.
+The private plan/journal are terminal `applied_verified`; do not submit again.
+Signed-in production acceptance remains outstanding.

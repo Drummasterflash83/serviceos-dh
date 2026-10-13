@@ -7,10 +7,15 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October, 04:08 BST — historical Slack ranges and recovery verified locally.**
+**13 October — historical Slack ranges verified locally; Heidi access applied in production.**
 
 ### Working and verified
 
+- Chris approved founder-access plan `0cebff5a`. Heidi's existing production
+  profile is now Drummonds `admin`; exact audit, unchanged Auth/profile fields/portal
+  membership and absence of platform authority are verified. No account/password,
+  capture, schedule or provider change occurred. Signed-in acceptance is still open.
+  [Production access evidence](evidence/learn-founder-access-production-2026-10-13.json).
 - The local client, worker and SQL candidate support fixed historical periods
   spanning years, including replies made long after the original message.
   Saved cursors, exact bounds, ten-page approval limits and 24-hour approval
@@ -44,7 +49,7 @@ override a later release observation. No requirement is silently deferred.
 ### Blocked externally
 
 - Existing owner-action dependencies remain: recovery-key access (1Password was
-  locked at its last check), founder access, live sign-in and TEST AI selection.
+  locked at its last check), live sign-in and TEST AI selection.
   None prevents continuing the Slack implementation above.
 
 [Historical-range evidence](evidence/learn-slack-historical-ranges-2026-10-13.json).
