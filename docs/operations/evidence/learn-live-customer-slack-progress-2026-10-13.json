@@ -1,0 +1,53 @@
+{
+  "observed_at": "2026-10-13T14:19:17Z",
+  "environment": "production",
+  "slack_replay": {
+    "status": "succeeded",
+    "attempts": 1,
+    "records": 1,
+    "source_unchanged": true,
+    "exact_version_visibility_proof": true,
+    "customer_job_excerpt_browser_verified": true,
+    "initial_customer_read_failed_then_refresh_succeeded": true,
+    "dedicated_slack_original_source_reader": false,
+    "whole_customer_coverage_proven": false
+  },
+  "commusoft": {
+    "customer_contact_targets_complete": 1552,
+    "customer_contact_targets_total": 1552,
+    "customer_contact_records_at_pass_completion": 2402,
+    "site_contacts_process": "running",
+    "site_contact_requests_verified_at_least": 425,
+    "site_targets_total": 871,
+    "all_contact_coverage_proven": false
+  },
+  "voicemail": {
+    "published_pairs": 255,
+    "forward_routes_enabled": 7,
+    "forward_monitor": "running",
+    "new_messages_seen_in_monitor": 0,
+    "fresh_arrival_playback_proven": false,
+    "backup_original_emails": {
+      "verified": 255,
+      "bytes": 23622647,
+      "manifest_finalized": true
+    },
+    "backup_audio": {
+      "verified": 255,
+      "bytes": 13800699,
+      "manifest_finalized": true
+    },
+    "paired_independent_restore": {
+      "state": "verified",
+      "files": 2,
+      "bytes": 139356,
+      "audio_decoded_seconds": 25.344,
+      "source_access_during_restore": false,
+      "private_content_removed": true,
+      "listening": "not_verified",
+      "isolated_database_comparison": "pending"
+    }
+  },
+  "full_learn_v1_complete": false,
+  "backup_observed_at": "2026-10-13T14:23:42.345Z"
+}

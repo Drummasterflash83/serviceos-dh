@@ -2,6 +2,15 @@
   margin-top: 24px;
 }
 .emma-costs > p,
+.emma-costs > details,
+.emma-costs-grid {
+  margin-left: 24px;
+  margin-right: 24px;
+}
+.emma-costs > details {
+  margin-bottom: 24px;
+}
+.emma-costs > p,
 .emma-costs details {
   color: var(--rw-muted, #746d80);
   font-size: 14px;
@@ -11,7 +20,8 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  margin: 20px 0;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 .emma-costs-grid article {
   display: flex;

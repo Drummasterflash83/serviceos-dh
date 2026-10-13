@@ -1,0 +1,9 @@
+# Supplemental Slack source-replay patch
+
+Applied and verified on 13 October 2026; matching Slack v5/platform v65 and one scheduled exact-source replay are verified. See the production acceptance section of `docs/operations/LEARN-SLACK-SOURCE-REPLAY.md`. This patch follows the published Slack customer-context proof patch. The exact migration and both SQL files are pinned in `manifest.json`; no customer data or credentials are included.
+
+Set `serviceos.release_target` and `serviceos.release_sha256` to the manifest values and submit the entire guarded `apply.sql` as one transaction through the existing reviewed production maintenance runner. No role membership repair is necessary: the four replaced functions are already owned by `postgres`. A failed or uncertain response requires authoritative readback; never blindly retry. SQL must be verified before publishing the matching immutable workers and before requesting a replay.
+
+The exact envelope passed full-schema non-superuser rehearsal, wrong-target/digest guards, late failure rollback, the actual replay journey, existing readers, source preservation and rollback. The runtime baseline is Slack worker v4/platform worker v64, with voicemail v7 preserved. Detailed preparation and its safe enabled-voicemail preservation guard are documented in `docs/operations/LEARN-SLACK-SOURCE-REPLAY.md`.
+
+For recovery, first finish or explicitly resolve every queued/running/retrying supplemental replay and restore the previous matching runtimes. The guarded `rollback.sql` restores all four previous definitions and removes access to the new internal functions. It retains requests, job outcomes, communication sources and public-visibility proofs. Do not remove its active-job guard or delete evidence. Ordinary campaign state/cursors, schedules, credentials and access assignments are not changed by either envelope.

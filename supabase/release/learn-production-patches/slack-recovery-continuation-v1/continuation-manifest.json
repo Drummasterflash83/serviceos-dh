@@ -1,0 +1,61 @@
+{
+  "state": "prepared_only",
+  "sourceSha256": "b40a4549a11381913bbe0f4e89a74c3b2c296f9cb69bd2efada031cd97b72dd1",
+  "applySha256": "6132fb00efba6f406ec4a11d9daa5826564de808de70b8bf86bad2524cfb4ba7",
+  "rollbackSha256": "9d607e9dc4141a2e7c0f686a0786bead5515dbaba07e1f80ced781bb61bd51ea",
+  "repairSha256": "bd9d7bf97f31cbe3f5692bc4cafd8192a9e59205f448778df9b83c359cdd5b4c",
+  "before": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "hash": "311290e85ab8c30b9e81079a71156fc5",
+      "owner": "postgres",
+      "signature": "public.learn_slack_finish_job(uuid,uuid,text,integer,jsonb)"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "hash": "383ee9a76dee87a499e43f69df1480f4",
+      "owner": "postgres",
+      "signature": "public.learn_slack_campaign_job_allowed(uuid,uuid)"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "hash": "e06723e3b884bbf56e38efdb86e0c2ab",
+      "owner": "postgres",
+      "signature": "public.learn_slack_campaign_claim_allowed(uuid,uuid)"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "hash": "29fc3bba92be4e9346dc49cc3ef9fe65",
+      "owner": "postgres",
+      "signature": "public.learn_slack_campaign_recover_page(uuid,uuid,jsonb,text)"
+    }
+  ],
+  "after": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "hash": "1858a7e3b1714fbd4ccf35208ac9fd5d",
+      "owner": "postgres",
+      "signature": "public.learn_slack_finish_job(uuid,uuid,text,integer,jsonb)"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "hash": "383ee9a76dee87a499e43f69df1480f4",
+      "owner": "postgres",
+      "signature": "public.learn_slack_campaign_job_allowed(uuid,uuid)"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "hash": "e06723e3b884bbf56e38efdb86e0c2ab",
+      "owner": "postgres",
+      "signature": "public.learn_slack_campaign_claim_allowed(uuid,uuid)"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "hash": "29fc3bba92be4e9346dc49cc3ef9fe65",
+      "owner": "postgres",
+      "signature": "public.learn_slack_campaign_recover_page(uuid,uuid,jsonb,text)"
+    }
+  ],
+  "runtimeChanges": false,
+  "productionChangesExecuted": false
+}

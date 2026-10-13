@@ -1,0 +1,58 @@
+{
+  "observedAt": "2026-10-13T15:03:31.547088+00:00",
+  "environment": "production",
+  "initialSourceTraversals": [
+    {
+      "collection": "properties",
+      "state": "collection_complete",
+      "requests": 25,
+      "completedAt": "2026-10-13T11:02:04.573Z",
+      "complete": true,
+      "remainingCursor": null,
+      "targetsCompleted": null,
+      "existingInputCountsPreserved": true
+    },
+    {
+      "collection": "jobs",
+      "state": "collection_complete",
+      "requests": 127,
+      "completedAt": "2026-10-13T11:14:38.172Z",
+      "complete": true,
+      "remainingCursor": null,
+      "targetsCompleted": null,
+      "existingInputCountsPreserved": true
+    },
+    {
+      "collection": "customer_contacts",
+      "state": "collection_complete",
+      "requests": 1552,
+      "completedAt": "2026-10-13T13:34:13.808Z",
+      "complete": true,
+      "remainingCursor": null,
+      "targetsCompleted": 1552,
+      "existingInputCountsPreserved": true
+    },
+    {
+      "collection": "site_contacts",
+      "state": "collection_complete",
+      "requests": 871,
+      "completedAt": "2026-10-13T14:56:44.255Z",
+      "complete": true,
+      "remainingCursor": null,
+      "targetsCompleted": 871,
+      "existingInputCountsPreserved": true
+    }
+  ],
+  "distinctSources": {
+    "properties": 2423,
+    "jobs": 12633,
+    "propertyContacts": 2969
+  },
+  "ongoingCaptureVerified": false,
+  "allCanonicalCardsPublished": false,
+  "limitations": [
+    "39 live customer IDs lack corroborating historical classification; one type conflicts",
+    "Only representative customer/job relationships verified; no whole-account canonical publication",
+    "Provider-deleted or unavailable history is not inferred as captured"
+  ]
+}

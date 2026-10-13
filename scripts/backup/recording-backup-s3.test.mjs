@@ -194,3 +194,240 @@ test("a different principal in the same AWS account cannot reach the backup buck
     matched.close();
   }
 });
+
+// Virtual signals exercise the real SDK without waiting minutes or using AWS.
+test("database objects get eight minutes; recordings and database metadata retain two minutes", async (t) => {
+  const budgets = [];
+  t.mock.method(AbortSignal, "timeout", (ms) => {
+    budgets.push(ms);
+    return new AbortController().signal;
+  });
+  for (const database of [false, true]) {
+    const f = fixture({ database });
+    const { databaseBackupBinding } = await import("./database-backup-template.mjs");
+    const ctx = database ? databaseBackupBinding : context;
+    const bytes = Buffer.from("synthetic private object");
+    const { createHash } = await import("node:crypto");
+    const hash = createHash("sha256").update(bytes).digest("hex");
+    try {
+      await f.destination.inspect();
+      budgets.length = 0;
+      const key = ctx.prefix + "objects/" + "a".repeat(64) + "/" + hash;
+      const stored = await f.destination.put({
+        key,
+        size: bytes.length,
+        sha256: hash,
+        checksumSHA256: Buffer.from(hash, "hex").toString("base64"),
+        encryption: "AES256",
+        ifNoneMatch: "*",
+        body: () => bytes,
+      });
+      assert.deepEqual(budgets, [database ? 480000 : 120000, 120000]);
+      budgets.length = 0;
+      for await (const _ of await f.destination.read(key, stored.versionId)) {
+        /* drain */
+      }
+      assert.deepEqual(budgets, [database ? 480000 : 120000]);
+      budgets.length = 0;
+      await f.destination.put({
+        key: ctx.prefix + "receipts/" + "c".repeat(64) + ".json",
+        size: bytes.length,
+        sha256: hash,
+        checksumSHA256: Buffer.from(hash, "hex").toString("base64"),
+        encryption: "AES256",
+        ifNoneMatch: "*",
+        body: () => bytes,
+      });
+      assert.deepEqual(budgets, [120000, 120000]);
+    } finally {
+      f.close();
+    }
+  }
+});
+
+async function deadlineTransport(t, mode, external) {
+  const { createDatabaseS3 } = await import("./recording-backup-s3.mjs");
+  const { databaseBackupBinding: binding, databaseBackupTemplate } =
+    await import("./database-backup-template.mjs");
+  const { Readable, PassThrough } = await import("node:stream");
+  const principal = "arn:aws:iam::235099643372:user/serviceos/database-backup/synthetic";
+  const policy = JSON.parse(
+    JSON.stringify(
+      databaseBackupTemplate().Resources.DatabasePolicy.Properties.PolicyDocument,
+      (_k, v) =>
+        v?.["Fn::GetAtt"]
+          ? `arn:aws:s3:::${binding.bucket}`
+          : v?.["Fn::Sub"]
+            ? `arn:aws:s3:::${binding.bucket}/*`
+            : v,
+    ),
+  );
+  const calls = [],
+    bodies = [];
+  const response = (body, headers = {}) => ({
+    response: {
+      statusCode: 200,
+      headers: { "content-type": "application/xml", ...headers },
+      body: Readable.from([body]),
+    },
+  });
+  const wrap = (root, body) =>
+    `<${root} xmlns="http://s3.amazonaws.com/doc/2006-03-01/">${body}</${root}>`;
+  const handler = {
+    destroy() {},
+    async handle(req, { abortSignal } = {}) {
+      calls.push(req);
+      if (req.hostname.startsWith("sts."))
+        return response(
+          `<GetCallerIdentityResponse><GetCallerIdentityResult><Account>${binding.accountId}</Account><Arn>${principal}</Arn></GetCallerIdentityResult></GetCallerIdentityResponse>`,
+        );
+      const q = req.query ?? {};
+      if ("location" in q) return response(wrap("LocationConstraint", binding.region));
+      if ("publicAccessBlock" in q)
+        return response(
+          wrap(
+            "PublicAccessBlockConfiguration",
+            ["BlockPublicAcls", "IgnorePublicAcls", "BlockPublicPolicy", "RestrictPublicBuckets"]
+              .map((x) => `<${x}>true</${x}>`)
+              .join(""),
+          ),
+        );
+      if ("ownershipControls" in q)
+        return response(
+          wrap(
+            "OwnershipControls",
+            "<Rule><ObjectOwnership>BucketOwnerEnforced</ObjectOwnership></Rule>",
+          ),
+        );
+      if ("versioning" in q)
+        return response(wrap("VersioningConfiguration", "<Status>Enabled</Status>"));
+      if ("encryption" in q)
+        return response(
+          wrap(
+            "ServerSideEncryptionConfiguration",
+            "<Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>AES256</SSEAlgorithm></ApplyServerSideEncryptionByDefault></Rule>",
+          ),
+        );
+      if ("object-lock" in q)
+        return response(
+          wrap(
+            "ObjectLockConfiguration",
+            "<ObjectLockEnabled>Enabled</ObjectLockEnabled><Rule><DefaultRetention><Mode>GOVERNANCE</Mode><Days>30</Days></DefaultRetention></Rule>",
+          ),
+        );
+      if ("policy" in q)
+        return response(JSON.stringify(policy), { "content-type": "application/json" });
+      if (mode === "socket")
+        throw Object.assign(Error("PRIVATE TOKEN CUSTOMER BODY"), { name: "TimeoutError" });
+      if (mode === "stream") {
+        const body = new PassThrough();
+        bodies.push(body);
+        return {
+          response: {
+            statusCode: 200,
+            headers: {
+              "content-length": "4",
+              "x-amz-version-id": "v1",
+              "x-amz-server-side-encryption": "AES256",
+              "x-amz-meta-sha256": "a".repeat(64),
+              "last-modified": new Date(time).toUTCString(),
+              "x-amz-object-lock-mode": "GOVERNANCE",
+              "x-amz-object-lock-retain-until-date": new Date(time + 30 * 86400000).toISOString(),
+            },
+            body,
+          },
+        };
+      }
+      if (mode === "cancel") setImmediate(() => external.abort());
+      return new Promise((_resolve, reject) => {
+        const fail = () =>
+          reject(Object.assign(Error("PRIVATE TOKEN CUSTOMER BODY"), { name: "AbortError" }));
+        if (abortSignal.aborted) fail();
+        else abortSignal.addEventListener("abort", fail, { once: true });
+      });
+    },
+  };
+  const transport = createDatabaseS3({
+    credentials: async () => ({ accessKeyId: "SYNTHETIC", secretAccessKey: "SYNTHETIC" }),
+    requestHandler: handler,
+    expectedPrincipalArn: principal,
+    signal: external?.signal,
+    now: () => time,
+  });
+  t.after(() => transport.close());
+  await transport.destination.inspect();
+  return { ...transport, calls, bodies, binding, Readable };
+}
+
+test("database deadline and external cancellation stop one conditional upload, destroy stream, and expose fixed codes only", async (t) => {
+  for (const mode of ["deadline", "cancel", "socket"]) {
+    const external = new AbortController();
+    const f = await deadlineTransport(t, mode, external);
+    const original = AbortSignal.timeout;
+    if (mode === "deadline")
+      AbortSignal.timeout = (ms) => {
+        assert.equal(ms, 480000);
+        const c = new AbortController();
+        setImmediate(() => c.abort());
+        return c.signal;
+      };
+    const body = f.Readable.from([Buffer.from("test")]);
+    const hash = "a".repeat(64);
+    try {
+      await assert.rejects(
+        f.destination.put({
+          key: f.binding.prefix + "objects/" + hash + "/" + hash,
+          size: 4,
+          sha256: hash,
+          checksumSHA256: Buffer.from(hash, "hex").toString("base64"),
+          encryption: "AES256",
+          ifNoneMatch: "*",
+          body: () => body,
+        }),
+        errorCode(
+          {
+            deadline: "s3_request_deadline_exceeded",
+            cancel: "s3_request_cancelled",
+            socket: "s3_transport_timeout",
+          }[mode],
+        ),
+      );
+      const writes = f.calls.filter((c) => c.method === "PUT");
+      assert.equal(writes.length, 1);
+      assert.equal(writes[0].headers["if-none-match"], "*");
+      assert.equal(body.destroyed, true);
+    } finally {
+      AbortSignal.timeout = original;
+    }
+  }
+});
+
+test("database streamed download deadline is bounded and caller abort destroys unread body", async (t) => {
+  for (const mode of ["deadline", "cancel"]) {
+    const external = new AbortController();
+    const f = await deadlineTransport(t, "stream", external);
+    const timer = globalThis.setTimeout;
+    if (mode === "deadline")
+      t.mock.method(globalThis, "setTimeout", (fn, ms, ...args) => {
+        if (ms > 470000 && ms <= 480000) return timer(fn, 5, ...args);
+        return timer(fn, ms, ...args);
+      });
+    const iterable = await f.destination.read(
+      f.binding.prefix + "objects/" + "a".repeat(64) + "/" + "b".repeat(64),
+      "v1",
+    );
+    if (mode === "cancel") setImmediate(() => external.abort());
+    try {
+      await assert.rejects(
+        async () => {
+          for await (const _ of iterable) {
+          }
+        },
+        errorCode(mode === "deadline" ? "s3_stream_timeout" : "s3_request_cancelled"),
+      );
+      assert.equal(f.bodies[0].destroyed, true);
+    } finally {
+      t.mock.restoreAll();
+    }
+  }
+});

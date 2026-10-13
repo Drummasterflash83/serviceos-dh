@@ -132,3 +132,120 @@ has been inferred. Private aggregate evidence is retained in
 
 This work completes the original input-to-context requirement. The proposed richer
 customer-card UX remains discussion-only, as requested.
+
+## Initial source traversals completed — 13 October, 15:56 BST
+
+All four logged initial production passes completed: properties 25 pages,
+jobs 127 pages, customer contacts 1,552 target pages, and site contacts 871
+ target pages. Each retained a terminal complete checkpoint with no next cursor.
+The final source totals are 2,423 distinct properties, 12,633 jobs and 2,969
+contacts across the two contact passes. Contacts are not additive per pass:
+shared provider contact identities may appear in more than one property context.
+The final account has no queued/running/retrying source job; existing communication,
+recording and voicemail totals were preserved.
+
+This establishes traversal of available API results for the approved initial
+scope. It does not establish complete canonical identity mapping, provider-deleted
+history, recurring capture or comprehensive customer cards. The earlier card-design
+hold was superseded by Chris's later approved customer/job UX changes; identity
+merges still require evidence. Next: verify recurring capture and reconcile the
+remaining classification/relationship gaps through the logged operator workflow.
+
+Evidence: [initial production capture](evidence/learn-commusoft-initial-live-complete-2026-10-13.json).
+
+## Customer identity corroboration — 13 October, 17:14 BST
+
+The fresh read-only audit selects only the latest unambiguous observed source
+for each customer identity. All1,552 source heads were unambiguous. The earlier
+322 exact historical ID/name/postcode matches omitted the provider title from
+individual full names; the sealed export leaves separate first/last-name columns
+blank. Including the explicit title raises exact matches to1,237, without fuzzy
+matching or changing any production record. Thirty-nine source IDs still have
+no historical counterpart. This strengthens the review evidence but establishes
+neither current taxonomy nor canonical identity authority by itself.
+
+The existing settings/customerTypes denial used the established working Bearer
+request, so repeating it with the same credential has not been attempted. The
+current official endpoint documentation still identifies that settings route.
+No provider permission, credential or customer merge changed during this audit.
+
+Evidence: [customer corroboration](evidence/learn-commusoft-customer-corroboration-2026-10-13.json).
+
+## Current provider UI taxonomy — 13 October, 17:26 BST
+
+The existing authenticated Arc session displayed Settings → Customer types at
+`https://app.commusoft.co.uk/settings/customer_types`. It currently lists Private
+customer, Company, Estate Agent, School or College, Property Management, Care Home,
+Religious building, Hospitality, Government Building, Private Landlord, Building
+Company, Accounting Name and Staff Member. The first two cannot be edited or deleted.
+Accounting Name uses “Account code”; the other types use work-address labels.
+
+Read-only form inspection confirmed that Estate Agent describes a letting agent
+managing multiple tenant properties, and Private Landlord describes a customer
+owning more than one premises. Neither description alone proves person/company
+classification. No values were edited or saved. No numeric type IDs were exposed;
+row order is not ID evidence. The provider settings API remains denied for the
+existing credential. This fresh observation corroborates category names, but does
+not resolve historical type changes or authorize arbitrary customer merges.
+
+The latest recurring read at 16:25:39 UTC showed phase 3 (customer contacts), 40
+settled pages, valid operator/connection authority and unchanged runtime hashes.
+Thus the ongoing job stage advanced automatically after the property stage.
+Both contact stages and a final recurring watermark remain to be verified.
+
+## Current taxonomy and provider coverage discrepancy — 13 October, 18:22 BST
+
+Authenticated Commusoft Customers navigation exposes the numeric category IDs in
+its labelled creation links. This resolves the earlier lack of current ID-to-label
+evidence without requesting additional provider scopes. The exact observed mapping
+is retained in the evidence below. Route names are supporting metadata, not a
+canonical identity policy: “Building Company” (11) uses the individual route, and
+“Accounting Name” (13) and “Staff Member” (14) need distinct treatment.
+
+The documented `includeCount=true` requests independently returned **1,552 customers
+and 871 work addresses**, exactly matching retained initial and recurring property
+traversals. Commusoft's dashboard reports **1,650 customers and 982 work addresses**.
+A fresh customer export contains 1,650 distinct IDs: all 1,552 imported IDs are
+present, with **98 additional IDs** absent from the API traversal. All ten newest
+customers displayed in the provider UI were already retained.
+
+One missing customer was inspected as Active in the provider UI. The documented
+property detail endpoint returned JSON HTTP 404 with the same existing credential;
+the first unfiltered list page also omitted it. No default dormant-only explanation
+has been inferred. This requires provider visibility/filter clarification, not a
+blind replay of a completed traversal. Four bounded read-only diagnostic requests
+were made; no settings, credentials, provider or production records changed.
+
+The export, exact ID differences and private request journal remain outside Git.
+The existing 1,552 API-visible customers can continue through identity and
+relationship review while the coverage difference is resolved.
+
+Evidence: [current taxonomy and coverage](evidence/learn-commusoft-provider-coverage-2026-10-13.json).
+
+## Account holder versus primary contact — 13 October, 18:31 BST
+
+The fresh same-day export corroborates the ID and display name for 1,297 of 1,552
+API-visible customers, and ID/name/nonblank postcode for 1,282. There are 18 cases
+with a missing postcode. In five inspected name mismatches, the API's primary
+contact name differs from the exported account-holder name despite matching
+postcodes. This is consistent with the documented field meaning: a contact
+associated with the customer, not necessarily the customer themselves.
+
+A bounded audit of the three already-published customer links found all three
+canonical names agree with the fresh export after removing an explicit title,
+and all three card titles agree with their canonical names. No existing card
+was changed. This does not establish the correctness of unreviewed identities.
+
+**Next implementation priority:** support a reviewed account-holder identity and
+its retained supporting evidence independently of the API primary contact. The
+current new-person path copies `contact.firstName/lastName`; it cannot represent
+a different account holder without choosing an already-existing target. Extend
+the audited review flow to support that case before broad person publication,
+retain the original source/contact unchanged, and preserve separate contact
+relationships. Do not bulk-create customers from primary-contact names or treat
+shared email, phone or address as merge authority. Existing company/source review
+and verified identity reuse remain available.
+
+The fresh export and review differences are sealed under the existing ignored
+private verification directory. A provider clarification draft is prepared there
+as `support-draft.txt`; it has not been sent.

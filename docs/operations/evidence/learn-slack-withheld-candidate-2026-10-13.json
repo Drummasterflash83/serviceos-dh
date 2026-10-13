@@ -1,0 +1,36 @@
+{
+  "state": "verified_local_not_deployed",
+  "date": "2026-10-13",
+  "sourceSha256": "a8c5ea5b2afd0be29fc8fd23a1aaf133b0a1f9d61f5e6be1d26f6c5b711fedfe",
+  "patchSha256": "5960a0f4727b1f7d55ed3b6beb8c2f94c25afd2837b48cac3ce5bdbaf0e59862",
+  "localChecks": {
+    "focusedTests": 126,
+    "typecheck": "passed",
+    "npmInstall": "passed",
+    "productionBuild": "passed",
+    "fullSchemaJourneys": 13,
+    "maintenanceRole": "postgres",
+    "preservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 401,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "ddd4e6cb6f5c211533a5e88b639225b78aa0541b281f2694a2c673ad302a9b03",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "containerRemoved": true
+  },
+  "behaviour": [
+    "Retains exact Slack unavailable-message markers and immutable source versions.",
+    "Prevents old content reappearing through ordinary reads, derived context or scoring.",
+    "Available replies remain independently eligible; unavailable counts are separate from conversation counts.",
+    "Tenant and operator authority remain unchanged."
+  ],
+  "limits": [
+    "Hosted schema/runtime/frontend release and provider-page continuation are not yet verified.",
+    "Already published card summaries without per-field lineage require explicit reconciliation; the page fails atomically before ingestion.",
+    "Restoration of withheld content remains an explicit future reviewed action.",
+    "No DMs, private-channel expansion, downloads or new credential access."
+  ],
+  "productionWrites": 0
+}

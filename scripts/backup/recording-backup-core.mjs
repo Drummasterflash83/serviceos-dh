@@ -31,7 +31,10 @@ export class RecordingBackupError extends Error {
 function requireValue(ok, code) {
   if (!ok) throw new RecordingBackupError(code);
 }
+export const voicemailBackupBuckets = Object.freeze(["receptionist-voicemails", "learn-voicemail-sources"]);
 export function recordingIdentity(value) {
+  requireValue(value?.sourceBucket === undefined || voicemailBackupBuckets.includes(value.sourceBucket), "invalid_source_bucket");
+  requireValue(value?.sourceContentSha256 === undefined || (value.sourceBucket !== undefined && hash(value.sourceContentSha256)), "invalid_source_content_hash");
   requireValue(
     value &&
       uuid(value.tenantId) &&
@@ -58,6 +61,9 @@ export function recordingIdentity(value) {
     sourceVersion: value.sourceVersion,
     size: value.size,
     recordingIds: [...value.recordingIds].sort(),
+    // Omit these keys for legacy phone entries: existing digests/receipts are immutable.
+    ...(value.sourceBucket === undefined ? {} : { sourceBucket: value.sourceBucket }),
+    ...(value.sourceContentSha256 === undefined ? {} : { sourceContentSha256: value.sourceContentSha256 }),
   };
 }
 export function recordingContext(value) {
@@ -155,6 +161,7 @@ function privateReceipt(receipt, entry, context) {
       JSON.stringify(recordingIdentity(receipt.source)) === JSON.stringify(entry) &&
       JSON.stringify(recordingContext(receipt.destination)) === JSON.stringify(context) &&
       hash(receipt.sha256) &&
+      (entry.sourceContentSha256 === undefined || receipt.sha256 === entry.sourceContentSha256) &&
       receipt.key === `${context.prefix}objects/${identity}/${receipt.sha256}` &&
       typeof receipt.versionId === "string" &&
       receipt.versionId.length > 0 &&
@@ -212,6 +219,7 @@ export async function backupRecording(
     } finally {
       await file.close();
     }
+    requireValue(entry.sourceContentSha256 === undefined || sha256 === entry.sourceContentSha256, "source_content_hash_mismatch");
     await unchanged(entry, source);
     const key = `${context.prefix}objects/${identity}/${sha256}`;
     let version = await destination.find(key);
@@ -310,6 +318,8 @@ export async function restoreRecording(receipt, binding, { destination, now = Da
       bytes: entry.size,
       sha256: actual,
       recordingIds: [...entry.recordingIds],
+      ...(entry.sourceBucket === undefined ? {} : {sourceBucket:entry.sourceBucket}),
+      ...(entry.sourceContentSha256 === undefined ? {} : {sourceContentSha256:entry.sourceContentSha256}),
       playback: "not_verified",
     };
     directory = null;

@@ -1,0 +1,34 @@
+{
+  "state": "prepared_not_deployed",
+  "preparedAt": "2026-10-13T13:02:03.429Z",
+  "preparationSha256": "779fb12499f49849bd451fd14156ea55060b82f2b9ef66f6a9f3464ba3ddae12",
+  "sourceClosureSha256": "300107a46cc8264c5e6466bec20b35c14ab4b6ea3284324642e389b27bfa2ef2",
+  "changedFiles": [
+    "_shared/birchills_voicemail_email.ts"
+  ],
+  "endpoints": [
+    {
+      "name": "learn-voicemail-import",
+      "baselineVersion": 6,
+      "baselineSha256": "0ea4b6857b1914c6695e32d56b26c105cdd1b56ec7cff4ffccac88b939c564ba",
+      "preparedSha256": "9e1ef1e7c2224e1e98a0cebd03bd1405931101c075e0c6cdd9f4912837bcb1f5",
+      "rollbackSha256": "0ea4b6857b1914c6695e32d56b26c105cdd1b56ec7cff4ffccac88b939c564ba"
+    },
+    {
+      "name": "platform-worker",
+      "baselineVersion": 63,
+      "baselineSha256": "ea6b7068fbb06939b101d9ba759d1bab34324bf4303a2a5bf344b8fb7dc39c25",
+      "preparedSha256": "fd2eb90f556fe110392b10a59cd46f774e575bca18d1b26462fd0417bb49a338",
+      "rollbackSha256": "ea6b7068fbb06939b101d9ba759d1bab34324bf4303a2a5bf344b8fb7dc39c25"
+    }
+  ],
+  "bootState": "all_endpoints_booted_and_rejected_missing_auth",
+  "bootChecks": 2,
+  "bootContainerRemoved": true,
+  "allFivePublishedSlackProofFilesPreserved": true,
+  "existingVoicemailPairs": 248,
+  "activeVoicemailRoutes": 0,
+  "activeVoicemailJobs": 0,
+  "productionWrites": 0,
+  "providerImports": 0
+}

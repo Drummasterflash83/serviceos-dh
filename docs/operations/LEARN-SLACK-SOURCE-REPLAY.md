@@ -1,5 +1,23 @@
 # Supplemental revalidation of retained Slack sources
 
+## Production acceptance — 13 October, 15:19 BST
+
+The guarded schema and matching Slack worker v5/platform worker v65 were deployed
+and verified. One logged request then completed through the normal scheduler on
+its first attempt, recording one unchanged source and its exact-version public
+visibility proof. Signed-in live verification confirms customer → linked
+Commusoft job → retained Slack excerpt and return navigation. Source content and
+staff attribution remain unchanged. This is one representative reviewed link,
+not full customer coverage, automatic AI findings or complete Slack history.
+
+An initial customer-card read failed and a subsequent refresh succeeded. Its
+misleading generic access wording remains to fix. The dedicated original Slack
+reader remains unavailable; the retained communication excerpt and provenance
+are visible. The following preparation sections describe the earlier release
+work and are superseded by this production observation where stated.
+
+Evidence: [production progress](evidence/learn-live-customer-slack-progress-2026-10-13.json).
+
 Prepared only. No production request, provider call, replay job or proof has been created by this work.
 
 Messages captured before durable public-visibility proofs were introduced cannot be attached to customer context merely because their channel IDs begin with C. Existing campaigns own their accounts and cursors, so the manual import/recovery controls correctly refuse to overwrite them. This protocol adds a bounded supplemental read without disturbing the original campaign.

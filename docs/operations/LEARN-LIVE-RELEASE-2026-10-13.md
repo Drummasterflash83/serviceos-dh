@@ -1,6 +1,30 @@
 # LEARN live release — 13 October 2026
 
-## Latest checkpoint — 13:56 BST
+## Latest checkpoint — 18:06 BST
+
+**13 October, 18:06 BST — LIVE Slack repair completed its real history page.**
+
+- The additive SQL and both matching workers are published and read back:
+  Slack worker v9, platform worker v70. Retained Slack identities/versions,
+  voicemail records, access, connections, runtime configuration and schedules
+  passed preservation checks.
+- A post-commit check initially disagreed with PostgreSQL's schema-qualified
+  policy formatting. A separate read-only canonical comparison verified all
+  12 exact policies and the existing rules; no SQL write was replayed.
+- Git 5b276dd now serves all existing live aliases. Its production authentication
+  target and signed-in operator controls were verified, retaining the live design.
+- The exact held channel page succeeded at 17:05 UTC in one attempt, saving
+  80 records and completing that channel's history window. Two unavailable
+  markers were retained without publishing conversation interactions. Their
+  ordinary reads are suppressed; prior source history and campaign limits remain.
+  Signed-in LIVE shows the two unavailable records and the captured history
+  window. Both markers were new inputs; suppression of older stored previews
+  was exercised in the offline rehearsal, not by this live page. Reply discovery/
+  capture and the wider campaign remain unfinished.
+
+Evidence: [LIVE Slack release](evidence/learn-slack-withheld-production-2026-10-13.json).
+
+## Previous checkpoint — 13:56 BST
 
 - Additive Slack capture visibility and customer/job context SQL is installed.
   Exact role/ACL restoration, existing policies and schedule fingerprints passed.

@@ -1,0 +1,32 @@
+{
+  "state": "local_adapter_verified_not_executed",
+  "sourceHashes": {
+    "scripts/backup/recording-backup-core.mjs": "194530208d5e99a72e4ffb182f8351b29ad19c25804b6a97c3a59c6df8d30426",
+    "scripts/backup/recording-backup-source.mjs": "7e0f13af6687a25d0b754a6c0bb35aac8ddd3f2c2e4c51bbd44427da983bc7c2",
+    "scripts/backup/voicemail-backup-source.test.mjs": "8dbc5294588ab6f65019e2b21af98283348d73c3078080147f9afba9a5e6d1ae",
+    "scripts/backup/inventory-drummonds-voicemails.mjs": "ad752524520db09b2f5740c25904b475b30c26d689510fce95e4c2b3b53ae719"
+  },
+  "legacyDigestsUnchanged": true,
+  "voicemailTests": 9,
+  "totalTestsAcrossSourceCoreTransportRestoreSuites": 47,
+  "metadataInventoryPrepared": true,
+  "metadataInventoryExecuted": false,
+  "realSourceRequests": 0,
+  "awsRequests": 0,
+  "productionWrites": 0,
+  "sourceBuckets": [
+    "receptionist-voicemails",
+    "learn-voicemail-sources"
+  ],
+  "approvedDestinationReused": true,
+  "newCredentials": 0,
+  "newPermissions": 0,
+  "remaining": [
+    "Run bounded metadata-only inventory",
+    "Pin actual inventory counts, bytes and hashes",
+    "Prepare and review exact copy/finalize executor",
+    "Copy and verify all inventoried objects",
+    "Independent raw/audio restore against database and audio playback",
+    "Integrate per-bucket daily health after acceptance"
+  ]
+}

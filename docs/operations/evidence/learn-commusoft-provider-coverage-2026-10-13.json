@@ -1,0 +1,232 @@
+{
+  "state": "api_traversal_complete_provider_ui_coverage_gap_confirmed",
+  "observedAt": "2026-10-13T17:21:36.625Z",
+  "provider": "commusoft",
+  "apiCountChecks": [
+    {
+      "resource": "customers",
+      "status": 200,
+      "count": 1552,
+      "recordsRequested": 1
+    },
+    {
+      "resource": "workAddresses",
+      "status": 200,
+      "count": 871,
+      "recordsRequested": 1
+    }
+  ],
+  "retainedSources": {
+    "customers": 1552,
+    "workAddresses": 871
+  },
+  "providerUi": {
+    "customers": 1650,
+    "workAddresses": 982
+  },
+  "freshCustomerExport": {
+    "observedAt": "2026-10-13T17:17:50.370Z",
+    "exportRows": 1650,
+    "exportUniqueIds": 1650,
+    "apiUniqueIds": 1552,
+    "shared": 1552,
+    "missingFromApi": 98,
+    "missingFromExport": 0,
+    "missingIdMin": 5,
+    "missingIdMax": 1708,
+    "productionWrites": 0,
+    "providerApiRequests": 0
+  },
+  "example": {
+    "visibleAndActiveInProviderUi": true,
+    "absentFromFirstApiPage": true,
+    "documentedDetailEndpointStatus": 404
+  },
+  "currentTaxonomy": {
+    "source": "Authenticated customer-page link labels and explicit numeric URL segments",
+    "url": "https://app.commusoft.co.uk/customers",
+    "uiEvidenceSha256": "bde2da23ffb9941941f53dcc4c05da5e40481f760d6d9fa06f0bf5de4f0f0b37",
+    "types": [
+      {
+        "id": 1,
+        "label": "Private customer",
+        "creationRoute": "new_customer"
+      },
+      {
+        "id": 2,
+        "label": "Company",
+        "creationRoute": "new_company"
+      },
+      {
+        "id": 3,
+        "label": "Estate Agent",
+        "creationRoute": "new_company"
+      },
+      {
+        "id": 4,
+        "label": "School or College",
+        "creationRoute": "new_company"
+      },
+      {
+        "id": 5,
+        "label": "Property Management",
+        "creationRoute": "new_company"
+      },
+      {
+        "id": 6,
+        "label": "Care Home",
+        "creationRoute": "new_company"
+      },
+      {
+        "id": 7,
+        "label": "Religious building",
+        "creationRoute": "new_company"
+      },
+      {
+        "id": 8,
+        "label": "Hospitality",
+        "creationRoute": "new_company"
+      },
+      {
+        "id": 9,
+        "label": "Government Building",
+        "creationRoute": "new_company"
+      },
+      {
+        "id": 10,
+        "label": "Private Landlord",
+        "creationRoute": "new_customer"
+      },
+      {
+        "id": 11,
+        "label": "Building Company",
+        "creationRoute": "new_customer"
+      },
+      {
+        "id": 13,
+        "label": "Accounting Name",
+        "creationRoute": "new_company"
+      },
+      {
+        "id": 14,
+        "label": "Staff Member",
+        "creationRoute": "new_customer"
+      }
+    ]
+  },
+  "providerRequests": 4,
+  "productionWrites": 0,
+  "providerWrites": 0,
+  "limitations": [
+    "Exact category IDs are now observed; a creation-route label is not sufficient for canonical identity or merging.",
+    "Type 11 is named Building Company but uses the individual creation route; retain explicit review.",
+    "Accounting Name and Staff Member are distinct categories and must not silently be presented as ordinary external customers.",
+    "Customer export reconciles IDs, not independent current site-export coverage.",
+    "No complete provider history or canonical card coverage is claimed.",
+    "The API primary-contact name is not always the customer account-holder name. Five mismatching samples confirmed different names despite matching postcodes. Bulk person creation must not infer account identity from the contact."
+  ],
+  "freshNameCorroboration": {
+    "state": "fresh_provider_corroboration_not_merge_authority",
+    "observedAt": "2026-10-13T17:26:28.053Z",
+    "apiCustomerHeads": 1552,
+    "exportCustomers": 1650,
+    "exportSha256": "aabeac22fa074098e1e995adfb9d7d6e20fc8c94b868af1b01d3d318b1c788c7",
+    "ambiguousHeads": 0,
+    "exactIdName": 1297,
+    "exactIdNameAndNonblankPostcode": 1282,
+    "blankPostcode": 18,
+    "reviewCount": 270,
+    "groups": [
+      {
+        "typeId": "1",
+        "sources": 1181,
+        "companyNamePresent": 18,
+        "personNamePresent": 1181
+      },
+      {
+        "typeId": "2",
+        "sources": 176,
+        "companyNamePresent": 176,
+        "personNamePresent": 176
+      },
+      {
+        "typeId": "3",
+        "sources": 5,
+        "companyNamePresent": 5,
+        "personNamePresent": 5
+      },
+      {
+        "typeId": "4",
+        "sources": 21,
+        "companyNamePresent": 21,
+        "personNamePresent": 21
+      },
+      {
+        "typeId": "5",
+        "sources": 47,
+        "companyNamePresent": 47,
+        "personNamePresent": 47
+      },
+      {
+        "typeId": "6",
+        "sources": 16,
+        "companyNamePresent": 16,
+        "personNamePresent": 16
+      },
+      {
+        "typeId": "7",
+        "sources": 12,
+        "companyNamePresent": 12,
+        "personNamePresent": 12
+      },
+      {
+        "typeId": "8",
+        "sources": 23,
+        "companyNamePresent": 23,
+        "personNamePresent": 23
+      },
+      {
+        "typeId": "9",
+        "sources": 35,
+        "companyNamePresent": 35,
+        "personNamePresent": 35
+      },
+      {
+        "typeId": "10",
+        "sources": 25,
+        "companyNamePresent": 0,
+        "personNamePresent": 25
+      },
+      {
+        "typeId": "11",
+        "sources": 5,
+        "companyNamePresent": 0,
+        "personNamePresent": 5
+      },
+      {
+        "typeId": "13",
+        "sources": 5,
+        "companyNamePresent": 5,
+        "personNamePresent": 5
+      },
+      {
+        "typeId": "14",
+        "sources": 1,
+        "companyNamePresent": 0,
+        "personNamePresent": 1
+      }
+    ],
+    "productionWrites": 0,
+    "providerApiRequests": 0
+  },
+  "publishedCustomerNames": {
+    "observedAt": "2026-10-13T17:30:37.593Z",
+    "reviewedCustomerLinks": 3,
+    "exactNames": 2,
+    "titleInsensitiveNames": 3,
+    "cardMatchesCanonical": 3,
+    "unresolved": 0,
+    "productionWrites": 0,
+    "providerRequests": 0
+  }
+}

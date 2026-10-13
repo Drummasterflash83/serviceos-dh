@@ -10,7 +10,9 @@ export async function readSlackHistoryPage(scope:SlackHistoryScope,tenantId:stri
  if(page?.ok!==true||!Array.isArray(page.messages)||page.messages.length>(scope.pageLimit??15)||typeof page.has_more!=='boolean')throw Error('history_page_unavailable');
  const seen=new Set<bigint>();
  const records=page.messages.map((m:any)=>{
-  if(!m||typeof m.text!=='string'||m.text.length>40000||!timestamp(m.ts)
+  // Only an exact withholding marker may omit text; the provider payload stays unchanged.
+  const text=m?.text===undefined&&m?.type==='message'&&m?.subtype==='tombstone'&&m?.hidden===true?'':m?.text;
+  if(!m||typeof text!=='string'||text.length>40000||!timestamp(m.ts)
    ||micros(m.ts)<micros(scope.oldest)||micros(m.ts)>micros(scope.latest)
    ||seen.has(micros(m.ts))
    ||m.thread_ts!==undefined&&(!timestamp(m.thread_ts)||micros(m.thread_ts)>micros(m.ts)))throw Error('history_page_integrity');
@@ -19,7 +21,7 @@ export async function readSlackHistoryPage(scope:SlackHistoryScope,tenantId:stri
   // attachments were captured. Keep the provider payload, never synthesize a root.
   if(m.subtype==='thread_broadcast'&&(!timestamp(m.thread_ts)||micros(m.thread_ts)>=micros(m.ts)))throw Error('history_page_integrity');
   const encoded=JSON.stringify(m);if(new TextEncoder().encode(encoded).length>262144)throw Error('history_message_too_large');
-  seen.add(micros(m.ts));return {tenant_id:tenantId,source_external_id:`${scope.teamId}:${channelId}:${m.ts}`,source_connector_id:'slack',channel_id:channelId,provider_timestamp:m.ts,thread_timestamp:typeof m.thread_ts==='string'?m.thread_ts:null,text:m.text,provider_payload:JSON.parse(encoded)};});
+  seen.add(micros(m.ts));return {tenant_id:tenantId,source_external_id:`${scope.teamId}:${channelId}:${m.ts}`,source_connector_id:'slack',channel_id:channelId,provider_timestamp:m.ts,thread_timestamp:typeof m.thread_ts==='string'?m.thread_ts:null,text,provider_payload:JSON.parse(encoded)};});
  const next=page.response_metadata?.next_cursor;
  if(next!==undefined&&(typeof next!=='string'||next.length>1024)||page.has_more&&!(typeof next==='string'&&next.length)||!page.has_more&&!!next)throw Error('history_cursor_unavailable');
  return {records,nextCursor:next||null,historyComplete:!page.has_more,coverage:'channel_history_page_only' as const,threadCoverage:'unverified' as const};

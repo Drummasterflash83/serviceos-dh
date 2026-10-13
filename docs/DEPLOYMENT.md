@@ -42,17 +42,18 @@ Cloudflare-flavoured.
 
 ## Current live checkpoint — 13 October 2026
 
-The matched LEARN backend (24 SQL packages and 37 runtimes) is installed and the
-existing schedules are restored. The latest verified live frontend is Git
-`9b0c581288b023dd30f90981a0c98c97bb371eca`, deployment
-`dpl_BVXbnJE4i6d6b8iGMRZ8SqmpLGya`, on the existing openfolk.ai aliases.
-This adds audited exact-record lookup and backward-compatible customer/job context
-validation. The related Slack context SQL/runtime is not yet deployed.
-Use **https://www.openfolk.ai** for live and **https://test.openfolk.ai** for TEST.
-Later processing and UI amendments are recorded in the
-[live release log](operations/LEARN-LIVE-RELEASE-2026-10-13.md).
-Full LEARN V1 acceptance remains incomplete; earlier preview notes below are
-historical preparation evidence, not the current live status.
+The latest verified LIVE frontend is Git
+5b276dd571116aa968b4c90595c896858dc267d0, deployment
+dpl_54BGSWXmMFMULhR48q1ufayPzVS9, serving the existing openfolk.ai aliases.
+The matching Slack unavailable-source schema and Slack worker v9/platform worker
+v70 are installed with source/access/schedule preservation verified. Its exact
+held-page recovery saved 80 records and completed that channel's history window;
+full campaign history, replies and broader LEARN acceptance remain incomplete. Use **https://www.openfolk.ai** for LIVE and
+**https://test.openfolk.ai** for TEST. This LIVE release does not update TEST.
+
+See the [live release log](operations/LEARN-LIVE-RELEASE-2026-10-13.md) and
+[release evidence](operations/evidence/learn-slack-withheld-production-2026-10-13.json).
+Older preview sections below are historical preparation, not current live status.
 
 ## Preview deployments
 

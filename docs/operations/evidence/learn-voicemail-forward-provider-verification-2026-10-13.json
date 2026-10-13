@@ -1,0 +1,52 @@
+{
+  "state": "prepared_and_provider_configuration_verified_no_mutations",
+  "configurationObservedAt": "2026-10-13T12:47:06.478924+00:00",
+  "providerRequests": 8,
+  "providerWrites": 0,
+  "productionWrites": 0,
+  "providerAccountMatched": true,
+  "existingEndpointBindingsMatched": 7,
+  "currentNotificationRecipientsMatched": 7,
+  "providerVoicemailEnabledSupplied": 0,
+  "publishedVoicemailResourceLinks": 0,
+  "messageInventoryVerified": false,
+  "rawResponsesPersisted": false,
+  "forwardRoutePlanSha256": "ce180e84cba72279596167b598435fe3b4a6feb829df81c3dd0caf23533419bd",
+  "sevenSourceRehearsal": {
+    "state": "passed",
+    "planSha256": "7e68864347065c8524ffa38870bb620a1cb52909049ebf7b54c4747ed00a0cd5",
+    "sqlSha256": "581a8307995abb0865c5e13eda9d4a4ceadf1a30626e3c00b5e94594b6234f33",
+    "productionWrites": 0,
+    "providerRequests": 0,
+    "existingSourceMessageOwnerHashesPreserved": true,
+    "routes": 2,
+    "newRoutes": 0,
+    "dispatcherConcurrencyFencePassed": true,
+    "heldRoutesEnqueueNoJobs": true,
+    "allSourceAdmissionsPassed": true,
+    "oldScanControlsRestoredExactly": true,
+    "allRoutesPaused": true,
+    "managerPermissionsUnchanged": true,
+    "repeatedActivationNoDuplicateRoutes": true,
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true
+  },
+  "limitations": [
+    "Destination match does not prove voicemail enabled or new delivery.",
+    "No forward routes activated or further originals imported.",
+    "Older retired signing-key records remain withheld."
+  ]
+}

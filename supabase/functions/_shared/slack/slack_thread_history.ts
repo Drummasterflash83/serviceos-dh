@@ -16,14 +16,16 @@ export async function readSlackThreadPage(scope:SlackThreadScope,tenantId:string
  if(page?.ok!==true||!Array.isArray(page.messages)||page.messages.length>(scope.pageLimit??15)||typeof page.has_more!=='boolean')throw Error('thread_page_unavailable');
  const seen=new Set<bigint>();
  const records=page.messages.map((m:any)=>{
-  if(!m||!timestamp(m.ts)||typeof m.text!=='string'||m.text.length>40000||seen.has(micros(m.ts))
+  // Only an exact withholding marker may omit text; the provider payload stays unchanged.
+  const text=m?.text===undefined&&m?.type==='message'&&m?.subtype==='tombstone'&&m?.hidden===true?'':m?.text;
+  if(!m||!timestamp(m.ts)||typeof text!=='string'||text.length>40000||seen.has(micros(m.ts))
    ||micros(m.ts)<micros(scope.oldest)||micros(m.ts)>micros(scope.latest)||micros(m.ts)<micros(scope.parentTimestamp)
    ||m.ts===scope.parentTimestamp&&(m.thread_ts!==undefined&&m.thread_ts!==scope.parentTimestamp)
    ||m.ts!==scope.parentTimestamp&&m.thread_ts!==scope.parentTimestamp)throw Error('thread_page_integrity');
   slackMessageKind(m);
   if(m.subtype==='thread_broadcast' && m.ts===scope.parentTimestamp)throw Error('thread_page_integrity');
   const encoded=JSON.stringify(m);if(new TextEncoder().encode(encoded).length>262144)throw Error('thread_message_too_large');
-  seen.add(micros(m.ts));return {tenant_id:tenantId,source_external_id:`${scope.teamId}:${channelId}:${m.ts}`,source_connector_id:'slack',channel_id:channelId,provider_timestamp:m.ts,thread_timestamp:typeof m.thread_ts==='string'?m.thread_ts:null,text:m.text,provider_payload:JSON.parse(encoded)};
+  seen.add(micros(m.ts));return {tenant_id:tenantId,source_external_id:`${scope.teamId}:${channelId}:${m.ts}`,source_connector_id:'slack',channel_id:channelId,provider_timestamp:m.ts,thread_timestamp:typeof m.thread_ts==='string'?m.thread_ts:null,text,provider_payload:JSON.parse(encoded)};
  });
  const next=page.response_metadata?.next_cursor;
  if(next!==undefined&&(typeof next!=='string'||next.length>1024)||page.has_more&&!(typeof next==='string'&&next.length)||!page.has_more&&!!next||next&&next===cursor)throw Error('thread_cursor_unavailable');

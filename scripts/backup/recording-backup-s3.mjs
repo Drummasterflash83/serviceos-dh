@@ -68,12 +68,13 @@ export function createDatabaseS3(options = {}) {
     ),
     "s3_database_principal_required",
   );
-  return createPrivateS3({ ...databaseBackupBinding }, 1024 ** 3, options);
+  return createPrivateS3({ ...databaseBackupBinding }, 1024 ** 3, options, 480000);
 }
 function createPrivateS3(
   context,
   MAX_BYTES,
   { credentials, requestHandler, now = Date.now, expectedPrincipalArn, signal } = {},
+  objectTransferMs = 120000,
 ) {
   requireValue(typeof credentials === "function", "s3_credentials_provider_required");
   const abortAfter = (ms) =>
@@ -113,8 +114,28 @@ function createPrivateS3(
       typeof v === "string" && v.length > 0 && v.length <= 1024 && v !== "null",
       "s3_version_required",
     );
-  const send = async (Command, input) =>
-    s3.send(new Command({ ...bucket, ...input }), { abortSignal: abortAfter(120000) });
+  // Only the fixed database factory receives the eight-minute object budget.
+  // Metadata/journal calls, recording limits and idle/connect timeouts stay fixed.
+  const transferBudget = (key) =>
+    key.startsWith(context.prefix + "objects/") ? objectTransferMs : 120000;
+  const send = async (Command, input, timeoutMs = 120000) => {
+    const deadline = AbortSignal.timeout(timeoutMs);
+    const abortSignal = signal ? AbortSignal.any([signal, deadline]) : deadline;
+    try {
+      return await s3.send(new Command({ ...bucket, ...input }), { abortSignal });
+    } catch (error) {
+      // These fixed codes retain useful failure classification without exposing
+      // keys, headers, credentials, response bodies or SDK exception messages.
+      if (signal?.aborted) throw new RecordingBackupError("s3_request_cancelled");
+      if (deadline.aborted) throw new RecordingBackupError("s3_request_deadline_exceeded");
+      if (
+        ["TimeoutError", "RequestTimeout"].includes(error?.name) ||
+        ["ETIMEDOUT", "ESOCKETTIMEDOUT"].includes(error?.code)
+      )
+        throw new RecordingBackupError("s3_transport_timeout");
+      throw error;
+    }
+  };
   const inspect = () =>
     safe(async () => {
       // Refresh per minute at most. Each request is still bound by ExpectedBucketOwner.
@@ -249,7 +270,9 @@ function createPrivateS3(
       keyValid(key);
       versionValid(versionId);
       await inspect();
-      const result = await send(S3.GetObjectCommand, { Key: key, VersionId: versionId });
+      const budgetMs = transferBudget(key),
+        started = performance.now();
+      const result = await send(S3.GetObjectCommand, { Key: key, VersionId: versionId }, budgetMs);
       try {
         describe(key, result);
         requireValue(result.VersionId === versionId, "s3_version_mismatch");
@@ -261,13 +284,22 @@ function createPrivateS3(
       requireValue(body && typeof body[Symbol.asyncIterator] === "function", "s3_stream_missing");
       // The absolute deadline covers stream consumption, not only response headers.
       return (async function* () {
-        let timeout;
+        let timeout, cancel;
         const deadline = new Promise((_, reject) => {
-          timeout = setTimeout(() => {
-            body.destroy?.();
-            reject(new RecordingBackupError("s3_stream_timeout"));
-          }, 120000);
+          timeout = setTimeout(
+            () => {
+              body.destroy?.();
+              reject(new RecordingBackupError("s3_stream_timeout"));
+            },
+            Math.max(1, budgetMs - (performance.now() - started)),
+          );
           timeout.unref?.();
+          cancel = () => {
+            body.destroy?.();
+            reject(new RecordingBackupError("s3_request_cancelled"));
+          };
+          if (signal?.aborted) cancel();
+          else signal?.addEventListener("abort", cancel, { once: true });
         });
         const iterator = body[Symbol.asyncIterator]();
         let bytes = 0;
@@ -282,10 +314,19 @@ function createPrivateS3(
           }
           requireValue(bytes === result.ContentLength, "s3_stream_size_mismatch");
         } catch (error) {
+          if (signal?.aborted) throw new RecordingBackupError("s3_request_cancelled");
           if (error instanceof RecordingBackupError) throw error;
+          if (performance.now() - started >= budgetMs)
+            throw new RecordingBackupError("s3_stream_timeout");
+          if (
+            ["TimeoutError", "RequestTimeout"].includes(error?.name) ||
+            ["ETIMEDOUT", "ESOCKETTIMEDOUT"].includes(error?.code)
+          )
+            throw new RecordingBackupError("s3_transport_timeout");
           throw new RecordingBackupError("s3_stream_unconfirmed");
         } finally {
           clearTimeout(timeout);
+          signal?.removeEventListener("abort", cancel);
           body.destroy?.();
         }
       })();
@@ -308,19 +349,23 @@ function createPrivateS3(
       const body = request.body();
       let result;
       try {
-        result = await send(S3.PutObjectCommand, {
-          Key: request.key,
-          Body: body,
-          ContentLength: request.size,
-          ContentType: request.key.endsWith(".json")
-            ? "application/json"
-            : "application/octet-stream",
-          IfNoneMatch: "*",
-          ServerSideEncryption: "AES256",
-          ChecksumAlgorithm: "SHA256",
-          ChecksumSHA256: request.checksumSHA256,
-          Metadata: { sha256: request.sha256 },
-        });
+        result = await send(
+          S3.PutObjectCommand,
+          {
+            Key: request.key,
+            Body: body,
+            ContentLength: request.size,
+            ContentType: request.key.endsWith(".json")
+              ? "application/json"
+              : "application/octet-stream",
+            IfNoneMatch: "*",
+            ServerSideEncryption: "AES256",
+            ChecksumAlgorithm: "SHA256",
+            ChecksumSHA256: request.checksumSHA256,
+            Metadata: { sha256: request.sha256 },
+          },
+          transferBudget(request.key),
+        );
       } finally {
         body?.destroy?.();
       }

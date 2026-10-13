@@ -422,7 +422,7 @@ export async function readLearnCardDetail(
           };
     if (Object.keys(selection).length)
       direct = await communications(
-        "Linked communications could not be read. Company owner/admin access is required.",
+        "Linked communications could not be read. Refresh to try again; if this continues, ask OpenFolk to check the connection and your access.",
         selection,
       );
     else gaps.push("This customer has no canonical person or company link yet.");
@@ -479,7 +479,7 @@ export async function readLearnCardDetail(
   const missing = linkedIds.filter((id) => !directIds.has(id));
   const extra = missing.length
     ? await communications(
-        "Some supporting evidence could not be read. Company owner/admin access is required.",
+        "Some supporting evidence could not be read. Refresh to try again; if this continues, ask OpenFolk to check the connection and your access.",
         { ids: missing.slice(0, DETAIL_LIMIT) },
       )
     : [];

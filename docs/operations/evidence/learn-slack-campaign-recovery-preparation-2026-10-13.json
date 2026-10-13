@@ -1,0 +1,57 @@
+{
+  "state": "prepared_not_deployed_or_requested",
+  "date": "2026-10-13",
+  "productionWrites": 0,
+  "providerRequests": 0,
+  "schemaSource": {
+    "path": "supabase/migrations/20261101930000_learn_slack_campaign_recovery.sql",
+    "sha256": "02bf6603659818f4bc2d1c12645c19ca4e4ac5edb9b314b29a5d5ec60e2453f3"
+  },
+  "checks": {
+    "nodeTests": 131,
+    "typescript": "passed",
+    "fullSchema": "slack-campaign-recovery-rehearsal-v6/report.json",
+    "exactReleaseEnvelope": "slack-campaign-recovery-deployment-rehearsal-v2/report.json",
+    "offlineRuntimeBoot": "all_endpoints_booted_and_rejected_missing_auth",
+    "archivedRowsPreserved": 1591580,
+    "nullImportIdentity": "actual authenticated dispatch rejects JSON null with PT409; no recovery request or job written"
+  },
+  "schemaPlanSha256": "469e99b9c35f61fb55775911793ca87112a92caf940d8ce9e0ebf6f8d9c73c73",
+  "runtimePlanSha256": "cb2bc72df28d31aa975217717175772d55d6217df16dc269ec5f9c893d11200b",
+  "executors": {
+    ".verification-results/production-slack-campaign-recovery-20261013/schema-v3.mjs": "e21effbb125d2646b7589bda9e385f6eaaf9f3474af23c306d9cfa7cab6b45d7",
+    ".verification-results/production-slack-campaign-recovery-20261013/deploy-v2.mjs": "00445e35d52f99f4046b7374a084bb2f1c8e8d57dd4c313aeb2cf2df12682bf7"
+  },
+  "runtime": {
+    "sourceClosureSha256": "a8254406e25c31aeaaa8c6abe8ec0858781f6517ae3c795859b02fb6a9ccd17c",
+    "changedFiles": [
+      "_shared/slack/slack_history_errors.ts",
+      "_shared/slack/slack_message_kind.ts",
+      "_shared/worker_handlers/slack_history.ts"
+    ],
+    "endpoints": [
+      {
+        "name": "learn-slack-worker",
+        "eszipSha256": "342221b9d66a81467c6fe5fe42a06d6ca0311bb4b6504706f951fd64e1a1fccf"
+      },
+      {
+        "name": "platform-worker",
+        "eszipSha256": "1aaa061e6f1b6ff2ea906d1d862dc2626466ea5e7f875c89ec6c42b7e75f836e"
+      }
+    ]
+  },
+  "requiredOrder": [
+    "parent voicemail monitor terminal result",
+    "review and apply guarded SQL",
+    "publish matching Slack/platform runtime with unchanged auth/capture/access/credentials/schedules",
+    "publish operator frontend",
+    "one logged reviewed exact recovery per held channel",
+    "inspect structural diagnostics without guessing message acceptance"
+  ],
+  "supersededPreparations": [
+    "schema-plan.json",
+    "schema-plan-v2.json",
+    "preparation.json"
+  ],
+  "runtimeBindsExactSchemaPlan": true
+}

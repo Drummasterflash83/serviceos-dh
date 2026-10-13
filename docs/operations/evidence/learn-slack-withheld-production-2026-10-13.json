@@ -1,0 +1,122 @@
+{
+  "state": "production_release_and_exact_recovery_verified",
+  "date": "2026-10-13",
+  "schema": {
+    "sourceSha256": "a8c5ea5b2afd0be29fc8fd23a1aaf133b0a1f9d61f5e6be1d26f6c5b711fedfe",
+    "releaseSha256": "0b3cf4b9b7ea7b2450d81dd8b3aad83d701c6ea85a2bcaf5a404f957fa646fd8",
+    "verification": "read_only_canonical_policy_reconciliation",
+    "originalJournalPreserved": true,
+    "retainedSourceRows": 10383,
+    "retainedVersionRows": 10383,
+    "restrictivePolicies": 12
+  },
+  "runtime": {
+    "state": "published_and_verified",
+    "completedAt": "2026-10-13T16:59:12.461Z",
+    "sourceClosureSha256": "5c327252fadfa1a3e298fccf449eac5add6be188dce607aeab0ca0e8d238ba95",
+    "endpoints": [
+      {
+        "name": "learn-slack-worker",
+        "version": 9,
+        "wireSha256": "049f301458c25d74f37c9e2fbcdf9391e6b0e5ff4ab6345e755bf3460679c399",
+        "verifyJwt": true
+      },
+      {
+        "name": "platform-worker",
+        "version": 70,
+        "wireSha256": "d4e90f4b5a3c0197b6127bc7fc7d1eea8f97885cc92053f0edd7d483cfeaff5f",
+        "verifyJwt": false
+      }
+    ],
+    "unrelatedFunctionsUnchanged": true,
+    "sourceIdentitiesAndVersionsPreserved": true,
+    "accessConnectionsSecretsAndSchedulesPreserved": true,
+    "voicemailPreservation": {
+      "messages": {
+        "before": 255,
+        "after": 255,
+        "appended": 0
+      },
+      "sources": {
+        "before": 255,
+        "after": 255,
+        "appended": 0
+      }
+    }
+  },
+  "frontend": {
+    "deployment": "dpl_54BGSWXmMFMULhR48q1ufayPzVS9",
+    "gitSha": "5b276dd571116aa968b4c90595c896858dc267d0",
+    "stableLiveAliasesVerified": true,
+    "renderedProductionAuthTargetVerified": true,
+    "signedInOperatorControlsVerified": true,
+    "existingBrandingRetained": true
+  },
+  "providerAcceptance": {
+    "state": "live_history_page_accepted_replies_pending",
+    "observedAt": "2026-10-13T17:06:58.445679+00:00",
+    "recovery": {
+      "status": "succeeded",
+      "attempts": 1,
+      "records": 80,
+      "errorCode": null,
+      "completedAt": "2026-10-13T17:05:08.724627+00:00",
+      "checkpointPages": 3,
+      "historyWindowComplete": true
+    },
+    "exactApprovedCheckpointConsumed": true,
+    "savedPage": {
+      "withheld": 2,
+      "proofCount": 80,
+      "conversations": 59,
+      "allPublicCapture": true
+    },
+    "withheldMarkers": 2,
+    "allMarkersSuppressed": true,
+    "markerSourceVersionsRetained": 2,
+    "ordinaryInteractionProjectionsForMarkers": 0,
+    "priorInputIdentitiesPreserved": true,
+    "priorImmutableVersionsPreserved": true,
+    "campaignScopeAndLimitsUnchanged": true,
+    "requestUsage": [
+      {
+        "reserved": 1909,
+        "budget": 10000
+      },
+      {
+        "reserved": 1510,
+        "budget": 20000
+      }
+    ],
+    "replyCoverage": {
+      "complete": false,
+      "coverage": "fixed_window_observed_threads",
+      "observedThreads": 0,
+      "threadsComplete": false,
+      "completedThreads": 0,
+      "discoveryComplete": false,
+      "channelPagesComplete": true
+    },
+    "restrictionsVerified": true,
+    "limitations": [
+      "Both real markers were first-time inputs; they had no prior stored content or ordinary interaction. Removal of previously stored previews/derived evidence was verified in the offline full-schema journeys, not exercised by this real page.",
+      "Thread discovery and replies remain pending; completed history pages are not full channel completion.",
+      "Signed-in UI proof is recorded separately by the parent task."
+    ],
+    "agentProductionWrites": 0,
+    "agentProviderRequests": 0,
+    "signedInReaderAcceptance": {
+      "verified": true,
+      "unavailableRecordsNotice": 2,
+      "historyWindowCaptured": true,
+      "replyDiscoveryShownUnfinished": true,
+      "existingBrandingRetained": true
+    }
+  },
+  "limitations": [
+    "This release does not establish complete Slack history or replies.",
+    "DMs remain private; private-channel visibility remains separate unfinished work.",
+    "Identity-published summaries without field lineage require explicit reconciliation before marker ingestion.",
+    "After any held marker is retained, keep suppression schema and use runtime-only rollback; never restore readers exposing older content."
+  ]
+}

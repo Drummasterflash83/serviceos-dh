@@ -1,0 +1,87 @@
+{
+  "state": "passed",
+  "planSha256": "685bb8e3e0e7e618566e07ec11809a25ff9076f828bc497f5a83f15416ad0bd8",
+  "sqlSha256": "67d6bbbd19f2055771d7c83d94d1447a29fe6558a6bf81ed4229128156cbaae1",
+  "productionWrites": 0,
+  "providerRequests": 0,
+  "fairSevenRoutesWithinFourActualMinuteTicks": true,
+  "actualSchedulerTicks": [
+    {
+      "pages": 2,
+      "state": "completed",
+      "tick_at": "2026-10-13T12:53:00+00:00",
+      "observed_at": "2026-10-13T12:53:25.280722+00:00",
+      "jobs_enqueued": 2,
+      "routes_failed": 0,
+      "rows_examined": 2,
+      "routes_attempted": 2,
+      "coverage_complete": false,
+      "historical_receipt": false
+    },
+    {
+      "pages": 2,
+      "state": "completed",
+      "tick_at": "2026-10-13T12:54:00+00:00",
+      "observed_at": "2026-10-13T12:54:00.774606+00:00",
+      "jobs_enqueued": 2,
+      "routes_failed": 0,
+      "rows_examined": 2,
+      "routes_attempted": 2,
+      "coverage_complete": false,
+      "historical_receipt": false
+    },
+    {
+      "pages": 2,
+      "state": "completed",
+      "tick_at": "2026-10-13T12:55:00+00:00",
+      "observed_at": "2026-10-13T12:55:01.667124+00:00",
+      "jobs_enqueued": 2,
+      "routes_failed": 0,
+      "rows_examined": 2,
+      "routes_attempted": 2,
+      "coverage_complete": false,
+      "historical_receipt": false
+    },
+    {
+      "pages": 2,
+      "state": "completed",
+      "tick_at": "2026-10-13T12:56:00+00:00",
+      "observed_at": "2026-10-13T12:56:02.865128+00:00",
+      "jobs_enqueued": 1,
+      "routes_failed": 0,
+      "rows_examined": 2,
+      "routes_attempted": 2,
+      "coverage_complete": false,
+      "historical_receipt": false
+    }
+  ],
+  "fixedBoundaryAdmissionPassed": true,
+  "lateArrivalBelowCursorDiscovered": true,
+  "duplicateReceiptPreservesJobs": true,
+  "pauseRejectsQueuedImportAdmission": true,
+  "schedulerUnchanged": true,
+  "existingSourceMessageOwnerHashesPreserved": true,
+  "routes": 7,
+  "newRoutes": 7,
+  "dispatcherConcurrencyFencePassed": true,
+  "heldRoutesEnqueueNoJobs": true,
+  "allSourceAdmissionsPassed": true,
+  "oldScanControlsRestoredExactly": true,
+  "allRoutesPaused": true,
+  "managerPermissionsUnchanged": true,
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true
+}

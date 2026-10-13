@@ -44,3 +44,39 @@ test('a rejected record prevents page publication and cursor advancement',async(
  persist:async()=>{writes++;}}),(e:any)=>e.code==='slack_history_message_subtype_unsupported');
  assert.equal(writes,0);assert.equal(initial.pages,0);assert.equal(initial.cursor,null);
 });
+
+test('unsupported structures retain only bounded structural diagnostics and do not broaden accepted types',()=>{
+ for(const m of [{hidden:true,subtype:'message_changed'},{type:'private raw type',subtype:42},{subtype:'PRIVATE SECRET 123'},{subtype:'x'.repeat(65)}]){
+  try{slackMessageKind({...m,text:'Never disclose this',user:'U_PRIVATE',files:[{url:'private'}]});assert.fail('accepted');}
+  catch(e:any){assert.equal(e.retryable,false);assert.ok(e.diagnostic);assert.deepEqual(Object.keys(e.diagnostic).sort(),['code','hidden','subtype','subtypeType','type','version']);
+   assert.equal(JSON.stringify(e.diagnostic).includes('private'),false);assert.equal(JSON.stringify(e.diagnostic).includes('PRIVATE'),false);
+   assert.equal(JSON.stringify(e.diagnostic).includes('Never disclose'),false);assert.ok(e.diagnostic.subtype===null || e.diagnostic.subtype==='message_changed');}
+ }
+});
+
+// This exact observed type is a source-only hold, not an activity classification.
+test('welcome_party is retained for review in channel and thread pages without losing provider fields',async()=>{
+ const message={...record('welcome_party'),reply_count:2,blocks:[{type:'section',text:{type:'plain_text',text:'Synthetic unclassified input'}}]};
+ assert.equal(slackMessageKind(message),'source_needs_review');
+ for(const page of await readBoth(message))assert.deepEqual(page.records[0].provider_payload,message);
+});
+test('welcome_party does not bypass hidden/type/subtype guards or admit other undocumented types',async()=>{
+ for(const message of [{...record('welcome_party'),hidden:true},{...record('welcome_party'),hidden:null},
+ {...record('welcome_party'),type:'event_callback'},record('welcome_party_v2'),record('WELCOME_PARTY')]){
+  await assert.rejects(readBoth(message),(e:any)=>e.retryable===false);
+ }
+});
+
+test('only the exact hidden tombstone shape is retained as withheld, with unchanged provider evidence',async()=>{
+ const marker={...record('tombstone'),hidden:true,reply_count:1};
+ assert.equal(slackMessageKind(marker),'source_withheld');
+ for(const page of await readBoth(marker))assert.deepEqual(page.records[0].provider_payload,marker);
+ for(const m of [{...marker,hidden:false},{...marker,hidden:'true'},{...marker,hidden:null},{...marker,type:'event_callback'},
+  {...marker,type:undefined},{...marker,subtype:'message_deleted'},{...marker,subtype:'message_changed'},{...marker,subtype:'unknown_hidden'}])await assert.rejects(readBoth(m));
+});
+
+test('exact textless tombstone retains absent provider text; malformed text and unrelated omissions reject',async()=>{
+ const marker={...record('tombstone'),hidden:true};delete (marker as any).text;
+ for(const page of await readBoth(marker)){assert.equal(page.records[0].text,'');assert.deepEqual(page.records[0].provider_payload,marker);assert.equal('text' in page.records[0].provider_payload,false);}
+ for(const m of [{...marker,text:null},{...marker,text:42},{...marker,text:{}},{...marker,subtype:'bot_message'},{...marker,hidden:false}])await assert.rejects(readBoth(m));
+});

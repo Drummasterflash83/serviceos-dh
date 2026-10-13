@@ -1,0 +1,31 @@
+{
+  "version": "learn-slack-source-replay-release/1",
+  "state": "prepared_not_applied",
+  "project": "tgbnakbxwcqjeimygroz",
+  "source": {
+    "path": "supabase/migrations/20261101920000_learn_slack_campaign_source_replay.sql",
+    "sha256": "17b4d8ea7b4fae2d59fb3d1d1f3c68ad5913c06bfeea119c61d6943ba9df9c83"
+  },
+  "files": {
+    "apply.sql": "ff66d16f2ccc274eb148490cb47389e77382ced5d63c6430a7bcd0e4185f2c64",
+    "rollback.sql": "bec3676bd0d56fab9281d53a4e2e9686ab004750ffb8dd73123c2b8455dd7dfa"
+  },
+  "executionContract": {
+    "release_target": "tgbnakbxwcqjeimygroz",
+    "release_sha256": "17b4d8ea7b4fae2d59fb3d1d1f3c68ad5913c06bfeea119c61d6943ba9df9c83",
+    "schemaBeforeRuntime": true,
+    "noRoleGrantRequired": true,
+    "resolveActiveReplaysBeforeRollback": true,
+    "retainAllReplayAndSourceProofEvidence": true
+  },
+  "rehearsal": {
+    "state": "passed",
+    "role": "postgres",
+    "checks": [
+      "wrong_target",
+      "wrong_digest",
+      "late_failure"
+    ],
+    "rollbackVerified": true
+  }
+}

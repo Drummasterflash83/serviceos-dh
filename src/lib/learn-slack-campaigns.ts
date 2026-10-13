@@ -9,7 +9,16 @@ export type CampaignDefinition = {
   requestBudget: number;
   reason: string;
 };
+export type CampaignRecoveryInput = {
+  campaignId: string;
+  accountId: string;
+  importId: string;
+  failedJobId: string;
+  checkpointHash: string;
+  reason: string;
+};
 export type CampaignAction =
+  | { operation: "recover_page"; input: CampaignRecoveryInput }
   | {
       operation: "replay_source";
       input: { campaignId: string; sourceMessageId: string; sourceVersion: string; reason: string };
@@ -42,6 +51,8 @@ export type CampaignChannel = {
   complete: boolean;
 };
 export type Campaign = {
+  sourceNeedsReviewCount?: number;
+  sourceWithheldCount?: number;
   tenantId: string;
   campaignId: string;
   revision: number;
@@ -138,6 +149,13 @@ function validate(d: CampaignDraft) {
       !/^[a-f0-9]{64}$/.test(d.input.sourceVersion)
     )
       throw Error("Use the exact campaign, retained source ID and 64-character source version.");
+  } else if (d.operation === "recover_page") {
+    if (
+      !keys(x, "campaignId,accountId,importId,failedJobId,checkpointHash,reason") ||
+      ![d.input.campaignId, d.input.accountId, d.input.importId, d.input.failedJobId].every(uuid) ||
+      !/^[a-f0-9]{64}$/.test(d.input.checkpointHash)
+    )
+      throw Error("Refresh the exact failed page and checkpoint before recovery.");
   } else if (d.operation === "control" || d.operation === "close") {
     const x = d.input;
     if (!uuid(x.campaignId) || !count(x.revision) || x.revision < 1)
@@ -257,6 +275,8 @@ export async function readCampaign(
       !count(d.requestsReserved) ||
       d.requestsReserved > d.requestBudget ||
       d.coverage !== "fixed_window_observed_threads" ||
+      (d.sourceNeedsReviewCount !== undefined && !count(d.sourceNeedsReviewCount)) ||
+      (d.sourceWithheldCount !== undefined && !count(d.sourceWithheldCount)) ||
       d.requestAccounting !== "conservative_dispatch_reservations" ||
       !Array.isArray(d.channels) ||
       d.channels.length < 1 ||
@@ -313,7 +333,7 @@ export function readSourceReplayReceipt(
     validate(r.draft);
     if (
       !keys(r, "draft,jobId") ||
-      r.draft.operation !== "replay_source" ||
+      !["replay_source", "recover_page"].includes(r.draft.operation) ||
       !uuid(r.jobId) ||
       r.draft.backend !== scope.backend ||
       r.draft.actorId !== scope.actorId ||
@@ -345,7 +365,7 @@ async function dispatch(
       throw Error();
     if (r.state === "pending" || r.state === "cancelled")
       return r as { state: string; campaignId?: string };
-    if (d.operation === "replay_source") {
+    if (d.operation === "replay_source" || d.operation === "recover_page") {
       if (r.state !== "committed" || !uuid(r.jobId)) throw Error();
       return { state: "committed", campaignId: d.input.campaignId, jobId: r.jobId };
     }
@@ -409,7 +429,10 @@ export async function resolveCampaign(
     if (r.state !== "pending") {
       if (!allowed() || store.getItem(key) !== encoded)
         throw Error("Result recorded, but the saved context changed. Check its receipt again.");
-      if (d.operation === "replay_source" && r.state === "committed") {
+      if (
+        (d.operation === "replay_source" || d.operation === "recover_page") &&
+        r.state === "committed"
+      ) {
         const prior = readSourceReplayReceipt(store, s);
         if (
           prior?.draft.requestId === d.requestId &&
@@ -428,4 +451,98 @@ export async function resolveCampaign(
     }
     return r;
   });
+}
+
+export type CampaignRecoveryState = {
+  campaignId: string;
+  accountId: string;
+  importId: string;
+  checkpointHash: string;
+  jobId: string | null;
+  status: string | null;
+  errorCode: string | null;
+  diagnostic: { type: string; hidden: string; subtypeType: string; subtype: string | null } | null;
+};
+export async function readCampaignRecovery(
+  db: RecurringClient,
+  tenant: string,
+  campaign: string,
+  account: string,
+  request: string | null = null,
+): Promise<CampaignRecoveryState> {
+  if (![tenant, campaign, account].every(uuid) || (request !== null && !uuid(request)))
+    throw Error("Choose a valid campaign channel.");
+  try {
+    const { data: d, error } = await db.rpc("learn_slack_campaign_recovery_read", {
+      p_tenant: tenant,
+      p_campaign: campaign,
+      p_account: account,
+      p_request: request,
+    });
+    if (
+      error ||
+      !object(d) ||
+      d.version !== "slack-campaign-recovery/1" ||
+      d.tenantId !== tenant ||
+      d.campaignId !== campaign ||
+      d.accountId !== account ||
+      d.requestId !== request ||
+      !uuid(d.importId) ||
+      typeof d.checkpointHash !== "string" ||
+      !/^[a-f0-9]{64}$/.test(d.checkpointHash) ||
+      (d.jobId !== null && !uuid(d.jobId)) ||
+      (d.status !== null &&
+        ![
+          "queued",
+          "running",
+          "retrying",
+          "succeeded",
+          "failed",
+          "dead_letter",
+          "cancelled",
+          "skipped",
+        ].includes(d.status)) ||
+      (d.errorCode !== null &&
+        (typeof d.errorCode !== "string" || !/^slack_history_[a-z_]{1,80}$/.test(d.errorCode)))
+    )
+      throw Error();
+    if (
+      d.diagnostic !== null &&
+      (!object(d.diagnostic) ||
+        d.diagnostic.version !== "slack-structure/1" ||
+        ![
+          "slack_history_message_shape_unsupported",
+          "slack_history_message_subtype_unsupported",
+        ].includes(d.diagnostic.code) ||
+        !["missing", "message", "other"].includes(d.diagnostic.type) ||
+        !["missing", "true", "false", "other"].includes(d.diagnostic.hidden) ||
+        !["missing", "string", "other"].includes(d.diagnostic.subtypeType) ||
+        (d.diagnostic.subtype !== null &&
+          (typeof d.diagnostic.subtype !== "string" ||
+            !/^[a-z_]{1,64}$/.test(d.diagnostic.subtype))))
+    )
+      throw Error();
+    return {
+      campaignId: campaign,
+      accountId: account,
+      importId: d.importId,
+      checkpointHash: d.checkpointHash,
+      jobId: d.jobId,
+      status: d.status,
+      errorCode: d.errorCode,
+      diagnostic:
+        d.diagnostic === null
+          ? null
+          : {
+              type: d.diagnostic.type,
+              hidden: d.diagnostic.hidden,
+              subtypeType: d.diagnostic.subtypeType,
+              subtype: d.diagnostic.subtype,
+            },
+    };
+  } catch {
+    throw Error(
+      "Campaign page recovery could not be verified. Keep the existing checkpoint and refresh.",
+    );
+  }
 }

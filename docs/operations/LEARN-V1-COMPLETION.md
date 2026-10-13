@@ -7,6 +7,256 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 18:22 BST — Slack replies advancing; Commusoft coverage reconciled against its UI.**
+
+- The recovered Slack channel entered normal reply discovery: 20 threads found and
+  its first scheduled thread succeeded at 17:08:09 UTC. The old failed attempt is
+  not blocking it. Discovery and remaining replies continue in bounded batches.
+- Current Commusoft category IDs and labels are now corroborated by authenticated
+  provider navigation. Ambiguous customer representations still need review.
+- The API's independent counts match all 1,552 captured customers and 871 sites.
+  Its UI shows 1,650 customers and 982 sites; a fresh export confirms 98 additional
+  customer IDs. One active UI customer returns API 404. Full provider coverage is
+  therefore not established, even though the available traversal is exhausted.
+- All three published customer-card names agree with the fresh export. Wider
+  review found that API primary contacts can differ from account holders. The
+  next card implementation must retain their distinct identities and evidence
+  before broad person publication. No automatic merge or complete-card claim
+  was made.
+
+Evidence: [provider coverage reconciliation](evidence/learn-commusoft-provider-coverage-2026-10-13.json),
+[Slack scheduled discovery](evidence/learn-slack-recovery-discovery-2026-10-13.json).
+
+**13 October, 18:06 BST — LIVE Slack repair completed its real history page.**
+
+- The additive SQL and both matching workers are published and read back:
+  Slack worker v9, platform worker v70. Retained Slack identities/versions,
+  voicemail records, access, connections, runtime configuration and schedules
+  passed preservation checks.
+- A post-commit check initially disagreed with PostgreSQL's schema-qualified
+  policy formatting. A separate read-only canonical comparison verified all
+  12 exact policies and the existing rules; no SQL write was replayed.
+- Git 5b276dd now serves all existing live aliases. Its production authentication
+  target and signed-in operator controls were verified, retaining the live design.
+- The exact held channel page succeeded at 17:05 UTC in one attempt, saving
+  80 records and completing that channel's history window. Two unavailable
+  markers were retained without publishing conversation interactions. Their
+  ordinary reads are suppressed; prior source history and campaign limits remain.
+  Signed-in LIVE shows the two unavailable records and the captured history
+  window. Both markers were new inputs; suppression of older stored previews
+  was exercised in the offline rehearsal, not by this live page. Reply discovery/
+  capture and the wider campaign remain unfinished.
+
+Evidence: [LIVE Slack release](evidence/learn-slack-withheld-production-2026-10-13.json).
+
+**Earlier 13 October checkpoint — local verification before the LIVE release above.**
+
+- The exact observed Slack unavailable-message marker is retained without
+  becoming conversation content. Prior versions remain protected; stale replays
+  cannot restore them through ordinary context or scores. Available replies are
+  processed independently, with a separate unavailable-source count.
+- All 126 focused tests, typechecking and the production application build passed.
+  The full native-schema rehearsal ran as the production maintenance role,
+  passed 13 journeys and preserved all 1,591,580 archived rows and seven sequences.
+- At that earlier checkpoint, deployment was pending. The LIVE release above
+  supersedes that status; wider history and reply acceptance remain unfinished.
+  Previously published card summaries without per-field provenance require
+  explicit reconciliation; the import stops atomically in that case.
+- LIVE recurring Commusoft capture reached 290 customer-contact pages at
+  16:50 UTC, after its property and job stages. Canonical customer reconciliation
+  remains distinct from completed source imports.
+
+Evidence: [Slack candidate verification](evidence/learn-slack-withheld-candidate-2026-10-13.json).
+
+**13 October, 17:32 BST — recurring backup procedure accepted; contacts advancing.**
+
+- The combined manual backup verified 2,990 phone files and all 255 voicemail
+  email/audio pairs in AWS, including 40 new phone files. The independent monthly
+  voicemail runner restored a pair, decoded 20.448 seconds and confirmed cleanup.
+- The existing 09:00 follow-up now uses the verified three-bucket daily procedure
+  and retains both phone and voicemail monthly checks. Its saved configuration
+  was read back. Dependable scheduled execution and full application recovery
+  remain separate unfinished requirements.
+- The LIVE recurring Commusoft job stage completed and automatically advanced to
+  customer contacts; 40 contact pages were settled at 16:25 UTC. Site contacts,
+  a completed recurring-cycle watermark and pause/re-enable acceptance remain.
+- Current Commusoft customer-category names and two descriptions were read in the
+  existing authenticated provider UI without changing settings. Numeric type IDs
+  were not exposed there; their classification and canonical identity review remain
+  incomplete. The settings API denial is not resolved by this UI observation.
+
+Evidence: [communication backup and monthly restore](evidence/learn-communication-daily-2026-10-13.json).
+
+
+**13 October, 17:20 BST — customer review evidence and monthly restore runner advanced.**
+
+- Correct title-inclusive full-name comparison corroborates1,237of1,552 latest
+  customer sources against the sealed historical ID/name/postcode export, up
+  from322. No merge or classification rule was inferred;39IDs still lack
+  historical counterparts and current customer-type access remains unavailable.
+- The reusable AWS-only monthly voicemail pair restore runner passed20offline
+  tests, including real WAV decode and verified cleanup. Its real acceptance
+  awaits the first combined backup aggregate, still running under its original
+  process. Existing schedules are unchanged.
+- Commusoft's recurring jobs stage reached92settled pages at16:17UTC. The
+  property stage had completed automatically; both contact stages remain.
+
+
+**13 October, 17:04 BST — ongoing Commusoft capture enabled.**
+
+- The bounded dispatcher is LIVE and the existing logged operator approved only
+  Drummonds:2,000pages per stage,100records per page. The normal scheduler opened
+  its first recurring property window at16:02UTC, completed25pages by16:06UTC
+  and automatically advanced to jobs by16:08UTC. All four stages, later
+  incremental updates and pause/re-enable acceptance remain to be observed.
+- Activation changed only the existing dispatcher boolean. Runtime artifacts,
+  other configuration, access, schedules and retained voicemail evidence passed
+  preservation checks. No new credential or grant was introduced.
+- The three-bucket phone/voicemail backup supervisor passed52offline tests in the
+  main checkout. Real repeat verification and schedule activation are next; this
+  is not yet evidence of dependable unattended daily backups.
+
+
+**13 October, 16:46 BST — Slack queued continuation repaired.**
+
+- The exact retained child is now claimable under its original campaign, cursor
+  and request allowance. The initial repair refusal was missing infrastructure
+  execution context; a clean-session rehearsal verified the correction before
+  application. No new user grant or access scope was introduced.
+- All 9,037 source/version rows present during repair were preserved, alongside
+  permissions, schedules and campaign bounds. At 15:46:09 UTC the normal scheduler
+  completed the repaired page in one attempt (five records), exhausting that
+  channel's history cursor. Reply/discovery completion remains separate; no manual
+  dispatch was used.
+- The fresh independent database/voicemail recovery below is complete for its
+  snapshot and sampled pair. Ongoing backup acceptance, customer/job reconciliation
+  and the remaining Slack withheld-source handling continue.
+
+
+**13 October, 16:39 BST — fresh independent database and voicemail relationships recovered.**
+
+- The approved encrypted AWS copy was independently downloaded, decrypted and
+  restored in isolation. All 1,726,602 native archive rows, 2,652 operational rows,
+  18 Vault secrets and 2,977 recording relationships verified. Disposable restore
+  containers were removed; production was unchanged.
+- A second isolated read matched the sampled voicemail's intake, original-email
+  source, voicemail message and both private storage records to the separately
+  restored email/audio pair. All five relationships passed; audio decoded to
+  25.344 seconds. This closes the prior pre-import-snapshot relationship gap.
+- Slack recovered-page continuation now omits the one-use marker from normal
+  successors. The separately guarded repair of the existing child refused its
+  receipt/state check and remains held at zero attempts, pending read-only diagnosis.
+  Source history, access, schedules and campaign limits were preserved.
+- The snapshot is from 14:27 UTC: it does not cover later arrivals or releases.
+  Human listening, full application recovery and dependable daily database/voicemail
+  operation remain unverified. Daily voicemail backup preparation is in progress.
+
+Evidence: [independent recovery](evidence/learn-independent-recovery-2026-10-13.json).
+
+
+**13 October, 16:25 BST — independent copy downloaded; final restore resuming.**
+
+- The fresh encrypted database package was copied to the approved independent
+  destination and downloaded using the separate Restore identity. The downloaded
+  294,441,336 bytes match the prepared SHA-256. Final decryption/native restore
+  stopped at renewed 1Password authorisation; Chris has now completed Touch ID.
+  A successful final restore and voicemail relationship comparison remain required.
+- Slack scheduling is advancing: 13 active channels have completed their scoped
+  history and observed replies, five are processing replies, one is importing
+  history and one remains held. Round-robin scheduling explains general latency.
+- A separate defect affects the single recovered history continuation: it copied
+  a one-use recovery marker and is therefore correctly rejected by the exact
+  authority guard. Its checkpoint is preserved. A narrow SQL correction has passed
+  local full-schema tests and is being prepared for guarded production application;
+  it is not yet released. Hidden tombstone handling remains separate work.
+
+
+**13 October, 16:16 BST — three formerly held Slack pages recovered; review notice LIVE.**
+
+- Exact logged retries after Slack v7/platform v67 succeeded once each, processing
+  99, 100 and 77 records. Six retained welcome-type sources now show an honest
+  operator review notice; they are excluded from conversation interpretation and
+  scoring. Original source versions and campaign bounds remain retained.
+- Frontend `37731bd` is live at the existing aliases. Protected candidate backend,
+  browser errors and signed-in live review notice were checked; the full build
+  passed. GitHub TEST checkpoint matched the exact commit.
+- Successful pages do not prove whole-channel completion: the campaign still
+  reports review/discovery gaps and remaining thread work. The hidden tombstone
+  is a withheld-content marker, not proof of permanent deletion. Its safe handling
+  must also prevent old previews/scoring/stale replay from republishing content.
+- The encrypted database copy retry is still running under its existing handle
+  after a bounded transfer-deadline fix. No new independent restore is claimed.
+
+Evidence: [source-review live release and page outcomes](evidence/learn-slack-source-review-live-2026-10-13.json).
+
+
+**13 October, 16:02 BST — all four initial LIVE Commusoft source traversals complete.**
+
+- Production retained 2,423 property sources (1,552 customers and 871 sites),
+  12,633 jobs and 2,969 distinct contact sources across customer/site passes.
+  Customer contacts checked 1,552/1,552 targets; site contacts checked 871/871.
+  All four cursors exhausted, the final account has no active source job, and
+  before/after input totals did not decrease. Recurring capture and comprehensive
+  canonical customer/job/contact publication remain unfinished.
+- Slack recovery controls are LIVE on frontend `96e9336`, with Slack worker v6
+  and platform-worker v66. One bounded diagnostic retry per held channel found
+  three `welcome_party` records and one hidden `tombstone`. These pages remain
+  held with original checkpoints. A narrowly retained source-review treatment
+  for `welcome_party` is now schema/runtime verified (Slack v7/platform v67),
+  with provider retry and frontend notice still pending; withheld-marker
+  handling is separate and must prevent stale-content resurrection.
+- Seven ongoing voicemail routes completed the 30-minute monitor without a new
+  message or capture error. All 255 voicemail pairs remain retained; first new
+  arrival acceptance is still unproven. The 510-file independent backup and
+  sampled paired audio restore are verified; daily voicemail backup is unfinished.
+- A fresh 291,316,647-byte database archive restored in isolation, matched native
+  archive contents/catalog and recovered all 18 Vault secrets against live values.
+  Its encrypted package passed local decrypt verification. The independent copy
+  stopped with an unconfirmed S3 request; a subsequent exact-object lookup found
+  no completed object. No independent restore from this new package is claimed.
+  The prior independent database snapshot remains available. Bounded transfer
+  timeout diagnosis is in progress; no production source was changed.
+- The current LIVE frontend contains the clearer card read-error wording and the
+  previously verified representative customer → job → Slack excerpt journey.
+  Full LEARN V1 acceptance remains open, including all-input coverage, canonical
+  relationships, scoring evidence, ongoing operation and recovery automation.
+
+Evidence: [initial Commusoft capture](evidence/learn-commusoft-initial-live-complete-2026-10-13.json).
+
+
+**13 October, 15:19 BST — first LIVE customer → Commusoft job → genuine Slack excerpt verified.**
+
+- The logged exact-source replay succeeded on its first scheduled attempt. Its
+  unchanged source version now has a matching public-channel visibility proof.
+  Signed-in customer and job cards show the same retained communication; the
+  expandable excerpt contains the actual outstanding job questions. This verifies
+  one reviewed relationship, not complete customer matching or AI understanding.
+- One initial customer read failed; a fresh read returned the expected timeline.
+  The generic owner/admin warning misclassifies an unclassified read failure and
+  has a local wording correction (22 existing card/communication checks passed),
+  awaiting frontend release. The dedicated original Slack source reader remains unavailable;
+  the retained excerpt and provenance are available.
+- Customer contacts completed all 1,552 customer targets (2,402 contact records at
+  completion). The 871-site contact pass is still running; at least 425 supervised
+  requests have verified. Complete contact coverage and recurring Commusoft capture
+  remain open.
+- Seven ongoing voicemail routes are enabled under a dependency-aware monitor;
+  20 observations have seen no new arrival. All 255 published pairs are retained.
+  First-arrival import and playback acceptance remain unproven.
+- Independent backup finalized all 255 original emails and 255 audio files
+  (37,423,346 bytes). At 15:23 BST, a separate Restore identity verified one matched
+  pair and decoded 25.344 seconds of audio without source access. Isolated database
+  relationships, listening and recurring voicemail backups remain unfinished.
+- Slack held-page recovery is locally prepared and rehearsed, not deployed. Four
+  channels still need observed structural diagnostics and recovery. The active
+  voicemail monitor must finish before shared-runtime publication.
+- The live frontend now also includes the separately verified Emma recap/cost
+  release from `ac4810b`; see its release record. QuickBooks work has moved to the
+  separate **Quick Books Integration** chat and is not counted as completed here.
+
+Evidence: [current production checkpoint](evidence/learn-live-customer-slack-progress-2026-10-13.json).
+
+
 **13 October, 14:22 BST — 255 LIVE voicemail/source pairs; transcript display and playback verified.**
 
 - The final seven current-template sources imported successfully; two replays retained

@@ -1,0 +1,48 @@
+{
+  "state": "ongoing_enabled_first_stage_verified",
+  "observedAt": "2026-10-13T16:08:17.742Z",
+  "scope": "Drummonds existing LIVE Commusoft connection only",
+  "activationPlanSha256": "0ee1f0f1a88fb8941b4cc550231ce2a5aedd869a7c6357cefacf6f944d33c517",
+  "runtime": [
+    {
+      "name": "learn-commusoft-worker",
+      "id": "d0db77c9-c88c-49ff-b055-aceef8b59933",
+      "version": 3,
+      "hash": "dffe6f5a274bf51291198914a8dc2d1f52bc4f9f4fcaadd57c9f9200ef015511",
+      "jwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "platform-worker",
+      "id": "d4a0b71f-262d-4ede-9485-2621893b6c90",
+      "version": 69,
+      "hash": "2e43cfa65460f715e1c78833a4601280395e329ab3e5dafe7598549b3623dc15",
+      "jwt": false,
+      "status": "ACTIVE"
+    }
+  ],
+  "initialPasses": "all_four_complete_separate_evidence",
+  "recurring": {
+    "maxPagesPerStage": 2000,
+    "pageSize": 100,
+    "firstPropertiesPages": 25,
+    "firstPropertiesComplete": true,
+    "currentPhase": 2,
+    "currentJobsPages": 3,
+    "watermark": null
+  },
+  "preservation": {
+    "otherConfiguration": true,
+    "artifactsAndJwt": true,
+    "access": true,
+    "schedules": true,
+    "voicemailRows": true
+  },
+  "pending": [
+    "remaining_first_cycle_stages",
+    "later_incremental_cycle",
+    "pause_resume_acceptance",
+    "canonical_customer_job_coverage"
+  ],
+  "sourceDataIncluded": false
+}

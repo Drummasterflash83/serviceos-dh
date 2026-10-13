@@ -1,0 +1,74 @@
+{
+  "state": "prepared_not_deployed",
+  "preparedAt": "2026-10-13",
+  "baselineCommit": "96e9336",
+  "productionWrites": 0,
+  "providerRequests": 0,
+  "reviewedSubtype": "welcome_party",
+  "classification": "source_needs_review",
+  "officialSemanticsConfirmed": false,
+  "nodeTestsPassed": 44,
+  "typescriptCheck": "passed",
+  "diffCheck": "passed",
+  "schemaSha256": "d3794e8ed87fcc0ac3cdf0b601a9c5e70826db575251b66c2c5ba7ac893625fa",
+  "schemaPlanSha256": "fc821ab2be8b3273600c8d2827fea68eb68fdb06ce1b2aba48f409a9535469ee",
+  "schemaExecutorSha256": "877f173c03e5d66ca4aa6f0f4c93f42b59ecafddc5ce5437eaf6116fd8fd9272",
+  "runtimePlanSha256": "355a8545be2d6803b43c5769ca4eaea9e296a85c4c90d0ef2bcbfbad077e620e",
+  "runtimeExecutorSha256": "2faa44fd5d899a3759b1b28231077cf5d86573337b75d71ea4476f6806bdb976",
+  "sourceClosureSha256": "611084cab9653131de3159f140e146e3b0608647ae69b05a2c0648aff5e489d9",
+  "endpoints": [
+    {
+      "name": "learn-slack-worker",
+      "baselineVersion": 6,
+      "wireSha256": "ce8325d75361d0399468c34ea3197d6cf6e928c8cb27c02b7603599268d2109b"
+    },
+    {
+      "name": "platform-worker",
+      "baselineVersion": 66,
+      "wireSha256": "ba3bf1e986a3e5cd21cb36527281b39ef2c5f36a5c3a6a900df2d27dda580ce7"
+    }
+  ],
+  "fullSchema": {
+    "state": "passed",
+    "preservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 401,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "3a6219f9dd5917be9907c3a1a72333dbb23af30e3adbcbe107288aa346678dc2",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "role": "postgres",
+    "roleMembershipsRestored": true,
+    "guardChecks": [
+      "wrong_target",
+      "wrong_digest",
+      "function_drift",
+      "late_failure"
+    ],
+    "rollbackVerified": true,
+    "heldSourcesPreventClassifierRollback": true,
+    "isolated": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true
+  },
+  "limits": [
+    "Hidden tombstone remains rejected in this bundle; independent investigation pending.",
+    "Unknown subtype semantics remain unconfirmed; sources are retained but not interpreted.",
+    "No logged retry or provider acceptance performed."
+  ]
+}

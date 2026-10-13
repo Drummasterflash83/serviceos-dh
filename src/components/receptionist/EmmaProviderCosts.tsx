@@ -5,9 +5,9 @@ import "./emma-provider-costs.css";
 type Period = {
   usd: number;
   calls: number;
-  costedCalls: number;
+  costedCalls: number | null;
   minutes: number | null;
-  pending: number;
+  pending: number | null;
 };
 type Costs = { currency: "USD"; checkedAt: string; periods: { today: Period; month: Period } };
 export function EmmaProviderCosts({ tenant, userId }: { tenant: string; userId: string }) {
@@ -67,12 +67,12 @@ export function EmmaProviderCosts({ tenant, userId }: { tenant: string; userId: 
                   <span>{label} · London time</span>
                   <strong>{money(p.usd)}</strong>
                   <small>
-                    {p.calls.toLocaleString("en-GB")} calls ·{" "}
+                    {p.calls.toLocaleString("en-GB")} {p.calls === 1 ? "call" : "calls"} ·{" "}
                     {p.minutes === null
                       ? "Minutes not reported"
                       : `${p.minutes.toLocaleString("en-GB", { maximumFractionDigits: 1 })} provider minutes`}
                   </small>
-                  {p.pending > 0 && (
+                  {p.pending !== null && p.pending > 0 && (
                     <small>{p.pending} calls awaiting a reported cost; total is incomplete.</small>
                   )}
                 </article>

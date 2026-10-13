@@ -1,7 +1,11 @@
 /** Read-only Supabase source adapter. Run inside an authorised ServiceOS/server
  * environment. Never export its source credentials to AWS or persist them. */
 import { createHash, randomUUID } from "node:crypto";
-import { recordingIdentity, RecordingBackupError } from "./recording-backup-core.mjs";
+import {
+  recordingIdentity,
+  RecordingBackupError,
+  voicemailBackupBuckets,
+} from "./recording-backup-core.mjs";
 const uuid = (v) =>
   typeof v === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(v);
 const requireValue = (ok, code) => {
@@ -39,8 +43,17 @@ const etag = (v) => {
   requireValue(/^[a-zA-Z0-9-]+$/.test(result), "source_etag_unverified");
   return result;
 };
-export function createRecordingSource(
+export function createRecordingSource(binding, options = {}) {
+  return createBucketSource(binding, "phone-recordings", options);
+}
+/** The only additional source buckets; no caller-supplied table, origin or path. */
+export function createVoicemailSource(binding, bucket, options = {}) {
+  requireValue(voicemailBackupBuckets.includes(bucket), "source_bucket_outside_scope");
+  return createBucketSource(binding, bucket, options);
+}
+function createBucketSource(
   binding,
+  bucket,
   { credentials, fetcher = fetch, now = Date.now, requestBudget = 100000 } = {},
 ) {
   requireValue(
@@ -55,8 +68,7 @@ export function createRecordingSource(
   const tenantId = binding.tenantId,
     sourceProjectRef = binding.sourceProjectRef;
   const origin = `https://${sourceProjectRef}.supabase.co`,
-    prefix = `${tenantId}/`,
-    bucket = "phone-recordings";
+    prefix = `${tenantId}/`;
   let requests = 0,
     inspectedAt = null;
   const keyValid = (key) =>
@@ -141,8 +153,103 @@ export function createRecordingSource(
       inspectedAt = now();
       return { tenantId, sourceProjectRef, bucket, private: true };
     });
+  async function voicemailReferences(path) {
+    const rows = [],
+      isAudio = bucket === "receptionist-voicemails";
+    let cursor = null;
+    while (true) {
+      const page = await json(
+        `/rest/v1/${isAudio ? "receptionist_voicemail_intakes" : "receptionist_voicemail_sources"}`,
+        {
+          query: {
+            select: isAudio
+              ? "id,tenant_id,mailbox_id,audio_sha256,audio_bytes,state"
+              : "id,tenant_id,intake_id,raw_sha256,raw_bytes",
+            tenant_id: `eq.${tenantId}`,
+            order: "id.asc",
+            limit: "500",
+            ...(cursor ? { id: `gt.${cursor}` } : {}),
+          },
+        },
+      );
+      requireValue(Array.isArray(page) && page.length <= 500, "source_references_unverified");
+      if (!page.length) break;
+      for (const r of page) {
+        const digest = isAudio ? r.audio_sha256 : r.raw_sha256,
+          size = isAudio ? r.audio_bytes : r.raw_bytes;
+        requireValue(
+          r?.tenant_id === tenantId &&
+            uuid(r.id) &&
+            (!cursor || r.id > cursor) &&
+            uuid(isAudio ? r.mailbox_id : r.intake_id) &&
+            /^[a-f0-9]{64}$/.test(digest ?? "") &&
+            Number.isSafeInteger(size) &&
+            size > 0 &&
+            size <= (isAudio ? 26214400 : 1048576) &&
+            (!isAudio || ["prepared", "published"].includes(r.state)),
+          "source_references_unverified",
+        );
+        const storagePath = isAudio
+          ? `${tenantId}/${r.mailbox_id}/${r.id}`
+          : `${tenantId}/${r.intake_id}/${r.id}.eml`;
+        keyValid(storagePath);
+        rows.push({
+          id: r.id,
+          storagePath,
+          sha256: digest,
+          size,
+          state: isAudio ? r.state : "source_retained",
+        });
+        cursor = r.id;
+        requireValue(rows.length <= 10000, "source_reference_limit");
+      }
+    }
+    if (isAudio) {
+      let last = null,
+        count = 0;
+      const published = new Set();
+      while (true) {
+        const page = await json("/rest/v1/receptionist_voicemails", {
+          query: {
+            select: "id,tenant_id,mailbox_id,recording_path",
+            tenant_id: `eq.${tenantId}`,
+            order: "id.asc",
+            limit: "500",
+            ...(last ? { id: `gt.${last}` } : {}),
+          },
+        });
+        requireValue(
+          Array.isArray(page) && page.length <= 500,
+          "source_published_references_unverified",
+        );
+        if (!page.length) break;
+        for (const r of page) {
+          const ref = rows.find((x) => x.id === r.id);
+          requireValue(
+            r.tenant_id === tenantId &&
+              uuid(r.id) &&
+              (!last || r.id > last) &&
+              uuid(r.mailbox_id) &&
+              ref?.state === "published" &&
+              r.recording_path === ref.storagePath &&
+              r.recording_path === `${tenantId}/${r.mailbox_id}/${r.id}`,
+            "source_published_references_unverified",
+          );
+          published.add(r.id);
+          last = r.id;
+          requireValue(++count <= 10000, "source_reference_limit");
+        }
+      }
+      requireValue(
+        rows.filter((r) => r.state === "published").every((r) => published.has(r.id)),
+        "source_published_references_unverified",
+      );
+    }
+    return path === undefined ? rows : rows.filter((r) => r.storagePath === path);
+  }
   async function references(path) {
     if (path !== undefined) keyValid(path);
+    if (bucket !== "phone-recordings") return voicemailReferences(path);
     const rows = [];
     let cursor = null;
     while (true) {
@@ -264,19 +371,32 @@ export function createRecordingSource(
       version: result.version,
     };
   }
-  const identity = (details, ids) =>
-    recordingIdentity({
+  const identity = (details, ids, refs = []) => {
+    const matches = refs.filter((r) => r.storagePath === details.key);
+    requireValue(
+      matches.every((r) => r.size === details.size) &&
+        new Set(matches.map((r) => r.sha256)).size <= 1,
+      "source_content_binding_changed",
+    );
+    return recordingIdentity({
       tenantId,
       objectId: details.id,
       sourceKey: details.key,
       size: details.size,
       sourceVersion: JSON.stringify([details.version, details.etag, details.updatedAt]),
       recordingIds: ids,
+      ...(bucket === "phone-recordings" ? {} : { sourceBucket: bucket }),
+      ...(matches.length ? { sourceContentSha256: matches[0].sha256 } : {}),
     });
+  };
   const metadata = (input) =>
     safe(async () => {
       const entry = recordingIdentity(input);
       requireValue(entry.tenantId === tenantId, "foreign_tenant");
+      requireValue(
+        entry.sourceBucket === (bucket === "phone-recordings" ? undefined : bucket),
+        "source_bucket_outside_scope",
+      );
       keyValid(entry.sourceKey);
       await inspect();
       const details = await info(entry.sourceKey),
@@ -284,12 +404,17 @@ export function createRecordingSource(
       return identity(
         details,
         refs.map((r) => r.id),
+        bucket === "phone-recordings" ? [] : refs,
       );
     });
   const read = (input) =>
     safe(async () => {
       const entry = recordingIdentity(input);
       requireValue(entry.tenantId === tenantId, "foreign_tenant");
+      requireValue(
+        entry.sourceBucket === (bucket === "phone-recordings" ? undefined : bucket),
+        "source_bucket_outside_scope",
+      );
       const current = await metadata(entry);
       requireValue(canonical(current) === canonical(entry), "source_changed");
       const version = JSON.parse(entry.sourceVersion),
@@ -317,15 +442,22 @@ export function createRecordingSource(
       return (async function* () {
         const reader = response.body.getReader();
         let bytes = 0;
+        const contentHash = createHash("sha256");
         try {
           while (true) {
             const part = await reader.read();
             if (part.done) break;
             bytes += part.value.byteLength;
+            contentHash.update(part.value);
             requireValue(bytes <= entry.size, "source_byte_length_mismatch");
             yield part.value;
           }
           requireValue(bytes === entry.size, "source_byte_length_mismatch");
+          const digest = contentHash.digest("hex");
+          requireValue(
+            entry.sourceContentSha256 === undefined || digest === entry.sourceContentSha256,
+            "source_content_hash_mismatch",
+          );
         } catch (e) {
           if (e instanceof RecordingBackupError) throw e;
           throw new RecordingBackupError("source_stream_unconfirmed");
@@ -359,7 +491,11 @@ export function createRecordingSource(
               canonical({ ...details, version: undefined }) === canonical(object),
               "source_changed",
             );
-            return identity(details, idsByPath.get(object.key) ?? []);
+            return identity(
+              details,
+              idsByPath.get(object.key) ?? [],
+              bucket === "phone-recordings" ? [] : beforeRefs,
+            );
           }),
         );
         const failure = batch.find((r) => r.status === "rejected");
@@ -390,6 +526,12 @@ export function createRecordingSource(
           tenantId,
           sourceProjectRef,
           recordingRows: beforeRefs.length,
+          ...(bucket === "phone-recordings"
+            ? {}
+            : {
+                sourceBucket: bucket,
+                preparedReferences: beforeRefs.filter((r) => r.state === "prepared").length,
+              }),
           objects: entries.length,
           totalBytes: entries.reduce((n, e) => n + e.size, 0),
           unreferencedObjects: entries.filter((e) => !e.recordingIds.length).length,

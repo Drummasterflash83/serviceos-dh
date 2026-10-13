@@ -1,0 +1,35 @@
+{
+  "state": "prepared_not_activated",
+  "runnerSha256": "a36e626371ff290b152052defc3476ed49c7eaf166bedb07b380df79b4cba2b2",
+  "planSha256": "685bb8e3e0e7e618566e07ec11809a25ff9076f828bc497f5a83f15416ad0bd8",
+  "sqlSha256": "67d6bbbd19f2055771d7c83d94d1447a29fe6558a6bf81ed4229128156cbaae1",
+  "providerReceiptExpiresAt": "2026-10-13T14:47:06.478924Z",
+  "existingVoicemailPairs": 255,
+  "newRoutes": 7,
+  "existingRoutes": 13,
+  "monitorMinutes": 30,
+  "checks": [
+    {
+      "scenario": "empty_scans_remain_awaiting_message",
+      "passed": true
+    },
+    {
+      "scenario": "template_failure_pauses_and_preserves",
+      "passed": true
+    },
+    {
+      "scenario": "failed_enable_transaction_pauses_safely",
+      "passed": true
+    },
+    {
+      "scenario": "runtime_drift_pauses_and_preserves",
+      "passed": true
+    }
+  ],
+  "offlineSimulatedMonitorPolls": 40,
+  "fullSchemaRouteRehearsalPreviouslyPassed": true,
+  "productionRequests": 0,
+  "productionWrites": 0,
+  "independentVoicemailBackup": "pending_extension_copy_and_restore",
+  "limitation": "Abrupt host termination cannot run an in-process rollback; retained journal and explicit pause mode support recovery. Existing source pause admission remains enforced."
+}

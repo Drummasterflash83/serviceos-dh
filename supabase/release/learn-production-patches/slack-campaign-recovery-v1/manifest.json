@@ -1,0 +1,22 @@
+{
+  "version": "slack-campaign-recovery-release/1",
+  "state": "prepared_not_applied",
+  "project": "tgbnakbxwcqjeimygroz",
+  "source": {
+    "path": "supabase/migrations/20261101930000_learn_slack_campaign_recovery.sql",
+    "sha256": "02bf6603659818f4bc2d1c12645c19ca4e4ac5edb9b314b29a5d5ec60e2453f3"
+  },
+  "applySha256": "46e57f6b155f71d41e34750cc4313e833605b54a11d0bef36075991f9435b288",
+  "rollbackSha256": "02bae5bfb37331d058633bce57349a32bb2d862e7213e98a407bc491837e2790",
+  "changedFunctions": [
+    "learn_slack_campaign_dispatch(uuid,uuid,uuid,text,jsonb,text)",
+    "learn_slack_campaign_job_allowed(uuid,uuid)"
+  ],
+  "addedFunctions": [
+    "learn_slack_record_structure_diagnostic(uuid,uuid,text,integer,jsonb)",
+    "learn_slack_campaign_recover_page(uuid,uuid,jsonb,text)",
+    "learn_slack_campaign_recovery_read(uuid,uuid,uuid,uuid)"
+  ],
+  "security": "Existing authenticated operator/client-admin controls; no memberships, account grants, source or checkpoint edits. Private immutable tables have no direct client/service privileges.",
+  "nullImportBinding": "Rejected with IS DISTINCT FROM before any recovery request or job write"
+}

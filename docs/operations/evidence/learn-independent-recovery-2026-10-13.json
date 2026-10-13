@@ -1,0 +1,33 @@
+{
+  "state": "independent_database_and_sampled_voicemail_relationships_verified",
+  "snapshotAt": "2026-10-13T14:27:12.924128+00:00",
+  "encryptedBytes": 294441336,
+  "independentStorageVerified": true,
+  "keyEscrowReadbackVerified": true,
+  "recovery": {
+    "nativeRows": 1726602,
+    "operationalRows": 2652,
+    "recordingRelationships": 2977,
+    "vaultSecretsVerified": 18,
+    "containerRemoved": true
+  },
+  "voicemailRelationshipChecks": {
+    "intake": true,
+    "source": true,
+    "voicemail": true,
+    "rawStorage": true,
+    "audioStorage": true
+  },
+  "pairedFileRecovery": {
+    "state": "independent_files_verified",
+    "filesVerified": true,
+    "decoded": true,
+    "durationSeconds": 25.344,
+    "listening": "not_verified"
+  },
+  "containerRemoved": true,
+  "productionWrites": false,
+  "dailyVoicemailBackupVerified": false,
+  "dailyDatabaseBackupVerified": false,
+  "fullServiceRecoveryVerified": false
+}
