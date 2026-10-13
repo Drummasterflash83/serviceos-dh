@@ -249,3 +249,99 @@ and verified identity reuse remain available.
 The fresh export and review differences are sealed under the existing ignored
 private verification directory. A provider clarification draft is prepared there
 as `support-draft.txt`; it has not been sent.
+
+## Customer-to-work publication — 13 October, 21:11 BST
+
+**13 October, 21:11 BST — one substantial customer journey linked and verified LIVE.**
+
+- One company account was corroborated against its retained Commusoft source,
+  current customer export and full existing-identity snapshot, then saved through
+  the existing logged operator review. No possible identity collisions were merged.
+- All 22 sites and 585 jobs belonging to that account in the retained snapshot are
+  now linked. Every job's explicit property reference and customer/site ownership
+  was verified; the database readback checks every source link, original actor,
+  customer card and site relationship. Source descriptions and historical codes
+  remain unchanged. These are unverified canonical records with explicit source
+  evidence, not independently verified job-completion facts.
+- The signed-in LIVE card shows 585 linked jobs (25 on its first page) and 22 sites.
+  Source completion times without confirmed timezones remain excluded from duration
+  and performance calculations. Communications and contacts are not complete for
+  this customer. Complete provider coverage is not claimed.
+- All 4,456 previous identity projections, 1,552 retained customer heads, 24 prior
+  customer links and 35 contact points were unchanged. No new grant, schema/runtime
+  deployment, provider write or paid AI was involved. This is scoped preservation,
+  not a hash comparison of every production row.
+- Total published business links are now 25 customers, 33 sites, 616 jobs and 22
+  contacts. LIVE Slack has 12,127 sources; 102 archived windows and 15 active windows
+  are complete. Commusoft site-contact capture remains active with no full-cycle
+  watermark yet. Both known Slack recoveries were still queued at 21:03 BST.
+- Next: extend evidence-backed customer/contact/communication reconciliation,
+  make long job histories easier to scan by current work and date, complete input
+  coverage and ongoing capture, then scoring and operational acceptance. The full
+  goal remains incomplete; this account is not a substitute for broad coverage.
+
+[Live customer/site/job evidence](evidence/learn-customer-site-job-publication-2026-10-13.json).
+
+## Company contact acceptance — 13 October, 21:26 BST
+
+**13 October, 21:26 BST — company contacts verified LIVE; card read timeout diagnosed.**
+
+- Eleven reviewed source-contact links now represent nine distinct people on the
+  previously linked company card; two site sources reuse existing people after
+  explicit name, individual-email and company/site corroboration. The LIVE client
+  view shows nine contacts. All source payloads, versions, actors and customer/site
+  ownership were checked. Reuse preserves original card/endpoint evidence; the
+  additional site relationship and immutable source link retain the newer evidence.
+- All 22 previous contact links, 4,457 identity projections, 1,552 customer source
+  heads, 25 customer links and 35 contact points remain unchanged. Nine people and
+  17 non-primary, unverified contact points were added. No permissions, capture
+  settings or provider records changed. This is scoped preservation evidence.
+- A separate named contact sharing an office phone remains held. Do not merge
+  different people because they share a reception number. Explicit shared-office
+  endpoint review and department/non-person contacts still need completion.
+- The LIVE card's findings read reproducibly times out (Postgres 57014 at 20:20:24
+  and 20:22:17 UTC). Server error context identifies `learn_slack_document_withheld`
+  through the source-visibility policy. One communication read also timed out;
+  the subsequent read succeeded but returned no linked communications. Do not
+  describe this as a complete or healthy customer timeline.
+- A semantics-preserving candidate scopes withholding dependency checks to UUID
+  references present in the requested document. It is under isolated full-schema
+  rehearsal; **not deployed**. Keep source-withholding protection and existing ACLs.
+- The two known Slack recovery handles remain queued, attempt zero, verified at
+  20:19:08 UTC. No duplicate recovery was created. LIVE UI later showed 12,249
+  retained Slack sources, 32,616 emails, 4,462 calls, 2,984 recordings and 255
+  voicemails; counts do not prove historical coverage or completed learning.
+- Next: finish/release the card-read fix with preservation and signed-in evidence,
+  extend meaningful contact/communication reconciliation, finish connector coverage,
+  scoring and unattended operational acceptance. The full goal remains active.
+
+[Contact publication evidence](evidence/learn-company-contact-publication-2026-10-13.json).
+
+## First scheduled cycle — 13 October, 21:44 BST
+
+**13 October, 21:44 BST — first complete scheduled Commusoft traversal verified LIVE.**
+
+- All four stages in the first unfiltered scheduled cycle have durable terminal
+  checkpoints backed by successful worker/page receipts. The cycle completed at
+  20:28:01 UTC and advanced its watermark to 16:02:03 UTC. Capture remains enabled;
+  the next scheduled check is 21:28:01 UTC. No job was manually restarted.
+- Properties: 25 pages, 1,552 customer records and 871 work addresses. Jobs: 127
+  pages, 12,637 records. Customer contacts: all 1,552 frozen customer targets,
+  2,402 distinct contact records. Site contacts: all 871 frozen site targets,
+  567 distinct contact records. Both contact terminal counts equal their plans.
+- This proves traversal of the authorized API inventory, not complete agreement
+  with Commusoft's UI. The previously observed 98 customer/111 site count differences
+  remain unresolved. Initial capture is not an atomic snapshot; subsequent cycles
+  must overlap the retained watermark. Canonical publication and communication
+  matching remain separate: 25 customers, 33 sites, 616 jobs and 33 contact source
+  links are currently published.
+- Slack continues: 12,321 retained sources at 20:39 UTC; 15/20 active and 103/160
+  archived channel windows complete. Thread capture has 298 active-campaign and 18
+  archived-campaign captured threads; other observed/queued threads remain unfinished.
+- The communication-reader candidate passed the 600-unrelated-job regression,
+  preserving the reviewed conversation while refusing unnecessary source traversal.
+  Full-schema acceptance is rerunning its final checks after the superseded rollback
+  correctly refused to overwrite the newly changed helper. No context patch is LIVE
+  yet; the previous visibility-helper release remains installed.
+
+[First complete cycle evidence](evidence/learn-commusoft-first-live-cycle-2026-10-13.json).

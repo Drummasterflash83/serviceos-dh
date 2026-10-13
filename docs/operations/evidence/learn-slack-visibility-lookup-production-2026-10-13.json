@@ -1,0 +1,42 @@
+{
+  "state": "applied_and_catalog_verified",
+  "at": "2026-10-13T20:33:33.305Z",
+  "sourceSha256": "7913dd9be692c12bb4402716e7f15d6cd8fa18a8927a6ce1f9f300091d9201a7",
+  "releaseSha256": "0737c5ac9b44432c11984050a9ad718d1f4987ec2a96ee45fd1339c782d9c4d6",
+  "after": {
+    "acl": "{postgres=X/postgres}",
+    "md5": "dcd5606ed5fab4214ce581b4e7f610b8",
+    "owner": "postgres"
+  },
+  "permissionsPreserved": true,
+  "directReadOnlyProbe": "private_helper_execute_denied_as_expected",
+  "signedInBrowserAcceptance": {
+    "origin": "https://app.openfolk.ai",
+    "observedAt": "2026-10-13T20:33:55Z",
+    "findingsRead": "succeeded_no_linked_findings",
+    "communicationRead": "failed_statement_timeout",
+    "customerContacts": 9,
+    "customerJobs": 585,
+    "fullTimelineComplete": false
+  },
+  "runtimeChanged": false,
+  "frontendChanged": false,
+  "sourceDataWrites": false,
+  "scopedPreservation": {
+    "state": "verified_unchanged",
+    "at": "2026-10-13T20:35:31.878167+00:00",
+    "contactSourceLinks": 33,
+    "includesPersonFieldsEndpointsOwnersSourcePayloadsAndActors": true,
+    "sha256": "f3fdc46449e21dff1c417600ae6db6627d2a47738385766f08b1719d46ac4d80"
+  },
+  "remainingFailure": {
+    "at": "2026-10-13T20:33:52.526Z",
+    "code": "57014",
+    "entrypoint": "learn_card_communications_read",
+    "context": [
+      "learn_card_slack_job_context",
+      "learn_business_input_latest"
+    ],
+    "candidatePreparedNotApplied": true
+  }
+}

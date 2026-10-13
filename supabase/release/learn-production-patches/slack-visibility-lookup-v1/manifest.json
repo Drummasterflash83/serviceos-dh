@@ -1,0 +1,22 @@
+{
+  "state": "applied_and_catalog_verified",
+  "project": "tgbnakbxwcqjeimygroz",
+  "source": "supabase/migrations/20261102040000_learn_slack_visibility_lookup.sql",
+  "sourceSha256": "7913dd9be692c12bb4402716e7f15d6cd8fa18a8927a6ce1f9f300091d9201a7",
+  "applySha256": "0737c5ac9b44432c11984050a9ad718d1f4987ec2a96ee45fd1339c782d9c4d6",
+  "rollbackSha256": "eecfbdb9aac1beeadb739884d5b37a525af9ab024bb6767ecc6067aebec05886",
+  "before": {
+    "md5": "deaf0e95e96e547ab0d91565dedecd02",
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres}"
+  },
+  "after": {
+    "acl": "{postgres=X/postgres}",
+    "md5": "dcd5606ed5fab4214ce581b4e7f610b8",
+    "owner": "postgres"
+  },
+  "runtimeChanges": false,
+  "frontendChanges": false,
+  "sourceDataWrites": false,
+  "productionEvidence": "docs/operations/evidence/learn-slack-visibility-lookup-production-2026-10-13.json"
+}

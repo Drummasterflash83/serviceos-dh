@@ -1,0 +1,51 @@
+{
+  "version": "learn-company-contact-publication/1",
+  "state": "verified_live_contact_relationships",
+  "at": "2026-10-13T20:19:33.571518+00:00",
+  "publishedSourceLinks": 11,
+  "newDistinctPeople": 9,
+  "reviewedPersonReuses": 2,
+  "cardRelationships": 11,
+  "siteRelationships": 2,
+  "sourceContactPoints": 17,
+  "priorContactLinksRetained": 22,
+  "allSourcePayloadsVersionsAndActorsVerified": true,
+  "allIdentitiesRemainUnverified": true,
+  "reusedPeopleKeepOriginalCardAndEndpointEvidence": true,
+  "newSiteEvidenceRetainsEachAdditionalSource": true,
+  "sharedOfficeCollisionHeld": true,
+  "recurring": [
+    {
+      "phase": 4,
+      "state": "window_active",
+      "enabled": true
+    }
+  ],
+  "privateEvidenceSha256": "1a5540e1db16a48f3df1ecc852e82e76fc15fa03a9c820722ed73cde5cda50cb",
+  "preservation": {
+    "state": "verified_contact_publication_preservation",
+    "at": "2026-10-13T20:20:16.101664+00:00",
+    "priorIdentitiesUnchanged": 4457,
+    "priorCustomerSourceHeadsUnchanged": 1552,
+    "priorCustomerLinksUnchanged": 25,
+    "priorContactPointsUnchanged": 35,
+    "newPeople": 9,
+    "newContactPoints": 17,
+    "checks": {
+      "existing": true,
+      "customers": true,
+      "links": true,
+      "contactPoints": true
+    },
+    "snapshotSha256": "1989cabe2fa4bc6fad199e75b73ec855d9e395a246d104940e5bcaf4306b8c5b"
+  },
+  "browser": {
+    "origin": "https://app.openfolk.ai",
+    "observedAt": "2026-10-13T20:22:39Z",
+    "linkedContacts": 9,
+    "shownContacts": 9,
+    "customerCardFindingsRead": "failed_statement_timeout",
+    "communicationsRead": "succeeded_on_second_observation_no_linked_communications",
+    "completeCoverage": false
+  }
+}
