@@ -1,0 +1,70 @@
+{
+  "project": "saatxzwxvdvqevbnskxy",
+  "release": "quickbooks_customer_finance_v1",
+  "sourceHashes": [
+    {
+      "name": "20261102020000_learn_quickbooks_customer_finance.sql",
+      "sha256": "d6b7c742b7520533ebdd0f1b5ce956fd91a7c37f75065a2a0abf692c84666a0f"
+    }
+  ],
+  "bundleSha256": "b61341c864eee4551666a0f85f01daf1a189e7568ded9de4085c391297d61836",
+  "helpers": [
+    {
+      "signature": "auth.uid()",
+      "body_hash": "cdef18c69c4f4cbbced2eaf81e628b49",
+      "owner": "supabase_auth_admin"
+    },
+    {
+      "signature": "auth.role()",
+      "body_hash": "f31486fed08a7402e89d4aa71b0ad273",
+      "owner": "supabase_auth_admin"
+    },
+    {
+      "signature": "public.learn_operator_input_access(uuid,uuid,boolean)",
+      "body_hash": "6b26e22470bfb077e0c61d312c55f713",
+      "owner": "postgres"
+    },
+    {
+      "signature": "public.learn_import_batch_authority(uuid,uuid)",
+      "body_hash": "8010faf9b8dd341b7eda54d891d7b9b6",
+      "owner": "postgres"
+    },
+    {
+      "signature": "public.learn_quickbooks_enabled(uuid)",
+      "body_hash": "bdd3136f37f38cfaa84f332ed6b47185",
+      "owner": "postgres"
+    },
+    {
+      "signature": "public.learn_operator_input_immutable()",
+      "body_hash": "5226d715d49ccaa8a0c61b39a08c294b",
+      "owner": "postgres"
+    }
+  ],
+  "columns": [
+    {
+      "relname": "profiles",
+      "attname": "tenant_id",
+      "type": "uuid"
+    },
+    {
+      "relname": "profiles",
+      "attname": "role",
+      "type": "text"
+    },
+    {
+      "relname": "customer_cards",
+      "attname": "id",
+      "type": "uuid"
+    },
+    {
+      "relname": "customer_cards",
+      "attname": "tenant_id",
+      "type": "uuid"
+    }
+  ],
+  "preparedAt": "2026-10-13T16:54:42.075Z",
+  "effects": [
+    "Create reviewed customer links and audited finance RPCs behind existing company-admin/operator authority.",
+    "No credential, source import, user, grant, flag, link or schedule seeded."
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "observedAt": "2026-10-13T17:53:21.795Z",
+  "state": "protected_preview_ready_not_promoted",
+  "deployment": {
+    "id": "dpl_4XaKvd6y88DBwo21pqZBcnVv3N6H",
+    "url": "https://serviceos-learn-test-fnatjh8ir-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/quickbooks-integration",
+      "sha": "769aace2e8f5c971deb1bda94c342d4c6381a0d9"
+    },
+    "target": null,
+    "readyState": "READY",
+    "autoAssignCustomDomains": false
+  },
+  "protection": {
+    "deploymentType": "all"
+  },
+  "stableAliases": [
+    {
+      "name": "test.openfolk.ai",
+      "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+      "deploymentId": "dpl_821QqBty3MAXSeiJN8dhtDAsHQqD"
+    },
+    {
+      "name": "serviceos-learn-test-allkin.vercel.app",
+      "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+      "deploymentId": "dpl_821QqBty3MAXSeiJN8dhtDAsHQqD"
+    }
+  ],
+  "validation": {
+    "combinedTests": 89,
+    "failedTests": 0,
+    "typescript": "passed",
+    "localBuild": "passed",
+    "remoteBuild": "ready",
+    "browserLogin": "rendered",
+    "signedInAcceptance": "not_verified",
+    "backendBinding": "preview_configuration_inherited_not_verified_in_rendered_authenticated_app"
+  },
+  "gates": [
+    "Intuit development callback and hosted credential setup await their separate action-time approval.",
+    "Real sandbox connect/disconnect/reconnect and accounting import are not performed.",
+    "Production Intuit assessment and legal publication remain unfinished.",
+    "TEST lacks learn_slack_campaign_recovery_read while merged operator UI exposes recovery; reconcile before stable TEST promotion.",
+    "No stable alias or production changes made in this release."
+  ]
+}

@@ -53,6 +53,7 @@ function fixture() {
             version: "learn-slack-campaign-list/1",
             tenantId: id(1),
             canWrite: access,
+            capabilities: { sourceReplay: true, pageRecovery: true },
             campaigns: [],
             next: null,
           },
@@ -462,16 +463,92 @@ test("recovery reader validates tenant/campaign/account/request and strips untru
     );
 });
 
-test('held source coverage is explicit, nonnegative, and absent for older snapshots rather than invented zero',async()=>{
- const db=(data:any)=>({rpc:async()=>({data,error:null})});
- assert.equal((await readCampaign(db({...progress,sourceNeedsReviewCount:2}),id(1),id(3))).sourceNeedsReviewCount,2);
- assert.equal((await readCampaign(db(progress),id(1),id(3))).sourceNeedsReviewCount,undefined);
- for(const value of [-1,0.5,null,'2',Infinity])await assert.rejects(readCampaign(db({...progress,sourceNeedsReviewCount:value}),id(1),id(3)));
+test("held source coverage is explicit, nonnegative, and absent for older snapshots rather than invented zero", async () => {
+  const db = (data: any) => ({ rpc: async () => ({ data, error: null }) });
+  assert.equal(
+    (await readCampaign(db({ ...progress, sourceNeedsReviewCount: 2 }), id(1), id(3)))
+      .sourceNeedsReviewCount,
+    2,
+  );
+  assert.equal((await readCampaign(db(progress), id(1), id(3))).sourceNeedsReviewCount, undefined);
+  for (const value of [-1, 0.5, null, "2", Infinity])
+    await assert.rejects(
+      readCampaign(db({ ...progress, sourceNeedsReviewCount: value }), id(1), id(3)),
+    );
 });
 
-test('withheld source coverage remains separate from unclassified records and missing does not imply zero',async()=>{
- const db=(data:any)=>({rpc:async()=>({data,error:null})});
- assert.equal((await readCampaign(db({...progress,sourceWithheldCount:2,sourceNeedsReviewCount:3}),id(1),id(3))).sourceWithheldCount,2);
- assert.equal((await readCampaign(db(progress),id(1),id(3))).sourceWithheldCount,undefined);
- for(const value of [-1,0.5,null,'2',Infinity])await assert.rejects(readCampaign(db({...progress,sourceWithheldCount:value}),id(1),id(3)));
+test("withheld source coverage remains separate from unclassified records and missing does not imply zero", async () => {
+  const db = (data: any) => ({ rpc: async () => ({ data, error: null }) });
+  assert.equal(
+    (
+      await readCampaign(
+        db({ ...progress, sourceWithheldCount: 2, sourceNeedsReviewCount: 3 }),
+        id(1),
+        id(3),
+      )
+    ).sourceWithheldCount,
+    2,
+  );
+  assert.equal((await readCampaign(db(progress), id(1), id(3))).sourceWithheldCount, undefined);
+  for (const value of [-1, 0.5, null, "2", Infinity])
+    await assert.rejects(
+      readCampaign(db({ ...progress, sourceWithheldCount: value }), id(1), id(3)),
+    );
+});
+
+test("older campaign backends keep basic reads but cannot dispatch unsupported recovery", async () => {
+  for (const capabilities of [
+    undefined,
+    { sourceReplay: false, pageRecovery: false },
+    { sourceReplay: false, pageRecovery: true },
+  ]) {
+    const f = fixture();
+    const db = {
+      rpc: async (name: string, args: any) => {
+        const r = await f.db.rpc(name, args);
+        if (name === "learn_slack_campaign_list") r.data.capabilities = capabilities as any;
+        return r;
+      },
+    };
+    const page = await listCampaigns(db, scope.tenantId);
+    assert.equal(page.canWrite, true);
+    assert.equal(page.capabilities.sourceReplay, false);
+    await assert.rejects(
+      resolveCampaign(
+        db,
+        f.store,
+        async (_, task) => task(),
+        scope,
+        replay,
+        "apply",
+        () => true,
+      ),
+      /unavailable in this environment/,
+    );
+    assert.equal(f.calls.filter((c) => c.name === "learn_slack_campaign_dispatch").length, 0);
+    assert.deepEqual(readSavedCampaign(f.store, scope), replay);
+  }
+});
+test("malformed backend capability flags cannot enable recovery", async () => {
+  for (const capabilities of [
+    null,
+    {},
+    { sourceReplay: "true", pageRecovery: true },
+    { sourceReplay: true, pageRecovery: 1 },
+  ]) {
+    const db = {
+      rpc: async () => ({
+        error: null,
+        data: {
+          version: "learn-slack-campaign-list/1",
+          tenantId: scope.tenantId,
+          canWrite: true,
+          campaigns: [],
+          next: null,
+          capabilities,
+        },
+      }),
+    };
+    await assert.rejects(listCampaigns(db, scope.tenantId), /could not be checked/);
+  }
 });

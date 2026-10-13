@@ -1,0 +1,273 @@
+{
+  "project": "tgbnakbxwcqjeimygroz",
+  "release": "quickbooks_production_v1",
+  "status": "prepared_not_installed",
+  "preparedAt": "2026-10-13T19:02:16.790Z",
+  "catalogCheckedAt": "2026-10-13T19:02:16.810608+00:00",
+  "sourceHashes": [
+    {
+      "name": "20261102000000_learn_quickbooks_oauth.sql",
+      "sha256": "344c2530955bb86a90fe7943060026661c9a8b68be467aa9f7c213afba50d046"
+    },
+    {
+      "name": "20261102010000_learn_quickbooks_import.sql",
+      "sha256": "d801ba6a45af0570dd47312e8fb35552e3dfd085c130e7f5e7b3b5f9835e342c"
+    },
+    {
+      "name": "20261102020000_learn_quickbooks_customer_finance.sql",
+      "sha256": "d6b7c742b7520533ebdd0f1b5ce956fd91a7c37f75065a2a0abf692c84666a0f"
+    },
+    {
+      "name": "20261102030000_learn_quickbooks_disconnect.sql",
+      "sha256": "5a75324ea900a06d4bfb31edae26d85e0d9bc00eab80a4d1c2fb4d7014fb2e18"
+    }
+  ],
+  "bundleSha256": "97cf9c47f60cb051e7a6688c5dcd1ea1ece4fbd1fea8a7ca92c17e71771a41e1",
+  "helpers": [
+    {
+      "owner": "postgres",
+      "exists": true,
+      "bodyHash": "5226d715d49ccaa8a0c61b39a08c294b",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "signature": "public.learn_operator_input_immutable()",
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "owner": "postgres",
+      "exists": true,
+      "bodyHash": "6b26e22470bfb077e0c61d312c55f713",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "signature": "public.learn_operator_input_access(uuid,uuid,boolean)",
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "owner": "postgres",
+      "exists": true,
+      "bodyHash": "d36508a666fb4488977dfc202a66b410",
+      "settings": [
+        "search_path=public"
+      ],
+      "signature": "public.current_user_is_openfolk_operator(text)",
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "owner": "postgres",
+      "exists": true,
+      "bodyHash": "2e19bd2a1c02fecc48090bf9b066ad40",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "public.provider_secret_name(uuid,text,text)",
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "owner": "postgres",
+      "exists": true,
+      "bodyHash": "9fc619c82fd169f5bfe293d18b994340",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "public.provider_secret_store(uuid,text,text,text)",
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "owner": "supabase_admin",
+      "exists": true,
+      "bodyHash": "db64516e2717e986a5f997783b5b9c20",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "vault.create_secret(text,text,text,uuid)",
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "owner": "supabase_admin",
+      "exists": true,
+      "bodyHash": "650d4c4b9939ea49ed73bdb3bfde1d39",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "vault.update_secret(uuid,text,text,text,uuid)",
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "owner": "supabase_auth_admin",
+      "exists": true,
+      "bodyHash": "cdef18c69c4f4cbbced2eaf81e628b49",
+      "settings": null,
+      "signature": "auth.uid()",
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": true
+    },
+    {
+      "owner": "supabase_auth_admin",
+      "exists": true,
+      "bodyHash": "f31486fed08a7402e89d4aa71b0ad273",
+      "settings": null,
+      "signature": "auth.role()",
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": true
+    },
+    {
+      "owner": "postgres",
+      "exists": true,
+      "bodyHash": "8010faf9b8dd341b7eda54d891d7b9b6",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "signature": "public.learn_import_batch_authority(uuid,uuid)",
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    }
+  ],
+  "columns": [
+    {
+      "relation": "public.tenants",
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "relation": "public.tenants",
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "relation": "public.profiles",
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "relation": "public.profiles",
+      "name": "tenant_id",
+      "type": "uuid"
+    },
+    {
+      "relation": "public.profiles",
+      "name": "role",
+      "type": "text"
+    },
+    {
+      "relation": "public.customer_cards",
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "relation": "public.customer_cards",
+      "name": "tenant_id",
+      "type": "uuid"
+    },
+    {
+      "relation": "public.platform_authority_grants",
+      "name": "profile_id",
+      "type": "uuid"
+    },
+    {
+      "relation": "public.platform_authority_grants",
+      "name": "permission",
+      "type": "text"
+    },
+    {
+      "relation": "public.platform_authority_grants",
+      "name": "effective_from",
+      "type": "timestamp with time zone"
+    },
+    {
+      "relation": "public.platform_authority_grants",
+      "name": "effective_to",
+      "type": "timestamp with time zone"
+    },
+    {
+      "relation": "public.view_as_context",
+      "name": "actor_user_id",
+      "type": "uuid"
+    },
+    {
+      "relation": "public.view_as_context",
+      "name": "ended_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "relation": "public.view_as_context",
+      "name": "expires_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "relation": "public.feature_flags",
+      "name": "tenant_id",
+      "type": "uuid"
+    },
+    {
+      "relation": "public.feature_flags",
+      "name": "flag",
+      "type": "text"
+    },
+    {
+      "relation": "public.feature_flags",
+      "name": "value",
+      "type": "jsonb"
+    },
+    {
+      "relation": "auth.users",
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "relation": "auth.users",
+      "name": "deleted_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "relation": "auth.users",
+      "name": "banned_until",
+      "type": "timestamp with time zone"
+    },
+    {
+      "relation": "vault.decrypted_secrets",
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "relation": "vault.decrypted_secrets",
+      "name": "name",
+      "type": "text"
+    },
+    {
+      "relation": "vault.decrypted_secrets",
+      "name": "decrypted_secret",
+      "type": "text"
+    }
+  ],
+  "effects": [
+    "Add QuickBooks tables, guarded RPCs and a private release receipt.",
+    "Use existing authenticated authority; create no user or operator grants.",
+    "Seed no apps, credentials, connections, source records, flags, imports or schedules."
+  ],
+  "outstanding": [
+    "Real sandbox provider lifecycle acceptance.",
+    "Rehearse this exact package against a current isolated production-schema clone.",
+    "Refresh production metadata immediately before any installation.",
+    "Verify recovery/preservation and matching runtime/frontend before promotion.",
+    "Production Intuit access, exact callback, credential storage and company consent."
+  ]
+}

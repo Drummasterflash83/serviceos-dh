@@ -1,0 +1,44 @@
+{
+  "scope": "Local synthetic QuickBooks OAuth candidate; not hosted acceptance",
+  "recorded_at": "2026-10-13T15:52:34.657844+00:00",
+  "checks": {
+    "targeted_typescript_tests": 33,
+    "isolated_postgresql_oauth": "passed",
+    "typescript_sql_combined_flow": "passed with synthetic provider",
+    "frontend_typecheck": "passed",
+    "deno_endpoint_check": "passed",
+    "production_build": "passed using existing local dependencies",
+    "existing_prebuild_checks": 47
+  },
+  "limitations": [
+    "No real QuickBooks company connection or financial import",
+    "No hosted migration or endpoint deployment",
+    "Vault fixture tests transactionality, not encryption",
+    "Full-schema rehearsal and signed-in UI verification still required",
+    "Record ingestion, financial projections, disconnect/revocation and production app requirements still incomplete"
+  ],
+  "sha256": {
+    "scripts/verify/learn-quickbooks-oauth-flow.mjs": "ca53b54693cb4aa5cc0ab4aab5b104734d2a469376d673fae234be83462b8852",
+    "scripts/verify/learn-quickbooks-oauth.assert.sql": "9d0325f7aa36f2587768e8afd0fb5ca8ffa7ed80a38f008b431784d1e56d419b",
+    "scripts/verify/learn-quickbooks-oauth.fixture.sql": "7f15aa0ea1ae7d0acb401448dc31b847843bda925f3de24fbeb9e8a0b70d5ab0",
+    "scripts/verify/learn-quickbooks-oauth.py": "48db19f96ec656d342874a273b2b3f3fdf98e518aa929a1a6153db16771359c2",
+    "src/components/app/OperatorQuickBooksConnection.tsx": "7dae0c1dd85d26e739c4375a2507101052ba7815b1a05305a7b5151bd3d96967",
+    "src/lib/learn-quickbooks.test.ts": "752f392bfb46cd1574ad21366f08af169c63989f1b46b1ba1a834f30f66f0a60",
+    "src/lib/learn-quickbooks.ts": "0a3674989e4bc4a529547f45e5ed7062e53e9e6d3e0e38c45b1469309ee6a347",
+    "supabase/functions/_shared/quickbooks/company_info.ts": "5b9271fc82aed53fdfbeef180516c3eb42a59a9297336d90c3f98d2b28663077",
+    "supabase/functions/_shared/quickbooks/edge_ports.ts": "9000ec9a502a86c61d86f71b355cef3024519ec9afcc2df23ebe3b5bf7a544d7",
+    "supabase/functions/_shared/quickbooks/oauth_contract.test.ts": "aaa2cce90e0f7d4c7355f434f6e724619d9001e6ca74e737833aa79ea23665fc",
+    "supabase/functions/_shared/quickbooks/oauth_contract.ts": "6efa91d7b86ab49f81835c756c2b7b94b99ceb8ce47cdb31d114f1bad4d3dc52",
+    "supabase/functions/_shared/quickbooks/oauth_flow.test.ts": "f71966989bb411da3ddd7e11faf79f3ca93a71a0351994a69893d39ae4d3aa9a",
+    "supabase/functions/_shared/quickbooks/oauth_flow.ts": "3256484019f99256b42dcd5ff9c889e033ebeb1c4bb44e283f0a08a2368a9a2e",
+    "supabase/functions/_shared/quickbooks/oauth_http.test.ts": "b048ad911092cd2e76d9e20c614d1e3361e8c4f8794036c212df0e6298ac1436",
+    "supabase/functions/_shared/quickbooks/oauth_http.ts": "f955ca76d8112660f7a8c4dd0d5aaa2f0e040c8e9320ade250b7e76512a29838",
+    "supabase/functions/_shared/quickbooks/read_page.test.ts": "fb6849f4be646e36593ee8b3267d2a6ca10e7c881b7e5c33bda3aa11146d5439",
+    "supabase/functions/_shared/quickbooks/read_page.ts": "69dbf6c1e058667c58db5bd3aad218c072a28aee848db05b6cc1120f2c903c1e",
+    "supabase/functions/_shared/quickbooks/token_transport.test.ts": "c841604f19cc53f389727f79cb842e7946691a08a3c630dcf18304ae112361a4",
+    "supabase/functions/_shared/quickbooks/token_transport.ts": "038db0d8039fcf8f487ff347fa5e24f1e761b376aded85f7b0bd51cd1811aa8e",
+    "supabase/functions/quickbooks-oauth-callback/index.ts": "88859e68d1b97607c3b369ea4dd298684716e86259dac57dc3bf81376bac36a2",
+    "supabase/functions/quickbooks-oauth-start/index.ts": "deb4c2dea4d851fb07e47f066c09cd771fe49cf2db98a014c29cd14407462801",
+    "supabase/migrations/20261102000000_learn_quickbooks_oauth.sql": "344c2530955bb86a90fe7943060026661c9a8b68be467aa9f7c213afba50d046"
+  }
+}

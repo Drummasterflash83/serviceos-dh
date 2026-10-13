@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-13",
+  "scope": "TEST only",
+  "git": "b46cb2dc0fd133c773d236e532fa74db8d732a68",
+  "deployment": "dpl_5agREx9pF4kCMmC52BLmDzo8t31w",
+  "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+  "readyState": "READY",
+  "target": null,
+  "aliases": [
+    "test.openfolk.ai",
+    "serviceos-learn-test-allkin.vercel.app"
+  ],
+  "aliasReadbackMatches": true,
+  "protection": "all",
+  "anonymousHttpsLogin": {
+    "status": 302,
+    "redirectHost": "vercel.com"
+  },
+  "renderedBuild": {
+    "sha": "b46cb2d",
+    "environment": "preview",
+    "supabase": "saatxzwxvdvqevbnskxy"
+  },
+  "signedIn": {
+    "existingSession": true,
+    "quickbooksConnectionEmptyState": true,
+    "quickbooksImportEmptyState": true,
+    "connectAndImportDisabled": true,
+    "slackCampaignRead": true,
+    "optionalRecoveryUnavailable": true,
+    "observedConsoleErrors": [],
+    "observedConsoleWarnings": []
+  },
+  "verification": {
+    "combinedTests": 78,
+    "typescript": "passed",
+    "build": "passed",
+    "sql": "isolated and hosted rollback/install passed"
+  },
+  "capabilityMigration": {
+    "path": "supabase/migrations/20261101970000_learn_slack_control_capabilities.sql",
+    "sha256": "6ee8f1cb97c874202dc139e3c32d86ecd5f93d1c9302405aef0e1c4d1e0f5445",
+    "installedDefinitionSha256": "ff1ff547492c37eb6bb26bb6e763d91ae16fcded5543f207c18073b7ac44659b",
+    "sourceReplay": false,
+    "pageRecovery": false,
+    "permissionsUnchanged": true,
+    "otherFunctionsUnchanged": true
+  },
+  "limitations": [
+    "No app credential provisioned",
+    "No QuickBooks company authorization or import",
+    "Real sandbox refresh/disconnect unverified",
+    "Finance-card and mobile visual acceptance pending",
+    "Client overview reports status check unresolved; no baseline attribution",
+    "No QuickBooks production release"
+  ],
+  "providerRequests": 0,
+  "newGrants": 0,
+  "productionChanges": 0
+}

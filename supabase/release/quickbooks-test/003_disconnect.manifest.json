@@ -1,0 +1,134 @@
+{
+  "project": "saatxzwxvdvqevbnskxy",
+  "release": "quickbooks_disconnect_v1",
+  "sourceHashes": [
+    {
+      "name": "20261102030000_learn_quickbooks_disconnect.sql",
+      "sha256": "5a75324ea900a06d4bfb31edae26d85e0d9bc00eab80a4d1c2fb4d7014fb2e18"
+    }
+  ],
+  "bundleSha256": "d6745734bf6974304fafed5037b336850e6eb3e5c6a2e7f5818d704f9d268fa6",
+  "helpers": [
+    {
+      "signature": "auth.uid()",
+      "body_hash": "cdef18c69c4f4cbbced2eaf81e628b49",
+      "owner": "supabase_auth_admin"
+    },
+    {
+      "signature": "auth.role()",
+      "body_hash": "f31486fed08a7402e89d4aa71b0ad273",
+      "owner": "supabase_auth_admin"
+    },
+    {
+      "signature": "public.learn_operator_input_access(uuid,uuid,boolean)",
+      "body_hash": "6b26e22470bfb077e0c61d312c55f713",
+      "owner": "postgres"
+    },
+    {
+      "signature": "public.learn_quickbooks_actor_access(uuid,uuid)",
+      "body_hash": "309316a6759cde58d203837efb826788",
+      "owner": "postgres"
+    },
+    {
+      "signature": "public.provider_secret_name(uuid,text,text)",
+      "body_hash": "2e19bd2a1c02fecc48090bf9b066ad40",
+      "owner": "postgres"
+    },
+    {
+      "signature": "vault.update_secret(uuid,text,text,text,uuid)",
+      "body_hash": "650d4c4b9939ea49ed73bdb3bfde1d39",
+      "owner": "supabase_admin"
+    }
+  ],
+  "prerequisiteFunctions": [
+    {
+      "name": "learn_quickbooks_actor_access",
+      "md5": "309316a6759cde58d203837efb826788"
+    },
+    {
+      "name": "learn_quickbooks_register_app",
+      "md5": "20341503dac3da941dae9256ebed37da"
+    },
+    {
+      "name": "learn_quickbooks_begin",
+      "md5": "c7dfbe1bbff48f302a8fcbdd16a3c4d9"
+    },
+    {
+      "name": "learn_quickbooks_claim",
+      "md5": "72e132b05e34ced0d3c78fae45791984"
+    },
+    {
+      "name": "learn_quickbooks_claim_current",
+      "md5": "29d4df0fb86dc8d90578675730b40e4a"
+    },
+    {
+      "name": "learn_quickbooks_validate_pair",
+      "md5": "b184daa13ca129d1ec31e740e6b9e5cf"
+    },
+    {
+      "name": "learn_quickbooks_finish",
+      "md5": "bdfa6d54a10c5fc4f7ded3509165d05c"
+    },
+    {
+      "name": "learn_quickbooks_fail",
+      "md5": "370cad57ba560344d74826df5d58728e"
+    },
+    {
+      "name": "learn_quickbooks_status",
+      "md5": "d8eaf9ff7970ba2fd0835cea48ea212d"
+    },
+    {
+      "name": "learn_quickbooks_control",
+      "md5": "88fcae503198c54a08a64b4921ed9cfd"
+    },
+    {
+      "name": "learn_quickbooks_refresh_acquire",
+      "md5": "159f7f3cad72e2b7a21049529016cf09"
+    },
+    {
+      "name": "learn_quickbooks_refresh_finish",
+      "md5": "62d882059246c18b145c33ec2deadf80"
+    },
+    {
+      "name": "learn_quickbooks_enabled",
+      "md5": "bdd3136f37f38cfaa84f332ed6b47185"
+    },
+    {
+      "name": "learn_quickbooks_set_enabled",
+      "md5": "27a08920240206b5e9c098283f69496a"
+    },
+    {
+      "name": "learn_quickbooks_import_start",
+      "md5": "ae1b504c9644788b08aa269845db225b"
+    },
+    {
+      "name": "learn_quickbooks_import_access",
+      "md5": "27bfb591c1007571c423cc1aab14b54b"
+    },
+    {
+      "name": "learn_quickbooks_import_acquire",
+      "md5": "a6eded8ea67c3e6633f976115c8d8b74"
+    },
+    {
+      "name": "learn_quickbooks_import_current",
+      "md5": "08602cf5c5e9a2ba4bd0f27f6fe108f0"
+    },
+    {
+      "name": "learn_quickbooks_import_commit",
+      "md5": "2c996e5b3935c53247c46e0dd7bcede4"
+    },
+    {
+      "name": "learn_quickbooks_import_fail",
+      "md5": "9f18a34602d3b8dac9b865942e1f40b7"
+    },
+    {
+      "name": "learn_quickbooks_import_status",
+      "md5": "1c78427470d0f3c51879fe9a9baec042"
+    }
+  ],
+  "preparedAt": "2026-10-13T17:32:19.557Z",
+  "effects": [
+    "Add disconnect ledger, fences and operator/service RPCs.",
+    "No credential, user/grant, connection, revocation, source data, module flag or schedule seeded."
+  ]
+}

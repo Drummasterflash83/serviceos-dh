@@ -3,6 +3,7 @@ import { OperatorCommusoftRecurring } from "./OperatorCommusoftRecurring";
 import { OperatorCommusoftResume } from "./OperatorCommusoftResume";
 import { OperatorCommusoftConnection } from "./OperatorCommusoftConnection";
 import { OperatorSlackConnection } from "./OperatorSlackConnection";
+import { OperatorQuickBooksConnection } from "./OperatorQuickBooksConnection";
 import type { ConnectionControlClient } from "@/lib/learn-commusoft-connection-outbox";
 import { connectionOutboxKey } from "@/lib/learn-operator-request-scope";
 import "@/styles/operator-learn-inputs.css";
@@ -42,6 +43,7 @@ export function OperatorLearnInputs({
     [notice, setNotice] = useState("");
   const [canWrite, setCanWrite] = useState<boolean | null>(null);
   const [slackOpen, setSlackOpen] = useState(false);
+  const [quickbooksOpen, setQuickbooksOpen] = useState(false);
   const [recurringBlocked, setRecurringBlocked] = useState(false);
   const [connectionBlocked, setConnectionBlocked] = useState(true);
   const [values, setValues] = useState<InputFlags>({
@@ -374,6 +376,13 @@ export function OperatorLearnInputs({
             />
           </div>
         )}
+      </details>
+      <details className="rounded-xl border p-4" open={quickbooksOpen} onToggle={(event) => setQuickbooksOpen(event.currentTarget.open)}>
+        <summary className="cursor-pointer font-semibold">QuickBooks accounting connection</summary>
+        {quickbooksOpen && <div className="pt-4"><OperatorQuickBooksConnection
+          key={`${backend}:${tenantId}:${actorId}`} tenantId={tenantId} actorId={actorId}
+          canWrite={canWrite === true && !busy && !pending}
+        /></div>}
       </details>
       {data && (
         <>

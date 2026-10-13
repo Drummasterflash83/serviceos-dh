@@ -8,6 +8,7 @@ import {
 } from "@/lib/learn-customer-business-context";
 import { jobTimingFields } from "@/lib/learn-job-timing";
 import { LearnCustomerContactPoints } from "./LearnCustomerContactPoints";
+import { LearnCustomerFinance } from "./LearnCustomerFinance";
 
 /** The same canonical links are shown to an authorised client and audited operator. */
 export function LearnCustomerBusinessContext({
@@ -272,6 +273,12 @@ export function LearnCustomerBusinessContext({
           )}
         </>
       )}
+      <LearnCustomerFinance
+        tenantId={tenantId}
+        actorId={actorId}
+        cardId={cardId}
+        operatorReason={operatorReason}
+      />
     </section>
   );
 }
