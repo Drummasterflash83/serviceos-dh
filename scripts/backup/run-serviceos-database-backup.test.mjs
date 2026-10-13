@@ -169,3 +169,24 @@ test("CLI requires explicit initial-snapshot mode and a run identity", () => {
     "--prepare-initial",
   );
 });
+
+test("checkpoint copy requires its exact independently prepared archive pin", async(t)=>{
+  const {directory,options,preparation,order}=await setup(t);
+  const expectedArchive={bytes:200123456,sha256:"e".repeat(64)};
+  await assert.rejects(runPreparedDatabaseBackup({...options,expectedArchive}));
+  assert.equal(order.length,0);
+  preparation.archive=expectedArchive;
+  await writeFile(join(directory,"preparation.json"),JSON.stringify(preparation));
+  const result=await runPreparedDatabaseBackup({...options,expectedArchive});
+  assert.equal(result.state,"independent_database_snapshot_verified");
+});
+test("checkpoint CLI rejects ambiguous paths, missing scope and unbounded archive sizes",async(t)=>{
+  const id="00000000-0000-4000-8000-000000000001";
+  for(const path of ["/tmp/other", ".verification-results/../private", ".verification-results/production-release-checkpoint-20261013-../../other"])
+    assert.throws(()=>parseDatabaseBackupArgs(["--prepare-checkpoint",id,"/tmp/binding.json",path]));
+  const parsed=parseDatabaseBackupArgs(["--prepare-checkpoint",id,"/tmp/binding.json",".verification-results/production-release-checkpoint-20261013-prelaunch"]);
+  assert.ok(parsed.sourcePath.endsWith("production-release-checkpoint-20261013-prelaunch"));
+  const {options,order}=await setup(t);
+  for(const bytes of [0,-1,1024**3+1])await assert.rejects(runPreparedDatabaseBackup({...options,expectedArchive:{bytes,sha256:"a".repeat(64)}}));
+  assert.equal(order.length,0);
+});

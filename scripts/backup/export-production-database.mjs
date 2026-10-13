@@ -14,10 +14,13 @@ import { savedCliToken } from '../verify/learn-test-readiness.mjs';
 const project = 'tgbnakbxwcqjeimygroz';
 const image = 'sha256:28f0e16a019e648089fc1a6d333549a55548f6019c15ae4bd7cd58b989027518';
 const mode = process.argv.slice(2).join(' ');
-const monitoredCapture = mode === '--export-complete-capture-small-full';
+const releaseCheckpoint = process.argv[2] === '--export-release-checkpoint'
+  && process.argv.length === 4
+  && /^\.verification-results\/production-release-checkpoint-[0-9]{8}-[a-z0-9-]+$/.test(process.argv[3]);
+const monitoredCapture = releaseCheckpoint || mode === '--export-complete-capture-small-full';
 const afterSmallUpgrade = monitoredCapture || mode === '--export-complete-capture-small';
 const completeCapture = afterSmallUpgrade || mode === '--export-complete-capture-v2';
-const root = monitoredCapture
+const root = releaseCheckpoint ? process.argv[3] : monitoredCapture
   ? '.verification-results/production-database-complete-capture-small-full-2026-10-12'
   : afterSmallUpgrade
   ? '.verification-results/production-database-complete-capture-small-2026-10-12'

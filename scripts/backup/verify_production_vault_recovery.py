@@ -2,6 +2,7 @@
 import hashlib
 import json
 import sys
+import re
 from pathlib import Path
 from database_restore_sandbox import RestoreSandbox, RecoveryError
 from inspect_production_release_baseline import prepare_archive_roles
@@ -12,6 +13,10 @@ report = {'version':'production-vault-recovery/1','productionWrites':False,
           'keyPersistedOnHost':False,'decryptedValuesPersisted':False,'externalUpload':False}
 try:
     data = json.loads(sys.stdin.buffer.read(8192))
+    source = data.pop('source',str(ROOT))
+    if source != str(ROOT) and not re.fullmatch(r'\.verification-results/production-release-checkpoint-[0-9]{8}-[a-z0-9-]+',source):
+        raise RecoveryError('Unreviewed private checkpoint path')
+    ROOT = Path(source)
     key = data.pop('rootKey').encode('ascii')
     challenge = data['challenge']
     if len(challenge) != 64 or any(c not in '0123456789abcdef' for c in challenge):

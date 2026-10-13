@@ -1,4 +1,4 @@
-/** Supervised initial snapshot only. Never creates keys/resources or schedules.
+/** Supervised explicitly pinned snapshots. Never creates keys/resources or schedules.
  * Real execution requires the separate destination/copy and CLI authorisations. */
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -25,14 +25,16 @@ const need = (ok, code) => {
 };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 export function parseDatabaseBackupArgs(args) {
-  need(
-    args.length === 3 &&
-      ["--prepare-initial", "--copy-and-restore-initial"].includes(args[0]) &&
-      /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(args[1]),
-    "database_runner_arguments_invalid",
-  );
-  return { mode: args[0], runId: args[1], bindingPath: resolve(args[2]) };
+  const checkpoint = ["--prepare-checkpoint", "--copy-and-restore-checkpoint"].includes(args[0]);
+  need(args.length === (checkpoint ? 4 : 3)
+    && (checkpoint || ["--prepare-initial", "--copy-and-restore-initial"].includes(args[0]))
+    && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(args[1])
+    && (!checkpoint || /^\.verification-results\/production-release-checkpoint-[0-9]{8}-[a-z0-9-]+$/.test(args[3])),
+    "database_runner_arguments_invalid");
+  return { mode: args[0], runId: args[1], bindingPath: resolve(args[2]),
+    ...(checkpoint ? {sourcePath: resolve(REPO,args[3])} : {}) };
 }
+
 async function privateDirectory(path) {
   const st = await lstat(path);
   need(
@@ -130,7 +132,12 @@ export async function runPreparedDatabaseBackup({
   openRestore = () => transport("Restore"),
   recover = (data) => pythonStage("restore_database_package.py", data),
   now = Date.now,
+  expectedArchive = ARCHIVE,
 }) {
+  expectedArchive = structuredClone(expectedArchive);
+  need(Number.isSafeInteger(expectedArchive.bytes) && expectedArchive.bytes > 0
+    && expectedArchive.bytes <= 1024 ** 3 && /^[a-f0-9]{64}$/.test(expectedArchive.sha256 ?? ""),
+    "database_expected_archive_invalid");
   await privateDirectory(directory);
   const lockPath = join(directory, "active.lock");
   const lock = await open(lockPath, "wx", 0o600);
@@ -148,8 +155,8 @@ export async function runPreparedDatabaseBackup({
         preparation.snapshotAt === d.snapshotAt &&
         preparation.localDatabaseRestoreVerified === true &&
         same(preparation.descriptor, d) &&
-        preparation.archive.bytes === ARCHIVE.bytes &&
-        preparation.archive.sha256 === ARCHIVE.sha256,
+        preparation.archive.bytes === expectedArchive.bytes &&
+        preparation.archive.sha256 === expectedArchive.sha256,
       "database_initial_package_not_verified",
     );
     const material = await escrow.read();
@@ -158,7 +165,7 @@ export async function runPreparedDatabaseBackup({
       state: "started",
       at: new Date(now()).toISOString(),
       keyStoreItem: escrow.binding,
-      sourceArchive: ARCHIVE,
+      sourceArchive: expectedArchive,
       sourceSnapshotAt: d.snapshotAt,
     });
     stage = "copy";
@@ -252,12 +259,18 @@ async function main(args) {
   need(status.stdout.trim() === "", "database_runner_requires_committed_checkpoint");
   const escrow = createRecoveryEscrow(await privateJson(parsed.bindingPath));
   const directory = join(PRIVATE, "database-backup-" + parsed.runId);
-  if (parsed.mode === "--prepare-initial") {
+  const source = parsed.sourcePath ?? SOURCE;
+  await privateDirectory(source);
+  const exported = await privateJson(join(source, "report.json"));
+  need(exported.project === "tgbnakbxwcqjeimygroz" && exported.state === "export_complete_restore_unverified"
+    && exported.productionDataWrites === false, "database_source_export_unverified");
+  const expectedArchive = parsed.sourcePath ? exported.archive : ARCHIVE;
+  if (["--prepare-initial", "--prepare-checkpoint"].includes(parsed.mode)) {
     await mkdir(directory, { mode: 0o700 });
     const material = await escrow.read();
     const { stdout } = await execute("git", ["rev-parse", "HEAD"], { cwd: REPO });
     const result = await pythonStage("prepare_database_package.py", {
-      source: SOURCE,
+      source,
       directory,
       agePath: AGE,
       revision: stdout.trim(),
@@ -271,7 +284,7 @@ async function main(args) {
     );
     return { state: result.state, runId: parsed.runId, uploaded: false };
   }
-  return runPreparedDatabaseBackup({ directory, escrow });
+  return runPreparedDatabaseBackup({ directory, escrow, expectedArchive });
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {

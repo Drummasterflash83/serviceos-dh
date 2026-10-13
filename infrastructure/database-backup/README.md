@@ -374,3 +374,35 @@ estimate reads public AWS pricing only. They do not prove deployed IAM policy
 behaviour, 1Password recovery or independent S3 database restore acceptance.
 The Python tests do use the real pinned age implementation for encryption,
 authentication, tamper rejection and byte-preserving local recovery.
+
+## Explicit release checkpoints — 13 October
+
+The original initial-snapshot commands retain their fixed archive. Release work
+can now name a fresh private checkpoint explicitly, without overwriting an earlier
+export or creating a recurring schedule:
+
+```sh
+node scripts/backup/export-production-database.mjs --export-release-checkpoint .verification-results/production-release-checkpoint-20261013-prelaunch
+node scripts/backup/check-production-vault-recovery.mjs --verify-release-checkpoint .verification-results/production-release-checkpoint-20261013-prelaunch
+```
+
+Run the native offline restore between these two commands, passing the checkpoint
+as both `source_root` and `evidence_root` to
+`restore_production_database.run(compare_native=True, ...)`. All physical-table,
+operational supplement, catalog and source-binding checks still apply. Vault
+verification reads the existing key only into memory and passes it by stdin to
+the offline container; it does not write keys or plaintext secrets into reports.
+
+After both checks pass, the supervised runner accepts `--prepare-checkpoint` and
+`--copy-and-restore-checkpoint` with four arguments: mode, a fresh UUID, the existing
+private 1Password binding path, and the exact relative checkpoint path. Preparation
+requires the committed source revision and verified archive, and reads the existing
+recovery material from 1Password. Copy uses the same private London destination,
+separate Writer/Restore identities and 1 GiB maximum, with an explicit archive
+length/hash bound to the preparation. It downloads and restores that exact new
+snapshot; it cannot silently substitute the original initial archive. An uncertain
+restore retains its inspection lock. No keys, resources or schedules are created.
+
+The first release-checkpoint export is in progress. The runner's ten tests pass,
+including rejection of a mismatched archive and invalid checkpoint paths. This is
+tooling readiness, not evidence that the fresh checkpoint is restored or copied.
