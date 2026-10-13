@@ -1,7 +1,7 @@
 {
   "version": "learn-communication-relevance/1",
-  "observedAt": "2026-10-13T00:45:58.874583+00:00",
-  "state": "test_runtime_verified_frontend_pending",
+  "observedAt": "2026-10-13T00:49:56.450971+00:00",
+  "state": "hosted_test_runtime_and_signed_in_frontend_verified",
   "projectRef": "saatxzwxvdvqevbnskxy",
   "runtimeVersion": 12,
   "runtimeHash": "62c216641d4e896f57a585b419151d6d5749be19bded93870488fe9d63b2be85",
@@ -40,8 +40,28 @@
   "productionChanges": 0,
   "providerRequests": 0,
   "limitations": [
-    "Signed-in frontend verification pending.",
     "Historical verdict consensus is not source-revision reclassification or complete capture coverage.",
-    "Production candidate must be regenerated for changed control-plane source and frontend before promotion."
-  ]
+    "Production candidate must be regenerated for changed control-plane source and frontend before promotion.",
+    "Malformed report, stale-tenant guard and failure handling were checked locally; no provider failure or second tenant was forced in the signed-in browser."
+  ],
+  "frontend": {
+    "gitSha": "5a892a4373f04e9ab50c2c2c1e886b7fa94ab0a5",
+    "deploymentId": "dpl_CKpLsG9SLELwoSCevJeZbyn3QLcn",
+    "aliases": [
+      "test.openfolk.ai",
+      "serviceos-learn-test-allkin.vercel.app"
+    ],
+    "protection": "retained",
+    "signedInOperator": "existing authorised session",
+    "visibleDistinctCommunications": 21,
+    "visibleRecordedRelevant": 17,
+    "visiblePotentialNoise": 4,
+    "visibleReviewedWork": 2,
+    "visibleUncertain": 0,
+    "cleanUrlVerified": true,
+    "initialReload": "previous build briefly served; subsequent clean-URL inspection verified build 5a892a4",
+    "screenshotSha256": "d8f71753d36cd73ea6e1355a65d2229dae1a78e68fc203a8a94c46bf70986f0a"
+  },
+  "httpNoAuthStatus": 401,
+  "productionFrontendUnchanged": "dpl_DXueDsax146gdtyFoniXRaW3dzMM"
 }

@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October, 01:46 BST — communication relevance repaired in TEST; frontend verification pending.**
+**13 October, 01:50 BST — communication relevance repaired and signed-in verified in TEST.**
 
 ### Working and verified
 
@@ -19,11 +19,16 @@ override a later release observation. No requirement is silently deferred.
   including the two operator-reviewed Slack messages. No source data changed.
 - Nine targeted tests, full TypeScript and the production build passed. The frontend
   clears previous-tenant results and provides an explicit unavailable/retry state.
+- Stable TEST aliases serve Git `5a892a4`, deployment
+  `dpl_CKpLsG9SLELwoSCevJeZbyn3QLcn`. Signed-in inspection verified the distinct
+  counts, reviewed Slack category and scope caveat on the clean permanent URL.
+  Both aliases retain protection; unauthenticated API access returns 401.
+  Live deployment remains unchanged. No provider calls or capture activation.
 
 ### Needs finishing
 
-- Deploy and verify the signed-in TEST frontend. Historical eligibility is still
-  not source-revision-aware reclassification; noisy observations need review.
+- Historical eligibility is still not source-revision-aware reclassification;
+  noisy observations need review. This report does not alter operational queues.
 - This source change postdates the pinned production runtime candidate. Regenerate
   matching runtime/frontend artifacts before release; do not promote stale pins.
 - All remaining input, client-workspace, scoring and live release gates remain open.
