@@ -7,6 +7,42 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 16:25 BST — independent copy downloaded; final restore resuming.**
+
+- The fresh encrypted database package was copied to the approved independent
+  destination and downloaded using the separate Restore identity. The downloaded
+  294,441,336 bytes match the prepared SHA-256. Final decryption/native restore
+  stopped at renewed 1Password authorisation; Chris has now completed Touch ID.
+  A successful final restore and voicemail relationship comparison remain required.
+- Slack scheduling is advancing: 13 active channels have completed their scoped
+  history and observed replies, five are processing replies, one is importing
+  history and one remains held. Round-robin scheduling explains general latency.
+- A separate defect affects the single recovered history continuation: it copied
+  a one-use recovery marker and is therefore correctly rejected by the exact
+  authority guard. Its checkpoint is preserved. A narrow SQL correction has passed
+  local full-schema tests and is being prepared for guarded production application;
+  it is not yet released. Hidden tombstone handling remains separate work.
+
+
+**13 October, 16:16 BST — three formerly held Slack pages recovered; review notice LIVE.**
+
+- Exact logged retries after Slack v7/platform v67 succeeded once each, processing
+  99, 100 and 77 records. Six retained welcome-type sources now show an honest
+  operator review notice; they are excluded from conversation interpretation and
+  scoring. Original source versions and campaign bounds remain retained.
+- Frontend `37731bd` is live at the existing aliases. Protected candidate backend,
+  browser errors and signed-in live review notice were checked; the full build
+  passed. GitHub TEST checkpoint matched the exact commit.
+- Successful pages do not prove whole-channel completion: the campaign still
+  reports review/discovery gaps and remaining thread work. The hidden tombstone
+  is a withheld-content marker, not proof of permanent deletion. Its safe handling
+  must also prevent old previews/scoring/stale replay from republishing content.
+- The encrypted database copy retry is still running under its existing handle
+  after a bounded transfer-deadline fix. No new independent restore is claimed.
+
+Evidence: [source-review live release and page outcomes](evidence/learn-slack-source-review-live-2026-10-13.json).
+
+
 **13 October, 16:02 BST — all four initial LIVE Commusoft source traversals complete.**
 
 - Production retained 2,423 property sources (1,552 customers and 871 sites),

@@ -31,3 +31,21 @@ remains held pending withheld-content and stale-replay handling. The frontend
 source-review notice is built locally but not yet released.
 
 Evidence: [live release](evidence/learn-slack-source-review-live-2026-10-13.json).
+
+## Provider and frontend acceptance — 13 October, 16:16 BST
+
+All three exact failed-page retries succeeded once (99, 100 and 77 records).
+Frontend37731bd is promoted to existing live aliases and the signed-in operator
+read shows six retained records awaiting source review. Their semantics remain
+unconfirmed; no conversation or scoring inference is made. The campaign still
+reports channel review/discovery gaps, so this proves recovered pages rather than
+complete channel coverage. Hidden tombstone handling remains separate work.
+
+## Continuation diagnosis — 13 October, 16:25 BST
+
+Production scheduling and other channels continue advancing. A distinct defect
+copies the one-shot recovery marker into a normal history successor, so the
+existing exact-job authority guard rejects that queued child. The original
+checkpoint is retained. A SQL-only correction has passed full-schema local
+journeys; production repair is still pending. General round-robin latency is
+separate from this single unclaimable successor.

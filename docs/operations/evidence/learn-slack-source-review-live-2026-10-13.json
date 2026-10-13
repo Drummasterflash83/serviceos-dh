@@ -18,8 +18,31 @@
   "unrelatedFunctionsUnchanged": true,
   "existingSourceCountsPreserved": true,
   "accessAndSchedulesPreserved": true,
-  "providerRetryVerified": false,
-  "frontendReviewNoticeReleased": false,
+  "providerRetryVerified": true,
+  "frontendReviewNoticeReleased": true,
   "sourceSemanticsConfirmed": false,
-  "scope": "Visible welcome_party retained as source_needs_review, no conversation or scoring inference; tombstone remains held."
+  "scope": "Visible welcome_party retained as source_needs_review, no conversation or scoring inference; tombstone remains held.",
+  "frontend": {
+    "git": "37731bd0461468ba79e7724b9f8d38c44d071163",
+    "deployment": "dpl_4spRuvtKVoM3QWQY3j5Fm2vWdYLE",
+    "canonical": "https://www.openfolk.ai",
+    "signedInNoticeVerified": true,
+    "sourceNeedsReviewCountObserved": 6
+  },
+  "successfulRecoveryPages": [
+    {
+      "job": "adf6ab57-1804-444e-be53-eeddad3c463c",
+      "records": 99
+    },
+    {
+      "job": "d067667b-f494-44ca-84c2-4496137deb81",
+      "records": 100
+    },
+    {
+      "job": "ae06319b-e969-4b99-be8b-9a6fab0210f2",
+      "records": 77
+    }
+  ],
+  "wholeCampaignComplete": false,
+  "remaining": "One recovered history successor retains a one-shot marker and cannot be claimed; guarded SQL correction pending. Other channels continue. Hidden tombstone remains held. Whole campaign completion unproven."
 }
