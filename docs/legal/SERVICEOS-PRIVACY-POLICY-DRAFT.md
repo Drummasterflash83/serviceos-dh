@@ -13,16 +13,18 @@ purposes of processing described in this notice. Its registered office is
 **Unit 15 Westlink Belbins Business Park, Cupernham Lane, Romsey, Hampshire,
 England, SO51 7JF**. In this notice, “Drummonds”, “we” and “us” mean that company.
 
-Contact: **office@drummondheating.co.uk**, marked “ServiceOS privacy”, or write to
-our registered office. **[Confirm that this published business mailbox will handle
-privacy requests and identify the responsible person before publication.]**
+Contact: **Chris Drummond, chris@drummondheating.co.uk**, marked “ServiceOS privacy”,
+or write to our registered office. Chris is the nominated contact for privacy,
+support and security enquiries about this deployment; this is not a designation
+as a statutory data protection officer.
 Effective date: **[PUBLICATION DATE]**.
 
 Drummonds uses OpenFolk ServiceOS to bring together its customer, job,
-communication and business information. OpenFolk provides the software and
-technical support. **[Identify the legal entity providing OpenFolk and complete
-its data-processing agreement.]** That supplier processes our workspace records
-on our instructions; its separate business administration may have its own notice.
+communication and business information. This is Drummonds’ internal application,
+developed and supported by Chris Drummond, who supplies the software personally
+and works directly with Drummonds. OpenFolk ServiceOS is the software name; this
+notice does not identify a separate OpenFolk company as the supplier. Technical
+administration is carried out under Drummonds’ authorisation and instructions.
 
 This notice concerns our ServiceOS deployment. It supplements, rather than silently
 replaces, any existing Drummonds customer, workforce or website privacy notices.
@@ -56,8 +58,9 @@ notice. Not every feature listed in this draft is enabled or verified today.
 
 We use the selected information to understand customer needs and job progress,
 follow up communications, identify outstanding work, reconcile business records,
-manage operations, and investigate service problems. OpenFolk may help diagnose
-issues and improve the software supplied to us under our instructions.
+manage operations, and investigate service problems. Our authorised technical
+support personnel may diagnose issues and improve our implementation under our
+instructions.
 
 The proposed purpose/basis mapping is:
 
@@ -145,7 +148,7 @@ where legally required, or in a lawful business transfer with appropriate safegu
 The service uses access restrictions, protected server-side credentials, private
 storage and recovery controls. No system can promise absolute security. Users
 should protect their accounts and report suspected unauthorised access through
-our business contact, marked “ServiceOS security”. **[Confirm escalation ownership.]**
+Chris Drummond at the contact above, marked “ServiceOS security”.
 
 Some suppliers or their support teams may process information outside the UK.
 **[Insert verified countries, applicable transfer safeguards and how to obtain

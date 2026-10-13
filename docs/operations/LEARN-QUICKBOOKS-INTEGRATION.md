@@ -116,8 +116,12 @@ the app sidebar Settings route works. No compliance declarations have been
 submitted. Chris requested new drafts and instructed that this first setup use
 Drummonds' company details. The [privacy draft](../legal/SERVICEOS-PRIVACY-POLICY-DRAFT.md)
 and [end-user terms](../legal/SERVICEOS-TERMS-DRAFT.md) now cover Drummonds' deployment,
-using verified DRUMMOND HEATING LTD. details, with OpenFolk as the separate software
-supplier. See the [publication review](../legal/SERVICEOS-LEGAL-PUBLICATION-REVIEW.md)
+using verified DRUMMOND HEATING LTD. details. Chris clarified that this is an
+internal Drummonds application which he supplies personally, and nominated
+**Chris Drummond, chris@drummondheating.co.uk** for privacy/support/security
+contact. OpenFolk ServiceOS remains the software name; no separate OpenFolk
+company or transfer of software ownership is assumed.
+See the [publication review](../legal/SERVICEOS-LEGAL-PUBLICATION-REVIEW.md)
 for remaining factual, contractual and implementation decisions. No public routes
 or policy submissions have been made, and drafts are not effective agreements.
 Do not invent public URLs, certify unverified controls or treat the local tests

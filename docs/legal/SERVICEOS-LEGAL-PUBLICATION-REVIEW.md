@@ -10,32 +10,36 @@ use as the business's legal terms. They do not establish legal compliance.
 
 ## Confirmed direction and identity
 
-Chris instructed: “Use Drummonds for this inc their company details”. The drafts
-therefore cover **Drummonds' deployment**, with Drummonds as the responsible
-business/controller and OpenFolk as its software/support supplier. They do not
-claim that Drummonds owns OpenFolk or operates the service for future clients.
+Chris instructed that this be submitted as Drummonds' internal application and
+confirmed that he supplies the software personally, is a shareholder and works
+directly with Drummonds. The drafts cover **Drummonds' deployment**, with Drummonds
+as the responsible business/controller and Chris Drummond providing development
+and support under its authorisation. OpenFolk ServiceOS is the software name;
+no separate OpenFolk legal supplier is asserted. The drafts do not claim that
+Drummonds owns OpenFolk or operates the service for future clients.
 The terms are internal authorised-user terms, not a contract in which Drummonds
 purports to sell OpenFolk subscriptions to itself.
 
 [Companies House](https://find-and-update.company-information.service.gov.uk/company/07556814)
 identifies **DRUMMOND HEATING LTD.**, number **07556814**, registered office
 **Unit 15 Westlink Belbins Business Park, Cupernham Lane, Romsey, Hampshire,
-England, SO51 7JF**. Its [own website](https://drummondheating.co.uk/) publishes
-**office@drummondheating.co.uk**. Both were checked on 13 October 2026. The public
-email is a proposed request-routing contact, not evidence of a designated DPO or
-an established support/privacy response process.
+England, SO51 7JF**. The company details were checked on 13 October 2026.
+Chris explicitly nominated **Chris Drummond, chris@drummondheating.co.uk** as the
+contact for this application. The drafts now use that address for privacy,
+support and security requests. This does not designate a statutory DPO or
+demonstrate that request-handling procedures have been tested.
 
 ## Decisions needed from the business
 
 | Decision | Current position |
 | --- | --- |
 | Drummonds identity | Verified above and inserted in both drafts. Confirm notices align with the organisation's existing policies before adoption. |
-| OpenFolk supplier | Legal entity and agreement still need identifying. Drummonds' details cannot be substituted for its separate supplier. |
-| Privacy, support, security and formal notices | Published office mailbox inserted as proposed routing contact; confirm responsible people and escalation. |
+| Application operator and developer | Confirmed: Drummonds internal application; Chris supplies personally and supports it. No separate OpenFolk company identity is required for this stated setup. Document software rights without assuming a transfer of ownership. |
+| Privacy, support, security and formal notices | Confirmed: Chris Drummond, chris@drummondheating.co.uk. Verify request handling and continuity of cover before operational promises. |
 | Retention and exit | Agree category-specific retention, export window, deletion timing and maximum backup retention. No changes to retained source data are authorised by drafting. |
 | AI and product improvement | Proposed: authorised client-specific support/improvement; no sale, unrelated client reuse or general-purpose training of identifiable customer data. Verify supplier terms/configuration before promising it. |
-| Commercial terms | Keep fees, renewal and supplier liabilities in the separate Drummonds–OpenFolk agreement. Review internal EULA remedies, licence chain and jurisdiction. |
-| Data-processing agreement | Separate signed agreement and processing/security/subprocessor schedules are needed; the privacy notice is not a substitute. |
+| Internal terms | Review adoption, software rights, remedies and jurisdiction. These drafts create no separate Drummonds–OpenFolk commercial contract. |
+| Processing arrangements | Document Chris's authorised role and actual external providers. Confirm processor agreements where applicable; do not infer a separate OpenFolk processor solely from the software name. |
 
 ## Engineering and operational verification
 
@@ -68,7 +72,7 @@ an established support/privacy response process.
 3. Add stable public routes, proposed as `https://www.openfolk.ai/privacy/drummonds`
    and `https://www.openfolk.ai/terms/drummonds`. These routes are proposals, not live URLs.
    Check anonymous access, mobile layout, links, effective dates and consistency
-   with the signed supplier agreement and existing Drummonds notices. No acceptance
+   with the actual operating arrangements and existing Drummonds notices. No acceptance
    is implied by this draft. Generic OpenFolk policies for other clients need their
    own correct legal operator and scope.
 4. Publish the approved text through the established Vercel release process.
@@ -93,6 +97,6 @@ the Data (Use and Access) Act; check current guidance before final adoption.
 The [ICO storage-limitation guidance](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-protection-principles/a-guide-to-the-data-protection-principles/storage-limitation/)
 supports defining retention by purpose instead of retaining personal information
 indefinitely by default. The [ICO controller/processor guidance](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/accountability-and-governance/contracts-and-liabilities-between-controllers-and-processors-multi/)
-informs the separate processing-agreement requirement. The [ICO transfer guide](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/international-transfers/a-guide-to-international-transfers/)
+informs review of actual processor arrangements. The [ICO transfer guide](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/international-transfers/a-guide-to-international-transfers/)
 informs the need to verify locations, overseas access and safeguards. These
 references do not validate OpenFolk's current contracts or technical configuration.
