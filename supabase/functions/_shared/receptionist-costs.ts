@@ -40,8 +40,7 @@ export function costQueries(now: Date) {
       operations: [
         { operation: "sum", column: "cost", alias: "usd" },
         { operation: "count", column: "id", alias: "calls" },
-        { operation: "count", column: "cost", alias: "costedCalls" },
-        { operation: "sum", column: "minutesUsed", alias: "minutes" },
+        // Vapi rejects count(cost) and sum(minutesUsed). Do not infer their values.
       ],
     })),
   };
@@ -60,24 +59,21 @@ export function scopedCostSummary(raw: unknown, assistantId: string, now: Date) 
       if (!rows.length) return [name, { usd: 0, calls: 0, costedCalls: 0, minutes: 0, pending: 0 }];
       const row = record(rows[0]);
       const r = Object.fromEntries(["usd", "calls", "costedCalls", "minutes"].map(k => [k, numeric(row[k])]));
-      if (
-        !Number.isSafeInteger(r.calls) ||
-        Number(r.calls) < 0 ||
-        !Number.isSafeInteger(r.costedCalls) ||
-        Number(r.costedCalls) < 0 ||
-        Number(r.costedCalls) > Number(r.calls)
-      )
+      if (!Number.isSafeInteger(r.calls) || Number(r.calls) < 0)
         throw Error("Invalid cost counts");
-      const usd = n(r.usd) ? r.usd : r.usd === null && r.costedCalls === 0 ? 0 : null;
+      const costedCalls = r.costedCalls === undefined ? null : r.costedCalls;
+      if (costedCalls !== null && (!Number.isSafeInteger(costedCalls) || Number(costedCalls) < 0 || Number(costedCalls) > Number(r.calls)))
+        throw Error("Invalid cost counts");
+      const usd = n(r.usd) ? r.usd : r.usd === null && r.calls === 0 ? 0 : null;
       if (usd === null) throw Error("Cost total unavailable");
       return [
         name,
         {
           usd,
           calls: r.calls,
-          costedCalls: r.costedCalls,
+          costedCalls,
           minutes: n(r.minutes) ? r.minutes : null,
-          pending: Number(r.calls) - Number(r.costedCalls),
+          pending: costedCalls === null ? null : Number(r.calls) - Number(costedCalls),
         },
       ];
     }),

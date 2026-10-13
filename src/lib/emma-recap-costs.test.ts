@@ -104,6 +104,16 @@ test("cost result exposes only the selected assistant and preserves pending cost
   }
   assert.throws(() => scopedCostSummary([], "Emma", now));
   assert.deepEqual(costQueries(now).queries[0].groupBy, ["assistantId"]);
+  assert.deepEqual(costQueries(now).queries[0].operations, [
+    {operation: "sum", column: "cost", alias: "usd"},
+    {operation: "count", column: "id", alias: "calls"},
+  ]);
+  const reportedOnly = raw.map(q => ({...q, result: [{assistantId: "Emma", usd: "1.23", calls: "3"}]}));
+  const limited = scopedCostSummary(reportedOnly, "Emma", now).periods.today as any;
+  assert.equal(limited.usd, 1.23);
+  assert.equal(limited.pending, null);
+  assert.equal(limited.minutes, null);
+  assert.equal(limited.costedCalls, null);
   assert.throws(() =>
     scopedCostSummary(
       raw.map((q) => ({
