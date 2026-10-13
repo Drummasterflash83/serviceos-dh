@@ -238,6 +238,26 @@ returned an empty success body. An independent inventory confirmed those exact
 setting hashes and zero endpoints before continuation; the response parser now
 accepts empty success bodies and skips already-matching settings.
 
+### Protected frontend candidate — 13 October
+
+The clean managed release worktree is now
+`/Users/chrisdrummond/.codex/worktrees/quickbooks-test-release/ServiceOS`.
+An ordinary merge of LEARN `92834cd` and QuickBooks `7a5f2cd` produced
+`769aace2e8f5c971deb1bda94c342d4c6381a0d9`, backed up and verified on
+`codex/quickbooks-integration`. It preserves paced Commusoft draining and independent
+QuickBooks dispatch. All 89 combined tests, TypeScript and the local build passed.
+The original d322 worktree and its inherited uncommitted changes remain untouched.
+
+Vercel built that exact Git commit as protected TEST preview
+`dpl_4XaKvd6y88DBwo21pqZBcnVv3N6H`; it is READY and its login screen renders.
+Protection remains `all`; both stable TEST aliases still serve their previous
+`dpl_821QqBty3MAXSeiJN8dhtDAsHQqD` deployment. No live release occurred.
+Signed-in acceptance and rendered backend verification remain open. A compatibility
+check also found TEST lacks `learn_slack_campaign_recovery_read`, exposed by the
+merged operator interface. Reconcile this before stable TEST promotion; this is a
+release compatibility gap, not a new QuickBooks credential approval requirement.
+See [preview evidence](evidence/learn-quickbooks-test-preview-2026-10-13.json).
+
 ## Needs finishing
 
 1. Complete configuration and production assessment for the created Intuit app.
