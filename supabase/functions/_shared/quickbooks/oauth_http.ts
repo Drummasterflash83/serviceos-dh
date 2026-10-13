@@ -120,27 +120,15 @@ export async function handleQuickBooksCallback(req: Request, ports: Ports): Prom
     fetcher: ports.fetcher,
     signal: req.signal,
   });
-  const title =
-    result.state === "saved"
-      ? "QuickBooks authorisation saved"
-      : "QuickBooks connection needs checking";
-  const description =
-    result.state === "saved"
-      ? "Return to OpenFolk to confirm the company before importing records."
-      : "Return to OpenFolk to check connection status. You may need to start authorisation again.";
-  // Return destination comes only from deployment configuration. No callback
-  // query is reflected, and no analytics/resources receive codes or state.
-  const href = `${site}/openfolk`;
-  return new Response(
-    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title></head><body><main><h1>${title}</h1><p>${description}</p><a href="${href}">Return to OpenFolk</a></main></body></html>`,
-    {
-      status: result.state === "saved" ? 200 : 400,
-      headers: {
-        ...headers,
-        "Content-Type": "text/html; charset=utf-8",
-        "Content-Security-Policy":
-          "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
-      },
+  // Hosted Supabase rewrites GET text/html to text/plain. Render guidance on
+  // the frontend instead; never forward code/state/realm/error query values.
+  // An explicit empty fragment also prevents inheriting a callback fragment.
+  const outcome = result.state === "saved" ? "review" : "needs_check";
+  return new Response(null, {
+    status: 303,
+    headers: {
+      ...headers,
+      Location: `${site}/quickbooks?mode=connect&result=${outcome}#`,
     },
-  );
+  });
 }

@@ -1,0 +1,24 @@
+{
+  "state": "owner_rotated_secret_saved_and_verified",
+  "app": "4ef4971d-2a39-4309-8c6c-46510d679c59",
+  "project": "saatxzwxvdvqevbnskxy",
+  "revision": 2,
+  "active": true,
+  "vaultEqualityVerified": true,
+  "keychainEqualityVerified": true,
+  "changedFromOldSecret": true,
+  "imports": 0,
+  "boundCompanies": 0,
+  "at": "2026-10-13T19:16:01.601Z",
+  "onePassword": {
+    "state": "saved_and_verified",
+    "itemTitle": "Openfolk ServiceOS",
+    "field": "serviceos_quickbooks_development",
+    "credentialsPrinted": false,
+    "existingFieldsPreserved": true,
+    "at": "2026-10-13T19:16:26.061Z"
+  },
+  "temporaryPlaintextRemoved": true,
+  "rotationPerformedBy": "owner",
+  "productionChanges": false
+}

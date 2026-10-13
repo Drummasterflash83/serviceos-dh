@@ -76,12 +76,38 @@ test("callback never reflects OAuth errors, codes, state or unsafe return destin
     ),
     ports,
   );
-  assert.equal(response.status, 400);
+  assert.equal(response.status, 303);
   const text = await response.text();
   assert.equal(text.includes("private"), false);
   assert.equal(text.includes("foreign.invalid"), false);
-  assert.ok(text.includes("https://test.example.invalid/openfolk"));
+  assert.equal(text, "");
+  assert.equal(response.headers.get("Location"), "https://test.example.invalid/quickbooks?mode=connect&result=needs_check#");
   assert.equal(response.headers.get("Referrer-Policy"), "no-referrer");
   assert.equal(response.headers.get("Cache-Control"), "no-store");
-  assert.ok(response.headers.get("Content-Security-Policy")?.includes("default-src 'none'"));
+  assert.equal(response.headers.get("X-Content-Type-Options"), "nosniff");
+});
+
+test("saved callback returns a clean frontend redirect only after persistence", async () => {
+  const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+  const now = Date.now(), realm = "9130357990011111";
+  const app = { registrationId:id(4), clientId:"synthetic-client", environment:"sandbox", redirectUri:"https://example.invalid/callback" };
+  let saved = false;
+  const response = await handleQuickBooksCallback(new Request(`${app.redirectUri}?state=${"a".repeat(43)}&code=synthetic-code&realmId=${realm}`), {
+    ...ports,
+    serviceRpc: async (name) => {
+      if(name === "learn_quickbooks_claim") return {error:null,data:{requestId:id(5),claimId:id(6),claimUntil:new Date(now+120000).toISOString(),tenantId:id(1),connectionId:id(2),actorId:id(3),expectedRealmId:null,createdAt:new Date(now-1000).toISOString(),expiresAt:new Date(now+599000).toISOString(),clientSecret:"synthetic-secret",app}};
+      if(name === "learn_quickbooks_claim_current") return {error:null,data:true};
+      assert.equal(name,"learn_quickbooks_finish");saved=true;
+      return {error:null,data:{state:"saved",connectionId:id(2)}};
+    },
+    fetcher: async (_url, options) => options?.method === "POST"
+      ? Response.json({token_type:"bearer",access_token:"synthetic-access",refresh_token:"synthetic-refresh",expires_in:3600,x_refresh_token_expires_in:8640000})
+      : Response.json({CompanyInfo:{Id:"1",CompanyName:"Synthetic Company"}}),
+  });
+  assert.equal(saved,true);
+  assert.equal(response.status,303);
+  assert.equal(response.headers.get("Location"),"https://test.example.invalid/quickbooks?mode=connect&result=review#");
+  assert.equal(await response.text(),"");
+  assert.equal(response.headers.get("Cache-Control"),"no-store");
+  assert.equal(response.headers.get("Referrer-Policy"),"no-referrer");
 });

@@ -3,8 +3,12 @@ import { ArrowRight, Link2, Unplug } from "lucide-react";
 import { OpenFolkWordmark } from "@/components/OpenFolkWordmark";
 
 export const Route = createFileRoute("/quickbooks")({
-  validateSearch: (search: Record<string, unknown>): { mode: "connect" | "disconnect" } => ({
+  validateSearch: (search: Record<string, unknown>): {
+    mode: "connect" | "disconnect";
+    result?: "review" | "needs_check";
+  } => ({
     mode: search.mode === "disconnect" ? "disconnect" : "connect",
+    result: search.result === "review" || search.result === "needs_check" ? search.result : undefined,
   }),
   head: () => ({
     meta: [
@@ -23,7 +27,7 @@ const intuitHelp =
   "https://quickbooks.intuit.com/learn-support/en-us/help-article/manage-users/transfer-app-ownership-disconnect-apps/L73ZAy899_US_en_US";
 
 function QuickBooksGuide() {
-  const { mode } = Route.useSearch();
+  const { mode, result } = Route.useSearch();
   const disconnect = mode === "disconnect";
   return (
     <div className="min-h-screen bg-[#faf9f6] text-[#252334]">
@@ -54,6 +58,19 @@ function QuickBooksGuide() {
             ? "Stop future access, review the connection and keep control of the records already captured."
             : "Connect the right QuickBooks company so its accounting records can sit alongside your customer and job information."}
         </p>
+        {result && !disconnect && (
+          <section aria-label="QuickBooks return guidance" className="mt-6 rounded-2xl border border-[#ded8e7] bg-[#f5f1f8] p-5">
+            <h2 className="font-semibold">
+              {result === "review" ? "Review your connection" : "Your connection needs checking"}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#625b70]">
+              {result === "review"
+                ? "Open the signed-in connection controls to check the saved status and confirm the company before importing."
+                : "Open the signed-in connection controls to check the saved status. You may need to start authorisation again."}
+              {" "}This page does not verify account access or start an import.
+            </p>
+          </section>
+        )}
         <nav aria-label="QuickBooks connection help" className="my-8 flex flex-wrap gap-3">
           <Link
             to="/quickbooks"
