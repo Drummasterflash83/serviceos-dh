@@ -1,5 +1,5 @@
 {
-  "state": "rehearsed_not_applied",
+  "state": "applied_and_signed_in_verified",
   "project": "tgbnakbxwcqjeimygroz",
   "source": "supabase/migrations/20261102050000_learn_customer_context_lookup.sql",
   "sourceSha256": "bde5a0421b8f200a0a9c361c1a8cf11ef2c641ee06674891ef9f72572fbd2274",
@@ -17,5 +17,6 @@
   },
   "runtimeChanges": false,
   "frontendChanges": false,
-  "sourceDataWrites": false
+  "sourceDataWrites": false,
+  "productionEvidence": "docs/operations/evidence/learn-customer-context-lookup-production-2026-10-13.json"
 }

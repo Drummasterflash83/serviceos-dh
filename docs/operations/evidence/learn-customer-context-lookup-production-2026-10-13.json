@@ -1,0 +1,46 @@
+{
+  "state": "applied_and_signed_in_verified",
+  "at": "2026-10-13T20:51:28.779Z",
+  "sourceSha256": "bde5a0421b8f200a0a9c361c1a8cf11ef2c641ee06674891ef9f72572fbd2274",
+  "releaseSha256": "aa52a23eaea663a45aa90f733acc5078d9a4a5026d3663f223023e67142b0e40",
+  "after": {
+    "acl": "{postgres=X/postgres,learn_card_communication_reader=X/postgres}",
+    "md5": "c9c46bc594b5008a9642bbcaa09d7e06",
+    "owner": "postgres"
+  },
+  "permissionsPreserved": true,
+  "signedInBrowserAcceptance": {
+    "state": "passed",
+    "at": "2026-10-13T20:52:13Z",
+    "largeCustomerLinkedJobs": 585,
+    "retainedContacts": 9,
+    "findingsReadSucceeded": true,
+    "communicationsReadSucceeded": true,
+    "returnedCommunications": 0,
+    "limitations": "Successful read does not prove complete matching or provider coverage."
+  },
+  "runtimeChanged": false,
+  "frontendChanged": false,
+  "sourceDataWrites": false,
+  "liveContactPreservation": {
+    "state": "verified_unchanged",
+    "at": "2026-10-13T20:52:26.205105+00:00",
+    "contactSourceLinks": 33,
+    "includesPersonFieldsEndpointsOwnersSourcePayloadsAndActors": true,
+    "sha256": "17afbc729d42bcc1a915d49c904d3beb90d04b53ea9783c9b3dc45b9f7815d4a"
+  },
+  "remainingSourceRefreshGap": {
+    "verified": true,
+    "originalProviderStatus": "ongoing",
+    "latestProviderStatus": "completed",
+    "changedFields": [
+      "closed",
+      "completed",
+      "status"
+    ],
+    "providerIdentityUnchanged": true,
+    "propertyReferenceUnchanged": true,
+    "canonicalRefreshImplemented": false,
+    "originalSourceAndReviewRetained": true
+  }
+}

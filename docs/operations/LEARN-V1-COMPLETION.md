@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 21:53 BST — customer communication timeout fixed and verified LIVE.**
+
+- The scoped `learn_card_slack_job_context` optimization is installed with its exact
+  rehearsed definition, owner and execute ACL. The signed-in customer card with
+  585 jobs now loads findings and communications without the earlier timeout;
+  nine contacts remain visible. It honestly returns no linked communications.
+- Full native-schema acceptance passed 15 journeys, 42 withholding comparisons
+  and the 600-unrelated-job regression. All 1,591,580 archived rows and seven
+  sequences were preserved. Rollback and target/digest/definition/access guards
+  passed. LIVE readback separately preserves all 33 contact source links, people,
+  endpoint choices, source payloads, actors and relationships.
+- A real reviewed Slack conversation is still correctly withheld from its customer
+  timeline because the linked Commusoft job version is stale. Exact source comparison
+  shows the job changed from `ongoing` to `completed`; only status/completed/closed
+  fields changed, while provider identity and property reference stayed the same.
+  The current canonical job remains open. This is a missing source-refresh workflow,
+  not a reason to bypass freshness checks or rewrite immutable source links.
+- Next: implement an audited, versioned refresh of published business records,
+  retaining original links and source history, checking current ownership and local
+  edits, and exposing held changes for review. Update source-aware card readers and
+  verify the real completed-job/Slack journey. Broader publication, communication
+  matching, capture coverage, scoring and operational readiness remain unfinished.
+- Latest observed LIVE inputs at 20:51 UTC: 33,111 emails, 4,462 calls, 2,984 recording
+  records, 12,470 Slack sources and 255 visible voicemails. Saved totals are not
+  historical coverage or completed-learning claims.
+
+[Production acceptance](evidence/learn-customer-context-lookup-production-2026-10-13.json)
+and [full-schema rehearsal](evidence/learn-customer-context-lookup-rehearsal-2026-10-13.json).
+
 **13 October, 21:44 BST — first complete scheduled Commusoft traversal verified LIVE.**
 
 - All four stages in the first unfiltered scheduled cycle have durable terminal
