@@ -1,6 +1,16 @@
 # LEARN live release — 13 October 2026
 
-## Latest checkpoint — 12:09 BST
+## Latest checkpoint — 12:29 BST
+
+- Active public Slack history/replies now have reviewed priority 40 ahead of archived
+  priority 60. A scheduled 100-message active page succeeded while archived jobs
+  remained queued; saved messages reached 1,226. Source cursors, windows, budgets,
+  access and the minute schedule are preserved.
+- This is a schema/decision release only; frontend and runtimes are unchanged.
+- Seven offline full-schema journeys and production preservation/readback passed.
+  See [production evidence](evidence/learn-slack-campaign-priority-production-2026-10-13.json).
+
+## Previous checkpoint — 12:09 BST
 
 - Published matching Slack worker v3, voicemail importer v5 and platform-worker v61.
   The exact reviewed six-file runtime change covers connection-bound Slack page size

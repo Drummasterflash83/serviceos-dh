@@ -1,0 +1,38 @@
+{
+  "status": "production_scheduled_priority_verified",
+  "observedAt": "2026-10-13T11:29:26.289833+00:00",
+  "planSha256": "7269e0331073ffd5d9534b255f87718527b427ba3c96946b0f0f2e8acce4ace2",
+  "schemaSha256": "2c4678902b45b36b3fe8278d1a83231e4f3a0e2906be3bd8bd4efec14cef9b83",
+  "decisions": {
+    "rls": true,
+    "count": 2,
+    "active": 40,
+    "exposed": false,
+    "archived": 60
+  },
+  "scheduledAcceptance": {
+    "activeScheduledPage": true,
+    "archiveStillQueued": true,
+    "budgetsRespected": true,
+    "cronSucceeded": true
+  },
+  "firstScheduledPage": {
+    "committedAt": "2026-10-13T11:29:08.308133+00:00",
+    "records": 100,
+    "kind": "slack.history_sync",
+    "effectivePriority": 40
+  },
+  "savedMessages": 1226,
+  "preservation": {
+    "countsNonDecreasing": true,
+    "policiesUnchanged": true,
+    "schedulesUnchanged": true,
+    "existingFunctionAccessChecked": true
+  },
+  "manualDispatches": 0,
+  "limitations": [
+    "Newest-first within each fixed channel window, not globally chronological.",
+    "Customer/job linking and ongoing capture acceptance remain incomplete.",
+    "Private channels not imported; DMs deferred."
+  ]
+}

@@ -7,6 +7,22 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 12:29 BST — active Slack history priority is live and scheduled acceptance passed.**
+
+- The existing minute scheduler saved a 100-message active-channel page after the
+  reviewed priority activation; 141 archived jobs were still queued. Slack totals
+  reached 1,226 messages. Existing policies, schedules, source counts and request
+  budgets passed preservation checks. Newest-first remains per channel/window.
+- Customer-contact traversal continues from its verified checkpoint under the same
+  approval. Completed property/job traversals remain 2,423 and 12,633 respectively.
+- Broader voicemail metadata discovery found 1,372 exact candidates, including
+  1,298 beyond the retained set. These are not imported recordings; Office discovery
+  is still capped and older templates/signers require validation.
+- Customer/job context, ongoing capture, full coverage and recovery requirements
+  remain open. Richer customer-card UX remains discussion-only.
+
+Evidence: [scheduled Slack priority acceptance](evidence/learn-slack-campaign-priority-production-2026-10-13.json).
+
 **13 October, 12:16 BST — Commusoft jobs traversal finished; contact traversal started.**
 
 - Production retains 12,633 Commusoft jobs after 127 pages with exhausted cursor,

@@ -1,0 +1,52 @@
+{
+  "status": "prepared_offline_verified_not_deployed",
+  "observedDate": "2026-10-13",
+  "productionChanged": false,
+  "providerRequests": 0,
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101890000_learn_slack_campaign_priority.sql",
+      "sha256": "2c4678902b45b36b3fe8278d1a83231e4f3a0e2906be3bd8bd4efec14cef9b83"
+    },
+    {
+      "path": "scripts/verify/learn-slack-campaign-priority.assert.sql",
+      "sha256": "b33075bd0049da1d8a4be7921a7af543d874375695fc1fb96e95413f6103480d"
+    }
+  ],
+  "verified": [
+    "actual active continuation before archived initial",
+    "thread derives actual campaign; payload mismatch falls back",
+    "foreign tenant and revoked/expired/mismatched decisions fall back",
+    "shared workspace lock and FIFO within equal priorities",
+    "budget reservation dedup and Retry-After 120 seconds",
+    "original default and accelerated history/replies journeys",
+    "prepared release wrapper and activation SQL with synthetic IDs and bounds"
+  ],
+  "journeys": [
+    "scripts/verify/learn-production-slack.assert.sql",
+    "scripts/verify/learn-production-slack-threads.assert.sql",
+    ".verification-results/learn-slack-internal-throughput.assert.sql",
+    "scripts/verify/learn-production-slack.assert.sql",
+    ".verification-results/learn-slack-internal-threads.assert.sql",
+    "scripts/verify/learn-slack-campaign.assert.sql",
+    "scripts/verify/learn-slack-campaign-priority.assert.sql"
+  ],
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "executionPlanSha256": "7269e0331073ffd5d9534b255f87718527b427ba3c96946b0f0f2e8acce4ace2",
+  "finalGuardHardening": "Immediate activation readback uses IS DISTINCT FROM to reject null, replacing <> after successful template rehearsal."
+}
