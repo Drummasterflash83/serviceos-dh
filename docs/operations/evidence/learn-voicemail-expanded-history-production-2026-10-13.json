@@ -1,0 +1,27 @@
+{
+  "version": "learn-voicemail-expanded-history/1",
+  "state": "eligible_history_verified",
+  "completedAt": "2026-10-13T12:03:50.271Z",
+  "planSha256": "e7f8a4a6128306fdb869bfbc3f7e1a2f81214ac91d529d2fa27b755805df515c",
+  "runtimeHash": "e3a8b476abd77f3b9d3950128d343ecd5db3efca79ae35544c808db51a244b2f",
+  "sourcesBefore": 71,
+  "sourcesAfter": 139,
+  "messagesBefore": 71,
+  "messagesAfter": 139,
+  "imports": 68,
+  "identityPreservingReplays": 9,
+  "preservation": {
+    "allRoutesPaused": true,
+    "accessPreserved": true,
+    "oldSourcesPreserved": true,
+    "oldMessagesPreserved": true,
+    "oldRoutesPreserved": true,
+    "oldScanControlsRestored": true,
+    "privateBucketsPreserved": true,
+    "noDispatcherJobsAdded": true
+  },
+  "rawOrAudioPersistedLocally": false,
+  "newPlaybackAcceptance": "pending",
+  "ongoingCapture": "paused",
+  "historicalCoverage": "incomplete; signature and discovery gaps remain"
+}

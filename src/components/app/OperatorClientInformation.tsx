@@ -26,13 +26,14 @@ export function OperatorClientInformation({
 }) {
   const [collection, setCollection] = useState<InformationCollection>(initialCollection);
   const [reason, setReason] = useState("");
+  const [record, setRecord] = useState("");
   const [page, setPage] = useState<InformationPage | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const request = useRef<AbortController | null>(null);
   const generation = useRef(0);
-  const scope = `${tenantId}:${actorId}:${collection}`;
+  const scope = `${tenantId}:${actorId}:${collection}:${record.trim()}`;
   const [loadedScope, setLoadedScope] = useState("");
   const [loadedReason, setLoadedReason] = useState("");
   const visible = loadedScope === scope ? page : null;
@@ -45,6 +46,7 @@ export function OperatorClientInformation({
   }
   useEffect(() => {
     clear();
+    setRecord("");
     setError("");
     return () => {
       generation.current++;
@@ -79,13 +81,21 @@ export function OperatorClientInformation({
     try {
       const result = await readClientInformation(
         getSupabaseClient(),
-        { tenant: tenantId, actor: actorId, collection, reason, after },
+        {
+          tenant: tenantId,
+          actor: actorId,
+          collection,
+          reason,
+          after,
+          record: record.trim() || null,
+        },
         AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]),
       );
       if (ticket !== generation.current) return;
       setPage(result);
       setLoadedScope(scope);
       setLoadedReason(reason.trim());
+      if (result.record) setSelected(result.record);
     } catch (e) {
       if (ticket === generation.current)
         setError(e instanceof Error ? e.message : "Client information is unavailable.");
@@ -158,6 +168,23 @@ export function OperatorClientInformation({
           />
         </label>
       </div>
+      <label className="block space-y-1">
+        Find a specific record (optional)
+        <input
+          className="block w-full rounded border p-2"
+          value={record}
+          maxLength={36}
+          placeholder="Record ID from a diagnostic or evidence receipt"
+          onChange={(e) => {
+            clear();
+            setRecord(e.target.value);
+          }}
+        />
+        <span className="block text-sm text-muted-foreground">
+          Paste its full record ID to open that record in this client and collection. Leave blank to
+          browse.
+        </span>
+      </label>
       <button
         className="cp-primary"
         disabled={busy || reason.trim().length < 3}

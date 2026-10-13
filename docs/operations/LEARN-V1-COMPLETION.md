@@ -7,6 +7,25 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 13:12 BST — 139 LIVE voicemails; real customer/job publication verified.**
+
+- The expanded voicemail run saved 68 authenticated originals/audio records and passed
+  nine identity-preserving replays. All 71 earlier records, owners, managers and private
+  buckets are preserved; all ten historical routes are paused. New-batch browser playback,
+  complete provider discovery, older-source compatibility, ongoing capture and backup remain.
+- One real organisation and one real individual have been published through the logged
+  customer-review controls, with source versions and preservation verified. The first real
+  canonical job has verified customer ownership; a second job batch reports one linked.
+  This replaces the earlier zero-publication state, not the whole-account coverage gap.
+- A retained Slack conversation explicitly references the second job. Source review and
+  context publication are next; saved Slack messages alone are not accepted learning.
+- Customer contacts continue under the existing supervised import. Site contacts and
+  ongoing reconciliation remain open. Expanded customer-card UX remains discussion-only.
+
+Evidence: [expanded voicemail production receipt](evidence/learn-voicemail-expanded-history-production-2026-10-13.json),
+[representative customer/job publication](evidence/learn-commusoft-live-customer-job-context-2026-10-13.json).
+
+
 **13 October, 12:38 BST — voicemail candidate discovery installed; shared job publication remains open.**
 
 - Candidate-directed voicemail discovery is installed and preservation-verified.

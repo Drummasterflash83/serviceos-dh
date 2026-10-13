@@ -19,3 +19,20 @@ test("foreign, duplicate, unrelated, removed, oversized and raw-payload response
 test("long Unicode excerpts and explicitly empty permitted reads remain valid",async()=>{
  const unicode={...row,body_preview:"😀".repeat(4000)+"… [excerpt shortened]"};assert.deepEqual(await readCardCommunications({rpc:async()=>({data:payload([unicode]),error:null})},tenant,{company}),[unicode]);assert.deepEqual(await readCardCommunications({rpc:async()=>({data:payload([]),error:null})},tenant,{company}),[]);
 });
+
+const jobContext = {version:"learn-customer-job-context/1",kind:"reviewed_slack_job",job_id:other,person_id:null,company_id:company,review_request_id:id,source_version:"a".repeat(64),job_source_version_id:id,property_source_version_id:id,customer_source_version_id:id};
+const slackRow = {id,tenant_id:tenant,source_table:"slack_messages",source_connector_id:"slack",source_id:id,related_person_id:null,related_company_id:null,related_job_id:other,body_preview:"Engineer waiting for parts",job_context:jobContext};
+test("reviewed job context reaches its customer without inventing speaker identity",async()=>{
+ const result=await readCardCommunications({rpc:async()=>({data:payload([slackRow]),error:null})},tenant,{company});
+ assert.deepEqual(result,[slackRow]);assert.equal(result[0].related_person_id,null);assert.equal(result[0].related_company_id,null);
+});
+test("foreign or mismatched job-context proof never expands a customer scope",async()=>{
+ for(const change of [{company_id:other},{job_id:id},{source_version:"bad"},{review_request_id:"bad"},{customer_source_version_id:null},{kind:"guessed"},{person_id:id},{raw_payload:"not allowed"}]){
+  await assert.rejects(()=>readCardCommunications({rpc:async()=>({data:payload([{...slackRow,job_context:{...jobContext,...change}}]),error:null})},tenant,{company}));
+ }
+ for(const scope of [{ids:[id]},{job:other},{person:id}])await assert.rejects(()=>readCardCommunications({rpc:async()=>({data:payload([slackRow]),error:null})},tenant,scope));
+ await assert.rejects(()=>readCardCommunications({rpc:async()=>({data:payload([{...slackRow,source_table:"email_messages"}]),error:null})},tenant,{company}));
+});
+test("direct rows with null context remain accepted during SQL rollout",async()=>{
+ const r={...row,job_context:null};assert.deepEqual(await readCardCommunications({rpc:async()=>({data:payload([r]),error:null})},tenant,{company}),[r]);
+});

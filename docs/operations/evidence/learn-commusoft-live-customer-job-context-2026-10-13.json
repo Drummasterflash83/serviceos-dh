@@ -1,0 +1,38 @@
+{
+  "state": "representative_live_publication_verified_whole_account_incomplete",
+  "customers": [
+    {
+      "kind": "company",
+      "verifiedAt": "2026-10-13T11:48:40.691585+00:00",
+      "sourcePreserved": true,
+      "priorCustomersAndCardsPreserved": true,
+      "newCustomerCount": 1,
+      "newCardCount": 1,
+      "sourceVersionLinked": true
+    },
+    {
+      "kind": "person",
+      "verifiedAt": "2026-10-13T12:05:06.739068+00:00",
+      "sourcePreserved": true,
+      "priorCustomersAndCardsPreserved": true,
+      "newCustomerCount": 1,
+      "newCardCount": 1,
+      "sourceVersionLinked": true
+    }
+  ],
+  "firstJob": {
+    "verifiedAt": "2026-10-13T11:52:46.914867+00:00",
+    "canonicalPublished": true,
+    "customerOwnershipVerified": true,
+    "currentSourceLinked": true,
+    "completionNotInvented": true,
+    "siteNotInvented": true
+  },
+  "secondJob": "signed-in batch reports one linked; database readback pending",
+  "limitations": [
+    "Whole-account canonical coverage incomplete",
+    "Customer and site contact traversal incomplete",
+    "Slack context review and customer timeline derivation incomplete",
+    "Expanded card UX remains discussion-only"
+  ]
+}
