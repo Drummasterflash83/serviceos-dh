@@ -1,0 +1,114 @@
+{
+  "state": "communication_inventory_verified",
+  "startedAt": "2026-10-13T16:06:00.570Z",
+  "verifiedAt": "2026-10-13T16:29:19.331Z",
+  "inventoryObservedAt": "2026-10-13T16:06:03.389Z",
+  "pair": {
+    "matchedPairs": 255,
+    "scope": "observed_non_atomic_inventories"
+  },
+  "budget": {
+    "objects": 40,
+    "bytes": 8484120,
+    "requests": 27384,
+    "limits": {
+      "objects": 400,
+      "bytes": 268435456,
+      "requests": 100000
+    }
+  },
+  "sourceSnapshot": "non_atomic",
+  "databaseRestore": "separate_acceptance",
+  "listening": "not_verified",
+  "backupComplete": false,
+  "buckets": {
+    "phone-recordings": {
+      "state": "inventory_verified",
+      "objects": 2990,
+      "totalBytes": 624547986,
+      "newObjectsCopied": 40,
+      "newBytesConsidered": 8484120,
+      "sourceReconciliation": {
+        "recordingRows": 2984,
+        "rowsWithoutStoragePointer": 0,
+        "unreferencedObjects": 6,
+        "missingObjectReferences": 0
+      },
+      "inventoryObservedAt": "2026-10-13T16:06:03.389Z",
+      "verifiedAt": "2026-10-13T16:24:47.835Z"
+    },
+    "learn-voicemail-sources": {
+      "state": "inventory_verified",
+      "objects": 255,
+      "totalBytes": 23622647,
+      "newObjectsCopied": 0,
+      "newBytesConsidered": 0,
+      "sourceReconciliation": {
+        "sourceBucket": "learn-voicemail-sources",
+        "preparedReferences": 0,
+        "recordingRows": 255,
+        "rowsWithoutStoragePointer": 0,
+        "unreferencedObjects": 0,
+        "missingObjectReferences": 0
+      },
+      "inventoryObservedAt": "2026-10-13T16:24:53.383Z",
+      "verifiedAt": "2026-10-13T16:27:28.271Z"
+    },
+    "receptionist-voicemails": {
+      "state": "inventory_verified",
+      "objects": 255,
+      "totalBytes": 13800699,
+      "newObjectsCopied": 0,
+      "newBytesConsidered": 0,
+      "sourceReconciliation": {
+        "sourceBucket": "receptionist-voicemails",
+        "preparedReferences": 0,
+        "recordingRows": 255,
+        "rowsWithoutStoragePointer": 0,
+        "unreferencedObjects": 0,
+        "missingObjectReferences": 0
+      },
+      "inventoryObservedAt": "2026-10-13T16:27:29.755Z",
+      "verifiedAt": "2026-10-13T16:29:18.349Z"
+    }
+  },
+  "monthlyVoicemailRestore": {
+    "state": "paired_files_restored_and_verified",
+    "checkedAt": "2026-10-13T16:29:50.242Z",
+    "files": 2,
+    "bytes": 115826,
+    "playback": {
+      "state": "decoded",
+      "decoder": "macOS afconvert",
+      "frames": 163584,
+      "sampleRate": 8000,
+      "channels": 1,
+      "durationSeconds": 20.448,
+      "listening": "not_verified"
+    },
+    "privateContentRemoved": true,
+    "sourceAccessDuringRestore": false,
+    "databaseRestore": "separate_acceptance",
+    "listening": "not_verified",
+    "backupComplete": false
+  },
+  "automation": {
+    "id": "drummonds-recording-backup-and-recovery-checks",
+    "status": "ACTIVE",
+    "localTime": "09:00 Europe/London",
+    "sameSchedule": true,
+    "threeBucketDaily": true,
+    "phoneMonthlyRetained": true,
+    "voicemailMonthlyAdded": true,
+    "nextVoicemailRestoreDueAt": "2026-11-13T16:29:50.242Z",
+    "scheduledExecutionVerified": false,
+    "requiresAwakeComputer": true
+  },
+  "limitations": [
+    "Non-atomic inventories; later arrivals require a later run.",
+    "Six unreferenced phone files retained.",
+    "Sample audio decoded, not listened to by a human.",
+    "Database and complete application restoration remain separate acceptance.",
+    "Manual procedure verified; dependable unattended scheduling remains unproven."
+  ]
+}

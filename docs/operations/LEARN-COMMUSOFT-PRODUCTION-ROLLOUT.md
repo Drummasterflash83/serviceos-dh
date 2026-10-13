@@ -170,3 +170,25 @@ current official endpoint documentation still identifies that settings route.
 No provider permission, credential or customer merge changed during this audit.
 
 Evidence: [customer corroboration](evidence/learn-commusoft-customer-corroboration-2026-10-13.json).
+
+## Current provider UI taxonomy — 13 October, 17:26 BST
+
+The existing authenticated Arc session displayed Settings → Customer types at
+`https://app.commusoft.co.uk/settings/customer_types`. It currently lists Private
+customer, Company, Estate Agent, School or College, Property Management, Care Home,
+Religious building, Hospitality, Government Building, Private Landlord, Building
+Company, Accounting Name and Staff Member. The first two cannot be edited or deleted.
+Accounting Name uses “Account code”; the other types use work-address labels.
+
+Read-only form inspection confirmed that Estate Agent describes a letting agent
+managing multiple tenant properties, and Private Landlord describes a customer
+owning more than one premises. Neither description alone proves person/company
+classification. No values were edited or saved. No numeric type IDs were exposed;
+row order is not ID evidence. The provider settings API remains denied for the
+existing credential. This fresh observation corroborates category names, but does
+not resolve historical type changes or authorize arbitrary customer merges.
+
+The latest recurring read at 16:25:39 UTC showed phase 3 (customer contacts), 40
+settled pages, valid operator/connection authority and unchanged runtime hashes.
+Thus the ongoing job stage advanced automatically after the property stage.
+Both contact stages and a final recurring watermark remain to be verified.

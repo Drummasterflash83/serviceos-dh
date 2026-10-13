@@ -1,5 +1,52 @@
 # Drummonds daily recording backup operations
 
+**13 October, 16:29 UTC — combined phone and voicemail backup verified.**
+The fixed three-bucket supervisor verified 2,990 phone files / 624,547,986 bytes,
+255 original voicemail emails / 23,622,647 bytes and 255 voicemail audio files /
+13,800,699 bytes. All 255 email/audio pairs reconcile; there are no missing file
+references or null pointers. Six unreferenced phone files remain retained.
+Forty new phone files / 8,484,120 bytes were copied; all 510 voicemail files reused
+existing receipts and passed byte verification. The run used 27,384 of 100,000
+source requests and terminated successfully under its original execution handle.
+
+The AWS-only monthly voicemail check then restored one matched pair (115,826
+bytes), decoded 20.448 seconds of audio and confirmed temporary-file removal.
+It used only the existing Restore identity and no production source credential.
+The next voicemail check is due 13 November at 16:29:50 UTC. The existing phone
+monthly procedure remains independently required.
+
+The existing 09:00 local follow-up was updated and read back: same chat, cadence
+and ACTIVE status; it now uses the combined daily command and includes both monthly
+checks. This is verified manual execution and an updated schedule, not proof of
+unattended operation. The Mac and desktop app must remain available.
+[Aggregate acceptance evidence](evidence/learn-communication-daily-2026-10-13.json).
+
+### Current combined commands (supersede phone-only daily commands below)
+
+```sh
+node scripts/backup/run-drummonds-communication-backups.mjs --health
+node scripts/backup/run-drummonds-communication-backups.mjs --run-drummonds-daily
+node scripts/backup/run-drummonds-voicemail-monthly-restore.mjs --health
+node scripts/backup/run-drummonds-voicemail-monthly-restore.mjs --check-drummonds
+```
+
+The daily supervisor covers only `phone-recordings`, `learn-voicemail-sources`
+and `receptionist-voicemails` for the existing Drummonds tenant and approved London
+bucket. The 400-new-object/256 MiB and 100,000-request limits are shared across all
+three stages. The phone daily lock also protects the combined run; never launch
+both commands. Check the original process handle before considering stale-lock
+recovery. An incomplete stage preserves the previous successful aggregate.
+
+The monthly voicemail command requires a verified aggregate no older than 30
+hours, matching immutable manifests and complete pair coverage. It selects a
+bounded pair and rotates away from the previous sample where possible. A separate
+lock is acquired before credentials; cleanup must pass before success is saved.
+Inspect `.verification-results/voicemail-monthly-restore/last-success.json` and
+use its actual `checkedAt`, not file modification time. A failed check does not
+refresh success. The existing phone monthly command below remains unchanged.
+
+The following dated entries retain earlier phone-only history.
+
 **12 October, 08:30–08:31 UTC — fresh recording backup and linked restore verified.**
 The retried manual daily run verified **2,893 files / 602,476,551 bytes**, including
 **five newly copied files / 1,472,290 bytes** and all **2,887 recording references**.

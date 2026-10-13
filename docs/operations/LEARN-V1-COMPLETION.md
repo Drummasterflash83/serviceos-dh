@@ -7,6 +7,26 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 17:32 BST — recurring backup procedure accepted; contacts advancing.**
+
+- The combined manual backup verified 2,990 phone files and all 255 voicemail
+  email/audio pairs in AWS, including 40 new phone files. The independent monthly
+  voicemail runner restored a pair, decoded 20.448 seconds and confirmed cleanup.
+- The existing 09:00 follow-up now uses the verified three-bucket daily procedure
+  and retains both phone and voicemail monthly checks. Its saved configuration
+  was read back. Dependable scheduled execution and full application recovery
+  remain separate unfinished requirements.
+- The LIVE recurring Commusoft job stage completed and automatically advanced to
+  customer contacts; 40 contact pages were settled at 16:25 UTC. Site contacts,
+  a completed recurring-cycle watermark and pause/re-enable acceptance remain.
+- Current Commusoft customer-category names and two descriptions were read in the
+  existing authenticated provider UI without changing settings. Numeric type IDs
+  were not exposed there; their classification and canonical identity review remain
+  incomplete. The settings API denial is not resolved by this UI observation.
+
+Evidence: [communication backup and monthly restore](evidence/learn-communication-daily-2026-10-13.json).
+
+
 **13 October, 17:20 BST — customer review evidence and monthly restore runner advanced.**
 
 - Correct title-inclusive full-name comparison corroborates1,237of1,552 latest
