@@ -1,0 +1,40 @@
+{
+  "state": "verified_live_publication",
+  "at": "2026-10-13T22:39:46.145658+00:00",
+  "customers": 1,
+  "jobs": 3,
+  "checks": {
+    "allSourceVersionsAndOwnersVerified": true,
+    "existingSignedInOperatorRecorded": true,
+    "allCreatedIdentitiesRemainUnverified": true,
+    "reviewedAccountHolderEvidenceRetained": true,
+    "originalJobDescriptionsRetained": true,
+    "unknownCompletionTimezoneWithheld": true
+  },
+  "privateEvidenceSha256": "197dfdd1e6037497390377c6485964c4d92986dd44849d91ebd17f58f958954e",
+  "preservation": {
+    "checks": {
+      "existing": true,
+      "links": true,
+      "contactPoints": true,
+      "retainedCustomerPayloads": true
+    },
+    "existingIdentitiesCompared": 4466,
+    "previousCustomerLinksCompared": 25,
+    "retainedCustomerSourcesCompared": 1552,
+    "previousContactPointsCompared": 52,
+    "scope": "Selected identity fields, previous customer links and retained customer payloads; not all production tables."
+  },
+  "browser": {
+    "existingLiveOperatorSession": true,
+    "customerCardVisible": true,
+    "linkedJobsVisible": 3,
+    "completionTimezoneWarningVisible": true
+  },
+  "limitations": [
+    "One additional reviewed customer and three jobs, not full customer coverage.",
+    "Historical source descriptions retain their original codes; current taxonomy crosswalk remains unverified.",
+    "Completion dates without timezones remain excluded from duration/performance calculations.",
+    "No claim of complete contacts, communications, findings or scoring on this card."
+  ]
+}

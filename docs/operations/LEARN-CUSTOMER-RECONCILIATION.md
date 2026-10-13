@@ -135,3 +135,23 @@ and TEST; see the contact-details release evidence.
 [Sanitised contact acceptance](evidence/learn-contact-reconciliation-2026-10-13.json)
 records the exact counts and preservation scope. No private contact details, source
 payloads or browser screenshots are committed.
+
+## Further LIVE customer journey — 13 October, 22:40 UTC
+
+A fresh read-only snapshot found 25 linked customers, 827 proposals and 798 held
+accounts. One further person account was corroborated against the same-day export,
+current retained source, category and postcode, then checked against current LIVE
+identity candidates. The existing signed-in operator published the customer through
+the logged control, followed by its three explicitly related jobs. Readback verifies
+source versions, actor, account-holder evidence, card ownership and job identities.
+The existing LIVE customer view shows all three linked jobs. Published totals are
+now 26 customers and 619 jobs; this is not complete customer context.
+
+All 4,466 previous identity projections (selected fields), 25 prior customer links,
+1,552 retained customer payloads and 52 contact points match the before snapshot.
+This comparison does not claim every production field/table was hashed. The source
+completion times lack a timezone and remain withheld from duration/scoring. Original
+Commusoft descriptions, including historical code labels, are retained exactly.
+Current taxonomy must not be inferred from those labels or silently replace them.
+
+[Additional real journey and preservation evidence](evidence/learn-customer-reconciliation-second-2026-10-13.json).

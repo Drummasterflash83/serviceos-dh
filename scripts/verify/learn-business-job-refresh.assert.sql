@@ -1,5 +1,13 @@
 -- This scenario runs at the known-positive point of the existing customer/Slack
 -- journey and rolls its own changes back before the remaining negative cases.
+create function pg_temp.reobserve_job_source(p_version uuid) returns void language plpgsql as $$
+declare s public.learn_business_input_versions%rowtype;p uuid:=gen_random_uuid();permit uuid:=gen_random_uuid();job uuid:=gen_random_uuid();t timestamptz;begin
+ select * into strict s from public.learn_business_input_versions where id=p_version and tenant_id=pg_temp.sc(1);
+ select greatest(clock_timestamp(),max(committed_at)+interval '1 microsecond') into t from public.learn_business_input_pages where tenant_id=s.tenant_id;
+ insert into public.learn_business_input_request_permits(id,tenant_id,job_id,claimed_by,attempt_count,binding,credential_fingerprint) values(permit,s.tenant_id,job,'synthetic',1,'{}','synthetic-slack-customer');
+ insert into public.learn_business_input_pages(id,tenant_id,connection_id,provider,collection,job_id,permit_id,envelope,checkpoint_before,checkpoint_after,record_count,committed_at) values(p,s.tenant_id,s.connection_id,s.provider,s.collection,job,permit,jsonb_build_object('data',jsonb_build_array(s.payload)),'{}','{}',1,t);
+ insert into public.learn_business_input_observations(page_id,version_id,ordinal) values(p,p_version,0);
+end$$;
 create function pg_temp.refresh_fail() returns trigger language plpgsql as $$begin raise exception 'Injected refresh ledger failure';end$$;
 do $$declare l uuid;v uuid;plan jsonb;receipt jsonb;before_job jsonb;initial_link jsonb;old_source jsonb;args jsonb;answer jsonb;mutation text;begin
  begin
@@ -116,6 +124,21 @@ do $$declare l uuid;v uuid;plan jsonb;receipt jsonb;before_job jsonb;initial_lin
    perform set_config('role','authenticated',true);
    assert public.learn_commusoft_job_refresh_plan(pg_temp.sc(1),l)->>'reason'='source_changed_or_ambiguous','Equal-time versions must remain ambiguous';
    perform set_config('role','none',true);
+
+   -- A later, unambiguous observation may return to an existing content version.
+   -- Retain another page receipt, never duplicate or rewrite the old version.
+   perform pg_temp.reobserve_job_source((initial_link->>'source_version_id')::uuid);
+   perform set_config('role','authenticated',true);
+   plan:=public.learn_commusoft_job_refresh_plan(pg_temp.sc(1),l);
+   assert plan->>'state'='ready' and plan->>'source_version_id'=initial_link->>'source_version_id';
+   answer:=public.learn_commusoft_job_refresh(pg_temp.sc(1),pg_temp.sc(703),l,(plan->>'source_version_id')::uuid,plan->>'revision','Reviewed return to the original source content','apply');
+   assert answer->>'revision'='3';
+   perform set_config('role','none',true);
+   assert (select status='open' and title='Job 100' and completed_date is null from jobs where id=pg_temp.sc(20));
+   assert (select count(*) from learn_business_input_refreshes where tenant_id=pg_temp.sc(1))=3;
+   assert (select to_jsonb(x) from learn_business_input_links x where id=l)=initial_link;
+   assert (select to_jsonb(x) from learn_business_input_versions x where id=(initial_link->>'source_version_id')::uuid)=old_source;
+   assert (select source_version_id from learn_business_input_current_links where id=l)=(initial_link->>'source_version_id')::uuid;
    raise exception 'rollback_transitions';
   exception when raise_exception then if sqlerrm<>'rollback_transitions' then raise;end if;end;
   -- Removing existing access or capture availability must stop a new review.

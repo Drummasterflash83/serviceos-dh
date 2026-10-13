@@ -1,0 +1,60 @@
+{
+  "at": "2026-10-13T22:35:48.933262+00:00",
+  "groups": [
+    {
+      "changed": 1,
+      "current": 615,
+      "published": 616,
+      "collection": "jobs",
+      "entity_kind": "job",
+      "unavailable_or_ambiguous": 0
+    },
+    {
+      "changed": 0,
+      "current": 25,
+      "published": 25,
+      "collection": "properties",
+      "entity_kind": "customer",
+      "unavailable_or_ambiguous": 0
+    },
+    {
+      "changed": 0,
+      "current": 33,
+      "published": 33,
+      "collection": "properties",
+      "entity_kind": "site",
+      "unavailable_or_ambiguous": 0
+    },
+    {
+      "changed": 0,
+      "current": 33,
+      "published": 33,
+      "collection": "propertyContacts",
+      "entity_kind": "contact",
+      "unavailable_or_ambiguous": 0
+    }
+  ],
+  "changedFields": [
+    {
+      "k": "closed",
+      "records": 1,
+      "collection": "jobs",
+      "entity_kind": "job"
+    },
+    {
+      "k": "completed",
+      "records": 1,
+      "collection": "jobs",
+      "entity_kind": "job"
+    },
+    {
+      "k": "status",
+      "records": 1,
+      "collection": "jobs",
+      "entity_kind": "job"
+    }
+  ],
+  "state": "verified_read_only",
+  "scope": "Published Drummonds Commusoft projections only; observation precedes the additional customer and three jobs.",
+  "writes": 0
+}

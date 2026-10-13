@@ -7,6 +7,68 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 23:40 BST — further customer/job journey verified LIVE.**
+
+- One more corroborated customer and its three explicit Commusoft jobs are published
+  through the existing signed-in, logged LIVE operator controls. The LIVE card shows
+  all three jobs. Totals are 26 published customers and 619 jobs; broader publication,
+  contact/communication context, findings and scoring remain unfinished.
+- Readback verifies source versions, actor, card ownership and account-holder
+  evidence. The before/after comparison preserves 4,466 earlier identity projections,
+  25 customer links, 1,552 customer payloads and 52 contact points within its stated
+  scope. Original historical descriptions are retained; unknown completion timezones
+  remain excluded from duration/performance calculations.
+- The preceding read-only freshness audit found 615/616 published jobs current and
+  one changed completion status; all 25 customer, 33 site and 33 contact links were
+  current. This narrows the immediate refresh need without establishing full coverage.
+- Slack at 22:34 UTC retains 13,673 sources, with 17 active and 110 archived windows
+  complete. Both existing recovery jobs remain queued, attempt 0. Commusoft's next
+  contact pass has reached 610 pages; its existing cycle is continuing without restart.
+- New refresh frontend remains held, and its preview still shows sign-in. The
+  ambiguous saved LIVE/TEST credential clarification remains pending. The existing
+  LIVE session used here does not verify the new preview or satisfy its changed-job gate.
+
+[Additional LIVE journey](evidence/learn-customer-reconciliation-second-2026-10-13.json)
+· [Published projection freshness](evidence/learn-projection-freshness-2026-10-13.json).
+
+
+**13 October, 23:24 BST — job-refresh backend preserved in LIVE; frontend held.**
+
+- The exact guarded backend is installed in production. All nine function bodies,
+  ownership and ACLs match; all 133,019 rows across sixteen compared tables retain
+  identical digests. Both refresh ledgers remain empty. No job was changed.
+- Isolated frontend `41a22e6` is READY at protected candidate
+  `dpl_8aNn41L5xKaZADdN1YhNtxHTnrjt`, with verified rendered production binding.
+  It contains the six reviewed UI files plus HTML no-store rules; the matching
+  local build passes. LIVE aliases still serve `a11f204` / `dpl_FEvZQUizXBraRu71hJtGciJTPZER`.
+- Automatic approval review rejected promotion before real changed-source
+  acceptance. The saved credential named “Openfolk Test” points to app.openfolk.ai;
+  copying it was separately rejected as ambiguous. Chris was asked to identify it.
+  No password was copied, no session extracted, and no credential/grant changed.
+- TEST has no linked jobs with newer retained source versions. Its current-source
+  check passes; it cannot supply genuine changed-source acceptance without more
+  provider input. The protected production preview is available for that check,
+  using existing LIVE authority, before any alias change.
+- Slack at 22:22 UTC retains 13,643 sources: 17/20 active and 110/160 archived
+  windows are complete. The two recorded recovery jobs remain queued at attempt 0.
+  The next Commusoft cycle has terminal property/job receipts; contacts are at
+  phase 3, 490 pages against 1,552 customer targets, still running.
+- Additional isolated two-session races and a later return to prior source content
+  now pass. All three races observed actual lock waits and one durable outcome;
+  all 15 native journeys and 1,591,580 archived rows / seven sequences are preserved.
+  The disposable container was removed. This remains offline acceptance.
+
+[Production backend and held frontend evidence](evidence/learn-business-job-refresh-production-2026-10-13.json).
+[Concurrent/recurrence checks](evidence/learn-business-job-refresh-concurrency-2026-10-13.json).
+
+The queued Slack recoveries were evaluated in a rolled-back read-only transaction
+under the actual service-worker role context. Both are eligible with priority 60;
+11 and 15 eligible jobs respectively were ahead at that observation. Their existing
+handles remain authoritative. The initial administrative-role probe returned false
+because the function requires service-role claims; it was not a production defect.
+
+
+
 **13 October, 23:11 BST — TEST job-refresh UI partially verified; LIVE unchanged.**
 
 - The isolated frontend `119b13d` is READY on both protected stable TEST aliases.
