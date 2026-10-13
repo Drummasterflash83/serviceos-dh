@@ -391,7 +391,7 @@ may appear after answers are selected.
 | Authorization | Intuit asks explicitly about sandbox/non-production connect, disconnect and reconnect testing. This has **not** yet been performed. It also asks about refresh frequency, failed auth retries, reconnect prompts, discovery-document endpoints, expired access/refresh tokens, invalid grants, CSRF and reliance on offline OAuth tools. Existing code/SQL tests support some controls, but cannot be substituted for the missing provider lifecycle run. |
 | API usage | API categories and per-customer call frequency. The initial connector uses Accounting entity queries and CompanyInfo; bounded imports reserve requests and pace requests per realm. No perpetual live sync schedule has been enabled. Do not invent a polling frequency or claim reports/webhooks/CDC are implemented. |
 | Error handling | API/syntax/validation error tests, `intuit_tid` capture, troubleshooting logs and in-app support. TEST v2 endpoints now record bounded `intuit_tid`, HTTP status and operation metadata in existing Edge logs; 55 tests, Deno checks and downloaded runtime comparison pass. Real provider receipt and log-retention verification remain open; this is not an indefinite diagnostic archive. Sanitised errors and bounded retry behaviour have tests. Verify support access and actual retained diagnostics before answering. |
-| Security | Notifiable breach history and who assesses risks require Chris's factual answers; questions have been sent. Client secrets are designed for server-side Vault storage, but the real app secret has not been provisioned. MFA, CAPTCHA and WebSocket use require a current app/configuration check. Authorised OpenFolk operators can access tenant information for support: do not claim only an individual customer can ever see their information. Ordinary tenants remain isolated. |
+| Security | Notifiable breach history and who assesses risks require Chris's factual answers; questions have been sent. The development secret was provisioned in TEST Vault, then its app was disabled pending owner rotation after a diagnostic exposure; production credentials are not provisioned. MFA, CAPTCHA and WebSocket use require a current app/configuration check. Authorised OpenFolk operators can access tenant information for support: do not claim only an individual customer can ever see their information. Ordinary tenants remain isolated. |
 
 Next provider acceptance step is a real sandbox lifecycle run after the exact
 callback and secure development-credential destination are prepared. Production
@@ -414,7 +414,7 @@ ServiceOS** 1Password item, with the owner, environment, app ID, callback, secre
 location and rotation notes. The actual new credential storage/setup will be
 reviewed before provisioning the created app. This checkpoint contains no real keys.
 
-### Development credential setup — approved, recovery copy pending
+### Development credential setup — held for owner rotation
 
 Chris approved the exact development callback and credential destinations on
 13 October. Intuit saved the additional Development callback below, with the
@@ -426,9 +426,28 @@ one-use state, server-side token exchange and a return to `https://test.openfolk
 At 18:28 UTC the existing app was registered in TEST as sandbox, revision 1.
 The client ID, secret, environment and callback were compared in memory and match.
 The signed-in TEST screen now shows “Sandbox · 4ef4971d”. Connections/imports are
-still zero. The Keychain recovery copy is saved and read back; the 1Password copy
-still awaits local authentication and is not yet verified. The temporary plaintext
-transfer file was removed. No key was rotated and no company was authorised.
+still zero. The initial Keychain copy was saved and read back. The development secret was
+subsequently treated as exposed when a native 1Password field observation included
+selected text in tool output. The unsaved 1Password edit was cancelled and its
+temporary transfer file removed. TEST app registration is now **inactive**, still
+revision 1. The old Keychain/Vault values require replacement following the owner's
+rotation. No secret has been rotated by the agent and no company was authorised.
+
+Chris has been asked to rotate only this app's Development client secret in Intuit.
+The correct page is open in Arc with credentials hidden. Do not reuse the old
+secret, retry the old authorization link, or re-enable the app before replacement.
+The approved credential destinations remain TEST Vault, the existing Keychain
+service and the existing 1Password note; no wider destination is introduced.
+Future native UI observations must allow-list only specific safe output: filtering
+`Value:` lines is insufficient because accessibility output may include a separate
+selected-text block. Do not write raw credential-bearing UI state to logs.
+
+A genuine signed-in OAuth start ran at 18:38:11 UTC and reached Intuit sign-in.
+Readback confirmed environment sandbox, status authorizing, token generation 0,
+no bound realm and no saved token. The pending request grants no company access;
+app inactivity now fences its exchange. The in-app flow needs an Intuit sign-in
+before a fresh consent review. Arc stalled loading the workspace/consent view;
+no successful Arc consent is claimed. No accounting records were imported.
 
 The restricted SQL read-only API could not decrypt Vault; verification succeeded
 through an explicit read-only transaction using the existing privileged database
