@@ -12,8 +12,16 @@ credential or company-specific mapping belongs in shared code.
 Arc shows an existing **Drummonds Dashboard** app, dated 02/03/2026 and labelled
 “In production”. Chris explicitly chose **Create a separate ServiceOS app** on
 13 October. Leave the existing app, callbacks, permissions and keys unchanged.
-Proposed new name: **OpenFolk ServiceOS**, in the Drummond Heating Dashboard
-developer workspace. No new app has yet been created.
+Created after explicit approval on 13 October: **OpenFolk ServiceOS**, in the
+Drummond Heating Dashboard developer workspace. Intuit confirmed “Your app is
+ready for testing”. Only Accounting was selected; Payments was not selected.
+
+- App ID: `4ef4971d-2a39-4309-8c6c-46510d679c59` (identifier, not a credential).
+- Developer workspace ID: `9341456295810067` (not a QuickBooks accounting realm).
+- Status: development/sandbox ready; production credentials locked pending app
+  details and compliance. No accounting company has authorised this app yet.
+- Credentials remain hidden in Intuit; no keys have been copied to local or hosted
+  storage. The existing Drummonds Dashboard app was not modified.
 
 Keep these identities separate:
 
@@ -57,8 +65,9 @@ node --test supabase/functions/_shared/quickbooks/*.test.ts
 
 ## Needs finishing
 
-1. Create/configure the Intuit app, confirm developer workspace owner, production
-   eligibility and any assessment/terms. No app has been created by this build.
+1. Complete configuration and production assessment for the created Intuit app.
+   The portal shows App details 17% and Compliance 0%; these are provider progress
+   indicators, not percentages of ServiceOS implementation completed.
 2. Implement audited operator connection controls and server-only state storage.
    Insert state durably before redirecting; atomically claim unused/unexpired
    state, recheck actor authority and reject callback replay before code exchange.
@@ -89,16 +98,25 @@ read-only accounting behaviour in its transport. Do not represent the OAuth
 credential itself as a provider-enforced read-only credential. Payroll and the
 separate payment-processing API are outside this first connection.
 
-## Pending app creation approval
+## Production app requirements
 
 The original in-app browser failed to load **App dashboard** and **Workspaces**.
-Arc subsequently opened the correct Drummond Heating developer workspace and
-its existing app list. Direct browser controls reached the separate app form
-after intermittent loading delays. The name **OpenFolk ServiceOS** is filled;
-only `com.intuit.quickbooks.accounting` is checked; the separate Payments scope
-is unchecked. **Done has not been clicked.** Action-time confirmation was
-requested for app registration/development credential creation. No company
-authorisation, credential extraction/storage or accounting request has occurred.
+Arc/direct browser controls subsequently completed the approved app creation.
+Production keys remain locked behind the portal's tasks:
+
+- Review developer profile and verify email.
+- Public end-user licence agreement and privacy policy.
+- Host domain, launch, disconnect, connect/reconnect URLs; exact OAuth redirects.
+- At least one app category, intended regulated industries and hosting geography.
+- App assessment questionnaire (not accessible until industries are selected).
+- The basic information form also requests a 100×100 JPG/PNG logo under 1 MB.
+
+The questionnaire's inline settings link currently leads to a missing page;
+the app sidebar Settings route works. No compliance declarations have been
+submitted. Repository search found no public policy/terms routes or approved
+legal documents; Chris has been asked for existing documents or draft direction.
+Do not invent public URLs, certify unverified controls or treat the local tests
+as evidence of a working hosted integration.
 
 ## Preservation and release
 
