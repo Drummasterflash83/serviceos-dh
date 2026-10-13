@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 19:47 BST — broader LIVE reconciliation: twenty more customer cards.**
+
+- A reusable read-only planner reconciles the actual customer export with retained
+  sources, tenant-specific category evidence and existing people/companies/contact
+  points. It makes bounded proposals, never approvals, merges or provider writes.
+  Eighteen tests cover scope/freshness, changed identities, shared endpoints,
+  duplicate exports, ambiguous observations and missing provider records.
+- The first twenty proposals passed fresh logged operator checks and were saved
+  in LIVE. Their four sites and eighteen jobs are also published. Readback verifies
+  all forty-two source links, ownership, original actor and person-account evidence.
+  A signed-in live card shows two jobs, including a pending job created today and
+  an open job. Contacts and communication links for this group still need work.
+- All 4,431 pre-existing identity projections (ID/type/name/email/phone/postcode),
+  four prior customer links, six contact points and 1,552 retained customer source
+  heads match the pre-run snapshot. The earlier release preservation verifier also
+  passes for immutable sources, access, schedules and prior identity IDs. This is
+  not a full-row comparison of every canonical or communication table.
+- The refreshed report has **24 linked customer accounts, 828 review proposals and
+  798 held cases** across the 1,650 exported account IDs. Nine additional proposals
+  now have possible matches after the new cards were created, confirming why each
+  group must refresh its candidate checks. Held reasons overlap; the 98 API-missing
+  customers remain held. Nothing automatically approves the remaining proposals.
+- No new schema/frontend release, access grant, provider write or paid AI request.
+  Broader customer context, the contact display gap, scoring, provider coverage,
+  TEST frontend parity and full operational/recovery acceptance remain unfinished.
+
+[Reconciliation procedure](LEARN-CUSTOMER-RECONCILIATION.md) ·
+[Bounded LIVE evidence](evidence/learn-customer-reconciliation-2026-10-13.json).
+
 **13 October, 19:25 BST — one LIVE customer now has connected sites, jobs and contacts.**
 
 - Logged operator reviews published six sites, ten jobs (four direct and six
