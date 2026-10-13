@@ -7,6 +7,19 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 12:16 BST — Commusoft jobs traversal finished; contact traversal started.**
+
+- Production retains 12,633 Commusoft jobs after 127 pages with exhausted cursor,
+  alongside 2,423 properties. The live controller confirms traversal completion.
+- Customer contacts are now being read across 1,552 retained customer targets under
+  a separate bounded approval. Site contacts, reconciliation and ongoing capture remain.
+- The signed-in live overview at 12:11 BST displayed 443 Slack messages and 71 private
+  voicemails. Additional provider notification metadata exists beyond the original
+  retained voicemail candidates; that broader discovery and its limitations are under
+  review. Do not describe 71 as complete provider history.
+- Verified input changes and sanitised evidence are backed up to GitHub TEST branch
+  at `0bd7a8fc61a60de22aec27191682efaa5a8ea64e`, with remote-head readback.
+
 **13 October, 12:09 BST — faster scheduled Slack intake, 71 private voicemails, and first LIVE Commusoft traversal verified.**
 
 ### Working and verified

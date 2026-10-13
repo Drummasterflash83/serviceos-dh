@@ -91,3 +91,13 @@ publication or ongoing Commusoft schedule was enabled by these source passes.
 Private journals: `.verification-results/commusoft-live-properties-20261013-execution.json`
 and `.verification-results/commusoft-live-jobs-20261013-execution.json`. These contain
 scope/checkpoint evidence, not source payloads or API credentials.
+
+### Jobs finished and customer contacts started — 12:16 BST
+
+The job traversal finished after 127 successful pages, retaining 12,633 distinct
+jobs with `complete=true` and no remaining cursor. Properties remain at 2,423.
+The signed-in production controller independently shows the completed job traversal.
+The next logged approval covers customer contacts for the 1,552 customer targets
+in that completed property traversal, at most 2,500 pages of 100 through 14 October
+11:15 UTC. Its first supervised batch is running; site contacts have not started.
+This is source capture, not complete canonical customer/job/card coverage.
