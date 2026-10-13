@@ -1,0 +1,59 @@
+{
+  "project": "saatxzwxvdvqevbnskxy",
+  "release": "quickbooks_foundation_v1",
+  "preparedAt": "2026-10-13T16:27:11.470Z",
+  "sourceHashes": [
+    {
+      "name": "20261102000000_learn_quickbooks_oauth.sql",
+      "sha256": "344c2530955bb86a90fe7943060026661c9a8b68be467aa9f7c213afba50d046"
+    },
+    {
+      "name": "20261102010000_learn_quickbooks_import.sql",
+      "sha256": "d801ba6a45af0570dd47312e8fb35552e3dfd085c130e7f5e7b3b5f9835e342c"
+    }
+  ],
+  "bundleSha256": "f30b7e82ea08c39003e4d5c84096236e17535873fc6d1c40590c0b014c97c1e4",
+  "prerequisiteHashes": [
+    {
+      "signature": "auth.role()",
+      "bodyHash": "f31486fed08a7402e89d4aa71b0ad273"
+    },
+    {
+      "signature": "auth.uid()",
+      "bodyHash": "cdef18c69c4f4cbbced2eaf81e628b49"
+    },
+    {
+      "signature": "public.current_user_is_openfolk_operator(text)",
+      "bodyHash": "d36508a666fb4488977dfc202a66b410"
+    },
+    {
+      "signature": "public.learn_operator_input_access(uuid,uuid,boolean)",
+      "bodyHash": "6b26e22470bfb077e0c61d312c55f713"
+    },
+    {
+      "signature": "public.learn_operator_input_immutable()",
+      "bodyHash": "5226d715d49ccaa8a0c61b39a08c294b"
+    },
+    {
+      "signature": "public.provider_secret_name(uuid,text,text)",
+      "bodyHash": "2e19bd2a1c02fecc48090bf9b066ad40"
+    },
+    {
+      "signature": "public.provider_secret_store(uuid,text,text,text)",
+      "bodyHash": "9fc619c82fd169f5bfe293d18b994340"
+    },
+    {
+      "signature": "vault.create_secret(text,text,text,uuid)",
+      "bodyHash": "db64516e2717e986a5f997783b5b9c20"
+    },
+    {
+      "signature": "vault.update_secret(uuid,text,text,text,uuid)",
+      "bodyHash": "650d4c4b9939ea49ed73bdb3bfde1d39"
+    }
+  ],
+  "effects": [
+    "Create QuickBooks-only tables, RPCs and receipt.",
+    "Existing authenticated operators use gated RPCs; server uses service-only worker/credential RPCs.",
+    "No apps, identities, grants, credentials, import scope, source data, flags or schedules seeded."
+  ]
+}

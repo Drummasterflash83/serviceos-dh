@@ -74,7 +74,8 @@ Intuit's current transfer options still need verification in its portal.
   transactional substitute, not evidence of hosted encryption configuration.
 - Full frontend TypeScript, Deno endpoint checks, 47 existing prebuild checks and
   the local production build pass using the existing local dependency installation.
-  No real QuickBooks accounting data has been requested. No new code is deployed.
+  No real QuickBooks accounting data has been requested. Hosted TEST deployment
+  has since progressed as recorded below; there is no QuickBooks production release.
 - Durable imports now reserve requests before HTTP, enforce a per-realm pacing
   gate, retain original JSON and immutable record versions/observations, and save
   each page and checkpoint atomically. Failed requests count against the budget;
@@ -107,18 +108,49 @@ python3 scripts/verify/learn-quickbooks-oauth.py
 python3 scripts/verify/learn-quickbooks-schema.py
 ```
 
+## Working and verified — hosted TEST, 13 October
+
+- Read-only catalog checks completed for TEST `saatxzwxvdvqevbnskxy` and production
+  `tgbnakbxwcqjeimygroz`: all nine prerequisite functions exist, expected referenced
+  columns/indexes match, and neither initially contained QuickBooks objects.
+- The exact additive TEST bundle passed a hosted transaction/rollback rehearsal,
+  then installed at **16:28:26 UTC**. Its receipt records both source hashes.
+  Twelve private tables (including the release receipt) have RLS and no anonymous
+  or authenticated direct-table access. Operator/worker RPC grants match scope.
+- Three new TEST endpoints are ACTIVE at version 1: `quickbooks-oauth-start`,
+  `quickbooks-oauth-callback` and `learn-quickbooks-worker`. Other TEST endpoints
+  were unchanged. The existing platform-worker has **not** been redeployed here.
+- Downloaded source closures match the reviewed local modules: seven for start,
+  seven for callback and eight for worker. This is actual runtime readback,
+  in addition to deployment metadata and public HTTP checks.
+- Verified HTTP results: allowed-origin preflight 204; unsigned start 401;
+  foreign-origin start 403; invalid callback 400 with no-referrer/no-store and
+  stable TEST return; unconfigured worker 503. The worker trigger is not provisioned.
+- Hosted rollback probes deny missing identity, anonymous and client worker/raw
+  table access. The service worker returns idle and releases no credential.
+- Only non-secret `QUICKBOOKS_SITE_ORIGIN=https://test.openfolk.ai` and
+  `QUICKBOOKS_MINOR_VERSION=75` were configured. The latter is an explicitly
+  pinned test version documented in [Intuit’s SDK release history](https://github.com/intuit/QuickBooks-V3-PHP-SDK/releases).
+- **Zero apps, connections, import runs, pages or accounting source records.**
+  No provider credentials, new users/grants, schedules, capture or production
+  changes. Real sandbox/company OAuth and signed-in browser acceptance remain.
+
+Evidence: [hosted TEST release](evidence/learn-quickbooks-test-foundation-2026-10-13.json).
+The first runtime attempt stopped after settings were saved because Supabase
+returned an empty success body. An independent inventory confirmed those exact
+setting hashes and zero endpoints before continuation; the response parser now
+accepts empty success bodies and skips already-matching settings.
+
 ## Needs finishing
 
 1. Complete configuration and production assessment for the created Intuit app.
    The portal shows App details 17% and Compliance 0%; these are provider progress
    indicators, not percentages of ServiceOS implementation completed.
-2. Run `scripts/verify/learn-quickbooks-preflight.sql` against each explicitly
-   selected hosted project. It returns catalog metadata and function hashes only,
-   not customer rows, credentials or function bodies. Compare the current hosted
-   schema with the OAuth/import prerequisites, then
-   deploy matching SQL/endpoints to TEST. The augmented local rehearsal passed. Configure exact stable backend callbacks,
-   `QUICKBOOKS_SITE_ORIGIN` and an explicitly selected `QUICKBOOKS_MINOR_VERSION`.
-   Provision the app secret server-side and save its recovery copy securely.
+2. TEST foundation and three standalone endpoints are installed and checked above.
+   Provision the development app secret server-side and save its recovery copy
+   securely. Add the exact TEST callback to the development app registration.
+   Deploy/reconcile the signed-in frontend and configure the independently gated
+   worker dispatcher only for an explicitly defined sandbox import scope.
 3. Exercise real sandbox authorisation, token rotation and signed-in operator
    controls through TEST. Complete disconnect/provider revocation and recovery
    behaviour. Local tests do not establish real provider acceptance.
@@ -179,8 +211,9 @@ company or transfer of software ownership is assumed.
 See the [publication review](../legal/SERVICEOS-LEGAL-PUBLICATION-REVIEW.md)
 for remaining factual, contractual and implementation decisions. No public routes
 or policy submissions have been made, and drafts are not effective agreements.
-Do not invent public URLs, certify unverified controls or treat the local tests
-as evidence of a working hosted integration.
+Do not invent public URLs or certify unverified controls. The hosted TEST
+foundation now exists, but no real company is connected and no accounting
+import has been accepted.
 
 ## Preservation and release
 
@@ -223,3 +256,23 @@ files are excluded from this checkpoint; the local build is not a release artifa
   — bounded query pages and rate limiting.
 - [Webhook best practices](https://static.developer.intuit.com/output_html/qbo/docs/develop/webhooks/best-practices.html)
   — reconciliation for missed events; webhooks are not yet implemented here.
+
+### TEST release operations
+
+- `scripts/verify/learn-quickbooks-hosted-preflight.mjs test|production` is read-only.
+- `scripts/verify/learn-quickbooks-test-foundation.mjs prepare|rehearse|install|verify`
+  is hard-bound to TEST. Preparation records exact helper/column prerequisites;
+  installation uses one transaction, a receipt and no automatic write retry.
+- `supabase/release/quickbooks-test/001_foundation.sql` and its manifest are the
+  installed bundle. It seeds no credentials or capture configuration.
+- `scripts/verify/learn-quickbooks-test-runtime.mjs deploy|verify` deploys only the
+  three new endpoints, refuses unreviewed replacement, and keeps imports disabled.
+- `scripts/verify/learn-quickbooks-test-runtime-readback.mjs` verifies downloaded
+  version-1 source closures. Do not silently widen its expected version after a
+  later release; update the release record and source evidence first.
+- `scripts/verify/learn-quickbooks-test-denials.sql` is a rollback-only TEST role
+  probe; it does not create users, grants or credentials.
+
+Do not deploy the full platform-worker from this fork without reconciling its
+current parent-workstream changes and resolving the existing Deno mailauth
+check. The standalone QuickBooks endpoints do not require that replacement.

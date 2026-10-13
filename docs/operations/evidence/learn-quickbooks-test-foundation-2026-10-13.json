@@ -1,0 +1,165 @@
+{
+  "date": "2026-10-13",
+  "state": "test_foundation_and_public_guards_verified",
+  "project": "saatxzwxvdvqevbnskxy",
+  "foundation": {
+    "state": "installed_metadata_verified",
+    "project": "saatxzwxvdvqevbnskxy",
+    "apps": 0,
+    "runs": 0,
+    "pages": 0,
+    "tables": 12,
+    "sources": 0,
+    "connections": 0,
+    "operatorStart": true,
+    "privateTables": true,
+    "workerServiceOnly": true,
+    "installedAt": "2026-10-13 16:28:26.209793+00",
+    "sourceHashes": [
+      {
+        "name": "20261102000000_learn_quickbooks_oauth.sql",
+        "sha256": "344c2530955bb86a90fe7943060026661c9a8b68be467aa9f7c213afba50d046"
+      },
+      {
+        "name": "20261102010000_learn_quickbooks_import.sql",
+        "sha256": "d801ba6a45af0570dd47312e8fb35552e3dfd085c130e7f5e7b3b5f9835e342c"
+      }
+    ]
+  },
+  "runtime": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-13T16:31:02.808Z",
+    "endpoints": [
+      {
+        "name": "quickbooks-oauth-start",
+        "status": "ACTIVE",
+        "version": 1,
+        "verifyJwt": false,
+        "artifactHash": "6f397322f0156fb18ec59928e092199d5b3f2171b3c3b64f645a60340bc450a1"
+      },
+      {
+        "name": "quickbooks-oauth-callback",
+        "status": "ACTIVE",
+        "version": 1,
+        "verifyJwt": false,
+        "artifactHash": "b01105fb32cc351e6657a897150b623ed7f11d2211b01a7b0d870e27caa8e764"
+      },
+      {
+        "name": "learn-quickbooks-worker",
+        "status": "ACTIVE",
+        "version": 1,
+        "verifyJwt": false,
+        "artifactHash": "891baf1805b9dcd4d43ad13fbdc7637b26582a49d3e05d420f266896d5a425d2"
+      }
+    ],
+    "probes": [
+      {
+        "name": "quickbooks-oauth-start",
+        "method": "OPTIONS",
+        "status": 204,
+        "origin": "https://test.openfolk.ai"
+      },
+      {
+        "name": "quickbooks-oauth-start",
+        "method": "POST",
+        "status": 401,
+        "origin": "https://test.openfolk.ai"
+      },
+      {
+        "name": "quickbooks-oauth-start",
+        "method": "POST",
+        "status": 403,
+        "origin": "https://example.invalid"
+      },
+      {
+        "name": "quickbooks-oauth-callback",
+        "method": "GET",
+        "status": 400,
+        "origin": null
+      },
+      {
+        "name": "learn-quickbooks-worker",
+        "method": "POST",
+        "status": 503,
+        "origin": null
+      }
+    ],
+    "productionChanges": 0,
+    "providerRequests": 0,
+    "sourceBundleSha256": "453a4cb04055ee8512f87c69c1baade8ca7727b62ba71f2c5a691ff21ab5d914",
+    "otherEndpointsUnchanged": true,
+    "counts": {
+      "apps": 0,
+      "connections": 0,
+      "imports": 0,
+      "pages": 0
+    },
+    "state": "deployed_public_guards_verified",
+    "completedAt": "2026-10-13T16:31:14.279Z"
+  },
+  "runtimeReadback": {
+    "state": "downloaded_runtime_closures_verified",
+    "project": "saatxzwxvdvqevbnskxy",
+    "checkedAt": "2026-10-13T16:35:13.698Z",
+    "reports": [
+      {
+        "name": "quickbooks-oauth-start",
+        "version": 1,
+        "artifactHash": "6f397322f0156fb18ec59928e092199d5b3f2171b3c3b64f645a60340bc450a1",
+        "matchingRuntimeModules": 7,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "e0c232c5a9b72f0d3b62b18709ff62ad4fc0c6dd7ffa9e30b4c3581273e2d9ab"
+      },
+      {
+        "name": "quickbooks-oauth-callback",
+        "version": 1,
+        "artifactHash": "b01105fb32cc351e6657a897150b623ed7f11d2211b01a7b0d870e27caa8e764",
+        "matchingRuntimeModules": 7,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "85f1b7d87e63168bc163c1307d34d5c4433edf74d2f24581bd8e60401ada6742"
+      },
+      {
+        "name": "learn-quickbooks-worker",
+        "version": 1,
+        "artifactHash": "891baf1805b9dcd4d43ad13fbdc7637b26582a49d3e05d420f266896d5a425d2",
+        "matchingRuntimeModules": 8,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "009f131c609321f2038b4ae03ce75444776542f8a654c63a450823a8036c8691"
+      }
+    ],
+    "providerRequests": 0,
+    "limitations": [
+      "Source closure readback and public guards only; no company OAuth, accounting requests or hosted token rotation."
+    ]
+  },
+  "roleProbes": {
+    "state": "passed",
+    "project": "saatxzwxvdvqevbnskxy",
+    "checkedAt": "2026-10-13T16:36:42.524Z",
+    "checks": [
+      "Missing identity cannot read operator status or import counts.",
+      "Authenticated client cannot acquire worker credentials or read raw accounting tables.",
+      "Anonymous cannot read status or acquire work.",
+      "Service worker returns idle with no credential."
+    ],
+    "persistentChanges": 0,
+    "providerRequests": 0,
+    "limitations": [
+      "Database role probes are not signed-in browser acceptance or real-company OAuth."
+    ]
+  },
+  "scope": {
+    "productionWrites": 0,
+    "providerRequests": 0,
+    "newUsers": 0,
+    "newAuthorityGrants": 0,
+    "providerCredentials": 0,
+    "accountingRecords": 0,
+    "captureEnabled": false
+  },
+  "limitations": [
+    "No real sandbox/company authorisation, token rotation, accounting capture or signed-in browser acceptance.",
+    "TEST frontend and infrastructure dispatcher are not promoted by this endpoint release.",
+    "Production Intuit declaration is awaiting explicit approval; public policy/terms and app assessment remain."
+  ]
+}
