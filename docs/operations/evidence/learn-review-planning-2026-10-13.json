@@ -1,0 +1,125 @@
+{
+  "version": "learn-review-planning/1",
+  "state": "installed_and_signed_in_test_verified",
+  "observedAt": "2026-10-13T02:13:11.528Z",
+  "source": {
+    "path": "supabase/migrations/20261101640000_learn_commusoft_review_planning.sql",
+    "sha256": "c140f3855a9236d85e0f62b3142eafc85af457023e047d70ea0cf471b591fd63"
+  },
+  "diagnosis": {
+    "databaseCancellations": 3,
+    "sqlState": "57014",
+    "genericPlanTimeoutMs": 20000,
+    "method": "Explicit read-only transactions; retained TEST inventory; no provider requests"
+  },
+  "rehearsal": {
+    "resultCasesCompared": 4,
+    "candidateReads": 8,
+    "candidateElapsedMs": [
+      996,
+      966,
+      987,
+      569,
+      960,
+      1008,
+      991,
+      539
+    ],
+    "all238TablesMatched": true,
+    "catalogRestored": true
+  },
+  "installation": {
+    "all238TablesUnchanged": true,
+    "bodyOwnerAndAclUnchanged": true,
+    "otherFunctionsUnchanged": true,
+    "priorLedgerUnchanged": true,
+    "migrationReceiptRecorded": true,
+    "installedFingerprint": "b488b788541a41110f485b04cb72febe"
+  },
+  "browser": {
+    "origin": "https://test.openfolk.ai",
+    "checks": [
+      {
+        "queryCase": "existing_reference",
+        "elapsedMs": 1371,
+        "returnedRows": 1
+      },
+      {
+        "queryCase": "existing_reference",
+        "elapsedMs": 1139,
+        "returnedRows": 1
+      },
+      {
+        "queryCase": "property_reference",
+        "elapsedMs": 1267,
+        "returnedRows": 14
+      },
+      {
+        "queryCase": "no_match",
+        "elapsedMs": 1167,
+        "returnedRows": 0
+      },
+      {
+        "queryCase": "existing_reference",
+        "elapsedMs": 1138,
+        "returnedRows": 1
+      },
+      {
+        "queryCase": "existing_reference",
+        "elapsedMs": 1367,
+        "returnedRows": 1
+      },
+      {
+        "queryCase": "property_reference",
+        "elapsedMs": 2668,
+        "returnedRows": 14
+      },
+      {
+        "queryCase": "existing_reference",
+        "elapsedMs": 1825,
+        "returnedRows": 1
+      },
+      {
+        "queryCase": "no_match",
+        "elapsedMs": 2109,
+        "returnedRows": 0
+      },
+      {
+        "queryCase": "existing_reference",
+        "elapsedMs": 1995,
+        "returnedRows": 1
+      },
+      {
+        "queryCase": "property_reference",
+        "elapsedMs": 3185,
+        "returnedRows": 14
+      },
+      {
+        "queryCase": "existing_reference",
+        "elapsedMs": 2589,
+        "returnedRows": 1
+      }
+    ],
+    "failures": 0,
+    "inputFlagRestoredOff": true,
+    "sourceOrRelationshipWrites": 0
+  },
+  "local": {
+    "command": "python3 scripts/verify/learn-commusoft-permits.py --review-search",
+    "passed": true,
+    "additionalSyntheticJobs": 10000,
+    "selectiveQueryElapsedMs": 164,
+    "repeatedCallerQueries": 24,
+    "network": "none",
+    "containerRemoved": true
+  },
+  "productionChanges": 0,
+  "providerRequests": 0,
+  "productionPackageIncludesFix": false,
+  "limitations": [
+    "Finite TEST acceptance, not an SLA or sustained-concurrency proof.",
+    "Cold-cache and larger-volume performance require separate checks.",
+    "Existing production candidate needs the additional migration and refreshed release bindings.",
+    "Customer sign-in and full LEARN launch remain unaccepted."
+  ]
+}

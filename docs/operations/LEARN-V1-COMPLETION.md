@@ -7,6 +7,43 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 03:14 BST — intermittent retained-job search failure diagnosed and fixed in TEST.**
+
+### Working and verified
+
+- TEST database logs show three cancelled work-review queries during the prior
+  job-linking session. A forced generic plan reproduced a statement timeout after
+  20 seconds on the retained inventory; its nested loop repeatedly scanned the
+  latest-version set. This was a database failure, not merely a browser wait.
+- Migration `20261101640000` gives only the work-search function a custom plan for
+  each request. Its body, authority, grants, owner and returned data are unchanged.
+  Full-schema rehearsal compared four search cases and repeated them twice under
+  a generic-plan caller. Results matched, with candidate database timings 539–1008 ms.
+- TEST installation preserved all 238 data tables and all other functions. The
+  migration receipt was appended. No credentials, grants or provider access changed.
+- Twelve actual signed-in browser searches then completed without failure, taking
+  1138–3185 ms end to end. Exact references, property references and empty results
+  were covered. The input switch was restored Off after acceptance.
+- The isolated SQL suite passes, including 10,000 synthetic jobs, repeated selective
+  and broad queries, pagination, caller-setting isolation, source preservation and
+  existing permission/replay/concurrency checks. These timings are not an SLA.
+
+### Needs finishing
+
+- Add this migration to the matching production package and refresh/rehearse its
+  release bindings. The existing 22-package production candidate does not include it.
+- Continue broader customer/contact publication and the remaining real input,
+  processing, scoring, signed-in customer and live-release journeys.
+
+### Blocked externally
+
+- Existing founder-access decision, live sign-in, TEST AI access and 1Password
+  recovery unlock remain pending. No new user action is needed for this TEST fix.
+
+[Search-planning evidence](evidence/learn-review-planning-2026-10-13.json).
+
+### Previous retained-job milestone
+
 **13 October, 03:02 BST — retained customer job history linked and inspected in TEST.**
 
 ### Working and verified

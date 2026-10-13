@@ -174,6 +174,16 @@ try:
                     sql(migration.replace('\ncommit;', '\nrollback;'))
                     assert sql("select to_regprocedure('public.learn_commusoft_review_search(uuid,uuid,text,text,integer)') is null and to_regprocedure('public.learn_commusoft_work_review_search(uuid,uuid,text,text,text,integer)') is null and to_regprocedure('public.learn_commusoft_source_matches(jsonb,text,text,text)') is null;")=='t','Search rollback left functions'
                     sql(migration)
+                    planning=(root/'supabase/migrations/20261101640000_learn_commusoft_review_planning.sql').read_text()
+                    reader="'public.learn_commusoft_work_review_search(uuid,uuid,text,text,text,integer)'::regprocedure"
+                    definition="select pg_get_functiondef("+reader+");"
+                    contract="select prosrc,proacl::text,pg_get_userbyid(proowner) from pg_proc where oid="+reader
+                    prior_definition,prior_contract=sql(definition),sql(contract)
+                    sql(planning.replace('\ncommit;', '\nrollback;'))
+                    assert sql(definition)==prior_definition,'Search planning rollback changed reader'
+                    sql(planning)
+                    assert sql(contract)==prior_contract,'Search planning changed body, grants or owner'
+                    assert sql("select proconfig @> array['plan_cache_mode=force_custom_plan'] from pg_proc where oid="+reader)=='t'
                     print(sql((root/'scripts/verify/learn-commusoft-review-search.assert.sql').read_text()))
                     sql('begin;'+(root/'scripts/verify/learn-review-search-hosted.assert.sql').read_text()+'rollback;')
                     print('PASS: exact hosted search matcher/permission probe')
@@ -181,6 +191,7 @@ try:
                     js="""import{readFileSync}from'node:fs';import{loadCommusoftReviewPage}from'./src/lib/learn-commusoft-review.ts';import{loadWorkPage}from'./src/lib/learn-commusoft-work.ts';const p=JSON.parse(readFileSync(0,'utf8')),id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0'),db=data=>({rpc:async()=>({data,error:null})});await loadCommusoftReviewPage(db(p.customers),id(1),id(5),null,'Alpine');await loadWorkPage(db(p.jobs),id(1),id(5),'job',null,'Alpine repair');await loadWorkPage(db(p.contacts),id(1),id(5),'contact',null,'site@example.invalid');console.log('PASS: actual SQL search pages pass application readers');"""
                     subprocess.run(['node','--input-type=module','-e',js],input=pages,text=True,cwd=root,check=True)
                     print(sql((root/'scripts/verify/learn-commusoft-review-search-scale.assert.sql').read_text()))
+                    print(sql((root/'scripts/verify/learn-commusoft-review-planning.assert.sql').read_text()))
 
                 if sys.argv[1:] in (['--job-details'], ['--partial-job-times']):
                     migration=(root/'supabase/migrations/20261101070000_learn_commusoft_job_details.sql').read_text()

@@ -1,5 +1,42 @@
 # Searching retained Commusoft records
 
+## 13 October — generic-plan failure fixed in TEST
+
+Repeated signed-in work searches exposed a plan-cache regression not covered by the
+original one-call local benchmark. Three database cancellations occurred during the
+retained-job review. A SELECT-only benchmark on the real TEST inventory reproduced
+a 20-second timeout with a generic plan; that plan repeatedly scanned a materialized
+latest-version result through a nested loop.
+
+Migration `20261101640000_learn_commusoft_review_planning.sql` sets
+`plan_cache_mode=force_custom_plan` on the work-search function only. Planning now
+uses the actual company, collection, cursor and search term on each call. This adds
+planning work per request, avoiding reuse of the demonstrated unsuitable generic
+plan. It does not raise the statement timeout, relax access or change search semantics.
+
+The full-schema TEST rollback rehearsal preserved all 238 tables and restored the
+function catalog. Four actual search cases matched their old results; eight candidate
+reads under a generic-plan caller took 539–1008 ms. Installation preserved the same
+tables, the function body, owner and grants, and every unrelated function. Twelve
+signed-in browser searches completed in 1138–3185 ms with no errors. Cold-cache,
+larger-volume and sustained-concurrency performance are not established by this run.
+
+The existing isolated regression driver now installs and rolls back the planning
+change, checks unchanged body/permissions, and runs repeated selective/broad searches
+after loading 10,000 synthetic jobs:
+
+```sh
+python3 scripts/verify/learn-commusoft-permits.py --review-search
+```
+
+The new repeated-call assertion also verifies pagination and that the function's
+setting does not escape into its caller. Existing search, ambiguity, authority,
+preservation and concurrency checks still pass. TEST capture is Off again; no
+provider requests or production changes occurred. The production package and
+release bindings still need this migration before promotion.
+
+[Acceptance evidence](evidence/learn-review-planning-2026-10-13.json).
+
 ## Behaviour — installed in TEST release 045
 
 The customer and work-review lists now have an explicit search over all retained
