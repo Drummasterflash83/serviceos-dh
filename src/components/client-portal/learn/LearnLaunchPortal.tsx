@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Mail,
   Phone,
@@ -8,7 +9,9 @@ import {
   ArrowUpRight,
   ShieldCheck,
   Files,
+  Voicemail,
 } from "lucide-react";
+import { mainNumberStatus } from "@/lib/emma-health";
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
 import { startGmailOAuth } from "@/lib/api";
@@ -46,13 +49,27 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
   const [cardRevision, setCardRevision] = useState(0);
   const revision = useRef(0),
     scope = useRef("");
+  const pendingScope = useRef<{ scope: string; ticket: number } | null>(null);
   scope.current = `${user?.id ?? ""}:${tenantId}`;
+  const receptionist = useQuery({
+    queryKey: ["workspace-receptionist-summary", user?.id, tenantId],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().from("receptionist_workspaces")
+        .select("name,launch_stage").eq("tenant_id", tenantId).maybeSingle();
+      if (error) throw Error("Receptionist readiness unavailable");
+      return data;
+    },
+    staleTime: 30_000,
+    refetchInterval: 45_000,
+  });
   const canConnect =
     !!user && profile?.tenant_id === tenantId && ["owner", "admin", "ops"].includes(profile.role);
   async function refresh() {
+    if (pendingScope.current?.scope === scope.current) return;
     const ticket = ++revision.current,
       selected = scope.current;
-    setResult(null);
+    pendingScope.current = { scope: selected, ticket };
     setState("loading");
     try {
       const { data, error } = await getSupabaseClient().functions.invoke("learn-launch-status", {
@@ -60,13 +77,15 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
       });
       if (!isCurrentLaunchRequest(ticket, selected, revision.current, scope.current)) return;
       const valid = !error && launchSnapshot(data, tenantId, Date.now());
-      setResult(valid || null);
+      setResult(valid ? { ...valid, scope: selected } : null);
       setState(valid ? "ready" : "unavailable");
     } catch {
       if (isCurrentLaunchRequest(ticket, selected, revision.current, scope.current)) {
         setResult(null);
         setState("failed");
       }
+    } finally {
+      if (pendingScope.current?.ticket === ticket) pendingScope.current = null;
     }
   }
   useEffect(() => {
@@ -74,8 +93,18 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
     const timer = setInterval(() => {
       setResult((old: any) => (old && Date.now() >= Date.parse(old.valid_until) ? null : old));
     }, 1000);
+    // The server snapshot expires after one minute. Keep an open showcase
+    // current instead of removing its totals until someone manually refreshes.
+    const poll = setInterval(() => {
+      if (document.visibilityState === "visible") void refresh();
+    }, 45_000);
+    const onVisible = () => { if (document.visibilityState === "visible") void refresh(); };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       clearInterval(timer);
+      clearInterval(poll);
+      pendingScope.current = null;
+      document.removeEventListener("visibilitychange", onVisible);
       revision.current++;
     };
   }, [user?.id, tenantId]);
@@ -115,7 +144,7 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
       return `Processing · ${display(v.records_processed)} processed so far · started ${when(v.started_at)}`;
     return `${v.state === "success" ? "Update completed" : "Update needs attention"} · ${display(v.records_processed)} processed · completed ${when(v.completed_at)}`;
   };
-  const active = result && Date.now() < Date.parse(result.valid_until) ? result : null;
+  const active = result?.scope === scope.current && Date.now() < Date.parse(result.valid_until) ? result : null;
   return (
     <div className="lr-page">
       <div className="cp-page-heading lr-heading">
@@ -133,7 +162,7 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
           Refresh
         </button>
       </div>
-      {(state !== "ready" || !active) && (
+      {!active && (
         <p role="status" className="lr-notice">
           {state === "loading"
             ? "Checking your saved activity…"
@@ -142,17 +171,16 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
       )}
       {active && (
         <p role="status" className="lr-notice">
-          Status checked {when(active.observed_at)}. Refresh checks for updates; it does not start
-          an import.
+          Saved input totals · checked {when(active.observed_at)}. Updates automatically while this page is open.
         </p>
       )}
-      {active && (
-        <section className="lr-counts" aria-label="Saved communications">
+        <section className="lr-counts lr-input-overview" aria-label="Your inputs at a glance">
           {[
-            { name: "Emails", value: active?.counts.email.record_count, Icon: Mail },
-            { name: "Calls", value: active?.counts.phone.record_count, Icon: Phone },
-            { name: "Recordings", value: active?.recordings.record_count, Icon: Files },
-            { name: "Slack messages", value: null, Icon: MessagesSquare },
+            { name: "Email", value: active?.counts.email.record_count, Icon: Mail, note: "Emails saved in LEARN", detail: active?.email.last_successful_message_sync_at ? `Latest capture ${when(active.email.last_successful_message_sync_at)}` : "Capture status awaiting confirmation", href: "#learn-communication-sources" },
+            { name: "Phone", value: active?.counts.phone.record_count, Icon: Phone, note: "Call records saved in LEARN", detail: active?.phone.last_successful_call_sync_at ? `Latest capture ${when(active.phone.last_successful_call_sync_at)}` : "Capture status awaiting confirmation", href: "#learn-communication-sources" },
+            { name: "Voice recordings", value: active?.recordings.record_count, Icon: Files, note: "Recordings saved", detail: "Audio coverage is checked separately", href: "#learn-communication-sources" },
+            { name: "Slack", value: null, Icon: MessagesSquare, note: "Message count awaiting verification", detail: "Review channel history and import progress", href: null },
+            { name: "Voicemail", value: active?.voicemails.record_count, Icon: Voicemail, note: "Saved messages visible to your account", detail: "Open your inbox to check mailbox sync", href: `/client?tenant=${encodeURIComponent(tenantId)}&section=receptionist&view=voicemails` },
           ].map((c) => (
             <article className="lr-count" key={c.name}>
               <div className="lr-count-label">
@@ -162,15 +190,19 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
               <strong className={typeof c.value === "number" ? "" : "lr-unknown"}>
                 {display(c.value)}
               </strong>
-              <small>
-                {c.name === "Slack messages"
-                  ? "See Slack imports for channel progress."
-                  : "Saved records · full history not yet confirmed."}
-              </small>
+              <small>{c.note}</small>
+              <p className="lr-input-detail">{c.detail}</p>
+              {c.href ? <a className="lr-input-link" href={c.href}>View details <ArrowUpRight size={13} /></a> : <button className="lr-input-link" onClick={() => setSlackSetup(true)}>View Slack imports <ArrowUpRight size={13} /></button>}
             </article>
           ))}
+          <article className="lr-count lr-emma-readiness">
+            <div className="lr-count-label">AI {receptionist.data?.name || "Emma"}<Headphones size={17} /></div>
+            <strong className="lr-unknown">{receptionist.isPending ? "Checking readiness" : receptionist.isError ? "Check needed" : mainNumberStatus(receptionist.data?.launch_stage)}</strong>
+            <small>Recorded launch status · call routing still needs verification</small>
+            <a className="lr-input-link" href={`/client?tenant=${encodeURIComponent(tenantId)}&section=receptionist`}>Open AI Receptionist <ArrowUpRight size={13} /></a>
+          </article>
         </section>
-      )}
+      <p className="lr-input-caption">These are saved totals, not a claim that every historical message or call has been captured.</p>
       <LearnCards key={cardRevision} tenantId={tenantId} />
       <LearnVoicemails key={`${user?.id}:${tenantId}`} tenantId={tenantId} actorId={user?.id} />
       <section className="cp-card">
@@ -293,7 +325,7 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
           )}
         </DialogContent>
       </Dialog>
-      <div className="lr-section-heading">
+      <div className="lr-section-heading" id="learn-communication-sources">
         <div>
           <h2>Your communication sources</h2>
           <p>Review each connection and its latest recorded activity.</p>
