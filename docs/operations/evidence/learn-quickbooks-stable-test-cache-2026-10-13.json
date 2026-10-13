@@ -1,0 +1,62 @@
+{
+  "state": "stable_test_promoted",
+  "startedAt": "2026-10-13T22:28:08.566Z",
+  "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+  "candidate": "dpl_4V1Jw7cyxwdqb6u4DdZ8eCU5zbFP",
+  "sha": "e048b49ea95c87d0eedb23881065196336275970",
+  "prior": "dpl_8oV6zsNRRRbSiUdwsxgDBLHfoqV5",
+  "backendObservedInBrowser": "saatxzwxvdvqevbnskxy",
+  "protection": "all",
+  "aliases": [
+    {
+      "alias": "test.openfolk.ai",
+      "deployment": "dpl_4V1Jw7cyxwdqb6u4DdZ8eCU5zbFP",
+      "verified": true
+    },
+    {
+      "alias": "serviceos-learn-test-allkin.vercel.app",
+      "deployment": "dpl_4V1Jw7cyxwdqb6u4DdZ8eCU5zbFP",
+      "verified": true
+    }
+  ],
+  "productionChanged": false,
+  "finishedAt": "2026-10-13T22:28:10.612Z",
+  "browserAcceptance": {
+    "checkedAt": "2026-10-13T22:29:29Z",
+    "existingSignedInSession": true,
+    "renderedGit": "e048b49",
+    "environment": "preview",
+    "supabaseProject": "saatxzwxvdvqevbnskxy",
+    "providerCompany": "Sandbox Company_US_1",
+    "connection": "revoked",
+    "inputEnabled": false,
+    "latestSourceCounts": {
+      "Customer": 29,
+      "Invoice": 31,
+      "Payment": 16,
+      "CreditMemo": 1
+    },
+    "completedScans": 2,
+    "observationsPerScan": 77,
+    "newProviderRequests": 0
+  },
+  "cacheHeaders": {
+    "configuredInBuiltSource": true,
+    "sameSourceUnpromotedBuildObserved": {
+      "routes": [
+        "/quickbooks?mode=connect",
+        "/login"
+      ],
+      "status": 200,
+      "cacheControl": "no-cache, no-store, max-age=0, must-revalidate",
+      "cdnCacheControl": "no-store"
+    },
+    "correctedDeploymentResponseVerified": false,
+    "limit": "Native Network inspection did not expose the main document on the corrected deployment; source-identical earlier response is supporting evidence only."
+  },
+  "limitations": [
+    "TEST acceptance only; production frontend and Drummonds company authorization remain open.",
+    "Policy publication, owner security-policy commitment and production Intuit keys remain pending.",
+    "Whole-ServiceOS export/deletion/recovery-copy expiry are not verified."
+  ]
+}

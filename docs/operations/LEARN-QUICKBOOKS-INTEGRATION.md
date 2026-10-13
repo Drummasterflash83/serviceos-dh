@@ -937,3 +937,35 @@ needed; the retired preview is not a release target.
 The saved Intuit questionnaire was closed at Chris's request to stop recurring
 save alerts. Reopen only for necessary batched edits and dismiss any confirmation
 promptly. No final assessment submission has occurred.
+
+
+## Permanent TEST release — 13 October, 22:29 UTC
+
+Protected TEST now serves Git `e048b49ea95c87d0eedb23881065196336275970`,
+deployment `dpl_4V1Jw7cyxwdqb6u4DdZ8eCU5zbFP`, on both stable aliases.
+Readback confirms both assignments and unchanged all-deployment protection.
+The existing signed-in operator session shows build e048b49, preview environment,
+and TEST Supabase saatxzwxvdvqevbnskxy. The 29 customers, 31 invoices, 16 payments
+and one credit memo remain; the sandbox is still revoked and input disabled.
+No new provider call, connection or grant was made. LIVE is unchanged.
+
+An earlier unaliased candidate was rejected before promotion because it used
+Production environment selection in the TEST project, whose authentication
+configuration is Preview-only. The corrected build inherits the existing Preview
+configuration; the login DOM target and signed-in build badge both verify TEST.
+Do not use the rejected deployment as a future release target.
+
+Native response inspection verified no-cache/no-store on QuickBooks and login
+in the earlier source-identical build. The corrected build contains the same
+header rules, but its actual document headers were not captured; this remains
+explicitly unverified. Temporary native cache/log settings were restored and
+verification tabs closed. Automatic approval review declined screenshots because
+they could retain private client data; no screenshot is required to substantiate
+the recorded text-only checks.
+
+The [supplier review](../legal/SERVICEOS-QUICKBOOKS-SUPPLIER-REVIEW.md) now records
+current hosting regions, verified Vercel Pro plan and the providers' published
+DPA mechanisms. Owner/account-chain and applicable transfer review remain distinct
+from those findings. No contracts were accepted or public policies published.
+
+[Stable TEST release evidence](evidence/learn-quickbooks-stable-test-cache-2026-10-13.json).

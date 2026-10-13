@@ -1,0 +1,25 @@
+{
+  "state": "rejected_before_promotion_auth_configuration_missing",
+  "sha": "e048b49ea95c87d0eedb23881065196336275970",
+  "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+  "prior": "dpl_AFvr5njNt4hpPUqpBo413zKt3NRr",
+  "startedAt": "2026-10-13T22:20:42.724Z",
+  "id": "dpl_9SPbMywpZsXcGgscBSHcFmUw8XoD",
+  "url": "serviceos-learn-test-6v6cxcxny-allkin.vercel.app",
+  "readyState": "INITIALIZING",
+  "runtimeHeaders": {
+    "checkedRoutes": [
+      "/quickbooks?mode=connect",
+      "/login"
+    ],
+    "status": 200,
+    "cacheControl": "no-cache, no-store, max-age=0, must-revalidate",
+    "cdnCacheControl": "no-store",
+    "method": "Native Arc Network response headers; request headers excluded from evidence"
+  },
+  "auth": {
+    "configured": false,
+    "reason": "TEST project auth variables are preview-only; this candidate used target production."
+  },
+  "stableAliasesChanged": false
+}
