@@ -7,6 +7,31 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 23:40 BST — further customer/job journey verified LIVE.**
+
+- One more corroborated customer and its three explicit Commusoft jobs are published
+  through the existing signed-in, logged LIVE operator controls. The LIVE card shows
+  all three jobs. Totals are 26 published customers and 619 jobs; broader publication,
+  contact/communication context, findings and scoring remain unfinished.
+- Readback verifies source versions, actor, card ownership and account-holder
+  evidence. The before/after comparison preserves 4,466 earlier identity projections,
+  25 customer links, 1,552 customer payloads and 52 contact points within its stated
+  scope. Original historical descriptions are retained; unknown completion timezones
+  remain excluded from duration/performance calculations.
+- The preceding read-only freshness audit found 615/616 published jobs current and
+  one changed completion status; all 25 customer, 33 site and 33 contact links were
+  current. This narrows the immediate refresh need without establishing full coverage.
+- Slack at 22:34 UTC retains 13,673 sources, with 17 active and 110 archived windows
+  complete. Both existing recovery jobs remain queued, attempt 0. Commusoft's next
+  contact pass has reached 610 pages; its existing cycle is continuing without restart.
+- New refresh frontend remains held, and its preview still shows sign-in. The
+  ambiguous saved LIVE/TEST credential clarification remains pending. The existing
+  LIVE session used here does not verify the new preview or satisfy its changed-job gate.
+
+[Additional LIVE journey](evidence/learn-customer-reconciliation-second-2026-10-13.json)
+· [Published projection freshness](evidence/learn-projection-freshness-2026-10-13.json).
+
+
 **13 October, 23:24 BST — job-refresh backend preserved in LIVE; frontend held.**
 
 - The exact guarded backend is installed in production. All nine function bodies,

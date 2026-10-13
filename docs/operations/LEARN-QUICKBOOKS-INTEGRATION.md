@@ -58,6 +58,11 @@ rule, not a verified mapping between those examples.
   QuickBooks reference as source context. Other clients' source precedence remains
   configurable; these Drummonds examples must not become shared hard-coded rules.
 
+Observed on 13 October: retained historical Commusoft job descriptions can themselves
+contain older labels such as `15b` and `16b`. Preserve those source-era descriptions.
+The current Commusoft code catalogue and an evidenced historical crosswalk remain
+separate from the original job description; do not silently relabel old jobs.
+
 This records the agreed integration contract. It does not establish that a
 crosswalk has been implemented or that QuickBooks LIVE import is complete.
 
