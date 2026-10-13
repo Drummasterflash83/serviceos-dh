@@ -3,7 +3,8 @@
   "git": {
     "deploymentEnabled": {
       "codex/learn-v1-test": false,
-      "codex/quickbooks-integration": false
+      "codex/quickbooks-integration": false,
+      "codex/quickbooks-live-release": false
     }
   },
   "headers": [
