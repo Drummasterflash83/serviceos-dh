@@ -67,7 +67,7 @@ Intuit's current transfer options still need verification in its portal.
   implemented locally. The panel can connect, refresh status, confirm a company
   and pause. The import panel now supports explicit module enable/disable, record
   type selection, bounded starts, continuation, counts and recent run diagnostics.
-- 52 targeted TypeScript tests pass (including shared dispatcher and UI parsers). An isolated PostgreSQL run verifies grants,
+- 58 targeted TypeScript tests pass (including disconnect, shared dispatcher and UI parsers). An isolated PostgreSQL run verifies grants,
   tenant isolation, callback races/replays, actor revocation/bans, expired states,
   company confirmation, pause and atomic rollback after a simulated Vault write.
   The actual TypeScript start/callback/confirmation/refresh flow also passes against
@@ -91,7 +91,7 @@ Intuit's current transfer options still need verification in its portal.
 - The actual TypeScript import worker passes against PostgreSQL RPCs and a
   synthetic provider, including exact decimals, lost replies, version conflicts,
   budget exhaustion, continuation and expired leases.
-- All three migrations install and explicitly roll back under non-superuser postgres
+- All four migrations install and explicitly roll back under non-superuser postgres
   in a disposable clone of the local 257-table schema, after adding its two
   missing repository operator helpers. The real local Vault extension stores
   and retrieves a synthetic app secret. This augmented local clone is not proof
@@ -140,6 +140,42 @@ of that isolated failure is not established. The fixture now reports database-cl
 and lifetime assertion failures explicitly. Production validation was not relaxed.
 Check this again during real OAuth acceptance rather than treating a passing rerun
 as proof that the original failure was fixed.
+
+### Disconnect and reconnect — local verification, 13 October
+
+The fourth additive migration and dedicated `quickbooks-disconnect` endpoint are
+implemented and tested locally. **Neither is installed in hosted TEST or LIVE.**
+The existing start/callback/worker source closures are unchanged. The frontend now
+requires the disconnect status RPC, so install and verify this migration before
+releasing the new frontend.
+
+- An authenticated OpenFolk admin's logged request stops the selected connection,
+  pauses queued/running imports and preserves retained pages/source history.
+  Only a single-use service lease releases the token for Intuit's revoke endpoint.
+- A successful HTTP 200 receipt clears the saved token pair. Timeout, rejection,
+  expired lease or lost settlement reply cannot be reported as confirmed revocation
+  or automatically trigger another provider request. Status distinguishes stopped
+  capture, pending revocation, confirmed revocation and operator review.
+- Unsettled disconnects prevent reauthorisation of that connection and new OAuth
+  exchanges for the same app (whose target company would not yet be known).
+  Existing other-company captures remain available. Shared-company grants and
+  uncertain exchanges require coordinated operator review, not blind revocation.
+- Explicit recovery supports resuming an unclaimed queued request, or recording
+  a provider-side removal after review. An operator review is labelled separately
+  from Intuit's API receipt and cannot settle while another shared connection is
+  active or an exchange is still within its lease. It never enables capture.
+- Operator controls include a disconnect confirmation, saved status, reconnect
+  blocking while unresolved, and a recorded manual-review path. These controls
+  pass frontend checks but still need signed-in browser/mobile acceptance.
+- Actual TypeScript against disposable PostgreSQL verifies stop/revoke/reconnect,
+  duplicate requests, uncertain results, manual recovery, shared-grant isolation,
+  expired leases and source preservation. Two concurrent service acquisitions
+  release credentials once; an ended operator grant prevents subsequent access.
+- The exact migration installs and rolls back in the augmented 257-table local
+  schema under non-superuser postgres. This is not hosted compatibility or real
+  Intuit acceptance. The provider responses in lifecycle tests are synthetic.
+
+See [disconnect verification evidence](evidence/learn-quickbooks-disconnect-2026-10-13.json).
 
 Reproduce:
 
@@ -194,8 +230,9 @@ accepts empty success bodies and skips already-matching settings.
    Deploy/reconcile the signed-in frontend and configure the independently gated
    worker dispatcher only for an explicitly defined sandbox import scope.
 3. Exercise real sandbox authorisation, token rotation and signed-in operator
-   controls through TEST. Complete disconnect/provider revocation and recovery
-   behaviour. Local tests do not establish real provider acceptance.
+   controls through TEST. Disconnect/provider revocation and recovery are now
+   locally implemented; deploy and exercise them against the real sandbox.
+   Local tests do not establish real provider acceptance.
 4. Obtain production app access and verify Drummonds' actual company identity
    through its authorised administrator. Never infer realm from a numeric
    JavaScript value or the developer workspace ID.
@@ -275,9 +312,9 @@ may appear after answers are selected.
 
 Next provider acceptance step is a real sandbox lifecycle run after the exact
 callback and secure development-credential destination are prepared. Production
-keys and live company authorization remain outstanding. An untested disconnect
-migration is currently local work in progress and must not be included in a release
-bundle until its concurrency, uncertain-outcome and recovery checks pass.
+keys and live company authorization remain outstanding. The disconnect migration
+has now passed local lifecycle, concurrency, uncertain-outcome and recovery checks
+recorded above; hosted installation and real provider verification remain required.
 
 ## Preservation and release
 

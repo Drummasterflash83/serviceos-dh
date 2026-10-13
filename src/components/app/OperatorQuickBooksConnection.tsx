@@ -5,6 +5,9 @@ import {
   readQuickBooksOverview,
   verifiedQuickBooksAuthorizationUrl,
   quickBooksStatusLabel,
+  readQuickBooksDisconnections,
+  quickBooksDisconnectLabel,
+  type QuickBooksDisconnect,
   type QuickBooksOverview,
   type QuickBooksConnection,
 } from "@/lib/learn-quickbooks";
@@ -24,6 +27,9 @@ export function OperatorQuickBooksConnection({
     [appId, setAppId] = useState("");
   const [reason, setReason] = useState(""),
     [confirmed, setConfirmed] = useState<string | null>(null);
+  const [disconnections, setDisconnections] = useState<QuickBooksDisconnect[]>([]),
+    [disconnectConfirmed, setDisconnectConfirmed] = useState<string | null>(null),
+    [reviewConfirmed, setReviewConfirmed] = useState<string | null>(null);
   const generation = useRef(0),
     working = useRef(false);
   const backend = supabaseConfig.url.replace(/\/$/, "");
@@ -35,8 +41,14 @@ export function OperatorQuickBooksConnection({
       });
       if (result.error) throw Error();
       const overview = readQuickBooksOverview(result.data, tenantId);
+      const disconnects = await getSupabaseClient().rpc("learn_quickbooks_disconnect_status", {
+        p_tenant: tenantId,
+      });
+      if (disconnects.error) throw Error();
+      const savedDisconnects = readQuickBooksDisconnections(disconnects.data, tenantId);
       if (ticket !== generation.current) return;
       setData(overview);
+      setDisconnections(savedDisconnects);
       setAppId((previous) =>
         overview.apps.some((a) => a.id === previous)
           ? previous
@@ -57,6 +69,9 @@ export function OperatorQuickBooksConnection({
     setData(null);
     setNotice("");
     setConfirmed(null);
+    setDisconnectConfirmed(null);
+    setReviewConfirmed(null);
+    setDisconnections([]);
     setReason("");
     setAppId("");
     setBusy(false);
@@ -100,6 +115,71 @@ export function OperatorQuickBooksConnection({
       if (ticket === generation.current) {
         setNotice(
           "Authorisation was not confirmed. Refresh status before trying again; any saved connection is retained.",
+        );
+        await refresh(ticket);
+      }
+    } finally {
+      if (ticket === generation.current) {
+        working.current = false;
+        setBusy(false);
+      }
+    }
+  }
+  async function disconnect(c: QuickBooksConnection, review?: QuickBooksDisconnect) {
+    const prior = disconnections.find((d) => d.connectionId === c.id && d.state === "queued");
+    if (
+      !canWrite ||
+      working.current ||
+      (!prior && !reason.trim()) ||
+      (review
+        ? reviewConfirmed !== review.id || reason.trim().length < 20
+        : disconnectConfirmed !== c.id)
+    )
+      return;
+    working.current = true;
+    setBusy(true);
+    setNotice("");
+    const ticket = generation.current;
+    try {
+      if (review) {
+        const saved = await getSupabaseClient().rpc("learn_quickbooks_disconnect_review", {
+          p_tenant: tenantId,
+          p_request: review.id,
+          p_reason: reason.trim(),
+        });
+        if (saved.error || saved.data?.state !== "reviewed") throw Error();
+      } else {
+        // An explicit resume uses the saved request. The single-use server lease
+        // prevents another provider call if an earlier attempt already acquired it.
+        const saved = await getSupabaseClient().functions.invoke("quickbooks-disconnect", {
+          body: {
+            tenantId,
+            connectionId: c.id,
+            requestId: prior?.id ?? crypto.randomUUID(),
+            revision: prior?.requestRevision ?? c.revision,
+            reason: prior?.reason ?? reason.trim(),
+          },
+        });
+        if (
+          saved.error ||
+          saved.data?.connectionId !== c.id ||
+          saved.data?.localCaptureStopped !== true
+        )
+          throw Error();
+      }
+      if (ticket !== generation.current) return;
+      setNotice(
+        review
+          ? "Provider disconnection review recorded. Check status before reconnecting."
+          : "Disconnect requested. The saved status below distinguishes stopped capture from revoked access.",
+      );
+      setDisconnectConfirmed(null);
+      setReviewConfirmed(null);
+      await refresh(ticket);
+    } catch {
+      if (ticket === generation.current) {
+        setNotice(
+          "The result needs checking. Refresh status before another action; do not assume Intuit access was revoked.",
         );
         await refresh(ticket);
       }
@@ -213,66 +293,160 @@ export function OperatorQuickBooksConnection({
           {data.connections.length === 0 && (
             <p className="text-sm">No QuickBooks company has been connected for this client.</p>
           )}
-          {data.connections.map((c) => (
-            <article key={c.id} className="space-y-3 rounded-xl border p-4">
-              <div>
-                <h4 className="font-semibold">{c.companyName ?? "QuickBooks company"}</h4>
-                <p className="text-sm">
-                  {quickBooksStatusLabel[c.status]} ·{" "}
-                  {c.environment === "production" ? "LIVE" : "Sandbox"}
-                </p>
-                {c.realmId && (
-                  <p className="break-all text-xs text-muted-foreground">
-                    Company reference {c.realmId}
+          {data.connections.map((c) => {
+            const d = disconnections.find((item) => item.connectionId === c.id);
+            const unresolved = d && !["revoked", "reviewed"].includes(d.state);
+            return (
+              <article key={c.id} className="space-y-3 rounded-xl border p-4">
+                <div>
+                  <h4 className="font-semibold">{c.companyName ?? "QuickBooks company"}</h4>
+                  <p className="text-sm">
+                    {quickBooksStatusLabel[c.status]} ·{" "}
+                    {c.environment === "production" ? "LIVE" : "Sandbox"}
                   </p>
-                )}
-              </div>
-              {c.status === "awaiting_confirmation" && canWrite && (
-                <label className="flex items-start gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    disabled={busy}
-                    checked={confirmed === c.id}
-                    onChange={(e) => setConfirmed(e.target.checked ? c.id : null)}
-                  />
-                  I have checked that this is the correct QuickBooks company for the selected
-                  client.
-                </label>
-              )}
-              {canWrite && (
-                <div className="flex flex-wrap gap-2">
-                  {c.status === "awaiting_confirmation" && (
-                    <button
-                      className="cp-primary"
-                      disabled={busy || confirmed !== c.id || !reason.trim()}
-                      onClick={() => void control(c, "confirm")}
-                    >
-                      Confirm company
-                    </button>
+                  {c.realmId && (
+                    <p className="break-all text-xs text-muted-foreground">
+                      Company reference {c.realmId}
+                    </p>
                   )}
-                  <button
-                    className="cp-secondary"
-                    disabled={
-                      busy ||
-                      !appId ||
-                      !reason.trim() ||
-                      data.apps.find((a) => a.id === appId)?.environment !== c.environment
-                    }
-                    onClick={() => void connect(c)}
-                  >
-                    Reconnect through Intuit
-                  </button>
-                  <button
-                    className="cp-secondary"
-                    disabled={busy || !reason.trim() || c.status === "paused"}
-                    onClick={() => void control(c, "pause")}
-                  >
-                    Pause connection
-                  </button>
                 </div>
-              )}
-            </article>
-          ))}
+                {d && (c.status === "disconnected" || unresolved) && (
+                  <div className="space-y-2 text-sm" role="status">
+                    <p>{quickBooksDisconnectLabel[d.state]}</p>
+                    {d.code === "shared_provider_grant" && (
+                      <p>
+                        Another ServiceOS connection uses this Intuit grant. Coordinate those
+                        connections before removing the app in QuickBooks.
+                      </p>
+                    )}
+                    {d.state === "queued" && canWrite && d.actorId === actorId && (
+                      <>
+                        <label className="flex items-start gap-2">
+                          <input
+                            type="checkbox"
+                            disabled={busy}
+                            checked={disconnectConfirmed === c.id}
+                            onChange={(e) => setDisconnectConfirmed(e.target.checked ? c.id : null)}
+                          />
+                          Complete the saved disconnect request.
+                        </label>
+                        <p>Uses the saved request reason: {d.reason}</p>
+                        <button
+                          className="cp-secondary"
+                          disabled={busy || disconnectConfirmed !== c.id}
+                          onClick={() => void disconnect(c)}
+                        >
+                          Complete pending disconnection
+                        </button>
+                      </>
+                    )}
+                    {["manual_review", "queued"].includes(d.state) && canWrite && (
+                      <>
+                        <p>
+                          Check the company’s connected apps in QuickBooks and remove this ServiceOS
+                          app if still connected. Record what you checked in the reason above (at
+                          least 20 characters).
+                        </p>
+                        <label className="flex items-start gap-2">
+                          <input
+                            type="checkbox"
+                            disabled={busy}
+                            checked={reviewConfirmed === d.id}
+                            onChange={(e) => setReviewConfirmed(e.target.checked ? d.id : null)}
+                          />
+                          I have verified provider disconnection and checked any shared connections.
+                          This is an operator review, not an API confirmation.
+                        </label>
+                        <button
+                          className="cp-secondary"
+                          disabled={busy || reviewConfirmed !== d.id || reason.trim().length < 20}
+                          onClick={() => void disconnect(c, d)}
+                        >
+                          Record provider review
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+                {c.status === "awaiting_confirmation" && canWrite && (
+                  <label className="flex items-start gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      disabled={busy}
+                      checked={confirmed === c.id}
+                      onChange={(e) => setConfirmed(e.target.checked ? c.id : null)}
+                    />
+                    I have checked that this is the correct QuickBooks company for the selected
+                    client.
+                  </label>
+                )}
+                {canWrite && (
+                  <div className="flex flex-wrap gap-2">
+                    {c.status === "awaiting_confirmation" && (
+                      <button
+                        className="cp-primary"
+                        disabled={busy || confirmed !== c.id || !reason.trim()}
+                        onClick={() => void control(c, "confirm")}
+                      >
+                        Confirm company
+                      </button>
+                    )}
+                    <button
+                      className="cp-secondary"
+                      disabled={
+                        busy ||
+                        !!unresolved ||
+                        !appId ||
+                        !reason.trim() ||
+                        data.apps.find((a) => a.id === appId)?.environment !== c.environment
+                      }
+                      onClick={() => void connect(c)}
+                    >
+                      Reconnect through Intuit
+                    </button>
+                    <button
+                      className="cp-secondary"
+                      disabled={
+                        busy ||
+                        !!unresolved ||
+                        !reason.trim() ||
+                        c.status === "paused" ||
+                        c.status === "disconnected"
+                      }
+                      onClick={() => void control(c, "pause")}
+                    >
+                      Pause connection
+                    </button>
+                  </div>
+                )}
+                {canWrite && !unresolved && c.status !== "disconnected" && (
+                  <details className="space-y-2 text-sm">
+                    <summary className="cursor-pointer">Disconnect QuickBooks</summary>
+                    <p>
+                      Stop new imports and request revocation of this app’s QuickBooks access. Saved
+                      accounting records remain in LEARN.
+                    </p>
+                    <label className="flex items-start gap-2">
+                      <input
+                        type="checkbox"
+                        disabled={busy}
+                        checked={disconnectConfirmed === c.id}
+                        onChange={(e) => setDisconnectConfirmed(e.target.checked ? c.id : null)}
+                      />
+                      Disconnect this client’s selected QuickBooks company.
+                    </label>
+                    <button
+                      className="cp-secondary"
+                      disabled={busy || disconnectConfirmed !== c.id || !reason.trim()}
+                      onClick={() => void disconnect(c)}
+                    >
+                      Stop capture and revoke access
+                    </button>
+                  </details>
+                )}
+              </article>
+            );
+          })}
           {canWrite && data.connections.length === 0 && (
             <button
               className="cp-primary"

@@ -365,6 +365,11 @@ verify_jwt = false
 [functions.quickbooks-oauth-callback]
 verify_jwt = false
 
+[functions.quickbooks-disconnect]
+# Validates the caller JWT through auth.getUser; only operator-authorised SQL
+# can stop capture and issue the single-use server-side revocation lease.
+verify_jwt = false
+
 # A dedicated infrastructure trigger key protects the bounded QuickBooks worker.
 # The request cannot select a client, supply credentials or change import scope.
 [functions.learn-quickbooks-worker]

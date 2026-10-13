@@ -1,7 +1,39 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readQuickBooksOverview, verifiedQuickBooksAuthorizationUrl } from "./learn-quickbooks.ts";
+import {
+  readQuickBooksOverview,
+  verifiedQuickBooksAuthorizationUrl,
+  readQuickBooksDisconnections,
+} from "./learn-quickbooks.ts";
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+test("disconnect status rejects foreign scope and unsafe resume metadata", () => {
+  const entry = {
+    id: id(4),
+    connectionId: id(2),
+    actorId: id(3),
+    state: "queued",
+    requestRevision: 1,
+    reason: "Saved request",
+    code: null,
+    createdAt: "2026-10-13T12:00:00Z",
+    finishedAt: null,
+  };
+  const envelope = (e: unknown) => ({ tenantId: id(1), requests: [e] });
+  assert.equal(readQuickBooksDisconnections(envelope(entry), id(1))[0].state, "queued");
+  assert.throws(() => readQuickBooksDisconnections(envelope(entry), id(2)));
+  for (const patch of [
+    { state: "success" },
+    { requestRevision: 0 },
+    { requestRevision: 1.5 },
+    { actorId: null },
+    { reason: "" },
+    { code: "provider secret payload" },
+  ])
+    assert.throws(() => readQuickBooksDisconnections(envelope({ ...entry, ...patch }), id(1)));
+  assert.throws(() =>
+    readQuickBooksDisconnections({ tenantId: id(1), requests: [entry, entry] }, id(1)),
+  );
+});
 const data = () => ({
   tenantId: id(1),
   checkedAt: "2026-10-13T12:00:00Z",

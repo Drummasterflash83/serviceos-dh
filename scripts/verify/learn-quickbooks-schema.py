@@ -10,7 +10,7 @@ SOURCE='supabase_db_serviceos-dh'
 TARGET='serviceos-quickbooks-schema-'+uuid.uuid4().hex[:8]
 IMAGE='public.ecr.aws/supabase/postgres:17.6.1.141'
 created=False
-migrations=['20261102000000_learn_quickbooks_oauth.sql','20261102010000_learn_quickbooks_import.sql','20261102020000_learn_quickbooks_customer_finance.sql']
+migrations=['20261102000000_learn_quickbooks_oauth.sql','20261102010000_learn_quickbooks_import.sql','20261102020000_learn_quickbooks_customer_finance.sql','20261102030000_learn_quickbooks_disconnect.sql']
 def docker(*args,**kwargs):return subprocess.run([DOCKER,*args],capture_output=True,check=True,**kwargs)
 def sql(text,db='quickbooks_schema'):
  r=subprocess.run([DOCKER,'exec','-i',TARGET,'psql','-h','127.0.0.1','-U','supabase_admin','-d',db,'-qAt','-v','ON_ERROR_STOP=1'],input=text,text=True,capture_output=True)
@@ -45,7 +45,7 @@ try:
  for file in migrations:
   source=(ROOT/'supabase/migrations'/file).read_text()
   sql('set role postgres;'+source.replace('\ncommit;','\nrollback;'))
-  table='learn_quickbooks_apps' if 'oauth' in file else 'learn_quickbooks_customer_links' if 'finance' in file else 'learn_quickbooks_imports'
+  table='learn_quickbooks_apps' if 'oauth' in file else 'learn_quickbooks_customer_links' if 'finance' in file else 'learn_quickbooks_disconnections' if 'disconnect' in file else 'learn_quickbooks_imports'
   assert sql(f"select to_regclass('public.{table}') is null")=='t'
   sql('set role postgres;'+source)
  assert sql("select count(*) from learn_quickbooks_apps")=='0'
@@ -55,6 +55,6 @@ try:
  # Real local Vault extension stores only a synthetic app secret.
  sql("set role postgres;set request.jwt.claim.role='service_role';select learn_quickbooks_register_app('b0000000-0000-4000-8000-000000000001','sandbox','synthetic-app','https://example.invalid/functions/v1/quickbooks-oauth-callback','synthetic-secret');")
  assert sql("select s.decrypted_secret='synthetic-secret' from vault.decrypted_secrets s join learn_quickbooks_apps a on a.client_secret_id=s.id")=='t'
- print(json.dumps({'state':'passed','source':'local schema only','existingPublicTables':int(before),'addedRepositoryHelpers':additions,'checks':['All three exact migrations install under non-superuser postgres and roll back in the local schema augmented with the listed prerequisite helpers.','No connection, source import, feature activation or schedule seeded.','QuickBooks table RLS and user/service grants verified.','Real local Vault extension stores and retrieves a synthetic app secret.'],'limitations':['Local schema can differ from hosted TEST and production; hosted catalog preflight still required.','No real provider credential, company data, hosted encryption or signed-in browser acceptance.']},indent=2))
+ print(json.dumps({'state':'passed','source':'local schema only','existingPublicTables':int(before),'addedRepositoryHelpers':additions,'checks':['All four exact migrations install under non-superuser postgres and roll back in the local schema augmented with the listed prerequisite helpers.','No connection, source import, feature activation or schedule seeded.','QuickBooks table RLS and user/service grants verified.','Real local Vault extension stores and retrieves a synthetic app secret.'],'limitations':['Local schema can differ from hosted TEST and production; hosted catalog preflight still required.','No real provider credential, company data, hosted encryption or signed-in browser acceptance.']},indent=2))
 finally:
  if created:docker('rm','-fv',TARGET)

@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-13",
+  "scope": "Local synthetic verification only; no hosted disconnect deployment",
+  "files": [
+    {
+      "path": "supabase/migrations/20261102030000_learn_quickbooks_disconnect.sql",
+      "sha256": "5a75324ea900a06d4bfb31edae26d85e0d9bc00eab80a4d1c2fb4d7014fb2e18"
+    },
+    {
+      "path": "supabase/functions/_shared/quickbooks/disconnect.ts",
+      "sha256": "831bc485bf768474e08c53f484c1eac855ca83e2365a59d7612cc6737c5b1dbf"
+    },
+    {
+      "path": "supabase/functions/_shared/quickbooks/disconnect_http.ts",
+      "sha256": "827f9e89454a33a48df73630a1dc7eac19268371574252eaeaa0a9ac54857c06"
+    },
+    {
+      "path": "supabase/functions/quickbooks-disconnect/index.ts",
+      "sha256": "d7c9d1f89d3ea8af2b8356f0d60e9d499c7a0a3ca2fe5db575d2a50f1463f4fb"
+    },
+    {
+      "path": "scripts/verify/learn-quickbooks-disconnect-flow.mjs",
+      "sha256": "3447474aa60e9ae8e3694e3ac41e03740b370f990c27f4a7f56c86f17bb5fa71"
+    }
+  ],
+  "verified": [
+    "58 targeted TypeScript tests passed",
+    "Full frontend TypeScript check passed",
+    "Dedicated disconnect endpoint Deno check passed",
+    "Actual TypeScript and PostgreSQL lifecycle with synthetic provider responses passed: disconnect, one-shot provider request, replay, reconnect, manual recovery, shared-grant isolation, expiry, permissions and retained source counts",
+    "Two concurrent revocation acquisitions released credentials once; ended operator grants denied subsequent acquisition",
+    "Four migrations installed and rolled back under non-superuser postgres in an isolated augmented clone of the 257-table local schema"
+  ],
+  "limitations": [
+    "Provider responses are synthetic; no real QuickBooks company has authorized this application",
+    "Disconnected state alone means local capture stopped; provider revocation is separately evidenced",
+    "Frontend signed-in and mobile verification remain outstanding",
+    "Hosted TEST disconnect migration/endpoint installation and runtime verification remain outstanding",
+    "Real sandbox connection/disconnection/reconnection and production release remain outstanding",
+    "Manual review is an operator attestation, not an independently verified provider response"
+  ]
+}

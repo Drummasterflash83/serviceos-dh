@@ -78,6 +78,18 @@ try:
     sql(finance)
     sql(source('scripts/verify/learn-quickbooks-finance.assert.sql'))
     print('PASS: reviewed customer links, identity drift, currency-separated exact totals, conflict exclusions, tenant/role fences and retained finance audit.')
+    disconnect = source('supabase/migrations/20261102030000_learn_quickbooks_disconnect.sql')
+    sql(disconnect.replace('\ncommit;', '\nrollback;'))
+    assert sql("select to_regclass('learn_quickbooks_disconnections') is null") == 't'
+    sql(disconnect)
+    subprocess.run(['node', str(root / 'scripts/verify/learn-quickbooks-disconnect-flow.mjs')], check=True,
+                   env={**os.environ, 'SERVICEOS_QB_TEST_CONTAINER': name, 'SERVICEOS_QB_TEST_DOCKER': docker}, timeout=60)
+    def disconnect_claim(_):
+        return sql("set request.jwt.claim.role='service_role';set role service_role;select learn_quickbooks_disconnect_acquire(fixture_id(854))->>'state';")
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        assert sorted(pool.map(disconnect_claim, range(2))) == ['ready', 'revoking']
+    sql("update platform_authority_grants set effective_to=clock_timestamp();set request.jwt.claim.role='service_role';set role service_role;select fixture_denied('select learn_quickbooks_disconnect_acquire(fixture_id(854))');")
+    print('PASS: racing disconnect workers release credentials once; ended operator grants deny subsequent access.')
 finally:
     if created:
         subprocess.run([docker, 'rm', '-fv', name], check=True, capture_output=True, timeout=30)

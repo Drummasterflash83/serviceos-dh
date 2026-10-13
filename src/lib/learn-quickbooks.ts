@@ -122,5 +122,53 @@ export const quickBooksStatusLabel: Record<QuickBooksConnectionStatus, string> =
   paused: "Capture paused",
   active: "Capture enabled",
   authentication_required: "Reconnect QuickBooks",
-  disconnected: "Disconnected",
+  disconnected: "Capture stopped — check disconnection status",
+};
+
+export interface QuickBooksDisconnect {
+  id: string;
+  connectionId: string;
+  state: "queued" | "revoking" | "revoked" | "manual_review" | "reviewed";
+  code: string | null;
+  createdAt: string;
+  finishedAt: string | null;
+  requestRevision: number;
+  reason: string;
+  actorId: string;
+}
+export function readQuickBooksDisconnections(
+  value: unknown,
+  tenantId: string,
+): QuickBooksDisconnect[] {
+  if (!object(value) || value.tenantId !== tenantId || !Array.isArray(value.requests))
+    throw new Error("Disconnect status unavailable.");
+  const ids = new Set<string>();
+  for (const d of value.requests) {
+    if (
+      !object(d) ||
+      !uuid(d.id) ||
+      !uuid(d.connectionId) ||
+      !uuid(d.actorId) ||
+      ids.has(d.connectionId) ||
+      !Number.isSafeInteger(d.requestRevision) ||
+      Number(d.requestRevision) < 1 ||
+      typeof d.reason !== "string" ||
+      !d.reason.trim() ||
+      d.reason.length > 1000 ||
+      !["queued", "revoking", "revoked", "manual_review", "reviewed"].includes(String(d.state)) ||
+      !(d.code === null || (typeof d.code === "string" && /^[a-z_]{1,64}$/.test(d.code))) ||
+      !date(d.createdAt) ||
+      !maybeDate(d.finishedAt)
+    )
+      throw new Error("Disconnect status unavailable.");
+    ids.add(d.connectionId);
+  }
+  return value.requests as QuickBooksDisconnect[];
+}
+export const quickBooksDisconnectLabel: Record<QuickBooksDisconnect["state"], string> = {
+  queued: "Capture stopped. Revocation has not been sent.",
+  revoking: "Capture stopped. Checking the Intuit revocation result.",
+  revoked: "Intuit confirmed access revocation. Imported records are preserved.",
+  manual_review: "Capture stopped. Provider access still needs checking before reconnecting.",
+  reviewed: "An operator recorded provider disconnection. Imported records are preserved.",
 };
