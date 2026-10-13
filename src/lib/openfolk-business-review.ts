@@ -13,6 +13,8 @@ const actions = new Set([
   "learn_commusoft_work_batch_result",
   "learn_commusoft_work_batch",
   "learn_commusoft_job_details",
+  "learn_commusoft_job_refresh_plan",
+  "learn_commusoft_job_refresh",
 ]);
 const uuid = (v: unknown) =>
   typeof v === "string" && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v);
