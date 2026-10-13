@@ -307,3 +307,35 @@ and [voicemail](evidence/learn-voicemail-history-2026-10-13.json).
   live design; do not present proposals or unverified AI suggestions as delivered.
 
 Evidence: [voicemail production checkpoint](evidence/learn-voicemail-third-footer-production-2026-10-13.json).
+
+## 21:36 BST — card visibility lookup performance
+
+**13 October, 21:36 BST — visibility lookup fix LIVE; separate communication lookup remains.**
+
+- Replaced only the private `learn_slack_document_withheld` helper. Its exact
+  definition, owner and execute ACL match the rehearsed package. Existing callers,
+  visibility rules, source rows, runtime artifacts and frontend are unchanged.
+- Full native-schema rehearsal passed all 15 existing journeys and 42 comparisons
+  against the original withholding semantics. All 1,591,580 archived rows and seven
+  sequences were preserved. Exact wrapper guards, transaction rollback and
+  definition rollback passed; both isolated containers were removed. Production
+  contact preservation readback confirms all 33 source links, people, endpoint
+  choices, payloads, actors and relationships remain unchanged.
+- Signed-in LIVE now reads the reviewed company's findings successfully. The
+  independent communication read still times out (57014 at 20:33:52 UTC) inside
+  `learn_business_input_latest`, called while `learn_card_slack_job_context` checks
+  all 585 owned jobs. Its materialized input needs restricting to jobs with reviewed
+  Slack interactions before current-source validation. A candidate is prepared
+  privately, not tested or applied; retain every final source/visibility check.
+- The card still shows nine contacts and 585 jobs. These useful published records
+  do not establish a complete communication timeline. No missing communications
+  or findings are converted into successful-learning claims.
+- Both known Slack recovery jobs were still queued with zero attempts at 20:35:34
+  UTC. Their handles remain unchanged. Do not duplicate or restart them just because
+  the archive queue is taking time.
+- Next priority: rehearse and release the scoped communication lookup fix, verify
+  the full signed-in card read, then continue contact/communication reconciliation,
+  remaining capture coverage, scoring and operating-readiness gates.
+
+[Production evidence](evidence/learn-slack-visibility-lookup-production-2026-10-13.json)
+and [full-schema rehearsal](evidence/learn-slack-visibility-lookup-rehearsal-2026-10-13.json).

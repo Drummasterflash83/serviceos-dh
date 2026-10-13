@@ -1,6 +1,9 @@
 # Slack visibility lookup performance patch
 
-Prepared and rehearsed; consult the production evidence before claiming deployment.
+Applied and catalog-verified in LIVE at 20:33 UTC on 13 October 2026. The signed-in
+findings read succeeds. A separate customer/Slack communication lookup still times
+out; this patch does not establish a complete healthy timeline. See the production
+evidence referenced by the manifest.
 The LIVE card findings query timed out inside `learn_slack_document_withheld`.
 This patch replaces only that private helper. It follows UUID references in the
 requested document, then at most one measurement and one observation layer, matching

@@ -1,5 +1,5 @@
 {
-  "state": "prepared_not_applied",
+  "state": "applied_and_catalog_verified",
   "project": "tgbnakbxwcqjeimygroz",
   "source": "supabase/migrations/20261102040000_learn_slack_visibility_lookup.sql",
   "sourceSha256": "7913dd9be692c12bb4402716e7f15d6cd8fa18a8927a6ce1f9f300091d9201a7",
@@ -17,5 +17,6 @@
   },
   "runtimeChanges": false,
   "frontendChanges": false,
-  "sourceDataWrites": false
+  "sourceDataWrites": false,
+  "productionEvidence": "docs/operations/evidence/learn-slack-visibility-lookup-production-2026-10-13.json"
 }
