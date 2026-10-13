@@ -97,6 +97,9 @@ includes read and write capability; ServiceOS restricts its implementation to
 reads. The separate payment-processing API and payroll are outside this initial
 connection.
 
+QuickBooks data is excluded from model training and fine-tuning. The current
+connector does not send QuickBooks records to an AI processing pipeline.
+
 An authorised administrator can revoke access through Intuit’s connected-app
 controls or request disconnection through our ServiceOS support contact.
 Disconnection does not change our records in QuickBooks or automatically erase

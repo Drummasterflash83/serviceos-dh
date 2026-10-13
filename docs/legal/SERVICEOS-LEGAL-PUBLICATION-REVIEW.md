@@ -31,6 +31,20 @@ contact for this application. The drafts now use that address for privacy,
 support and security requests. This does not designate a statutory DPO or
 demonstrate that request-handling procedures have been tested.
 
+## Owner clarifications — 13 October 2026
+
+Chris confirmed that legal counsel has not reviewed the use of customer data and
+that nobody is appointed to review ServiceOS security risks. His support/contact
+role is not evidence of a security review programme. He is willing to review and
+sign a separate agreement with Drummonds; no agreement has been accepted or signed.
+The internal EULA remains distinct from any Chris–Drummonds development, licence
+and data-handling agreement, whose substantive terms still need agreement.
+
+Chris explicitly directed that QuickBooks data remain excluded from model training
+and approved the corresponding No answer in Intuit. Record this as the confirmed
+QuickBooks-specific policy. Broader supplier settings and other source-data uses
+still require verification before publication.
+
 ## Decisions needed from the business
 
 | Decision | Current position |
@@ -39,15 +53,15 @@ demonstrate that request-handling procedures have been tested.
 | Application operator and developer | Confirmed: Drummonds internal application; Chris supplies personally and supports it. No separate OpenFolk company identity is required for this stated setup. Document software rights without assuming a transfer of ownership. |
 | Privacy, support, security and formal notices | Confirmed: Chris Drummond, chris@drummondheating.co.uk. Verify request handling and continuity of cover before operational promises. |
 | Retention and exit | Agree category-specific retention, export window, deletion timing and maximum backup retention. No changes to retained source data are authorised by drafting. |
-| AI and product improvement | Proposed: authorised client-specific support/improvement; no sale, unrelated client reuse or general-purpose training of identifiable customer data. Verify supplier terms/configuration before promising it. |
+| AI and product improvement | Confirmed: QuickBooks data is excluded from model training and fine-tuning. For other source data, proposed: authorised client-specific support/improvement; no sale, unrelated client reuse or general-purpose training of identifiable customer data. Verify supplier terms/configuration before promising it. |
 | Internal terms | Review adoption, software rights, remedies and jurisdiction. These drafts create no separate Drummonds–OpenFolk commercial contract. |
 | Processing arrangements | Document Chris's authorised role and actual external providers. Confirm processor agreements where applicable; do not infer a separate OpenFolk processor solely from the software name. |
 
 ## Engineering and operational verification
 
-- The QuickBooks app exists, but no real company is connected and no financial
-  import has been accepted. Code tests demonstrate local transport boundaries,
-  not production compliance, availability or data coverage.
+- The QuickBooks sandbox connection and two bounded imports are verified: 77
+  sample records, no duplicates on repeat, capture paused. Drummonds' live company
+  remains unconnected. Sandbox acceptance is not production compliance or coverage.
 - Confirm all actual data flows, suppliers, subprocessors, locations, support
   access, contracts and transfer safeguards. Vercel, Supabase, AWS, Cloudflare,
   OpenAI and Vapi are inventory leads from this repository, not a complete

@@ -408,12 +408,12 @@ may appear after answers are selected.
 
 | Section | Observed questions and supported position |
 | --- | --- |
-| General | Regulatory complaints/investigations, legal-counsel review and sanctions history require Chris's factual answers; questions have been sent. Security-policy compliance requires an evidence review. The app is relevant to business/accounting workflows. ServiceOS includes generative AI; do not answer “no” merely because this initial connector does not send QuickBooks records to AI. |
+| General | Chris confirms no regulatory complaints/investigations or sanctions, and no legal-counsel review. These are owner statements, not an independent audit. Security-policy compliance requires an evidence review. The app is relevant to business/accounting workflows. ServiceOS includes generative AI; do not answer “no” merely because this initial connector does not send QuickBooks records to AI. |
 | App information | Custom application; server-side Web/SaaS calls; accounting reads only in this connector. Current registration is for Drummonds' internal deployment, with reusable architecture for future clients. It is not a platform that lets outside developers obtain QuickBooks API access, and clients do not need to create their own Intuit developer apps. Disclose the use of development tools accurately. Other ServiceOS inputs include Commusoft, email, telephony and Slack. Review exact available options before entering answers. |
 | Authorization | Intuit asks explicitly about sandbox/non-production connect, disconnect and reconnect testing. Connect and accounting reads now pass against Intuit sandbox; provider refresh, disconnect/revocation and reconnect after revocation remain unverified. It also asks about refresh frequency, failed auth retries, reconnect prompts, discovery-document endpoints, expired access/refresh tokens, invalid grants, CSRF and reliance on offline OAuth tools. Existing code/SQL tests support some controls, but cannot be substituted for the missing provider lifecycle run. |
 | API usage | API categories and per-customer call frequency. The initial connector uses Accounting entity queries and CompanyInfo; bounded imports reserve requests and pace requests per realm. No perpetual live sync schedule has been enabled. Do not invent a polling frequency or claim reports/webhooks/CDC are implemented. |
 | Error handling | API/syntax/validation error tests, `intuit_tid` capture, troubleshooting logs and in-app support. TEST v2 endpoints now record bounded `intuit_tid`, HTTP status and operation metadata in existing Edge logs; 55 tests, Deno checks and downloaded runtime comparison pass. Real provider receipt and log-retention verification remain open; this is not an indefinite diagnostic archive. Sanitised errors and bounded retry behaviour have tests. Verify support access and actual retained diagnostics before answering. |
-| Security | Notifiable breach history and who assesses risks require Chris's factual answers; questions have been sent. The exposed development secret was rotated by the owner and its replacement verified in TEST Vault, Keychain and 1Password; production credentials are not provisioned. MFA, CAPTCHA and WebSocket use require a current app/configuration check. Authorised OpenFolk operators can access tenant information for support: do not claim only an individual customer can ever see their information. Ordinary tenants remain isolated. |
+| Security | Chris confirms no notifiable breach history and nobody appointed to review security risks; the assessment draft records Security Team = No. The exposed development secret was rotated by the owner and its replacement verified in TEST Vault, Keychain and 1Password; production credentials are not provisioned. MFA, CAPTCHA and WebSocket use require a current app/configuration check. Authorised OpenFolk operators can access tenant information for support: do not claim only an individual customer can ever see their information. Ordinary tenants remain isolated. |
 
 Next provider acceptance step is a real sandbox lifecycle run after the exact
 callback and secure development-credential destination are prepared. Production
@@ -712,6 +712,17 @@ refresh, provider revocation or full accounting reconciliation.
 
 Chris answered “None” to the question covering regulatory investigations or
 complaints, sanctions and notifiable data breaches. Record those as his stated
-business facts, not independently audited findings. His answer does not clearly
-identify legal-counsel review or the person responsible for security-risk review;
-those remain unconfirmed. Do not treat it as a blanket compliance attestation.
+business facts, not independently audited findings. Chris subsequently confirmed:
+
+- No legal-counsel review of the business activities/use of user data.
+- Nobody appointed to review ServiceOS security risks.
+- QuickBooks data must be excluded from model training; he explicitly approved
+  answering No to Intuit's training question. This includes fine-tuning.
+- He is willing to review and sign a separate agreement with Drummonds. This is
+  not an executed agreement, acceptance of draft terms, or evidence of legal review.
+
+Intuit confirmed the General Questions draft was saved, including Legal Counsel
+= No, AI = Yes, AI Training = No and an explanation of the current connector's
+read/store-only handling with no QuickBooks AI pipeline. No final submission or
+blanket security-policy compliance attestation was made. The security-team and
+breach answers are likewise based on the owner statements, not audited findings.
