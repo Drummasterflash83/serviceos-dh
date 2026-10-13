@@ -89,8 +89,58 @@
       }
     ]
   },
-  "frontendFeatureDeployed": false,
+  "frontendFeatureDeployed": true,
   "browserFeatureAcceptance": false,
   "realProviderRequests": 0,
-  "productionChanged": false
+  "productionChanged": false,
+  "frontend": {
+    "at": "2026-10-13T22:07:17.025Z",
+    "id": "dpl_8oV6zsNRRRbSiUdwsxgDBLHfoqV5",
+    "url": "serviceos-learn-test-4hzaxo22s-allkin.vercel.app",
+    "sha": "119b13d81b91f6b87cfead0a5bbd8445f671517d",
+    "readyState": "READY",
+    "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "protection": "all",
+    "aliases": [
+      {
+        "name": "test.openfolk.ai",
+        "deployment": "dpl_8oV6zsNRRRbSiUdwsxgDBLHfoqV5"
+      },
+      {
+        "name": "serviceos-learn-test-allkin.vercel.app",
+        "deployment": "dpl_8oV6zsNRRRbSiUdwsxgDBLHfoqV5"
+      }
+    ]
+  },
+  "browserPartialAcceptance": {
+    "at": "2026-10-13T22:10:19.145529+00:00",
+    "renderedBuild": "119b13d",
+    "backend": "saatxzwxvdvqevbnskxy",
+    "existingOperatorSession": true,
+    "linkedJobSearch": true,
+    "currentSourceReview": true,
+    "observedResult": "This job already uses the latest retained Commusoft version.",
+    "changedSourceApply": false,
+    "canonicalWrites": 0,
+    "screenshotSha256": "828fb027ee21ca576d7234df0742d1d65dad1df9d963ec2489741524bf68ef55",
+    "stalePageObserved": "Existing stable URL rendered c7744a8 after reload; navigation with exact release query rendered 119b13d. Cache cause not yet established."
+  },
+  "temporaryReviewWindows": [
+    {
+      "openedAt": "2026-10-13T22:02:12.119Z",
+      "closedAt": "2026-10-13T22:07:01.464Z",
+      "captureAccountDisabledDuringReview": true,
+      "originalConfigurationRestored": true,
+      "newPermissions": false,
+      "newProviderRequests": 0
+    },
+    {
+      "openedAt": "2026-10-13T22:07:57.701Z",
+      "closedAt": "2026-10-13T22:09:25.181Z",
+      "captureAccountDisabledDuringReview": true,
+      "originalConfigurationRestored": true,
+      "newPermissions": false,
+      "newProviderRequests": 0
+    }
+  ]
 }

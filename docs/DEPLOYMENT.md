@@ -92,20 +92,27 @@ and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
 ### Isolated LEARN TEST project (updated 13 October 2026)
 
-**Latest observed TEST deployment:** `dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq`, Git
-`c7744a8b0808bfb64b737e4b9ee453782cd2efa0`, serves both stable TEST aliases
-(verified 13 October, 19:38 UTC). This shared release includes QuickBooks callback
-guidance from `91c2f3a`; protection remains `all`. The rotated development app
-is active in TEST and Intuit sandbox company authorization now succeeds.
-The company is `Sandbox Company_US_1`, not Drummonds' live accounts.
-TEST callback runtime v7 has a verified same-project gateway routing correction;
-the remaining QuickBooks endpoints retain their previously verified v2 releases.
+**Latest observed TEST deployment:** `dpl_8oV6zsNRRRbSiUdwsxgDBLHfoqV5`, Git
+`119b13d81b91f6b87cfead0a5bbd8445f671517d`, serves both stable TEST aliases
+(verified 13 October, 22:07 UTC). Protection remains `all`. This adds the six-file
+reviewed job-refresh frontend to the prior QuickBooks/contact checkpoint.
+The existing signed-in operator session can find a linked job and verify that it
+already uses the latest retained Commusoft version. Applying a changed source is
+not yet verified in hosted TEST. The old stable page rendered `c7744a8` after a
+reload; navigation with `release=119b13d` rendered the new build. The underlying
+cache cause remains unresolved; alias readiness alone is not browser acceptance.
+Two temporary retained-data review windows have closed, restoring the original
+disabled module / active account configuration. Capture was disabled during review;
+no provider requests or canonical job updates occurred.
+Rollback frontend: `dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq`, Git `c7744a8`.
+[TEST release and partial browser evidence](operations/evidence/learn-business-job-refresh-test-2026-10-13.json).
+
+The prior TEST checkpoint includes QuickBooks callback guidance from `91c2f3a`.
+Its rotated development app and Intuit sandbox authorization were verified for
+`Sandbox Company_US_1`, not Drummonds' live accounts. Callback runtime v7 and the
+remaining endpoints' v2 releases are unchanged by this frontend release.
 See [integration evidence and limits](operations/LEARN-QUICKBOOKS-INTEGRATION.md#hosted-gateway-callback-correction-and-sandbox-connection--13-october-1936-utc).
-Production QuickBooks is not installed or connected.
-This shared frontend also includes saved contact details: signed-in contact reads
-and operator audit passed in the parent release. Its prior rollback target is
-`dpl_FxxyFqJaMM4bzkRAhXScmajU1cN7`. Optional Slack recovery controls still follow
-backend capability metadata. The wider client overview has a check needing attention.
+Production QuickBooks is not installed or connected by this release.
 
 Older deployment details below are historical acceptance records.
 
