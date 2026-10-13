@@ -7,6 +7,8 @@ import {
 } from "@/lib/learn-slack-setup";
 import {
   campaignKey,
+  campaignActionAvailable,
+  type CampaignCapabilities,
   campaignStates,
   listCampaigns,
   readCampaign,
@@ -48,6 +50,12 @@ export function LearnSlackCampaigns({
   const [connections, setConnections] = useState<SlackConnectionOption[]>([]),
     [rows, setRows] = useState<CampaignSummary[]>([]),
     [next, setNext] = useState<string | null>(null);
+  const [capabilities, setCapabilities] = useState<CampaignCapabilities>({
+    sourceReplay: false,
+    pageRecovery: false,
+  });
+  const capabilityRef = useRef(capabilities);
+  capabilityRef.current = capabilities;
   const [selected, setSelected] = useState(""),
     [campaign, setCampaign] = useState<Campaign | null>(null),
     [writable, setWritable] = useState(false);
@@ -105,6 +113,7 @@ export function LearnSlackCampaigns({
     const ticket = ++generation.current;
     setLoading(true);
     setWritable(false);
+    setCapabilities({ sourceReplay: false, pageRecovery: false });
     setNotice("");
     try {
       const [page, connection] = await Promise.all([
@@ -116,6 +125,7 @@ export function LearnSlackCampaigns({
       setNext(page.next);
       setConnections(connection);
       setWritable(page.canWrite);
+      setCapabilities(page.capabilities);
     } catch (e) {
       if (live.current && ticket === generation.current) setNotice((e as Error).message);
     } finally {
@@ -240,7 +250,8 @@ export function LearnSlackCampaigns({
     setRecoveryAccount(account);
     setReview(null);
     setConfirmed(false);
-    if (!account || !campaignId || !allowSourceReplay) return;
+    if (!account || !campaignId || !allowSourceReplay || !capabilityRef.current.pageRecovery)
+      return;
     setRecoveryLoading(true);
     try {
       const r = await readCampaignRecovery(db(), tenantId, campaignId, account, request);
@@ -252,7 +263,8 @@ export function LearnSlackCampaigns({
     }
   }
   function reviewRecovery() {
-    if (!recovery?.jobId || !campaign || !allowSourceReplay) return;
+    if (!recovery?.jobId || !campaign || !allowSourceReplay || !capabilityRef.current.pageRecovery)
+      return;
     try {
       setReview(
         prepareCampaign({
@@ -275,7 +287,7 @@ export function LearnSlackCampaigns({
     }
   }
   function reviewReplay() {
-    if (!campaign || !allowSourceReplay) return;
+    if (!campaign || !allowSourceReplay || !capabilityRef.current.sourceReplay) return;
     try {
       setReview(
         prepareCampaign({
@@ -300,6 +312,7 @@ export function LearnSlackCampaigns({
       working.current ||
       !allowed() ||
       !ready ||
+      !campaignActionAvailable(capabilityRef.current, d.operation) ||
       (["replay_source", "recover_page"].includes(d.operation) && !allowSourceReplay)
     )
       return;
@@ -316,6 +329,7 @@ export function LearnSlackCampaigns({
         mode,
         () =>
           allowed() &&
+          campaignActionAvailable(capabilityRef.current, d.operation) &&
           (!["replay_source", "recover_page"].includes(d.operation) || replayAllowedRef.current),
       );
       if (!allowed()) return;
@@ -421,16 +435,16 @@ export function LearnSlackCampaigns({
           </p>
           {campaign.sourceNeedsReviewCount !== undefined && campaign.sourceNeedsReviewCount > 0 && (
             <p role="status" className="text-sm text-muted-foreground">
-              {campaign.sourceNeedsReviewCount.toLocaleString()} saved Slack records need source review.
-              Their content is retained, but they are not yet used as conversations or for scoring.
-              Available thread replies are captured separately.
+              {campaign.sourceNeedsReviewCount.toLocaleString()} saved Slack records need source
+              review. Their content is retained, but they are not yet used as conversations or for
+              scoring. Available thread replies are captured separately.
             </p>
           )}
           {campaign.sourceWithheldCount !== undefined && campaign.sourceWithheldCount > 0 && (
             <p role="status" className="text-sm text-muted-foreground">
-              {campaign.sourceWithheldCount.toLocaleString()} Slack records are unavailable at source.
-              Their withholding markers are retained; their content is excluded from customer context and scoring.
-              Available replies are captured separately.
+              {campaign.sourceWithheldCount.toLocaleString()} Slack records are unavailable at
+              source. Their withholding markers are retained; their content is excluded from
+              customer context and scoring. Available replies are captured separately.
             </p>
           )}
           <div className="overflow-auto">
@@ -500,7 +514,19 @@ export function LearnSlackCampaigns({
           }}
         />
       </label>
-      {allowSourceReplay && (
+      {allowSourceReplay &&
+        !loading &&
+        (!capabilities.sourceReplay || !capabilities.pageRecovery) && (
+          <p role="status" className="text-sm text-muted-foreground">
+            {!capabilities.sourceReplay && !capabilities.pageRecovery
+              ? "Advanced recovery tools are"
+              : !capabilities.pageRecovery
+                ? "Held-page recovery is"
+                : "Source revalidation is"}{" "}
+            unavailable in this environment. Existing history and saved requests are preserved.
+          </p>
+        )}
+      {allowSourceReplay && capabilities.pageRecovery && (
         <details>
           <summary className="cursor-pointer font-medium">
             Advanced: recover a held campaign page
@@ -541,7 +567,11 @@ export function LearnSlackCampaigns({
                 </p>
                 <p>{recovery.errorCode ?? "No failure code recorded"}</p>
                 {recovery.errorCode === "slack_history_withheld_card_review_required" && (
-                  <p>A withheld Slack source previously supplied a customer-card summary. OpenFolk must reconcile that summary before retrying this page; no source or card content was changed.</p>
+                  <p>
+                    A withheld Slack source previously supplied a customer-card summary. OpenFolk
+                    must reconcile that summary before retrying this page; no source or card content
+                    was changed.
+                  </p>
                 )}
                 {recovery.diagnostic ? (
                   <p>
@@ -575,7 +605,7 @@ export function LearnSlackCampaigns({
           </div>
         </details>
       )}
-      {allowSourceReplay && (
+      {allowSourceReplay && capabilities.sourceReplay && (
         <details>
           <summary className="cursor-pointer font-medium">
             Advanced: revalidate a retained Slack source
@@ -617,43 +647,45 @@ export function LearnSlackCampaigns({
             >
               Review source replay
             </button>
-            {replayReceipt && (
-              <div className="space-y-2 rounded border p-3" role="status">
-                <p>
-                  Last recovery request accepted. Execution outcome is separate from this receipt.
-                </p>
-                <p className="break-all">
-                  Request: {replayReceipt.draft.requestId}
-                  <br />
-                  Job: {replayReceipt.jobId}
-                </p>
-                <p>
-                  Checking this receipt confirms acceptance only. It does not submit another job.
-                </p>
-                <button
-                  className="cp-secondary"
-                  disabled={busy || !!saved || !canEdit || !ready}
-                  onClick={() => void send(replayReceipt.draft, "check")}
-                >
-                  Reconcile saved receipt
-                </button>
-                {replayReceipt.draft.operation === "recover_page" && (
-                  <button
-                    className="cp-secondary"
-                    disabled={busy || recoveryLoading || !canEdit}
-                    onClick={() => {
-                      const d = replayReceipt.draft;
-                      if (d.operation === "recover_page")
-                        void loadRecovery(d.input.accountId, d.requestId, d.input.campaignId);
-                    }}
-                  >
-                    Read recovery job outcome
-                  </button>
-                )}
-              </div>
-            )}
           </div>
         </details>
+      )}
+      {allowSourceReplay && replayReceipt && (
+        <div className="space-y-2 rounded border p-3" role="status">
+          <p>Last recovery request accepted. Execution outcome is separate from this receipt.</p>
+          <p className="break-all">
+            Request: {replayReceipt.draft.requestId}
+            <br />
+            Job: {replayReceipt.jobId}
+          </p>
+          <p>Checking this receipt confirms acceptance only. It does not submit another job.</p>
+          <button
+            className="cp-secondary"
+            disabled={
+              busy ||
+              !!saved ||
+              !canEdit ||
+              !ready ||
+              !campaignActionAvailable(capabilities, replayReceipt.draft.operation)
+            }
+            onClick={() => void send(replayReceipt.draft, "check")}
+          >
+            Reconcile saved receipt
+          </button>
+          {replayReceipt.draft.operation === "recover_page" && (
+            <button
+              className="cp-secondary"
+              disabled={busy || recoveryLoading || !canEdit || !capabilities.pageRecovery}
+              onClick={() => {
+                const d = replayReceipt.draft;
+                if (d.operation === "recover_page")
+                  void loadRecovery(d.input.accountId, d.requestId, d.input.campaignId);
+              }}
+            >
+              Read recovery job outcome
+            </button>
+          )}
+        </div>
       )}
       <details>
         <summary className="cursor-pointer font-medium">Start a historical import</summary>
