@@ -24,7 +24,7 @@ const message = [
   "From: synthetic@birchills.net",
   "To: synthetic@example.invalid",
   "Subject: New message in mailbox 601 from 01234567890",
-  "Date: Sun, 11 Oct 2026 12:00:00 +0000",
+  "Date: Sun, 11 Oct 2026 08:00:00 +0000",
   "Message-ID: <synthetic@example.invalid>",
   "MIME-Version: 1.0",
   "Content-Type: multipart/mixed; boundary=synthetic",
@@ -52,6 +52,8 @@ const message = [
 ].join("\r\n");
 const signed = await dkimSign(message, {
   strict: true,
+  // Match the authenticated Gmail internalDate used by the bridge fixture.
+  signTime: new Date("2026-10-11T08:00:00.000Z"),
   signatureData: [
     {
       signingDomain,

@@ -1,11 +1,29 @@
-# Drummonds Slack production intake — prepared, not executed
+# Drummonds Slack production intake — approved and started
 
-Prepared 13 October 2026. This is the next production credential/import decision;
+Updated 13 October 2026. Chris approved the exact production rollout in this chat;
 the earlier approved two-message TEST sample is closed and its allowance is not reused.
 Existing deployment permission is already recorded. No new login, access grant or
 Slack app installation is needed.
 
-## Working and verified
+## Latest execution
+
+The existing credential was saved through Chris’s signed-in production OpenFolk
+control. The UI confirmed encrypted storage. Two immutable campaigns were created:
+20 active public channels (`a3980d74` prefix), then 160 archived (`b54d246b` prefix),
+with the exact dates, request ceilings and expiry below. Initial dedicated worker
+calls saved 37 real messages and 37 source versions; more pages remain. The initial
+verification runner counted interactions using the wrong source-type filter; use
+`source_table=slack_messages` for the matching readback, not `source_type=slack`.
+No complete-history, job matching or AI interpretation acceptance is claimed.
+
+A Slack-only switch is implemented and tested locally to reuse the existing
+one-minute platform-worker schedule without enabling Commusoft. Production
+activation/verification is the next step; the global input switch stays false.
+Private-channel visibility remains unfinished and DMs remain excluded. Chris’s
+subsequent “all voicemails and all Slack” instruction expands delivery intent but
+does not remove these existing visibility requirements or the DM exclusion.
+
+## Working and verified at preparation
 
 - The existing Heidi-authorised, channel-only credential was verified again against
   DH on 13 October. The refresh used 13 metadata requests: **180 public channels
@@ -104,7 +122,7 @@ that is not permission to download or analyse the linked files.
 
 ## Needs finishing
 
-- The production credential/import approval and execution above.
+- Continue the approved production campaigns and verify full retained coverage.
 - A production-only guarded runner and retained baseline, followed by first real
   production messages, replies, deduplication, source-to-card and ongoing checks.
 - Dependable Slack scheduling without accidentally enabling unrelated inputs.
@@ -118,8 +136,7 @@ that is not permission to download or analyse the linked files.
 
 - No new Slack sign-in is currently needed. The existing credential and Heidi's
   identity worked during the fresh metadata check.
-- A concrete production hosted credential/import decision is required because
-  earlier approvals expressly reserved that step. This document is preparation;
-  it does not claim the decision has been received.
+- The production credential/import decision has been received and the campaigns
+  are recorded; no new Slack sign-in or repeated approval is needed for this scope.
 - Slack retention, inaccessible/deleted history and provider rate limits can
   constrain availability or duration. Full-history completion has no verified ETA.

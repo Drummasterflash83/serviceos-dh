@@ -122,6 +122,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   background?.waitUntil?.(discoveryWork);
   const inputWork = runLearnInputTick({
     enabled: Deno.env.get("LEARN_INPUT_DISPATCH_ENABLED"),
+    slackEnabled: Deno.env.get("LEARN_SLACK_DISPATCH_ENABLED"),
     url: Deno.env.get("SUPABASE_URL"),
     serviceKey,
     commusoftKey: Deno.env.get("LEARN_COMMUSOFT_WORKER_KEY"),

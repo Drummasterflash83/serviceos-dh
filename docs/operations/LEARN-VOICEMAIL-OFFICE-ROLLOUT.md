@@ -2,7 +2,25 @@
 
 Updated 13 October 2026. **Approved; one production message imported and browser playback verified. Route paused. Historical acceptance remains incomplete.**
 
-## Proposed scope
+## Historical repair and continuation
+
+The signature-time failure was resolved against RFC6376§3.5 and mailauth7.3.0:
+archived verification now uses the authenticated Gmail receipt with bounded
+signing-clock skew and signed Date/expiry checks. Generic current-time verification
+remains unchanged. All cryptographic, body, signed-header, recipient and route
+requirements remain enforced. Seventeen tests passed and a rejected real source
+passed read-only extraction. Matching production importer v2 and platform-worker
+v58 were published and verified; authentication, environment and schedules stayed
+unchanged. Exact old artifacts are retained for rollback.
+
+Continuation has now published six recordings. Three remaining found notifications
+are held for parser diagnostics (at least one has an ambiguous/missing notification
+section); two retained references were absent from Office Gmail. The route remains
+paused and existing manager access is unchanged. Additional mailbox coverage is
+being prepared under Chris’s subsequent explicit instruction to bring in all
+voicemails; current ownership must be verified per mailbox, never inferred.
+
+## Approved initial scope
 
 - Drummonds production `tgbnakbxwcqjeimygroz`, tenant
   `00000000-0000-0000-0000-000000000001` only.

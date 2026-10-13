@@ -80,3 +80,53 @@ test("missing trigger key cannot send gateway credentials to that worker; no aut
   assert.equal(calls.filter(url => url.endsWith("slack-worker")).length, 1);
   assert.ok(calls.every(url => !url.includes("commusoft")));
 });
+
+test("Slack-only scheduling reaches the real endpoint guards without invoking Commusoft", async () => {
+  const calls: string[] = [];
+  const handlers = {
+    "learn-slack-schedule": slackWorkerEndpoint(config.slackKey, async () => schedule),
+    "learn-slack-worker": slackWorkerEndpoint(config.slackKey, async () => idle),
+  };
+  const result = await runLearnInputTick({ ...config, enabled: "false", slackEnabled: "true", commusoftKey: undefined }, null, async (url, init) => {
+    const name = new URL(url).pathname.split("/").pop()! as keyof typeof handlers;
+    assert.ok(name in handlers, "Slack-only dispatch must never reach another provider");
+    assert.equal(init.body, undefined);
+    assert.equal(new Headers(init.headers).get("x-serviceos-worker-key"), config.slackKey);
+    calls.push(name);
+    return handlers[name](new Request(url, init));
+  });
+  assert.deepEqual(calls, ["learn-slack-schedule", "learn-slack-worker"]);
+  assert.deepEqual(result, { commusoft: { state: "disabled" }, slackSchedule: { state: "idle" }, slack: { state: "idle" } });
+});
+
+test("explicit Slack disable, malformed override and filtered invocations fail closed", async () => {
+  for (const slackEnabled of ["false", "TRUE", "1", "", " true "]) {
+    const calls: string[] = [];
+    const result = await runLearnInputTick({ ...config, slackEnabled }, null, async url => { calls.push(url); return ok(idle); });
+    assert.equal(calls.length, 1);
+    assert.ok(calls[0].endsWith("learn-commusoft-worker"));
+    assert.equal(result.slack.state, "disabled");
+    assert.equal(result.slackSchedule.state, "disabled");
+  }
+  for (const filter of [[], ["slack.history_sync"], ["phone.voicemail_import"]]) {
+    const result = await runLearnInputTick({ ...config, enabled: "false", slackEnabled: "true" }, filter, async () => { throw Error("filtered calls cannot dispatch"); });
+    assert.deepEqual(Object.values(result).map(v => v.state), ["skipped", "skipped", "skipped"]);
+  }
+});
+
+test("Slack-only configuration errors and provider failures cannot fall back to Commusoft", async () => {
+  const cfg = { ...config, enabled: "false", slackEnabled: "true" };
+  for (const patch of [{ url: "https://wrong.invalid" }, { serviceKey: undefined }, { slackKey: undefined }]) {
+    let calls = 0;
+    const result = await runLearnInputTick({ ...cfg, ...patch }, null, async () => { calls++; throw Error("must not send credentials"); });
+    assert.equal(calls, 0);
+    assert.equal(result.commusoft.state, "disabled");
+    assert.equal(result.slack.state, "unconfirmed");
+  }
+  const calls: string[] = [];
+  const result = await runLearnInputTick(cfg, null, async url => { calls.push(url); return new Response(null, { status: 429 }); });
+  assert.equal(calls.length, 2);
+  assert.ok(calls.every(url => !url.includes("commusoft")));
+  assert.equal(result.commusoft.state, "disabled");
+  assert.equal(result.slack.state, "unconfirmed");
+});

@@ -9,7 +9,16 @@ export const signingDomain = "birchills-net.20251104.gappssmtp.com";
 export function createSignedVoicemailTools({ dkimVerify, PostalMime }) {
   const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
   const required = ["from", "subject", "to", "date", "message-id", "mime-version", "content-type"];
-  async function verifySignature(bytes, publicKey) {
+  // RFC 6376 §3.5 permits reliable first-receipt time for verification. Only
+  // extraction uses the archive path: workspace-import obtains internalDate
+  // from authenticated Gmail, checks the actual mailbox/message and matches it
+  // to the request; private-import also enforces the approved route's dates.
+  // Gmail API imports can set internalDate, so it is provider metadata rather
+  // than a universal proof of SMTP delivery. Signed chronology remains bounded.
+  // Never derive this clock from an unsigned header or arbitrary caller date.
+  const clockSkewMs = 5 * 60 * 1000;
+  const maxDeliveryMs = 24 * 60 * 60 * 1000;
+  async function verify(bytes, publicKey, receivedMillis = null) {
     if (!(bytes instanceof Uint8Array) || bytes.byteLength > 1048576)
       throw Error("Message exceeds bound");
     if (!Buffer.isBuffer(bytes)) bytes = Buffer.from(bytes);
@@ -26,8 +35,12 @@ export function createSignedVoicemailTools({ dkimVerify, PostalMime }) {
       strict: true,
       minBitLength: 2048,
       resolver: publicKey,
+      ...(receivedMillis === null ? {} : { curTime: new Date(receivedMillis) }),
     });
     const uniqueHeaders = required.every((k) => fields.filter((f) => f === k).length === 1);
+    const dateHeader = header.replace(/\r\n[ \t]+/g, " ").split("\r\n")
+      .filter((line) => /^date:/i.test(line));
+    const signedDate = dateHeader.length === 1 ? Date.parse(dateHeader[0].slice(5).trim()) : NaN;
     const fromDomainMatches =
       result.headerFrom?.length === 1 &&
       result.headerFrom[0].split("@").at(-1)?.toLowerCase() === "birchills.net";
@@ -37,6 +50,19 @@ export function createSignedVoicemailTools({ dkimVerify, PostalMime }) {
       const signed = (
         Array.isArray(keys) ? keys : typeof keys === "string" ? keys.split(":") : []
       ).map((k) => k.trim().toLowerCase());
+      const signTime = typeof r.signTime === "string" ? Date.parse(r.signTime) : NaN;
+      const expiration = typeof r.expiresAfter === "string" ? Date.parse(r.expiresAfter) : null;
+      // Google's stored receipt can precede the provider signature by seconds.
+      // Permit at most five minutes of skew, without extending expiration or
+      // accepting signatures/date headers far removed from receipt. Signing,
+      // expiry and Date values are authenticated by the signature below;
+      // receipt time instead comes from the bound provider response.
+      const receiptTimingVerified = receivedMillis !== null &&
+        Number.isFinite(signTime) && Number.isFinite(signedDate) &&
+        signTime >= receivedMillis - maxDeliveryMs && signTime <= receivedMillis + clockSkewMs &&
+        signedDate >= receivedMillis - maxDeliveryMs && signedDate <= receivedMillis + clockSkewMs &&
+        Math.abs(signedDate - signTime) <= maxDeliveryMs &&
+        (expiration === null || Number.isFinite(expiration) && expiration > signTime && expiration >= receivedMillis);
       return {
         expectedSigningDomain: r.signingDomain?.toLowerCase() === signingDomain,
         status: ["pass", "fail", "neutral", "policy", "temperror", "none"].includes(
@@ -49,7 +75,11 @@ export function createSignedVoicemailTools({ dkimVerify, PostalMime }) {
         completeBody:
           r.canonBodyLengthLimited === false && r.canonBodyLength === r.canonBodyLengthTotal,
         requiredHeadersSigned: required.every((k) => signed.includes(k)),
-        signatureTimeValid: r.signatureTimeValid === true,
+        signatureTimeValid: receivedMillis === null ? r.signatureTimeValid === true : receiptTimingVerified,
+        ...(receivedMillis === null ? {} : {
+          verifierSignatureTimeValid: r.signatureTimeValid === true,
+          receiptClockSkewApplied: receiptTimingVerified && signTime > receivedMillis,
+        }),
       };
     });
     return {
@@ -69,7 +99,16 @@ export function createSignedVoicemailTools({ dkimVerify, PostalMime }) {
             r.signatureTimeValid,
         ),
       signatures,
+      ...(receivedMillis === null ? {} : {
+        verificationTime: new Date(receivedMillis).toISOString(),
+        verificationTimeBasis: "authenticated_gmail_internal_date",
+        allowedSigningClockSkewSeconds: clockSkewMs / 1000,
+      }),
     };
+  }
+  // Generic diagnostics keep current-time verification; no external clock option.
+  async function verifySignature(bytes, publicKey) {
+    return verify(bytes, publicKey);
   }
   /** Extract only from the SAME raw bytes whose signature was checked here.
    * The returned candidate still requires provider-account/mailbox ownership binding
@@ -80,9 +119,12 @@ export function createSignedVoicemailTools({ dkimVerify, PostalMime }) {
       throw Error("Message exceeds bound");
     if (typeof expectedMailbox !== "string" || !/^[^\s@]+@[^\s@]+$/.test(expectedMailbox))
       throw Error("Expected recipient required");
+    if (typeof internalDate !== "string" || !/^(0|[1-9][0-9]{0,14})$/.test(internalDate) ||
+      !Number.isSafeInteger(Number(internalDate)) || Number(internalDate) > Date.now())
+      throw Error("notification_receipt_time_unverified");
     const raw = Buffer.from(input);
     try {
-      const signature = await verifySignature(raw, resolver);
+      const signature = await verify(raw, resolver, Number(internalDate));
       if (!signature.contentSignatureVerified) throw Error("notification_signature_unverified");
       const email = await PostalMime.parse(raw, {
         attachmentEncoding: "arraybuffer",

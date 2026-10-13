@@ -4,6 +4,9 @@
  */
 type Config = {
   enabled?: string;
+  // Explicit Slack override; absent preserves the original shared switch.
+  // Enabling Slack alone never enables the Commusoft dispatcher.
+  slackEnabled?: string;
   url?: string;
   serviceKey?: string;
   commusoftKey?: string;
@@ -21,9 +24,15 @@ export async function runLearnInputTick(config: Config, jobTypes: string[] | nul
   // Explicitly filtered invocations must never start unrelated input work, even
   // if a caller supplies an empty list. Only the ordinary cron tick dispatches.
   if (jobTypes !== null) return all("skipped");
-  if (config.enabled !== "true") return all("disabled");
+  const commusoftEnabled = config.enabled === "true";
+  const slackEnabled = config.slackEnabled === undefined ? commusoftEnabled : config.slackEnabled === "true";
+  if (!commusoftEnabled && !slackEnabled) return all("disabled");
   if (!/^https:\/\/[a-z]{20}\.supabase\.co$/.test(config.url ?? "") || !config.serviceKey)
-    return all("unconfirmed");
+    return {
+      commusoft: outcome(commusoftEnabled ? "unconfirmed" : "disabled"),
+      slackSchedule: outcome(slackEnabled ? "unconfirmed" : "disabled"),
+      slack: outcome(slackEnabled ? "unconfirmed" : "disabled"),
+    };
 
   async function invoke(name: string, key: string | undefined, schedule = false): Promise<Outcome> {
     if (!key || key.length < 20) return outcome("unconfirmed");
@@ -59,8 +68,9 @@ export async function runLearnInputTick(config: Config, jobTypes: string[] | nul
     }
   }
   const [commusoft, slack] = await Promise.all([
-    invoke("learn-commusoft-worker", config.commusoftKey),
+    commusoftEnabled ? invoke("learn-commusoft-worker", config.commusoftKey) : outcome("disabled"),
     (async () => {
+      if (!slackEnabled) return { slackSchedule: outcome("disabled"), slack: outcome("disabled") };
       const slackSchedule = await invoke("learn-slack-schedule", config.slackKey, true);
       // Existing history jobs can continue even if creating a new window failed.
       return { slackSchedule, slack: await invoke("learn-slack-worker", config.slackKey) };
