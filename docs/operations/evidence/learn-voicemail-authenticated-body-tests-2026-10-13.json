@@ -1,0 +1,65 @@
+{
+  "state": "prepared_offline_verified_not_deployed",
+  "observedAt": "2026-10-13T12:07:29.221449+00:00",
+  "customerData": false,
+  "credentials": false,
+  "productionWrites": 0,
+  "verifierTestsPassed": 15,
+  "bridgeAudioTestsPassed": 9,
+  "workerTypecheck": "passed",
+  "edge": {
+    "network": "none",
+    "image": "public.ecr.aws/supabase/edge-runtime:v1.74.3",
+    "result": {
+      "state": "passed",
+      "queueLostAcknowledgementRecovered": true,
+      "queueReplayWithoutProvider": true,
+      "signedExtraction": true,
+      "mimeInterpretation": "authenticated_body_boundary",
+      "tamperRejected": true,
+      "invalidAudioRejected": true,
+      "positiveAudioDecode": {
+        "state": "decoded",
+        "decoder": "mpg123-decoder@1.0.3",
+        "frames": 225216,
+        "sampleRate": 8000,
+        "decodedChannels": 2,
+        "durationSeconds": 28.152,
+        "listening": "not_verified"
+      },
+      "coordinatorWithControlledTransport": true,
+      "internalAuthEnforced": true,
+      "workspaceProviderBridge": true,
+      "providerReads": 2,
+      "tokenReads": 1,
+      "uploads": 2,
+      "readbacks": 2,
+      "audioBytes": 56304,
+      "version": {
+        "deno": "supabase-edge-runtime-1.74.3 (compatible with Deno v2.1.4)",
+        "v8": "11.6.189.12",
+        "typescript": "5.1.6"
+      }
+    },
+    "limitations": [
+      "controlled SDK transport; not hosted Storage or SQL",
+      "synthetic audio only",
+      "DNS supplied by synthetic resolver",
+      "no hosted deployment or provider activation"
+    ]
+  },
+  "sourceSha256": {
+    "supabase/functions/_shared/voicemail/authenticated-multipart.js": "7c03fd68e21ca3079efc6dffe0277dfde6aa158a5ebb786df87a0968a3c4030a",
+    "supabase/functions/_shared/voicemail/signed-source.js": "6b5f60acc9ae4e0c5c005817aea3e4052540cf3d222b9eee74a570d12b373053",
+    "scripts/verify/voicemail-auth/authenticated-multipart.test.mjs": "dc837300c46fb5fdd8d0fa97e1ace8ef80317b04f2eb9cfbb1526e451b6b5448",
+    "scripts/verify/voicemail-auth/edge-fixture.mjs": "2f9b08f79030f7481864b45c6f0a7e8eb17bd001b59bbbb7c3b3a0361b331c2a",
+    "scripts/verify/voicemail-auth/edge-runtime-probe.ts": "3d5dd5554baae4956b6a5d77504f5299eb715d8d76fab48e1bd230e6b4fdd400",
+    "scripts/verify/learn-voicemail-edge-runtime.py": "2a56ce3faee836fc6c30891e4812b3723f777e9e3363ba3b3d91c7e32898f833"
+  },
+  "pending": [
+    "Parent review",
+    "Bounded current-signer original-source re-preflight",
+    "Separate reviewed publication and import"
+  ],
+  "olderSignerPolicyChanged": false
+}

@@ -1,0 +1,224 @@
+{
+  "state": "read_only_structural_diagnostic_complete",
+  "originalReadLimit": 4,
+  "originalReads": 4,
+  "gmailRequests": 6,
+  "dnsRequests": 2,
+  "productionWrites": 0,
+  "rawPersisted": false,
+  "audioPersisted": false,
+  "diagnosticOnlyNotImportEligibility": true,
+  "completedAt": "2026-10-13T11:51:39.726Z",
+  "results": [
+    {
+      "receivedAt": "2026-07-03T12:26:37.000Z",
+      "extension": "103",
+      "signature": [
+        {
+          "domain": "birchills-net.20251104.gappssmtp.com",
+          "status": "pass",
+          "keyBits": 2048,
+          "fullBody": true,
+          "bodyLengthLimitPresent": false,
+          "identityHeadersSigned": true,
+          "contentTypeSigned": false,
+          "expirationValid": true,
+          "signedHeaderNames": [
+            "to",
+            "from",
+            "subject",
+            "mime-version",
+            "date",
+            "message-id"
+          ],
+          "rsaSha256": true,
+          "signTimeNearReceipt": true
+        }
+      ],
+      "dateNearReceipt": true,
+      "uniqueIdentityHeaders": true,
+      "fromExpectedDomain": true,
+      "unsignedOuterMime": "multipart/mixed",
+      "bodyDerivedBoundary": true,
+      "delimiters": {
+        "open": 2,
+        "close": 1,
+        "closingLast": true
+      },
+      "parts": [
+        {
+          "headersInsideSignedBody": true,
+          "type": "multipart/alternative",
+          "dispositionInSignedBody": false,
+          "encodingInSignedBody": false
+        },
+        {
+          "headersInsideSignedBody": true,
+          "type": "application/octet-stream",
+          "dispositionInSignedBody": true,
+          "encodingInSignedBody": true
+        }
+      ],
+      "diagnosticFullBodyAuthenticated": true,
+      "state": "body_derived_mime_prototype_passed_not_import_eligible",
+      "template": "transcribed"
+    },
+    {
+      "receivedAt": "2026-04-07T10:03:53.000Z",
+      "extension": "103",
+      "signature": [
+        {
+          "domain": "birchills-net.20251104.gappssmtp.com",
+          "status": "pass",
+          "keyBits": 2048,
+          "fullBody": true,
+          "bodyLengthLimitPresent": false,
+          "identityHeadersSigned": true,
+          "contentTypeSigned": false,
+          "expirationValid": true,
+          "signedHeaderNames": [
+            "to",
+            "from",
+            "subject",
+            "mime-version",
+            "date",
+            "message-id"
+          ],
+          "rsaSha256": true,
+          "signTimeNearReceipt": true
+        }
+      ],
+      "dateNearReceipt": true,
+      "uniqueIdentityHeaders": true,
+      "fromExpectedDomain": true,
+      "unsignedOuterMime": "multipart/mixed",
+      "bodyDerivedBoundary": true,
+      "delimiters": {
+        "open": 2,
+        "close": 1,
+        "closingLast": true
+      },
+      "parts": [
+        {
+          "headersInsideSignedBody": true,
+          "type": "multipart/alternative",
+          "dispositionInSignedBody": false,
+          "encodingInSignedBody": false
+        },
+        {
+          "headersInsideSignedBody": true,
+          "type": "application/octet-stream",
+          "dispositionInSignedBody": true,
+          "encodingInSignedBody": true
+        }
+      ],
+      "diagnosticFullBodyAuthenticated": true,
+      "state": "body_derived_mime_prototype_passed_not_import_eligible",
+      "template": "transcribed"
+    },
+    {
+      "receivedAt": "2026-04-02T15:43:39.000Z",
+      "extension": "102",
+      "signature": [
+        {
+          "domain": "birchills-net.20230601.gappssmtp.com",
+          "status": "neutral",
+          "fullBody": true,
+          "bodyLengthLimitPresent": false,
+          "identityHeadersSigned": true,
+          "contentTypeSigned": false,
+          "expirationValid": true,
+          "signedHeaderNames": [
+            "to",
+            "from",
+            "subject",
+            "mime-version",
+            "date",
+            "message-id"
+          ],
+          "rsaSha256": true,
+          "signTimeNearReceipt": true
+        }
+      ],
+      "dateNearReceipt": true,
+      "uniqueIdentityHeaders": true,
+      "fromExpectedDomain": true,
+      "unsignedOuterMime": "multipart/mixed",
+      "bodyDerivedBoundary": true,
+      "delimiters": {
+        "open": 2,
+        "close": 1,
+        "closingLast": true
+      },
+      "parts": [
+        {
+          "headersInsideSignedBody": true,
+          "type": "multipart/alternative",
+          "dispositionInSignedBody": false,
+          "encodingInSignedBody": false
+        },
+        {
+          "headersInsideSignedBody": true,
+          "type": "application/octet-stream",
+          "dispositionInSignedBody": true,
+          "encodingInSignedBody": true
+        }
+      ],
+      "diagnosticFullBodyAuthenticated": false,
+      "state": "requires_review",
+      "code": "diagnostic_signature_not_verified"
+    },
+    {
+      "receivedAt": "2023-12-15T13:19:09.000Z",
+      "extension": "103",
+      "signature": [
+        {
+          "domain": "birchills-net.20230601.gappssmtp.com",
+          "status": "neutral",
+          "fullBody": true,
+          "bodyLengthLimitPresent": false,
+          "identityHeadersSigned": true,
+          "contentTypeSigned": false,
+          "expirationValid": true,
+          "signedHeaderNames": [
+            "to",
+            "from",
+            "subject",
+            "mime-version",
+            "date",
+            "message-id"
+          ],
+          "rsaSha256": true,
+          "signTimeNearReceipt": true
+        }
+      ],
+      "dateNearReceipt": true,
+      "uniqueIdentityHeaders": true,
+      "fromExpectedDomain": true,
+      "unsignedOuterMime": "multipart/mixed",
+      "bodyDerivedBoundary": true,
+      "delimiters": {
+        "open": 2,
+        "close": 1,
+        "closingLast": true
+      },
+      "parts": [
+        {
+          "headersInsideSignedBody": true,
+          "type": "multipart/alternative",
+          "dispositionInSignedBody": false,
+          "encodingInSignedBody": false
+        },
+        {
+          "headersInsideSignedBody": true,
+          "type": "application/octet-stream",
+          "dispositionInSignedBody": true,
+          "encodingInSignedBody": true
+        }
+      ],
+      "diagnosticFullBodyAuthenticated": false,
+      "state": "requires_review",
+      "code": "diagnostic_signature_not_verified"
+    }
+  ]
+}

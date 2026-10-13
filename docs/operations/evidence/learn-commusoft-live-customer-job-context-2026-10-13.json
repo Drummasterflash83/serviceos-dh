@@ -28,11 +28,22 @@
     "completionNotInvented": true,
     "siteNotInvented": true
   },
-  "secondJob": "signed-in batch reports one linked; database readback pending",
+  "secondJob": {
+    "verifiedAt": "2026-10-13T12:15:02.210431+00:00",
+    "canonicalPublished": true,
+    "canonicalJobsTotal": 2,
+    "cardMatches": true,
+    "customerMatches": true,
+    "siteNotInvented": true,
+    "sourceSystemMatches": true,
+    "sourceVersionMatches": true,
+    "metadataVersionMatches": true
+  },
   "limitations": [
     "Whole-account canonical coverage incomplete",
     "Customer and site contact traversal incomplete",
     "Slack context review and customer timeline derivation incomplete",
     "Expanded card UX remains discussion-only"
-  ]
+  ],
+  "slackCandidateReview": "Rejected multi-job stock summary; no context link published"
 }

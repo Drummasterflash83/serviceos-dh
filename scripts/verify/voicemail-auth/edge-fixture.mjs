@@ -20,7 +20,8 @@ const audio = Buffer.concat(chunks);
 const decoded = await decodeVoicemailAudio(audio);
 if (decoded.sampleRate !== 8000 || decoded.durationSeconds < 28 || decoded.durationSeconds > 29)
   throw Error("Synthetic MP3 duration invalid");
-const message = [
+const authenticatedBody = process.argv.includes("--authenticated-body");
+let message = [
   "From: synthetic@birchills.net",
   "To: synthetic@example.invalid",
   "Subject: New message in mailbox 601 from 01234567890",
@@ -50,6 +51,12 @@ const message = [
   "--synthetic--",
   "",
 ].join("\r\n");
+if (authenticatedBody) {
+  message = message.replace("Content-Type: text/plain; charset=utf-8\r\n\r\n",
+    'Content-Type: multipart/alternative; boundary="body-alternative"\r\n\r\n--body-alternative\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n');
+  message = message.replace("\r\n--synthetic\r\nContent-Type: application/octet-stream",
+    "\r\n--body-alternative\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<p>Synthetic voicemail runtime check.</p>\r\n--body-alternative--\r\n\r\n--synthetic\r\nContent-Type: application/octet-stream");
+}
 const signed = await dkimSign(message, {
   strict: true,
   // Match the authenticated Gmail internalDate used by the bridge fixture.
@@ -58,6 +65,7 @@ const signed = await dkimSign(message, {
     {
       signingDomain,
       selector: "synthetic",
+      ...(authenticatedBody ? { headerList: ["from", "to", "subject", "date", "message-id", "mime-version"] } : {}),
       privateKey: privateKey.export({ type: "pkcs8", format: "pem" }),
     },
   ],
@@ -66,6 +74,7 @@ if (signed.errors.length) throw Error("Synthetic signing failed");
 process.stdout.write(
   JSON.stringify({
     raw: signed.signatures + message,
+    authenticatedBody,
     dnsName: `synthetic._domainkey.${signingDomain}`,
     keyRecord:
       "v=DKIM1; k=rsa; p=" + publicKey.export({ type: "spki", format: "der" }).toString("base64"),

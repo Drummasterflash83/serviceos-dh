@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { Buffer } from "node:buffer";
+import { reconstructAuthenticatedMultipart } from "./authenticated-multipart.js";
 import {
   parseBirchillsVoicemailEmail,
   voicemailCandidateFingerprint,
@@ -75,6 +76,8 @@ export function createSignedVoicemailTools({ dkimVerify, PostalMime }) {
         completeBody:
           r.canonBodyLengthLimited === false && r.canonBodyLength === r.canonBodyLengthTotal,
         requiredHeadersSigned: required.every((k) => signed.includes(k)),
+        identityHeadersSigned: required.filter((k) => k !== "content-type").every((k) => signed.includes(k)),
+        contentTypeSigned: signed.includes("content-type"),
         signatureTimeValid: receivedMillis === null ? r.signatureTimeValid === true : receiptTimingVerified,
         ...(receivedMillis === null ? {} : {
           verifierSignatureTimeValid: r.signatureTimeValid === true,
@@ -98,6 +101,13 @@ export function createSignedVoicemailTools({ dkimVerify, PostalMime }) {
             r.requiredHeadersSigned &&
             r.signatureTimeValid,
         ),
+      // A separate legacy path may interpret MIME from the authenticated body.
+      // It still requires the current signer, all unique identity headers, the
+      // complete body and the same receipt chronology. Older keys never qualify.
+      authenticatedBodyMimeEligible:
+        uniqueHeaders && fromDomainMatches && signatures.some((r) =>
+          r.expectedSigningDomain && r.status === "pass" && r.rsaSha256 && r.keyBits >= 2048 &&
+          r.completeBody && r.identityHeadersSigned && !r.contentTypeSigned && r.signatureTimeValid),
       signatures,
       ...(receivedMillis === null ? {} : {
         verificationTime: new Date(receivedMillis).toISOString(),
@@ -123,10 +133,16 @@ export function createSignedVoicemailTools({ dkimVerify, PostalMime }) {
       !Number.isSafeInteger(Number(internalDate)) || Number(internalDate) > Date.now())
       throw Error("notification_receipt_time_unverified");
     const raw = Buffer.from(input);
+    let reconstructed = null;
     try {
       const signature = await verify(raw, resolver, Number(internalDate));
-      if (!signature.contentSignatureVerified) throw Error("notification_signature_unverified");
-      const email = await PostalMime.parse(raw, {
+      let mimeInterpretation = "signed_content_type";
+      if (!signature.contentSignatureVerified) {
+        if (!signature.authenticatedBodyMimeEligible) throw Error("notification_signature_unverified");
+        reconstructed = reconstructAuthenticatedMultipart(raw);
+        mimeInterpretation = "authenticated_body_boundary";
+      }
+      const email = await PostalMime.parse(reconstructed ?? raw, {
         attachmentEncoding: "arraybuffer",
         maxNestingDepth: 16,
         maxHeadersSize: 65536,
@@ -161,7 +177,12 @@ export function createSignedVoicemailTools({ dkimVerify, PostalMime }) {
         audioSha256 = sha256(audio);
       return {
         state: "signed_source_extracted_requires_mailbox_binding_and_audio_validation",
-        signature,
+        signature: {
+          ...signature,
+          signedContentTypeVerified: signature.contentSignatureVerified,
+          contentSignatureVerified: true,
+          mimeInterpretation,
+        },
         candidate,
         audio,
         audioSha256,
@@ -171,6 +192,7 @@ export function createSignedVoicemailTools({ dkimVerify, PostalMime }) {
       };
     } finally {
       raw.fill(0);
+      reconstructed?.fill(0);
     }
   }
 

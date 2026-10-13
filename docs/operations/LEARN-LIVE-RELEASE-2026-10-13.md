@@ -1,6 +1,26 @@
 # LEARN live release — 13 October 2026
 
-## Latest checkpoint — 12:38 BST
+## Latest checkpoint — 13:30 BST
+
+- Live frontend `9b0c581288b023dd30f90981a0c98c97bb371eca`, deployment
+  `dpl_BVXbnJE4i6d6b8iGMRZ8SqmpLGya`, serves the four existing aliases. Production
+  auth target, signed-in exact-record lookup, existing protection and aliases verified.
+  Promotion plan SHA256: `f7cc9686a9162e1bc47bce53aa538777d815181eb8f6f12f0979c15e69fbf9a1`.
+- Voicemail importer v6 and platform-worker v62 now contain the authenticated-body
+  compatibility fix, retaining complete-body DKIM, signed identities and receipt-time
+  verification. Immutable compiled closures exclude the concurrently prepared Slack
+  change. Both published hashes, boot checks and unrelated function preservation passed.
+- 109 more messages and sources imported with six identity-preserving replays:
+  139 → 248 pairs. All 13 historical routes paused; prior data, private buckets,
+  owner/manager access and discovery controls preserved. No scheduler jobs added.
+- Two representative canonical customer/job pairs now have source/ownership readback.
+  This does not establish whole-account canonical coverage. A multi-job Slack summary
+  was rejected as an attribution candidate; Slack customer-context publication remains open.
+- [Voicemail production evidence](evidence/learn-voicemail-authenticated-body-production-2026-10-13.json).
+  Private release journals: `.verification-results/production-exact-context-20261013/`
+  and `.verification-results/production-voicemail-authenticated-body-20261013/`.
+
+## Previous checkpoint — 12:38 BST
 
 - Voicemail candidate discovery SQL/index installed with unchanged route, ownership,
   access and schedule fingerprints; all five routes remain paused and 71 saved

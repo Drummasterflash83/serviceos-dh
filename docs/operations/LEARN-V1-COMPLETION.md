@@ -7,6 +7,31 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 13:30 BST — 248 LIVE voicemail/source pairs; frontend and two customer/job pairs verified.**
+
+- Another 109 authenticated voicemail originals/audio records imported successfully,
+  with six identity-preserving replays. All 139 prior records, owners/managers and
+  private buckets are preserved. A new-batch recording played to its 29.64-second
+  end in the signed-in live browser, with no media error. All 13 historical routes
+  are paused. Provider-wide
+  history, ongoing capture and independent voicemail file backup remain incomplete.
+- Matching voicemail importer v6/platform-worker v62 are published and verified.
+  Compatibility derives MIME boundaries from the fully authenticated body; it does
+  not accept unsigned payloads or revoked signing keys. Seven current-template
+  originals and older signer history remain withheld for review.
+- Frontend Git `9b0c581` is live on existing aliases. Signed-in exact-record lookup
+  works; customer/job context validation remains compatible with the old SQL response.
+- Both representative canonical jobs now have database-verified customer ownership,
+  source versions and cards. The apparent Slack match for job 13356 was a multi-job
+  stock summary and was rejected. No customer context is claimed from that source.
+- Slack source visibility/context SQL and runtime passed full-schema rehearsal;
+  production installation and a genuine reviewed source-to-customer journey remain.
+  Customer-contact capture continues; site contacts and reconciliation remain open.
+
+Evidence: [voicemail import and preservation](evidence/learn-voicemail-authenticated-body-production-2026-10-13.json),
+[canonical customer/job verification](evidence/learn-commusoft-live-customer-job-context-2026-10-13.json).
+
+
 **13 October, 13:12 BST — 139 LIVE voicemails; real customer/job publication verified.**
 
 - The expanded voicemail run saved 68 authenticated originals/audio records and passed

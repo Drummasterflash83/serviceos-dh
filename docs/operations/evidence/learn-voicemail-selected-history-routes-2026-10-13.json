@@ -1,0 +1,33 @@
+{
+  "state": "offline_verified_not_applied",
+  "planSha256": "e7f8a4a6128306fdb869bfbc3f7e1a2f81214ac91d529d2fa27b755805df515c",
+  "sqlSha256": "a57d2b41fe3fd7553a713abb01279cd0ca494aa20804234133f1d00dffa02cdb",
+  "productionWrites": 0,
+  "providerRequests": 0,
+  "routes": 9,
+  "newRoutes": 5,
+  "dispatcherConcurrencyFencePassed": true,
+  "heldRoutesEnqueueNoJobs": true,
+  "allSourceAdmissionsPassed": true,
+  "oldScanControlsRestoredExactly": true,
+  "allRoutesPaused": true,
+  "managerPermissionsUnchanged": true,
+  "repeatedActivationNoDuplicateRoutes": true,
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "version": "learn-voicemail-selected-history-routes/1",
+  "oldArchiveWorkspaceStatusAlignment": true
+}

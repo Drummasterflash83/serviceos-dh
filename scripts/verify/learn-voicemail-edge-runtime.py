@@ -30,7 +30,7 @@ with tempfile.TemporaryDirectory(prefix="serviceos-voicemail-edge-") as tmp:
         target = stage / "supabase/functions" / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, target)
-    fixture = subprocess.run(["node", str(source / "edge-fixture.mjs")], check=True, capture_output=True, text=True)
+    fixture = subprocess.run(["node", str(source / "edge-fixture.mjs"), *(["--authenticated-body"] if "--authenticated-body" in sys.argv else [])], check=True, capture_output=True, text=True)
     fixture_data = json.loads(fixture.stdout)
     fixture_data["queue"] = "--queue" in sys.argv
     (package / "fixture.json").write_text(json.dumps(fixture_data))

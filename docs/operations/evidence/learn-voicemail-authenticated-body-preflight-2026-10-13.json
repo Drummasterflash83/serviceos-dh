@@ -1,0 +1,56 @@
+{
+  "state": "read_only_preflight_complete_not_deployed_or_imported",
+  "completedAt": "2026-10-13T12:15:03.217Z",
+  "planSha256": "05d9bd499351ac9cb6555238a7db110ca04d0543ad7901dd52f1309d3fe581e8",
+  "privateReportSha256": "a3a426f68e875879f5c64e7d013108c93f168fa10d261e352a84858ebc6a8950",
+  "sourceHashes": {
+    "supabase/functions/_shared/voicemail/signed-source.js": "6b5f60acc9ae4e0c5c005817aea3e4052540cf3d222b9eee74a570d12b373053",
+    "supabase/functions/_shared/voicemail/authenticated-multipart.js": "7c03fd68e21ca3079efc6dffe0277dfde6aa158a5ebb786df87a0968a3c4030a",
+    "supabase/functions/_shared/birchills_voicemail_email.ts": "e949f58250a169bf6dcbb0f0fa34c9bfc0d62f07cb6dca804c02ba43c0ce3dba",
+    "supabase/functions/_shared/voicemail/provider-keys.js": "6741731369a66d6d0d3cfbacc3fc299bf4dd5c073b8e489b189db49aef29eb53",
+    "supabase/functions/_shared/voicemail/decode-audio.js": "7a85b89bf1f803573f86c7702e2fda6c0de9b6df097eb4a6a20484cada1fc7a3"
+  },
+  "originalReadLimit": 116,
+  "rawReads": 116,
+  "gmailRequests": 119,
+  "tokenRequests": 3,
+  "dnsQueries": 1,
+  "productionWrites": 0,
+  "rawPersisted": false,
+  "audioPersisted": false,
+  "verified": 109,
+  "requiresReview": 7,
+  "mimeInterpretations": {
+    "authenticated_body_boundary": 109
+  },
+  "templates": {
+    "transcribed": 100,
+    "observed_legacy_without_transcript": 9
+  },
+  "rejections": {
+    "notification_reference_invalid": 7
+  },
+  "duplicateVerifiedContentGroups": 0,
+  "verifiedByExtension": {
+    "103": 76,
+    "102": 13,
+    "601": 1,
+    "105": 19
+  },
+  "rejectedTemplateShapes": [
+    {
+      "count": 7,
+      "automatedTranscriptionMarkers": 0,
+      "referenceMarkers": 1,
+      "mailboxOwnerIntro": true,
+      "legacyDialZero": false,
+      "legacyDialStar95": false,
+      "attachments": 1
+    }
+  ],
+  "remaining": [
+    "Seven current-signer originals need precise legacy template diagnosis",
+    "1117 older-signer originals remain excluded; no signer-policy change",
+    "Reviewed runtime release and separately bounded import still required"
+  ]
+}

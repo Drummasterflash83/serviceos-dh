@@ -24,6 +24,7 @@ Deno.serve(async () => {
     const extracted = await extractSignedVoicemail(new TextEncoder().encode(fixture.raw), options);
     if (
       !extracted.signature.contentSignatureVerified ||
+      extracted.signature.mimeInterpretation !== (fixture.authenticatedBody ? "authenticated_body_boundary" : "signed_content_type") ||
       extracted.audio.length !== fixture.audioBytes ||
       extracted.audioSha256 !== fixture.audioSha256
     )
@@ -260,6 +261,7 @@ Deno.serve(async () => {
       queueLostAcknowledgementRecovered: queueRecovered,
       queueReplayWithoutProvider: fixture.queue === true,
       signedExtraction: true,
+      mimeInterpretation: extracted.signature.mimeInterpretation,
       tamperRejected,
       invalidAudioRejected,
       positiveAudioDecode: decoded,

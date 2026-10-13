@@ -1,0 +1,47 @@
+{
+  "version": "learn-voicemail-authenticated-body-production/1",
+  "state": "eligible_history_verified",
+  "completedAt": "2026-10-13T12:29:46.685Z",
+  "planSha256": "9938f12d61451bc57a3722eac2f63ef9d6f2f9c5b4eed12381026850c2777c19",
+  "runtimeHash": "0ea4b6857b1914c6695e32d56b26c105cdd1b56ec7cff4ffccac88b939c564ba",
+  "sourcesBefore": 139,
+  "sourcesAfter": 248,
+  "messagesBefore": 139,
+  "messagesAfter": 248,
+  "imports": 109,
+  "identityPreservingReplays": 6,
+  "routesAfter": 13,
+  "preservation": {
+    "allRoutesPaused": true,
+    "accessPreserved": true,
+    "oldSourcesPreserved": true,
+    "oldMessagesPreserved": true,
+    "oldRoutesPreserved": true,
+    "oldScanControlsRestored": true,
+    "privateBucketsPreserved": true,
+    "noDispatcherJobsAdded": true
+  },
+  "release": {
+    "state": "published_and_verified",
+    "completedAt": "2026-10-13T12:23:42.998Z",
+    "sourceClosureSha256": "1c7c824f18c4114c9f590b5daad66a63a453c2c786e6404291f6739345048060",
+    "unrelatedFunctionsUnchanged": true
+  },
+  "rawOrAudioPersistedLocally": false,
+  "playbackAcceptance": {
+    "verifiedAt": "2026-10-13T12:37:43.757Z",
+    "signedInLive": true,
+    "durationSeconds": 29.64,
+    "ended": true,
+    "readyState": 4,
+    "mediaError": null,
+    "initialLinkRetry": "Reload recording recovered initial media load failure; expired-link cause not independently proven"
+  },
+  "ongoingCapture": "paused",
+  "limitations": [
+    "Provider discovery still truncated for some accounts",
+    "Seven current-signer originals need template review",
+    "Older-signer originals not verified",
+    "Independent backup of voicemail file buckets remains open"
+  ]
+}

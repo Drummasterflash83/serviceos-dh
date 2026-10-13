@@ -1,0 +1,146 @@
+{
+  "version": "learn-voicemail-expanded-preflight/1",
+  "state": "read_only_preflight_complete_not_imported",
+  "completedAt": "2026-10-13T11:51:04.840Z",
+  "candidatesChecked": 1298,
+  "eligible": 68,
+  "review": 1230,
+  "classification": {
+    "signed_source_and_audio_verified": 68,
+    "notification_signature_unverified": 1230
+  },
+  "signaturesObserved": {
+    "birchills-net.20251104.gappssmtp.com": 181,
+    "birchills-net.20230601.gappssmtp.com": 1117
+  },
+  "signatureCoverage": {
+    "birchills-net.20251104.gappssmtp.com|pass|missing:": 68,
+    "birchills-net.20251104.gappssmtp.com|pass|missing:content-type": 113,
+    "birchills-net.20230601.gappssmtp.com|neutral|missing:content-type": 1117
+  },
+  "acceptedTemplates": {
+    "observed_legacy_without_transcript": 17,
+    "transcribed": 51
+  },
+  "duplicateFingerprintGroups": 0,
+  "routes": [
+    {
+      "extension": "102",
+      "recipientLabel": "anna",
+      "newHistoricalRoute": true,
+      "eligible": 0,
+      "review": 98,
+      "reviewReasons": {
+        "notification_signature_unverified": 98
+      }
+    },
+    {
+      "extension": "108",
+      "recipientLabel": "heidi",
+      "newHistoricalRoute": true,
+      "eligible": 2,
+      "review": 0,
+      "reviewReasons": {}
+    },
+    {
+      "extension": "107",
+      "recipientLabel": "larne",
+      "newHistoricalRoute": true,
+      "eligible": 1,
+      "review": 0,
+      "reviewReasons": {}
+    },
+    {
+      "extension": "102",
+      "recipientLabel": "liz",
+      "newHistoricalRoute": false,
+      "eligible": 2,
+      "review": 0,
+      "reviewReasons": {}
+    },
+    {
+      "extension": "102",
+      "recipientLabel": "liz",
+      "newHistoricalRoute": true,
+      "eligible": 1,
+      "review": 0,
+      "reviewReasons": {}
+    },
+    {
+      "extension": "103",
+      "recipientLabel": "office",
+      "newHistoricalRoute": false,
+      "eligible": 45,
+      "review": 29,
+      "reviewReasons": {
+        "notification_signature_unverified": 29
+      }
+    },
+    {
+      "extension": "103",
+      "recipientLabel": "office",
+      "newHistoricalRoute": true,
+      "eligible": 0,
+      "review": 741,
+      "reviewReasons": {
+        "notification_signature_unverified": 741
+      }
+    },
+    {
+      "extension": "601",
+      "recipientLabel": "office",
+      "newHistoricalRoute": false,
+      "eligible": 6,
+      "review": 0,
+      "reviewReasons": {}
+    },
+    {
+      "extension": "601",
+      "recipientLabel": "office",
+      "newHistoricalRoute": true,
+      "eligible": 0,
+      "review": 112,
+      "reviewReasons": {
+        "notification_signature_unverified": 112
+      }
+    },
+    {
+      "extension": "106",
+      "recipientLabel": "rudi",
+      "newHistoricalRoute": true,
+      "eligible": 1,
+      "review": 0,
+      "reviewReasons": {}
+    },
+    {
+      "extension": "105",
+      "recipientLabel": "tony",
+      "newHistoricalRoute": false,
+      "eligible": 5,
+      "review": 0,
+      "reviewReasons": {}
+    },
+    {
+      "extension": "105",
+      "recipientLabel": "tony",
+      "newHistoricalRoute": true,
+      "eligible": 5,
+      "review": 250,
+      "reviewReasons": {
+        "notification_signature_unverified": 250
+      }
+    }
+  ],
+  "gmailRequests": 1305,
+  "rawReads": 1298,
+  "dnsQueries": 1,
+  "productionWrites": 0,
+  "rawPersisted": false,
+  "audioPersisted": false,
+  "coverageComplete": false,
+  "previousRetainedScope": {
+    "published": 71,
+    "unsignedContentType": 3,
+    "providerUnavailable": 4
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "state": "prepared_not_executed",
+  "productionWrites": 0,
+  "candidateCount": 109,
+  "duplicateReplays": 6,
+  "maximumManualImportRequests": 115,
+  "routeCount": 6,
+  "newHistoricalRoutes": 3,
+  "preserveExistingMessages": 139,
+  "preserveExistingSources": 139,
+  "preserveExistingRoutes": 10,
+  "withheldTemplateInvalid": 7,
+  "olderSignerExcluded": 1117,
+  "allRoutesPausedFinally": true,
+  "routePlanSha256": "9938f12d61451bc57a3722eac2f63ef9d6f2f9c5b4eed12381026850c2777c19",
+  "routeOperationSha256": "856022e2ed0662ea62b56981ea07044499ca9eaa0135fe35af34a99c1bd40bd8",
+  "runnerSha256": "d457822ed7d86468bb9389ebf330be518c2b69671b68ef6abc10e6d2318d770d",
+  "rehearsal": {
+    "state": "passed",
+    "planSha256": "9938f12d61451bc57a3722eac2f63ef9d6f2f9c5b4eed12381026850c2777c19",
+    "sqlSha256": "856022e2ed0662ea62b56981ea07044499ca9eaa0135fe35af34a99c1bd40bd8",
+    "productionWrites": 0,
+    "providerRequests": 0,
+    "existingSourceMessageOwnerHashesPreserved": true,
+    "routes": 6,
+    "newRoutes": 3,
+    "dispatcherConcurrencyFencePassed": true,
+    "heldRoutesEnqueueNoJobs": true,
+    "allSourceAdmissionsPassed": true,
+    "oldScanControlsRestoredExactly": true,
+    "allRoutesPaused": true,
+    "managerPermissionsUnchanged": true,
+    "repeatedActivationNoDuplicateRoutes": true,
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true
+  },
+  "runtimePreparationSha256": "0b3195b9b26611f13809ff0761453f30ce532bfe27cb57a4c08392beb0f44805",
+  "runtimeChanges": [
+    "_shared/voicemail/authenticated-multipart.js",
+    "_shared/voicemail/signed-source.js"
+  ],
+  "runtimeEndpoints": [
+    {
+      "name": "learn-voicemail-import",
+      "beforeVersion": 5,
+      "wireSha256": "0ea4b6857b1914c6695e32d56b26c105cdd1b56ec7cff4ffccac88b939c564ba",
+      "rollbackSha256": "e3a8b476abd77f3b9d3950128d343ecd5db3efca79ae35544c808db51a244b2f"
+    },
+    {
+      "name": "platform-worker",
+      "beforeVersion": 61,
+      "wireSha256": "df8c91ab9706e03da3861fa43713f9bc0b75b9fc5631ed278d1514ecff82691c",
+      "rollbackSha256": "55c4bcc16b863d0385b0d98917cbee10c9ec137d4ed0563a0dfc51d2fde44a5b"
+    }
+  ],
+  "runtimeBoot": {
+    "state": "all_endpoints_booted_and_rejected_missing_auth",
+    "network": "none",
+    "checks": [
+      {
+        "name": "learn-voicemail-import",
+        "status": 403,
+        "code": null,
+        "denied": true
+      },
+      {
+        "name": "platform-worker",
+        "status": 403,
+        "code": null,
+        "denied": true
+      }
+    ],
+    "containerRemoved": true
+  },
+  "limitations": [
+    "Offline route rehearsal does not import private recordings.",
+    "Runtime missing-auth probes do not establish hosted authenticated provider acceptance.",
+    "Both runtime publication and the115-request maximum import remain unexecuted."
+  ]
+}
