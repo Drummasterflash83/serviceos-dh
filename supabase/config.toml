@@ -364,3 +364,8 @@ verify_jwt = false
 # state claim binds the callback to the app, tenant, connection and current actor.
 [functions.quickbooks-oauth-callback]
 verify_jwt = false
+
+# A dedicated infrastructure trigger key protects the bounded QuickBooks worker.
+# The request cannot select a client, supply credentials or change import scope.
+[functions.learn-quickbooks-worker]
+verify_jwt = false

@@ -1,0 +1,72 @@
+-- Synthetic imports, no network or real accounting records.
+create table public.feature_flags(id uuid primary key default gen_random_uuid(),tenant_id uuid,flag text,value jsonb);
+create unique index fixture_flag_uk on feature_flags(coalesce(tenant_id,'00000000-0000-0000-0000-000000000000'::uuid),flag);
+insert into feature_flags(tenant_id,flag,value) values(fixture_id(1),'learn.enabled','true');
+insert into learn_quickbooks_connections(id,tenant_id,environment,app_id,realm_id,company_name,status,token_generation,created_by,confirmed_at,confirmed_by,access_expires_at,refresh_expires_at,verified_at)
+values(fixture_id(80),fixture_id(1),'sandbox',fixture_id(20),'9130357990033333','Import Synthetic','paused',1,fixture_id(10),clock_timestamp(),fixture_id(10),clock_timestamp()+interval '1 hour',clock_timestamp()+interval '100 days',clock_timestamp());
+update learn_quickbooks_connections set token_secret_id=provider_secret_store(fixture_id(1),'quickbooks',fixture_id(80)::text||':tokens',fixture_pair()::text) where id=fixture_id(80);
+create table fixture_import_definition as select jsonb_build_object('entities',jsonb_build_array('Customer','Invoice'),'pageSize',2,'minorVersion',75,'maxRequests',10,'expiresAt',clock_timestamp()+interval '1 hour','reason','Synthetic import','resumeFrom',null) definition;
+create function fixture_import_def() returns jsonb language sql security definer as $$select definition from public.fixture_import_definition$$;
+create function fixture_permit(i integer) returns uuid language sql security definer as $$select lease_id from public.learn_quickbooks_imports where id=fixture_id(i)$$;
+set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000010';set role authenticated;
+select fixture_denied('select learn_quickbooks_import_start(fixture_id(1),fixture_id(80),fixture_id(81),fixture_import_def())');
+select learn_quickbooks_set_enabled(fixture_id(1),fixture_id(80),true,'Enable synthetic import');
+select learn_quickbooks_import_start(fixture_id(1),fixture_id(80),fixture_id(81),fixture_import_def())->>'state'='queued';
+select learn_quickbooks_import_start(fixture_id(1),fixture_id(80),fixture_id(81),fixture_import_def())->>'state'='queued';
+select fixture_denied('select learn_quickbooks_import_start(fixture_id(2),fixture_id(80),fixture_id(82),fixture_import_def())');
+select fixture_denied('select * from learn_quickbooks_source_versions');
+reset role;
+set request.jwt.claim.role='service_role';set role service_role;
+select fixture_assert(learn_quickbooks_import_acquire(fixture_id(81))->>'state'='ready','page lease acquired');
+select fixture_assert(learn_quickbooks_import_acquire(fixture_id(81))->>'state'='idle','overlapping acquisition idle');
+select fixture_denied('select learn_quickbooks_import_commit(fixture_id(81),fixture_permit(81),''{"QueryResponse":{"Customer":[{"Id":"1","SyncToken":"0"},{"Id":"1","SyncToken":"0"}],"startPosition":1,"maxResults":2},"time":"2026-10-13T15:00:00Z"}'')');
+reset role;
+select fixture_assert((select pages_saved=0 and start_position=1 from learn_quickbooks_imports where id=fixture_id(81)),'bad page cannot advance');
+create table fixture_import_saved as select fixture_permit(81) permit;
+create function fixture_first_permit() returns uuid language sql security definer as $$select permit from public.fixture_import_saved$$;
+set role service_role;
+select learn_quickbooks_import_commit(fixture_id(81),fixture_permit(81),'{"QueryResponse":{"Customer":[{"Id":"1","SyncToken":"0","DisplayName":"Synthetic Customer","MetaData":{"LastUpdatedTime":"2026-10-13T15:00:00Z"}}],"startPosition":1,"maxResults":1},"time":"2026-10-13T15:00:00Z"}')->>'state'='queued';
+-- Exact receipt recovery is allowed after a lost response, without another read.
+select learn_quickbooks_import_commit(fixture_id(81),fixture_first_permit(),'{"QueryResponse":{"Customer":[{"Id":"1","SyncToken":"0","DisplayName":"Synthetic Customer","MetaData":{"LastUpdatedTime":"2026-10-13T15:00:00Z"}}],"startPosition":1,"maxResults":1},"time":"2026-10-13T15:00:00Z"}')->>'state'='queued';
+reset role;
+select fixture_assert((select pages_saved=1 and entity_index=2 and start_position=1 from learn_quickbooks_imports where id=fixture_id(81)),'one atomic page and next collection');
+update learn_quickbooks_request_gates set next_at=clock_timestamp();update learn_quickbooks_imports set next_at=clock_timestamp() where id=fixture_id(81);
+set role service_role;
+select fixture_assert(learn_quickbooks_import_acquire(fixture_id(81))->>'state'='ready','invoice acquired');
+select learn_quickbooks_import_commit(fixture_id(81),fixture_permit(81),'{"QueryResponse":{"Invoice":[{"Id":"9","SyncToken":"1","CustomerRef":{"value":"1"},"CurrencyRef":{"value":"GBP"},"TotalAmt":9007199254740993.01,"Balance":0.10,"MetaData":{"LastUpdatedTime":"2026-10-13T15:00:00Z"}}],"startPosition":1,"maxResults":1},"time":"2026-10-13T15:00:00Z"}')->>'state'='traversed';
+reset role;
+select fixture_assert((select payload->>'TotalAmt'='9007199254740993.01' and payload->>'Balance'='0.10' from learn_quickbooks_source_versions where entity='Invoice'),'financial decimals exact in Postgres');
+select fixture_assert((select pages_saved=2 and records_observed=2 and requests_used=2 from learn_quickbooks_imports where id=fixture_id(81)),'exact page/request counts');
+select fixture_assert((select status='paused' from learn_quickbooks_connections where id=fixture_id(80)),'bounded import pauses after traversal');
+select fixture_denied('delete from learn_quickbooks_pages');
+select fixture_denied('truncate learn_quickbooks_source_versions cascade');
+-- A later scope can revisit records without duplicating versions.
+set request.jwt.claim.role='authenticated';set role authenticated;
+select learn_quickbooks_import_start(fixture_id(1),fixture_id(80),fixture_id(82),fixture_import_def()) is not null;
+reset role;update learn_quickbooks_request_gates set next_at=clock_timestamp();
+set request.jwt.claim.role='service_role';set role service_role;
+select fixture_assert(learn_quickbooks_import_acquire(fixture_id(82))->>'state'='ready','revisit acquired');
+select learn_quickbooks_import_commit(fixture_id(82),fixture_permit(82),'{"QueryResponse":{"Customer":[{"Id":"1","SyncToken":"0","DisplayName":"Synthetic Customer","MetaData":{"LastUpdatedTime":"2026-10-13T15:00:00Z"}}],"startPosition":1,"maxResults":1},"time":"2026-10-13T16:00:00Z"}') is not null;
+reset role;
+select fixture_assert((select count(*)=2 from learn_quickbooks_source_versions),'deduplicate source versions across runs');
+select fixture_assert((select count(*)=3 from learn_quickbooks_observations),'retain repeat observations');
+update learn_quickbooks_request_gates set next_at=clock_timestamp();update learn_quickbooks_imports set next_at=clock_timestamp() where id=fixture_id(82);
+set role service_role;
+select fixture_assert(learn_quickbooks_import_acquire(fixture_id(82))->>'state'='ready','second invoice acquired');
+reset role;
+-- Switch off between fetch and commit: raw data and checkpoint both stay absent.
+set request.jwt.claim.role='authenticated';set role authenticated;
+select learn_quickbooks_set_enabled(fixture_id(1),fixture_id(80),false,'Pause before save');
+set request.jwt.claim.role='service_role';reset role;set role service_role;
+select fixture_denied('select learn_quickbooks_import_commit(fixture_id(82),fixture_permit(82),''{"QueryResponse":{},"time":"2026-10-13T16:00:00Z"}'')');
+reset role;
+select fixture_assert((select pages_saved=1 from learn_quickbooks_imports where id=fixture_id(82)),'disabled module fences page save');
+select fixture_assert((select count(*)=3 from learn_quickbooks_pages),'no hidden page after denied save');
+select fixture_assert(not has_function_privilege('authenticated','learn_quickbooks_import_acquire(uuid)','execute'),'user cannot acquire tokens');
+select fixture_assert(not has_function_privilege('anon','learn_quickbooks_import_status(uuid)','execute'),'anonymous cannot inspect accounting');
+-- 429 updates the shared realm pacing gate and consumes a request without moving.
+set role service_role;
+select learn_quickbooks_import_fail(fixture_id(82),fixture_permit(82),'rate_limited',120)->>'state'='queued';
+reset role;
+select fixture_assert((select start_position=1 and entity_index=2 and requests_used=2 from learn_quickbooks_imports where id=fixture_id(82)),'retry leaves cursor and counts attempted request');
+select fixture_assert((select next_at>clock_timestamp()+interval '119 seconds' from learn_quickbooks_request_gates where realm_id='9130357990033333'),'realm-wide retry gate');

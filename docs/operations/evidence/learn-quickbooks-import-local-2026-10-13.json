@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-13",
+  "scope": "local QuickBooks import candidate only",
+  "state": "local_checks_passed_with_limits",
+  "checks": {
+    "targetedTypeScriptTests": 48,
+    "frontendTypecheck": "passed",
+    "quickbooksDenoEndpoints": "passed",
+    "platformWorkerDenoCheck": "not_complete_existing_mailauth_dependency_unavailable_registry_dns_failed",
+    "frontendBuild": "passed_existing_shared_dependency_installation",
+    "prebuildTests": 47,
+    "postgresSyntheticContractAndActualWorkerFlow": "passed",
+    "augmentedLocalSchema": {
+      "existingPublicTables": 257,
+      "addedHelpers": [
+        "learn_operator_input_immutable",
+        "learn_operator_input_access"
+      ],
+      "migrationInstallRollback": "passed_non_superuser_postgres",
+      "realLocalVault": "passed_synthetic_app_secret"
+    }
+  },
+  "behaviour": [
+    "Original JSON preserves exact financial decimals.",
+    "Request allowance consumed before read; bounded retries do not advance cursor.",
+    "Lost save reply recovers retained page receipt.",
+    "Version deduplication retains observations; conflicting equal SyncToken versions flagged.",
+    "Older SyncToken cannot overwrite latest source.",
+    "Module/actor/lease checks fence publication.",
+    "Explicit continuation preserves checkpoint and previous run.",
+    "Dedicated dispatcher disabled unless independently configured."
+  ],
+  "limitations": [
+    "No real company OAuth or accounting request.",
+    "No hosted TEST or production deployment, provider acceptance or live data.",
+    "UI built/typechecked but not signed-in browser verified.",
+    "Local schema augmented with exact repository helper definitions; current hosted catalog still needs preflight.",
+    "No customer identity linking, financial aggregation, CDC/deletion reconciliation or ongoing capture policy yet.",
+    "Intuit production setup and public legal documents remain unfinished."
+  ],
+  "sha256": {
+    "supabase/migrations/20261102010000_learn_quickbooks_import.sql": "d801ba6a45af0570dd47312e8fb35552e3dfd085c130e7f5e7b3b5f9835e342c",
+    "supabase/functions/_shared/quickbooks/import_worker.ts": "9cebc189253dea2dd1d75985e8d71dff5ae1edd2621c42460ac1a5c017953051",
+    "supabase/functions/_shared/quickbooks/read_page.ts": "c4a87ac0dedb222350478585dc59aa1ac6bd14b96466577027e4c79cc5162fb3",
+    "supabase/functions/learn-quickbooks-worker/index.ts": "b09973ff371dc70ca7da8e71a1f6ea7d62b27e8de9fe368aebdca641d41c10c5",
+    "supabase/functions/_shared/learn_input_tick.ts": "c2ed79dab6b676d3fd385863960d38e67ab8c3b760e32b57a0830a7bc8bb7204",
+    "supabase/functions/platform-worker/index.ts": "621524eb4fe453cdb7b89ab80e28d575f35169a721866a72272215d6b6bdc7ff",
+    "src/components/app/OperatorQuickBooksImports.tsx": "a96b22f21cd314b4a5abafed175a7f80e048f8e8ae884b78351ba46ce011d01f",
+    "src/lib/learn-quickbooks-import.ts": "e847d8660b70b28f92e8817143acf5538af8c9aefa65fea8da0902ab4b32807d",
+    "scripts/verify/learn-quickbooks-import-flow.mjs": "969702f8a6940aacd392178f590587ede61c5d8de0ad7df23db75ae40da625c1",
+    "scripts/verify/learn-quickbooks-schema.py": "55d2f7573765cb73c3d340c35dbf118c3be34709ad5b46ab63940461f461fee6"
+  }
+}

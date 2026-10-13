@@ -75,6 +75,9 @@ export interface QuickBooksPage {
   entity: QuickBooksEntity;
   records: Record<string, unknown>[];
   rawEnvelope: Record<string, unknown>;
+  // Persist this exact UTF-8 JSON text. JS numbers in rawEnvelope/records are
+  // validation/display conveniences, never authoritative financial amounts.
+  rawEnvelopeText: string;
   permitId: string;
   nextPosition: number | null;
   traversalExhausted: boolean;
@@ -84,7 +87,7 @@ export interface QuickBooksPage {
   observedAt: string;
 }
 
-async function jsonBody(response: Response, signal: AbortSignal): Promise<unknown> {
+async function jsonBody(response: Response, signal: AbortSignal): Promise<{ value: unknown; text: string }> {
   if (!response.body || response.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") {
     await response.body?.cancel();
     fail("invalid_response");
@@ -105,7 +108,7 @@ async function jsonBody(response: Response, signal: AbortSignal): Promise<unknow
     }
     const all = new Uint8Array(length); let offset = 0;
     for (const chunk of chunks) { all.set(chunk, offset); offset += chunk.length; }
-    try { return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(all)); }
+    try { const text = new TextDecoder("utf-8", { fatal: true }).decode(all); return { value: JSON.parse(text), text }; }
     catch { return fail("invalid_response"); }
   } finally {
     signal.removeEventListener("abort", cancel);
@@ -149,7 +152,7 @@ export async function readQuickBooksPage(input: QuickBooksRead, credential: Quic
       }
       fail(response.status >= 500 ? "provider_unavailable" : "provider_rejected");
     }
-    const raw = await jsonBody(response, signal);
+    const body = await jsonBody(response, signal), raw = body.value;
     if (!object(raw) || Object.hasOwn(raw, "Fault") || !object(raw.QueryResponse) ||
       typeof raw.time !== "string" || !Number.isFinite(Date.parse(raw.time))) fail("invalid_response");
     const query = raw.QueryResponse;
@@ -170,7 +173,7 @@ export async function readQuickBooksPage(input: QuickBooksRead, credential: Quic
     if (Date.parse(permit.expiresAt) <= now()) fail("reservation_unavailable");
     signal.throwIfAborted();
     const exhausted = records.length < request.pageSize;
-    return { binding, entity: request.entity, records, rawEnvelope: raw, permitId: permit.permitId,
+    return { binding, entity: request.entity, records, rawEnvelope: raw, rawEnvelopeText: body.text, permitId: permit.permitId,
       nextPosition: exhausted ? null : request.startPosition + records.length,
       traversalExhausted: exhausted, coverage: "non_atomic_query_traversal", providerTime: raw.time, observedAt: new Date(now()).toISOString() };
   } catch (error) {

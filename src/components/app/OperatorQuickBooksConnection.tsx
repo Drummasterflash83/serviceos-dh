@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { OperatorQuickBooksImports } from "./OperatorQuickBooksImports";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import {
   readQuickBooksOverview,
@@ -281,6 +282,13 @@ export function OperatorQuickBooksConnection({
               Connect QuickBooks
             </button>
           )}
+          <OperatorQuickBooksImports
+            tenantId={tenantId}
+            actorId={actorId}
+            canWrite={canWrite}
+            connections={data.connections}
+            onChange={() => refresh()}
+          />
         </>
       )}
     </section>

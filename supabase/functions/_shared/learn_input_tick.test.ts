@@ -41,7 +41,7 @@ test("server dispatch reaches actual empty-body guards and schedules Slack befor
   });
   assert.equal(calls.length, 3);
   assert.ok(calls.indexOf("learn-slack-schedule") < calls.indexOf("learn-slack-worker"));
-  assert.deepEqual(Object.values(result).map(v => v.state), ["idle", "idle", "idle"]);
+  assert.deepEqual(Object.values(result).map(v => v.state), ["idle", "idle", "idle", "disabled"]);
 });
 
 test("failed scheduler and provider do not stop independent work or disclose private errors", async () => {
@@ -52,7 +52,7 @@ test("failed scheduler and provider do not stop independent work or disclose pri
     if (url.endsWith("slack-schedule")) return new Response("private failure", { status: 503 });
     return ok({ claimed: 1, outcomes: [{ status: "succeeded", job_id: "private-id" }] });
   });
-  assert.deepEqual(result, { commusoft: { state: "unconfirmed" }, slackSchedule: { state: "unconfirmed" }, slack: { state: "processed" } });
+  assert.deepEqual(result, { commusoft: { state: "unconfirmed" }, slackSchedule: { state: "unconfirmed" }, slack: { state: "processed" }, quickbooks: { state: "disabled" } });
   assert.equal(calls.length, 3);
   assert.doesNotMatch(JSON.stringify(result), /secret|private/);
 });
@@ -66,7 +66,7 @@ test("HTTP success without matching settlement is unconfirmed; retries and holds
   for (const settled of [{ status: "retrying" }, { status: "dead_letter" }, { state: "waiting", reason: "paused" }]) {
     const observed = await runLearnInputTick(config, null, async url => ok(url.endsWith("schedule")
       ? { checked: 1, queued: 0, held: 1 } : { claimed: 1, outcomes: [settled] }));
-    assert.deepEqual(Object.values(observed).map(v => v.state), ["attention", "attention", "attention"]);
+    assert.deepEqual(Object.values(observed).map(v => v.state), ["attention", "attention", "attention", "disabled"]);
   }
 });
 
@@ -96,7 +96,7 @@ test("Slack-only scheduling reaches the real endpoint guards without invoking Co
     return handlers[name](new Request(url, init));
   });
   assert.deepEqual(calls, ["learn-slack-schedule", "learn-slack-worker"]);
-  assert.deepEqual(result, { commusoft: { state: "disabled" }, slackSchedule: { state: "idle" }, slack: { state: "idle" } });
+  assert.deepEqual(result, { commusoft: { state: "disabled" }, slackSchedule: { state: "idle" }, slack: { state: "idle" }, quickbooks: { state: "disabled" } });
 });
 
 test("explicit Slack disable, malformed override and filtered invocations fail closed", async () => {
@@ -110,7 +110,7 @@ test("explicit Slack disable, malformed override and filtered invocations fail c
   }
   for (const filter of [[], ["slack.history_sync"], ["phone.voicemail_import"]]) {
     const result = await runLearnInputTick({ ...config, enabled: "false", slackEnabled: "true" }, filter, async () => { throw Error("filtered calls cannot dispatch"); });
-    assert.deepEqual(Object.values(result).map(v => v.state), ["skipped", "skipped", "skipped"]);
+    assert.deepEqual(Object.values(result).map(v => v.state), ["skipped", "skipped", "skipped", "skipped"]);
   }
 });
 
@@ -129,4 +129,23 @@ test("Slack-only configuration errors and provider failures cannot fall back to 
   assert.ok(calls.every(url => !url.includes("commusoft")));
   assert.equal(result.commusoft.state, "disabled");
   assert.equal(result.slack.state, "unconfirmed");
+});
+
+
+test("QuickBooks dispatch is independently enabled and uses its authenticated empty-body endpoint", async () => {
+ const cfg={...config,enabled:'false',quickbooksEnabled:'true',quickbooksKey:'synthetic-quickbooks-trigger'};
+ let calls=0;
+ const handler=slackWorkerEndpoint(cfg.quickbooksKey,async()=>({claimed:1,state:'saved'}));
+ const result=await runLearnInputTick(cfg,null,async(url,init)=>{
+  calls++;assert.ok(url.endsWith('/learn-quickbooks-worker'));assert.equal(init.body,undefined);
+  return handler(new Request(url,init));
+ });
+ assert.equal(calls,1);assert.equal(result.quickbooks.state,'processed');assert.equal(result.slack.state,'disabled');
+ for(const patch of [{quickbooksEnabled:undefined},{quickbooksEnabled:'TRUE'},{quickbooksKey:undefined}]){
+  await runLearnInputTick({...cfg,...patch},null,async()=>{throw Error('must not dispatch');});
+ }
+ for(const filter of [[],['quickbooks.import']]) assert.equal((await runLearnInputTick(cfg,filter,async()=>{throw Error('must not dispatch');})).quickbooks.state,'skipped');
+ for(const [body,expected] of [[{claimed:0,state:'held'},'attention'],[{claimed:0,state:'idle'},'idle'],[{claimed:1,state:'attention'},'attention'],[{claimed:0,state:'saved'},'unconfirmed']]){
+  assert.equal((await runLearnInputTick(cfg,null,async()=>ok(body))).quickbooks.state,expected);
+ }
 });

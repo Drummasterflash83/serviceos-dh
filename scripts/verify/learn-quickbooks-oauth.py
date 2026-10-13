@@ -17,6 +17,8 @@ def sql(statement):
                             input=statement, text=True, capture_output=True, timeout=40)
     if result.returncode:
         raise RuntimeError(result.stderr[-3000:])
+    if 'f' in result.stdout.splitlines():
+        raise RuntimeError('Synthetic SQL boolean assertion returned false')
     return result.stdout.strip()
 
 def source(path):
@@ -59,6 +61,14 @@ try:
     print('PASS: racing callbacks release credentials exactly once.')
     subprocess.run(['node', str(root / 'scripts/verify/learn-quickbooks-oauth-flow.mjs')], check=True,
                    env={**os.environ, 'SERVICEOS_QB_TEST_CONTAINER': name, 'SERVICEOS_QB_TEST_DOCKER': docker}, timeout=40)
+    ingestion = source('supabase/migrations/20261102010000_learn_quickbooks_import.sql')
+    sql(ingestion.replace('\ncommit;', '\nrollback;'))
+    assert sql("select to_regclass('learn_quickbooks_imports') is null") == 't'
+    sql(ingestion)
+    sql(source('scripts/verify/learn-quickbooks-import.assert.sql'))
+    print('PASS: durable imports, exact financial decimals, replay recovery, version deduplication, module fence and realm-wide throttling.')
+    subprocess.run(['node', str(root / 'scripts/verify/learn-quickbooks-import-flow.mjs')], check=True,
+                   env={**os.environ, 'SERVICEOS_QB_TEST_CONTAINER': name, 'SERVICEOS_QB_TEST_DOCKER': docker}, timeout=60)
 finally:
     if created:
         subprocess.run([docker, 'rm', '-fv', name], check=True, capture_output=True, timeout=30)

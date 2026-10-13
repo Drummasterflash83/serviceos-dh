@@ -102,3 +102,12 @@ test("mutating caller input during reservation cannot switch company or entity",
   const page = await f.run(r);
   assert.equal(page.binding.realmId, request.realmId); assert.equal(page.entity, "Invoice");
 });
+
+test('exact provider JSON preserves financial decimals beyond JS number precision', async () => {
+  const raw = '{"QueryResponse":{"Invoice":[{"Id":"1","SyncToken":"0","TotalAmt":9007199254740993.01,"Balance":0.10}],"startPosition":1,"maxResults":1},"time":"2026-10-13T14:00:00Z"}';
+  const page = await fixture(new Response(raw,{headers:{'content-type':'application/json'}})).run();
+  assert.equal(page.rawEnvelopeText, raw);
+  assert.ok(page.rawEnvelopeText.includes('9007199254740993.01'));
+  assert.ok(page.rawEnvelopeText.includes('0.10'));
+  assert.notEqual(JSON.stringify(page.rawEnvelope), raw);
+});

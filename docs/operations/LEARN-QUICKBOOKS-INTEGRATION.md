@@ -64,8 +64,9 @@ Intuit's current transfer options still need verification in its portal.
   reauthorisation instead of automatically resending a potentially rotated token.
 - Server start/callback endpoints and the OpenFolk QuickBooks connection panel are
   implemented locally. The panel can connect, refresh status, confirm a company
-  and pause. No accounting import controls are available yet.
-- 33 targeted TypeScript tests pass. An isolated PostgreSQL run verifies grants,
+  and pause. The import panel now supports explicit module enable/disable, record
+  type selection, bounded starts, continuation, counts and recent run diagnostics.
+- 48 targeted TypeScript tests pass (including shared dispatcher and UI parsers). An isolated PostgreSQL run verifies grants,
   tenant isolation, callback races/replays, actor revocation/bans, expired states,
   company confirmation, pause and atomic rollback after a simulated Vault write.
   The actual TypeScript start/callback/confirmation/refresh flow also passes against
@@ -74,13 +75,36 @@ Intuit's current transfer options still need verification in its portal.
 - Full frontend TypeScript, Deno endpoint checks, 47 existing prebuild checks and
   the local production build pass using the existing local dependency installation.
   No real QuickBooks accounting data has been requested. No new code is deployed.
+- Durable imports now reserve requests before HTTP, enforce a per-realm pacing
+  gate, retain original JSON and immutable record versions/observations, and save
+  each page and checkpoint atomically. Failed requests count against the budget;
+  lost commit replies recover from the saved receipt without a second fetch.
+- Exact monetary decimals reach Postgres as original JSON text. Same-SyncToken
+  conflicting payloads are flagged; older versions cannot overwrite newer ones.
+  Source identity survives app/connection replacement. No financial totals or
+  canonical customer matches are published by this import.
+- A dedicated worker is wired into the unfiltered infrastructure tick behind
+  `LEARN_QUICKBOOKS_DISPATCH_ENABLED=true` and its own trigger key. Existing
+  Slack/Commusoft activation does not enable it. No scheduler is enabled here.
+- The actual TypeScript import worker passes against PostgreSQL RPCs and a
+  synthetic provider, including exact decimals, lost replies, version conflicts,
+  budget exhaustion, continuation and expired leases.
+- Both migrations install and explicitly roll back under non-superuser postgres
+  in a disposable clone of the local 257-table schema, after adding its two
+  missing repository operator helpers. The real local Vault extension stores
+  and retrieves a synthetic app secret. This augmented local clone is not proof
+  of current hosted compatibility; hosted preflight remains required.
+- Dedicated QuickBooks endpoints pass Deno checks. A full platform-worker Deno
+  check is not complete: the existing `mailauth` npm dependency is unavailable
+  in the local Deno cache and registry DNS lookup failed. Dispatcher tests pass.
 
 Reproduce:
 
 ```sh
 node --test supabase/functions/_shared/quickbooks/*.test.ts
-node --test src/lib/learn-quickbooks.test.ts
+node --test src/lib/learn-quickbooks*.test.ts supabase/functions/_shared/learn_input_tick.test.ts
 python3 scripts/verify/learn-quickbooks-oauth.py
+python3 scripts/verify/learn-quickbooks-schema.py
 ```
 
 ## Needs finishing
@@ -88,8 +112,8 @@ python3 scripts/verify/learn-quickbooks-oauth.py
 1. Complete configuration and production assessment for the created Intuit app.
    The portal shows App details 17% and Compliance 0%; these are provider progress
    indicators, not percentages of ServiceOS implementation completed.
-2. Rehearse the additive OAuth migration against the actual full schema, then
-   deploy matching SQL/endpoints to TEST. Configure exact stable backend callbacks,
+2. Compare the current hosted schema with the OAuth/import prerequisites, then
+   deploy matching SQL/endpoints to TEST. The augmented local rehearsal passed. Configure exact stable backend callbacks,
    `QUICKBOOKS_SITE_ORIGIN` and an explicitly selected `QUICKBOOKS_MINOR_VERSION`.
    Provision the app secret server-side and save its recovery copy securely.
 3. Exercise real sandbox authorisation, token rotation and signed-in operator
@@ -98,10 +122,10 @@ python3 scripts/verify/learn-quickbooks-oauth.py
 4. Obtain production app access and verify Drummonds' actual company identity
    through its authorised administrator. Never infer realm from a numeric
    JavaScript value or the developer workspace ID.
-5. Implement durable request reservations, tenant-scoped source versions, page
-   receipt/checkpoint transactions, bounded capture and recovery after uncertain
-   HTTP/persistence outcomes. The transport's injected callbacks are not yet
-   backed by database functions. Pausing/revoking must also fence publication.
+5. Verify the implemented durable request reservations, exact source versions,
+   page receipts/checkpoints, bounded capture and uncertain-outcome recovery in
+   hosted TEST. Exercise the new signed-in import controls and worker dispatch,
+   including module disable, pause and revoked authority during a page read.
 6. Reconcile offset-based backfill with subsequent changes/deletions before
    describing coverage as complete. Preserve exact raw financial values for
    decimal arithmetic; do not calculate money from rounded JS floats.
@@ -173,7 +197,10 @@ its RPCs; the callback endpoint claims state through its server-only service RPC
 End users never receive a secret, token, claim ID or stored state hash.
 
 The operator UI is mounted on demand inside the existing LEARN input controls.
-Its data is scoped to backend, signed-in actor and selected tenant. Hosted
+Its data is scoped to backend, signed-in actor and selected tenant. The import
+worker processes one page per invocation. Runs expire within 24 hours and never
+become recurring captures implicitly; budget/expiry continuations are explicit.
+Query traversal is labelled separately from reconciliation/deletion coverage. Hosted
 signed-in/mobile verification is still required. Existing parent-workstream dirty
 files are excluded from this checkpoint; the local build is not a release artifact.
 
