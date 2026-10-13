@@ -1,6 +1,39 @@
 # LEARN live release — 13 October 2026
 
-## Working and verified
+## Latest checkpoint — 10:03 BST
+
+- Final live frontend: Git `6f5082ae72d31a60b27c20ba29551126b2f64076`, deployment
+  `dpl_3HCyNS2f2KbPzaR7X4F1R58FtU1G`. All four existing aliases verified. The
+  separate one-step promotion journal completed with plan hash
+  `db4e864e260905e85ea65312a8d726104fbbaa7349f8a0307741e65875bc05e7`.
+- Six input tiles, automatic visible-tab refresh and the evidence-based customer
+  brief are live. The brief counts explicit Actions only, excluding observations,
+  drafts and cancelled findings. Its live rendered state was checked. Mobile
+  overview passed at 390px without horizontal page overflow.
+- Runtime hotfix: `customer-card-sync` v41, `phone-process-pipeline` v59,
+  `platform-worker` v57. Only the graph-read batching/pagination and canonical
+  PostgreSQL UUID validation helpers changed; exact source ownership checks stay.
+  Compiled identity, unauthenticated rejection and unchanged schedules were verified;
+  exact previous artifacts are retained for rollback.
+- Read-only shadow prepared 200 cards before deployment. The existing scheduled
+  retry subsequently **succeeded at 09:01:18 UTC with 200 saved projections and
+  zero failed**. Its retained old `last_error` is historical; terminal status and
+  result establish this success. The next continuation was queued.
+- Three post-fix phone pipelines succeeded. One later run failed with
+  `phone_handoff_call_changed`; diagnosis remains open. The old two invalid-UUID
+  failures are retained. A separate bounded card endpoint probe returned HTTP 401
+  `internal_auth_mismatch`, made no writes and was not retried; no auth was weakened.
+- Live saved totals at 10:00 BST: 20,048 emails, 4,416 calls, 2,950 recordings.
+  These are growing saved totals, not complete historical or analysis coverage.
+- Voicemail still awaits real syncing. Emma practice UI is available, but the main
+  number is not activated and transfers/fallback are unverified. No routing changed.
+- This supersedes the older frontend and processing-failure status below. Full
+  production Slack/Commusoft coverage, actionable card/scoring acceptance, voicemail,
+  unattended backup operation and the complete LEARN V1 goal remain unfinished.
+
+## Earlier release evidence
+
+### Working and verified
 
 - The 24 pinned SQL packages and 37 compiled runtime functions were installed in production (`tgbnakbxwcqjeimygroz`). The immutable original journal reached paired backend acceptance, 69 steps verified.
 - Original-column fingerprints matched across 28 source/access/storage sets before SQL, after SQL and after runtime installation: 79,802 rows. All 2,944 recording references still resolved. These fingerprints supplement the independent restore-tested backup; they are not a backup themselves.

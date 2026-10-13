@@ -7,51 +7,56 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October, 09:07 BST — the matched LEARN release is live; processing fixes are prepared.**
+**13 October, 10:03 BST — the matched release, processing fixes and input overview are live.**
 
 ### Working and verified
 
-- Production has the 24 SQL packages and 37 matching runtimes. The final live
-  frontend is Git `fc5fb67` on openfolk.ai; Home, LEARN, Modules and Phone passed
-  mobile layout checks. The existing operator can enter Drummonds and read cards
-  with linked evidence. This is a live working preview, not full V1 acceptance.
+- Production has the 24 SQL packages and 37 matching runtimes. The live frontend
+  is Git `6f5082a` on the existing openfolk.ai domains. The six-input overview
+  shows Email, Phone, recordings, Slack, voicemail and Emma readiness; missing
+  verification is explicit. Visible-tab input totals refresh automatically.
+- Customer cards now start with latest communication, recorded completed work,
+  the next recorded action and its owner. Ordinary observations are not tasks;
+  missing evidence does not invent completion or assignment. The signed-in live
+  customer brief and mobile input grid were checked.
+- At 10:00 BST the live screen showed 20,048 emails, 4,416 calls and 2,950 recordings.
+  Capture continues; these are saved totals, not complete historical coverage.
+- The graph-read batching and legacy tenant UUID fixes are deployed in three
+  matching runtimes. At 10:01 BST the previously retrying scheduled card job
+  succeeded: 200 projections, zero failed; its continuation was queued.
+- Three new phone pipelines succeeded after the fix. A later pipeline stopped at
+  `phone_handoff_call_changed`, so universal phone processing acceptance remains
+  open. The two older invalid-UUID failures remain historical evidence.
+- Nineteen card/handoff regressions, 73 phone-handler checks and four customer-brief
+  checks pass. The final frontend build passes. All three changed runtimes boot
+  offline and deny missing authentication. No source history was removed.
 - Original release preservation matched 79,802 rows across 28 source/access/storage
   sets, with all 2,944 pre-existing recording references resolving. Independent
   database recovery and recording restoration remain verified earlier milestones.
-- All nine original schedules were restored. At 08:54 BST live totals were 19,267
-  emails, 4,407 calls and 2,946 recordings; new capture is occurring.
-
-### Verified locally / read-only production checks
-
-- A normal 200-card graph request failed while the same read with 40 targets
-  succeeded. The corrected handler limits identity filters and paginates graph
-  edges. A read-only production shadow prepared all 200 projections successfully
-  in about ten seconds; every write was intercepted, so this is not deployment
-  or successful saved-refresh evidence.
-- The two failed phone pipelines stopped at `phone_handoff_input_invalid` after
-  saving audio, transcripts and analysis. Their existing tenant UUID lacks RFC
-  version/variant bits. The fix accepts canonical PostgreSQL UUIDs while retaining
-  exact receipt identity matching and database ownership checks.
-- Nineteen card/handoff regressions and 73 phone-handler checks pass. The three
-  affected runtimes compile and boot offline, rejecting missing authentication.
+  All nine original schedules remain restored; the hotfix did not change them.
 
 ### Needs finishing
 
-- Deploy and observe the three processing fixes; neither is live yet at this
-  checkpoint. Preserve existing capture, permissions and sources.
+- Complete and verify real production voicemail discovery, private audio import
+  and playback. The live inbox still shows mailboxes awaiting sync; it is not
+  evidence that the provider has no messages.
 - Activate and verify complete production Slack/Commusoft history and ongoing
-  capture, including linked canonical contacts/jobs/cards. Their TEST imports do
-  not establish production coverage; DMs remain excluded.
-- Complete input coverage, card/scoring acceptance, Heidi's own signed-in journey
-  and operational ownership. Scores and broader intelligence remain unassessed.
-- Verify unattended daily database backups; interactive recovery was proven but
+  capture, including canonical contacts/jobs/cards. TEST imports do not establish
+  production coverage; DMs remain excluded.
+- Emma's practice page is available, but the main number is not activated. Live
+  inbound routing, transfer/fallback, caller-experience issues and handover proof
+  remain before a supported switchover. No PBX routing was changed this turn.
+- Investigate the newly observed changed-call handoff failure without weakening
+  source-identity checks. Complete input coverage, meaningful action extraction,
+  card/scoring acceptance and Heidi's own signed-in journey.
+- Verify unattended daily database backups; interactive recovery is proven but
   is not an unattended operating schedule.
 
 ### Blocked externally
 
 - Three mailbox delegation failures remain; other mailboxes are capturing.
 - TEST AI key selection and Heidi's own signed-in acceptance remain outstanding.
-  They do not prevent the current processing corrections.
+  They do not prevent independent finishing work.
 
 [Live release evidence](LEARN-LIVE-RELEASE-2026-10-13.md).
 [Independent recovery](evidence/learn-production-release-checkpoint-2026-10-13.json).

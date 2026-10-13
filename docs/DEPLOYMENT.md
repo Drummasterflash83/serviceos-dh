@@ -40,6 +40,18 @@ and switches to the Vercel preset** (`λ __server`). So: build **remotely on Ver
 upload or Git push). Do **not** ship a locally-prebuilt `.output` to Vercel — it would be
 Cloudflare-flavoured.
 
+## Current live checkpoint — 13 October 2026
+
+The matched LEARN backend (24 SQL packages and 37 runtimes) is installed and the
+existing schedules are restored. The latest verified live frontend is Git
+`6f5082ae72d31a60b27c20ba29551126b2f64076`, deployment
+`dpl_3HCyNS2f2KbPzaR7X4F1R58FtU1G`, on the existing openfolk.ai aliases.
+Use **https://www.openfolk.ai** for live and **https://test.openfolk.ai** for TEST.
+Later processing and UI amendments are recorded in the
+[live release log](operations/LEARN-LIVE-RELEASE-2026-10-13.md).
+Full LEARN V1 acceptance remains incomplete; earlier preview notes below are
+historical preparation evidence, not the current live status.
+
 ## Preview deployments
 
 **Latest release preparation, 12 October:** the candidate contains production
