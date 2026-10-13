@@ -33,6 +33,10 @@ override a later release observation. No requirement is silently deferred.
   22 SQL packages and 37 runtimes. It has not been executed.
 - Live aggregate inspection found 14 historical unleased running jobs: 13 phone
   synchronisations and one graph sync. Retain their history and resolve safely;
+  the retained deployed Phone code used best-effort tracking without leases. Eleven
+  phone jobs correlate to one unfinished run each by account/window, two have no
+  match, and none has a matching completed run. This cannot be marked successful.
+  Safe interruption settlement still needs fenced execution and an audited receipt;
   an empty HTTP queue is not proof that live work has drained. Nine recent request
   timeouts also need diagnosis. No production schedules or jobs were changed.
 - Offline rehearsal temporarily simulated a drained queue and restored every
