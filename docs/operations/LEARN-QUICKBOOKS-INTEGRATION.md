@@ -530,7 +530,7 @@ current parent-workstream changes and resolving the existing Deno mailauth
 check. The standalone QuickBooks endpoints do not require that replacement.
 
 
-### Connection guide candidate — 13 October 2026
+### Connection guide on TEST — 13 October 2026
 
 The `/quickbooks` route provides connect/reconnect and disconnect guidance using
 the existing OpenFolk branding. It links to the signed-in operator controls,
@@ -540,6 +540,12 @@ connection status, legal policy or automatic provider action.
 
 Local production build and TypeScript checks passed. Desktop and 390 px mobile
 views were inspected; both modes fit without horizontal overflow and reported
-no browser warnings/errors. Hosted verification and Intuit Development App URL
-registration remain pending. The development app remains inactive pending owner
+no browser warnings/errors. Protected TEST deployment `dpl_HnmKvRxyTC79N3jBWQ4vVExpoRn5`
+from Git `3817044c4a5d2dd893769c8aa239169f4526181f` now serves both stable TEST aliases.
+Hosted connect/disconnect rendering and sign-in destinations passed; TEST protection
+remains `all`. Intuit Development App URLs were saved and survived reload: host
+`test.openfolk.ai`, launch `/quickbooks`, reconnect `/quickbooks?mode=connect`,
+and disconnect `/quickbooks?mode=disconnect`. These are guidance pages, not
+an OAuth callback or a provider revocation endpoint. Production settings remain
+unchanged. The development app remains inactive pending owner
 secret rotation; this guide does not establish OAuth or accounting acceptance.

@@ -89,16 +89,16 @@ and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
 ### Isolated LEARN TEST project (updated 13 October 2026)
 
-**Latest TEST deployment:** `dpl_5agREx9pF4kCMmC52BLmDzo8t31w`, Git
-`b46cb2dc0fd133c773d236e532fa74db8d732a68`, serves both stable TEST aliases.
-Its build badge and signed-in operator screen target TEST. QuickBooks connection
-and import empty states are verified against the matching installed TEST schema;
-no app/company is connected or capturing. Optional Slack recovery controls now
-follow backend capability metadata. Existing permissions and ordinary campaign
-reads remain intact. Protection remains `all`; live production is unchanged.
-The wider client overview still reports a check needing attention; this release
-is not acceptance of all workspace features or real QuickBooks capture.
-[Current TEST evidence](operations/evidence/learn-quickbooks-stable-test-2026-10-13.json).
+**Latest TEST deployment:** `dpl_HnmKvRxyTC79N3jBWQ4vVExpoRn5`, Git
+`3817044c4a5d2dd893769c8aa239169f4526181f`, serves both stable TEST aliases.
+It adds the responsive `/quickbooks` connection guide. Hosted connect/disconnect
+views and sign-in links are verified, with protection still `all`. Existing TEST
+QuickBooks schema/runtime remains installed. The development app is inactive
+pending owner secret rotation; an earlier OAuth start has no bound company or
+token and no imports exist. This does not establish real QuickBooks acceptance.
+Optional Slack recovery controls still follow backend capability metadata.
+The wider client overview has a check needing attention. Live production is unchanged.
+[Guide release evidence](operations/evidence/learn-quickbooks-guide-test-2026-10-13.json).
 Older deployment details below are historical acceptance records.
 
 
