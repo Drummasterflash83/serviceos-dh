@@ -56,13 +56,16 @@ function structure(source) {
   return JSON.stringify(walk(tree));
 }
 
-if(process.argv.length>3||(process.argv[2]&&process.argv[2]!=='disconnect'))throw Error('Specify disconnect or omit for foundation');
-const project='saatxzwxvdvqevbnskxy',names=process.argv[2]==='disconnect'?['quickbooks-disconnect']:['quickbooks-oauth-start','quickbooks-oauth-callback','learn-quickbooks-worker'];
+const args=process.argv.slice(2),all=args.includes('all'),disconnect=args.includes('disconnect');
+const versionArg=args.find(a=>/^--version=[1-9][0-9]*$/.test(a));
+if(args.length>2||args.some(a=>!['all','disconnect'].includes(a)&&a!==versionArg)||(all&&disconnect)||new Set(args).size!==args.length)throw Error('Specify all or disconnect, optionally --version=N');
+const expectedVersion=versionArg?Number(versionArg.slice(10)):1;
+const project='saatxzwxvdvqevbnskxy',names=disconnect?['quickbooks-disconnect']:['quickbooks-oauth-start','quickbooks-oauth-callback','learn-quickbooks-worker',...(all?['quickbooks-disconnect']:[])];
 const token=savedCliToken(),root='.verification-results/quickbooks-runtime-readback-'+Date.now();mkdirSync(root,{recursive:true,mode:0o700});
 async function inventory(){const r=await fetch(`https://api.supabase.com/v1/projects/${project}/functions`,{headers:{Authorization:'Bearer '+token},redirect:'error',signal:AbortSignal.timeout(30000)});if(!r.ok)throw Error('TEST runtime inventory unavailable');return r.json();}
 const before=await inventory(),reports=[];
 for(const name of names){
- const live=before.find(x=>x.slug===name);if(live?.version!==1||live.status!=='ACTIVE'||live.verify_jwt!==false)throw Error('Unexpected QuickBooks TEST runtime version');
+ const live=before.find(x=>x.slug===name);if(live?.version!==expectedVersion||live.status!=='ACTIVE'||live.verify_jwt!==false)throw Error('Unexpected QuickBooks TEST runtime version');
  const download=spawnSync('/Users/chrisdrummond/.npm/_npx/f488b5593433aa64/node_modules/supabase/bin/supabase',['functions','download',name,'--project-ref',project,'--workdir',root],{env:{...process.env,SUPABASE_ACCESS_TOKEN:token},encoding:'utf8',timeout:60000,maxBuffer:2097152});
  if(download.status!==0)throw Error('TEST function readback unconfirmed');
  const bundle=edgeRuntimeBundle([{name,verifyJwt:false}]),folder=root+'/supabase/functions/'+name+'/',missing=[],changed=[],matched=[];

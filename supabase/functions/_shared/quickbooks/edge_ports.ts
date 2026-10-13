@@ -1,5 +1,6 @@
-// Server-only Deno adapter. No credential or request logging.
+// Server-only Deno adapter. Logs only bounded provider response metadata.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { quickBooksDiagnosticFetch } from "./provider_trace.ts";
 export function quickBooksEdgePorts() {
   const url = Deno.env.get("SUPABASE_URL"),
     anon = Deno.env.get("SUPABASE_ANON_KEY"),
@@ -14,6 +15,7 @@ export function quickBooksEdgePorts() {
   const server = createClient(url, service, options);
   return {
     siteOrigin,
+    fetcher: quickBooksDiagnosticFetch(),
     minorVersion: Number(minor),
     serviceRpc: (name: string, args: Record<string, unknown>) => server.rpc(name, args),
     userRpc: async (jwt: string) => {
