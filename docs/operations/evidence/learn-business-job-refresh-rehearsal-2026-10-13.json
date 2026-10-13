@@ -1,0 +1,77 @@
+{
+  "state": "verified_offline_not_deployed",
+  "source": "supabase/migrations/20261102060000_learn_business_job_refresh.sql",
+  "sourceSha256": "f4e958c5d62ebfd3037d18b68b2995c08e3f18f020e5fdc7733f7109acaed713",
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 401,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "fd5b6454b6cc161cd051e84433d0708f510467949c22bdc7b0300ea6e0a5e780",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "newLedgerVerifiedEmpty": true,
+  "transactionRollback": true,
+  "journeys": 15,
+  "withholdingComparisons": 42,
+  "largeCustomerRegression": {
+    "unrelatedJobs": 600,
+    "originalUnboundedWalkReproduced": true,
+    "reviewedConversationRetained": true,
+    "unrelatedSourceReadsRejected": true
+  },
+  "refreshJourney": {
+    "ownerPreview": true,
+    "operatorApplyAudited": true,
+    "profileUnchanged": true,
+    "sourceStatusUpdated": true,
+    "originalSourceAndLinkPreserved": true,
+    "customerSlackContextRestored": true,
+    "replayIdempotent": true,
+    "conflictingRequestRejected": true,
+    "foreignTenantRejected": true,
+    "localEditsHeld": true,
+    "reassignmentHeld": true,
+    "lateLedgerFailureRollsBackJob": true,
+    "unzonedCompletionExcludedFromInstant": true,
+    "effectiveSourceReturnedOnCustomerCard": true
+  },
+  "frontend": {
+    "targetedTestsPassed": 21,
+    "typescriptPassed": true,
+    "buildPassed": true,
+    "browserAcceptance": false
+  },
+  "containerRemoved": true,
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "remaining": [
+    "Durable cancellation of obsolete pending requests",
+    "Additional multiple-update and revocation cases",
+    "Exact matched release and preservation-aware rollback",
+    "Hosted TEST and signed-in browser acceptance",
+    "Production scoped release and actual source/card refresh",
+    "Customer/site/contact refresh adapters and controlled unattended operation"
+  ]
+}
