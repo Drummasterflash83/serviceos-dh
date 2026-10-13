@@ -10,6 +10,12 @@ import { LearnPerformanceCard } from "./LearnPerformanceCard";
 import { LearnWorkHistory } from "./LearnWorkHistory";
 import { LearnWorkCalendarSettings } from "./LearnWorkCalendarSettings";
 import { cardBrief } from "@/lib/learn-card-brief";
+import { readCustomerBusinessContext } from "@/lib/learn-customer-business-context";
+import {
+  customerJobBrief,
+  visibleCustomerJobBrief,
+  type ScopedCustomerJobBrief,
+} from "@/lib/learn-card-job-brief";
 import { LearnScorecardSettings } from "./LearnScorecardSettings";
 import {
   readLearnCards,
@@ -438,6 +444,51 @@ function CardDetail({
     [revision, setRevision] = useState(0);
   const [clock, setClock] = useState(Date.now());
   const [relatedJobId, setRelatedJobId] = useState<string | null>(null);
+  const [jobRead, setJobRead] = useState<ScopedCustomerJobBrief | null>(null);
+  const [jobReadState, setJobReadState] = useState("Reading linked job statuses…");
+  const jobScope = `${tenantId}:${actorId}:${id}:${revision}`;
+  useEffect(() => {
+    if (kind !== "customer") return;
+    let active = true;
+    const controller = new AbortController();
+    setJobRead(null);
+    setJobReadState("Reading linked job statuses…");
+    void readCustomerBusinessContext(
+      getSupabaseClient(),
+      {
+        tenant: tenantId,
+        actor: actorId,
+        card: id,
+        collection: "jobs",
+      },
+      AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]),
+    )
+      .then((page) => {
+        if (active) {
+          setJobRead({ scope: jobScope, brief: customerJobBrief(page) });
+          setJobReadState("Refresh evidence to recheck linked job statuses.");
+        }
+      })
+      .catch(() => {
+        if (active)
+          setJobReadState("Linked job statuses could not be checked. Refresh evidence to retry.");
+      });
+    const hide = () => {
+      if (document.hidden) {
+        active = false;
+        controller.abort();
+        setJobRead(null);
+        setJobReadState("Refresh evidence to recheck linked job statuses.");
+      }
+    };
+    document.addEventListener("visibilitychange", hide);
+    return () => {
+      active = false;
+      controller.abort();
+      document.removeEventListener("visibilitychange", hide);
+    };
+  }, [kind, tenantId, actorId, id, revision]);
+  const jobBrief = visibleCustomerJobBrief(jobRead, jobScope, clock);
   useEffect(() => {
     let active = true;
     setData(null);
@@ -544,14 +595,31 @@ function CardDetail({
                 <article>
                   <span>What has been done</span>
                   <strong>
-                    {brief.closed.length
-                      ? `${brief.closed.length} action${brief.closed.length === 1 ? "" : "s"} marked complete`
-                      : "Completed work not established"}
+                    {jobBrief?.completed
+                      ? `${jobBrief.completed} linked job${jobBrief.completed === 1 ? "" : "s"} recorded complete`
+                      : brief.closed.length
+                        ? `${brief.closed.length} action${brief.closed.length === 1 ? "" : "s"} marked complete`
+                        : "Completed work not established"}
                   </strong>
                   <small>
-                    {brief.closed.length
-                      ? "Recorded outcomes are listed in the findings below."
-                      : "Missing completion evidence does not mean no work was done."}
+                    {jobBrief?.completed && brief.closed.length
+                      ? `${brief.closed.length} action${brief.closed.length === 1 ? "" : "s"} also marked complete; these may concern the same jobs.`
+                      : brief.closed.length
+                        ? "Recorded outcomes are listed in the findings below."
+                        : jobBrief?.completed
+                          ? "Recorded job status is completion evidence; it does not establish payment or a completion time."
+                          : "Missing completion evidence does not mean no work was done."}
+                  </small>
+                  {kind === "customer" && (
+                    <small>
+                      {jobBrief
+                        ? `Based on ${jobBrief.shown} of ${jobBrief.total} published linked jobs${jobBrief.limited ? "; further jobs are outside this summary" : ""}. See job details below for source evidence.`
+                        : jobReadState}
+                    </small>
+                  )}
+                  <small>
+                    {jobBrief &&
+                      `${jobBrief.open} open · ${jobBrief.pending} pending · ${jobBrief.on_hold} on hold · ${jobBrief.closed} closed${jobBrief.unconfirmed ? ` · ${jobBrief.unconfirmed} status${jobBrief.unconfirmed === 1 ? "" : "es"} to confirm` : ""}. Published statuses may lag the provider.`}
                   </small>
                 </article>
                 <article>
