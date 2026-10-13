@@ -7,6 +7,27 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 18:47 BST — account-holder review candidate verified locally.**
+
+- New person-card review now requires a checked customer account name and an
+  explicit same/different primary-contact decision. Different contacts' email
+  and phone are not copied onto the account holder. Existing reviews and source
+  history remain intact; no broader customers were published.
+- Fourteen focused tests, TypeScript, 47 prebuild checks and the build pass.
+  An isolated native restore plus 24 reviewed packages verifies the writer,
+  operator audit/isolation, stale-source rejection, exact legacy retries and
+  rollback, preserving 1,591,580 archived rows and seven sequences. Its disposable
+  container was removed. Later unrelated Slack changes are outside that baseline.
+- This is **local-only**. Current hosted-schema comparison, matched deployment
+  and signed-in review acceptance remain before describing the feature as LIVE.
+- A fresh read at 17:45 UTC shows LIVE recurring Commusoft capture at 840 customer-
+  contact pages, with valid actor/connection authority. Site contacts and the
+  full recurring-cycle watermark remain unfinished.
+
+[Candidate and release requirements](LEARN-CUSTOMER-ACCOUNT-HOLDER.md) ·
+[Verification evidence](evidence/learn-customer-account-holder-candidate-2026-10-13.json).
+
+
 **13 October, 18:22 BST — Slack replies advancing; Commusoft coverage reconciled against its UI.**
 
 - The recovered Slack channel entered normal reply discovery: 20 threads found and

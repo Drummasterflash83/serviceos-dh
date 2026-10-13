@@ -101,3 +101,39 @@ test("null batch receipt is preserved and writes never retry automatically", asy
   assert.deepEqual(await client.rpc(action, args), { data: null, error: null });
   assert.equal(calls, 1);
 });
+
+test("account-holder confirmation stays inside the logged selected-client facade", async () => {
+  const identityAction = "learn_commusoft_confirm_customer_identity";
+  const identityArgs = {
+    p_tenant: tenant,
+    p_version: actor,
+    p_kind: "person",
+    p_target: null,
+    p_reason: "Reviewed source",
+    p_identity: {
+      display_name: "Synthetic holder",
+      contact_is_customer: false,
+      evidence: "Synthetic account screen",
+    },
+  };
+  const client = operatorBusinessReviewClient(
+    {
+      rpc: async (name, input) => {
+        assert.equal(name, "openfolk_business_review");
+        assert.deepEqual(input, {
+          p_tenant: tenant,
+          p_action: identityAction,
+          p_reason: scope.reason,
+          p_args: identityArgs,
+        });
+        return { data: { ...envelope({ already: false }), action: identityAction }, error: null };
+      },
+    },
+    scope,
+    () => true,
+  );
+  assert.deepEqual(await client.rpc(identityAction, identityArgs), {
+    data: { already: false },
+    error: null,
+  });
+});

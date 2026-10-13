@@ -41,6 +41,9 @@ export function LearnCommusoftCustomers({
   const [target, setTarget] = useState(""),
     [reason, setReason] = useState(""),
     [approved, setApproved] = useState(false);
+  const [accountName, setAccountName] = useState(""),
+    [accountEvidence, setAccountEvidence] = useState(""),
+    [contactRelation, setContactRelation] = useState<"" | "same" | "different">("");
   const [busy, setBusy] = useState(false),
     [ready, setReady] = useState(false),
     [notice, setNotice] = useState("");
@@ -49,6 +52,9 @@ export function LearnCommusoftCustomers({
     editable = useRef(canEdit);
   editable.current = canEdit;
   function resetDecision() {
+    setAccountName("");
+    setAccountEvidence("");
+    setContactRelation("");
     setKind("");
     setSearch("");
     setSearched(null);
@@ -162,7 +168,10 @@ export function LearnCommusoftCustomers({
       !approved ||
       !ready ||
       searched !== search.trim() ||
-      reason.trim().length < 3
+      reason.trim().length < 3 ||
+      (kind === "person" &&
+        target === "new" &&
+        (!contactRelation || !accountName.trim() || accountEvidence.trim().length < 3))
     )
       return;
     const input = {
@@ -171,6 +180,15 @@ export function LearnCommusoftCustomers({
       kind,
       target: target === "new" ? null : target,
       reason,
+      ...(kind === "person" && target === "new"
+        ? {
+            identity: {
+              displayName: accountName,
+              contactIsCustomer: contactRelation === "same",
+              evidence: accountEvidence,
+            },
+          }
+        : {}),
     };
     await operation(async (ticket) => {
       setApproved(false);
@@ -257,7 +275,10 @@ export function LearnCommusoftCustomers({
                     }}
                     aria-pressed={selected?.external_id === r.external_id}
                   >
-                    {r.summary.company_name ?? r.summary.person_name ?? `Customer ${r.external_id}`}{" "}
+                    {r.summary.company_name ?? `Customer ${r.external_id}`}
+                    {!r.summary.company_name &&
+                      r.summary.person_name &&
+                      ` · Primary contact: ${r.summary.person_name}`}{" "}
                     · {r.link ? "Linked" : "Review needed"}
                   </button>
                 </li>
@@ -297,11 +318,11 @@ export function LearnCommusoftCustomers({
           <h3>Commusoft customer {selected.external_id}</h3>
           <p>Observed {new Date(selected.observed_at).toLocaleString("en-GB")}</p>
           <dl>
-            <dt>Person / primary contact</dt>
+            <dt>Primary contact</dt>
             <dd>{selected.summary.person_name ?? "Not supplied"}</dd>
             <dt>Company</dt>
             <dd>{selected.summary.company_name ?? "Not supplied"}</dd>
-            <dt>Email and phone</dt>
+            <dt>Primary contact email and phone</dt>
             <dd>
               {selected.summary.email ?? "No email"} · {selected.summary.phone ?? "No phone"}
             </dd>
@@ -331,6 +352,9 @@ export function LearnCommusoftCustomers({
                   value={kind}
                   onChange={(e) => {
                     setKind(e.target.value as CustomerKind | "");
+                    setAccountName("");
+                    setAccountEvidence("");
+                    setContactRelation("");
                     setCandidates([]);
                     setSearched(null);
                     setCandidateNext(null);
@@ -423,6 +447,66 @@ export function LearnCommusoftCustomers({
                     Create a new {kind === "company" ? "company" : "person"} customer after checking
                     existing records
                   </label>
+                  {target === "new" && kind === "person" && (
+                    <section className="space-y-3" aria-label="Confirm customer account holder">
+                      <p>
+                        Check the customer account in Commusoft or its export. The primary contact
+                        above may be someone else, such as a tenant or a family member.
+                      </p>
+                      <label className="block">
+                        Is the primary contact also the customer account holder?
+                        <select
+                          aria-label="Primary contact relationship"
+                          value={contactRelation}
+                          onChange={(e) => {
+                            const relation = e.target.value as "" | "same" | "different";
+                            setContactRelation(relation);
+                            setAccountName(
+                              relation === "same" ? (selected.summary.person_name ?? "") : "",
+                            );
+                            setApproved(false);
+                          }}
+                        >
+                          <option value="">Choose after checking the account</option>
+                          <option value="same">Yes, the same person</option>
+                          <option value="different">No, a different person</option>
+                        </select>
+                      </label>
+                      <label className="block">
+                        Confirmed customer account name
+                        <input
+                          aria-label="Confirmed customer account name"
+                          value={accountName}
+                          maxLength={1000}
+                          readOnly={contactRelation === "same"}
+                          onChange={(e) => {
+                            setAccountName(e.target.value);
+                            setApproved(false);
+                          }}
+                        />
+                      </label>
+                      <label className="block">
+                        Where you checked the account holder
+                        <textarea
+                          aria-label="Account holder evidence"
+                          value={accountEvidence}
+                          maxLength={1000}
+                          placeholder="Account number and provider screen, or export date and row"
+                          onChange={(e) => {
+                            setAccountEvidence(e.target.value);
+                            setApproved(false);
+                          }}
+                        />
+                      </label>
+                      {contactRelation === "different" && (
+                        <p>
+                          The account holder gets a separate customer card. The primary contact
+                          stays in the retained source for contact review; their email and phone
+                          will not be assigned to the account holder.
+                        </p>
+                      )}
+                    </section>
+                  )}
                   <label className="block">
                     Review reason{" "}
                     <textarea
@@ -445,7 +529,16 @@ export function LearnCommusoftCustomers({
                   </label>
                   <button
                     className="cp-primary"
-                    disabled={!target || !approved || reason.trim().length < 3}
+                    disabled={
+                      !target ||
+                      !approved ||
+                      reason.trim().length < 3 ||
+                      (kind === "person" &&
+                        target === "new" &&
+                        (!contactRelation ||
+                          !accountName.trim() ||
+                          accountEvidence.trim().length < 3))
+                    }
                     onClick={() => void save()}
                   >
                     Confirm customer identity
