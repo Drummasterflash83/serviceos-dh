@@ -1,0 +1,35 @@
+{
+  "state": "reviewed_hosted_baseline_unchanged",
+  "observedAt": "2026-10-13T00:22:30.703Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "schemaMatches": true,
+  "runtimeMatches": true,
+  "differences": {
+    "tables": {
+      "added": [],
+      "missing": [],
+      "changed": []
+    },
+    "functions": {
+      "added": [],
+      "missing": [],
+      "changed": []
+    },
+    "views": {
+      "added": [],
+      "missing": [],
+      "changed": []
+    }
+  },
+  "functionCount": 88,
+  "baselineSchemaSha256": "d9668ac8e7481070280203d4a7bdd5c226d5a029bedaade876712ef6f7d22501",
+  "baselineRuntimeSha256": "cff4dde841dfe8bceaa8d3482176f3f1260f528309fc9b99a039b5a189500ec4",
+  "currentSchemaSha256": "fd008bb60705003544ae4efe518aff616010d56fa59e22e5e6b448faed4c2e98",
+  "currentRuntimeSha256": "d362dac5884f290a1ee204468c09c91e2485fea7744b6717d99812acb13de1ff",
+  "productionChanges": 0,
+  "providerRequests": 0,
+  "limitations": [
+    "Public schema and hosted runtime definitions only; not a preservation snapshot, active-work drain or signed-in acceptance.",
+    "Matches the reviewed hosted schema; earlier isolated-archive deparsing differences are not ignored or reclassified by this check."
+  ]
+}

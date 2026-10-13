@@ -26,6 +26,11 @@ override a later release observation. No requirement is silently deferred.
   sites resolve to 51 available, executable RPC targets in the rehearsed schema.
   Fresh production configuration preflight is ready; no secrets were provisioned.
 
+- Fresh read-only inspection at 00:22 UTC confirms the reviewed production public
+  schema and all 88 hosted function definitions remain unchanged. The new private
+  recovery snapshot is exporting; neither its restore nor independent copy is yet
+  verified. The existing snapshot and recovery evidence remain retained.
+
 ### Needs finishing
 
 - Complete signed-in production acceptance. The matching protected frontend now
