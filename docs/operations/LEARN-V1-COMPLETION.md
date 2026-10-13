@@ -7,6 +7,31 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 22:11 BST — source-to-job refresh and matching review UX pass offline.**
+
+- Added an append-only effective projection history and a reviewed Commusoft job
+  refresh. The full-schema scenario advances open to completed and restores the
+  proven customer/Slack context, without changing original identity links or source
+  history. Owner/site changes and local edits are held; uncertain dates do not
+  become invented instants. The real LIVE job has not been refreshed yet.
+- The existing review UI now has a saved/latest comparison, review reason and durable
+  scoped request recovery. Twenty-one client tests, TypeScript and frontend build
+  pass. No new frontend, hosted schema or runtime was deployed.
+- Full native-schema acceptance passes all 15 journeys, 42 withholding comparisons,
+  the 600-job regression and the new reviewed refresh path. Installation preserves
+  all 1,591,580 archived rows and seven sequences; the additional ledger is empty.
+  The first rehearsal caught a comparison that treated the new empty table as a data
+  change; the second caught a synthetic feature-flag constraint mismatch. Both were
+  corrected before the third complete passing run; no hosted data was involved.
+- Still needed before release: durable cancellation of obsolete pending requests,
+  additional transition/revocation cases, exact matching guards/rollback and hosted
+  TEST/browser acceptance. Then verify the actual LIVE completed-job/Slack journey.
+  Broader customer/site/contact refresh, unattended reconciliation and the remaining
+  LEARN coverage/scoring/operations requirements remain active.
+
+[Refresh design and release work](LEARN-BUSINESS-SOURCE-REFRESH.md) ·
+[Offline evidence](evidence/learn-business-job-refresh-rehearsal-2026-10-13.json).
+
 **13 October, 21:53 BST — customer communication timeout fixed and verified LIVE.**
 
 - The scoped `learn_card_slack_job_context` optimization is installed with its exact
