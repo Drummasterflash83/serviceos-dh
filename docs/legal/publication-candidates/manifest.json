@@ -1,0 +1,9 @@
+{
+  "state": "prepared_not_approved_or_published",
+  "preparedAt": "2026-10-13",
+  "sources": {
+    "PRIVACY": "d66192de5182338be15087e83b2a5411b45b10b165bb577e932026a4a66ba359",
+    "TERMS": "07e5537a5b72c2ad8484692dc5dc2204ae7ca85367818ac46e65543d73179f03",
+    "REVIEW": "6991bae88692c351cfc78e33e12baed2ac2be25cba79d9bbf5e1147996be97ff"
+  }
+}

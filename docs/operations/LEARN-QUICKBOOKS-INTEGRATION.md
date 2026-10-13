@@ -885,3 +885,30 @@ Production Intuit credentials, Drummonds consent/import, public-policy adoption,
 frontend release and live acceptance remain open. HTML no-store headers are
 prepared locally and still need deployed verification. No production accounting
 access or continuous capture is implied by the installed foundation.
+
+
+## Protected frontend and policy wording — 13 October, 22:06 UTC
+
+Git `ed7e3669f585ebee61cdee3eb30f2692d1a413ce` built successfully locally and on
+Vercel as protected TEST candidate `dpl_9hCMhDtwTVvCZiu8xv36dnHt5jAH`. Both
+GitHub checkpoint refs were read back at that SHA. The candidate retains the
+latest shared Commusoft TEST work. Its QuickBooks guide renders in the existing
+browser session. Stable TEST aliases and the LIVE frontend were not changed.
+The HTML cache rules are in the built commit, but actual application response
+headers are not yet verified: unauthenticated reads reach Vercel protection, and
+no existing automation-bypass credential was available. No bypass access was
+created or protection weakened.
+
+The Intuit Accounting API draft was saved once and its delayed confirmation
+dismissed promptly. Reload verified all four design-target versions, version-
+change acceptance = No, thoroughly tested multicurrency/tax features = None,
+webhooks = No and CDC = No. These answers do not claim actual testing across all
+subscription plans. The security-policy commitment remains awaiting Chris; no
+final assessment submission occurred.
+
+Clean [publication wording candidates](../legal/publication-candidates/REVIEW.md)
+and local previews now exist alongside the unchanged approved originals. Their
+retention clarification is explicitly pending Chris's decision; it does not
+waive the original verification-before-publication gate by default. The private
+agreement remains unchanged, unsigned and unpublished. Supplier/transfer checks
+and release acceptance remain open.
