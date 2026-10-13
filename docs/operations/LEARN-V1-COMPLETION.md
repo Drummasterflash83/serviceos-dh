@@ -7,6 +7,48 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 03:02 BST — retained customer job history linked and inspected in TEST.**
+
+### Working and verified
+
+- The already-reviewed customer card now has 46 linked Commusoft jobs, up from one.
+  The 45 additions reference its existing reviewed customer or site; no new customer
+  identity was inferred. All were applied through the signed-in operator review UI.
+- Both card pages were inspected: 25 plus 21 records, with 46 distinct job numbers.
+  Source statuses and missing/unconfirmed timing evidence remain visible. Unzoned
+  completion times remain excluded from duration and performance calculations.
+- A five-minute review expiry interrupted one acknowledgement. Reopening the review
+  and checking its saved receipt recovered the successful result without another write.
+- The rollback rehearsal preserved all 238 checked tables. After the retained run,
+  232 tables matched in full; the other six contained only expected new jobs, links,
+  review receipts and audit records. All their prior rows also matched. Credentials,
+  source versions, recordings, communications and access grants were unchanged.
+- Commusoft was enabled temporarily for retained review and restored Off through
+  audited controls. The prior import approval was expired, with no active Commusoft
+  jobs, enabled recurring capture or TEST cron table. No provider requests, paid AI,
+  production changes or promotion occurred.
+
+### Needs finishing
+
+- This proves one customer's retained job journey through the operator view, not
+  complete publication of the 12,611 retained jobs or a customer-signed-in journey.
+  Remaining customer/site/contact relationships still need review.
+- Several review reads were slow or failed and needed reload; diagnose query/runtime
+  performance before scaling this workflow. Saved writes and receipt recovery worked.
+- The operator's client-view route still asks for a company login to read cards.
+  Do not represent the verified operator card as accepted customer access.
+- Full input coverage, ongoing capture, phone transcription/AI, useful summaries and
+  scoring, matched production release, live acceptance and monitoring remain open.
+
+### Blocked externally
+
+- The founder access decision, live sign-in, TEST AI access and earlier 1Password
+  unlock request remain pending. Fresh independent off-site recovery is unfinished.
+
+[Retained job acceptance evidence](evidence/learn-retained-job-links-2026-10-13.json).
+
+### Previous founder access and frontend milestone
+
 **13 October, 02:38 BST — founder access rehearsed and matching frontend staged; not promoted.**
 
 ### Working and verified

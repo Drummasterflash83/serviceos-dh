@@ -1,0 +1,53 @@
+{
+  "version": "learn-retained-job-links/1",
+  "observedAt": "2026-10-13T02:01:35.473Z",
+  "environment": "hosted TEST",
+  "state": "retained_customer_job_journey_verified",
+  "scope": "Existing reviewed customer and site; previously retained sources only",
+  "before": { "linkedJobs": 1, "retainedJobIdentities": 12611 },
+  "after": { "addedJobs": 45, "linkedJobs": 46, "successfulBatches": 45, "held": 0 },
+  "browser": {
+    "origin": "https://test.openfolk.ai",
+    "actor": "existing signed-in OpenFolk operator",
+    "firstPage": 25,
+    "secondPage": 21,
+    "distinctJobNumbers": 46,
+    "reviewExpiryReceiptRecoveredWithoutDuplicateWrite": true,
+    "customerSignedInAcceptance": false,
+    "intermittentReviewReadFailures": true
+  },
+  "preservation": {
+    "rolledBackRehearsalTablesMatched": 238,
+    "retainedRunTablesUnchanged": 232,
+    "tablesWithExpectedAppendOnlyChanges": 6,
+    "allPriorRowsMatched": true,
+    "newJobsConfinedToSelectedTenant": true,
+    "newReviewsAttributedToExistingOperator": true,
+    "credentialsSourcesCommunicationsRecordingsAndGrantsUnchanged": true
+  },
+  "capture": {
+    "inputFlagRestoredOff": true,
+    "existingAccountStatus": "active",
+    "existingImportApprovalExpired": true,
+    "activeCommusoftJobs": 0,
+    "enabledRecurringCapture": 0,
+    "testCronTablePresent": false,
+    "providerRequests": 0,
+    "paidAiRequests": 0
+  },
+  "productionChanges": 0,
+  "limitations": [
+    "One reviewed customer only; overall source-to-card coverage remains incomplete.",
+    "Completion times without an explicit timezone remain unverified and excluded from timing scores.",
+    "Intermittent review-read failures require diagnosis before scaling.",
+    "The customer-signed-in journey, ongoing capture and production release are not accepted by this result."
+  ],
+  "privateEvidence": [
+    ".verification-results/retained-business-links-20261013.json",
+    ".verification-results/retained-job-link-rehearsal-v3-20261013.json",
+    ".verification-results/retained-job-capture-safety-20261013.json",
+    ".verification-results/retained-job-capture-after-20261013.json",
+    ".verification-results/retained-job-links-acceptance-20261013.json",
+    ".verification-results/test-customer-46-jobs-20261013.png"
+  ]
+}
