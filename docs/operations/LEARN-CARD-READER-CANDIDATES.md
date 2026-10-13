@@ -1,6 +1,23 @@
 # Customer-card communication reader candidate
 
-Status: verified in the isolated restored production schema; not deployed.
+Status: installed and verified LIVE on 14 October, 00:08–00:09 BST.
+
+The paired management-API probe improved from 5,625 ms to 639 ms with an identical
+two-row response digest. Two signed-in LIVE refreshes showed both emails and the
+two linked Commusoft jobs without the communication-read warning. Owner resolution
+and the completed-work brief remain separate unfinished work. This is one measured
+customer journey, not a latency guarantee or full provider-coverage claim.
+
+The exact apply and inverse rollback passed the full-schema rehearsal, including
+five failure/drift guards and all sixteen journeys. The LIVE client wait timed out
+at 75 seconds; no mutation was repeated. Independent catalog reads confirmed the
+committed definition, exact ownership/grants, original role membership and unchanged
+dependent helpers. The atomic transaction checks all 22 named data tables and
+access/schedules before commit. Its individual table-count/digest receipt was not
+returned to the runner; this limitation is retained in the evidence.
+
+[Live evidence](evidence/learn-card-reader-live-2026-10-14.json) ·
+[Exact apply/rollback package](../../supabase/release/learn-card-reader-candidates/manifest.json).
 
 The LIVE reader intermittently failed for an existing person card, then succeeded
 on refresh. Both saved emails remained intact. Management read-only probes returned
@@ -30,7 +47,7 @@ The 16-journey networkless rehearsal passed. All archive COPY data and seven
 sequences match; the temporary container was removed. Evidence is recorded in
 [evidence/learn-card-communication-candidates-2026-10-13.json](evidence/learn-card-communication-candidates-2026-10-13.json).
 
-## Remaining release steps
+## Completed release procedure (retain for operations)
 
 1. Capture the current function definition, owner/ACL, role memberships and relevant
    source-preservation baseline. Reject drift from the rehearsed prior reader.

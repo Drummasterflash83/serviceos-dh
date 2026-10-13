@@ -1,0 +1,43 @@
+{
+  "target": "tgbnakbxwcqjeimygroz",
+  "source": "supabase/migrations/20261102080000_learn_card_communication_candidates.sql",
+  "sourceSha256": "d91fed0a03d16c39100f36aba12f5eb89651678e47b4649c4e97d5867a0a8ecc",
+  "before": {
+    "acl": "{learn_card_communication_reader=X/learn_card_communication_reader,authenticated=X/learn_card_communication_reader}",
+    "hash": "fe5cb8bd96f3c5e4cc49141b5da2bda7",
+    "owner": "learn_card_communication_reader",
+    "signature": "public.learn_card_communications_read(uuid,uuid,uuid,uuid,uuid[])"
+  },
+  "after": {
+    "acl": "{learn_card_communication_reader=X/learn_card_communication_reader,authenticated=X/learn_card_communication_reader}",
+    "hash": "fe07b1ae36b8daebae5ffe89352ada18",
+    "owner": "learn_card_communication_reader",
+    "signature": "public.learn_card_communications_read(uuid,uuid,uuid,uuid,uuid[])"
+  },
+  "applySha256": "f957c153d61aea58796118fb3795f467fcffed987479ca04b95bc71b0925cbac",
+  "rollbackSha256": "129f3def2f840fb7ab0498e865a657ef16d58fe72e8b31d7c7d39784bf620e2f",
+  "preservationTables": [
+    "jobs",
+    "sites",
+    "people",
+    "companies",
+    "customer_cards",
+    "contact_points",
+    "learn_business_input_links",
+    "learn_business_input_versions",
+    "learn_business_input_pages",
+    "learn_business_input_observations",
+    "slack_messages",
+    "slack_message_versions",
+    "interactions",
+    "profiles",
+    "platform_authority_grants",
+    "provider_connections",
+    "email_messages",
+    "phone_calls",
+    "phone_recordings",
+    "receptionist_voicemails",
+    "receptionist_voicemail_intakes",
+    "receptionist_voicemail_sources"
+  ]
+}

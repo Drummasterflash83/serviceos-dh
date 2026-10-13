@@ -8,6 +8,33 @@ override a later release observation. No requirement is silently deferred.
 ## Current evidence and priority
 
 
+**14 October, 00:10 BST — scoped communication reader verified LIVE.**
+
+- The exact rehearsed reader is installed. A paired real-customer read returned
+  the same two-row digest in 639 ms versus 5,625 ms before. Two existing-session
+  LIVE refreshes show both emails and both Commusoft jobs without the communication
+  read warning. This is measured acceptance for this card, not a broad latency SLA.
+- All sixteen full-schema journeys and five release failure guards passed, including
+  inverse rollback and membership restoration. The atomic LIVE release checks equal
+  before/after fingerprints for 22 tables plus access/policies/schedules before commit.
+  The client timed out waiting for its response; no mutation was repeated. Read-only
+  reconciliation confirmed the exact committed function, owner/ACL, dependencies and
+  original membership. The per-table fingerprint receipt was not returned, which is
+  explicitly recorded as an evidence limitation.
+- The customer brief still does not combine completed-job status into its summary;
+  owner-name resolution, broader linked customer/contact coverage, findings and scoring
+  remain unfinished. The unrelated changed-job frontend acceptance gate is still open.
+- At 23:05 UTC Slack held 14,007 sources, with 18 active and 112 archived channel
+  windows complete. One recovery job succeeded at 23:01 UTC; the other remains held
+  for `automatic_ai_huddle_notes_enabled`. No failed job was blindly retried. The
+  ongoing Commusoft customer-contact pass reached 910 pages, without advancing its
+  cycle watermark prematurely.
+
+[Verified LIVE reader](evidence/learn-card-reader-live-2026-10-14.json) ·
+[Release and rollback procedure](LEARN-CARD-READER-CANDIDATES.md).
+
+
+
 **13 October, 23:59 BST — existing customer context verified; reader fix rehearsed.**
 
 - LIVE refresh now shows two retained email timeline entries alongside two newly
