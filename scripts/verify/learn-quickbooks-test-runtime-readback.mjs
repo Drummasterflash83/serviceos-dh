@@ -56,7 +56,8 @@ function structure(source) {
   return JSON.stringify(walk(tree));
 }
 
-const project='saatxzwxvdvqevbnskxy',names=['quickbooks-oauth-start','quickbooks-oauth-callback','learn-quickbooks-worker'];
+if(process.argv.length>3||(process.argv[2]&&process.argv[2]!=='disconnect'))throw Error('Specify disconnect or omit for foundation');
+const project='saatxzwxvdvqevbnskxy',names=process.argv[2]==='disconnect'?['quickbooks-disconnect']:['quickbooks-oauth-start','quickbooks-oauth-callback','learn-quickbooks-worker'];
 const token=savedCliToken(),root='.verification-results/quickbooks-runtime-readback-'+Date.now();mkdirSync(root,{recursive:true,mode:0o700});
 async function inventory(){const r=await fetch(`https://api.supabase.com/v1/projects/${project}/functions`,{headers:{Authorization:'Bearer '+token},redirect:'error',signal:AbortSignal.timeout(30000)});if(!r.ok)throw Error('TEST runtime inventory unavailable');return r.json();}
 const before=await inventory(),reports=[];

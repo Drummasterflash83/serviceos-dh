@@ -6,8 +6,9 @@ import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {savedCliToken} from './learn-test-readiness.mjs';
 const project='saatxzwxvdvqevbnskxy';
-const names=['quickbooks-oauth-start','quickbooks-oauth-callback','learn-quickbooks-worker'];
-const mode=process.argv[2];if(!['deploy','verify'].includes(mode)||process.argv.length!==3)throw Error('Specify deploy or verify');
+const disconnectOnly=process.argv[3]==='disconnect';
+const names=disconnectOnly?['quickbooks-disconnect']:['quickbooks-oauth-start','quickbooks-oauth-callback','learn-quickbooks-worker'];
+const mode=process.argv[2];if(!['deploy','verify'].includes(mode)||(![3,4].includes(process.argv.length)||(process.argv.length===4&&!disconnectOnly)))throw Error('Specify deploy or verify');
 const token=savedCliToken(),sha=s=>createHash('sha256').update(s).digest('hex');
 async function api(path,options={}){
  const r=await fetch(`https://api.supabase.com/v1/projects/${project}${path}`,{...options,headers:{Authorization:'Bearer '+token,...options.headers},redirect:'error',signal:AbortSignal.timeout(45000)});
@@ -19,6 +20,7 @@ let stage;
 const report={project,observedAt:new Date().toISOString(),endpoints:[],probes:[],productionChanges:0,providerRequests:0};
 try{
  const foundation=await query("select release_id from learn_quickbooks_release_receipts where release_id='quickbooks_foundation_v1'");if(foundation.length!==1)throw Error('TEST foundation required');
+ if(disconnectOnly){const r=await query("select source_hashes from learn_quickbooks_release_receipts where release_id='quickbooks_disconnect_v1'");if(r.length!==1||r[0].source_hashes?.[0]?.sha256!==sha(readFileSync('supabase/migrations/20261102030000_learn_quickbooks_disconnect.sql','utf8')))throw Error('TEST disconnect schema required');}
  const before=await api('/functions');
  if(mode==='deploy'){
   if(before.some(f=>names.includes(f.slug)))throw Error('TEST QuickBooks endpoint already exists; inspect before replacement');
@@ -44,7 +46,8 @@ try{
  const rest=rows=>JSON.stringify(rows.filter(f=>!names.includes(f.slug)).map(f=>({slug:f.slug,version:f.version,hash:f.ezbr_sha256,status:f.status,verifyJwt:f.verify_jwt})).sort((a,b)=>a.slug.localeCompare(b.slug)));
  report.otherEndpointsUnchanged=rest(before)===rest(after);if(!report.otherEndpointsUnchanged)throw Error('TEST unrelated runtime changed; inspect concurrent release');
  const base=`https://${project}.supabase.co/functions/v1/`;
- for(const p of [{name:'quickbooks-oauth-start',method:'OPTIONS',origin:'https://test.openfolk.ai',expected:204},{name:'quickbooks-oauth-start',method:'POST',origin:'https://test.openfolk.ai',expected:401},{name:'quickbooks-oauth-start',method:'POST',origin:'https://example.invalid',expected:403},{name:'quickbooks-oauth-callback',method:'GET',expected:400},{name:'learn-quickbooks-worker',method:'POST',expected:503}]){
+ const probes=disconnectOnly?[{name:'quickbooks-disconnect',method:'OPTIONS',origin:'https://test.openfolk.ai',expected:204},{name:'quickbooks-disconnect',method:'POST',origin:'https://test.openfolk.ai',expected:401},{name:'quickbooks-disconnect',method:'POST',origin:'https://example.invalid',expected:403}]:[{name:'quickbooks-oauth-start',method:'OPTIONS',origin:'https://test.openfolk.ai',expected:204},{name:'quickbooks-oauth-start',method:'POST',origin:'https://test.openfolk.ai',expected:401},{name:'quickbooks-oauth-start',method:'POST',origin:'https://example.invalid',expected:403},{name:'quickbooks-oauth-callback',method:'GET',expected:400},{name:'learn-quickbooks-worker',method:'POST',expected:503}];
+ for(const p of probes){
   const r=await fetch(base+p.name,{method:p.method,headers:p.origin?{Origin:p.origin}:{},redirect:'error',signal:AbortSignal.timeout(20000)});
   const body=await r.text();
   if(r.status!==p.expected||!r.headers.get('cache-control')?.includes('no-store'))throw Error('TEST public guard probe failed: '+p.name);

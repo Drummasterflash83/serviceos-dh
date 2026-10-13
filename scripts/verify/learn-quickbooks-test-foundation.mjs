@@ -39,6 +39,12 @@ async function verify(manifest){
   if(hashes?.length!==1||hashes[0].name!==name||hashes[0].sha256!==sha(readFileSync(new URL('supabase/migrations/'+name,root),'utf8')))throw Error('TEST finance extension receipt differs');
   expectedTables+=2;
  }
+ const disconnectReceipt=await query("select source_hashes from public.learn_quickbooks_release_receipts where release_id='quickbooks_disconnect_v1'");
+ if(disconnectReceipt.length){
+  const name='20261102030000_learn_quickbooks_disconnect.sql',hashes=disconnectReceipt[0].source_hashes;
+  if(hashes?.length!==1||hashes[0].name!==name||hashes[0].sha256!==sha(readFileSync(new URL('supabase/migrations/'+name,root),'utf8')))throw Error('TEST disconnect extension receipt differs');
+  expectedTables+=1;
+ }
  if(result.tables!==expectedTables||result.privateTables!==true||result.workerServiceOnly!==true||result.operatorStart!==true)throw Error('TEST release verification failed');
  return {state:'installed_metadata_verified',project,...result,installedAt:receipts[0].installed_at,sourceHashes:manifest.sourceHashes};
 }

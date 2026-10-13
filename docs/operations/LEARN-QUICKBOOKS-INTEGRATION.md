@@ -144,10 +144,11 @@ as proof that the original failure was fixed.
 ### Disconnect and reconnect — local verification, 13 October
 
 The fourth additive migration and dedicated `quickbooks-disconnect` endpoint are
-implemented and tested locally. **Neither is installed in hosted TEST or LIVE.**
-The existing start/callback/worker source closures are unchanged. The frontend now
-requires the disconnect status RPC, so install and verify this migration before
-releasing the new frontend.
+implemented and tested locally, and have now been **installed in hosted TEST** as
+recorded below. Neither is installed in LIVE. The existing start/callback/worker
+source closures are unchanged. The frontend now requires the disconnect status
+RPC; that prerequisite is present in TEST but must be installed before any LIVE
+frontend release.
 
 - An authenticated OpenFolk admin's logged request stops the selected connection,
   pauses queued/running imports and preserves retained pages/source history.
@@ -176,6 +177,24 @@ releasing the new frontend.
   Intuit acceptance. The provider responses in lifecycle tests are synthetic.
 
 See [disconnect verification evidence](evidence/learn-quickbooks-disconnect-2026-10-13.json).
+
+Hosted TEST release `quickbooks_disconnect_v1` installed at
+`2026-10-13 17:33:23.508781+00`, following an exact transaction/rollback rehearsal.
+The eight function bodies, owners, security-definer/search-path settings,
+user/service grants and both trigger bindings match the implementation. Runtime
+denial probes passed without creating identities or retained data. The initial
+preflight caught the hosted Vault helper's five-argument signature (with defaults),
+which differs from the disposable fixture; the prepared guard now uses the actual
+hosted signature.
+
+`quickbooks-disconnect` is ACTIVE version 1, artifact
+`a2d49119783e3b6b35fee7ac6e55f10b4ab28543b986747bbaca04de41574990`.
+Downloaded runtime readback matched all four source modules. HTTP checks returned
+204 for the allowed-origin preflight, 401 for an unsigned request and 403 for a
+foreign origin. All other TEST endpoints were unchanged. The foundation audit
+still passes with 15 private tables and **zero apps, connections, imports, pages,
+source records and disconnect requests**. This is hosted deployment evidence, not
+successful signed-in/provider revocation acceptance.
 
 Reproduce:
 
@@ -231,7 +250,7 @@ accepts empty success bodies and skips already-matching settings.
    worker dispatcher only for an explicitly defined sandbox import scope.
 3. Exercise real sandbox authorisation, token rotation and signed-in operator
    controls through TEST. Disconnect/provider revocation and recovery are now
-   locally implemented; deploy and exercise them against the real sandbox.
+   installed in hosted TEST; exercise them against the real sandbox.
    Local tests do not establish real provider acceptance.
 4. Obtain production app access and verify Drummonds' actual company identity
    through its authorised administrator. Never infer realm from a numeric
@@ -314,7 +333,8 @@ Next provider acceptance step is a real sandbox lifecycle run after the exact
 callback and secure development-credential destination are prepared. Production
 keys and live company authorization remain outstanding. The disconnect migration
 has now passed local lifecycle, concurrency, uncertain-outcome and recovery checks
-recorded above; hosted installation and real provider verification remain required.
+and hosted deployment verification recorded above; real provider acceptance remains
+required.
 
 ## Preservation and release
 
@@ -329,6 +349,35 @@ Recovery copies of real app credentials belong in the authorised **Openfolk
 ServiceOS** 1Password item, with the owner, environment, app ID, callback, secret
 location and rotation notes. The actual new credential storage/setup will be
 reviewed before provisioning the created app. This checkpoint contains no real keys.
+
+### Prepared development credential setup — not executed
+
+The Intuit app's Development redirect screen currently contains its default OAuth
+Playground callback. The following additional URL has been entered but **not saved**:
+`https://saatxzwxvdvqevbnskxy.supabase.co/functions/v1/quickbooks-oauth-callback`.
+The default entry remains unchanged. This is the deployed TEST callback, with
+one-use state, server-side token exchange and a return to `https://test.openfolk.ai/openfolk`.
+
+Proposed setup, awaiting the action-time credential-destination decision:
+
+- Read the existing **development** client ID/secret for OpenFolk ServiceOS,
+  app `4ef4971d-2a39-4309-8c6c-46510d679c59`; do not generate/rotate a key or alter
+  the separate Drummonds Dashboard app.
+- Register that ID in TEST `saatxzwxvdvqevbnskxy` as environment `sandbox`, with
+  the exact callback above. The existing service-only registration RPC stores
+  the client secret in Vault as `quickbooks_app:4ef4971d-2a39-4309-8c6c-46510d679c59`.
+  It remains until explicitly rotated/retired; no browser/client can read it.
+- Keep a local recovery copy in this Mac's Keychain under
+  `serviceos.quickbooks.development.4ef4971d-2a39-4309-8c6c-46510d679c59`, and in
+  the existing **Openfolk ServiceOS** 1Password item, labelled Development/Sandbox.
+  Any temporary transfer file must be private (0600), excluded from Git/output,
+  and removed after storage verification. Never put credentials in chat or logs.
+- Verify saved registration metadata and secret equality in memory. Do not
+  print plaintext or commit credential fingerprints.
+- This setup does **not** authorize any QuickBooks company, create users/grants,
+  import financial records, activate schedules, change production, or widen the
+  selected Intuit Accounting scope. Real sandbox-company authorization is the
+  next separate provider grant, reviewed at its consent screen.
 
 ### OAuth candidate installation boundaries
 
@@ -371,6 +420,13 @@ files are excluded from this checkpoint; the local build is not a release artifa
 - `scripts/verify/learn-quickbooks-test-runtime-readback.mjs` verifies downloaded
   version-1 source closures. Do not silently widen its expected version after a
   later release; update the release record and source evidence first.
+- `scripts/verify/learn-quickbooks-test-disconnect.mjs prepare|rehearse|install|verify`
+  manages only the TEST disconnect extension. `003_disconnect.sql` and its
+  manifest record the installed guarded bundle and source hashes.
+- Add `disconnect` to `learn-quickbooks-test-runtime.mjs deploy|verify` or
+  `learn-quickbooks-test-runtime-readback.mjs` to target only that endpoint.
+  Deployment refuses to overwrite an existing endpoint; all downloads verify
+  version 1 explicitly. No credentials or company grants are provisioned by these scripts.
 - `scripts/verify/learn-quickbooks-test-denials.sql` is a rollback-only TEST role
   probe; it does not create users, grants or credentials.
 
