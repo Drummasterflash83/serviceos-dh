@@ -18,6 +18,7 @@ export type EmmaInfo = {
   enabled: boolean;
   unavailableReason?: string | null;
   checkedAt: string;
+  recapText?: string | null;
   maxSeconds: number;
   overview: {
     name: string;
@@ -34,14 +35,15 @@ export function useEmmaInfo(
   userId: string | undefined,
   demo: boolean,
   enabled = true,
+  recap = false,
 ) {
   return useQuery({
-    queryKey: ["receptionist-info", userId, tenant],
+    queryKey: ["receptionist-info", userId, tenant, recap],
     enabled: enabled && !!userId && !!tenant && !demo,
     staleTime: 60000,
     queryFn: async () => {
       const { data, error } = await getSupabaseClient().functions.invoke("receptionist-practice", {
-        body: { tenantId: tenant, action: "info" },
+        body: { tenantId: tenant, action: "info", ...(recap ? {mode:"learn_recap"} : {}) },
       });
       if (error || data?.error) {
         // This endpoint returns governed messages, never raw provider payloads.
@@ -89,6 +91,7 @@ export function PracticeImprove({
   active,
   info,
   approvedTask,
+  recap = false,
 }: {
   tenant: string;
   userId?: string;
@@ -98,6 +101,7 @@ export function PracticeImprove({
   active: boolean;
   info: ReturnType<typeof useEmmaInfo>;
   approvedTask?: { id: string; version: number };
+  recap?: boolean;
 }) {
   const db = getSupabaseClient(),
     qc = useQueryClient();
@@ -312,7 +316,7 @@ export function PracticeImprove({
           tenantId: tenant,
           action: "start",
           sessionId: id,
-          mode: "conversation",
+          mode: recap ? "learn_recap" : "conversation",
           ...(approvedTask
             ? { careIssueId: approvedTask.id, careVersion: approvedTask.version }
             : {}),
@@ -524,20 +528,20 @@ export function PracticeImprove({
     <div className="ep" hidden={!active}>
       <div className="ep-grid">
         <section className="ep-stage" aria-label="Practice conversation">
-          <span className="ep-kicker">A PRIVATE CONVERSATION, RIGHT HERE</span>
+          <span className="ep-kicker">{recap ? "YOUR LEARN PICTURE, IN EMMA’S VOICE" : "A PRIVATE CONVERSATION, RIGHT HERE"}</span>
           <div className="ep-orb" aria-hidden="true">
             <Headphones size={46} />
           </div>
-          <h2>{approvedTask ? "Hear the approved change." : `Get to know ${name}.`}</h2>
+          <h2>{recap ? "Hear what’s coming into view." : approvedTask ? "Hear the approved change." : `Get to know ${name}.`}</h2>
           <p>
-            Speak to {name} in the app. End the conversation, hear it back and send one clear report
-            to OpenFolk.
+            {recap ? "Emma will read a fresh snapshot of the inputs your account can see, then explain what they could help your business discover. You can ask about the recap afterwards." : <>Speak to {name} in the app. End the conversation, hear it back and send one clear report to OpenFolk.</>}
           </p>
           <p className="ep-phone-safety">
             Allow microphone access and use fictional customer details. This tests Emma’s voice and
             answers, not the phone transfer or Birchills route. Practice is recorded, uses provider
             minutes and cannot change customer records.
           </p>
+          {recap && info.data?.recapText && <details className="ep-phone-safety"><summary>Read the recap preview</summary><p>{info.data.recapText}</p><small>Counts are checked again when you start. No costs are included in this recap.</small></details>}
           <div className="ep-call-console">
             <div className="ep-controls">
               {speaking ? (
@@ -565,7 +569,7 @@ export function PracticeImprove({
                     disabled={demo || info.isPending}
                     onClick={() => void start()}
                   >
-                    <Mic size={18} /> Test {name}
+                    <Mic size={18} /> {recap ? "Start LEARN recap" : `Test ${name}`}
                   </button>
                 </>
               )}

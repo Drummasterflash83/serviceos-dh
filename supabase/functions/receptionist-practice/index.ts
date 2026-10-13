@@ -1,3 +1,4 @@
+import { learnRecap, readRecapCounts, recapAssistant } from "../_shared/learn-recap.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { record, normalizeCall, secureUrl } from "../_shared/receptionist-data.ts";
 import { evidenceHash } from "../_shared/receptionist-care.ts";
@@ -44,7 +45,7 @@ Deno.serve(async (req) => {
     if (!uuid(body.tenantId)) return reply({ error: "Invalid workspace" }, 400);
     const { data: w, error: scopeError } = await db
       .from("receptionist_workspaces")
-      .select("assistant_id,vapi_secret_name,practice_enabled")
+      .select("assistant_id,vapi_secret_name,practice_enabled,company")
       .eq("tenant_id", body.tenantId)
       .maybeSingle();
     if (scopeError || !w) return reply({ error: "Workspace unavailable" }, 403);
@@ -199,8 +200,16 @@ Deno.serve(async (req) => {
               ? "Emma’s published conversation instructions are unavailable. OpenFolk needs to check the assistant configuration."
               : "Emma’s voice or model configuration is not supported by this practice connection yet. OpenFolk needs to check it.";
     }
+    let recapText: string | null = null;
+    if (body.mode === "learn_recap") {
+      if (voiceApproval) return reply({ error: "Choose a separate LEARN recap" }, 400);
+      const counts = await readRecapCounts(db, body.tenantId, Deno.env.get("LEARN_STATUS_READ_MODE"), Deno.env.get("SUPABASE_URL")!);
+      recapText = learnRecap(w.company, counts);
+      if (candidate) candidate = recapAssistant(candidate, recapText);
+    }
     if (body.action === "info")
       return reply({
+        recapText,
         overview: {
           ...overview,
           queryToolCount: queryIds.length + (candidate?.model.tools?.length ?? 0),

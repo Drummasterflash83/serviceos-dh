@@ -1,3 +1,4 @@
+import { EmmaProviderCosts } from "./EmmaProviderCosts";
 import { WorkspaceMenu } from "@/components/WorkspaceMenu";
 import { ClientHeaderBrand } from "@/components/ClientHeaderBrand";
 import { clientDisplayName } from "@/lib/client-brand";
@@ -939,6 +940,7 @@ export function ReceptionistWorkspace({
                   })}
                 </div>
               </section>
+              {!demo && tenant && user && <EmmaProviderCosts key={`${user.id}:${tenant}`} tenant={tenant} userId={user.id} />}
               <section className="rw-panel rw-emma-roadmap" aria-label="Where Emma is heading">
                 <div className="rw-panel-title">
                   <div>

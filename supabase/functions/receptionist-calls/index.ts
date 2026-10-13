@@ -1,3 +1,4 @@
+import { costQueries, scopedCostSummary } from "../_shared/receptionist-costs.ts";
 // Read-only Vapi view. Does not ingest duplicate interactions or alter the assistant.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { scopedCalls, record, normalizeCall } from "../_shared/receptionist-data.ts";
@@ -33,8 +34,19 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (error || !w) return reply({ error: "Workspace unavailable" }, 403);
     const key = Deno.env.get(w.vapi_secret_name);
-    if (body.action && body.action !== "recording" && body.action !== "detail")
+    if (body.action && body.action !== "recording" && body.action !== "detail" && body.action !== "costs")
       return reply({ error: "Unsupported action" }, 400);
+    if (body.action === "costs") {
+      if (!key) return reply({ error: "Provider costs are unavailable" }, 503);
+      const now = new Date();
+      const response = await fetch("https://api.vapi.ai/analytics", {
+        method: "POST", redirect: "error", signal: AbortSignal.timeout(20000),
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify(costQueries(now)),
+      });
+      if (!response.ok) return reply({ error: "Provider costs could not be refreshed" }, 502);
+      return reply(scopedCostSummary(await response.json(), w.assistant_id, now));
+    }
     if (body.action === "detail") {
       if (!key) return reply({ error: "Call connection unavailable" }, 503);
       if (

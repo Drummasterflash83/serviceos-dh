@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Mail,
@@ -36,12 +36,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+const EmmaLearnRecap = lazy(() => import("./EmmaLearnRecap").then(m => ({default:m.EmmaLearnRecap})));
+
 export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
   const { user, profile } = useAuth();
   const [result, setResult] = useState<any>(null),
     [state, setState] = useState("loading"),
     [connectState, setConnectState] = useState("idle"),
     [notice, setNotice] = useState("");
+  const [recapOpen, setRecapOpen] = useState(false);
   const [slackSetup, setSlackSetup] = useState(false);
   const [fileImports, setFileImports] = useState(false);
   const [commusoftReview, setCommusoftReview] = useState(false);
@@ -185,6 +188,18 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
           Refresh
         </button>
       </div>
+      <section className="cp-card" style={{marginBottom:20}} aria-label="Emma's LEARN recap">
+        <div className="lr-section-heading" style={{margin:0}}>
+          <div><p className="of-eyebrow">A WORD FROM EMMA</p><h2>Your progress, brought to life.</h2><p>Hear what has arrived and what it could help your business discover.</p></div>
+          <button className="cp-secondary" disabled={!user} onClick={()=>setRecapOpen(true)}><Headphones size={17}/> Hear Emma’s recap</button>
+        </div>
+      </section>
+      <Dialog open={recapOpen} onOpenChange={setRecapOpen}>
+        <DialogContent className="cp-dialog max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+          <DialogHeader><DialogTitle>Emma’s LEARN recap</DialogTitle><DialogDescription>A fresh snapshot of saved inputs, in Emma’s current voice. Collection and completed analysis are kept distinct.</DialogDescription></DialogHeader>
+          {recapOpen && user && <Suspense fallback={<p role="status">Preparing Emma’s recap…</p>}><EmmaLearnRecap key={`${user.id}:${tenantId}`} tenantId={tenantId} userId={user.id} tester={user.email ?? "You"}/></Suspense>}
+        </DialogContent>
+      </Dialog>
       {!active && (
         <p role="status" className="lr-notice">
           {state === "loading"
