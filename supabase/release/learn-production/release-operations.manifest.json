@@ -2,7 +2,7 @@
   "version": "learn-production-release-operations/1",
   "state": "deployment_authorised_execution_gates_incomplete",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "planSha256": "e4801d5bf8146fd11af776ffc4e39bd068ddb5b2f2114274ceb29f77120e55dd",
+  "planSha256": "8ea35582657f83c8b540bef44db593ef8f390e1889957723af6a8028c9d49ac8",
   "operations": [
     {
       "id": "fresh-release-preflight",
@@ -1401,9 +1401,9 @@
       "contract": {
         "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
         "team": "team_PGUQWiaAZZkMTCM9nSHahIpG",
-        "id": "dpl_8YWHfdbY2SFVkKWsBcEz5LcnMVFn",
-        "url": "https://serviceos-7cq6rfd6f-allkin.vercel.app",
-        "gitSha": "bebb19c88b0e094e0ef005e98567878e6833e796",
+        "id": "dpl_FHkfcrYZQ6bVmupHvvjse5pKUrFu",
+        "url": "https://serviceos-djgkyjvck-allkin.vercel.app",
+        "gitSha": "cbb310cb5813c1279d441d16fd24b5c197623dee",
         "target": "production",
         "previousProductionDeployment": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
         "domains": [
@@ -1425,7 +1425,7 @@
           }
         ]
       },
-      "pinSha256": "03e32a5fd0bce09e51ae16c9504cbfa7b2a647f76c3fa9b40e3181944736f9c5"
+      "pinSha256": "0e124ee71a9d96217b89222e71773db8ea641d8141334007492b4f1a0b27a6f4"
     },
     {
       "id": "signed-in-live-acceptance",

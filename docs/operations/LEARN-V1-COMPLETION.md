@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October, 02:34 BST — founder access change and reversal rehearsed offline; decision pending.**
+**13 October, 02:38 BST — founder access rehearsed and matching frontend staged; not promoted.**
 
 ### Working and verified
 
@@ -17,6 +17,11 @@ override a later release observation. No requirement is silently deferred.
   The other 297 archived tables and five sequences matched; expected profile fields
   and two audit records were checked separately. The disposable container was removed.
 - No hosted account, source record, capture setting or live deployment changed.
+- The latest TEST-verified frontend (`cbb310c`) is now staged for production as
+  `dpl_FHkfcrYZQ6bVmupHvvjse5pKUrFu`, with automatic domain assignment disabled.
+  Its actual rendered login targets production, protection is intact, and the
+  read-only promotion adapter reports ready. All four live aliases remain on
+  `dpl_DXueDsax146gdtyFoniXRaW3dzMM`. The release plan now pins this newer candidate.
 
 ### Needs finishing
 
@@ -33,6 +38,7 @@ override a later release observation. No requirement is silently deferred.
   pending the earlier unlock request. Live sign-in and TEST AI access remain unresolved.
 
 [Access preparation evidence](evidence/learn-founder-access-2026-10-13.json).
+[Current staged frontend](evidence/learn-production-frontend-staged-workspace-2026-10-13.json).
 
 ### Previous workspace milestone
 

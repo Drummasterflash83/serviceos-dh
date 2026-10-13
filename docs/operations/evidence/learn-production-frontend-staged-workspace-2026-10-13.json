@@ -1,0 +1,76 @@
+{
+  "observedAt": "2026-10-13T01:37:33.359Z",
+  "state": "protected_staged_production_ready",
+  "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+  "team": "team_PGUQWiaAZZkMTCM9nSHahIpG",
+  "id": "dpl_FHkfcrYZQ6bVmupHvvjse5pKUrFu",
+  "url": "https://serviceos-djgkyjvck-allkin.vercel.app",
+  "gitSha": "cbb310cb5813c1279d441d16fd24b5c197623dee",
+  "target": "production",
+  "previousProductionDeployment": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "domains": [
+    {
+      "name": "app.openfolk.ai",
+      "redirect": null
+    },
+    {
+      "name": "openfolk.ai",
+      "redirect": "www.openfolk.ai"
+    },
+    {
+      "name": "serviceos-dh.vercel.app",
+      "redirect": null
+    },
+    {
+      "name": "www.openfolk.ai",
+      "redirect": null
+    }
+  ],
+  "autoAssignCustomDomains": false,
+  "productionDeploymentUnchanged": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "productionPromotion": false,
+  "browser": {
+    "loginScreenLoaded": true,
+    "actualServedAuthOrigin": "https://tgbnakbxwcqjeimygroz.supabase.co",
+    "bindingEvidence": "Rendered login data-auth-target attribute observed through browser",
+    "signedInAcceptance": false
+  },
+  "protection": {
+    "status": 302,
+    "redirectOrigin": "https://vercel.com"
+  },
+  "readOnlyAdapterObservation": {
+    "state": "ready",
+    "evidenceSha256": "9b11191a3a2916a4494c74eb2ef00050f83b5f4b91f00cabbc95b395090b2af8"
+  },
+  "limitations": [
+    "Staged production build is READY; existing production domains are unchanged.",
+    "Exact frontend promotion and positive signed-in production acceptance remain pending.",
+    "CLI transport is read-only because its internal retry behaviour is unsuitable for journalled mutations.",
+    "Mutation transport uses one direct HTTP request and requires current scoped release authority.",
+    "This candidate includes the signed-in TEST workspace setup change. Founder access remains a separate unapproved change."
+  ],
+  "supersedesDeployment": "dpl_8YWHfdbY2SFVkKWsBcEz5LcnMVFn",
+  "supersedesEvidence": "learn-production-frontend-staged-2026-10-13.json",
+  "releasePlan": {
+    "state": "prepared_not_executed",
+    "steps": 73,
+    "databasePackages": 22,
+    "runtimeEndpoints": 37,
+    "localChecksPassed": 22,
+    "sources": [
+      {
+        "path": "scripts/verify/learn-production-release-sequence.mjs",
+        "sha256": "8f996796fc8a5130f719305fd4cd2f74377223dd06849d63f7b0d12699efc638"
+      },
+      {
+        "path": "supabase/release/learn-production/release-sequence.plan.json",
+        "sha256": "e2a29355e958d4acaad1cfc35aa551e8426ed98c7890f8b39d352bfe54a79251"
+      },
+      {
+        "path": "supabase/release/learn-production/release-operations.manifest.json",
+        "sha256": "48050f793443882f749afb010be9e033db495fb338e0189c57c9d0c26a4d342e"
+      }
+    ]
+  }
+}
