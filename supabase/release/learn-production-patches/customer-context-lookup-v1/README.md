@@ -1,6 +1,10 @@
 # Customer communication lookup performance patch
 
-Rehearsed against the complete retained native schema; not yet applied. The LIVE
+Applied and catalog-verified LIVE at 20:51:28 UTC on 13 October 2026. The signed-in
+customer card with 585 jobs now reads both findings and communications successfully;
+nine contacts remain available. All 33 retained contact source links and their
+identity, endpoint, source and relationship evidence were unchanged. No linked
+communication was returned for that customer; matching remains incomplete. The LIVE
 customer communication reader times out while checking current Commusoft versions
 for every owned job. This patch restricts that work to jobs with a committed Slack
 context review, before the costly version checks. All final tenant, customer/site
