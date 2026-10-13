@@ -3,6 +3,7 @@ import { useSlackImportOutbox } from "./useSlackImportOutbox";
 import { SlackSavedImport } from "./SlackSavedImport";
 import { LearnSlackRecovery } from "./LearnSlackRecovery";
 import { LearnSlackThreads } from "./LearnSlackThreads";
+import { LearnSlackCampaigns } from "./LearnSlackCampaigns";
 import { LearnSlackRecurring } from "./LearnSlackRecurring";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -24,7 +25,9 @@ export function LearnSlackSetup({
   actorId: string;
   canEdit: boolean;
 }) {
-  const [view, setView] = useState<"channel" | "threads" | "recovery" | "ongoing">("recovery");
+  const [view, setView] = useState<"channel" | "threads" | "recovery" | "ongoing" | "campaigns">(
+    "recovery",
+  );
   const [connections, setConnections] = useState<SlackConnectionOption[] | null>(null),
     [loading, setLoading] = useState(true),
     [notice, setNotice] = useState("");
@@ -92,6 +95,16 @@ export function LearnSlackSetup({
       <div role="group" aria-label="Slack import type" className="flex flex-wrap gap-2">
         <button
           type="button"
+          id="slack-campaign-tab"
+          aria-pressed={view === "campaigns"}
+          aria-controls="slack-campaign-panel"
+          className={view === "campaigns" ? "cp-primary" : "cp-secondary"}
+          onClick={() => setView("campaigns")}
+        >
+          Historical campaigns
+        </button>
+        <button
+          type="button"
           id="slack-ongoing-tab"
           aria-pressed={view === "ongoing"}
           aria-controls="slack-ongoing-panel"
@@ -131,6 +144,16 @@ export function LearnSlackSetup({
           Thread replies
         </button>
       </div>
+      {view === "campaigns" && (
+        <div id="slack-campaign-panel" role="region" aria-labelledby="slack-campaign-tab">
+          <LearnSlackCampaigns
+            key={`${tenantId}:${actorId}`}
+            tenantId={tenantId}
+            actorId={actorId}
+            canEdit={canEdit}
+          />
+        </div>
+      )}
       {view === "ongoing" && (
         <div id="slack-ongoing-panel" role="region" aria-labelledby="slack-ongoing-tab">
           <LearnSlackRecurring
@@ -209,7 +232,9 @@ export function LearnSlackSetup({
                 />
               </label>
               <p>
-                Start and end use your device’s local time. Choose a fixed past period, including earlier years if needed. Each approval imports only the selected number of pages; unfinished history keeps its checkpoint for continuation.
+                Start and end use your device’s local time. Choose a fixed past period, including
+                earlier years if needed. Each approval imports only the selected number of pages;
+                unfinished history keeps its checkpoint for continuation.
               </p>
               <label className="block">
                 From

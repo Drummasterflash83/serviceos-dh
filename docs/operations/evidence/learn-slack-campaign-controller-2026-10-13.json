@@ -1,0 +1,107 @@
+{
+  "version": "learn-slack-campaign-controller/1",
+  "state": "verified_locally_not_deployed",
+  "recordedAt": "2026-10-13T04:58:40.515762+00:00",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101700000_learn_slack_campaign_controller.sql",
+      "sha256": "4b0d4f13116e43f1b63fca7e64aaf9413b29a14848d44b71478086e41f93b602"
+    },
+    {
+      "path": "scripts/verify/learn-slack-campaign-controller.assert.sql",
+      "sha256": "828b8dbee6224a1a81e9f823b3a553356b717d37ef7000dc2e2f75d69cae0958"
+    },
+    {
+      "path": "scripts/backup/rehearse_slack_historical_ranges.py",
+      "sha256": "4707552d917253208dd00ccedd7b936b37d72de140dee0d57c8cbbdd760e19cc"
+    },
+    {
+      "path": "src/lib/learn-slack-campaigns.ts",
+      "sha256": "732c7f7788e80aaf3d55f2b9798bdc39c22ffff5ac093a2fe11b26598a9296a8"
+    },
+    {
+      "path": "src/lib/learn-slack-campaigns.test.ts",
+      "sha256": "5d2b27a5d7303b7cf01c15cb2f4d307ab43a487f926c6e33d0e08404a67da535"
+    },
+    {
+      "path": "src/components/client-portal/learn/LearnSlackCampaigns.tsx",
+      "sha256": "e5ff254c5374fa3dca73c508fc61029d42f7a9e985480c7ef0ecc49aa6f494c9"
+    },
+    {
+      "path": "src/components/client-portal/learn/LearnSlackSetup.tsx",
+      "sha256": "f1295e11ed0a76a0a56f1e3aa0b43079b8cefcb88155a52de1b88df7c31715a5"
+    }
+  ],
+  "checks": {
+    "focusedTestsPassed": 154,
+    "typecheckPassed": true,
+    "frontendBuildPassed": true,
+    "fullSchemaJourneysPassed": 10,
+    "loggedTenantScopedCampaignPagination": true,
+    "wrongActorDispatchDenied": true,
+    "foreignViewerReadDenied": true,
+    "serviceRoleDispatchDenied": true,
+    "existingCampaignStartControlCloseProtocolsUsed": true,
+    "localRequestPersistedBeforeDispatch": true,
+    "lostAcknowledgementReceiptRecovery": true,
+    "contextSwitchStopsPendingApply": true,
+    "corruptSavedRequestRetainedWithoutDispatch": true,
+    "expiredRequestReceiptCheckAllowed": true,
+    "falseCompletenessAndForeignResponseRejected": true,
+    "browserActualComponentSyntheticClient": true,
+    "browserIncompleteHandoffDisabled": true,
+    "browserPauseReviewAndLostResponseRecovery": true,
+    "browserTwoChannelScopeReview": true,
+    "migrationRollbackVerified": true,
+    "duplicateMigrationRejected": true,
+    "existingSchemaDataAndAuthorityUnchanged": true
+  },
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "originalDataPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 388,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "a9b5c1f7d2f69c0edfc6a09e357dadeb717f82f116d4c0526fd6fed4d6c94157",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "postJourneyPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 395,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "cb72eeee236f1ae7f5312e2d7cca8059f2c486e72e8f4fa1c629447c76a47b4d",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "fullHistoryAccepted": false,
+  "limitations": [
+    "Browser proof uses the real React component with an explicitly synthetic RPC client; it is not signed-in hosted acceptance.",
+    "Channel selection accepts explicit public-channel IDs or workspace links. A provider-backed complete channel picker and authorised private/shared visibility remain unfinished.",
+    "Approval reissue after budget exhaustion/expiry remains unfinished; existing pause/resume cannot increase these limits.",
+    "The six newer Slack migrations and matching runtime/frontend remain outside the current hosted/staged release. No broader real import started.",
+    "Complete LEARN V1 provider coverage, production sign-in, recovery/release and useful learning acceptance remain open."
+  ]
+}

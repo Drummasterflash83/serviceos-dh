@@ -1,5 +1,12 @@
 # LEARN V1 production release plan
 
+> 13 October: the local campaign controller now passes browser, unit, type, build
+> and full-schema checks. It requires both new controller RPCs and all five prior
+> campaign-related migrations. This staged candidate excludes all six newer SQL
+> sources through `20261101700000_learn_slack_campaign_controller.sql` and their
+> matched runtime/frontend. Signed-in hosted acceptance is still required.
+> [Controller evidence](evidence/learn-slack-campaign-controller-2026-10-13.json).
+
 > 13 October: permanent campaign stop and history-to-ongoing handoff now pass the
 > local full-schema rehearsal. They are also excluded from this staged release.
 > The next paired candidate must include all five newer Slack migrations through

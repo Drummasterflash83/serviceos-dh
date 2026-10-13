@@ -2,7 +2,7 @@
 
 ## Delivery state — 13 October 2026
 
-**Local channel/reply traversal, permanent stop and handoff verified; not deployed or ready to activate for Drummonds.**
+**Local campaign controller and channel/reply lifecycle verified; not deployed or ready to activate for Drummonds.**
 The complete delivery target remains all available authorised channel history and
 observed replies, followed by ongoing capture. No real campaign or provider request
 has been created by this work. The completed two-message TEST sample remains closed.
@@ -57,8 +57,26 @@ starts exactly at the historical cutoff; it does not jump to today. Old jobs ret
 their campaign fence even after the account moves to a non-campaign scope. Historical
 coverage remains readable as ongoing capture advances its own checkpoint.
 
+The existing Slack setup now includes a Historical campaigns tab. Operators can
+enter exact public-channel IDs/workspace links, review fixed dates, expiry, request
+allowance and reason, then submit. Campaign status distinguishes channel completion,
+observed-reply discovery/capture and retained terminal coverage. Pause/resume, permanent
+stop and completed-window handoff use a reviewed request. This is the existing UX and
+styling; it does not replace the client workspace or Drummonds branding.
+
+A saved request is bound to backend, actor and tenant and written before dispatch.
+Browser coordination and server receipt checks prevent a lost response from creating
+a fresh import. Context/access changes, conflicting requests, corrupt storage and
+unverifiable responses retain the pending request. The server dispatch wrapper checks
+the actual authenticated actor. No secret or message content is stored in this outbox.
+Channel selection is currently explicit IDs/links, not a complete provider inventory.
+
 ## Interfaces and limits
 
+- `learn_slack_campaign_list`: logged tenant/operator read, twenty campaigns per
+  UUID-keyset page, current write permission, and no direct campaign table grants.
+- `learn_slack_campaign_dispatch`: actor-bound authenticated wrapper for the existing
+  start/control/close protocols, including request/check/cancel modes.
 - `learn_slack_campaign_start`: authenticated company admin/OpenFolk operator;
   immutable request/check/cancel receipt. The definition contains `connectionId`,
   `connectionRevision`, `channelIds`, `start`, `end`, `expiresAt`, `requestBudget`
@@ -86,7 +104,7 @@ owned campaign scope. Existing request receipts can still resolve after later ch
 
 ## Verification
 
-144 focused tests, TypeScript and the frontend build pass. The isolated archived
+154 focused tests, TypeScript and the frontend build pass. The isolated archived
 production-schema rehearsal exercises ten actual claim/publish/settle transactions,
 automatic continuation, exact replay, cross-client operator attribution, tenant
 isolation, shared budget exhaustion, two concurrent contenders for the last request,
@@ -101,7 +119,7 @@ owners/security modes/grants and table/view definitions remain unchanged. The cl
 had no network, host mounts, published ports or background workers and was removed.
 The source is the retained 12 October archive, not a fresh production backup.
 
-The extended rehearsal passes nine journeys. Its dedicated thread journey discovers
+The extended rehearsal passes ten journeys. Its dedicated thread journey discovers
 21 distinct roots across two bounded scans, processes 31 reply pages including one
 11-page thread, and verifies 53 unique synthetic messages/versions/interactions.
 All 297 channel/reply dispatch reservations share the original budget. Duplicate
@@ -114,6 +132,13 @@ denial, stale revisions, incomplete-handoff rejection, a real synthetic ongoing
 page transaction after handoff, durable coverage after account advancement, and
 permanent-stop dispatch/publication fencing. Archived rows/sequences remain intact.
 
+The controller journey proves pagination across 23 synthetic campaigns, actor binding,
+viewer/tenant isolation and existing start/pause/stop receipt semantics. Browser checks
+use the actual component and existing styles with a synthetic client: incomplete handoff
+stays disabled, scope review is explicit, and a lost response recovers its saved receipt.
+This is not hosted acceptance. TypeScript and the complete frontend build pass.
+
+[Controller evidence](evidence/learn-slack-campaign-controller-2026-10-13.json).
 [Lifecycle evidence](evidence/learn-slack-campaign-lifecycle-2026-10-13.json).
 [Foundation evidence](evidence/learn-slack-campaign-foundation-2026-10-13.json).
 [Observed-thread evidence](evidence/learn-slack-campaign-threads-2026-10-13.json).
@@ -123,9 +148,9 @@ permanent-stop dispatch/publication fencing. Archived rows/sequences remain inta
 1. Complete authorised reapproval after exhausted budget/expired approval without
    losing checkpoints or silently extending a prior request allowance. Permanent stop
    currently retains its binding; replacement needs an explicit reviewed workflow.
-2. Add the OpenFolk campaign selection/review/status controls in the existing UX.
-   Preserve pending requests through uncertain replies and show coverage limitations.
-3. Package the historical-range, message-kind, campaign, thread and lifecycle SQL with their exact worker,
+2. Complete a provider-backed channel inventory/selection experience and verify the
+   controller in signed-in hosted TEST. Explicit ID/link selection is available locally.
+3. Package the historical-range, message-kind, campaign, thread, lifecycle and controller SQL with their exact worker,
    scheduler and frontend dependency closure. Older staged manifests exclude this work.
 4. Verify signed-in hosted controls and prepare the concrete broader Drummonds import:
    selected inventory, fixed dates, total requests, deadline, destination and recovery.

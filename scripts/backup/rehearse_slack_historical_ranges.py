@@ -38,7 +38,10 @@ def run():
     parser.add_argument('--with-campaigns', action='store_true')
     parser.add_argument('--with-campaign-threads', action='store_true')
     parser.add_argument('--with-campaign-lifecycle', action='store_true')
+    parser.add_argument('--with-campaign-controller', action='store_true')
     options = parser.parse_args()
+    if options.with_campaign_controller:
+        options.with_campaign_lifecycle = True
     if options.with_campaign_lifecycle:
         options.with_campaign_threads = True
     if options.with_campaign_threads:
@@ -288,6 +291,29 @@ def run():
                 report['campaignLifecycle'] = {'source':str(lifecycle_path),'sha256':hashlib.sha256(lifecycle_source.encode()).hexdigest(),
                   'rollbackVerified':True,'duplicateRejected':True,'newTables':sorted(expected_tables),
                   'changedFunctions':sorted(changed_lifecycle),'existingAuthorityUnchanged':True}
+            if options.with_campaign_controller:
+                controller_path = Path('supabase/migrations/20261101700000_learn_slack_campaign_controller.sql')
+                controller_source = controller_path.read_text()
+                target.query(controller_source.replace('\ncommit;\n', '\nrollback;\n'))
+                if schema()!=after_schema:
+                    raise RecoveryError('Controller rollback changed schema')
+                target.query(controller_source)
+                controller_schema = schema()
+                old_funcs = {(f['name'],f['arguments']):f for f in after_schema['functions']}
+                new_funcs = {(f['name'],f['arguments']):f for f in controller_schema['functions']}
+                if any(new_funcs.get(k)!=v for k,v in old_funcs.items()) or {k[0] for k in set(new_funcs)-set(old_funcs)}!={'learn_slack_campaign_list','learn_slack_campaign_dispatch'} or after_schema['tables']!=controller_schema['tables'] or after_schema['views']!=controller_schema['views']:
+                    raise RecoveryError('Unexpected controller schema change')
+                report['controllerDataPreservation'] = compare_native_data(before, restored_fingerprints(target))
+                try:
+                    target.query(controller_source)
+                except RecoveryError:
+                    if schema()!=controller_schema:
+                        raise RecoveryError('Duplicate controller changed schema')
+                else:
+                    raise RecoveryError('Duplicate controller accepted')
+                after_schema = controller_schema
+                report['campaignController'] = {'source':str(controller_path),'sha256':hashlib.sha256(controller_source.encode()).hexdigest(),
+                  'rollbackVerified':True,'duplicateRejected':True,'existingSchemaAndDataUnchanged':True}
             # Actual production helpers, both the tenant bot route and logged
             # cross-client user-token operator route. All synthetic rows are
             # contained in disposable child databases.
@@ -296,7 +322,7 @@ def run():
                 ('historical_tenant', ['learn-production-slack', 'learn-production-slack-threads', 'learn-slack-historical-recovery']),
                 ('historical_operator', ['learn-production-slack-setup']),
                 *([('campaigns', ['learn-slack-campaign'])] if options.with_campaigns else []),
-                *([('campaign_threads', ['learn-slack-campaign-threads', *(['learn-slack-campaign-lifecycle'] if options.with_campaign_lifecycle else [])])] if options.with_campaign_threads else []),
+                *([('campaign_threads', ['learn-slack-campaign-threads', *(['learn-slack-campaign-lifecycle'] if options.with_campaign_lifecycle else []), *(['learn-slack-campaign-controller'] if options.with_campaign_controller else [])])] if options.with_campaign_threads else []),
                 *([('message_kinds', ['learn-production-slack', 'learn-slack-message-kinds'])] if options.with_message_kinds else []),
             ]:
                 target.query('create database '+clone+' template postgres;')
@@ -305,7 +331,7 @@ def run():
                 try:
                     for name in names:
                         path = Path('scripts/verify')/(name+'.assert.sql')
-                        probe = 'set plpgsql.check_asserts=on;\n'+(path.read_text() if name in ('learn-slack-historical-recovery', 'learn-slack-message-kinds', 'learn-slack-campaign', 'learn-slack-campaign-threads', 'learn-slack-campaign-lifecycle') else historical_probe(path))
+                        probe = 'set plpgsql.check_asserts=on;\n'+(path.read_text() if name in ('learn-slack-historical-recovery', 'learn-slack-message-kinds', 'learn-slack-campaign', 'learn-slack-campaign-threads', 'learn-slack-campaign-lifecycle', 'learn-slack-campaign-controller') else historical_probe(path))
                         if options.with_campaign_threads and name == 'learn-slack-campaign':
                             # The same retained root now queues its replies after channel completion.
                             probe = probe.replace("state='history_captured_threads_pending'", "state='thread_queued'")
