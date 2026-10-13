@@ -7,6 +7,28 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 23:11 BST — TEST job-refresh UI partially verified; LIVE unchanged.**
+
+- The isolated frontend `119b13d` is READY on both protected stable TEST aliases.
+  Its rendered build and TEST backend binding were verified in the existing
+  signed-in operator session. Linked-job search and the “already latest” review
+  result pass. An actual changed-source apply remains unverified in hosted TEST.
+- The stable page initially served the older build after reload. An exact release
+  query loaded the correct build; the underlying cache cause still needs resolving.
+  Do not infer browser acceptance from Vercel alias metadata alone.
+- Both bounded review windows restored the original module/account settings.
+  Capture remained disabled during each review; no new provider calls, access grants
+  or canonical writes occurred. Raw browser evidence stays private and outside Git.
+- The isolated LIVE frontend candidate `535ba3e` passes 24 tests, TypeScript and
+  build, but is not deployed. Continue changed-source acceptance, fresh production
+  preservation and the real source-to-card journey before promotion.
+- Commusoft job-code authority and leading-zero preservation remain recorded in
+  AGENTS and the QuickBooks integration notes. Historical financial codes require
+  evidenced mappings; examples are not an automatic crosswalk.
+
+[TEST deployment and partial browser evidence](evidence/learn-business-job-refresh-test-2026-10-13.json).
+
+
 **13 October, 22:52 BST — job-refresh backend installed and preserved in TEST.**
 
 - The exact LIVE package passes target/digest/definition/existing-object/late-failure

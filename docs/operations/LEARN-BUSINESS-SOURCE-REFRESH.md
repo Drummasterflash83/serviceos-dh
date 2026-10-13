@@ -55,7 +55,9 @@ isolated fully restored database with the prior baseline helper retained exactly
 that fixture requires. Roll the encompassing transaction back. It must never run
 against a hosted project. Client checks: node --test src/lib/learn-job-refresh.test.ts
 src/lib/learn-commusoft-work.test.ts src/lib/openfolk-business-review.test.ts (24 pass),
-TypeScript and npm run build pass. No signed-in browser acceptance is claimed.
+TypeScript and npm run build pass. Signed-in TEST now verifies linked-job search
+and an already-current source review on frontend `119b13d`. Hosted changed-source
+apply remains unverified; see the TEST evidence below.
 
 ## Remaining release and delivery work
 
@@ -75,3 +77,12 @@ TypeScript and npm run build pass. No signed-in browser acceptance is claimed.
   This job candidate does not complete all ongoing business-system reconciliation.
 
 [Sanitized evidence](evidence/learn-business-job-refresh-rehearsal-2026-10-13.json).
+
+## Hosted TEST frontend observation — 13 October, 22:11 UTC
+
+Deployment `dpl_8oV6zsNRRRbSiUdwsxgDBLHfoqV5` serves both protected TEST aliases.
+The current-source review passes in the existing operator session. The old page
+initially remained cached after reload; an exact release query showed `119b13d`.
+Cache origin remains under investigation. Both bounded review windows are closed
+and original module/account state is restored. No canonical refresh occurred.
+[Partial browser evidence](evidence/learn-business-job-refresh-test-2026-10-13.json).
