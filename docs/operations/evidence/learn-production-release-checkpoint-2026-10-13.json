@@ -1,6 +1,6 @@
 {
   "version": "learn-production-release-checkpoint/1",
-  "state": "fresh_local_checkpoint_verified_independent_copy_pending",
+  "state": "release_checkpoint_independent_copy_and_restore_verified",
   "project": "tgbnakbxwcqjeimygroz",
   "snapshotAt": "2026-10-13T00:16:29.971745+00:00",
   "exportCompletedAt": "2026-10-13T00:24:47.306Z",
@@ -137,8 +137,29 @@
     }
   ],
   "remaining": [
-    "Fresh encrypted off-site copy and independent restore await existing 1Password recovery material; app was observed locked after inactivity.",
-    "This live snapshot does not establish a controlled pause/drain or after-release preservation.",
+    "The independent snapshot is from 13 October 00:16 UTC; later changes require the release preservation checkpoint.",
+    "Controlled pause/drain and after-release preservation remain unverified.",
+    "Daily database backup operation and complete service recovery remain unfinished.",
     "No production schema, runtime, frontend or input activation changed in this checkpoint operation."
-  ]
+  ],
+  "independentRestore": {
+    "observedAt": "2026-10-13T06:24:11.039083+00:00",
+    "receiptSha256": "d274abc636572556b9b85a6e285c662c69a08436be5c1bcd6eb5cf9a661bb285",
+    "state": "independent_database_snapshot_verified",
+    "attempt": "2ee029d2-ed8b-4616-96d0-ebefe364b55e",
+    "snapshotAt": "2026-10-13T00:16:29.971745+00:00",
+    "encryptedBytes": 204645336,
+    "independentStorageVerified": true,
+    "keyEscrowReadbackVerified": true,
+    "recovery": {
+      "nativeRows": 1617988,
+      "operationalRows": 2652,
+      "recordingRelationships": 2944,
+      "vaultSecretsVerified": 16,
+      "containerRemoved": true
+    },
+    "dailyOperationVerified": false,
+    "fullServiceRecoveryVerified": false,
+    "productionWrites": false
+  }
 }

@@ -7,6 +7,47 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 07:22 BST — independent recovery and existing production operator sign-in verified.**
+
+### Working and verified
+
+- The 00:16 UTC release checkpoint is now encrypted in the approved independent
+  AWS destination and was downloaded with the separate Restore identity. Its
+  isolated restore verifies 1,617,988 native rows, 2,652 operational rows, 2,944
+  recording relationships and 16 Vault secrets. The restore container was removed.
+- Chris's existing live OpenFolk account opens the staged production frontend,
+  client list and Drummonds workspace. No account, grant or password was changed
+  by the agent. Normal user links remain openfolk.ai and test.openfolk.ai.
+- Fresh production public-schema and all 88 runtime definitions match the reviewed
+  baseline. Nine scheduler credential bindings match. Live capture stored seven
+  emails in the observed half-hour; six phone cycles completed without new calls.
+
+### Needs finishing
+
+- Install the matched backend before promoting the frontend: its new LEARN
+  controls correctly show unavailable against the current production backend.
+- Complete caller acceptance, coordinated pause/drain, current preservation,
+  rollout, signed-in LEARN journeys and resumed-capture observation. Historical
+  coverage, cards/scoring and the remaining full goal are still unfinished.
+- The snapshot predates ongoing capture; independent recovery is now proved, but
+  it is not the exact preservation boundary for the later deployment.
+- Separate unattended public-key backup encryption from interactive private-key
+  restore checks. Daily database backup operation is not yet verified.
+- Five delegation failures across three accounts and 21 network timeouts were
+  observed. Other jobs succeeded in that window; per-request correlation remains
+  unverified. No failing mailbox was silently disabled.
+
+### Blocked externally
+
+- The 1Password recovery access and live operator sign-in blockers are resolved.
+  TEST AI selection remains pending; remaining release engineering can proceed.
+- Heidi's own signed-in acceptance remains separate from Chris's operator access.
+
+[Current release checks](evidence/learn-production-release-preflight-2026-10-13.json).
+[Independent recovery](evidence/learn-production-release-checkpoint-2026-10-13.json).
+
+### Previous matched release preparation
+
 **13 October — matched production campaign release is prepared; live installation remains pending.**
 
 ### Working and verified

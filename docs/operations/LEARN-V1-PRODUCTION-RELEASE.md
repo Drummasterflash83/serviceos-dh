@@ -16,8 +16,9 @@ The read-only promotion adapter reports ready. No real capture has been enabled.
 
 Chris has authorised promotion. Execution still requires current independent
 recovery, fresh production baseline checks, coordinated pause/drain, matching
-backend installation, signed-in acceptance and post-release observation. The
-1Password unlock is pending; do not equate staging with live deployment.
+backend installation, signed-in acceptance and post-release observation. Independent copy/restore of the 00:16 UTC checkpoint and Chris's existing live
+operator sign-in now pass. The matched LEARN backend and exact deployment
+preservation boundary remain pending; do not equate staging with live deployment.
 
 [Production package and runtime evidence](evidence/learn-production-slack-campaigns-2026-10-13.json).
 [Staged frontend evidence](evidence/learn-production-frontend-campaign-2026-10-13.json).

@@ -410,3 +410,18 @@ ten tests pass, including mismatched archive and invalid path rejection. The fre
 encrypted off-site copy and independent restore remain pending the existing
 1Password recovery material; this local proof does not claim those steps passed.
 [Checkpoint evidence](../../docs/operations/evidence/learn-production-release-checkpoint-2026-10-13.json).
+
+### Release checkpoint independent restore — 13 October
+
+The 00:16 UTC checkpoint has now been encrypted, copied to the approved private
+London bucket, downloaded using the separate Restore identity, and restored in an
+isolated container. Its 1,617,988 native rows, 2,652 operational rows, 2,944 recording
+relationships and 16 Vault secrets verified. The container was removed. This does
+not establish daily database backups or include later production changes.
+
+The existing local binding file is
+`.verification-results/database-backup-onepassword-binding.json`; the earlier
+`database-escrow-binding.json` commands are examples, not an existing local file.
+Routine unattended backup encryption should need only the public recipient and
+scoped Writer access. Private recovery material belongs in a separate restore
+workflow; that unattended database workflow remains to be implemented and tested.

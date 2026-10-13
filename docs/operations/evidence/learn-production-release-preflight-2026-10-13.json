@@ -1,0 +1,964 @@
+{
+  "version": "learn-production-release-preflight-observation/1",
+  "state": "recovery_and_operator_signin_verified_rollout_pending",
+  "observedAt": "2026-10-13T06:24:11.040018+00:00",
+  "productionWrites": false,
+  "baseline": {
+    "state": "reviewed_hosted_baseline_unchanged",
+    "observedAt": "2026-10-13T06:22:03.559Z",
+    "project": "tgbnakbxwcqjeimygroz",
+    "schemaMatches": true,
+    "runtimeMatches": true,
+    "differences": {
+      "tables": {
+        "added": [],
+        "missing": [],
+        "changed": []
+      },
+      "functions": {
+        "added": [],
+        "missing": [],
+        "changed": []
+      },
+      "views": {
+        "added": [],
+        "missing": [],
+        "changed": []
+      }
+    },
+    "functionCount": 88,
+    "baselineSchemaSha256": "d9668ac8e7481070280203d4a7bdd5c226d5a029bedaade876712ef6f7d22501",
+    "baselineRuntimeSha256": "cff4dde841dfe8bceaa8d3482176f3f1260f528309fc9b99a039b5a189500ec4",
+    "currentSchemaSha256": "fd008bb60705003544ae4efe518aff616010d56fa59e22e5e6b448faed4c2e98",
+    "currentRuntimeSha256": "d362dac5884f290a1ee204468c09c91e2485fea7744b6717d99812acb13de1ff",
+    "productionChanges": 0,
+    "providerRequests": 0,
+    "limitations": [
+      "Public schema and hosted runtime definitions only; not a preservation snapshot, active-work drain or signed-in acceptance.",
+      "Matches the reviewed hosted schema; earlier isolated-archive deparsing differences are not ignored or reclassified by this check."
+    ]
+  },
+  "scheduleBindings": {
+    "version": "learn-production-scheduled-callers/1",
+    "observedAt": "2026-10-13T06:14:45.724Z",
+    "project": "tgbnakbxwcqjeimygroz",
+    "state": "existing_schedule_bindings_match",
+    "manifestSha256": "3dc2952a33f3153ad3f44f00dc3ced76e6f51b3dff69c2904fc5c5619497c121",
+    "checks": [
+      {
+        "jobId": 35,
+        "jobName": "serviceos-worker",
+        "endpoint": "platform-worker",
+        "secretName": "WORKER_SECRET",
+        "schedule": "* * * * *",
+        "commandHash": "8db9215dcb087977d71c2c66aec49e45",
+        "scheduleUnchanged": true,
+        "credentialBindingMatches": true,
+        "runtimeUnchanged": true,
+        "currentGatewayAcceptsScheduleHeader": true,
+        "candidateGatewayAcceptsScheduleHeader": true
+      },
+      {
+        "jobId": 36,
+        "jobName": "serviceos-phone-sync",
+        "endpoint": "phone-scheduled-sync",
+        "secretName": "PHONE_SCHEDULE_SECRET",
+        "schedule": "*/5 * * * *",
+        "commandHash": "00dca0017140144a8f5e7bd6e73d8f0a",
+        "scheduleUnchanged": true,
+        "credentialBindingMatches": true,
+        "runtimeUnchanged": true,
+        "currentGatewayAcceptsScheduleHeader": true,
+        "candidateGatewayAcceptsScheduleHeader": true
+      },
+      {
+        "jobId": 37,
+        "jobName": "serviceos-phone-processing",
+        "endpoint": "phone-processing-scheduled-sync",
+        "secretName": "PHONE_PROCESSING_SECRET",
+        "schedule": "*/2 * * * *",
+        "commandHash": "386681c2cf264ee0c8b4b522ec615146",
+        "scheduleUnchanged": true,
+        "credentialBindingMatches": true,
+        "runtimeUnchanged": true,
+        "currentGatewayAcceptsScheduleHeader": true,
+        "candidateGatewayAcceptsScheduleHeader": true
+      },
+      {
+        "jobId": 38,
+        "jobName": "serviceos-email-sync",
+        "endpoint": "email-scheduled-sync",
+        "secretName": "EMAIL_SCHEDULE_SECRET",
+        "schedule": "*/5 * * * *",
+        "commandHash": "ad8c01be92875be65ca2410bab51de12",
+        "scheduleUnchanged": true,
+        "credentialBindingMatches": true,
+        "runtimeUnchanged": true,
+        "currentGatewayAcceptsScheduleHeader": true,
+        "candidateGatewayAcceptsScheduleHeader": true
+      },
+      {
+        "jobId": 39,
+        "jobName": "serviceos-email-workspace",
+        "endpoint": "email-workspace-scheduled-sync",
+        "secretName": "EMAIL_WORKSPACE_SCHEDULE_SECRET",
+        "schedule": "*/5 * * * *",
+        "commandHash": "d2a80e20aa7e37cd01fd6dac3e06b7ab",
+        "scheduleUnchanged": true,
+        "credentialBindingMatches": true,
+        "runtimeUnchanged": true,
+        "currentGatewayAcceptsScheduleHeader": true,
+        "candidateGatewayAcceptsScheduleHeader": true
+      },
+      {
+        "jobId": 40,
+        "jobName": "serviceos-email-wksp-backfill",
+        "endpoint": "email-workspace-backfill-scheduled-sync",
+        "secretName": "EMAIL_WORKSPACE_BACKFILL_SECRET",
+        "schedule": "*/15 * * * *",
+        "commandHash": "8354a109177bffb9c7e55a8bfd62e5cf",
+        "scheduleUnchanged": true,
+        "credentialBindingMatches": true,
+        "runtimeUnchanged": true,
+        "currentGatewayAcceptsScheduleHeader": true,
+        "candidateGatewayAcceptsScheduleHeader": true
+      },
+      {
+        "jobId": 41,
+        "jobName": "serviceos-interactions",
+        "endpoint": "interactions-scheduled-sync",
+        "secretName": "SIGNAL_SYNC_SECRET",
+        "schedule": "*/5 * * * *",
+        "commandHash": "d3390d06393559972307772e33699bb7",
+        "scheduleUnchanged": true,
+        "credentialBindingMatches": true,
+        "runtimeUnchanged": true,
+        "currentGatewayAcceptsScheduleHeader": true,
+        "candidateGatewayAcceptsScheduleHeader": true
+      },
+      {
+        "jobId": 42,
+        "jobName": "serviceos-identity",
+        "endpoint": "identity-scheduled-sync",
+        "secretName": "IDENTITY_SYNC_SECRET",
+        "schedule": "*/5 * * * *",
+        "commandHash": "6326fa9be696289c8af2560cfc54f26b",
+        "scheduleUnchanged": true,
+        "credentialBindingMatches": true,
+        "runtimeUnchanged": true,
+        "currentGatewayAcceptsScheduleHeader": true,
+        "candidateGatewayAcceptsScheduleHeader": true
+      },
+      {
+        "jobId": 44,
+        "jobName": "serviceos-customer-cards",
+        "endpoint": "customer-card-scheduled-sync",
+        "secretName": "CARD_SYNC_SECRET",
+        "schedule": "*/5 * * * *",
+        "commandHash": "1c53a8faba626782ee8c2d503443b16b",
+        "scheduleUnchanged": true,
+        "credentialBindingMatches": true,
+        "runtimeUnchanged": true,
+        "currentGatewayAcceptsScheduleHeader": true,
+        "candidateGatewayAcceptsScheduleHeader": true
+      }
+    ],
+    "productionChanges": 0,
+    "functionInvocations": 0,
+    "providerRequests": 0,
+    "credentialValuesRetained": false,
+    "limitations": [
+      "Confirms the current Vault-to-runtime credential fingerprints and header/gateway compatibility; does not invoke a scheduler or prove candidate execution.",
+      "Nine statically observed candidate schedule targets only. Other dynamic callers and in-flight requests still need release review.",
+      "Does not close signed-in acceptance, thirteen changed function gateway flags, new Slack/Commusoft worker provisioning or release approval."
+    ]
+  },
+  "capture": {
+    "emailNew": 7,
+    "phoneNew": 0,
+    "emailRuns": [
+      {
+        "count": 5,
+        "status": "failed",
+        "sync_type": "workspace_messages",
+        "error_class": "delegation_failed",
+        "last_started": "2026-10-13T06:12:01.283+00:00",
+        "first_started": "2026-10-13T05:56:01.449+00:00",
+        "last_completed": "2026-10-13T06:12:01.402+00:00",
+        "records_processed": 0
+      },
+      {
+        "count": 2,
+        "status": "success",
+        "sync_type": "workspace_backfill_scheduled",
+        "error_class": "none",
+        "last_started": "2026-10-13T06:00:02.675+00:00",
+        "first_started": "2026-10-13T05:45:01.575+00:00",
+        "last_completed": "2026-10-13T06:00:02.675+00:00",
+        "records_processed": 0
+      },
+      {
+        "count": 1,
+        "status": "success",
+        "sync_type": "workspace_discover",
+        "error_class": "none",
+        "last_started": "2026-10-13T06:04:01.173+00:00",
+        "first_started": "2026-10-13T06:04:01.173+00:00",
+        "last_completed": "2026-10-13T06:04:01.998+00:00",
+        "records_processed": 29
+      },
+      {
+        "count": 51,
+        "status": "success",
+        "sync_type": "workspace_messages",
+        "error_class": "none",
+        "last_started": "2026-10-13T06:12:01.261+00:00",
+        "first_started": "2026-10-13T05:43:00.963+00:00",
+        "last_completed": "2026-10-13T06:12:01.736+00:00",
+        "records_processed": 7
+      },
+      {
+        "count": 6,
+        "status": "success",
+        "sync_type": "workspace_scheduled_sync",
+        "error_class": "none",
+        "last_started": "2026-10-13T06:10:03.399+00:00",
+        "first_started": "2026-10-13T05:45:03.035+00:00",
+        "last_completed": "2026-10-13T06:10:03.399+00:00",
+        "records_processed": 180
+      }
+    ],
+    "phoneRuns": [
+      {
+        "count": 6,
+        "status": "success",
+        "sync_type": "scheduled_sync",
+        "last_started": "2026-10-13T06:10:01.807514+00:00",
+        "first_started": "2026-10-13T05:45:01.934357+00:00",
+        "last_completed": "2026-10-13T06:10:10.354+00:00",
+        "records_processed": 0
+      },
+      {
+        "count": 6,
+        "status": "success",
+        "sync_type": "calls",
+        "last_started": "2026-10-13T06:10:02.09221+00:00",
+        "first_started": "2026-10-13T05:45:02.180501+00:00",
+        "last_completed": "2026-10-13T06:10:02.275+00:00",
+        "records_processed": 0
+      },
+      {
+        "count": 6,
+        "status": "success",
+        "sync_type": "recordings",
+        "last_started": "2026-10-13T06:10:02.522682+00:00",
+        "first_started": "2026-10-13T05:45:02.706514+00:00",
+        "last_completed": "2026-10-13T06:10:10.275+00:00",
+        "records_processed": 0
+      }
+    ],
+    "observedAt": "2026-10-13T06:12:17.243397+00:00",
+    "recordingNew": 0,
+    "failedEmailAccounts": [
+      {
+        "failures": 1,
+        "latestFailure": "2026-10-13T06:12:01.283+00:00",
+        "lastSuccess": "2026-09-01T09:21:04.204+00:00"
+      },
+      {
+        "failures": 1,
+        "latestFailure": "2026-10-13T06:05:02.838+00:00",
+        "lastSuccess": "2026-09-06T22:11:02.805+00:00"
+      },
+      {
+        "failures": 3,
+        "latestFailure": "2026-10-13T06:10:02.009+00:00",
+        "lastSuccess": "2026-09-06T22:18:02.048+00:00"
+      }
+    ]
+  },
+  "timeouts": {
+    "state": "aggregate_observation_not_request_correlation",
+    "responses": [
+      {
+        "count": 21,
+        "latest": "2026-10-13T06:15:04.651363+00:00",
+        "earliest": "2026-10-13T05:46:02.30307+00:00",
+        "timed_out": true,
+        "error_class": "timeout",
+        "status_code": null
+      },
+      {
+        "count": 200,
+        "latest": "2026-10-13T06:15:04.651363+00:00",
+        "earliest": "2026-10-13T05:46:00.118686+00:00",
+        "timed_out": false,
+        "error_class": "none",
+        "status_code": 200
+      }
+    ],
+    "observedAt": "2026-10-13T06:15:37.912405+00:00",
+    "jobOutcomes": [
+      {
+        "count": 1,
+        "latest": "2026-10-13T06:15:24.089401+00:00",
+        "status": "queued",
+        "earliest": "2026-10-13T06:15:24.089401+00:00",
+        "job_type": "customer_card.sync"
+      },
+      {
+        "count": 19,
+        "latest": "2026-10-13T06:15:24.059475+00:00",
+        "status": "succeeded",
+        "earliest": "2026-10-13T05:46:15.316326+00:00",
+        "job_type": "customer_card.sync"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-13T06:04:02.063426+00:00",
+        "status": "succeeded",
+        "earliest": "2026-10-13T06:04:02.063426+00:00",
+        "job_type": "email.mailbox_discovery"
+      },
+      {
+        "count": 3,
+        "latest": "2026-10-13T06:12:01.558938+00:00",
+        "status": "dead_letter",
+        "earliest": "2026-10-13T05:56:01.626678+00:00",
+        "job_type": "email.workspace_sync"
+      },
+      {
+        "count": 27,
+        "latest": "2026-10-13T06:15:06.12335+00:00",
+        "status": "queued",
+        "earliest": "2026-10-13T06:05:02.690264+00:00",
+        "job_type": "email.workspace_sync"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-13T06:15:05.38799+00:00",
+        "status": "retrying",
+        "earliest": "2026-10-13T06:15:05.38799+00:00",
+        "job_type": "email.workspace_sync"
+      },
+      {
+        "count": 48,
+        "latest": "2026-10-13T06:15:05.713163+00:00",
+        "status": "succeeded",
+        "earliest": "2026-10-13T05:46:03.464844+00:00",
+        "job_type": "email.workspace_sync"
+      },
+      {
+        "count": 2,
+        "latest": "2026-10-13T06:15:07.233145+00:00",
+        "status": "succeeded",
+        "earliest": "2026-10-13T06:02:46.655838+00:00",
+        "job_type": "graph.sync"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-13T06:15:04.901198+00:00",
+        "status": "queued",
+        "earliest": "2026-10-13T06:15:04.901198+00:00",
+        "job_type": "identity.resolve"
+      },
+      {
+        "count": 2,
+        "latest": "2026-10-13T06:11:02.205676+00:00",
+        "status": "succeeded",
+        "earliest": "2026-10-13T05:58:00.547437+00:00",
+        "job_type": "identity.resolve"
+      },
+      {
+        "count": 4,
+        "latest": "2026-10-13T06:15:05.055317+00:00",
+        "status": "queued",
+        "earliest": "2026-10-13T06:15:04.954938+00:00",
+        "job_type": "intelligence.ingest_interaction"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-13T05:58:00.628868+00:00",
+        "status": "succeeded",
+        "earliest": "2026-10-13T05:58:00.628868+00:00",
+        "job_type": "intelligence.ingest_interaction"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-13T05:51:01.633582+00:00",
+        "status": "succeeded",
+        "earliest": "2026-10-13T05:51:01.633582+00:00",
+        "job_type": "intelligence.observe"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-13T06:15:04.838185+00:00",
+        "status": "queued",
+        "earliest": "2026-10-13T06:15:04.838185+00:00",
+        "job_type": "interactions.sync"
+      },
+      {
+        "count": 3,
+        "latest": "2026-10-13T06:14:01.408021+00:00",
+        "status": "succeeded",
+        "earliest": "2026-10-13T05:50:03.073498+00:00",
+        "job_type": "interactions.sync"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-13T06:06:00.491465+00:00",
+        "status": "queued",
+        "earliest": "2026-10-13T06:06:00.491465+00:00",
+        "job_type": "phone.process_pending"
+      },
+      {
+        "count": 2,
+        "latest": "2026-10-13T06:04:01.1845+00:00",
+        "status": "succeeded",
+        "earliest": "2026-10-13T05:50:02.78308+00:00",
+        "job_type": "phone.process_pending"
+      },
+      {
+        "count": 6,
+        "latest": "2026-10-13T06:15:04.635783+00:00",
+        "status": "succeeded",
+        "earliest": "2026-10-13T05:50:03.986198+00:00",
+        "job_type": "phone.scheduled_sync"
+      },
+      {
+        "count": 1,
+        "latest": "2026-10-13T06:10:01.658025+00:00",
+        "status": "queued",
+        "earliest": "2026-10-13T06:10:01.658025+00:00",
+        "job_type": "recommendation.sync"
+      },
+      {
+        "count": 2,
+        "latest": "2026-10-13T06:07:49.778184+00:00",
+        "status": "succeeded",
+        "earliest": "2026-10-13T05:56:37.95618+00:00",
+        "job_type": "recommendation.sync"
+      }
+    ],
+    "scheduleTimeouts": [
+      {
+        "jobid": 35,
+        "worker": "platform-worker",
+        "jobname": "serviceos-worker",
+        "timeout_ms": null
+      },
+      {
+        "jobid": 36,
+        "worker": "other",
+        "jobname": "serviceos-phone-sync",
+        "timeout_ms": null
+      },
+      {
+        "jobid": 37,
+        "worker": "other",
+        "jobname": "serviceos-phone-processing",
+        "timeout_ms": null
+      },
+      {
+        "jobid": 38,
+        "worker": "other",
+        "jobname": "serviceos-email-sync",
+        "timeout_ms": null
+      },
+      {
+        "jobid": 39,
+        "worker": "other",
+        "jobname": "serviceos-email-workspace",
+        "timeout_ms": null
+      },
+      {
+        "jobid": 40,
+        "worker": "other",
+        "jobname": "serviceos-email-wksp-backfill",
+        "timeout_ms": null
+      },
+      {
+        "jobid": 41,
+        "worker": "other",
+        "jobname": "serviceos-interactions",
+        "timeout_ms": null
+      },
+      {
+        "jobid": 42,
+        "worker": "other",
+        "jobname": "serviceos-identity",
+        "timeout_ms": null
+      },
+      {
+        "jobid": 44,
+        "worker": "other",
+        "jobname": "serviceos-customer-cards",
+        "timeout_ms": null
+      }
+    ],
+    "productionChanges": 0,
+    "providerRequests": 0
+  },
+  "runtimeActivity": {
+    "version": "learn-production-runtime-activity/1",
+    "project": "tgbnakbxwcqjeimygroz",
+    "start": "2026-10-13T05:46:00.000Z",
+    "end": "2026-10-13T06:16:00.000Z",
+    "state": "observed_activity_not_drain_or_capture_acceptance",
+    "invocations": [
+      {
+        "function": "recommendation-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 523,
+        "count": 4,
+        "latest": "2026-10-13T06:10:01.677000"
+      },
+      {
+        "function": "marketing-sequence-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 762,
+        "count": 14,
+        "latest": "2026-10-13T06:13:00.687000"
+      },
+      {
+        "function": "interactions-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 754,
+        "count": 4,
+        "latest": "2026-10-13T06:15:04.859000"
+      },
+      {
+        "function": "phone-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 4389,
+        "count": 3,
+        "latest": "2026-10-13T06:15:04.646000"
+      },
+      {
+        "function": "simwood-sync-recordings",
+        "httpStatus": 200,
+        "maxDurationMs": 7996,
+        "count": 5,
+        "latest": "2026-10-13T06:10:10.347000"
+      },
+      {
+        "function": "gmail-workspace-sync-messages",
+        "httpStatus": 200,
+        "maxDurationMs": 2268,
+        "count": 33,
+        "latest": "2026-10-13T06:11:02.005000"
+      },
+      {
+        "function": "gmail-workspace-sync-messages",
+        "httpStatus": 502,
+        "maxDurationMs": 481,
+        "count": 5,
+        "latest": "2026-10-13T06:15:05.339000"
+      },
+      {
+        "function": "client-notifications",
+        "httpStatus": 200,
+        "maxDurationMs": 1458,
+        "count": 16,
+        "latest": "2026-10-13T06:12:00.850000"
+      },
+      {
+        "function": "business-graph-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 1119,
+        "count": 5,
+        "latest": "2026-10-13T06:10:01.686000"
+      },
+      {
+        "function": "marketing-broadcast-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 963,
+        "count": 22,
+        "latest": "2026-10-13T06:15:04.920000"
+      },
+      {
+        "function": "business-graph-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 70934,
+        "count": 1,
+        "latest": "2026-10-13T06:12:13.131000"
+      },
+      {
+        "function": "receptionist-review-collector",
+        "httpStatus": 200,
+        "maxDurationMs": 2919,
+        "count": 9,
+        "latest": "2026-10-13T06:14:01.224000"
+      },
+      {
+        "function": "customer-card-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 704,
+        "count": 1,
+        "latest": "2026-10-13T06:00:02.204000"
+      },
+      {
+        "function": "identity-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 1136,
+        "count": 5,
+        "latest": "2026-10-13T06:15:04.907000"
+      },
+      {
+        "function": "intelligence-ingestion-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 1284,
+        "count": 5,
+        "latest": "2026-10-13T06:15:05.066000"
+      },
+      {
+        "function": "email-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 1231,
+        "count": 3,
+        "latest": "2026-10-13T06:10:01.731000"
+      },
+      {
+        "function": "simwood-sync-calls",
+        "httpStatus": 200,
+        "maxDurationMs": 629,
+        "count": 4,
+        "latest": "2026-10-13T06:10:02.339000"
+      },
+      {
+        "function": "receptionist-test-collector",
+        "httpStatus": 200,
+        "maxDurationMs": 583,
+        "count": 13,
+        "latest": "2026-10-13T06:14:00.741000"
+      },
+      {
+        "function": "platform-worker",
+        "httpStatus": 200,
+        "maxDurationMs": 20639,
+        "count": 15,
+        "latest": "2026-10-13T06:15:24.101000"
+      },
+      {
+        "function": "phone-processing-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 2166,
+        "count": 7,
+        "latest": "2026-10-13T06:04:00.809000"
+      },
+      {
+        "function": "email-workspace-backfill-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 1261,
+        "count": 1,
+        "latest": "2026-10-13T06:00:02.776000"
+      },
+      {
+        "function": "email-workspace-scheduled-sync",
+        "httpStatus": 200,
+        "maxDurationMs": 2270,
+        "count": 2,
+        "latest": "2026-10-13T06:10:03.429000"
+      }
+    ],
+    "lifecycle": [
+      {
+        "function": "recommendation-scheduled-sync",
+        "eventType": "Boot",
+        "count": 6,
+        "latest": "2026-10-13T06:15:04.775000"
+      },
+      {
+        "function": "recommendation-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 6,
+        "latest": "2026-10-13T06:13:21.521000"
+      },
+      {
+        "function": "marketing-sequence-scheduled-sync",
+        "eventType": "Boot",
+        "count": 30,
+        "latest": "2026-10-13T06:15:04.761000"
+      },
+      {
+        "function": "marketing-sequence-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 30,
+        "latest": "2026-10-13T06:15:20.486000"
+      },
+      {
+        "function": "interactions-scheduled-sync",
+        "eventType": "Boot",
+        "count": 6,
+        "latest": "2026-10-13T06:15:04.758000"
+      },
+      {
+        "function": "interactions-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 6,
+        "latest": "2026-10-13T06:13:21.705000"
+      },
+      {
+        "function": "phone-scheduled-sync",
+        "eventType": "Boot",
+        "count": 6,
+        "latest": "2026-10-13T06:15:00.483000"
+      },
+      {
+        "function": "phone-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 6,
+        "latest": "2026-10-13T06:13:21.501000"
+      },
+      {
+        "function": "simwood-sync-recordings",
+        "eventType": "Boot",
+        "count": 6,
+        "latest": "2026-10-13T06:15:01.736000"
+      },
+      {
+        "function": "simwood-sync-recordings",
+        "eventType": "Shutdown",
+        "count": 6,
+        "latest": "2026-10-13T06:13:22.449000"
+      },
+      {
+        "function": "gmail-workspace-sync-messages",
+        "eventType": "Boot",
+        "count": 54,
+        "latest": "2026-10-13T06:15:05.088000"
+      },
+      {
+        "function": "gmail-workspace-sync-messages",
+        "eventType": "Shutdown",
+        "count": 56,
+        "latest": "2026-10-13T06:15:21.197000"
+      },
+      {
+        "function": "client-notifications",
+        "eventType": "Boot",
+        "count": 30,
+        "latest": "2026-10-13T06:15:04.758000"
+      },
+      {
+        "function": "client-notifications",
+        "eventType": "Shutdown",
+        "count": 30,
+        "latest": "2026-10-13T06:15:20.769000"
+      },
+      {
+        "function": "business-graph-scheduled-sync",
+        "eventType": "Boot",
+        "count": 6,
+        "latest": "2026-10-13T06:15:04.764000"
+      },
+      {
+        "function": "business-graph-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 6,
+        "latest": "2026-10-13T06:13:21.474000"
+      },
+      {
+        "function": "marketing-broadcast-scheduled-sync",
+        "eventType": "Boot",
+        "count": 30,
+        "latest": "2026-10-13T06:15:04.763000"
+      },
+      {
+        "function": "marketing-broadcast-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 30,
+        "latest": "2026-10-13T06:15:20.763000"
+      },
+      {
+        "function": "business-graph-sync",
+        "eventType": "Boot",
+        "count": 1,
+        "latest": "2026-10-13T06:11:02.297000"
+      },
+      {
+        "function": "business-graph-sync",
+        "eventType": "Shutdown",
+        "count": 1,
+        "latest": "2026-10-13T06:12:13.133000"
+      },
+      {
+        "function": "receptionist-review-collector",
+        "eventType": "Boot",
+        "count": 15,
+        "latest": "2026-10-13T06:14:00.588000"
+      },
+      {
+        "function": "receptionist-review-collector",
+        "eventType": "Shutdown",
+        "count": 15,
+        "latest": "2026-10-13T06:15:20.942000"
+      },
+      {
+        "function": "customer-card-scheduled-sync",
+        "eventType": "Boot",
+        "count": 6,
+        "latest": "2026-10-13T06:15:04.748000"
+      },
+      {
+        "function": "customer-card-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 6,
+        "latest": "2026-10-13T06:13:21.647000"
+      },
+      {
+        "function": "identity-scheduled-sync",
+        "eventType": "Boot",
+        "count": 6,
+        "latest": "2026-10-13T06:15:04.763000"
+      },
+      {
+        "function": "identity-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 6,
+        "latest": "2026-10-13T06:13:21.834000"
+      },
+      {
+        "function": "intelligence-ingestion-scheduled-sync",
+        "eventType": "Boot",
+        "count": 6,
+        "latest": "2026-10-13T06:15:04.751000"
+      },
+      {
+        "function": "intelligence-ingestion-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 6,
+        "latest": "2026-10-13T06:13:22.271000"
+      },
+      {
+        "function": "email-scheduled-sync",
+        "eventType": "Boot",
+        "count": 6,
+        "latest": "2026-10-13T06:15:04.754000"
+      },
+      {
+        "function": "email-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 6,
+        "latest": "2026-10-13T06:13:21.642000"
+      },
+      {
+        "function": "simwood-sync-calls",
+        "eventType": "Boot",
+        "count": 6,
+        "latest": "2026-10-13T06:15:01.158000"
+      },
+      {
+        "function": "simwood-sync-calls",
+        "eventType": "Shutdown",
+        "count": 6,
+        "latest": "2026-10-13T06:13:22.029000"
+      },
+      {
+        "function": "receptionist-test-collector",
+        "eventType": "Boot",
+        "count": 15,
+        "latest": "2026-10-13T06:14:00.596000"
+      },
+      {
+        "function": "receptionist-test-collector",
+        "eventType": "Shutdown",
+        "count": 15,
+        "latest": "2026-10-13T06:15:20.775000"
+      },
+      {
+        "function": "platform-worker",
+        "eventType": "Boot",
+        "count": 30,
+        "latest": "2026-10-13T06:15:04.770000"
+      },
+      {
+        "function": "platform-worker",
+        "eventType": "Shutdown",
+        "count": 31,
+        "latest": "2026-10-13T06:15:20.969000"
+      },
+      {
+        "function": "phone-processing-scheduled-sync",
+        "eventType": "Boot",
+        "count": 15,
+        "latest": "2026-10-13T06:14:00.720000"
+      },
+      {
+        "function": "phone-processing-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 15,
+        "latest": "2026-10-13T06:15:20.782000"
+      },
+      {
+        "function": "email-workspace-backfill-scheduled-sync",
+        "eventType": "Boot",
+        "count": 2,
+        "latest": "2026-10-13T06:15:04.785000"
+      },
+      {
+        "function": "email-workspace-backfill-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 2,
+        "latest": "2026-10-13T06:03:22.429000"
+      },
+      {
+        "function": "email-workspace-scheduled-sync",
+        "eventType": "Boot",
+        "count": 6,
+        "latest": "2026-10-13T06:15:04.749000"
+      },
+      {
+        "function": "email-workspace-scheduled-sync",
+        "eventType": "Shutdown",
+        "count": 6,
+        "latest": "2026-10-13T06:13:21.694000"
+      },
+      {
+        "function": "google-workspace-discover-mailboxes",
+        "eventType": "Boot",
+        "count": 1,
+        "latest": "2026-10-13T06:04:01.158000"
+      },
+      {
+        "function": "google-workspace-discover-mailboxes",
+        "eventType": "Shutdown",
+        "count": 1,
+        "latest": "2026-10-13T06:07:21.170000"
+      }
+    ],
+    "httpRequestCount": 177,
+    "httpErrorCount": 5,
+    "missingInvocationEvidence": false,
+    "unknownFunctions": false,
+    "inFlightWorkVerifiedStopped": false,
+    "durableCaptureVerified": false,
+    "productionChanges": 0,
+    "providerRequests": 0,
+    "limitations": [
+      "Log windows may be delayed, missing or cross execution boundaries; absence is not proof of inactivity.",
+      "Boot/Shutdown totals cannot be subtracted to count active executions: events can span the window.",
+      "HTTP 200 does not prove durable capture, complete history, authenticated user journeys or background completion.",
+      "Current schedule state, leases, downstream work and caller coordination must be checked separately."
+    ],
+    "observedAt": "2026-10-13T06:16:13.640Z"
+  },
+  "browser": {
+    "deployment": "dpl_hbUQRS9DWFqMAq24KjgdiBTvtxhg",
+    "productionBackend": "tgbnakbxwcqjeimygroz",
+    "existingOperatorSignedIn": true,
+    "clientListLoaded": true,
+    "drummondsWorkspaceLoaded": true,
+    "newLearnControlsAvailable": false,
+    "reason": "Matching production LEARN backend not installed",
+    "customerSignedInAcceptance": false,
+    "credentialsChangedByAgent": false
+  },
+  "limitations": [
+    "Read-only operational evidence and completed independent recovery; not production promotion or full LEARN acceptance.",
+    "Successful jobs in the same window do not correlate each network timeout to a successful job.",
+    "Three mailboxes still report delegation errors; no mailbox capture state changed.",
+    "Existing operator access works; new LEARN controls require the pending paired backend release.",
+    "Normal input capture uses hosted credentials. Unattended database backup should encrypt with a public key; interactive private-key restore checks remain separate and are not yet redesigned."
+  ]
+}
