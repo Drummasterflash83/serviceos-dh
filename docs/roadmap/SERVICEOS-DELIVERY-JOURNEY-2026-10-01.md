@@ -1,5 +1,12 @@
 # Service OS delivery journey
 
+13 October planning continuation: [Drummonds and reusable ServiceOS staged build
+prompts](drummonds-serviceos-builds/README.md) records Chris's expanded LEARN-first,
+outcome-led sequence. Begin by reconciling the current build; complete the agreed
+company-understanding gate before new operational capabilities. This is a planning
+pack, not implementation or release acceptance. The existing LEARN V1 completion
+checklist remains authoritative for its active delivery obligations.
+
 Chris's direction, 1 October 2026. This is the current delivery order. Older
 roadmap Live labels are historical claims, not fresh acceptance evidence.
 
