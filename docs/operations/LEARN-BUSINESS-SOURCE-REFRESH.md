@@ -3,7 +3,8 @@
 ## Current state — 13 October 2026
 
 The job-refresh candidate and matching existing-workspace review control are
-implemented and verified offline, not installed in TEST or LIVE. The live reader
+implemented; its aligned backend is installed and verified in TEST. The matching
+TEST frontend is being prepared. It is not installed in LIVE. The live reader
 timeout fix remains the last released change. The actual completed Commusoft job
 has not yet been refreshed in production.
 
@@ -62,9 +63,10 @@ TypeScript and npm run build pass. No signed-in browser acceptance is claimed.
   revoked owner/module/connection checks now pass offline. Still verify a later
   unambiguous return to prior content and real concurrent requests; serial replay
   tests alone do not establish that acceptance.
-- Prepare the exact matching release and guards. Rollback must preserve refresh
-  history and accepted canonical versions; an older source reader which ignores
-  those revisions must not be restored after real refreshes exist.
+- Exact LIVE guards, empty rollback and history-preserving pause now pass native
+  rehearsal. TEST alignment and both empty rollbacks also pass; all sixteen scoped
+  TEST tables (78,378 rows) are unchanged by installation. An older reader which
+  ignores accepted revisions must never be restored after real refreshes exist.
 - Verify hosted TEST and browser UX, then release the scoped backend/frontend and
   refresh the observed real job through the logged operator controls. Do not promote
   unrelated QuickBooks, legal drafts or roadmap changes with this feature.
