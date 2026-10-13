@@ -78,7 +78,9 @@ export function createProductionFrontendAdapter({operation, request, allowWrite=
       else if (allOld && end.targets?.production?.id === c.previousProductionDeployment &&
         (!job || job.toDeploymentId !== c.id)) state = 'ready';
       else if (allNew && end.targets?.production?.id === c.id && d.aliasAssigned === true &&
-        job?.type === 'promote' && job.toDeploymentId === c.id && job.jobStatus === 'succeeded') state = 'applied';
+        // Vercel can clear its transient alias job after completion. The stable
+        // project target and all four exact alias bindings establish the result.
+        (!job || (job.type === 'promote' && job.toDeploymentId === c.id && job.jobStatus === 'succeeded'))) state = 'applied';
     }
     return {state,evidenceSha256:digest(snapshot)};
   }

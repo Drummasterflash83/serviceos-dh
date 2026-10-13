@@ -34,6 +34,14 @@ test('staged production build is ready and all domain readbacks prove promotion'
  assert.equal(f.calls.filter(c=>c.method==='POST').length,1);
  assert.deepEqual(f.calls.find(c=>c.method==='POST'),{path:`/v10/projects/${project}/promote/${contract.id}`,method:'POST',body:{}});
 });
+test('cleared transient alias job is accepted only with every final deployment binding',async()=>{
+ const f=fixture();f.applied();f.p.lastAliasRequest=null;
+ assert.equal((await f.adapter.observe(step)).state,'applied');
+ f.aliases[0].deploymentId=contract.previousProductionDeployment;
+ assert.equal((await f.adapter.observe(step)).state,'inconclusive');
+ f.applied();f.p.lastAliasRequest=null;f.d.aliasAssigned=false;
+ assert.equal((await f.adapter.observe(step)).state,'drift');
+});
 test('preview, wrong SHA, protection change, pagination and unexpected domains stop promotion',async()=>{
  for(const mutate of [f=>f.d.target=null,f=>f.d.gitSource.sha='c'.repeat(40),f=>f.p.ssoProtection=null,f=>f.domains.pagination.next=1,f=>f.domains.domains.push({name:'unexpected.example'}),f=>f.d.autoAssignCustomDomains=true,f=>f.aliases[0].projectId='other',f=>f.aliases[1].redirect='other.example']){
   const f=fixture();mutate(f);assert.equal((await f.adapter.observe(step)).state,'drift');await assert.rejects(f.adapter.apply(step));assert.equal(f.calls.filter(c=>c.method==='POST').length,0);

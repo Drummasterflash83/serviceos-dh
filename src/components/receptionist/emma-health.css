@@ -193,6 +193,9 @@
     align-items: flex-start;
     flex-direction: column;
   }
+  .eh-summary header > div {
+    flex: initial;
+  }
   .eh-areas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
