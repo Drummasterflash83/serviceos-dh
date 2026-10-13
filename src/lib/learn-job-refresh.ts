@@ -56,6 +56,15 @@ export type RefreshReceipt = {
   changed_fields: string[];
   timing_limitations: string[];
 };
+export type RefreshCancellation = {
+  state: "cancelled";
+  request_id: string;
+  tenant_id: string;
+  link_id: string;
+  job_id: string;
+  source_version_id: string;
+  actor_id: string;
+};
 const uuid = (v: unknown): v is string =>
   typeof v === "string" && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v);
 const object = (v: unknown): v is Record<string, any> =>
@@ -229,7 +238,28 @@ export function prepareJobRefresh(
     reason,
   });
 }
-function receipt(r: unknown, d: RefreshDraft): RefreshReceipt {
+function receipt(r: unknown, d: RefreshDraft): RefreshReceipt | RefreshCancellation {
+  if (
+    object(r) &&
+    r.version === "learn-business-refresh/1" &&
+    r.state === "cancelled" &&
+    r.tenant_id === d.scope.tenant &&
+    r.request_id === d.request &&
+    r.link_id === d.link &&
+    r.job_id === d.job &&
+    r.source_version_id === d.source &&
+    r.actor_id === d.scope.actor
+  ) {
+    return {
+      state: "cancelled",
+      tenant_id: r.tenant_id,
+      request_id: r.request_id,
+      link_id: r.link_id,
+      job_id: r.job_id,
+      source_version_id: r.source_version_id,
+      actor_id: r.actor_id,
+    };
+  }
   if (
     !object(r) ||
     r.version !== "learn-business-refresh/1" ||
@@ -263,10 +293,10 @@ export async function resolveJobRefresh(
   client: RefreshClient,
   store: RefreshStore,
   draft: RefreshDraft,
-  allowApply: boolean,
+  mode: "check" | "apply" | "cancel",
   lock: <T>(name: string, work: () => Promise<T>) => Promise<T>,
   active: () => boolean,
-): Promise<RefreshReceipt | { state: "pending" }> {
+): Promise<RefreshReceipt | RefreshCancellation | { state: "pending" }> {
   const d = checkedDraft(draft.scope, draft.link, draft),
     key = refreshKey(d.scope, d.link),
     encoded = JSON.stringify(d);
@@ -284,7 +314,7 @@ export async function resolveJobRefresh(
       p_revision: d.revision,
       p_reason: d.reason,
     };
-    const call = async (action: "check" | "apply") => {
+    const call = async (action: "check" | "apply" | "cancel") => {
       if (!active()) throw failure();
       const { data, error } = await client.rpc("learn_commusoft_job_refresh", {
         ...args,
@@ -295,8 +325,8 @@ export async function resolveJobRefresh(
     };
     let r = await call("check");
     if (object(r) && r.state === "pending" && r.request_id === d.request) {
-      if (!allowApply) return { state: "pending" };
-      r = await call("apply");
+      if (mode === "check") return { state: "pending" };
+      r = await call(mode);
     }
     const result = receipt(r, d);
     if (!active() || store.getItem(key) !== encoded) throw failure();

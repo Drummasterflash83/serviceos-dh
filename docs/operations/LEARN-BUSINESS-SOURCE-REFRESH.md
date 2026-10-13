@@ -32,6 +32,11 @@ Its actor/backend/tenant/link-scoped outbox persists before dispatch. A lost res
 is recovered by checking the same request before any retry. Wrong-scope receipts and
 session changes do not clear the outbox. The UI remains unavailable on older backends.
 
+Cancellation now has its own append-only receipt. It retires an obsolete preview,
+fences a delayed apply and never reverses a committed update. The scoped outbox is
+cleared only after a matching committed or cancelled receipt. Lost cancellation
+responses recover through the same saved request.
+
 ## Verification
 
 The full retained native schema passes 15 existing journeys and the new open-to-
@@ -40,7 +45,7 @@ unchanged profile/identity/source, restored customer Slack context, replay/confl
 foreign tenant, local edit/reassignment holds and late-ledger atomic failure.
 Unzoned completion remains null as an instant. All 1,591,580 archived rows and seven
 sequences remain unchanged by installation; the new ledger is separately verified
-empty. Transaction rollback, 42 withholding comparisons and the 600-job lookup
+empty, including the additional cancellation ledger. Transaction rollback, 42 withholding comparisons and the 600-job lookup
 regression also pass. The isolated container was removed.
 
 Run the source-refresh SQL fixture at the known-positive point immediately before
@@ -48,16 +53,15 @@ Run the source-refresh SQL fixture at the known-positive point immediately befor
 isolated fully restored database with the prior baseline helper retained exactly as
 that fixture requires. Roll the encompassing transaction back. It must never run
 against a hosted project. Client checks: node --test src/lib/learn-job-refresh.test.ts
-src/lib/learn-commusoft-work.test.ts src/lib/openfolk-business-review.test.ts (21 pass),
+src/lib/learn-commusoft-work.test.ts src/lib/openfolk-business-review.test.ts (24 pass),
 TypeScript and npm run build pass. No signed-in browser acceptance is claimed.
 
 ## Remaining release and delivery work
 
-- Add durable cancellation for an obsolete pending review, preserving its receipt
-  and fencing a delayed apply. The current control can check/retry but cannot safely
-  discard that request; do not describe recovery UX as finished.
-- Verify multiple source transitions (including repeat content), stale/ambiguous
-  previews, disabled modules/connections and revoked actors, with UI recovery cases.
+- Cancellation, a second source transition, stale/equal-time ambiguous previews and
+  revoked owner/module/connection checks now pass offline. Still verify a later
+  unambiguous return to prior content and real concurrent requests; serial replay
+  tests alone do not establish that acceptance.
 - Prepare the exact matching release and guards. Rollback must preserve refresh
   history and accepted canonical versions; an older source reader which ignores
   those revisions must not be restored after real refreshes exist.
