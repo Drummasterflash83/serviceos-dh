@@ -20,11 +20,11 @@ The policy pages are approval previews, not published policies. The agreement is
 - QuickBooks records must not be used for model training or fine-tuning.
 - No legal-counsel review has taken place. An agreement between the parties does not change that answer.
 
-## Decisions for Chris and Heidi
+## Draft approval and remaining completion
 
-1. Approve or amend the actual privacy notice, user terms and pilot agreement. Agreement approval is separate from signing it.
+1. Chris approved the draft privacy notice, user terms, pilot agreement and proposed retention targets on 13 October. The approved source hashes are recorded alongside these documents. Publication and signing have not happened.
 2. Confirm Heidi's contractual notice email and authority to sign, and Chris's actual processing role and software rights. The drafts avoid transferring ownership or inventing a separate OpenFolk company.
-3. Agree the proposed exit targets: 30-day export opportunity, active-data deletion within 30 days after return/deletion is agreed, recovery-copy deletion within 90 days after active deletion. Engineering must verify these before promising them; existing records are not deleted by approval of a draft.
+3. Verify the approved proposed exit targets: 30-day export opportunity, active-data deletion within 30 days after return/deletion is agreed, recovery-copy deletion within 90 days after active deletion. Engineering must verify these before promising them; existing records are not deleted by approval of a draft.
 4. Adopt the recorded security review responsibilities, business purposes and supplier arrangements. No artificial compliance certification is implied.
 
 ## Engineering checks

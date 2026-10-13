@@ -773,3 +773,9 @@ placed in public routes or deployed. Business approval, exact recipient/transfer
 arrangements and achievable exit/deletion commitments still need resolution.
 The draft terms now propose England and Wales jurisdiction and a concrete change
 notice process; this is proposed text, not an accepted agreement.
+
+Chris subsequently approved the draft text and proposed retention targets via the
+review-pack question. The exact source hashes and scope are recorded in
+`docs/legal/SERVICEOS-QUICKBOOKS-DRAFT-APPROVAL.json`. This approves the drafts,
+not signature or publication. The preview labels that distinction and invalidates
+its approved label if any of the three approved document hashes changes.

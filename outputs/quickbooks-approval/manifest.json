@@ -1,5 +1,5 @@
 {
-  "status": "draft_not_approved_not_published",
+  "status": "draft_text_approved_not_published_or_signed",
   "publicPolicyPaths": [
     "/privacy/drummonds",
     "/terms/drummonds"
@@ -7,7 +7,7 @@
   "privateAgreement": "agreement.html",
   "sources": {
     "SERVICEOS-QUICKBOOKS-APPROVAL.md": {
-      "sha256": "f629e359b01d240fdfea01a07d1ff89155708584f3e63368e561531fe542b52e",
+      "sha256": "3505a14b5ef068e9c1c497eeca5a2dc0fca7fbf435be7bba864f205dbb61eac4",
       "preview": "index.html"
     },
     "SERVICEOS-PRIVACY-POLICY-DRAFT.md": {

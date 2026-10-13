@@ -1,0 +1,14 @@
+{
+  "status": "draft_text_and_targets_approved",
+  "date": "2026-10-13",
+  "approvedBy": "Chris Drummond",
+  "decision": "Approve draft text and proposed targets",
+  "scope": "Draft text and proposed 30-day export opportunity, active-data deletion within 30 days after agreed return/deletion, recovery-copy removal within 90 days after active deletion. Operational verification remains required before publication.",
+  "signed": false,
+  "published": false,
+  "sourceHashes": {
+    "SERVICEOS-PRIVACY-POLICY-DRAFT.md": "2709a0c96fb1fb48384cb753f9c20a4b360803c3aeff36fc409b6cdda461f12c",
+    "SERVICEOS-TERMS-DRAFT.md": "163ab92db893594ee193312b3c471f8e350ee497367a05d7ac09b3c80661fc2d",
+    "SERVICEOS-DRUMMONDS-PILOT-AGREEMENT-DRAFT.md": "44c9586629fac60b97959f831ea983326f7c4e89bddea6946445a25d03f8bb9e"
+  }
+}
