@@ -1,5 +1,26 @@
 # Drummonds Slack production intake — approved and started
 
+## Latest LIVE observation — 13 October, 18:06 BST
+
+The unavailable-source schema and matching workers are deployed and verified.
+The logged operator's exact recovery succeeded in one attempt with 80 records,
+completing that channel's history window. Two unavailable markers were retained
+and suppressed from ordinary conversation reads. Other channel replies continue
+on the normal scheduler. See the [current release evidence](evidence/learn-slack-withheld-production-2026-10-13.json).
+Earlier initial-dispatch instructions below do not override later verified
+coordinated scheduler activation or expand the original campaign scope.
+
+The exact marker is retained with immutable source versions. Ordinary reads,
+derived context and scores cannot resurrect unavailable content. Available replies
+remain independently eligible. Previously published card summaries without
+per-field lineage cause an atomic review hold, not a guessed content edit.
+
+After any unavailable marker has been retained, **keep the suppression policies,
+triggers and readers when rolling back**. Roll back only the matching runtime if
+needed; restoring old readers could expose unavailable older content. No source
+record deletion is part of rollback. Before marker ingestion only, the exact
+rehearsed guarded schema rollback remains possible after verifying zero markers.
+
 Updated 13 October 2026. Chris approved the exact production rollout in this chat;
 the earlier approved two-message TEST sample is closed and its allowance is not reused.
 Existing deployment permission is already recorded. No new login, access grant or
