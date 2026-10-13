@@ -1,0 +1,17 @@
+{
+  "observedAt": "2026-10-13T22:55:26.060542Z",
+  "sourceRecords": 13857,
+  "campaignWindowsComplete": {
+    "active": 17,
+    "archived": 112
+  },
+  "newlyBlockedRecovery": {
+    "status": "dead_letter",
+    "attempts": 1,
+    "code": "slack_history_message_subtype_unsupported",
+    "structuralSubtype": "automatic_ai_huddle_notes_enabled"
+  },
+  "otherRecovery": "queued_attempt_zero",
+  "action": "No retry or checkpoint advancement; subtype handling needs implementation and verification.",
+  "privateMessagesIncluded": false
+}
