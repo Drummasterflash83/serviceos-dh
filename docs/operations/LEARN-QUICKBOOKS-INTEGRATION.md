@@ -584,3 +584,26 @@ company consent, matching runtime/frontend release and the real sandbox lifecycl
 remain outstanding. No live data, secrets, grants or schedules changed.
 
 [Package rehearsal evidence](evidence/learn-quickbooks-production-package-2026-10-13.json).
+
+
+### Shared LEARN integration — 13 October
+
+The QuickBooks worktree has merged shared TEST head `b88fbcf`, retaining the newer
+reviewed Commusoft account-holder and contact reconciliation work. The shared
+branch introduced `20261101970000_learn_customer_account_holder.sql`, colliding
+with this branch's Slack capability-reader migration number. The unchanged Slack
+SQL is now named `20261101971000_learn_slack_control_capabilities.sql`; verification
+scripts use the new path. The historical TEST evidence retains its original path
+and source hash, since that is what was applied. This rename does not reapply SQL,
+alter any stored receipt or change a hosted migration history.
+
+Two earlier duplicate migration versions (`20261023190000`, `20261023200000`)
+predate this integration and are outside this rename. Production QuickBooks uses
+its exact guarded release artifact, not an indiscriminate migration push.
+
+Combined validation passed: 175 targeted TypeScript tests across QuickBooks,
+Slack, Commusoft review and the dispatcher; 18 Python reconciliation planner
+tests; production build and full frontend TypeScript. The renamed Slack SQL
+also passed its isolated PostgreSQL rollback, pagination, capability and access
+checks. This is source integration acceptance, not a new hosted release or real
+QuickBooks provider acceptance.

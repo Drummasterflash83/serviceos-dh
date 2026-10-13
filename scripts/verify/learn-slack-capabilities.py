@@ -34,7 +34,7 @@ try:
  query="select public.learn_slack_campaign_list('00000000-0000-4000-8000-000000000001',null)"
  before=json.loads(sql('set role authenticated;'+query))
  definition=sql("select pg_get_functiondef('public.learn_slack_campaign_list(uuid,uuid)'::regprocedure)")
- migration=(root/'supabase/migrations/20261101970000_learn_slack_control_capabilities.sql').read_text()
+ migration=(root/'supabase/migrations/20261101971000_learn_slack_control_capabilities.sql').read_text()
  sql(migration.replace('commit;','rollback;'))
  assert definition==sql("select pg_get_functiondef('public.learn_slack_campaign_list(uuid,uuid)'::regprocedure)")
  sql(migration)

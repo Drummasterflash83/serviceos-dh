@@ -1,0 +1,164 @@
+{
+  "version": "learn-customer-account-holder-production/1",
+  "state": "live_reviewed_identity_journey_verified",
+  "sourceSha256": "2e9de30402df874d7824dfc39f5ad422e0312320315af57b04a02a96acc55fad",
+  "frontend": {
+    "observedAt": "2026-10-13T18:04:41.151Z",
+    "id": "dpl_BdmR3wuhjf1ghYYN58sQQgeYbMpG",
+    "url": "serviceos-r792jbm0u-allkin.vercel.app",
+    "readyState": "READY",
+    "gitSha": "9091ce4970a319aacb6959227382532688957e93",
+    "productionTarget": "dpl_BdmR3wuhjf1ghYYN58sQQgeYbMpG",
+    "protection": "all_except_custom_domains",
+    "productionTargetMatchesCandidate": true
+  },
+  "promotionPlanSha256": "64196f9499b4e1a0186b607593573a74e4aa8650f1b0c6324e0a42d039b9538c",
+  "existingLiveAliases": [
+    "app.openfolk.ai",
+    "openfolk.ai",
+    "serviceos-dh.vercel.app",
+    "www.openfolk.ai"
+  ],
+  "testFrontendChanged": false,
+  "backend": {
+    "production": {
+      "state": "applied_verified",
+      "startedAt": "2026-10-13T17:58:40.181Z",
+      "finishedAt": "2026-10-13T17:58:46.810Z",
+      "releaseSha256": "5d22b3f27520e8878363b98d928b561ad6a0b40d2da57503fe3bee89a84bfc48",
+      "preservation": {
+        "retainedVersions": 18052,
+        "retainedPages": 3697,
+        "retainedLinks": 7,
+        "retainedPeople": 3246,
+        "retainedCompanies": 1180,
+        "retainedCards": 3248,
+        "accessSchedulesConnectionsAndFlagsUnchanged": true,
+        "unrelatedFunctionsUnchanged": true
+      }
+    },
+    "test": {
+      "state": "applied_verified",
+      "startedAt": "2026-10-13T17:57:45.171Z",
+      "finishedAt": "2026-10-13T17:58:15.247Z",
+      "releaseSha256": "5add5b6f60c115ceea11796ef5f8922c79d1f793bc24ee0a7a1e310f6515c406",
+      "preservation": {
+        "retainedVersions": 18014,
+        "retainedPages": 4157,
+        "retainedLinks": 62,
+        "retainedPeople": 16254,
+        "retainedCompanies": 16,
+        "retainedCards": 16251,
+        "accessSchedulesConnectionsAndFlagsUnchanged": true,
+        "unrelatedFunctionsUnchanged": true
+      }
+    }
+  },
+  "realPublication": {
+    "state": "verified_real_publication",
+    "at": "2026-10-13T18:03:29.790958+00:00",
+    "checks": {
+      "correctAccountName": true,
+      "differentFromPrimaryContact": true,
+      "noCopiedContactIdentity": true,
+      "notMarkedVerified": true,
+      "cardMatchesAccount": true,
+      "originalActor": true,
+      "evidenceRetained": true,
+      "contactDecisionRetained": true,
+      "auditReceipt": true
+    },
+    "singleCardForReviewedIdentity": true,
+    "privateEvidenceSha256": "75e0a604143ac77e9754584f9842d12bcc14fbdc8e83592a13a9f11f0b204f6f"
+  },
+  "offlineEnvelope": {
+    "state": "passed",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "baseline": "retained native archive plus 24 reviewed packages; later unrelated Slack runtime changes excluded",
+    "archive": {
+      "bytes": 196872981,
+      "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+    },
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "sourceSha256": "2e9de30402df874d7824dfc39f5ad422e0312320315af57b04a02a96acc55fad",
+    "legacyReplayAcrossMigration": true,
+    "transactionRollback": true,
+    "envelopeChecks": [
+      "test:wrong_target",
+      "test:wrong_digest",
+      "test:writer_drift",
+      "test:late_failure",
+      "test:rollback",
+      "production:wrong_target",
+      "production:wrong_digest",
+      "production:writer_drift",
+      "production:late_failure",
+      "production:rollback"
+    ],
+    "productionReleaseSha256": "5d22b3f27520e8878363b98d928b561ad6a0b40d2da57503fe3bee89a84bfc48",
+    "testReleaseSha256": "5add5b6f60c115ceea11796ef5f8922c79d1f793bc24ee0a7a1e310f6515c406",
+    "journeys": [
+      "journey",
+      "identity"
+    ],
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 394,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "aa02c1b12297f9429ae5498ee2accec463059fc9d64e08afdcc51ebc1599dc6c",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true
+  },
+  "browserAcceptance": {
+    "stableLiveDomain": true,
+    "existingSignedInOperator": true,
+    "primaryContactLabelVerified": true,
+    "requiredIdentityEvidenceFormVerified": true,
+    "savedConfirmationVisible": true,
+    "publishedAccountCardReadThroughAuditedOperator": true,
+    "linkedJobsShown": 0,
+    "coverageLimitationVisible": true
+  },
+  "remaining": [
+    "Broader account-holder reconciliation and customer/site/job/contact publication",
+    "Provider API/UI coverage gap",
+    "TEST matching frontend and signed-in workflow acceptance",
+    "Complete recurring-cycle and pause/re-enable acceptance",
+    "Remaining LEARN inputs, scoring, recovery and operational gates"
+  ]
+}

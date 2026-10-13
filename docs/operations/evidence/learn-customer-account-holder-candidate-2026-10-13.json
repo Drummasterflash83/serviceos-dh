@@ -1,0 +1,91 @@
+{
+  "version": "learn-customer-account-holder-candidate/1",
+  "observedAt": "2026-10-13T17:47:44.494517+00:00",
+  "state": "verified_locally_not_released",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "source": {
+    "path": "supabase/migrations/20261101970000_learn_customer_account_holder.sql",
+    "sha256": "2e9de30402df874d7824dfc39f5ad422e0312320315af57b04a02a96acc55fad"
+  },
+  "verification": {
+    "focusedTests": 14,
+    "prebuildTests": 47,
+    "typescript": "passed",
+    "build": "passed",
+    "offlineRehearsal": {
+      "state": "passed",
+      "productionChanged": false,
+      "hostedTestChanged": false,
+      "providerRequests": 0,
+      "baseline": "retained native archive plus 24 reviewed packages; later unrelated Slack runtime changes excluded",
+      "archive": {
+        "bytes": 196872981,
+        "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+      },
+      "containment": {
+        "network": "none",
+        "hostMounts": 0,
+        "publishedPorts": 0,
+        "cronLaunchActiveJobs": false,
+        "preloadedLibraries": [
+          "pg_cron",
+          "pg_net",
+          "pgsodium",
+          "supabase_vault",
+          "supautils"
+        ],
+        "maxWorkerProcesses": 0,
+        "networkWorkerDatabaseAbsent": true,
+        "containerLogging": "none"
+      },
+      "sourceSha256": "2e9de30402df874d7824dfc39f5ad422e0312320315af57b04a02a96acc55fad",
+      "legacyReplayAcrossMigration": true,
+      "transactionRollback": true,
+      "journeys": [
+        "journey",
+        "identity"
+      ],
+      "sourcePreservation": {
+        "state": "all_archived_copy_rows_and_sequences_match",
+        "tables": 394,
+        "rows": 1591580,
+        "sequences": 7,
+        "comparisonSha256": "d75ca4fa02887719c9db0ea5fd00ba52f2f48f48c7316fdc6995ae16517ced96",
+        "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+      },
+      "containmentAfter": {
+        "network": "none",
+        "hostMounts": 0,
+        "publishedPorts": 0,
+        "cronLaunchActiveJobs": false,
+        "preloadedLibraries": [
+          "pg_cron",
+          "pg_net",
+          "pgsodium",
+          "supabase_vault",
+          "supautils"
+        ],
+        "maxWorkerProcesses": 0,
+        "networkWorkerDatabaseAbsent": true,
+        "containerLogging": "none"
+      },
+      "containerRemoved": true
+    }
+  },
+  "liveCommusoftObservation": {
+    "at": "2026-10-13T17:45:55.438Z",
+    "phase": 3,
+    "lastState": "window_active",
+    "customerContactPages": 840,
+    "complete": false,
+    "actorValid": true,
+    "connectionValid": true
+  },
+  "remaining": [
+    "Match current hosted schema and prepare guarded backend/frontend release",
+    "Verify the signed-in customer-review journey",
+    "Review and reconcile broader canonical customer/job publication",
+    "Resolve API/UI coverage gap; do not describe all-account coverage as complete"
+  ]
+}

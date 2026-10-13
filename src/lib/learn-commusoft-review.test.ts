@@ -181,3 +181,85 @@ test("matching endpoints retain bounded evidence without private fields or requi
     await assert.rejects(find(envelope(invalid)));
   }
 });
+
+test("new person confirmation requires reviewed account identity before dispatch", async () => {
+  let calls = 0;
+  const db: ReviewClient = {
+    rpc: async () => {
+      calls++;
+      return { data: null, error: null };
+    },
+  };
+  const input = {
+    tenant: id(1),
+    version: id(3),
+    kind: "person" as const,
+    target: null,
+    reason: "Reviewed source",
+  };
+  for (const identity of [
+    undefined,
+    null,
+    { displayName: " ", contactIsCustomer: false, evidence: "Provider account" },
+    { displayName: "Account holder", contactIsCustomer: "false", evidence: "Provider account" },
+    { displayName: "Account holder", contactIsCustomer: false, evidence: " " },
+    { displayName: "x".repeat(1001), contactIsCustomer: false, evidence: "Provider account" },
+  ]) {
+    await assert.rejects(confirmCommusoftCustomer(db, { ...input, identity: identity as any }));
+  }
+  const identity = {
+    displayName: "Account holder",
+    contactIsCustomer: false,
+    evidence: "Provider account",
+  };
+  await assert.rejects(confirmCommusoftCustomer(db, { ...input, identity, target: id(4) }));
+  await assert.rejects(confirmCommusoftCustomer(db, { ...input, identity, kind: "company" }));
+  assert.equal(calls, 0);
+});
+test("reviewed same and different account holders use the identity endpoint without a supplied actor", async () => {
+  for (const contactIsCustomer of [true, false]) {
+    let calls = 0;
+    const db: ReviewClient = {
+      rpc: async (name, args) => {
+        calls++;
+        assert.equal(name, "learn_commusoft_confirm_customer_identity");
+        assert.deepEqual(args, {
+          p_tenant: id(1),
+          p_version: id(3),
+          p_kind: "person",
+          p_target: null,
+          p_reason: "Reviewed source",
+          p_identity: {
+            display_name: "Reviewed holder",
+            contact_is_customer: contactIsCustomer,
+            evidence: "Provider account screen",
+          },
+        });
+        return {
+          data: {
+            link_id: id(5),
+            entity_id: id(4),
+            card_id: id(6),
+            entity_table: "people",
+            already: false,
+          },
+          error: null,
+        };
+      },
+    };
+    const result = await confirmCommusoftCustomer(db, {
+      tenant: id(1),
+      version: id(3),
+      kind: "person",
+      target: null,
+      reason: "Reviewed source",
+      identity: {
+        displayName: " Reviewed holder ",
+        contactIsCustomer,
+        evidence: " Provider account screen ",
+      },
+    });
+    assert.equal(result.entityId, id(4));
+    assert.equal(calls, 1);
+  }
+});

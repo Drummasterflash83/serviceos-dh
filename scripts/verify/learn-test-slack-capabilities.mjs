@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import {savedCliToken} from './learn-test-readiness.mjs';
 const phase=process.argv[2],project='saatxzwxvdvqevbnskxy';
 if(process.argv.length!==3||!['prepare','rehearse','apply','verify'].includes(phase))throw Error('Specify prepare, rehearse, apply or verify');
-const path='supabase/migrations/20261101970000_learn_slack_control_capabilities.sql',source=readFileSync(path,'utf8');
+const path='supabase/migrations/20261101971000_learn_slack_control_capabilities.sql',source=readFileSync(path,'utf8');
 const hash=s=>createHash('sha256').update(s).digest('hex'),quote=s=>"'"+s.replaceAll("'","''")+"'";
 const root='.verification-results/slack-test-capabilities';mkdirSync(root,{recursive:true,mode:0o700});
 const token=savedCliToken();

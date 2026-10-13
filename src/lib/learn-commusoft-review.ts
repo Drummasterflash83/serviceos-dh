@@ -1,4 +1,28 @@
 export type CustomerKind = "person" | "company";
+export type CustomerAccountIdentity = {
+  displayName: string;
+  contactIsCustomer: boolean;
+  evidence: string;
+};
+/** A reviewed account name is not inferred from a primary contact or shared endpoint. */
+export function customerAccountIdentity(value: CustomerAccountIdentity) {
+  if (
+    !value ||
+    typeof value.displayName !== "string" ||
+    value.displayName.trim().length < 1 ||
+    value.displayName.trim().length > 1000 ||
+    typeof value.contactIsCustomer !== "boolean" ||
+    typeof value.evidence !== "string" ||
+    value.evidence.trim().length < 3 ||
+    value.evidence.trim().length > 1000
+  )
+    throw Error("Confirm the customer account name and where you checked it.");
+  return {
+    display_name: value.displayName.trim(),
+    contact_is_customer: value.contactIsCustomer,
+    evidence: value.evidence.trim(),
+  };
+}
 export type ReviewClient = {
   rpc: (
     name: string,
@@ -287,6 +311,7 @@ export async function confirmCommusoftCustomer(
     kind: CustomerKind;
     target: string | null;
     reason: string;
+    identity?: CustomerAccountIdentity;
   },
 ) {
   scope(input.tenant);
@@ -298,15 +323,23 @@ export async function confirmCommusoftCustomer(
     input.reason.trim().length > 1000
   )
     throw Error("Choose a customer type, target and review reason.");
+  const creatingPerson = input.kind === "person" && input.target === null;
+  if (creatingPerson !== (input.identity !== undefined))
+    throw Error("Confirm the account holder when creating a new person customer.");
+  const identity = input.identity === undefined ? null : customerAccountIdentity(input.identity);
   // No automatic retries: a lost acknowledgement may still represent a saved link.
   try {
-    const { data: d, error } = await db.rpc("learn_commusoft_confirm_customer", {
-      p_tenant: input.tenant,
-      p_version: input.version,
-      p_kind: input.kind,
-      p_target: input.target,
-      p_reason: input.reason.trim(),
-    });
+    const { data: d, error } = await db.rpc(
+      identity ? "learn_commusoft_confirm_customer_identity" : "learn_commusoft_confirm_customer",
+      {
+        p_tenant: input.tenant,
+        p_version: input.version,
+        p_kind: input.kind,
+        p_target: input.target,
+        p_reason: input.reason.trim(),
+        ...(identity ? { p_identity: identity } : {}),
+      },
+    );
     if (
       error ||
       !object(d) ||

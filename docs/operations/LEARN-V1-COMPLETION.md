@@ -7,6 +7,137 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 20:04 BST — seventeen LIVE contact relationships verified.**
+
+- Reviewed the 22 retained contact sources attached to the twenty newly reconciled
+  accounts and their four sites. Published 17: twelve reuse the corroborated
+  account-holder person; five create distinct named, unverified people. Readback
+  verifies all source versions, original operator, card relationships and the one
+  applicable site relationship. Twenty-nine source contact points remain unverified
+  and non-primary; no consent or endpoint-verification decision was inferred.
+- Five sources remain held: two possible duplicate/alias contacts, one departmental
+  label, and two named contacts whose endpoints collide with existing unnamed
+  identities. The collision guard prevented new duplicates. Those unnamed records
+  must be reconciled using communication evidence before choosing a person; shared
+  endpoints alone are insufficient. No automatic merge was attempted.
+- A signed-in LIVE company card displays its newly linked contact alongside its
+  already-published jobs. This is operator-view acceptance, not a new claim of
+  ordinary-client permission acceptance or complete contact/provider coverage.
+- All 4,451 prior identity projections, six prior contact-point projections,
+  24 customer links, 1,552 retained customer heads and five prior contact links
+  are unchanged. The earlier release preservation check also passes for its
+  immutable sources, identity IDs, permissions, schedules and configuration.
+  These checks are scoped comparisons, not a full-row production database hash.
+- Recurring Commusoft capture has reached phase 4 (site contacts), enabled and
+  window-active at 19:03 UTC. Full-cycle completion is not yet verified. Broader
+  customer publication, source-to-card communication attribution, the additional
+  contact-point display gap, scoring, TEST parity and operational gates remain.
+- No frontend/schema release, new access grant, provider write or paid AI request.
+
+[Contact acceptance evidence](evidence/learn-contact-reconciliation-2026-10-13.json).
+
+**13 October, 19:47 BST — broader LIVE reconciliation: twenty more customer cards.**
+
+- A reusable read-only planner reconciles the actual customer export with retained
+  sources, tenant-specific category evidence and existing people/companies/contact
+  points. It makes bounded proposals, never approvals, merges or provider writes.
+  Eighteen tests cover scope/freshness, changed identities, shared endpoints,
+  duplicate exports, ambiguous observations and missing provider records.
+- The first twenty proposals passed fresh logged operator checks and were saved
+  in LIVE. Their four sites and eighteen jobs are also published. Readback verifies
+  all forty-two source links, ownership, original actor and person-account evidence.
+  A signed-in live card shows two jobs, including a pending job created today and
+  an open job. Contacts and communication links for this group still need work.
+- All 4,431 pre-existing identity projections (ID/type/name/email/phone/postcode),
+  four prior customer links, six contact points and 1,552 retained customer source
+  heads match the pre-run snapshot. The earlier release preservation verifier also
+  passes for immutable sources, access, schedules and prior identity IDs. This is
+  not a full-row comparison of every canonical or communication table.
+- The refreshed report has **24 linked customer accounts, 828 review proposals and
+  798 held cases** across the 1,650 exported account IDs. Nine additional proposals
+  now have possible matches after the new cards were created, confirming why each
+  group must refresh its candidate checks. Held reasons overlap; the 98 API-missing
+  customers remain held. Nothing automatically approves the remaining proposals.
+- No new schema/frontend release, access grant, provider write or paid AI request.
+  Broader customer context, the contact display gap, scoring, provider coverage,
+  TEST frontend parity and full operational/recovery acceptance remain unfinished.
+
+[Reconciliation procedure](LEARN-CUSTOMER-RECONCILIATION.md) ·
+[Bounded LIVE evidence](evidence/learn-customer-reconciliation-2026-10-13.json).
+
+**13 October, 19:25 BST — one LIVE customer now has connected sites, jobs and contacts.**
+
+- Logged operator reviews published six sites, ten jobs (four direct and six
+  through sites), and five contacts onto the previously verified account card.
+  Existing account-holder identity was reused for its matching contact; additional
+  people remain distinct and unverified. All 21 reviewed source links retain their
+  versions and original actor. There is still exactly one card for that account.
+- Read-only acceptance verifies site/job ownership, five active contact-to-card
+  relationships and two unverified, non-primary contact points for the account
+  holder. Signed-in LIVE shows ten jobs and six sites; three account contacts were
+  visually checked before the two further named site contacts were published.
+- Four contacts labelled only “Occupier” remain unpublished. The card reader also
+  exposes only primary email/phone, so it currently omits the account holder's two
+  additional saved contact points. This display gap needs fixing without changing
+  primary/verification choices. Completion timestamps without a timezone remain
+  excluded from duration and performance calculations.
+- Preservation readback retains the earlier 18,052 versions, 3,697 pages, seven
+  source links and all prior people/company/card IDs. Access, policies, schedules,
+  connections, flags and unrelated functions are unchanged. No provider writes,
+  new grants, schema changes, frontend release or paid AI work in this step.
+- This proves a connected real customer journey, **not broad card completion**.
+  The 18:17 UTC inventory contains 12,637 latest job versions and 2,969 contacts;
+  1,553 jobs reference properties absent from retained property sources, and 18
+  sites lack a retained customer parent. The scalable reconciliation path must
+  expose those gaps and the already-confirmed API/UI discrepancy rather than
+  invent relationships. Wider publication remains the next priority.
+
+[Connected customer evidence](evidence/learn-reviewed-customer-context-2026-10-13.json).
+
+**13 October, 19:06 BST — account-holder review released; one real LIVE card verified.**
+
+- The exact guarded backend is installed in TEST and production. Production
+  retained all 18,052 prior business-source versions, 3,697 pages, seven links,
+  customer identities, access, schedules, connections and flags. The subsequent
+  real reviewed save added one person/card/link without changing earlier history.
+- Git 9091ce4, deployment dpl_BdmR3wuhjf1ghYYN58sQQgeYbMpG, now serves the existing
+  live aliases. Its production auth binding and signed-in review form are verified.
+  TEST's frontend has not been updated by this release.
+- A real account was checked against the fresh provider export and searched by
+  name/surname/postcode before creation. Its account-holder name is separate from
+  the primary contact, whose email/phone were not copied. Source, actor and review
+  evidence are retained, with an audited result receipt and exactly one card.
+  The card opens through logged operator access and shows zero published linked
+  jobs with an explicit coverage limitation. Broader card reconciliation remains.
+- The guarded SQL passed target/digest/drift/late-failure and rollback rehearsals;
+  the source and operator journeys preserve all 1,591,580 archived rows and seven
+  sequences. TEST's absent pg_cron table was caught in a read-only preflight and
+  handled before applying either release. No new access grant or provider write.
+
+[Release evidence](evidence/learn-customer-account-holder-production-2026-10-13.json).
+
+
+**13 October, 18:47 BST — account-holder review candidate verified locally.**
+
+- New person-card review now requires a checked customer account name and an
+  explicit same/different primary-contact decision. Different contacts' email
+  and phone are not copied onto the account holder. Existing reviews and source
+  history remain intact; no broader customers were published.
+- Fourteen focused tests, TypeScript, 47 prebuild checks and the build pass.
+  An isolated native restore plus 24 reviewed packages verifies the writer,
+  operator audit/isolation, stale-source rejection, exact legacy retries and
+  rollback, preserving 1,591,580 archived rows and seven sequences. Its disposable
+  container was removed. Later unrelated Slack changes are outside that baseline.
+- This is **local-only**. Current hosted-schema comparison, matched deployment
+  and signed-in review acceptance remain before describing the feature as LIVE.
+- A fresh read at 17:45 UTC shows LIVE recurring Commusoft capture at 840 customer-
+  contact pages, with valid actor/connection authority. Site contacts and the
+  full recurring-cycle watermark remain unfinished.
+
+[Candidate and release requirements](LEARN-CUSTOMER-ACCOUNT-HOLDER.md) ·
+[Verification evidence](evidence/learn-customer-account-holder-candidate-2026-10-13.json).
+
+
 **13 October, 18:22 BST — Slack replies advancing; Commusoft coverage reconciled against its UI.**
 
 - The recovered Slack channel entered normal reply discovery: 20 threads found and

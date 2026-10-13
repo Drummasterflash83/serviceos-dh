@@ -7,6 +7,7 @@ const actions = new Set([
   "learn_commusoft_customer_candidates",
   "learn_commusoft_contact_candidates",
   "learn_commusoft_confirm_customer",
+  "learn_commusoft_confirm_customer_identity",
   "learn_commusoft_work_review_page",
   "learn_commusoft_work_review_search",
   "learn_commusoft_work_batch_result",

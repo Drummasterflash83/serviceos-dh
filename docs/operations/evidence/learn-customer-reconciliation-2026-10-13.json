@@ -1,0 +1,127 @@
+{
+  "version": "learn-customer-reconciliation-2026-10-13/1",
+  "state": "first_bounded_live_group_verified",
+  "before": {
+    "sources": 1552,
+    "exportAccounts": 1650,
+    "states": {
+      "ready_for_operator_review": 857,
+      "held": 789,
+      "linked": 4
+    },
+    "reasons": {
+      "existing_identity_candidates": 400,
+      "account_postcode_not_corroborated": 18,
+      "account_holder_differs_or_uncertain": 327,
+      "other_account_candidates": 102,
+      "category_needs_review": 11,
+      "person_category_has_company_name": 18,
+      "not_in_retained_api_sources": 98
+    },
+    "ambiguousRelationships": 0,
+    "reviewBatches": 43,
+    "applied": 0
+  },
+  "after": {
+    "sources": 1552,
+    "exportAccounts": 1650,
+    "states": {
+      "linked": 24,
+      "held": 798,
+      "ready_for_operator_review": 828
+    },
+    "reasons": {
+      "existing_identity_candidates": 410,
+      "account_postcode_not_corroborated": 18,
+      "account_holder_differs_or_uncertain": 327,
+      "other_account_candidates": 102,
+      "category_needs_review": 11,
+      "person_category_has_company_name": 18,
+      "not_in_retained_api_sources": 98
+    },
+    "ambiguousRelationships": 0,
+    "reviewBatches": 42,
+    "applied": 0
+  },
+  "exportSha256": "aabeac22fa074098e1e995adfb9d7d6e20fc8c94b868af1b01d3d318b1c788c7",
+  "liveAcceptance": {
+    "version": "commusoft-customer-review-batch/1",
+    "state": "verified_live_publication",
+    "at": "2026-10-13T18:43:28.128687+00:00",
+    "customers": 20,
+    "sites": 4,
+    "jobs": 18,
+    "checks": {
+      "allSourceVersionsAndOwnersVerified": true,
+      "existingSignedInOperatorRecorded": true,
+      "allCreatedIdentitiesRemainUnverified": true,
+      "reviewedPersonAccountEvidenceRetained": true,
+      "jobSiteRelationshipsVerified": true
+    },
+    "privateEvidenceSha256": "79f74ebea55a81ac5cedf2e5fe1aedd986222d3a47ba49233a5b45f12e4e833d"
+  },
+  "identityPreservation": {
+    "state": "verified",
+    "before": "2026-10-13T18:29:49.981332+00:00",
+    "after": "2026-10-13T18:42:33.055071+00:00",
+    "existingCustomerLinksUnchanged": 4,
+    "contactPointsRetained": 6,
+    "newIdentityRows": 20,
+    "customerLinksAfter": 24,
+    "existingIdentityProjectionsUnchanged": 4431,
+    "identityFieldsChecked": [
+      "id",
+      "kind",
+      "name",
+      "email",
+      "phone",
+      "postcode"
+    ],
+    "retainedCustomerSourceHeadsUnchanged": 1552
+  },
+  "priorReleasePreservation": {
+    "state": "verified",
+    "at": "2026-10-13T18:43:41.434Z",
+    "preservation": {
+      "retainedVersions": 18052,
+      "retainedPages": 3697,
+      "retainedLinks": 7,
+      "retainedPeople": 3246,
+      "retainedCompanies": 1180,
+      "retainedCards": 3248,
+      "accessSchedulesConnectionsAndFlagsUnchanged": true,
+      "unrelatedFunctionsUnchanged": true
+    }
+  },
+  "verification": {
+    "pythonTests": 18,
+    "snapshotReaderSyntaxCheck": true,
+    "scopedProductionSnapshotReaderExecuted": true,
+    "privateOutputMode": "0600",
+    "readOnlyPlanner": true,
+    "browserCustomerSaves": 20,
+    "browserSiteSaves": 4,
+    "browserJobSaves": 18,
+    "representativeCardWithTwoJobsObservedAt": "2026-10-13T18:45:07Z",
+    "representativeJobStatuses": [
+      "pending",
+      "open"
+    ],
+    "newAccessGrants": 0,
+    "providerWrites": 0,
+    "schemaChanges": 0,
+    "frontendRelease": false,
+    "finalPlannerSummaryReproduced": true
+  },
+  "code": {
+    "scripts/commusoft/plan_commusoft_customers.py": "8190226277b2928df72b464724f7cd055fd794c63714e360f44af7e662817d2a",
+    "scripts/commusoft/plan_commusoft_customers_test.py": "13249bf9b8f2454882a964cbcb4cbd6a94cae6417fdca8764a1e9a02b7868ea2",
+    "scripts/commusoft/customer-review-snapshot.mjs": "2513ef9e7b1978d995d8b0a5f81674fc576e93ef4545ce19d04b2e1b716bca44"
+  },
+  "remaining": [
+    "828 proposals require fresh source and identity checks plus logged operator review; they are not approved or applied.",
+    "798 held cases include possible duplicates, account-holder uncertainty, category/postcode gaps and 98 customers absent from retained API sources. Reasons overlap.",
+    "Contacts and communications still need linking for the twenty newly published customers.",
+    "Additional contact-point display, remaining broad coverage, TEST frontend parity, scoring and full operational acceptance remain unfinished."
+  ]
+}
