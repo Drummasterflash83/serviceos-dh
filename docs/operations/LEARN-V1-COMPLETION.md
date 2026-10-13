@@ -7,6 +7,26 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October — saved contact details candidate verified; release in progress.**
+
+- The contact card now distinguishes primary selections from additional saved
+  contact points. An expandable, paginated reader shows channel, label, verification
+  state and source without changing identity, primary, consent or verification.
+- Ten client contract tests, TypeScript and the final production build pass.
+  An isolated native restore plus 24 release packages proves paging, tenant/card/
+  person isolation, inactive relationship denial, shared/invalid endpoints, audited
+  operator reads, revoked authority and failure when audit recording fails.
+- Exact TEST and production envelopes pass wrong-target/digest, dependency drift,
+  late-failure and rollback checks. All 1,591,580 archived rows and seven sequences
+  remain identical; the disposable containers were removed. Live dependencies
+  match those tested. No fixture users or grants are retained or added to hosting.
+- Installation, matching frontend deployment and signed-in real-data acceptance
+  must be recorded before this display gap is considered fixed in LIVE. This
+  candidate does not complete communication attribution or broader reconciliation.
+
+[Candidate evidence](evidence/learn-contact-details-candidate-2026-10-13.json) ·
+[Exact additive release](../../supabase/release/learn-production-patches/contact-details-v1/README.md).
+
 **13 October, 20:04 BST — seventeen LIVE contact relationships verified.**
 
 - Reviewed the 22 retained contact sources attached to the twenty newly reconciled

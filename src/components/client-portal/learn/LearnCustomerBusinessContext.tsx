@@ -7,6 +7,7 @@ import {
   type BusinessContextPage,
 } from "@/lib/learn-customer-business-context";
 import { jobTimingFields } from "@/lib/learn-job-timing";
+import { LearnCustomerContactPoints } from "./LearnCustomerContactPoints";
 
 /** The same canonical links are shown to an authorised client and audited operator. */
 export function LearnCustomerBusinessContext({
@@ -180,8 +181,8 @@ export function LearnCustomerBusinessContext({
                           {
                             address_text: "Address",
                             postcode: "Postcode",
-                            primary_email: "Email",
-                            primary_phone: "Phone",
+                            primary_email: "Primary email",
+                            primary_phone: "Primary phone",
                             description: "About this job",
                             priority: "Priority",
                           } as Record<string, string>
@@ -189,7 +190,10 @@ export function LearnCustomerBusinessContext({
                       </dt>
                       <dd className="whitespace-pre-wrap break-words text-sm">
                         {value === null
-                          ? "Not recorded"
+                          ? collection === "contacts" &&
+                            ["primary_email", "primary_phone"].includes(key)
+                            ? "No primary selected"
+                            : "Not recorded"
                           : typeof value === "boolean"
                             ? value
                               ? "Yes"
@@ -199,6 +203,17 @@ export function LearnCustomerBusinessContext({
                     </div>
                   ))}
               </dl>
+              {collection === "contacts" && (
+                <LearnCustomerContactPoints
+                  scope={{
+                    tenant: tenantId,
+                    actor: actorId,
+                    card: cardId,
+                    person: row.id,
+                    operatorReason,
+                  }}
+                />
+              )}
               {collection === "jobs" && (
                 <>
                   <p>

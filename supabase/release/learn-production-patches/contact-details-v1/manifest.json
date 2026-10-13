@@ -1,0 +1,187 @@
+{
+  "state": "prepared_not_installed",
+  "source": {
+    "path": "supabase/migrations/20261101980000_learn_customer_contact_points.sql",
+    "sha256": "90b47cf7bea1e290e5b9f5d9f1364f73fb341b04c317eb4e122c271af586fcb9"
+  },
+  "environments": {
+    "production": {
+      "state": "prepared_not_applied",
+      "project": "tgbnakbxwcqjeimygroz",
+      "sourceSha256": "90b47cf7bea1e290e5b9f5d9f1364f73fb341b04c317eb4e122c271af586fcb9",
+      "releaseSha256": "52b876838a4e8348c53c2e205484de16844f9c5a3ae1ee9796e16ce66746b449",
+      "before": [
+        {
+          "name": "learn_customer_business_context",
+          "signature": "public.learn_customer_business_context(uuid,uuid,text,uuid,text)",
+          "hash": "0aca3dac49b265d26a51034b00a7ce12",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "securityDefiner": true,
+          "anonExecute": false,
+          "authenticatedExecute": true,
+          "serviceExecute": false
+        },
+        {
+          "name": "learn_import_batch_authority",
+          "signature": "public.learn_import_batch_authority(uuid,uuid)",
+          "hash": "4b4020b92092a7f09453f765a55dee65",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "securityDefiner": false,
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "serviceExecute": true
+        },
+        {
+          "name": "learn_operator_input_access",
+          "signature": "public.learn_operator_input_access(uuid,uuid,boolean)",
+          "hash": "6ebce242963afa929b7465a99e7608c6",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres}",
+          "securityDefiner": true,
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "serviceExecute": false
+        }
+      ],
+      "after": [
+        {
+          "name": "learn_customer_business_context",
+          "signature": "public.learn_customer_business_context(uuid,uuid,text,uuid,text)",
+          "hash": "0aca3dac49b265d26a51034b00a7ce12",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "securityDefiner": true,
+          "anonExecute": false,
+          "authenticatedExecute": true,
+          "serviceExecute": false
+        },
+        {
+          "name": "learn_import_batch_authority",
+          "signature": "public.learn_import_batch_authority(uuid,uuid)",
+          "hash": "4b4020b92092a7f09453f765a55dee65",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "securityDefiner": false,
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "serviceExecute": true
+        },
+        {
+          "name": "learn_operator_input_access",
+          "signature": "public.learn_operator_input_access(uuid,uuid,boolean)",
+          "hash": "6ebce242963afa929b7465a99e7608c6",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres}",
+          "securityDefiner": true,
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "serviceExecute": false
+        },
+        {
+          "hash": "f4c3c6a6872ae71f997e1628b550b614",
+          "name": "learn_customer_contact_points",
+          "owner": "postgres",
+          "arguments": "p_tenant uuid, p_card uuid, p_person uuid, p_after uuid, p_operator_reason text",
+          "anonExecute": false,
+          "serviceExecute": false,
+          "securityDefiner": true,
+          "authenticatedExecute": true,
+          "signature": "public.learn_customer_contact_points(uuid,uuid,uuid,uuid,text)",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+        }
+      ],
+      "rollback": "Roll back the frontend to its prior verified deployment; the additive reader is unused by older clients. Do not alter contact data or primary choices."
+    },
+    "test": {
+      "state": "prepared_not_applied",
+      "project": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "90b47cf7bea1e290e5b9f5d9f1364f73fb341b04c317eb4e122c271af586fcb9",
+      "releaseSha256": "8c892a5cef903b7ba56ca0551cfee22a8b82effdd20f289eb82e2104e9f69326",
+      "before": [
+        {
+          "name": "learn_customer_business_context",
+          "signature": "public.learn_customer_business_context(uuid,uuid,text,uuid,text)",
+          "hash": "0aca3dac49b265d26a51034b00a7ce12",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "securityDefiner": true,
+          "anonExecute": false,
+          "authenticatedExecute": true,
+          "serviceExecute": false
+        },
+        {
+          "name": "learn_import_batch_authority",
+          "signature": "public.learn_import_batch_authority(uuid,uuid)",
+          "hash": "4b4020b92092a7f09453f765a55dee65",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "securityDefiner": false,
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "serviceExecute": true
+        },
+        {
+          "name": "learn_operator_input_access",
+          "signature": "public.learn_operator_input_access(uuid,uuid,boolean)",
+          "hash": "6ebce242963afa929b7465a99e7608c6",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres}",
+          "securityDefiner": true,
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "serviceExecute": false
+        }
+      ],
+      "after": [
+        {
+          "name": "learn_customer_business_context",
+          "signature": "public.learn_customer_business_context(uuid,uuid,text,uuid,text)",
+          "hash": "0aca3dac49b265d26a51034b00a7ce12",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "securityDefiner": true,
+          "anonExecute": false,
+          "authenticatedExecute": true,
+          "serviceExecute": false
+        },
+        {
+          "name": "learn_import_batch_authority",
+          "signature": "public.learn_import_batch_authority(uuid,uuid)",
+          "hash": "4b4020b92092a7f09453f765a55dee65",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "securityDefiner": false,
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "serviceExecute": true
+        },
+        {
+          "name": "learn_operator_input_access",
+          "signature": "public.learn_operator_input_access(uuid,uuid,boolean)",
+          "hash": "6ebce242963afa929b7465a99e7608c6",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres}",
+          "securityDefiner": true,
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "serviceExecute": false
+        },
+        {
+          "hash": "f4c3c6a6872ae71f997e1628b550b614",
+          "name": "learn_customer_contact_points",
+          "owner": "postgres",
+          "arguments": "p_tenant uuid, p_card uuid, p_person uuid, p_after uuid, p_operator_reason text",
+          "anonExecute": false,
+          "serviceExecute": false,
+          "securityDefiner": true,
+          "authenticatedExecute": true,
+          "signature": "public.learn_customer_contact_points(uuid,uuid,uuid,uuid,text)",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+        }
+      ],
+      "rollback": "Roll back the frontend to its prior verified deployment; the additive reader is unused by older clients. Do not alter contact data or primary choices."
+    }
+  }
+}
