@@ -91,3 +91,13 @@ test('observed canvas subtype is retained without becoming conversation or perfo
   await assert.rejects(readBoth(m),(e:any)=>e.retryable===false);
  }
 });
+
+// Production diagnostic: type=message, hidden absent, exact subtype below.
+// The name is not evidence that any meeting notes, AI content or staff action exists.
+test('observed huddle-notes marker is retained for review across channel and thread imports',async()=>{
+ const message={...record('automatic_ai_huddle_notes_enabled'),reply_count:2,text:'Synthetic setting marker',blocks:[{type:'section',text:{type:'plain_text',text:'Uninterpreted source'}}]};
+ assert.equal(slackMessageKind(message),'source_needs_review');
+ for(const page of await readBoth(message))assert.deepEqual(page.records[0].provider_payload,message);
+ for(const m of [{...message,hidden:true},{...message,hidden:null},{...message,type:'event_callback'},
+  {...message,subtype:'automatic_ai_huddle_notes_enabled_v2'},{...message,subtype:'AUTOMATIC_AI_HUDDLE_NOTES_ENABLED'}])await assert.rejects(readBoth(m),(e:any)=>e.retryable===false);
+});

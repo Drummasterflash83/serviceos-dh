@@ -8,6 +8,31 @@ override a later release observation. No requirement is silently deferred.
 ## Current evidence and priority
 
 
+**14 October, 00:26 BST — Slack notification handling verified LIVE; recovery queued.**
+
+- The exact observed `automatic_ai_huddle_notes_enabled` message is now retained
+  for source review by both LIVE workers and matching SQL. Its original payload
+  stays intact and is not interpreted as customer activity or performance evidence.
+  Existing records, access, credentials, schedules and campaign limits were preserved.
+- All 107 Slack runtime tests, 18 full-schema journeys, exact release/rollback
+  checks and both offline worker boots passed. All 1,591,580 archived COPY rows
+  and seven sequences matched. These checks do not establish full provider coverage.
+- The existing signed-in operator queued one recovery for the held archived channel.
+  Job `fb47041d-ee55-478c-a655-6463921fdc4f` is queued at attempt zero; retain this
+  handle and observe its outcome rather than submit another request. Provider
+  acceptance for this particular marker is still unproven.
+- The latest overall Slack read at 23:23 UTC retained 14,344 sources, with 18 active
+  and 115 archived channel windows complete. Commusoft at 23:26 UTC has verified
+  property/job stage receipts; customer contacts are 1,126 / 1,552 targets. Its
+  current cycle watermark remains held until all remaining phases complete.
+- Customer summary/ownership, broader linked coverage, findings and configurable
+  scoring remain unfinished. The separate changed-job frontend acceptance gate
+  remains open; this release does not satisfy it.
+
+[Slack LIVE release evidence](evidence/learn-slack-observed-huddle-production-2026-10-14.json)
+· [Exact release and rollback](../../supabase/release/learn-production-patches/slack-observed-huddle-v1/README.md).
+
+
 **14 October, 00:10 BST — scoped communication reader verified LIVE.**
 
 - The exact rehearsed reader is installed. A paired real-customer read returned
