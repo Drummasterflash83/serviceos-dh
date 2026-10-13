@@ -251,3 +251,27 @@ voicemail/database backup and scheduled-run acceptance remain unfinished.
 Sanitised evidence: [independent recovery](evidence/learn-independent-recovery-2026-10-13.json).
 Private final receipt: `.verification-results/database-backup-3c0b2419-f200-4425-bba2-ad947953f14e/verified-7f51d0ae-0264-4bef-bcab-4420574cf107.json`.
 Private relationship comparison: `.verification-results/voicemail-independent-postimport-comparison-20261013/report.json`.
+
+## Recurring three-bucket supervisor — 13 October, prepared for real verification
+
+The existing approved phone backup can now include both voicemail buckets using
+`scripts/backup/run-drummonds-communication-backups.mjs --run-drummonds-daily`.
+It uses the same London bucket/prefix and Writer identity. One shared lock covers
+manual and daily copy/finalisation; nested work carries a verified local lease.
+The aggregate has a total new-copy ceiling of400objects/256MiB,100,000source
+requests and one hour, with four concurrent checks per bucket. Existing510
+voicemail receipts have identical lookup identities and do not consume the
+new-object limit when unchanged. Every retained object is reverified.
+
+Fifty-two focused offline tests passed after applying the reviewed implementation,
+including repeated510-object verification with zero new object uploads, late
+historical arrivals, missing pairs, shared limits and manual/daily overlap.
+A failed component preserves prior success but marks aggregate health incomplete.
+Routine access uses the existing Keychain Writer; no1Password recovery-key access
+is required. Source credentials must match the production runtime fingerprint.
+
+Real execution and scheduled acceptance remain pending. The existing09:00
+automation has not yet changed. This remains Mac-dependent; always-on operation,
+monthly paired restores and daily independent database backups are separate gates.
+Changed runner files invalidate older manual source-code pins by design; prepare
+a fresh exact manifest if using those manual tools again.

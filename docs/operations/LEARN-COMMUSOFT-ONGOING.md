@@ -26,7 +26,7 @@ platform-worker bundle changes only `_shared/learn_input_tick.ts` against LIVE v
 it booted offline and rejected missing authentication. The reviewed preparation
 keeps Commusoft dispatch disabled, preserves other runtime/credentials/schedules
 and includes the exact previous runtime for rollback. No schema change is needed.
-At this preparation checkpoint the runtime is not deployed and capture is off.
+The runtime was published as platform-worker v68, then verified after configuration refresh as v69 with the identical artifact hash and JWT setting. Commusoft dispatch is now enabled. The existing signed-in operator approved only Drummonds at 15:54:43 UTC; its first scheduled cycle started at 16:02 UTC. All-stage completion remains to be verified.
 
 ## Activation sequence
 
@@ -59,3 +59,20 @@ capture while preserving receipts/checkpoints. For a dispatch-level incident,
 restore only the prior false boolean after verifying the exact configuration.
 The saved v67 runtime remains the binary rollback. Never rewind a completed page,
 delete source history, force a watermark or retry an uncertain import blindly.
+
+## Activation evidence — 13 October, 17:04 BST
+
+The existing project dispatcher boolean was changed once from false to true.
+Supabase returned an empty success body; the executor stopped at JSON decoding
+and the separate read-only reconciliation verified the result without repeating
+the write. All other secret fingerprints, runtime artifacts/JWT settings, access,
+connection bindings, schedules and retained voicemail rows were preserved.
+Supabase refreshed function versions by one (platform69, Commusoft3); source
+artifacts did not change during configuration activation.
+
+At 16:04 UTC the existing scheduler had opened the first property window with
+one queued continuation under the same Drummonds account. Recurrence is enabled;
+completion, later incremental updates and pause/re-enable acceptance remain open.
+The activation plan SHA-256 is
+`0ee1f0f1a88fb8941b4cc550231ce2a5aedd869a7c6357cefacf6f944d33c517`.
+Private journals retain metadata and the exact before/after preservation evidence.

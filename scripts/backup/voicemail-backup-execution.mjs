@@ -4,6 +4,7 @@ import { readFile, lstat, realpath, mkdir, open, rm, rename, unlink } from "node
 import { constants } from "node:fs";
 import { createHash, randomUUID } from "node:crypto";
 import { resolve, join, dirname } from "node:path";
+import { withProductionCommunicationLease } from "./communication-backup-lock.mjs";
 import { runRecordingBackup } from "./recording-backup-runner.mjs";
 import {
   recordingContext,
@@ -176,7 +177,16 @@ export async function loadVoicemailBackupScope({ root, planPath, planSha256, bin
   );
   return { plan, context, scopes };
 }
-export async function executeVoicemailBackup({
+export async function executeVoicemailBackup(options) {
+  check(["copy", "finalize", "restore-pair"].includes(options?.mode), "voicemail_mode_invalid");
+  if (options.mode === "restore-pair") return executeVoicemailBackupUnlocked(options);
+  return withProductionCommunicationLease(
+    recordingContext(options?.scope?.context),
+    undefined,
+    (communicationLease) => executeVoicemailBackupUnlocked({ ...options, communicationLease }),
+  );
+}
+async function executeVoicemailBackupUnlocked({
   scope,
   mode,
   bucket,
@@ -187,6 +197,7 @@ export async function executeVoicemailBackup({
   signal,
   decode = checkRecordingPlayback,
   onProgress,
+  communicationLease,
 }) {
   check(["copy", "finalize", "restore-pair"].includes(mode), "voicemail_mode_invalid");
   check(!signal?.aborted, "voicemail_cancelled");
@@ -219,6 +230,7 @@ export async function executeVoicemailBackup({
       const selected = scope.scopes.find((s) => s.spec.sourceBucket === bucket);
       check(selected, "voicemail_bucket_scope_invalid");
       const result = await runRecordingBackup({
+        communicationLease,
         directory: selected.directory,
         inventoryFileSha256: selected.spec.inventoryFileSha256,
         binding: scope.context,
@@ -242,7 +254,13 @@ export async function executeVoicemailBackup({
       };
       await save(dir, `last-${bucket}-${mode}.json`, journal);
       await save(dir, "last-attempt.json", journal);
-      return { state: journal.state, mode, sourceBucket: bucket, ...result, backupComplete: false };
+      return {
+        state: journal.state,
+        mode,
+        sourceBucket: bucket,
+        ...result,
+        backupComplete: false,
+      };
     }
     check(
       typeof createRestorePorts === "function" && restoreSelection && restoreSelection.length === 2,

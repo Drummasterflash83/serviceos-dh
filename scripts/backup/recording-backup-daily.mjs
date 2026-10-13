@@ -21,6 +21,7 @@ export async function dailyRecordingCycle(
     maxNewObjects = 400,
     maxNewBytes = 256 * 1024 * 1024,
     concurrency = 4,
+    reserveNewData,
   } = {},
 ) {
   const context = recordingContext(binding),
@@ -89,6 +90,7 @@ export async function dailyRecordingCycle(
   });
   const newBytes = missing.reduce((n, e) => n + e.size, 0);
   check(missing.length <= maxNewObjects && newBytes <= maxNewBytes, "daily_new_data_limit");
+  reserveNewData?.({ objects: missing.length, bytes: newBytes });
   let copied = 0,
     recovered = 0;
   await bounded(missing, "new_recordings", async (e) => {
@@ -135,7 +137,11 @@ export function recordingBackupHealth({ lastSuccess, lastAttempt, now = Date.now
     Number.isSafeInteger(lastSuccess.objects) &&
     lastSuccess.objects > 0;
   if (!valid)
-    return { status: "attention", reason: "no_verified_inventory", backupComplete: false };
+    return {
+      status: "attention",
+      reason: "no_verified_inventory",
+      backupComplete: false,
+    };
   if (
     lastAttempt?.state === "in_progress" &&
     (!Number.isFinite(Date.parse(lastAttempt.startedAt)) ||
@@ -149,7 +155,11 @@ export function recordingBackupHealth({ lastSuccess, lastAttempt, now = Date.now
     };
   const age = now - Date.parse(lastSuccess.inventoryObservedAt);
   if (age < 0)
-    return { status: "attention", reason: "inventory_time_invalid", backupComplete: false };
+    return {
+      status: "attention",
+      reason: "inventory_time_invalid",
+      backupComplete: false,
+    };
   if (
     lastAttempt?.state === "failed" &&
     Date.parse(lastAttempt.finishedAt ?? lastAttempt.startedAt) >=

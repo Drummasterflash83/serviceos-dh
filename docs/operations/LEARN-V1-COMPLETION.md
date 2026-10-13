@@ -7,6 +7,20 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 17:04 BST — ongoing Commusoft capture enabled.**
+
+- The bounded dispatcher is LIVE and the existing logged operator approved only
+  Drummonds:2,000pages per stage,100records per page. The normal scheduler opened
+  its first recurring property window at16:02UTC. All four stages, later
+  incremental updates and pause/re-enable acceptance remain to be observed.
+- Activation changed only the existing dispatcher boolean. Runtime artifacts,
+  other configuration, access, schedules and retained voicemail evidence passed
+  preservation checks. No new credential or grant was introduced.
+- The three-bucket phone/voicemail backup supervisor passed52offline tests in the
+  main checkout. Real repeat verification and schedule activation are next; this
+  is not yet evidence of dependable unattended daily backups.
+
+
 **13 October, 16:46 BST — Slack queued continuation repaired.**
 
 - The exact retained child is now claimable under its original campaign, cursor

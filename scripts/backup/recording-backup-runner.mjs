@@ -1,6 +1,7 @@
 /** Private disk progress is advisory; only the immutable S3 manifest proves
  * inventory coverage. No credentials or recording bytes are persisted here. */
 import { constants } from "node:fs";
+import { withProductionCommunicationLease } from "./communication-backup-lock.mjs";
 import { open, lstat, realpath, rename, unlink } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { createHash, randomUUID } from "node:crypto";
@@ -62,7 +63,13 @@ async function savePrivate(directory, name, value) {
 }
 /** One bounded copy batch or a deliberate whole-inventory finalization. The
  * caller owns scheduling and must never infer completion from nextIndex alone. */
-export async function runRecordingBackup({
+export async function runRecordingBackup(options) {
+  const context = recordingContext(options?.binding);
+  return withProductionCommunicationLease(context, options.communicationLease, () =>
+    runRecordingBackupUnlocked(options),
+  );
+}
+async function runRecordingBackupUnlocked({
   directory,
   inventoryFileSha256,
   binding,
@@ -128,7 +135,10 @@ export async function runRecordingBackup({
     if (mode === "finalize") {
       if (signal?.aborted) fail("runner_cancelled");
       const final = await finalizeRecordingInventory(inventory, context, {
-        ...ports, signal, verificationConcurrency: 4, onProgress,
+        ...ports,
+        signal,
+        verificationConcurrency: 4,
+        onProgress,
       });
       result = {
         state: final.state,

@@ -10,6 +10,7 @@ import {
   createLiveRecordingPorts,
 } from "./run-drummonds-recording-backup.mjs";
 import { dailyRecordingCycle, recordingBackupHealth } from "./recording-backup-daily.mjs";
+import { verifyDailyLease } from "./communication-backup-lock.mjs";
 import { RecordingBackupError } from "./recording-backup-core.mjs";
 const fail = (code) => {
   throw new RecordingBackupError(code);
@@ -17,7 +18,7 @@ const fail = (code) => {
 // Inventory plus two complete metadata/reference passes and up to 400 new copies.
 // The source adapter enforces this ceiling across the entire daily run.
 export const dailySourceRequestBudget = 100000;
-async function privateDir(path) {
+export async function privateDir(path) {
   await mkdir(path, { recursive: true, mode: 0o700 });
   const s = await lstat(path);
   if (
@@ -29,7 +30,7 @@ async function privateDir(path) {
   )
     fail("daily_directory_unverified");
 }
-async function readPrivate(path) {
+export async function readPrivate(path) {
   let f;
   try {
     f = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
@@ -50,7 +51,7 @@ async function readPrivate(path) {
     await f?.close();
   }
 }
-async function writePrivate(dir, name, value) {
+export async function writePrivate(dir, name, value) {
   const path = join(dir, ".pending-" + randomUUID());
   let f;
   try {
@@ -79,32 +80,43 @@ export async function runDailyBackup({
   createPorts = createLiveRecordingPorts,
   signal = AbortSignal.timeout(60 * 60 * 1000),
   onProgress,
+  lockLease,
+  cycleOptions = {},
+  onInventory,
 } = {}) {
   let lock,
     locked = false,
     ports,
-    runDir;
+    runDir,
+    journalOwned = false;
   const startedAt = new Date().toISOString();
   try {
     await privateDir(directory);
-    try {
-      lock = await open(join(directory, "daily.lock"), "wx", 0o600);
-      locked = true;
-    } catch (e) {
-      if (e.code === "EEXIST") fail("daily_already_locked");
-      throw e;
+    if (lockLease !== undefined) await verifyDailyLease(lockLease, directory);
+    else {
+      try {
+        lock = await open(join(directory, "daily.lock"), "wx", 0o600);
+        locked = true;
+      } catch (e) {
+        if (e.code === "EEXIST") fail("daily_already_locked");
+        throw e;
+      }
+      await lock.writeFile(JSON.stringify({ pid: process.pid, startedAt }));
+      await lock.sync();
     }
-    await lock.writeFile(JSON.stringify({ pid: process.pid, startedAt }));
-    await lock.sync();
+    journalOwned = true;
     await writePrivate(directory, "last-attempt.json", {
       state: "in_progress",
       pid: process.pid,
       startedAt,
       backupComplete: false,
     });
-    ports = await createPorts(signal, { requestBudget: dailySourceRequestBudget });
+    ports = await createPorts(signal, {
+      requestBudget: dailySourceRequestBudget,
+    });
     if (signal.aborted) fail("daily_cancelled");
     const listed = await ports.source.inventory();
+    onInventory?.(listed);
     if (signal.aborted) fail("daily_cancelled");
     runDir = await mkdtemp(join(directory, "run-"));
     await writePrivate(runDir, "inventory.json", listed.inventory);
@@ -118,6 +130,7 @@ export async function runDailyBackup({
       backupComplete: false,
     });
     const result = await dailyRecordingCycle(listed.inventory, binding, ports, {
+      ...cycleOptions,
       signal,
       onProgress,
     });
@@ -137,6 +150,12 @@ export async function runDailyBackup({
     )
       fail("daily_reconciliation_unverified");
     result.sourceReconciliation = {
+      ...(reconciliation.sourceBucket
+        ? {
+            sourceBucket: reconciliation.sourceBucket,
+            preparedReferences: reconciliation.preparedReferences,
+          }
+        : {}),
       recordingRows: reconciliation.recordingRows,
       rowsWithoutStoragePointer: reconciliation.rowsWithoutStoragePointer,
       unreferencedObjects: reconciliation.unreferencedObjects,
@@ -157,7 +176,7 @@ export async function runDailyBackup({
     return result;
   } catch (e) {
     const code = e instanceof RecordingBackupError ? e.code : "daily_unconfirmed";
-    if (locked)
+    if (journalOwned)
       await writePrivate(directory, "last-attempt.json", {
         state: "failed",
         startedAt,
@@ -204,7 +223,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     else {
       timer = setInterval(
         () =>
-          console.log(JSON.stringify({ state: "daily_backup_in_progress", backupComplete: false })),
+          console.log(
+            JSON.stringify({
+              state: "daily_backup_in_progress",
+              backupComplete: false,
+            }),
+          ),
         30000,
       );
       console.log(
@@ -213,7 +237,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
             directory,
             onProgress: (p) =>
               console.log(
-                JSON.stringify({ state: "daily_backup_verifying", ...p, backupComplete: false }),
+                JSON.stringify({
+                  state: "daily_backup_verifying",
+                  ...p,
+                  backupComplete: false,
+                }),
               ),
           }),
           null,
