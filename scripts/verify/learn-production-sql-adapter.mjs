@@ -17,10 +17,10 @@ export const SQL_OBSERVATIONS={
 export function createProductionSqlAdapter({candidate,operations,scheduleBaseline,query,read=readFileSync,
   allowWrite=false,assertApprovedRelease}) {
   candidate=structuredClone(candidate);operations=structuredClone(operations);scheduleBaseline=structuredClone(scheduleBaseline);
-  check(candidate.projectRef===project&&candidate.database.length===21&&operations.projectRef===project&&typeof query==='function',
+  check(candidate.projectRef===project&&candidate.database.length===22&&operations.projectRef===project&&typeof query==='function',
     'Reviewed production SQL scope required');
   const selected=operations.operations.filter(o=>['database','schedule'].includes(o.kind));
-  check(selected.length===23&&selected.filter(o=>o.kind==='database').length===21&&
+  check(selected.length===24&&selected.filter(o=>o.kind==='database').length===22&&
     selected.every(o=>o.pinSha256===hashObject(o.contract)), 'SQL operation pins differ');
   check(scheduleBaseline.schedules.length===9&&new Set(scheduleBaseline.schedules.map(s=>s.jobid)).size===9,
     'Exact schedule scope required');

@@ -170,9 +170,19 @@
     }
   ],
   "remainingGates": [
-    "Matching production frontend and signed-in acceptance.",
-    "Refresh release operation pins; old 21-package plan is obsolete.",
+    "Signed-in production acceptance of the matching protected frontend.",
     "Resolve 14 historical unleased running jobs, pause and prove real in-flight drain.",
     "Positive hosted caller acceptance, fresh independent recovery, provider coverage and monitored activation."
-  ]
+  ],
+  "releasePreparation": {
+    "steps": 73,
+    "databasePackages": 22,
+    "runtimeEndpoints": 37,
+    "adapterAndJournalTestsPassed": 31,
+    "rpcSites": 19,
+    "uniqueRpcTargets": 51,
+    "configurationPreflight": "ready_no_changes",
+    "frontendEvidence": "learn-production-frontend-learning-2026-10-13.json",
+    "productionChanges": 0
+  }
 }

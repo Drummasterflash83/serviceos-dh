@@ -65,7 +65,7 @@ export function createProductionConfigurationAdapter({
   desiredSecretDigests = structuredClone(desiredSecretDigests);
   check(
     candidate.projectRef === project &&
-      candidate.database.length === 21 &&
+      candidate.database.length === 22 &&
       candidate.endpoints.length === 37 &&
       operations.projectRef === project &&
       typeof api === "function",

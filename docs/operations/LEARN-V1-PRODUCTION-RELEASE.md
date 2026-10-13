@@ -2,9 +2,12 @@
 
 > 13 October 01:00 BST: packages 001–022 and 37 freshly compiled runtime artifacts
 > passed isolated database, boot and scheduler checks. Production remains unchanged.
-> The older 21-package operation plan below is obsolete; matching frontend and
-> operation pins are being refreshed. Live unleased-job reconciliation, drain,
-> authenticated acceptance and recovery gates remain open.
+> The current 73-step operation plan now pins 22 packages, 37 runtimes and the
+> protected production-configured frontend dpl_8pxWB8RWQcNseSQHPExMQ3Gos354.
+> Its 31 adapter/journal tests and 19-site RPC binding check passed. Configuration
+> preflight is ready without provisioning secrets. Older release plans below are
+> historical. Live unleased-job reconciliation, drain, authenticated acceptance
+> and recovery gates remain open.
 > [Current evidence](evidence/learn-production-learning-2026-10-13.json).
 
 > 13 October 00:10 BST: atomic observation delivery and reviewed Slack context

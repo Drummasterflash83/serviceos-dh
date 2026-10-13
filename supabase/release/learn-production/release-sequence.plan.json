@@ -1,17 +1,17 @@
 {
   "version": "learn-production-release-sequence/1",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "candidateSha256": "b554445ce842aa867653a0d44f38d6cd77d3db115164236999cf847987b43646",
+  "candidateSha256": "e617ba0dceb927aa8829a340bcb119371419a25b9efeaef0e709c3cb302e1c20",
   "steps": [
     {
       "id": "fresh-release-preflight",
       "kind": "check",
-      "pinSha256": "eb01a786122300f9b2ce23ff2e481a25d9bf143f2d5c6502c083cc785de69a7e"
+      "pinSha256": "64fe500f4efbaeea96d24870c3e0d88c525172e1153b6ef9814c462d247a0e2b"
     },
     {
       "id": "pause-existing-schedules",
       "kind": "schedule",
-      "pinSha256": "9d64c196092cd3951d54c60e491816633c7ff8ce629c18c78f435da173852949"
+      "pinSha256": "3738f317aa72083aa8df3d7eec79494276e04cb2a1c94e4950e33ab486edf93b"
     },
     {
       "id": "verify-in-flight-drain",
@@ -127,6 +127,11 @@
       "id": "database-021",
       "kind": "database",
       "pinSha256": "74de4b6ae0cd45d59ac6a91fe0e562cd53b5ccfdbe99e2a25059d4a932d92fea"
+    },
+    {
+      "id": "database-022",
+      "kind": "database",
+      "pinSha256": "bd4fefa3230be3106e19c8940023d1d7dd29d0d1324e5b26cf875aee7715b3de"
     },
     {
       "id": "matching-server-configuration",
@@ -246,7 +251,7 @@
     {
       "id": "runtime-openfolk-control-plane",
       "kind": "runtime",
-      "pinSha256": "feae9252c5e20a9ed2ba1811d90690fdb0c42faa95498a735bedff8f39599d57"
+      "pinSha256": "2cb123af218c376ca95debf798b4defd41ce52e4f39114fc3715d12dac947126"
     },
     {
       "id": "runtime-phone-analyse-transcript",
@@ -286,7 +291,7 @@
     {
       "id": "runtime-platform-worker",
       "kind": "runtime",
-      "pinSha256": "860c54002a874a7aa64220a1893cbe28bfa7fb09745704bc7e0759025f174c17"
+      "pinSha256": "a85fec51fb3d3d79cb93775fe8c08d01ef375ef33d005b86b859b260b97e8f38"
     },
     {
       "id": "runtime-receptionist-voicemail-recording",
@@ -321,7 +326,7 @@
     {
       "id": "publish-runtime-metadata",
       "kind": "runtime",
-      "pinSha256": "b8aaee85773f07129d2a380108d8e409c4ae6ea4ebb1531b3ce28d37f34e74b0"
+      "pinSha256": "575de066f3463edeaadf28702ae1347c2ee58a7e8e44bd1e20d276d7f3b34f19"
     },
     {
       "id": "runtime-publication-readback",
@@ -336,7 +341,7 @@
     {
       "id": "promote-matching-frontend",
       "kind": "frontend",
-      "pinSha256": "9c7e0e57f79e989482cc2bee6cb968b5baff59a3d17922f5a3e2854e50e75b96"
+      "pinSha256": "a911103fe8256a0df0c8bffc4afa8b1ed436fefba70d3d04c11ea6226fdad554"
     },
     {
       "id": "signed-in-live-acceptance",
@@ -351,7 +356,7 @@
     {
       "id": "restore-existing-schedules",
       "kind": "schedule",
-      "pinSha256": "d05fe3157ae8cfa71157cf88e1c33fe71d22278e61d6973a10a55ba56bcd304e"
+      "pinSha256": "8be3ddb690178e33703288d7546d61605f249cf28070bcbf9de320b96ddda576"
     },
     {
       "id": "observe-initial-live-capture",

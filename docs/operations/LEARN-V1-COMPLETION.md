@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October, 01:00 BST — matching production Learning database/runtime rehearsed.**
+**13 October — matching production Learning release prepared and checked.**
 
 ### Working and verified
 
@@ -22,10 +22,15 @@ override a later release observation. No requirement is silently deferred.
   28 scheduler caller cases passed in isolated containers. The exact upload files
   are prepared, not uploaded. Fresh metadata shows production definitions unchanged.
 
+- All 31 release-adapter/journal tests pass. The 19 unchanged dynamic dispatch
+  sites resolve to 51 available, executable RPC targets in the rehearsed schema.
+  Fresh production configuration preflight is ready; no secrets were provisioned.
+
 ### Needs finishing
 
-- Match the production frontend and refresh release-operation pins. The prior
-  21-package plan is obsolete and must not be executed against the new candidate.
+- Complete signed-in production acceptance. The matching protected frontend now
+  loads with verified production authentication; the 73-step plan pins its artifact,
+  22 SQL packages and 37 runtimes. It has not been executed.
 - Live aggregate inspection found 14 historical unleased running jobs: 13 phone
   synchronisations and one graph sync. Retain their history and resolve safely;
   an empty HTTP queue is not proof that live work has drained. Nine recent request

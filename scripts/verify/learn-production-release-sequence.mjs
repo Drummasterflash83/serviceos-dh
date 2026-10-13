@@ -11,24 +11,24 @@ const read = p => JSON.parse(readFileSync(p));
 const base = 'supabase/release/learn-production/';
 const runtimeBytes = readFileSync(base+'runtime-candidate.manifest.json');
 const candidate = JSON.parse(runtimeBytes), candidateSha256 = sha(runtimeBytes);
-const wireRoot = '.verification-results/production-runtime-wire-20261012-slack-context';
+const wireRoot = '.verification-results/production-runtime-wire-20261013-learning';
 const wire = read(join(wireRoot,'report.json'));
 const backupRoot = '.verification-results/production-runtime-compiled-backup-20261012';
 const backup = read(join(backupRoot,'report.json'));
 const schedules = read(base+'schedule-transition.manifest.json');
-const frontend = read('docs/operations/evidence/learn-production-frontend-slack-context-2026-10-12.json');
-if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!==21 || candidate.endpoints.length!==37 ||
+const frontend = read('docs/operations/evidence/learn-production-frontend-learning-2026-10-13.json');
+if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!==22 || candidate.endpoints.length!==37 ||
     wire.projectRef!==candidate.projectRef || wire.candidateManifestSha256!==candidateSha256 ||
     wire.state!=='prepared_not_uploaded' || schedules.runtime.sha256!==candidateSha256 ||
     backup.projectRef!==candidate.projectRef || backup.state!=='compiled_artifacts_retained_with_unchanged_deployment_metadata')
   throw Error('Exact production artifact set required');
 const verified = (path,expected) => { if(sha(readFileSync(path))!==expected) throw Error('Pinned file changed: '+path); };
-const binding=read('docs/operations/evidence/learn-production-slack-context-2026-10-12.json');
-const originalRoot='.verification-results/production-runtime-bundle-20261012-slack-context';
+const binding=read('docs/operations/evidence/learn-production-learning-2026-10-13.json');
+const originalRoot='.verification-results/production-runtime-bundle-20261013-learning';
 verified(join(originalRoot,'report.json'),binding.bundleReportSha256);
-verified(join(originalRoot,'boot-carried-forward/report.json'),binding.bootReportSha256);
-const bundled=read(join(originalRoot,'report.json')), boot=read(join(originalRoot,'boot-carried-forward/report.json'));
-const callerPath='.verification-results/production-scheduler-callers-after-20261012/report.json';
+verified(join(originalRoot,'boot-learning/report.json'),binding.bootReportSha256);
+const bundled=read(join(originalRoot,'report.json')), boot=read(join(originalRoot,'boot-learning/report.json'));
+const callerPath='.verification-results/production-learning-scheduler-callers-20261013/report.json';
 verified(callerPath,binding.callerReportSha256);
 const caller=read(callerPath);
 for(const source of binding.sources) verified(source.path,source.sha256);
@@ -77,7 +77,7 @@ for(const e of candidate.endpoints) {
     verified(join(backupRoot,e.name+'.ezbr'),b.ezbrSha256);
   }
 }
-if(frontend.id!=='dpl_HAuQP1P52UzyXXSyGo5pWWEKVioa' || frontend.gitSha!=='d42987ee88c5859b748cafa027d9e038fecd39fb' ||
+if(frontend.id!=='dpl_8pxWB8RWQcNseSQHPExMQ3Gos354' || frontend.gitSha!=='1c3457b4a68d8a24bf48dce5eae4c63cb4c90b92' ||
    frontend.state!=='protected_production_configured_preview_ready') throw Error('Reviewed frontend artifact required');
 const operations=[];
 function add(id,kind,contract) { operations.push({id,kind,contract,pinSha256:sha(JSON.stringify(contract))}); }
@@ -142,4 +142,4 @@ writeFileSync(base+'release-operations.manifest.json',JSON.stringify({version:'l
     'The current protected frontend preview and its production backend binding are verified; signed-in acceptance remains unverified.',
     'Do not restore old runtimes over new checkpoints without reviewed compatibility or forward repair.'],
 },null,2)+'\n');
-console.log(JSON.stringify({state:'prepared_not_executed',steps:plan.steps.length,database:21,runtime:37}));
+console.log(JSON.stringify({state:'prepared_not_executed',steps:plan.steps.length,database:22,runtime:37}));
