@@ -84,7 +84,7 @@ const ClientDeliverySummary = lazy(() =>
 const ClientNotifications = lazy(() =>
   import("./ClientNotifications").then((m) => ({ default: m.ClientNotifications })),
 );
-import { LearnLaunchPortal } from "./learn/LearnLaunchPortal";
+import { LearnWorkspace } from "./learn/LearnWorkspace";
 const nav = [
   { id: "home", label: "Workspace home", Icon: LayoutDashboard },
   { id: "receptionist", label: "AI Receptionist", Icon: Headphones },
@@ -825,7 +825,12 @@ export function ClientPortal({
           className={`cp-content${section === "receptionist" ? " cp-receptionist-content" : ""}`}
         >
           {section === "learn" && tenant ? (
-            <LearnLaunchPortal key={`${user?.id}:${tenant}`} tenantId={tenant} />
+            <LearnWorkspace
+              key={`${user?.id}:${tenant}:${operator.data === true}`}
+              tenantId={tenant}
+              company={clientDisplayName(company)}
+              operatorAuthorised={operator.data === true}
+            />
           ) : section === "receptionist" ? (
             receptionistContent
           ) : (

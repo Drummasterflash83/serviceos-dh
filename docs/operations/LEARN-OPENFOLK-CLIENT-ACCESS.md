@@ -176,3 +176,25 @@ notification triggers queued one record; no TEST dispatcher or destination exist
 Review the queue before any later notification enablement. Client home now opens,
 while its unavailable care status and missing receptionist are still explicit gaps.
 [Verification](evidence/learn-workspace-setup-2026-10-13.json).
+
+## 13 October: LEARN entry for a selected client
+
+The client-shell LEARN entry now distinguishes the signed-in company's normal
+workspace from an explicitly authorised OpenFolk support view. The latter uses
+`OperatorClientInformation`, beginning with customer cards, instead of mounting
+client-only readers which require the operator's profile to belong to that company.
+Customer expansion reuses the existing audited linked-job/site/contact reader.
+The records selector also exposes the already-supported communication collections.
+Input-health and reconciliation links preserve the selected tenant.
+
+This is presentation routing, not a permission grant: the existing server verifies
+and audits each content read with the real actor, selected tenant and supplied
+reason. No profile, membership, table policy or server function changes. Switching
+actor/client remounts the private reader; its existing cancellation, background
+clearing and expiry remain in force. Same-company users retain the normal LEARN
+journey. Unauthorised foreign-company selections mount neither reader.
+
+Fourteen focused routing/reader tests, TypeScript and the full local build pass.
+Hosted deployment and signed-in acceptance are not yet established for this change.
+This makes existing operator reads reachable; it does not complete all operator
+performance/scoring reads or prove customer-signed-in acceptance.

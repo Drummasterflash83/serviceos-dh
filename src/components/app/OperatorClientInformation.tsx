@@ -15,12 +15,14 @@ export function OperatorClientInformation({
   tenantId,
   actorId,
   company,
+  initialCollection = "business_sources",
 }: {
   tenantId: string;
   actorId: string;
   company: string;
+  initialCollection?: InformationCollection;
 }) {
-  const [collection, setCollection] = useState<InformationCollection>("business_sources");
+  const [collection, setCollection] = useState<InformationCollection>(initialCollection);
   const [reason, setReason] = useState("");
   const [page, setPage] = useState<InformationPage | null>(null);
   const [error, setError] = useState("");
