@@ -912,3 +912,28 @@ retention clarification is explicitly pending Chris's decision; it does not
 waive the original verification-before-publication gate by default. The private
 agreement remains unchanged, unsigned and unpublished. Supplier/transfer checks
 and release acceptance remain open.
+
+
+## Runtime reconciliation and preview cleanup — 13 October, 22:19 UTC
+
+The earlier runtime-inventory difference is resolved. Reversing exactly one
+version-counter increment on all 97 existing endpoints reproduces the complete
+original inventory SHA-256. Their code hashes, names, JWT settings and statuses
+are unchanged; earlier secret fingerprints also match. The original failed
+journal is retained, with a separate read-only reconciliation report. Platform
+configuration propagation is a possible explanation, not a retrieved audit fact.
+Eight focused tests ensure this comparison rejects code, permission, identity,
+status and inventory changes rather than ignoring the discrepancy.
+
+The unused protected cache-header preview was retired after a preview-only Vercel
+browser cookie appeared in a DevTools diagnostic. No cookie is copied into this
+record. Vercel confirmed the deployment deleted and both stable TEST aliases were
+read back unchanged. Its Git source remains backed up. The public old address
+still redirects through protection, so an anonymous 404 is not claimed. No LIVE
+frontend or provider data was changed. The temporary browser tabs were closed.
+A new frontend candidate and application-response cache verification are still
+needed; the retired preview is not a release target.
+
+The saved Intuit questionnaire was closed at Chris's request to stop recurring
+save alerts. Reopen only for necessary batched edits and dismiss any confirmation
+promptly. No final assessment submission has occurred.
