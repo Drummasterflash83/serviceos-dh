@@ -1,5 +1,12 @@
 # LEARN V1 production release plan
 
+> 13 October: the local durable Slack campaign foundation is also excluded from
+> the staged release. Its worker now requires the dispatch-reservation RPC and its
+> scheduler calls the campaign scheduler. Deploy only a newly verified paired SQL/
+> runtime candidate, after finishing the campaign journey; do not mix these runtime
+> bytes with the old 23-package database contract.
+> [Foundation evidence](evidence/learn-slack-campaign-foundation-2026-10-13.json).
+
 > 13 October: the local Slack message-kind migration, runtime reader changes and
 > recovery explanations are also **not included** in the staged release. Pair them
 > with the historical-range work in the next candidate; do not deploy the wider

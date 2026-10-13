@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October — durable Slack channel campaigns verified locally.**
+
+### Working and verified
+
+- The local campaign records selected channels, frozen dates, approval identity,
+  expiry and one cumulative request allowance. Ten-page continuation retains the
+  exact cursor and previous approval; identity checks and retries consume budget.
+- Full-schema tests prove shared budget enforcement, concurrent last-slot exclusion,
+  pause before/after claim, explicit interrupted recovery, expiry, revoked operator/
+  credential access and tenant isolation. No existing baseline data changed.
+- All 144 focused tests, TypeScript and the build pass. No hosted deployment, real
+  campaign, provider request or new access grant occurred.
+
+### Needs finishing
+
+- Complete campaign-wide observed replies, cancellation/handoff and the existing-UX
+  OpenFolk controls. Channel completion explicitly leaves thread coverage unfinished.
+- Pair all three new Slack migrations with the runtime/scheduler/frontend release;
+  the existing staged candidate excludes them. Then verify hosted controls and prepare
+  the broader authorised history import. The earlier real sample stays closed.
+- Production sign-in, fresh recovery/drain/rollout checks, full input coverage,
+  processing/cards, scoring and ongoing operation remain open across LEARN V1.
+
+### Blocked externally
+
+- Existing recovery-key access, live sign-in and TEST AI selection remain pending.
+  None blocks the next Slack implementation work.
+
+[Campaign implementation and remaining work](LEARN-SLACK-CAMPAIGNS.md).
+[Local campaign evidence](evidence/learn-slack-campaign-foundation-2026-10-13.json).
+
+### Previous message-handling milestone
+
 **13 October — Slack message handling verified locally; Heidi production access remains applied.**
 
 ### Working and verified

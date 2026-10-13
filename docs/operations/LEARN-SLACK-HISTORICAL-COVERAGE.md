@@ -44,6 +44,15 @@ history. Do not enumerate or ingest DMs with the replacement credential.
 
 ## Current implementation and gaps
 
+### Local campaign foundation — 13 October, not deployed
+
+Selected-channel campaigns now retain a fixed cutoff, original approval and one
+cumulative request budget across pages/retries. Ten-page continuation, pause, expiry,
+revocation and concurrent budget enforcement pass the offline production-schema
+rehearsal. Campaign-wide replies, cancellation/handoff and operator UI remain open;
+the campaign does not report complete history. No real campaign has been started.
+[Implementation and remaining work](LEARN-SLACK-CAMPAIGNS.md).
+
 ### Local message handling — 13 October, not deployed
 
 The candidate readers now accept common text-bearing channel events, `/me` messages

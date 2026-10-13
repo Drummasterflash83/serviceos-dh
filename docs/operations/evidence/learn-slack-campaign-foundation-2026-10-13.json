@@ -1,0 +1,126 @@
+{
+  "version": "learn-slack-campaign-foundation/1",
+  "state": "verified_locally_not_deployed",
+  "recordedAt": "2026-10-13T04:17:22.772291+00:00",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101670000_learn_slack_history_campaigns.sql",
+      "sha256": "2f320d285a4efbadf18297779bc223c6ab437358cb91ebb3803c62a3744c7fe3"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_history_server.ts",
+      "sha256": "e908d40c46d9c0387963296ad2fe4504703f6729d060ffb420ffd7ca9f62fb20"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_recurring.ts",
+      "sha256": "b7e398f23223370237bc7e710521b02f9e034fa9406b2a98ea943e676ff687e9"
+    },
+    {
+      "path": "supabase/functions/learn-slack-schedule/index.ts",
+      "sha256": "9b35bb354b8a91dcee03883fe2c74178476376df2f231c247a0c0f2fac12f9fa"
+    },
+    {
+      "path": "scripts/verify/learn-slack-campaign.assert.sql",
+      "sha256": "7b40afab45afb4ae4676032a8813225bf9cd7744f6f1067ac1dd2844872aa963"
+    },
+    {
+      "path": "scripts/backup/rehearse_slack_historical_ranges.py",
+      "sha256": "604b463c1bb876da72c9572a477911695ffb76b0b20f372faa76c2702287ce53"
+    }
+  ],
+  "checks": {
+    "focusedTestsPassed": 144,
+    "typecheckPassed": true,
+    "frontendBuildPassed": true,
+    "fullProductionSchemaRehearsal": true,
+    "automaticTenPageContinuation": true,
+    "canonicalWorkerScopeKeyRetained": true,
+    "immutablePreviousApprovalAndCursorPreserved": true,
+    "requestCheckCancelReplay": true,
+    "changedRequestAndStaleControlRejected": true,
+    "crossClientOperatorAttributionWithoutImpersonation": true,
+    "foreignClientReadWriteDenied": true,
+    "cumulativeHundredRequestLimitAcrossChannels": true,
+    "concurrentFinalReservationOneWinner": true,
+    "duplicateReservationDenied": true,
+    "pauseBeforeClaimDoesNotConsumeAttempts": true,
+    "pauseAfterClaimStopsDispatchAndPublication": true,
+    "explicitResumeRenewsInterruptedScope": true,
+    "originalOperatorRevocationStopsWork": true,
+    "credentialRevocationStopsWork": true,
+    "disabledCaptureStopsWork": true,
+    "realClockExpiryStopsWork": true,
+    "lostReservationAcknowledgementNeverFetches": true,
+    "migrationRollbackVerified": true,
+    "duplicateMigrationRejected": true,
+    "existingFunctionAuthorityUnchanged": true,
+    "migrationSeedsNoData": true
+  },
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "originalDataPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 388,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "4d55e4269ef2223ac01aa6e62b896b6784feebd28d406975a587a5ce7f980275",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "postJourneyPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 392,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "f96d0538ad065fcc7005cb1e8e10952a1a749496723316fa72676e493aa45e02",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "newEmptyTables": [
+    "slack_history_campaign_channels",
+    "slack_history_campaign_dispatches",
+    "slack_history_campaign_requests",
+    "slack_history_campaigns"
+  ],
+  "changedExistingFunctions": [
+    "learn_slack_claim_jobs",
+    "learn_slack_commit_page_private",
+    "learn_slack_read_credential",
+    "learn_slack_read_thread_credential",
+    "learn_slack_recurring_control",
+    "learn_slack_reference_guard",
+    "learn_slack_resume_history",
+    "learn_slack_resume_thread",
+    "learn_slack_start_import",
+    "learn_slack_start_thread_import",
+    "slack_thread_commit_page"
+  ],
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "fullHistoryAccepted": false,
+  "limitations": [
+    "Campaign-wide thread discovery, traversal and recovery remain to be implemented; overall complete and threadsComplete remain false.",
+    "Operator campaign UI, cancellation/handoff to ongoing capture, and a broader reviewed real import remain unfinished.",
+    "Only explicitly selected internal public channels are currently supported; private channels, shared channels, DMs and file downloads are not enabled.",
+    "Reservation counts conservatively include uncertain acknowledgements, not a measured provider-success count.",
+    "The current staged production and hosted TEST packages do not include the new campaign SQL or runtime changes."
+  ]
+}

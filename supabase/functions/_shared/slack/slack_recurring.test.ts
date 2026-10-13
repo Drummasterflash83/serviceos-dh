@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {scheduleRecurringSlack} from './slack_recurring.ts';
+import {scheduleRecurringSlack,scheduleSlackCampaigns} from './slack_recurring.ts';
 import {slackWorkerEndpoint} from './slack_worker_http.ts';
 
 test('scheduler makes one bounded call and strips unexpected server fields',async()=>{
@@ -26,4 +26,13 @@ test('HTTP scheduling rejects user-only credentials and caller-selected work',as
   assert.equal(calls,0);
   const r=await handler(new Request('https://synthetic.invalid',{method:'POST',headers:{'x-serviceos-worker-key':key}}));
   assert.equal(r.status,200);assert.equal(calls,1);
+});
+
+test('campaign scheduling reports bounded work and does not retry uncertain acknowledgements',async()=>{
+ const calls:unknown[]=[];
+ assert.deepEqual(await scheduleSlackCampaigns({rpc:async(n,a)=>{calls.push([n,a]);return {data:{checked:3,queued:1,held:1,raw:'private'},error:null};}}),{checked:3,queued:1,held:1});
+ assert.deepEqual(calls,[['learn_slack_schedule_campaigns',{p_batch:10}]]);
+ for(const data of [null,{},[],{checked:1,queued:2,held:0},{checked:2,queued:0,held:3},{checked:11,queued:0,held:0}]){
+  let tries=0;await assert.rejects(scheduleSlackCampaigns({rpc:async()=>{tries++;return {data,error:null};}}),/slack_campaign_schedule_unconfirmed/);assert.equal(tries,1);
+ }
 });

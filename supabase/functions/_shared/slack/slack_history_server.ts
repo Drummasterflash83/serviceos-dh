@@ -124,6 +124,22 @@ export function createSlackHistoryServerPorts(
         if (providerRequests >= SLACK_HISTORY_PROVIDER_REQUESTS_PER_JOB)
           throw new SlackHistoryTransportError("slack_history_request_budget_exhausted", false);
         providerRequests++;
+        // The durable campaign ledger includes identity/channel checks and all
+        // retries. Never dispatch when the reservation reply is uncertain.
+        let reservation;
+        try {
+          reservation = await db.rpc('learn_slack_campaign_reserve_request', {
+            p_tenant: ctx.tenantId, p_job: ctx.jobId,
+            p_claimed_by: ctx.claim!.claimedBy, p_attempt: ctx.claim!.attemptCount,
+            p_ordinal: providerRequests,
+          });
+        } catch {
+          throw new SlackHistoryTransportError('slack_history_campaign_request_unconfirmed', true);
+        }
+        if (reservation.error)
+          throw new SlackHistoryTransportError('slack_history_campaign_request_unconfirmed', true);
+        if (reservation.data !== true)
+          throw new SlackHistoryTransportError('slack_history_campaign_request_unavailable', false);
         const url = new URL(`https://slack.com/api/${method}`);
         for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
         let response: Response;

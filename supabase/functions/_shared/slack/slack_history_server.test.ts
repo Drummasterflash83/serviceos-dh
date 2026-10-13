@@ -81,6 +81,9 @@ function fixture(kind: "bot" | "user" = "bot") {
         response_metadata: { next_cursor: "next" },
       },
       recurringAllowed: true as boolean | null,
+      reservation: true as boolean | null,
+      reservationError: null as null | object,
+      reservationThrows: false,
       override: null as null | ((method: string) => Response | Promise<Response> | undefined),
     };
   const db: any = {
@@ -105,6 +108,10 @@ function fixture(kind: "bot" | "user" = "bot") {
     },
     rpc: async (name: string, args: any) => {
       rpc.push({ name, args });
+      if (name === "learn_slack_campaign_reserve_request") {
+        if(state.reservationThrows)throw Error("private reservation transport error");
+        return {data:state.reservation,error:state.reservationError};
+      }
       if (name === "learn_slack_recurring_thread_allowed") return {data:state.recurringAllowed,error:null};
       if (name === "learn_slack_read_credential" || name === "learn_slack_read_thread_credential") return { data: state.credential, error: null };
       if (name === "slack_thread_commit_page") {
@@ -497,4 +504,29 @@ test('changing the configured user or credential kind without a revision still f
   const f=fixture('user');f.state.override=method=>{if(method==='conversations.history')mutate(f);return undefined;};
   assert.equal((await f.run()).success,false);assert.ok(!f.rpc.some(r=>r.name==='slack_history_commit_page'));
  }
+});
+
+test('every provider dispatch reserves its cumulative campaign allowance first; uncertain or denied reservations never fetch',async()=>{
+ const f=fixture('user');assert.equal((await f.run()).success,true);
+ const reservations=f.rpc.filter(r=>r.name==='learn_slack_campaign_reserve_request');
+ assert.equal(reservations.length,f.requests.length);
+ assert.deepEqual(reservations.map(r=>r.args.p_ordinal),[1,2,3,4,5,6,7,8,9]);
+ for(const r of reservations)assert.deepEqual(r.args,{p_tenant:id(1),p_job:id(2),p_claimed_by:'learn-slack:test',p_attempt:1,p_ordinal:r.args.p_ordinal});
+ for(const [value,error] of [[false,null],[null,null],[true,{message:'private database error'}]] as const){
+  const denied=fixture('user');denied.state.reservation=value;denied.state.reservationError=error;
+  const r=await denied.run();assert.equal(r.success,false);assert.equal(r.error?.code,error?'slack_history_campaign_request_unconfirmed':'slack_history_campaign_request_unavailable');
+  assert.equal(r.error?.retryable,!!error);
+  assert.equal(denied.requests.length,0);assert.equal(JSON.stringify(r).includes('private database error'),false);
+ }
+ const paused=fixture('user');paused.state.override=()=>{paused.state.reservation=false;return undefined;};
+ const stopped=await paused.run();assert.equal(stopped.success,false);assert.equal(paused.requests.length,1);
+ assert.equal(paused.rpc.some(r=>r.name==='slack_history_commit_page'),false);
+});
+
+test('a lost campaign reservation acknowledgement never fetches and retries only through a new durable attempt',async()=>{
+ const f=fixture('user');f.state.reservationThrows=true;
+ const r=await f.run();assert.equal(r.success,false);assert.equal(r.error?.code,'slack_history_campaign_request_unconfirmed');
+ assert.equal(r.error?.retryable,true);assert.equal(f.requests.length,0);
+ assert.equal(f.rpc.filter(call=>call.name==='learn_slack_campaign_reserve_request').length,1);
+ assert.equal(JSON.stringify(r).includes('private reservation transport error'),false);
 });

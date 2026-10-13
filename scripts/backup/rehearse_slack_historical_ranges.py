@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from database_restore_sandbox import RestoreSandbox, RecoveryError
 from restore_production_database import ROOT, IMAGE, PINNED_IMAGE, write_private
@@ -34,7 +35,10 @@ def run():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', required=True)
     parser.add_argument('--with-message-kinds', action='store_true')
+    parser.add_argument('--with-campaigns', action='store_true')
     options = parser.parse_args()
+    if options.with_campaigns:
+        options.with_message_kinds = True
     out = Path(options.output).resolve()
     if out.parent != Path('.verification-results').resolve() or out.exists():
         raise SystemExit('Fresh private output directory required')
@@ -145,6 +149,53 @@ def run():
                 report['messageKinds'] = {'source': str(kinds), 'sha256': hashlib.sha256(kinds_source.encode()).hexdigest(),
                                          'rollbackVerified': True, 'duplicateRejected': True,
                                          'existingFunctionAuthorityUnchanged': True, 'existingDataUnchanged': True}
+            if options.with_campaigns:
+                campaign_path = Path('supabase/migrations/20261101670000_learn_slack_history_campaigns.sql')
+                campaign_source = campaign_path.read_text()
+                target.query(campaign_source.replace('\ncommit;\n', '\nrollback;\n'))
+                if schema() != after_schema:
+                    raise RecoveryError('Campaign rollback changed schema')
+                compare_native_data(before, restored_fingerprints(target))
+                target.query(campaign_source)
+                campaign_schema = schema()
+                old_tables = {t['name']: t for t in after_schema['tables']}
+                new_tables = {t['name']: t for t in campaign_schema['tables']}
+                expected_tables = {'slack_history_campaigns','slack_history_campaign_channels',
+                                   'slack_history_campaign_requests','slack_history_campaign_dispatches'}
+                if set(new_tables)-set(old_tables) != expected_tables or any(new_tables.get(k)!=v for k,v in old_tables.items()):
+                    raise RecoveryError('Campaign changed existing table schema')
+                before_campaign = restored_fingerprints(target)
+                added_tables = [t for t in before_campaign['tables'] if t['schema']=='public' and t['table'] in expected_tables]
+                if len(added_tables)!=4 or any(t['rows']!=0 for t in added_tables):
+                    raise RecoveryError('Campaign migration seeded data')
+                stripped = {**before_campaign,'tables':[t for t in before_campaign['tables'] if t not in added_tables]}
+                report['campaignOriginalDataPreservation'] = compare_native_data(before,stripped)
+                old_funcs = {(f['name'],f['arguments']):f for f in after_schema['functions']}
+                new_funcs = {(f['name'],f['arguments']):f for f in campaign_schema['functions']}
+                changed_campaign = []
+                for key,prior in old_funcs.items():
+                    current = new_funcs.get(key)
+                    if current is None or {k:v for k,v in prior.items() if k!='hash'} != {k:v for k,v in current.items() if k!='hash'}:
+                        raise RecoveryError('Campaign changed existing function authority')
+                    if current != prior:
+                        changed_campaign.append(key[0])
+                expected_changed = {'learn_slack_reference_guard','learn_slack_start_import','learn_slack_resume_history',
+                  'learn_slack_start_thread_import','learn_slack_resume_thread','learn_slack_recurring_control','learn_slack_claim_jobs',
+                  'learn_slack_read_credential','learn_slack_read_thread_credential','learn_slack_commit_page_private','slack_thread_commit_page'}
+                if set(changed_campaign)!=expected_changed or after_schema['views']!=campaign_schema['views']:
+                    raise RecoveryError('Unexpected campaign function/view change')
+                try:
+                    target.query(campaign_source)
+                except RecoveryError:
+                    if schema()!=campaign_schema:
+                        raise RecoveryError('Duplicate campaign migration changed schema')
+                else:
+                    raise RecoveryError('Duplicate campaign migration accepted')
+                before = before_campaign
+                after_schema = campaign_schema
+                report['campaigns'] = {'source':str(campaign_path),'sha256':hashlib.sha256(campaign_source.encode()).hexdigest(),
+                  'rollbackVerified':True,'duplicateRejected':True,'newTables':sorted(expected_tables),
+                  'changedFunctions':sorted(changed_campaign),'existingAuthorityUnchanged':True}
             # Actual production helpers, both the tenant bot route and logged
             # cross-client user-token operator route. All synthetic rows are
             # contained in disposable child databases.
@@ -152,6 +203,7 @@ def run():
             for clone, names in [
                 ('historical_tenant', ['learn-production-slack', 'learn-production-slack-threads', 'learn-slack-historical-recovery']),
                 ('historical_operator', ['learn-production-slack-setup']),
+                *([('campaigns', ['learn-slack-campaign'])] if options.with_campaigns else []),
                 *([('message_kinds', ['learn-production-slack', 'learn-slack-message-kinds'])] if options.with_message_kinds else []),
             ]:
                 target.query('create database '+clone+' template postgres;')
@@ -160,7 +212,7 @@ def run():
                 try:
                     for name in names:
                         path = Path('scripts/verify')/(name+'.assert.sql')
-                        probe = 'set plpgsql.check_asserts=on;\n'+(path.read_text() if name in ('learn-slack-historical-recovery', 'learn-slack-message-kinds') else historical_probe(path))
+                        probe = 'set plpgsql.check_asserts=on;\n'+(path.read_text() if name in ('learn-slack-historical-recovery', 'learn-slack-message-kinds', 'learn-slack-campaign') else historical_probe(path))
                         (out/(name+'.sql')).write_text(probe)
                         result = subprocess.run([target.docker, *args], input=probe.encode(), stdout=subprocess.PIPE,
                                                 stderr=subprocess.PIPE, timeout=300)
@@ -169,6 +221,23 @@ def run():
                             raise RecoveryError('Historical journey failed: '+name)
                         report['journeys'].append({'path': str(path), 'sourceSha256': hashlib.sha256(path.read_bytes()).hexdigest(),
                                                   'probeSha256': hashlib.sha256(probe.encode()).hexdigest(), 'passed': True})
+                        if name == 'learn-slack-campaign':
+                            def reserve(slot):
+                                probe = "set request.jwt.claim.role='service_role';set role service_role;select public.learn_slack_campaign_reserve_request(verify.id(1),job_id,claimed_by,attempt,"+('9' if slot==1 else '1')+") from verify.concurrent_jobs where slot="+str(slot)+";"
+                                result = subprocess.run([target.docker,*args],input=probe.encode(),stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=60)
+                                if result.returncode:
+                                    write_private(out/('campaign-race-'+str(slot)+'-error.json'), {'error':result.stderr.decode()})
+                                    raise RecoveryError('Campaign reservation race failed')
+                                return result.stdout.decode().strip().splitlines()[-1]
+                            with ThreadPoolExecutor(max_workers=2) as pool:
+                                results = list(pool.map(reserve,[1,2]))
+                            if sorted(results)!=['f','t']:
+                                raise RecoveryError('Campaign shared budget was not enforced concurrently')
+                            check = "do $$begin assert (select requests_reserved=9 from public.slack_history_campaigns where id=verify.id(60));assert (select count(*)=9 from public.slack_history_campaign_dispatches where campaign_id=verify.id(60));end$$;"
+                            result = subprocess.run([target.docker,*args],input=check.encode(),stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=60)
+                            if result.returncode:
+                                raise RecoveryError('Campaign final concurrent budget differs')
+                            report['campaigns']['concurrentLastReservationVerified'] = True
                         print('PASS: historical '+name, flush=True)
                 finally:
                     target.query('drop database '+clone+';')
@@ -177,7 +246,7 @@ def run():
                 raise RecoveryError('Journey changed retained schema')
             write_private(out/'schema.json', after_schema)
             report.update(state='slack_historical_ranges_rehearsed_offline', changedFunctions=sorted(changed),
-                          existingFunctionAuthorityUnchanged=True, tablesViewsAndDataUnchanged=True,
+                          existingFunctionAuthorityUnchanged=True, existingTablesViewsAndDataUnchanged=True,
                           containmentAfter=target.verify_boundary(), fullHistoryAccepted=False)
         report['containerRemoved'] = target.cleaned
     except Exception as error:
