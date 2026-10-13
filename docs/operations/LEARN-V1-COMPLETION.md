@@ -8,6 +8,27 @@ override a later release observation. No requirement is silently deferred.
 ## Current evidence and priority
 
 
+**14 October, 00:54 BST — two further customer identities and five explicit jobs verified LIVE.**
+
+- The existing logged OpenFolk review published two corroborated account holders
+  and their five explicitly owned jobs. The authenticated customer export and
+  current candidate checks supported each identity. A read-only database check
+  verified all seven source versions, customer/card relationships and original actor.
+- Provider job numbers and descriptions are preserved exactly, including leading
+  zeros in current codes and historical descriptions. A job whose number happens
+  to equal the searched customer number was excluded when ownership differed.
+  No QuickBooks mapping was guessed. Unknown completion timezones remain withheld
+  from duration/performance calculations and verification flags remain unchanged.
+- Before/after comparison preserved all prior identity projections, contact points
+  and customer links. There are now 29 customer links; one still needs account
+  review. The refreshed planner has 823 proposals and 798 held accounts, including
+  98 exported accounts absent from retained API sources. Full coverage remains open.
+- This is publication through the existing LIVE controls, with no code, schema,
+  provider, credential, permission or capture-schedule change.
+
+[Customer coverage evidence](evidence/learn-customer-coverage-live-2026-10-14.json).
+
+
 **14 October, 00:44 BST — completed job status visible in LIVE customer summaries.**
 
 - The customer brief now combines its linked communications/actions with a scoped,
