@@ -1,0 +1,68 @@
+{
+  "version": "learn-contact-reconciliation/1",
+  "state": "verified_live_contact_relationships",
+  "at": "2026-10-13T19:03:48.087318+00:00",
+  "reviewedSourceRecords": 22,
+  "published": 17,
+  "existingPeopleReused": 12,
+  "newPeople": 5,
+  "held": 5,
+  "heldReasons": {
+    "possibleDuplicate": 2,
+    "departmentNotPerson": 1,
+    "unresolvedExistingEndpointIdentities": 2
+  },
+  "cardRelationships": 17,
+  "siteRelationships": 1,
+  "sourceContactPoints": 29,
+  "priorContactLinksRetained": 5,
+  "allSourcesAndActorsVerified": true,
+  "allIdentitiesRemainUnverified": true,
+  "recurring": [
+    {
+      "phase": 4,
+      "state": "window_active",
+      "enabled": true
+    }
+  ],
+  "privateEvidenceSha256": "0129f59a51d0a68b50dcf0c2a7d6d6261c59e5c6254cd4c757d8840cd0f9a992",
+  "preservation": {
+    "observedAt": "2026-10-13T19:03:56.63561+00:00",
+    "projections": {
+      "existing": {
+        "priorCount": 4451,
+        "currentCount": 4456,
+        "allPriorProjectionsRetained": true
+      },
+      "contactPoints": {
+        "priorCount": 6,
+        "currentCount": 35,
+        "allPriorProjectionsRetained": true
+      },
+      "links": {
+        "priorCount": 24,
+        "currentCount": 24,
+        "allPriorProjectionsRetained": true
+      },
+      "customers": {
+        "priorCount": 1552,
+        "currentCount": 1552,
+        "allPriorProjectionsRetained": true
+      }
+    },
+    "scope": "Identity fields, contact point projections, customer links and retained customer heads; not a full-row database comparison."
+  },
+  "signedInLiveContactCardVerified": true,
+  "communicationAttributionVerified": false,
+  "completeProviderContactCoverage": false,
+  "releasePreservation": {
+    "retainedVersions": 18052,
+    "retainedPages": 3697,
+    "retainedLinks": 7,
+    "retainedPeople": 3246,
+    "retainedCompanies": 1180,
+    "retainedCards": 3248,
+    "accessSchedulesConnectionsAndFlagsUnchanged": true,
+    "unrelatedFunctionsUnchanged": true
+  }
+}

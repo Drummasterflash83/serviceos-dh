@@ -1,8 +1,10 @@
 # Customer reconciliation from retained Commusoft evidence
 
 The first bounded LIVE group is verified: twenty customer identities, four sites
-and eighteen jobs. This is broader canonical publication, not complete customer,
-contact or communication coverage. Use the completion checklist for current gates.
+and eighteen jobs. Its follow-up contact review published seventeen relationships
+(twelve existing account holders and five distinct named people), with five sources
+held. This is broader canonical publication, not complete customer, contact or
+communication coverage. Use the completion checklist for current gates.
 
 ## Read-only preparation
 
@@ -110,3 +112,25 @@ accounts. This includes the known 98 exported customers absent from the API;
 reasons overlap. The UI/API site discrepancy also remains unresolved. Contacts,
 communication attribution, useful summaries, scoring, additional contact-point
 presentation and full operational acceptance remain separate delivery work.
+
+## Contact follow-up acceptance, 13 October 20:04 BST
+
+For an existing account holder, corroborate the provider contact ID as well as the
+full name, explicit property relationship and current candidate identity. Reuse the
+reviewed person only when those facts agree. A name match alone is insufficient.
+For an additional named contact, review the property/site owner and current person
+search, then allow the existing backend endpoint-collision check to hold uncertain
+identities. Never select a different person merely to bypass a collision hold.
+
+The real follow-up published 17 of 22 retained contacts, preserving source versions,
+actor and card/site evidence. Two attempted new contacts were held because their
+email or phone matched unnamed existing people; they were not retried against an
+arbitrary candidate. A departmental label and two possible duplicates also remain
+held. Publication added 29 unverified, non-primary contact points and retained the
+five earlier contact links. No primary-field, consent or verification override was
+made for reused people. The live operator card displays a representative new
+contact, while additional contact-point presentation remains a separate gap.
+
+[Sanitised contact acceptance](evidence/learn-contact-reconciliation-2026-10-13.json)
+records the exact counts and preservation scope. No private contact details, source
+payloads or browser screenshots are committed.

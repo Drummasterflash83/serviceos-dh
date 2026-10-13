@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 20:04 BST — seventeen LIVE contact relationships verified.**
+
+- Reviewed the 22 retained contact sources attached to the twenty newly reconciled
+  accounts and their four sites. Published 17: twelve reuse the corroborated
+  account-holder person; five create distinct named, unverified people. Readback
+  verifies all source versions, original operator, card relationships and the one
+  applicable site relationship. Twenty-nine source contact points remain unverified
+  and non-primary; no consent or endpoint-verification decision was inferred.
+- Five sources remain held: two possible duplicate/alias contacts, one departmental
+  label, and two named contacts whose endpoints collide with existing unnamed
+  identities. The collision guard prevented new duplicates. Those unnamed records
+  must be reconciled using communication evidence before choosing a person; shared
+  endpoints alone are insufficient. No automatic merge was attempted.
+- A signed-in LIVE company card displays its newly linked contact alongside its
+  already-published jobs. This is operator-view acceptance, not a new claim of
+  ordinary-client permission acceptance or complete contact/provider coverage.
+- All 4,451 prior identity projections, six prior contact-point projections,
+  24 customer links, 1,552 retained customer heads and five prior contact links
+  are unchanged. The earlier release preservation check also passes for its
+  immutable sources, identity IDs, permissions, schedules and configuration.
+  These checks are scoped comparisons, not a full-row production database hash.
+- Recurring Commusoft capture has reached phase 4 (site contacts), enabled and
+  window-active at 19:03 UTC. Full-cycle completion is not yet verified. Broader
+  customer publication, source-to-card communication attribution, the additional
+  contact-point display gap, scoring, TEST parity and operational gates remain.
+- No frontend/schema release, new access grant, provider write or paid AI request.
+
+[Contact acceptance evidence](evidence/learn-contact-reconciliation-2026-10-13.json).
+
 **13 October, 19:47 BST — broader LIVE reconciliation: twenty more customer cards.**
 
 - A reusable read-only planner reconciles the actual customer export with retained
