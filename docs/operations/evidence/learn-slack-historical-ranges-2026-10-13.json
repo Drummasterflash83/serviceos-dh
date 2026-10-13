@@ -1,0 +1,97 @@
+{
+  "state": "slack_historical_ranges_rehearsed_offline",
+  "source": "supabase/migrations/20261101650000_learn_slack_historical_ranges.sql",
+  "sourceSha256": "fda96765913f2fb95624d3e6d41ae01f150f4e96048e7d247b208bebd41af9c6",
+  "providerRequests": 0,
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "rollbackVerified": true,
+  "duplicateRejected": true,
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 388,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "daf964768c88e788137517623b6fd5efaa852d668271e361dfd620d2dedbc20c",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "postJourneyPreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 388,
+    "rows": 1591603,
+    "sequences": 7,
+    "comparisonSha256": "daf964768c88e788137517623b6fd5efaa852d668271e361dfd620d2dedbc20c",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "changedFunctions": [
+    "learn_slack_commit_page_private",
+    "learn_slack_history_state",
+    "learn_slack_start_import",
+    "learn_slack_start_thread_import",
+    "learn_slack_thread_recovery_state"
+  ],
+  "existingFunctionAuthorityUnchanged": true,
+  "tablesViewsAndDataUnchanged": true,
+  "journeys": [
+    {
+      "path": "scripts/verify/learn-production-slack.assert.sql",
+      "sourceSha256": "f3487eba7d010845e6abb86bcd332da2a25e19a65c6311269b7bc55b1d563d88",
+      "probeSha256": "fe4df68722d328e9b6ad983b67958d8f61abc0977f2cf5230cec6d73b411ca5e",
+      "passed": true
+    },
+    {
+      "path": "scripts/verify/learn-production-slack-threads.assert.sql",
+      "sourceSha256": "650ba2d9b2d7b326ae66ea2d9d39655bde4e8d84e7c44deede37744c24c649de",
+      "probeSha256": "31b198d68fbf5694eaecaac8151e063ed7abb523a6159ed5bcfc690319140931",
+      "passed": true
+    },
+    {
+      "path": "scripts/verify/learn-slack-historical-recovery.assert.sql",
+      "sourceSha256": "62bb90be90baff9e593c6fdb0dd4fcfecddf37ac55b6123ffd1b69e6d917e9e3",
+      "probeSha256": "b35bfc03fefad37baea2d7a6e900c2701f19b0657cb38fb8462467dd8c8da764",
+      "passed": true
+    },
+    {
+      "path": "scripts/verify/learn-production-slack-setup.assert.sql",
+      "sourceSha256": "2cfb069ec109df6ef5fcbba85c39639c7a531f65cc69949be70a0ed20781e45f",
+      "probeSha256": "b0f0d75ec08748dec6dea6c537f4b4265ab678a5b08e0dd4cb985738aaeb2393",
+      "passed": true
+    }
+  ],
+  "fullHistoryAccepted": false,
+  "containerRemoved": true,
+  "observedAt": "2026-10-13T03:08:42Z",
+  "environment": "local and network-isolated production restore only",
+  "unitTests": 134,
+  "typecheckPassed": true,
+  "frontendBuildPassed": true,
+  "providerRequestsPerWorkerInvocation": 9,
+  "requestLimitEnforcedInLocalTransport": true,
+  "hostedDeployment": false,
+  "releasePackageInclusion": false,
+  "limitations": [
+    "Not deployed to TEST or production",
+    "Per-approval page limit remains ten; unattended renewal/orchestration remains missing",
+    "Workspace inventory selection, private-channel visibility and real reply acceptance remain open",
+    "Unsupported message subtypes remain a capture risk requiring explicit coverage handling",
+    "Existing production runtime and frontend candidate must be rebuilt before including this change"
+  ],
+  "runtimeSources": [
+    {
+      "path": "supabase/functions/_shared/slack/slack_history_binding.ts",
+      "sha256": "9c837fd5c693b60a6abfda410e584651ca81c701050653ef6f6797946ed17dfd"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_history_request.ts",
+      "sha256": "abcf740c9c5848f6bbaac2eb6fb79ad6452e5597458d7496df3914d534557671"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_history_server.ts",
+      "sha256": "622cf09508ff6cd3c575d55cc98ac6dd2a7944fdd704b508e5645f50f6420bd1"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_provider_budget.ts",
+      "sha256": "c469e157eac48d4c26856563a66df546ca308e88a963b9b4bb1addc8b2bf1065"
+    }
+  ]
+}

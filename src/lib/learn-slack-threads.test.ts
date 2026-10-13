@@ -42,6 +42,17 @@ const request: SlackThreadRequest = {
   reason: "Retained synthetic thread",
 };
 const db = (data: any) => ({ rpc: async () => ({ data, error: null }) });
+test("reply approval includes months after an observed parent with the same page bound", async () => {
+  let sent: any;
+  await startSlackThreadImport({rpc: async (_name, args) => {
+    sent = args;
+    return {data: {requestId: id(4), accountId: id(2), jobId: id(5), reused: false}, error: null};
+  }}, {...request, end: "2026-10-01T00:00:00Z"});
+  assert.equal(sent.p_start, "2026-01-01T00:00:00.000Z");
+  assert.equal(sent.p_end, "2026-10-01T00:00:00.000Z");
+  assert.equal(sent.p_max_pages, 3);
+  assert.equal(sent.p_source_message_id, request.sourceId);
+});
 test("reader binds company/account and returns only validated observed-thread coverage", async () => {
   let called: any;
   const c = {
@@ -154,7 +165,7 @@ test("invalid approval windows, guessed source versions and limits never reach R
     { sourceVersion: "bad" },
     { sourceId: "bad" },
     { parentTimestamp: "9999999999.000001" },
-    { end: "2026-01-03T00:00:00Z" },
+    { end: "2999-01-03T00:00:00Z" },
     { maxPages: 11 },
     { maxPages: 1.5 },
     { reason: " " },

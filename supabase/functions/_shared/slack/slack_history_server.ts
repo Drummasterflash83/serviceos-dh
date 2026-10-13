@@ -1,6 +1,7 @@
 import { readStoredHistoryScope } from "./slack_history_binding.ts";
 import { readSlackCredentialBinding } from "./slack_credential_binding.ts";
 import { SlackHistoryTransportError } from "./slack_history_errors.ts";
+import { SLACK_HISTORY_PROVIDER_REQUESTS_PER_JOB } from "./slack_provider_budget.ts";
 import type {
   HistoryServerPorts,
   HistoryRequestIdentity,
@@ -114,11 +115,15 @@ export function createSlackHistoryServerPorts(
       )
         return null;
       const token = secret.data;
+      let providerRequests = 0;
       async function request(
         method: "auth.test" | "conversations.info" | "conversations.history" | "conversations.replies",
         params: Record<string, string> = {},
       ) {
         if (!(await authorised())) throw denied();
+        if (providerRequests >= SLACK_HISTORY_PROVIDER_REQUESTS_PER_JOB)
+          throw new SlackHistoryTransportError("slack_history_request_budget_exhausted", false);
+        providerRequests++;
         const url = new URL(`https://slack.com/api/${method}`);
         for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
         let response: Response;

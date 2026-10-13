@@ -32,8 +32,8 @@ ordinary TEST/live deployment permission is already recorded.
 - Maximum **180 message observations including replays**, with duplicate roots /
   repeated pages distinguished from unique stored messages. Maximum **201 read-only
   Slack provider requests**, including identity/channel checks and retries. The
-  runner permits at most 12 one-job worker calls (at most three provider requests
-  per call); a further at most 21 read-only identity checks are allowed. The tighter worker
+  runner permits at most 12 one-job worker calls (at most nine provider requests
+  per call, including identity/channel checks; corrected on 13 October); a further at most 21 read-only identity checks are allowed. The tighter worker
   bound also caps observations if a request must be retried before storage. Empty
   or failed invocations still consume this budget; stop rather than expanding it.
 - Pause Slack capture after the run or a blocking failure. Retain its source
@@ -170,6 +170,25 @@ message contained an observed thread parent; no replies were requested or verifi
 Capture is paused, with no active Slack jobs or recurring subscriptions. Six total
 worker invocations include the two original empty windows and one paced no-op.
 Five total message observations include discovery and replay. The conservative
-provider-request upper bound is 23, within the original 201 cap. The runner rejects
+provider-request upper bound was initially reported as 23. The 13 October
+accounting correction below supersedes that estimate; the original 201 cap was
+not exceeded by the corrected conservative bound. The runner rejects
 further dispatch after this completed historical sample; unused capacity is not a
 new import approval. [Sanitised acceptance evidence](evidence/learn-slack-real-history-2026-10-12.json).
+
+### Request-accounting correction — 13 October, 04:08 BST
+
+The transport rechecks channel access repeatedly around each page. A successful
+one-page worker invocation makes nine requests (one identity, seven channel
+checks, one history/replies request), rather than the three previously budgeted.
+The conservative completed-run bound is therefore **80**: six invocations × nine,
+five discovery requests, plus the full reserved allowance of 21 separate identity
+checks. This is an upper bound reconstructed from the code path and allowances,
+not a directly measured request count. It remains below the approved 201 cap.
+The paused, terminal run has not been reopened or dispatched again.
+
+The local runner now counts this larger allowance, and the local worker transport
+has an explicit nine-request ceiling per acquired job lease. Tests exercise both
+channel and reply routes and rejection before a tenth dispatch. This transport
+change still needs paired hosted deployment; it is not a claim about a deployed
+hard ceiling. Source/message counts and the sample's limitations are unchanged.

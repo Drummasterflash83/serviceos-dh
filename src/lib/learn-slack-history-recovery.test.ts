@@ -97,7 +97,7 @@ test("invalid progress and contradictory recovery flags cannot become an actiona
     { progress: { ...state.progress, pagesThisApproval: -1 } },
     { progress: { ...state.progress, complete: true } },
     { progress: { ...state.progress, hasCursor: false } },
-    { window: { ...state.window, end: "2026-01-04T00:00:00Z" } },
+    { window: { ...state.window, end: "2025-12-31T00:00:00Z" } },
     { latestJob: { ...state.latestJob, errorCode: "raw provider credentials" } },
   ])
     await assert.rejects(
@@ -205,4 +205,9 @@ test("rejected reviews and uncertain transport outcomes have different recovery 
       resumeSlackHistory({ rpc: async () => ({ data: null, error: { code } }) }, request),
       kind(expected),
     );
+});
+
+test("multi-year unfinished coverage remains reviewable without exposing its cursor", async () => {
+  const historical = {...state, window: {...state.window, start:"2016-01-01T00:00:00Z", end:"2026-10-01T00:00:00Z"}};
+  assert.deepEqual(await loadSlackHistoryState(db(historical), id(1), id(2)), historical);
 });

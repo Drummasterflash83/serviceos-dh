@@ -123,7 +123,6 @@ export async function loadSlackHistoryState(
       !date(w.expiresAt) ||
       Date.parse(w.start) < 0 ||
       Date.parse(w.end) <= Date.parse(w.start) ||
-      Date.parse(w.end) - Date.parse(w.start) > 86400000 ||
       !budget(w.pageLimit) ||
       !Number.isInteger(p.pagesThisApproval) ||
       p.pagesThisApproval < 0 ||

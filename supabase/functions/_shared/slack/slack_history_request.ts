@@ -30,7 +30,7 @@ export function createHistoryRequestAdapter(ports?:HistoryServerPorts,clock:()=>
   try {
    const identity=Object.freeze({...supplied});
    assertSlackHistoryScope({...identity,channelIds:[identity.channelId]},identity.tenantId,identity.channelId,null);
-   if(!ports||!uuid(identity.accountId)||typeof identity.consentReference!=='string'||!identity.consentReference.trim()||identity.consentReference.length>2000||Number(identity.latest)-Number(identity.oldest)>86400||!Number.isSafeInteger(identity.maxPages)||identity.maxPages<1||identity.maxPages>10||typeof identity.expiresAt!=='string'||!Number.isFinite(Date.parse(identity.expiresAt)))return null;
+   if(!ports||!uuid(identity.accountId)||typeof identity.consentReference!=='string'||!identity.consentReference.trim()||identity.consentReference.length>2000||!Number.isSafeInteger(identity.maxPages)||identity.maxPages<1||identity.maxPages>10||typeof identity.expiresAt!=='string'||!Number.isFinite(Date.parse(identity.expiresAt)))return null;
    const unexpired=()=>{const now=clock();return Number.isFinite(now)&&Date.parse(identity.expiresAt)>now;};
    if(!unexpired()||identity.parentTimestamp!==undefined&&(!/^\d{1,12}\.\d{1,6}$/.test(identity.parentTimestamp)||Number(identity.parentTimestamp)>Number(identity.latest)))return null;
    const lease=await ports.acquire(identity);

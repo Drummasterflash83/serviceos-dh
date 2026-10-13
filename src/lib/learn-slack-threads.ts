@@ -211,7 +211,6 @@ export function validateSlackThreadRequest(r: SlackThreadRequest, now = Date.now
     start < 0 ||
     end <= start ||
     end > now ||
-    end - start > 86400000 ||
     Number(r.parentTimestamp) * 1000 > end ||
     !Number.isInteger(r.maxPages) ||
     r.maxPages < 1 ||
@@ -220,7 +219,7 @@ export function validateSlackThreadRequest(r: SlackThreadRequest, now = Date.now
     r.reason.trim().length > 1000
   )
     throw Error(
-      "Choose a past window up to 24 hours that includes time after this thread started, a page limit and a reason.",
+      "Choose a fixed past period that includes time after this thread started, a page limit and a reason.",
     );
 }
 export async function startSlackThreadImport(db: SlackThreadClient, r: SlackThreadRequest) {

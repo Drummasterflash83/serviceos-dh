@@ -82,14 +82,13 @@ export function validateSlackImportRequest(input: SlackImportRequest, now = Date
     start < 0 ||
     end <= start ||
     end > now ||
-    end - start > 86400000 ||
     !Number.isInteger(input.maxPages) ||
     input.maxPages < 1 ||
     input.maxPages > 10 ||
     !input.reason.trim() ||
     input.reason.trim().length > 1000
   )
-    throw Error("Choose a past window up to 24 hours, a public channel, page limit and reason.");
+    throw Error("Choose a fixed past period, a public channel, page limit and reason.");
 }
 
 export async function startSlackImport(

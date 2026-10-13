@@ -328,7 +328,7 @@ export function LearnSlackThreads({
             >
               <fieldset className="space-y-3" disabled={locked || !canEdit || !page.canImport}>
                 <p>
-                  Import replies for the selected threads over a past period of up to 24 hours.
+                  Import replies for the selected threads through a fixed past cutoff. Include the full period needed, even when replies arrived months after the original message. The page limit applies to each thread; unfinished replies keep their checkpoints.
                   Times use your device’s local timezone. Existing evidence stays in place.
                 </p>
                 <label className="block">

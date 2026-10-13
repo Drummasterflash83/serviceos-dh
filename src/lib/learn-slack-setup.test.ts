@@ -23,6 +23,18 @@ const request: SlackImportRequest = {
   maxPages: 3,
   reason: "First import",
 };
+test("historical periods use a fixed cutoff without expanding the page budget", async () => {
+  const long = { ...request, start: "2013-01-01T00:00:00Z", end: "2026-10-01T00:00:00Z" };
+  let sent: any;
+  await startSlackImport({ rpc: async (_name: string, args: Record<string, unknown>) => {
+    sent = args;
+    return { data: { requestId: long.requestId, accountId: id(4), jobId: id(5), reused: false }, error: null };
+  }} as any, long, Date.parse("2026-10-13T00:00:00Z"));
+  assert.equal(sent.p_start, "2013-01-01T00:00:00.000Z");
+  assert.equal(sent.p_end, "2026-10-01T00:00:00.000Z");
+  assert.equal(sent.p_max_pages, 3);
+  assert.throws(() => validateSlackImportRequest({ ...long, maxPages: 11 }));
+});
 test("channel link parsing rejects other workspaces and destinations", () => {
   assert.equal(slackChannelId(" C123 ", "T123"), "C123");
   assert.equal(slackChannelId("https://app.slack.com/client/T123/C123", "T123"), "C123");
@@ -45,7 +57,7 @@ test("setup validation rejects invalid windows before any queue call", async () 
   };
   for (const change of [
     { end: "2026-01-01T00:00:00Z" },
-    { end: "2026-01-03T00:00:00Z" },
+    { end: "2999-01-03T00:00:00Z" },
     { start: "invalid" },
     { maxPages: 11 },
     { maxPages: 1.5 },

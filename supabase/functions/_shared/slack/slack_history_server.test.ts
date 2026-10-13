@@ -4,6 +4,7 @@ import { createSlackHistoryServerPorts } from "./slack_history_server.ts";
 import { createHistoryRequestAdapter } from "./slack_history_request.ts";
 import { createStoredHistoryBinding } from "./slack_history_binding.ts";
 import { createSlackHistoryHandler } from "../worker_handlers/slack_history.ts";
+import { SLACK_HISTORY_PROVIDER_REQUESTS_PER_JOB } from "./slack_provider_budget.ts";
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const now = Date.parse("2026-10-09T12:00:00Z"),
   token = "xoxb-synthetic-not-a-credential";
@@ -171,6 +172,55 @@ function threadFixture(kind: "bot" | "user" = "bot") {
   f.state.history.messages = [{ ts: "123.1", text: "Synthetic reply", user: "U123", thread_ts: "110.1" } as any];
   return f;
 }
+test("one-page worker counts identity and channel requests; a lease cannot exceed its provider budget", async () => {
+  for (const f of [fixture('user'), threadFixture('user')]) {
+    assert.equal((await f.run()).success, true);
+    assert.equal(f.requests.length, SLACK_HISTORY_PROVIDER_REQUESTS_PER_JOB);
+    assert.equal(f.requests.filter(r => r.method === 'auth.test').length, 1);
+    assert.equal(f.requests.filter(r => ['conversations.history', 'conversations.replies'].includes(r.method)).length, 1);
+  }
+  const f = fixture('user');
+  const bound = await f.bind(f.ctx);
+  assert.ok(bound);
+  while (f.requests.length < SLACK_HISTORY_PROVIDER_REQUESTS_PER_JOB) await bound.authorised();
+  await assert.rejects(bound.authorised(), (e: any) => e.code === 'slack_history_request_budget_exhausted' && e.retryable === false);
+  assert.equal(f.requests.length, SLACK_HISTORY_PROVIDER_REQUESTS_PER_JOB);
+});
+test("multi-year channel and reply ranges retain exact bounds, cursor and page limits", async () => {
+  for (const f of [fixture('user'), threadFixture('user')]) {
+    const thread = f.ctx.jobType === 'slack.thread_sync';
+    const scope = thread ? f.rows.slack_thread_imports.scope : f.rows.connector_accounts.settings.slack_history;
+    scope.oldest = '1451606400.000000';
+    scope.latest = '1790812800.000000';
+    scope.maxPages = 2;
+    if (thread) scope.parentTimestamp = '1451606400.000001';
+    const message = (ts: string) => ({ts, text:'Synthetic historical observation', user:'U123',
+      ...(thread ? {thread_ts:scope.parentTimestamp} : {})});
+    f.state.history.messages = [message('1767225600.000001')];
+    assert.equal((await f.run()).success, true);
+    f.state.history.messages = [message('1451606400.000001')];
+    f.state.history.response_metadata.next_cursor = 'next-2';
+    const second = await f.run();
+    assert.equal(second.result?.stopReason, 'page_budget_exhausted');
+    assert.equal(second.result?.ingestion_complete, false);
+    assert.equal(second.continuation, undefined);
+    const calls = f.requests.filter(r => r.method === (thread ? 'conversations.replies' : 'conversations.history'));
+    assert.equal(calls.length, 2);
+    assert.equal(calls[1].params.cursor, 'next');
+    for (const call of calls) {
+      assert.equal(call.params.oldest, scope.oldest);
+      assert.equal(call.params.latest, scope.latest);
+      assert.equal(call.params.limit, '15');
+      assert.equal(call.params.inclusive, 'true');
+    }
+    await f.run();
+    assert.equal(f.requests.filter(r => ['conversations.history', 'conversations.replies'].includes(r.method)).length, 2,
+      'exhausted approval must not read another message page');
+    const cp = thread ? f.rows.slack_thread_imports.checkpoint : f.rows.connector_accounts.sync_cursor;
+    assert.equal(cp.cursor, 'next-2');
+    assert.equal(cp.complete, false);
+  }
+});
 test("stored thread approval binds exact parent, replies method and independent checkpoint", async () => {
   const f = threadFixture(), result = await f.run();
   assert.equal(result.success, true);

@@ -6,6 +6,7 @@ import { randomUUID, createHash } from "node:crypto";
 import { TEST_PROJECT, savedCliToken } from "./learn-test-readiness.mjs";
 import { communicationQuery } from "./learn-card-communication-catalog.mjs";
 import { edgeInventory } from "./learn-test-email-runtime-deploy.mjs";
+import { SLACK_HISTORY_PROVIDER_REQUESTS_PER_JOB } from "../../supabase/functions/_shared/slack/slack_provider_budget.ts";
 const mode = process.argv[2],
   path = ".verification-results/slack-real-test-20261012.json";
 if (
@@ -244,7 +245,7 @@ if (mode === "prepare") {
   );
   check(
     (p.steps.length + 1) * 15 + (selected?.messageObservations ?? 0) <= 180 &&
-      (p.steps.length + 1) * 3 + (selected?.requests.length ?? 0) <= 201,
+      (p.steps.length + 1) * SLACK_HISTORY_PROVIDER_REQUESTS_PER_JOB + (selected?.requests.length ?? 0) + 21 <= 201,
     "Cumulative message/provider budget exhausted",
   );
   check(

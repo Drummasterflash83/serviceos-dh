@@ -49,8 +49,9 @@ credentials, verifies workspace and identity, and imports internal public channe
 in approved windows of at most
 24 hours. It stores durable checkpoints/source versions, handles rate limits,
 deduplicates messages and supports separately paginated observed threads.
-Recurring capture revisits retained parents. Synthetic and production-archive
-rehearsal evidence exists; real Drummonds Slack acceptance remains outstanding.
+Recurring capture revisits retained parents. Two real public-channel messages
+were captured in the approved TEST sample, with exact replay verification; real
+thread replies, full history and ongoing acceptance remain outstanding.
 
 The deployed TEST transport rejects private/shared channels, DMs and mismatched
 credential identities. It does not
@@ -130,6 +131,37 @@ concurrent scheduling. The fixture uses synthetic records and a synthetic Vault
 table; the full production schema/actual Vault and hosted worker/provider round
 trip remain separate acceptance gates. No message reads, hosted changes or
 production promotion resulted from these tests.
+
+## Fixed historical ranges — locally verified 13 October, 04:08 BST
+
+The local candidate removes the artificial one-day span restriction across setup,
+worker binding, database publication, progress readers and saved recovery forms.
+An operator can choose a fixed past start/cutoff covering earlier years, then
+continue the retained cursor without manually importing thousands of empty days.
+Observed thread approvals can cover replies years after their original root.
+Slack supports timestamp bounds with cursor pagination; the existing transport
+continues using inclusive boundaries and stable source identities.
+
+Each approval still allows at most ten pages of fifteen observations and expires
+after 24 hours. Exhausting pages leaves coverage incomplete; continuation is the
+existing explicit reviewed recovery action. This is **not yet unattended full
+history orchestration**. A separate durable campaign needs inventory selection,
+a total request allowance, automatic checkpoint continuation under that approval,
+observed-parent traversal, pause/revocation and coverage/gap accounting. Private
+channel visibility and unsupported history events also remain implementation work.
+
+All 134 client/worker tests, TypeScript and the frontend build pass. The full
+23-package production-schema restore verifies ten-year channel imports, an old
+root with much later replies, exact replay, channel/thread recovery, lost-response
+retries, expired approvals, page exhaustion, authority and tenant isolation.
+All 388 baseline datasets (1,591,603 rows) and seven sequences match before/after;
+only five existing function bodies change, preserving their authority. Rollback
+and repeat-apply rejection pass, and the disposable database is removed.
+
+Nothing was installed or activated in either hosted environment. The 23-package
+production plan and its existing runtime/frontend artifacts do not yet include
+this candidate and must be rebuilt/verified together. The completed real sample
+is still closed. [Evidence](evidence/learn-slack-historical-ranges-2026-10-13.json).
 
 ## Connection preparation
 

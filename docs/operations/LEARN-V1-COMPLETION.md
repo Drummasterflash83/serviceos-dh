@@ -7,36 +7,48 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October, 03:50 BST — TEST-accepted operator frontend staged for production.**
+**13 October, 04:08 BST — historical Slack ranges and recovery verified locally.**
 
 ### Working and verified
 
-- Git `d535085`, including the operator LEARN entry and corrected embedded layout,
-  is READY as staged production deployment `dpl_5j57s4SuMBQMkzKEpM2BgX4BE9m6`.
-  The rendered login targets the real production Supabase project. Automatic
-  custom-domain assignment is disabled; all four live domains remain unchanged.
-- The read-only promotion adapter reports ready. The 74-step release sequence now
-  references this frontend alongside the 23 SQL packages and 37 runtime artifacts.
-  All 22 relevant frontend/coordinator/journal tests pass.
+- The local client, worker and SQL candidate support fixed historical periods
+  spanning years, including replies made long after the original message.
+  Saved cursors, exact bounds, ten-page approval limits and 24-hour approval
+  expiry remain enforced. No automatic claim of complete history is introduced.
+- All 134 client/worker tests, TypeScript and the frontend build pass. Offline
+  production-schema tests cover old roots/later replies, channel and thread
+  recovery, duplicate settlement, expiry, permissions and tenant isolation.
+  All 388 baseline datasets / 1,591,603 rows and seven sequences are unchanged.
+- Provider-request accounting now includes repeated access checks. The old real
+  sample's conservative bound is corrected from 23 to 80, below its approved 201
+  cap; this is a code-derived allowance, not a measured count. Local transport
+  stops before a tenth provider dispatch per lease. The real sample remains closed.
+- The previously accepted TEST operator frontend remains staged for production
+  at `dpl_5j57s4SuMBQMkzKEpM2BgX4BE9m6`, source `d535085`; live domains unchanged
+  at the last verified staging check. This turn made no hosted changes.
 
 ### Needs finishing
 
-- Positive signed-in production acceptance and the remaining live recovery,
-  current-state, drain, paired backend and monitored rollout gates remain open.
-- The Slack worker currently imports approved windows of at most 24 hours. It
-  does not orchestrate complete channel history across those windows. Building
-  that resumable history journey remains implementation work, alongside private
-  channel visibility, observed replies and ongoing capture; two sample messages
-  do not complete it. Do not classify all remaining Slack work as awaiting access.
-- Full input coverage, useful processing/cards and scoring remain unfinished.
+- Build the durable whole-history campaign: channel inventory selection, frozen
+  cutoff, cumulative request budget, automatic cursor continuation and observed
+  thread traversal. Current longer ranges still require reviewed continuation
+  after each page allowance. Private-channel visibility and unsupported message
+  subtype handling remain required; do not classify these as access blockers.
+- Package the new SQL, worker dependency closure and frontend together for TEST
+  and production. The existing 23-package/37-runtime release excludes this work.
+  Then verify signed-in hosted controls and real historical/reply capture within
+  a concrete broader approval; do not reuse the completed sample's unused budget.
+- Positive production sign-in, current recovery/drain/rollout gates, complete input
+  coverage, processing/cards, scoring and ongoing operation remain unfinished.
 
 ### Blocked externally
 
-- 1Password was freshly checked and is still locked after inactivity; the existing
-  recovery-key unlock request remains relevant. No unlock or new prompt was attempted.
-- Founder access, live sign-in and the TEST AI key selection remain pending.
+- Existing owner-action dependencies remain: recovery-key access (1Password was
+  locked at its last check), founder access, live sign-in and TEST AI selection.
+  None prevents continuing the Slack implementation above.
 
-[Staged frontend evidence](evidence/learn-production-frontend-operator-learn-2026-10-13.json).
+[Historical-range evidence](evidence/learn-slack-historical-ranges-2026-10-13.json).
+[Previously staged frontend](evidence/learn-production-frontend-operator-learn-2026-10-13.json).
 
 ### Previous TEST operator journey milestone
 

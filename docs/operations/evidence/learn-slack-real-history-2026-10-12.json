@@ -22,7 +22,7 @@
   "claimedJobs": 5,
   "unclaimedInvocations": 1,
   "discoveryRequests": 5,
-  "providerRequestConservativeUpperBound": 23,
+  "providerRequestConservativeUpperBound": 80,
   "messageObservationsIncludingDiscoveryAndReplay": 5,
   "uniqueMessages": 2,
   "versions": 2,
@@ -47,5 +47,16 @@
     "No observed parents, so real reply acceptance remains open",
     "No ongoing schedule, private-channel capture or source-to-card acceptance",
     "No production changes; DMs excluded"
-  ]
+  ],
+  "requestAccountingCorrection": {
+    "at": "2026-10-13T03:08:42Z",
+    "previousUpperBound": 23,
+    "workerInvocationAllowance": 54,
+    "discoveryRequests": 5,
+    "additionalIdentityAllowance": 21,
+    "basis": "Conservative code-path bound, including identity/channel rechecks and the entire reserved additional identity allowance; not a directly measured provider-request count. The earlier three-per-invocation estimate omitted repeated channel checks.",
+    "originalRequestCap": 201,
+    "withinApprovedCap": true,
+    "runReopened": false
+  }
 }

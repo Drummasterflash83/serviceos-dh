@@ -209,7 +209,7 @@ export function LearnSlackSetup({
                 />
               </label>
               <p>
-                Start and end use your device’s local time. Choose a past period of up to 24 hours.
+                Start and end use your device’s local time. Choose a fixed past period, including earlier years if needed. Each approval imports only the selected number of pages; unfinished history keeps its checkpoint for continuation.
               </p>
               <label className="block">
                 From

@@ -33,7 +33,7 @@ const state: SlackThreadRecoveryState = {
   canContinue: true,
   canRestart: true,
   window: {
-    start: "2026-01-01T00:00:00Z",
+    start: "2016-01-01T00:00:00Z",
     end: "2026-01-02T00:00:00Z",
     pageLimit: 1,
     expiresAt: "2026-01-03T00:00:00Z",

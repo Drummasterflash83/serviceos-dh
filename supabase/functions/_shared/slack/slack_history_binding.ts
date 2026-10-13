@@ -37,7 +37,6 @@ export async function readStoredHistoryScope(ctx:WorkerHandlerContext,clock:()=>
  if(!cfg||typeof cfg.consentReference!=='string'||!cfg.consentReference.trim()||cfg.consentReference.length>2000||cfg.approved!==true||!Number.isFinite(now)||typeof cfg.expiresAt!=='string'||!Number.isFinite(Date.parse(cfg.expiresAt))||Date.parse(cfg.expiresAt)<=now||!Number.isSafeInteger(cfg.maxPages)||cfg.maxPages<1||cfg.maxPages>10||typeof cfg.channelId!=='string'||typeof cfg.oldest!=='string'||typeof cfg.latest!=='string')return null;
  const scope:SlackHistoryScope={tenantId:ctx.tenantId,teamId:cfg.teamId,channelIds:[cfg.channelId],oldest:cfg.oldest,latest:cfg.latest,consentReference:cfg.consentReference,...(thread?{parentTimestamp:cfg.parentTimestamp}:{})};
  assertSlackHistoryScope(scope,ctx.tenantId,cfg.channelId,null);
- if(Number(cfg.latest)-Number(cfg.oldest)>86400)return null;
  const scopeKey=historyScopeKey(scope,cfg.channelId);
  const checkpoint=saved&&Object.keys(saved).length===0?{scopeKey,cursor:null,pages:0,complete:false}:saved;
  if(!checkpoint||checkpoint.scopeKey!==scopeKey||!Number.isSafeInteger(checkpoint.pages)||checkpoint.pages<0||checkpoint.pages>cfg.maxPages||typeof checkpoint.complete!=='boolean'||checkpoint.cursor!==null&&(typeof checkpoint.cursor!=='string'||checkpoint.cursor.length===0||checkpoint.cursor.length>1024)||checkpoint.complete&&checkpoint.cursor!==null)return null;

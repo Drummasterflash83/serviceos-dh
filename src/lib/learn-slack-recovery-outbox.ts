@@ -44,8 +44,8 @@ function checked(scope: RecoveryScope, d: RecoveryDraft): RecoveryDraft {
     !/^C[A-Z0-9]+$/.test(r.channelId) ||
     !Number.isFinite(Date.parse(r.start)) ||
     !Number.isFinite(Date.parse(r.end)) ||
-    Date.parse(r.end) <= Date.parse(r.start) ||
-    Date.parse(r.end) - Date.parse(r.start) > 86400000
+    Date.parse(r.start) < 0 ||
+    Date.parse(r.end) <= Date.parse(r.start)
   )
     throw Error("Saved recovery window could not be verified.");
   return {

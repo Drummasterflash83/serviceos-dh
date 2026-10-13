@@ -1,5 +1,13 @@
 # LEARN V1 production release plan
 
+> 13 October 04:08 BST: newer local Slack historical-range and request-accounting
+> changes are verified offline but are **not included** in the staged release
+> below. They require a new paired SQL/runtime/frontend candidate and hosted
+> acceptance. Do not treat the older 23-package manifest or runtime preflight as
+> proof that the current worktree is packaged or ready to promote. No hosted
+> deployment, capture setting or production domain changed in this work.
+> [Local evidence](evidence/learn-slack-historical-ranges-2026-10-13.json).
+
 > 13 October 03:50 BST: the current frontend is staged production deployment
 > `dpl_5j57s4SuMBQMkzKEpM2BgX4BE9m6`, Git `d535085`, including the TEST-accepted
 > operator LEARN entry and embedded layout. Its rendered login targets production,
