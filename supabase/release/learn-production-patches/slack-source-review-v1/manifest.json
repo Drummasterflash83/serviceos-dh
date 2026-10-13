@@ -1,0 +1,29 @@
+{
+  "version": "slack-source-review-release/1",
+  "state": "prepared_not_applied",
+  "project": "tgbnakbxwcqjeimygroz",
+  "sourcePath": "supabase/migrations/20261101940000_learn_slack_source_review.sql",
+  "sourceSha256": "d3794e8ed87fcc0ac3cdf0b601a9c5e70826db575251b66c2c5ba7ac893625fa",
+  "applySha256": "1412df0bf74b96f9df2eebb9e61319fe448035ad28a7597c97b19567d9006d6e",
+  "rollbackSha256": "9c7f9db6237ba3f20d1d11387b6f0b46176229d89fe749187555e9ebd4059db2",
+  "changedSignatures": [
+    "learn_slack_message_kind(jsonb)",
+    "learn_slack_store_records(uuid,jsonb,jsonb,text)",
+    "learn_slack_campaign_threads_step(uuid,uuid)",
+    "learn_slack_campaign_read(uuid,uuid)"
+  ],
+  "newPermissions": false,
+  "newSchedules": false,
+  "newTables": false,
+  "baselineFrontend": "96e9336",
+  "runtimeChangedFiles": [
+    "_shared/slack/slack_message_kind.ts"
+  ],
+  "baselineVersions": {
+    "learn-slack-worker": 6,
+    "platform-worker": 66
+  },
+  "reviewedSubtype": "welcome_party",
+  "classification": "source_needs_review",
+  "rollbackLimitation": "If any welcome_party source has been retained, keep additive SQL; revert matching runtime only. Retained source evidence must not be made unreadable or deleted."
+}

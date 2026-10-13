@@ -132,3 +132,23 @@ has been inferred. Private aggregate evidence is retained in
 
 This work completes the original input-to-context requirement. The proposed richer
 customer-card UX remains discussion-only, as requested.
+
+## Initial source traversals completed — 13 October, 15:56 BST
+
+All four logged initial production passes completed: properties 25 pages,
+jobs 127 pages, customer contacts 1,552 target pages, and site contacts 871
+ target pages. Each retained a terminal complete checkpoint with no next cursor.
+The final source totals are 2,423 distinct properties, 12,633 jobs and 2,969
+contacts across the two contact passes. Contacts are not additive per pass:
+shared provider contact identities may appear in more than one property context.
+The final account has no queued/running/retrying source job; existing communication,
+recording and voicemail totals were preserved.
+
+This establishes traversal of available API results for the approved initial
+scope. It does not establish complete canonical identity mapping, provider-deleted
+history, recurring capture or comprehensive customer cards. The earlier card-design
+hold was superseded by Chris's later approved customer/job UX changes; identity
+merges still require evidence. Next: verify recurring capture and reconcile the
+remaining classification/relationship gaps through the logged operator workflow.
+
+Evidence: [initial production capture](evidence/learn-commusoft-initial-live-complete-2026-10-13.json).

@@ -7,6 +7,40 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 16:02 BST — all four initial LIVE Commusoft source traversals complete.**
+
+- Production retained 2,423 property sources (1,552 customers and 871 sites),
+  12,633 jobs and 2,969 distinct contact sources across customer/site passes.
+  Customer contacts checked 1,552/1,552 targets; site contacts checked 871/871.
+  All four cursors exhausted, the final account has no active source job, and
+  before/after input totals did not decrease. Recurring capture and comprehensive
+  canonical customer/job/contact publication remain unfinished.
+- Slack recovery controls are LIVE on frontend `96e9336`, with Slack worker v6
+  and platform-worker v66. One bounded diagnostic retry per held channel found
+  three `welcome_party` records and one hidden `tombstone`. These pages remain
+  held with original checkpoints. A narrowly retained source-review treatment
+  for `welcome_party` is now schema/runtime verified (Slack v7/platform v67),
+  with provider retry and frontend notice still pending; withheld-marker
+  handling is separate and must prevent stale-content resurrection.
+- Seven ongoing voicemail routes completed the 30-minute monitor without a new
+  message or capture error. All 255 voicemail pairs remain retained; first new
+  arrival acceptance is still unproven. The 510-file independent backup and
+  sampled paired audio restore are verified; daily voicemail backup is unfinished.
+- A fresh 291,316,647-byte database archive restored in isolation, matched native
+  archive contents/catalog and recovered all 18 Vault secrets against live values.
+  Its encrypted package passed local decrypt verification. The independent copy
+  stopped with an unconfirmed S3 request; a subsequent exact-object lookup found
+  no completed object. No independent restore from this new package is claimed.
+  The prior independent database snapshot remains available. Bounded transfer
+  timeout diagnosis is in progress; no production source was changed.
+- The current LIVE frontend contains the clearer card read-error wording and the
+  previously verified representative customer → job → Slack excerpt journey.
+  Full LEARN V1 acceptance remains open, including all-input coverage, canonical
+  relationships, scoring evidence, ongoing operation and recovery automation.
+
+Evidence: [initial Commusoft capture](evidence/learn-commusoft-initial-live-complete-2026-10-13.json).
+
+
 **13 October, 15:19 BST — first LIVE customer → Commusoft job → genuine Slack excerpt verified.**
 
 - The logged exact-source replay succeeded on its first scheduled attempt. Its

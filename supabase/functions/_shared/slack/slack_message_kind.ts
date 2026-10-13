@@ -21,7 +21,7 @@ function unsupported(message: Record<string, unknown>, code: string): never {
   });
   throw error;
 }
-export function slackMessageKind(message: Record<string, unknown>): 'conversation' | 'channel_activity' {
+export function slackMessageKind(message: Record<string, unknown>): 'conversation' | 'channel_activity' | 'source_needs_review' {
   if (message.type !== undefined && message.type !== 'message' ||
       message.hidden !== undefined && message.hidden !== false ||
       message.subtype !== undefined && typeof message.subtype !== 'string') {
@@ -31,6 +31,9 @@ export function slackMessageKind(message: Record<string, unknown>): 'conversatio
   if (activity.has(message.subtype as string)) return 'channel_activity';
   // Fail without advancing the checkpoint: unknown, redacted or event-envelope
   // data is not silently skipped or reported as captured conversation content.
+  // Observed provider subtype, undocumented in the reviewed official reference.
+  // Retain it for review; do not infer activity or conversation semantics.
+  if (message.subtype === 'welcome_party') return 'source_needs_review';
   if (message.subtype === 'ekm_access_denied') throw new SlackHistoryTransportError('slack_history_content_unavailable', false);
   unsupported(message, 'slack_history_message_subtype_unsupported');
 }

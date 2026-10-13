@@ -419,6 +419,13 @@ export function LearnSlackCampaigns({
             Coverage describes this fixed window and observed threads. It does not prove deleted or
             inaccessible Slack history was available.
           </p>
+          {campaign.sourceNeedsReviewCount !== undefined && campaign.sourceNeedsReviewCount > 0 && (
+            <p role="status" className="text-sm text-muted-foreground">
+              {campaign.sourceNeedsReviewCount.toLocaleString()} saved Slack records need source review.
+              Their content is retained, but they are not yet used as conversations or for scoring.
+              Available thread replies are captured separately.
+            </p>
+          )}
           <div className="overflow-auto">
             <table className="w-full text-sm">
               <thead>

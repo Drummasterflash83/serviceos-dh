@@ -425,3 +425,31 @@ The existing local binding file is
 Routine unattended backup encryption should need only the public recipient and
 scoped Writer access. Private recovery material belongs in a separate restore
 workflow; that unattended database workflow remains to be implemented and tested.
+
+### Database object transfer deadline — 13 October
+
+The post-voicemail encrypted package is 294,441,336 bytes. Its first copy attempt
+ended around the previous shared 120-second absolute request limit, reporting
+only `s3_request_unconfirmed`. A subsequent exact, read-only destination check
+found no object. The old generic receipt cannot establish whether the request
+hit that absolute deadline, a socket timeout, or another transport failure.
+
+The fixed database transport now allows **eight minutes per object upload or
+complete streamed download**, within the supervisor's ten-minute role lifetime.
+Database metadata/receipt calls and recording-object transfers retain two-minute
+limits. Connection timeout remains ten seconds and idle-socket timeout remains
+two minutes. No configurable destination, additional bytes, multipart upload,
+automatic retry, IAM change, key change or schedule has been introduced.
+
+Failures expose only fixed classifications: `s3_request_deadline_exceeded`,
+`s3_request_cancelled`, `s3_transport_timeout`, or the existing bounded stream
+codes. Provider exception messages, headers and private object paths are not
+included. A timeout still means an uncertain operation; it never proves absence.
+The existing retry path checks the exact immutable object before deciding whether
+to copy and retains conditional `If-None-Match: *`, hash, version and receipt gates.
+
+The 27 targeted synthetic transport/runner checks pass, including database-only
+budget selection, unchanged metadata/recording limits, cancellation and deadline
+stream cleanup, single-attempt conditional uploads, unknown acknowledgement
+recovery, and invalid destination/size/hash rejection. No real upload was performed
+as part of this change; live retry remains a separate supervised operation.

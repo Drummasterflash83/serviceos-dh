@@ -1,0 +1,25 @@
+{
+  "state": "schema_and_runtime_live_verified",
+  "completedAt": "2026-10-13T15:06:16.292Z",
+  "schemaPlanSha256": "fc821ab2be8b3273600c8d2827fea68eb68fdb06ce1b2aba48f409a9535469ee",
+  "runtimePreparationSha256": "355a8545be2d6803b43c5769ca4eaea9e296a85c4c90d0ef2bcbfbad077e620e",
+  "endpoints": [
+    {
+      "name": "learn-slack-worker",
+      "version": 7,
+      "sha256": "ce8325d75361d0399468c34ea3197d6cf6e928c8cb27c02b7603599268d2109b"
+    },
+    {
+      "name": "platform-worker",
+      "version": 67,
+      "sha256": "ba3bf1e986a3e5cd21cb36527281b39ef2c5f36a5c3a6a900df2d27dda580ce7"
+    }
+  ],
+  "unrelatedFunctionsUnchanged": true,
+  "existingSourceCountsPreserved": true,
+  "accessAndSchedulesPreserved": true,
+  "providerRetryVerified": false,
+  "frontendReviewNoticeReleased": false,
+  "sourceSemanticsConfirmed": false,
+  "scope": "Visible welcome_party retained as source_needs_review, no conversation or scoring inference; tombstone remains held."
+}

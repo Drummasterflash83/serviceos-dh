@@ -461,3 +461,10 @@ test("recovery reader validates tenant/campaign/account/request and strips untru
       /could not be verified/,
     );
 });
+
+test('held source coverage is explicit, nonnegative, and absent for older snapshots rather than invented zero',async()=>{
+ const db=(data:any)=>({rpc:async()=>({data,error:null})});
+ assert.equal((await readCampaign(db({...progress,sourceNeedsReviewCount:2}),id(1),id(3))).sourceNeedsReviewCount,2);
+ assert.equal((await readCampaign(db(progress),id(1),id(3))).sourceNeedsReviewCount,undefined);
+ for(const value of [-1,0.5,null,'2',Infinity])await assert.rejects(readCampaign(db({...progress,sourceNeedsReviewCount:value}),id(1),id(3)));
+});

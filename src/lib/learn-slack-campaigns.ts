@@ -51,6 +51,7 @@ export type CampaignChannel = {
   complete: boolean;
 };
 export type Campaign = {
+  sourceNeedsReviewCount?: number;
   tenantId: string;
   campaignId: string;
   revision: number;
@@ -273,6 +274,7 @@ export async function readCampaign(
       !count(d.requestsReserved) ||
       d.requestsReserved > d.requestBudget ||
       d.coverage !== "fixed_window_observed_threads" ||
+      (d.sourceNeedsReviewCount !== undefined && !count(d.sourceNeedsReviewCount)) ||
       d.requestAccounting !== "conservative_dispatch_reservations" ||
       !Array.isArray(d.channels) ||
       d.channels.length < 1 ||
