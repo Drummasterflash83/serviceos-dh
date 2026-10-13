@@ -1,4 +1,5 @@
 import { record } from "./receptionist-data.ts";
+import { practiceSpeakingPlans } from "./receptionist-speech.ts";
 
 export const PRACTICE_SECONDS = 180;
 
@@ -155,21 +156,17 @@ export function practiceAssistant(source: unknown, queryToolIds: string[]) {
       "style",
       "useSpeakerBoost",
       "speed",
+      "optimizeStreamingLatency",
+      "enableSsmlParsing",
+      "autoMode",
+      "cachingEnabled",
     ]),
     ...(record(a.transcriber).provider
       ? { transcriber: pick(record(a.transcriber), ["provider", "model", "language"]) }
       : {}),
     firstMessage: typeof a.firstMessage === "string" ? a.firstMessage : undefined,
     firstMessageMode: "assistant-speaks-first",
-    startSpeakingPlan: pick(record(a.startSpeakingPlan), [
-      "waitSeconds",
-      "smartEndpointingEnabled",
-    ]),
-    stopSpeakingPlan: pick(record(a.stopSpeakingPlan), [
-      "numWords",
-      "voiceSeconds",
-      "backoffSeconds",
-    ]),
+    ...practiceSpeakingPlans(a),
     maxDurationSeconds: PRACTICE_SECONDS,
     // Vapi's default web join window is only 15 seconds. Mobile permission
     // prompts and the WebRTC handshake can legitimately take longer.

@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-13",
+  "state": "published_configuration_and_software_verified_listening_pending",
+  "provider": {
+    "assistant": "Emma \u2013 Drummond Heating",
+    "versionBefore": 11,
+    "versionAfter": 13,
+    "voiceIdentityPreserved": true,
+    "modelAndTranscriberPreserved": true,
+    "waitSeconds": {
+      "before": 0.8,
+      "after": 0.4
+    },
+    "stopSpeakingPlan": {
+      "numWords": 0,
+      "voiceSeconds": 0.2,
+      "backoffSeconds": 0.8
+    },
+    "promptChange": "Seven natural-delivery bullets added within Voice and conduct; prior instructions preserved.",
+    "numberAssignmentsChanged": false
+  },
+  "practiceRuntime": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "versionBefore": 12,
+    "versionAfter": 13,
+    "sourceClosureSha256": "edc93c37829590c2f0e96c31d35b5411506ff0a17f2f6f9f67a0016e87de3fac",
+    "publishedArtifactSha256": "d1fa2f34be6e1b908aa4bc88043c7f9674c71ba831ab9d3140cfc519b11c9c19",
+    "sourceReadbackMatches": true,
+    "unauthenticatedStatus": 401,
+    "signedInReady": true,
+    "unrelatedFunctionsChanged": []
+  },
+  "tests": {
+    "passed": 29,
+    "failed": 0
+  },
+  "acceptance": {
+    "recordedListeningComparison": "pending",
+    "measuredLatencyImprovement": "not measured",
+    "newPaidCalls": 0
+  },
+  "rollback": {
+    "provider": "v12 for timing-only configuration; v11 for original configuration. Inspect version diff before restoring.",
+    "practice": "Retained production v12 downloaded source in private verification directory; preserve existing in-function JWT and tenant authorization."
+  }
+}
