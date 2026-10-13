@@ -89,13 +89,16 @@ and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
 ### Isolated LEARN TEST project (updated 13 October 2026)
 
-**Latest TEST deployment:** `dpl_821QqBty3MAXSeiJN8dhtDAsHQqD`, Git
-`65ef71dee3d2a43bb1fab924d1120a81fe3bd5a6`, now serves both stable TEST aliases.
-Its build badge and actual signed-in operator screen target TEST. Matched package
-092 and worker/scheduler installation passed preservation and idle HTTP checks.
-Campaign state reads are audited; no broader import was started. Protection
-remains `all`, and live production is unchanged.
-[Current TEST evidence](operations/evidence/learn-slack-campaign-hosted-2026-10-13.json).
+**Latest TEST deployment:** `dpl_5agREx9pF4kCMmC52BLmDzo8t31w`, Git
+`b46cb2dc0fd133c773d236e532fa74db8d732a68`, serves both stable TEST aliases.
+Its build badge and signed-in operator screen target TEST. QuickBooks connection
+and import empty states are verified against the matching installed TEST schema;
+no app/company is connected or capturing. Optional Slack recovery controls now
+follow backend capability metadata. Existing permissions and ordinary campaign
+reads remain intact. Protection remains `all`; live production is unchanged.
+The wider client overview still reports a check needing attention; this release
+is not acceptance of all workspace features or real QuickBooks capture.
+[Current TEST evidence](operations/evidence/learn-quickbooks-stable-test-2026-10-13.json).
 Older deployment details below are historical acceptance records.
 
 

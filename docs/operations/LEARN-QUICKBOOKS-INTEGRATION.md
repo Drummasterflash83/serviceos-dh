@@ -107,7 +107,7 @@ component, so it is available to both the client card and the logged OpenFolk
 customer view once that frontend is released. It loads on request, clears on
 actor/tenant/card/backend/environment changes and when the tab is hidden, and
 expires after one minute. Its frontend build and TypeScript checks pass; signed-in
-browser/visual acceptance and frontend deployment remain outstanding.
+finance-card browser/visual acceptance remains outstanding. The frontend is now on stable TEST as recorded below.
 
 - Explicit operator review links a captured QuickBooks customer to an existing
   tenant-owned card. No fuzzy matching, automatic parent/subcustomer roll-up or
@@ -269,25 +269,48 @@ An ordinary merge of LEARN `92834cd` and QuickBooks `7a5f2cd` produced
 QuickBooks dispatch. All 89 combined tests, TypeScript and the local build passed.
 The original d322 worktree and its inherited uncommitted changes remain untouched.
 
-Vercel built that exact Git commit as protected TEST preview
-`dpl_4XaKvd6y88DBwo21pqZBcnVv3N6H`; it is READY and its login screen renders.
-Protection remains `all`; both stable TEST aliases still serve their previous
-`dpl_821QqBty3MAXSeiJN8dhtDAsHQqD` deployment. No live release occurred.
-Signed-in acceptance and rendered backend verification remain open. A compatibility
-check also found TEST lacks `learn_slack_campaign_recovery_read`, exposed by the
-merged operator interface. Reconcile this before stable TEST promotion; this is a
-release compatibility gap, not a new QuickBooks credential approval requirement.
-See [preview evidence](evidence/learn-quickbooks-test-preview-2026-10-13.json).
+The initial protected preview `dpl_4XaKvd6y88DBwo21pqZBcnVv3N6H` was not
+promoted because TEST lacked the newer optional Slack recovery helpers. That gap
+is now resolved by explicit backend capability metadata, rather than installing
+unrelated Slack capture changes. Existing campaign permissions, pagination and
+rows are unchanged. Unsupported advanced controls are withheld and explained.
+
+### Stable TEST frontend released — 13 October, 18:22 UTC
+
+Git `b46cb2dc0fd133c773d236e532fa74db8d732a68`, deployment
+`dpl_5agREx9pF4kCMmC52BLmDzo8t31w`, now serves both `test.openfolk.ai` and
+`serviceos-learn-test-allkin.vercel.app`. Vercel reports READY, the TEST project
+retains `all` protection, and both HTTPS login routes redirect anonymous requests
+to Vercel authentication. Chris's existing signed-in session survives the release.
+The rendered build badge confirms `b46cb2d`, Preview, and TEST backend
+`saatxzwxvdvqevbnskxy`.
+
+Signed-in Drummonds TEST acceptance verified the QuickBooks connection and import
+panels: no app registration, no connected company, no captured records, disabled
+input, and disabled connect/start controls. Slack campaign status loads and says
+advanced recovery is unavailable in TEST, while preserving ordinary controls.
+No console warnings/errors were observed on these checked routes. Opening the
+client overview also showed an unresolved report-status check; this observation
+is not an all-clear for the broader workspace and was not attributed to this
+release without a baseline comparison.
+
+The 78 combined QuickBooks/Slack tests, TypeScript and frontend build pass.
+The exact optional-capability migration passed isolated SQL checks and hosted
+rollback/install checks with permissions and unrelated functions unchanged.
+No credentials, provider calls, new grants, captures or production changes were
+made. Real sandbox OAuth/import/refresh/disconnect, finance-card visual acceptance,
+mobile acceptance and the production release are still open.
+[Release evidence](evidence/learn-quickbooks-stable-test-2026-10-13.json).
 
 ## Needs finishing
 
 1. Complete configuration and production assessment for the created Intuit app.
    The portal shows App details 17% and Compliance 0%; these are provider progress
    indicators, not percentages of ServiceOS implementation completed.
-2. TEST foundation and three standalone endpoints are installed and checked above.
+2. TEST foundation and four standalone endpoints are installed and checked above.
    Provision the development app secret server-side and save its recovery copy
    securely. Add the exact TEST callback to the development app registration.
-   Deploy/reconcile the signed-in frontend and configure the independently gated
+   The signed-in frontend is released; configure the independently gated
    worker dispatcher only for an explicitly defined sandbox import scope.
 3. Exercise real sandbox authorisation, token rotation and signed-in operator
    controls through TEST. Disconnect/provider revocation and recovery are now
