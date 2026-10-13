@@ -1,0 +1,157 @@
+{
+  "state": "sandbox_oauth_and_bounded_import_verified",
+  "checkedAt": "2026-10-13T19:46:40.239Z",
+  "project": "saatxzwxvdvqevbnskxy",
+  "company": "Sandbox Company_US_1",
+  "environment": "sandbox",
+  "callback": {
+    "state": "downloaded_runtime_closures_verified",
+    "project": "saatxzwxvdvqevbnskxy",
+    "checkedAt": "2026-10-13T19:35:40.772Z",
+    "reports": [
+      {
+        "name": "quickbooks-oauth-callback",
+        "version": 7,
+        "artifactHash": "85373b50148d06f7594059cdc48d7a4b2faabdfc8f07825c22c4942fe1c2b13e",
+        "matchingRuntimeModules": 9,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "f0df75ae73615f90d312b9c49c29441b539520a7233d70072c7a33297eda04e3"
+      }
+    ],
+    "providerRequests": 0,
+    "limitations": [
+      "Source closure readback and public guards only; no company OAuth, accounting requests or hosted token rotation."
+    ]
+  },
+  "provider": {
+    "checkedAt": "2026-10-13T19:41:45.108Z",
+    "events": [
+      {
+        "operation": "company_info",
+        "environment": "sandbox",
+        "status": 200,
+        "outcome": "response",
+        "observedAt": "2026-10-13T19:36:10.984Z",
+        "intuitTid": "1-6ace8829-1e4435a567ca310d40278630"
+      },
+      {
+        "operation": "token",
+        "environment": "oauth",
+        "status": 200,
+        "outcome": "response",
+        "observedAt": "2026-10-13T19:36:09.219Z",
+        "intuitTid": "1-6ace8829-7ad867fe742377116f92e9e2"
+      }
+    ]
+  },
+  "first": {
+    "run": "8d80fb5d-cd24-420f-bf73-e316d53c454d",
+    "environment": "sandbox",
+    "company": "Sandbox Company_US_1",
+    "startedAt": "2026-10-13T19:42:24.996Z",
+    "execution": "local exact worker with pinned run; hosted dispatcher remains disabled",
+    "steps": [
+      {
+        "claimed": 1,
+        "state": "saved"
+      },
+      {
+        "claimed": 1,
+        "state": "saved"
+      },
+      {
+        "claimed": 1,
+        "state": "saved"
+      },
+      {
+        "claimed": 1,
+        "state": "saved"
+      }
+    ],
+    "providerRequests": 4,
+    "productionChanges": 0,
+    "final": {
+      "state": "traversed",
+      "requestsUsed": 4,
+      "pagesSaved": 4,
+      "recordsObserved": 77,
+      "lastError": null
+    },
+    "state": "bounded_capture_verified",
+    "finishedAt": "2026-10-13T19:42:46.338Z"
+  },
+  "repeat": {
+    "run": "82eddbab-cdd6-422a-ae6c-3cd2fb693a73",
+    "environment": "sandbox",
+    "company": "Sandbox Company_US_1",
+    "startedAt": "2026-10-13T19:44:26.958Z",
+    "execution": "local exact worker with pinned run; hosted dispatcher remains disabled",
+    "steps": [
+      {
+        "claimed": 1,
+        "state": "saved"
+      },
+      {
+        "claimed": 1,
+        "state": "saved"
+      },
+      {
+        "claimed": 1,
+        "state": "saved"
+      },
+      {
+        "claimed": 1,
+        "state": "saved"
+      }
+    ],
+    "providerRequests": 4,
+    "productionChanges": 0,
+    "final": {
+      "state": "traversed",
+      "requestsUsed": 4,
+      "pagesSaved": 4,
+      "recordsObserved": 77,
+      "lastError": null
+    },
+    "state": "bounded_capture_verified",
+    "finishedAt": "2026-10-13T19:44:40.759Z"
+  },
+  "duplicateCheck": {
+    "checkedAt": "2026-10-13T19:45:13.787Z",
+    "counts": [
+      {
+        "entity": "CreditMemo",
+        "records": 1
+      },
+      {
+        "entity": "Customer",
+        "records": 29
+      },
+      {
+        "entity": "Invoice",
+        "records": 31
+      },
+      {
+        "entity": "Payment",
+        "records": 16
+      }
+    ],
+    "duplicateCountsStable": true
+  },
+  "final": {
+    "latest_records": 77,
+    "source_versions": 77,
+    "saved_pages": 8,
+    "observations": 154,
+    "canonical_links": 0,
+    "active_imports": 0,
+    "connection_status": "paused",
+    "input_enabled": false
+  },
+  "limitations": [
+    "Intuit sandbox sample company, not live Drummonds",
+    "Manual pinned worker execution, hosted dispatch disabled",
+    "Provider refresh/revocation/reconnect after revocation not yet verified",
+    "No canonical customer links, production deployment or live financial coverage"
+  ]
+}

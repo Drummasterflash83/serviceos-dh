@@ -92,17 +92,21 @@ and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
 ### Isolated LEARN TEST project (updated 13 October 2026)
 
-**Latest TEST deployment:** `dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq`, Git
-`c7744a8b0808bfb64b737e4b9ee453782cd2efa0`, serves both stable TEST aliases.
-It combines saved contact details with the QuickBooks callback/connection guide
-fix from `91c2f3a`. Candidate auth is bound to TEST; stable signed-in contact reads
-and operator audit pass. Protection remains `all`. The previous TEST rollback
-target is `dpl_FxxyFqJaMM4bzkRAhXScmajU1cN7`. QuickBooks schema/runtime and owner
-credential-rotation status are recorded in the QuickBooks integration handover;
-this frontend acceptance does not establish a real accounting-company connection.
-Optional Slack recovery controls still follow backend capability metadata.
-The wider client overview has a check needing attention. Live production is unchanged.
-[Guide release evidence](operations/evidence/learn-quickbooks-guide-test-2026-10-13.json).
+**Latest observed TEST deployment:** `dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq`, Git
+`c7744a8b0808bfb64b737e4b9ee453782cd2efa0`, serves both stable TEST aliases
+(verified 13 October, 19:38 UTC). This shared release includes QuickBooks callback
+guidance from `91c2f3a`; protection remains `all`. The rotated development app
+is active in TEST and Intuit sandbox company authorization now succeeds.
+The company is `Sandbox Company_US_1`, not Drummonds' live accounts.
+TEST callback runtime v7 has a verified same-project gateway routing correction;
+the remaining QuickBooks endpoints retain their previously verified v2 releases.
+See [integration evidence and limits](operations/LEARN-QUICKBOOKS-INTEGRATION.md#hosted-gateway-callback-correction-and-sandbox-connection--13-october-1936-utc).
+Production QuickBooks is not installed or connected.
+This shared frontend also includes saved contact details: signed-in contact reads
+and operator audit passed in the parent release. Its prior rollback target is
+`dpl_FxxyFqJaMM4bzkRAhXScmajU1cN7`. Optional Slack recovery controls still follow
+backend capability metadata. The wider client overview has a check needing attention.
+
 Older deployment details below are historical acceptance records.
 
 
