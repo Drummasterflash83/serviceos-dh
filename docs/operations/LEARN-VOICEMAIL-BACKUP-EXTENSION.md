@@ -228,3 +228,26 @@ That snapshot was observed at **13 October 00:16:29 UTC**, before the voicemail 
 The completed Restore-only paired-file receipt matches the exact pinned inventory selection: both original-email and audio hashes/sizes agree; audio decodes to **25.344 seconds**; no production source was accessed during file restore, and restored private files were removed. Decoding does not establish human listening or application recovery.
 
 Local-only comparison evidence: `.verification-results/voicemail-independent-database-comparison-v2-20261013/report.json`. The earlier attempt failed before Docker creation because system Python 3.9 lacks `hashlib.file_digest`; its receipt is retained separately. The corrected runner uses bounded streaming hashing. Four synthetic tests cover every relationship field, missing snapshot rows, mismatched tenant/intake pairing, and changed restore hashes/size/identity/source-access/decode claims.
+
+### Fresh independent relationship recovery verified — 13 October, 16:39 BST
+
+The post-import snapshot from **14:27:12 UTC** was encrypted, copied to the
+approved London database bucket, downloaded using the separate Restore identity
+and restored without production access. Recovery verified 1,726,602 native rows,
+2,652 operational rows, 18 Vault secrets and 2,977 recording relationships.
+The encrypted object contains 294,441,336 bytes; the underlying database archive
+is 291,316,647 bytes, SHA-256
+`185354036d21576770808d831fe971f4bb43d149bbd6148e58dadde6b4e14c3a`.
+
+The actual restored snapshot then passed all five selected voicemail links:
+intake, retained email source, voicemail message, raw storage and audio storage.
+Both independently restored files match the selected pair and the audio decodes
+to 25.344 seconds. No migrations or synthetic rows were added; both disposable
+containers were removed. This supersedes the earlier missing-relationship result
+for the old snapshot. Human listening and full application recovery remain open.
+Later arrivals are outside the fixed snapshot and file inventories; recurring
+voicemail/database backup and scheduled-run acceptance remain unfinished.
+
+Sanitised evidence: [independent recovery](evidence/learn-independent-recovery-2026-10-13.json).
+Private final receipt: `.verification-results/database-backup-3c0b2419-f200-4425-bba2-ad947953f14e/verified-7f51d0ae-0264-4bef-bcab-4420574cf107.json`.
+Private relationship comparison: `.verification-results/voicemail-independent-postimport-comparison-20261013/report.json`.

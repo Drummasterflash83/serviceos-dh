@@ -7,6 +7,27 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 16:39 BST — fresh independent database and voicemail relationships recovered.**
+
+- The approved encrypted AWS copy was independently downloaded, decrypted and
+  restored in isolation. All 1,726,602 native archive rows, 2,652 operational rows,
+  18 Vault secrets and 2,977 recording relationships verified. Disposable restore
+  containers were removed; production was unchanged.
+- A second isolated read matched the sampled voicemail's intake, original-email
+  source, voicemail message and both private storage records to the separately
+  restored email/audio pair. All five relationships passed; audio decoded to
+  25.344 seconds. This closes the prior pre-import-snapshot relationship gap.
+- Slack recovered-page continuation now omits the one-use marker from normal
+  successors. The separately guarded repair of the existing child refused its
+  receipt/state check and remains held at zero attempts, pending read-only diagnosis.
+  Source history, access, schedules and campaign limits were preserved.
+- The snapshot is from 14:27 UTC: it does not cover later arrivals or releases.
+  Human listening, full application recovery and dependable daily database/voicemail
+  operation remain unverified. Daily voicemail backup preparation is in progress.
+
+Evidence: [independent recovery](evidence/learn-independent-recovery-2026-10-13.json).
+
+
 **13 October, 16:25 BST — independent copy downloaded; final restore resuming.**
 
 - The fresh encrypted database package was copied to the approved independent
