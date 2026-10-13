@@ -7,6 +7,22 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 10:57 BST — first private production voicemail verified; Slack production scope prepared.**
+
+- One Office mailbox 601 voicemail is now saved live with original/source integrity,
+  duplicate replay and signed-in browser audio verified. The bounded route is paused;
+  existing Chris/Heidi access is preserved. This is not complete voicemail coverage.
+- Nine of eleven retained references were found in Office Gmail. Eight older messages
+  stopped at signature-time validation; two references returned 404. Historical
+  verification is being repaired without bypassing signature/content checks.
+- Slack metadata now verifies 180 public channels (20 active, 160 archived) and 135
+  accessible private channels. Production still has no Slack connection/messages.
+  [Exact public rollout](LEARN-SLACK-PRODUCTION-ROLLOUT.md) is prepared for its
+  reserved production credential/import decision. Private visibility controls are
+  unfinished; private channels remain in scope, and DMs remain deferred.
+- [Voicemail execution evidence](LEARN-VOICEMAIL-OFFICE-ROLLOUT.md) supersedes earlier
+  statements that no production voicemail exists. No full V1 completion is claimed.
+
 **13 October, 10:03 BST — the matched release, processing fixes and input overview are live.**
 
 ### Working and verified
