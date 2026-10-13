@@ -1,6 +1,34 @@
 # LEARN live release — 13 October 2026
 
-## Latest checkpoint — 19:06 BST
+## Latest checkpoint — 20:35 BST
+
+**13 October, 20:35 BST — saved contact details verified in LIVE and stable TEST.**
+
+- LIVE now shows additional saved email/phone details beneath each contact, with
+  pagination, source and verification state. A signed-in operator opened two real
+  unverified endpoints; primary selections stayed unchanged and the read was audited.
+- The additive reader is installed in both environments. LIVE Git `a11f204`,
+  deployment `dpl_FEvZQUizXBraRu71hJtGciJTPZER`, serves all four existing aliases.
+  TEST Git `c7744a8`, deployment `dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq`, serves both
+  stable TEST aliases with protection `all`. It preserves the parallel QuickBooks
+  callback fix and finance panel; that QuickBooks work is not promoted to LIVE here.
+- Stable TEST signed-in acceptance shows an existing contact's primary email and
+  honestly reports zero additional details. Its matching operator audit is verified.
+  LIVE preservation retains 18,053 prior business-source versions, 4,505 pages,
+  88 links and all prior customer identity IDs. Access, schedules, connections,
+  flags and unrelated functions are unchanged. This is scoped preservation,
+  not a full-row hash of every production table.
+- Ten contact/context tests, TypeScript and both frontend builds passed. Exact
+  SQL envelopes and isolated access/pagination/rollback journeys preserve all
+  1,591,580 archived rows and seven sequences. No new hosted login or grant.
+- The saved-contact display gap and this TEST parity gap are fixed. Broader
+  customer publication, communication attribution, full historical/recurring
+  coverage, scoring and operational acceptance remain unfinished. Browser
+  acceptance here uses the operator; Heidi's own acceptance remains separate.
+
+[Release evidence](evidence/learn-contact-details-production-2026-10-13.json).
+
+## Previous checkpoint — 19:06 BST
 
 **13 October, 19:06 BST — account-holder review released; one real LIVE card verified.**
 

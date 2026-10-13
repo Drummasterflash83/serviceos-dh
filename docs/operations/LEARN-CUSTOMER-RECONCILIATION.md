@@ -110,8 +110,8 @@ claims every field of every production table was hashed.
 The latest observed report has 24 linked accounts, 828 proposals and 798 held
 accounts. This includes the known 98 exported customers absent from the API;
 reasons overlap. The UI/API site discrepancy also remains unresolved. Contacts,
-communication attribution, useful summaries, scoring, additional contact-point
-presentation and full operational acceptance remain separate delivery work.
+communication attribution, useful summaries, scoring and full operational acceptance remain separate delivery work. Additional
+contact-point presentation is now verified in LIVE and TEST.
 
 ## Contact follow-up acceptance, 13 October 20:04 BST
 
@@ -129,7 +129,8 @@ arbitrary candidate. A departmental label and two possible duplicates also remai
 held. Publication added 29 unverified, non-primary contact points and retained the
 five earlier contact links. No primary-field, consent or verification override was
 made for reused people. The live operator card displays a representative new
-contact, while additional contact-point presentation remains a separate gap.
+contact, and additional saved-contact presentation was subsequently verified in LIVE
+and TEST; see the contact-details release evidence.
 
 [Sanitised contact acceptance](evidence/learn-contact-reconciliation-2026-10-13.json)
 records the exact counts and preservation scope. No private contact details, source

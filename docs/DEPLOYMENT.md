@@ -43,17 +43,19 @@ Cloudflare-flavoured.
 ## Current live checkpoint — 13 October 2026
 
 The latest verified LIVE frontend is Git
-9091ce4970a319aacb6959227382532688957e93, deployment
-dpl_BdmR3wuhjf1ghYYN58sQQgeYbMpG, serving the four existing openfolk.ai aliases.
-Matching account-holder review SQL is installed in TEST and production. One real
-LIVE account-to-card journey verifies separate account/contact identities and
-logged review; broader customer/job publication and provider coverage remain
-incomplete. The preceding Slack worker v9/platform worker v70 release remains.
+`a11f2041b84cb572a5ce8b65c97057e005bf4da3`, deployment
+`dpl_FEvZQUizXBraRu71hJtGciJTPZER`, serving the four existing openfolk.ai aliases.
+The matching additive contact-details reader is installed in TEST and production.
+Signed-in LIVE verifies two saved unverified contact endpoints without changing
+primary selections; the operator read is audited. Prior source/identity/access/
+schedule preservation checks pass. Full customer and communication coverage,
+scoring and operational acceptance remain incomplete.
 Use **https://www.openfolk.ai** for LIVE and **https://test.openfolk.ai** for TEST.
-This release does not update the TEST frontend.
+TEST is separately built from the merged QuickBooks/contact checkpoint below;
+QuickBooks changes have not been promoted by this LIVE frontend release.
 
 See the [live release log](operations/LEARN-LIVE-RELEASE-2026-10-13.md) and
-[release evidence](operations/evidence/learn-customer-account-holder-production-2026-10-13.json).
+[release evidence](operations/evidence/learn-contact-details-production-2026-10-13.json).
 Older preview sections below are historical preparation, not current live status.
 
 ## Preview deployments
@@ -90,13 +92,14 @@ and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
 ### Isolated LEARN TEST project (updated 13 October 2026)
 
-**Latest TEST deployment:** `dpl_HnmKvRxyTC79N3jBWQ4vVExpoRn5`, Git
-`3817044c4a5d2dd893769c8aa239169f4526181f`, serves both stable TEST aliases.
-It adds the responsive `/quickbooks` connection guide. Hosted connect/disconnect
-views and sign-in links are verified, with protection still `all`. Existing TEST
-QuickBooks schema/runtime remains installed. The development app is inactive
-pending owner secret rotation; an earlier OAuth start has no bound company or
-token and no imports exist. This does not establish real QuickBooks acceptance.
+**Latest TEST deployment:** `dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq`, Git
+`c7744a8b0808bfb64b737e4b9ee453782cd2efa0`, serves both stable TEST aliases.
+It combines saved contact details with the QuickBooks callback/connection guide
+fix from `91c2f3a`. Candidate auth is bound to TEST; stable signed-in contact reads
+and operator audit pass. Protection remains `all`. The previous TEST rollback
+target is `dpl_FxxyFqJaMM4bzkRAhXScmajU1cN7`. QuickBooks schema/runtime and owner
+credential-rotation status are recorded in the QuickBooks integration handover;
+this frontend acceptance does not establish a real accounting-company connection.
 Optional Slack recovery controls still follow backend capability metadata.
 The wider client overview has a check needing attention. Live production is unchanged.
 [Guide release evidence](operations/evidence/learn-quickbooks-guide-test-2026-10-13.json).
