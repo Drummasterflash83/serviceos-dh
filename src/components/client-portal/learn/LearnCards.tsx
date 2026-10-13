@@ -607,7 +607,7 @@ function CardDetail({
                       : brief.closed.length
                         ? "Recorded outcomes are listed in the findings below."
                         : jobBrief?.completed
-                          ? "Recorded job status is completion evidence; it does not establish payment or a completion time."
+                          ? "Published job statuses record completion; they do not establish payment, verification or a completion time."
                           : "Missing completion evidence does not mean no work was done."}
                   </small>
                   {kind === "customer" && (
@@ -619,7 +619,7 @@ function CardDetail({
                   )}
                   <small>
                     {jobBrief &&
-                      `${jobBrief.open} open · ${jobBrief.pending} pending · ${jobBrief.on_hold} on hold · ${jobBrief.closed} closed${jobBrief.unconfirmed ? ` · ${jobBrief.unconfirmed} status${jobBrief.unconfirmed === 1 ? "" : "es"} to confirm` : ""}. Published statuses may lag the provider.`}
+                      `${jobBrief.open} open · ${jobBrief.pending} pending · ${jobBrief.on_hold} on hold · ${jobBrief.closed} closed${jobBrief.unconfirmed ? ` · ${jobBrief.unconfirmed} status${jobBrief.unconfirmed === 1 ? "" : "es"} to confirm` : ""}${jobBrief.verificationPending ? ` · ${jobBrief.verificationPending} job record${jobBrief.verificationPending === 1 ? "" : "s"} await verification` : ""}. Published statuses may lag the provider.`}
                   </small>
                 </article>
                 <article>
