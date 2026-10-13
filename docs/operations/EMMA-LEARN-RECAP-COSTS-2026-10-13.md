@@ -28,6 +28,10 @@
   Vercel deployment `dpl_5fXdTZQh6pZf7VkCnEqn1eFy4E1s`, with existing live aliases
   verified after promotion. The frontend and both production endpoints were
   released separately.
+- Final frontend polish (nullable provider counts, singular call labels and
+  panel spacing) deployed from `ac4810b38067c38005f761c057c290645b0a0177` as
+  `dpl_BvP3y1kBsr9wcLxrXVESEB6HqL6x`; promotion to the existing live aliases
+  passed the release adapter's readback. All 36 focused tests passed.
 - Production `receptionist-practice` v15 and `receptionist-calls` v15 contain the
   corrected spoken quantities and working aggregate request respectively.
   Source readback matches the candidate; unauthenticated requests return 401.
