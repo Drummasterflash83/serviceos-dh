@@ -231,18 +231,19 @@ Production keys remain locked behind the portal's tasks:
 - Public end-user licence agreement and privacy policy.
 - Host domain, launch, disconnect, connect/reconnect URLs; exact OAuth redirects.
 - At least one app category, intended regulated industries and hosting geography.
-- App assessment questionnaire (not accessible until industries are selected).
+- App assessment questionnaire (now unlocked; not yet completed or submitted).
 - The basic information form also requests a 100×100 JPG/PNG logo under 1 MB.
 
-The app sidebar Settings route works. The Regulated industries tab was clipped
-outside the browser viewport; a temporary 1600px viewport made it usable, and the
-viewport was reset afterwards. Its options are Insurance, Investment / financial
-planning, Lending, Payments / money movement, and None of the above. The proposed
-selection is None of the above for this accounting-read connector. Automatic
-approval review rejected saving that declaration without explicit confirmation;
-an approval question is pending. Nothing was selected or saved. The assessment
-remains locked until this selection is saved. No compliance declarations have
-been submitted. Chris requested new drafts and instructed that this first setup use
+Chris explicitly approved the regulated-industries declaration **None of the
+above** on 13 October. It was saved and verified in Intuit: the Save button became
+disabled and Compliance's Start questionnaire became enabled. The previous
+automatic approval-review block for that declaration is resolved. The assessment
+is now open in Arc; no questionnaire answers have been saved or submitted.
+The extension connection subsequently stalled; native Arc accessibility controls
+can read the questionnaire. The temporary extension viewport still needs resetting
+when that connection recovers.
+
+Chris requested new drafts and instructed that this first setup use
 Drummonds' company details. The [privacy draft](../legal/SERVICEOS-PRIVACY-POLICY-DRAFT.md)
 and [end-user terms](../legal/SERVICEOS-TERMS-DRAFT.md) now cover Drummonds' deployment,
 using verified DRUMMOND HEATING LTD. details. Chris clarified that this is an
@@ -256,6 +257,27 @@ or policy submissions have been made, and drafts are not effective agreements.
 Do not invent public URLs or certify unverified controls. The hosted TEST
 foundation now exists, but no real company is connected and no accounting
 import has been accepted.
+
+### Assessment preparation — observed questionnaire, 13 October
+
+The questionnaire has six sections. This is a preparation record, not a submitted
+declaration or an assertion that all controls pass. Conditional follow-up questions
+may appear after answers are selected.
+
+| Section | Observed questions and supported position |
+| --- | --- |
+| General | Regulatory complaints/investigations, legal-counsel review and sanctions history require Chris's factual answers; questions have been sent. Security-policy compliance requires an evidence review. The app is relevant to business/accounting workflows. ServiceOS includes generative AI; do not answer “no” merely because this initial connector does not send QuickBooks records to AI. |
+| App information | Custom application; server-side Web/SaaS calls; accounting reads only in this connector. Current registration is for Drummonds' internal deployment, with reusable architecture for future clients. It is not a platform that lets outside developers obtain QuickBooks API access, and clients do not need to create their own Intuit developer apps. Disclose the use of development tools accurately. Other ServiceOS inputs include Commusoft, email, telephony and Slack. Review exact available options before entering answers. |
+| Authorization | Intuit asks explicitly about sandbox/non-production connect, disconnect and reconnect testing. This has **not** yet been performed. It also asks about refresh frequency, failed auth retries, reconnect prompts, discovery-document endpoints, expired access/refresh tokens, invalid grants, CSRF and reliance on offline OAuth tools. Existing code/SQL tests support some controls, but cannot be substituted for the missing provider lifecycle run. |
+| API usage | API categories and per-customer call frequency. The initial connector uses Accounting entity queries and CompanyInfo; bounded imports reserve requests and pace requests per realm. No perpetual live sync schedule has been enabled. Do not invent a polling frequency or claim reports/webhooks/CDC are implemented. |
+| Error handling | API/syntax/validation error tests, `intuit_tid` capture, troubleshooting logs and in-app support. The current transports discard response trace IDs; capture/persistence is still an implementation gap. Sanitised errors and bounded retry behaviour have tests. Verify support access and actual retained diagnostics before answering. |
+| Security | Notifiable breach history and who assesses risks require Chris's factual answers; questions have been sent. Client secrets are designed for server-side Vault storage, but the real app secret has not been provisioned. MFA, CAPTCHA and WebSocket use require a current app/configuration check. Authorised OpenFolk operators can access tenant information for support: do not claim only an individual customer can ever see their information. Ordinary tenants remain isolated. |
+
+Next provider acceptance step is a real sandbox lifecycle run after the exact
+callback and secure development-credential destination are prepared. Production
+keys and live company authorization remain outstanding. An untested disconnect
+migration is currently local work in progress and must not be included in a release
+bundle until its concurrency, uncertain-outcome and recovery checks pass.
 
 ## Preservation and release
 
