@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-10-13T22:52:25.179662+00:00",
+  "status": "protected_candidate_ready_not_promoted",
+  "liveBaseline": {
+    "sha": "a11f2041b84cb572a5ce8b65c97057e005bf4da3",
+    "deployment": "dpl_FEvZQUizXBraRu71hJtGciJTPZER"
+  },
+  "candidate": {
+    "sha": "f03a96328924d9c6de4414143444c7f6949328e1",
+    "deployment": "dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR",
+    "url": "https://serviceos-2dd4pasyn-allkin.vercel.app",
+    "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+    "state": "READY",
+    "autoAssignCustomDomains": false,
+    "protection": "all_except_custom_domains"
+  },
+  "localValidation": {
+    "typescript": "pass",
+    "quickbooksUnitTests": 8,
+    "prebuildTests": 47,
+    "build": "pass",
+    "manifestHashes": "matched"
+  },
+  "browserChecks": {
+    "connectGuide": "rendered",
+    "disconnectGuide": "rendered by link navigation",
+    "authenticationTarget": "https://tgbnakbxwcqjeimygroz.supabase.co",
+    "signInEnabled": true,
+    "signedInAcceptance": false
+  },
+  "limits": [
+    "No production sign-in session at the protected candidate; no identity or grant created.",
+    "Main-document response cache headers still need direct verification.",
+    "No live alias promotion, policy publication, Intuit submission, production credential or company consent.",
+    "No real Drummonds accounting import."
+  ],
+  "excludedFrontendChanges": [
+    "Commusoft job refresh",
+    "Slack recovery"
+  ],
+  "liveQuickbooksHttpBeforeRelease": 404
+}

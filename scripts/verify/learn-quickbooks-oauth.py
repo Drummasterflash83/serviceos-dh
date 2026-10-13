@@ -78,6 +78,12 @@ try:
     sql(finance)
     sql(source('scripts/verify/learn-quickbooks-finance.assert.sql'))
     print('PASS: reviewed customer links, identity drift, currency-separated exact totals, conflict exclusions, tenant/role fences and retained finance audit.')
+    retained_finance = source('supabase/migrations/20261102040000_learn_quickbooks_retained_finance.sql')
+    sql(retained_finance.replace('\ncommit;', '\nrollback;'))
+    assert sql("select to_regprocedure('learn_quickbooks_retained_finance_access(uuid,text)') is null") == 't'
+    sql(retained_finance)
+    sql(source('scripts/verify/learn-quickbooks-retained-finance.assert.sql'))
+    print('PASS: paused intake preserves authorised finance reads; master switch, link-write fence, tenant/role/banned-user checks and source history preserved.')
     # Export is an operations query, not a new RPC/grant. Verify real SQL scope,
     # exact decimals and credential exclusion against the retained fixture.
     sql("reset role;insert into learn_quickbooks_source_versions(tenant_id,environment,realm_id,entity,external_id,content_hash,payload,sync_token) values(fixture_id(2),'production','other-realm','Customer','other','other-hash','{\"Id\":\"other\",\"DisplayName\":\"OTHER_TENANT_EXPORT_SENTINEL\"}',0);")

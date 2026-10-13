@@ -2,6 +2,26 @@
 
 Updated 13 October 2026. Workstream: `codex/quickbooks-integration`.
 
+## Current state — 13 October, 22:53 UTC
+
+- Stable TEST is on e048b49, with signed-in operator acceptance and the correct
+  TEST backend. It retains 77 sandbox records; the sandbox grant is revoked.
+- Real sandbox connection, repeat import, token refresh and API revocation are
+  verified. No Drummonds live company has connected.
+- Production schema and four handlers are installed but inert. Existing runtime
+  preservation is reconciled. No production Intuit credentials/imports exist.
+- The retained-finance reader correction below is installed and verified in TEST
+  and production. Pausing intake no longer prevents authorised retained reads.
+- A QuickBooks-only frontend candidate is READY on the verified live baseline,
+  with production auth-target and connect/disconnect guide checks passed. It is
+  protected and unpromoted; signed-in production and response-header checks remain.
+- Policy adoption/publication, owner Intuit security-policy commitment, production
+  keys/company consent, final frontend response checks and live accounting
+  acceptance remain open. Original retention verification gate is unchanged.
+
+Earlier dated sections below are implementation history and may describe stages
+superseded by later evidence; they are not current launch claims.
+
 ## Scope and ownership
 
 Chris confirmed QuickBooks Online and authorised using the Drummonds developer
@@ -974,3 +994,45 @@ DPA mechanisms. Owner/account-chain and applicable transfer review remain distin
 from those findings. No contracts were accepted or public policies published.
 
 [Stable TEST release evidence](evidence/learn-quickbooks-stable-test-cache-2026-10-13.json).
+
+
+## Retained finance with intake off — 13 October, 22:43 UTC
+
+The TEST browser reproduced an access error when an existing authorised operator
+read saved finance with QuickBooks intake disabled. Both read RPCs previously
+required the capture-enabled flag. The new private retained-read authority helper
+keeps the same tenant owner/admin or logged OpenFolk admin checks, active-login
+check and LEARN master availability, while separating reads from the intake flag.
+The customer-link mutation and all import/credential paths retain their original
+input-enabled guards. No new user, grant, provider connection or capture was added.
+
+The full disposable PostgreSQL suite passed, including rollback, existing OAuth/
+import/finance/disconnect/export tests, exact amounts, cross-tenant and staff/
+banned-user denials, master-off denials, paused link-write denial and preservation.
+Both hosted projects passed rollback rehearsals, exact installed body/permission
+readback, unchanged source/link/flag/grant checks and unauthorised RPC denials.
+TEST retained all 77 source versions; production still has zero QuickBooks records.
+
+Using the existing signed-in TEST operator, saved finance now returns an honest
+empty linked view; all 29 retained sandbox customer candidates are browsable as
+25 plus four. Both reads have the recorded operator reason and sandbox scope.
+No synthetic accounting identity was attached to a real customer card. This is
+read-path acceptance, not a claim of live accounting linkage or completeness.
+
+[Verified correction](evidence/learn-quickbooks-retained-finance-2026-10-13.json).
+
+### Isolated live frontend candidate — 13 October, 22:53 UTC
+
+Prepared Git `f03a96328924d9c6de4414143444c7f6949328e1` directly from the
+verified live `a11f2041` baseline. It contains the QuickBooks guide, existing
+operator controls and customer finance view, plus explicit HTML cache settings.
+The 14-file source/configuration allowlist excludes the separate Commusoft job
+refresh and Slack recovery changes. The protected Vercel build is READY; its
+production sign-in target and both guide modes are verified. No live aliases
+were moved, and signed-in production acceptance remains pending. Local checks
+passed: TypeScript, eight QuickBooks tests, 47 prebuild checks and full build.
+
+The candidate is backed up on `codex/quickbooks-live-release`, with automatic Git
+deployment disabled, and merged into the complete integration history. The
+[release evidence](evidence/learn-quickbooks-isolated-frontend-2026-10-13.json)
+distinguishes these checks from outstanding company connection/import acceptance.
