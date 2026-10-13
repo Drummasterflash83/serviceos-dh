@@ -34,3 +34,11 @@ Vapi v12 retains the response-wait change alone; v11 is the original full config
 The downloaded production practice v12 source is retained at `rollback-source/supabase/functions/` beneath that private directory, with `_shared` modules restored to their import locations and its original gateway setting in `supabase/config.toml`. Roll back only this endpoint through the established Supabase CLI path, then verify source, denied unauthenticated access and signed-in readiness again.
 
 The deployment initially stopped because the source comparator treated formatting/transpilation differences as mismatches. A separate read-only AST comparison verified all six baseline modules, with negative controls for changed values, authentication and HTTP methods. Only then was deployment allowed. [Sanitised release evidence](evidence/emma-natural-delivery-2026-10-13.json).
+
+## Follow-up: 5% speaking-speed trial (v14)
+
+Chris explicitly requested 5% faster spoken cadence on phone and software, preserving Emma's voice and clear numbers/postcodes. Vapi v14 is published with 100% version traffic. The reviewed provider diff contained only one added field: `voice.speed: 1.05` (previous UI default 1.00). The voice ID, model, prompt, turn timing and routing were unchanged. The published prompt's existing measured-pace / do-not-rush-digits instruction was checked before publishing.
+
+No new software deployment was needed: the previously verified production practice adapter passes `voice.speed` from the current published assistant into each new practice conversation. A local projection check retained 1.05, the same voice ID and clear-number instructions. The signed-in live practice screen is ready with Test Emma enabled. No call was placed; actual spoken cadence and postcode/number intelligibility still need listening acceptance. Start a fresh practice session. Restore Vapi v13 to undo this speed-only trial; the practice adapter will inherit that speed as well.
+
+Private screenshot evidence: `.verification-results/emma-speed-20261013/vapi-v14-speed.png`. Earlier v13 acceptance statements above remain historical, not evidence of a recorded v14 test.
