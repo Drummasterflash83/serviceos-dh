@@ -1,0 +1,84 @@
+{
+  "state": "candidate_verified_not_installed",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "baseline": "retained native archive plus 24 reviewed packages; later unrelated Slack runtime changes excluded",
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "sourceSha256": "90b47cf7bea1e290e5b9f5d9f1364f73fb341b04c317eb4e122c271af586fcb9",
+  "transactionRollback": true,
+  "envelopeChecks": [
+    "test:wrong_target",
+    "test:wrong_digest",
+    "test:reader_drift",
+    "test:late_failure",
+    "test:rollback",
+    "production:wrong_target",
+    "production:wrong_digest",
+    "production:reader_drift",
+    "production:late_failure",
+    "production:rollback"
+  ],
+  "productionReleaseSha256": "52b876838a4e8348c53c2e205484de16844f9c5a3ae1ee9796e16ce66746b449",
+  "testReleaseSha256": "8c892a5cef903b7ba56ca0551cfee22a8b82effdd20f289eb82e2104e9f69326",
+  "journeys": [
+    "existing_business_context",
+    "paginated_contact_details",
+    "tenant_card_person_isolation",
+    "inactive_relationships",
+    "operator_audit_revocation_failure",
+    "shared_invalid_unverified_details"
+  ],
+  "sourcePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 394,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "36f2096c8089e45be45ee45d44a5ce6fcb69722520765bc2670682902cffd61a",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "containmentAfter": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "containerRemoved": true,
+  "clientTestsPassed": 10,
+  "typecheckPassed": true,
+  "frontendSourceFiles": {
+    "src/lib/learn-customer-contact-points.ts": "6d7ca12d28af4a367caf0bb5a9cb0a185adf78a7414cd134d0a2addff6678378",
+    "src/components/client-portal/learn/LearnCustomerContactPoints.tsx": "8949a24f77efe195846d9cb53c0f3b9012dd8ff4da4de796ccbd1b76d08fa666",
+    "src/components/client-portal/learn/LearnCustomerBusinessContext.tsx": "049ec5ebd3c2f9afc7fc379d805b0b27102c5fd11e6e62656cb4ccb7deb3cff6"
+  },
+  "buildPassed": true
+}

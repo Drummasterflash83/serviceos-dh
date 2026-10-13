@@ -7,6 +7,78 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 20:39 BST — ingestion advancing; two archived Slack holds diagnosed.**
+
+- LIVE has 11,900 saved Slack messages. The active-channel campaign has 15 of 20
+  approved channel windows complete; the archive campaign has 98 of 160 complete.
+  Thread discovery is complete for 20 active and 138 archived channels. Remaining
+  history/replies and the ongoing-capture handoff are not complete.
+- In the preceding hour, 576 Commusoft jobs, 53 Slack reply jobs and six Slack
+  history jobs succeeded. Commusoft has a currently leased running job in phase 4
+  (site contacts); its first full-cycle watermark is still absent. Do not restart
+  this active cycle merely because full coverage remains unfinished.
+- Two archived channels were held for an unsupported subtype. One retained
+  diagnostic identifies `tabbed_canvas_updated`; official documentation reviewed
+  does not establish its semantics. Prepare exact source-only retention and
+  explicit review accounting, retaining hidden/content-availability guards;
+  do not infer conversation, customer or performance meaning from the name.
+- The other failure had no structural diagnostic. One exact recovery was committed
+  through the existing logged operator UI under the original campaign allowance.
+  Job `12df1bd3-d9cf-4379-8e7f-199faf0b6b19` is queued as last verified at 20:39 BST.
+  Observe that handle before further action; do not create another recovery or
+  restart the campaign. No history page or unsupported record was skipped.
+- Published source relationships remain 24 customers, 11 sites, 31 jobs and 22
+  contacts, with one reviewed Slack work-context link. Broad source-to-card
+  reconciliation is a major remaining delivery requirement, not a cosmetic task.
+
+[Current input evidence](evidence/learn-input-progress-2026-10-13-2036.json).
+
+**13 October, 20:35 BST — saved contact details verified in LIVE and stable TEST.**
+
+- LIVE now shows additional saved email/phone details beneath each contact, with
+  pagination, source and verification state. A signed-in operator opened two real
+  unverified endpoints; primary selections stayed unchanged and the read was audited.
+- The additive reader is installed in both environments. LIVE Git `a11f204`,
+  deployment `dpl_FEvZQUizXBraRu71hJtGciJTPZER`, serves all four existing aliases.
+  TEST Git `c7744a8`, deployment `dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq`, serves both
+  stable TEST aliases with protection `all`. It preserves the parallel QuickBooks
+  callback fix and finance panel; that QuickBooks work is not promoted to LIVE here.
+- Stable TEST signed-in acceptance shows an existing contact's primary email and
+  honestly reports zero additional details. Its matching operator audit is verified.
+  LIVE preservation retains 18,053 prior business-source versions, 4,505 pages,
+  88 links and all prior customer identity IDs. Access, schedules, connections,
+  flags and unrelated functions are unchanged. This is scoped preservation,
+  not a full-row hash of every production table.
+- Ten contact/context tests, TypeScript and both frontend builds passed. Exact
+  SQL envelopes and isolated access/pagination/rollback journeys preserve all
+  1,591,580 archived rows and seven sequences. No new hosted login or grant.
+- The saved-contact display gap and this TEST parity gap are fixed. Broader
+  customer publication, communication attribution, full historical/recurring
+  coverage, scoring and operational acceptance remain unfinished. Browser
+  acceptance here uses the operator; Heidi's own acceptance remains separate.
+
+[Release evidence](evidence/learn-contact-details-production-2026-10-13.json).
+
+**13 October — saved contact details candidate verified; release in progress.**
+
+- The contact card now distinguishes primary selections from additional saved
+  contact points. An expandable, paginated reader shows channel, label, verification
+  state and source without changing identity, primary, consent or verification.
+- Ten client contract tests, TypeScript and the final production build pass.
+  An isolated native restore plus 24 release packages proves paging, tenant/card/
+  person isolation, inactive relationship denial, shared/invalid endpoints, audited
+  operator reads, revoked authority and failure when audit recording fails.
+- Exact TEST and production envelopes pass wrong-target/digest, dependency drift,
+  late-failure and rollback checks. All 1,591,580 archived rows and seven sequences
+  remain identical; the disposable containers were removed. Live dependencies
+  match those tested. No fixture users or grants are retained or added to hosting.
+- Installation, matching frontend deployment and signed-in real-data acceptance
+  must be recorded before this display gap is considered fixed in LIVE. This
+  candidate does not complete communication attribution or broader reconciliation.
+
+[Candidate evidence](evidence/learn-contact-details-candidate-2026-10-13.json) ·
+[Exact additive release](../../supabase/release/learn-production-patches/contact-details-v1/README.md).
+
 **13 October, 20:04 BST — seventeen LIVE contact relationships verified.**
 
 - Reviewed the 22 retained contact sources attached to the twenty newly reconciled

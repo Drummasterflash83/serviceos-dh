@@ -1,0 +1,125 @@
+{
+  "version": "learn-input-progress/1",
+  "observedAt": "2026-10-13T19:36:25.693055+00:00",
+  "commusoft": [
+    {
+      "phase": 4,
+      "state": "window_active",
+      "enabled": true,
+      "watermark": null,
+      "cycleEnd": "2026-10-13T16:02:03.332+00:00"
+    }
+  ],
+  "slackMessages": 11900,
+  "slackCampaigns": [
+    {
+      "enabled": true,
+      "requests": 2953,
+      "budget": 10000,
+      "expires": "2026-10-20T09:30:00+00:00",
+      "closed": null,
+      "threads": {
+        "queued": 16,
+        "captured": 248,
+        "observed": 261
+      },
+      "channels": {
+        "thread_queued": 5,
+        "campaign_window_complete": 15
+      },
+      "discoveryComplete": 20
+    },
+    {
+      "enabled": true,
+      "requests": 1816,
+      "budget": 20000,
+      "expires": "2026-10-20T09:30:00+00:00",
+      "closed": null,
+      "threads": {
+        "queued": 50,
+        "captured": 13,
+        "observed": 92
+      },
+      "channels": {
+        "needs_review": 2,
+        "thread_active": 40,
+        "window_active": 20,
+        "campaign_window_complete": 98
+      },
+      "discoveryComplete": 138
+    }
+  ],
+  "jobOutcomesLastHour": [
+    {
+      "total": 53,
+      "status": "succeeded",
+      "job_type": "slack.thread_sync"
+    },
+    {
+      "total": 9,
+      "status": "queued",
+      "job_type": "slack.thread_sync"
+    },
+    {
+      "total": 576,
+      "status": "succeeded",
+      "job_type": "commusoft.source_sync"
+    },
+    {
+      "total": 2,
+      "status": "queued",
+      "job_type": "slack.history_sync"
+    },
+    {
+      "total": 1,
+      "status": "running",
+      "job_type": "commusoft.source_sync"
+    },
+    {
+      "total": 6,
+      "status": "succeeded",
+      "job_type": "slack.history_sync"
+    }
+  ],
+  "currentJobCounts": [
+    {
+      "type": "slack.thread_sync",
+      "status": "queued",
+      "count": 40
+    },
+    {
+      "type": "slack.history_sync",
+      "status": "queued",
+      "count": 20
+    },
+    {
+      "type": "commusoft.source_sync",
+      "status": "running",
+      "count": 1
+    }
+  ],
+  "canonicalSourceLinks": {
+    "job": 31,
+    "site": 11,
+    "contact": 22,
+    "customer": 24
+  },
+  "slackReviewedContexts": 1,
+  "heldPageDiagnosis": {
+    "observedAt": "2026-10-13T19:39:06.659558+00:00",
+    "knownStructuralSubtype": "tabbed_canvas_updated",
+    "classificationNotEstablished": true,
+    "otherPageRecoveryJob": "12df1bd3-d9cf-4379-8e7f-199faf0b6b19",
+    "otherPageRecoveryState": "queued",
+    "reason": "One exact failed-page recovery committed through existing signed-in operator controls; original campaign scope, budget and checkpoint retained.",
+    "officialReference": "https://docs.slack.dev/reference/events/message/",
+    "referenceLimit": "The reviewed official reference and a targeted official-docs/Slack SDK search did not establish semantics for this observed subtype. Do not classify as conversation or performance evidence by its name."
+  },
+  "limitations": [
+    "Counts are saved observations, not proof of complete historical coverage.",
+    "Commusoft first recurring cycle has not advanced its watermark.",
+    "Slack history/replies and recurring handoff remain unfinished.",
+    "No failed page was skipped; the queued recovery must be observed, not duplicated.",
+    "Broader customer publication and communication attribution remain incomplete."
+  ]
+}

@@ -43,17 +43,19 @@ Cloudflare-flavoured.
 ## Current live checkpoint — 13 October 2026
 
 The latest verified LIVE frontend is Git
-9091ce4970a319aacb6959227382532688957e93, deployment
-dpl_BdmR3wuhjf1ghYYN58sQQgeYbMpG, serving the four existing openfolk.ai aliases.
-Matching account-holder review SQL is installed in TEST and production. One real
-LIVE account-to-card journey verifies separate account/contact identities and
-logged review; broader customer/job publication and provider coverage remain
-incomplete. The preceding Slack worker v9/platform worker v70 release remains.
+`a11f2041b84cb572a5ce8b65c97057e005bf4da3`, deployment
+`dpl_FEvZQUizXBraRu71hJtGciJTPZER`, serving the four existing openfolk.ai aliases.
+The matching additive contact-details reader is installed in TEST and production.
+Signed-in LIVE verifies two saved unverified contact endpoints without changing
+primary selections; the operator read is audited. Prior source/identity/access/
+schedule preservation checks pass. Full customer and communication coverage,
+scoring and operational acceptance remain incomplete.
 Use **https://www.openfolk.ai** for LIVE and **https://test.openfolk.ai** for TEST.
-This release does not update the TEST frontend.
+TEST is separately built from the merged QuickBooks/contact checkpoint below;
+QuickBooks changes have not been promoted by this LIVE frontend release.
 
 See the [live release log](operations/LEARN-LIVE-RELEASE-2026-10-13.md) and
-[release evidence](operations/evidence/learn-customer-account-holder-production-2026-10-13.json).
+[release evidence](operations/evidence/learn-contact-details-production-2026-10-13.json).
 Older preview sections below are historical preparation, not current live status.
 
 ## Preview deployments
@@ -100,6 +102,11 @@ TEST callback runtime v7 has a verified same-project gateway routing correction;
 the remaining QuickBooks endpoints retain their previously verified v2 releases.
 See [integration evidence and limits](operations/LEARN-QUICKBOOKS-INTEGRATION.md#hosted-gateway-callback-correction-and-sandbox-connection--13-october-1936-utc).
 Production QuickBooks is not installed or connected.
+This shared frontend also includes saved contact details: signed-in contact reads
+and operator audit passed in the parent release. Its prior rollback target is
+`dpl_FxxyFqJaMM4bzkRAhXScmajU1cN7`. Optional Slack recovery controls still follow
+backend capability metadata. The wider client overview has a check needing attention.
+
 Older deployment details below are historical acceptance records.
 
 

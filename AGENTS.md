@@ -17,6 +17,13 @@
   customer/contact/site/job model, cards and scoring framework.
 - Prioritise a read-only Drummonds Commusoft API connection for Monday, 12 October.
   Verify account access, coverage and end-to-end sync before calling it live.
+- Chris clarified on 13 October that Commusoft is the source of truth for
+  Drummonds' current job codes (for example `001`, `008`, `016`). Preserve codes
+  as strings, including leading zeros. QuickBooks may carry older codes (for
+  example `15b`, `13a`); preserve those on their original financial records.
+  Cross-provider job links need an explicit, evidenced tenant-scoped mapping;
+  do not overwrite Commusoft codes, infer mappings from these examples, or treat
+  a service/job-type code as a unique job identity without verifying its meaning.
 - OpenFolk is the operator controller for clients, module/submodule availability,
   connector health, diagnostics and recovery. Customer-facing status should be calm
   and actionable; never invent successful processing or hide material stale data.
