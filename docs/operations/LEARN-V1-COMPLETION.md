@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 15:19 BST — first LIVE customer → Commusoft job → genuine Slack excerpt verified.**
+
+- The logged exact-source replay succeeded on its first scheduled attempt. Its
+  unchanged source version now has a matching public-channel visibility proof.
+  Signed-in customer and job cards show the same retained communication; the
+  expandable excerpt contains the actual outstanding job questions. This verifies
+  one reviewed relationship, not complete customer matching or AI understanding.
+- One initial customer read failed; a fresh read returned the expected timeline.
+  The generic owner/admin warning misclassifies an unclassified read failure and
+  has a local wording correction (22 existing card/communication checks passed),
+  awaiting frontend release. The dedicated original Slack source reader remains unavailable;
+  the retained excerpt and provenance are available.
+- Customer contacts completed all 1,552 customer targets (2,402 contact records at
+  completion). The 871-site contact pass is still running; at least 425 supervised
+  requests have verified. Complete contact coverage and recurring Commusoft capture
+  remain open.
+- Seven ongoing voicemail routes are enabled under a dependency-aware monitor;
+  20 observations have seen no new arrival. All 255 published pairs are retained.
+  First-arrival import and playback acceptance remain unproven.
+- Independent backup finalized all 255 original emails and 255 audio files
+  (37,423,346 bytes). At 15:23 BST, a separate Restore identity verified one matched
+  pair and decoded 25.344 seconds of audio without source access. Isolated database
+  relationships, listening and recurring voicemail backups remain unfinished.
+- Slack held-page recovery is locally prepared and rehearsed, not deployed. Four
+  channels still need observed structural diagnostics and recovery. The active
+  voicemail monitor must finish before shared-runtime publication.
+- The live frontend now also includes the separately verified Emma recap/cost
+  release from `ac4810b`; see its release record. QuickBooks work has moved to the
+  separate **Quick Books Integration** chat and is not counted as completed here.
+
+Evidence: [current production checkpoint](evidence/learn-live-customer-slack-progress-2026-10-13.json).
+
+
 **13 October, 14:22 BST — 255 LIVE voicemail/source pairs; transcript display and playback verified.**
 
 - The final seven current-template sources imported successfully; two replays retained

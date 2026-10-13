@@ -1,0 +1,37 @@
+{
+  "state": "metadata_inventory_verified_copy_pending",
+  "observedFrom": "2026-10-13T13:32:46.170Z",
+  "observedUntil": "2026-10-13T13:34:40.325Z",
+  "buckets": [
+    {
+      "sourceBucket": "learn-voicemail-sources",
+      "objects": 255,
+      "bytes": 23622647,
+      "sourceRequests": 1285,
+      "inventoryFileSha256": "d6b669ab68e8eef43ec98c161a8d3e742e7079ca49b4261d55f2ac9f340c6959",
+      "reconciliationSha256": "21c0c183433bdc9fccf08ef47f8a3f92fb74d949b0ad549fe75a02a6a3279ace"
+    },
+    {
+      "sourceBucket": "receptionist-voicemails",
+      "objects": 255,
+      "bytes": 13800699,
+      "sourceRequests": 297,
+      "inventoryFileSha256": "391ce44ad30518726e3f6c256476da1f2cb23f2bc92cd1bf648f31a3afc5067c",
+      "reconciliationSha256": "dceb8c2856193ba32c236128444df0fd1ca3ea912adfdae291fa850b34a32a37"
+    }
+  ],
+  "exactObjects": 510,
+  "exactSourceBytes": 37423346,
+  "matchedRawAudioPairs": 255,
+  "missingObjects": 0,
+  "orphanObjects": 0,
+  "preparedAudioIntakes": 0,
+  "managementRequests": 3,
+  "sourceRequests": 1582,
+  "sourceBytesDownloaded": 0,
+  "sourceWrites": 0,
+  "awsRequests": 0,
+  "backupComplete": false,
+  "transferPlanSha256": "002a089d745a6d76982586da80faaf87479e6d1d97a26e97e29693ffee927ae3",
+  "concurrentArrivalHandling": "Inventories are immutable non-atomic snapshots. Recheck each selected revision and source linkage before/after copy. New objects are not silently added; retain separately for next reviewed inventory. If source rows/files change, pause, preserve existing receipts and re-inventory; never claim current complete coverage from older manifests."
+}

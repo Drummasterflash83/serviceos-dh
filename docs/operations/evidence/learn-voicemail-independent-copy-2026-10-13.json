@@ -1,0 +1,35 @@
+{
+  "observed_at": "2026-10-13T14:23:42.345Z",
+  "environment": "production_backup",
+  "scope": "retained 255 voicemail pairs from the fixed 13 October inventory",
+  "destination": "existing OpenFolk London recording backup bucket and Drummonds prefix",
+  "new_credentials": 0,
+  "new_permissions": 0,
+  "source_writes": 0,
+  "audio": {
+    "objects": 255,
+    "bytes": 13800699,
+    "manifest_finalized": true
+  },
+  "original_emails": {
+    "objects": 255,
+    "bytes": 23622647,
+    "manifest_finalized": true
+  },
+  "total_objects": 510,
+  "total_bytes": 37423346,
+  "source_revision_and_destination_bytes_verified": true,
+  "independent_restore": {
+    "identity": "existing read-only Restore",
+    "files": 2,
+    "bytes": 139356,
+    "checksums_match": true,
+    "audio_decoded_seconds": 25.344,
+    "source_access": false,
+    "temporary_content_removed": true,
+    "listening_verified": false
+  },
+  "isolated_database_relationships": "pending comparison; prior snapshots predate these imports",
+  "daily_voicemail_backup": "not configured",
+  "complete_operational_recovery": false
+}
