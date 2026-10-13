@@ -178,5 +178,5 @@ export function loadRuntimeAdapter(api, options={}) {
     JSON.stringify(plan.steps)===JSON.stringify(operations.operations.map(({id,kind,pinSha256})=>({id,kind,pinSha256}))),
     'Release plan, operations or candidate binding differs');
   return createProductionRuntimeAdapter({candidate:{...JSON.parse(candidateBytes),manifestSha256:sha(candidateBytes)},operations,
-    readBody:name=>readFileSync(join('.verification-results/production-runtime-wire-20261013-relevance',name)),api,...options});
+    readBody:name=>readFileSync(join('.verification-results/production-runtime-wire-20261013-planning',name)),api,...options});
 }

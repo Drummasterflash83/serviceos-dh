@@ -7,6 +7,42 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 03:27 BST — search fix included in the matching production candidate.**
+
+### Working and verified
+
+- Production package 023 now includes the function-local search-planning fix already
+  accepted in TEST. The candidate contains 23 SQL packages and 37 server endpoints;
+  its deployment sequence, scheduler transactions and adapters use matching hashes.
+- A network-isolated production-archive rehearsal applied all prerequisites and
+  verified package 023 preserves 387 tables, 1,591,580 rows and seven sequence states.
+  Function body, owner and permissions are unchanged. Wrong target, missing prior
+  package, reader drift, late failure, rollback and duplicate application were checked.
+- The prior RPC catalog matched when compared using the same PostgreSQL deparsing
+  context. All 19 reviewed dispatch sites and 51 RPC targets remain available.
+- Existing runtime bytes were verified unchanged, then booted again: 37 missing-auth
+  denials and 28 scheduler caller checks passed. All 45 local release tests pass.
+  No production or TEST state changed during this preparation.
+
+### Needs finishing
+
+- Execute the remaining live release gates: fresh independent recovery, current
+  hosted-state and drain checks, signed-in production journeys and monitored rollout.
+  This rehearsal uses the retained 12 October archive; it is not a fresh live backup.
+- Finish full input coverage, ongoing capture, broader customer/contact publication,
+  phone transcription/AI and evidence-backed cards/scoring. Two historical Slack
+  messages are verified in TEST; full history and real replies remain unfinished.
+
+### Blocked externally
+
+- The existing founder-access decision, live sign-in, TEST AI access and 1Password
+  recovery unlock remain pending. The bounded Slack historical approval has already
+  been exercised and does not need repeating.
+
+[Production planning evidence](evidence/learn-production-review-planning-2026-10-13.json).
+
+### Previous TEST search milestone
+
 **13 October, 03:14 BST — intermittent retained-job search failure diagnosed and fixed in TEST.**
 
 ### Working and verified

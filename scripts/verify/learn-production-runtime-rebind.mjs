@@ -13,9 +13,16 @@ const {database:priorDb,...priorRuntime}=old,{database:currentDb,...currentRunti
 if(JSON.stringify(priorRuntime)!==JSON.stringify(currentRuntime)||currentDb.length!==priorDb.length+1||
  JSON.stringify(currentDb.slice(0,-1))!==JSON.stringify(priorDb))throw Error('Only one additive SQL package may differ');
 const rehearsal=parse(rehearsalPath);
-if(!['production_commusoft_recurring_rehearsed_offline','production_slack_context_rehearsed_offline'].includes(rehearsal.state)||!rehearsal.containerRemoved||
- !rehearsal.journey?.passed||JSON.stringify(rehearsal.packages)!==JSON.stringify(currentDb.map(p=>p.sha256))||
- rehearsal.originalArchivePreservation?.state!=='all_archived_copy_rows_and_sequences_match'||
+const priorJourney=['production_commusoft_recurring_rehearsed_offline','production_slack_context_rehearsed_offline'].includes(rehearsal.state)&&
+ rehearsal.journey?.passed&&JSON.stringify(rehearsal.packages)===JSON.stringify(currentDb.map(p=>p.sha256))&&
+ rehearsal.originalArchivePreservation?.state==='all_archived_copy_rows_and_sequences_match';
+const planningOnly=rehearsal.state==='production_review_planning_rehearsed_offline'&&
+ currentDb.at(-1).path.endsWith('/023_commusoft_review_planning.sql')&&rehearsal.packages===currentDb.length&&
+ rehearsal.packageSha256===currentDb.at(-1).sha256&&rehearsal.bodyOwnerAndAclUnchanged&&
+ rehearsal.otherSchemaUnchanged&&rehearsal.priorReceiptsUnchanged&&rehearsal.permissionProbePassed&&
+ rehearsal.packageRollbackVerified&&rehearsal.duplicateRejected&&
+ JSON.stringify(rehearsal.negativeChecks)===JSON.stringify(['wrong_target','missing_prerequisite','reader_drift','late_failure']);
+if(!(priorJourney||planningOnly)||!rehearsal.containerRemoved||
  rehearsal.preservation?.state!=='all_archived_copy_rows_and_sequences_match')throw Error('Matching successful SQL rehearsal required');
 for(const p of currentDb)if(sha(readFileSync(p.path))!==p.sha256||sha(readFileSync(p.path.replace('.sql','.manifest.json')))!==p.manifestSha256)throw Error('SQL package changed');
 const bundleBytes=readFileSync(join(bundleDir,'report.json')),bundle=JSON.parse(bundleBytes);
@@ -43,7 +50,7 @@ const derivation={state:'unchanged_runtime_evidence_carried_forward',observedAt:
  originalBundleReportSha256:sha(bundleBytes),originalBootReportSha256:sha(bootBytes),
  sqlRehearsalReportSha256:sha(readFileSync(rehearsalPath)),
  runtimeInputsUnchanged:true,artifactBytesUnchanged:true,newBootExecution:false,productionChanged:false,
- explanation:'Only the ordered SQL package set changed. All endpoint metadata, source bytes, entrypoints and JWT settings remain identical. These exact retained executable bytes passed the original offline boot; the added package passed its separate full-schema journey.', addedDatabasePackage:currentDb.at(-1).path};
+ explanation:'Only the ordered SQL package set changed. All endpoint metadata, source bytes, entrypoints and JWT settings remain identical. These exact retained executable bytes passed the original offline boot; the added package passed its separate full-schema rehearsal.', addedDatabasePackage:currentDb.at(-1).path};
 for(const file of current.files){const path=join(destination,'stage/supabase/functions',file.path);mkdirSync(dirname(path),{recursive:true,mode:0o700});copyFileSync(join(bundleDir,'stage/supabase/functions',file.path),path);}
 for(const e of current.endpoints)copyFileSync(join(bundleDir,'artifacts',e.name+'.eszip'),join(destination,'artifacts',e.name+'.eszip'));
 const save=(name,value)=>writeFileSync(join(destination,name),JSON.stringify(value,null,2)+'\n',{flag:'wx',mode:0o600});

@@ -1,5 +1,17 @@
 # LEARN V1 production release plan
 
+> 13 October 03:27 BST: the current candidate includes package 023 (Commusoft
+> search planning), with 23 SQL packages, 37 unchanged runtime artifacts and a
+> refreshed 74-step release sequence. Full-schema preservation, rollback/guards,
+> 37 fresh runtime boot checks, 28 scheduler checks and 45 local release tests passed.
+> The frontend remains staged deployment `dpl_FHkfcrYZQ6bVmupHvvjse5pKUrFu`
+> (Git `cbb310c`); no production domain or backend was changed.
+> [Current evidence](evidence/learn-production-review-planning-2026-10-13.json).
+> Fresh recovery, live sign-in and execution/acceptance gates remain open.
+
+Earlier observations below are retained as history; current artifact identities
+come from the release manifests and the evidence above.
+
 > 13 October 02:07 BST: promotion now pins staged production deployment
 > `dpl_8YWHfdbY2SFVkKWsBcEz5LcnMVFn` (same Git `bebb19c`). Domain assignment was
 > disabled; the previous live deployment and all four production domains are unchanged.

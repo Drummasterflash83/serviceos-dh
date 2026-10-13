@@ -1,0 +1,30 @@
+{
+  "version": "learn-production-review-planning/1",
+  "status": "prepared_requires_release_rehearsal",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "sha256": "e2345323e52908add5fa12107efaf88540bf37f609f612d12e52aea298a0760d",
+  "priorSha256": "217a1d5eea6b0c632b2e4fa7d3b5ae251bfb388053a3d59f0283714c6f4e5ead",
+  "baselineArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101640000_learn_commusoft_review_planning.sql",
+      "sha256": "c140f3855a9236d85e0f62b3142eafc85af457023e047d70ea0cf471b591fd63"
+    }
+  ],
+  "newFunctions": [],
+  "changedFunctions": [
+    "learn_commusoft_work_review_search"
+  ],
+  "newTables": [],
+  "changedViews": [],
+  "newSequences": [],
+  "extendedTables": {},
+  "limitations": [
+    "Requires full-schema rehearsal and inclusion in the matched release before promotion.",
+    "Function-local query planning changes only; body, permissions, owner and retained sources remain unchanged.",
+    "No provider requests, accounts, grants, credentials or capture activation."
+  ]
+}

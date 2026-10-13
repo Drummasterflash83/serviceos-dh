@@ -1,0 +1,147 @@
+{
+  "version": "learn-production-review-planning/1",
+  "state": "matching_production_release_prepared_not_executed",
+  "observedAt": "2026-10-13T02:26:31.874Z",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "databasePackages": 23,
+  "runtimeEndpoints": 37,
+  "sourceFiles": 226,
+  "candidateManifestSha256": "272d30181d48e18f1e9541f1e54b00ab73a1ae1e8406f427fcaf3ee1d526fa29",
+  "sourceClosureSha256": "93f4946509cedf52cad18ae8b5fba14646de5e749e0e7ecc05d94b4f3a3902c0",
+  "bundleReportSha256": "d8e00b61de26d2956c8e294b04dbd70f5dd818032739c18ad622dcbf0add14df",
+  "bootReportSha256": "18b450bfc0b71dbe0f08ac7dee4cc967ed0682f874e81799c48f008272aca76f",
+  "runtimeWireReportSha256": "6889fb8f4eae877b0d21c0417974cc9c5447d15aa5fd8bba3156158999d46801",
+  "callerReportSha256": "dd7c27b271b4952b1b1d453117857f29c64acbe037c9ae9705a32e2c6dba02b5",
+  "callerManifestSha256": "272d30181d48e18f1e9541f1e54b00ab73a1ae1e8406f427fcaf3ee1d526fa29",
+  "callerChecks": 28,
+  "sources": [
+    {
+      "path": "scripts/backup/rehearse_production_review_planning.py",
+      "sha256": "222d117b4e964467a1420f71efa7c1a5409f05466a8e580e624e23b5a5463b26"
+    },
+    {
+      "path": "scripts/verify/learn-production-review-planning-candidate.mjs",
+      "sha256": "57438d3b2121e769c8f55b4abdaf2b6f9825914411562fc4c4af936de56a6450"
+    },
+    {
+      "path": "scripts/verify/learn-production-runtime-rebind.mjs",
+      "sha256": "1edffc9195024a8627ed14480597493e4cd505a016f8d0f8b4e3c084eb21719f"
+    },
+    {
+      "path": "scripts/verify/learn-production-runtime-boot.mjs",
+      "sha256": "a2cae4ef3c2a5809ab9d2ed32481832ef4cfb31dc8a62f088983231f75ad5ff3"
+    },
+    {
+      "path": "scripts/verify/learn-production-scheduler-callers.mjs",
+      "sha256": "a2abbc1d7ae2b16b07256465b7bc205c19156ce765d5881b07b93561dc101791"
+    },
+    {
+      "path": "scripts/verify/learn-production-scheduler-caller.fixture.ts",
+      "sha256": "60b5bf47bfa5372a1f49bd4d3feebebb52745e1dd2b7a97a2dc6e6e9790706f7"
+    },
+    {
+      "path": "scripts/verify/learn-production-runtime-transport.mjs",
+      "sha256": "f0692b1eeec80712472d6e4dbd4d60cd6abc84be34ff9197d1da951942a330a3"
+    },
+    {
+      "path": "scripts/verify/learn-production-rpc-bindings.mjs",
+      "sha256": "3425122a13b638d9f65683921cf3a2d5809fc409207b76a740ad321a35cfe44b"
+    }
+  ],
+  "databaseRehearsal": {
+    "reportSha256": "a8b0cac6a77055248cec00d9e2d7ed55d514ce5df2439f011471a6e5ede18c40",
+    "state": "production_review_planning_rehearsed_offline",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "archive": {
+      "bytes": 196872981,
+      "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+    },
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "offlineDrainSimulation": {
+      "archivedRunningRows": 14,
+      "originalValuesRestored": true,
+      "liveDrainProven": false
+    },
+    "priorReviewedFunctionCatalogMatches": true,
+    "negativeChecks": [
+      "wrong_target",
+      "missing_prerequisite",
+      "reader_drift",
+      "late_failure"
+    ],
+    "packageRollbackVerified": true,
+    "preservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 387,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "c9da107f33e27828bb451872aeed3391602ae2aeb1e8ea0f461517904be552af",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "packages": 23,
+    "packageSha256": "e2345323e52908add5fa12107efaf88540bf37f609f612d12e52aea298a0760d",
+    "bodyOwnerAndAclUnchanged": true,
+    "otherSchemaUnchanged": true,
+    "priorReceiptsUnchanged": true,
+    "permissionProbePassed": true,
+    "duplicateRejected": true,
+    "containerRemoved": true
+  },
+  "runtimeEvidence": {
+    "derivation": {
+      "state": "unchanged_runtime_evidence_carried_forward",
+      "observedAt": "2026-10-13T02:23:24.374Z",
+      "priorManifestSha256": "7067f9f8f390cb22d0a43cb9567100cc43aeea3ed6fb9a72f7377c59a48ee84e",
+      "currentManifestSha256": "272d30181d48e18f1e9541f1e54b00ab73a1ae1e8406f427fcaf3ee1d526fa29",
+      "originalBundleReportSha256": "13464c70888a1fedc559955670915d90000c3d64c666384231186048e82961b9",
+      "originalBootReportSha256": "04a3b23954fd9f1e85e3a9d5435a82e7d60f893dcfef55f7166373693c43f6c9",
+      "sqlRehearsalReportSha256": "aa5a0dd98740e4f327e1f3421acdbcfb9f1f0dca2f357957af70467ceed7df3d",
+      "runtimeInputsUnchanged": true,
+      "artifactBytesUnchanged": true,
+      "newBootExecution": false,
+      "productionChanged": false,
+      "explanation": "Only the ordered SQL package set changed. All endpoint metadata, source bytes, entrypoints and JWT settings remain identical. These exact retained executable bytes passed the original offline boot; the added package passed its separate full-schema rehearsal.",
+      "addedDatabasePackage": "supabase/release/learn-production/023_commusoft_review_planning.sql"
+    },
+    "compiledAgain": false,
+    "bootExecutedAgain": true,
+    "missingAuthDenials": 37,
+    "schedulerChecksExecutedAgain": true,
+    "containerRemovalVerified": true
+  },
+  "limitations": [
+    "This is offline release preparation, not production installation or signed-in live acceptance.",
+    "Runtime byte preservation was validated against the retained 22-package artifact set; original reports remain intact.",
+    "The SQL rehearsal uses the retained 12 October archive and compares package 023 against the complete 022 state; this is not the fresh independent launch recovery checkpoint.",
+    "Full Slack history, observed reply acceptance, ongoing capture and remaining provider/card/processing journeys remain unfinished.",
+    "Existing live release, founder access and recovery gates remain applicable."
+  ],
+  "releasePreparation": {
+    "steps": 74,
+    "databasePackages": 23,
+    "runtimeEndpoints": 37,
+    "localReleaseTestsPassed": 45,
+    "rpcSites": 19,
+    "uniqueRpcTargets": 51,
+    "productionChanges": 0
+  }
+}

@@ -112,6 +112,11 @@
       "path": "supabase/release/learn-production/022_learning_delivery_reads.sql",
       "sha256": "217a1d5eea6b0c632b2e4fa7d3b5ae251bfb388053a3d59f0283714c6f4e5ead",
       "manifestSha256": "e678ac81048eea66db7da4badab9bb4174c334726290eeb2ae2518b323d6a890"
+    },
+    {
+      "path": "supabase/release/learn-production/023_commusoft_review_planning.sql",
+      "sha256": "e2345323e52908add5fa12107efaf88540bf37f609f612d12e52aea298a0760d",
+      "manifestSha256": "5847e3feadde284e9f4073985310bc460676e212a22f235ddb17fdefa2d92549"
     }
   ],
   "sourceClosureSha256": "93f4946509cedf52cad18ae8b5fba14646de5e749e0e7ecc05d94b4f3a3902c0",

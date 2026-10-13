@@ -1,17 +1,17 @@
 {
   "version": "learn-production-release-sequence/1",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "candidateSha256": "7067f9f8f390cb22d0a43cb9567100cc43aeea3ed6fb9a72f7377c59a48ee84e",
+  "candidateSha256": "272d30181d48e18f1e9541f1e54b00ab73a1ae1e8406f427fcaf3ee1d526fa29",
   "steps": [
     {
       "id": "fresh-release-preflight",
       "kind": "check",
-      "pinSha256": "14f1c81a895ca7a983d3fcce69e68cf9d3a22694317a0b3eab5965fd33c34af4"
+      "pinSha256": "b9eea79ac755f2f0af6d81ce6f3f6405b79fdaff4a2333c191826949c3d88075"
     },
     {
       "id": "pause-existing-schedules",
       "kind": "schedule",
-      "pinSha256": "f43fd633fb5a6b0c76364991f33445eaddbec1037ea1fd7f26b5d37204d6a4da"
+      "pinSha256": "c0b31492598e67a5632e26763343a46df1c4c19e45490dbd137fc287843fc650"
     },
     {
       "id": "verify-in-flight-drain",
@@ -132,6 +132,11 @@
       "id": "database-022",
       "kind": "database",
       "pinSha256": "bd4fefa3230be3106e19c8940023d1d7dd29d0d1324e5b26cf875aee7715b3de"
+    },
+    {
+      "id": "database-023",
+      "kind": "database",
+      "pinSha256": "9bdc33acfe93159ce9a56b325624f5965a39e0aa980ed7c96666525fdf263065"
     },
     {
       "id": "matching-server-configuration",
@@ -356,7 +361,7 @@
     {
       "id": "restore-existing-schedules",
       "kind": "schedule",
-      "pinSha256": "40f2f22bcd0e7874ca5aa61986e76e64b145d668904c16ba481e0daa9b432457"
+      "pinSha256": "10a030c804a7f15a1f9e8ab2488c0666d1f39adee821c40c82d317b9209948e6"
     },
     {
       "id": "observe-initial-live-capture",

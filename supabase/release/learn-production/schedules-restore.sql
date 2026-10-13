@@ -6,7 +6,7 @@ set local statement_timeout='30s';
 do $guard$ begin
  if current_user <> 'postgres'
    or current_setting('serviceos.release_project',true) is distinct from 'tgbnakbxwcqjeimygroz'
-   or current_setting('serviceos.release_manifest_sha256',true) is distinct from '7067f9f8f390cb22d0a43cb9567100cc43aeea3ed6fb9a72f7377c59a48ee84e'
+   or current_setting('serviceos.release_manifest_sha256',true) is distinct from '272d30181d48e18f1e9541f1e54b00ab73a1ae1e8406f427fcaf3ee1d526fa29'
    or current_setting('serviceos.release_schedule_action',true) is distinct from 'restore' then
    raise exception 'Reviewed production release schedule target and action required';
  end if;
@@ -53,7 +53,7 @@ do $transition$ declare r record; begin
  ) then raise exception 'Unexpected scheduler change; transaction rolled back'; end if;
 end $transition$;
 select jsonb_build_object('project','tgbnakbxwcqjeimygroz','mode','restore',
- 'manifestSha256','7067f9f8f390cb22d0a43cb9567100cc43aeea3ed6fb9a72f7377c59a48ee84e','observedAt',clock_timestamp(),
+ 'manifestSha256','272d30181d48e18f1e9541f1e54b00ab73a1ae1e8406f427fcaf3ee1d526fa29','observedAt',clock_timestamp(),
  'schedules',(select jsonb_agg(jsonb_build_object('jobId',j.jobid,'active',j.active,
     'commandHash',md5(j.command)) order by j.jobid)
    from cron.job j join release_expected_schedule e using(jobid)),
