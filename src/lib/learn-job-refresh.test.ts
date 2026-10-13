@@ -103,7 +103,7 @@ test("read-only recovery never dispatches apply", async () => {
     },
     s,
     d,
-    false,
+    "check",
     locked,
     () => true,
   );
@@ -129,9 +129,9 @@ test("lost apply response retains request and retries recover receipt without ap
       };
     },
   };
-  await assert.rejects(resolveJobRefresh(c, s, d, true, locked, () => true));
+  await assert.rejects(resolveJobRefresh(c, s, d, "apply", locked, () => true));
   assert.deepEqual(readJobRefreshDraft(s, scope, link), d);
-  const r = await resolveJobRefresh(c, s, d, true, locked, () => true);
+  const r = await resolveJobRefresh(c, s, d, "apply", locked, () => true);
   assert.equal(r.state, "committed");
   assert.deepEqual(actions, ["check", "apply", "check"]);
   assert.equal(readJobRefreshDraft(s, scope, link), null);
@@ -153,7 +153,7 @@ test("foreign receipt leaves draft intact and does not trigger apply", async () 
       },
       s,
       d,
-      true,
+      "apply",
       locked,
       () => true,
     ),
@@ -172,9 +172,81 @@ test("saved different request and switched actor cannot overwrite the outbox", a
       throw Error("Must not call");
     },
   };
-  await assert.rejects(resolveJobRefresh(c, s, { ...d, request: id(8) }, true, locked, () => true));
-  await assert.rejects(resolveJobRefresh(c, s, d, true, locked, () => false));
+  await assert.rejects(
+    resolveJobRefresh(c, s, { ...d, request: id(8) }, "apply", locked, () => true),
+  );
+  await assert.rejects(resolveJobRefresh(c, s, d, "apply", locked, () => false));
   assert.equal(calls, 0);
   assert.deepEqual(readJobRefreshDraft(s, scope, link), d);
   assert.notEqual(refreshKey(scope, link), refreshKey({ ...scope, actor: id(8) }, link));
+});
+const cancelled = (d: RefreshDraft) => ({
+  version: "learn-business-refresh/1",
+  state: "cancelled",
+  request_id: d.request,
+  tenant_id: d.scope.tenant,
+  link_id: d.link,
+  job_id: d.job,
+  source_version_id: d.source,
+  actor_id: d.scope.actor,
+});
+test("lost cancellation response recovers the tombstone without dispatching apply", async () => {
+  const d = await draft(),
+    s = storage(),
+    actions: string[] = [];
+  let cancelledAlready = false;
+  const client = {
+    rpc: async (_: string, a: Record<string, unknown>) => {
+      actions.push(String(a.p_action));
+      if (a.p_action === "cancel") {
+        cancelledAlready = true;
+        throw Error("Lost cancellation response");
+      }
+      return {
+        data: cancelledAlready ? cancelled(d) : { state: "pending", request_id: d.request },
+        error: null,
+      };
+    },
+  };
+  await assert.rejects(resolveJobRefresh(client, s, d, "cancel", locked, () => true));
+  assert.deepEqual(readJobRefreshDraft(s, scope, link), d);
+  const result = await resolveJobRefresh(client, s, d, "apply", locked, () => true);
+  assert.equal(result.state, "cancelled");
+  assert.deepEqual(actions, ["check", "cancel", "check"]);
+  assert.equal(readJobRefreshDraft(s, scope, link), null);
+});
+test("cancelling an already committed request reports the saved commit", async () => {
+  const d = await draft(),
+    s = storage(),
+    actions: string[] = [];
+  const result = await resolveJobRefresh(
+    {
+      rpc: async (_, a) => {
+        actions.push(String(a.p_action));
+        return { data: committed(d), error: null };
+      },
+    },
+    s,
+    d,
+    "cancel",
+    locked,
+    () => true,
+  );
+  assert.equal(result.state, "committed");
+  assert.deepEqual(actions, ["check"]);
+});
+test("another actors cancellation cannot clear a saved request", async () => {
+  const d = await draft(),
+    s = storage();
+  await assert.rejects(
+    resolveJobRefresh(
+      { rpc: async () => ({ data: { ...cancelled(d), actor_id: id(99) }, error: null }) },
+      s,
+      d,
+      "check",
+      locked,
+      () => true,
+    ),
+  );
+  assert.deepEqual(readJobRefreshDraft(s, scope, link), d);
 });

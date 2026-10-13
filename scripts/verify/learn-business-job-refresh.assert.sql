@@ -1,7 +1,7 @@
 -- This scenario runs at the known-positive point of the existing customer/Slack
 -- journey and rolls its own changes back before the remaining negative cases.
 create function pg_temp.refresh_fail() returns trigger language plpgsql as $$begin raise exception 'Injected refresh ledger failure';end$$;
-do $$declare l uuid;v uuid;plan jsonb;receipt jsonb;before_job jsonb;initial_link jsonb;old_source jsonb;args jsonb;answer jsonb;begin
+do $$declare l uuid;v uuid;plan jsonb;receipt jsonb;before_job jsonb;initial_link jsonb;old_source jsonb;args jsonb;answer jsonb;mutation text;begin
  begin
   insert into feature_flags(tenant_id,flag,value) values(pg_temp.sc(1),'learn.enabled','true'),(pg_temp.sc(1),'learn.inputs.commusoft.enabled','true') on conflict do nothing;
   update feature_flags set value='true' where tenant_id=pg_temp.sc(1) and flag in ('learn.enabled','learn.inputs.commusoft.enabled');
@@ -76,6 +76,61 @@ do $$declare l uuid;v uuid;plan jsonb;receipt jsonb;before_job jsonb;initial_lin
   assert not has_table_privilege('authenticated','learn_business_input_current_links','select');
   assert not has_function_privilege('anon','learn_commusoft_job_refresh_plan(uuid,uuid)','execute');
   begin delete from learn_business_input_refreshes where tenant_id=pg_temp.sc(1);raise exception 'Refresh history deleted';exception when insufficient_privilege then null;end;
+  -- Completed requests cannot be undone by a late cancel.
+  perform set_config('request.jwt.claim.sub',pg_temp.sc(10)::text,true);perform set_config('role','authenticated',true);
+  assert public.openfolk_business_review(pg_temp.sc(1),'learn_commusoft_job_refresh','Check already saved update',args||'{"p_action":"cancel"}')->'result'=receipt;
+  perform set_config('role','none',true);
+  begin
+   -- A newer source invalidates a previously rendered preview. Cancellation still
+   -- fences that exact request, even after its source is no longer latest.
+   v:=pg_temp.scsource('jobs','{"id":100,"propertyID":1,"status":"on_hold","description":"001. Synthetic repair"}');
+   perform set_config('request.jwt.claim.sub',pg_temp.sc(11)::text,true);perform set_config('role','authenticated',true);
+   plan:=public.learn_commusoft_job_refresh_plan(pg_temp.sc(1),l);
+   assert plan->>'state'='ready';
+   perform set_config('role','none',true);
+   perform pg_temp.scsource('jobs','{"id":100,"propertyID":1,"status":"Closed","description":"001. Synthetic repair"}');
+   perform set_config('role','authenticated',true);
+   begin perform public.learn_commusoft_job_refresh(pg_temp.sc(1),pg_temp.sc(701),l,v,plan->>'revision','Obsolete pending review','apply');raise exception 'Superseded preview applied';exception when sqlstate 'PT409' then null;end;
+   answer:=public.learn_commusoft_job_refresh(pg_temp.sc(1),pg_temp.sc(701),l,v,plan->>'revision','Obsolete pending review','cancel');
+   assert answer->>'state'='cancelled';
+   assert public.learn_commusoft_job_refresh(pg_temp.sc(1),pg_temp.sc(701),l,v,plan->>'revision','Obsolete pending review','apply')=answer;
+   assert public.learn_commusoft_job_refresh(pg_temp.sc(1),pg_temp.sc(701),l,v,plan->>'revision','Obsolete pending review','check')=answer;
+   perform set_config('role','none',true);
+   assert (select status from jobs where id=pg_temp.sc(20))='completed';
+   assert (select count(*) from learn_business_input_refreshes where tenant_id=pg_temp.sc(1))=1;
+   assert (select count(*) from learn_business_input_refresh_cancellations where tenant_id=pg_temp.sc(1))=1;
+   assert not has_table_privilege('authenticated','learn_business_input_refresh_cancellations','select');
+   begin delete from learn_business_input_refresh_cancellations where tenant_id=pg_temp.sc(1);raise exception 'Cancellation history deleted';exception when insufficient_privilege then null;end;
+   perform set_config('role','authenticated',true);
+   plan:=public.learn_commusoft_job_refresh_plan(pg_temp.sc(1),l);
+   answer:=public.learn_commusoft_job_refresh(pg_temp.sc(1),pg_temp.sc(702),l,(plan->>'source_version_id')::uuid,plan->>'revision','Reviewed later closed state','apply');
+   assert answer->>'revision'='2';
+   perform set_config('role','none',true);
+   assert (select status='closed' and completed_date is null from jobs where id=pg_temp.sc(20));
+   assert (select count(*) from learn_business_input_refreshes where tenant_id=pg_temp.sc(1))=2;
+   assert (select to_jsonb(x) from learn_business_input_links x where id=l)=initial_link;
+   -- Re-observe the original content without inserting a duplicate version.
+   insert into learn_business_input_observations(page_id,version_id,ordinal)
+    select page_id,(initial_link->>'source_version_id')::uuid,1 from learn_business_input_observations
+     where version_id=(plan->>'source_version_id')::uuid limit 1;
+   perform set_config('role','authenticated',true);
+   assert public.learn_commusoft_job_refresh_plan(pg_temp.sc(1),l)->>'reason'='source_changed_or_ambiguous','Equal-time versions must remain ambiguous';
+   perform set_config('role','none',true);
+   raise exception 'rollback_transitions';
+  exception when raise_exception then if sqlerrm<>'rollback_transitions' then raise;end if;end;
+  -- Removing existing access or capture availability must stop a new review.
+  foreach mutation in array array[
+   'update profiles set role=''viewer'' where id=pg_temp.sc(11)',
+   'update feature_flags set value=''false'' where tenant_id=pg_temp.sc(1) and flag=''learn.inputs.commusoft.enabled''',
+   'update provider_connections set revoked_at=clock_timestamp() where id=pg_temp.sc(70)'
+  ]loop
+   begin
+    execute mutation;perform set_config('request.jwt.claim.sub',pg_temp.sc(11)::text,true);perform set_config('role','authenticated',true);
+    begin perform public.learn_commusoft_job_refresh_plan(pg_temp.sc(1),l);raise exception 'Revoked refresh access accepted';exception when insufficient_privilege then null;end;
+    perform set_config('role','none',true);raise exception 'rollback_revocation';
+   exception when raise_exception then if sqlerrm<>'rollback_revocation' then raise;end if;end;
+  end loop;
+
   raise exception 'rollback_refresh_scenario';
  exception when raise_exception then if sqlerrm<>'rollback_refresh_scenario' then raise;end if;end;
 end$$;

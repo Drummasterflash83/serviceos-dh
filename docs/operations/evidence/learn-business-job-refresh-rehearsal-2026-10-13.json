@@ -27,7 +27,7 @@
     "tables": 401,
     "rows": 1591580,
     "sequences": 7,
-    "comparisonSha256": "fd5b6454b6cc161cd051e84433d0708f510467949c22bdc7b0300ea6e0a5e780",
+    "comparisonSha256": "257a444f6304121aff1e4a9246a6fa045e6c67418b42b8a55ec70424d15ff096",
     "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
   },
   "newLedgerVerifiedEmpty": true,
@@ -57,7 +57,7 @@
     "effectiveSourceReturnedOnCustomerCard": true
   },
   "frontend": {
-    "targetedTestsPassed": 21,
+    "targetedTestsPassed": 24,
     "typescriptPassed": true,
     "buildPassed": true,
     "browserAcceptance": false
@@ -67,11 +67,26 @@
   "hostedTestChanged": false,
   "providerRequests": 0,
   "remaining": [
-    "Durable cancellation of obsolete pending requests",
-    "Additional multiple-update and revocation cases",
+    "Later unambiguous repeat-content transition and actual concurrent-request verification",
     "Exact matched release and preservation-aware rollback",
-    "Hosted TEST and signed-in browser acceptance",
+    "Hosted TEST baseline alignment and signed-in browser acceptance",
     "Production scoped release and actual source/card refresh",
     "Customer/site/contact refresh adapters and controlled unattended operation"
-  ]
+  ],
+  "cancellationSource": {
+    "path": "supabase/migrations/20261102070000_learn_business_refresh_cancellation.sql",
+    "sha256": "2c8a4f85f1319f42f3b6e3bea85456358fba35f35c7a4fd4703531bcf5ffc1a2"
+  },
+  "combinedRehearsalSourceSha256": "4b8f2880f50aacdf24d3c99674be2e1e44d6b11e73cdd2862c1eb3892ab98c4d",
+  "newCancellationLedgerVerifiedEmpty": true,
+  "cancellationJourney": {
+    "obsoletePreviewCancelled": true,
+    "delayedApplyFenced": true,
+    "savedOutcomeRecovered": true,
+    "lateCancelPreservesCommittedUpdate": true,
+    "appendOnlyCancellationHistory": true,
+    "secondSourceTransitionRecorded": true,
+    "equalTimeAmbiguityHeld": true,
+    "revokedOwnerModuleAndConnectionRejected": true
+  }
 }

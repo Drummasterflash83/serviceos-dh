@@ -97,9 +97,14 @@ export function LearnJobRefresh({
       if (active()) setPlan(result);
     });
   }
-  async function resolve(apply: boolean) {
-    if (apply && !draft && (!approved || plan?.state !== "ready" || reason.trim().length < 3))
+  async function resolve(mode: "check" | "apply" | "cancel") {
+    if (
+      mode === "apply" &&
+      !draft &&
+      (!approved || plan?.state !== "ready" || reason.trim().length < 3)
+    )
       return;
+    if (mode !== "apply" && !draft) return;
     await run(async (active) => {
       const pending =
         draft ??
@@ -111,7 +116,7 @@ export function LearnJobRefresh({
         client ?? getSupabaseClient(),
         localStorage,
         pending,
-        apply,
+        mode,
         async (name, work) => {
           if (!navigator.locks)
             throw Error("This browser cannot coordinate saved reviews. Use a current browser.");
@@ -129,9 +134,11 @@ export function LearnJobRefresh({
       setDraft(null);
       setPlan(null);
       setNotice(
-        "The job was updated from Commusoft. Its earlier record and source history are retained.",
+        receipt.state === "cancelled"
+          ? "This update was cancelled. A delayed request cannot apply it."
+          : "The job was updated from Commusoft. Its earlier record and source history are retained.",
       );
-      onSaved?.();
+      if (receipt.state === "committed") onSaved?.();
     });
   }
   return (
@@ -156,7 +163,7 @@ export function LearnJobRefresh({
             type="button"
             className="cp-secondary"
             disabled={busy || !canEdit}
-            onClick={() => void resolve(false)}
+            onClick={() => void resolve("check")}
           >
             Check saved update
           </button>
@@ -164,9 +171,17 @@ export function LearnJobRefresh({
             type="button"
             className="cp-secondary"
             disabled={busy || !canEdit}
-            onClick={() => void resolve(true)}
+            onClick={() => void resolve("apply")}
           >
             Retry reviewed update
+          </button>
+          <button
+            type="button"
+            className="cp-secondary"
+            disabled={busy || !canEdit}
+            onClick={() => void resolve("cancel")}
+          >
+            Cancel saved update
           </button>
         </div>
       )}
@@ -239,7 +254,7 @@ export function LearnJobRefresh({
             type="button"
             className="cp-primary"
             disabled={busy || !canEdit || !approved || reason.trim().length < 3}
-            onClick={() => void resolve(true)}
+            onClick={() => void resolve("apply")}
           >
             Save reviewed job update
           </button>

@@ -7,6 +7,18 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October — durable job-refresh cancellation passes offline.**
+
+- The full native-schema rehearsal now covers cancelling obsolete previews,
+  delayed apply fencing, late cancellation of committed work, a second source
+  transition, ambiguous observations and revoked actor/module/connection access.
+  All 15 journeys and the archived-row/sequence preservation checks pass.
+- The matching client has 24 passing checks; TypeScript and build pass. This remains
+  local evidence: TEST and LIVE have not received the refresh feature.
+- Exact release guards and history-preserving recovery still need rehearsal. TEST
+  lacks two LIVE Slack context helpers, so its baseline must be aligned deliberately
+  before claiming cross-source browser acceptance. Broader LEARN work remains active.
+
 **13 October, 22:11 BST — source-to-job refresh and matching review UX pass offline.**
 
 - Added an append-only effective projection history and a reviewed Commusoft job
