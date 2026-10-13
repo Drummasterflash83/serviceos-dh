@@ -1,0 +1,166 @@
+{
+  "version": "learn-account-holder-release/1",
+  "source": "supabase/migrations/20261101970000_learn_customer_account_holder.sql",
+  "sourceSha256": "2e9de30402df874d7824dfc39f5ad422e0312320315af57b04a02a96acc55fad",
+  "environments": {
+    "production": {
+      "project": "tgbnakbxwcqjeimygroz",
+      "file": "production.sql",
+      "sha256": "5d22b3f27520e8878363b98d928b561ad6a0b40d2da57503fe3bee89a84bfc48",
+      "before": [
+        {
+          "name": "learn_business_review_authority",
+          "signature": "public.learn_business_review_authority(uuid,uuid)",
+          "hash": "26872e3b0d18cc9b9eaf436a83e1b8ce",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres}"
+        },
+        {
+          "name": "learn_commusoft_confirm_customer",
+          "signature": "public.learn_commusoft_confirm_customer(uuid,uuid,text,uuid,text)",
+          "hash": "eee75d34d69b2728c99081f63a933f69",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+        },
+        {
+          "name": "learn_commusoft_review_customer",
+          "signature": "public.learn_commusoft_review_customer(uuid,uuid,uuid,text,uuid,text)",
+          "hash": "a7919f46b5ed0c31f3f5c70d9d5e32bb",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,service_role=X/postgres}"
+        },
+        {
+          "name": "openfolk_business_review",
+          "signature": "public.openfolk_business_review(uuid,text,text,jsonb)",
+          "hash": "caa982d878e395233ddc7cd8270fea24",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+        }
+      ],
+      "after": [
+        {
+          "name": "learn_business_review_authority",
+          "signature": "public.learn_business_review_authority(uuid,uuid)",
+          "hash": "26872e3b0d18cc9b9eaf436a83e1b8ce",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres}"
+        },
+        {
+          "name": "learn_commusoft_confirm_customer",
+          "signature": "public.learn_commusoft_confirm_customer(uuid,uuid,text,uuid,text)",
+          "hash": "eee75d34d69b2728c99081f63a933f69",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+        },
+        {
+          "name": "learn_commusoft_review_customer",
+          "signature": "public.learn_commusoft_review_customer(uuid,uuid,uuid,text,uuid,text)",
+          "hash": "54013281433d9b7d225c56321bcc86e2",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,service_role=X/postgres}"
+        },
+        {
+          "name": "openfolk_business_review",
+          "signature": "public.openfolk_business_review(uuid,text,text,jsonb)",
+          "hash": "c6a8d25c80288fd65a0b602750ef99ac",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+        },
+        {
+          "name": "learn_commusoft_review_customer_identity",
+          "signature": "public.learn_commusoft_review_customer_identity(uuid,uuid,uuid,text,uuid,text,jsonb)",
+          "hash": "fd9900092ecbd5ef08cebe35379d9270",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,service_role=X/postgres}"
+        },
+        {
+          "name": "learn_commusoft_confirm_customer_identity",
+          "signature": "public.learn_commusoft_confirm_customer_identity(uuid,uuid,text,uuid,text,jsonb)",
+          "hash": "f06cdbf547fafa7be3e85b6a45f0672b",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+        }
+      ]
+    },
+    "test": {
+      "project": "saatxzwxvdvqevbnskxy",
+      "file": "test.sql",
+      "sha256": "5add5b6f60c115ceea11796ef5f8922c79d1f793bc24ee0a7a1e310f6515c406",
+      "before": [
+        {
+          "name": "learn_business_review_authority",
+          "signature": "public.learn_business_review_authority(uuid,uuid)",
+          "hash": "26872e3b0d18cc9b9eaf436a83e1b8ce",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres}"
+        },
+        {
+          "name": "learn_commusoft_confirm_customer",
+          "signature": "public.learn_commusoft_confirm_customer(uuid,uuid,text,uuid,text)",
+          "hash": "eee75d34d69b2728c99081f63a933f69",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+        },
+        {
+          "name": "learn_commusoft_review_customer",
+          "signature": "public.learn_commusoft_review_customer(uuid,uuid,uuid,text,uuid,text)",
+          "hash": "a7919f46b5ed0c31f3f5c70d9d5e32bb",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,service_role=X/postgres}"
+        },
+        {
+          "name": "openfolk_business_review",
+          "signature": "public.openfolk_business_review(uuid,text,text,jsonb)",
+          "hash": "caa982d878e395233ddc7cd8270fea24",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+        }
+      ],
+      "after": [
+        {
+          "name": "learn_business_review_authority",
+          "signature": "public.learn_business_review_authority(uuid,uuid)",
+          "hash": "26872e3b0d18cc9b9eaf436a83e1b8ce",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres}"
+        },
+        {
+          "name": "learn_commusoft_confirm_customer",
+          "signature": "public.learn_commusoft_confirm_customer(uuid,uuid,text,uuid,text)",
+          "hash": "eee75d34d69b2728c99081f63a933f69",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+        },
+        {
+          "name": "learn_commusoft_review_customer",
+          "signature": "public.learn_commusoft_review_customer(uuid,uuid,uuid,text,uuid,text)",
+          "hash": "54013281433d9b7d225c56321bcc86e2",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,service_role=X/postgres}"
+        },
+        {
+          "name": "openfolk_business_review",
+          "signature": "public.openfolk_business_review(uuid,text,text,jsonb)",
+          "hash": "c6a8d25c80288fd65a0b602750ef99ac",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+        },
+        {
+          "name": "learn_commusoft_review_customer_identity",
+          "signature": "public.learn_commusoft_review_customer_identity(uuid,uuid,uuid,text,uuid,text,jsonb)",
+          "hash": "fd9900092ecbd5ef08cebe35379d9270",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,service_role=X/postgres}"
+        },
+        {
+          "name": "learn_commusoft_confirm_customer_identity",
+          "signature": "public.learn_commusoft_confirm_customer_identity(uuid,uuid,text,uuid,text,jsonb)",
+          "hash": "f06cdbf547fafa7be3e85b6a45f0672b",
+          "owner": "postgres",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+        }
+      ]
+    }
+  },
+  "rollback": "Keep the installed safety schema and retained reviews. Frontend rollback is permitted; new-person saves from an old frontend fail closed. Diagnose and forward-fix rather than restoring implicit identity inference."
+}

@@ -1,14 +1,24 @@
 # Commusoft customer account-holder review
 
-## Status: local candidate, 13 October 2026
+## Status: LIVE reviewed identity journey verified, 13 October 2026
+
+The exact backend change is installed in TEST and production. Git
+9091ce4970a319aacb6959227382532688957e93, deployment
+dpl_BdmR3wuhjf1ghYYN58sQQgeYbMpG, serves the existing live aliases. A signed-in
+operator reviewed one real account against the current provider export and saved
+it through the new form. Readback verified one correctly named card, separate
+primary-contact identity, retained evidence/source/actor and a matching audit
+receipt. The published card was then opened through logged operator access.
+It currently has no published linked jobs; this is not a comprehensive-card claim.
+TEST's frontend remains unchanged and its signed-in journey is still outstanding.
 
 Current Commusoft evidence distinguishes a customer account holder from its API
 primary contact. A tenant, family member or other contact must not silently
 become the customer or receive the account's jobs and communication context.
-All three already-published Drummonds customer-card names were corroborated
+Before this release, all three previously published Drummonds customer-card names were corroborated
 against the fresh provider export; this change does not rewrite those records.
 
-The candidate requires an explicit account name, a same/different primary-contact
+The review requires an explicit account name, a same/different primary-contact
 decision and a short reference to the checked provider account or export when
 creating a new person customer. If the two are different, the new account holder
 gets no copied first/last name, email or phone. The original contact remains in
@@ -43,7 +53,13 @@ restore diagnostics stay outside Git.
 
 ## Release and remaining acceptance
 
-Before promotion, compare current hosted definitions/access, prepare the exact
+[Verified release evidence](evidence/learn-customer-account-holder-production-2026-10-13.json)
+and the exact envelopes under
+`supabase/release/learn-production-patches/account-holder-v1/` supersede the local-only
+status above. The requirements below were followed for this release and apply to
+future amendments.
+
+For future promotion, compare current hosted definitions/access, prepare the exact
 guarded migration and preservation evidence, and verify a matched backend and
 frontend release. Install the backend before enabling the new frontend form.
 The old frontend will refuse new person creation during that interval rather
@@ -51,7 +67,7 @@ than infer an account holder. Retain the schema safeguards if frontend rollback
 is necessary; do not restore blind primary-contact person creation. Any rollback
 of published review data needs a separately reviewed correction, not deletion.
 
-This candidate does not bulk-publish customers or prove provider completeness.
+This release does not bulk-publish customers or prove provider completeness.
 The known API/UI customer coverage gap and wider canonical customer/site/job/
 contact reconciliation remain open. Local evidence is recorded in
 [evidence](evidence/learn-customer-account-holder-candidate-2026-10-13.json).

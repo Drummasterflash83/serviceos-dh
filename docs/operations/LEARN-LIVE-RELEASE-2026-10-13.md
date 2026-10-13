@@ -1,6 +1,30 @@
 # LEARN live release — 13 October 2026
 
-## Latest checkpoint — 18:06 BST
+## Latest checkpoint — 19:06 BST
+
+**13 October, 19:06 BST — account-holder review released; one real LIVE card verified.**
+
+- The exact guarded backend is installed in TEST and production. Production
+  retained all 18,052 prior business-source versions, 3,697 pages, seven links,
+  customer identities, access, schedules, connections and flags. The subsequent
+  real reviewed save added one person/card/link without changing earlier history.
+- Git 9091ce4, deployment dpl_BdmR3wuhjf1ghYYN58sQQgeYbMpG, now serves the existing
+  live aliases. Its production auth binding and signed-in review form are verified.
+  TEST's frontend has not been updated by this release.
+- A real account was checked against the fresh provider export and searched by
+  name/surname/postcode before creation. Its account-holder name is separate from
+  the primary contact, whose email/phone were not copied. Source, actor and review
+  evidence are retained, with an audited result receipt and exactly one card.
+  The card opens through logged operator access and shows zero published linked
+  jobs with an explicit coverage limitation. Broader card reconciliation remains.
+- The guarded SQL passed target/digest/drift/late-failure and rollback rehearsals;
+  the source and operator journeys preserve all 1,591,580 archived rows and seven
+  sequences. TEST's absent pg_cron table was caught in a read-only preflight and
+  handled before applying either release. No new access grant or provider write.
+
+[Release evidence](evidence/learn-customer-account-holder-production-2026-10-13.json).
+
+## Previous checkpoint — 18:06 BST
 
 **13 October, 18:06 BST — LIVE Slack repair completed its real history page.**
 

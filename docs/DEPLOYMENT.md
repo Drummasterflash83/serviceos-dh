@@ -43,16 +43,17 @@ Cloudflare-flavoured.
 ## Current live checkpoint — 13 October 2026
 
 The latest verified LIVE frontend is Git
-5b276dd571116aa968b4c90595c896858dc267d0, deployment
-dpl_54BGSWXmMFMULhR48q1ufayPzVS9, serving the existing openfolk.ai aliases.
-The matching Slack unavailable-source schema and Slack worker v9/platform worker
-v70 are installed with source/access/schedule preservation verified. Its exact
-held-page recovery saved 80 records and completed that channel's history window;
-full campaign history, replies and broader LEARN acceptance remain incomplete. Use **https://www.openfolk.ai** for LIVE and
-**https://test.openfolk.ai** for TEST. This LIVE release does not update TEST.
+9091ce4970a319aacb6959227382532688957e93, deployment
+dpl_BdmR3wuhjf1ghYYN58sQQgeYbMpG, serving the four existing openfolk.ai aliases.
+Matching account-holder review SQL is installed in TEST and production. One real
+LIVE account-to-card journey verifies separate account/contact identities and
+logged review; broader customer/job publication and provider coverage remain
+incomplete. The preceding Slack worker v9/platform worker v70 release remains.
+Use **https://www.openfolk.ai** for LIVE and **https://test.openfolk.ai** for TEST.
+This release does not update the TEST frontend.
 
 See the [live release log](operations/LEARN-LIVE-RELEASE-2026-10-13.md) and
-[release evidence](operations/evidence/learn-slack-withheld-production-2026-10-13.json).
+[release evidence](operations/evidence/learn-customer-account-holder-production-2026-10-13.json).
 Older preview sections below are historical preparation, not current live status.
 
 ## Preview deployments
