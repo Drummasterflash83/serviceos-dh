@@ -26,3 +26,25 @@ tombstone handling remains a separate unresolved source-withholding requirement.
 Release SQL and rollback: `supabase/release/learn-production-patches/slack-recovery-continuation-v1/`.
 Rollback restores the function only, never rewinds processed pages or sources.
 [Sanitised evidence](evidence/learn-slack-recovery-continuation-2026-10-13.json).
+
+## V2 retained-child repair verified LIVE — 13 October, 16:46 BST
+
+The first refusal was execution context, not source/receipt drift: the management
+connection had no infrastructure claim role. The exact parent authority function
+requires that role. V2 keeps the postgres deployment role and sets only
+transaction-local infrastructure claims, with no user identity or access grant.
+Every original row/receipt/cursor guard remains intact. Ten clean-context
+full-schema journeys passed, including late rollback and replay refusal.
+
+The exact queued child is now verified claimable at zero attempts; its saved
+cursor and parent receipt remain intact. All 9,037 source/version rows present at
+repair, access, schedules and campaign scope/budget were preserved. Scheduled
+provider acceptance remains to be observed. Both original refusal and corrected
+execution journals are retained; never rerun either mutation blindly.
+
+### Scheduled acceptance — 13 October, 15:46:09 UTC
+
+The existing scheduler claimed the repaired child and completed it in one attempt,
+processing five records. Its account now records three pages and history complete;
+the immutable finish receipt has no successor. No manual dispatch was used.
+Observed-thread discovery/reply completion remains a separate campaign stage.

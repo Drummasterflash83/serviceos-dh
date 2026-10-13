@@ -7,6 +7,22 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 16:46 BST — Slack queued continuation repaired.**
+
+- The exact retained child is now claimable under its original campaign, cursor
+  and request allowance. The initial repair refusal was missing infrastructure
+  execution context; a clean-session rehearsal verified the correction before
+  application. No new user grant or access scope was introduced.
+- All 9,037 source/version rows present during repair were preserved, alongside
+  permissions, schedules and campaign bounds. At 15:46:09 UTC the normal scheduler
+  completed the repaired page in one attempt (five records), exhausting that
+  channel's history cursor. Reply/discovery completion remains separate; no manual
+  dispatch was used.
+- The fresh independent database/voicemail recovery below is complete for its
+  snapshot and sampled pair. Ongoing backup acceptance, customer/job reconciliation
+  and the remaining Slack withheld-source handling continue.
+
+
 **13 October, 16:39 BST — fresh independent database and voicemail relationships recovered.**
 
 - The approved encrypted AWS copy was independently downloaded, decrypted and

@@ -1,5 +1,5 @@
 {
-  "state": "function_live_verified_retained_child_repair_held",
+  "state": "function_repair_and_scheduled_page_verified",
   "appliedAt": "2026-10-13T15:39:23.677Z",
   "preservation": {
     "priorSourcesRetained": 8840,
@@ -10,9 +10,28 @@
     "scopeAndBudgetPreserved": true
   },
   "rehearsal": "rehearsal-v5 passed full-schema continuation and retained-child synthetic journeys",
-  "retainedChildRepair": "Transaction refused receipt-linked guard; readback confirms queued, zero attempts, unchanged marker. Read-only diagnosis pending.",
+  "retainedChildRepair": "V2 verified under explicit transaction-local infrastructure context, with unchanged exact guards. Existing scheduler then completed the page naturally.",
   "runtimeChange": false,
   "frontendChange": false,
   "sourceDataChanged": false,
-  "wholeCampaignComplete": false
+  "wholeCampaignComplete": false,
+  "repairPreservation": {
+    "priorSourcesRetained": 9037,
+    "priorVersionsRetained": 9037,
+    "currentSources": 9037,
+    "currentVersions": 9037,
+    "accessAndSchedulesPreserved": true,
+    "scopeAndBudgetPreserved": true
+  },
+  "repairAppliedAt": "2026-10-13T15:45:16.001Z",
+  "cleanContextRehearsalVerified": true,
+  "scheduledAcceptance": {
+    "at": "2026-10-13T15:46:09Z",
+    "attempts": 1,
+    "records": 5,
+    "historyComplete": true,
+    "pages": 3,
+    "successor": null,
+    "manualDispatch": false
+  }
 }
