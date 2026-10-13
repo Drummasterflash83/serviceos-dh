@@ -7,6 +7,26 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 22:52 BST — job-refresh backend installed and preserved in TEST.**
+
+- The exact LIVE package passes target/digest/definition/existing-object/late-failure
+  guards, empty rollback, all 15 native journeys and a retained-history pause check.
+  The TEST alignment and job-refresh journey also pass, including both empty
+  rollbacks and restoration of restricted-reader role membership.
+- TEST installation matches all nine expected definitions and access settings.
+  All 78,378 rows across sixteen scoped source/canonical/access tables are unchanged;
+  new refresh, cancellation and capture-proof tables remain empty. No provider
+  requests, real refreshes, production changes or frontend feature release occurred.
+- The existing TEST operator session is signed in. The six-file frontend candidate
+  from the current TEST base passes 24 tests, TypeScript and build. Its deployment
+  and signed-in feature acceptance remain next, before the LIVE source/card journey.
+- LIVE Slack at 21:47 UTC retains 13,316 sources; 16/20 active and 107/160 archived
+  channel windows are complete. Two observed recovery jobs remain queued, attempt 0;
+  their authoritative handles were read without restarting them.
+
+[Exact release rehearsal](evidence/learn-business-job-refresh-release-rehearsal-2026-10-13.json)
+· [TEST backend readback](evidence/learn-business-job-refresh-test-2026-10-13.json).
+
 **13 October — durable job-refresh cancellation passes offline.**
 
 - The full native-schema rehearsal now covers cancelling obsolete previews,
@@ -4979,13 +4999,16 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   mailbox reconciliation remain open. The 12 October retained TEST sample now
   proves nineteen real email-to-card deliveries; it does not prove full history
   or recurring capture.
-- [ ] **Commusoft:** jobs traversal reaches 127 pages / 12,611 unique jobs;
-  the original 1,547-customer contact plan and refreshed 2,421-property traversal
-  are complete. Finish the 871-site contact plan and refreshed 1,550-customer
-  contact traversal; reconcile
-  missing customer/property references and unzoned timestamps; publish valid
-  customer/contact/site/job relationships with held records visible for review.
-  Verify incremental updates and a real source-to-card journey without provider writes.
+- [ ] **Commusoft:** the first full LIVE scheduled cycle is verified complete:
+  1,552 customers, 871 sites, 12,637 jobs, 2,402 customer-contact records and 567
+  site-contact records. All four terminal checkpoints match successful page receipts.
+  At 21:37 UTC on 13 October the next overlapping incremental cycle had completed
+  properties and a 27-record jobs pass; its contact traversal was still running.
+  Reconcile the remaining UI/API inventory differences, missing relationships and
+  unzoned timestamps. Finish canonical publication, reviewed/unattended refresh,
+  source-to-card matching and signed-in acceptance; retained coverage alone does not
+  make the customer cards comprehensive. No provider writes are authorized here.
+  [Current incremental evidence](evidence/learn-commusoft-next-cycle-2026-10-13.json).
 - [ ] **Phone:** verify existing account binding, calls, recording download,
   transcription, playable audio, retry/recovery and recurring capture with the
   real Birchill account. Preserve existing IDs and distinguish capture from shadow

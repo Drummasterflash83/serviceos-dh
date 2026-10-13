@@ -1,0 +1,96 @@
+{
+  "state": "verified",
+  "target": "saatxzwxvdvqevbnskxy",
+  "at": "2026-10-13T21:52:02.318521+00:00",
+  "definitionsMatch": true,
+  "membershipsRestored": true,
+  "changedTables": [],
+  "newRows": {
+    "refreshes": 0,
+    "cancellations": 0,
+    "visibility": 0,
+    "proofs": 0
+  },
+  "tablesCompared": 16,
+  "totalRows": 78378,
+  "catalog": {
+    "at": "2026-10-13T21:52:02.318521+00:00",
+    "objects": [
+      "learn_business_input_current_links",
+      "learn_business_input_refresh_cancellations",
+      "learn_business_input_refreshes",
+      "slack_channel_visibility_receipts",
+      "slack_source_visibility_proofs"
+    ],
+    "functions": [
+      {
+        "acl": "{postgres=X/postgres,learn_card_communication_reader=X/postgres}",
+        "md5": "2adbf3b163734e7a92efff84ae140b94",
+        "name": "learn_card_slack_job_context",
+        "owner": "postgres"
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "md5": "9281951f956bd9c7eec12636d27edaad",
+        "name": "learn_commusoft_confirm_work_record",
+        "owner": "postgres"
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "3fe8bdb8623aafa6f71890101c71c97e",
+        "name": "learn_commusoft_job_fields",
+        "owner": "postgres"
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "md5": "cd4fdf833ca4c4d6f513307ff158a49a",
+        "name": "learn_commusoft_job_refresh",
+        "owner": "postgres"
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "md5": "36cb885d292a8b9a80ce467e26027ec4",
+        "name": "learn_commusoft_job_refresh_plan",
+        "owner": "postgres"
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "md5": "8e2cb43fe4fda4c24926399c3ef8917b",
+        "name": "learn_commusoft_work_review_page",
+        "owner": "postgres"
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "md5": "4385d308eb96da5891d0c59143fa2bd6",
+        "name": "learn_commusoft_work_review_search",
+        "owner": "postgres"
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "md5": "0176020ae98545133b07c0a841f5862b",
+        "name": "learn_customer_business_context",
+        "owner": "postgres"
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "md5": "c623f4b271406811f7e32b96077d07d7",
+        "name": "openfolk_business_review",
+        "owner": "postgres"
+      }
+    ],
+    "memberships": [
+      {
+        "set": false,
+        "role": "learn_card_communication_reader",
+        "admin": true,
+        "member": "postgres",
+        "grantor": "supabase_admin",
+        "inherit": false
+      }
+    ]
+  },
+  "frontendFeatureDeployed": false,
+  "browserFeatureAcceptance": false,
+  "realProviderRequests": 0,
+  "productionChanged": false
+}

@@ -1,0 +1,24 @@
+{
+  "state": "prepared_not_deployed",
+  "sourceCheckpoint": "2cae71ad9ff5d38259f4c5eb7c4d5e5caa7ac3ac",
+  "files": [
+    "src/components/client-portal/learn/LearnCommusoftWork.tsx",
+    "src/components/client-portal/learn/LearnJobRefresh.tsx",
+    "src/lib/learn-commusoft-work.ts",
+    "src/lib/learn-job-refresh.ts",
+    "src/lib/learn-job-refresh.test.ts",
+    "src/lib/openfolk-business-review.ts"
+  ],
+  "targets": {
+    "live": {
+      "base": "a11f2041b84cb572a5ce8b65c97057e005bf4da3",
+      "patchSha256": "e1edfd6e8e04b83a7d90cf04ab861eae77a59f24729aef9337a89314e5a33b46",
+      "fileCount": 6
+    },
+    "test": {
+      "base": "c7744a8b0808bfb64b737e4b9ee453782cd2efa0",
+      "patchSha256": "e1edfd6e8e04b83a7d90cf04ab861eae77a59f24729aef9337a89314e5a33b46",
+      "fileCount": 6
+    }
+  }
+}
