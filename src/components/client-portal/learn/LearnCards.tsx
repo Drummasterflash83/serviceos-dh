@@ -489,12 +489,12 @@ function CardDetail({
             <section className="lc-brief" aria-label="Customer situation at a glance">
               <div className="lc-brief-heading">
                 <p className="of-eyebrow">THE PICTURE SO FAR</p>
-                <h3>{brief.outstanding.length ? `${brief.outstanding.length} recorded item${brief.outstanding.length === 1 ? "" : "s"} to follow up` : "Your customer context is taking shape"}</h3>
+                <h3>{brief.outstanding.length ? `${brief.outstanding.length} recorded action${brief.outstanding.length === 1 ? "" : "s"} to review` : "Your customer context is taking shape"}</h3>
                 <p>Based on the linked records below{brief.limited ? "; some context is still missing" : ""}. This is not a complete account of the customer's work.</p>
               </div>
               <div className="lc-brief-grid">
                 <article><span>Latest communication</span><strong>{brief.latest?.title ?? "No linked communication yet"}</strong><small>{brief.latest ? `${brief.latest.source} · ${when(brief.latest.occurredAt)}` : "More source data or identity matching is needed."}</small></article>
-                <article><span>What has been done</span><strong>{brief.closed.length ? `${brief.closed.length} finding${brief.closed.length === 1 ? "" : "s"} marked closed` : "Completed work not established"}</strong><small>{brief.closed.length ? "Recorded outcomes are listed in the findings below." : "Missing completion evidence does not mean no work was done."}</small></article>
+                <article><span>What has been done</span><strong>{brief.closed.length ? `${brief.closed.length} action${brief.closed.length === 1 ? "" : "s"} marked complete` : "Completed work not established"}</strong><small>{brief.closed.length ? "Recorded outcomes are listed in the findings below." : "Missing completion evidence does not mean no work was done."}</small></article>
                 <article><span>First item to review</span><strong>{brief.next?.title ?? "Review the linked communications"}</strong><small>{brief.next?.deadline ? `Recorded deadline ${when(brief.next.deadline)}` : "Confirm what still needs a response or action."}</small></article>
                 <article><span>Who is taking it forward</span><strong>{brief.next?.owner ?? "Owner to confirm"}</strong><small>{brief.next?.waitingOn ? `Waiting on ${brief.next.waitingOn}` : "Check the next step with the team before treating it as assigned."}</small></article>
               </div>

@@ -4,8 +4,10 @@ import type { LearnCardDetail } from './learn-cards.ts';
  * silence or turn a missing owner into an assignment. No new AI claims. */
 export function cardBrief(data: LearnCardDetail) {
   const terminal = new Set(['complete', 'completed', 'cancelled', 'resolved', 'closed', 'done']);
-  const closed = data.findings.filter(f => terminal.has(f.status.toLowerCase()));
-  const outstanding = data.findings.filter(f => !terminal.has(f.status.toLowerCase()));
+  // An Observation in monitoring is evidence, not an outstanding task.
+  const actions = data.findings.filter(f => f.type.toLowerCase() === 'action');
+  const closed = actions.filter(f => ['complete', 'completed', 'done'].includes(f.status.toLowerCase()));
+  const outstanding = actions.filter(f => !terminal.has(f.status.toLowerCase()) && !['draft', 'unknown'].includes(f.status.toLowerCase()));
   const ordered = [...outstanding].sort((a, b) =>
     Number(b.overdue) - Number(a.overdue) ||
     (a.deadline ? Date.parse(a.deadline) : Infinity) - (b.deadline ? Date.parse(b.deadline) : Infinity));
