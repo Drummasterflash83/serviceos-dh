@@ -1,0 +1,20 @@
+{
+  "state": "registered_and_verified",
+  "project": "saatxzwxvdvqevbnskxy",
+  "app": "4ef4971d-2a39-4309-8c6c-46510d679c59",
+  "environment": "sandbox",
+  "redirect": "https://saatxzwxvdvqevbnskxy.supabase.co/functions/v1/quickbooks-oauth-callback",
+  "revision": 1,
+  "secretEqualityVerified": true,
+  "connections": 0,
+  "imports": 0,
+  "at": "2026-10-13T18:28:41.214Z",
+  "callbackSavedAndVerified": true,
+  "defaultPlaygroundCallbackPreserved": true,
+  "keychainSavedAndVerified": true,
+  "onePassword": "pending local authentication; no write performed",
+  "temporaryPlaintextRemoved": true,
+  "signedInSandboxRegistrationVisible": true,
+  "keyRotation": false,
+  "productionChanges": false
+}

@@ -20,8 +20,8 @@ ready for testing”. Only Accounting was selected; Payments was not selected.
 - Developer workspace ID: `9341456295810067` (not a QuickBooks accounting realm).
 - Status: development/sandbox ready; production credentials locked pending app
   details and compliance. No accounting company has authorised this app yet.
-- Credentials remain hidden in Intuit; no keys have been copied to local or hosted
-  storage. The existing Drummonds Dashboard app was not modified.
+- Development credentials were provisioned after explicit approval as recorded
+  below. The existing Drummonds Dashboard app was not modified.
 
 Keep these identities separate:
 
@@ -414,15 +414,27 @@ ServiceOS** 1Password item, with the owner, environment, app ID, callback, secre
 location and rotation notes. The actual new credential storage/setup will be
 reviewed before provisioning the created app. This checkpoint contains no real keys.
 
-### Prepared development credential setup — not executed
+### Development credential setup — approved, recovery copy pending
 
-The Intuit app's Development redirect screen currently contains its default OAuth
-Playground callback. The following additional URL has been entered but **not saved**:
+Chris approved the exact development callback and credential destinations on
+13 October. Intuit saved the additional Development callback below, with the
+default OAuth Playground callback preserved:
 `https://saatxzwxvdvqevbnskxy.supabase.co/functions/v1/quickbooks-oauth-callback`.
 The default entry remains unchanged. This is the deployed TEST callback, with
 one-use state, server-side token exchange and a return to `https://test.openfolk.ai/openfolk`.
 
-Proposed setup, awaiting the action-time credential-destination decision:
+At 18:28 UTC the existing app was registered in TEST as sandbox, revision 1.
+The client ID, secret, environment and callback were compared in memory and match.
+The signed-in TEST screen now shows “Sandbox · 4ef4971d”. Connections/imports are
+still zero. The Keychain recovery copy is saved and read back; the 1Password copy
+still awaits local authentication and is not yet verified. The temporary plaintext
+transfer file was removed. No key was rotated and no company was authorised.
+
+The restricted SQL read-only API could not decrypt Vault; verification succeeded
+through an explicit read-only transaction using the existing privileged database
+route. No grants changed and the registration was not retried.
+
+Approved scope:
 
 - Read the existing **development** client ID/secret for OpenFolk ServiceOS,
   app `4ef4971d-2a39-4309-8c6c-46510d679c59`; do not generate/rotate a key or alter
