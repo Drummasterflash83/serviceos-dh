@@ -49,7 +49,7 @@ export function createStoredHistoryBinding(bindRequest:BindHistoryRequest,clock:
   try{const stored=await readStoredHistoryScope(ctx,clock);if(!stored)return null;
    const bound=await bindRequest({tenantId:ctx.tenantId,accountId:stored.accountId,teamId:stored.scope.teamId,channelId:stored.channelId,oldest:stored.scope.oldest,latest:stored.scope.latest,consentReference:stored.scope.consentReference,expiresAt:stored.expiresAt,maxPages:stored.maxPages,...(stored.scope.parentTimestamp?{parentTimestamp:stored.scope.parentTimestamp}:{})});
    if(!bound||bound.teamId!==stored.scope.teamId||bound.channelId!==stored.channelId||bound.isPrivate!==false||bound.isShared!==false||typeof bound.isMember!=='boolean'||(bound.isMember!==true&&bound.publicUserAccess!==true))return null;
-   return {tenantId:ctx.tenantId,jobId:ctx.jobId!,...stored,scope:{...stored.scope,pageLimit:bound.pageLimit??15},request:bound.request,authorised:async()=>{try{
+   return {captureVisibility:bound.captureVisibility,tenantId:ctx.tenantId,jobId:ctx.jobId!,...stored,scope:{...stored.scope,pageLimit:bound.pageLimit??15},request:bound.request,authorised:async()=>{try{
     const current=await readStoredHistoryScope(ctx,clock);return !!current&&current.accountId===stored.accountId&&current.maxPages===stored.maxPages&&current.expiresAt===stored.expiresAt&&historyScopeKey(current.scope,current.channelId)===historyScopeKey(stored.scope,stored.channelId)&&await bound.authorised();
    }catch(error){if(error instanceof SlackHistoryTransportError)throw error;return false;}}};
   }catch(error){if(error instanceof SlackHistoryTransportError)throw error;return null;}

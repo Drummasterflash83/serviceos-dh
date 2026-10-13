@@ -1,0 +1,63 @@
+{
+  "version": "learn-slack-customer-context-release/1",
+  "project": "tgbnakbxwcqjeimygroz",
+  "source": {
+    "path": "supabase/migrations/20261101910000_learn_slack_customer_job_context.sql",
+    "sha256": "6412911d76228c8aa1e3b1a17af919dcb4a99d393c1e53021684bd922d08fd49"
+  },
+  "files": {
+    "apply.sql": "43879eab572a04957b772622eb0eb1ec8efcddaed3093e062be1877decdef778",
+    "rollback.sql": "82d73526cd95c0c1d2de7ed6fceaa781ec95e118719fc52e5f5cba50d8b6b41c",
+    "original-reader.sql": "d59dd4cc725815c1c6fcb4d85cafc84d8da5364a2b3ac313a05d3e5341940ceb"
+  },
+  "sqlState": "applied_verified",
+  "priorAttempt": {
+    "outcome": "transaction_rolled_back_verified",
+    "sqlState": "42501",
+    "cause": "Management postgres is not superuser and cannot inherit or SET the restricted reader owner."
+  },
+  "maintenanceAuthority": "Existing postgres ADMIN OPTION; temporary self-grant with INHERIT true, SET false, ADMIN false; remove exact postgres grant before commit; original grant unchanged",
+  "expectedReader": {
+    "before": "5029bcc91c0f0b5985a7f8dc4fdf5140",
+    "after": "fe5cb8bd96f3c5e4cc49141b5da2bda7",
+    "owner": "learn_card_communication_reader",
+    "authenticatedExecute": true,
+    "anonExecute": false,
+    "serviceExecute": false
+  },
+  "offlineRehearsal": {
+    "role": "postgres",
+    "originalFailureReproduced": true,
+    "checks": [
+      "wrong_target",
+      "wrong_digest",
+      "prior_acl_drift",
+      "before_role_restore_failure",
+      "late_failure"
+    ],
+    "allMembershipsRestored": true,
+    "readerRollbackVerified": true,
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 396,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "da8e45d5970f624cec22d182c2723786c2866724d057b7d62cdc809e19710dd6",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "journeys": [
+      "scripts/verify/learn-slack-customer-job-context.assert.sql",
+      "scripts/verify/learn-production-card-readers.assert.sql",
+      "scripts/verify/learn-production-card-draft.assert.sql",
+      "scripts/verify/learn-slack-work-context.assert.sql"
+    ]
+  },
+  "executionContract": {
+    "release_target": "tgbnakbxwcqjeimygroz",
+    "release_sha256": "6412911d76228c8aa1e3b1a17af919dcb4a99d393c1e53021684bd922d08fd49",
+    "schemaBeforeRuntime": true,
+    "runtimeBeforeReaderRollback": true,
+    "retainProofStorageOnRollback": true,
+    "noScheduleCredentialOrAccessAssignmentChanges": true
+  }
+}

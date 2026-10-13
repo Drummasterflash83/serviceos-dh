@@ -235,7 +235,9 @@ export function createSlackHistoryServerPorts(
           : typeof auth.bot_id !== "string" || !/^B[A-Z0-9]+$/.test(auth.bot_id))
       )
         return null;
+      let visibility:Readonly<Record<string,unknown>>|null=null;
       const inspectChannel = async () => {
+        visibility=null;
         const data = await request("conversations.info", { channel: identity.channelId });
         const c = data.channel;
         if (
@@ -250,9 +252,14 @@ export function createSlackHistoryServerPorts(
           c.is_ext_shared === true ||
           c.is_org_shared === true ||
           c.is_pending_ext_shared === true ||
+          (c.pending_shared !== undefined && !Array.isArray(c.pending_shared)) ||
           (Array.isArray(c.pending_shared) && c.pending_shared.length)
         )
           throw denied();
+        visibility=Object.freeze({version:'slack-capture-visibility/1',connection_id:initial.id,connection_revision:initial.revision,
+          team_id:identity.teamId,channel_id:identity.channelId,is_channel:c.is_channel,is_private:c.is_private,is_shared:c.is_shared,
+          is_im:c.is_im??null,is_mpim:c.is_mpim??null,is_ext_shared:c.is_ext_shared??null,is_org_shared:c.is_org_shared??null,
+          is_pending_ext_shared:c.is_pending_ext_shared??null,pending_shared:Array.isArray(c.pending_shared)&&c.pending_shared.length>0});
         return {
           tenantId: ctx.tenantId,
           accountId: identity.accountId,
@@ -266,6 +273,7 @@ export function createSlackHistoryServerPorts(
       };
       return {
         identity,
+        captureVisibility:()=>visibility?{...visibility}:null,
         pageLimit:initial.pageLimit,
         authorised,
         inspectChannel,

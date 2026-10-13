@@ -7,6 +7,26 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 13:56 BST — Slack context schema/runtime released; first site-backed job and genuine Slack review verified.**
+
+- Production Slack worker v4 and platform-worker v63 retain exact-version public
+  capture evidence atomically with source pages. Existing auth, schedules, credentials,
+  voicemail records and access are preserved. Two scheduled pages have succeeded,
+  saving 36 exact-version proofs; 4,112 Slack messages were retained at 13:57 BST.
+- The protected-reader release first rolled back with 42501. Its corrected deployment
+  passed the actual non-superuser role rehearsal and restored every role membership.
+- A third real customer/job pair now includes a verified work address. One genuinely
+  single-job Slack action request has an immutable operator review linking it to that
+  job; source content, unknown direction and staff attribution are preserved.
+- The older message still needs capture-proof replay before it appears through the
+  derived customer timeline. Do not present a saved review as completed AI learning.
+- Customer contacts continue. Seven more authenticated voicemail sources and current
+  provider notification destinations are verified; imports and forward capture are
+  prepared separately. Full V1 remains incomplete.
+
+Evidence: [production Slack/customer-context checkpoint](evidence/learn-slack-customer-context-production-2026-10-13.json).
+
+
 **13 October, 13:30 BST — 248 LIVE voicemail/source pairs; frontend and two customer/job pairs verified.**
 
 - Another 109 authenticated voicemail originals/audio records imported successfully,

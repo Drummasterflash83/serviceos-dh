@@ -1,0 +1,67 @@
+{
+  "state": "schema_runtime_and_scheduled_capture_verified_customer_timeline_pending",
+  "completedAt": "2026-10-13T12:55:31.314Z",
+  "schema": {
+    "planSha256": "15feaf5e9e98add43287f9fedba152b7bf3624aa2d68023e96f0b583ed9cd1d0",
+    "state": "applied_verified",
+    "originalAttempt": "42501; transaction rollback confirmed before corrected release",
+    "rolesRestored": true,
+    "accessPreserved": true,
+    "policiesPreserved": true,
+    "schedulesPreserved": true,
+    "proofTablesPrivate": true
+  },
+  "runtime": {
+    "state": "published_and_verified",
+    "unrelatedFunctionsUnchanged": true,
+    "endpoints": [
+      {
+        "name": "learn-slack-worker",
+        "version": 4,
+        "sha256": "062911dc29ab1786102d037153e6cf04d427d69a6684f08d08294bd972f10adb"
+      },
+      {
+        "name": "platform-worker",
+        "version": 63,
+        "sha256": "ea6b7068fbb06939b101d9ba759d1bab34324bf4303a2a5bf344b8fb7dc39c25"
+      }
+    ]
+  },
+  "representativeCustomerSiteJob": {
+    "verifiedAt": "2026-10-13T12:51:11.527876+00:00",
+    "canonicalJobsTotal": 3,
+    "job": {
+      "cardMatches": true,
+      "siteMatches": true,
+      "sourceMatches": true,
+      "customerMatches": true
+    },
+    "site": {
+      "cardMatches": true,
+      "sourceMatches": true,
+      "customerMatches": true
+    }
+  },
+  "reviewedSlackContext": {
+    "verifiedAt": "2026-10-13T12:52:57.662581+00:00",
+    "contextMatches": true,
+    "sourceUnchanged": true,
+    "jobSourceMatches": true,
+    "receiptCommitted": true,
+    "authorNotRelabelled": true,
+    "direction": "unknown",
+    "processingState": "enriched denotes reviewed context, not AI analysis"
+  },
+  "pending": [
+    "Retained reviewed source needs bounded replay before customer-derived timeline acceptance",
+    "Full channel history/replies and ongoing coverage incomplete"
+  ],
+  "scheduledCapture": {
+    "observedAt": "2026-10-13T12:57:50.676085+00:00",
+    "successfulPages": 2,
+    "visibilityReceipts": 2,
+    "exactVersionProofs": 36,
+    "retainedMessages": 4112,
+    "manualProviderRuns": 0
+  }
+}

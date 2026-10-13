@@ -1,7 +1,8 @@
 import {SlackHistoryTransportError} from './slack_history_errors.ts';
 import {assertSlackHistoryScope} from './slack_history.ts';
 export type HistoryRequestIdentity={tenantId:string;accountId:string;teamId:string;channelId:string;oldest:string;latest:string;consentReference:string;expiresAt:string;maxPages:number;parentTimestamp?:string};
-export type HistoryRequestBinding={teamId:string;channelId:string;isPrivate:false;isShared:false;pageLimit?:15|100;isMember:boolean;publicUserAccess?:true;authorised:()=>Promise<boolean>;request:(method:string,body:Record<string,unknown>)=>Promise<any>};
+export type CaptureVisibility=Readonly<Record<string,unknown>>;
+export type HistoryRequestBinding={captureVisibility?:()=>CaptureVisibility|null;teamId:string;channelId:string;isPrivate:false;isShared:false;pageLimit?:15|100;isMember:boolean;publicUserAccess?:true;authorised:()=>Promise<boolean>;request:(method:string,body:Record<string,unknown>)=>Promise<any>};
 export type BindHistoryRequest=(identity:HistoryRequestIdentity)=>Promise<HistoryRequestBinding|null>;
 
 export type HistoryArguments={channel:string;oldest:string;latest:string;limit:15|100;cursor?:string;ts?:string};
@@ -11,6 +12,7 @@ export type ChannelAttestation={tenantId:string;accountId:string;teamId:string;c
  * authoritative storage, rather than accept a queued/browser claim as authority. */
 export interface HistoryServerLease {
  identity:Readonly<HistoryRequestIdentity>;
+ captureVisibility?:()=>CaptureVisibility|null;
  pageLimit?:15|100;
  authorised:()=>Promise<boolean>;
  inspectChannel:()=>Promise<ChannelAttestation>;
@@ -47,7 +49,7 @@ export function createHistoryRequestAdapter(ports?:HistoryServerPorts,clock:()=>
    if(!await authorised())return null;
    let requests=0;
    const channel=verifiedChannel as ChannelAttestation|null;if(!channel)return null;
-   return {pageLimit,teamId:identity.teamId,channelId:identity.channelId,isPrivate:false,isShared:false,isMember:channel.isMember,...(channel.publicUserAccess?{publicUserAccess:true as const}:{}),authorised,
+   return {captureVisibility:lease.captureVisibility,pageLimit,teamId:identity.teamId,channelId:identity.channelId,isPrivate:false,isShared:false,isMember:channel.isMember,...(channel.publicUserAccess?{publicUserAccess:true as const}:{}),authorised,
     request:async(method,body)=>{
      const allowed=['channel','oldest','latest','limit','cursor',...(identity.parentTimestamp?['ts']:[])];
      if(method!==(identity.parentTimestamp?'conversations.replies':'conversations.history')||body?.ts!==identity.parentTimestamp||!body||Object.keys(body).some(k=>!allowed.includes(k))||body.channel!==identity.channelId||body.oldest!==identity.oldest||body.latest!==identity.latest||body.limit!==pageLimit||body.cursor!==undefined&&(typeof body.cursor!=='string'||body.cursor.length===0||body.cursor.length>1024))throw Error('history_request_scope_unavailable');

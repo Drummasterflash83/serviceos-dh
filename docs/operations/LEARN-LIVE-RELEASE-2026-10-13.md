@@ -1,6 +1,23 @@
 # LEARN live release — 13 October 2026
 
-## Latest checkpoint — 13:30 BST
+## Latest checkpoint — 13:56 BST
+
+- Additive Slack capture visibility and customer/job context SQL is installed.
+  Exact role/ACL restoration, existing policies and schedule fingerprints passed.
+  First failed attempt rolled back; corrected apply and rollback were rehearsed
+  using production's non-superuser deployment role.
+- Matching Slack worker v4/platform-worker v63 published with exact artifact readback,
+  retaining importer v6 and all existing voicemail data. New frontend is already live.
+- Three representative canonical jobs now exist; the third includes a real linked site.
+  One single-job Slack conversation has a verified source-preserving operator review.
+  Two scheduled pages succeeded with 36 exact-version capture proofs at 13:57 BST.
+  Earlier source versions still require capture-proof replay; derived customer-timeline
+  acceptance remains pending.
+- [Production evidence](evidence/learn-slack-customer-context-production-2026-10-13.json).
+  Reproducible restricted-reader apply/rollback is retained under
+  `supabase/release/learn-production-patches/slack-customer-context-v1/`.
+
+## Previous checkpoint — 13:30 BST
 
 - Live frontend `9b0c581288b023dd30f90981a0c98c97bb371eca`, deployment
   `dpl_BVXbnJE4i6d6b8iGMRZ8SqmpLGya`, serves the four existing aliases. Production

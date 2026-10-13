@@ -117,11 +117,11 @@ function fixture(kind: "bot" | "user" = "bot") {
       }
       if (name === "learn_slack_recurring_thread_allowed") return {data:state.recurringAllowed,error:null};
       if (name === "learn_slack_read_credential" || name === "learn_slack_read_thread_credential") return { data: state.credential, error: null };
-      if (name === "slack_thread_commit_page") {
+      if (name === "slack_commit_attested_page" && args.p_import_id) {
         rows.slack_thread_imports.checkpoint = args.p_next;
         return { data: true, error: null };
       }
-      if (name === "slack_history_commit_page") {
+      if (name === "slack_commit_attested_page") {
         rows.connector_accounts.sync_cursor = args.p_next;
         return { data: true, error: null };
       }
@@ -239,7 +239,7 @@ test("stored thread approval binds exact parent, replies method and independent 
   }]);
   assert.ok(f.rpc.some(r => r.name === "learn_slack_read_thread_credential"));
   assert.ok(!f.rpc.some(r => r.name === "learn_slack_read_credential"));
-  const saved = f.rpc.find(r => r.name === "slack_thread_commit_page");
+  const saved = f.rpc.find(r => r.name === "slack_commit_attested_page");
   assert.equal(saved.args.p_import_id, id(7));
   assert.equal(saved.args.p_records[0].provider_payload.thread_ts, "110.1");
   assert.equal(f.rows.slack_thread_imports.checkpoint.pages, 1);
@@ -308,7 +308,7 @@ test("actual server transport scopes secret lookup, validates workspace/channel 
       },
     ],
   );
-  const committed = f.rpc.find((r) => r.name === "slack_history_commit_page");
+  const committed = f.rpc.find((r) => r.name === "slack_commit_attested_page");
   assert.equal(committed.args.p_records[0].provider_payload.user, "U123");
   assert.equal(JSON.stringify(r).includes(token), false);
 });
@@ -346,7 +346,7 @@ test("wrong workspace, shared/private/nonmember channel never requests messages"
       false,
     );
     assert.equal(
-      f.rpc.some((r) => r.name === "slack_history_commit_page"),
+      f.rpc.some((r) => r.name === "slack_commit_attested_page"),
       false,
     );
   }
@@ -365,7 +365,7 @@ test("revocation or credential revision change during provider response prevents
     };
     assert.equal((await f.run()).success, false);
     assert.equal(
-      f.rpc.some((r) => r.name === "slack_history_commit_page"),
+      f.rpc.some((r) => r.name === "slack_commit_attested_page"),
       false,
     );
   }
@@ -384,7 +384,7 @@ test("rate limiting during binding or history preserves provider delay without e
     assert.equal(r.error?.retryAfterSeconds, 120);
     assert.equal(f.requests.filter((r) => r.method === step).length, 1);
     assert.equal(
-      f.rpc.some((r) => r.name === "slack_history_commit_page"),
+      f.rpc.some((r) => r.name === "slack_commit_attested_page"),
       false,
     );
     assert.equal(JSON.stringify(r).includes("private"), false);
@@ -402,7 +402,7 @@ test("oversized and malformed responses are discarded, while missing permission 
     assert.equal(r.success, false);
     assert.equal(r.error?.retryable, false);
     assert.equal(
-      f.rpc.some((r) => r.name === "slack_history_commit_page"),
+      f.rpc.some((r) => r.name === "slack_commit_attested_page"),
       false,
     );
     assert.equal(JSON.stringify(r).includes("private prose"), false);
@@ -437,7 +437,7 @@ test('worker commits channel broadcasts through the real adapter and transport w
  const broadcast={ts:'123.1',text:'Synthetic broadcast',user:'U123',subtype:'thread_broadcast',thread_ts:'90.1',root:{ts:'90.1',text:'Retained reference'}};
  f.state.history={ok:true,has_more:false,messages:[broadcast],response_metadata:{next_cursor:''}};
  const result=await f.run();assert.equal(result.success,true);
- const saved=f.rpc.find(r=>r.name==='slack_history_commit_page');
+ const saved=f.rpc.find(r=>r.name==='slack_commit_attested_page');
  assert.ok(saved);assert.deepEqual(saved.args.p_records[0].provider_payload,broadcast);
  assert.equal(saved.args.p_records[0].thread_timestamp,'90.1');
  assert.equal(result.result?.threadCoverage,'unverified');
@@ -445,7 +445,7 @@ test('worker commits channel broadcasts through the real adapter and transport w
  assert.ok(!f.requests.some(r=>r.method==='conversations.replies'));
  const denied=fixture();denied.state.history.messages=[{...broadcast,thread_ts:'124.1'}];
  assert.equal((await denied.run()).success,false);
- assert.ok(!denied.rpc.some(r=>r.name==='slack_history_commit_page'));
+ assert.ok(!denied.rpc.some(r=>r.name==='slack_commit_attested_page'));
  assert.deepEqual(denied.rows.connector_accounts.sync_cursor,{});
 });
 
@@ -460,7 +460,7 @@ test('worker commits channel broadcasts through the real adapter and transport w
   const paused=threadFixture();paused.rows.slack_thread_imports.definition={recurringHistoryImportId:id(9)};
   paused.state.override=(method)=>{if(method==='conversations.replies'){paused.state.recurringAllowed=false;return new Response(JSON.stringify(paused.state.history),{status:200});}};
   assert.equal((await paused.run()).success,false);
-  assert.ok(!paused.rpc.some(r=>r.name==='slack_thread_commit_page'));
+  assert.ok(!paused.rpc.some(r=>r.name==='slack_commit_attested_page'));
  });
 
 test('explicit user token captures public nonmember history and replies without pretending membership',async()=>{
@@ -468,7 +468,7 @@ test('explicit user token captures public nonmember history and replies without 
   f.state.channel.is_member=false;
   const binding=await f.bind(f.ctx);assert.ok(binding);
   const result=await f.run();assert.equal(result.success,true);
-  assert.ok(f.rpc.some(r=>r.name=== (f.ctx.jobType==='slack.thread_sync'?'slack_thread_commit_page':'slack_history_commit_page')));
+  assert.ok(f.rpc.some(r=>r.name=== 'slack_commit_attested_page'));
   assert.equal(JSON.stringify(result).includes(f.state.credential),false);
  }
  const f=fixture('user');f.state.channel.is_member=false;
@@ -494,7 +494,7 @@ test('user identity, token kind and channel restrictions cannot be widened by th
  ]){
   const f=fixture('user');mutate(f);assert.equal((await f.run()).success,false);
   assert.ok(!f.requests.some(r=>['conversations.history','conversations.replies'].includes(r.method)));
-  assert.ok(!f.rpc.some(r=>r.name==='slack_history_commit_page'));
+  assert.ok(!f.rpc.some(r=>r.name==='slack_commit_attested_page'));
  }
  const malformed=fixture('user');delete malformed.rows.provider_connections.non_secret_config.authorized_user_id;
  assert.equal((await malformed.run()).success,false);assert.equal(malformed.rpc.length,0);assert.equal(malformed.requests.length,0);
@@ -505,7 +505,7 @@ test('changing the configured user or credential kind without a revision still f
   (f:any)=>f.rows.provider_connections.non_secret_config.credential_kind='bot',
  ]){
   const f=fixture('user');f.state.override=method=>{if(method==='conversations.history')mutate(f);return undefined;};
-  assert.equal((await f.run()).success,false);assert.ok(!f.rpc.some(r=>r.name==='slack_history_commit_page'));
+  assert.equal((await f.run()).success,false);assert.ok(!f.rpc.some(r=>r.name==='slack_commit_attested_page'));
  }
 });
 
@@ -523,7 +523,7 @@ test('every provider dispatch reserves its cumulative campaign allowance first; 
  }
  const paused=fixture('user');paused.state.override=()=>{paused.state.reservation=false;return undefined;};
  const stopped=await paused.run();assert.equal(stopped.success,false);assert.equal(paused.requests.length,1);
- assert.equal(paused.rpc.some(r=>r.name==='slack_history_commit_page'),false);
+ assert.equal(paused.rpc.some(r=>r.name==='slack_commit_attested_page'),false);
 });
 
 test('a lost campaign reservation acknowledgement never fetches and retries only through a new durable attempt',async()=>{
@@ -543,7 +543,7 @@ test("reviewed internal connection reads 100 messages with unchanged consent and
   const call=f.requests.find(r=>r.method===(thread?'conversations.replies':'conversations.history'));
   assert.equal(call.params.limit,'100');assert.equal(call.params.channel,'C123');
   assert.equal(f.requests.length,SLACK_HISTORY_PROVIDER_REQUESTS_PER_JOB);
-  const saved=f.rpc.find(r=>r.name===(thread?'slack_thread_commit_page':'slack_history_commit_page'));
+  const saved=f.rpc.find(r=>r.name==='slack_commit_attested_page');
   assert.equal(saved.args.p_records.length,100);
   assert.equal(result.result?.ingestion_complete,false);
  }
@@ -552,24 +552,29 @@ test("unknown/error/malformed profiles cannot increase page size or obtain crede
  for(const value of [null,0,16,101,1000]){const f=fixture();f.state.pageLimit=value;assert.equal((await f.run()).success,false);assert.equal(f.requests.length,0);}
  const f=fixture();f.state.rateError={code:'unavailable'};assert.equal((await f.run()).success,false);assert.equal(f.requests.length,0);
  const fallback=fixture();fallback.state.history.messages=Array.from({length:16},(_,i)=>({ts:`123.${i+1}`,text:'Synthetic',user:'U123'}));
- assert.equal((await fallback.run()).success,false);assert.ok(!fallback.rpc.some(r=>r.name==='slack_history_commit_page'));
+ assert.equal((await fallback.run()).success,false);assert.ok(!fallback.rpc.some(r=>r.name==='slack_commit_attested_page'));
 });
 test("profile revocation before publication and oversized internal pages fail closed",async()=>{
  const f=fixture();f.state.pageLimit=100;
  f.state.override=(method)=>{if(method==='conversations.history')f.state.pageLimit=15;return undefined;};
- assert.equal((await f.run()).success,false);assert.ok(!f.rpc.some(r=>r.name==='slack_history_commit_page'));
+ assert.equal((await f.run()).success,false);assert.ok(!f.rpc.some(r=>r.name==='slack_commit_attested_page'));
  const oversized=fixture();oversized.state.pageLimit=100;
  oversized.state.history.messages=Array.from({length:101},(_,i)=>({ts:`123.${i+1}`,text:'Synthetic',user:'U123'}));
- assert.equal((await oversized.run()).success,false);assert.ok(!oversized.rpc.some(r=>r.name==='slack_history_commit_page'));
+ assert.equal((await oversized.run()).success,false);assert.ok(!oversized.rpc.some(r=>r.name==='slack_commit_attested_page'));
 });
 test("internal profile retains provider Retry-After and never publishes a throttled page",async()=>{
  const f=fixture();f.state.pageLimit=100;
  f.state.override=method=>method==='conversations.history'?new Response('',{status:429,headers:{'Retry-After':'300'}}):undefined;
  const result=await f.run();assert.equal(result.success,false);assert.equal(result.error?.code,'slack_history_rate_limited');assert.equal(result.error?.retryAfterSeconds,300);
- assert.ok(!f.rpc.some(r=>r.name==='slack_history_commit_page'));
+ assert.ok(!f.rpc.some(r=>r.name==='slack_commit_attested_page'));
 });
 
 test("missing profile schema retains old 15-message runtime during rollout",async()=>{
  for(const code of ['PGRST202','42883','42P01']){const f=fixture();f.state.rateError={code};f.state.pageLimit=null;
  assert.equal((await f.run()).success,true);assert.equal(f.requests.find(r=>r.method==='conversations.history').params.limit,'15');}
 });
+
+test('atomic page receives only the real channel metadata and exact connection revision',async()=>{const f=fixture();assert.equal((await f.run()).success,true);const p=f.rpc.find(r=>r.name==='slack_commit_attested_page')!.args;assert.equal(p.p_import_id,null);assert.equal(p.p_visibility.connection_id,f.rows.provider_connections.id);assert.equal(p.p_visibility.connection_revision,f.rows.provider_connections.updated_at);assert.equal(p.p_visibility.channel_id,'C123');assert.equal(p.p_visibility.is_private,false);assert.equal(p.p_visibility.is_channel,true);assert.equal(Object.keys(p.p_visibility).length,14);assert.ok(!JSON.stringify(p.p_visibility).includes(f.state.credential));});
+test('channel becoming private after history response cannot publish or inherit the old public observation',async()=>{const f=fixture();f.state.override=method=>{if(method==='conversations.history'){f.state.channel.is_private=true;return new Response(JSON.stringify(f.state.page));}};assert.equal((await f.run()).success,false);assert.ok(!f.rpc.some(r=>r.name==='slack_commit_attested_page'));});
+
+test('malformed pending-shared metadata cannot be normalised into public proof',async()=>{const f=fixture();(f.state.channel as any).pending_shared='unknown';assert.equal((await f.run()).success,false);assert.ok(!f.rpc.some(r=>r.name==='slack_commit_attested_page'));});

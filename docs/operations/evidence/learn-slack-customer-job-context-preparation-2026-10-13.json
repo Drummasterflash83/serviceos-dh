@@ -1,0 +1,85 @@
+{
+  "state": "prepared_offline_verified_not_deployed",
+  "date": "2026-10-13",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "providerRequests": 0,
+  "nodeTests": {
+    "passed": 119,
+    "failed": 0
+  },
+  "sqlJourneys": [
+    "scripts/verify/learn-slack-customer-job-context.assert.sql",
+    "scripts/verify/learn-production-card-readers.assert.sql",
+    "scripts/verify/learn-production-card-draft.assert.sql",
+    "scripts/verify/learn-slack-work-context.assert.sql",
+    "scripts/verify/learn-slack-visibility-commit.assert.sql"
+  ],
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "sourcePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 396,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "fb82c631caf928be02180f1e715fd0c9a3971dd38ff69ecac3f537d379d23e22",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "containerRemoved": true,
+  "captureProof": "durable exact retained source-version evidence committed atomically with the existing fenced page transaction",
+  "legacySources": "require authorised bounded worker replay; no inferred public visibility",
+  "sourceReviewCorrection": "former job 13356 whole-message candidate rejected as a multi-job StockBot summary; JN syntax regression test added",
+  "releaseOrder": [
+    "backward-compatible frontend validator",
+    "reviewed SQL reader/helper and attested-page writer",
+    "matching Slack worker/platform-worker runtime",
+    "bounded actual source replay if needed",
+    "logged genuine source-to-job review and signed-in timeline acceptance"
+  ],
+  "existingPresentationUnchanged": true,
+  "files": {
+    "supabase/migrations/20261101910000_learn_slack_customer_job_context.sql": "6412911d76228c8aa1e3b1a17af919dcb4a99d393c1e53021684bd922d08fd49",
+    "scripts/verify/learn-slack-customer-job-context.assert.sql": "324b8b7fa13d3a9793ba19f8a4ad7f8252752d7da7f03f463485ecad5f013bb9",
+    "scripts/verify/learn-slack-visibility-commit.assert.sql": "a4bea9b186ba74eac918c38beb9820e048dc4c7e640164214ff726d9fa6396ab",
+    "supabase/functions/_shared/slack/slack_history_server.ts": "ed4cbe3713c2570584e15e206cdc54cdd3d171157d69331368a0593f7133a30b",
+    "supabase/functions/_shared/slack/slack_history_request.ts": "17345070bb754a1ccfcab98fc8dfa60d8ab374307a383624642e7db74496d444",
+    "supabase/functions/_shared/slack/slack_history_binding.ts": "d27facf8c005f45444efd0c2a589c2dd942667406e1f9b0b4a16582b26a49c9c",
+    "supabase/functions/_shared/slack/slack_history_persist.ts": "1958ef61a52bdc6482a4c03a6d1e625444d3cd22e6ffb744296dfbf921d6e8b5",
+    "supabase/functions/_shared/worker_handlers/slack_history.ts": "74fdfcd766c9a8134226a8ba813f0ba7d34a5ad777eb327143c69a03bf2932b9",
+    "supabase/functions/_shared/slack/slack_job_context.ts": "b29fce9e5e5487ed3b6cd6145509226162e215cd648fa196ad304f506062288a",
+    "supabase/functions/_shared/slack/slack_job_context.test.ts": "57de9ab6cb6b5389c26937b762d968449c60aa506888b9149be135653720d427"
+  },
+  "privateRehearsal": ".verification-results/slack-customer-context-rehearsal-v6/report.json",
+  "deploymentPreparation": {
+    "state": "prepared_not_applied_or_deployed",
+    "baseline": {
+      "learn-slack-worker": 3,
+      "platform-worker": 62
+    },
+    "target": {
+      "learn-slack-worker": 4,
+      "platform-worker": 63
+    },
+    "reviewManifestSha256": "9952db42c64d8255e275d9d85928d9a5e63ab0d699546a230b4d9dbb77a94e8c",
+    "schemaPlanSha256": "ae72aacfe0b8117b3e5bd3ba3e13605545c671f07d8d43de3c26e658994d7070",
+    "runtimePlanSha256": "0b45b23af7de9842244c8e3798a3b3dacb51aabb17f80b7ff999c5eda283130f",
+    "offlineBoot": "all_endpoints_booted_and_rejected_missing_auth",
+    "guardAndRollbackRehearsal": "passed",
+    "newProviderRequests": 0,
+    "productionWrites": 0
+  }
+}

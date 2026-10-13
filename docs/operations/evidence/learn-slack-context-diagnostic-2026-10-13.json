@@ -1,0 +1,94 @@
+{
+  "observedAt": "2026-10-13T11:30:33.069Z",
+  "productionWrites": 0,
+  "providerRequests": 0,
+  "aggregateOnly": true,
+  "jobs": null,
+  "links": {
+    "job": 0,
+    "person": 0,
+    "company": 0,
+    "reviewed": 0
+  },
+  "states": [
+    {
+      "count": 668,
+      "reason": null,
+      "direction": "unknown",
+      "processing_status": "pending"
+    },
+    {
+      "count": 189,
+      "reason": "direction_unverified",
+      "direction": "unknown",
+      "processing_status": "identity_review"
+    }
+  ],
+  "messages": 1233,
+  "jobAliases": 0,
+  "references": {
+    "candidates": 1,
+    "candidateAmbiguous": 0,
+    "candidateUniqueApiJob": 0,
+    "candidateNoCanonicalJob": 1,
+    "candidateUniqueCanonicalJob": 0,
+    "messagesWithPrefixedCandidate": 1
+  },
+  "interactions": 857,
+  "messageKinds": [
+    {
+      "kind": "channel_activity",
+      "count": 376
+    },
+    {
+      "kind": "conversation",
+      "count": 857
+    }
+  ],
+  "pendingEvents": 0,
+  "contextReviews": 0,
+  "processingJobs": [
+    {
+      "count": 25750,
+      "status": "succeeded",
+      "job_type": "intelligence.ingest_interaction",
+      "error_code": null
+    },
+    {
+      "count": 14308,
+      "status": "succeeded",
+      "job_type": "intelligence.observe",
+      "error_code": null
+    },
+    {
+      "count": 11,
+      "status": "queued",
+      "job_type": "intelligence.ingest_interaction",
+      "error_code": null
+    },
+    {
+      "count": 1,
+      "status": "queued",
+      "job_type": "identity.resolve",
+      "error_code": null
+    },
+    {
+      "count": 5,
+      "status": "dead_letter",
+      "job_type": "intelligence.observe",
+      "error_code": "learn_observation_mode_review"
+    },
+    {
+      "count": 4894,
+      "status": "succeeded",
+      "job_type": "identity.resolve",
+      "error_code": null
+    },
+    {
+      "count": 4,
+      "status": "dead_letter",
+      "job_type": "identity.resolve",
+      "error_code": "identity_review_required"
+    }
+  ]
+}
