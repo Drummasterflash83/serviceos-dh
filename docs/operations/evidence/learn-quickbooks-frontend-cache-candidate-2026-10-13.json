@@ -1,0 +1,29 @@
+{
+  "state": "protected_test_candidate_ready_not_promoted",
+  "sha": "ed7e3669f585ebee61cdee3eb30f2692d1a413ce",
+  "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+  "prior": "dpl_AFvr5njNt4hpPUqpBo413zKt3NRr",
+  "startedAt": "2026-10-13T21:57:19.853Z",
+  "id": "dpl_9hCMhDtwTVvCZiu8xv36dnHt5jAH",
+  "url": "serviceos-learn-test-czyfgytod-allkin.vercel.app",
+  "readyState": "READY",
+  "gitHubCheckpointVerified": [
+    "codex/quickbooks-integration",
+    "codex/learn-v1-test"
+  ],
+  "localMergedBuild": "passed",
+  "browserGuideRendered": true,
+  "protection": "all",
+  "stableAliasesChanged": false,
+  "productionFrontendChanged": false,
+  "cacheHeaders": {
+    "configurationAdded": true,
+    "runtimeResponseVerified": false,
+    "reason": "Unauthenticated requests stop at Vercel protection. No existing automation bypass credential was available; none was created and protection remains enabled."
+  },
+  "limitations": [
+    "This candidate contains the merged shared TEST branch. It is not a production promotion.",
+    "Signed-in finance views, deployed cache headers, final policy adoption and Drummonds company acceptance remain separate checks."
+  ],
+  "recordedAt": "2026-10-13T22:06:21Z"
+}

@@ -1,6 +1,6 @@
 {
-  "state": "sandbox_recovery_and_reconnection_verified_refresh_pending",
-  "checkedAt": "2026-10-13T20:51:51.354Z",
+  "state": "sandbox_refresh_and_api_revocation_verified",
+  "checkedAt": "2026-10-13T21:51:21.343Z",
   "project": "saatxzwxvdvqevbnskxy",
   "failedRefresh": {
     "checkedAt": "2026-10-13T20:31:35.880Z",
@@ -89,9 +89,83 @@
     "sourceVersions": 77
   },
   "pending": [
-    "Normal provider refresh when the new token reaches its renewal window",
-    "API revocation acceptance",
-    "Production Intuit access, approved policy publication, live company consent and release acceptance"
+    "Production Intuit access and approved policy publication",
+    "Live company consent, bounded import/reconciliation and release acceptance"
   ],
-  "productionChanges": 0
+  "productionChanges": 0,
+  "refreshAcceptance": {
+    "providerResponse": {
+      "checkedAt": "2026-10-13T21:44:10.667Z",
+      "project": "saatxzwxvdvqevbnskxy",
+      "environment": "sandbox",
+      "outcome": "unconfirmed",
+      "providerRequests": 1,
+      "traces": [
+        {
+          "event": "quickbooks_provider_response",
+          "operation": "token",
+          "environment": "oauth",
+          "observedAt": "2026-10-13T21:44:09.656Z",
+          "status": 200,
+          "intuitTid": "1-6acea629-21bf22173f7bf9474705744d",
+          "outcome": "response"
+        }
+      ],
+      "generationBefore": 2,
+      "generationAfter": 3,
+      "expiryExtended": true,
+      "leaseClear": true,
+      "captureStatus": "paused",
+      "productionChanges": 0,
+      "verified": false
+    },
+    "savedEvent": {
+      "event": "refresh_saved",
+      "detail": {
+        "generation": 3
+      },
+      "created_at": "2026-10-13 21:44:09.821647+00"
+    },
+    "interpretation": "Provider returned HTTP 200; generation 3 and extended expiry were committed atomically and the lease cleared. The temporary test adapter attempted JSON parsing on the void finish RPC response, yielding a false-negative outcome. Production uses the Supabase SDK RPC adapter, not that temporary adapter. No token request was replayed.",
+    "persistenceVerified": true,
+    "hostedScheduledRenewalVerified": false
+  },
+  "apiRevocation": {
+    "method": "Existing signed-in TEST operator control; approved sandbox lifecycle check",
+    "providerAcceptance": "Intuit confirmed access revocation; persisted disconnection state revoked",
+    "readback": {
+      "checkedAt": "2026-10-13T21:51:21.343Z",
+      "project": "saatxzwxvdvqevbnskxy",
+      "savedPages": 8,
+      "connections": [
+        {
+          "id": "5b5e7505-fb77-4b38-b928-9f5c76eaea71",
+          "realm": "9341456295767559",
+          "status": "disconnected",
+          "revision": 10,
+          "generation": 3,
+          "leaseClear": true,
+          "environment": "sandbox",
+          "accessExpiresAt": null
+        }
+      ],
+      "disconnects": [
+        {
+          "code": "operator_verified_provider_disconnect",
+          "state": "reviewed",
+          "finishedAt": "2026-10-13T20:47:14.663071+00:00"
+        },
+        {
+          "code": null,
+          "state": "revoked",
+          "finishedAt": "2026-10-13T21:51:09.497228+00:00"
+        }
+      ],
+      "activeImports": 0,
+      "latestRecords": 77,
+      "sourceVersions": 77
+    },
+    "sampleRecordsRetained": 77,
+    "productionChanges": 0
+  }
 }

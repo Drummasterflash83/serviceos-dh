@@ -1,0 +1,22 @@
+{
+  "state": "passed",
+  "productionPackage": true,
+  "exactBundleSha256": "97cf9c47f60cb051e7a6688c5dcd1ea1ece4fbd1fea8a7ca92c17e71771a41e1",
+  "source": "local schema only",
+  "existingPublicTables": 257,
+  "addedRepositoryHelpers": [
+    "learn_operator_input_immutable",
+    "learn_operator_input_access",
+    "learn_import_batch_authority"
+  ],
+  "checks": [
+    "Exact combined production package installs and rolls back under non-superuser postgres; wrong target, widened helper permissions and repeated installation are rejected.",
+    "No connection, source import, feature activation or schedule seeded.",
+    "QuickBooks table RLS and user/service grants verified.",
+    "Real local Vault extension stores and retrieves a synthetic app secret."
+  ],
+  "limitations": [
+    "Local schema can differ from hosted TEST and production; hosted catalog preflight still required.",
+    "No real provider credential, company data, hosted encryption or signed-in browser acceptance."
+  ]
+}
