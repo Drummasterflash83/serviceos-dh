@@ -1,3 +1,4 @@
+import {readStoredSourceReplay} from './slack_source_replay.ts';
 import {SlackHistoryTransportError} from './slack_history_errors.ts';
 import {historyScopeKey,assertSlackHistoryScope} from './slack_history.ts';
 import type {SlackHistoryScope} from './slack_history.ts';
@@ -19,6 +20,7 @@ export async function readStoredHistoryScope(ctx:WorkerHandlerContext,clock:()=>
  if(account.error||!account.data||account.data.tenant_id!==ctx.tenantId||account.data.id!==accountId||account.data.status!=='active'||!uuid(account.data.tenant_connector_id))return null;
  const connector=await db.from('tenant_connectors').select('id,tenant_id,connector_id,enabled,status').eq('tenant_id',ctx.tenantId).eq('id',account.data.tenant_connector_id).maybeSingle();
  if(connector.error||!connector.data||connector.data.tenant_id!==ctx.tenantId||connector.data.id!==account.data.tenant_connector_id||connector.data.connector_id!=='slack'||connector.data.enabled!==true||connector.data.status!=='active')return null;
+ if(Object.hasOwn(job.data.payload,'source_replay_id')){if(thread)return null;return readStoredSourceReplay(ctx,accountId,job.data.payload.source_replay_id,clock);}
  let cfg=account.data.settings?.slack_history,saved=account.data.sync_cursor;
  let threadImportId:string|undefined;
  if(thread){
@@ -40,7 +42,7 @@ export async function readStoredHistoryScope(ctx:WorkerHandlerContext,clock:()=>
  const scopeKey=historyScopeKey(scope,cfg.channelId);
  const checkpoint=saved&&Object.keys(saved).length===0?{scopeKey,cursor:null,pages:0,complete:false}:saved;
  if(!checkpoint||checkpoint.scopeKey!==scopeKey||!Number.isSafeInteger(checkpoint.pages)||checkpoint.pages<0||checkpoint.pages>cfg.maxPages||typeof checkpoint.complete!=='boolean'||checkpoint.cursor!==null&&(typeof checkpoint.cursor!=='string'||checkpoint.cursor.length===0||checkpoint.cursor.length>1024)||checkpoint.complete&&checkpoint.cursor!==null)return null;
- return {connectionId:cfg.connectionId,accountId,threadImportId,scope,channelId:cfg.channelId,checkpoint,maxPages:cfg.maxPages,expiresAt:cfg.expiresAt};
+ return {connectionId:cfg.connectionId,accountId,threadImportId,sourceReplayId:undefined,scope,channelId:cfg.channelId,checkpoint,maxPages:cfg.maxPages,expiresAt:cfg.expiresAt};
 }
 /** Reads authoritative durable job/config only; browser/queued payload is not
  * used as consent. The transport separately verifies the credential connection. */

@@ -1,0 +1,102 @@
+{
+  "state": "prepared_offline_verified_not_deployed",
+  "date": "2026-10-13",
+  "productionChanged": false,
+  "providerRequests": 0,
+  "nodeTests": {
+    "passed": 124,
+    "failed": 0
+  },
+  "sqlRehearsal": {
+    "state": "passed",
+    "role": "postgres",
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 396,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "9d1b0629b32edc1fcc156a0ef3d4b7b17eb0ee4c003e4cb4191bdce91ed1e18a",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "journeys": [
+      "scripts/verify/learn-slack-source-replay.assert.sql",
+      "scripts/verify/learn-slack-customer-job-context.assert.sql",
+      "scripts/verify/learn-production-card-readers.assert.sql",
+      "scripts/verify/learn-production-card-draft.assert.sql",
+      "scripts/verify/learn-slack-work-context.assert.sql"
+    ],
+    "containerRemoved": true
+  },
+  "explicitChecks": [
+    "authenticated request/check/cancel and exact request retry",
+    "wrong actor and duplicate active source denial",
+    "actual queue claim and shared campaign ledger reservation",
+    "duplicate reservation and unreserved proof rejection",
+    "private channel and wrong source rejection",
+    "campaign pause, actor revocation and exhausted shared budget",
+    "atomic rollback on proof-insert failure",
+    "missing/changed source held without proof",
+    "exact idempotent source proof and unchanged source/version",
+    "unchanged primary account settings/cursor",
+    "429 retry delay and workspace backoff",
+    "stale attempt rejection after actual reclaim",
+    "same campaign ledger charged for both attempts",
+    "retained observed reply parent and exact reply window"
+  ],
+  "releasePrerequisite": "Prepare against live Slack worker v4 and platform-worker v64, preserving the separately published voicemail importer v7 implementation. No replay runtime artifacts or production apply were executed.",
+  "files": {
+    "supabase/migrations/20261101920000_learn_slack_campaign_source_replay.sql": "17b4d8ea7b4fae2d59fb3d1d1f3c68ad5913c06bfeea119c61d6943ba9df9c83",
+    "supabase/functions/_shared/slack/slack_source_replay.ts": "42d60fcf4f97bd7083d868e4b32b0a6035241cdc73c7191e90a46bd9378ee075",
+    "supabase/functions/_shared/slack/slack_source_replay.test.ts": "cc9859d3a2930fa22ccdf1e267f06d623f6e06931b1e4721f96c0fc54f3fabd0",
+    "supabase/functions/_shared/slack/slack_history_binding.ts": "7e16285069759c462c71825c644e25232d40b5d9543832026871662d6a3f1c2c",
+    "supabase/functions/_shared/worker_handlers/slack_history.ts": "a1c6d8ab6e2466d80794309cd029013472ed383e2399f411fd767c203837f1d8",
+    "scripts/verify/learn-slack-source-replay.assert.sql": "bbc73925915ea6337485856d28b11aa15196d6b05845346e96e152ba9381f802"
+  },
+  "immutableRuntimePreparation": {
+    "state": "prepared_not_deployed",
+    "sourceClosureSha256": "41a46ff5faf471f64d21228edacef69d8e8bddc9ac363c632f17f54e4fcabace",
+    "changedFiles": [
+      "_shared/slack/slack_history_binding.ts",
+      "_shared/slack/slack_source_replay.ts",
+      "_shared/worker_handlers/slack_history.ts"
+    ],
+    "baseline": {
+      "learn-slack-worker": 4,
+      "platform-worker": 64,
+      "learn-voicemail-import": 7
+    },
+    "boot": {
+      "state": "all_endpoints_booted_and_rejected_missing_auth",
+      "containerRemoved": true
+    },
+    "voicemailParserSha256": "2d0991566b89962d53add6ccd059a695c5d18a7d8dfc340486d9f4759756f4b2",
+    "preservationGuardTests": 4,
+    "allowsEnabledVoicemailAndNewRows": true
+  },
+  "releaseEnvelopeRehearsal": {
+    "state": "passed",
+    "checks": [
+      "wrong_target",
+      "wrong_digest",
+      "late_failure"
+    ],
+    "rollbackVerified": true,
+    "noRoleGrantRequired": true
+  }
+}

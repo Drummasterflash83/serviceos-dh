@@ -1,3 +1,4 @@
+import {sourceReplayPersistence} from '../slack/slack_source_replay.ts';
 import {createStoredHistoryBinding} from '../slack/slack_history_binding.ts';
 import {createSlackHistoryServerPorts} from '../slack/slack_history_server.ts';
 import {createHistoryRequestAdapter} from '../slack/slack_history_request.ts';
@@ -6,7 +7,7 @@ import {readSlackHistoryBatch} from '../slack/slack_history_batch.ts';
 import {slackHistoryPersistence} from '../slack/slack_history_persist.ts';
 import type {SlackHistoryScope} from '../slack/slack_history.ts';
 import type {WorkerHandlerContext,WorkerHandlerResult} from '../worker_contract.ts';
-export type SlackHistoryBinding={captureVisibility?:()=>Readonly<Record<string,unknown>>|null;tenantId:string;jobId:string;accountId:string;threadImportId?:string;channelId:string;scope:SlackHistoryScope;checkpoint:Parameters<typeof readSlackHistoryBatch>[3];maxPages:number;authorised:()=>Promise<boolean>;request:Parameters<typeof readSlackHistoryBatch>[5]['request']};
+export type SlackHistoryBinding={captureVisibility?:()=>Readonly<Record<string,unknown>>|null;tenantId:string;jobId:string;accountId:string;threadImportId?:string;sourceReplayId?:string;channelId:string;scope:SlackHistoryScope;checkpoint:Parameters<typeof readSlackHistoryBatch>[3];maxPages:number;authorised:()=>Promise<boolean>;request:Parameters<typeof readSlackHistoryBatch>[5]['request']};
 /** Trusted server binding must verify claimed job, account/team/token, consent,
  * window and checkpoint. Browser/job payload is never itself a binding. */
 export function createSlackHistoryHandler(bind:(ctx:WorkerHandlerContext)=>Promise<SlackHistoryBinding|null>,clock:()=>number=Date.now){
@@ -14,8 +15,8 @@ export function createSlackHistoryHandler(bind:(ctx:WorkerHandlerContext)=>Promi
   if(!ctx.jobId||!ctx.claim?.claimedBy||!Number.isSafeInteger(ctx.claim.attemptCount)||ctx.claim.attemptCount<1||ctx.signal?.aborted)return {success:false,error:{code:'slack_history_job_required',message:'A running durable job is required.',retryable:false}};
   try{const binding=await bind(ctx);
    if(!binding||binding.tenantId!==ctx.tenantId||binding.jobId!==ctx.jobId)return {success:false,error:{code:'slack_history_binding_unavailable',message:'Approved server-side history binding is unavailable.',retryable:false}};
-   const checkpoint=await readSlackHistoryBatch(binding.scope,ctx.tenantId,binding.channelId,binding.checkpoint,binding.maxPages,{authorised:async()=>!ctx.signal?.aborted&&await binding.authorised(),request:binding.request,persist:slackHistoryPersistence(ctx.supabaseAdmin,ctx.tenantId,ctx.jobId,binding.accountId,ctx.claim,binding.threadImportId,binding.captureVisibility)},1);
-   return {success:true,result:{...checkpoint,coverage:binding.threadImportId?'observed_thread_window':'bounded_channel_history',ingestion_complete:false},...(checkpoint.stopReason==='run_page_limit'?{continuation:{jobType:binding.threadImportId?'slack.thread_sync':'slack.history_sync',jobKey:binding.threadImportId?`slack.thread:${binding.accountId}:${binding.scope.parentTimestamp}:${binding.scope.oldest}:${binding.scope.latest}`:`slack.history:${binding.accountId}`,connectorId:'slack',payload:{connector_account_id:binding.accountId,...(binding.threadImportId?{thread_import_id:binding.threadImportId}:{})},availableAt:new Date(clock()+60000).toISOString()}}:{})};
+   const checkpoint=await readSlackHistoryBatch(binding.scope,ctx.tenantId,binding.channelId,binding.checkpoint,binding.maxPages,{authorised:async()=>!ctx.signal?.aborted&&await binding.authorised(),request:binding.request,persist:binding.sourceReplayId?sourceReplayPersistence(ctx.supabaseAdmin,ctx,binding.captureVisibility):slackHistoryPersistence(ctx.supabaseAdmin,ctx.tenantId,ctx.jobId,binding.accountId,ctx.claim,binding.threadImportId,binding.captureVisibility)},1);
+   return {success:true,result:{...checkpoint,coverage:binding.sourceReplayId?'one_retained_source_revalidation':binding.threadImportId?'observed_thread_window':'bounded_channel_history',ingestion_complete:false},...(checkpoint.stopReason==='run_page_limit'?{continuation:{jobType:binding.threadImportId?'slack.thread_sync':'slack.history_sync',jobKey:binding.threadImportId?`slack.thread:${binding.accountId}:${binding.scope.parentTimestamp}:${binding.scope.oldest}:${binding.scope.latest}`:`slack.history:${binding.accountId}`,connectorId:'slack',payload:{connector_account_id:binding.accountId,...(binding.threadImportId?{thread_import_id:binding.threadImportId}:{})},availableAt:new Date(clock()+60000).toISOString()}}:{})};
   }catch(error){if(error instanceof SlackHistoryTransportError)return {success:false,error:{code:error.code,message:error.message,retryable:error.retryable,retryAfterSeconds:error.retryAfterSeconds}};return {success:false,error:{code:'slack_history_failed',message:'History scope, provider page or durable checkpoint could not be verified.',retryable:false}};}
  };
 }
