@@ -135,3 +135,18 @@ They remain unsigned. Exit/deletion targets are proposals, not current guarantee
 The latest statement supersedes the earlier absence of an appointed security owner.
 Legal-counsel review remains No. Only the privacy and user-terms pages are intended
 for public publication; the commercial/processing agreement remains private.
+
+
+## Approved draft and retention verification update — 13 October
+
+Chris approved the exact draft text and proposed exit targets; the hash-bound
+record is `SERVICEOS-QUICKBOOKS-DRAFT-APPROVAL.json`. This supersedes the request
+for initial draft approval above, not the outstanding operational verification.
+He also confirmed finance access stays limited to Drummonds owners/admins and
+explicitly logged OpenFolk support operators. No wider staff access was granted.
+
+The [data-exit readiness record](../operations/LEARN-QUICKBOOKS-DATA-EXIT.md)
+distinguishes the locally verified QuickBooks export from unverified whole-service
+deletion and recovery-copy expiry. Immutable retained rows and backups without
+automatic expiry need an operational solution before publication of the targets.
+The three approved legal source documents were not edited by this update.

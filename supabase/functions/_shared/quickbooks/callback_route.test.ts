@@ -30,5 +30,5 @@ test('gateway-normalised callback exchanges once using the registered public red
       return Response.json({CompanyInfo:{Id:'1',CompanyName:'Synthetic Company'}});
     },
   });
-  assert.equal(response.status,303);assert.match(response.headers.get('location')!,/result=review#$/);assert.equal(exchanges,1);assert.equal(saved,1);
+  assert.equal(response.status,302);assert.match(response.headers.get('location')!,/result=review#$/);assert.equal(exchanges,1);assert.equal(saved,1);
 });

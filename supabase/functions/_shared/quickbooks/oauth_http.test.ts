@@ -76,7 +76,7 @@ test("callback never reflects OAuth errors, codes, state or unsafe return destin
     ),
     ports,
   );
-  assert.equal(response.status, 303);
+  assert.equal(response.status, 302);
   const text = await response.text();
   assert.equal(text.includes("private"), false);
   assert.equal(text.includes("foreign.invalid"), false);
@@ -105,7 +105,7 @@ test("saved callback returns a clean frontend redirect only after persistence", 
       : Response.json({CompanyInfo:{Id:"1",CompanyName:"Synthetic Company"}}),
   });
   assert.equal(saved,true);
-  assert.equal(response.status,303);
+  assert.equal(response.status,302);
   assert.equal(response.headers.get("Location"),"https://test.example.invalid/quickbooks?mode=connect&result=review#");
   assert.equal(await response.text(),"");
   assert.equal(response.headers.get("Cache-Control"),"no-store");

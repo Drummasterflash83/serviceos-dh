@@ -121,11 +121,12 @@ export async function handleQuickBooksCallback(req: Request, ports: Ports): Prom
     signal: req.signal,
   });
   // Hosted Supabase rewrites GET text/html to text/plain. Render guidance on
-  // the frontend instead; never forward code/state/realm/error query values.
+  // the frontend instead with Intuit's required 302; never forward
+  // code/state/realm/error query values.
   // An explicit empty fragment also prevents inheriting a callback fragment.
   const outcome = result.state === "saved" ? "review" : "needs_check";
   return new Response(null, {
-    status: 303,
+    status: 302,
     headers: {
       ...headers,
       Location: `${site}/quickbooks?mode=connect&result=${outcome}#`,

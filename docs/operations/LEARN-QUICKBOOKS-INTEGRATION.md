@@ -807,3 +807,44 @@ completion and review against evidence. The normal refresh process remains
 running under terminal session 28253, due at 21:44:04 UTC. Inspect its handle and
 `/private/tmp/serviceos-qb-sandbox-refresh-after-reconnect-proof.json` before any
 retry or claim of refresh acceptance.
+
+
+### Discovery, callback and assessment update — 13 October, 21:22 UTC
+
+Both official Intuit discovery documents returned HTTP 200; the connector's
+sandbox/production authorisation, token and revocation URLs match them. Intuit's
+security requirements specify an empty-body 302 redirect for OAuth callback
+pages. The callback now uses 302 instead of 303. Six targeted route/HTTP tests
+passed. TEST callback v9 was deployed and its ten runtime modules downloaded and
+matched to source. A credential-free GET confirmed 302, an empty body, no-store,
+no-referrer and a stable TEST destination containing no returned OAuth parameters.
+Other endpoints, secret fingerprints and retained counts were unchanged. No
+production function changed. [Evidence](evidence/learn-quickbooks-discovery-and-redirect-2026-10-13.json).
+
+Intuit's app-information draft was saved and read back: custom-built app with
+Codex development assistance, Supabase/Vercel hosting, server-side read-only
+accounting, future availability to other clients, initially one Drummonds company,
+and the other existing ServiceOS input providers. API Usage was saved and reloaded:
+Accounting API only, operator-started bounded imports, no recurring accounting
+schedule. Webhooks and CDC are No; these answers were saved. No final submission
+or blanket security-policy attestation has occurred.
+
+Chris confirmed that finance stays limited to Drummonds owners/admins and logged
+OpenFolk support. The narrower Intuit customer choice, Any admin of the QuickBooks
+Online company, was selected and saved with an explicit explanation: a company
+admin grants the QuickBooks connection, but ServiceOS viewer roles are separately
+administered and are not individually checked against QuickBooks roles. No staff
+access was added. This resolves the earlier rejected broader Any user declaration.
+The earlier private-app declaration was also avoided: reusable future client access
+is accurately described as planned public availability, not an existing listing.
+
+The Intuit Save button produces a native confirmation alert. Chris asked us to
+stop these interruptions; the current alert was dismissed and repeated saves
+were stopped. Batch remaining edits and handle any future necessary save alert
+immediately rather than repeatedly interrupting the user's browser.
+
+[Data-exit readiness](LEARN-QUICKBOOKS-DATA-EXIT.md) records a new read-only scoped
+export query. Two input/secret-exclusion tests and the full disposable PostgreSQL
+OAuth/import/finance/disconnect rehearsal pass, including tenant/environment
+isolation and exact financial-number export. This does not claim whole-ServiceOS
+deletion or 90-day backup expiry. Approved legal source hashes remain unchanged.

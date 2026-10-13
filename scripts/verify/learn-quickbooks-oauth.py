@@ -78,6 +78,28 @@ try:
     sql(finance)
     sql(source('scripts/verify/learn-quickbooks-finance.assert.sql'))
     print('PASS: reviewed customer links, identity drift, currency-separated exact totals, conflict exclusions, tenant/role fences and retained finance audit.')
+    # Export is an operations query, not a new RPC/grant. Verify real SQL scope,
+    # exact decimals and credential exclusion against the retained fixture.
+    sql("reset role;insert into learn_quickbooks_source_versions(tenant_id,environment,realm_id,entity,external_id,content_hash,payload,sync_token) values(fixture_id(2),'production','other-realm','Customer','other','other-hash','{\"Id\":\"other\",\"DisplayName\":\"OTHER_TENANT_EXPORT_SENTINEL\"}',0);")
+    export_sql = subprocess.run(['node', str(root / 'scripts/operations/quickbooks-export-query.mjs'),
+                                 '00000000-0000-4000-8000-000000000001', 'production'],
+                                check=True, capture_output=True, text=True, timeout=10).stdout
+    exported = sql(export_sql)
+    import json
+    lines = [json.loads(line) for line in exported.splitlines()]
+    assert lines[0]['kind'] == 'manifest'
+    assert lines[0]['environment'] == 'production'
+    versions = [row['data'] for row in lines if row['kind'] == 'source_version']
+    assert versions and all(row['tenant_id'] == '00000000-0000-4000-8000-000000000001' and row['environment'] == 'production' for row in versions)
+    assert any('9007199254740993.01' in row['payload_text'] for row in versions)
+    assert 'OTHER_TENANT_EXPORT_SENTINEL' not in exported
+    assert all(key not in exported for key in ['synthetic-access', 'synthetic-refresh', 'token_secret_id', 'state_hash', 'token_digest'])
+    assert any(row['kind'] == 'customer_link' for row in lines)
+    sandbox_sql = export_sql.replace("'production'", "'sandbox'")
+    sandbox_lines = [json.loads(line) for line in sql(sandbox_sql).splitlines()]
+    assert any(row['kind'] == 'page' for row in sandbox_lines)
+    assert any(row['kind'] == 'observation' for row in sandbox_lines)
+    print('PASS: tenant/environment-isolated read-only export, history, exact financial decimals and no credentials.')
     disconnect = source('supabase/migrations/20261102030000_learn_quickbooks_disconnect.sql')
     sql(disconnect.replace('\ncommit;', '\nrollback;'))
     assert sql("select to_regclass('learn_quickbooks_disconnections') is null") == 't'
