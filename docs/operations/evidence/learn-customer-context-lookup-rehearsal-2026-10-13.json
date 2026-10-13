@@ -1,0 +1,52 @@
+{
+  "state": "passed_offline_not_live",
+  "fullNativeArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 401,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "652596c8622c8e22bcb36a159800b8b2f8b7afd018e4816418b3cb53ae1c955d",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "existingJourneyCount": 15,
+  "largeCustomerRegression": {
+    "unrelatedJobs": 600,
+    "originalUnboundedWalkReproduced": true,
+    "reviewedConversationRetained": true,
+    "unrelatedSourceReadsRejected": true
+  },
+  "withholdingEquivalenceCases": 42,
+  "guardChecks": [
+    "wrong_target",
+    "wrong_digest",
+    "definition_drift",
+    "access_drift",
+    "late_failure"
+  ],
+  "transactionRollback": true,
+  "definitionRollback": true,
+  "permissionsPreserved": true,
+  "sourceSha256": "bde5a0421b8f200a0a9c361c1a8cf11ef2c641ee06674891ef9f72572fbd2274",
+  "releaseSha256": "aa52a23eaea663a45aa90f733acc5078d9a4a5026d3663f223023e67142b0e40",
+  "containersRemoved": true
+}
