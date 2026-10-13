@@ -31,7 +31,15 @@ async function verify(manifest){
  'workerServiceOnly',has_function_privilege('service_role','learn_quickbooks_import_acquire(uuid)','execute') and not has_function_privilege('authenticated','learn_quickbooks_import_acquire(uuid)','execute'),
  'operatorStart',has_function_privilege('authenticated','learn_quickbooks_import_start(uuid,uuid,uuid,jsonb)','execute') and not has_function_privilege('anon','learn_quickbooks_import_start(uuid,uuid,uuid,jsonb)','execute')) as result`);
  const result=data(checked);
- if(result.tables!==12||result.privateTables!==true||result.workerServiceOnly!==true||result.operatorStart!==true)throw Error('TEST release verification failed');
+ const financeReceipt=await query("select source_hashes from public.learn_quickbooks_release_receipts where release_id='quickbooks_customer_finance_v1'");
+ let expectedTables=12;
+ if(financeReceipt.length){
+  const name='20261102020000_learn_quickbooks_customer_finance.sql';
+  const hashes=financeReceipt[0].source_hashes;
+  if(hashes?.length!==1||hashes[0].name!==name||hashes[0].sha256!==sha(readFileSync(new URL('supabase/migrations/'+name,root),'utf8')))throw Error('TEST finance extension receipt differs');
+  expectedTables+=2;
+ }
+ if(result.tables!==expectedTables||result.privateTables!==true||result.workerServiceOnly!==true||result.operatorStart!==true)throw Error('TEST release verification failed');
  return {state:'installed_metadata_verified',project,...result,installedAt:receipts[0].installed_at,sourceHashes:manifest.sourceHashes};
 }
 try{

@@ -69,6 +69,15 @@ try:
     print('PASS: durable imports, exact financial decimals, replay recovery, version deduplication, module fence and realm-wide throttling.')
     subprocess.run(['node', str(root / 'scripts/verify/learn-quickbooks-import-flow.mjs')], check=True,
                    env={**os.environ, 'SERVICEOS_QB_TEST_CONTAINER': name, 'SERVICEOS_QB_TEST_DOCKER': docker}, timeout=60)
+    sql("alter table profiles add column tenant_id uuid,add column role text;create table customer_cards(id uuid primary key,tenant_id uuid not null);")
+    authority = source('supabase/migrations/20261031080000_learn_import_batches.sql')
+    sql(authority[authority.index('create function learn_import_batch_authority('):authority.index('create function learn_import_match_batch(')])
+    finance = source('supabase/migrations/20261102020000_learn_quickbooks_customer_finance.sql')
+    sql(finance.replace('\ncommit;', '\nrollback;'))
+    assert sql("select to_regclass('learn_quickbooks_customer_links') is null") == 't'
+    sql(finance)
+    sql(source('scripts/verify/learn-quickbooks-finance.assert.sql'))
+    print('PASS: reviewed customer links, identity drift, currency-separated exact totals, conflict exclusions, tenant/role fences and retained finance audit.')
 finally:
     if created:
         subprocess.run([docker, 'rm', '-fv', name], check=True, capture_output=True, timeout=30)

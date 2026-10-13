@@ -36,8 +36,15 @@ const rpc = (role) => async (name, args) => {
         .map(([k, v]) => `${k}=>${quote(v)}`)
         .join(",")}));`,
     );
-    return { data: out ? JSON.parse(out) : null, error: null };
-  } catch {
+    const data = out ? JSON.parse(out) : null;
+    if (name === "learn_quickbooks_begin") {
+      const created = Date.parse(data?.createdAt), expires = Date.parse(data?.expiresAt);
+      assert.ok(created <= Date.now(), "Fixture database clock is ahead of the OAuth worker");
+      assert.ok(expires - created <= 600000, "Stored OAuth lifetime exceeds ten minutes");
+    }
+    return { data, error: null };
+  } catch (error) {
+    if (error instanceof assert.AssertionError) throw error;
     return { data: null, error: "synthetic RPC rejected" };
   }
 };

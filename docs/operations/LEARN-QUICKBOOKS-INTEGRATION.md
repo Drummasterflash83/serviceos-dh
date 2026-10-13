@@ -49,7 +49,8 @@ Intuit's current transfer options still need verification in its portal.
   sanitised rate-limit/authentication errors. No automatic HTTP retries.
 - Pure OAuth state/URL/callback contracts: random 256-bit state with a ten-minute
   lifetime, exact app and redirect matching, duplicate-query rejection, opaque
-  errors. These helpers are not a deployed authorisation endpoint.
+  errors. Hosted TEST endpoint verification is recorded below; no company has
+  authorised the application yet.
 - Token endpoint transport supports code exchange and refresh, fixed HTTPS
   endpoint, bounded responses, replacement token pairs and provider expiry fields.
   It never retries automatically after an uncertain exchange.
@@ -66,7 +67,7 @@ Intuit's current transfer options still need verification in its portal.
   implemented locally. The panel can connect, refresh status, confirm a company
   and pause. The import panel now supports explicit module enable/disable, record
   type selection, bounded starts, continuation, counts and recent run diagnostics.
-- 48 targeted TypeScript tests pass (including shared dispatcher and UI parsers). An isolated PostgreSQL run verifies grants,
+- 52 targeted TypeScript tests pass (including shared dispatcher and UI parsers). An isolated PostgreSQL run verifies grants,
   tenant isolation, callback races/replays, actor revocation/bans, expired states,
   company confirmation, pause and atomic rollback after a simulated Vault write.
   The actual TypeScript start/callback/confirmation/refresh flow also passes against
@@ -90,7 +91,7 @@ Intuit's current transfer options still need verification in its portal.
 - The actual TypeScript import worker passes against PostgreSQL RPCs and a
   synthetic provider, including exact decimals, lost replies, version conflicts,
   budget exhaustion, continuation and expired leases.
-- Both migrations install and explicitly roll back under non-superuser postgres
+- All three migrations install and explicitly roll back under non-superuser postgres
   in a disposable clone of the local 257-table schema, after adding its two
   missing repository operator helpers. The real local Vault extension stores
   and retrieves a synthetic app secret. This augmented local clone is not proof
@@ -98,6 +99,47 @@ Intuit's current transfer options still need verification in its portal.
 - Dedicated QuickBooks endpoints pass Deno checks. A full platform-worker Deno
   check is not complete: the existing `mailauth` npm dependency is unavailable
   in the local Deno cache and registry DNS lookup failed. Dispatcher tests pass.
+
+### Customer finance — 13 October, 16:55 UTC
+
+The customer-card finance section is implemented in the existing business-context
+component, so it is available to both the client card and the logged OpenFolk
+customer view once that frontend is released. It loads on request, clears on
+actor/tenant/card/backend/environment changes and when the tab is hidden, and
+expires after one minute. Its frontend build and TypeScript checks pass; signed-in
+browser/visual acceptance and frontend deployment remain outstanding.
+
+- Explicit operator review links a captured QuickBooks customer to an existing
+  tenant-owned card. No fuzzy matching, automatic parent/subcustomer roll-up or
+  app-registration-dependent identities. Revision checks prevent overwriting
+  concurrent decisions; corrections/unlinking retain the audit and source history.
+- Identity changes or source conflicts withhold a customer's financial figures
+  until reviewed again. Balance-only changes do not invalidate identity review.
+- Captured invoices, payments, credits, sales receipts and estimates are separate.
+  Invoice balances are not reduced a second time by payments/credits. Amounts
+  stay exact decimal strings from PostgreSQL through browser formatting. Totals
+  are grouped by provider company, currency and entity; unknown currency or
+  missing amounts withhold the affected aggregate. No profit claim is made.
+- Ordinary reads require the existing tenant owner/admin authority. Cross-client
+  reads and matching require an existing active OpenFolk admin and logged reason.
+  Every finance read/link decision is audited; direct table access is revoked.
+- Coverage remains **retained, unreconciled records**. This is not a current
+  statement of account or evidence that deleted/missed transactions are reconciled.
+
+Installed only in TEST: `quickbooks_customer_finance_v1`, receipt time
+`2026-10-13 16:55:24.359864+00`. The exact migration passed a hosted rollback
+rehearsal first. Readback matched all six function bodies to local source and
+verified RLS/grants plus missing-identity, anonymous, service and direct-table
+denials. TEST still has zero app registrations, connections, imported records,
+customer links and finance events. No provider calls or credentials were added.
+See [finance verification evidence](evidence/learn-quickbooks-finance-2026-10-13.json).
+
+One initial local OAuth fixture run rejected timestamp validation before reaching
+finance checks. A clock probe and the subsequent complete run passed; the cause
+of that isolated failure is not established. The fixture now reports database-clock
+and lifetime assertion failures explicitly. Production validation was not relaxed.
+Check this again during real OAuth acceptance rather than treating a passing rerun
+as proof that the original failure was fixed.
 
 Reproduce:
 
