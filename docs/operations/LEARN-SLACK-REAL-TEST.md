@@ -1,4 +1,4 @@
-# Drummonds Slack TEST acceptance — approved run completed; date amendment pending
+# Drummonds Slack TEST acceptance — bounded historical sample completed
 
 Run `315c7d05-deb3-4869-9895-1622d5d70403` targets existing Drummonds TEST tenant
 `f8c114fa-fee7-4983-8970-f6e7f5fd3129` in Supabase `saatxzwxvdvqevbnskxy`,

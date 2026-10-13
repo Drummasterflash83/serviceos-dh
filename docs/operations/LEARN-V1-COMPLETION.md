@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October, 01:14 BST — historical production job blocker resolved; release prepared.**
+**13 October, 01:40 BST — release sequencing and restart integration verified locally.**
 
 ### Working and verified
 
@@ -22,9 +22,14 @@ override a later release observation. No requirement is silently deferred.
   28 scheduler caller cases passed in isolated containers. The exact upload files
   are prepared, not uploaded. Fresh metadata shows production definitions unchanged.
 
-- All 31 release-adapter/journal tests pass. The 19 unchanged dynamic dispatch
-  sites resolve to 51 available, executable RPC targets in the rehearsed schema.
-  Fresh production configuration preflight is ready; no secrets were provisioned.
+- All 38 release-adapter, candidate, coordinator and journal tests pass. The new
+  coordinator retains verified configuration readbacks before accepting a step;
+  a restart then uses the correct runtime versions. Actual configuration/runtime
+  adapters composed across 37 uploads, publication and activation against a
+  simulated API. Lost responses, persistence failure and readback drift fail safely.
+- The 19 unchanged dynamic dispatch sites resolve to 51 available, executable RPC
+  targets in the rehearsed schema. Production configuration preflight is ready;
+  no secrets were provisioned.
 
 - Fresh read-only inspection at 00:22 UTC confirms the reviewed production public
   schema and all 88 hosted function definitions remain unchanged. The new 00:16 UTC
@@ -39,7 +44,9 @@ override a later release observation. No requirement is silently deferred.
 
 - Complete signed-in production acceptance. The matching protected frontend now
   loads with verified production authentication; the 73-step plan pins its artifact,
-  22 SQL packages and 37 runtimes. It has not been executed.
+  22 SQL packages and 37 runtimes. It has not been executed. Concrete recovery,
+  drain, caller-acceptance and frontend ports still need connecting to the
+  coordinator; passing its local routing tests does not close those gates.
 - The 14 historical unleased jobs have now been settled as interrupted in production,
   with 14 audited original-row snapshots and exact non-status field preservation.
   Fresh observation found no running platform jobs; all nine existing schedules
@@ -60,7 +67,7 @@ override a later release observation. No requirement is silently deferred.
   to unlock it; no keys were exposed or authentication protection bypassed.
 - Signed-in production acceptance and TEST AI credential access remain unresolved.
 
-Evidence: [fresh local recovery checkpoint](evidence/learn-production-release-checkpoint-2026-10-13.json), [production Learning candidate](evidence/learn-production-learning-2026-10-13.json), [audited production job recovery](evidence/learn-production-legacy-job-recovery-2026-10-13.json).
+Evidence: [release coordinator checks](evidence/learn-production-release-coordinator-2026-10-13.json), [fresh local recovery checkpoint](evidence/learn-production-release-checkpoint-2026-10-13.json), [production Learning candidate](evidence/learn-production-learning-2026-10-13.json), [audited production job recovery](evidence/learn-production-legacy-job-recovery-2026-10-13.json).
 
 ### Previous hosted TEST milestone
 

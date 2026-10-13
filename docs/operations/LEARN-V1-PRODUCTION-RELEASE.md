@@ -1,5 +1,32 @@
 # LEARN V1 production release plan
 
+## Current execution integration — 13 October, 01:40 BST
+
+The pinned 73-step sequence now has a coordinator that connects the journal to
+SQL/schedule, configuration, runtime, check and frontend adapters. Configuration
+readbacks are validated, saved with private permissions and flushed to disk before
+the journal accepts the change. Restart loads that same candidate/step-bound
+receipt before runtime deployment, preserving the updated function-version baseline.
+Only metadata and credential digests are stored; secret values are rejected.
+
+All 38 local release checks pass. The integration test drives actual configuration
+and runtime adapters through setup, restart, 37 uploads, publication and activation
+against a simulated API. SQL, frontend and external checks in that test remain
+simulated; this is not hosted release acceptance. Missing adapters stop before
+intent. Lost acknowledgements, failed receipt storage and state changes between
+observation and readback cannot silently advance or resubmit a mutation.
+
+Production execution still requires concrete fresh recovery, drain, caller and
+frontend adapters with retained evidence, plus signed-in acceptance. The coordinator
+supplies no successful default gate or fabricated approval. A partial receipt file
+requires inspection and deliberate recovery; it is never overwritten automatically.
+No production configuration, runtime, schedule, alias or customer data was changed
+by these checks. The exact candidate and upload files remain unchanged.
+
+[Coordinator evidence](evidence/learn-production-release-coordinator-2026-10-13.json).
+
+## Earlier release observations
+
 > 13 October 01:14 BST: the 14 old unleased running jobs are now recorded as
 > interrupted in production, with all original fields preserved in audited snapshots.
 > No source data, schedules or runtime were changed. The subsequent read showed

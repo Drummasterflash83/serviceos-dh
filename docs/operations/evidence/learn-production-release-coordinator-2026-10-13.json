@@ -1,0 +1,56 @@
+{
+  "version": "learn-production-release-coordinator/1",
+  "observedAt": "2026-10-13T00:39:38.805676+00:00",
+  "state": "offline_composition_and_restart_checks_passed",
+  "productionChanges": 0,
+  "hostedTestChanges": 0,
+  "providerRequests": 0,
+  "sequenceSteps": 73,
+  "databasePackages": 22,
+  "runtimeEndpoints": 37,
+  "testsPassed": 38,
+  "verificationCommand": "node --test scripts/verify/learn-production-{sql-adapter,runtime-adapter,configuration-adapter,release-journal,release-coordinator,runtime-candidate}.test.mjs",
+  "verified": [
+    "exact pinned operation routing in release order",
+    "configuration readback saved before accepting journal step",
+    "restart after setup uses persisted runtime version refresh",
+    "37 runtime uploads and publication compose with actual configuration/runtime adapters",
+    "lost acknowledgement does not repeat configuration mutation",
+    "failed receipt persistence blocks runtime and reconciles without repeating mutation",
+    "observation/receipt drift blocks acceptance",
+    "missing external gate stops before intent",
+    "secret fields, tampering and conflicting readbacks rejected"
+  ],
+  "files": [
+    {
+      "path": "scripts/verify/learn-production-release-coordinator.mjs",
+      "sha256": "9b1f38f3db8022ac5c083f2f5349d0ac512683943ea05fabd25d9046b0c7beb3"
+    },
+    {
+      "path": "scripts/verify/learn-production-release-receipts.mjs",
+      "sha256": "9daf6cd591e567a381d785de584eba857813c669fca21e76b7617b17782bc0ba"
+    },
+    {
+      "path": "scripts/verify/learn-production-release-coordinator.test.mjs",
+      "sha256": "814ceed8316f73b89861f68f971f6aab257556216e8daeddc6dc3e84e978bfd9"
+    },
+    {
+      "path": "scripts/verify/learn-production-configuration-adapter.test.mjs",
+      "sha256": "cb252df02a874ffb6ab06a542a8acc520a3e6224d031ba90add0230e1da2358a"
+    },
+    {
+      "path": "supabase/release/learn-production/release-sequence.plan.json",
+      "sha256": "5dec41b6383d47365cda2f6694bd4efec844aa9cce1827b10810c6e9fa4f86ea"
+    },
+    {
+      "path": "supabase/release/learn-production/release-operations.manifest.json",
+      "sha256": "cb98a168b7f1e26676662759c61a5b9d1ec8bc3805ecf452769e9b9ad1461b71"
+    }
+  ],
+  "limitations": [
+    "Local synthetic remote API only; no production or TEST write.",
+    "Full-sequence routing uses simulated SQL, external checks and frontend ports. The composed test uses actual configuration/runtime adapters with a simulated API.",
+    "Concrete current recovery, drain, caller acceptance and frontend adapters remain required before hosted execution.",
+    "The 73-step sequence has not executed in production; signed-in production acceptance and full LEARN launch remain open."
+  ]
+}

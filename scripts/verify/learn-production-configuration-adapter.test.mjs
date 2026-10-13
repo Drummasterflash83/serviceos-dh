@@ -11,6 +11,8 @@ import {
 } from "./learn-production-configuration-adapter.mjs";
 import { createProductionRuntimeAdapter } from "./learn-production-runtime-adapter.mjs";
 import { openReleaseJournal } from "./learn-production-release-journal.mjs";
+import { createProductionReleaseCoordinator } from "./learn-production-release-coordinator.mjs";
+import { openConfigurationReceiptStore } from "./learn-production-release-receipts.mjs";
 const sha = (b) => createHash("sha256").update(b).digest("hex");
 const root = "supabase/release/learn-production/",
   project = "tgbnakbxwcqjeimygroz";
@@ -314,7 +316,7 @@ test("transport permits only exact project and pinned values, strips upstream er
   );
 });
 
-test("configuration refresh, all runtime uploads, publication and activation compose without baseline drift", async () => {
+test("coordinator resumes with durable configuration refresh through all runtime uploads and activation", async (t) => {
   const f = fixture(),
     bodies = new Map();
   for (const op of f.operations.operations.filter(
@@ -334,17 +336,7 @@ test("configuration refresh, all runtime uploads, publication and activation com
       (o) => o.id === "runtime-" + target.name,
     ).contract.ezbrSha256;
   bulk.pinSha256 = sha(JSON.stringify(bulk.contract));
-  await f.adapter.apply(f.step);
-  const receipt = await f.adapter.receipt(f.step);
-  const runtimeRows = f.functions.map((r) => ({
-    slug: r.name,
-    name: r.name,
-    id: r.id,
-    version: r.version,
-    ezbr_sha256: r.hash,
-    verify_jwt: r.jwt,
-    status: r.status,
-  }));
+  let runtimeRows;
   let uploads = 0,
     publications = 0;
   const runtimeApi = async (r) => {
@@ -382,53 +374,115 @@ test("configuration refresh, all runtime uploads, publication and activation com
     else runtimeRows.push(row);
     return row;
   };
-  const adapter = createProductionRuntimeAdapter({
-    candidate: f.candidate,
-    operations: f.operations,
-    configurationRefresh: receipt,
-    api: runtimeApi,
-    readBody: (n) => bodies.get(n),
-    allowWrite: true,
-    assertApprovedAndDrained: async (s) => ({
-      projectRef: project,
-      stepPinSha256: s.pinSha256,
-      approvalEvidenceSha256: "a".repeat(64),
-    }),
+  const plan = {
+    ...JSON.parse(readFileSync(root + "release-sequence.plan.json")),
+    steps: f.operations.operations.map(({ id, kind, pinSha256 }) => ({ id, kind, pinSha256 })),
+  };
+  f.operations.planSha256 = sha(JSON.stringify(plan));
+  const dir = mkdtempSync(join(tmpdir(), "learn-config-compose-"));
+  const receipts = openConfigurationReceiptStore(join(dir, "receipts"), { create: true });
+  let journal = openReleaseJournal(join(dir, "journal"), plan, { create: true });
+  t.after(() => {
+    journal.close();
+    rmSync(dir, { recursive: true, force: true });
   });
-  for (const op of f.operations.operations.filter((o) => o.kind === "runtime")) {
-    const step = { id: op.id, kind: op.kind, pinSha256: op.pinSha256 };
-    await adapter.apply(step);
-    assert.equal((await adapter.observe(step, "after")).state, "applied");
+  // SQL, frontend and acceptance gates are simulated here. This test exercises
+  // the real configuration/runtime adapters, durable journal and receipt store.
+  const simulated = new Set();
+  const port = {
+    observe: async (s) => ({
+      state: simulated.has(s.id) ? "applied" : "ready",
+      evidenceSha256: "a".repeat(64),
+    }),
+    apply: async (s) => {
+      simulated.add(s.id);
+    },
+  };
+  const authority = async (s) => ({
+    projectRef: project,
+    stepPinSha256: s.pinSha256,
+    approvalEvidenceSha256: "a".repeat(64),
+  });
+  let runtimeFactoryCalls = 0;
+  const makeRunner = () =>
+    createProductionReleaseCoordinator({
+      plan,
+      operations: f.operations,
+      journal,
+      configurationReceipts: receipts,
+      sql: port,
+      frontend: port,
+      checks: Object.fromEntries(
+        plan.steps.filter((s) => s.kind === "check").map((s) => [s.id, port]),
+      ),
+      authorize: authority,
+      createConfiguration: async (step) => {
+        if (step.id === f.step.id) return f.adapter;
+        f.functions.splice(
+          0,
+          f.functions.length,
+          ...runtimeRows.map((r) => ({
+            name: r.slug,
+            id: r.id,
+            version: r.version,
+            hash: r.ezbr_sha256,
+            jwt: r.verify_jwt,
+            status: r.status,
+          })),
+        );
+        return createProductionConfigurationAdapter({
+          ...f.options,
+          baseline: {
+            ...f.baseline,
+            stepId: step.id,
+            stepPinSha256: step.pinSha256,
+            functions: structuredClone(f.functions),
+            secrets: structuredClone(f.secrets),
+          },
+        });
+      },
+      createRuntime: async (receipt) => {
+        runtimeFactoryCalls++;
+        assert.deepEqual(receipt, receipts.load(f.step.id));
+        runtimeRows = f.functions.map((r) => ({
+          slug: r.name,
+          name: r.name,
+          id: r.id,
+          version: r.version,
+          ezbr_sha256: r.hash,
+          verify_jwt: r.jwt,
+          status: r.status,
+        }));
+        return createProductionRuntimeAdapter({
+          candidate: f.candidate,
+          operations: f.operations,
+          configurationRefresh: receipt,
+          api: runtimeApi,
+          readBody: (n) => bodies.get(n),
+          allowWrite: true,
+          assertApprovedAndDrained: authority,
+        });
+      },
+    });
+  let runner = makeRunner();
+  while (runner.status().nextStep !== f.step.id) {
+    assert.notEqual((await runner.next()).state, "unknown_outcome");
   }
+  assert.notEqual((await runner.next()).state, "unknown_outcome");
+  assert.equal(writes(f).length, 1);
+  assert.ok(receipts.load(f.step.id));
+  // Start a new coordinator after configuration changed all function versions.
+  journal.close();
+  journal = openReleaseJournal(join(dir, "journal"), plan);
+  runner = makeRunner();
+  while (runner.status().nextStep) {
+    assert.notEqual((await runner.next()).state, "unknown_outcome");
+  }
+  assert.equal(runner.status().state, "sequence_verified");
+  assert.equal(runtimeFactoryCalls, 1);
   assert.equal(uploads, 37);
   assert.equal(publications, 1);
-  const activation = f.operations.operations.find(
-      (o) => o.id === "activate-reviewed-input-dispatch",
-    ),
-    step = { id: activation.id, kind: activation.kind, pinSha256: activation.pinSha256 };
-  f.functions.splice(
-    0,
-    f.functions.length,
-    ...runtimeRows.map((r) => ({
-      name: r.slug,
-      id: r.id,
-      version: r.version,
-      hash: r.ezbr_sha256,
-      jwt: r.verify_jwt,
-      status: r.status,
-    })),
-  );
-  const enabled = createProductionConfigurationAdapter({
-    ...f.options,
-    baseline: {
-      ...f.baseline,
-      stepId: step.id,
-      stepPinSha256: step.pinSha256,
-      functions: structuredClone(f.functions),
-      secrets: structuredClone(f.secrets),
-    },
-  });
-  await enabled.apply(step);
-  assert.equal((await enabled.observe(step)).state, "applied");
+  assert.equal(writes(f).length, 2);
   assert.deepEqual(writes(f).at(-1).names, ["LEARN_INPUT_DISPATCH_ENABLED"]);
+  assert.ok(receipts.load("activate-reviewed-input-dispatch"));
 });
