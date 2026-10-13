@@ -48,6 +48,7 @@ export function costQueries(now: Date) {
 }
 export function scopedCostSummary(raw: unknown, assistantId: string, now: Date) {
   if (!Array.isArray(raw)) throw Error("Cost data unavailable");
+  const numeric = (v: unknown) => typeof v === "string" && /^\d+(?:\.\d+)?$/.test(v) ? Number(v) : v;
   const n = (v: unknown) => typeof v === "number" && Number.isFinite(v) && v >= 0;
   const periods = Object.fromEntries(
     ["today", "month"].map((name) => {
@@ -57,7 +58,8 @@ export function scopedCostSummary(raw: unknown, assistantId: string, now: Date) 
       const rows = queries[0].result.filter((r: unknown) => record(r).assistantId === assistantId);
       if (rows.length > 1) throw Error("Ambiguous cost period");
       if (!rows.length) return [name, { usd: 0, calls: 0, costedCalls: 0, minutes: 0, pending: 0 }];
-      const r = record(rows[0]);
+      const row = record(rows[0]);
+      const r = Object.fromEntries(["usd", "calls", "costedCalls", "minutes"].map(k => [k, numeric(row[k])]));
       if (
         !Number.isSafeInteger(r.calls) ||
         Number(r.calls) < 0 ||

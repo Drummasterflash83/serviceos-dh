@@ -44,8 +44,25 @@ Deno.serve(async (req) => {
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
         body: JSON.stringify(costQueries(now)),
       });
-      if (!response.ok) return reply({ error: "Provider costs could not be refreshed" }, 502);
-      return reply(scopedCostSummary(await response.json(), w.assistant_id, now));
+      if (!response.ok) {
+        console.warn("emma_cost_check", JSON.stringify({ stage: "provider", status: response.status }));
+        return reply({ error: "Provider costs could not be refreshed" }, 502);
+      }
+      const raw = await response.json();
+      try {
+        return reply(scopedCostSummary(raw, w.assistant_id, now));
+      } catch {
+        // Types only: never log credentials, assistant IDs, call data or monetary values.
+        const shape = Array.isArray(raw) ? raw.map(q => ({
+          period: ["today", "month"].includes(record(q).name) ? record(q).name : "unknown",
+          rows: Array.isArray(record(q).result) ? record(q).result
+            .filter((r: unknown) => record(r).assistantId === w.assistant_id)
+            .map((r: unknown) => Object.fromEntries(["usd", "calls", "costedCalls", "minutes"].map(k =>
+              [k, record(r)[k] === null ? "null" : typeof record(r)[k]]))) : "not_array",
+        })) : "not_array";
+        console.warn("emma_cost_check", JSON.stringify({ stage: "shape", shape }));
+        return reply({ error: "Provider costs could not be refreshed" }, 502);
+      }
     }
     if (body.action === "detail") {
       if (!key) return reply({ error: "Call connection unavailable" }, 503);

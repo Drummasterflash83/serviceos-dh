@@ -96,6 +96,12 @@ test("cost result exposes only the selected assistant and preserves pending cost
   assert.equal((s.periods.today as any).usd, 1.23);
   assert.equal((s.periods.today as any).pending, 1);
   assert.doesNotMatch(JSON.stringify(s), /900|other/);
+  const stringValues = raw.map(q => ({...q, result: [{assistantId: "Emma", usd: "1.23", calls: "3", costedCalls: "2", minutes: "4"}]}));
+  assert.deepEqual(scopedCostSummary(stringValues, "Emma", now), s);
+  for (const invalid of ["", "NaN", "Infinity", "-1", "1e3", " 2 "]) {
+    assert.throws(() => scopedCostSummary(raw.map(q => ({...q,
+      result: [{assistantId: "Emma", usd: invalid, calls: 3, costedCalls: 2, minutes: 4}]})), "Emma", now));
+  }
   assert.throws(() => scopedCostSummary([], "Emma", now));
   assert.deepEqual(costQueries(now).queries[0].groupBy, ["assistantId"]);
   assert.throws(() =>
