@@ -2,7 +2,7 @@
 
 Updated 13 October 2026. Workstream: `codex/quickbooks-integration`.
 
-## Current state — 13 October, 22:43 UTC
+## Current state — 13 October, 22:53 UTC
 
 - Stable TEST is on e048b49, with signed-in operator acceptance and the correct
   TEST backend. It retains 77 sandbox records; the sandbox grant is revoked.
@@ -12,6 +12,9 @@ Updated 13 October 2026. Workstream: `codex/quickbooks-integration`.
   preservation is reconciled. No production Intuit credentials/imports exist.
 - The retained-finance reader correction below is installed and verified in TEST
   and production. Pausing intake no longer prevents authorised retained reads.
+- A QuickBooks-only frontend candidate is READY on the verified live baseline,
+  with production auth-target and connect/disconnect guide checks passed. It is
+  protected and unpromoted; signed-in production and response-header checks remain.
 - Policy adoption/publication, owner Intuit security-policy commitment, production
   keys/company consent, final frontend response checks and live accounting
   acceptance remain open. Original retention verification gate is unchanged.
@@ -1017,3 +1020,19 @@ No synthetic accounting identity was attached to a real customer card. This is
 read-path acceptance, not a claim of live accounting linkage or completeness.
 
 [Verified correction](evidence/learn-quickbooks-retained-finance-2026-10-13.json).
+
+### Isolated live frontend candidate — 13 October, 22:53 UTC
+
+Prepared Git `f03a96328924d9c6de4414143444c7f6949328e1` directly from the
+verified live `a11f2041` baseline. It contains the QuickBooks guide, existing
+operator controls and customer finance view, plus explicit HTML cache settings.
+The 14-file source/configuration allowlist excludes the separate Commusoft job
+refresh and Slack recovery changes. The protected Vercel build is READY; its
+production sign-in target and both guide modes are verified. No live aliases
+were moved, and signed-in production acceptance remains pending. Local checks
+passed: TypeScript, eight QuickBooks tests, 47 prebuild checks and full build.
+
+The candidate is backed up on `codex/quickbooks-live-release`, with automatic Git
+deployment disabled, and merged into the complete integration history. The
+[release evidence](evidence/learn-quickbooks-isolated-frontend-2026-10-13.json)
+distinguishes these checks from outstanding company connection/import acceptance.
