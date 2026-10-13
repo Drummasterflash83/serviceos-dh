@@ -218,3 +218,13 @@ copy, source download or restore has run at this preparation checkpoint.
 
 Sanitised execution preparation:
 `docs/operations/evidence/learn-voicemail-backup-execution-preparation-2026-10-13.json`.
+
+### Independent database relationship comparison — 13 October, after file restore
+
+The existing independently downloaded database snapshot was restored again into a fresh, network-disabled container, with no ports/mounts, cron execution disabled and no worker slots. The archive SHA-256 remained `009c3236c3f73fe686c4a0f99e988c7c47776c0fa7b11c619d1fc6bf672f057e` (201,420,792 bytes). No migrations or seed rows were applied; the disposable container was removed.
+
+That snapshot was observed at **13 October 00:16:29 UTC**, before the voicemail import. It has no voicemail intake/source tables, and the selected pair's message and both storage-object rows are also absent. Therefore this is **not a completed independent database relationship recovery**. A post-import database snapshot, independently downloaded and restored, is still required to verify the intake → source → message → private storage relationships. Restoring synthetic rows or today's local execution journals into the old snapshot would not establish that proof.
+
+The completed Restore-only paired-file receipt matches the exact pinned inventory selection: both original-email and audio hashes/sizes agree; audio decodes to **25.344 seconds**; no production source was accessed during file restore, and restored private files were removed. Decoding does not establish human listening or application recovery.
+
+Local-only comparison evidence: `.verification-results/voicemail-independent-database-comparison-v2-20261013/report.json`. The earlier attempt failed before Docker creation because system Python 3.9 lacks `hashlib.file_digest`; its receipt is retained separately. The corrected runner uses bounded streaming hashing. Four synthetic tests cover every relationship field, missing snapshot rows, mismatched tenant/intake pairing, and changed restore hashes/size/identity/source-access/decode claims.

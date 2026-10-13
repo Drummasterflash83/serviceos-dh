@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "state": "file_pair_verified_database_snapshot_too_old",
+  "observedDate": "2026-10-13",
+  "databaseSnapshotObservedAt": "2026-10-13T00:16:29.971745+00:00",
+  "archive": {
+    "bytes": 201420792,
+    "sha256": "009c3236c3f73fe686c4a0f99e988c7c47776c0fa7b11c619d1fc6bf672f057e"
+  },
+  "independentFilePair": {
+    "state": "independent_files_verified",
+    "filesVerified": true,
+    "decoded": true,
+    "durationSeconds": 25.344,
+    "listening": "not_verified"
+  },
+  "databaseComparison": {
+    "state": "database_relationships_absent",
+    "missing": [
+      "intake",
+      "source",
+      "voicemail",
+      "rawStorage",
+      "audioStorage"
+    ],
+    "databaseRecoveryVerified": false
+  },
+  "containerRemoved": true,
+  "productionChanged": false,
+  "newDataFetched": false,
+  "rowsSeeded": false,
+  "migrationsApplied": false,
+  "tests": {
+    "passed": 4,
+    "scope": "synthetic metadata comparison failure cases"
+  },
+  "privateReportSha256": "6a258d85d7a2c12de90e1a0c7ca1859f0f02a6db3c21991d5cbb2ac09ade2f4a",
+  "remaining": [
+    "post_import_independent_database_snapshot_and_relationship_restore",
+    "human_listening_not_verified"
+  ]
+}

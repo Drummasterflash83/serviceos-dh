@@ -13,6 +13,8 @@ import {
   prepareCampaign,
   readSavedCampaign,
   readSourceReplayReceipt,
+  readCampaignRecovery,
+  type CampaignRecoveryState,
   type SourceReplayReceipt,
   resolveCampaign,
   type Campaign,
@@ -65,6 +67,10 @@ export function LearnSlackCampaigns({
   const [sourceId, setSourceId] = useState(""),
     [sourceVersion, setSourceVersion] = useState("");
   const [replayReceipt, setReplayReceipt] = useState<SourceReplayReceipt | null>(null);
+  const [recoveryAccount, setRecoveryAccount] = useState("");
+  const [recovery, setRecovery] = useState<CampaignRecoveryState | null>(null);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const recoveryGeneration = useRef(0);
   const live = useRef(false),
     working = useRef(false),
     generation = useRef(0),
@@ -119,6 +125,10 @@ export function LearnSlackCampaigns({
   async function detail(id: string) {
     const ticket = ++detailGeneration.current;
     setSelected(id);
+    recoveryGeneration.current++;
+    setRecovery(null);
+    setRecoveryAccount("");
+    setRecoveryLoading(false);
     setCampaign(null);
     setReview(null);
     setConfirmed(false);
@@ -155,6 +165,7 @@ export function LearnSlackCampaigns({
       live.current = false;
       generation.current++;
       detailGeneration.current++;
+      recoveryGeneration.current++;
       window.removeEventListener("storage", changed);
     };
   }, [tenantId, actorId, backend]);
@@ -219,6 +230,50 @@ export function LearnSlackCampaigns({
       setNotice((e as Error).message);
     }
   }
+  async function loadRecovery(
+    account: string,
+    request: string | null = null,
+    campaignId = campaign?.campaignId,
+  ) {
+    const ticket = ++recoveryGeneration.current;
+    setRecovery(null);
+    setRecoveryAccount(account);
+    setReview(null);
+    setConfirmed(false);
+    if (!account || !campaignId || !allowSourceReplay) return;
+    setRecoveryLoading(true);
+    try {
+      const r = await readCampaignRecovery(db(), tenantId, campaignId, account, request);
+      if (allowed() && ticket === recoveryGeneration.current) setRecovery(r);
+    } catch (e) {
+      if (allowed() && ticket === recoveryGeneration.current) setNotice((e as Error).message);
+    } finally {
+      if (live.current && ticket === recoveryGeneration.current) setRecoveryLoading(false);
+    }
+  }
+  function reviewRecovery() {
+    if (!recovery?.jobId || !campaign || !allowSourceReplay) return;
+    try {
+      setReview(
+        prepareCampaign({
+          ...base(),
+          operation: "recover_page",
+          input: {
+            campaignId: recovery.campaignId,
+            accountId: recovery.accountId,
+            importId: recovery.importId,
+            failedJobId: recovery.jobId,
+            checkpointHash: recovery.checkpointHash,
+            reason: reason.trim(),
+          },
+        }),
+      );
+      setConfirmed(false);
+      setNotice("");
+    } catch (e) {
+      setNotice((e as Error).message);
+    }
+  }
   function reviewReplay() {
     if (!campaign || !allowSourceReplay) return;
     try {
@@ -245,7 +300,7 @@ export function LearnSlackCampaigns({
       working.current ||
       !allowed() ||
       !ready ||
-      (d.operation === "replay_source" && !allowSourceReplay)
+      (["replay_source", "recover_page"].includes(d.operation) && !allowSourceReplay)
     )
       return;
     working.current = true;
@@ -259,7 +314,9 @@ export function LearnSlackCampaigns({
         scope,
         d,
         mode,
-        () => allowed() && (d.operation !== "replay_source" || replayAllowedRef.current),
+        () =>
+          allowed() &&
+          (!["replay_source", "recover_page"].includes(d.operation) || replayAllowedRef.current),
       );
       if (!allowed()) return;
       restore();
@@ -270,7 +327,7 @@ export function LearnSlackCampaigns({
       if (r.campaignId) await detail(r.campaignId);
       setNotice(
         r.state === "committed"
-          ? "Replay request queued. Capture has not yet been verified; retain the job receipt for outcome review."
+          ? "Recovery request queued. Capture has not yet been verified; retain the job receipt for outcome review."
           : r.state === "recorded"
             ? "Change recorded. Refresh progress to follow the import."
             : r.state === "cancelled"
@@ -432,6 +489,78 @@ export function LearnSlackCampaigns({
       {allowSourceReplay && (
         <details>
           <summary className="cursor-pointer font-medium">
+            Advanced: recover a held campaign page
+          </summary>
+          <div className="mt-3 space-y-3">
+            <p>
+              Inspect the saved failure before one exact retry. The campaign’s dates, allowance and
+              checkpoint stay unchanged. Unsupported messages remain held for review.
+            </p>
+            <label className="block space-y-1">
+              <span>Campaign channel</span>
+              <select
+                className="block w-full rounded border p-2"
+                value={recoveryAccount}
+                disabled={busy || !campaign}
+                onChange={(e) => void loadRecovery(e.target.value)}
+              >
+                <option value="">Choose a channel from the selected campaign</option>
+                {campaign?.channels.map((c) => (
+                  <option key={c.accountId} value={c.accountId}>
+                    {c.channelId} · {campaignStates[c.state] ?? c.state}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              className="cp-secondary"
+              disabled={busy || recoveryLoading || !recoveryAccount}
+              onClick={() => void loadRecovery(recoveryAccount)}
+            >
+              Refresh saved failure
+            </button>
+            {recoveryLoading && <p role="status">Reading saved failure and checkpoint…</p>}
+            {recovery && (
+              <div className="space-y-2 break-all">
+                <p>
+                  Job: {recovery.jobId ?? "None"} · {recovery.status ?? "Not checked"}
+                </p>
+                <p>{recovery.errorCode ?? "No failure code recorded"}</p>
+                {recovery.diagnostic ? (
+                  <p>
+                    Structure: type {recovery.diagnostic.type}; hidden {recovery.diagnostic.hidden};
+                    subtype {recovery.diagnostic.subtype ?? recovery.diagnostic.subtypeType}.
+                  </p>
+                ) : (
+                  <p>
+                    No structural diagnostic is recorded. A reviewed bounded retry can inspect the
+                    held page without skipping it.
+                  </p>
+                )}
+                <button
+                  className="cp-secondary"
+                  disabled={
+                    !editable ||
+                    recoveryLoading ||
+                    !["failed", "dead_letter"].includes(recovery.status ?? "") ||
+                    ![
+                      "slack_history_message_subtype_unsupported",
+                      "slack_history_message_shape_unsupported",
+                      "slack_history_diagnostic_unconfirmed",
+                    ].includes(recovery.errorCode ?? "")
+                  }
+                  onClick={reviewRecovery}
+                >
+                  Review exact page recovery
+                </button>
+              </div>
+            )}
+          </div>
+        </details>
+      )}
+      {allowSourceReplay && (
+        <details>
+          <summary className="cursor-pointer font-medium">
             Advanced: revalidate a retained Slack source
           </summary>
           <div className="mt-3 space-y-3">
@@ -473,14 +602,16 @@ export function LearnSlackCampaigns({
             </button>
             {replayReceipt && (
               <div className="space-y-2 rounded border p-3" role="status">
-                <p>Last replay request accepted. Execution outcome has not been checked here.</p>
+                <p>
+                  Last recovery request accepted. Execution outcome is separate from this receipt.
+                </p>
                 <p className="break-all">
                   Request: {replayReceipt.draft.requestId}
                   <br />
                   Job: {replayReceipt.jobId}
                 </p>
                 <p>
-                  Checking this receipt confirms acceptance only. It does not submit another replay.
+                  Checking this receipt confirms acceptance only. It does not submit another job.
                 </p>
                 <button
                   className="cp-secondary"
@@ -489,6 +620,19 @@ export function LearnSlackCampaigns({
                 >
                   Reconcile saved receipt
                 </button>
+                {replayReceipt.draft.operation === "recover_page" && (
+                  <button
+                    className="cp-secondary"
+                    disabled={busy || recoveryLoading || !canEdit}
+                    onClick={() => {
+                      const d = replayReceipt.draft;
+                      if (d.operation === "recover_page")
+                        void loadRecovery(d.input.accountId, d.requestId, d.input.campaignId);
+                    }}
+                  >
+                    Read recovery job outcome
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -581,6 +725,25 @@ export function LearnSlackCampaigns({
                 reserved provider requests, including checks/retries. Observed replies are included.
               </p>
             </>
+          ) : draft.operation === "recover_page" ? (
+            <div className="space-y-2 break-all">
+              <p>
+                Retry exactly the held page from its preserved checkpoint. Existing campaign
+                allowance and expiry apply; this may record a diagnostic and remain held.
+              </p>
+              <p>
+                Campaign: {draft.input.campaignId}
+                <br />
+                Account: {draft.input.accountId}
+                <br />
+                Import: {draft.input.importId}
+                <br />
+                Failed job: {draft.input.failedJobId}
+                <br />
+                Checkpoint: {draft.input.checkpointHash}
+              </p>
+              <p>Cancellation only applies before the request is committed.</p>
+            </div>
           ) : draft.operation === "replay_source" ? (
             <div className="space-y-2 break-all">
               <p>

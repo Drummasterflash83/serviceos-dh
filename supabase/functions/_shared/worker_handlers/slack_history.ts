@@ -17,7 +17,13 @@ export function createSlackHistoryHandler(bind:(ctx:WorkerHandlerContext)=>Promi
    if(!binding||binding.tenantId!==ctx.tenantId||binding.jobId!==ctx.jobId)return {success:false,error:{code:'slack_history_binding_unavailable',message:'Approved server-side history binding is unavailable.',retryable:false}};
    const checkpoint=await readSlackHistoryBatch(binding.scope,ctx.tenantId,binding.channelId,binding.checkpoint,binding.maxPages,{authorised:async()=>!ctx.signal?.aborted&&await binding.authorised(),request:binding.request,persist:binding.sourceReplayId?sourceReplayPersistence(ctx.supabaseAdmin,ctx,binding.captureVisibility):slackHistoryPersistence(ctx.supabaseAdmin,ctx.tenantId,ctx.jobId,binding.accountId,ctx.claim,binding.threadImportId,binding.captureVisibility)},1);
    return {success:true,result:{...checkpoint,coverage:binding.sourceReplayId?'one_retained_source_revalidation':binding.threadImportId?'observed_thread_window':'bounded_channel_history',ingestion_complete:false},...(checkpoint.stopReason==='run_page_limit'?{continuation:{jobType:binding.threadImportId?'slack.thread_sync':'slack.history_sync',jobKey:binding.threadImportId?`slack.thread:${binding.accountId}:${binding.scope.parentTimestamp}:${binding.scope.oldest}:${binding.scope.latest}`:`slack.history:${binding.accountId}`,connectorId:'slack',payload:{connector_account_id:binding.accountId,...(binding.threadImportId?{thread_import_id:binding.threadImportId}:{})},availableAt:new Date(clock()+60000).toISOString()}}:{})};
-  }catch(error){if(error instanceof SlackHistoryTransportError)return {success:false,error:{code:error.code,message:error.message,retryable:error.retryable,retryAfterSeconds:error.retryAfterSeconds}};return {success:false,error:{code:'slack_history_failed',message:'History scope, provider page or durable checkpoint could not be verified.',retryable:false}};}
+  }catch(error){if(error instanceof SlackHistoryTransportError && error.diagnostic){
+    try { const saved=await ctx.supabaseAdmin.rpc('learn_slack_record_structure_diagnostic',{
+      p_tenant:ctx.tenantId,p_job:ctx.jobId,p_claimed_by:ctx.claim.claimedBy,p_attempt:ctx.claim.attemptCount,p_diagnostic:error.diagnostic,
+    }); if(saved.error || saved.data!==true)throw Error(); }
+    catch { return {success:false,error:{code:'slack_history_diagnostic_unconfirmed',message:'Unsupported Slack structure needs operator review; diagnostic receipt was not confirmed.',retryable:false}}; }
+   }
+   if(error instanceof SlackHistoryTransportError)return {success:false,error:{code:error.code,message:error.message,retryable:error.retryable,retryAfterSeconds:error.retryAfterSeconds}};return {success:false,error:{code:'slack_history_failed',message:'History scope, provider page or durable checkpoint could not be verified.',retryable:false}};}
  };
 }
 // Missing storage, connection, approved scope or claimed job prevents any fetch.

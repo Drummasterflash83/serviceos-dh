@@ -5,6 +5,7 @@ import {
   resolveCampaign,
   readSavedCampaign,
   readSourceReplayReceipt,
+  readCampaignRecovery,
   campaignKey,
   readCampaign,
   listCampaigns,
@@ -359,4 +360,104 @@ test("a conflicting job receipt cannot overwrite an accepted replay receipt", as
   assert.equal(readSourceReplayReceipt(f.store, scope)?.jobId, id(8));
   assert.deepEqual(readSavedCampaign(f.store, scope), replay);
   assert.equal(f.calls.filter((c) => c.p_mode === "apply").length, 1);
+});
+
+const recoveryDraft: CampaignDraft = {
+  ...replay,
+  operation: "recover_page",
+  input: {
+    campaignId: id(4),
+    accountId: id(5),
+    importId: id(6),
+    failedJobId: id(7),
+    checkpointHash: "a".repeat(64),
+    reason: "Review held page",
+  },
+};
+test("campaign recovery binds all exact failed-page identifiers and never accepts scope overrides", () => {
+  assert.deepEqual(prepareCampaign(recoveryDraft), recoveryDraft);
+  for (const delta of [
+    { accountId: "bad" },
+    { importId: "bad" },
+    { importId: null },
+    { failedJobId: "bad" },
+    { checkpointHash: "x" },
+    { oldest: "0" },
+  ])
+    assert.throws(() =>
+      prepareCampaign({
+        ...recoveryDraft,
+        input: { ...recoveryDraft.input, ...delta },
+      } as CampaignDraft),
+    );
+});
+test("campaign recovery lost acknowledgement reuses the same logged request and job", async () => {
+  const f = replayFixture();
+  f.lose();
+  await assert.rejects(f.run("apply", recoveryDraft), /not confirmed/);
+  assert.deepEqual(readSavedCampaign(f.store, scope), recoveryDraft);
+  assert.equal((await f.run("check", recoveryDraft)).state, "committed");
+  assert.deepEqual(readSourceReplayReceipt(f.store, scope), { draft: recoveryDraft, jobId: id(9) });
+  assert.equal(f.calls.filter((c) => c.p_mode === "apply").length, 1);
+  assert.ok(f.calls.every((c) => c.p_operation === "recover_page"));
+});
+const recoveryState = {
+  version: "slack-campaign-recovery/1",
+  tenantId: scope.tenantId,
+  campaignId: id(4),
+  accountId: id(5),
+  requestId: null,
+  importId: id(6),
+  checkpointHash: "a".repeat(64),
+  jobId: id(7),
+  status: "dead_letter",
+  errorCode: "slack_history_message_shape_unsupported",
+  diagnostic: {
+    version: "slack-structure/1",
+    code: "slack_history_message_shape_unsupported",
+    type: "message",
+    hidden: "true",
+    subtypeType: "string",
+    subtype: "message_changed",
+  },
+};
+test("recovery reader validates tenant/campaign/account/request and strips untrusted extra prose", async () => {
+  const calls: any[] = [];
+  const db = {
+    rpc: async (name: string, args: any) => {
+      calls.push({ name, args });
+      return {
+        data: {
+          ...recoveryState,
+          private_body: "must not return",
+          diagnostic: { ...recoveryState.diagnostic, private_body: "must not return" },
+        },
+        error: null,
+      };
+    },
+  };
+  const result = await readCampaignRecovery(db, scope.tenantId, id(4), id(5));
+  assert.equal(result.diagnostic?.subtype, "message_changed");
+  assert.equal(JSON.stringify(result).includes("must not return"), false);
+  assert.equal(calls[0].name, "learn_slack_campaign_recovery_read");
+  assert.equal(calls[0].args.p_request, null);
+  for (const delta of [
+    { tenantId: id(9) },
+    { campaignId: id(9) },
+    { accountId: id(9) },
+    { requestId: id(9) },
+    { checkpointHash: "bad" },
+    { jobId: "bad" },
+    { status: "fake success" },
+    { diagnostic: { ...recoveryState.diagnostic, subtype: "PRIVATE URL" } },
+  ])
+    await assert.rejects(
+      readCampaignRecovery(
+        { rpc: async () => ({ data: { ...recoveryState, ...delta }, error: null }) },
+        scope.tenantId,
+        id(4),
+        id(5),
+      ),
+      /could not be verified/,
+    );
 });

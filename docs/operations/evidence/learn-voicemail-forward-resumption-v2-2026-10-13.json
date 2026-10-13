@@ -1,0 +1,39 @@
+{
+  "observedAt": "2026-10-13T13:55:40.321Z",
+  "state": "resumption_prepared_not_activated",
+  "priorReceipt": "voicemail-forward-runtime-drift-20261013.json",
+  "releaseReceipt": "production-slack-source-replay-20261013/deployment-v3.json",
+  "changes": [
+    {
+      "name": "platform-worker",
+      "before": {
+        "version": 64,
+        "hash": "fd2eb90f556fe110392b10a59cd46f774e575bca18d1b26462fd0417bb49a338"
+      },
+      "after": {
+        "version": 65,
+        "hash": "a0d01a53608b827f2d77381b9421cf826333ea051d00f115a583641e6e57b7aa"
+      }
+    },
+    {
+      "name": "learn-slack-worker",
+      "before": {
+        "version": 4,
+        "hash": "062911dc29ab1786102d037153e6cf04d427d69a6684f08d08294bd972f10adb"
+      },
+      "after": {
+        "version": 5,
+        "hash": "98a5977039d2a3f6ae42ac240727dad8ab6fe59cfa8e45aab5f8d034b4294cbe"
+      }
+    }
+  ],
+  "requests": 1,
+  "productionWrites": 0,
+  "resumptionPlanSha256": "3fa07818333b591e489237d16a219e58493e6d2bef18831044d8e03bdb5e947f",
+  "runnerSha256": "8bd5b2f913b4516e9ac7d5a1cd6bb0705f171ed780301c9085c79661f00d2b79",
+  "existingPairs": 255,
+  "newRoutes": 0,
+  "historicalImports": 0,
+  "offlineScenariosPassed": 4,
+  "providerReceiptExpiresAt": "2026-10-13T14:47:06.478924Z"
+}

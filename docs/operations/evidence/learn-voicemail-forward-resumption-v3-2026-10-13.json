@@ -1,0 +1,45 @@
+{
+  "observedAt": "2026-10-13T13:59:21.852Z",
+  "state": "dependency_scoped_resumption_prepared_not_activated",
+  "priorReceipt": "voicemail-forward-resumption-runtime-v2-20261013.json",
+  "releaseReceipt": "production-slack-source-replay-20261013/deployment-v3.json",
+  "changes": [
+    {
+      "name": "receptionist-calls",
+      "before": {
+        "version": 11,
+        "hash": "12f9b830d4bab8d7ea5579eb76a3d32ba37d448187d4cd1c2e6919d13c5c6fd2"
+      },
+      "after": {
+        "version": 13,
+        "hash": "3def45a2868f80f3e80a92d5159d0fe99d1d0ff2062e4c5cb6b7dd90753baa56"
+      }
+    },
+    {
+      "name": "receptionist-practice",
+      "before": {
+        "version": 14,
+        "hash": "fe4faabdf370bb42281a4783b1a894263066fb38d352b0c19ca4d730d296c05e"
+      },
+      "after": {
+        "version": 15,
+        "hash": "ec063370514c5d5ff1537a444c016ee56f12ac1321766136d80dd7a86db29488"
+      }
+    }
+  ],
+  "requests": 1,
+  "productionWrites": 0,
+  "note": "Only independent Emma calls/practice runtime changes since v2; no voicemail dependency changes.",
+  "resumptionPlanSha256": "b1c9c88c5353cfc6e7a4183ac3480cdbefdf46aa2200ff4100362ab10b02474d",
+  "runnerSha256": "17e922d3c24d28cef33d21818eb1a210ba35bb1f12372e9c8b27ef565dcb1bd4",
+  "guardedDependencyCount": 10,
+  "policyTestsPassed": 3,
+  "fullRunnerScenariosPassed": 5,
+  "relevantDriftPauses": true,
+  "unrelatedEmmaDriftRecordedWithoutPause": true,
+  "allSecretMetadataPreserved": true,
+  "accessRoutesAndCronGuardsUnchanged": true,
+  "newRoutes": 0,
+  "newHistoricalImports": 0,
+  "activationPerformed": false
+}

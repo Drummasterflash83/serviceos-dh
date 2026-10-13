@@ -44,3 +44,12 @@ test('a rejected record prevents page publication and cursor advancement',async(
  persist:async()=>{writes++;}}),(e:any)=>e.code==='slack_history_message_subtype_unsupported');
  assert.equal(writes,0);assert.equal(initial.pages,0);assert.equal(initial.cursor,null);
 });
+
+test('unsupported structures retain only bounded structural diagnostics and do not broaden accepted types',()=>{
+ for(const m of [{hidden:true,subtype:'message_changed'},{type:'private raw type',subtype:42},{subtype:'PRIVATE SECRET 123'},{subtype:'x'.repeat(65)}]){
+  try{slackMessageKind({...m,text:'Never disclose this',user:'U_PRIVATE',files:[{url:'private'}]});assert.fail('accepted');}
+  catch(e:any){assert.equal(e.retryable,false);assert.ok(e.diagnostic);assert.deepEqual(Object.keys(e.diagnostic).sort(),['code','hidden','subtype','subtypeType','type','version']);
+   assert.equal(JSON.stringify(e.diagnostic).includes('private'),false);assert.equal(JSON.stringify(e.diagnostic).includes('PRIVATE'),false);
+   assert.equal(JSON.stringify(e.diagnostic).includes('Never disclose'),false);assert.ok(e.diagnostic.subtype===null || e.diagnostic.subtype==='message_changed');}
+ }
+});

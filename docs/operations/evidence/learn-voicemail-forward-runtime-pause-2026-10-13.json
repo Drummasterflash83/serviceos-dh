@@ -1,0 +1,51 @@
+{
+  "observedAt": "2026-10-13T13:52:17.351Z",
+  "state": "paused_preserved",
+  "failure": "runtime_changed",
+  "pauseCompletedAt": "2026-10-13T13:48:38.240Z",
+  "changes": [
+    {
+      "name": "receptionist-calls",
+      "before": {
+        "version": 10,
+        "hash": "75d2029bdcf0abc805b0964039276ce71f753b36fc9f04f7241a463d1f2a9b52",
+        "jwt": false
+      },
+      "after": [
+        {
+          "version": 11,
+          "hash": "12f9b830d4bab8d7ea5579eb76a3d32ba37d448187d4cd1c2e6919d13c5c6fd2",
+          "jwt": false
+        }
+      ]
+    },
+    {
+      "name": "receptionist-practice",
+      "before": {
+        "version": 13,
+        "hash": "d1fa2f34be6e1b908aa4bc88043c7f9674c71ba831ab9d3140cfc519b11c9c19",
+        "jwt": false
+      },
+      "after": [
+        {
+          "version": 14,
+          "hash": "fe4faabdf370bb42281a4783b1a894263066fb38d352b0c19ca4d730d296c05e",
+          "jwt": false
+        }
+      ]
+    }
+  ],
+  "added": [],
+  "existingMessages": 255,
+  "existingSources": 255,
+  "enabledRoutes": 0,
+  "requests": 1,
+  "productionWrites": 0,
+  "resumptionState": "prepared_not_activated",
+  "resumptionPlanSha256": "3e18b08cf09d075695f42dd69fff5e5e029af158dd32875eb49e86f023ee194c",
+  "runnerSha256": "f4722073a959ea7c56548f4936426be1dc159b9160434ef1d0a84b4e4da8b7c1",
+  "newRoutes": 0,
+  "historicalImports": 0,
+  "offlineResumptionScenariosPassed": 4,
+  "coordination": "Rebaseline and review after pending Slack runtime publication before resuming. Provider destination receipt expires14:47:06 UTC."
+}

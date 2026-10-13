@@ -9,16 +9,28 @@ const activity = new Set(['channel_archive', 'channel_unarchive', 'channel_join'
   'channel_posting_permissions', 'channel_convert_to_private', 'channel_convert_to_public',
   'group_archive', 'group_unarchive', 'group_join', 'group_leave', 'group_name',
   'group_purpose', 'group_topic', 'pinned_item', 'unpinned_item']);
+function unsupported(message: Record<string, unknown>, code: string): never {
+  const error = new SlackHistoryTransportError(code, false);
+  // Structural labels only: never persist text, identities, files or raw values.
+  error.diagnostic = Object.freeze({
+    version: 'slack-structure/1', code,
+    type: message.type === undefined ? 'missing' : message.type === 'message' ? 'message' : 'other',
+    hidden: message.hidden === undefined ? 'missing' : message.hidden === true ? 'true' : message.hidden === false ? 'false' : 'other',
+    subtypeType: message.subtype === undefined ? 'missing' : typeof message.subtype === 'string' ? 'string' : 'other',
+    subtype: typeof message.subtype === 'string' && /^[a-z_]{1,64}$/.test(message.subtype) ? message.subtype : null,
+  });
+  throw error;
+}
 export function slackMessageKind(message: Record<string, unknown>): 'conversation' | 'channel_activity' {
   if (message.type !== undefined && message.type !== 'message' ||
       message.hidden !== undefined && message.hidden !== false ||
       message.subtype !== undefined && typeof message.subtype !== 'string') {
-    throw new SlackHistoryTransportError('slack_history_message_shape_unsupported', false);
+    unsupported(message, 'slack_history_message_shape_unsupported');
   }
   if (message.subtype === undefined || conversation.has(message.subtype as string)) return 'conversation';
   if (activity.has(message.subtype as string)) return 'channel_activity';
   // Fail without advancing the checkpoint: unknown, redacted or event-envelope
   // data is not silently skipped or reported as captured conversation content.
   if (message.subtype === 'ekm_access_denied') throw new SlackHistoryTransportError('slack_history_content_unavailable', false);
-  throw new SlackHistoryTransportError('slack_history_message_subtype_unsupported', false);
+  unsupported(message, 'slack_history_message_subtype_unsupported');
 }

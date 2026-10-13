@@ -1,0 +1,56 @@
+{
+  "state": "investigated_prepared_not_deployed",
+  "productionWrites": 0,
+  "newImports": 0,
+  "thirdFooter": {
+    "exactAlternative": "To access your mailbox, simply dial 0 from any connected handset.",
+    "originalsVerified": 7,
+    "allSignedAndAudioVerified": true,
+    "preflightSha256": "8101cacbad78fb017610709abcfffb2f1d389a3f681defff2b57ba8af4a149ea",
+    "parserSha256": "2d0991566b89962d53add6ccd059a695c5d18a7d8dfc340486d9f4759756f4b2",
+    "signatureMimeDisplayTestsPassed": 18,
+    "workerTypecheck": "passed"
+  },
+  "olderSigner": {
+    "diagnosticOriginals": 2,
+    "domain": "birchills-net.20230601.gappssmtp.com",
+    "selector": "20230601",
+    "dns": {
+      "name": "20230601._domainkey.birchills-net.20230601.gappssmtp.com",
+      "type": "TXT",
+      "result": "TXT_returned",
+      "recordCount": 1,
+      "records": [
+        {
+          "keyTagPresent": true,
+          "emptyKey": true,
+          "sha256": "a53ecdc4efb916971d78b3babcdc930362b471ba50938ab5fd6b7dcc82991159"
+        }
+      ]
+    },
+    "observedStatus": "neutral",
+    "observedReason": "invalid public key",
+    "conclusion": "Observed selector public key is explicitly revoked; current DKIM cannot authenticate these originals.",
+    "policyChanged": false,
+    "reference": "https://www.rfc-editor.org/rfc/rfc6376.html#section-6.1.2"
+  },
+  "transcriptDisplay": {
+    "storageChanges": false,
+    "behavior": "Only complete known trailing provider footer is hidden; full provider text remains expandable.",
+    "syntheticTestsPassed": 2,
+    "liveBrowserNotYetChecked": true
+  },
+  "ongoing": {
+    "routesPrepared": 7,
+    "planSha256": "af0d4ddab8c735b57e0f50f63d54852ec0b2daa6dee8046ee36ec1d6b78f8595",
+    "allSelectedAccountsActiveAndCaptureSelected": true,
+    "providerCurrentDestinationMetadataAvailable": false,
+    "emailAndPhoneGates": {
+      "email": true,
+      "phone": true
+    },
+    "activeRoutesChanged": false,
+    "ownerManagerChanges": false,
+    "requiresCurrentDestinationOrFreshSignedAcceptance": true
+  }
+}

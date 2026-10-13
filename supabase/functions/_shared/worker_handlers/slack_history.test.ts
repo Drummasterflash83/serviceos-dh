@@ -9,6 +9,14 @@ test('unsupported history is reported by a safe actionable code without publicat
   const f=fixture();const h=createSlackHistoryHandler(async()=>({captureVisibility:()=>({version:"synthetic visibility"}),tenantId:T,jobId:f.ctx.jobId,accountId:'synthetic-account',channelId:'C123',scope,checkpoint,maxPages:1,authorised:async()=>true,
    request:async()=>({ok:true,has_more:false,messages:[{ts:'123.1',text:'Private provider content',subtype}]})}));
   const r=await h(f.ctx);assert.equal(r.success,false);assert.equal(r.error?.code,code);assert.equal(r.error?.retryable,false);
-  assert.equal(f.calls.length,0);assert.equal(JSON.stringify(r).includes('Private provider content'),false);
+  assert.equal(f.calls.length,subtype==='future_subtype'?1:0);if(f.calls.length)assert.equal(f.calls[0][0],'learn_slack_record_structure_diagnostic');assert.equal(JSON.stringify(f.calls).includes('Private provider content'),false);assert.equal(JSON.stringify(r).includes('Private provider content'),false);
  }
+});
+
+test('structural diagnostic acknowledgement failure preserves a non-retryable hold and never publishes',async()=>{
+ const f=fixture();f.ctx.supabaseAdmin.rpc=async(n:any,a:any)=>{f.calls.push([n,a]);return {data:false,error:null}};
+ const h=createSlackHistoryHandler(async()=>({tenantId:T,jobId:f.ctx.jobId,accountId:'synthetic-account',channelId:'C123',scope,checkpoint,maxPages:1,authorised:async()=>true,
+ request:async()=>({ok:true,has_more:false,messages:[{ts:'123.1',text:'Private content',hidden:true,subtype:'future_subtype'}]})}));
+ const r=await h(f.ctx);assert.equal(r.error?.code,'slack_history_diagnostic_unconfirmed');assert.equal(r.error?.retryable,false);
+ assert.deepEqual(f.calls.map(x=>x[0]),['learn_slack_record_structure_diagnostic']);assert.equal(JSON.stringify(f.calls).includes('Private content'),false);
 });
