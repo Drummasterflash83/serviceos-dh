@@ -7,6 +7,36 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 21:11 BST — one substantial customer journey linked and verified LIVE.**
+
+- One company account was corroborated against its retained Commusoft source,
+  current customer export and full existing-identity snapshot, then saved through
+  the existing logged operator review. No possible identity collisions were merged.
+- All 22 sites and 585 jobs belonging to that account in the retained snapshot are
+  now linked. Every job's explicit property reference and customer/site ownership
+  was verified; the database readback checks every source link, original actor,
+  customer card and site relationship. Source descriptions and historical codes
+  remain unchanged. These are unverified canonical records with explicit source
+  evidence, not independently verified job-completion facts.
+- The signed-in LIVE card shows 585 linked jobs (25 on its first page) and 22 sites.
+  Source completion times without confirmed timezones remain excluded from duration
+  and performance calculations. Communications and contacts are not complete for
+  this customer. Complete provider coverage is not claimed.
+- All 4,456 previous identity projections, 1,552 retained customer heads, 24 prior
+  customer links and 35 contact points were unchanged. No new grant, schema/runtime
+  deployment, provider write or paid AI was involved. This is scoped preservation,
+  not a hash comparison of every production row.
+- Total published business links are now 25 customers, 33 sites, 616 jobs and 22
+  contacts. LIVE Slack has 12,127 sources; 102 archived windows and 15 active windows
+  are complete. Commusoft site-contact capture remains active with no full-cycle
+  watermark yet. Both known Slack recoveries were still queued at 21:03 BST.
+- Next: extend evidence-backed customer/contact/communication reconciliation,
+  make long job histories easier to scan by current work and date, complete input
+  coverage and ongoing capture, then scoring and operational acceptance. The full
+  goal remains incomplete; this account is not a substitute for broad coverage.
+
+[Live customer/site/job evidence](evidence/learn-customer-site-job-publication-2026-10-13.json).
+
 **13 October, 20:55 BST — observed Slack canvas retention released; recovery queued.**
 
 - LIVE `learn-slack-worker` v10 and `platform-worker` v71 now retain the exact

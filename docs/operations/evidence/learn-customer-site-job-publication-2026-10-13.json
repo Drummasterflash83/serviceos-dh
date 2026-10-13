@@ -1,0 +1,168 @@
+{
+  "version": "learn-customer-site-job-publication/1",
+  "state": "verified_live_source_relationships",
+  "at": "2026-10-13T20:09:38.033362+00:00",
+  "acceptance": {
+    "version": "commusoft-customer-review-batch/1",
+    "state": "verified_live_publication",
+    "at": "2026-10-13T20:09:38.033362+00:00",
+    "customers": 1,
+    "sites": 22,
+    "jobs": 585,
+    "checks": {
+      "allSourceVersionsAndOwnersVerified": true,
+      "existingSignedInOperatorRecorded": true,
+      "allCreatedIdentitiesRemainUnverified": true,
+      "jobSiteRelationshipsVerified": true,
+      "companyAccountCorroboratedAgainstExport": true
+    },
+    "privateEvidenceSha256": "9642df4cb621703cecdd434a58d114de4975c801c1e5bb67acedb3144d05119f"
+  },
+  "coverage": {
+    "scope": "One corroborated business customer and all its sites/jobs present in the current retained Commusoft snapshot",
+    "customers": 1,
+    "sites": 22,
+    "jobs": 585,
+    "completeProviderCoverage": false,
+    "communicationAttributionComplete": false,
+    "contactsComplete": false
+  },
+  "preservation": {
+    "scope": "Prior customer identity projections, customer links, retained customer heads and contact points, not a full-row database hash",
+    "existing": {
+      "before": 4456,
+      "after": 4457,
+      "allPriorUnchanged": true
+    },
+    "customers": {
+      "before": 1552,
+      "after": 1552,
+      "allPriorUnchanged": true
+    },
+    "links": {
+      "before": 24,
+      "after": 25,
+      "allPriorUnchanged": true
+    },
+    "contactPoints": {
+      "before": 35,
+      "after": 35,
+      "allPriorUnchanged": true
+    }
+  },
+  "browser": {
+    "signedInLiveOperator": true,
+    "auditedCardReadAt": "2026-10-13T20:10:09Z",
+    "jobsShownInFirstPage": 25,
+    "totalLinkedJobsShown": 585,
+    "totalLinkedSitesShown": 22,
+    "jobTimingLimitationsShown": true,
+    "snapshotSha256": "31b4ede3e6043fd1b43f40d61b2328b627ccc0eac51cbecf4c6a848eaeba2f56",
+    "batchLogSha256": "50297c5681e55589fa4d100efbe8afa8d85223e28b7386fb7a751eecdbd1c31a"
+  },
+  "currentInputProgress": {
+    "at": "2026-10-13T20:10:47.735382+00:00",
+    "commusoft": [
+      {
+        "phase": 4,
+        "state": "window_active",
+        "account": "46644d30-4780-4855-956a-fabd0bcdd8cc",
+        "enabled": true,
+        "cycleEnd": "2026-10-13T16:02:03.332+00:00",
+        "nextCheck": "2026-10-13T20:11:24.628137+00:00",
+        "updatedAt": "2026-10-13T20:10:24.628137+00:00",
+        "watermark": null
+      }
+    ],
+    "slackCampaign": [
+      {
+        "id": "a3980d74-29fa-4655-a914-61219cdf7dad",
+        "budget": 10000,
+        "closed": null,
+        "enabled": true,
+        "expires": "2026-10-20T09:30:00+00:00",
+        "threads": {
+          "queued": 16,
+          "captured": 273,
+          "observed": 236
+        },
+        "channels": {
+          "thread_queued": 5,
+          "campaign_window_complete": 15
+        },
+        "requests": 3187,
+        "discoveryComplete": 20
+      },
+      {
+        "id": "b54d246b-2818-44d1-ba05-ccbe2c6bd6c9",
+        "budget": 20000,
+        "closed": null,
+        "enabled": true,
+        "expires": "2026-10-20T09:30:00+00:00",
+        "threads": {
+          "queued": 51,
+          "captured": 17,
+          "observed": 88
+        },
+        "channels": {
+          "thread_active": 37,
+          "window_active": 21,
+          "campaign_window_complete": 102
+        },
+        "requests": 1888,
+        "discoveryComplete": 139
+      }
+    ],
+    "slackMessages": 12127,
+    "jobOutcomesLastHour": [
+      {
+        "total": 55,
+        "status": "succeeded",
+        "job_type": "slack.thread_sync"
+      },
+      {
+        "total": 8,
+        "status": "queued",
+        "job_type": "slack.thread_sync"
+      },
+      {
+        "total": 586,
+        "status": "succeeded",
+        "job_type": "commusoft.source_sync"
+      },
+      {
+        "total": 5,
+        "status": "queued",
+        "job_type": "slack.history_sync"
+      },
+      {
+        "total": 1,
+        "status": "queued",
+        "job_type": "commusoft.source_sync"
+      },
+      {
+        "total": 4,
+        "status": "succeeded",
+        "job_type": "slack.history_sync"
+      }
+    ],
+    "canonicalSourceLinks": {
+      "job": 616,
+      "site": 33,
+      "contact": 22,
+      "customer": 25
+    },
+    "slackReviewedContexts": 1
+  },
+  "codeChanged": false,
+  "newAccess": false,
+  "providerWrites": 0,
+  "originalJobCodesAndDescriptionsRetained": true,
+  "remaining": [
+    "Finish broader customer identity, site/job/contact publication and communications attribution.",
+    "Confirm completion-time timezone semantics before duration/performance calculations.",
+    "Improve job ordering/filtering for a customer with hundreds of linked jobs; present useful current work without losing historical access.",
+    "Complete recurring provider coverage and operating acceptance.",
+    "Observe both existing Slack recovery handles; do not create duplicate recovery jobs."
+  ]
+}
