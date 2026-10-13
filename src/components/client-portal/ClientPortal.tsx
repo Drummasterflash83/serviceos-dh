@@ -35,6 +35,7 @@ import { ClientHeaderBrand } from "@/components/ClientHeaderBrand";
 import { clientDisplayName } from "@/lib/client-brand";
 import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
 import { WorkspaceHome } from "./WorkspaceHome";
+import { ClientWorkspaceSetup } from "./ClientWorkspaceSetup";
 import { receptionistNavigation } from "@/components/receptionist/ReceptionistNavigation";
 import { usePullToRefresh } from "@/lib/use-pull-to-refresh";
 import {
@@ -83,7 +84,7 @@ const ClientDeliverySummary = lazy(() =>
 const ClientNotifications = lazy(() =>
   import("./ClientNotifications").then((m) => ({ default: m.ClientNotifications })),
 );
-import {LearnLaunchPortal} from "./learn/LearnLaunchPortal";
+import { LearnLaunchPortal } from "./learn/LearnLaunchPortal";
 const nav = [
   { id: "home", label: "Workspace home", Icon: LayoutDashboard },
   { id: "receptionist", label: "AI Receptionist", Icon: Headphones },
@@ -131,11 +132,13 @@ export function ClientPortal({
   section: requestedSection = "home",
   receptionistPage = "today",
   operatorEmbedded = false,
+  operatorCompany,
 }: {
   tenantId?: string;
   section?: ClientSectionInput;
   receptionistPage?: ReceptionistView;
   operatorEmbedded?: boolean;
+  operatorCompany?: string;
 }) {
   const section = resolveClientSection(requestedSection);
   const { user, profile, signOut } = useAuth();
@@ -230,7 +233,12 @@ export function ClientPortal({
     section === "receptionist"
       ? selectedWorkspace(receptionistAccess.data, tenantId ?? row?.tenant_id)
       : undefined;
-  const tenant = row?.tenant_id ?? receptionistWorkspace?.tenant_id ?? (section === "learn" && (!tenantId || tenantId === profile?.tenant_id) ? profile?.tenant_id : undefined);
+  const tenant =
+    row?.tenant_id ??
+    receptionistWorkspace?.tenant_id ??
+    (section === "learn" && (!tenantId || tenantId === profile?.tenant_id)
+      ? profile?.tenant_id
+      : undefined);
   const notes = useQuery({
     queryKey: ["client-programme-notes", user?.id, tenant],
     enabled: !!user && !!tenant && section === "notes",
@@ -353,6 +361,18 @@ export function ClientPortal({
             ? "Your login is secure. OpenFolk will link your workspace to this account."
             : ""}
       </p>
+      {operatorEmbedded &&
+        tenantId &&
+        operatorCompany &&
+        operator.data === true &&
+        programmes.isSuccess && (
+          <ClientWorkspaceSetup
+            key={tenantId}
+            tenantId={tenantId}
+            company={operatorCompany}
+            onCreated={() => qc.invalidateQueries({ queryKey: ["client-programmes", user?.id] })}
+          />
+        )}
       {programmes.isError && (
         <button className="cp-primary" onClick={() => programmes.refetch()}>
           Try again
@@ -804,7 +824,13 @@ export function ClientPortal({
           id="client-main"
           className={`cp-content${section === "receptionist" ? " cp-receptionist-content" : ""}`}
         >
-          {section === "learn" && tenant ? <LearnLaunchPortal key={`${user?.id}:${tenant}`} tenantId={tenant}/> : section === "receptionist" ? receptionistContent : content}
+          {section === "learn" && tenant ? (
+            <LearnLaunchPortal key={`${user?.id}:${tenant}`} tenantId={tenant} />
+          ) : section === "receptionist" ? (
+            receptionistContent
+          ) : (
+            content
+          )}
         </main>
       </div>
     </div>

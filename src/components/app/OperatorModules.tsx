@@ -235,7 +235,13 @@ function OperatorModuleContent({
             Modules below share the client’s workspace. Changes to scope, prices and delivery status
             publish to their workspace.
           </p>
-          <ClientPortal key={tenantId} tenantId={tenantId} section="modules" operatorEmbedded />
+          <ClientPortal
+            key={tenantId}
+            tenantId={tenantId}
+            section="modules"
+            operatorEmbedded
+            operatorCompany={company}
+          />
         </div>
       </>
     );

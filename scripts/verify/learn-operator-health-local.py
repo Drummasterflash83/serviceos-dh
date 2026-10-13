@@ -60,6 +60,20 @@ try:
  passed('Active View-As retains reads but blocks all five direct programme/note/feedback write paths.')
  run(f"update view_as_context set expires_at=now()-interval '1 second' where actor_user_id='{admin}'")
  assert user(admin,f"update client_programmes set content='{{}}' where tenant_id='{a}' returning version").stdout.strip()=='3'
+ before_access=run("select md5(coalesce(jsonb_agg(to_jsonb(a) order by tenant_id,profile_id)::text,'')) from client_portal_access a").stdout
+ before_grants=run("select md5(coalesce(jsonb_agg(to_jsonb(g) order by profile_id)::text,'')) from platform_authority_grants g").stdout
+ before_profiles=run("select md5(coalesce(jsonb_agg(to_jsonb(p) order by id)::text,'')) from profiles p").stdout
+ user(admin,f"insert into client_programmes(tenant_id,content) values('{c}','{{\"company\":\"Synthetic C\"}}')")
+ assert run(f"select version from client_programmes where tenant_id='{c}'").stdout.strip()=='1'
+ assert run(f"select count(*) from client_programme_revisions where tenant_id='{c}' and actor_id='{admin}'").stdout.strip()=='1'
+ assert run(f"select count(*) from client_notification_outbox where tenant_id='{c}'").stdout.strip()=='1'
+ assert user(admin,f"insert into client_programmes(tenant_id,content) values('{c}','{{}}')",False).returncode!=0
+ assert run(f"select content->>'company' from client_programmes where tenant_id='{c}'").stdout.strip()=='Synthetic C'
+ assert count(client,'client_programmes')==1 and count(foreign,'client_programmes')==1
+ assert before_access==run("select md5(coalesce(jsonb_agg(to_jsonb(a) order by tenant_id,profile_id)::text,'')) from client_portal_access a").stdout
+ assert before_grants==run("select md5(coalesce(jsonb_agg(to_jsonb(g) order by profile_id)::text,'')) from platform_authority_grants g").stdout
+ assert before_profiles==run("select md5(coalesce(jsonb_agg(to_jsonb(p) order by id)::text,'')) from profiles p").stdout
+ passed('Admin creates one audited workspace without changing accounts or memberships; duplicate creation cannot overwrite it.')
  run(f"update platform_authority_grants set effective_to=now()-interval '1 second' where profile_id='{admin}'")
  assert count(admin,'client_programmes')==0
  passed('Expired preview permits normal authorized editing; expired operator grant removes cross-company access.')
