@@ -779,3 +779,31 @@ review-pack question. The exact source hashes and scope are recorded in
 `docs/legal/SERVICEOS-QUICKBOOKS-DRAFT-APPROVAL.json`. This approves the drafts,
 not signature or publication. The preview labels that distinction and invalidates
 its approved label if any of the three approved document hashes changes.
+
+### Intuit assessment draft update — 13 October, 21:02 UTC
+
+The assessment was reopened through this app's Compliance page using the existing
+Intuit session. Production remains In-Progress / N/A; nothing was submitted.
+Saved answers were checked again after a page reload:
+
+- Security Storage Yes; MFA No; CAPTCHA No; WebSocket Yes. The app uses Supabase
+  Realtime for live calls. Enabling TOTP in backend configuration alone does not
+  establish an application MFA flow.
+- Security Team remains No: appointing Chris now does not establish a team that
+  already conducts regular reviews. Breach No remains Chris's stated business fact.
+- Data Display uses Intuit's exact option: data is used only for the benefit of
+  the original customer. Authorised, logged operator support is still disclosed;
+  this answer must not be read as denying support access.
+- Error handling, Intuit trace IDs, diagnostic logs and in-app support are Yes.
+  The support explanation explicitly describes sanitised logs and excludes
+  credentials and raw accounting response bodies.
+- Sandbox connect/disconnect/reconnect is Yes. Refresh frequency is Other, with
+  the five-minute expiry window, one leased attempt and no automatic uncertain
+  retry explained. Its text explicitly says real refresh acceptance is pending.
+
+General Security Policies remains unanswered; no blanket compliance attestation
+has been made. Remaining app/API/OAuth fields and the final submission still need
+completion and review against evidence. The normal refresh process remains
+running under terminal session 28253, due at 21:44:04 UTC. Inspect its handle and
+`/private/tmp/serviceos-qb-sandbox-refresh-after-reconnect-proof.json` before any
+retry or claim of refresh acceptance.
