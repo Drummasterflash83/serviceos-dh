@@ -16,7 +16,7 @@ const wire = read(join(wireRoot,'report.json'));
 const backupRoot = '.verification-results/production-runtime-compiled-backup-20261012';
 const backup = read(join(backupRoot,'report.json'));
 const schedules = read(base+'schedule-transition.manifest.json');
-const frontend = read('docs/operations/evidence/learn-production-frontend-relevance-2026-10-13.json');
+const frontend = read('docs/operations/evidence/learn-production-frontend-staged-2026-10-13.json');
 if (candidate.projectRef!=='tgbnakbxwcqjeimygroz' || candidate.database.length!==22 || candidate.endpoints.length!==37 ||
     wire.projectRef!==candidate.projectRef || wire.candidateManifestSha256!==candidateSha256 ||
     wire.state!=='prepared_not_uploaded' || schedules.runtime.sha256!==candidateSha256 ||
@@ -77,8 +77,8 @@ for(const e of candidate.endpoints) {
     verified(join(backupRoot,e.name+'.ezbr'),b.ezbrSha256);
   }
 }
-if(frontend.id!=='dpl_HPUABE8gMShxGYnopkVbgTkPAQHP' || frontend.gitSha!=='bebb19c88b0e094e0ef005e98567878e6833e796' ||
-   frontend.state!=='protected_production_configured_preview_ready') throw Error('Reviewed frontend artifact required');
+if(frontend.id!=='dpl_8YWHfdbY2SFVkKWsBcEz5LcnMVFn' || frontend.gitSha!=='bebb19c88b0e094e0ef005e98567878e6833e796' ||
+   frontend.state!=='protected_staged_production_ready' || frontend.target!=='production' || frontend.autoAssignCustomDomains!==false) throw Error('Reviewed frontend artifact required');
 const operations=[];
 function add(id,kind,contract) { operations.push({id,kind,contract,pinSha256:sha(JSON.stringify(contract))}); }
 add('fresh-release-preflight','check',{
@@ -114,8 +114,8 @@ add('runtime-publication-readback','check',{requires:['all_37_exact_artifacts_an
   'provider_publication_metadata_confirmed','unchanged_endpoints_outside_release']});
 add('paired-runtime-acceptance','check',{requires:['positive_scheduled_and_user_callers','tenant_isolation',
   'production_metadata_reader','matched_database_receipts','source_preservation','protected_preview_journeys']});
-add('promote-matching-frontend','frontend',{project:frontend.project,id:frontend.id,url:frontend.url,
-  gitSha:frontend.gitSha,previousProductionDeployment:frontend.productionDeploymentUnchanged});
+add('promote-matching-frontend','frontend',{project:frontend.project,team:frontend.team,id:frontend.id,url:frontend.url,
+  gitSha:frontend.gitSha,target:frontend.target,previousProductionDeployment:frontend.productionDeploymentUnchanged,domains:frontend.domains});
 add('signed-in-live-acceptance','check',{requires:['actual_openfolk_ai_deployment_and_production_backend',
   'drummonds_branding','client_learn_inputs_context_cards_and_operator_controls','source_preservation']});
 add('activate-reviewed-input-dispatch','configuration',{
@@ -139,7 +139,7 @@ writeFileSync(base+'release-operations.manifest.json',JSON.stringify({version:'l
   planSha256:sha(JSON.stringify(plan)),operations,
   limitations:['SQL, configuration and runtime adapters are locally tested; integrated production execution and acceptance gates remain unfinished.',
     'Exact artifact pins do not prove current hosted state, approval, signed-in access or provider completeness.',
-    'The current protected frontend preview and its production backend binding are verified; signed-in acceptance remains unverified.',
+    'The protected staged production build and its production backend binding are verified; signed-in acceptance remains unverified.',
     'Do not restore old runtimes over new checkpoints without reviewed compatibility or forward repair.'],
 },null,2)+'\n');
 console.log(JSON.stringify({state:'prepared_not_executed',steps:plan.steps.length,database:22,runtime:37}));

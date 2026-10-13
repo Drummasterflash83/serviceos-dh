@@ -454,10 +454,18 @@ Production tracks `main`, so the controlled routes are:
 1. **Fast-forward `main`** to the verified branch and push — Vercel's Git integration then
    builds & deploys it to production (carries the real commit SHA). This is the current
    default. It is a fast-forward, never a history rewrite.
-2. `vercel promote <preview-url>` — promote an already-built, verified preview.
+2. For an exact-build release, create a staged production deployment with
+   `vercel deploy --prod --skip-domain`, verify that deployment, then run
+   `vercel promote <staged-production-id>`. A preview promotion instead triggers
+   a new production build; it does not preserve the verified preview artifact.
 3. `vercel deploy --prod` — deploy the working tree straight to production.
 
-Instant rollback: `vercel rollback` (or `vercel promote <previous-prod-url>`).
+Instant rollback: `vercel rollback <previous-production-id>`, after checking backend
+compatibility. Previously promoted deployments use rollback, not staging promotion.
+See [Vercel promotion semantics](https://vercel.com/docs/deployments/promoting-a-deployment)
+and [staged production builds](https://vercel.com/docs/cli/deploying-from-cli).
+For LEARN V1, the pinned release coordinator governs promotion after backend gates;
+do not substitute an unverified working-tree deployment or a moving branch head.
 
 ### Required checks before promoting
 

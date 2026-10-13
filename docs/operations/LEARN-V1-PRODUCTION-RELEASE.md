@@ -1,5 +1,40 @@
 # LEARN V1 production release plan
 
+> 13 October 02:07 BST: promotion now pins staged production deployment
+> `dpl_8YWHfdbY2SFVkKWsBcEz5LcnMVFn` (same Git `bebb19c`). Domain assignment was
+> disabled; the previous live deployment and all four production domains are unchanged.
+> Browser login binding and hosted read-only frontend preflight passed; 45 local
+> release tests pass. Signed-in acceptance and the remaining execution gates are open.
+
+## Concrete frontend promotion adapter
+
+`learn-production-frontend-adapter.mjs` plugs into the coordinator's frontend port.
+`loadFrontendOperation()` verifies the plan binding; construct the adapter with that
+operation and its fixed-path transport. CLI transport reuses the current login for
+reads only. Promotion uses `productionFrontendHttpTransport` with an existing
+in-memory credential, explicit write enablement and current scoped release authority.
+The CLI API client can retry requests internally, so it is never used for this mutation.
+
+The adapter rejects preview targets, different source revisions, changed project/team,
+unready artifacts, changed protection, incomplete/changed domain inventories and aliases
+outside the previous or selected deployment. It reads project state before and after
+alias inspection. Only the exact new target, all four remapped aliases and a succeeded
+matching promotion job count as applied. Pending or mixed states remain unconfirmed.
+The journal reconciles a lost response without repeating the POST, including after restart.
+
+The provider API does not offer an expected-previous-target precondition. Exclude other
+release writers before execution; repeated readback cannot provide atomic compare-and-swap.
+The read-only hosted check returned ready; this does not prove positive promotion or
+signed-in service acceptance. Full backend gates remain mandatory.
+
+The old preview cannot be promoted through the CLI without rebuilding. The staged
+production build uses the documented [no-domain deployment workflow](https://vercel.com/docs/cli/deploying-from-cli),
+then the [no-rebuild promotion endpoint](https://vercel.com/docs/rest-api/projects/point-production-traffic-to-a-given-deployment).
+[Staged build evidence](evidence/learn-production-frontend-staged-2026-10-13.json) and
+[adapter evidence](evidence/learn-production-frontend-adapter-2026-10-13.json).
+
+## Previous matching-candidate observation
+
 > 13 October 01:56 BST: the current 73-step plan now includes the TEST-verified
 > relevance repair and protected preview `dpl_HPUABE8gMShxGYnopkVbgTkPAQHP`
 > (Git `bebb19c`). All 37 exact runtime artifacts passed fresh compile/boot checks;

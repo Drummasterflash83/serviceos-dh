@@ -1,0 +1,48 @@
+{
+  "observedAt": "2026-10-13T01:06:21.629259+00:00",
+  "state": "frontend_adapter_locally_verified_and_hosted_read_only_preflight_ready",
+  "tests": {
+    "passed": 45,
+    "frontendCases": 7,
+    "hostedPromotionExercised": false
+  },
+  "stagedDeployment": "dpl_8YWHfdbY2SFVkKWsBcEz5LcnMVFn",
+  "productionPromotion": false,
+  "requestBehaviour": {
+    "cli": "read_only_existing_login",
+    "mutation": "single_direct_HTTP_POST_no_retry_no_redirect",
+    "reconciliation": "release_journal_readback_only_after_unknown_outcome"
+  },
+  "sources": [
+    {
+      "path": "scripts/verify/learn-production-frontend-adapter.mjs",
+      "sha256": "789ce54f85de6b69e87ff40b271d651bce5f685ef766e9cfcf0d516367e5f521"
+    },
+    {
+      "path": "scripts/verify/learn-production-frontend-adapter.test.mjs",
+      "sha256": "8d96bf374b5e7bdad813d09bd659dc2e5716882b9d897dd030e6450ef0dc1ed2"
+    },
+    {
+      "path": "scripts/verify/learn-production-release-sequence.mjs",
+      "sha256": "382fe874bc597d5f8ab9643cabff0fdc78f0e8dec3777d7e14ef3a0b4960e742"
+    },
+    {
+      "path": "supabase/release/learn-production/release-sequence.plan.json",
+      "sha256": "c64fa9078b4b47ad638ea3540999c6f86df45e02e8a539d519a8d42d60bf30a8"
+    },
+    {
+      "path": "supabase/release/learn-production/release-operations.manifest.json",
+      "sha256": "3efc39fd98e3f8be1108c85b5a01af3d556e266112da24c74b13f6a886575d02"
+    }
+  ],
+  "limitations": [
+    "The provider has no compare-and-swap field in the documented promotion API. Coordinate other release writers before promotion.",
+    "Recovery, controlled drain, positive backend callers, signed-in journeys and real capture acceptance remain unfinished.",
+    "Local tests use synthetic Vercel state; hosted verification made no promotion request."
+  ],
+  "references": [
+    "https://vercel.com/docs/cli/promote",
+    "https://vercel.com/docs/cli/deploying-from-cli",
+    "https://vercel.com/docs/rest-api/projects/point-production-traffic-to-a-given-deployment"
+  ]
+}

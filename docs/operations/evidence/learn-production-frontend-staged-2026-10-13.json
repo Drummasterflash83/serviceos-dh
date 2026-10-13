@@ -1,0 +1,52 @@
+{
+  "observedAt": "2026-10-13T01:03:37.520Z",
+  "state": "protected_staged_production_ready",
+  "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+  "team": "team_PGUQWiaAZZkMTCM9nSHahIpG",
+  "id": "dpl_8YWHfdbY2SFVkKWsBcEz5LcnMVFn",
+  "url": "https://serviceos-7cq6rfd6f-allkin.vercel.app",
+  "gitSha": "bebb19c88b0e094e0ef005e98567878e6833e796",
+  "target": "production",
+  "previousProductionDeployment": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "domains": [
+    {
+      "name": "app.openfolk.ai",
+      "redirect": null
+    },
+    {
+      "name": "openfolk.ai",
+      "redirect": "www.openfolk.ai"
+    },
+    {
+      "name": "serviceos-dh.vercel.app",
+      "redirect": null
+    },
+    {
+      "name": "www.openfolk.ai",
+      "redirect": null
+    }
+  ],
+  "autoAssignCustomDomains": false,
+  "productionDeploymentUnchanged": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "productionPromotion": false,
+  "browser": {
+    "loginScreenLoaded": true,
+    "actualServedAuthOrigin": "https://tgbnakbxwcqjeimygroz.supabase.co",
+    "bindingEvidence": "Rendered login data-auth-target attribute observed through browser",
+    "signedInAcceptance": false
+  },
+  "protection": {
+    "status": 302,
+    "redirectOrigin": "https://vercel.com"
+  },
+  "readOnlyAdapterObservation": {
+    "state": "ready",
+    "evidenceSha256": "9e2f6aee5d5f68f8341f3f9ce308b0145ea55344e1e0a3e4beb37f1d0bb3c487"
+  },
+  "limitations": [
+    "Staged production build is READY; existing production domains are unchanged.",
+    "Exact frontend promotion and positive signed-in production acceptance remain pending.",
+    "CLI transport is read-only because its internal retry behaviour is unsuitable for journalled mutations.",
+    "Mutation transport uses one direct HTTP request and requires current scoped release authority."
+  ]
+}

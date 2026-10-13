@@ -2,7 +2,7 @@
   "version": "learn-production-release-operations/1",
   "state": "deployment_authorised_execution_gates_incomplete",
   "projectRef": "tgbnakbxwcqjeimygroz",
-  "planSha256": "667e21f87752d9d947858603bf9775fdc46b3b7be29efdde7a73596236a9a435",
+  "planSha256": "e4801d5bf8146fd11af776ffc4e39bd068ddb5b2f2114274ceb29f77120e55dd",
   "operations": [
     {
       "id": "fresh-release-preflight",
@@ -1400,12 +1400,32 @@
       "kind": "frontend",
       "contract": {
         "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
-        "id": "dpl_HPUABE8gMShxGYnopkVbgTkPAQHP",
-        "url": "https://serviceos-e2r0hhehv-allkin.vercel.app",
+        "team": "team_PGUQWiaAZZkMTCM9nSHahIpG",
+        "id": "dpl_8YWHfdbY2SFVkKWsBcEz5LcnMVFn",
+        "url": "https://serviceos-7cq6rfd6f-allkin.vercel.app",
         "gitSha": "bebb19c88b0e094e0ef005e98567878e6833e796",
-        "previousProductionDeployment": "dpl_DXueDsax146gdtyFoniXRaW3dzMM"
+        "target": "production",
+        "previousProductionDeployment": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+        "domains": [
+          {
+            "name": "app.openfolk.ai",
+            "redirect": null
+          },
+          {
+            "name": "openfolk.ai",
+            "redirect": "www.openfolk.ai"
+          },
+          {
+            "name": "serviceos-dh.vercel.app",
+            "redirect": null
+          },
+          {
+            "name": "www.openfolk.ai",
+            "redirect": null
+          }
+        ]
       },
-      "pinSha256": "57e76569ebe7b82ac764a7fd1dfa9cba9ae2a34a62f116988793f5aa5bbdefa8"
+      "pinSha256": "03e32a5fd0bce09e51ae16c9504cbfa7b2a647f76c3fa9b40e3181944736f9c5"
     },
     {
       "id": "signed-in-live-acceptance",
@@ -1485,7 +1505,7 @@
   "limitations": [
     "SQL, configuration and runtime adapters are locally tested; integrated production execution and acceptance gates remain unfinished.",
     "Exact artifact pins do not prove current hosted state, approval, signed-in access or provider completeness.",
-    "The current protected frontend preview and its production backend binding are verified; signed-in acceptance remains unverified.",
+    "The protected staged production build and its production backend binding are verified; signed-in acceptance remains unverified.",
     "Do not restore old runtimes over new checkpoints without reviewed compatibility or forward repair."
   ]
 }

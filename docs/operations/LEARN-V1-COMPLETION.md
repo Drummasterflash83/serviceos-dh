@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 02:07 BST — exact frontend promotion path prepared and checked.**
+
+### Working and verified
+
+- A protected staged **production** build is READY: `dpl_8YWHfdbY2SFVkKWsBcEz5LcnMVFn`,
+  Git `bebb19c`. Automatic domain assignment was disabled. The rendered login points
+  to production; all four existing production domains still serve the previous release.
+- The 73-step plan now pins this staged build. Vercel preview promotion would rebuild
+  the app, so the previous preview is retained as historical evidence, not the promotion target.
+- The concrete frontend adapter checks source revision, production target, protection,
+  complete domain inventory and every alias. The existing journal reconciles an uncertain
+  promotion without resending it. All 45 release tests pass (seven frontend cases).
+- Hosted adapter verification was read-only and returned ready. No live promotion,
+  backend changes, provider capture or customer-data mutations occurred in this milestone.
+
+### Needs finishing
+
+- Connect fresh recovery, controlled drain and positive caller/acceptance checks to
+  the coordinator, then perform the matched release and signed-in live acceptance.
+  The frontend adapter is implemented; its actual promotion path remains unexecuted.
+- Full history/ongoing capture, source-revision relevance, customer-workspace setup,
+  source-to-card quality, scoring, AI/voicemail and operational ownership remain open.
+
+### Blocked externally
+
+- The existing pending 1Password unlock is needed for the fresh independent encrypted
+  database copy/restore. Production sign-in and TEST AI credential access remain unresolved.
+
+Evidence: [staged production build](evidence/learn-production-frontend-staged-2026-10-13.json),
+[promotion adapter](evidence/learn-production-frontend-adapter-2026-10-13.json).
+
+### Previous matching-candidate milestone
+
 **13 October, 01:56 BST — matching production candidate includes the verified relevance repair.**
 
 ### Working and verified

@@ -341,7 +341,7 @@
     {
       "id": "promote-matching-frontend",
       "kind": "frontend",
-      "pinSha256": "57e76569ebe7b82ac764a7fd1dfa9cba9ae2a34a62f116988793f5aa5bbdefa8"
+      "pinSha256": "03e32a5fd0bce09e51ae16c9504cbfa7b2a647f76c3fa9b40e3181944736f9c5"
     },
     {
       "id": "signed-in-live-acceptance",
