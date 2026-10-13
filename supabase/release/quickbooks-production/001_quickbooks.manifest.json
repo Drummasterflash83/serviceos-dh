@@ -1,9 +1,9 @@
 {
   "project": "tgbnakbxwcqjeimygroz",
   "release": "quickbooks_production_v1",
-  "status": "prepared_not_installed",
-  "preparedAt": "2026-10-13T19:02:16.790Z",
-  "catalogCheckedAt": "2026-10-13T19:02:16.810608+00:00",
+  "status": "installed_verified_inert",
+  "preparedAt": "2026-10-13T21:39:11.411Z",
+  "catalogCheckedAt": "2026-10-13T21:39:11.378009+00:00",
   "sourceHashes": [
     {
       "name": "20261102000000_learn_quickbooks_oauth.sql",
@@ -269,5 +269,7 @@
     "Refresh production metadata immediately before any installation.",
     "Verify recovery/preservation and matching runtime/frontend before promotion.",
     "Production Intuit access, exact callback, credential storage and company consent."
-  ]
+  ],
+  "installedAt": "2026-10-13 21:41:59.163124+00",
+  "installationEvidence": "docs/operations/evidence/learn-quickbooks-production-foundation-2026-10-13.json"
 }

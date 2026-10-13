@@ -848,3 +848,40 @@ export query. Two input/secret-exclusion tests and the full disposable PostgreSQ
 OAuth/import/finance/disconnect rehearsal pass, including tenant/environment
 isolation and exact financial-number export. This does not claim whole-ServiceOS
 deletion or 90-day backup expiry. Approved legal source hashes remain unchanged.
+
+
+## Latest acceptance — 13 October, 21:51 UTC
+
+The real sandbox refresh succeeded: Intuit HTTP 200, token generation 2 → 3,
+extended expiry, cleared lease and a saved `refresh_saved` event. The temporary
+verification adapter incorrectly parsed the empty response from a void finish
+RPC; its original false-negative report is retained, alongside the independent
+readback. No uncertain token request was repeated. The deployed adapter uses the
+Supabase SDK. This proves this renewal, not unattended scheduling.
+
+The existing signed-in TEST operator then completed the approved API disconnect.
+The saved request is `revoked`, the connection is disconnected, and all 77 latest
+records, 77 source versions and 8 pages remain; no imports are active. Earlier
+provider-UI disconnection/reconnection evidence remains separately recorded.
+See [lifecycle evidence](evidence/learn-quickbooks-lifecycle-2026-10-13.json).
+
+The exact production database package is now installed, with all 15 new tables
+private and RLS enabled. Existing database object metadata was unchanged. No
+QuickBooks app, company connection or accounting records were created. This
+supersedes earlier 'prepared, not installed' database status in this history.
+See [foundation evidence](evidence/learn-quickbooks-production-foundation-2026-10-13.json).
+
+The four production edge handlers are installed at version 1; downloaded source
+closures match. The two non-secret configuration settings match their expected
+fingerprints, and all earlier secret fingerprints are unchanged. The broad
+existing-function inventory hash differed, however; the original runner retained
+only its digest, not raw endpoint metadata. That exact preservation comparison
+remains unresolved and is not reported as passed. No retry was attempted. The
+runner now retains a baseline for any future use; this does not reconstruct the
+missing historical baseline.
+See [runtime evidence](evidence/learn-quickbooks-production-runtime-2026-10-13.json).
+
+Production Intuit credentials, Drummonds consent/import, public-policy adoption,
+frontend release and live acceptance remain open. HTML no-store headers are
+prepared locally and still need deployed verification. No production accounting
+access or continuous capture is implied by the installed foundation.

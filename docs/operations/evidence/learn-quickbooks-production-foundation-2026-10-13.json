@@ -1,0 +1,21 @@
+{
+  "state": "inert_production_foundation_verified",
+  "project": "tgbnakbxwcqjeimygroz",
+  "bundleSha256": "97cf9c47f60cb051e7a6688c5dcd1ea1ece4fbd1fea8a7ca92c17e71771a41e1",
+  "installedAt": "2026-10-13 21:41:59.163124+00",
+  "counters": {
+    "apps": 0,
+    "connections": 0,
+    "imports": 0,
+    "pages": 0,
+    "versions": 0,
+    "links": 0,
+    "disconnects": 0
+  },
+  "permissions": {
+    "relations": 15,
+    "private_tables": true
+  },
+  "preExistingObjectMetadataUnchanged": true,
+  "providerRequests": 0
+}
