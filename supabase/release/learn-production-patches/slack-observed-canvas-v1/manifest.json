@@ -8,7 +8,7 @@
     "learn_slack_campaign_read(uuid,uuid)"
   ],
   "version": "slack-observed-canvas-release/1",
-  "state": "prepared_not_applied",
+  "state": "production_applied_verified",
   "applySha256": "3542a24fc95a4f389b10075cdf798c43912ea331d1bbc384f09c19b5033b54eb",
   "newPermissions": false,
   "newSchedules": false,
@@ -22,5 +22,6 @@
   },
   "reviewedSubtype": "tabbed_canvas_updated",
   "classification": "source_needs_review",
-  "rollbackLimitation": "After any observed canvas source is retained, preserve additive SQL and roll back runtime only."
+  "rollbackLimitation": "After any observed canvas source is retained, preserve additive SQL and roll back runtime only.",
+  "productionEvidence": "docs/operations/evidence/learn-slack-observed-canvas-production-2026-10-13.json"
 }

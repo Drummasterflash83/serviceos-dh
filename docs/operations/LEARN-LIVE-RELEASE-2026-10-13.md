@@ -1,6 +1,38 @@
 # LEARN live release — 13 October 2026
 
-## Latest checkpoint — 20:35 BST
+## Latest checkpoint — 20:55 BST
+
+**13 October, 20:55 BST — observed Slack canvas retention released; recovery queued.**
+
+- LIVE `learn-slack-worker` v10 and `platform-worker` v71 now retain the exact
+  observed `tabbed_canvas_updated` subtype as source needing review. Matching SQL
+  classifies and counts it consistently; it cannot create conversation/performance
+  evidence. Genuine observed replies remain eligible. Other unknown or hidden
+  shapes stay held. No undocumented business semantics are inferred.
+- Exact transaction/rollback/guard and source/thread journeys passed on the isolated
+  full native schema; all 1,591,580 archived rows and seven sequences were preserved.
+  All 106 Slack runtime tests passed, and both exact artifacts booted without
+  network and rejected missing authentication. Production definitions, worker
+  hashes, existing permissions, secrets metadata, schedules and retained Slack
+  versions were verified; all 255 voicemail/source pairs were preserved.
+- One recovery was committed through the signed-in LIVE operator controls:
+  `197a31a7-1297-4319-b90c-be0689ea2e31`. It is queued. The earlier recovery
+  `12df1bd3-d9cf-4379-8e7f-199faf0b6b19` also remains queued. Observe these handles;
+  do not create duplicates or claim the affected provider page has succeeded yet.
+- At 20:54 BST LIVE held 12,045 Slack sources; 15/20 active and 99/160 archived
+  campaign windows were complete. Observed replies and ongoing capture handoff
+  remain unfinished. Commusoft phase 4 site-contact capture is active with no
+  completed first-cycle watermark. Its latest browser observation showed 526/871
+  site-contact pages retained. Existing worker progress must not be restarted.
+- Wider source publication remains 24 customers, 11 sites, 31 jobs and 22 contacts.
+  Customer/job reconciliation, coverage exceptions, scoring and unattended
+  operational acceptance remain substantial unfinished requirements. The LIVE
+  frontend was not changed by this backend release; parallel QuickBooks TEST
+  work was preserved in Git but excluded from the two LIVE runtime artifacts.
+
+[Production evidence](evidence/learn-slack-observed-canvas-production-2026-10-13.json).
+
+## Previous checkpoint — 20:35 BST
 
 **13 October, 20:35 BST — saved contact details verified in LIVE and stable TEST.**
 
