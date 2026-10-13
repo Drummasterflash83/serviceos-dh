@@ -549,3 +549,38 @@ and disconnect `/quickbooks?mode=disconnect`. These are guidance pages, not
 an OAuth callback or a provider revocation endpoint. Production settings remain
 unchanged. The development app remains inactive pending owner
 secret rotation; this guide does not establish OAuth or accounting acceptance.
+
+
+### Production package prepared and locally rehearsed — 13 October, 19:00 UTC
+
+A fresh read-only LIVE catalog check found the required ten helper functions,
+customer-card/profile columns and no existing QuickBooks relations. The new
+`supabase/release/quickbooks-production/001_quickbooks.sql` combines the four
+exact migrations in one transaction with a private source-hash receipt. Its
+guards pin the target setting, prerequisite bodies/owners/search paths and
+user/service execute permissions, required column types and absence of existing
+QuickBooks functions/relations. The target setting is an operator mistake guard,
+not independent proof of backend identity.
+
+`learn-quickbooks-production-package.mjs prepare` performs only metadata reads
+and local artifact writes. `verify` checks source and artifact hashes offline.
+It deliberately has no installation command. Four targeted tests pass for stale
+or wrong-target catalogs, incomplete prerequisites and altered transaction
+boundaries.
+
+The exact bundle passed install and rollback in a network-isolated clone of the
+257-table local schema under non-superuser postgres. Three missing repository
+helpers were added to that clone only. The first attempt rejected their default
+execute permissions: the fixture now applies their actual repository revocations
+and grant, rather than weakening production guards. Explicit wrong-target,
+widened-permission and repeated-install probes reject safely. Private table/RPC
+permissions and a synthetic local Vault round trip pass.
+
+This is **prepared, not installed**. The clone has no production customer rows;
+it does not prove live row preservation, provider acceptance or current production
+schema equivalence beyond the checked prerequisites. Refresh the catalog and
+recovery/preservation evidence before installation. Production credentials,
+company consent, matching runtime/frontend release and the real sandbox lifecycle
+remain outstanding. No live data, secrets, grants or schedules changed.
+
+[Package rehearsal evidence](evidence/learn-quickbooks-production-package-2026-10-13.json).
