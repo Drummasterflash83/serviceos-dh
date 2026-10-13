@@ -1,16 +1,17 @@
 import {SlackHistoryTransportError} from './slack_history_errors.ts';
 import {assertSlackHistoryScope} from './slack_history.ts';
 export type HistoryRequestIdentity={tenantId:string;accountId:string;teamId:string;channelId:string;oldest:string;latest:string;consentReference:string;expiresAt:string;maxPages:number;parentTimestamp?:string};
-export type HistoryRequestBinding={teamId:string;channelId:string;isPrivate:false;isShared:false;isMember:boolean;publicUserAccess?:true;authorised:()=>Promise<boolean>;request:(method:string,body:Record<string,unknown>)=>Promise<any>};
+export type HistoryRequestBinding={teamId:string;channelId:string;isPrivate:false;isShared:false;pageLimit?:15|100;isMember:boolean;publicUserAccess?:true;authorised:()=>Promise<boolean>;request:(method:string,body:Record<string,unknown>)=>Promise<any>};
 export type BindHistoryRequest=(identity:HistoryRequestIdentity)=>Promise<HistoryRequestBinding|null>;
 
-export type HistoryArguments={channel:string;oldest:string;latest:string;limit:15;cursor?:string;ts?:string};
+export type HistoryArguments={channel:string;oldest:string;latest:string;limit:15|100;cursor?:string;ts?:string};
 export type ChannelAttestation={tenantId:string;accountId:string;teamId:string;channelId:string;isPrivate:boolean;isShared:boolean;isMember:boolean;publicUserAccess?:true};
 /** Implemented only by the credential-owning server. Credentials never cross
  * this port. Acquisition must resolve the account and approved consent from
  * authoritative storage, rather than accept a queued/browser claim as authority. */
 export interface HistoryServerLease {
  identity:Readonly<HistoryRequestIdentity>;
+ pageLimit?:15|100;
  authorised:()=>Promise<boolean>;
  inspectChannel:()=>Promise<ChannelAttestation>;
  // Transport rechecks its credential/consent lease at execution and does not
@@ -35,6 +36,7 @@ export function createHistoryRequestAdapter(ports?:HistoryServerPorts,clock:()=>
    if(!unexpired()||identity.parentTimestamp!==undefined&&(!/^\d{1,12}\.\d{1,6}$/.test(identity.parentTimestamp)||Number(identity.parentTimestamp)>Number(identity.latest)))return null;
    const lease=await ports.acquire(identity);
    if(!lease)return null;
+   const pageLimit=lease.pageLimit??15;if(pageLimit!==15&&pageLimit!==100)return null;
    let verifiedChannel:ChannelAttestation|null=null;
    const authorised=async()=>{try{
     if(!unexpired()||!fields.every(k=>lease.identity[k]===identity[k])||!await lease.authorised())return false;
@@ -45,12 +47,12 @@ export function createHistoryRequestAdapter(ports?:HistoryServerPorts,clock:()=>
    if(!await authorised())return null;
    let requests=0;
    const channel=verifiedChannel as ChannelAttestation|null;if(!channel)return null;
-   return {teamId:identity.teamId,channelId:identity.channelId,isPrivate:false,isShared:false,isMember:channel.isMember,...(channel.publicUserAccess?{publicUserAccess:true as const}:{}),authorised,
+   return {pageLimit,teamId:identity.teamId,channelId:identity.channelId,isPrivate:false,isShared:false,isMember:channel.isMember,...(channel.publicUserAccess?{publicUserAccess:true as const}:{}),authorised,
     request:async(method,body)=>{
      const allowed=['channel','oldest','latest','limit','cursor',...(identity.parentTimestamp?['ts']:[])];
-     if(method!==(identity.parentTimestamp?'conversations.replies':'conversations.history')||body?.ts!==identity.parentTimestamp||!body||Object.keys(body).some(k=>!allowed.includes(k))||body.channel!==identity.channelId||body.oldest!==identity.oldest||body.latest!==identity.latest||body.limit!==15||body.cursor!==undefined&&(typeof body.cursor!=='string'||body.cursor.length===0||body.cursor.length>1024))throw Error('history_request_scope_unavailable');
+     if(method!==(identity.parentTimestamp?'conversations.replies':'conversations.history')||body?.ts!==identity.parentTimestamp||!body||Object.keys(body).some(k=>!allowed.includes(k))||body.channel!==identity.channelId||body.oldest!==identity.oldest||body.latest!==identity.latest||body.limit!==pageLimit||body.cursor!==undefined&&(typeof body.cursor!=='string'||body.cursor.length===0||body.cursor.length>1024))throw Error('history_request_scope_unavailable');
      // Copy validated input before any await; callers cannot mutate the request.
-     const args:HistoryArguments={channel:identity.channelId,oldest:identity.oldest,latest:identity.latest,limit:15,...(identity.parentTimestamp?{ts:identity.parentTimestamp}:{}),...(body.cursor===undefined?{}:{cursor:body.cursor as string})};
+     const args:HistoryArguments={channel:identity.channelId,oldest:identity.oldest,latest:identity.latest,limit:pageLimit,...(identity.parentTimestamp?{ts:identity.parentTimestamp}:{}),...(body.cursor===undefined?{}:{cursor:body.cursor as string})};
      if(!await authorised())throw Error('history_request_authority_unavailable');
      if(requests>=identity.maxPages)throw Error('history_request_budget_exhausted');
      requests++; // Reserve synchronously, including failed calls; no retry loop.

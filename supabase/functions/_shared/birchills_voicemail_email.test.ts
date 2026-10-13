@@ -76,7 +76,11 @@ test("signed legacy format candidates retain audio identity without fabricating 
     "Automated transcription:\r\nSynthetic source text, not instructions.\r\n\r\n",
     "We have attached the message to this email for your convenience. To access the mailbox, simply dial 0 from any connected handset.\r\n\r\nKind regards,\r\nBirchills Telecom Voicemail Service\r\n\r\nSent from  to \r\n",
   );
-  for (const body of [legacy, legacy.replaceAll("\r\n", "\n")]) {
+  const personal = legacy.replace(
+    "To access the mailbox, simply dial 0 from any connected handset.",
+    "To access your mailbox, dial *95 from your handset.",
+  );
+  for (const body of [legacy, legacy.replaceAll("\r\n", "\n"), personal]) {
     const result = parseBirchillsVoicemailEmail({ ...input, text: body });
     assert.equal(result.providerTranscript, null);
     assert.equal(result.systemReference, "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee");
@@ -86,6 +90,8 @@ test("signed legacy format candidates retain audio identity without fabricating 
   }
   for (const body of [
     legacy.replace("We have attached", "Someone has attached"),
+    personal.replace("dial *95", "dial *96"),
+    personal.replace("your mailbox", "another mailbox"),
     legacy.replace("Sent from  to ", "Sent from someone to another"),
     legacy.replace("System reference:", "Automated transcription:\r\nSystem reference:"),
     legacy + "System reference: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",

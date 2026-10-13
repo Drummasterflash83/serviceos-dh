@@ -12,8 +12,8 @@ export async function readSlackThreadPage(scope:SlackThreadScope,tenantId:string
  request:(method:string,args:Record<string,unknown>)=>Promise<any>){
  assertSlackHistoryScope(scope,tenantId,channelId,cursor);
  if(!timestamp(scope.parentTimestamp)||micros(scope.parentTimestamp)>micros(scope.latest))throw Error('thread_scope_unavailable');
- const page=await request('conversations.replies',{channel:channelId,ts:scope.parentTimestamp,oldest:scope.oldest,latest:scope.latest,limit:15,...(cursor?{cursor}:{})});
- if(page?.ok!==true||!Array.isArray(page.messages)||page.messages.length>15||typeof page.has_more!=='boolean')throw Error('thread_page_unavailable');
+ const page=await request('conversations.replies',{channel:channelId,ts:scope.parentTimestamp,oldest:scope.oldest,latest:scope.latest,limit:scope.pageLimit??15,...(cursor?{cursor}:{})});
+ if(page?.ok!==true||!Array.isArray(page.messages)||page.messages.length>(scope.pageLimit??15)||typeof page.has_more!=='boolean')throw Error('thread_page_unavailable');
  const seen=new Set<bigint>();
  const records=page.messages.map((m:any)=>{
   if(!m||!timestamp(m.ts)||typeof m.text!=='string'||m.text.length>40000||seen.has(micros(m.ts))

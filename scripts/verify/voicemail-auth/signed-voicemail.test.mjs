@@ -61,13 +61,18 @@ test("signed legacy footer extracts the same audio while leaving the unavailable
     `Automated transcription:\r\n${transcript}\r\n\r\n`,
     "We have attached the message to this email for your convenience. To access the mailbox, simply dial 0 from any connected handset.\r\n\r\nKind regards,\r\nBirchills Telecom Voicemail Service\r\n\r\nSent from  to \r\n",
   );
-  const raw = await sign(legacy);
+  for (const body of [legacy, legacy.replace(
+    "To access the mailbox, simply dial 0 from any connected handset.",
+    "To access your mailbox, dial *95 from your handset.",
+  )]) {
+  const raw = await sign(body);
   const result = await extract(raw);
   assert.equal(result.signature.contentSignatureVerified, true);
   assert.equal(result.candidate.providerTranscript, null);
   assert.equal(result.candidate.systemReference, "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee");
   assert.deepEqual(result.audio, new Uint8Array([1, 2, 3, 4]));
-  await assert.rejects(extract(Buffer.from(raw.toString().replace("dial 0", "dial 1"))), /signature_unverified/);
+  await assert.rejects(extract(Buffer.from(raw.toString().replace("We have attached", "They have attached"))), /signature_unverified/);
+  }
 });
 test("historical receipt verifies an expired-now signature without weakening the current-time diagnostic", async () => {
   const raw = await sign(message(), { expires: new Date(Number(internalDate) + 86400000) });

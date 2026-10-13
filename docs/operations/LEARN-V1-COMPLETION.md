@@ -7,6 +7,47 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**13 October, 12:09 BST — faster scheduled Slack intake, 71 private voicemails, and first LIVE Commusoft traversal verified.**
+
+### Working and verified
+
+- The connection-bound internal Slack profile is live: up to 100 messages per page,
+  with the existing minute schedule and provider backoff. An automatic page at
+  11:08:08 UTC saved 58 records; totals reached 364 messages and 259 interactions.
+  RLS, existing access, schedules and campaign request budgets are unchanged.
+- Production now contains 71 voicemail/source pairs: Office 601 nine, Liz 102 nine,
+  mailbox 103 forty-five, and Tony 105 eight. The latest 60 imports and three duplicate
+  checks passed, preserving earlier records, owners, managers and private buckets.
+  A newly repaired personal notification played to completion in the signed-in live
+  browser (4.68 seconds, readyState 4, no media error).
+- Commusoft account 19136 is connected and verified in production. The first property
+  traversal exhausted its cursor after 25 pages and retained 2,423 customer/site sources.
+  The subsequent jobs import has retained 7,500 jobs across 75 pages and is continuing
+  under its existing 300-page approval. No TEST records were copied into production.
+- Matching runtimes are published: Slack worker 3, voicemail importer 5 and platform
+  worker 61. Full-schema throughput rehearsal and 40 final focused runtime/parser/
+  signature tests passed. Existing live frontend and branding remain unchanged.
+
+### Needs finishing
+
+- Complete Slack history/replies and ongoing capture; active-channel priority needs
+  correction. Newest-first applies within each channel's fixed window, not globally.
+  Customer/job attribution and processing are not complete merely because messages
+  have been saved. Private-channel visibility controls remain open; DMs are deferred.
+- Complete Commusoft jobs and both contact traversals, reconcile relationships, then
+  verify ongoing capture and canonical customer context. Richer card UX expansion
+  remains discussion-only at Chris's request.
+- All five historical voicemail routes are paused after verification. Full provider
+  discovery, ongoing capture and independent backup of the voicemail file buckets
+  remain unfinished. Of 78 retained candidates, three omit signed Content-Type and
+  four originals returned Gmail 404; all retained evidence is preserved.
+- The wider card/scoring, phone-processing, Heidi acceptance, unattended recovery
+  and Emma routing requirements below remain open. No full V1 completion is claimed.
+
+Evidence: [Slack throughput](evidence/learn-slack-internal-throughput-production-2026-10-13.json),
+[voicemail history](evidence/learn-voicemail-history-2026-10-13.json), and
+[Commusoft rollout](LEARN-COMMUSOFT-PRODUCTION-ROLLOUT.md).
+
 **13 October, 11:35 BST — live Slack/voicemail counts verified; scheduled Slack intake advances.**
 
 - Production now retains nine available Office 601 voicemails and their original

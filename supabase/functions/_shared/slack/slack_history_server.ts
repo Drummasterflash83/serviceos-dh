@@ -74,7 +74,15 @@ export function createSlackHistoryServerPorts(
       return null;
     const credential = readSlackCredentialBinding(c);
     if (!credential) return null;
-    return { id: c.id, revision: c.updated_at, ...credential };
+    // This infrastructure-only profile is bound to the exact reviewed connection
+    // revision and Vault reference. Browser/job claims cannot opt into a faster tier.
+    const rate = await db.rpc("learn_slack_page_limit", {p_tenant:ctx.tenantId,p_connection:c.id,p_team:identity.teamId});
+    // A rolling deployment may precede schema-cache refresh. Only a missing
+    // profile function/table is a safe conservative fallback; other errors stop.
+    const missing=rate.error && ["PGRST202","42883","42P01"].includes(rate.error.code);
+    const pageLimit=missing?15:rate.data;
+    if((rate.error&&!missing) || (pageLimit!==15 && pageLimit!==100))return null;
+    return { id: c.id, revision: c.updated_at, pageLimit:pageLimit as 15|100, ...credential };
   }
   return {
     acquire: async (supplied) => {
@@ -93,6 +101,7 @@ export function createSlackHistoryServerPorts(
           !!current &&
           current.id === initial.id &&
           current.revision === initial.revision &&
+          current.pageLimit === initial.pageLimit &&
           current.secretRef === initial.secretRef &&
           current.kind === initial.kind && current.userId === initial.userId
         );
@@ -257,6 +266,7 @@ export function createSlackHistoryServerPorts(
       };
       return {
         identity,
+        pageLimit:initial.pageLimit,
         authorised,
         inspectChannel,
         history: async (args: HistoryArguments) => {
@@ -266,7 +276,7 @@ export function createSlackHistoryServerPorts(
             args.channel !== identity.channelId ||
             args.oldest !== identity.oldest ||
             args.latest !== identity.latest ||
-            args.limit !== 15 ||
+            args.limit !== initial.pageLimit ||
             Object.keys(args).some(
               (k) => !["channel", "oldest", "latest", "limit", "cursor",...(identity.parentTimestamp?["ts"]:[])].includes(k),
             ) ||
@@ -278,7 +288,7 @@ export function createSlackHistoryServerPorts(
             channel: identity.channelId,
             oldest: identity.oldest,
             latest: identity.latest,
-            limit: "15",
+            limit: String(initial.pageLimit),
             inclusive: "true",
             ...(identity.parentTimestamp?{ts:identity.parentTimestamp}:{}),
             ...(args.cursor ? { cursor: args.cursor } : {}),

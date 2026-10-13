@@ -1,6 +1,6 @@
-# Shared-office voicemail: prepared production acceptance
+# Voicemail: production historical intake
 
-Updated 13 October 2026. **Approved; one production message imported and browser playback verified. Route paused. Historical acceptance remains incomplete.**
+Updated 13 October 2026, 12:04 BST. **71 production voicemails and 71 original-source records verified from 78 retained candidates. Three withheld for signature-header verification; four originals unavailable. All historical routes paused. Full provider-history and ongoing-intake coverage remain incomplete.**
 
 ## Historical repair and continuation
 
@@ -13,12 +13,37 @@ passed read-only extraction. Matching production importer v2 and platform-worker
 v58 were published and verified; authentication, environment and schedules stayed
 unchanged. Exact old artifacts are retained for rollback.
 
-Continuation has now published six recordings. Three remaining found notifications
-are held for parser diagnostics (at least one has an ambiguous/missing notification
-section); two retained references were absent from Office Gmail. The route remains
-paused and existing manager access is unchanged. Additional mailbox coverage is
-being prepared under Chris’s subsequent explicit instruction to bring in all
-voicemails; current ownership must be verified per mailbox, never inferred.
+The shared-office continuation published all nine available, verified originals.
+A second exact legacy footer for personal mailboxes was subsequently added and
+verified against synthetic signed messages and every remaining available original.
+Production importer v5 contains the repair; cryptographic and routing guards remain
+unchanged. The latest historical continuation is complete below.
+
+## Latest verified production result — 12:04 BST
+
+- **71 published:** mailbox 601 (Office) 9; mailbox 102 (Liz) 9;
+  mailbox 103 (Office recipient) 45; mailbox 105 (Tony) 8.
+- The final continuation imported **60 of 60 eligible sources**. Three duplicate
+  replays preserved source/voicemail identities and counts. The previous eleven
+  messages and sources remain unchanged.
+- All five historical routes are paused; the two-source historical Anna route
+  was never resumed. No pending jobs remained for the continuation routes.
+- Existing mailbox owners, manager permissions, private buckets and the Office
+  route were preserved. No new user access, phone routing, AI processing or
+  ongoing voicemail capture was introduced.
+- **Seven retained exceptions:** three originals omit `Content-Type` from the
+  provider signature and remain withheld; four exact Gmail source IDs return 404.
+  None was deleted or counted as successfully imported.
+- The deployed importer verified original signatures, recipient/route/date
+  binding, full audio decoding and stored-byte readback. Browser playback was
+  previously verified for Office; new mailbox browser checks remain separate.
+
+[Sanitised acceptance evidence](evidence/learn-voicemail-history-2026-10-13.json).
+Private execution journal:
+`.verification-results/additional-voicemail-history-continuation-20261013.json`.
+This reconciles the retained candidate set only. Complete provider-mailbox history,
+ongoing capture and independent backup of both voicemail file buckets remain
+separate delivery requirements.
 
 ## Approved initial scope
 
@@ -84,7 +109,7 @@ Independent backup coverage for these new voicemail files remains a separate
 launch requirement; this run must not claim that recovery gate is complete.
 No AWS copy or infrastructure change is included in this proposal.
 
-## Approval and current result
+## Initial approval and first-message result
 
 Chris approved the shared-office historical import in this chat. He also explicitly
 approved a read-only production runtime credential fingerprint check after automatic
@@ -153,3 +178,28 @@ Exact candidate IDs and execution evidence remain in ignored private journals:
 `.verification-results/voicemail-additional-history-import-plan-20261013.json` and
 `.verification-results/additional-voicemail-history-execution-20261013.json`.
 No source email/audio or credentials are in this document or Git.
+
+### Read-only continuation preflight — 11:41 BST
+
+The first Liz failure was an observed personal-mailbox footer variation: it says
+“To access your mailbox, dial *95 from your handset.” The parser now accepts that
+exact alternative to the shared-office footer; recipient, signature, reference,
+attachment and audio checks remain intact. Sixteen synthetic parser/signature
+tests passed. At that checkpoint this follow-up parser change awaited deployment;
+production importer v5 now includes it.
+
+All 63 remaining originals were then checked in memory through their authenticated
+recipient accounts. Sixty passed signed-source extraction, exact mailbox/date
+binding and full audio decoding: seven Liz, 45 Office-recipient mailbox 103, and
+eight Tony. No original emails or audio were saved by this preflight.
+
+The other three (two historic Anna-recipient 102 notifications and the oldest
+Office-recipient 103 notification) have valid expected-domain signatures but omit
+`Content-Type` from the signed headers. The existing guard therefore correctly
+rejects unauthenticated MIME interpretation. They remain withheld for review;
+signature requirements have not been weakened. At that checkpoint all historical routes were paused and the 60-source continuation
+and duplicate checks awaited deployment. The latest verified result above supersedes
+that execution status.
+
+Private evidence: `.verification-results/additional-voicemail-history-preflight-20261013.json`
+and `.verification-results/additional-voicemail-signature-review-20261013.json`.

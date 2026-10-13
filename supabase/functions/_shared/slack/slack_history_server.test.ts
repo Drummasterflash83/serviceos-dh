@@ -64,6 +64,8 @@ function fixture(kind: "bot" | "user" = "bot") {
     reads: any[] = [],
     state = {
       storage: true,
+      pageLimit:15 as number|null,
+      rateError:null as object|null,
       credential,
       auth: kind === "user" ? {user_id:"U123"} : {bot_id:"B123"},
       team: "T123",
@@ -108,6 +110,7 @@ function fixture(kind: "bot" | "user" = "bot") {
     },
     rpc: async (name: string, args: any) => {
       rpc.push({ name, args });
+      if (name === "learn_slack_page_limit")return {data:state.pageLimit,error:state.rateError};
       if (name === "learn_slack_campaign_reserve_request") {
         if(state.reservationThrows)throw Error("private reservation transport error");
         return {data:state.reservation,error:state.reservationError};
@@ -255,7 +258,7 @@ test("foreign, changed or missing thread approvals fail before a credential or p
   ]) {
     const f = threadFixture(); mutate(f);
     assert.equal((await f.run()).success, false);
-    assert.equal(f.rpc.length, 0); assert.equal(f.requests.length, 0);
+    assert.equal(f.rpc.filter(r=>r.name!=="learn_slack_page_limit").length, 0); assert.equal(f.requests.length, 0);
   }
 });
 test("history and thread bindings cannot switch methods or widen the approved parent", async () => {
@@ -321,7 +324,7 @@ test("missing storage, foreign/revoked/unconfigured connection and absent explic
     const f = fixture();
     mutate(f);
     assert.equal((await f.run()).success, false);
-    assert.equal(f.rpc.length, 0);
+    assert.equal(f.rpc.filter(r=>r.name!=="learn_slack_page_limit").length, 0);
     assert.equal(f.requests.length, 0);
   }
 });
@@ -529,4 +532,44 @@ test('a lost campaign reservation acknowledgement never fetches and retries only
  assert.equal(r.error?.retryable,true);assert.equal(f.requests.length,0);
  assert.equal(f.rpc.filter(call=>call.name==='learn_slack_campaign_reserve_request').length,1);
  assert.equal(JSON.stringify(r).includes('private reservation transport error'),false);
+});
+
+test("reviewed internal connection reads 100 messages with unchanged consent and provider budget", async()=>{
+ for(const f of [fixture('user'),threadFixture('user')]){
+  f.state.pageLimit=100;
+  const thread=f.ctx.jobType==='slack.thread_sync';
+  f.state.history.messages=Array.from({length:100},(_,i)=>({ts:`123.${String(i+1).padStart(6,'0')}`,text:'Synthetic historical message',user:'U123',...(thread?{thread_ts:'110.1'}:{})}));
+  const result=await f.run();assert.equal(result.success,true);
+  const call=f.requests.find(r=>r.method===(thread?'conversations.replies':'conversations.history'));
+  assert.equal(call.params.limit,'100');assert.equal(call.params.channel,'C123');
+  assert.equal(f.requests.length,SLACK_HISTORY_PROVIDER_REQUESTS_PER_JOB);
+  const saved=f.rpc.find(r=>r.name===(thread?'slack_thread_commit_page':'slack_history_commit_page'));
+  assert.equal(saved.args.p_records.length,100);
+  assert.equal(result.result?.ingestion_complete,false);
+ }
+});
+test("unknown/error/malformed profiles cannot increase page size or obtain credentials",async()=>{
+ for(const value of [null,0,16,101,1000]){const f=fixture();f.state.pageLimit=value;assert.equal((await f.run()).success,false);assert.equal(f.requests.length,0);}
+ const f=fixture();f.state.rateError={code:'unavailable'};assert.equal((await f.run()).success,false);assert.equal(f.requests.length,0);
+ const fallback=fixture();fallback.state.history.messages=Array.from({length:16},(_,i)=>({ts:`123.${i+1}`,text:'Synthetic',user:'U123'}));
+ assert.equal((await fallback.run()).success,false);assert.ok(!fallback.rpc.some(r=>r.name==='slack_history_commit_page'));
+});
+test("profile revocation before publication and oversized internal pages fail closed",async()=>{
+ const f=fixture();f.state.pageLimit=100;
+ f.state.override=(method)=>{if(method==='conversations.history')f.state.pageLimit=15;return undefined;};
+ assert.equal((await f.run()).success,false);assert.ok(!f.rpc.some(r=>r.name==='slack_history_commit_page'));
+ const oversized=fixture();oversized.state.pageLimit=100;
+ oversized.state.history.messages=Array.from({length:101},(_,i)=>({ts:`123.${i+1}`,text:'Synthetic',user:'U123'}));
+ assert.equal((await oversized.run()).success,false);assert.ok(!oversized.rpc.some(r=>r.name==='slack_history_commit_page'));
+});
+test("internal profile retains provider Retry-After and never publishes a throttled page",async()=>{
+ const f=fixture();f.state.pageLimit=100;
+ f.state.override=method=>method==='conversations.history'?new Response('',{status:429,headers:{'Retry-After':'300'}}):undefined;
+ const result=await f.run();assert.equal(result.success,false);assert.equal(result.error?.code,'slack_history_rate_limited');assert.equal(result.error?.retryAfterSeconds,300);
+ assert.ok(!f.rpc.some(r=>r.name==='slack_history_commit_page'));
+});
+
+test("missing profile schema retains old 15-message runtime during rollout",async()=>{
+ for(const code of ['PGRST202','42883','42P01']){const f=fixture();f.state.rateError={code};f.state.pageLimit=null;
+ assert.equal((await f.run()).success,true);assert.equal(f.requests.find(r=>r.method==='conversations.history').params.limit,'15');}
 });

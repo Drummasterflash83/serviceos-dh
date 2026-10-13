@@ -1,6 +1,36 @@
 # LEARN live release — 13 October 2026
 
-## Latest checkpoint — 11:35 BST
+## Latest checkpoint — 12:09 BST
+
+- Published matching Slack worker v3, voicemail importer v5 and platform-worker v61.
+  The exact reviewed six-file runtime change covers connection-bound Slack page size
+  and the observed personal-mailbox voicemail footer. Existing authentication,
+  credentials, schedules, source records and access remain preserved.
+- The scoped internal Slack profile allows 100 messages/page and a 30-second cooldown.
+  A scheduled 58-record page at 11:08:08 UTC proves the larger batch is active. Totals
+  reached 364 messages/versions and 259 interactions, without a provider rate block.
+  History and customer/job context acceptance remain incomplete.
+- Schema comparison initially differed only in PostgreSQL composite-type qualification;
+  read-only canonical function inspection and original policy fingerprints reconciled it.
+  Initial profile activation rolled back because its verification timestamp was later
+  than the statement timestamp. The exact one-line timestamp correction passed an
+  isolated reproduction and the production activation; both original journals remain.
+- Voicemail history now retains 71 messages and 71 original-source receipts. All 60
+  additional eligible imports and three duplicate checks passed. Original records,
+  mailbox access and private buckets were preserved; all five routes are paused.
+  Signed-in personal voicemail playback reached its 4.68-second end without error.
+- Commusoft's production credential/access check succeeded. The initial property pass
+  completed 25 pages with 2,423 sources. Jobs reached 7,500 across 75 pages and continue
+  within the approved 300-page source scope. Contacts and canonical links remain open.
+- The live frontend remains Git `22a48ba`; no design or branding change in this checkpoint.
+  Full-schema rehearsal, exact runtime boot checks and 40 focused final tests passed.
+
+Runtime and activation journals are retained privately under
+`.verification-results/production-slack-throughput-voicemail-20261013/`.
+Sanitised evidence: [Slack](evidence/learn-slack-internal-throughput-production-2026-10-13.json)
+and [voicemail](evidence/learn-voicemail-history-2026-10-13.json).
+
+## Earlier checkpoint — 11:35 BST
 
 - Live frontend Git `22a48ba8259923ded15b0748f398544b96d018c7`, deployment
   `dpl_9EK4ZfKn4cH1oMm3tCJYa5EtZPoJ`, now serves all four existing aliases.

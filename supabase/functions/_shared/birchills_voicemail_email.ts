@@ -77,7 +77,7 @@ export function parseBirchillsVoicemailEmail(input: {
   // this fixed footer. Do not accept arbitrary text as an absent transcript or
   // use the footer's empty "Sent from / to" placeholders for routing.
   const untranscribed = transcriptionMarkers === 0
-    ? /^[ \t\n]*We have attached the message to this email for your convenience\. To access the mailbox, simply dial 0 from any connected handset\.\n\nKind regards,\nBirchills Telecom Voicemail Service\n\nSent from  to \nSystem reference:[ \t]*([^\n]+)[ \t\n]*$/.exec(rest)
+    ? /^[ \t\n]*We have attached the message to this email for your convenience\. (?:To access the mailbox, simply dial 0 from any connected handset\.|To access your mailbox, dial \*95 from your handset\.)\n\nKind regards,\nBirchills Telecom Voicemail Service\n\nSent from  to \nSystem reference:[ \t]*([^\n]+)[ \t\n]*$/.exec(rest)
     : null;
   const reference = transcribed?.[2] ?? untranscribed?.[1];
   if (!reference || !uuid.test(reference.trim())) fail("notification_reference_invalid");

@@ -1,0 +1,90 @@
+{
+  "version": "slack-internal-throughput-production-acceptance/1",
+  "observedAt": "2026-10-13T11:08:41.62349+00:00",
+  "activationAt": "2026-10-13T11:06:30.856Z",
+  "state": "scheduled_large_page_verified",
+  "runtime": [
+    {
+      "name": "platform-worker",
+      "version": 61,
+      "status": "ACTIVE",
+      "verifyJwt": false
+    },
+    {
+      "name": "learn-slack-worker",
+      "version": 3,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "name": "learn-voicemail-import",
+      "version": 5,
+      "status": "ACTIVE",
+      "verifyJwt": false
+    }
+  ],
+  "checks": {
+    "eligibleProfile": true,
+    "largePageCommitted": true,
+    "schedulesUnchanged": true,
+    "policiesUnchanged": true,
+    "existingAccessUnchanged": true,
+    "profileNotClientWritable": true,
+    "budgetsRespected": true
+  },
+  "counts": {
+    "messages": 364,
+    "versions": 364,
+    "interactions": 259
+  },
+  "scheduledPages": [
+    {
+      "type": "slack.history_sync",
+      "status": "succeeded",
+      "recordsProcessed": 58,
+      "committedAt": "2026-10-13T11:08:08.929522+00:00"
+    }
+  ],
+  "campaigns": [
+    {
+      "budget": 10000,
+      "requestsReserved": 189,
+      "enabled": true,
+      "expiresAt": "2026-10-20T09:30:00+00:00"
+    },
+    {
+      "budget": 20000,
+      "requestsReserved": 27,
+      "enabled": true,
+      "expiresAt": "2026-10-20T09:30:00+00:00"
+    }
+  ],
+  "providerRateBlocked": false,
+  "lastStartedAt": "2026-10-13T11:08:02.310141+00:00",
+  "lastFinishedAt": "2026-10-13T11:08:08.970907+00:00",
+  "nextAllowedAt": "2026-10-13T11:08:38.969876+00:00",
+  "queue": [
+    {
+      "count": 173,
+      "status": "queued",
+      "job_type": "slack.history_sync",
+      "error_code": null
+    },
+    {
+      "count": 24,
+      "status": "succeeded",
+      "job_type": "slack.history_sync",
+      "error_code": null
+    }
+  ],
+  "profilePageLimit": 100,
+  "retainedPrivateEvidenceSha256": "31fd23325f810b91720af81e7d58b5484d26208cdaba1bf901bf926203f3cdaa",
+  "verificationProviderRequests": 0,
+  "verificationManualDispatches": 0,
+  "verificationProductionWrites": 0,
+  "limitations": [
+    "Historical channel and observed-thread coverage still in progress.",
+    "Current live proof is a58-record page under the100-message cap, not a claim that all pages return100.",
+    "Private-channel access implementation remains separate; individual/group DMs remain excluded."
+  ]
+}

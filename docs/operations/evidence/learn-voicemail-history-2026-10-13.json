@@ -1,0 +1,46 @@
+{
+  "version": "learn-voicemail-production-history/1",
+  "observedAt": "2026-10-13T11:04:31.813Z",
+  "state": "available_history_verified",
+  "environment": "production",
+  "candidateCoverage": {
+    "retainedNotifications": 78,
+    "publishedVoicemails": 71,
+    "publishedSources": 71,
+    "withheldUnsignedContentType": 3,
+    "originalsUnavailableInGmail": 4
+  },
+  "publishedByMailbox": {
+    "102": 9,
+    "103": 45,
+    "105": 8,
+    "601": 9
+  },
+  "continuation": {
+    "imports": 60,
+    "successfulImports": 60,
+    "replays": 3,
+    "replayIdentitiesPreserved": true,
+    "remainingEligible": 0
+  },
+  "preservation": {
+    "allHistoricalRoutesPaused": true,
+    "previousSourcesPreserved": true,
+    "previousMessagesPreserved": true,
+    "managerAndOwnerPermissionsPreserved": true,
+    "privateBucketsPreserved": true,
+    "officeRoutePreserved": true
+  },
+  "runtime": {
+    "importerVersion": 5,
+    "sha256": "e3a8b476abd77f3b9d3950128d343ecd5db3efca79ae35544c808db51a244b2f"
+  },
+  "limitations": [
+    "Coverage of retained notification candidates only; no claim of complete provider mailbox history.",
+    "Three sources lack authenticated MIME Content-Type; four original message IDs unavailable. Retained records preserved.",
+    "Stored audio decoded and read back by importer; browser playback previously verified for Office only.",
+    "Historical routes paused; ongoing voicemail intake not enabled by this run.",
+    "Independent backup coverage of voicemail source and audio buckets remains to be verified."
+  ],
+  "privateEvidence": ".verification-results/additional-voicemail-history-continuation-20261013.json"
+}
