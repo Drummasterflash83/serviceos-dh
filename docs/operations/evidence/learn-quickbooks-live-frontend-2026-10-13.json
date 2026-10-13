@@ -1,0 +1,140 @@
+{
+  "checkedAt": "2026-10-13T22:59:48.592813+00:00",
+  "status": "frontend_live_verified_not_company_connected",
+  "release": {
+    "state": "frontend_promoted_and_verified",
+    "candidate": "dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR",
+    "prior": "dpl_FEvZQUizXBraRu71hJtGciJTPZER",
+    "sha": "f03a96328924d9c6de4414143444c7f6949328e1",
+    "startedAt": "2026-10-13T22:54:56.775Z",
+    "aliases": [
+      {
+        "alias": "www.openfolk.ai",
+        "deployment": "dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR",
+        "verified": true
+      },
+      {
+        "alias": "app.openfolk.ai",
+        "deployment": "dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR",
+        "verified": true
+      },
+      {
+        "alias": "serviceos-dh.vercel.app",
+        "deployment": "dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR",
+        "verified": true
+      },
+      {
+        "alias": "openfolk.ai",
+        "deployment": "dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR",
+        "verified": true
+      }
+    ],
+    "postReleaseAcceptance": "existing operator session, inactive connection/import controls, audited empty finance reads and customer workspace checked",
+    "rollbackDeployment": "dpl_FEvZQUizXBraRu71hJtGciJTPZER",
+    "finishedAt": "2026-10-13T22:55:00.875Z",
+    "checkedAt": "2026-10-13T22:59:48.592813+00:00"
+  },
+  "http": {
+    "checkedAt": "2026-10-13T22:57:56.790Z",
+    "checks": [
+      {
+        "path": "/quickbooks?mode=connect",
+        "status": 200,
+        "cacheControl": "no-cache, no-store, max-age=0, must-revalidate",
+        "cdnCacheControl": "no-store",
+        "vercelCache": "MISS"
+      },
+      {
+        "path": "/quickbooks?mode=disconnect",
+        "status": 200,
+        "cacheControl": "no-cache, no-store, max-age=0, must-revalidate",
+        "cdnCacheControl": "no-store",
+        "vercelCache": "MISS"
+      },
+      {
+        "path": "/login",
+        "status": 200,
+        "cacheControl": "no-cache, no-store, max-age=0, must-revalidate",
+        "cdnCacheControl": "no-store",
+        "vercelCache": "MISS"
+      },
+      {
+        "path": "/client",
+        "status": 307,
+        "cacheControl": "no-cache, no-store, max-age=0, must-revalidate",
+        "cdnCacheControl": "no-store",
+        "vercelCache": "MISS"
+      },
+      {
+        "path": "/openfolk/drummonds",
+        "status": 307,
+        "cacheControl": "no-cache, no-store, max-age=0, must-revalidate",
+        "cdnCacheControl": "no-store",
+        "vercelCache": "MISS"
+      },
+      {
+        "path": "/assets/index-BBr5EGgZ.js",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "cdnCacheControl": null
+      }
+    ]
+  },
+  "database": {
+    "checkedAt": "2026-10-13T22:57:21.421Z",
+    "apps": 0,
+    "imports": 0,
+    "readAudit": [
+      {
+        "count": 1,
+        "event": "customer.finance.read",
+        "environment": "production"
+      },
+      {
+        "count": 1,
+        "event": "customers.read",
+        "environment": "production"
+      }
+    ],
+    "connections": 0,
+    "customerLinks": 0,
+    "sourceVersions": 0
+  },
+  "browser": {
+    "stableDomain": "https://www.openfolk.ai",
+    "build": "f03a963",
+    "buildEnvironmentLabel": "preview",
+    "backend": "tgbnakbxwcqjeimygroz",
+    "existingOperatorSessionPreserved": true,
+    "company": "Drummond Heating",
+    "quickbooksRegistration": "requires_server_side_setup",
+    "connection": "none",
+    "input": "disabled",
+    "sourceRecords": 0,
+    "financeRead": "empty state succeeded; no financial activity claim",
+    "customerCandidates": "empty state succeeded",
+    "financeEnvironment": "production",
+    "readReasonAudited": true,
+    "customerLinksChanged": false,
+    "customerWorkspaceLoaded": true,
+    "existingBrandAndNavigationPresent": true,
+    "learnSummariesLoaded": [
+      "email",
+      "phone",
+      "recordings",
+      "slack",
+      "voicemail"
+    ],
+    "initialReloadWasCachedOldBuild": true,
+    "newBuildConfirmedAfterReleaseQuery": true
+  },
+  "limitations": [
+    "No Intuit production app registration, keys, company consent or accounting import.",
+    "Policy wording/publication and owner security-policy declaration remain pending.",
+    "No real financial record or customer-link acceptance yet.",
+    "Unattended capture and refresh remain disabled and unverified.",
+    "Separate Commusoft job-refresh and Slack recovery frontend changes were excluded."
+  ],
+  "providerRequests": 0,
+  "newAccountsOrGrants": 0
+}

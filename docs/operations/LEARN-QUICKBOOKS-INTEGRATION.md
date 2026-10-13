@@ -2,22 +2,23 @@
 
 Updated 13 October 2026. Workstream: `codex/quickbooks-integration`.
 
-## Current state — 13 October, 22:53 UTC
+## Current state — 13 October, 22:59 UTC
 
-- Stable TEST is on e048b49, with signed-in operator acceptance and the correct
-  TEST backend. It retains 77 sandbox records; the sandbox grant is revoked.
-- Real sandbox connection, repeat import, token refresh and API revocation are
-  verified. No Drummonds live company has connected.
-- Production schema and four handlers are installed but inert. Existing runtime
-  preservation is reconciled. No production Intuit credentials/imports exist.
-- The retained-finance reader correction below is installed and verified in TEST
-  and production. Pausing intake no longer prevents authorised retained reads.
-- A QuickBooks-only frontend candidate is READY on the verified live baseline,
-  with production auth-target and connect/disconnect guide checks passed. It is
-  protected and unpromoted; signed-in production and response-header checks remain.
+- QuickBooks frontend is now LIVE on the existing openfolk.ai aliases, Git
+  `f03a9632`, deployment `dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR`. Existing live operator
+  sign-in, connection/import controls, audited empty finance reads, customer
+  workspace and LEARN navigation pass. Real HTML no-store headers and immutable
+  hashed-asset caching are verified. This release enables no provider connection.
+- Stable TEST remains on e048b49 with the correct TEST backend, 77 retained sandbox
+  records and a deliberately revoked sandbox grant. Real sandbox connection,
+  repeat import, token refresh and API revocation are verified.
+- Production schema and four handlers are installed but inert. Runtime preservation
+  is reconciled. The retained-finance reader fix is verified in both environments.
+- No production Intuit registration, credential, company connection, imports,
+  customer links or financial source records exist. The live screens say so.
 - Policy adoption/publication, owner Intuit security-policy commitment, production
-  keys/company consent, final frontend response checks and live accounting
-  acceptance remain open. Original retention verification gate is unchanged.
+  keys/company consent and real accounting acceptance remain open. Original
+  retention verification gate is unchanged. The full integration is not complete.
 
 Earlier dated sections below are implementation history and may describe stages
 superseded by later evidence; they are not current launch claims.
@@ -1036,3 +1037,27 @@ The candidate is backed up on `codex/quickbooks-live-release`, with automatic Gi
 deployment disabled, and merged into the complete integration history. The
 [release evidence](evidence/learn-quickbooks-isolated-frontend-2026-10-13.json)
 distinguishes these checks from outstanding company connection/import acceptance.
+
+### Live frontend release — 13 October, 22:59 UTC
+
+Promoted only the isolated QuickBooks frontend after fresh checks of the installed
+production readers, exact candidate identity and all four old live aliases.
+The existing signed-in LIVE session made post-release checks possible on the
+permanent domain without a new account, grant or preview password request.
+The previous deployment remains available for rollback. All four aliases read
+back to the candidate and project protection remains unchanged.
+
+The operator controls show no app registration/company and disabled input. An
+existing customer card successfully read the empty production finance view and
+empty QuickBooks customer candidates; the two matching audit events were verified.
+No customer link, provider request or import was made. Existing Drummonds branding,
+customer home and LEARN navigation remain present, and all five communication
+summary totals loaded. Public connect/disconnect pages return HTTP 200. HTML
+responses have no-store headers while a rendered hashed JS asset remains immutable.
+The initial browser reload reused the prior build; a release query fetched and
+verified `f03a963`. The About panel correctly retains its build-time `preview`
+label even though this production-configured build now serves the live aliases.
+
+See [live frontend evidence](evidence/learn-quickbooks-live-frontend-2026-10-13.json).
+This completes frontend release acceptance only; it does not connect Drummonds'
+QuickBooks company or establish live accounting coverage.

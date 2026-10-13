@@ -43,19 +43,27 @@ Cloudflare-flavoured.
 ## Current live checkpoint — 13 October 2026
 
 The latest verified LIVE frontend is Git
-`a11f2041b84cb572a5ce8b65c97057e005bf4da3`, deployment
-`dpl_FEvZQUizXBraRu71hJtGciJTPZER`, serving the four existing openfolk.ai aliases.
-The matching additive contact-details reader is installed in TEST and production.
-Signed-in LIVE verifies two saved unverified contact endpoints without changing
-primary selections; the operator read is audited. Prior source/identity/access/
-schedule preservation checks pass. Full customer and communication coverage,
+`f03a96328924d9c6de4414143444c7f6949328e1`, deployment
+`dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR`, serving the four existing openfolk.ai aliases.
+This is the isolated QuickBooks frontend on top of the previous verified
+`a11f2041b84cb572a5ce8b65c97057e005bf4da3` contact-details release. It excludes the
+separate pending Commusoft job-refresh and Slack recovery frontend changes.
+Existing live operator sign-in, connection/import controls, audited empty finance
+reads and Drummonds customer/LEARN navigation were checked on the permanent domain.
+Actual HTML no-store headers and immutable hashed JavaScript caching are verified.
+The previous deployment `dpl_FEvZQUizXBraRu71hJtGciJTPZER` remains a rollback target.
+
+QuickBooks backend is installed, but no production app registration, credentials,
+company connection, accounting records or imports exist. Frontend release is not
+real-provider acceptance. Policy/Intuit confirmations and live accounting acceptance
+remain outstanding. Existing contact details are preserved; broader source coverage,
 scoring and operational acceptance remain incomplete.
 Use **https://www.openfolk.ai** for LIVE and **https://test.openfolk.ai** for TEST.
-TEST is separately built from the merged QuickBooks/contact checkpoint below;
-QuickBooks changes have not been promoted by this LIVE frontend release.
+TEST is unchanged by this release. The About panel reports the live candidate's
+build-time `preview` environment; its verified auth backend is production.
 
-See the [live release log](operations/LEARN-LIVE-RELEASE-2026-10-13.md) and
-[release evidence](operations/evidence/learn-contact-details-production-2026-10-13.json).
+See [QuickBooks live frontend evidence](operations/evidence/learn-quickbooks-live-frontend-2026-10-13.json)
+and the [preceding contact-details evidence](operations/evidence/learn-contact-details-production-2026-10-13.json).
 Older preview sections below are historical preparation, not current live status.
 
 ## Preview deployments
