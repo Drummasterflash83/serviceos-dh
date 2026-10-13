@@ -12,6 +12,7 @@ import {
   type VoicemailMessage,
 } from "@/lib/voicemails";
 import "./voicemails.css";
+import { voicemailTranscriptDisplay } from "@/lib/voicemail-transcript";
 import {
   parseVoicemailMailboxPage,
   parseVoicemailMessages,
@@ -316,6 +317,7 @@ function ScopedVoicemailInbox({ tenant, userId, demo = false }: InboxProps) {
 
 function Message({ message, tenant }: { message: VoicemailMessage; tenant: string }) {
   const [open, setOpen] = useState(false);
+  const transcript = voicemailTranscriptDisplay(message.transcript);
   return (
     <details className="vm-message" onToggle={(e) => setOpen(e.currentTarget.open)}>
       <summary>
@@ -358,7 +360,13 @@ function Message({ message, tenant }: { message: VoicemailMessage; tenant: strin
           {message.transcript && (
             <section>
               <h3>Message transcript</h3>
-              <p className="vm-transcript">{message.transcript}</p>
+              <p className="vm-transcript">{transcript.text}</p>
+              {transcript.providerFooterHidden && (
+                <details>
+                  <summary>Show full provider text</summary>
+                  <p className="vm-transcript">{message.transcript}</p>
+                </details>
+              )}
             </section>
           )}
         </div>

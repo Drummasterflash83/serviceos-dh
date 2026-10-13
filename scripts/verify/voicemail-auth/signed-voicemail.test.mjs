@@ -64,7 +64,7 @@ test("signed legacy footer extracts the same audio while leaving the unavailable
   for (const body of [legacy, legacy.replace(
     "To access the mailbox, simply dial 0 from any connected handset.",
     "To access your mailbox, dial *95 from your handset.",
-  )]) {
+  ), legacy.replace("To access the mailbox,", "To access your mailbox,")]) {
   const raw = await sign(body);
   const result = await extract(raw);
   assert.equal(result.signature.contentSignatureVerified, true);
@@ -73,6 +73,16 @@ test("signed legacy footer extracts the same audio while leaving the unavailable
   assert.deepEqual(result.audio, new Uint8Array([1, 2, 3, 4]));
   await assert.rejects(extract(Buffer.from(raw.toString().replace("We have attached", "They have attached"))), /signature_unverified/);
   }
+});
+test("unrecognized legacy footer text and mismatched identity remain rejected", async () => {
+  const legacy = message().replace(
+    `Automated transcription:\r\n${transcript}\r\n\r\n`,
+    "We have attached the message to this email for your convenience. To access your mailbox, simply dial 0 from any connected handset.\r\n\r\nKind regards,\r\nBirchills Telecom Voicemail Service\r\n\r\nSent from  to \r\n",
+  );
+  for (const modified of [legacy.replace("dial 0", "dial 1"), legacy.replace("Kind regards,", "Other text,"), legacy.replace("Sent from  to ", "Sent from another to recipient")]) {
+    await assert.rejects(extract(await sign(modified)), /reference_invalid/);
+  }
+  await assert.rejects(extract(await sign(legacy.replace("mailbox 601 from 01234567890 (28 seconds)", "mailbox 602 from 01234567890 (28 seconds)"))), /identity_mismatch/);
 });
 test("historical receipt verifies an expired-now signature without weakening the current-time diagnostic", async () => {
   const raw = await sign(message(), { expires: new Date(Number(internalDate) + 86400000) });
