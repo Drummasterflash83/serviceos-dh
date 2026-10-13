@@ -117,3 +117,39 @@ destination. Earlier approvals covered phone TEST and independent recording
 backup; this proposal concerns the private **production voicemail buckets**.
 Approval is for the historical import and existing private recipients above,
 not new accounts, permissions, phone routing or an unbounded ongoing capture.
+
+## Additional historical mailboxes — 13 October, 11:34 BST
+
+Chris subsequently authorised all voicemail intake. Authenticated recipient-profile
+and message-metadata checks found 74 available originals among 78 retained
+notifications. Four original IDs returned Gmail 404; their retained email records
+were preserved. This is coverage of retained candidates, not the whole provider
+mailbox history.
+
+The shared Office history now contains nine published sources/voicemails. Historical
+signature verification and the exact legacy notification footer were repaired and
+tested without relaxing recipient, signature, reference or audio checks. The three
+legacy notifications correctly retain a null provider transcript.
+
+The additional [historical route operation](../../scripts/operations/learn-voicemail-additional-history-routes.sql)
+was rehearsed against the restored full schema. Creation, idempotency, date bounds,
+tenant isolation, pause and rollback passed with unchanged managers and owners.
+It covers 65 available originals: nine addressed to Liz for mailbox 102, two
+historically addressed to Anna for 102, 46 addressed to Office for 103, and eight
+addressed to Tony for 105. Existing managers-only visibility is retained; recipient
+addresses do not imply historical ownership.
+
+- Production imported the first two Liz sources successfully. The third returned
+  `voicemail_import_unconfirmed`; the runner stopped and paused all four routes.
+- Current totals are eleven voicemail records and eleven source records: nine
+  Office and two Liz. Sixty-three additional candidates remain; the four planned
+  replay checks have not run.
+- Before/after checks preserved the original Office route, all prior voicemail
+  sources/messages, mailbox owners, manager grants and both private buckets.
+- The failed source needs a read-only diagnosis before another import attempt.
+  No production processing failure is counted as completed coverage.
+
+Exact candidate IDs and execution evidence remain in ignored private journals:
+`.verification-results/voicemail-additional-history-import-plan-20261013.json` and
+`.verification-results/additional-voicemail-history-execution-20261013.json`.
+No source email/audio or credentials are in this document or Git.

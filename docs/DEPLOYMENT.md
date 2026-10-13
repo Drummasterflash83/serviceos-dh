@@ -44,8 +44,8 @@ Cloudflare-flavoured.
 
 The matched LEARN backend (24 SQL packages and 37 runtimes) is installed and the
 existing schedules are restored. The latest verified live frontend is Git
-`6f5082ae72d31a60b27c20ba29551126b2f64076`, deployment
-`dpl_3HCyNS2f2KbPzaR7X4F1R58FtU1G`, on the existing openfolk.ai aliases.
+`22a48ba8259923ded15b0748f398544b96d018c7`, deployment
+`dpl_9EK4ZfKn4cH1oMm3tCJYa5EtZPoJ`, on the existing openfolk.ai aliases.
 Use **https://www.openfolk.ai** for live and **https://test.openfolk.ai** for TEST.
 Later processing and UI amendments are recorded in the
 [live release log](operations/LEARN-LIVE-RELEASE-2026-10-13.md).

@@ -1,6 +1,32 @@
 # LEARN live release — 13 October 2026
 
-## Latest checkpoint — 10:03 BST
+## Latest checkpoint — 11:35 BST
+
+- Live frontend Git `22a48ba8259923ded15b0748f398544b96d018c7`, deployment
+  `dpl_9EK4ZfKn4cH1oMm3tCJYa5EtZPoJ`, now serves all four existing aliases.
+  Promotion journal verified plan `0c5f4c07583f5a66dfbe46bce20c6def00cec9d0f33ee6858acaa55399e8e90a`.
+- Signed-in live overview now displays real Slack and voicemail counts through
+  the caller's existing RLS. At 11:35 BST the screen showed 97 Slack messages and
+  11 accessible voicemails; no browser errors were observed. Refresh and the
+  lower voicemail summary agree. Counts do not imply complete history.
+- The matched voicemail parser and Slack dispatcher runtime repair published
+  importer v3 and platform-worker v59. Setting activation retained exact code,
+  authentication and existing schedules. `LEARN_SLACK_DISPATCH_ENABLED=true`;
+  the shared Commusoft dispatcher remains false. No new keys or grants.
+- Automatic Slack page receipts at 10:30 and 10:32 UTC prove unattended progress
+  after activation: 30 additional messages, no failed/retrying jobs or provider
+  rate-limit block. Full 180-public-channel history is still in progress. Existing
+  conservative pacing is under review against the dedicated app's distribution status.
+- All nine available shared-office voicemail sources imported, with replay identity
+  and manager access preserved; route paused. Two more Liz messages imported before
+  another provider-template parse failure. All four additional routes are paused;
+  63 planned messages remain. Source/access preservation checks passed.
+- Production Commusoft check at 10:28 UTC: no connection, source pages, source
+  collections or import jobs for Drummonds. TEST imports are not live coverage.
+- Typecheck, production build and 20 focused parser/auth/brief tests passed. A test
+  fixture was completed with the required card/timestamp fields; no card UX expansion.
+
+## Earlier checkpoint — 10:03 BST
 
 - Final live frontend: Git `6f5082ae72d31a60b27c20ba29551126b2f64076`, deployment
   `dpl_3HCyNS2f2KbPzaR7X4F1R58FtU1G`. All four existing aliases verified. The

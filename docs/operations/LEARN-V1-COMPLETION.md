@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**13 October, 11:30 BST — Office voicemail history recovered; public Slack intake activated.**
+**13 October, 11:35 BST — live Slack/voicemail counts verified; scheduled Slack intake advances.**
 
 - Production now retains nine available Office 601 voicemails and their original
   sources. Three legacy notifications without transcripts now parse after signature
@@ -17,16 +17,19 @@ override a later release observation. No requirement is silently deferred.
 - Both approved public Slack campaigns exist in production; 52 messages were saved
   at 11:28 BST. The matching platform-worker and voicemail importer repair is live.
   The Slack-only dispatcher setting is enabled on the existing minute schedule;
-  actual unattended progression remains under observation. Commusoft dispatch stays off.
+  automatic durable page receipts at 10:30 and 10:32 UTC verify unattended progress.
+  At 11:35 BST the signed-in live overview shows 97 messages. Commusoft dispatch stays off.
 - A fresh production check at 11:28 BST found no Drummonds Commusoft connection,
   source pages, source collections or import jobs. TEST coverage must not be described
   as comprehensive live customer/job coverage. Broader customer-card expansion is
   discussion only at Chris's request.
 - Signed-in RLS count reads for Slack and private voicemail are implemented locally;
-  frontend deployment and browser acceptance remain pending. Existing permission
+  frontend Git `22a48ba` is deployed live and signed-in browser acceptance passed. Existing permission
   rules are used; no access grants are added.
 - Four additional historical voicemail routes (65 available source messages) passed
-  an isolated full-schema rehearsal. They remain prepared, not imported. Private
+  an isolated full-schema rehearsal. Two additional messages imported; the first
+  remaining candidate failed notification parsing, so all four routes are paused.
+  Live now retains 11 voicemails; 63 planned originals remain. Private
   Slack visibility controls and complete source/processing/recovery acceptance remain open.
 
 
