@@ -11,7 +11,8 @@ override a later release observation. No requirement is silently deferred.
 
 - The bounded dispatcher is LIVE and the existing logged operator approved only
   Drummonds:2,000pages per stage,100records per page. The normal scheduler opened
-  its first recurring property window at16:02UTC. All four stages, later
+  its first recurring property window at16:02UTC, completed25pages by16:06UTC
+  and automatically advanced to jobs by16:08UTC. All four stages, later
   incremental updates and pause/re-enable acceptance remain to be observed.
 - Activation changed only the existing dispatcher boolean. Runtime artifacts,
   other configuration, access, schedules and retained voicemail evidence passed

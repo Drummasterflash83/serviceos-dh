@@ -76,3 +76,9 @@ completion, later incremental updates and pause/re-enable acceptance remain open
 The activation plan SHA-256 is
 `0ee1f0f1a88fb8941b4cc550231ce2a5aedd869a7c6357cefacf6f944d33c517`.
 Private journals retain metadata and the exact before/after preservation evidence.
+
+At16:06:45UTC the recurring property cursor was complete after25pages, with
+no remaining property job. At16:08:17UTC the scheduler had independently moved
+to jobs (phase2), with three pages already settled and the next running. The
+signed-in LIVE operator screen showed the Jobs stage. No manual dispatch was
+used. First-cycle coverage still has no watermark; both contact passes remain.
