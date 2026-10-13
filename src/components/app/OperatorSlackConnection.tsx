@@ -315,6 +315,7 @@ export function OperatorSlackConnection({
         </button>
       </fieldset>
       <LearnSlackSetup
+        allowSourceReplay
         key={`${key}:${revision}`}
         tenantId={tenantId}
         actorId={actorId}

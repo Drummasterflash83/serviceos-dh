@@ -10,6 +10,10 @@ export type CampaignDefinition = {
   reason: string;
 };
 export type CampaignAction =
+  | {
+      operation: "replay_source";
+      input: { campaignId: string; sourceMessageId: string; sourceVersion: string; reason: string };
+    }
   | { operation: "start"; input: CampaignDefinition }
   | {
       operation: "control";
@@ -126,6 +130,14 @@ function validate(d: CampaignDraft) {
       x.requestBudget > 1000000
     )
       throw Error("Review the connection, channels, fixed dates and request allowance.");
+  } else if (d.operation === "replay_source") {
+    if (
+      !keys(x, "campaignId,sourceMessageId,sourceVersion,reason") ||
+      !uuid(d.input.campaignId) ||
+      !uuid(d.input.sourceMessageId) ||
+      !/^[a-f0-9]{64}$/.test(d.input.sourceVersion)
+    )
+      throw Error("Use the exact campaign, retained source ID and 64-character source version.");
   } else if (d.operation === "control" || d.operation === "close") {
     const x = d.input;
     if (!uuid(x.campaignId) || !count(x.revision) || x.revision < 1)
@@ -287,7 +299,39 @@ export async function readCampaign(
     throw Error("Campaign progress could not be verified. Refresh before taking action.");
   }
 }
-async function dispatch(db: RecurringClient, d: CampaignDraft, mode: "apply" | "check" | "cancel") {
+export type CampaignReceipt = { state: string; campaignId?: string; jobId?: string };
+export type SourceReplayReceipt = { draft: CampaignDraft; jobId: string };
+export function readSourceReplayReceipt(
+  store: Store,
+  scope: RecurringScope,
+): SourceReplayReceipt | null {
+  const raw = store.getItem(campaignKey(scope) + ":replay-receipt");
+  if (raw === null) return null;
+  try {
+    if (raw.length > 150000) throw Error();
+    const r = JSON.parse(raw);
+    validate(r.draft);
+    if (
+      !keys(r, "draft,jobId") ||
+      r.draft.operation !== "replay_source" ||
+      !uuid(r.jobId) ||
+      r.draft.backend !== scope.backend ||
+      r.draft.actorId !== scope.actorId ||
+      r.draft.tenantId !== scope.tenantId
+    )
+      throw Error();
+    return r;
+  } catch {
+    throw Error(
+      "Saved replay receipt could not be verified. Keep browser data for OpenFolk review.",
+    );
+  }
+}
+async function dispatch(
+  db: RecurringClient,
+  d: CampaignDraft,
+  mode: "apply" | "check" | "cancel",
+): Promise<CampaignReceipt> {
   try {
     const { data: r, error } = await db.rpc("learn_slack_campaign_dispatch", {
       p_tenant: d.tenantId,
@@ -301,6 +345,10 @@ async function dispatch(db: RecurringClient, d: CampaignDraft, mode: "apply" | "
       throw Error();
     if (r.state === "pending" || r.state === "cancelled")
       return r as { state: string; campaignId?: string };
+    if (d.operation === "replay_source") {
+      if (r.state !== "committed" || !uuid(r.jobId)) throw Error();
+      return { state: "committed", campaignId: d.input.campaignId, jobId: r.jobId };
+    }
     if (
       r.state !== "recorded" ||
       r.campaignId !== (d.operation === "start" ? d.requestId : d.input.campaignId) ||
@@ -361,6 +409,19 @@ export async function resolveCampaign(
     if (r.state !== "pending") {
       if (!allowed() || store.getItem(key) !== encoded)
         throw Error("Result recorded, but the saved context changed. Check its receipt again.");
+      if (d.operation === "replay_source" && r.state === "committed") {
+        const prior = readSourceReplayReceipt(store, s);
+        if (
+          prior?.draft.requestId === d.requestId &&
+          (JSON.stringify(prior.draft) !== encoded || prior.jobId !== r.jobId)
+        )
+          throw Error("Saved replay receipt changed. Keep the request for operator review.");
+        const receiptKey = key + ":replay-receipt";
+        const receipt = JSON.stringify({ draft: frozen, jobId: r.jobId });
+        store.setItem(receiptKey, receipt);
+        if (store.getItem(receiptKey) !== receipt)
+          throw Error("Replay was queued; keep the saved request until its receipt can be saved.");
+      }
       store.removeItem(key);
       if (store.getItem(key) !== null)
         throw Error("Result recorded; recovery storage needs another check.");

@@ -437,6 +437,7 @@ function CardDetail({
     [failed, setFailed] = useState(false),
     [revision, setRevision] = useState(0);
   const [clock, setClock] = useState(Date.now());
+  const [relatedJobId, setRelatedJobId] = useState<string | null>(null);
   useEffect(() => {
     let active = true;
     setData(null);
@@ -460,15 +461,43 @@ function CardDetail({
   }, [tenantId, kind, id, revision]);
   const stale = !!data && clock >= Date.parse(data.validUntil);
   const brief = data ? cardBrief(data) : null;
+  if (kind === "customer" && relatedJobId) {
+    return (
+      <>
+        <button
+          type="button"
+          className="cp-secondary"
+          onClick={() => {
+            setRelatedJobId(null);
+            setRevision((r) => r + 1);
+          }}
+        >
+          Back to {data?.card.title ?? "customer"}
+        </button>
+        <CardDetail
+          key={relatedJobId}
+          tenantId={tenantId}
+          actorId={actorId}
+          kind="job"
+          id={relatedJobId}
+          groupId={null}
+          canReview={canReview}
+        />
+      </>
+    );
+  }
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{data?.card.title ?? "Company card"}</DialogTitle>
+        <DialogTitle>
+          {data?.card.title ?? (kind === "job" ? "Job card" : "Company card")}
+        </DialogTitle>
         <DialogDescription>
           Stored links and findings from your company's existing records. Inferences remain subject
           to review.
         </DialogDescription>
       </DialogHeader>
+      {kind === "job" && data?.card.subtitle && <p>Job {data.card.subtitle}</p>}
       <button className="cp-secondary" onClick={() => setRevision((r) => r + 1)}>
         <RefreshCw size={14} />
         Refresh evidence
@@ -489,14 +518,60 @@ function CardDetail({
             <section className="lc-brief" aria-label="Customer situation at a glance">
               <div className="lc-brief-heading">
                 <p className="of-eyebrow">THE PICTURE SO FAR</p>
-                <h3>{brief.outstanding.length ? `${brief.outstanding.length} recorded action${brief.outstanding.length === 1 ? "" : "s"} to review` : "Your customer context is taking shape"}</h3>
-                <p>Based on the linked records below{brief.limited ? "; some context is still missing" : ""}. This is not a complete account of the customer's work.</p>
+                <h3>
+                  {brief.outstanding.length
+                    ? `${brief.outstanding.length} recorded action${brief.outstanding.length === 1 ? "" : "s"} to review`
+                    : kind === "job"
+                      ? "Your job context is taking shape"
+                      : "Your customer context is taking shape"}
+                </h3>
+                <p>
+                  Based on the linked records below
+                  {brief.limited ? "; some context is still missing" : ""}. This is not a complete
+                  account of the customer's work.
+                </p>
               </div>
               <div className="lc-brief-grid">
-                <article><span>Latest communication</span><strong>{brief.latest?.title ?? "No linked communication yet"}</strong><small>{brief.latest ? `${brief.latest.source} · ${when(brief.latest.occurredAt)}` : "More source data or identity matching is needed."}</small></article>
-                <article><span>What has been done</span><strong>{brief.closed.length ? `${brief.closed.length} action${brief.closed.length === 1 ? "" : "s"} marked complete` : "Completed work not established"}</strong><small>{brief.closed.length ? "Recorded outcomes are listed in the findings below." : "Missing completion evidence does not mean no work was done."}</small></article>
-                <article><span>First item to review</span><strong>{brief.next?.title ?? "Review the linked communications"}</strong><small>{brief.next?.deadline ? `Recorded deadline ${when(brief.next.deadline)}` : "Confirm what still needs a response or action."}</small></article>
-                <article><span>Who is taking it forward</span><strong>{brief.next?.owner ?? "Owner to confirm"}</strong><small>{brief.next?.waitingOn ? `Waiting on ${brief.next.waitingOn}` : "Check the next step with the team before treating it as assigned."}</small></article>
+                <article>
+                  <span>Latest communication</span>
+                  <strong>{brief.latest?.title ?? "No linked communication yet"}</strong>
+                  <small>
+                    {brief.latest
+                      ? `${brief.latest.source} · ${when(brief.latest.occurredAt)}`
+                      : "More source data or identity matching is needed."}
+                  </small>
+                </article>
+                <article>
+                  <span>What has been done</span>
+                  <strong>
+                    {brief.closed.length
+                      ? `${brief.closed.length} action${brief.closed.length === 1 ? "" : "s"} marked complete`
+                      : "Completed work not established"}
+                  </strong>
+                  <small>
+                    {brief.closed.length
+                      ? "Recorded outcomes are listed in the findings below."
+                      : "Missing completion evidence does not mean no work was done."}
+                  </small>
+                </article>
+                <article>
+                  <span>First item to review</span>
+                  <strong>{brief.next?.title ?? "Review the linked communications"}</strong>
+                  <small>
+                    {brief.next?.deadline
+                      ? `Recorded deadline ${when(brief.next.deadline)}`
+                      : "Confirm what still needs a response or action."}
+                  </small>
+                </article>
+                <article>
+                  <span>Who is taking it forward</span>
+                  <strong>{brief.next?.owner ?? "Owner to confirm"}</strong>
+                  <small>
+                    {brief.next?.waitingOn
+                      ? `Waiting on ${brief.next.waitingOn}`
+                      : "Check the next step with the team before treating it as assigned."}
+                  </small>
+                </article>
               </div>
             </section>
           )}
@@ -510,16 +585,24 @@ function CardDetail({
               </ul>
             </aside>
           )}
-          <details className="lc-scoring-details"><summary>Performance &amp; scoring</summary><LearnPerformanceCard
-            tenantId={tenantId}
-            actorId={actorId}
-            kind={kind}
-            id={id}
-            groupId={groupId}
-            canReview={canReview}
-          /></details>
+          <details className="lc-scoring-details">
+            <summary>Performance &amp; scoring</summary>
+            <LearnPerformanceCard
+              tenantId={tenantId}
+              actorId={actorId}
+              kind={kind}
+              id={id}
+              groupId={groupId}
+              canReview={canReview}
+            />
+          </details>
           {kind === "customer" && (
-            <LearnCustomerBusinessContext tenantId={tenantId} actorId={actorId} cardId={id} />
+            <LearnCustomerBusinessContext
+              tenantId={tenantId}
+              actorId={actorId}
+              cardId={id}
+              onOpenJob={setRelatedJobId}
+            />
           )}
           <h3>Findings, commitments & blockers</h3>
           {!data.findings.length && (

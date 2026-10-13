@@ -20,10 +20,12 @@ export function LearnSlackSetup({
   tenantId,
   actorId,
   canEdit,
+  allowSourceReplay = false,
 }: {
   tenantId: string;
   actorId: string;
   canEdit: boolean;
+  allowSourceReplay?: boolean;
 }) {
   const [view, setView] = useState<"channel" | "threads" | "recovery" | "ongoing" | "campaigns">(
     "recovery",
@@ -147,6 +149,7 @@ export function LearnSlackSetup({
       {view === "campaigns" && (
         <div id="slack-campaign-panel" role="region" aria-labelledby="slack-campaign-tab">
           <LearnSlackCampaigns
+            allowSourceReplay={allowSourceReplay}
             key={`${tenantId}:${actorId}`}
             tenantId={tenantId}
             actorId={actorId}

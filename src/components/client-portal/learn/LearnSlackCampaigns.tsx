@@ -12,6 +12,8 @@ import {
   readCampaign,
   prepareCampaign,
   readSavedCampaign,
+  readSourceReplayReceipt,
+  type SourceReplayReceipt,
   resolveCampaign,
   type Campaign,
   type CampaignDraft,
@@ -29,12 +31,14 @@ export function LearnSlackCampaigns({
   tenantId,
   actorId,
   canEdit,
+  allowSourceReplay = false,
   client,
   backend = supabaseConfig.url.replace(/\/$/, ""),
 }: {
   tenantId: string;
   actorId: string;
   canEdit: boolean;
+  allowSourceReplay?: boolean;
   client?: RecurringClient;
   backend?: string;
 }) {
@@ -58,6 +62,9 @@ export function LearnSlackCampaigns({
     [expires, setExpires] = useState(() => local(Date.now() + 7 * 86400000)),
     [budget, setBudget] = useState(1000),
     [reason, setReason] = useState("");
+  const [sourceId, setSourceId] = useState(""),
+    [sourceVersion, setSourceVersion] = useState("");
+  const [replayReceipt, setReplayReceipt] = useState<SourceReplayReceipt | null>(null);
   const live = useRef(false),
     working = useRef(false),
     generation = useRef(0),
@@ -66,6 +73,8 @@ export function LearnSlackCampaigns({
   current.current = scope;
   const canEditRef = useRef(canEdit);
   canEditRef.current = canEdit;
+  const replayAllowedRef = useRef(allowSourceReplay);
+  replayAllowedRef.current = allowSourceReplay;
   const db = () => client ?? getSupabaseClient();
   const allowed = () =>
     live.current &&
@@ -77,6 +86,7 @@ export function LearnSlackCampaigns({
     try {
       const d = readSavedCampaign(localStorage, scope);
       setSaved(d);
+      setReplayReceipt(readSourceReplayReceipt(localStorage, scope));
       setReady(true);
       return d;
     } catch (e) {
@@ -130,7 +140,11 @@ export function LearnSlackCampaigns({
     restore();
     void load();
     const changed = (e: StorageEvent) => {
-      if (e.key === campaignKey(scope) || e.key === null) {
+      if (
+        e.key === campaignKey(scope) ||
+        e.key === campaignKey(scope) + ":replay-receipt" ||
+        e.key === null
+      ) {
         setReview(null);
         setConfirmed(false);
         restore();
@@ -205,13 +219,48 @@ export function LearnSlackCampaigns({
       setNotice((e as Error).message);
     }
   }
+  function reviewReplay() {
+    if (!campaign || !allowSourceReplay) return;
+    try {
+      setReview(
+        prepareCampaign({
+          ...base(),
+          operation: "replay_source",
+          input: {
+            campaignId: campaign.campaignId,
+            sourceMessageId: sourceId.trim(),
+            sourceVersion: sourceVersion.trim(),
+            reason: reason.trim(),
+          },
+        }),
+      );
+      setConfirmed(false);
+      setNotice("");
+    } catch (e) {
+      setNotice((e as Error).message);
+    }
+  }
   async function send(d: CampaignDraft, mode: "apply" | "check" | "cancel") {
-    if (working.current || !allowed() || !ready) return;
+    if (
+      working.current ||
+      !allowed() ||
+      !ready ||
+      (d.operation === "replay_source" && !allowSourceReplay)
+    )
+      return;
     working.current = true;
     setBusy(true);
     setNotice("");
     try {
-      const r = await resolveCampaign(db(), localStorage, lock, scope, d, mode, allowed);
+      const r = await resolveCampaign(
+        db(),
+        localStorage,
+        lock,
+        scope,
+        d,
+        mode,
+        () => allowed() && (d.operation !== "replay_source" || replayAllowedRef.current),
+      );
       if (!allowed()) return;
       restore();
       setReview(null);
@@ -220,11 +269,13 @@ export function LearnSlackCampaigns({
       if (!allowed()) return;
       if (r.campaignId) await detail(r.campaignId);
       setNotice(
-        r.state === "recorded"
-          ? "Change recorded. Refresh progress to follow the import."
-          : r.state === "cancelled"
-            ? "Pending request cancelled. Existing capture was not changed."
-            : "No completed result yet. The same saved request is available to retry.",
+        r.state === "committed"
+          ? "Replay request queued. Capture has not yet been verified; retain the job receipt for outcome review."
+          : r.state === "recorded"
+            ? "Change recorded. Refresh progress to follow the import."
+            : r.state === "cancelled"
+              ? "Pending request cancelled. Existing capture was not changed."
+              : "No completed result yet. The same saved request is available to retry.",
       );
     } catch (e) {
       if (allowed()) {
@@ -378,6 +429,71 @@ export function LearnSlackCampaigns({
           }}
         />
       </label>
+      {allowSourceReplay && (
+        <details>
+          <summary className="cursor-pointer font-medium">
+            Advanced: revalidate a retained Slack source
+          </summary>
+          <div className="mt-3 space-y-3">
+            <p>
+              Recheck one exact saved message under the selected campaign’s existing allowance and
+              expiry. This preserves historical checkpoints and does not enable new channels or DMs.
+            </p>
+            <p>Selected campaign: {campaign?.campaignId ?? "Choose a campaign above"}</p>
+            <label className="block space-y-1">
+              <span>Retained source message ID</span>
+              <input
+                className="block w-full rounded border p-2"
+                value={sourceId}
+                disabled={!editable}
+                onChange={(e) => {
+                  setSourceId(e.target.value);
+                  setReview(null);
+                }}
+              />
+            </label>
+            <label className="block space-y-1">
+              <span>Exact source version (64-character hash)</span>
+              <input
+                className="block w-full rounded border p-2"
+                value={sourceVersion}
+                disabled={!editable}
+                onChange={(e) => {
+                  setSourceVersion(e.target.value);
+                  setReview(null);
+                }}
+              />
+            </label>
+            <button
+              className="cp-secondary"
+              disabled={!editable || !campaign}
+              onClick={reviewReplay}
+            >
+              Review source replay
+            </button>
+            {replayReceipt && (
+              <div className="space-y-2 rounded border p-3" role="status">
+                <p>Last replay request accepted. Execution outcome has not been checked here.</p>
+                <p className="break-all">
+                  Request: {replayReceipt.draft.requestId}
+                  <br />
+                  Job: {replayReceipt.jobId}
+                </p>
+                <p>
+                  Checking this receipt confirms acceptance only. It does not submit another replay.
+                </p>
+                <button
+                  className="cp-secondary"
+                  disabled={busy || !!saved || !canEdit || !ready}
+                  onClick={() => void send(replayReceipt.draft, "check")}
+                >
+                  Reconcile saved receipt
+                </button>
+              </div>
+            )}
+          </div>
+        </details>
+      )}
       <details>
         <summary className="cursor-pointer font-medium">Start a historical import</summary>
         <div className="mt-3 space-y-3">
@@ -465,6 +581,24 @@ export function LearnSlackCampaigns({
                 reserved provider requests, including checks/retries. Observed replies are included.
               </p>
             </>
+          ) : draft.operation === "replay_source" ? (
+            <div className="space-y-2 break-all">
+              <p>
+                Revalidate exactly one retained source. Existing campaign allowance and expiry
+                apply; the main import checkpoint stays unchanged.
+              </p>
+              <p>
+                Campaign: {draft.input.campaignId}
+                <br />
+                Source: {draft.input.sourceMessageId}
+                <br />
+                Version: {draft.input.sourceVersion}
+              </p>
+              <p>
+                A queued receipt is not proof that revalidation succeeded. Cancellation only applies
+                before the request is committed.
+              </p>
+            </div>
           ) : (
             <p>
               {draft.operation === "control"

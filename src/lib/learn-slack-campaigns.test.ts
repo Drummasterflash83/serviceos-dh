@@ -4,6 +4,7 @@ import {
   prepareCampaign,
   resolveCampaign,
   readSavedCampaign,
+  readSourceReplayReceipt,
   campaignKey,
   readCampaign,
   listCampaigns,
@@ -223,4 +224,139 @@ test("list rejects a forged pagination cursor and unordered duplicates", async (
         id(1),
       ),
     );
+});
+
+const replay: CampaignDraft = {
+  version: 1,
+  ...scope,
+  requestId: id(3),
+  operation: "replay_source",
+  input: {
+    campaignId: id(4),
+    sourceMessageId: id(5),
+    sourceVersion: "a".repeat(64),
+    reason: "Revalidate exact retained source",
+  },
+};
+test("replay rejects incomplete, foreign-form or expanded source definitions before dispatch", () => {
+  assert.deepEqual(prepareCampaign(replay), replay);
+  for (const change of [
+    { campaignId: "bad" },
+    { sourceMessageId: "bad" },
+    { sourceVersion: "A".repeat(64) },
+    { sourceVersion: "a".repeat(63) },
+    { channelId: "CPUBLIC" },
+    { reason: " " },
+  ])
+    assert.throws(() =>
+      prepareCampaign({ ...replay, input: { ...replay.input, ...change } } as CampaignDraft),
+    );
+});
+function replayFixture() {
+  const f = fixture();
+  let lost = false,
+    malformed = false;
+  let receipt: any = { tenantId: scope.tenantId, requestId: replay.requestId, state: "pending" };
+  const calls: any[] = [];
+  const db = {
+    rpc: async (name: string, args: any) => {
+      if (name === "learn_slack_campaign_list") return f.db.rpc(name, args);
+      calls.push(args);
+      if (args.p_mode === "apply") {
+        receipt = { ...receipt, state: "committed", jobId: id(9) };
+        if (lost) throw Error("PRIVATE DETAILS");
+      }
+      if (args.p_mode === "cancel" && receipt.state === "pending")
+        receipt = { ...receipt, state: "cancelled" };
+      return { data: malformed ? { ...receipt, jobId: "bad" } : receipt, error: null };
+    },
+  };
+  return {
+    ...f,
+    calls,
+    lose: () => {
+      lost = true;
+    },
+    malformed: () => {
+      malformed = true;
+    },
+    run: (mode: "apply" | "check" | "cancel" = "apply", d = replay) =>
+      resolveCampaign(
+        db,
+        f.store,
+        async (_, task) => task(),
+        scope,
+        d,
+        mode,
+        () => true,
+      ),
+  };
+}
+test("replay lost acknowledgement reconciles identical committed job without another apply", async () => {
+  const f = replayFixture();
+  f.lose();
+  await assert.rejects(f.run(), /not confirmed/);
+  assert.deepEqual(readSavedCampaign(f.store, scope), replay);
+  const receipt = await f.run("check");
+  assert.equal(receipt.state, "committed");
+  assert.equal(receipt.jobId, id(9));
+  assert.equal(receipt.campaignId, id(4));
+  assert.equal(readSavedCampaign(f.store, scope), null);
+  assert.deepEqual(readSourceReplayReceipt(f.store, scope), { draft: replay, jobId: id(9) });
+  await f.run("check");
+  assert.equal(f.calls.filter((c) => c.p_mode === "apply").length, 1);
+  assert.ok(f.calls.every((c) => c.p_operation === "replay_source" && c.p_actor === scope.actorId));
+});
+test("replay cancellation is reconciled before acceptance, but cannot claim to cancel committed work", async () => {
+  const f = replayFixture();
+  assert.equal((await f.run("cancel")).state, "cancelled");
+  assert.equal((await f.run()).state, "cancelled");
+  assert.equal(f.calls.filter((c) => c.p_mode === "apply").length, 0);
+  assert.equal(readSourceReplayReceipt(f.store, scope), null);
+  const g = replayFixture();
+  await g.run();
+  assert.equal((await g.run("cancel")).state, "committed");
+  assert.equal(readSourceReplayReceipt(g.store, scope)?.jobId, id(9));
+});
+test("invalid replay receipt or failed receipt persistence preserves recoverable request", async () => {
+  const f = replayFixture();
+  f.malformed();
+  await assert.rejects(f.run(), /not confirmed/);
+  assert.ok(readSavedCampaign(f.store, scope));
+  const g = replayFixture();
+  const original = g.store.setItem;
+  g.store.setItem = (key, value) => {
+    if (!key.endsWith(":replay-receipt")) original(key, value);
+  };
+  await assert.rejects(g.run(), /queued/);
+  assert.ok(readSavedCampaign(g.store, scope));
+  g.store.setItem = original;
+  assert.equal((await g.run("check")).state, "committed");
+  assert.equal(g.calls.filter((c) => c.p_mode === "apply").length, 1);
+});
+test("stored replay receipt rejects mismatched actor, tenant, backend and malformed job", async () => {
+  const f = replayFixture();
+  await f.run();
+  const key = campaignKey(scope) + ":replay-receipt";
+  for (const delta of [
+    { actorId: id(8) },
+    { tenantId: id(8) },
+    { backend: "https://other.invalid" },
+  ]) {
+    f.store.setItem(key, JSON.stringify({ draft: { ...replay, ...delta }, jobId: id(9) }));
+    assert.throws(() => readSourceReplayReceipt(f.store, scope), /could not be verified/);
+  }
+  f.store.setItem(key, JSON.stringify({ draft: replay, jobId: "bad" }));
+  assert.throws(() => readSourceReplayReceipt(f.store, scope), /could not be verified/);
+});
+
+test("a conflicting job receipt cannot overwrite an accepted replay receipt", async () => {
+  const f = replayFixture();
+  await f.run();
+  const key = campaignKey(scope) + ":replay-receipt";
+  f.store.setItem(key, JSON.stringify({ draft: replay, jobId: id(8) }));
+  await assert.rejects(f.run("check"), /receipt changed/);
+  assert.equal(readSourceReplayReceipt(f.store, scope)?.jobId, id(8));
+  assert.deepEqual(readSavedCampaign(f.store, scope), replay);
+  assert.equal(f.calls.filter((c) => c.p_mode === "apply").length, 1);
 });

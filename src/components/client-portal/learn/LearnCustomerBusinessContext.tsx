@@ -14,11 +14,13 @@ export function LearnCustomerBusinessContext({
   actorId,
   cardId,
   operatorReason,
+  onOpenJob,
 }: {
   tenantId: string;
   actorId: string;
   cardId: string;
   operatorReason?: string;
+  onOpenJob?: (jobId: string) => void;
 }) {
   const [collection, setCollection] = useState<BusinessCollection>("jobs");
   const [page, setPage] = useState<BusinessContextPage | null>(null);
@@ -132,6 +134,25 @@ export function LearnCustomerBusinessContext({
                   row.fields.display_name ??
                   "Unnamed record"}
               </h4>
+              {collection === "jobs" && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <strong>
+                    {row.fields.job_number
+                      ? `Job ${row.fields.job_number}`
+                      : "Job number not recorded"}
+                  </strong>
+                  <span>Recorded status: {row.fields.status ?? "Not recorded"}</span>
+                  {onOpenJob && (
+                    <button
+                      type="button"
+                      className="cp-secondary"
+                      onClick={() => onOpenJob(row.id)}
+                    >
+                      Open job &amp; communications
+                    </button>
+                  )}
+                </div>
+              )}
               <dl className="space-y-1">
                 {Object.entries(row.fields)
                   .filter(
@@ -144,11 +165,28 @@ export function LearnCustomerBusinessContext({
                         "created_date",
                         "completed_date",
                         "site_id",
+                        "source_system",
+                        "external_id",
+                        "updated_at",
+                        "verified",
+                        ...(collection === "jobs" ? ["job_number", "status"] : []),
+                        ...(row.fields.description === row.fields.title ? ["description"] : []),
                       ].includes(k),
                   )
                   .map(([key, value]) => (
                     <div key={key}>
-                      <dt className="text-sm font-semibold">{key.replaceAll("_", " ")}</dt>
+                      <dt className="text-sm font-semibold">
+                        {(
+                          {
+                            address_text: "Address",
+                            postcode: "Postcode",
+                            primary_email: "Email",
+                            primary_phone: "Phone",
+                            description: "About this job",
+                            priority: "Priority",
+                          } as Record<string, string>
+                        )[key] ?? key.replaceAll("_", " ")}
+                      </dt>
                       <dd className="whitespace-pre-wrap break-words text-sm">
                         {value === null
                           ? "Not recorded"
@@ -181,21 +219,31 @@ export function LearnCustomerBusinessContext({
                   are retained.
                 </p>
               )}
-              {!!row.sources.length && (
-                <details>
-                  <summary>Retained source references</summary>
-                  {row.sources.map((s) => (
-                    <p key={s.version_id}>
-                      {s.provider} · {s.collection} {s.external_id} · source version first retained{" "}
-                      {new Date(s.first_seen_at).toLocaleString("en-GB")}
+              <details>
+                <summary>Record details &amp; source evidence</summary>
+                <p>Verification: {row.fields.verified ? "Verified" : "Awaiting verification"}.</p>
+                {row.fields.updated_at && (
+                  <p>Record updated: {new Date(row.fields.updated_at).toLocaleString("en-GB")}.</p>
+                )}
+                {row.fields.external_id && <p>Provider record: {row.fields.external_id}.</p>}
+                {row.fields.source_system && (
+                  <p className="break-all">Source system: {row.fields.source_system}.</p>
+                )}
+                {!!row.sources.length && (
+                  <>
+                    {row.sources.map((s) => (
+                      <p key={s.version_id}>
+                        {s.provider} · {s.collection} {s.external_id} · source version first
+                        retained {new Date(s.first_seen_at).toLocaleString("en-GB")}
+                      </p>
+                    ))}
+                    <p>
+                      Up to five publication references are shown. They identify reviewed source
+                      versions, not current provider state.
                     </p>
-                  ))}
-                  <p>
-                    Up to five publication references are shown. They identify reviewed source
-                    versions, not current provider state.
-                  </p>
-                </details>
-              )}
+                  </>
+                )}
+              </details>
             </article>
           ))}
           {visible.next_after && (
