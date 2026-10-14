@@ -2,7 +2,8 @@
 
 Status: approved by Chris on 14 October. Intuit consent completed at 06:58 UTC,
 CompanyInfo verified, company confirmed through the logged LIVE operator UI.
-The bounded first import is running; completion and coverage are not yet verified.
+The bounded first import finished at its approved cap at 07:32 UTC.
+The connection is verified paused; source coverage is partial.
 Intuit screen identifies
 **OpenFolk ServiceOS → DRUMMOND HEATING**, signed in as Heidi. Observed accounting
 realm is `1197397945`; verify returned CompanyInfo before confirming in ServiceOS.
@@ -56,5 +57,28 @@ revocation path; do not revoke the newly desired connection as a routine test.
 - First import: `0b89d0a8-02de-4f1c-91e9-25b8917eca68`.
 - Definition readback matched all 13 entities, page size 100, minor version 75,
   maximum 500 requests and expiry 15 October 07:00:57 UTC.
-- The exact worker is running locally with acquisition pinned to that run.
+- The exact worker completed locally with acquisition pinned to that run.
   No hosted trigger credential or ongoing schedule was enabled.
+
+## Verified result — 14 October 07:32 UTC
+
+- 500/500 provider requests, 500 saved pages, 49,893 observations; no errors
+  or source-version conflicts. All page, observation and run totals reconcile.
+- Customer traversal: 13,158 records, comprising 4,310 main accounts and 8,848
+  jobs/subcustomers; 315 inactive records retained, no missing parent references.
+- Invoice traversal: 21,635 records.
+- Payment checkpoint: 15,100 records; next position 15,101.
+- CreditMemo, SalesReceipt, Estimate, Vendor, Bill, BillPayment, Purchase,
+  VendorCredit, Account and Item have not started.
+- All captured invoices/payments have a currency and reference a retained
+  QuickBooks customer. This does not establish account reconciliation.
+- Source tenant/realm/environment checks passed; private tables retain RLS and
+  deny direct anonymous/authenticated selection. Live authorised finance-reader
+  checks and audit events passed; 25 customer candidates loaded. No links created.
+- Connection paused automatically; token remains stored under the existing grant.
+  No hosted dispatch, ongoing schedule or provider writes enabled.
+
+Aggregate proof: `evidence/learn-quickbooks-live-first-import-2026-10-14.json`,
+`evidence/learn-quickbooks-live-references-2026-10-14.json` and
+`evidence/learn-quickbooks-live-finance-reader-2026-10-14.json`.
+The prepared continuation is separate and remains unapproved.
