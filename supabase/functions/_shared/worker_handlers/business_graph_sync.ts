@@ -14,7 +14,7 @@ import type { WorkerHandlerContext, WorkerHandlerResult } from "./index.ts";
 const DEFAULT_LIMIT = 200;
 const MAX_LIMIT = 1000;
 const WRITE_CONCURRENCY = 8;
-const MISSING_INTERACTION_PAGE = 100;
+const MISSING_INTERACTION_PAGE = 200;
 
 type Row = Record<string, unknown>;
 

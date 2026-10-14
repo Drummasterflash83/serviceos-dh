@@ -1,6 +1,6 @@
 {
   "date_utc": "2026-10-14",
-  "status": "released_live_lease_recovery_and_first_lighter_continuation_verified_full_drain_in_progress",
+  "status": "released_live_lease_recovery_repeated_lighter_continuation_and_200_page_verified_full_drain_in_progress",
   "purpose": "Drain eligible retained interactions outside the graph's latest-record window without changing canonical sources or inferred identities.",
   "test": {
     "selector_rollback_rehearsed": true,
@@ -12,16 +12,23 @@
     "job_keyed_events": 2,
     "remaining_missing": 0,
     "fixture_removed": true,
-    "downloaded_graph_endpoint_version": 7,
-    "downloaded_worker_version": 36,
+    "larger_page_synthetic_interactions": 400,
+    "larger_page_first_pass_nodes": 250,
+    "larger_page_second_pass_nodes": 400,
+    "larger_page_successful_jobs": 2,
+    "larger_page_keyed_events": 2,
+    "larger_page_remaining_missing": 0,
+    "larger_page_fixture_removed": true,
+    "downloaded_graph_endpoint_version": 8,
+    "downloaded_worker_version": 37,
     "downloaded_packages_match_staged_source": true
   },
   "live": {
     "selector_rollback_rehearsed": true,
     "selector_service_role_only": true,
-    "downloaded_graph_endpoint_version": 48,
+    "downloaded_graph_endpoint_version": 49,
     "downloaded_graph_scheduler_version": 43,
-    "downloaded_worker_version": 87,
+    "downloaded_worker_version": 88,
     "downloaded_packages_match_staged_source": true,
     "baseline_at_utc": "2026-10-14T21:55:15.803Z",
     "eligible_ready_or_enriched_interactions": 36645,
@@ -60,10 +67,26 @@
       "completion_events": 1,
       "next_continuation_queued_at_utc": "2026-10-14T22:21:09.174Z"
     },
+    "larger_page_first_ordinary_job": {
+      "claimed_at_utc": "2026-10-14T22:29:00.904Z",
+      "completed_at_utc": "2026-10-14T22:29:14.807Z",
+      "status": "succeeded",
+      "attempts": 1,
+      "by_type": {"interaction": 250},
+      "nodes_created": 200,
+      "edges_created": 578,
+      "records_processed": 928,
+      "completion_events": 1,
+      "next_continuation_queued_at_utc": "2026-10-14T22:29:14.881Z"
+    },
+    "coverage_snapshot_at_utc": "2026-10-14T22:29:25.241Z",
+    "eligible_interactions": 42240,
+    "missing_graph_interactions": 18600,
+    "unlinked_emails": 41877,
     "full_history_and_unattended_acceptance": "not_yet_verified"
   },
   "limits": [
-    "The service-only selector returns at most 100 oldest missing canonical interactions per run.",
+    "The service-only selector returns at most 200 oldest missing canonical interactions per run; the 200-page change required no SQL or grant change.",
     "A successful full page requests one serial interaction-only follow-on job after 60 seconds; the existing active job key prevents parallel graph drains.",
     "The latest-record refresh remains active; this does not establish complete edge, recommendation, scoring or source coverage.",
     "No working-day observation or human business sign-off is implied."

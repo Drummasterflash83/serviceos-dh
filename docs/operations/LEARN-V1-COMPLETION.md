@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**14 October, 22:23 UTC — frontend recovery released; graph continuation recovering normally.**
+**14 October, 22:29 UTC — frontend recovery released; larger bounded graph history page verified.**
 
 ### Working and verified
 
@@ -28,15 +28,25 @@ override a later release observation. No requirement is silently deferred.
   succeeded on attempt two at 22:19:34 UTC with one completion event. Its first
   lighter, interaction-only child succeeded at 22:21:09 UTC in about eight
   seconds, touching 150 interactions and creating 100 nodes/283 edges, and queued
-  the next serial child. Its identity/card/recommendation phases did not repeat.
+  the next serial child. Three further 100-missing pages also succeeded. A
+  400-interaction TEST fixture then proved a larger 200-missing page in two
+  serial ordinary worker runs with 400 final nodes, two keyed events and complete
+  cleanup. TEST graph endpoint v8/worker v37 and LIVE endpoint v49/worker v88
+  match downloaded source. The first LIVE 200-missing page finished in about
+  14 seconds at 22:29 UTC, created 200 nodes/578 edges, published one completion
+  event and queued the next child. Its identity/card/recommendation phases did
+  not repeat.
 
 ### Needs finishing
 
-- Observe repeated graph pages and reconcile the growing historical gap,
+- Observe repeated larger graph pages and reconcile the growing historical gap,
   recommendations and scoring. The email/card pipeline, legacy review holds,
   broad source coverage, full app/Auth recovery and real full working-day
   unattended acceptance remain open. Chris is the business reviewer; he has
   not yet signed off. Do not activate Build 02.
+  At 22:29 UTC, 18,600 of 42,240 eligible interactions still lacked a graph node,
+  and 41,877 retained emails lacked an interaction. These are current gaps, not
+  complete coverage claims.
 
 ### Blocked externally
 
