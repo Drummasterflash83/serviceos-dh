@@ -102,5 +102,35 @@
     "absentMailboxes": 4,
     "manualEnqueueOrRestart": false,
     "scope": "Saved connection/domain only; not every tenant domain or historical mail coverage."
+  },
+  "concurrentCheckpoint": {
+    "quickbooksRemoteHeadMerged": "03182b08",
+    "publishedPolicyFrontend": {
+      "at": "2026-10-14T06:17:43.803Z",
+      "aliases": [
+        {
+          "name": "www.openfolk.ai",
+          "deployment": "dpl_BtQPXQYCacqVyzmHL311J5F3Pw9E"
+        },
+        {
+          "name": "openfolk.ai",
+          "deployment": "dpl_BtQPXQYCacqVyzmHL311J5F3Pw9E"
+        },
+        {
+          "name": "app.openfolk.ai",
+          "deployment": "dpl_BtQPXQYCacqVyzmHL311J5F3Pw9E"
+        },
+        {
+          "name": "serviceos-dh.vercel.app",
+          "deployment": "dpl_BtQPXQYCacqVyzmHL311J5F3Pw9E"
+        }
+      ],
+      "sha": "e81575a04065199928cf7dbaf8afcb439a247c9c",
+      "readyState": "READY",
+      "projectId": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+      "protection": "all_except_custom_domains"
+    },
+    "mergedFrontendBuild": "passed",
+    "frontendDeploymentPerformedByThisRepair": false
   }
 }

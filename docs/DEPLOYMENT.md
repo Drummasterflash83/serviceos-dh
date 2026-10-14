@@ -42,8 +42,10 @@ Cloudflare-flavoured.
 
 ## Current live checkpoint — 14 October 2026
 
-LIVE frontend is `0659046d55abeb8bbddd5ae2b5c174b8fca2ba45` /
-`dpl_F34AYUtewmQubgbQCu2LQwqahSNQ`. TEST is
+LIVE frontend is `e81575a04065199928cf7dbaf8afcb439a247c9c` /
+`dpl_BtQPXQYCacqVyzmHL311J5F3Pw9E`, following the QuickBooks workstream’s
+approved policy-page publication. All four LIVE aliases and protection were
+reverified at 06:17 UTC. The prior job-search baseline remains included. TEST is
 `e7fdc2a6518dc17db6b70b823160a2ed50d81e2a` /
 `dpl_6WBCBMbVVLyv2ayQfxVPyQB4itQD`. All existing aliases, protections and rendered
 Supabase targets are verified. The isolated three-file releases add audited job
@@ -51,8 +53,9 @@ search to Slack context review while retaining the existing design and separate
 TEST-only changes. Signed-in TEST and LIVE search/context-reading acceptance passes.
 [Release, preservation and rollback](operations/LEARN-OPERATOR-JOB-SEARCH.md).
 
-Frontend rollback: LIVE `5375262266445fc9d913b96242d4c7a51387d0d4` /
-`dpl_AuCREnJ5GQNVN8YodUAYhNsnvqcB`; TEST
+Frontend rollback for the latest policy publication: LIVE
+`0659046d55abeb8bbddd5ae2b5c174b8fca2ba45` /
+`dpl_F34AYUtewmQubgbQCu2LQwqahSNQ`; TEST
 `778f7ad828086888ba4d355319a4a538725e3eff` /
 `dpl_DpvxmPfubUNPbTbUnpHgasNwD5BP`. The additive search backend can stay installed
 when reverting the frontend. Do not reverse the earlier contact-separation backend:
