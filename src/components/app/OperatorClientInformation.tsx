@@ -1,3 +1,4 @@
+import { LearnImportedCustomers } from "@/components/client-portal/learn/LearnImportedCustomers";
 import { LearnSlackSource } from "@/components/client-portal/learn/LearnSlackSource";
 import { LearnSlackEvidence } from "@/components/client-portal/learn/LearnSlackEvidence";
 import { useEffect, useRef, useState } from "react";
@@ -26,6 +27,8 @@ export function OperatorClientInformation({
   initialCollection?: InformationCollection;
   embedded?: boolean;
 }) {
+  const [importsOpen, setImportsOpen] = useState(false);
+  const [importsReason, setImportsReason] = useState("");
   const [collection, setCollection] = useState<InformationCollection | "slack_evidence">(
     initialCollection,
   );
@@ -35,6 +38,7 @@ export function OperatorClientInformation({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [pendingCard, setPendingCard] = useState<string | null>(null);
   const request = useRef<AbortController | null>(null);
   const generation = useRef(0);
   const scope = `${tenantId}:${actorId}:${collection}:${record.trim()}`;
@@ -46,6 +50,7 @@ export function OperatorClientInformation({
     request.current?.abort();
     setPage(null);
     setSelected(null);
+    setImportsOpen(false);
     setBusy(false);
   }
   useEffect(() => {
@@ -56,7 +61,7 @@ export function OperatorClientInformation({
       generation.current++;
       request.current?.abort();
     };
-  }, [tenantId, actorId, collection]);
+  }, [tenantId, actorId]);
   // Private content is not cached across background sessions or account switches.
   useEffect(() => {
     const hide = () => {
@@ -108,6 +113,11 @@ export function OperatorClientInformation({
       if (ticket === generation.current) setBusy(false);
     }
   }
+  useEffect(() => {
+    if (pendingCard === null || collection !== "customers" || record !== pendingCard) return;
+    setPendingCard(null);
+    void load();
+  }, [pendingCard, collection, record]);
   const title = (fields: Record<string, unknown>, id: string) =>
     String(
       fields.title ??
@@ -153,6 +163,8 @@ export function OperatorClientInformation({
             onChange={(e) => {
               clear();
               setCollection(e.target.value as InformationCollection | "slack_evidence");
+              setRecord("");
+              setPendingCard(null);
             }}
           >
             {Object.entries(clientInformationCollections).map(([key, label]) => (
@@ -173,6 +185,10 @@ export function OperatorClientInformation({
             onChange={(e) => setReason(e.target.value)}
           />
         </label>
+      </div>
+      <div className="space-y-3">
+        <button className="cp-secondary" disabled={reason.trim().length<3||reason.trim().length>500} onClick={()=>{setImportsReason(reason.trim());setImportsOpen(v=>!v);}}>{importsOpen?'Close imported customers':'Browse imported customer records'}</button>
+        {importsOpen&&<LearnImportedCustomers key={tenantId+':'+actorId+':'+importsReason} tenantId={tenantId} actorId={actorId} operatorReason={importsReason} onOpenCard={id=>{setImportsOpen(false);setReason(importsReason);setCollection('customers');setRecord(id);setPendingCard(id);}}/>}
       </div>
       {collection === "slack_evidence" ? (
         <LearnSlackEvidence tenantId={tenantId} actorId={actorId} operatorReason={reason} />

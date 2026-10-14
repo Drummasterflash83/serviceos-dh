@@ -1,0 +1,71 @@
+{
+  "run": {
+    "id": "af4983d5-2c01-4cae-a585-d2aa5ae2f841",
+    "pages": 1353,
+    "realm": "1197397945",
+    "state": "traversed",
+    "created": "2026-10-14T10:14:00.883816+00:00",
+    "expires": "2026-10-15T10:14:00.883815+00:00",
+    "records": 134599,
+    "entities": [
+      "Customer",
+      "Invoice",
+      "Payment",
+      "CreditMemo",
+      "SalesReceipt",
+      "Estimate",
+      "Vendor",
+      "Bill",
+      "BillPayment",
+      "Purchase",
+      "VendorCredit",
+      "Account",
+      "Item"
+    ],
+    "pageSize": 100,
+    "requests": 1353,
+    "lastError": null,
+    "entityIndex": 14,
+    "environment": "production",
+    "maxRequests": 3000,
+    "minorVersion": 75,
+    "observations": 134599,
+    "reservedRequests": 1353,
+    "savedPageRecords": 134599,
+    "wrongTenantPages": 0,
+    "uniquePagePermits": 1353,
+    "completedOrUpdated": "2026-10-14T12:38:09.108355+00:00"
+  },
+  "policy": {
+    "nextAt": "2026-10-14T18:38:09.108355+00:00",
+    "enabled": true,
+    "revision": 1,
+    "lastState": "waiting",
+    "currentRun": "af4983d5-2c01-4cae-a585-d2aa5ae2f841",
+    "maxRequests": 3000,
+    "intervalHours": 6,
+    "lastCompleted": "2026-10-14T12:38:09.108355+00:00",
+    "actorMatchesRun": true,
+    "realmMatchesRun": true,
+    "tenantMatchesRun": true,
+    "connectionMatchesRun": true
+  },
+  "checkedAt": "2026-10-14T12:55:01.707068+00:00",
+  "connection": {
+    "status": "paused",
+    "tokenGeneration": 6,
+    "refreshInProgress": false
+  },
+  "reviewedLinks": {
+    "count": 5,
+    "unchangedFiveReviews": true
+  },
+  "retainedSources": {
+    "latestRecords": 134599,
+    "conflictedRecords": 0
+  },
+  "state": "first_hosted_cycle_and_next_due_verified",
+  "financialValuesIncluded": false,
+  "providerWrites": 0,
+  "automaticMatching": false
+}

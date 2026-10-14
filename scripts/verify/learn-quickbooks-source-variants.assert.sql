@@ -61,3 +61,11 @@ select fixture_assert(not learn_quickbooks_payload_variant('Vendor',
 select fixture_assert(not learn_quickbooks_payload_variant('Vendor',
  '{"Id":"V1","Balance":10,"BalanceWithJobs":10,"MetaData":{"LastUpdatedTime":"2026-10-13T10:00:00Z"}}',
  '{"Id":"V1","Balance":20,"BalanceWithJobs":20,"MetaData":{"LastUpdatedTime":"2026-10-13T11:00:00Z"}}'),'supplier does not inherit customer-only ignored fields');
+
+select fixture_assert(learn_quickbooks_payload_variant('Account','{"Id":"A1","CurrentBalance":10,"MetaData":{"LastUpdatedTime":"2026-10-13T10:00:00Z"}}','{"Id":"A1","CurrentBalance":20,"MetaData":{"LastUpdatedTime":"2026-10-13T11:00:00Z"}}'),'ledger derived balance snapshot compatible');
+select fixture_assert(not learn_quickbooks_payload_variant('Account','{"Id":"A1","CurrentBalance":10,"MetaData":{"LastUpdatedTime":"2026-10-13T10:00:00Z"}}','{"Id":"A1","CurrentBalance":"20","MetaData":{"LastUpdatedTime":"2026-10-13T11:00:00Z"}}'),'malformed ledger balance held');
+select fixture_assert(not learn_quickbooks_payload_variant('Account','{"Id":"A1","Name":"First","CurrentBalance":10,"MetaData":{"LastUpdatedTime":"2026-10-13T10:00:00Z"}}','{"Id":"A1","Name":"Changed identity","CurrentBalance":20,"MetaData":{"LastUpdatedTime":"2026-10-13T11:00:00Z"}}'),'ledger identity change held');
+select fixture_assert(learn_quickbooks_payload_variant('Purchase','{"Id":"P1","TotalAmt":1,"EntityRef":{"value":"V1","type":"Vendor","name":"Old label"}}','{"Id":"P1","TotalAmt":1,"EntityRef":{"value":"V1","type":"Vendor","name":"New label"}}'),'payee display label alone compatible');
+select fixture_assert(not learn_quickbooks_payload_variant('Purchase','{"Id":"P1","EntityRef":{"value":"V1","type":"Vendor","name":"Label"}}','{"Id":"P1","EntityRef":{"value":"V2","type":"Vendor","name":"Label"}}'),'changed payee reference held');
+select fixture_assert(not learn_quickbooks_payload_variant('Purchase','{"Id":"P1","EntityRef":{"value":"V1","type":"Vendor","name":"Label"}}','{"Id":"P1","EntityRef":{"value":"V1","type":"Employee","name":"New label"}}'),'payee type change held');
+select fixture_assert(not learn_quickbooks_payload_variant('Purchase','{"Id":"P1","TotalAmt":1,"EntityRef":{"value":"V1","name":"Old label"}}','{"Id":"P1","TotalAmt":2,"EntityRef":{"value":"V1","name":"New label"}}'),'purchase amount change held');

@@ -1,3 +1,4 @@
+import { LearnImportedCustomers } from "./LearnImportedCustomers";
 import { LearnSlackSource } from "./LearnSlackSource";
 import { useEffect, useState } from "react";
 import { ArrowRight, BriefcaseBusiness, Building2, RefreshCw, Users } from "lucide-react";
@@ -69,6 +70,7 @@ function CardWorkspace({
   actorId: string;
   canEdit: boolean;
 }) {
+  const [imported, setImported] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [kind, setKind] = useState<LearnCardKind>("customer");
@@ -91,9 +93,16 @@ function CardWorkspace({
   const [failed, setFailed] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   useEffect(() => {
+    if (!canEdit) {
+      setImported(false);
+      setSelected(null);
+    }
+  }, [canEdit]);
+  useEffect(() => {
     let active = true;
     setResult(null);
     setFailed(false);
+    if (imported) return () => { active = false; };
     void (async () => {
       try {
         const data = search
@@ -122,7 +131,7 @@ function CardWorkspace({
     return () => {
       active = false;
     };
-  }, [tenantId, kind, group, page, revision, search]);
+  }, [tenantId, kind, group, page, revision, search, imported]);
   const current =
     result?.kind === kind &&
     result.group === group &&
@@ -154,6 +163,7 @@ function CardWorkspace({
             className={kind === value ? "selected" : ""}
             aria-pressed={kind === value}
             onClick={() => {
+              setImported(false);
               setKind(value);
               setGroup("");
               setGroupName("");
@@ -171,6 +181,8 @@ function CardWorkspace({
           </button>
         ))}
       </div>
+      {kind === 'customer' && canEdit && <div className="flex flex-wrap gap-2" aria-label="Customer record views"><button className="cp-secondary" aria-pressed={!imported} onClick={()=>setImported(false)}>Company cards</button><button className="cp-secondary" aria-pressed={imported} onClick={()=>{setSelected(null);setImported(true);}}>Imported customer records</button></div>}
+      {imported && canEdit ? <LearnImportedCustomers tenantId={tenantId} actorId={actorId} onOpenCard={id=>setSelected(id)}/> : <>
       <form
         className="lc-search"
         role="search"
@@ -341,6 +353,7 @@ function CardWorkspace({
           Next
         </button>
       </div>
+      </>}
       <Dialog
         open={!!selected}
         onOpenChange={(open) => {
