@@ -1,0 +1,120 @@
+{
+  "version": "learn-public-slack-observation-release/1",
+  "state": "locally_verified_not_deployed",
+  "project": "tgbnakbxwcqjeimygroz",
+  "source": {
+    "path": "supabase/migrations/20261102190000_learn_public_slack_observation_context.sql",
+    "sha256": "17047281e70605fde9db69df821f5db5528088b5a8b79a447f133c8968e8b932"
+  },
+  "scope": "Allow source-only observe-only learning from retained proven public Slack; preserve unresolved identities, source data, and tenant boundaries. No capture, credential, external action or schedule changes.",
+  "before": [
+    {
+      "signature": "intelligence_select_uningested(uuid,text,integer)",
+      "definition_md5": "8b9fca6f388b599604881b3f9b4c5651",
+      "body_md5": "7c853a1c8f7d5d787f0a26d685406472",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "security_definer": false,
+      "config": [
+        "search_path=pg_catalog"
+      ]
+    },
+    {
+      "signature": "learn_observation_deliver(uuid,uuid,jsonb,jsonb)",
+      "definition_md5": "8424ee4e639b930eac5f0ddb400cdd7e",
+      "body_md5": "3a6cfe0c2b26c56177c187849394a9d3",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "signature": "learn_slack_message_kind(jsonb)",
+      "definition_md5": "c93159306801b19d70bb4b223e49c977",
+      "body_md5": "d59311ec134c3298a0d879452caeffc6",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "security_definer": false,
+      "config": [
+        "search_path=pg_catalog"
+      ]
+    },
+    {
+      "signature": "learn_slack_document_withheld(uuid,jsonb)",
+      "definition_md5": "dcd5606ed5fab4214ce581b4e7f610b8",
+      "body_md5": "1c6a125744cd10f4908c609b6616412c",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=pg_catalog"
+      ]
+    }
+  ],
+  "after": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=pg_catalog"
+      ],
+      "bodyMd5": "a7d5df37fe9fe78f8cf55da5d67a48a5",
+      "signature": "public.intelligence_select_uningested(uuid,text,integer)",
+      "definitionMd5": "be6633660a9470dbfebe92f8099a52f7",
+      "securityDefiner": false
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=pg_catalog, public"
+      ],
+      "bodyMd5": "41fd2e0a95faabec25949cf9b1dbdac3",
+      "signature": "public.learn_observation_deliver(uuid,uuid,jsonb,jsonb)",
+      "definitionMd5": "c164522bddf22b92f79edf533a4b30cc",
+      "securityDefiner": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=pg_catalog",
+        "TimeZone=UTC"
+      ],
+      "bodyMd5": "a6c722aba45bc8290462d9649726fd9c",
+      "signature": "public.learn_public_slack_observation_context(uuid,uuid)",
+      "definitionMd5": "1c67f3afb423b83bc586dc82bdcad953",
+      "securityDefiner": true
+    }
+  ],
+  "files": {
+    "apply.sql": "5226185e32909a7f0d40521dc925a3437964b2873d7f7acb14091a76822f7637",
+    "intelligence_select_uningested.before.sql": "8eb00d7304da5be787f029d25d0951a24d153c41d19b19857decadfd8587c535",
+    "learn_observation_deliver.before.sql": "deeede391b60d4d381b0c54fe0579173c5401e5566f5244ce7808967cc5999b7",
+    "learn_slack_document_withheld.before.sql": "dfec494f9681db7e8997b5229e67d24f17fca4beafde39243d6348984dacb5d4",
+    "learn_slack_message_kind.before.sql": "fb2cfdee7aa643d2556aa0a24eb879c3536acace4ef9367b18d7ba95dc19d1ec",
+    "rollback.sql": "8788d856ef9f984d4d62073faa0f0a3c782db137ecfbc7115147511be50ea0f4"
+  },
+  "runtimePrerequisite": "Build and verify a platform-worker package on each current deployment; no whole-worktree deployment. This schema must precede the worker change. Hosted acceptance remains pending.",
+  "evidence": "docs/operations/evidence/learn-public-slack-observation-local-2026-10-14.json",
+  "runtimeCandidate": {
+    "state": "compiled_with_public_dependency_resolution",
+    "image": "public.ecr.aws/supabase/edge-runtime:v1.74.3",
+    "imageId": "sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c",
+    "sourceClosureSha256": "6327b7096640139cb0f31a08dd7b62badd18c384f891771a734320b5d601e096",
+    "changedFiles": [
+      "_shared/observation_ingest.ts",
+      "_shared/worker_handlers/intelligence_ingest.ts",
+      "_shared/observation_source_context.ts"
+    ],
+    "endpoints": [
+      {
+        "name": "platform-worker",
+        "verifyJwt": false,
+        "eszipSha256": "d2cd53660e670884d5b260badd1be972f8b2630a1544f35a3d5835a62d0e2276"
+      }
+    ]
+  }
+}

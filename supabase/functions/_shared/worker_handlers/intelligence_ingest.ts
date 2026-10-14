@@ -1,8 +1,9 @@
+import { retainedSourceContext } from "../observation_source_context.ts";
 // ServiceOS — Worker handler: intelligence.ingest_interaction
 //
 // The impure shell of the interaction → intelligence bridge. It processes an EXPLICIT,
 // bounded set of interaction ids (never a history sweep), verifies tenant ownership,
-// requires the interaction to be enriched, loads the resolved customer-card + graph
+// requires enrichment or independently proven retained-source context, loads the customer-card + graph
 // context tenant-scoped, and hands everything to the PURE mapper
 // (../observation_ingest.ts) which produces a channel-neutral ObservationDraft. It then
 // ENQUEUES the existing `intelligence.observe` job — it never evaluates a Decision
@@ -119,24 +120,68 @@ export async function handleIntelligenceIngest(
       .in("id", ids)
       .eq("tenant_id", tenantId);
     if (loadError || !Array.isArray(loaded)) throw new Error("interaction_inventory_unconfirmed");
+    // Qualification is read from an authenticated database function, never payload
+    // or source metadata. Recheck it on the second read before ledger/queue work.
+    async function qualify(row: IngestInteraction): Promise<IngestInteraction> {
+      const clean = { ...row, retainedSourceContext: undefined };
+      if (
+        clean.processing_status !== "identity_review" ||
+        clean.source_connector_id !== "slack" ||
+        clean.source_table !== "slack_messages" ||
+        clean.interaction_type !== "slack_message"
+      )
+        return clean;
+      const proof = await db.rpc("learn_public_slack_observation_context", {
+        p_tenant: tenantId,
+        p_interaction: clean.id,
+      });
+      if (proof.error) throw new Error("retained_source_context_unconfirmed");
+      if (proof.data == null) return clean;
+      const qualified = { ...clean, retainedSourceContext: proof.data };
+      if (!retainedSourceContext(qualified)) throw new Error("retained_source_context_changed");
+      return qualified;
+    }
     const rows = loaded as IngestInteraction[];
     if (
       rows.some((row) => row.tenant_id !== tenantId || !ids.includes(row.id)) ||
       new Set(rows.map((row) => row.id)).size !== rows.length
     )
       throw new Error("interaction_inventory_unconfirmed");
+    for (let index = 0; index < rows.length; index++) rows[index] = await qualify(rows[index]);
+    async function loadConfirmed(interactionId: string): Promise<IngestInteraction | null> {
+      const { data, error } = await db
+        .from("interactions")
+        .select(INTERACTION_COLUMNS)
+        .eq("id", interactionId)
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+      if (error) throw new Error("interaction_read_unconfirmed");
+      const fresh = data ? await qualify(data as IngestInteraction) : null;
+      const prior = rows.find((row) => row.id === interactionId)?.retainedSourceContext;
+      if (
+        prior &&
+        (!fresh ||
+          !retainedSourceContext(fresh) ||
+          !retainedSourceContext({ ...fresh, retainedSourceContext: prior }))
+      )
+        throw new Error("retained_source_context_changed");
+      return fresh;
+    }
     const unavailable = ids.filter((id) => !rows.some((row) => row.id === id));
     const waiting = rows.filter((row) => !isEligibleForIngest(row)).map((row) => row.id);
     const eligibility = new Map<string, EligibilityDecision>();
     const eligibleIds: string[] = [];
     let skipped = 0;
     for (const it of rows) {
-      if (!isEligibleForIngest(it)) continue; // lifecycle gate — not enriched yet, leave it
+      if (!isEligibleForIngest(it)) continue; // Leave unresolved, unproven sources untouched.
       const decision = shouldCreateIntelligence(it);
       if (decision.eligible) {
         eligibility.set(it.id, decision);
         eligibleIds.push(it.id);
       } else {
+        // Even a skip is durable: do not acknowledge it after proof withdrawal
+        // or a newer source revision appeared between reads.
+        if (it.retainedSourceContext) await loadConfirmed(it.id);
         await recordSkip(db, tenantId, it.id, mapperVersion, domain, decision);
         skipped += 1;
       }
@@ -144,16 +189,7 @@ export async function handleIntelligenceIngest(
 
     const deps: IngestDeps = {
       // Tenant-scoped load — a cross-tenant id simply returns null (never leaks).
-      loadInteraction: async (interactionId) => {
-        const { data, error } = await db
-          .from("interactions")
-          .select(INTERACTION_COLUMNS)
-          .eq("id", interactionId)
-          .eq("tenant_id", tenantId)
-          .maybeSingle();
-        if (error) throw new Error("interaction_read_unconfirmed");
-        return (data as IngestInteraction | null) ?? null;
-      },
+      loadInteraction: loadConfirmed,
       loadCardContext: async (personId, companyId) => {
         if (!personId && !companyId) return null;
         const filters: string[] = [];
