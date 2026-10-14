@@ -11,6 +11,95 @@ import {
 const tenant = context.tenantId;
 const errorCode = (code) => (e) =>
   e instanceof RecordingBackupError && e.code === code && !e.message.includes("PRIVATE");
+test("opted-in metadata reads retry transport failure with owner binding; writes remain single attempt", async () => {
+  let location = 0;
+  const f = fixture({
+    readAttempts: 3,
+    beforeRequest(req) {
+      if ("location" in (req.query ?? {}) && ++location === 1)
+        throw Object.assign(Error("PRIVATE timeout"), { code: "ETIMEDOUT" });
+      if (req.method === "PUT")
+        throw Object.assign(Error("PRIVATE uncertain write"), { code: "ETIMEDOUT" });
+    },
+  });
+  try {
+    await f.destination.inspect();
+    assert.equal(location, 2);
+    assert.equal(f.destination.recovery().readRequestRetries, 1);
+    assert.ok(
+      f.calls
+        .filter((c) => c.hostname.startsWith("s3."))
+        .every((c) => c.headers["x-amz-expected-bucket-owner"] === context.accountId),
+    );
+    await assert.rejects(backupRecording(f.entry, context, f), errorCode("s3_transport_timeout"));
+    assert.equal(f.calls.filter((c) => c.method === "PUT").length, 1);
+  } finally {
+    f.close();
+  }
+});
+test("persistent metadata transport failure stops after three reads and policy failure never retries", async () => {
+  let calls = 0;
+  const f = fixture({
+    readAttempts: 3,
+    beforeRequest(req) {
+      if ("location" in (req.query ?? {})) {
+        calls++;
+        throw Object.assign(Error("PRIVATE reset"), { code: "ECONNRESET" });
+      }
+    },
+  });
+  try {
+    await assert.rejects(f.destination.inspect(), errorCode("s3_request_unconfirmed"));
+    assert.equal(calls, 3);
+    assert.equal(f.destination.recovery().readRequestRetries, 2);
+    assert.equal(f.calls.filter((c) => c.method === "PUT").length, 0);
+  } finally {
+    f.close();
+  }
+  const policy = fixture({ readAttempts: 3 });
+  policy.invalidPolicy = true;
+  try {
+    await assert.rejects(policy.destination.inspect(), errorCode("s3_policy_unverified"));
+    assert.equal(policy.calls.filter((c) => "policy" in (c.query ?? {})).length, 1);
+    assert.equal(policy.destination.recovery().readRequestRetries, 0);
+  } finally {
+    policy.close();
+  }
+});
+test("journal stream recovery discards partial JSON and checks the same stored version before returning", async () => {
+  const f = fixture({ readAttempts: 3 });
+  try {
+    const copied = await backupRecording(f.entry, context, f),
+      original = f.destination.read;
+    let failures = 1;
+    const versions = [];
+    f.destination.read = async (key, version) => {
+      versions.push(version);
+      if (failures-- > 0)
+        return (async function* () {
+          yield Buffer.from("{");
+          throw new RecordingBackupError("s3_stream_unconfirmed");
+        })();
+      return original(key, version);
+    };
+    const puts = f.calls.filter((c) => c.method === "PUT").length;
+    const loaded = await f.journal.load(copied.receipt.identity);
+    assert.deepEqual(loaded, copied.receipt);
+    assert.equal(versions.length, 2);
+    assert.equal(new Set(versions).size, 1);
+    assert.equal(f.destination.recovery().journalReadRetries, 1);
+    assert.equal(f.calls.filter((c) => c.method === "PUT").length, puts);
+    f.corrupt = true;
+    versions.length = 0;
+    await assert.rejects(
+      f.journal.load(copied.receipt.identity),
+      errorCode("s3_journal_digest_mismatch"),
+    );
+    assert.equal(versions.length, 1);
+  } finally {
+    f.close();
+  }
+});
 test("official SDK signed requests copy audio, persist encrypted receipts/manifests and restore exact bytes", async () => {
   const f = fixture();
   try {

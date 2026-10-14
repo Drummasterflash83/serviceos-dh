@@ -73,10 +73,21 @@ export function createDatabaseS3(options = {}) {
 function createPrivateS3(
   context,
   MAX_BYTES,
-  { credentials, requestHandler, now = Date.now, expectedPrincipalArn, signal } = {},
+  {
+    credentials,
+    requestHandler,
+    now = Date.now,
+    expectedPrincipalArn,
+    signal,
+    readAttempts = 1,
+  } = {},
   objectTransferMs = 120000,
 ) {
   requireValue(typeof credentials === "function", "s3_credentials_provider_required");
+  requireValue(
+    Number.isInteger(readAttempts) && readAttempts >= 1 && readAttempts <= 3,
+    "s3_read_attempts_invalid",
+  );
   const abortAfter = (ms) =>
     signal ? AbortSignal.any([signal, AbortSignal.timeout(ms)]) : AbortSignal.timeout(ms);
   const options = {
@@ -99,6 +110,23 @@ function createPrivateS3(
   const sts = new STSClient({ ...options, endpoint: "https://sts.eu-west-2.amazonaws.com" });
   const bucket = { Bucket: context.bucket, ExpectedBucketOwner: context.accountId };
   let inspectedAt = null;
+  let readRequestRetries = 0,
+    journalReadRetries = 0;
+  const readCommands = new Set([
+    S3.GetBucketLocationCommand,
+    S3.GetPublicAccessBlockCommand,
+    S3.GetBucketOwnershipControlsCommand,
+    S3.GetBucketVersioningCommand,
+    S3.GetBucketEncryptionCommand,
+    S3.GetObjectLockConfigurationCommand,
+    S3.GetBucketPolicyCommand,
+    S3.ListObjectsV2Command,
+    S3.HeadObjectCommand,
+    S3.GetObjectCommand,
+  ]);
+  const transportFailure = (e) =>
+    ["TimeoutError", "RequestTimeout"].includes(e?.name) ||
+    ["ETIMEDOUT", "ESOCKETTIMEDOUT", "ECONNRESET", "EPIPE"].includes(e?.code);
   const keyValid = (key) => {
     requireValue(typeof key === "string" && key.startsWith(context.prefix), "s3_key_outside_scope");
     const suffix = key.slice(context.prefix.length);
@@ -121,19 +149,25 @@ function createPrivateS3(
   const send = async (Command, input, timeoutMs = 120000) => {
     const deadline = AbortSignal.timeout(timeoutMs);
     const abortSignal = signal ? AbortSignal.any([signal, deadline]) : deadline;
-    try {
-      return await s3.send(new Command({ ...bucket, ...input }), { abortSignal });
-    } catch (error) {
-      // These fixed codes retain useful failure classification without exposing
-      // keys, headers, credentials, response bodies or SDK exception messages.
-      if (signal?.aborted) throw new RecordingBackupError("s3_request_cancelled");
-      if (deadline.aborted) throw new RecordingBackupError("s3_request_deadline_exceeded");
-      if (
-        ["TimeoutError", "RequestTimeout"].includes(error?.name) ||
-        ["ETIMEDOUT", "ESOCKETTIMEDOUT"].includes(error?.code)
-      )
-        throw new RecordingBackupError("s3_transport_timeout");
-      throw error;
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await s3.send(new Command({ ...bucket, ...input }), { abortSignal });
+      } catch (error) {
+        // These fixed codes retain useful failure classification without exposing
+        // keys, headers, credentials, response bodies or SDK exception messages.
+        if (signal?.aborted) throw new RecordingBackupError("s3_request_cancelled");
+        if (deadline.aborted) throw new RecordingBackupError("s3_request_deadline_exceeded");
+        if (readCommands.has(Command) && transportFailure(error) && attempt < readAttempts) {
+          readRequestRetries++;
+          continue;
+        }
+        if (
+          ["TimeoutError", "RequestTimeout"].includes(error?.name) ||
+          ["ETIMEDOUT", "ESOCKETTIMEDOUT"].includes(error?.code)
+        )
+          throw new RecordingBackupError("s3_transport_timeout");
+        throw error;
+      }
     }
   };
   const inspect = () =>
@@ -380,12 +414,13 @@ function createPrivateS3(
     });
   const destination = {
     inspect,
+    recovery: () => ({ readRequestRetries, journalReadRetries }),
     find,
     version: (key, id) => head(key, id),
     read,
     put,
   };
-  async function loadJson(key) {
+  async function loadJsonOnce(key) {
     const version = await destination.find(key);
     if (!version) return null;
     requireValue(version.size <= MAX_JSON, "s3_journal_too_large");
@@ -394,6 +429,22 @@ function createPrivateS3(
     const bytes = Buffer.concat(chunks);
     requireValue(sha(bytes) === version.sha256, "s3_journal_digest_mismatch");
     return JSON.parse(bytes.toString("utf8"));
+  }
+  async function loadJson(key) {
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await loadJsonOnce(key);
+      } catch (e) {
+        if (
+          signal?.aborted ||
+          attempt >= readAttempts ||
+          !(e instanceof RecordingBackupError) ||
+          !["s3_transport_timeout", "s3_stream_timeout", "s3_stream_unconfirmed"].includes(e.code)
+        )
+          throw e;
+        journalReadRetries++;
+      }
+    }
   }
   async function saveJson(key, value) {
     const prior = await loadJson(key);

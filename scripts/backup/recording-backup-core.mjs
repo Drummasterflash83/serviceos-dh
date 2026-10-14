@@ -171,16 +171,27 @@ function privateReceipt(receipt, entry, context) {
   );
   return receipt;
 }
-async function verifyVersion(receipt, entry, context, destination, now) {
+async function verifyVersion(receipt, entry, context, destination, now, { attempts = 1, signal, onRetry } = {}) {
   privateReceipt(receipt, entry, context);
-  const version = await destination.version(receipt.key, receipt.versionId);
-  checkVersion(version, receipt.key, receipt.sha256, entry.size, now());
-  requireValue(version.versionId === receipt.versionId, "destination_version_unverified");
-  const actual = await hashStream(
-    await destination.read(receipt.key, receipt.versionId),
-    entry.size,
-  );
-  requireValue(actual === receipt.sha256, "destination_digest_mismatch");
+  requireValue(Number.isInteger(attempts) && attempts >= 1 && attempts <= 3, 'verification_read_attempts_invalid');
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    if (signal?.aborted) throw new RecordingBackupError('runner_cancelled');
+    try {
+      const version = await destination.version(receipt.key, receipt.versionId);
+      checkVersion(version, receipt.key, receipt.sha256, entry.size, now());
+      requireValue(version.versionId === receipt.versionId, "destination_version_unverified");
+      // Every retry starts a new complete hash of the same immutable version.
+      // No partial chunks, changed versions or earlier digest may be reused.
+      const actual = await hashStream(await destination.read(receipt.key, receipt.versionId), entry.size);
+      if (signal?.aborted) throw new RecordingBackupError('runner_cancelled');
+      requireValue(actual === receipt.sha256, "destination_digest_mismatch");
+      return;
+    } catch (e) {
+      if (signal?.aborted) throw new RecordingBackupError('runner_cancelled');
+      if (!(e instanceof RecordingBackupError) || !['s3_transport_timeout','s3_stream_timeout','s3_stream_unconfirmed'].includes(e.code) || attempt === attempts || signal?.aborted) throw e;
+      onRetry?.({ attempt, code: e.code });
+    }
+  }
 }
 /** One object per call. The journal is durable, private and create-only; a lost
  * upload or receipt acknowledgement is recovered on a later invocation, not
@@ -188,10 +199,13 @@ async function verifyVersion(receipt, entry, context, destination, now) {
 export async function backupRecording(
   input,
   binding,
-  { source, destination, journal, now = Date.now },
+  { source, destination, journal, now = Date.now, verificationReadAttempts = 1, signal, onVerificationReadRetry },
 ) {
   let directory;
   try {
+    requireValue(Number.isInteger(verificationReadAttempts) && verificationReadAttempts >= 1 && verificationReadAttempts <= 3, 'verification_read_attempts_invalid');
+    const readOptions = { attempts: verificationReadAttempts, signal, onRetry: onVerificationReadRetry };
+    if (signal?.aborted) throw new RecordingBackupError('runner_cancelled');
     const entry = recordingIdentity(input),
       context = recordingContext(binding);
     requireValue(entry.tenantId === context.tenantId, "foreign_tenant");
@@ -200,7 +214,7 @@ export async function backupRecording(
     const identity = sourceDigest(entry, context);
     const existing = await journal.load(identity);
     if (existing) {
-      await verifyVersion(existing, entry, context, destination, now);
+      await verifyVersion(existing, entry, context, destination, now, readOptions);
       await unchanged(entry, source);
       return {
         state: "verified",
@@ -253,7 +267,7 @@ export async function backupRecording(
       sha256,
       verifiedAt: new Date(now()).toISOString(),
     };
-    await verifyVersion(receipt, entry, context, destination, now);
+    await verifyVersion(receipt, entry, context, destination, now, readOptions);
     await unchanged(entry, source);
     const persisted = await journal.saveIfAbsent(identity, structuredClone(receipt));
     privateReceipt(persisted, entry, context);
@@ -343,10 +357,11 @@ export async function restoreRecording(receipt, binding, { destination, now = Da
 export async function finalizeRecordingInventory(
   input,
   binding,
-  { source, destination, journal, now = Date.now, verificationConcurrency = 1, signal, onProgress },
+  { source, destination, journal, now = Date.now, verificationConcurrency = 1, verificationReadAttempts = 1, signal, onProgress, onVerificationReadRetry },
 ) {
   try {
     requireValue(Number.isInteger(verificationConcurrency) && verificationConcurrency >= 1 && verificationConcurrency <= 4, 'verification_concurrency_invalid');
+    requireValue(Number.isInteger(verificationReadAttempts) && verificationReadAttempts >= 1 && verificationReadAttempts <= 3, 'verification_read_attempts_invalid');
     // Bound network/stream use and drain active workers on any failure. Never
     // publish a partial manifest or let checks continue beyond the runner lock.
     const verifyAll = async (entries, phase, verify) => {
@@ -420,7 +435,7 @@ export async function finalizeRecordingInventory(
     await verifyAll(entries,'destination_bytes',async(entry,i)=>{
       if (!prior) await unchanged(entry, source);
       const receipt = prior ? prior.objects[i] : await journal.load(sourceDigest(entry, context));
-      await verifyVersion(receipt, entry, context, destination, now);
+      await verifyVersion(receipt, entry, context, destination, now, { attempts: verificationReadAttempts, signal, onRetry: onVerificationReadRetry });
       receipts[i]=structuredClone(receipt);
     });
     // Receipt recovery retains its original time/coverage even if source objects

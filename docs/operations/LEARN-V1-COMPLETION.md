@@ -25,10 +25,11 @@ override a later release observation. No requirement is silently deferred.
 
 ### Needs finishing
 
-- The first manual backup stopped on an AWS timeout after a stable inventory.
-  The destination's safety checks subsequently passed; receipt-based recovery
-  remains in progress. A newer manifest or dependable unattended operation is
-  not established by starting that run.
+- Two manual backups stopped on AWS request/stream failures. The destination's
+  safety checks passed. Bounded read-only recovery now passes all 137 backup
+  checks; partial streams cannot bypass complete version/byte verification and
+  uploads remain single-attempt. A third manual invocation is active; no fresh
+  successful aggregate or dependable unattended operation is yet claimed.
 - The remaining V1 families in the Build 01 receipt stay incomplete. Authorised
   private Slack channels retain their separate source/visibility acceptance;
   the public browser does not remove that requirement. DMs remain deferred.

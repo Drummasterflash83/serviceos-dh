@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { dailyRecordingCycle, recordingBackupHealth } from "./recording-backup-daily.mjs";
 import { fixture, context, time } from "./test-support/s3-fixture.mjs";
+import { RecordingBackupError } from "./recording-backup-core.mjs";
 const id = (n) => "00000000-0000-4000-8000-" + String(n).padStart(12, "0");
 const inventory = (f, n = 10) => ({
   contract: "recording-inventory/1",
@@ -12,6 +13,110 @@ const inventory = (f, n = 10) => ({
   listingComplete: true,
   sourceSnapshot: "non_atomic",
   objects: [{ ...f.entry, sourceKey: context.tenantId + "/call.wav" }],
+});
+test("interrupted verification restarts a complete hash of the same version without recopying audio", async () => {
+  const f = fixture(),
+    input = inventory(f);
+  f.source.metadata = async () => structuredClone(input.objects[0]);
+  try {
+    await dailyRecordingCycle(input, context, f);
+    const original = f.destination.read,
+      versions = [];
+    let interruptions = 1;
+    f.destination.read = async (key, version) => {
+      if (key.includes("/objects/")) {
+        versions.push(version);
+        if (interruptions-- > 0)
+          return (async function* () {
+            yield f.bytes.subarray(0, 4);
+            throw new RecordingBackupError("s3_stream_unconfirmed");
+          })();
+      }
+      return original(key, version);
+    };
+    const puts = f.calls.filter((c) => c.method === "PUT").length;
+    const result = await dailyRecordingCycle(inventory(f, 11), context, f);
+    assert.equal(result.newObjectsCopied, 0);
+    assert.equal(result.readRecovery.verificationReadRetries, 1);
+    assert.equal(versions.length, 2);
+    assert.equal(new Set(versions).size, 1);
+    assert.equal(
+      f.calls.filter((c) => c.method === "PUT").length,
+      puts + 1,
+      "only the new complete manifest is written",
+    );
+  } finally {
+    f.close();
+  }
+});
+test("persistent interrupted reads exhaust three attempts without a manifest; bad digests are never retried", async () => {
+  for (const corrupt of [false, true]) {
+    const f = fixture(),
+      input = inventory(f);
+    f.source.metadata = async () => structuredClone(input.objects[0]);
+    try {
+      await dailyRecordingCycle(input, context, f);
+      const original = f.destination.read;
+      let reads = 0;
+      f.destination.read = async (key, version) => {
+        if (!key.includes("/objects/")) return original(key, version);
+        reads++;
+        return (async function* () {
+          if (corrupt) yield Buffer.alloc(f.bytes.length, 1);
+          else {
+            yield f.bytes.subarray(0, 4);
+            throw new RecordingBackupError("s3_stream_unconfirmed");
+          }
+        })();
+      };
+      const puts = f.calls.filter((c) => c.method === "PUT").length;
+      await assert.rejects(dailyRecordingCycle(inventory(f, 11), context, f), {
+        code: corrupt ? "destination_digest_mismatch" : "s3_stream_unconfirmed",
+      });
+      assert.equal(reads, corrupt ? 1 : 3);
+      assert.equal(f.calls.filter((c) => c.method === "PUT").length, puts);
+    } finally {
+      f.close();
+    }
+  }
+});
+test("read recovery still rejects a changed source and stops on cancellation", async () => {
+  for (const cancel of [false, true]) {
+    const f = fixture(),
+      input = inventory(f),
+      controller = new AbortController();
+    let changed = false;
+    f.source.metadata = async () => ({
+      ...input.objects[0],
+      ...(changed ? { sourceVersion: "changed" } : {}),
+    });
+    try {
+      await dailyRecordingCycle(input, context, f);
+      const original = f.destination.read;
+      let reads = 0;
+      f.destination.read = async (key, version) => {
+        if (!key.includes("/objects/")) return original(key, version);
+        reads++;
+        if (reads === 1)
+          return (async function* () {
+            yield f.bytes.subarray(0, 4);
+            if (cancel) controller.abort();
+            else changed = true;
+            throw new RecordingBackupError("s3_stream_unconfirmed");
+          })();
+        return original(key, version);
+      };
+      const puts = f.calls.filter((c) => c.method === "PUT").length;
+      await assert.rejects(
+        dailyRecordingCycle(inventory(f, 11), context, f, { signal: controller.signal }),
+        { code: cancel ? "runner_cancelled" : "source_changed" },
+      );
+      assert.equal(reads, cancel ? 1 : 2);
+      assert.equal(f.calls.filter((c) => c.method === "PUT").length, puts);
+    } finally {
+      f.close();
+    }
+  }
 });
 test("two daily inventories reuse audio once but verify it again before fresh manifest", async () => {
   const f = fixture();

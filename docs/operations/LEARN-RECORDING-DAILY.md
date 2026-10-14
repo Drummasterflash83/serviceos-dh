@@ -1,5 +1,24 @@
 # Drummonds daily recording backup operations
 
+**14 October, 12:20 UTC — interrupted-read recovery verified locally:** the second
+manual invocation stopped at 12:13:14 UTC with `s3_stream_unconfirmed`. It saved no
+fresh successful aggregate. The communication runtime now opts into at most three
+attempts for transient read-only AWS requests. Interrupted journal reads discard
+partial JSON; byte verification restarts a fresh complete hash of the same pinned
+version. Policy, account, identity, version, size and digest failures are not retried.
+Writes remain single-attempt; uncertain uploads still stop for later readback.
+Per-command deadlines and the whole run's original one-hour/other bounds remain.
+Successful results retain separate request, journal and verification-read retry counts.
+
+All **137 backup checks** pass, including SDK-signed owner binding, same-version
+recovery after partial streams, persistent failure, corruption without retry,
+changed source, cancellation, lost write acknowledgements, manifests and restores.
+A third manually initiated invocation of the same supervisor is active with phase
+progress logged. The two earlier terminal failures remain private; the previous
+successful aggregate remains authoritative until a complete new result is verified.
+This is not an unattended working-day acceptance or a new scheduled service.
+
+
 **14 October — bounded recovery of changing inventories:** the existing daily
 runner now makes at most three complete inventory observations when the exact
 `source_inventory_changed` guard fires. Each attempt is journalled. The same lease,
@@ -13,8 +32,8 @@ A manual combined run at 11:35 UTC obtained a stable inventory, then stopped on
 `s3_transport_timeout` at 11:40:32 UTC. Its terminal result and failure journal are
 retained. Read-only inspection subsequently verified the existing destination's
 account/privacy/encryption/retention/write safeguards. Recovery started at 11:59:23
-UTC using the same approved runner and receipt protocol. It is still in progress;
-no fresh backup success or unattended operation is claimed. The existing schedule
+UTC using the same approved runner and receipt protocol. Its terminal stream failure is recorded above;
+no fresh backup success or unattended operation is claimed by that invocation. The existing schedule
 was not changed and no second runner was created.
 [Current Build 01 follow-up](evidence/learn-build01-followup-2026-10-14.json).
 

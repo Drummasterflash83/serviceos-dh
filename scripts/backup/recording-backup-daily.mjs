@@ -53,6 +53,15 @@ export async function dailyRecordingCycle(
     "daily_limits_invalid",
   );
   const entries = input.objects.map(recordingIdentity);
+  let verificationReadRetries = 0;
+  const verificationPorts = {
+    ...ports,
+    signal,
+    verificationReadAttempts: 3,
+    onVerificationReadRetry: () => {
+      verificationReadRetries++;
+    },
+  };
   check(
     entries.every(
       (e) => e.tenantId === context.tenantId && e.sourceKey.startsWith(context.tenantId + "/"),
@@ -94,13 +103,13 @@ export async function dailyRecordingCycle(
   let copied = 0,
     recovered = 0;
   await bounded(missing, "new_recordings", async (e) => {
-    const r = await backupRecording(e, context, ports);
+    const r = await backupRecording(e, context, verificationPorts);
     if (r.recovered) recovered++;
     else copied++;
   });
   check(!signal?.aborted, "daily_cancelled");
   const final = await finalizeRecordingInventory(input, context, {
-    ...ports,
+    ...verificationPorts,
     signal,
     onProgress,
     verificationConcurrency: concurrency,
@@ -121,6 +130,7 @@ export async function dailyRecordingCycle(
     recoveredManifest: final.recovered,
     coverage: final.manifest.coverage,
     sourceSnapshot: "non_atomic",
+    readRecovery: { verificationReadRetries, ...(ports.destination.recovery?.() ?? {}) },
     playback: "not_verified",
     databaseRestore: "not_verified",
     backupComplete: false,

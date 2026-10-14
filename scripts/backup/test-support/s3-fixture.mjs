@@ -18,7 +18,13 @@ const recordingFixtureContext = context;
 const sha = (b) => createHash("sha256").update(b).digest("hex");
 const xml = (root, body) =>
   `<${root} xmlns="http://s3.amazonaws.com/doc/2006-03-01/">${body}</${root}>`;
-export function fixture({ expectedPrincipalArn, audioBytes, database = false } = {}) {
+export function fixture({
+  expectedPrincipalArn,
+  audioBytes,
+  database = false,
+  beforeRequest,
+  readAttempts,
+} = {}) {
   const context = database ? databaseBackupBinding : recordingFixtureContext;
   const databasePrincipal =
     "arn:aws:iam::235099643372:user/serviceos/database-backup/synthetic-writer";
@@ -65,6 +71,7 @@ export function fixture({ expectedPrincipalArn, audioBytes, database = false } =
     destroy() {},
     async handle(req) {
       calls.push(req);
+      await beforeRequest?.(req);
       assert.equal(req.protocol, "https:");
       assert.ok(
         req.headers.authorization.startsWith("AWS4-HMAC-SHA256 "),
@@ -180,6 +187,7 @@ export function fixture({ expectedPrincipalArn, audioBytes, database = false } =
     },
   };
   const options = {
+    ...(readAttempts === undefined ? {} : { readAttempts }),
     credentials: async () => ({ accessKeyId: "SYNTHETIC", secretAccessKey: "SYNTHETIC" }),
     requestHandler: handler,
     expectedPrincipalArn: expectedPrincipalArn ?? (database ? databasePrincipal : undefined),

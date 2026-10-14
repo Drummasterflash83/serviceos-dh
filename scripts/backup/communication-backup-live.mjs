@@ -78,6 +78,7 @@ export async function createLiveCommunicationSession(signal, budget) {
           ? createRecordingSource(binding, options)
           : createVoicemailSource(binding, bucket, options);
       const destination = createRecordingS3(binding, {
+        readAttempts: 3,
         credentials: async () => ({
           accessKeyId: writer.accessKeyId,
           secretAccessKey: writer.secretAccessKey,

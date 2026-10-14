@@ -83,10 +83,15 @@
     "focusedTests": 30,
     "firstManualRun": "Stable inventory then s3_transport_timeout; previous successful backup preserved.",
     "destinationReadback": "Existing account/privacy/encryption/retention/conditional-write safeguards subsequently passed in read-only inspection.",
-    "recoveryRun": "In progress under original execution handle; no fresh success claimed.",
+    "recoveryRun": "Second manual invocation failed s3_stream_unconfirmed at 12:13:14 UTC; third manual invocation is active with the verified bounded read-recovery change. No fresh manifest claimed.",
     "unattendedAcceptance": false,
     "scheduleChanged": false,
-    "newRunnerCreated": false
+    "newRunnerCreated": false,
+    "allBackupTests": 137,
+    "readRecovery": "Fixed communication runtime opts into at most three read attempts for transient read transport failures. Interrupted JSON and byte verification start afresh against the same immutable version and recheck full size/hash. Retries are counted.",
+    "writeRecovery": "No automatic upload retry; unknown writes still stop for receipt/readback recovery.",
+    "byteAndAccessFailurePolicy": "Corrupt bytes, changed source/version, rejected access/policy, cancellation and persistent failures cannot publish a manifest.",
+    "globalLimits": "Existing lock, one-hour deadline, source-request/new-object/byte budgets and four-operation bound remain."
   },
   "broaderV1": "Still incomplete; no later numbered build activated."
 }
