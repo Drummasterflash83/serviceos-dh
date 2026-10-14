@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { customerJobBrief, visibleCustomerJobBrief } from "./learn-card-job-brief.ts";
+import {
+  customerJobBrief,
+  visibleCustomerJobBrief,
+  visibleJobRecordBrief,
+} from "./learn-card-job-brief.ts";
 import type { BusinessContextPage } from "./learn-customer-business-context.ts";
 const observed = "2026-10-14T00:00:00Z";
 const page = (
@@ -80,4 +84,65 @@ test("tenant, actor, customer and refresh scope changes hide a previous job summ
   assert.equal(visibleCustomerJobBrief(value, scope, now + 60000), null);
   assert.equal(visibleCustomerJobBrief(null, scope, now), null);
   assert.equal(visibleCustomerJobBrief(value, scope, NaN), null);
+});
+
+import { projectLearnDetail } from "./learn-cards.ts";
+const ownJob = (status: unknown, verified = false) =>
+  projectLearnDetail({
+    tenant: "11111111-1111-4111-8111-111111111111",
+    kind: "job",
+    record: {
+      id: "22222222-2222-4222-8222-222222222222",
+      tenant_id: "11111111-1111-4111-8111-111111111111",
+      title: "012. Example job",
+      job_number: "001",
+      status,
+      verified,
+      completed_date: null,
+    },
+    findings: [],
+    interactions: [],
+    members: [],
+    now: Date.parse(observed),
+  });
+test("own completed job remains completed with no confirmed date or verification", () => {
+  const data = ownJob("completed");
+  assert.deepEqual(data.jobRecord, { status: "completed", verified: false });
+  const brief = visibleJobRecordBrief(data, Date.parse(observed));
+  assert.equal(brief?.headline, "Job recorded complete");
+  assert.equal(brief?.verification, "Job record awaits verification.");
+  assert.equal(data.card.subtitle, "001");
+  assert.match(brief!.qualification, /does not establish payment or a completion time/);
+});
+test("own status preserves open, pending, held and closed without claiming completion", () => {
+  for (const [status, label] of [
+    ["open", "open"],
+    ["pending", "pending"],
+    ["on_hold", "on hold"],
+    ["closed", "closed"],
+  ]) {
+    assert.equal(
+      visibleJobRecordBrief(ownJob(status, true), Date.parse(observed))?.headline,
+      `Job recorded as ${label}`,
+    );
+  }
+  for (const status of [null, "cancelled", "constructor", "COMPLETED", {}, 1]) {
+    assert.equal(
+      visibleJobRecordBrief(ownJob(status, true), Date.parse(observed))?.headline,
+      "Job status needs confirmation",
+    );
+  }
+});
+test("expired, malformed and non-job reads never supply an own-job status", () => {
+  const data = ownJob("completed");
+  const now = Date.parse(observed);
+  for (const time of [now + 60000, now - 1, NaN])
+    assert.equal(visibleJobRecordBrief(data, time), null);
+  assert.equal(visibleJobRecordBrief({ ...data, validUntil: "bad" }, now), null);
+  assert.equal(visibleJobRecordBrief({ ...data, observedAt: "bad" }, now), null);
+  assert.equal(
+    visibleJobRecordBrief({ ...data, card: { ...data.card, kind: "customer" } }, now),
+    null,
+  );
+  assert.equal(visibleJobRecordBrief({ ...data, jobRecord: undefined }, now), null);
 });

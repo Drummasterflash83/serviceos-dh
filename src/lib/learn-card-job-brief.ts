@@ -1,3 +1,4 @@
+import type { LearnCardDetail } from "./learn-cards.ts";
 import type { BusinessContextPage } from "./learn-customer-business-context.ts";
 
 /** Published canonical statuses only. Neither a completion date, title, missing
@@ -36,4 +37,37 @@ export function visibleCustomerJobBrief(
     now >= Date.parse(value.brief.observedAt) - 60000
     ? value.brief
     : null;
+}
+
+/** Own-job status uses the same scoped, expiring read as its evidence. Never
+ * infer completion from dates, descriptions, type codes or a verified flag. */
+export function visibleJobRecordBrief(data: LearnCardDetail | null, now: number) {
+  if (
+    !data ||
+    data.card.kind !== "job" ||
+    !data.jobRecord ||
+    !Number.isFinite(now) ||
+    now >= Date.parse(data.validUntil) ||
+    now < Date.parse(data.observedAt) ||
+    !Number.isFinite(Date.parse(data.validUntil)) ||
+    !Number.isFinite(Date.parse(data.observedAt))
+  )
+    return null;
+  const labels: Record<string, string> = {
+    completed: "Job recorded complete",
+    open: "Job recorded as open",
+    pending: "Job recorded as pending",
+    on_hold: "Job recorded as on hold",
+    closed: "Job recorded as closed",
+  };
+  return {
+    headline: Object.hasOwn(labels, data.jobRecord.status ?? "")
+      ? labels[data.jobRecord.status!]
+      : "Job status needs confirmation",
+    verification: data.jobRecord.verified
+      ? "Verified job record."
+      : "Job record awaits verification.",
+    qualification:
+      "Recorded status does not establish payment or a completion time. It may lag the provider.",
+  };
 }
