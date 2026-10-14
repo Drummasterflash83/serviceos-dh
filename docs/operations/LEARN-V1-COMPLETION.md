@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+
+**14 October, 01:52 BST — ordered projection repair installed; Slack learning mode mismatch confirmed.**
+
+- The earlier selector repair did not clear production acceptance: the original job
+  exhausted its fifth attempt at 00:45 UTC, with another SQLSTATE 57014 cancellation
+  in the pending selector. Its terminal receipt is retained, not restarted.
+- The second repair takes the first eligible batch from each source in indexed
+  occurrence order before merging. Twenty-five exact-selection cases pass on 36,500
+  synthetic emails, including tied timestamps, fallback dates, drafts, review holds,
+  current phone versions and tenant isolation. The early eligible batch visits 20
+  email rows and measured 0.067 s versus 2.546 s for the original query locally.
+- Hosted TEST full-schema rehearsal preserved existing selections and source hashes
+  and restored the original function/index state. Exact guarded patch/rollback,
+  wrong-target rejection and late-failure rollback passed offline. TEST and LIVE
+  installations at 00:50 UTC verify the function and both indexes, with unchanged
+  authority. No source records, schedules, credentials or permissions were changed.
+- The scheduler's new projection job is queued with zero attempts at 00:51 UTC.
+  Its eventual result is required before claiming production performance acceptance.
+  A mostly current or held inventory may still require scanning for eligible work.
+- All four reviewed Slack messages now have durable ingestion ledgers. The first
+  observation was held by `learn_observation_mode_review`; three remain queued.
+  The actual tenant override is `assisted`, while this LEARN handler requires an
+  observe-only result. Links and source hashes remain intact. No mode configuration
+  was altered and no new observation or AI finding is claimed. Resolve the LEARN-only
+  observation constraint without silently changing other modules' autonomy.
+- Capture continues: 15,599 Slack sources at 00:48 UTC; 18/20 active and 122/160
+  archived channel windows complete. Commusoft has checked 398/871 site-contact
+  targets after all 1,552 customer-contact targets; the full-cycle watermark remains
+  unchanged. Broader publication, matching, scoring and operational acceptance stay open.
+
+[Ordered projection evidence](evidence/learn-projection-ordered-selection-live-2026-10-14.json).
+
+
 **14 October, 01:41 BST — projection selection repair installed in TEST and LIVE; runtime acceptance pending.**
 
 - The existing production projection job is retrying with inventory unconfirmed;

@@ -1,7 +1,7 @@
 {
   "version": "learn-projection-selection-release/1",
   "project": "tgbnakbxwcqjeimygroz",
-  "state": "installed_runtime_acceptance_pending",
+  "state": "superseded_after_runtime_cancellation",
   "source": {
     "path": "supabase/migrations/20261102100000_learn_projection_selection_work.sql",
     "sha256": "a38809a3ee8495bb131884558bd1c16703a8ab5c7adec7d9467d8869f60dc1df"
@@ -42,5 +42,6 @@
     "Synthetic timings do not prove the production timeout resolved.",
     "Current identity review holds still stop continuation and require separate work.",
     "Retained data preservation and scheduled production runtime acceptance remain required."
-  ]
+  ],
+  "supersededBy": "projection-selection-v2"
 }

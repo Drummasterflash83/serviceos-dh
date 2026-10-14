@@ -1,8 +1,9 @@
 """Offline selector equivalence and volume regression; synthetic sources only."""
-import json,subprocess,time,uuid
+import json,subprocess,time,uuid,sys
 from pathlib import Path
 root=Path(__file__).resolve().parents[2]
 base=root
+ordered='--ordered' in sys.argv
 def source(p):return (root/p).read_text()
 def function_sql(text,name):
  start=text.index('create '+('or replace function ' if 'create or replace function '+name in text else 'function ')+name)
@@ -29,7 +30,7 @@ try:
  sql("alter function learn_projection_revision(jsonb,text) called on null input;alter function phone_projection_version(uuid,uuid) set search_path=pg_catalog,public;")
  original=function_sql(drafts,'public.learn_projection_pending');sql(original)
  sql("create role anon;create role authenticated;create role service_role;revoke all on function learn_projection_pending(uuid,text,integer) from public;grant execute on function learn_projection_pending(uuid,text,integer) to service_role;")
- candidate=source('supabase/migrations/20261102100000_learn_projection_selection_work.sql')
+ candidate=source('supabase/migrations/20261102110000_learn_projection_ordered_selection.sql' if ordered else 'supabase/migrations/20261102100000_learn_projection_selection_work.sql')
  original_catalog=sql("select json_build_array(proowner,proacl,prosecdef,proconfig) from pg_proc where oid='learn_projection_pending(uuid,text,integer)'::regprocedure")
  sql("""insert into tenants values('00000000-0000-4000-8000-000000000001','active');insert into email_messages select md5(n::text)::uuid,'00000000-0000-4000-8000-000000000001','gmail',n::text,null,'inbound','2026-01-01'::timestamptz+n*interval '1 minute',null,'2026-01-01','Synthetic','Synthetic snippet','customer@example.invalid','Synthetic Customer','[]','[]',jsonb_build_object('body',repeat('synthetic payload ',800)),repeat('synthetic body ',800),repeat('<p>synthetic</p>',800),null from generate_series(1,36500)n;insert into interactions select m.id,m.tenant_id,'email_messages',m.id,jsonb_build_object('source_projection',jsonb_build_object('revision',learn_projection_revision(learn_email_source_fields(m),''))),null from email_messages m;update email_messages set snippet='changed' where provider_message_id='36000';analyze;""")
  # Missing projection markers reflect the currently retained legacy inventory.
@@ -37,10 +38,20 @@ try:
  results=[]
  def select(which='all',limit='20',tenant='00000000-0000-4000-8000-000000000001'):
   return json.loads(sql(f"set statement_timeout='20s';select coalesce(jsonb_agg(x),'[]') from learn_projection_pending('{tenant}',{which if which=='null' else chr(39)+which+chr(39)},{limit})x;"))
- for label,definition in [('original',original),('bounded_fingerprint',candidate)]:
+ for label,definition in [('original',original),('ordered_selection' if ordered else 'bounded_fingerprint',candidate)]:
   sql(definition)
   start=time.monotonic();rows=select()
   results.append({'variant':label,'seconds':round(time.monotonic()-start,3),'rows':rows})
+ if ordered:
+  start=candidate.index('return query ')+len('return query ')
+  selection=candidate[start:candidate.index('\nend$$;',start)].replace('p_tenant',"'00000000-0000-4000-8000-000000000001'::uuid").replace('p_source',"'all'::text").replace('p_limit','20')
+  plan=json.loads(sql('explain(analyze,buffers,format json) '+selection))
+  def nodes(node):
+   yield node
+   for child in node.get('Plans',[]):yield from nodes(child)
+  scans=[n for n in nodes(plan[0]['Plan']) if n.get('Index Name')=='learn_email_projection_order_idx']
+  assert scans and sum(n['Actual Rows']*n['Actual Loops'] for n in scans)<=40, 'Early eligible batch must use ordered source index'
+  results[1]['orderedEmailRowsVisited']=sum(n['Actual Rows']*n['Actual Loops'] for n in scans)
  assert results[0]['rows']==results[1]['rows'] and len(results[1]['rows'])==20
  assert sql("select json_build_array(proowner,proacl,prosecdef,proconfig) from pg_proc where oid='learn_projection_pending(uuid,text,integer)'::regprocedure")==original_catalog
  # Baseline alias exists only inside this disposable synthetic database.
@@ -84,6 +95,14 @@ try:
  # An updated authoritative phone insight re-enters selection with its new revision.
  sql("insert into phone_ai_insights select gen_random_uuid(),tenant_id,id,'new insight','neutral',now() from phone_calls where provider_call_id='2';")
  assert len(select('phone'))==2
+ # Ties across input kinds, timestamp fallbacks and limits must preserve the
+ # exact global selection, including eligibility checks before per-input limits.
+ if ordered:
+  sql("update email_messages set received_at='2025-01-01 00:01Z' where provider_message_id in('2','4','5','6','7');update phone_calls set started_at='2025-01-01 00:01Z';update email_messages set received_at=null,sent_at='2025-01-01 00:01Z' where provider_message_id='8';update email_messages set received_at=null,sent_at=null,created_at='2025-01-01 00:01Z' where provider_message_id='9';")
+  for limit in ['-1','0','1','2','20','null']:
+   q=f"select coalesce(jsonb_agg(x),'[]') from FUNCTION('00000000-0000-4000-8000-000000000001','all',{limit})x;"
+   assert sql(q.replace('FUNCTION','learn_projection_pending'))==sql(q.replace('FUNCTION','learn_projection_pending_baseline'))
+   comparisons+=1
  # Exercise the exact guarded production patch and reversal on synthetic data.
  package=root/'supabase/release/learn-production-patches/projection-selection-v1'
  manifest=json.loads((package/'manifest.json').read_text())
@@ -101,6 +120,25 @@ try:
  assert sql("select md5(prosrc) from pg_proc where oid='public.learn_projection_pending(uuid,text,integer)'::regprocedure")==manifest['afterBodyMd5']
  sql(settings+rollback)
  assert sql(pin_sql)==manifest['beforeDefinitionMd5']
- print(json.dumps({'state':'offline_synthetic_verified','emails':36500,'baselineEquivalenceCases':comparisons,'timings':[{'variant':x['variant'],'seconds':x['seconds']} for x in results],'checks':['draft exclusion','exact campaign revision','unchanged markers','changed source','current review holds','stale review re-entry','authoritative phone handoff','updated phone insight','tenant isolation','inactive tenant','source validation','optional campaign column absent','original owner ACL and settings preserved','anonymous and client denied','exact production patch and rollback','wrong target rejection','late failure rollback']}),flush=True)
+ if ordered:
+  package=root/'supabase/release/learn-production-patches/projection-selection-v2'
+  manifest=json.loads((package/'manifest.json').read_text())
+  sql("drop index learn_email_projection_order_idx;drop index learn_phone_projection_order_idx;")
+  sql((package/'original-selector.sql').read_text())
+  assert sql(pin_sql)==manifest['beforeDefinitionMd5']
+  settings="set serviceos.release_target='tgbnakbxwcqjeimygroz';set serviceos.release_sha256='"+manifest['source']['sha256']+"';"
+  apply=(package/'apply.sql').read_text();rollback=(package/'rollback.sql').read_text()
+  for attempt in [settings.replace('tgbnakbxwcqjeimygroz','wrong-target')+apply,settings+apply.replace('commit;','select 1/0;commit;')]:
+   try:sql(attempt)
+   except RuntimeError:pass
+   else:raise AssertionError('Ordered release guard/failure should roll back')
+   assert sql(pin_sql)==manifest['beforeDefinitionMd5']
+   assert sql("select to_regclass('learn_email_projection_order_idx') is null and to_regclass('learn_phone_projection_order_idx') is null")=='t'
+  sql(settings+apply)
+  assert sql("select md5(prosrc) from pg_proc where oid='public.learn_projection_pending(uuid,text,integer)'::regprocedure")==manifest['afterBodyMd5']
+  sql(settings+rollback)
+  assert sql(pin_sql)==manifest['beforeDefinitionMd5']
+  assert sql("select to_regclass('learn_email_projection_order_idx') is null and to_regclass('learn_phone_projection_order_idx') is null")=='t'
+ print(json.dumps({'state':'offline_synthetic_verified','emails':36500,'baselineEquivalenceCases':comparisons,'timings':[{'variant':x['variant'],'seconds':x['seconds'],**({'orderedEmailRowsVisited':x['orderedEmailRowsVisited']} if 'orderedEmailRowsVisited' in x else {})} for x in results],'checks':['draft exclusion','exact campaign revision','unchanged markers','changed source','current review holds','stale review re-entry','authoritative phone handoff','updated phone insight','tenant isolation','inactive tenant','source validation','optional campaign column absent','original owner ACL and settings preserved','anonymous and client denied','exact production patch and rollback','wrong target rejection','late failure rollback']+(['cross-source ties and timestamp fallbacks','exact ordered patch and index rollback'] if ordered else [])}),flush=True)
 finally:
  if created:subprocess.run([docker,'rm','-f',name],capture_output=True)

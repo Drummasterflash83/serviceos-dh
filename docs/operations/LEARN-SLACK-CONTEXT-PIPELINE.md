@@ -1,6 +1,19 @@
 # Slack conversation-to-work context
 
-## Latest LIVE acceptance, 14 October 2026 00:24 UTC
+## Latest learning diagnostic, 14 October 2026 00:52 UTC
+
+All four reviewed messages now have durable ingestion ledgers. The first downstream
+observation failed with `learn_observation_mode_review`; three remain queued. The
+current platform default is discovery, but Drummonds has a tenant-wide assisted
+mode override. The LEARN observation handler requires `mode_observe_only` and therefore
+rejects this result before publication. No new observation has been verified.
+
+The four source-bound timeline links remain valid and unchanged. Do not replay their
+reviews or alter Drummonds' global autonomy just to pass this gate. Complete the
+LEARN-only non-executing observation path, verify its audit and unchanged permissions,
+then recover the original failed delivery through the existing logged controls.
+
+## Timeline acceptance, 14 October 2026 00:24 UTC
 
 Four full retained public Slack conversations now have logged, source-revision-bound
 reviews against three corroborated canonical jobs and their current site/customer
