@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 07:42 BST — twenty more LIVE customer journeys published.**
+
+- Twenty individually reviewed customers, four sites and thirty-two jobs are now
+  linked through the existing audited OpenFolk controls. Thirteen corroborated
+  account-holder contacts reuse their exact identities, with twenty-eight retained
+  non-primary, unverified contact channels.
+- Saved source versions, actors, ownership and descriptions pass readback. Final
+  scoped comparison preserves 4,511 previous identity projections, fifty-two customer
+  links, 115 contact points, all sixty-three previous contact links and all 1,552
+  retained customer source payloads. No provider writes or access changes occurred.
+- Signed-in LIVE customer verification passes six-job display, job drill-down and
+  return, contact display and saved-channel reading. Missing communications and
+  unknown completion timezones remain visible. The secondary status breakdown omits
+  completed jobs despite the correct headline; fix that presentation gap separately.
+- Published totals are now **72 customers, 78 sites, 931 jobs and 76 contacts**.
+  Seven contacts in this group still need identity/role review. A fresh planner has
+  759 proposals, 819 held export accounts and one linked account needing review;
+  fifteen previously ready proposals acquired candidate holds after publication.
+- The 98 API-missing customers, broader attribution, scorecards, operator recovery
+  and recurring-backup acceptance remain unresolved. Full LEARN V1 is not complete.
+
+[Customer publication and preservation evidence](evidence/learn-customer-publication-2026-10-14-second.json).
+
+
 **14 October, 07:14 BST — LIVE Workspace directory discovery recovered automatically.**
 
 - The existing job succeeded on its normal fourth attempt, with a durable receipt

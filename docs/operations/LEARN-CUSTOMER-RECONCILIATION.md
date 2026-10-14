@@ -238,3 +238,49 @@ leading-zero service code, job drill-down and return. Missing linked communicati
 and unconfirmed completion timezones remain explicit. Current totals are 52
 customers, 74 sites, 899 jobs and 63 contacts; overall customer coverage is incomplete.
 [Acceptance and preservation evidence](evidence/learn-customer-estate-publication-2026-10-14.json).
+
+## Further LIVE publication — 14 October, 06:42 UTC
+
+Twenty more export-corroborated accounts now have canonical customer cards, with
+four explicitly related sites and thirty-two jobs. Each customer source was read
+in the logged operator UI and checked against its exact account name, postcode and
+reviewed category; a fresh name/contact candidate check preceded each save. All
+site/job source IDs, customer labels and explicit property relationships were
+checked before publication. Five-minute review expiry was renewed normally, and
+saved batches were reloaded without replaying their mutations.
+
+Thirteen retained contacts reuse their corroborated account-holder identities:
+both the full name and explicit primary-contact ID agree. Their twenty-eight
+contact channels remain non-primary and unverified. Seven records remain held:
+a generic occupier, a possible duplicate of a current primary contact and five
+named people with existing identity candidates. Shared endpoints do not justify
+merging them or declaring different identities without further evidence.
+
+Readback proves all fifty-six customer/site/job links, source revisions, original
+operator, account-holder evidence, card ownership and unchanged job descriptions.
+Contact readback proves thirteen links, source payloads, graph relationships and
+all sixty-three earlier contact links preserved. Final scoped preservation retains
+4,511 earlier identity projections, fifty-two earlier customer links, 115 contact
+points and all 1,552 retained customer source payloads. This is not an assertion
+that every field in every production table was hashed.
+
+Signed-in LIVE verification on the stable app.openfolk.ai origin shows a sample
+customer's six linked jobs, customer-to-job drill-down and return, its contact and
+saved mobile detail. Missing communications/findings and unconfirmed completion
+timezones remain explicit. The secondary status breakdown omits a completed
+category despite the correct six-completed headline; that presentation gap is
+recorded for correction. Actual retained historical job descriptions are preserved,
+not silently replaced with current taxonomy codes.
+
+Current published source-link totals: **72 customers, 78 sites, 931 jobs and 76
+contacts**. Refreshing the planner after these changes leaves 759 proposals, 819
+held export accounts and one linked account requiring review. Fifteen previously
+ready accounts gained candidate holds; older plans are not blanket approval.
+The 98 API-missing customer accounts remain unresolved. Broad matching, scoring,
+operational recovery and complete acceptance remain open.
+
+No frontend/schema release, grant, credential, provider write or schedule change
+was made. Private source manifests, receipts and screenshots stay outside Git in
+`/private/tmp/serviceos-customer-publication-20261014-0740/`.
+
+[Sanitised acceptance](evidence/learn-customer-publication-2026-10-14-second.json).
