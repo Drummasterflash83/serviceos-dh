@@ -1,0 +1,118 @@
+{
+  "date": "2026-10-14",
+  "build": "01",
+  "state": "communication_inventory_verified",
+  "startedAt": "2026-10-14T13:50:44.469Z",
+  "verifiedAt": "2026-10-14T14:08:44.137Z",
+  "inventoryObservedAt": "2026-10-14T13:50:46.463Z",
+  "buckets": {
+    "phone-recordings": {
+      "objects": 3024,
+      "totalBytes": 631519326,
+      "recordingReferences": 3018,
+      "newObjectsCopied": 1,
+      "existingReceipts": 3023,
+      "sourceReconciliation": {
+        "recordingRows": 3018,
+        "rowsWithoutStoragePointer": 0,
+        "unreferencedObjects": 6,
+        "missingObjectReferences": 0
+      },
+      "sourceUsage": {
+        "requests": 21567,
+        "requestBudget": 100000,
+        "readRetries": 0
+      },
+      "readRecovery": {
+        "verificationReadRetries": 0,
+        "readRequestRetries": 0,
+        "journalReadRetries": 0
+      },
+      "inventoryObservedAt": "2026-10-14T13:50:46.463Z",
+      "verifiedAt": "2026-10-14T14:04:50.651Z"
+    },
+    "learn-voicemail-sources": {
+      "objects": 255,
+      "totalBytes": 23622647,
+      "recordingReferences": 255,
+      "newObjectsCopied": 0,
+      "existingReceipts": 255,
+      "sourceReconciliation": {
+        "sourceBucket": "learn-voicemail-sources",
+        "preparedReferences": 0,
+        "recordingRows": 255,
+        "rowsWithoutStoragePointer": 0,
+        "unreferencedObjects": 0,
+        "missingObjectReferences": 0
+      },
+      "sourceUsage": {
+        "requests": 2823,
+        "requestBudget": 100000,
+        "readRetries": 0
+      },
+      "readRecovery": {
+        "verificationReadRetries": 0,
+        "readRequestRetries": 0,
+        "journalReadRetries": 0
+      },
+      "inventoryObservedAt": "2026-10-14T14:04:52.497Z",
+      "verifiedAt": "2026-10-14T14:07:18.244Z"
+    },
+    "receptionist-voicemails": {
+      "objects": 255,
+      "totalBytes": 13800699,
+      "recordingReferences": 255,
+      "newObjectsCopied": 0,
+      "existingReceipts": 255,
+      "sourceReconciliation": {
+        "sourceBucket": "receptionist-voicemails",
+        "preparedReferences": 0,
+        "recordingRows": 255,
+        "rowsWithoutStoragePointer": 0,
+        "unreferencedObjects": 0,
+        "missingObjectReferences": 0
+      },
+      "sourceUsage": {
+        "requests": 2851,
+        "requestBudget": 100000,
+        "readRetries": 0
+      },
+      "readRecovery": {
+        "verificationReadRetries": 0,
+        "readRequestRetries": 0,
+        "journalReadRetries": 0
+      },
+      "inventoryObservedAt": "2026-10-14T14:07:18.959Z",
+      "verifiedAt": "2026-10-14T14:08:43.343Z"
+    }
+  },
+  "pair": {
+    "matchedPairs": 255,
+    "scope": "observed_non_atomic_inventories"
+  },
+  "budget": {
+    "objects": 1,
+    "bytes": 888805,
+    "requests": 27241,
+    "limits": {
+      "objects": 400,
+      "bytes": 268435456,
+      "requests": 100000
+    }
+  },
+  "health": {
+    "status": "observed_inventory_verified",
+    "reason": "within_daily_window",
+    "lastVerifiedAt": "2026-10-14T14:08:44.137Z"
+  },
+  "phoneLockReleased": true,
+  "testedSourcesMatched": true,
+  "manual": true,
+  "unattendedAcceptance": false,
+  "sourceSnapshot": "non_atomic",
+  "playback": "not_verified",
+  "fullAppAuthRestore": "not_verified",
+  "scheduleChanged": false,
+  "newRunnerCreated": false,
+  "backupComplete": false
+}

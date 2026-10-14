@@ -1,27 +1,44 @@
 # Drummonds daily recording backup operations
 
-**14 October — interrupted-read recovery verified locally:** three manual
-invocations stopped on separate AWS request/stream and final source-read failures;
-none replaced the previous successful aggregate. The third checked all 3,023
-observed phone-file bytes before its source recheck stopped on an unconfirmed
-request. Partial completion is not a new successful manifest.
+**14 October, 14:08 UTC — fresh combined manual backup verified.**
+The existing supervisor completed its fifth invocation at 14:08:44.137 UTC,
+checking **3,024 phone files / 631,519,326 bytes**, **255 original voicemail emails /
+23,622,647 bytes** and **255 audio files / 13,800,699 bytes**. All 255 voicemail
+pairs and 3,018 phone recording references reconcile. No missing references or
+null pointers exist in the observed inventories; six unreferenced phone files
+remain retained. This is **3,534 files / 668,942,672 bytes** in total.
 
-The fixed communication runtime now opts into at most three transient read
-attempts for AWS metadata/journals/byte verification and source metadata JSON.
-Partial JSON is discarded; every retried byte check starts a fresh complete hash
-of the same pinned version. Source credentials and budget checks sit outside the
-transport retry boundary. Credential failures, denied access, redirects, invalid
-JSON, changed identity/version and incorrect size/digest remain failures. Uploads
-remain single-attempt. All original deadlines, locks and shared budgets remain.
-Request, journal, byte-verification and source read retries are counted.
+The final run copied one new phone file / 888,805 bytes and reused 3,533 verified
+receipts, including files safely retained during earlier failed attempts. Every
+stored byte check and final source comparison passed before immutable manifests
+and the aggregate were published. It used 27,241 of 100,000 source requests,
+completed within the original one-hour limit and recorded zero read retries.
+The exact tested source hashes match. Terminal completion and private journals
+were read back; health reports `observed_inventory_verified / within_daily_window`
+and the phone lock is released. [Sanitised acceptance](evidence/learn-communication-daily-2026-10-14.json).
 
-All **142 backup checks** pass, including partial reads, pinned versions,
-persistent failure, corruption, cancellation, credential timeouts, exhausted
-budgets, uncertain writes, manifests and restores. A fourth manual invocation of
-the same supervisor is running with these tested boundaries. The three earlier
-terminal outcomes and unchanged previous aggregate are retained privately. No
-fresh success or unattended working-day acceptance follows from starting it.
-The existing schedule and approved credentials are unchanged.
+Coverage is the observed non-atomic inventories beginning at 13:50:46 UTC,
+not subsequent arrivals, a consistent database snapshot or full application/Auth
+recovery. This was a manual invocation; unattended operation and human listening
+remain unverified. The existing schedule, approved credentials and runner remain.
+
+**14 October — interrupted-read recovery:** four earlier manual invocations
+stopped on AWS request/stream or source-read failures and preserved the previous
+successful aggregate. The third checked all 3,023 observed phone-file bytes before
+its source recheck failed; the fourth stopped during inventory at 13:10:50 UTC.
+Their terminal outcomes, journals and prior aggregate remain private. A full
+source-only diagnostic subsequently passed, justifying the final recovery above.
+No failed or partial run was relabelled as success.
+
+All **142 backup checks** pass. The fixed communication runtime permits at most
+three transient read attempts for AWS metadata/journals/byte verification and
+source metadata JSON under the same deadlines, lock and budgets. Partial JSON is
+discarded; each retried byte check starts a fresh full hash of the pinned version.
+Credential failures, denied access, redirects, invalid JSON, changed source/version,
+wrong size/digest, cancellation and persistent failures remain failures. Uploads
+remain single-attempt; unknown writes require later receipt/readback recovery.
+The successful live invocation used zero retries, so actual live recovery from
+an interruption is not inferred from that run. [Current follow-up](evidence/learn-build01-followup-2026-10-14.json).
 
 **14 October — bounded recovery of changing inventories:** the existing daily
 runner now makes at most three complete inventory observations when the exact

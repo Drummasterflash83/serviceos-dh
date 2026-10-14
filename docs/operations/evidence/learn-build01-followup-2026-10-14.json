@@ -1,7 +1,7 @@
 {
   "date": "2026-10-14",
   "stage": "Build 01",
-  "state": "job_status_display_released_backup_verification_in_progress",
+  "state": "slack_and_job_display_released_fresh_manual_backup_verified",
   "jobSummary": {
     "change": "Include completed in the existing published-job status breakdown; retain all existing status/verification/source qualifications.",
     "focusedExistingTests": 7,
@@ -83,7 +83,7 @@
     "focusedTests": 30,
     "firstManualRun": "Stable inventory then s3_transport_timeout; previous successful backup preserved.",
     "destinationReadback": "Existing account/privacy/encryption/retention/conditional-write safeguards subsequently passed in read-only inspection.",
-    "recoveryRun": "Third invocation checked all 3,023 observed phone-file bytes then stopped on source_request_unconfirmed during the final source comparison. Fourth manual invocation is running with tested source JSON read recovery; no fresh aggregate claimed.",
+    "recoveryRun": "Four terminal failures retained their prior successful aggregate. A full source-only diagnostic then passed. The fifth existing-supervisor invocation completed at 14:08:44.137 UTC: full stored-byte and source rechecks passed for all three observed inventories. No new runner, changed schedule or relaxed acceptance.",
     "unattendedAcceptance": false,
     "scheduleChanged": false,
     "newRunnerCreated": false,
@@ -92,7 +92,77 @@
     "writeRecovery": "No automatic upload retry; unknown writes still stop for receipt/readback recovery.",
     "byteAndAccessFailurePolicy": "Corrupt bytes, changed source/version, rejected access/policy, cancellation and persistent failures cannot publish a manifest.",
     "globalLimits": "Existing lock, one-hour deadline, source-request/new-object/byte budgets and four-operation bound remain.",
-    "sourceReadRecovery": "At most three transient fixed-target metadata JSON reads share one logical request deadline and the existing global request budget. Partial JSON is discarded. Credential loading, access, malformed JSON, source identity and budget failures are outside the retry boundary. Source retries are counted."
+    "sourceReadRecovery": "At most three transient fixed-target metadata JSON reads share one logical request deadline and the existing global request budget. Partial JSON is discarded. Credential loading, access, malformed JSON, source identity and budget failures are outside the retry boundary. Source retries are counted.",
+    "manualRuns": [
+      {
+        "startedAt": "2026-10-14T11:35:31Z",
+        "finishedAt": "2026-10-14T11:40:32Z",
+        "failure": "s3_transport_timeout"
+      },
+      {
+        "startedAt": "2026-10-14T11:59:23Z",
+        "finishedAt": "2026-10-14T12:13:14Z",
+        "failure": "s3_stream_unconfirmed"
+      },
+      {
+        "startedAt": "2026-10-14T12:23:44Z",
+        "failure": "source_request_unconfirmed",
+        "partialProgress": "All 3,023 observed phone-file bytes checked; incomplete source recheck."
+      },
+      {
+        "startedAt": "2026-10-14T13:08:50.089Z",
+        "finishedAt": "2026-10-14T13:10:50.200Z",
+        "failure": "source_request_unconfirmed",
+        "sourceRequests": 1299,
+        "sourceReadRetries": 0
+      }
+    ],
+    "healthAfterFourthRun": {
+      "status": "attention",
+      "reason": "latest_run_failed",
+      "lastVerifiedAt": "2026-10-13T16:29:19.331Z",
+      "latestFailureCode": "source_request_unconfirmed",
+      "phoneLockReleased": true
+    },
+    "successfulAggregateRefreshed": true,
+    "freshManualAcceptance": "learn-communication-daily-2026-10-14.json",
+    "fifthRun": {
+      "startedAt": "2026-10-14T13:50:44.469Z",
+      "verifiedAt": "2026-10-14T14:08:44.137Z",
+      "inventoryObservedAt": "2026-10-14T13:50:46.463Z",
+      "phoneFiles": 3024,
+      "voicemailOriginalEmails": 255,
+      "voicemailAudioFiles": 255,
+      "totalFiles": 3534,
+      "totalBytes": 668942672,
+      "matchedPairs": 255,
+      "missingReferences": 0,
+      "nullPointers": 0,
+      "retainedUnreferencedPhoneFiles": 6,
+      "newFilesCopiedInFinalRun": 1,
+      "newBytesCopiedInFinalRun": 888805,
+      "sourceRequests": 27241,
+      "sourceRequestLimit": 100000,
+      "actualReadRetries": 0,
+      "health": {
+        "status": "observed_inventory_verified",
+        "reason": "within_daily_window",
+        "lastVerifiedAt": "2026-10-14T14:08:44.137Z"
+      },
+      "phoneLockReleased": true,
+      "testedSourcesMatched": true,
+      "manual": true,
+      "unattendedAcceptance": false,
+      "fullAppAuthRestore": "not_verified",
+      "sourceSnapshot": "non_atomic"
+    }
   },
-  "broaderV1": "Still incomplete; no later numbered build activated."
+  "broaderV1": "Still incomplete; no later numbered build activated.",
+  "checkpoint": {
+    "branch": "codex/learn-v1-test",
+    "sourceReadRecoverySha": "d9005bd6427603ade5a523d40c5fc78dc09f511b",
+    "remoteHeadReadback": "matched",
+    "interruptedUpload": "Remote head read back before normal retry; no history rewrite."
+  },
+  "finalFrontendReadback": "Both deployments READY; every intended stable alias matches its recorded deployment; domain/redirect and protection settings match the original release baseline."
 }

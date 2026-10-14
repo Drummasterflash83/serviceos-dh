@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**14 October — Build 01 follow-up: job breakdown corrected; backup recovery in progress.**
+**14 October — Build 01 follow-up: job breakdown corrected; fresh manual backup verified.**
 
 ### Working and verified
 
@@ -22,15 +22,21 @@ override a later release observation. No requirement is silently deferred.
   exact concurrent-change guard fails. It preserves the same lease, ports, deadline,
   shared request budget, complete source comparisons and prior successful manifest.
   Thirty focused source/daily/supervisor checks pass. No new runner or schedule.
+- The same three-bucket supervisor completed at 14:08:44 UTC: 3,024 phone files,
+  255 original voicemail emails and 255 audio files, 668,942,672 bytes total.
+  Full byte/source checks, 255 matched voicemail pairs and all 3,018 phone
+  references pass. Zero missing references/null pointers; six unlinked phone
+  files retained. Health readback is verified and the original lock is released.
+  All 142 local backup checks pass; tested source hashes match the actual run.
 
 ### Needs finishing
 
-- Three manual backups stopped on AWS request/stream or final source-read
-  failures. The destination safety checks passed. Bounded read-only recovery now
-  passes all 142 backup checks, including source JSON recovery and credentials
-  outside the retry boundary. Partial streams cannot bypass full verification;
-  uploads remain single-attempt. A fourth invocation of the same supervisor is
-  active. No fresh aggregate or dependable unattended operation is yet claimed.
+- Four earlier manual backups stopped on AWS request/stream or source reads;
+  their failures remain recorded. A subsequent full source diagnostic and fifth
+  supervisor invocation passed. Today's success covers non-atomic observed
+  inventories beginning 13:50:46 UTC. Dependable unattended operation, human
+  listening and full application/Auth recovery remain unverified. The final live
+  run used zero retries; live interruption recovery is not inferred from it.
 - The remaining V1 families in the Build 01 receipt stay incomplete. Authorised
   private Slack channels retain their separate source/visibility acceptance;
   the public browser does not remove that requirement. DMs remain deferred.
@@ -40,7 +46,8 @@ override a later release observation. No requirement is silently deferred.
 - Actual unattended observation, broader source reconciliation and human/business
   review remain separate from local tests and manually recovered runs.
 
-[Follow-up evidence and rollback](evidence/learn-build01-followup-2026-10-14.json).
+[Follow-up evidence and rollback](evidence/learn-build01-followup-2026-10-14.json),
+[fresh manual backup acceptance](evidence/learn-communication-daily-2026-10-14.json).
 
 
 **14 October, 12:30 BST — public Slack evidence browsing released and accepted.**
