@@ -1,0 +1,23 @@
+reset role;
+create temp table search_before as select count(*) n,coalesce(sum(revision),0) revisions from learn_quickbooks_customer_links;
+select fixture_finance_source('production','Customer','SEARCH_UNIQUE','{"Id":"SEARCH_UNIQUE","DisplayName":"Distinct Search Customer","PrimaryEmailAddr":{"Address":"distinct@example.invalid"}}');
+select fixture_finance_source('sandbox','Customer','SEARCH_SANDBOX','{"Id":"SEARCH_SANDBOX","DisplayName":"Distinct Search Customer"}');
+select fixture_finance_source('production','Customer','LITERAL','{"Id":"LITERAL","DisplayName":"Literal 100%_ Customer"}');
+select fixture_finance_source('production','Customer','PAGE_'||n,jsonb_build_object('Id','PAGE_'||n,'DisplayName','Paged Search '||n)) from generate_series(1,27) n;
+set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000010';set role authenticated;
+select fixture_assert(jsonb_array_length(learn_quickbooks_customer_search(fixture_id(1),'production','Search review','distinct@example.invalid')->'rows')=1,'email search and environment scope');
+select fixture_assert(jsonb_array_length(learn_quickbooks_customer_search(fixture_id(1),'production','Search review',' DISTINCT SEARCH ')->'rows')=1,'trimmed case-insensitive name search');
+select fixture_assert(jsonb_array_length(learn_quickbooks_customer_search(fixture_id(1),'production','Search review','%_')->'rows')=1,'wildcards treated literally');
+select fixture_assert(jsonb_array_length(learn_quickbooks_customer_search(fixture_id(1),'production','Search review','not-present')->'rows')=0,'empty result');
+do $$declare a jsonb;b jsonb;begin
+ a:=learn_quickbooks_customer_search(fixture_id(1),'production','Search review','Paged Search');
+ b:=learn_quickbooks_customer_search(fixture_id(1),'production','Search review','Paged Search',(a->>'next_after')::uuid);
+ perform fixture_assert(jsonb_array_length(a->'rows')=25 and jsonb_array_length(b->'rows')=2 and b->>'next_after' is null,'bounded cursor pagination');
+ perform fixture_assert(not exists(select 1 from jsonb_array_elements(a->'rows') x join jsonb_array_elements(b->'rows') y on x->>'version_id'=y->>'version_id'),'no page duplicates');end $$;
+select fixture_finance_denied('select learn_quickbooks_customer_search(fixture_id(2),''production'',''Wrong tenant'',''Distinct'')','42501');
+select fixture_finance_denied('select learn_quickbooks_customer_search(fixture_id(1),''production'',''Search review'',repeat(''x'',201))','22023');
+set request.jwt.claim.sub='00000000-0000-4000-8000-000000000011';
+select fixture_finance_denied('select learn_quickbooks_customer_search(fixture_id(1),''production'',''Not operator'',''Distinct'')','42501');
+reset role;
+select fixture_assert(not has_function_privilege('anon','learn_quickbooks_customer_search(uuid,text,text,text,uuid)','execute') and not has_function_privilege('service_role','learn_quickbooks_customer_search(uuid,text,text,text,uuid)','execute'),'no anonymous or service bypass');
+select fixture_assert((select n=(select count(*) from learn_quickbooks_customer_links) and revisions=(select coalesce(sum(revision),0) from learn_quickbooks_customer_links) from search_before),'search creates no links');

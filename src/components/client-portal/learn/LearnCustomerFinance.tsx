@@ -29,6 +29,7 @@ export function LearnCustomerFinance({
   } | null>(null);
   const [selected, setSelected] = useState<FinanceCandidate | null>(null);
   const [reason, setReason] = useState("");
+  const [customerQuery, setCustomerQuery] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [loadedScope, setLoadedScope] = useState("");
@@ -49,6 +50,7 @@ export function LearnCustomerFinance({
     cardId,
     environment,
     operatorReason,
+    customerQuery,
   ]);
   const visible = loadedScope === key ? page : null;
   const shownCandidates = loadedScope === key ? candidates : null;
@@ -111,12 +113,13 @@ export function LearnCustomerFinance({
               p_environment: environment,
               p_after: after,
               p_reason: operatorReason,
+              p_query: customerQuery.trim(),
             };
       const { data, error } = await getSupabaseClient()
         .rpc(
           kind === "finance"
             ? "learn_quickbooks_customer_finance"
-            : "learn_quickbooks_customer_candidates",
+            : "learn_quickbooks_customer_search",
           args,
         )
         .abortSignal(AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]));
@@ -208,6 +211,17 @@ export function LearnCustomerFinance({
               <option value="production">Live company</option>
               <option value="sandbox">Sandbox demonstration</option>
             </select>
+          </label>
+          <label className="grid gap-1 text-sm">
+            Find QuickBooks customer
+            <input
+              className="rounded border p-2"
+              value={customerQuery}
+              maxLength={200}
+              disabled={busy}
+              placeholder="Name, email, postcode or reference"
+              onChange={(e) => setCustomerQuery(e.target.value)}
+            />
           </label>
           <button className="cp-secondary" disabled={busy} onClick={() => void load("customers")}>
             Review customer links
