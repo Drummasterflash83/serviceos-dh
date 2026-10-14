@@ -28,7 +28,13 @@ const failure = () =>
   );
 export async function readSlackCardSource(
   client: InformationClient,
-  args: { tenant: string; actor: string; id: string; operatorReason?: string },
+  args: {
+    tenant: string;
+    actor: string;
+    id: string;
+    operatorReason?: string;
+    expectedSourceVersion?: string;
+  },
   signal: AbortSignal,
   now = Date.now(),
 ): Promise<{ record: SlackSource; observedAt: string }> {
@@ -36,6 +42,8 @@ export async function readSlackCardSource(
   if (
     ![args.tenant, args.actor, args.id].every(uuid) ||
     !Number.isFinite(now) ||
+    (args.expectedSourceVersion !== undefined &&
+      !/^[a-f0-9]{64}$/.test(args.expectedSourceVersion)) ||
     (operator &&
       (typeof args.operatorReason !== "string" ||
         args.operatorReason.trim().length < 3 ||
@@ -106,7 +114,8 @@ export async function readSlackCardSource(
     Math.abs(Date.parse(r.posted_at) - Math.floor(Number(r.provider_timestamp) * 1000)) > 1 ||
     !time(r.retained_at) ||
     typeof r.source_version !== "string" ||
-    !/^[a-f0-9]{64}$/.test(r.source_version)
+    !/^[a-f0-9]{64}$/.test(r.source_version) ||
+    (args.expectedSourceVersion !== undefined && r.source_version !== args.expectedSourceVersion)
   )
     throw failure();
   return { record: r as SlackSource, observedAt: p.observed_at };

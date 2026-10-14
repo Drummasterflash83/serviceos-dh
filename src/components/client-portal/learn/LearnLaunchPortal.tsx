@@ -25,6 +25,7 @@ import "@/styles/learn-launch.css";
 import { LearnCards } from "./LearnCards";
 import { LearnVoicemails } from "./LearnVoicemails";
 import { LearnSlackSetup } from "./LearnSlackSetup";
+import { LearnSlackEvidence } from "./LearnSlackEvidence";
 import { LearnFileImports } from "./LearnFileImports";
 import { LearnCommusoftCustomers } from "./LearnCommusoftCustomers";
 import { LearnCommusoftWork } from "./LearnCommusoftWork";
@@ -46,6 +47,7 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
     [notice, setNotice] = useState("");
   const [recapOpen, setRecapOpen] = useState(false);
   const [slackSetup, setSlackSetup] = useState(false);
+  const [slackEvidence, setSlackEvidence] = useState(false);
   const [fileImports, setFileImports] = useState(false);
   const [commusoftReview, setCommusoftReview] = useState(false);
   const [commusoftWork, setCommusoftWork] = useState(false);
@@ -230,7 +232,7 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
               </strong>
               <small>{c.note}</small>
               <p className="lr-input-detail">{c.detail}</p>
-              {c.href ? <a className="lr-input-link" href={c.href}>View details <ArrowUpRight size={13} /></a> : <button className="lr-input-link" onClick={() => setSlackSetup(true)}>View Slack imports <ArrowUpRight size={13} /></button>}
+              {c.href ? <a className="lr-input-link" href={c.href}>View details <ArrowUpRight size={13} /></a> : <button className="lr-input-link" onClick={() => setSlackEvidence(true)}>View Slack evidence <ArrowUpRight size={13} /></button>}
             </article>
           ))}
           <article className="lr-count lr-emma-readiness">
@@ -337,6 +339,15 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
           )}
         </DialogContent>
       </Dialog>
+      <Dialog open={slackEvidence} onOpenChange={setSlackEvidence}>
+        <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Slack evidence</DialogTitle>
+            <DialogDescription>Review saved public channel observations and their retained messages.</DialogDescription>
+          </DialogHeader>
+          {slackEvidence && user && <LearnSlackEvidence key={`${user.id}:${tenantId}:${profile?.role}`} tenantId={tenantId} actorId={user.id}/>}
+        </DialogContent>
+      </Dialog>
       <Dialog open={slackSetup} onOpenChange={setSlackSetup}>
         <DialogContent
           overlayClassName="z-[90]"
@@ -380,6 +391,9 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
             Open Slack imports to review channel progress and replies. Slack notifications do not
             confirm that conversations have been imported.
           </p>
+          <button className="lr-source-action" onClick={() => setSlackEvidence(true)}>
+            Browse saved Slack evidence <ArrowUpRight size={15} />
+          </button>
           <div className="lr-sync">
             <span>Slack notifications</span>
             <strong>
