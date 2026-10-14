@@ -27,12 +27,19 @@ Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
 - Shared platform worker v78 and accounting worker v2 are deployed and probed;
   unrelated runtime sources and secret values are preserved. Approved trigger
   access is verified in production, Keychain and the existing 1Password note.
-- Chris enabled ongoing LIVE refresh through logged controls: immediately, then
-  six hours after each completed cycle, max 3,000 reads/cycle, 24h expiry. Hosted
-  tick created run `af4983d5-2c01-4cae-a585-d2aa5ae2f841` at 10:14 UTC and renewed
-  the existing grant. The normal hosted scheduler has saved more than 65,000 observations and
-  completed the Customer traversal without an import error. Full verification
-  cycle completion and its next due time are still pending. No accounting writes, payroll, AI or automatic matching.
+- Ongoing LIVE refresh is enabled and its first unattended full cycle is verified:
+  1,353 saved pages / 134,599 observations across all 13 types, using 1,353 of
+  3,000 requests. It finished at 12:38 UTC, paused capture, and scheduled the
+  next cycle for 18:38 UTC. Ordinary token renewal reached generation 6.
+  Source receipts reconcile, no conflicts remain, and five reviewed links are
+  preserved. No accounting writes, payroll, AI or automatic matching.
+- A wider captured-customer catalogue and native-source detail view are prepared
+  locally. Existing admin/support authority, reviewed-only grouping, source
+  addresses, direct/site jobs, contacts, accounting subaccounts, exact decimals,
+  identity drift, tenant/role/environment fences, search, paging and rollback
+  pass isolated SQL checks. Frontend types and build pass. These new readers/UI
+  are **not installed or deployed**; frontend parser/interaction checks, hosted
+  compatibility/preservation and signed-in acceptance remain.
 - Stable TEST retains 77 sandbox records and its deliberately revoked grant.
   Connection, duplicates, token refresh and disconnect are verified separately.
 

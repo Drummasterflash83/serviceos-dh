@@ -1,3 +1,4 @@
+import { LearnImportedCustomers } from "@/components/client-portal/learn/LearnImportedCustomers";
 import { LearnSlackSource } from "@/components/client-portal/learn/LearnSlackSource";
 import { useEffect, useRef, useState } from "react";
 import { OperatorLearningEvidence } from "./OperatorLearningEvidence";
@@ -25,6 +26,8 @@ export function OperatorClientInformation({
   initialCollection?: InformationCollection;
   embedded?: boolean;
 }) {
+  const [importsOpen, setImportsOpen] = useState(false);
+  const [importsReason, setImportsReason] = useState("");
   const [collection, setCollection] = useState<InformationCollection>(initialCollection);
   const [reason, setReason] = useState("");
   const [record, setRecord] = useState("");
@@ -43,6 +46,7 @@ export function OperatorClientInformation({
     request.current?.abort();
     setPage(null);
     setSelected(null);
+    setImportsOpen(false);
     setBusy(false);
   }
   useEffect(() => {
@@ -126,6 +130,10 @@ export function OperatorClientInformation({
       className={embedded ? "min-w-0 space-y-5" : "op-embedded cp-root min-w-0 space-y-5"}
       aria-labelledby="client-information-heading"
     >
+      <div className="space-y-3">
+        <button className="cp-secondary" disabled={reason.trim().length<3||reason.trim().length>500} onClick={()=>{setImportsReason(reason.trim());setImportsOpen(v=>!v);}}>{importsOpen?'Close imported customers':'Browse imported customer records'}</button>
+        {importsOpen&&<LearnImportedCustomers key={tenantId+':'+actorId+':'+importsReason} tenantId={tenantId} actorId={actorId} operatorReason={importsReason} onOpenCard={id=>{setImportsOpen(false);setCollection('customers');setRecord(id);}}/>}
+      </div>
       <header>
         <p className="op-eyebrow">OPENFOLK · CLIENT INFORMATION</p>
         <h1 id="client-information-heading" className="text-2xl font-semibold">
