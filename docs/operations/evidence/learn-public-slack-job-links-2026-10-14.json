@@ -1,0 +1,47 @@
+{
+  "version": "learn-public-slack-context-acceptance/1",
+  "at": "2026-10-14T04:40:34.216Z",
+  "state": "two_reviewed_links_verified",
+  "messages": 2,
+  "jobs": 1,
+  "sourceTextAndVersionPreserved": true,
+  "speakerAndDirectionPreserved": true,
+  "exactPublicVisibilityProof": true,
+  "immutableAuditedReviews": 2,
+  "pipeline": [
+    null,
+    null
+  ],
+  "browser": {
+    "environment": "LIVE",
+    "customerTimelineMessages": 2,
+    "jobTimelineMessages": 2,
+    "fullRetainedSourceReadOnCustomer": true,
+    "fullRetainedSourceReadOnJob": true,
+    "customerJobReturnVerified": true
+  },
+  "scope": {
+    "newAccountsOrGrants": false,
+    "providerCalls": 0,
+    "runtimeOrSchemaChanged": false,
+    "privateChannelsOrDMsRead": false,
+    "performanceScoresAssigned": false,
+    "paidAiRequested": false
+  },
+  "limitations": [
+    "Two explicitly reviewed sources only; no automatic matching or whole-channel/thread attribution.",
+    "Inventory and pricing statements are retained source claims, not independently verified financial facts.",
+    "No downstream observation ledger yet for these two sources at the acceptance read.",
+    "No claim of comprehensive customer or Slack coverage."
+  ],
+  "handoffDiagnostic": {
+    "at": "2026-10-14T04:42:02.450513+00:00",
+    "enrichedWithoutCurrentMapperLedger": 23764,
+    "selectorOrder": "occurred_at ascending, created_at ascending",
+    "scheduleActive": true,
+    "schedule": "*/5 * * * *",
+    "exactSourceIngestionJobsFound": 0,
+    "previousFourRecoveryObservationsReverified": true,
+    "proposedNextWork": "Bounded priority for explicitly reviewed context while preserving historical progress; not implemented by this checkpoint."
+  }
+}

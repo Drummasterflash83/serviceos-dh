@@ -1,5 +1,32 @@
 # Slack conversation-to-work context
 
+## Latest timeline acceptance and queue diagnostic, 14 October 2026 04:42 UTC
+
+**14 October, 05:42 BST — two more public Slack messages connected to LIVE customer/job context.**
+
+- Reviewed two complete retained messages that explicitly concern one published
+  Commusoft job: a parts-location question and a follow-up reporting the stock
+  movement. Existing logged OpenFolk controls saved two immutable review receipts.
+  No provider calls, new permissions, schema change or runtime release were needed.
+- LIVE customer and job timelines both show the two messages. Full retained source
+  reading and customer-to-job-to-customer navigation pass. Original message text,
+  source-version hashes, Slack author attribution and unknown direction remain
+  intact; the customer is derived through the current reviewed job ownership.
+- Review scope requires exact-version public-channel capture proof. DMs, private
+  and shared channels are excluded. Reported stock movements/prices remain source
+  statements, not independently verified inventory or performance measurements.
+- Downstream learning is **not yet accepted for these two messages**. They have no
+  ingestion ledger or matching single/batch ingestion job at this check. The
+  existing five-minute selector is active and orders oldest first; **23,764 enriched
+  interactions** await a current-mapper ledger. The earlier four Slack recovery
+  observations still pass source/job binding, zero-action and preservation checks.
+- Next processing work: provide bounded priority for explicit context reviews while
+  continuing historical ingestion. The source-link result does not close this gate.
+  Operator job selection also currently requires paging through UUID-ordered jobs;
+  a usable job search remains needed for review at scale.
+
+[Public Slack context and handoff evidence](evidence/learn-public-slack-job-links-2026-10-14.json).
+
 ## Latest repair, 14 October 2026 01:14 UTC
 
 The LEARN-only evidence ceiling is now deployed in LIVE worker v74 and TEST v26.
