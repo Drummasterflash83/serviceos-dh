@@ -215,3 +215,26 @@ Current publication totals are 51 customers, 48 sites, 691 jobs and 56 contacts.
 The fresh plan has 795 proposals, 804 held export accounts and one already-linked
 account requiring review. This remains partial customer coverage.
 [Acceptance evidence](evidence/learn-customer-history-publication-2026-10-14.json).
+
+## Estate publication — 14 October, 04:30 UTC
+
+One larger company estate now has its 26 retained sites and 208 related jobs
+published in LIVE. The browser workflow checks visible owner/property and source
+IDs against the fresh retained relationship inventory before each bounded save.
+Numeric/description search hits belonging elsewhere are excluded. Saved receipts
+cover 208 distinct jobs, and the complete server readback verifies source versions,
+actors, original job IDs, customer/site ownership and retained source descriptions.
+Three display titles trim trailing source spaces using the existing normaliser;
+that presentation detail does not rewrite the underlying source descriptions.
+
+Seven named contacts and fourteen contact channels are published. Two evidenced
+separation reviews preserve three distinct people sharing an office number, with
+exact candidate sets and logged result receipts. Five generic occupier/location
+labels remain unpublished; suitable role handling remains required. Current roles,
+contact permission and performance are not inferred from historic source labels.
+
+Signed-in LIVE acceptance covers the job count, both site pages, contact details,
+leading-zero service code, job drill-down and return. Missing linked communications
+and unconfirmed completion timezones remain explicit. Current totals are 52
+customers, 74 sites, 899 jobs and 63 contacts; overall customer coverage is incomplete.
+[Acceptance and preservation evidence](evidence/learn-customer-estate-publication-2026-10-14.json).

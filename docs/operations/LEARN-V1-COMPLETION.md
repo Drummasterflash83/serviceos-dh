@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 05:30 BST — larger customer estate accepted in LIVE.**
+
+- Published one corroborated company account, all twenty-six retained sites and all
+  208 retained related jobs through existing logged OpenFolk controls. Each visible
+  job owner/property and source ID was checked against the fresh relationship
+  inventory. Unrelated numeric/description search matches were excluded. A normal
+  five-minute review expiry was renewed without replaying saved groups.
+- Seven named source contacts now link to the customer card with fourteen saved
+  unverified, non-primary contact-point records. Two explicit separation reviews
+  keep three people sharing an office number distinct; both exact candidate sets
+  and operator result audits pass. Five generic occupier/location labels remain
+  unlinked and still require suitable role handling.
+- Signed-in LIVE acceptance covers the 208-job count, both site pages (25 + 1),
+  seven contacts, saved shared-office details, job drill-down and return. The
+  leading-zero code is preserved. No linked communication is yet present; the
+  card discloses that gap and the completion-time limitations.
+- Source versions/actors, customer/site/job ownership and retained descriptions
+  pass readback. Three display titles trim trailing spaces through the existing
+  normaliser; their original descriptions remain unchanged. Scoped final comparison
+  preserves 4,503 earlier identity projections, 51 customer links, 101 contact
+  points and 1,552 customer source payloads; all 56 prior contact links remain.
+- Current published totals: **52 customers, 74 sites, 899 jobs and 63 contacts**.
+  Fresh reconciliation still has 794 individual-review proposals, 804 held export
+  accounts and one linked account needing review, including 98 API-missing accounts.
+  Broader publication/matching, generic role handling, scorecards and operational
+  acceptance remain requirements of the active goal.
+
+[Estate publication and preservation evidence](evidence/learn-customer-estate-publication-2026-10-14.json).
+
 **14 October, 05:15 BST — another complete retained customer/job/contact group accepted in LIVE.**
 
 - One corroborated company account, all forty-seven of its currently retained jobs,
