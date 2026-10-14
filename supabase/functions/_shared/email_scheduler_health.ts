@@ -40,9 +40,10 @@ export async function recordSchedulerHeartbeat(
   counts: SchedulerCounts,
   metadata: Record<string, number> = {},
   readFailure = false,
+  knownIneligible = 0,
 ): Promise<boolean> {
   const now = new Date().toISOString();
-  const failed = readFailure || counts.unconfirmed > 0;
+  const failed = readFailure || counts.unconfirmed > 0 || knownIneligible > 0;
   try {
     const { error } = await client.from("email_sync_runs").insert({
       tenant_id: tenantId,
@@ -52,7 +53,12 @@ export async function recordSchedulerHeartbeat(
       started_at: now,
       completed_at: now,
       records_processed: counts.queued,
-      error_message: failed ? "Scheduler could not confirm all requested work" : null,
+      error_message:
+        knownIneligible > 0
+          ? "Saved mailboxes need source-authority reconciliation"
+          : failed
+            ? "Scheduler could not confirm all requested work"
+            : null,
       metadata: {
         heartbeat: true,
         ...metadata,
@@ -61,6 +67,7 @@ export async function recordSchedulerHeartbeat(
         capture_paused: counts.paused,
         enqueue_unconfirmed: counts.unconfirmed,
         inventory_unavailable: readFailure,
+        known_ineligible: knownIneligible,
       },
     });
     return !error;

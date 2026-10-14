@@ -16,6 +16,8 @@ import {
   scheduleAndCount,
 } from "../_shared/email_scheduler_health.ts";
 import type { SchedulerCounts } from "../_shared/email_scheduler_health.ts";
+import { isWorkspaceMailboxEligible } from "../_shared/workspace_scheduler_selection.ts";
+import type { WorkspaceScheduleMailbox } from "../_shared/workspace_scheduler_selection.ts";
 
 const PROVIDER = "gmail";
 const DWD_STATUSES = ["pending_tokenless_dwd", "active_dwd"];
@@ -71,22 +73,57 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const tenantIds = Array.from(
     new Set(((conns ?? []) as { tenant_id: string }[]).map((c) => c.tenant_id)),
   );
-  const { data: accounts, error: accountError } = await supabase
-    .from("email_accounts")
-    .select("id, tenant_id")
-    .eq("provider", PROVIDER)
-    .in("status", DWD_STATUSES);
+  // PostgREST limits a single page. A partial authority inventory must never
+  // silently turn later accounts into absent or eligible sources.
+  const accounts: { id: string; tenant_id: string; email_address: string }[] = [];
+  const mailboxes: WorkspaceScheduleMailbox[] = [];
+  let inventoryError = false;
+  for (let offset = 0; offset < 100000; offset += 500) {
+    const { data, error } = await supabase
+      .from("email_accounts")
+      .select("id,tenant_id,email_address")
+      .eq("provider", PROVIDER)
+      .in("status", DWD_STATUSES)
+      .order("id")
+      .range(offset, offset + 499);
+    if (error || !data) {
+      inventoryError = true;
+      break;
+    }
+    accounts.push(...data);
+    if (data.length < 500) break;
+    if (offset === 99500) inventoryError = true;
+  }
+  if (!inventoryError) {
+    for (let offset = 0; offset < 100000; offset += 500) {
+      const { data, error } = await supabase
+        .from("google_workspace_mailboxes")
+        .select(
+          "tenant_id,email_address,status,sync_enabled,mailbox_type,directory_identity_conflict",
+        )
+        .order("id")
+        .range(offset, offset + 499);
+      if (error || !data) {
+        inventoryError = true;
+        break;
+      }
+      mailboxes.push(...data);
+      if (data.length < 500) break;
+      if (offset === 99500) inventoryError = true;
+    }
+  }
   const perTenant = new Map<string, SchedulerCounts>();
   const mailboxQueued = new Map<string, number>();
+  const ineligibleByTenant = new Map<string, number>();
   const discoveryCounts = new Map<string, number>();
   for (const tid of tenantIds) perTenant.set(tid, emptySchedulerCounts());
-  for (const acc of accountError ? [] : (accounts ?? [])) {
+  for (const acc of inventoryError ? [] : accounts) {
     if (!perTenant.has(acc.tenant_id)) perTenant.set(acc.tenant_id, emptySchedulerCounts());
   }
   let discoveryQueued = 0,
     queued = 0,
     duplicates = 0;
-  if (!accountError) {
+  if (!inventoryError) {
     for (const tid of tenantIds) {
       const counts = perTenant.get(tid)!;
       const { data: lastDisc, error: discoveryError } = await supabase
@@ -120,9 +157,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       discoveryQueued += counts.queued - before;
       discoveryCounts.set(tid, counts.queued - before);
     }
-    for (const acc of accounts ?? []) {
+    for (const acc of accounts) {
       const tid = acc.tenant_id as string,
         counts = perTenant.get(tid)!;
+      if (!isWorkspaceMailboxEligible(acc, mailboxes)) {
+        ineligibleByTenant.set(tid, (ineligibleByTenant.get(tid) ?? 0) + 1);
+        continue;
+      }
       const before = { ...counts };
       await scheduleAndCount(
         supabase,
@@ -154,7 +195,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
           mailboxes_enqueued: mailboxQueued.get(tid) ?? 0,
           discovery_enqueued: discoveryCounts.get(tid) ?? 0,
         },
-        !!accountError,
+        inventoryError,
+        ineligibleByTenant.get(tid) ?? 0,
       ))
     ) {
       heartbeatConfirmed = false;
@@ -166,7 +208,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       "Scheduler results could not be recorded. Check queued jobs before retrying.",
       503,
     );
-  if (accountError) return fail("db_error", "Could not list DWD mailboxes", 500);
+  if (inventoryError) return fail("db_error", "Could not list DWD mailbox authority", 500);
   const counts = [...perTenant.values()];
   if (counts.some((c) => c.unconfirmed))
     return fail(
@@ -176,10 +218,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
   return json({
     success: true,
-    mailboxes: (accounts ?? []).length,
+    mailboxes: accounts.length,
     queued,
     duplicates,
     discovery_queued: discoveryQueued,
     capture_paused: counts.reduce((n, c) => n + c.paused, 0),
+    known_ineligible: [...ineligibleByTenant.values()].reduce((n, c) => n + c, 0),
   });
 });

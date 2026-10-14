@@ -1,0 +1,56 @@
+{
+  "version": "learn-build01-workspace-scheduler/1",
+  "observedAt": "2026-10-14T17:42:33.612Z",
+  "scope": "Drummonds LIVE and isolated TEST scheduler repair",
+  "testDeployment": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "function": "email-workspace-scheduled-sync",
+    "version": 5,
+    "status": "ACTIVE",
+    "verifyJwt": false,
+    "sourceReadbackMatches": true,
+    "realMailboxCaptureProven": false
+  },
+  "liveDeployment": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "function": "email-workspace-scheduled-sync",
+    "version": 55,
+    "status": "ACTIVE",
+    "verifyJwt": false,
+    "sourceReadbackMatches": true
+  },
+  "liveCycle": {
+    "startedAt": "2026-10-14T17:40:05.289Z",
+    "status": "failed",
+    "eligibleMailboxesEnqueued": 14,
+    "knownIneligibleAccounts": 4,
+    "enqueueUnconfirmed": 0,
+    "inventoryUnavailable": false,
+    "meaning": "Four saved DWD accounts refer to mailboxes currently marked removed. They are withheld from capture and recorded as a coverage failure until authority is reconciled."
+  },
+  "aliasDiagnosis": {
+    "activeAliasCount": 2,
+    "recentCheckpointsBlocked": 2,
+    "blockCode": "source_ineligible",
+    "blockedSinceUtc": ["2026-10-13T07:40:02.770615Z", "2026-10-13T07:45:03.034572Z"],
+    "currentDirectoryBindingsValid": 2,
+    "currentReadOnlyDelegatedAliasProfilesPass": 2,
+    "currentReadOnlyDelegatedPrimaryProfilesPass": 2,
+    "messageRequests": 0,
+    "providerWrites": 0,
+    "recoveryApplied": false
+  },
+  "checks": {
+    "selectionTestPassed": true,
+    "typescriptPassed": true,
+    "eslintPassed": true,
+    "gitDiffCheckPassed": true
+  },
+  "limitations": [
+    "The scheduler repair stops new denied jobs for removed mailboxes but does not erase historical failures or decide whether those accounts should be disabled.",
+    "A failed scheduler heartbeat is intentional while saved account and mailbox authority disagree; it does not mean eligible enqueue failed.",
+    "Both active aliases need a fenced, logged explicit checkpoint recovery before normal capture can be accepted.",
+    "TEST has no real Drummonds Workspace capture credentials; its release confirms package and source readback only.",
+    "A real full working day and complete source-to-card coverage remain unverified."
+  ]
+}
