@@ -66,6 +66,14 @@ try:
     assert sql("select to_regclass('learn_quickbooks_imports') is null") == 't'
     sql(ingestion)
     sql(source('scripts/verify/learn-quickbooks-import.assert.sql'))
+    variants = source('supabase/migrations/20261102230000_learn_quickbooks_source_variants.sql')
+    commit_before_variants = sql("select md5(pg_get_functiondef('public.learn_quickbooks_import_commit(uuid,uuid,text)'::regprocedure))")
+    sql(variants.replace('\ncommit;', '\nrollback;'))
+    assert sql("select md5(pg_get_functiondef('public.learn_quickbooks_import_commit(uuid,uuid,text)'::regprocedure))") == commit_before_variants
+    assert sql("select to_regprocedure('public.learn_quickbooks_payload_variant(text,jsonb,jsonb)') is null") == 't'
+    sql(variants)
+    sql(source('scripts/verify/learn-quickbooks-source-variants.assert.sql'))
+    print('PASS: source-variant rollback, private helpers, actual commit, computed-balance chronology, reference multiplicity, immutable history and unknown-conflict preservation.')
     print('PASS: durable imports, exact financial decimals, replay recovery, version deduplication, module fence and realm-wide throttling.')
     subprocess.run(['node', str(root / 'scripts/verify/learn-quickbooks-import-flow.mjs')], check=True,
                    env={**os.environ, 'SERVICEOS_QB_TEST_CONTAINER': name, 'SERVICEOS_QB_TEST_DOCKER': docker}, timeout=60)

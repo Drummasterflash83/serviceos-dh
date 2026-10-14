@@ -103,3 +103,26 @@ stores; any required local Touch ID must be completed by Chris.
 At 10:16 UTC the scheduled run had ten saved pages and 1,000 observations, no
 import error, matching recorded actor/tenant, token generation 4 and unchanged
 reviewed-link fingerprint. No local provider runner was used for these pages.
+
+## Source-variant correction — 14 October, 10:58 UTC
+
+The first repeat scan exposed 13 newer computed Customer balance/update-time
+variants and two Invoice reference-list permutations under unchanged SyncTokens.
+The tested source-variant migration is verified in TEST and LIVE, with private
+helpers and unchanged original commit permissions/unrelated functions. It
+recognises only those narrowly compatible cases. Identity/amount changes,
+unknown same-time changes, malformed dates and changes to invoice line order
+remain held; existing unknown flags are never automatically erased.
+
+Fifteen earlier false flags were checkpointed and corrected only after all pairs
+of their retained versions passed compatibility. Locked pointer and immutable
+version fingerprint checks passed; 15 system-maintenance receipts were read back,
+zero flags remained, and the five reviewed financial links were unchanged. All
+original versions remain retained. No provider call or new authority was used.
+
+Actual-commit and rollback regression checks pass alongside the existing complete
+OAuth/import/finance/refresh/export/disconnect checks. At 10:58 UTC the normal
+hosted scan had 430 saved pages and 42,907 observations, zero current conflicts
+and preserved reviewed links. Full traversal and next-due verification remain
+pending. The read-only hosted-refresh evidence script verifies both before
+writing completed acceptance evidence.
