@@ -42,51 +42,36 @@ Cloudflare-flavoured.
 
 ## Current live checkpoint — 14 October 2026
 
-The learning scheduler is now LIVE v20, aligned with worker mapper `obs-ingest/2`
-and explicit queued mapper versions. Exact runtime readback and authentication
-checks pass; scheduled end-to-end acceptance remains pending.
+LIVE frontend is `0659046d55abeb8bbddd5ae2b5c174b8fca2ba45` /
+`dpl_F34AYUtewmQubgbQCu2LQwqahSNQ`. TEST is
+`e7fdc2a6518dc17db6b70b823160a2ed50d81e2a` /
+`dpl_6WBCBMbVVLyv2ayQfxVPyQB4itQD`. All existing aliases, protections and rendered
+Supabase targets are verified. The isolated three-file releases add audited job
+search to Slack context review while retaining the existing design and separate
+TEST-only changes. Signed-in TEST and LIVE search/context-reading acceptance passes.
+[Release, preservation and rollback](operations/LEARN-OPERATOR-JOB-SEARCH.md).
+
+Frontend rollback: LIVE `5375262266445fc9d913b96242d4c7a51387d0d4` /
+`dpl_AuCREnJ5GQNVN8YodUAYhNsnvqcB`; TEST
+`778f7ad828086888ba4d355319a4a538725e3eff` /
+`dpl_DpvxmPfubUNPbTbUnpHgasNwD5BP`. The additive search backend can stay installed
+when reverting the frontend. Do not reverse the earlier contact-separation backend:
+its guard preserves protection after real shared-endpoint contacts were published.
+[Prior contact release](operations/LEARN-CONTACT-SEPARATION.md).
+
+The learning scheduler is LIVE v20, aligned with worker mapper `obs-ingest/2` and
+explicit queued mapper versions. Exact runtime readback, authentication and normal
+scheduled dispatch pass; downstream observation acceptance remains pending.
 [Runtime evidence](../supabase/release/learn-reviewed-ingestion/runtime.manifest.json).
-
-The separately deployed learning selector now reserves bounded capacity for recorded
-Slack context reviews, preserving historical processing and existing permissions.
-The exact SQL release and rollback are in
-[`reviewed-ingestion-selection-v1`](../supabase/release/learn-production-patches/reviewed-ingestion-selection-v1/README.md).
-[Current acceptance evidence](operations/evidence/learn-reviewed-ingestion-selection-live-2026-10-14.json).
-This backend-only release does not change the frontend checkpoint below.
-
-LIVE frontend Git `5375262266445fc9d913b96242d4c7a51387d0d4`, deployment
-`dpl_AuCREnJ5GQNVN8YodUAYhNsnvqcB`, is verified on the production target and all
-four existing aliases. This isolated three-file release adds evidenced review of
-distinct named contacts sharing a phone/email, preserving the existing design,
-branding, recent-job ordering and Slack/QuickBooks foundations.
-
-The matching backend is separately installed in TEST and LIVE with exact definitions
-and grants. It preserves existing source history and people, records the review,
-and holds shared-endpoint automatic attribution for operator review. Signed-in TEST
-and one real LIVE publication pass, including the customer card, source/customer/site
-links, saved contact details and operator audit. This is not complete source coverage.
-[Release and acceptance](operations/LEARN-CONTACT-SEPARATION.md).
-
-LIVE frontend rollback: `c45c95a6188555d470f7c22146128be23471b531` /
-`dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS`. Keep the compatible backend when reverting the
-frontend. The guarded SQL reversal intentionally refuses once separate contacts
-have been published, preventing removal of shared-endpoint protection. Preserve
-pending version-two browser drafts and recover/cancel them with a compatible client.
-
-Protected TEST serves `778f7ad828086888ba4d355319a4a538725e3eff` /
-`dpl_DpvxmPfubUNPbTbUnpHgasNwD5BP` on both permanent aliases. TEST retains its earlier
-job-refresh controls; LIVE does not include that held frontend. TEST rollback:
-`8f99829de7de78fcc3d47b9e75884ad0dced02fe` /
-`dpl_GxKWS5zVMVEuogKuMXs8HTGNqkoz`. Deployment protection is unchanged.
+The matching selector reserves bounded capacity for recorded Slack reviews while
+continuing historical processing and preserving existing permissions.
+[SQL release and rollback](../supabase/release/learn-production-patches/reviewed-ingestion-selection-v1/README.md).
 
 Stable-domain release-query navigation verified the exact builds. The earlier
 stale-document behaviour on normal reload remains a separate open issue.
 QuickBooks production registration/company acceptance, broad publication/matching,
 scoring and operational acceptance remain incomplete. Use **https://www.openfolk.ai**
 for LIVE and **https://test.openfolk.ai** for TEST.
-
-[Contact release evidence](operations/evidence/learn-contact-separation-live-2026-10-14.json)
-· [Prior Slack release](operations/evidence/learn-slack-card-source-live-2026-10-14.json).
 
 ## Preview deployments
 

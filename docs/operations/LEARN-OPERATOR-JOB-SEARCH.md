@@ -31,8 +31,30 @@ fixture rollback. The first rehearsal fixture attempted a cross-tenant relations
 and was correctly rejected by the existing foundation guard; the fixture was fixed.
 No hosted data, user grant or provider was changed by these rehearsals.
 
-Hosted TEST/LIVE installation and signed-in acceptance are pending. Do not describe
-this search as available live until that acceptance is recorded.
+Hosted TEST and LIVE installation and signed-in acceptance passed at 05:23 UTC.
+TEST demonstrates 25 + 21 result paging, exact job lookup, customer/postcode labels,
+leading-zero descriptions, passing the selected job into the existing context reader,
+clearing that proposal when the query changes and an explicit empty result. All four
+searches have matching real-operator read audits. LIVE finds job 13356 directly and
+shows its existing reviewed context; its exact search audit and original source/
+review preservation pass. No context decision was saved during search acceptance.
+
+LIVE frontend: `0659046d55abeb8bbddd5ae2b5c174b8fca2ba45` /
+`dpl_F34AYUtewmQubgbQCu2LQwqahSNQ`, verified on all four existing aliases.
+TEST frontend: `e7fdc2a6518dc17db6b70b823160a2ed50d81e2a` /
+`dpl_6WBCBMbVVLyv2ayQfxVPyQB4itQD`, verified on both protected stable aliases.
+Prior frontends remain rollback targets: LIVE `5375262` /
+`dpl_AuCREnJ5GQNVN8YodUAYhNsnvqcB`; TEST `778f7ad` /
+`dpl_DpvxmPfubUNPbTbUnpHgasNwD5BP`. Each candidate changes only three frontend files
+on its own previously accepted baseline; TEST-only functionality remains separate.
+Both rendered authentication targets and deployment protection settings pass.
+
+Backend installation preserves 899 LIVE jobs and 18,079 business-source versions,
+and 69 TEST jobs and 18,016 source versions. Effective-access helper and existing
+profile/grant fingerprints remain unchanged. Exact new function body, owner, ACL,
+security-definer setting and fixed search path pass hosted readback.
+
+[Hosted acceptance evidence](evidence/learn-operator-job-search-live-2026-10-14.json).
 
 [Exact source and rehearsal evidence](../../supabase/release/learn-operator-job-search/manifest.json).
 

@@ -1,6 +1,6 @@
 {
   "version": "learn-operator-job-search-release/1",
-  "state": "local_verified_release_pending",
+  "state": "test_and_live_signed_in_verified",
   "source": {
     "path": "supabase/migrations/20261102170000_learn_operator_job_search.sql",
     "sha256": "a2f03581e979e235fb6dc41bb2ca882d884be04dc92b6e5fa8f3bda464bccd26"
@@ -45,5 +45,6 @@
     "containerRemoved": true
   },
   "scope": "New authenticated operator RPC guarded by existing controlplane-admin checks; read-only published job search with mandatory audit. No new accounts/grants, automatic linking or source changes.",
-  "rollback": "Revert frontend first. Drop only public.learn_operator_job_search(uuid,text,text,uuid) after checking the exact installed definition. Existing job/context records and read audit remain retained."
+  "rollback": "Revert frontend first. Drop only public.learn_operator_job_search(uuid,text,text,uuid) after checking the exact installed definition. Existing job/context records and read audit remain retained.",
+  "acceptance": "docs/operations/evidence/learn-operator-job-search-live-2026-10-14.json"
 }

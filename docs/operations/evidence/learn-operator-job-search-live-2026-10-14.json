@@ -1,0 +1,134 @@
+{
+  "version": "learn-operator-job-search-acceptance/1",
+  "at": "2026-10-14T05:23:45Z",
+  "state": "test_and_live_signed_in_verified",
+  "test": {
+    "backend": {
+      "at": "2026-10-14T05:17:43.543Z",
+      "state": "installed_verified",
+      "env": "test",
+      "project": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "a2f03581e979e235fb6dc41bb2ca882d884be04dc92b6e5fa8f3bda464bccd26",
+      "function": {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=pg_catalog"
+        ],
+        "bodyHash": "68b7bd5405d9b0876525ed41f276edd5",
+        "securityDefiner": true
+      },
+      "authorityUnchanged": true,
+      "priorJobsPreserved": 69,
+      "priorBusinessSourcesPreserved": 18016,
+      "error": null
+    },
+    "frontend": {
+      "state": "submitted",
+      "at": "2026-10-14T05:18:05.758Z",
+      "sha": "e7fdc2a6518dc17db6b70b823160a2ed50d81e2a",
+      "prior": "dpl_DpvxmPfubUNPbTbUnpHgasNwD5BP",
+      "priorProduction": "dpl_AFvr5njNt4hpPUqpBo413zKt3NRr",
+      "id": "dpl_6WBCBMbVVLyv2ayQfxVPyQB4itQD",
+      "url": "serviceos-learn-test-k7siw828m-allkin.vercel.app"
+    },
+    "browser": {
+      "state": "signed_in_job_search_verified",
+      "build": "e7fdc2a",
+      "operatorAuditVerified": true,
+      "pagedRows": [
+        25,
+        21
+      ],
+      "exactJobSearch": true,
+      "leadingZeroTitlePreserved": true,
+      "customerAndPostcodeShown": true,
+      "existingContextReaderAcceptedSelectedJob": true,
+      "searchChangeClearsProposedLink": true,
+      "noResultsVerified": true,
+      "savedNewContext": false
+    }
+  },
+  "live": {
+    "backend": {
+      "at": "2026-10-14T05:22:04.657Z",
+      "state": "installed_verified",
+      "env": "live",
+      "project": "tgbnakbxwcqjeimygroz",
+      "sourceSha256": "a2f03581e979e235fb6dc41bb2ca882d884be04dc92b6e5fa8f3bda464bccd26",
+      "function": {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=pg_catalog"
+        ],
+        "bodyHash": "68b7bd5405d9b0876525ed41f276edd5",
+        "securityDefiner": true
+      },
+      "authorityUnchanged": true,
+      "priorJobsPreserved": 899,
+      "priorBusinessSourcesPreserved": 18079,
+      "error": null
+    },
+    "frontend": {
+      "state": "submitted",
+      "at": "2026-10-14T05:20:29.925Z",
+      "sha": "0659046d55abeb8bbddd5ae2b5c174b8fca2ba45",
+      "prior": "dpl_AuCREnJ5GQNVN8YodUAYhNsnvqcB",
+      "priorProduction": "dpl_AuCREnJ5GQNVN8YodUAYhNsnvqcB",
+      "id": "dpl_F34AYUtewmQubgbQCu2LQwqahSNQ",
+      "url": "serviceos-k8hkjv4ae-allkin.vercel.app"
+    },
+    "browser": {
+      "state": "signed_in_job_search_verified",
+      "build": "0659046",
+      "operatorAuditVerified": true,
+      "exactJobSearch": true,
+      "leadingZeroTitlePreserved": true,
+      "customerAndPostcodeShown": true,
+      "existingContextReaderAcceptedSelectedJob": true,
+      "existingReviewRetained": true,
+      "savedNewContext": false
+    },
+    "aliases": {
+      "at": "2026-10-14T05:22:49.081Z",
+      "production": "dpl_F34AYUtewmQubgbQCu2LQwqahSNQ",
+      "aliases": [
+        {
+          "host": "app.openfolk.ai",
+          "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+          "deployment": "dpl_F34AYUtewmQubgbQCu2LQwqahSNQ",
+          "redirect": null
+        },
+        {
+          "host": "openfolk.ai",
+          "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+          "deployment": "dpl_F34AYUtewmQubgbQCu2LQwqahSNQ",
+          "redirect": "www.openfolk.ai"
+        },
+        {
+          "host": "serviceos-dh.vercel.app",
+          "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+          "deployment": "dpl_F34AYUtewmQubgbQCu2LQwqahSNQ",
+          "redirect": null
+        },
+        {
+          "host": "www.openfolk.ai",
+          "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+          "deployment": "dpl_F34AYUtewmQubgbQCu2LQwqahSNQ",
+          "redirect": null
+        }
+      ],
+      "id": "dpl_F34AYUtewmQubgbQCu2LQwqahSNQ",
+      "sha": "0659046d55abeb8bbddd5ae2b5c174b8fca2ba45",
+      "protection": {
+        "deploymentType": "all_except_custom_domains"
+      },
+      "ready": "READY",
+      "aliasAssigned": true,
+      "state": "aliases_verified"
+    }
+  },
+  "slackLearning": "Two reviewed sources remain preserved and queued; neither has a downstream observation receipt at this check.",
+  "scope": "Only job-search read workflow; no new context saved or source mapping changed."
+}

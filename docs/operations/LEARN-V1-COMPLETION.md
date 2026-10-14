@@ -7,6 +7,26 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 06:24 BST — audited operator job search accepted in TEST and LIVE.**
+
+- The Slack context reviewer can now find published jobs by job number, description,
+  customer, address or postcode. Customer/location labels help disambiguate results;
+  source codes retain leading zeros. Searches do not create links automatically.
+- Signed-in TEST passes paged results, direct lookup, the existing context reader,
+  clearing a proposed link when the search changes and explicit empty results.
+  LIVE finds the reviewed Commusoft job directly, replacing nineteen pages of manual
+  selection. Both environments have matching real-operator read audit evidence.
+- Isolated full-schema tests preserve all 1,591,601 archived rows and seven sequences
+  while verifying tenant isolation, revocation, View-As denial, mandatory auditing
+  and function rollback/reapply. The frontend build and ten focused tests pass.
+  Hosted release preserves existing job/source records, access and source reviews.
+- Both stable TEST aliases and all four LIVE aliases serve their isolated candidates
+  with existing protection. Broader customer publication, attribution, scorecards,
+  reliable processing throughput and operational acceptance remain open. The two
+  reviewed Slack sources are still queued, not yet accepted as new observations.
+
+[Job search release and verification](LEARN-OPERATOR-JOB-SEARCH.md).
+
 **14 October, 06:08 BST — LIVE scheduled learning now uses the current mapper.**
 
 - The downloaded production scheduler v19 used `obs-ingest/1`, while the current
