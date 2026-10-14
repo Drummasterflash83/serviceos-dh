@@ -1,3 +1,4 @@
+import { LearnSlackSource } from "./LearnSlackSource";
 import { useEffect, useState } from "react";
 import { ArrowRight, BriefcaseBusiness, Building2, RefreshCw, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -782,7 +783,9 @@ function CardDetail({
                     communication.
                   </p>
                 </details>
-                {e.sourceTable && e.sourceId && Object.hasOwn(CARD_SOURCE_FIELDS, e.sourceTable) ? (
+                {e.sourceTable === "slack_messages" && e.sourceId ? (
+                  <LearnSlackSource tenantId={tenantId} actorId={actorId} sourceId={e.sourceId} />
+                ) : e.sourceTable && e.sourceId && Object.hasOwn(CARD_SOURCE_FIELDS, e.sourceTable) ? (
                   <LearnStoredEvidence
                     tenantId={tenantId}
                     reference={{ table: e.sourceTable, id: e.sourceId }}

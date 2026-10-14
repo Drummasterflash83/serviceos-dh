@@ -1,3 +1,4 @@
+import { LearnSlackSource } from "@/components/client-portal/learn/LearnSlackSource";
 import { useEffect, useRef, useState } from "react";
 import { OperatorLearningEvidence } from "./OperatorLearningEvidence";
 import { OperatorSlackWorkContext } from "./OperatorSlackWorkContext";
@@ -256,6 +257,9 @@ export function OperatorClientInformation({
                         cardId={row.id}
                         operatorReason={loadedReason}
                       />
+                    )}
+                    {collection === "communications" && row.fields.source_table === "slack_messages" && typeof row.fields.source_id === "string" && (
+                      <LearnSlackSource tenantId={tenantId} actorId={actorId} sourceId={row.fields.source_id} operatorReason={loadedReason} />
                     )}
                     {collection === "communications" &&
                       row.fields.source_table === "slack_messages" && (
