@@ -7,6 +7,29 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 01:24 BST — four reviewed Slack conversations verified on a LIVE customer timeline.**
+
+- Four complete public-channel messages were reviewed against three current published
+  jobs, their exact site names and customer ownership. Existing logged OpenFolk controls
+  recorded four immutable decisions. Readback confirms all source hashes, unknown
+  direction and customer-speaker attribution are preserved; no identity was invented.
+- Signed-in LIVE verification shows all four entries on the customer timeline and the
+  first on its job timeline, including the correct source excerpt and provenance.
+  These are reviewed context links, not new AI findings or complete Slack matching.
+- The scheduled intelligence selector has queued the first reviewed interaction.
+  Its exact job is still queued with zero attempts at 00:23 UTC. Other ingest jobs
+  are completing, so no duplicate or replacement was started. Observation acceptance
+  remains open until its committed downstream receipt is verified.
+- Commusoft's current cycle has completed all 1,552 customer-contact targets with a
+  terminal receipt. The site-contact pass reached 107 of 871 at 00:19 UTC; the full
+  cycle watermark remains unchanged until all stages complete.
+- No code, deployment, credentials, permissions, provider records or capture settings
+  changed. Wider publication, automated matching, scoring and operational acceptance
+  remain open. Private source text/screenshots are excluded from Git.
+
+[Reviewed Slack context evidence](evidence/learn-slack-reviewed-context-live-2026-10-14.json).
+
+
 
 **14 October, 01:06 BST — own-job status correction verified on LIVE and protected TEST.**
 

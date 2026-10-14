@@ -1,6 +1,28 @@
 # Slack conversation-to-work context
 
-Inspection on 13 October 2026. **Diagnostic and implementation proposal only; no production mutations, paid AI or UI changes.**
+## Latest LIVE acceptance, 14 October 2026 00:24 UTC
+
+Four full retained public Slack conversations now have logged, source-revision-bound
+reviews against three corroborated canonical jobs and their current site/customer
+provenance. Readback verifies four committed receipts, unchanged source hashes,
+unknown direction and unchanged customer-speaker attribution. Signed-in LIVE shows
+all four on the customer timeline and the first on its job timeline. The existing
+customer job-context reader is therefore accepted for these actual relationships.
+
+The scheduled intelligence selector queued the first new review at 00:15 UTC; that
+exact job remains queued at 00:23 UTC, while other ingest jobs are succeeding.
+No new observation is verified yet. Do not restart it or describe the link itself
+as an AI finding. The standalone candidate helper remains unwired: this is explicit
+review, not automatic matching or comprehensive coverage. Timeline source excerpts
+are available; a full original Slack source reader remains unfinished.
+
+See [aggregate evidence](evidence/learn-slack-reviewed-context-live-2026-10-14.json)
+and the authoritative completion checklist. Earlier observations below are historical
+and do not override this later acceptance.
+
+## Historical inspection, 13 October 2026
+
+The initial diagnostic made no production mutations, paid AI or UI changes.
 
 ## Current evidence
 
