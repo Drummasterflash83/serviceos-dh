@@ -6,10 +6,11 @@ export function LearnSlackSource(props: {
   actorId: string;
   sourceId: string;
   operatorReason?: string;
+  expectedSourceVersion?: string;
 }) {
   return (
     <SlackSourceView
-      key={`${props.tenantId}:${props.actorId}:${props.sourceId}:${props.operatorReason ?? ""}`}
+      key={`${props.tenantId}:${props.actorId}:${props.sourceId}:${props.operatorReason ?? ""}:${props.expectedSourceVersion ?? ""}`}
       {...props}
     />
   );
@@ -19,11 +20,13 @@ function SlackSourceView({
   actorId,
   sourceId,
   operatorReason,
+  expectedSourceVersion,
 }: {
   tenantId: string;
   actorId: string;
   sourceId: string;
   operatorReason?: string;
+  expectedSourceVersion?: string;
 }) {
   const [open, setOpen] = useState(false),
     [data, setData] = useState<SlackSource | null>(null),
@@ -40,7 +43,7 @@ function SlackSourceView({
     setError("");
     void readSlackCardSource(
       getSupabaseClient(),
-      { tenant: tenantId, actor: actorId, id: sourceId, operatorReason },
+      { tenant: tenantId, actor: actorId, id: sourceId, operatorReason, expectedSourceVersion },
       AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]),
     ).then(
       (result) => {
@@ -54,7 +57,9 @@ function SlackSourceView({
       () => {
         if (active)
           setError(
-            "This Slack source is unavailable with your current access. Retained history may need checking.",
+            expectedSourceVersion
+              ? "This message may have changed or your access may have ended. Close the evidence and reload the list to check its current source."
+              : "This Slack source is unavailable with your current access. Retained history may need checking.",
           );
       },
     );
@@ -63,7 +68,7 @@ function SlackSourceView({
       controller.abort();
       if (expiry) clearTimeout(expiry);
     };
-  }, [open, revision, tenantId, actorId, sourceId, operatorReason]);
+  }, [open, revision, tenantId, actorId, sourceId, operatorReason, expectedSourceVersion]);
   useEffect(() => {
     const hide = () => {
       if (document.hidden) {
