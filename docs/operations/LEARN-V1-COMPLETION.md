@@ -7,6 +7,40 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October — Build 01 follow-up: job breakdown corrected; backup recovery in progress.**
+
+### Working and verified
+
+- The secondary customer job breakdown includes completed jobs. A real LIVE card
+  shows 25 completed in both headline and breakdown, bounded to 25 of 208 linked
+  published jobs. Record verification, payment and completion-time limits remain.
+- Current isolated frontends are LIVE `a9743c1` and TEST `b5b8b73`, retaining the
+  accepted Slack browser. Both stable alias sets, protections, actual backend
+  binding and signed-in build badges pass. Seven existing job-summary checks,
+  TypeScript and production build (including 47 prebuild checks) pass.
+- The existing backup runner now reobserves an inventory at most twice after the
+  exact concurrent-change guard fails. It preserves the same lease, ports, deadline,
+  shared request budget, complete source comparisons and prior successful manifest.
+  Thirty focused source/daily/supervisor checks pass. No new runner or schedule.
+
+### Needs finishing
+
+- The first manual backup stopped on an AWS timeout after a stable inventory.
+  The destination's safety checks subsequently passed; receipt-based recovery
+  remains in progress. A newer manifest or dependable unattended operation is
+  not established by starting that run.
+- The remaining V1 families in the Build 01 receipt stay incomplete. Authorised
+  private Slack channels retain their separate source/visibility acceptance;
+  the public browser does not remove that requirement. DMs remain deferred.
+
+### Blocked externally
+
+- Actual unattended observation, broader source reconciliation and human/business
+  review remain separate from local tests and manually recovered runs.
+
+[Follow-up evidence and rollback](evidence/learn-build01-followup-2026-10-14.json).
+
+
 **14 October, 12:30 BST — public Slack evidence browsing released and accepted.**
 
 ### Working and verified

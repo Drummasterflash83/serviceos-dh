@@ -2,9 +2,9 @@
  * per mutation, durable intent and readback. Never rebuilds via promotion. */
 import{readFileSync,writeFileSync,existsSync}from'node:fs';
 import{homedir}from'node:os';
-const [mode,environment]=process.argv.slice(2);
-if(!['plan','create','inspect','promote'].includes(mode)||!['test','live'].includes(environment))throw Error('Exact mode and environment required');
-const root='.verification-results/learn-slack-evidence-frontends-20261014-01';
+const [mode,environment,revision='01']=process.argv.slice(2);
+if(!['plan','create','inspect','promote'].includes(mode)||!['test','live'].includes(environment)||!['01','02'].includes(revision))throw Error('Exact mode, environment and frontend revision required');
+const root='.verification-results/learn-slack-evidence-frontends-20261014-'+revision;
 const candidate=JSON.parse(readFileSync(root+'/candidates.json')).find(c=>c.environment===environment);
 if(!candidate||!new RegExp('^codex/learn-slack-evidence-'+environment+'-20261014$').test(candidate.branch)||!/^[a-f0-9]{40}$/.test(candidate.sha))throw Error('Isolated candidate required');
 const live=environment==='live',project=live?'prj_XEuCp5gnEireW5WynUgkRp9QNiXa':'prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs',team='team_PGUQWiaAZZkMTCM9nSHahIpG';

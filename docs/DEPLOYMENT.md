@@ -42,6 +42,26 @@ Cloudflare-flavoured.
 
 ## Current live checkpoint — 14 October 2026
 
+**Build 01 frontend update — 14 October:** actual LIVE aliases now serve
+`a9743c1df5b2757c98f5a445e226bd52569d9ff7` /
+`dpl_4T3QH1wja6Q2jNMDpxNMQRHjBp3s`; both stable TEST aliases serve
+`b5b8b731f5abe6f56fcdc158a0d2894739bb6f56` /
+`dpl_5DRZ6gyD4sYvGTz6QTxuUNh13XQh`. This adds public Slack evidence browsing
+and includes completed jobs in the existing status breakdown. The candidates are
+based on each previously deployed frontend, preserving QuickBooks and other working
+features. Candidate/rendered and signed-in build badge backend checks pass; LIVE
+remains production, TEST Preview. All existing aliases, redirects, domains and
+protection are verified unchanged apart from their intended deployment binding.
+
+The project production-target pointer may still name an older staged release.
+Read the **actual aliases** before preparing any later candidate; never deploy or
+roll back from that stale pointer alone. No worker, capture schedule, provider
+permission or user identity was changed by these frontend releases.
+[Slack release and preservation](operations/LEARN-SLACK-EVIDENCE-BROWSING.md),
+[job-summary follow-up and per-alias rollback](operations/evidence/learn-build01-followup-2026-10-14.json).
+Older frontend identifiers below are historical.
+
+
 The public Slack source-learning package now installs LIVE worker **v77** with the
 matching guarded qualifier, observer and ordered selector. Exact executable readback,
 missing-auth denial and eleven canonical-source preservation checks pass. A real

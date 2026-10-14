@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runDailyBackup, readDailyHealth } from "./run-drummonds-recording-daily.mjs";
 import { fixture, context, time } from "./test-support/s3-fixture.mjs";
+import { RecordingBackupError } from "./recording-backup-core.mjs";
 const id = (n) => "00000000-0000-4000-8000-" + String(n).padStart(12, "0");
 function ports() {
   const f = fixture();
@@ -35,6 +36,125 @@ function ports() {
   });
   return f;
 }
+test("a changing inventory is completely reobserved with the same ports before any copy", async () => {
+  const directory = await realpath(await mkdtemp(join(tmpdir(), "daily-arrivals-"))),
+    f = ports();
+  const stable = f.source.inventory;
+  let attempts = 0,
+    opened = 0;
+  f.source.usage = () => ({ requests: attempts, maxRequests: 100000 });
+  f.source.inventory = async () => {
+    attempts++;
+    if (attempts < 3) {
+      assert.equal(f.calls.length, 0);
+      throw new RecordingBackupError("source_inventory_changed");
+    }
+    return stable();
+  };
+  try {
+    const result = await runDailyBackup({
+      directory,
+      binding: context,
+      createPorts: async () => {
+        opened++;
+        return f;
+      },
+    });
+    assert.equal(opened, 1);
+    assert.equal(attempts, 3);
+    assert.equal(result.state, "inventory_verified");
+    assert.deepEqual(
+      result.inventoryAttempts.map((a) => a.state),
+      ["failed", "failed", "stable"],
+    );
+    assert.deepEqual(result.sourceUsage, { requests: 3, maxRequests: 100000 });
+    const journal = JSON.parse(await readFile(join(directory, "last-attempt.json"), "utf8"));
+    assert.equal(journal.state, "succeeded");
+    assert.equal(journal.inventoryAttempts.length, 3);
+    await assert.rejects(stat(join(directory, "daily.lock")), { code: "ENOENT" });
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+test("three unstable scans stop without copying or replacing the previous verified result", async () => {
+  const directory = await realpath(await mkdtemp(join(tmpdir(), "daily-arrivals-"))),
+    f = ports();
+  try {
+    await runDailyBackup({ directory, binding: context, createPorts: async () => f });
+    const success = await readFile(join(directory, "last-success.json"), "utf8"),
+      calls = f.calls.length;
+    let scans = 0;
+    f.source.inventory = async () => {
+      scans++;
+      throw new RecordingBackupError("source_inventory_changed");
+    };
+    await assert.rejects(
+      runDailyBackup({ directory, binding: context, createPorts: async () => f }),
+      { code: "source_inventory_changed" },
+    );
+    assert.equal(scans, 3);
+    assert.equal(f.calls.length, calls);
+    assert.equal(await readFile(join(directory, "last-success.json"), "utf8"), success);
+    const journal = JSON.parse(await readFile(join(directory, "last-attempt.json"), "utf8"));
+    assert.equal(journal.state, "failed");
+    assert.equal(journal.inventoryAttempts.length, 3);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+test("source identity/access failures and exhausted shared budgets never restart inventory", async () => {
+  for (const code of [
+    "source_changed",
+    "source_request_unconfirmed",
+    "communication_request_limit",
+  ]) {
+    const directory = await realpath(await mkdtemp(join(tmpdir(), "daily-arrivals-"))),
+      f = ports();
+    let scans = 0;
+    f.source.inventory = async () => {
+      scans++;
+      throw new RecordingBackupError(scans === 1 ? "source_inventory_changed" : code);
+    };
+    try {
+      await assert.rejects(
+        runDailyBackup({ directory, binding: context, createPorts: async () => f }),
+        { code },
+      );
+      assert.equal(scans, 2);
+      assert.equal(f.calls.length, 0);
+      await assert.rejects(stat(join(directory, "last-success.json")), { code: "ENOENT" });
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  }
+});
+test("cancellation between inventories stops under the same lock before another read", async () => {
+  const directory = await realpath(await mkdtemp(join(tmpdir(), "daily-arrivals-"))),
+    f = ports(),
+    controller = new AbortController();
+  let scans = 0;
+  f.source.inventory = async () => {
+    scans++;
+    controller.abort();
+    throw new RecordingBackupError("source_inventory_changed");
+  };
+  try {
+    await assert.rejects(
+      runDailyBackup({
+        directory,
+        binding: context,
+        signal: controller.signal,
+        createPorts: async () => f,
+      }),
+      { code: "daily_cancelled" },
+    );
+    assert.equal(scans, 1);
+    assert.equal(f.calls.length, 0);
+    await assert.rejects(stat(join(directory, "daily.lock")), { code: "ENOENT" });
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
 test("daily runner saves private fresh manifests and preserves last success after failure", async () => {
   const directory = await realpath(await mkdtemp(join(tmpdir(), "daily-run-"))),
     f = ports();

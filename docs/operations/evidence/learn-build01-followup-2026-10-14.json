@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-14",
+  "stage": "Build 01",
+  "state": "job_status_display_released_backup_verification_in_progress",
+  "jobSummary": {
+    "change": "Include completed in the existing published-job status breakdown; retain all existing status/verification/source qualifications.",
+    "focusedExistingTests": 7,
+    "applicationTypeScript": "passed",
+    "productionBuild": "passed, including 47 required prebuild checks",
+    "liveActualCard": {
+      "completedShown": 25,
+      "linkedJobs": 208,
+      "boundedSummaryShown": 25,
+      "verificationAndIncompleteCoverageWarningsPreserved": true
+    },
+    "browserLimit": "Earlier temporary network/auth-refresh fetch errors were observed; after recovery the real card loaded with the corrected breakdown. No error-free interval is inferred for that whole session.",
+    "sourceAndAuthorityWrites": 0
+  },
+  "frontend": {
+    "test": {
+      "id": "dpl_5DRZ6gyD4sYvGTz6QTxuUNh13XQh",
+      "sha": "b5b8b731f5abe6f56fcdc158a0d2894739bb6f56",
+      "aliases": [
+        "serviceos-learn-test-allkin.vercel.app",
+        "test.openfolk.ai"
+      ],
+      "protection": {
+        "deploymentType": "all"
+      },
+      "rollback": [
+        {
+          "name": "serviceos-learn-test-allkin.vercel.app",
+          "deployment": "dpl_4AQQbHsj92X7KCLkD9yF8iaa8WAY",
+          "redirect": null
+        },
+        {
+          "name": "test.openfolk.ai",
+          "deployment": "dpl_4AQQbHsj92X7KCLkD9yF8iaa8WAY",
+          "redirect": null
+        }
+      ]
+    },
+    "live": {
+      "id": "dpl_4T3QH1wja6Q2jNMDpxNMQRHjBp3s",
+      "sha": "a9743c1df5b2757c98f5a445e226bd52569d9ff7",
+      "aliases": [
+        "app.openfolk.ai",
+        "openfolk.ai",
+        "serviceos-dh.vercel.app",
+        "www.openfolk.ai"
+      ],
+      "protection": {
+        "deploymentType": "all_except_custom_domains"
+      },
+      "rollback": [
+        {
+          "name": "app.openfolk.ai",
+          "deployment": "dpl_H94PaQFAWXR2w5NzJcAqjmD227aj",
+          "redirect": null
+        },
+        {
+          "name": "openfolk.ai",
+          "deployment": "dpl_H94PaQFAWXR2w5NzJcAqjmD227aj",
+          "redirect": "www.openfolk.ai"
+        },
+        {
+          "name": "serviceos-dh.vercel.app",
+          "deployment": "dpl_H94PaQFAWXR2w5NzJcAqjmD227aj",
+          "redirect": null
+        },
+        {
+          "name": "www.openfolk.ai",
+          "deployment": "dpl_H94PaQFAWXR2w5NzJcAqjmD227aj",
+          "redirect": null
+        }
+      ]
+    }
+  },
+  "backendBindings": "Actual candidate login and signed-in build badges match TEST Preview / LIVE production backends.",
+  "slackFeaturePreserved": true,
+  "backup": {
+    "change": "At most three full inventory observations on source_inventory_changed only, under the same ports, lock, deadline and shared request budget. No identity/byte/access failure retry.",
+    "focusedTests": 30,
+    "firstManualRun": "Stable inventory then s3_transport_timeout; previous successful backup preserved.",
+    "destinationReadback": "Existing account/privacy/encryption/retention/conditional-write safeguards subsequently passed in read-only inspection.",
+    "recoveryRun": "In progress under original execution handle; no fresh success claimed.",
+    "unattendedAcceptance": false,
+    "scheduleChanged": false,
+    "newRunnerCreated": false
+  },
+  "broaderV1": "Still incomplete; no later numbered build activated."
+}

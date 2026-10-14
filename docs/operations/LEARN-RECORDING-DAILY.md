@@ -1,5 +1,24 @@
 # Drummonds daily recording backup operations
 
+**14 October — bounded recovery of changing inventories:** the existing daily
+runner now makes at most three complete inventory observations when the exact
+`source_inventory_changed` guard fires. Each attempt is journalled. The same lease,
+ports, one-hour deadline and shared source-request budget remain in force; both
+complete listing/reference comparisons are still required. Identity, byte,
+credential, transport and budget failures do not trigger these inventory retries.
+Thirty targeted source/daily/supervisor checks pass, including persistent instability,
+shared-budget exhaustion, cancellation and preservation of prior success.
+
+A manual combined run at 11:35 UTC obtained a stable inventory, then stopped on
+`s3_transport_timeout` at 11:40:32 UTC. Its terminal result and failure journal are
+retained. Read-only inspection subsequently verified the existing destination's
+account/privacy/encryption/retention/write safeguards. Recovery started at 11:59:23
+UTC using the same approved runner and receipt protocol. It is still in progress;
+no fresh backup success or unattended operation is claimed. The existing schedule
+was not changed and no second runner was created.
+[Current Build 01 follow-up](evidence/learn-build01-followup-2026-10-14.json).
+
+
 **13 October, 16:29 UTC — combined phone and voicemail backup verified.**
 The fixed three-bucket supervisor verified 2,990 phone files / 624,547,986 bytes,
 255 original voicemail emails / 23,622,647 bytes and 255 voicemail audio files /

@@ -90,6 +90,7 @@ export async function runDailyBackup({
     runDir,
     journalOwned = false;
   const startedAt = new Date().toISOString();
+  const inventoryAttempts = [];
   try {
     await privateDir(directory);
     if (lockLease !== undefined) await verifyDailyLease(lockLease, directory);
@@ -115,7 +116,43 @@ export async function runDailyBackup({
       requestBudget: dailySourceRequestBudget,
     });
     if (signal.aborted) fail("daily_cancelled");
-    const listed = await ports.source.inventory();
+    // A new arrival can invalidate a non-atomic inventory. Reobserve the entire
+    // inventory at most twice, under this same lease, ports, deadline and budget.
+    // Never retry byte/identity/access failures or use an incomplete inventory.
+    let listed;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      if (signal.aborted) fail("daily_cancelled");
+      const observedFrom = new Date().toISOString();
+      try {
+        listed = await ports.source.inventory();
+        inventoryAttempts.push({
+          attempt,
+          observedFrom,
+          finishedAt: new Date().toISOString(),
+          state: "stable",
+        });
+        break;
+      } catch (e) {
+        const code = e instanceof RecordingBackupError ? e.code : "daily_unconfirmed";
+        inventoryAttempts.push({
+          attempt,
+          observedFrom,
+          finishedAt: new Date().toISOString(),
+          state: "failed",
+          code,
+        });
+        if (code !== "source_inventory_changed" || attempt === 3) throw e;
+        await writePrivate(directory, "last-attempt.json", {
+          state: "in_progress",
+          pid: process.pid,
+          startedAt,
+          inventoryAttempts,
+          sourceUsage: ports.source.usage?.() ?? null,
+          backupComplete: false,
+        });
+        onProgress?.({ state: "inventory_reobserve", attempt, code });
+      }
+    }
     onInventory?.(listed);
     if (signal.aborted) fail("daily_cancelled");
     runDir = await mkdtemp(join(directory, "run-"));
@@ -127,6 +164,7 @@ export async function runDailyBackup({
       startedAt,
       runDirectory: runDir,
       runId: listed.inventory.runId,
+      inventoryAttempts,
       backupComplete: false,
     });
     const result = await dailyRecordingCycle(listed.inventory, binding, ports, {
@@ -162,6 +200,7 @@ export async function runDailyBackup({
       missingObjectReferences: reconciliation.missingObjectReferences.length,
     };
     result.sourceUsage = ports.source.usage?.() ?? null;
+    result.inventoryAttempts = inventoryAttempts;
     await writePrivate(runDir, "result.json", result);
     // Publish last success only after the immutable remote manifest has verified.
     await writePrivate(directory, "last-success.json", result);
@@ -171,6 +210,7 @@ export async function runDailyBackup({
       finishedAt: new Date().toISOString(),
       runId: result.runId,
       runDirectory: runDir,
+      inventoryAttempts,
       backupComplete: false,
     });
     return result;
@@ -183,6 +223,7 @@ export async function runDailyBackup({
         finishedAt: new Date().toISOString(),
         runDirectory: runDir ?? null,
         code,
+        inventoryAttempts,
         sourceUsage: ports?.source.usage?.() ?? null,
         backupComplete: false,
       }).catch(() => {});

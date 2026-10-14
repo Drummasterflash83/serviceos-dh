@@ -128,3 +128,15 @@ close the stage or the expanded Build 10 gate.
 [Sanitised acceptance evidence](evidence/learn-slack-evidence-browsing-2026-10-14.json).
 The exact prior deployment for rollback is recorded per alias in that evidence.
 No audio bytes, credentials, private message contents or runtime manifests enter Git.
+
+### Subsequent presentation-only release
+
+The later one-file job-status correction now serves LIVE `a9743c1` and TEST
+`b5b8b73`, retaining this complete browsing feature. Both actual signed-in build
+badges show their correct backend/environment. [Current aliases and rollback](evidence/learn-build01-followup-2026-10-14.json).
+The 11:30 UTC deployment identifiers above remain the exact original feature
+release, not the latest frontend aliases.
+
+Authorised private-channel history remains an existing V1 obligation with its own
+source/visibility acceptance. This public-only browser does not satisfy or remove
+that obligation. DMs remain explicitly deferred and private.
