@@ -1,6 +1,6 @@
 {
   "date_utc": "2026-10-14",
-  "status": "released_first_live_page_verified_recovery_observation_in_progress",
+  "status": "released_live_lease_recovery_and_first_lighter_continuation_verified_full_drain_in_progress",
   "purpose": "Drain eligible retained interactions outside the graph's latest-record window without changing canonical sources or inferred identities.",
   "test": {
     "selector_rollback_rehearsed": true,
@@ -37,9 +37,29 @@
       "completion_events": 1,
       "continuation_created": true
     },
-    "second_ordinary_job": "claimed_at_2026-10-14T22:03:00Z_remained_running_without_recent_writes_at_22:07Z",
+    "second_ordinary_job": {
+      "first_claimed_at_utc": "2026-10-14T22:03:00.933Z",
+      "lease_reclaimed_at_utc": "2026-10-14T22:19:00.891Z",
+      "completed_at_utc": "2026-10-14T22:19:34.838Z",
+      "status": "succeeded",
+      "attempts": 2,
+      "interactions_touched": 300,
+      "records_processed": 2227,
+      "completion_events": 1
+    },
     "queue_priority": "future scheduled and internal graph enqueues use priority 50; TEST synthetic enqueue and downloaded TEST/LIVE packages confirmed",
-    "lighter_continuation": "TEST verified interaction-only continuation, then released to LIVE worker and graph endpoint; an already-running old-code job must settle or reach its guarded lease recovery",
+    "lighter_continuation": {
+      "first_claimed_at_utc": "2026-10-14T22:21:00.661Z",
+      "completed_at_utc": "2026-10-14T22:21:09.064Z",
+      "status": "succeeded",
+      "attempts": 1,
+      "by_type": {"interaction": 150},
+      "nodes_created": 100,
+      "edges_created": 283,
+      "records_processed": 533,
+      "completion_events": 1,
+      "next_continuation_queued_at_utc": "2026-10-14T22:21:09.174Z"
+    },
     "full_history_and_unattended_acceptance": "not_yet_verified"
   },
   "limits": [

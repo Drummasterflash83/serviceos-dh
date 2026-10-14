@@ -7,6 +7,44 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 22:23 UTC — frontend recovery released; graph continuation recovering normally.**
+
+### Working and verified
+
+- A stale frontend document requested an obsolete dynamically imported route
+  after the serving build changed. The root error view's Try again action now
+  reloads the document for that specific error, obtaining current route assets;
+  other errors retain their existing reset path. Isolated candidates were built
+  from each exact currently serving Git commit and changed only the root error
+  component. TypeScript, lint, 47 prebuild checks and both production builds pass.
+- The rendered candidates had their correct separate Supabase targets. The two
+  protected TEST aliases now serve `c3ed81d7` / `dpl_5v1UQiMqVxfwwxVdVHZrtmr3XBQ9`;
+  four LIVE aliases serve `e614eb52` / `dpl_EcUCHusjTKceNQ2DSPAokoDHDJ3N`.
+  Each alias, redirect, domain and protection setting passed exact readback.
+  Signed-in Drummonds TEST and LIVE workspaces and Modules pages loaded; the
+  LIVE Drummond's branding stayed intact. This resolves the observed stale-route
+  retry failure, not complete application/Auth disaster recovery.
+- The LIVE graph job that stopped after its first claim was safely reclaimed and
+  succeeded on attempt two at 22:19:34 UTC with one completion event. Its first
+  lighter, interaction-only child succeeded at 22:21:09 UTC in about eight
+  seconds, touching 150 interactions and creating 100 nodes/283 edges, and queued
+  the next serial child. Its identity/card/recommendation phases did not repeat.
+
+### Needs finishing
+
+- Observe repeated graph pages and reconcile the growing historical gap,
+  recommendations and scoring. The email/card pipeline, legacy review holds,
+  broad source coverage, full app/Auth recovery and real full working-day
+  unattended acceptance remain open. Chris is the business reviewer; he has
+  not yet signed off. Do not activate Build 02.
+
+### Blocked externally
+
+- No specific provider or access blocker was established by these releases.
+
+[Frontend recovery evidence](evidence/learn-build01-frontend-recovery-2026-10-14.json)
+and [graph history evidence](evidence/learn-build01-graph-history-2026-10-14.json).
+
 **14 October, 22:07 UTC — graph history has a confirmed LIVE page; recovery observation continues.**
 
 ### Working and verified

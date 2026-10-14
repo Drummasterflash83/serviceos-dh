@@ -38,6 +38,11 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  const staleModule =
+    /failed to fetch dynamically imported module|importing a module script failed|chunkloaderror/i.test(
+      message,
+    );
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
@@ -54,6 +59,12 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
+              // A stale client bundle keeps requesting the old chunk after a
+              // route reset. Reload the document to obtain the current build.
+              if (staleModule) {
+                window.location.reload();
+                return;
+              }
               router.invalidate();
               reset();
             }}

@@ -42,6 +42,21 @@ Cloudflare-flavoured.
 
 ## Current live checkpoint — 14 October 2026
 
+**Later Build 01 root-error recovery, 22:22 UTC:** all four LIVE aliases serve
+`e614eb52375ed44dd0783dc25015799a14a4f922` /
+`dpl_EcUCHusjTKceNQ2DSPAokoDHDJ3N`; both TEST aliases serve
+`c3ed81d7c433c9f77337c4eb18f7bdb838be3e5d` /
+`dpl_5v1UQiMqVxfwwxVdVHZrtmr3XBQ9`. Each isolated candidate was based on
+the exact alias-served commit immediately before release; each tree differs only
+in `src/routes/__root.tsx`. Rendered backend targets, alias/redirect readback,
+protection and signed-in workspace/Modules loading passed. The fix reloads the
+document when a stale dynamic route asset fails, so Try again obtains the
+current asset; other error recovery is unchanged. This does not prove full
+application/Auth restore. Exact rollback deployments and checks are in the
+[release evidence](operations/evidence/learn-build01-frontend-recovery-2026-10-14.json).
+The earlier checkpoint below is historical; use actual alias readback for any
+later release.
+
 **Build 01 frontend update — 14 October:** actual LIVE aliases now serve
 `a9743c1df5b2757c98f5a445e226bd52569d9ff7` /
 `dpl_4T3QH1wja6Q2jNMDpxNMQRHjBp3s`; both stable TEST aliases serve

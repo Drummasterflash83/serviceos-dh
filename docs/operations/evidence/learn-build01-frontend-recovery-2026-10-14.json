@@ -1,0 +1,32 @@
+{
+  "date_utc": "2026-10-14",
+  "status": "released_test_and_live_signed_in_navigation_verified",
+  "issue": "An already-open document requested an old dynamically imported route chunk after the alias-served frontend changed. Try again reset the route without loading the current document and failed again; a full reload recovered.",
+  "change": "The root error view reloads the document only for stale dynamic module/chunk errors. Other errors keep the existing router invalidation and reset.",
+  "scope": "Each candidate was based on the exact then-serving Git commit and differs from that baseline only in src/routes/__root.tsx.",
+  "verification": ["TypeScript", "ESLint", "47 prebuild checks", "both isolated production builds", "rendered candidate Supabase target", "Vercel READY/source/target checks", "all aliases, redirects, domains and protections read back", "signed-in TEST and LIVE workspace and Modules loading"],
+  "test": {
+    "baseline_git_sha": "44191bcc09042f1de2b9cc52d7e0118332e1c63d",
+    "baseline_deployment": "dpl_CHXcTKyYfpc4EWovMjwK46D1JjdA",
+    "released_git_sha": "c3ed81d7c433c9f77337c4eb18f7bdb838be3e5d",
+    "released_deployment": "dpl_5v1UQiMqVxfwwxVdVHZrtmr3XBQ9",
+    "rendered_backend": "saatxzwxvdvqevbnskxy",
+    "aliases": ["serviceos-learn-test-allkin.vercel.app", "test.openfolk.ai"],
+    "protection": "all",
+    "signed_in_workspace_and_modules_loaded": true
+  },
+  "live": {
+    "baseline_git_sha": "4216954205f1482602b2139c210f39faa185a2b2",
+    "baseline_deployment": "dpl_6ShqDNUYSk8hSmTf5Xg8h53sxXDA",
+    "released_git_sha": "e614eb52375ed44dd0783dc25015799a14a4f922",
+    "released_deployment": "dpl_EcUCHusjTKceNQ2DSPAokoDHDJ3N",
+    "rendered_backend": "tgbnakbxwcqjeimygroz",
+    "aliases": ["app.openfolk.ai", "openfolk.ai", "serviceos-dh.vercel.app", "www.openfolk.ai"],
+    "protection": "all_except_custom_domains",
+    "root_redirect": "openfolk.ai -> www.openfolk.ai",
+    "signed_in_workspace_and_modules_loaded": true,
+    "drummonds_branding_preserved": true
+  },
+  "rollback": "Rebind each alias to its corresponding baseline deployment, keeping the existing root redirect and project protection. Private exact per-alias readbacks and intent are retained in .verification-results/learn-chunk-recovery-frontends-20261014/.",
+  "limits": ["A stale-chunk failure was reproduced before this release; a second live stale-chunk failure was not deliberately induced after release.", "This specific retry repair is not full app/Auth recovery or Build 01 acceptance."]
+}
