@@ -52,3 +52,25 @@ The approval for deploying the existing LIVE UX is recorded in AGENTS.md; no new
 user or operator access was granted by this release. Roll back the frontend alias
 if needed; the additive reader can remain installed, or be removed after reverting
 all callers. Do not undo the unrelated retained-finance or source-history repairs.
+
+## Further reviewed LIVE cards — 14 October, 10:36 UTC
+
+Five financial customer links now exist. Two further matches were individually
+reviewed using unique name/postcode/email evidence, with phone corroboration
+where available; their finance readers succeed with zero direct transactions.
+No nonzero activity was invented from those linked identities.
+
+A separate retained Commusoft business account was explicitly classified and
+reviewed against its matching QuickBooks main account, including agreeing name,
+postcode, email and phone with no conflicting or duplicate counterpart. Existing
+company search found no candidate. Its published customer card now has a reviewed
+QuickBooks link and ten Commusoft jobs, all verified as belonging to that exact
+property/customer. A search result whose job number matched the property number
+but belonged to another customer was excluded. Batch result: ten linked, zero
+held; the ordinary LIVE LEARN reader shows all ten. Completion timezones remain
+unconfirmed and cannot support duration/performance calculations.
+
+The original two financial-link rows are byte-for-byte unchanged by fingerprint.
+All added relationships were saved through signed-in logged operator controls.
+No automatic matching, source-reference rewriting or QuickBooks job crosswalk was
+performed. Further canonical customer coverage and review remain incomplete.

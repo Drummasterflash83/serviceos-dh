@@ -2,7 +2,7 @@
 
 Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
 
-## Current LIVE position — 14 October 2026, 10:14 UTC
+## Current LIVE position — 14 October 2026, 10:36 UTC
 
 - DRUMMOND HEATING is connected and confirmed in LIVE. Both approved history
   runs have finished: 1,354 requests, 1,353 saved pages and 134,569 retained
@@ -10,12 +10,17 @@ Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
   observations/counts reconcile, no current version conflicts, and the import
   connection was paused at completion. This establishes traversal of that scan,
   not reconciled accounts or permanent completeness.
-- Two reviewed customer links are saved. Belvoir's ordinary live LEARN card
+- Five reviewed customer links are saved. Belvoir's ordinary live LEARN card
   shows Commusoft business context with two jobs and four retained QuickBooks
   financial records. Cinergi has a reviewed QuickBooks link and one published
-  Commusoft job. Finance stays restricted to admins and logged support.
+  Commusoft job. Two further corroborated links have working readers but no direct
+  financial records. A reviewed business account was published from Commusoft,
+  linked to its corroborated QuickBooks main account, and given all ten reviewed
+  direct Commusoft jobs. The ordinary LIVE client reader shows those ten jobs.
+  Its accounting link currently has no direct transactions; no child/job finance
+  or cross-provider job association is inferred. Finance stays restricted to admins and logged support.
 - Customer union is incomplete: LIVE retains 1,552 Commusoft customers and 871
-  sites, while only 72 Commusoft customers are currently published to cards.
+  sites, while only 73 Commusoft customers are currently published to cards.
   QuickBooks retains 4,310 main accounts and 8,848 jobs/subcustomers. Historical
   name suffixes are not current Commusoft identifiers. Broad candidate review,
   missing canonical cards and evidenced job crosswalks remain to finish.
@@ -25,8 +30,9 @@ Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
 - Chris enabled ongoing LIVE refresh through logged controls: immediately, then
   six hours after each completed cycle, max 3,000 reads/cycle, 24h expiry. Hosted
   tick created run `af4983d5-2c01-4cae-a585-d2aa5ae2f841` at 10:14 UTC and renewed
-  the existing grant. First saved pages, full completion and next due verification
-  are still pending. No accounting writes, payroll, AI or automatic matching.
+  the existing grant. The normal hosted scheduler has saved more than 19,000 observations and
+  completed the Customer traversal without an import error. Full verification
+  cycle completion and its next due time are still pending. No accounting writes, payroll, AI or automatic matching.
 - Stable TEST retains 77 sandbox records and its deliberately revoked grant.
   Connection, duplicates, token refresh and disconnect are verified separately.
 
