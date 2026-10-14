@@ -1,4 +1,5 @@
 import { LearnSlackSource } from "@/components/client-portal/learn/LearnSlackSource";
+import { LearnSlackEvidence } from "@/components/client-portal/learn/LearnSlackEvidence";
 import { useEffect, useRef, useState } from "react";
 import { OperatorLearningEvidence } from "./OperatorLearningEvidence";
 import { OperatorSlackWorkContext } from "./OperatorSlackWorkContext";
@@ -25,7 +26,9 @@ export function OperatorClientInformation({
   initialCollection?: InformationCollection;
   embedded?: boolean;
 }) {
-  const [collection, setCollection] = useState<InformationCollection>(initialCollection);
+  const [collection, setCollection] = useState<InformationCollection | "slack_evidence">(
+    initialCollection,
+  );
   const [reason, setReason] = useState("");
   const [record, setRecord] = useState("");
   const [page, setPage] = useState<InformationPage | null>(null);
@@ -71,6 +74,7 @@ export function OperatorClientInformation({
     return () => clearTimeout(timer);
   }, [page]);
   async function load(after: string | null = null) {
+    if (collection === "slack_evidence") return;
     request.current?.abort();
     const controller = new AbortController();
     request.current = controller;
@@ -148,7 +152,7 @@ export function OperatorClientInformation({
             value={collection}
             onChange={(e) => {
               clear();
-              setCollection(e.target.value as InformationCollection);
+              setCollection(e.target.value as InformationCollection | "slack_evidence");
             }}
           >
             {Object.entries(clientInformationCollections).map(([key, label]) => (
@@ -156,6 +160,7 @@ export function OperatorClientInformation({
                 {label}
               </option>
             ))}
+            <option value="slack_evidence">Public Slack evidence</option>
           </select>
         </label>
         <label className="space-y-1">
@@ -169,30 +174,36 @@ export function OperatorClientInformation({
           />
         </label>
       </div>
-      <label className="block space-y-1">
-        Find a specific record (optional)
-        <input
-          className="block w-full rounded border p-2"
-          value={record}
-          maxLength={36}
-          placeholder="Record ID from a diagnostic or evidence receipt"
-          onChange={(e) => {
-            clear();
-            setRecord(e.target.value);
-          }}
-        />
-        <span className="block text-sm text-muted-foreground">
-          Paste its full record ID to open that record in this client and collection. Leave blank to
-          browse.
-        </span>
-      </label>
-      <button
-        className="cp-primary"
-        disabled={busy || reason.trim().length < 3}
-        onClick={() => void load()}
-      >
-        {busy ? "Loading client records…" : "Load current records"}
-      </button>
+      {collection === "slack_evidence" ? (
+        <LearnSlackEvidence tenantId={tenantId} actorId={actorId} operatorReason={reason} />
+      ) : (
+        <>
+          <label className="block space-y-1">
+            Find a specific record (optional)
+            <input
+              className="block w-full rounded border p-2"
+              value={record}
+              maxLength={36}
+              placeholder="Record ID from a diagnostic or evidence receipt"
+              onChange={(e) => {
+                clear();
+                setRecord(e.target.value);
+              }}
+            />
+            <span className="block text-sm text-muted-foreground">
+              Paste its full record ID to open that record in this client and collection. Leave
+              blank to browse.
+            </span>
+          </label>
+          <button
+            className="cp-primary"
+            disabled={busy || reason.trim().length < 3}
+            onClick={() => void load()}
+          >
+            {busy ? "Loading client records…" : "Load current records"}
+          </button>
+        </>
+      )}
       {error && <p role="alert">{error}</p>}
       {visible && (
         <>
@@ -258,9 +269,16 @@ export function OperatorClientInformation({
                         operatorReason={loadedReason}
                       />
                     )}
-                    {collection === "communications" && row.fields.source_table === "slack_messages" && typeof row.fields.source_id === "string" && (
-                      <LearnSlackSource tenantId={tenantId} actorId={actorId} sourceId={row.fields.source_id} operatorReason={loadedReason} />
-                    )}
+                    {collection === "communications" &&
+                      row.fields.source_table === "slack_messages" &&
+                      typeof row.fields.source_id === "string" && (
+                        <LearnSlackSource
+                          tenantId={tenantId}
+                          actorId={actorId}
+                          sourceId={row.fields.source_id}
+                          operatorReason={loadedReason}
+                        />
+                      )}
                     {collection === "communications" &&
                       row.fields.source_table === "slack_messages" && (
                         <OperatorSlackWorkContext
