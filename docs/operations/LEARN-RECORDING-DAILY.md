@@ -1,23 +1,27 @@
 # Drummonds daily recording backup operations
 
-**14 October, 12:20 UTC — interrupted-read recovery verified locally:** the second
-manual invocation stopped at 12:13:14 UTC with `s3_stream_unconfirmed`. It saved no
-fresh successful aggregate. The communication runtime now opts into at most three
-attempts for transient read-only AWS requests. Interrupted journal reads discard
-partial JSON; byte verification restarts a fresh complete hash of the same pinned
-version. Policy, account, identity, version, size and digest failures are not retried.
-Writes remain single-attempt; uncertain uploads still stop for later readback.
-Per-command deadlines and the whole run's original one-hour/other bounds remain.
-Successful results retain separate request, journal and verification-read retry counts.
+**14 October — interrupted-read recovery verified locally:** three manual
+invocations stopped on separate AWS request/stream and final source-read failures;
+none replaced the previous successful aggregate. The third checked all 3,023
+observed phone-file bytes before its source recheck stopped on an unconfirmed
+request. Partial completion is not a new successful manifest.
 
-All **137 backup checks** pass, including SDK-signed owner binding, same-version
-recovery after partial streams, persistent failure, corruption without retry,
-changed source, cancellation, lost write acknowledgements, manifests and restores.
-A third manually initiated invocation of the same supervisor is active with phase
-progress logged. The two earlier terminal failures remain private; the previous
-successful aggregate remains authoritative until a complete new result is verified.
-This is not an unattended working-day acceptance or a new scheduled service.
+The fixed communication runtime now opts into at most three transient read
+attempts for AWS metadata/journals/byte verification and source metadata JSON.
+Partial JSON is discarded; every retried byte check starts a fresh complete hash
+of the same pinned version. Source credentials and budget checks sit outside the
+transport retry boundary. Credential failures, denied access, redirects, invalid
+JSON, changed identity/version and incorrect size/digest remain failures. Uploads
+remain single-attempt. All original deadlines, locks and shared budgets remain.
+Request, journal, byte-verification and source read retries are counted.
 
+All **142 backup checks** pass, including partial reads, pinned versions,
+persistent failure, corruption, cancellation, credential timeouts, exhausted
+budgets, uncertain writes, manifests and restores. A fourth manual invocation of
+the same supervisor is running with these tested boundaries. The three earlier
+terminal outcomes and unchanged previous aggregate are retained privately. No
+fresh success or unattended working-day acceptance follows from starting it.
+The existing schedule and approved credentials are unchanged.
 
 **14 October — bounded recovery of changing inventories:** the existing daily
 runner now makes at most three complete inventory observations when the exact

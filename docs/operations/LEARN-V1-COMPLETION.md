@@ -25,11 +25,12 @@ override a later release observation. No requirement is silently deferred.
 
 ### Needs finishing
 
-- Two manual backups stopped on AWS request/stream failures. The destination's
-  safety checks passed. Bounded read-only recovery now passes all 137 backup
-  checks; partial streams cannot bypass complete version/byte verification and
-  uploads remain single-attempt. A third manual invocation is active; no fresh
-  successful aggregate or dependable unattended operation is yet claimed.
+- Three manual backups stopped on AWS request/stream or final source-read
+  failures. The destination safety checks passed. Bounded read-only recovery now
+  passes all 142 backup checks, including source JSON recovery and credentials
+  outside the retry boundary. Partial streams cannot bypass full verification;
+  uploads remain single-attempt. A fourth invocation of the same supervisor is
+  active. No fresh aggregate or dependable unattended operation is yet claimed.
 - The remaining V1 families in the Build 01 receipt stay incomplete. Authorised
   private Slack channels retain their separate source/visibility acceptance;
   the public browser does not remove that requirement. DMs remain deferred.

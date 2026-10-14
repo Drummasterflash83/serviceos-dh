@@ -63,6 +63,8 @@ export async function createLiveCommunicationSession(signal, budget) {
         "communication_bucket_invalid",
       );
       const options = {
+        readAttempts: 3,
+        signal,
         credentials: async () => ({ apikey: key, token: key }),
         requestBudget: 100000,
         fetcher: (url, options) => {

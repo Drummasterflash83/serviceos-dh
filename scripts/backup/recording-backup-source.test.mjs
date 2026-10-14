@@ -44,6 +44,7 @@ function fixture(options = {}) {
   const fetcher = async (url, request) => {
     const u = new URL(url);
     calls.push({ url: u, request });
+    await options.beforeRequest?.(u, request);
     assert.equal(u.origin, `https://${project}.supabase.co`);
     assert.equal(request.redirect, "error");
     assert.equal(request.headers.Authorization, "Bearer SYNTHETIC");
@@ -241,6 +242,154 @@ test("source transport failure is safe and neither retried nor treated as an emp
     },
   });
   await assert.rejects(failing.source.inspect(), code("source_request_unconfirmed"));
+});
+test("opted-in JSON reads recover known network interruption with the same deadline and counted budget", async () => {
+  let failed = false;
+  const signals = [];
+  const f = fixture({
+    readAttempts: 3,
+    beforeRequest(u, request) {
+      if (u.pathname === "/rest/v1/tenants") {
+        signals.push(request.signal);
+        if (!failed) {
+          failed = true;
+          throw Object.assign(TypeError("PRIVATE network failure"), {
+            cause: { code: "UND_ERR_SOCKET" },
+          });
+        }
+      }
+    },
+  });
+  await f.source.inspect();
+  assert.equal(signals.length, 2);
+  assert.equal(signals[0], signals[1]);
+  assert.equal(f.source.usage().readRetries, 1);
+  assert.equal(f.source.usage().requests, 3);
+  assert.ok(
+    f.calls.every(
+      (c) => c.url.origin === `https://${project}.supabase.co` && c.request.redirect === "error",
+    ),
+  );
+});
+test("partial JSON is discarded before retry and persistent transport failure consumes a bounded budget", async () => {
+  const fetcher = async (url, request) => {
+    if (new URL(url).pathname === "/rest/v1/tenants" && !fetcher.failed) {
+      fetcher.failed = true;
+      let sent = false;
+      return new Response(
+        new ReadableStream({
+          pull(controller) {
+            if (!sent) {
+              sent = true;
+              controller.enqueue(new TextEncoder().encode('[{"id":'));
+            } else
+              controller.error(
+                Object.assign(TypeError("PRIVATE body interruption"), {
+                  cause: { code: "UND_ERR_SOCKET" },
+                }),
+              );
+          },
+        }),
+      );
+    }
+    return new Response(
+      JSON.stringify(
+        new URL(url).pathname === "/rest/v1/tenants"
+          ? [{ id: tenant }]
+          : { id: "phone-recordings", name: "phone-recordings", public: false },
+      ),
+    );
+  };
+  const recovering = createRecordingSource(
+    { tenantId: tenant, sourceProjectRef: project },
+    {
+      readAttempts: 3,
+      credentials: async () => ({ apikey: "SYNTHETIC", token: "SYNTHETIC" }),
+      fetcher,
+    },
+  );
+  await recovering.inspect();
+  assert.equal(recovering.usage().readRetries, 1);
+  assert.equal(recovering.usage().requests, 3);
+  let calls = 0;
+  const unavailable = fixture({
+    readAttempts: 3,
+    beforeRequest() {
+      calls++;
+      throw Object.assign(Error("PRIVATE reset"), { code: "ECONNRESET" });
+    },
+  });
+  await assert.rejects(unavailable.source.inspect(), code("source_request_unconfirmed"));
+  assert.equal(calls, 3);
+  assert.equal(unavailable.source.usage().requests, 3);
+  assert.equal(unavailable.source.usage().readRetries, 2);
+});
+test("denial, redirects, malformed JSON and exhausted quota never become retryable empty success", async () => {
+  for (const status of [401, 403, 404, 307]) {
+    const f = fixture({ readAttempts: 3 });
+    f.status = status;
+    await assert.rejects(f.source.inspect(), code("source_response_unavailable"));
+    assert.equal(f.calls.length, 1);
+    assert.equal(f.source.usage().readRetries, 0);
+  }
+  let calls = 0;
+  const malformed = fixture({
+    readAttempts: 3,
+    fetcher: async () => {
+      calls++;
+      return new Response("PRIVATE not JSON");
+    },
+  });
+  await assert.rejects(malformed.source.inspect(), code("source_request_unconfirmed"));
+  assert.equal(calls, 1);
+  const quota = fixture({
+    readAttempts: 3,
+    requestBudget: 1,
+    beforeRequest() {
+      throw Object.assign(Error("PRIVATE reset"), { code: "ECONNRESET" });
+    },
+  });
+  await assert.rejects(quota.source.inspect(), code("source_request_budget_exhausted"));
+  assert.equal(quota.calls.length, 1);
+  assert.equal(quota.source.usage().requests, 1);
+});
+test("transient HTTP failure can recover but caller cancellation stops before another request", async () => {
+  const f = fixture({
+    readAttempts: 3,
+    beforeRequest() {
+      f.status = f.calls.length === 1 ? 503 : null;
+    },
+  });
+  await f.source.inspect();
+  assert.equal(f.source.usage().readRetries, 1);
+  const controller = new AbortController();
+  let calls = 0;
+  const cancelled = fixture({
+    readAttempts: 3,
+    signal: controller.signal,
+    beforeRequest() {
+      calls++;
+      controller.abort();
+      throw Object.assign(Error("PRIVATE reset"), { code: "ECONNRESET" });
+    },
+  });
+  await assert.rejects(cancelled.source.inspect(), code("source_request_cancelled"));
+  assert.equal(calls, 1);
+  assert.equal(cancelled.source.usage().readRetries, 0);
+});
+test("credential timeout is not a transport read and is never retried", async () => {
+  let loads = 0;
+  const f = fixture({
+    readAttempts: 3,
+    credentials: async () => {
+      loads++;
+      throw Object.assign(Error("PRIVATE credential timeout"), { code: "ETIMEDOUT" });
+    },
+  });
+  await assert.rejects(f.source.inspect(), code("source_request_unconfirmed"));
+  assert.equal(loads, 1);
+  assert.equal(f.calls.length, 0);
+  assert.equal(f.source.usage().readRetries, 0);
 });
 test("invalid tenant or traversal key is rejected before any request", async () => {
   assert.throws(

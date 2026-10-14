@@ -1,6 +1,7 @@
 /** Read-only Supabase source adapter. Run inside an authorised ServiceOS/server
  * environment. Never export its source credentials to AWS or persist them. */
 import { createHash, randomUUID } from "node:crypto";
+import { setTimeout as delay } from "node:timers/promises";
 import {
   recordingIdentity,
   RecordingBackupError,
@@ -54,7 +55,14 @@ export function createVoicemailSource(binding, bucket, options = {}) {
 function createBucketSource(
   binding,
   bucket,
-  { credentials, fetcher = fetch, now = Date.now, requestBudget = 100000 } = {},
+  {
+    credentials,
+    fetcher = fetch,
+    now = Date.now,
+    requestBudget = 100000,
+    readAttempts = 1,
+    signal,
+  } = {},
 ) {
   requireValue(
     uuid(binding?.tenantId) &&
@@ -62,7 +70,10 @@ function createBucketSource(
       typeof credentials === "function" &&
       Number.isSafeInteger(requestBudget) &&
       requestBudget > 0 &&
-      requestBudget <= 100000,
+      requestBudget <= 100000 &&
+      Number.isInteger(readAttempts) &&
+      readAttempts >= 1 &&
+      readAttempts <= 3,
     "source_binding_invalid",
   );
   const tenantId = binding.tenantId,
@@ -70,7 +81,32 @@ function createBucketSource(
   const origin = `https://${sourceProjectRef}.supabase.co`,
     prefix = `${tenantId}/`;
   let requests = 0,
+    readRetries = 0,
     inspectedAt = null;
+  const networkFailure = (e) =>
+    [
+      "ECONNRESET",
+      "ETIMEDOUT",
+      "ESOCKETTIMEDOUT",
+      "EPIPE",
+      "ECONNREFUSED",
+      "EHOSTUNREACH",
+      "ENETUNREACH",
+      "EAI_AGAIN",
+      "UND_ERR_SOCKET",
+      "UND_ERR_CONNECT_TIMEOUT",
+      "UND_ERR_HEADERS_TIMEOUT",
+      "UND_ERR_BODY_TIMEOUT",
+    ].some((code) => code === e?.code || code === e?.cause?.code);
+  const transportReadFailure = (e) => {
+    if (!networkFailure(e)) return e;
+    const failure = new RecordingBackupError("source_request_unconfirmed");
+    failure.sourceTransportTransient = true;
+    return failure;
+  };
+  const transientRead = (e) =>
+    e?.sourceTransportTransient === true ||
+    [408, 429, 500, 502, 503, 504].includes(e?.sourceHttpStatus);
   const keyValid = (key) =>
     requireValue(
       typeof key === "string" &&
@@ -84,7 +120,10 @@ function createBucketSource(
     keyValid(key);
     return key.split("/").map(encodeURIComponent).join("/");
   };
-  async function request(path, { query = {}, body, extraHeaders = {}, timeout = 30000 } = {}) {
+  async function request(
+    path,
+    { query = {}, body, extraHeaders = {}, timeout = 30000, deadline } = {},
+  ) {
     requireValue(requests < requestBudget, "source_request_budget_exhausted");
     requests++;
     const auth = await credentials();
@@ -97,26 +136,40 @@ function createBucketSource(
     );
     const url = new URL(path, origin);
     for (const [k, v] of Object.entries(query)) url.searchParams.set(k, v);
-    const response = await fetcher(url, {
-      method: body ? "POST" : "GET",
-      headers: {
-        apikey: auth.apikey,
-        Authorization: `Bearer ${auth.token}`,
-        "Cache-Control": "no-cache",
-        ...(body ? { "Content-Type": "application/json" } : {}),
-        ...extraHeaders,
-      },
-      ...(body ? { body: JSON.stringify(body) } : {}),
-      redirect: "error",
-      signal: AbortSignal.timeout(timeout),
-    });
+    let response;
+    try {
+      response = await fetcher(url, {
+        method: body ? "POST" : "GET",
+        headers: {
+          apikey: auth.apikey,
+          Authorization: `Bearer ${auth.token}`,
+          "Cache-Control": "no-cache",
+          ...(body ? { "Content-Type": "application/json" } : {}),
+          ...extraHeaders,
+        },
+        ...(body ? { body: JSON.stringify(body) } : {}),
+        redirect: "error",
+        signal: signal
+          ? AbortSignal.any([signal, deadline ?? AbortSignal.timeout(timeout)])
+          : (deadline ?? AbortSignal.timeout(timeout)),
+      });
+    } catch (e) {
+      // Credentials and budget checks above are deliberately outside this
+      // boundary: only failures from the actual transport can be retried.
+      throw transportReadFailure(e);
+    }
     if (response.status !== 200 || !response.body) {
       await response.body?.cancel().catch(() => {});
-      throw new RecordingBackupError("source_response_unavailable");
+      const failure = new RecordingBackupError("source_response_unavailable");
+      failure.sourceHttpStatus = response.status;
+      const retryAfter = response.headers.get("retry-after");
+      if (retryAfter && /^\d+$/.test(retryAfter))
+        failure.retryAfterMs = Math.min(30000, Number(retryAfter) * 1000);
+      throw failure;
     }
     return response;
   }
-  async function json(path, options) {
+  async function jsonOnce(path, options) {
     const response = await request(path, options),
       reader = response.body.getReader(),
       chunks = [];
@@ -129,10 +182,35 @@ function createBucketSource(
         requireValue(bytes <= 8 * 1024 * 1024, "source_response_too_large");
         chunks.push(part.value);
       }
+    } catch (e) {
+      throw transportReadFailure(e);
     } finally {
       await reader.cancel().catch(() => {});
     }
     return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  }
+  async function json(path, options = {}) {
+    const deadline = AbortSignal.timeout(options.timeout ?? 30000);
+    for (let attempt = 1; ; attempt++) {
+      if (signal?.aborted) throw new RecordingBackupError("source_request_cancelled");
+      try {
+        return await jsonOnce(path, { ...options, deadline });
+      } catch (e) {
+        if (signal?.aborted) throw new RecordingBackupError("source_request_cancelled");
+        if (attempt >= readAttempts || deadline.aborted || !transientRead(e)) throw e;
+        // Retry only these fixed-target read-only JSON endpoints. Discard partial
+        // bytes and keep the same deadline, credentials boundary and request budget.
+        try {
+          await delay(Math.max(100, e.retryAfterMs ?? 100), undefined, {
+            signal: signal ? AbortSignal.any([signal, deadline]) : deadline,
+          });
+        } catch {
+          if (signal?.aborted) throw new RecordingBackupError("source_request_cancelled");
+          throw e;
+        }
+        readRetries++;
+      }
+    }
   }
   const inspect = () =>
     safe(async () => {
@@ -547,5 +625,11 @@ function createBucketSource(
         },
       };
     });
-  return { inspect, inventory, metadata, read, usage: () => ({ requests, requestBudget }) };
+  return {
+    inspect,
+    inventory,
+    metadata,
+    read,
+    usage: () => ({ requests, requestBudget, ...(readAttempts > 1 ? { readRetries } : {}) }),
+  };
 }
