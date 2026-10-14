@@ -77,6 +77,8 @@ export interface LearnFinding {
 }
 export interface LearnCardDetail {
   card: LearnCard;
+  /** Canonical status from the same scoped job read; verification is separate. */
+  jobRecord?: { status: string | null; verified: boolean };
   findings: LearnFinding[];
   evidence: LearnEvidence[];
   gaps: string[];
@@ -329,6 +331,9 @@ export function projectLearnDetail(input: {
   });
   return {
     card: card(record, kind, now),
+    ...(kind === "job"
+      ? { jobRecord: { status: text(record.status), verified: record.verified === true } }
+      : {}),
     findings,
     evidence,
     gaps: [...new Set(gaps)],
