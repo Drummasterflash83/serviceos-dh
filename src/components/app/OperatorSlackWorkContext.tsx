@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
-import { readClientInformation, type InformationPage } from "@/lib/openfolk-client-information";
+import { searchOperatorJobs, type JobSearchPage } from "@/lib/learn-operator-job-search";
 import {
   readSlackContext,
   readSavedSlackContext,
@@ -27,8 +27,9 @@ export function OperatorSlackWorkContext({
   const mounted = useRef(false);
   const generation = useRef(0);
   const [context, setContext] = useState<SlackContext | null>(null);
-  const [jobs, setJobs] = useState<InformationPage | null>(null);
+  const [jobs, setJobs] = useState<JobSearchPage | null>(null);
   const [job, setJob] = useState("");
+  const [jobQuery, setJobQuery] = useState("");
   const [reason, setReason] = useState("");
   const [saved, setSaved] = useState<SavedSlackContext | null>(null);
   const [ready, setReady] = useState(false);
@@ -41,6 +42,7 @@ export function OperatorSlackWorkContext({
     setContext(null);
     setJobs(null);
     setJob("");
+    setJobQuery("");
     setReason("");
     setMessage("");
     setError("");
@@ -66,9 +68,15 @@ export function OperatorSlackWorkContext({
     setError("");
     setMessage("");
     try {
-      const result = await readClientInformation(
+      const result = await searchOperatorJobs(
         getSupabaseClient(),
-        { tenant: tenantId, actor: actorId, collection: "jobs", reason: accessReason, after },
+        {
+          tenant: tenantId,
+          actor: actorId,
+          query: after ? jobs!.query : jobQuery,
+          reason: accessReason,
+          after,
+        },
         AbortSignal.timeout(15000),
       );
       if (allowed() && ticket === generation.current) setJobs(result);
@@ -210,6 +218,31 @@ export function OperatorSlackWorkContext({
       ) : (
         <>
           <label className="block">
+            Find a published job
+            <input
+              className="mt-1 block w-full rounded border p-2"
+              value={jobQuery}
+              maxLength={120}
+              placeholder="Job number, description, customer or address"
+              disabled={busy}
+              onChange={(e) => {
+                generation.current++;
+                setJobQuery(e.target.value);
+                setJobs(null);
+                setJob("");
+                setContext(null);
+                setMessage("");
+                setError("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  void loadJobs();
+                }
+              }}
+            />
+          </label>
+          <label className="block">
             Context
             <select
               className="mt-1 block w-full rounded border p-2"
@@ -226,6 +259,8 @@ export function OperatorSlackWorkContext({
                 <option key={row.id} value={row.id}>
                   {String(row.fields.job_number ?? "Job")} ·{" "}
                   {String(row.fields.title ?? "Untitled job")} ·{" "}
+                  {String(row.fields.customer ?? "Customer unavailable")} ·{" "}
+                  {String(row.fields.postcode ?? row.fields.address ?? "Address unavailable")} ·{" "}
                   {String(row.fields.status ?? "Status unavailable")}
                 </option>
               ))}
@@ -233,7 +268,7 @@ export function OperatorSlackWorkContext({
           </label>
           <div className="flex flex-wrap gap-2">
             <button className="cp-secondary" disabled={busy} onClick={() => void loadJobs()}>
-              Load jobs
+              Search jobs
             </button>
             {jobs?.next_after && (
               <button
@@ -250,8 +285,11 @@ export function OperatorSlackWorkContext({
           </div>
           {jobs && (
             <p className="text-sm">
-              {jobs.rows.length} published jobs on this page. Retained imports may still need
-              publication before appearing here.
+              {jobs.rows.length === 0
+                ? "No published jobs match this search."
+                : `${jobs.rows.length} matching published jobs on this page.`}{" "}
+              Retained imports may still need publication before appearing here. Check the job and
+              customer before saving a link; a shared service code alone does not identify a job.
             </p>
           )}
         </>
