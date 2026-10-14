@@ -74,5 +74,22 @@
     "Worker queue priority, processing throughput and existing eligibility checks are unchanged.",
     "No claim of complete Slack or customer coverage.",
     "Full-schema preservation covers the archived restore; LIVE fingerprint comparison covers the two reviewed sources, their review receipts and cron definitions."
-  ]
+  ],
+  "schedulerRuntime": {
+    "deployedAt": "2026-10-14T05:05:42.099Z",
+    "beforeVersion": 19,
+    "afterVersion": 20,
+    "previousMapperVersion": "obs-ingest/1",
+    "at": "2026-10-14T05:08:33.542Z",
+    "state": "runtime_readback_and_auth_verified",
+    "version": 20,
+    "mapperVersion": "obs-ingest/2",
+    "explicitQueuedMapper": true,
+    "eszipSha256": "e50cbe313da26839f95a0526b718f1b2cf0bcbdb677266f0b9879fe569239559",
+    "wireSha256": "fab9681d7daf551a814d4bc4469ef84ec2b34ca6712620d4e3dac1ebf2391461",
+    "missingAuthStatus": 403,
+    "scheduledAcceptance": false,
+    "unrelatedFunctionsUnchanged": true,
+    "accessSchedulesAndReviewsUnchanged": true
+  }
 }

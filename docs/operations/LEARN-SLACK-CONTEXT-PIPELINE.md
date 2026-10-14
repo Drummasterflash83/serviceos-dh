@@ -1,5 +1,22 @@
 # Slack conversation-to-work context
 
+**14 October, 06:08 BST — LIVE scheduled learning now uses the current mapper.**
+
+- The downloaded production scheduler v19 used `obs-ingest/1`, while the current
+  learning worker uses `obs-ingest/2`. Version 20 aligns selection to mapper 2 and
+  explicitly puts that version on newly queued jobs. The two newly reviewed
+  messages had no ledger under either mapper; no legacy ledger was assumed.
+- The exact compiled artifact passed isolated runtime checks for tenant-scoped
+  selection, explicit payload version, duplicate reuse and missing-auth rejection.
+  LIVE artifact readback matches, and an unauthenticated request returns 403.
+  Other deployed functions, access, review receipts and schedules are unchanged.
+- At 05:08 UTC one of the two sources still has its original queued ingestion job;
+  neither has a current-mapper observation yet. Normal scheduled processing is the
+  next acceptance step. No manual enqueue or restart was used, and no new source
+  reads, permission changes or paid AI were enabled by this runtime release.
+
+[Runtime release evidence](../../supabase/release/learn-reviewed-ingestion/runtime.manifest.json).
+
 ## Reviewed selection release, 14 October 2026 04:54 UTC
 
 **14 October, 05:54 BST — bounded reviewed-context selection deployed in LIVE.**

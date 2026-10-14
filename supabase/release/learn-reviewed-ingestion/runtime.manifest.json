@@ -1,6 +1,6 @@
 {
   "version": "learn-reviewed-ingestion-runtime/1",
-  "state": "prepared",
+  "state": "live_runtime_verified_scheduled_acceptance_pending",
   "project": "tgbnakbxwcqjeimygroz",
   "endpoint": "intelligence-ingestion-scheduled-sync",
   "beforeVersion": 19,
@@ -56,5 +56,20 @@
     },
     "harnessSha256": "e4f2851d29b6488c7b63e480364a3f8179cd5b1f907e06e2f29e6b46d78e296f"
   },
-  "scope": "Only the deployed scheduler mapper constant changes from obs-ingest/1 to obs-ingest/2, and queued payloads explicitly carry that version. Other files in the retained four-file closure are unchanged. No provider reads, new access, schedules or paid AI enabled."
+  "scope": "Only the deployed scheduler mapper constant changes from obs-ingest/1 to obs-ingest/2, and queued payloads explicitly carry that version. Other files in the retained four-file closure are unchanged. No provider reads, new access, schedules or paid AI enabled.",
+  "afterVersion": 20,
+  "deployedAt": "2026-10-14T05:05:42.099Z",
+  "verification": {
+    "at": "2026-10-14T05:08:33.542Z",
+    "state": "runtime_readback_and_auth_verified",
+    "version": 20,
+    "mapperVersion": "obs-ingest/2",
+    "explicitQueuedMapper": true,
+    "eszipSha256": "e50cbe313da26839f95a0526b718f1b2cf0bcbdb677266f0b9879fe569239559",
+    "wireSha256": "fab9681d7daf551a814d4bc4469ef84ec2b34ca6712620d4e3dac1ebf2391461",
+    "missingAuthStatus": 403,
+    "scheduledAcceptance": false
+  },
+  "unrelatedFunctionsUnchanged": true,
+  "accessSchedulesAndReviewsUnchanged": true
 }

@@ -42,6 +42,11 @@ Cloudflare-flavoured.
 
 ## Current live checkpoint — 14 October 2026
 
+The learning scheduler is now LIVE v20, aligned with worker mapper `obs-ingest/2`
+and explicit queued mapper versions. Exact runtime readback and authentication
+checks pass; scheduled end-to-end acceptance remains pending.
+[Runtime evidence](../supabase/release/learn-reviewed-ingestion/runtime.manifest.json).
+
 The separately deployed learning selector now reserves bounded capacity for recorded
 Slack context reviews, preserving historical processing and existing permissions.
 The exact SQL release and rollback are in
