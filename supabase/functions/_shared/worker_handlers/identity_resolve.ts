@@ -30,6 +30,7 @@ export async function handleIdentityResolve(
     suggestions_created: 0,
     events_consumed: 0,
     review_required: 0,
+    reviews_recorded: 0,
     failed: 0,
     continued: false,
   };
@@ -98,6 +99,7 @@ export async function handleIdentityResolve(
       }
       if (receipt.state === "review_required") {
         counts.review_required++;
+        counts.reviews_recorded++;
         continue;
       }
       counts.resolved++;
@@ -114,11 +116,28 @@ export async function handleIdentityResolve(
       throw Error("identity_review_inventory_unconfirmed");
     counts.review_required = review.data;
     const needsReview = counts.review_required > 0;
+    // A durable hold removes this revision from pending selection. Keep the
+    // review visible, but drain unrelated eligible records in the next batch.
+    counts.continued =
+      counts.failed === 0 &&
+      rows.length === batch &&
+      counts.resolved + counts.reviews_recorded === rows.length;
+    const continuation = counts.continued
+      ? {
+          jobType: "identity.resolve",
+          jobKey: `identity.resolve:${tenantId}`,
+          payload: { limit: batch },
+          connectorId: "openfolk-core",
+          moduleId: "core.identity",
+          priority: 50,
+        }
+      : undefined;
     if (counts.failed || needsReview)
       return {
         success: false,
         recordsProcessed: counts.resolved,
         result: counts,
+        ...(continuation ? { continuation } : {}),
         error: {
           code: counts.failed ? "identity_delivery_unconfirmed" : "identity_review_required",
           message: counts.failed
@@ -127,23 +146,11 @@ export async function handleIdentityResolve(
           retryable: counts.failed > 0,
         },
       };
-    counts.continued = rows.length === batch && counts.resolved > 0;
     return {
       success: true,
       recordsProcessed: counts.resolved,
       result: counts,
-      ...(counts.continued
-        ? {
-            continuation: {
-              jobType: "identity.resolve",
-              jobKey: `identity.resolve:${tenantId}`,
-              payload: { limit: batch },
-              connectorId: "openfolk-core",
-              moduleId: "core.identity",
-              priority: 50,
-            },
-          }
-        : {}),
+      ...(continuation ? { continuation } : {}),
     };
   } catch {
     return {

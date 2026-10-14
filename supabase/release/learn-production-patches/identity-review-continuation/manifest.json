@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "state": "installed_test_and_live_scheduled_acceptance_pending",
+  "source": {
+    "path": "supabase/migrations/20261102120000_learn_identity_review_continuation.sql",
+    "sha256": "5895670601f80fa6542beb98d9f921526043fed6ff52de66004a037b711bc1f0"
+  },
+  "beforeDefinitionMd5": "fe3f324d24d6675a2995fe3bac6512b0",
+  "afterBodyMd5": "dfd8a82b5eafd1e3ee129f8d7b296a90",
+  "authority": {
+    "owner": "postgres",
+    "acl": [
+      "postgres=X/postgres",
+      "service_role=X/postgres"
+    ],
+    "config": [
+      "search_path=pg_catalog",
+      "TimeZone=UTC"
+    ],
+    "securityDefiner": true
+  },
+  "files": {
+    "original-settlement.sql": "9d3df5b00fea553c74ee738a18b0d70b6f9e24554e563427b66b66f335b159e1",
+    "apply.sql": "0bf1a90944153fd9470ed22f1f49aa52b9da4a66d3df3c7d16952547f98f1ced",
+    "rollback.sql": "8aa4085858dd2f2eec45532518996a14564eb1e9683f21eaa3b2a450ee4cd336"
+  },
+  "scope": "Continue a full, durably published identity batch while preserving review-required terminal outcome and all holds. No new authority, source edits or scheduler changes."
+}

@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 02:32 BST — identity continuation repair released to TEST and LIVE; scheduled acceptance pending.**
+
+- An old identity-review hold no longer requires unrelated full batches to stop.
+  Each held outcome stays explicitly review-required; the atomic settlement permits
+  one continuation only after a full batch of distinct durable publications with
+  exact counts and no unconfirmed delivery. No ambiguous customer is approved.
+- TEST worker v27 and LIVE v75 contain the two isolated runtime changes; downloaded
+  executable hashes and HTTP auth guards pass. The backward-compatible SQL patch is
+  installed with unchanged authority. Source identities, retained Slack versions,
+  modes, access, schedules, connections and unrelated functions are preserved.
+- Twenty-one focused tests and TypeScript pass. A full native-schema rehearsal
+  preserves 1,591,601 rows; legacy queue and new failure/continuation cases pass.
+  The exact patch/reversal also passes in hosted TEST with synthetic rollback.
+- The original scheduled identity job remains queued at 01:32 UTC. Its real
+  continued-batch receipt is still required. Four Slack observation recovery
+  children also remain queued; none has been restarted or called an AI finding.
+- The projection chain continues: 18 completed batches plus one running batch at
+  01:26 UTC, with 380 committed email projection receipts at that observation.
+  Commusoft's existing incremental pass has checked 824/871 site-contact targets
+  at 01:31 UTC; its cycle watermark has not yet advanced.
+- Broader publication/matching, complete capture, scorecards, operator recovery and
+  operational acceptance remain open. No goal requirement has been deferred.
+
+[Identity continuation release and limits](LEARN-IDENTITY-CONTINUATION.md).
+
+
 **14 October, 02:14 BST — production projection is progressing; LEARN-only observation repair released.**
 
 - The ordered selector now has actual LIVE acceptance: six consecutive scheduled

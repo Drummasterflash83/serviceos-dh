@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-14T01:32:24Z",
+  "state": "released_waiting_for_scheduled_identity_job",
+  "runtime": {
+    "version": 1,
+    "state": "runtime_verified_scheduled_acceptance_pending",
+    "targets": [
+      {
+        "environment": "test",
+        "project": "saatxzwxvdvqevbnskxy",
+        "version": 27,
+        "priorVersion": 26,
+        "wireSha256": "750e2dbb6e00e7d0188f8cbc4511062eab7128ceac91f064e066886a8f9514f2",
+        "eszipSha256": "144f42e3b06b4f8d689e62418db0efa861b58dc36057b1484812260b52dae1f9",
+        "sourceClosureSha256": "099311ead732dc5e3296c3707fdd60f4a37993df7593f38d77fd47ed9cad1867",
+        "changedFiles": [
+          "_shared/learn-processing-job.ts",
+          "_shared/worker_handlers/identity_resolve.ts"
+        ],
+        "publishedAt": "2026-10-14T01:31:05.223Z",
+        "artifactReadbackMatched": true,
+        "missingAuthStatus": 403,
+        "sourceIdentitiesPreserved": {
+          "email": 254,
+          "phone": 14,
+          "slack": 24,
+          "recording": 15,
+          "voicemail": 1
+        },
+        "authorityAndModesUnchanged": true,
+        "schedulesAndSecretMetadataUnchanged": true,
+        "unrelatedFunctionsUnchanged": true,
+        "rollback": {
+          "localArtifact": "/private/tmp/serviceos-identity-continuation-20261014/test-runtime/artifacts/platform-worker.rollback.ezbr",
+          "wireSha256": "a63a6e56f7781233e01771abbf53d0427262616a30fa02f9ba5c579218168520",
+          "eszipSha256": "67c464ca3ac15c63642f92cea8328224e59498a752342185b1a0aa8d53b7b2fd",
+          "originalEntrypoint": "file:///work/supabase/functions/platform-worker/index.ts"
+        }
+      },
+      {
+        "environment": "live",
+        "project": "tgbnakbxwcqjeimygroz",
+        "version": 75,
+        "priorVersion": 74,
+        "wireSha256": "9341178f1d257bf1c3707117135ae917f3bb157a658f7aa2eae110e07f84e7f8",
+        "eszipSha256": "368c656691f1ac7f36b82c15cbb4b498e90bb90a916e7b5ccf7cb26043fe2953",
+        "sourceClosureSha256": "bc8869642d4795beacc7bf0d66520a93e7cd87fbc68a02600f2b4ad922c9b841",
+        "changedFiles": [
+          "_shared/learn-processing-job.ts",
+          "_shared/worker_handlers/identity_resolve.ts"
+        ],
+        "publishedAt": "2026-10-14T01:32:15.314Z",
+        "artifactReadbackMatched": true,
+        "missingAuthStatus": 403,
+        "sourceIdentitiesPreserved": {
+          "email": 37473,
+          "phone": 4462,
+          "slack": 16081,
+          "recording": 2984,
+          "voicemail": 255
+        },
+        "authorityAndModesUnchanged": true,
+        "schedulesAndSecretMetadataUnchanged": true,
+        "unrelatedFunctionsUnchanged": true,
+        "rollback": {
+          "localArtifact": "/private/tmp/serviceos-identity-continuation-20261014/live-runtime/artifacts/platform-worker.rollback.ezbr",
+          "wireSha256": "9bdce293cbf9bc9e4214741852905d3fe2a8aeac86475ab06da5efad244c87e7",
+          "eszipSha256": "5e43c8fe2b22a0b2128fb9637a8b76b96b2f59640cf8f0ab8fa94e4e0b584b3a",
+          "originalEntrypoint": "file:///work/supabase/functions/platform-worker/index.ts"
+        }
+      }
+    ],
+    "scope": "Two isolated runtime modules: preserve identity review-required outcome while atomically continuing a verified full batch. No new accounts, permissions, provider calls or AI charges from this release."
+  },
+  "sql": {
+    "source": {
+      "path": "supabase/migrations/20261102120000_learn_identity_review_continuation.sql",
+      "sha256": "5895670601f80fa6542beb98d9f921526043fed6ff52de66004a037b711bc1f0"
+    },
+    "beforeDefinitionMd5": "fe3f324d24d6675a2995fe3bac6512b0",
+    "afterBodyMd5": "dfd8a82b5eafd1e3ee129f8d7b296a90",
+    "authorityPreserved": true,
+    "hostedTestPatchAndReversalVerified": true,
+    "preparationCorrections": [
+      "Missing rollback statement terminator was caught before installation; TEST original function remained intact.",
+      "Candidate-body fingerprint corrected to exact SQL bytes after guard refusal; TEST original function remained intact."
+    ]
+  },
+  "verification": {
+    "focusedTests": 21,
+    "typescript": "passed",
+    "nativeRehearsal": {
+      "state": "identity_continuation_full_schema_rehearsed",
+      "productionChanged": false,
+      "hostedTestChanged": false,
+      "archive": {
+        "bytes": 196872981,
+        "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+      },
+      "containment": {
+        "network": "none",
+        "hostMounts": 0,
+        "publishedPorts": 0,
+        "cronLaunchActiveJobs": false,
+        "preloadedLibraries": [
+          "pg_cron",
+          "pg_net",
+          "pgsodium",
+          "supabase_vault",
+          "supautils"
+        ],
+        "maxWorkerProcesses": 0,
+        "networkWorkerDatabaseAbsent": true,
+        "containerLogging": "none"
+      },
+      "preservation": {
+        "state": "all_archived_copy_rows_and_sequences_match",
+        "tables": 387,
+        "rows": 1591601,
+        "sequences": 7,
+        "comparisonSha256": "5c65ed3ac962cd21fef72e03dae2fd3df7aed9ad2f05077d8ea6797440b28c85",
+        "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+      },
+      "learn-processing-queue": "passed",
+      "learn-identity-continuation": "passed",
+      "syntheticSequenceChanges": [],
+      "migrationSha256": "5895670601f80fa6542beb98d9f921526043fed6ff52de66004a037b711bc1f0",
+      "journeyRollbackVerified": true,
+      "containerRemoved": true
+    },
+    "heldOutcomePreserved": true,
+    "shortBatchAndUnconfirmedDeliveryCannotContinue": true,
+    "lostResponseSameRequest": true,
+    "foreignAndExpiredClaimsRejected": true,
+    "duplicateSourceCannotCountTwice": true,
+    "lateAuditFailureAtomicRollback": true
+  },
+  "pending": {
+    "identityJob": "f48e1ffd-8a44-4b4a-aaa4-6e7efc8c3dba",
+    "status": "queued",
+    "attempts": 0,
+    "source": "live_read_at_01:32:23_UTC",
+    "slackRecoveryJobs": 4,
+    "slackRecoveryStatus": "queued_at_01:32:24_UTC"
+  },
+  "limitations": [
+    "No actual post-release scheduled identity delivery is established yet.",
+    "Review holds remain unresolved and visible; this does not approve or match an ambiguous source.",
+    "Four Slack observation children still need committed receipts.",
+    "Full canonical publication, input coverage, scoring, controller and operational acceptance remain incomplete."
+  ]
+}

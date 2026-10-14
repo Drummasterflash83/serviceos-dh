@@ -59,9 +59,11 @@ export interface WorkerHandlerResult {
   result?: Record<string, unknown>;
   /** Present when success === false. */
   error?: WorkerHandlerError;
-  /** Present (on success) when the handler has more bounded work of the same kind
+  /** Present when the handler has more bounded work of the same kind
    *  queued behind it. The worker enqueues it only AFTER completing the current
-   *  job, so the active-key is free and no duplicate active job is created. */
+   *  job, so the active-key is free and no duplicate active job is created.
+   *  The fenced LEARN identity runner also permits a durable review-required
+   *  terminal outcome to continue unrelated work; generic failures never do. */
   continuation?: WorkerHandlerContinuation;
 }
 
