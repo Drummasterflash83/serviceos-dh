@@ -69,3 +69,15 @@ OpenFolk support. Source QuickBooks job codes do not replace Commusoft job codes
 - The reusable local adapter is saved at
   `scripts/operations/quickbooks-bounded-runner.mjs`; attempt journals remain
   ignored. Hosted dispatch and recurring refresh are separate finishing work.
+
+## Completed — 14 October, 09:04 UTC
+
+Continuation traversed all remaining collections using 854 of 2,000 approved
+requests and saved 853 pages / 84,676 observations. Combined with the first pass:
+1,354 requests, 1,353 pages and 134,569 latest records. One expired uncertain page
+reservation consumes a request but has no receipt; its retained checkpoint was
+explicitly reviewed before resumption. Counts and references reconcile, no version
+conflicts or outstanding refresh lease; capture paused after traversal. Two
+ordinary token renewals persisted. Aggregate proof is in
+[evidence](evidence/learn-quickbooks-live-history-2026-10-14.json). Ongoing refresh
+was separately approved and activated later; it does not alter these run limits.

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { OperatorQuickBooksRecurring } from "./OperatorQuickBooksRecurring";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import type { QuickBooksConnection } from "@/lib/learn-quickbooks";
 import {
@@ -339,6 +340,7 @@ export function OperatorQuickBooksImports({
               )}
             </div>
           )}
+          <OperatorQuickBooksRecurring tenantId={tenantId} actorId={actorId} canWrite={canWrite} connections={connections} />
           <ul className="space-y-3">
             {data.runs.map((r) => (
               <li key={r.id} className="rounded-lg border p-3 text-sm">

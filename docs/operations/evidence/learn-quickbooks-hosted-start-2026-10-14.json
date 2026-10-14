@@ -1,0 +1,54 @@
+{
+  "run": {
+    "id": "af4983d5-2c01-4cae-a585-d2aa5ae2f841",
+    "error": null,
+    "pages": 10,
+    "realm": "1197397945",
+    "state": "queued",
+    "created": "2026-10-14T10:14:00.883816+00:00",
+    "expires": "2026-10-15T10:14:00.883815+00:00",
+    "maximum": 3000,
+    "records": 1000,
+    "updated": "2026-10-14T10:16:03.055621+00:00",
+    "pageSize": 100,
+    "position": 1001,
+    "requests": 10,
+    "entityCount": 13,
+    "entityIndex": 1,
+    "actorMatchesApproval": true,
+    "tenantMatchesApproval": true
+  },
+  "links": {
+    "count": 2,
+    "identityHash": "797ab0f14f4bfa3da12fc1389e6e42b8"
+  },
+  "policies": [
+    {
+      "run": "af4983d5-2c01-4cae-a585-d2aa5ae2f841",
+      "next": "2026-10-14T10:16:05.934653+00:00",
+      "hours": 6,
+      "tenant": "00000000-0000-0000-0000-000000000001",
+      "enabled": true,
+      "requests": 3000,
+      "revision": 1,
+      "lastState": "capturing",
+      "connection": "04d68333-fc13-42c2-a500-789f386f015c",
+      "lastCompleted": "2026-10-14T09:04:27.774189+00:00"
+    }
+  ],
+  "checkedAt": "2026-10-14T10:16:03.601506+00:00",
+  "connection": {
+    "status": "active",
+    "generation": 4,
+    "refreshLease": false
+  },
+  "state": "first_hosted_pages_verified_full_cycle_pending",
+  "recoveryStoresVerified": [
+    "Mac Keychain",
+    "Openfolk ServiceOS concealed field"
+  ],
+  "workerAccessDeniedWithoutKey": true,
+  "otherSecretValuesPreserved": true,
+  "rotationDue": "2027-01-12",
+  "secretsPrinted": false
+}

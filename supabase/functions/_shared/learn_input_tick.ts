@@ -23,7 +23,7 @@ const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v ===
 /** A tick may settle several distinct pages, never retry an uncertain page.
  * SQL still owns admission, per-credential pacing, leases and successor creation.
  * Keep the whole sequence below the one-minute scheduler interval. */
-export async function drainCommusoftPages(
+export async function drainInputPages(
   invoke: (timeoutMs: number) => Promise<Outcome>,
   clock: () => number = () => performance.now(),
   sleep: (ms: number) => Promise<void> = ms => new Promise(resolve => setTimeout(resolve, ms)),
@@ -47,6 +47,8 @@ export async function drainCommusoftPages(
   }
   return outcome(progressed ? "processed" : "idle");
 }
+
+export const drainCommusoftPages = drainInputPages;
 
 export async function runLearnInputTick(config: Config, jobTypes: string[] | null, request: Fetch = fetch) {
   const all = (state: Outcome["state"]) => ({
@@ -114,7 +116,7 @@ export async function runLearnInputTick(config: Config, jobTypes: string[] | nul
       // Existing history jobs can continue even if creating a new window failed.
       return { slackSchedule, slack: await invoke("learn-slack-worker", config.slackKey) };
     })(),
-    quickbooksEnabled ? invoke("learn-quickbooks-worker", config.quickbooksKey) : outcome("disabled"),
+    quickbooksEnabled ? drainInputPages(timeoutMs => invoke("learn-quickbooks-worker", config.quickbooksKey, false, timeoutMs)) : outcome("disabled"),
   ]);
   return { commusoft, ...slack, quickbooks };
 }

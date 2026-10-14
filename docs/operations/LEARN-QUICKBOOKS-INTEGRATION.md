@@ -2,42 +2,36 @@
 
 Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
 
-## Current state — 14 October, first LIVE pass verified and paused
+## Current LIVE position — 14 October 2026, 10:14 UTC
 
-- Intuit app assessment is submitted and **Approved**. Chris explicitly approved
-  the security-policy commitment and revised retention wording as pilot targets.
-- Approved Drummonds privacy and authorised-user terms are published at
-  `https://www.openfolk.ai/privacy/drummonds` and
-  `https://www.openfolk.ai/terms/drummonds`. Both return 200 and no-store HTML.
-  Publication preserves the latest live baseline `0659046d`; release `e81575a0`,
-  deployment `dpl_BtQPXQYCacqVyzmHL311J5F3Pw9E`. Live sign-in uses production.
-- The owner-approved wording discloses support-led retention targets, incomplete
-  whole-workspace export/deletion and backup expiry. The previous publication
-  hold is superseded by this explicit approval; the engineering work remains.
-  The private pilot agreement is still unsigned and has not been published.
-- Production Intuit app details and the approved callback are saved. The existing
-  production credential is verified in encrypted Vault, Mac Keychain and the
-  separate concealed LIVE field in the Openfolk ServiceOS 1Password note. The
-  temporary plaintext transfer file was removed.
-- Chris approved the real DRUMMOND HEATING company grant and bounded first import.
-  Fresh OAuth completed at 06:58 UTC; CompanyInfo verified realm `1197397945`,
-  encrypted tokens stored, identity confirmed through logged operator controls.
-  The first LIVE pass finished at its approved 500-request cap at 07:32 UTC.
-  All 500 pages reconcile to 49,893 retained observations: 13,158 Customer
-  records (4,310 main accounts and 8,848 jobs/subcustomers), 21,635 invoices
-  and 15,100 payments. Customer and Invoice traversals finished; Payment
-  resumes at position 15,101. The other ten entity types have not started.
-  Connection is paused, no import error or version conflict was recorded,
-  and source scope/reference checks passed. This is partial history, not
-  complete or reconciled accounts. No ongoing schedule, accounting writes,
-  AI or automatic matching is enabled.
-- Stable TEST retains the 77 sandbox records and deliberately revoked grant.
-  Sandbox connection, duplicate import, refresh and revocation are verified.
-- Production schema and four handlers are installed; real OAuth and locally
-  executed capture are verified. Hosted dispatch remains disabled. The live
-  operator finance reader loaded 25 retained customer candidates and logged
-  its reads. No customer links were created. Finance remains restricted to
-  company owners/admins and logged authorised support.
+- DRUMMOND HEATING is connected and confirmed in LIVE. Both approved history
+  runs have finished: 1,354 requests, 1,353 saved pages and 134,569 retained
+  records across all 13 requested collections. SalesReceipt is empty. Source
+  observations/counts reconcile, no current version conflicts, and the import
+  connection was paused at completion. This establishes traversal of that scan,
+  not reconciled accounts or permanent completeness.
+- Two reviewed customer links are saved. Belvoir's ordinary live LEARN card
+  shows Commusoft business context with two jobs and four retained QuickBooks
+  financial records. Cinergi has a reviewed QuickBooks link and one published
+  Commusoft job. Finance stays restricted to admins and logged support.
+- Customer union is incomplete: LIVE retains 1,552 Commusoft customers and 871
+  sites, while only 72 Commusoft customers are currently published to cards.
+  QuickBooks retains 4,310 main accounts and 8,848 jobs/subcustomers. Historical
+  name suffixes are not current Commusoft identifiers. Broad candidate review,
+  missing canonical cards and evidenced job crosswalks remain to finish.
+- Shared platform worker v78 and accounting worker v2 are deployed and probed;
+  unrelated runtime sources and secret values are preserved. Approved trigger
+  access is verified in production, Keychain and the existing 1Password note.
+- Chris enabled ongoing LIVE refresh through logged controls: immediately, then
+  six hours after each completed cycle, max 3,000 reads/cycle, 24h expiry. Hosted
+  tick created run `af4983d5-2c01-4cae-a585-d2aa5ae2f841` at 10:14 UTC and renewed
+  the existing grant. First saved pages, full completion and next due verification
+  are still pending. No accounting writes, payroll, AI or automatic matching.
+- Stable TEST retains 77 sandbox records and its deliberately revoked grant.
+  Connection, duplicates, token refresh and disconnect are verified separately.
+
+See [history evidence](evidence/learn-quickbooks-live-history-2026-10-14.json) and
+[hosted refresh scope and acceptance](LEARN-QUICKBOOKS-HOSTED-REFRESH.md).
 
 Earlier dated sections below are implementation history and may describe stages
 superseded by later evidence; they are not current launch claims.

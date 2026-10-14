@@ -1,0 +1,156 @@
+{
+  "runs": [
+    {
+      "id": "0b89d0a8-02de-4f1c-91e9-25b8917eca68",
+      "pages": 500,
+      "state": "limit_reached",
+      "maximum": 500,
+      "records": 49893,
+      "requests": 500,
+      "lastError": null,
+      "entityIndex": 3,
+      "pageRecords": 49893,
+      "observations": 49893,
+      "uniquePermits": 500
+    },
+    {
+      "id": "ed8ae29c-aee6-455b-8904-1caac9ef3f8e",
+      "pages": 853,
+      "state": "traversed",
+      "maximum": 2000,
+      "records": 84676,
+      "requests": 854,
+      "lastError": null,
+      "entityIndex": 14,
+      "pageRecords": 84676,
+      "observations": 84676,
+      "uniquePermits": 853
+    }
+  ],
+  "counts": [
+    {
+      "entity": "Account",
+      "records": 719,
+      "conflicts": 0
+    },
+    {
+      "entity": "Bill",
+      "records": 41870,
+      "conflicts": 0
+    },
+    {
+      "entity": "BillPayment",
+      "records": 20049,
+      "conflicts": 0
+    },
+    {
+      "entity": "CreditMemo",
+      "records": 1021,
+      "conflicts": 0
+    },
+    {
+      "entity": "Customer",
+      "records": 13158,
+      "conflicts": 0
+    },
+    {
+      "entity": "Estimate",
+      "records": 2080,
+      "conflicts": 0
+    },
+    {
+      "entity": "Invoice",
+      "records": 21635,
+      "conflicts": 0
+    },
+    {
+      "entity": "Item",
+      "records": 102,
+      "conflicts": 0
+    },
+    {
+      "entity": "Payment",
+      "records": 17628,
+      "conflicts": 0
+    },
+    {
+      "entity": "Purchase",
+      "records": 11787,
+      "conflicts": 0
+    },
+    {
+      "entity": "Vendor",
+      "records": 3222,
+      "conflicts": 0
+    },
+    {
+      "entity": "VendorCredit",
+      "records": 1298,
+      "conflicts": 0
+    }
+  ],
+  "checkedAt": "2026-10-14T09:17:31.057317+00:00",
+  "connection": {
+    "status": "paused",
+    "generation": 3,
+    "refreshInProgress": false
+  },
+  "references": [
+    {
+      "entity": "CreditMemo",
+      "records": 1021,
+      "missingcurrency": 0,
+      "missingcustomer": 0,
+      "unmatchedcustomer": 0
+    },
+    {
+      "entity": "Estimate",
+      "records": 2080,
+      "missingcurrency": 0,
+      "missingcustomer": 0,
+      "unmatchedcustomer": 0
+    },
+    {
+      "entity": "Invoice",
+      "records": 21635,
+      "missingcurrency": 0,
+      "missingcustomer": 0,
+      "unmatchedcustomer": 0
+    },
+    {
+      "entity": "Payment",
+      "records": 17628,
+      "missingcurrency": 0,
+      "missingcustomer": 0,
+      "unmatchedcustomer": 0
+    }
+  ],
+  "wrongPageScope": 0,
+  "vendorReferences": [
+    {
+      "entity": "Bill",
+      "records": 41870,
+      "missingvendor": 0,
+      "unmatchedvendor": 0
+    },
+    {
+      "entity": "BillPayment",
+      "records": 20049,
+      "missingvendor": 0,
+      "unmatchedvendor": 0
+    },
+    {
+      "entity": "VendorCredit",
+      "records": 1298,
+      "missingvendor": 0,
+      "unmatchedvendor": 0
+    }
+  ],
+  "emptyTraversedTypes": [
+    "SalesReceipt"
+  ],
+  "totalRecords": 134569,
+  "providerRequests": 1354,
+  "savedPages": 1353,
+  "scope": "Approved 13 source types; retained unreconciled accounts, no model training"
+}

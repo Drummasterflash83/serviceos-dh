@@ -136,12 +136,12 @@ test("Slack-only configuration errors and provider failures cannot fall back to 
 test("QuickBooks dispatch is independently enabled and uses its authenticated empty-body endpoint", async () => {
  const cfg={...config,enabled:'false',quickbooksEnabled:'true',quickbooksKey:'synthetic-quickbooks-trigger'};
  let calls=0;
- const handler=slackWorkerEndpoint(cfg.quickbooksKey,async()=>({claimed:1,state:'saved'}));
+ const handler=slackWorkerEndpoint(cfg.quickbooksKey,async()=>calls===1?{claimed:1,state:'saved'}:{claimed:0,state:'idle'});
  const result=await runLearnInputTick(cfg,null,async(url,init)=>{
   calls++;assert.ok(url.endsWith('/learn-quickbooks-worker'));assert.equal(init.body,undefined);
   return handler(new Request(url,init));
  });
- assert.equal(calls,1);assert.equal(result.quickbooks.state,'processed');assert.equal(result.slack.state,'disabled');
+ assert.equal(calls,2);assert.equal(result.quickbooks.state,'processed');assert.equal(result.slack.state,'disabled');
  for(const patch of [{quickbooksEnabled:undefined},{quickbooksEnabled:'TRUE'},{quickbooksKey:undefined}]){
   await runLearnInputTick({...cfg,...patch},null,async()=>{throw Error('must not dispatch');});
  }
@@ -220,4 +220,17 @@ test("a completed Commusoft page continues through the actual HTTP guard, then s
   assert.equal(claims, 2);
   assert.deepEqual(result, { commusoft: { state: "processed" }, slackSchedule: { state: "disabled" }, slack: { state: "disabled" }, quickbooks: { state: "disabled" } });
 
+});
+
+
+test("QuickBooks drains distinct saved pages and stops on throttle attention", async () => {
+  let calls=0;
+  const observed=await runLearnInputTick({...config,enabled:"false",slackEnabled:"false",quickbooksEnabled:"true",quickbooksKey:"synthetic-qb-trigger-key"},null,async(url,init)=>{
+    assert.ok(url.endsWith("learn-quickbooks-worker"));
+    assert.equal(init.body,undefined);
+    return ok({claimed:1,state:++calls===1?"saved":"attention"});
+  });
+  assert.equal(calls,2);
+  assert.equal(observed.quickbooks.state,"attention");
+  assert.equal(observed.commusoft.state,"disabled");
 });

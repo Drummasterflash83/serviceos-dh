@@ -8,6 +8,10 @@ Deno.serve(
       key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!url || !key) throw Error("worker_unavailable");
     const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+    const schedule = await db.rpc("learn_quickbooks_schedule_tick", { p_limit: 10 });
+    if (schedule.error || !schedule.data || ![schedule.data.checked, schedule.data.queued, schedule.data.held].every(
+      n => Number.isSafeInteger(n) && n >= 0 && n <= 10,
+    ) || schedule.data.queued + schedule.data.held > schedule.data.checked) throw Error("schedule_unconfirmed");
     const result = await runQuickBooksImport({
       rpc: (name, args) => db.rpc(name, args),
       signal: AbortSignal.timeout(85000),
