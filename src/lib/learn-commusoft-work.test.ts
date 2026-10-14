@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   loadWorkPage,
+  checkedWorkDraft,
+  checkedContactSeparation,
   workTimingMessage,
   readWorkDraft,
   resolveWorkDraft,
@@ -329,4 +331,92 @@ test("saved batch receipts preserve timing limitations, while malformed claims k
     await assert.rejects(resolveWorkDraft(db, s, lock, scope, d, "apply", () => true));
     assert.ok(readWorkDraft(s, scope));
   }
+});
+
+test("separate-person evidence survives a lost response and exact recovery", async () => {
+  const s = storage();
+  const d: WorkDraft = {
+    ...draft(),
+    version: 2,
+    kind: "contact",
+    items: [
+      {
+        version_id: id(5),
+        target_id: null,
+        identity_review: {
+          mode: "separate_named_person",
+          source_name: "Jamie Office",
+          candidate_ids: [id(9)],
+          evidence: "Different property manager; the office telephone is shared.",
+        },
+      },
+    ],
+  };
+  let saved: unknown = null,
+    writes = 0;
+  const db: ReviewClient = {
+    rpc: async (name, args) => {
+      if (name.endsWith("_result")) return { data: saved, error: null };
+      writes++;
+      assert.deepEqual(args.p_items, d.items);
+      assert.deepEqual(readWorkDraft(s, scope), d);
+      saved = {
+        ...receipt(),
+        kind: "contact",
+        linked: 1,
+        held: 0,
+        items: [
+          {
+            version_id: id(5),
+            outcome: {
+              state: "linked",
+              entity_id: id(10),
+              entity_kind: "contact",
+              link_id: id(11),
+              already: false,
+            },
+          },
+        ],
+      };
+      throw Error("lost response");
+    },
+  };
+  await assert.rejects(resolveWorkDraft(db, s, lock, scope, d, "apply", () => true));
+  assert.deepEqual(readWorkDraft(s, scope), d);
+  await resolveWorkDraft(db, s, lock, scope, d, "check", () => true);
+  assert.equal(writes, 1);
+  assert.equal(readWorkDraft(s, scope), null);
+});
+
+test("separation cannot be downgraded, combined with a target, or applied to jobs", () => {
+  const review = {
+    mode: "separate_named_person",
+    source_name: "Jamie Office",
+    candidate_ids: [id(9)],
+    evidence: "Different named contact at the same office telephone.",
+  };
+  const d = {
+    ...draft(),
+    version: 2,
+    kind: "contact",
+    items: [{ version_id: id(5), target_id: null, identity_review: review }],
+  };
+  assert.equal(checkedWorkDraft(scope, d).version, 2);
+  for (const bad of [
+    { ...d, version: 1 },
+    { ...d, kind: "job" },
+    { ...d, items: [{ ...d.items[0], target_id: id(8) }] },
+    { ...d, items: [{ ...d.items[0], ignored: true }] },
+    { ...d, items: [{ version_id: id(5), target_id: null }] },
+  ])
+    assert.throws(() => checkedWorkDraft(scope, bad));
+  for (const bad of [
+    { ...review, candidate_ids: [] },
+    { ...review, candidate_ids: [id(9), id(9)] },
+    { ...review, candidate_ids: Array.from({ length: 51 }, (_, i) => id(100 + i)) },
+    { ...review, evidence: "not enough" },
+    { ...review, source_name: "" },
+    { ...review, unknown: true },
+  ])
+    assert.throws(() => checkedContactSeparation(bad));
 });
