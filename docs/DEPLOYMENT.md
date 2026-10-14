@@ -42,34 +42,36 @@ Cloudflare-flavoured.
 
 ## Current live checkpoint — 14 October 2026
 
-LIVE frontend Git `b3a74c4662dd3d3c2e51e6ef5bd874368a34d427`, deployment
-`dpl_21eztEFiDNUKj1MmZRmqy61K4Dhh`, is verified on all four existing openfolk.ai
-aliases and the production target. Its only feature change from the preceding
-QuickBooks frontend is the three-file customer job-status brief. The signed-in
-LIVE customer journey shows recorded completion, pending verification, existing
-emails, job drilldown and return. Existing source descriptions/codes remain intact.
+LIVE frontend Git `397d3c689ceb8b7cf980f00bdd70782d32628235`, deployment
+`dpl_TM6sYHnQJNbkzc6cpX31kreGiZ3T`, is verified on all four existing openfolk.ai
+aliases and the production target. The four-file own-job status correction retains
+canonical recorded completion separately from verification, payment and timing.
+The signed-in company-to-job journey shows the actual recorded completion and its
+pending verification/unknown-timezone limitations. Source descriptions, current
+codes with leading zeros, QuickBooks and customer job summaries are preserved.
 No backend, capture, credential, permission or source-data change is included.
 
-The preceding feature baseline `f03a96328924d9c6de4414143444c7f6949328e1` /
-`dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR` remains the rollback target for removing the
-entire summary change. The first summary release `dpl_8JpXxooWUKEWdvg7RKehn9JENsRW`
-was superseded because its verification flag check hid recorded completion.
-Do not use that conservative first rendering as acceptance of the final behaviour.
+Rollback for this correction is the preceding customer-summary release:
+`b3a74c4662dd3d3c2e51e6ef5bd874368a34d427` /
+`dpl_21eztEFiDNUKj1MmZRmqy61K4Dhh`. It has the known own-job summary inconsistency;
+rolling back must not be described as preserving the corrected status rendering.
 
-Protected TEST separately serves `f783f431d22696d4feac9bb7a0196939b8ad8026` /
-`dpl_EuUZso7KtiG3vaiTqxp2v7CTw92s` on both permanent aliases. Its About panel,
+Protected TEST separately serves `a193dbdf1be3a12b62b8a8f76ac77061faf25304` /
+`dpl_49UmtYRwQtyyoFFujRtwmuBPWGpf` on both permanent aliases. Its About panel,
 existing operator sign-in and TEST backend binding are verified. TEST preserves
-its existing job-refresh controls; the LIVE release does not include that held
-frontend. No deployment protection changed.
+its existing job-refresh controls; LIVE does not include that held frontend.
+TEST rollback is `f783f431d22696d4feac9bb7a0196939b8ad8026` /
+`dpl_EuUZso7KtiG3vaiTqxp2v7CTw92s`. Deployment protection is unchanged on both projects.
 
 QuickBooks frontend/foundation remain preserved; actual production app registration,
 credentials, company connection and real accounting acceptance remain outstanding.
 Customer briefs cover a labelled bounded published-job read, not all provider work.
-Individual job-card status summaries, wider publication, scoring and operational
-acceptance remain incomplete. Use **https://www.openfolk.ai** for LIVE and
-**https://test.openfolk.ai** for TEST.
+Wider publication, communication matching, scoring and operational acceptance remain
+incomplete. Use **https://www.openfolk.ai** for LIVE and **https://test.openfolk.ai**
+for TEST.
 
-[Customer summary release evidence](operations/evidence/learn-customer-job-brief-live-2026-10-14.json)
+[Own-job status release evidence](operations/evidence/learn-own-job-status-live-2026-10-14.json)
+· [Customer summary release](operations/evidence/learn-customer-job-brief-live-2026-10-14.json)
 · [Preserved QuickBooks release](operations/evidence/learn-quickbooks-live-frontend-2026-10-13.json).
 
 ## Preview deployments

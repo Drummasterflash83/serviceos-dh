@@ -8,6 +8,55 @@ override a later release observation. No requirement is silently deferred.
 ## Current evidence and priority
 
 
+**14 October, 01:06 BST — own-job status correction verified on LIVE and protected TEST.**
+
+- The real company → site job journey now shows “Job recorded complete” from the
+  existing scoped canonical read, with the unchanged pending verification and
+  unknown completion timezone alongside it. Open, pending, held, closed and unknown
+  statuses do not become completion. Expired/malformed reads withhold that status.
+- Thirty focused tests, TypeScript, local Vercel build and both remote Git builds
+  passed. LIVE `397d3c6` is verified on all four existing aliases and its production
+  target; TEST `a193dbd` is verified on both stable aliases, with the existing operator
+  session and About build/backend checks. Both rendered backend targets are correct.
+- The release contains four isolated frontend files. Source data, capture, schemas,
+  credentials and permissions are unchanged. Prior QuickBooks/customer summaries are
+  preserved and the held job-refresh frontend is still excluded from LIVE. Rollback
+  is the immediately preceding deployment in the release evidence.
+- Wider canonical publication, source-to-communication matching, ownership, findings,
+  scorecards and complete operational acceptance remain open. Commusoft's ongoing
+  customer-contact traversal reached 1,520 of 1,552 at 00:05 UTC; its watermark has
+  not advanced and full cycle completion must still be verified.
+- At 00:06 UTC Slack retained 14,982 sources: 18 of 20 active channel windows and
+  120 of 160 archived windows are complete. Replies and the existing held-page
+  recovery remain queued/running under their original campaign scope.
+
+[Own-job status release evidence](evidence/learn-own-job-status-live-2026-10-14.json).
+
+
+**14 October, 01:03 BST — company/site/job journey verified LIVE; job summary correction staged.**
+
+- One further corroborated company customer, thirteen explicit sites and their
+  retained site job were published through the existing logged OpenFolk controls.
+  Database readback verifies all fifteen links, provider ownership and the original
+  operator. Prior customer identities, links, contact points and customer source
+  versions are preserved. LIVE signed-in review shows all thirteen site addresses,
+  the job's unchanged `012` description, customer summary and job drilldown/return.
+- There are now thirty Commusoft customer links. This is incomplete publication,
+  not full contact/communication coverage. Missing ownership, source gaps and
+  unconfirmed completion timezone remain visible; no mapping or contact was invented.
+- The real journey exposed the known own-job brief contradiction: a recorded
+  completed job still says completion is not established. The four-file correction
+  preserves recorded status separately from verification, payment and timing. Thirty
+  focused checks, TypeScript and local build pass. Isolated LIVE `397d3c6` and TEST
+  `a193dbd` builds are staged, not yet accepted or promoted at this observation.
+- Slack is processing replies each minute. The existing recovery remains queued;
+  pacing and recent successful settlements confirm live work rather than a missing
+  worker. No duplicate job was started. Commusoft's contact pass reached 1,420 of
+  1,552 targets at 23:55 UTC; full cycle completion is not yet established.
+
+[Company/site publication evidence](evidence/learn-company-sites-live-2026-10-14.json).
+
+
 **14 October, 00:54 BST — two further customer identities and five explicit jobs verified LIVE.**
 
 - The existing logged OpenFolk review published two corroborated account holders
