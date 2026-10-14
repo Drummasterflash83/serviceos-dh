@@ -7,6 +7,24 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 04:40 BST — shared-contact separation and attribution guard rehearsed; release pending.**
+
+- Added an evidenced review for distinct named contacts sharing an office endpoint.
+  The source name/version and full candidate set are checked again at save; existing
+  people, primary choices and source links remain intact. Group labels remain held.
+- Automatic communication delivery now holds shared contact-point/primary matches
+  for review. Existing authorised per-communication attribution still works.
+- Native full-schema and hosted TEST rollback journeys pass, including receipt
+  recovery, stale reviews, permission denials, audit failures and downstream cards.
+  Existing identity regressions, twelve library tests, TypeScript and build pass.
+- Guarded installation/reversal is prepared and rehearsed. SQL reversal refuses to
+  remove the matching protection after distinct-contact publication. No hosted
+  installation or LIVE change has occurred. Signed-in TEST/LIVE acceptance and
+  real shared-office publication remain next, alongside the wider goal requirements.
+
+[Shared-contact release and acceptance](LEARN-CONTACT-SEPARATION.md).
+
+
 **14 October, 04:08 BST — another complete customer/site/job/contact publication group accepted in LIVE.**
 
 - Twenty reviewed customer accounts, two sites and seventeen jobs were published
