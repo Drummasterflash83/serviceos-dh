@@ -84,6 +84,9 @@ try:
     sql(retained_finance)
     sql(source('scripts/verify/learn-quickbooks-retained-finance.assert.sql'))
     print('PASS: paused intake preserves authorised finance reads; master switch, link-write fence, tenant/role/banned-user checks and source history preserved.')
+    sql(source('supabase/migrations/20261102200000_learn_quickbooks_customer_search.sql'))
+    sql(source('scripts/verify/learn-quickbooks-customer-search.assert.sql'))
+    print('PASS: bounded retained-customer search, literal filters, pagination, role and tenant isolation, no link mutation.')
     # Export is an operations query, not a new RPC/grant. Verify real SQL scope,
     # exact decimals and credential exclusion against the retained fixture.
     sql("reset role;insert into learn_quickbooks_source_versions(tenant_id,environment,realm_id,entity,external_id,content_hash,payload,sync_token) values(fixture_id(2),'production','other-realm','Customer','other','other-hash','{\"Id\":\"other\",\"DisplayName\":\"OTHER_TENANT_EXPORT_SENTINEL\"}',0);")

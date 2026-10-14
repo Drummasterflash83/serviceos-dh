@@ -1,6 +1,6 @@
 # Drummonds QuickBooks LIVE history continuation — prepared 14 October 2026
 
-Status: prepared, not approved or started. The first approved 500-request run is
+Status: approved by Chris on 14 October; continuation started at 07:56 UTC. The first approved 500-request run is
 verified at `limit_reached`, with its connection paused and Payment position
 15,101 retained. Customer and Invoice traversals are complete. Do not alter
 that run's definition or request budget.
@@ -50,3 +50,22 @@ accounting writes, payments, payroll, AI/model training, automatic customer/job
 matching or recurring schedule. Hosted unattended dispatch remains separate work.
 Retained financial information stays limited to company owners/admins and logged
 OpenFolk support. Source QuickBooks job codes do not replace Commusoft job codes.
+
+## Execution
+
+- Continuation ID: `ed8ae29c-aee6-455b-8904-1caac9ef3f8e`; scope readback
+  confirmed Payment position 15,101, original entities/page size/minor version,
+  2,000 maximum requests and expiry 15 October 07:55:05 UTC.
+- Ordinary token refresh succeeded and was durably saved as generation 2. The
+  local adapter initially mishandled an empty successful RPC response; status
+  inspection proved the saved refresh before processing resumed.
+- Payments completed at 17,628 records. Credit notes, estimates and suppliers
+  were traversed next; supplier bills are still importing. No final whole-scan
+  completion claim is made.
+- A later local execution stopped with an expired page lease and no receipt;
+  read-only inspection established a static 98-request/97-page checkpoint. The
+  same approved run resumed using the existing database lease/receipt guards,
+  keeping the original cap and counting the unsettled request.
+- The reusable local adapter is saved at
+  `scripts/operations/quickbooks-bounded-runner.mjs`; attempt journals remain
+  ignored. Hosted dispatch and recurring refresh are separate finishing work.
