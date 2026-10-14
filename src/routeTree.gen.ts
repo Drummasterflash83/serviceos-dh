@@ -27,6 +27,8 @@ import { Route as OpenfolkIndexRouteImport } from './routes/openfolk.index'
 import { Route as OpenfolkTenantIdRouteImport } from './routes/openfolk.$tenantId'
 import { Route as OpenfolkApisRouteImport } from './routes/openfolk.apis'
 import { Route as OpenfolkNotificationsRouteImport } from './routes/openfolk.notifications'
+import { Route as PrivacyDrummondsRouteImport } from './routes/privacy.drummonds'
+import { Route as TermsDrummondsRouteImport } from './routes/terms.drummonds'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -118,6 +120,16 @@ const OpenfolkNotificationsRoute = OpenfolkNotificationsRouteImport.update({
   path: '/notifications',
   getParentRoute: () => OpenfolkRoute,
 } as any)
+const PrivacyDrummondsRoute = PrivacyDrummondsRouteImport.update({
+  id: '/privacy/drummonds',
+  path: '/privacy/drummonds',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsDrummondsRoute = TermsDrummondsRouteImport.update({
+  id: '/terms/drummonds',
+  path: '/terms/drummonds',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,6 +149,8 @@ export interface FileRoutesByFullPath {
   '/openfolk/$tenantId': typeof OpenfolkTenantIdRoute
   '/openfolk/apis': typeof OpenfolkApisRoute
   '/openfolk/notifications': typeof OpenfolkNotificationsRoute
+  '/privacy/drummonds': typeof PrivacyDrummondsRoute
+  '/terms/drummonds': typeof TermsDrummondsRoute
   '/openfolk/': typeof OpenfolkIndexRoute
 }
 export interface FileRoutesByTo {
@@ -156,6 +170,8 @@ export interface FileRoutesByTo {
   '/openfolk/$tenantId': typeof OpenfolkTenantIdRoute
   '/openfolk/apis': typeof OpenfolkApisRoute
   '/openfolk/notifications': typeof OpenfolkNotificationsRoute
+  '/privacy/drummonds': typeof PrivacyDrummondsRoute
+  '/terms/drummonds': typeof TermsDrummondsRoute
   '/openfolk': typeof OpenfolkIndexRoute
 }
 export interface FileRoutesById {
@@ -177,6 +193,8 @@ export interface FileRoutesById {
   '/openfolk/$tenantId': typeof OpenfolkTenantIdRoute
   '/openfolk/apis': typeof OpenfolkApisRoute
   '/openfolk/notifications': typeof OpenfolkNotificationsRoute
+  '/privacy/drummonds': typeof PrivacyDrummondsRoute
+  '/terms/drummonds': typeof TermsDrummondsRoute
   '/openfolk/': typeof OpenfolkIndexRoute
 }
 export interface FileRouteTypes {
@@ -199,6 +217,8 @@ export interface FileRouteTypes {
     | '/openfolk/$tenantId'
     | '/openfolk/apis'
     | '/openfolk/notifications'
+    | '/privacy/drummonds'
+    | '/terms/drummonds'
     | '/openfolk/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -218,6 +238,8 @@ export interface FileRouteTypes {
     | '/openfolk/$tenantId'
     | '/openfolk/apis'
     | '/openfolk/notifications'
+    | '/privacy/drummonds'
+    | '/terms/drummonds'
     | '/openfolk'
   id:
     | '__root__'
@@ -238,6 +260,8 @@ export interface FileRouteTypes {
     | '/openfolk/$tenantId'
     | '/openfolk/apis'
     | '/openfolk/notifications'
+    | '/privacy/drummonds'
+    | '/terms/drummonds'
     | '/openfolk/'
   fileRoutesById: FileRoutesById
 }
@@ -256,6 +280,8 @@ export interface RootRouteChildren {
   DemoLearningCentreRoute: typeof DemoLearningCentreRoute
   DemoOpenfolkRoute: typeof DemoOpenfolkRoute
   DemoOwnershipRoute: typeof DemoOwnershipRoute
+  PrivacyDrummondsRoute: typeof PrivacyDrummondsRoute
+  TermsDrummondsRoute: typeof TermsDrummondsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -386,6 +412,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpenfolkNotificationsRouteImport
       parentRoute: typeof OpenfolkRoute
     }
+    '/privacy/drummonds': {
+      id: '/privacy/drummonds'
+      path: '/privacy/drummonds'
+      fullPath: '/privacy/drummonds'
+      preLoaderRoute: typeof PrivacyDrummondsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms/drummonds': {
+      id: '/terms/drummonds'
+      path: '/terms/drummonds'
+      fullPath: '/terms/drummonds'
+      preLoaderRoute: typeof TermsDrummondsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -422,6 +462,8 @@ const rootRouteChildren: RootRouteChildren = {
   DemoLearningCentreRoute: DemoLearningCentreRoute,
   DemoOpenfolkRoute: DemoOpenfolkRoute,
   DemoOwnershipRoute: DemoOwnershipRoute,
+  PrivacyDrummondsRoute: PrivacyDrummondsRoute,
+  TermsDrummondsRoute: TermsDrummondsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
