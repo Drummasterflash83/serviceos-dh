@@ -19,6 +19,7 @@ export type BusinessContextPage = {
   total: number;
   next_after: string | null;
   observed_at: string;
+  order?: "created_desc";
 };
 const uuid = (v: unknown): v is string =>
   typeof v === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(v);
@@ -79,6 +80,7 @@ export async function readCustomerBusinessContext(
   signal: AbortSignal,
 ): Promise<BusinessContextPage> {
   const after = args.after ?? null;
+  const recentJobs = args.collection === "jobs";
   const operator = args.operatorReason !== undefined;
   if (
     ![args.tenant, args.actor, args.card].every(uuid) ||
@@ -91,7 +93,7 @@ export async function readCustomerBusinessContext(
   )
     throw unavailable();
   const { data: p, error } = await client
-    .rpc("learn_customer_business_context", {
+    .rpc(recentJobs ? "learn_customer_jobs_recent" : "learn_customer_business_context", {
       p_tenant: args.tenant,
       p_card: args.card,
       p_collection: args.collection,
@@ -102,7 +104,8 @@ export async function readCustomerBusinessContext(
   if (
     error ||
     !object(p) ||
-    p.version !== "learn-customer-business-context/1" ||
+    p.version !== (recentJobs ? "learn-customer-jobs-recent/1" : "learn-customer-business-context/1") ||
+    (recentJobs && p.order !== "created_desc") ||
     p.tenant_id !== args.tenant ||
     p.actor_id !== args.actor ||
     p.card_id !== args.card ||
@@ -120,12 +123,16 @@ export async function readCustomerBusinessContext(
     (p.next_after !== null && !uuid(p.next_after))
   )
     throw unavailable();
-  let prior = after;
+  let prior = recentJobs ? null : after;
+  let priorTime = Number.POSITIVE_INFINITY;
+  const seen = new Set<string>();
   for (const row of p.rows) {
     if (
       !object(row) ||
       !uuid(row.id) ||
-      (prior && row.id <= prior) ||
+      (!recentJobs && prior && row.id <= prior) ||
+      seen.has(row.id) ||
+      (recentJobs && row.id === after) ||
       !object(row.fields) ||
       Object.keys(row.fields).length !== fields[args.collection].length ||
       !fields[args.collection].every((k) => Object.hasOwn(row.fields, k)) ||
@@ -154,6 +161,15 @@ export async function readCustomerBusinessContext(
       )
     )
       throw unavailable();
+    if (recentJobs) {
+      const created = row.fields.created_date;
+      if (created !== null && !/T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/i.test(created)) throw unavailable();
+      const time = created === null ? Number.NEGATIVE_INFINITY : Date.parse(created);
+      if (Number.isNaN(time) || time > priorTime || (time === priorTime && prior && row.id <= prior))
+        throw unavailable();
+      priorTime = time;
+    }
+    seen.add(row.id);
     prior = row.id;
   }
   if (p.next_after !== null && (p.rows.length !== 25 || p.next_after !== prior))
@@ -164,5 +180,6 @@ export async function readCustomerBusinessContext(
     total: p.total,
     next_after: p.next_after,
     observed_at: p.observed_at,
+    ...(recentJobs ? { order: "created_desc" as const } : {}),
   };
 }

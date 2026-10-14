@@ -122,6 +122,9 @@ export function LearnCustomerBusinessContext({
             {businessCollections[collection].toLowerCase()} recorded · checked{" "}
             {new Date(visible.observed_at).toLocaleString("en-GB")}
           </p>
+          {visible.order === "created_desc" && (
+            <p className="text-sm">Newest recorded creation first · jobs without a creation date appear last.</p>
+          )}
           {!visible.rows.length && (
             <p>
               No linked records on this page. This does not establish that the customer has no work

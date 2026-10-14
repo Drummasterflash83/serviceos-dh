@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "state": "runtime_verified_scheduled_acceptance_pending",
+  "state": "eleven_live_scheduled_batches_verified",
   "targets": [
     {
       "environment": "test",

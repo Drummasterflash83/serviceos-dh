@@ -7,6 +7,31 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 02:45 BST — identity continuation accepted in LIVE; Commusoft incremental cycle complete.**
+
+- Eleven scheduled identity batches have committed 104 customer-card updates and
+  446 durable review holds, with no unconfirmed delivery and a verified next child
+  each time. Held records stay review-required. This proves continuation, not full
+  backlog completion or resolution of the outstanding identity reviews.
+- Commusoft completed all four stages: 2,423 properties (1,552 customers and 871
+  sites), 27 changed jobs, and all customer/site contact targets. Terminal receipts
+  match their successful jobs. The watermark advanced to 13 October 21:26 UTC;
+  ongoing capture remains enabled and the next check is scheduled for 02:37 UTC.
+  This traversal does not establish complete canonical publication or all contacts.
+- Signed-in LIVE LEARN shows current source totals and the reviewed Slack timeline.
+  Four downstream Slack observation recovery jobs remain queued at 01:45 UTC.
+- Recent-job ordering is prepared to replace random internal-ID ordering on the
+  customer card. The additive reader is installed in TEST/LIVE, with unchanged
+  original reader and access. Fourteen focused tests, TypeScript, local build,
+  native-schema and hosted TEST rollback journeys pass. Frontend publication and
+  signed-in recent-job acceptance are still pending.
+- Full input coverage, broader matching/publication, scoring, operator recovery
+  and operational acceptance remain unfinished; the whole goal stays active.
+
+[Recent jobs release](LEARN-CUSTOMER-RECENT-JOBS.md) ·
+[Commusoft cycle evidence](evidence/learn-commusoft-incremental-cycle-complete-2026-10-14.json).
+
+
 **14 October, 02:32 BST — identity continuation repair released to TEST and LIVE; scheduled acceptance pending.**
 
 - An old identity-review hold no longer requires unrelated full batches to stop.

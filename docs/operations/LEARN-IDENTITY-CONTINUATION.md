@@ -36,10 +36,11 @@ and reversal also pass in the current hosted TEST schema. Two packaging defects
 were caught and corrected before installation; their failed attempts left the old
 TEST function intact and remain journalled privately.
 
-At 01:32 UTC the scheduler's existing identity job is queued with zero attempts.
-The runtime has been released, but a real continued batch is not yet accepted.
-Observe that original handle; do not create a replacement because it waits.
-The four reviewed Slack observation recovery jobs also remain queued.
+At 01:45 UTC eleven consecutive scheduled batches have committed 104 card
+updates and 446 durable review holds, each with a verified child and no unconfirmed
+delivery. The original scheduled parent and its descendants remain traceable.
+This is actual production continuation acceptance; full backlog and review
+resolution remain open. Four Slack observation recovery jobs are still queued.
 
 [Release evidence](evidence/learn-identity-continuation-live-2026-10-14.json) records
 the exact versions and hashes. Private runtime and recovery artifacts remain under

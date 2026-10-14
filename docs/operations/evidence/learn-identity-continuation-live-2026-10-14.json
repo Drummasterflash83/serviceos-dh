@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "observedAt": "2026-10-14T01:32:24Z",
-  "state": "released_waiting_for_scheduled_identity_job",
+  "observedAt": "2026-10-14T01:45:09.579045+00:00",
+  "state": "eleven_scheduled_batches_verified",
   "runtime": {
     "version": 1,
     "state": "runtime_verified_scheduled_acceptance_pending",
@@ -137,17 +137,180 @@
     "lateAuditFailureAtomicRollback": true
   },
   "pending": {
-    "identityJob": "f48e1ffd-8a44-4b4a-aaa4-6e7efc8c3dba",
+    "identityJob": "f5172811-3cbd-4472-acaf-77623535d19b",
     "status": "queued",
     "attempts": 0,
-    "source": "live_read_at_01:32:23_UTC",
+    "source": "live_read_at_2026-10-14T01:45:09.579045+00:00",
     "slackRecoveryJobs": 4,
     "slackRecoveryStatus": "queued_at_01:32:24_UTC"
   },
   "limitations": [
-    "No actual post-release scheduled identity delivery is established yet.",
+    "Eleven full scheduled batches verified; total pending backlog and unresolved reviews are not complete.",
     "Review holds remain unresolved and visible; this does not approve or match an ambiguous source.",
     "Four Slack observation children still need committed receipts.",
     "Full canonical publication, input coverage, scoring, controller and operational acceptance remain incomplete."
-  ]
+  ],
+  "productionAcceptance": {
+    "batches": 11,
+    "cardsEnriched": 104,
+    "durableHolds": 446,
+    "unconfirmedDeliveries": 0,
+    "scheduledRoot": "f48e1ffd-8a44-4b4a-aaa4-6e7efc8c3dba",
+    "childProofs": [
+      {
+        "id": "94c6938a-3c6f-433c-aa2f-de6de749add7",
+        "status": "dead_letter",
+        "parent_job_id": "dc1ece26-01d2-4b81-b5b1-54ff899423fc",
+        "settlement": {
+          "held": 37,
+          "child": "f5172811-3cbd-4472-acaf-77623535d19b",
+          "state": "dead_letter",
+          "records": 13,
+          "committed": 13,
+          "continued": true,
+          "childExists": true
+        }
+      },
+      {
+        "id": "dc1ece26-01d2-4b81-b5b1-54ff899423fc",
+        "status": "dead_letter",
+        "parent_job_id": "f45a2aa2-c079-4456-b3b4-35f61ce83ccf",
+        "settlement": {
+          "held": 43,
+          "child": "94c6938a-3c6f-433c-aa2f-de6de749add7",
+          "state": "dead_letter",
+          "records": 7,
+          "committed": 7,
+          "continued": true,
+          "childExists": true
+        }
+      },
+      {
+        "id": "f45a2aa2-c079-4456-b3b4-35f61ce83ccf",
+        "status": "dead_letter",
+        "parent_job_id": "417685be-6780-453a-bf86-fb96c14f8b32",
+        "settlement": {
+          "held": 42,
+          "child": "dc1ece26-01d2-4b81-b5b1-54ff899423fc",
+          "state": "dead_letter",
+          "records": 8,
+          "committed": 8,
+          "continued": true,
+          "childExists": true
+        }
+      },
+      {
+        "id": "417685be-6780-453a-bf86-fb96c14f8b32",
+        "status": "dead_letter",
+        "parent_job_id": "87c6d757-1a9e-49dd-99a4-7bbdcb601ee2",
+        "settlement": {
+          "held": 33,
+          "child": "f45a2aa2-c079-4456-b3b4-35f61ce83ccf",
+          "state": "dead_letter",
+          "records": 17,
+          "committed": 17,
+          "continued": true,
+          "childExists": true
+        }
+      },
+      {
+        "id": "87c6d757-1a9e-49dd-99a4-7bbdcb601ee2",
+        "status": "dead_letter",
+        "parent_job_id": "937c9950-4032-437b-9b2c-ebeb5d45652c",
+        "settlement": {
+          "held": 36,
+          "child": "417685be-6780-453a-bf86-fb96c14f8b32",
+          "state": "dead_letter",
+          "records": 14,
+          "committed": 14,
+          "continued": true,
+          "childExists": true
+        }
+      },
+      {
+        "id": "937c9950-4032-437b-9b2c-ebeb5d45652c",
+        "status": "dead_letter",
+        "parent_job_id": "5ef13751-7b31-483e-ab7a-084b488128f1",
+        "settlement": {
+          "held": 45,
+          "child": "87c6d757-1a9e-49dd-99a4-7bbdcb601ee2",
+          "state": "dead_letter",
+          "records": 5,
+          "committed": 5,
+          "continued": true,
+          "childExists": true
+        }
+      },
+      {
+        "id": "5ef13751-7b31-483e-ab7a-084b488128f1",
+        "status": "dead_letter",
+        "parent_job_id": "3179a5f3-ad4b-465a-ab7c-f28c9650b6e3",
+        "settlement": {
+          "held": 42,
+          "child": "937c9950-4032-437b-9b2c-ebeb5d45652c",
+          "state": "dead_letter",
+          "records": 8,
+          "committed": 8,
+          "continued": true,
+          "childExists": true
+        }
+      },
+      {
+        "id": "3179a5f3-ad4b-465a-ab7c-f28c9650b6e3",
+        "status": "dead_letter",
+        "parent_job_id": "d772eb61-7677-43ee-be97-9b84669325c8",
+        "settlement": {
+          "held": 39,
+          "child": "5ef13751-7b31-483e-ab7a-084b488128f1",
+          "state": "dead_letter",
+          "records": 11,
+          "committed": 11,
+          "continued": true,
+          "childExists": true
+        }
+      },
+      {
+        "id": "d772eb61-7677-43ee-be97-9b84669325c8",
+        "status": "dead_letter",
+        "parent_job_id": "e5810926-7b14-4337-9529-cb3d7d777797",
+        "settlement": {
+          "held": 44,
+          "child": "3179a5f3-ad4b-465a-ab7c-f28c9650b6e3",
+          "state": "dead_letter",
+          "records": 6,
+          "committed": 6,
+          "continued": true,
+          "childExists": true
+        }
+      },
+      {
+        "id": "e5810926-7b14-4337-9529-cb3d7d777797",
+        "status": "dead_letter",
+        "parent_job_id": "f48e1ffd-8a44-4b4a-aaa4-6e7efc8c3dba",
+        "settlement": {
+          "held": 43,
+          "child": "d772eb61-7677-43ee-be97-9b84669325c8",
+          "state": "dead_letter",
+          "records": 7,
+          "committed": 7,
+          "continued": true,
+          "childExists": true
+        }
+      },
+      {
+        "id": "f48e1ffd-8a44-4b4a-aaa4-6e7efc8c3dba",
+        "status": "dead_letter",
+        "parent_job_id": null,
+        "settlement": {
+          "held": 42,
+          "child": "e5810926-7b14-4337-9529-cb3d7d777797",
+          "state": "dead_letter",
+          "records": 8,
+          "committed": 8,
+          "continued": true,
+          "childExists": true
+        }
+      }
+    ]
+  }
 }

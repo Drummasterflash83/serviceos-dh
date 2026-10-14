@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "state": "incremental_cycle_complete",
+  "evidence": {
+    "at": "2026-10-14T01:37:09.877932+00:00",
+    "cycle": {
+      "phase": 0,
+      "state": "cycle_complete",
+      "enabled": true,
+      "cycleEnd": null,
+      "nextCheck": "2026-10-14T02:37:01.020293+00:00",
+      "watermark": "2026-10-13T21:26:01.79+00:00",
+      "cycleStart": null,
+      "stateUpdatedAt": "2026-10-14T01:37:01.020293+00:00"
+    },
+    "stages": [
+      {
+        "pages": 25,
+        "phase": 1,
+        "resource": "properties",
+        "terminal": [
+          {
+            "checkpoint": {
+              "after": null,
+              "pages": 25,
+              "complete": true,
+              "approvalId": "c286e53a-b740-4b19-8675-d92cfc2d1ef3"
+            },
+            "jobSucceeded": true,
+            "pageReceiptMatches": true
+          }
+        ],
+        "contactType": null,
+        "propertyTypes": {
+          "customer": 1552,
+          "workaddress": 871
+        },
+        "retainedRecords": 2423,
+        "targetProperties": 0,
+        "unfilteredInitialCycle": false
+      },
+      {
+        "pages": 1,
+        "phase": 2,
+        "resource": "jobs",
+        "terminal": [
+          {
+            "checkpoint": {
+              "after": null,
+              "pages": 1,
+              "complete": true,
+              "approvalId": "e552b4b0-8eb7-4525-af96-a9bc3fd08b2b"
+            },
+            "jobSucceeded": true,
+            "pageReceiptMatches": true
+          }
+        ],
+        "contactType": null,
+        "propertyTypes": null,
+        "retainedRecords": 27,
+        "targetProperties": 0,
+        "unfilteredInitialCycle": false
+      },
+      {
+        "pages": 1552,
+        "phase": 3,
+        "resource": "propertyContacts",
+        "terminal": [
+          {
+            "checkpoint": {
+              "after": null,
+              "pages": 1552,
+              "complete": true,
+              "approvalId": "95a7d7c9-5da3-4703-b846-cdec77a22a23",
+              "propertyId": null,
+              "propertiesCompleted": 1552
+            },
+            "jobSucceeded": true,
+            "pageReceiptMatches": true
+          }
+        ],
+        "contactType": "customer",
+        "propertyTypes": null,
+        "retainedRecords": 0,
+        "targetProperties": 1552,
+        "unfilteredInitialCycle": false
+      },
+      {
+        "pages": 871,
+        "phase": 4,
+        "resource": "propertyContacts",
+        "terminal": [
+          {
+            "checkpoint": {
+              "after": null,
+              "pages": 871,
+              "complete": true,
+              "approvalId": "e3f8e91a-4f5c-4d5d-b56a-ce1f859a3f30",
+              "propertyId": null,
+              "propertiesCompleted": 871
+            },
+            "jobSucceeded": true,
+            "pageReceiptMatches": true
+          }
+        ],
+        "contactType": "workaddress",
+        "propertyTypes": null,
+        "retainedRecords": 0,
+        "targetProperties": 871,
+        "unfilteredInitialCycle": false
+      }
+    ]
+  },
+  "limitations": [
+    "Cycle watermark covers the completed window ending 13 October 21:26 UTC, not current provider time.",
+    "All 1552 customer-contact and 871 site-contact targets traversed; endpoint-returned records and provider coverage remain separately reconciled.",
+    "Canonical customer/card publication and complete relationship coverage remain incomplete."
+  ]
+}

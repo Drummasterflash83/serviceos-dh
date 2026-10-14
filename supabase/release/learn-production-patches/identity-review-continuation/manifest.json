@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "state": "installed_test_and_live_scheduled_acceptance_pending",
+  "state": "eleven_live_scheduled_batches_verified",
   "source": {
     "path": "supabase/migrations/20261102120000_learn_identity_review_continuation.sql",
     "sha256": "5895670601f80fa6542beb98d9f921526043fed6ff52de66004a037b711bc1f0"

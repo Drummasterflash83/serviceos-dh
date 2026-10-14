@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "state": "backend_installed_frontend_prepared",
+  "at": "2026-10-14T01:45:10Z",
+  "backend": {
+    "version": 1,
+    "state": "backend_installed_frontend_prepared",
+    "source": {
+      "path": "supabase/migrations/20261102130000_learn_customer_jobs_recent.sql",
+      "sha256": "f327d3a3de104285afd385173156f38f44bf4161a6a9723e1594b091f1ab9643"
+    },
+    "legacyDefinitionMd5": "0176020ae98545133b07c0a841f5862b",
+    "newDefinitionMd5": "fe0f5e375ccce3d9881010100f792937",
+    "targets": [
+      {
+        "at": "2026-10-14T01:44:52.315Z",
+        "state": "installed_verified",
+        "project": "saatxzwxvdvqevbnskxy",
+        "sourceSha256": "f327d3a3de104285afd385173156f38f44bf4161a6a9723e1594b091f1ab9643",
+        "newMd5": "fe0f5e375ccce3d9881010100f792937",
+        "legacyMd5": "0176020ae98545133b07c0a841f5862b",
+        "sourceIdsPreserved": {
+          "jobs": 69,
+          "cards": 16251,
+          "sites": 15,
+          "people": 16254
+        },
+        "accessUnchanged": true,
+        "auth": {
+          "acl": [
+            "postgres=X/postgres",
+            "authenticated=X/postgres"
+          ],
+          "owner": "postgres",
+          "config": [
+            "search_path=pg_catalog"
+          ],
+          "service": false,
+          "anonymous": false,
+          "authenticated": true,
+          "securityDefiner": true
+        },
+        "error": null
+      },
+      {
+        "at": "2026-10-14T01:44:53.837Z",
+        "state": "installed_verified",
+        "project": "tgbnakbxwcqjeimygroz",
+        "sourceSha256": "f327d3a3de104285afd385173156f38f44bf4161a6a9723e1594b091f1ab9643",
+        "newMd5": "fe0f5e375ccce3d9881010100f792937",
+        "legacyMd5": "0176020ae98545133b07c0a841f5862b",
+        "sourceIdsPreserved": {
+          "jobs": 627,
+          "cards": 3275,
+          "sites": 46,
+          "people": 3281
+        },
+        "accessUnchanged": true,
+        "auth": {
+          "acl": [
+            "postgres=X/postgres",
+            "authenticated=X/postgres"
+          ],
+          "owner": "postgres",
+          "config": [
+            "search_path=pg_catalog"
+          ],
+          "service": false,
+          "anonymous": false,
+          "authenticated": true,
+          "securityDefiner": true
+        },
+        "error": null
+      }
+    ],
+    "scope": "Read-only recent published customer jobs with existing tenant/role authority and logged operator selection. No provider, source, credential, schedule or existing-reader changes.",
+    "rollbackSha256": "f4d7f12ebe689a462da9fd78891c563f314bbf7e641e07e4c2533d6c21f191de"
+  },
+  "verification": {
+    "focusedTests": 14,
+    "typescript": "passed",
+    "vercelTargetBuild": "passed",
+    "nativeRehearsal": {
+      "state": "customer_jobs_recent_full_schema_rehearsed",
+      "productionChanged": false,
+      "hostedTestChanged": false,
+      "archive": {
+        "bytes": 196872981,
+        "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+      },
+      "containment": {
+        "network": "none",
+        "hostMounts": 0,
+        "publishedPorts": 0,
+        "cronLaunchActiveJobs": false,
+        "preloadedLibraries": [
+          "pg_cron",
+          "pg_net",
+          "pgsodium",
+          "supabase_vault",
+          "supautils"
+        ],
+        "maxWorkerProcesses": 0,
+        "networkWorkerDatabaseAbsent": true,
+        "containerLogging": "none"
+      },
+      "preservation": {
+        "state": "all_archived_copy_rows_and_sequences_match",
+        "tables": 387,
+        "rows": 1591601,
+        "sequences": 7,
+        "comparisonSha256": "98e6af86b568b02eda6874a6e5c59ab9241cbc2db493fed5ce08f2e1d5c913c6",
+        "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+      },
+      "learn-customer-business-context": "passed",
+      "legacyReaderUnchanged": true,
+      "syntheticSequenceChanges": [],
+      "migrationSha256": "f327d3a3de104285afd385173156f38f44bf4161a6a9723e1594b091f1ab9643",
+      "journeyRollbackVerified": true,
+      "containerRemoved": true
+    },
+    "hostedTestRehearsal": "rehearsed_and_rolled_back"
+  },
+  "frontendCandidates": {
+    "live": {
+      "sha": "d33cfe56b0804fc3c69c12030474661d4ca9f344",
+      "base": "397d3c689ceb8b7cf980f00bdd70782d32628235",
+      "files": [
+        "src/components/client-portal/learn/LearnCustomerBusinessContext.tsx",
+        "src/lib/learn-customer-business-context.test.ts",
+        "src/lib/learn-customer-business-context.ts"
+      ]
+    },
+    "test": {
+      "sha": "97d78f697e5597ac9c243859e9dc7c0bad277afb",
+      "base": "a193dbdf1be3a12b62b8a8f76ac77061faf25304",
+      "files": [
+        "src/components/client-portal/learn/LearnCustomerBusinessContext.tsx",
+        "src/lib/learn-customer-business-context.test.ts",
+        "src/lib/learn-customer-business-context.ts"
+      ]
+    }
+  },
+  "limitations": [
+    "Frontend not yet published or accepted in signed-in browser.",
+    "Published jobs are incomplete compared with provider inventory.",
+    "Ordering uses recorded creation only, not completion or payment.",
+    "Undated jobs remain accessible at the end; source descriptions/codes and timezone limitations are retained."
+  ]
+}
