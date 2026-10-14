@@ -1,0 +1,41 @@
+{
+  "version": "learn-build01-removed-mailbox-reconciliation/1",
+  "scope": "Four stale Drummonds DWD capture accounts linked to removed Workspace users",
+  "observedAt": "2026-10-14T20:50:09.514Z",
+  "authority": {
+    "mailboxesMarkedRemovedAt": "2026-10-14T06:14:01.916153Z",
+    "completeDirectorySuccessesAfterRemoval": 41,
+    "lastObservedDirectorySuccess": "2026-10-14T20:49:02.755Z",
+    "readOnlyDelegatedGmailProfilesFailed": 4,
+    "safeFailureCode": "delegation_grant_invalid",
+    "accountsWithPriorSuccessfulCapture": 0,
+    "messageRequestsDuringDiagnosis": 0,
+    "providerWritesDuringDiagnosis": 0
+  },
+  "reconciliation": {
+    "rolledBackRehearsalPassed": true,
+    "appliedAt": "2026-10-14T20:49:18.299150Z",
+    "dwdAccountsChangedFromActiveToDisabled": 4,
+    "mailboxRowsStillRemoved": 4,
+    "mailboxSyncPreferencePreserved": true,
+    "historicalSourceRowsDeleted": 0,
+    "auditReceiptReadBack": true,
+    "reversibleThroughExistingMailboxAdminFlow": true
+  },
+  "scheduler": {
+    "lastBeforeReconciliationAt": "2026-10-14T20:45:06.542Z",
+    "lastBeforeKnownIneligible": 4,
+    "nextHeartbeatObserved": true,
+    "nextHeartbeatAt": "2026-10-14T20:50:06.570Z",
+    "nextHeartbeatStatus": "success",
+    "eligibleMailboxesEnqueued": 9,
+    "knownIneligible": 0,
+    "enqueueUnconfirmed": 0,
+    "inventoryUnavailable": false
+  },
+  "limitations": [
+    "One unattended Workspace scheduler heartbeat confirms the account/mailbox mismatch cleared; full-day reliability still needs observation.",
+    "A future directory return would require an authorised operator to re-enable the saved account; no credential or provider record was altered.",
+    "This does not prove complete coverage of the remaining eligible mailboxes."
+  ]
+}

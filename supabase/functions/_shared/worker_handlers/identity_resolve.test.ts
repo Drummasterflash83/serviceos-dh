@@ -153,6 +153,9 @@ test("empty inventory succeeds with zero work; a full verified batch continues o
   assert.equal(full.success, true);
   assert.equal(full.continuation?.jobType, "identity.resolve");
   assert.deepEqual(full.continuation?.payload, { limit: 2 });
+  const bounded = fixture({ rows: [] });
+  await bounded.run({ limit: 2000 });
+  assert.equal(bounded.calls[0].args.p_limit, 200);
 });
 test("legacy input without a pending event reports zero events consumed", async () => {
   const r = await fixture({

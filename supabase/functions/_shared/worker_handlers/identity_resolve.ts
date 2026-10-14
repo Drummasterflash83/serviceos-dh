@@ -15,7 +15,7 @@ export async function handleIdentityResolve(
   const batch = Math.max(
     1,
     Math.min(
-      50,
+      200,
       typeof payload.limit === "number" && Number.isFinite(payload.limit)
         ? Math.trunc(payload.limit)
         : 20,

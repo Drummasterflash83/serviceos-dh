@@ -1,0 +1,63 @@
+{
+  "version": "learn-build01-identity-drain/1",
+  "scope": "Drummonds Build 01 automatic interaction-to-identity/card delivery",
+  "observedAt": "2026-10-14T20:46:35.455Z",
+  "baseline": {
+    "identityBatchLimit": 50,
+    "recentFiftyBatchDurationsSeconds": "5.6-11.9",
+    "emailInteractionsReadyAt2045Utc": 1206,
+    "emailInteractionsEnrichedAt2045Utc": 21642,
+    "emailIdentityReviewAt2045Utc": 4078,
+    "slackIdentityReviewAt2045Utc": 29893,
+    "slackReviewMainReason": "direction_unverified",
+    "emailReviewMainReason": "company_ambiguous"
+  },
+  "change": {
+    "automaticBatchLimit": 200,
+    "manualRequestLimitUnchanged": 50,
+    "identityPendingSelectionBound": 200,
+    "settlementReviewFencingPreserved": true,
+    "queuedAutomaticContinuationPromoted": "One verified unclaimed LIVE child, 50 to 200, with audit metadata",
+    "noHeldIdentityAutoApproved": true
+  },
+  "test": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "rollbackRehearsalPassed": true,
+    "identityPendingDefinitionHash": "f732741e58c3020b2bff15f90be2cd12",
+    "settlementDefinitionHash": "5ad5d407c2d9445fa8231051a5ada9d1",
+    "platformWorkerVersion": 31,
+    "identitySchedulerVersion": 1,
+    "downloadedRuntimeStructureMatches": true,
+    "realDrummondsIdentityDeliveryProven": false
+  },
+  "live": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "rollbackRehearsalPassed": true,
+    "ownerAndGrantsPreserved": true,
+    "identityPendingDefinitionHash": "f732741e58c3020b2bff15f90be2cd12",
+    "settlementDefinitionHash": "5ad5d407c2d9445fa8231051a5ada9d1",
+    "platformWorkerVersion": 83,
+    "identitySchedulerVersion": 45,
+    "downloadedRuntimeStructureMatches": true,
+    "twoHundredRecordBatchCompleted": true,
+    "firstTwoHundredRecordBatch": {
+      "startedAt": "2026-10-14T20:46:02.142044Z",
+      "settledAt": "2026-10-14T20:46:22.031030Z",
+      "identityAndCardDeliveries": 137,
+      "durableReviewHoldsRecorded": 63,
+      "nextTwoHundredRecordChildQueued": true
+    }
+  },
+  "checks": {
+    "focusedTestsPassed": 31,
+    "typescriptPassed": true,
+    "eslintPassed": true,
+    "gitDiffCheckPassed": true
+  },
+  "limitations": [
+    "The first 200-record LIVE child completed; sustained downstream catch-up still needs observation.",
+    "Identity-review records need case-specific human evidence; the capacity change never promotes them automatically.",
+    "The large Slack direction-unverified population reflects held company-source evidence, not customer-card completion.",
+    "Full source-to-card/scoring coverage, a real full working day and Chris's business sign-off remain open."
+  ]
+}

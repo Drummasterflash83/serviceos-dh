@@ -7,6 +7,51 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 20:45 UTC — Build 01 source-to-card drain recovery is in progress.**
+
+### Working and verified
+
+- Both active Workspace aliases with obsolete `source_ineligible` checkpoints were
+  recovered through fenced, logged claims after current authority checks. Both
+  subsequently completed real LIVE scheduled captures. A later transient fetch
+  failure remains visible.
+- The interaction projector now continues through fully receipted batches while
+  keeping two legacy email review holds visible. Its first LIVE 200-record batch
+  published all 200 in about 14 seconds and queued the next batch. The retained
+  email-without-interaction count fell from 56,826 at 20:36 to 55,156 at 20:50,
+  while 604 new source emails arrived.
+- TEST and LIVE identity delivery now have a 200-record automatic bound; manual
+  requests stay at 50. SQL rollback rehearsals, owner/grant preservation,
+  downloaded runtime comparisons and focused checks pass. The first LIVE
+  200-record identity batch delivered 137 identities/cards, held 63 for review,
+  and queued its next batch in about 20 seconds.
+- Four stale DWD account switches linked to mailboxes absent from 41 successful
+  directory scans were disabled in one rehearsed, audited LIVE transaction.
+  Removed mailbox rows, sync preferences and all source history remain intact.
+  The next unattended Workspace scheduler cycle succeeded with nine eligible
+  mailboxes queued and zero ineligible or unconfirmed.
+
+### Needs finishing
+
+- Prove sustained source-to-interaction-to-identity/card/recommendation catch-up,
+  including the currently ready email backlog and case-specific identity holds.
+  Nearly 30,000 Slack source observations are intentionally held as
+  `direction_unverified`; do not call them linked customer-card evidence.
+- Continue the real full working-day Phone/Email observation, wider source/card/
+  scoring acceptance, dependable unattended backups and full app/Auth recovery.
+- Chris is the named Drummonds business reviewer and will sign off once the
+  evidence is ready. His confirmation of that role is not a sign-off.
+
+### Blocked externally
+
+- No specific new provider or access blocker is established. Elapsed observation
+  and source/identity reconciliation are unfinished Build 01 work.
+
+[Alias recovery](evidence/learn-build01-alias-recovery-2026-10-14.json),
+[projection drain](evidence/learn-build01-projection-drain-2026-10-14.json), and
+[identity drain](evidence/learn-build01-identity-drain-2026-10-14.json), and
+[removed-account reconciliation](evidence/learn-build01-removed-mailbox-reconciliation-2026-10-14.json).
+
 **14 October — Build 01 follow-up: job breakdown corrected; fresh manual backup verified.**
 
 ### Working and verified

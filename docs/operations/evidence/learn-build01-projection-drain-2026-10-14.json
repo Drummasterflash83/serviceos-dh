@@ -1,7 +1,7 @@
 {
   "version": "learn-build01-projection-drain/1",
   "scope": "Drummonds Build 01 LIVE source-to-interaction backlog; isolated TEST release",
-  "observedAt": "2026-10-14T20:36:32.997625Z",
+  "observedAt": "2026-10-14T20:50:09.760964Z",
   "problem": {
     "emailMessagesAt1943Utc": 79592,
     "emailMessagesWithoutInteractionAt1943Utc": 56338,
@@ -45,7 +45,13 @@
       "reviewHoldsStillVisible": 2,
       "nextTwoHundredRecordChildQueued": true
     },
-    "backlogDrainingConfirmed": false
+    "backlogDrainingConfirmed": true,
+    "shortTermTrend": {
+      "emailMessagesAt2050Utc": 82944,
+      "emailMessagesWithoutInteractionAt2050Utc": 55156,
+      "gapReductionSince2036Utc": 1670,
+      "newEmailSourcesSince2036Utc": 604
+    }
   },
   "checks": {
     "focusedTestsPassed": 18,
@@ -54,7 +60,7 @@
     "gitDiffCheckPassed": true
   },
   "limitations": [
-    "One completed 200-record LIVE batch is read back; sustained decreasing backlog must still be observed.",
+    "The backlog fell over the first fourteen minutes at 200 records per batch; complete catch-up and a full working day remain unverified.",
     "The two durable review holds remain for operator review; a chain of review-required jobs is expected while they remain.",
     "Source-to-interaction coverage is not source-to-identity, card or scoring acceptance.",
     "A real full working day of unattended operation and Chris's business sign-off are still required."

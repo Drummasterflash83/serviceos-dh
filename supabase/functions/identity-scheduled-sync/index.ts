@@ -82,7 +82,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         moduleId: "core.identity",
         // Prime the drain at the handler's max batch; the worker then self-continues
         // (chains the next batch after each full run) until the backlog clears.
-        payload: { limit: 50 },
+        payload: { limit: 200 },
       },
       counts,
       enqueueJob,
