@@ -2,7 +2,7 @@
 
 Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
 
-## Current state — 14 October, first LIVE import running
+## Current state — 14 October, first LIVE pass verified and paused
 
 - Intuit app assessment is submitted and **Approved**. Chris explicitly approved
   the security-policy commitment and revised retention wording as pilot targets.
@@ -22,14 +22,22 @@ Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
 - Chris approved the real DRUMMOND HEATING company grant and bounded first import.
   Fresh OAuth completed at 06:58 UTC; CompanyInfo verified realm `1197397945`,
   encrypted tokens stored, identity confirmed through logged operator controls.
-  The first LIVE import is running across 13 accounting record types with a
-  500-request cap, 100 records/page and 24-hour expiry. The first 27 pages saved
-  2,700 customer records without an error. This is progress, not complete coverage.
-  No ongoing schedule, accounting writes, AI or automatic matching is enabled.
+  The first LIVE pass finished at its approved 500-request cap at 07:32 UTC.
+  All 500 pages reconcile to 49,893 retained observations: 13,158 Customer
+  records (4,310 main accounts and 8,848 jobs/subcustomers), 21,635 invoices
+  and 15,100 payments. Customer and Invoice traversals finished; Payment
+  resumes at position 15,101. The other ten entity types have not started.
+  Connection is paused, no import error or version conflict was recorded,
+  and source scope/reference checks passed. This is partial history, not
+  complete or reconciled accounts. No ongoing schedule, accounting writes,
+  AI or automatic matching is enabled.
 - Stable TEST retains the 77 sandbox records and deliberately revoked grant.
   Sandbox connection, duplicate import, refresh and revocation are verified.
-- Production schema and four handlers remain installed but inert. Finance access
-  remains restricted to company owners/admins and logged authorised support.
+- Production schema and four handlers are installed; real OAuth and locally
+  executed capture are verified. Hosted dispatch remains disabled. The live
+  operator finance reader loaded 25 retained customer candidates and logged
+  its reads. No customer links were created. Finance remains restricted to
+  company owners/admins and logged authorised support.
 
 Earlier dated sections below are implementation history and may describe stages
 superseded by later evidence; they are not current launch claims.

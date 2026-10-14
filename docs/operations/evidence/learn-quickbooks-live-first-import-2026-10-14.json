@@ -2,7 +2,7 @@
   "project": "tgbnakbxwcqjeimygroz",
   "run": {
     "id": "0b89d0a8-02de-4f1c-91e9-25b8917eca68",
-    "state": "queued",
+    "state": "limit_reached",
     "entities": [
       "Customer",
       "Invoice",
@@ -20,25 +20,35 @@
     ],
     "expiresAt": "2026-10-15T07:00:57.491+00:00",
     "lastError": null,
-    "pagesSaved": 121,
+    "pagesSaved": 500,
     "maxRequests": 500,
-    "requestsUsed": 121,
-    "currentEntity": "Customer",
-    "startPosition": 12101,
-    "recordsObserved": 12100
+    "requestsUsed": 500,
+    "currentEntity": "Payment",
+    "startPosition": 15101,
+    "recordsObserved": 49893
   },
   "counts": [
     {
       "entity": "Customer",
-      "records": 12100,
+      "records": 13158,
+      "conflicts": 0
+    },
+    {
+      "entity": "Invoice",
+      "records": 21635,
+      "conflicts": 0
+    },
+    {
+      "entity": "Payment",
+      "records": 15100,
       "conflicts": 0
     }
   ],
-  "checkedAt": "2026-10-14T07:10:16.158594+00:00",
+  "checkedAt": "2026-10-14T07:32:19.780575+00:00",
   "connection": {
     "id": "04d68333-fc13-42c2-a500-789f386f015c",
     "realm": "1197397945",
-    "status": "active",
+    "status": "paused",
     "tenant": "00000000-0000-0000-0000-000000000001",
     "company": "DRUMMOND HEATING",
     "verifiedAt": "2026-10-14T06:58:20.268033+00:00",
@@ -68,7 +78,7 @@
       "event": "import_started"
     },
     {
-      "count": 5,
+      "count": 6,
       "event": "import_status_read"
     },
     {
@@ -76,7 +86,7 @@
       "event": "module_changed"
     },
     {
-      "count": 121,
+      "count": 500,
       "event": "page_saved"
     },
     {
@@ -84,11 +94,11 @@
       "event": "status_read"
     }
   ],
-  "observations": 12100,
+  "observations": 49893,
   "pageEvidence": {
-    "pages": 121,
-    "records": 12100,
-    "distinctPermits": 121
+    "pages": 500,
+    "records": 49893,
+    "distinctPermits": 500
   },
   "customerLinks": 0,
   "privateTables": [
@@ -118,11 +128,5 @@
     }
   ],
   "wrongScopePages": 0,
-  "wrongScopeVersions": 0,
-  "state": "live_connection_verified_first_import_in_progress",
-  "limits": [
-    "First scan still running; not complete accounting coverage.",
-    "No ongoing schedule or automatic customer/job linking.",
-    "Read-only provider operations; user-authorised 500-request cap."
-  ]
+  "wrongScopeVersions": 0
 }
