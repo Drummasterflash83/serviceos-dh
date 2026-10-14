@@ -37,14 +37,19 @@ override a later release observation. No requirement is silently deferred.
   inventories beginning 13:50:46 UTC. Dependable unattended operation, human
   listening and full application/Auth recovery remain unverified. The final live
   run used zero retries; live interruption recovery is not inferred from it.
+- Collect a real full working day of Phone/Email input-to-card operation without
+  manual rescue and reconcile every required source/identity/card population.
+  Elapsed observation is acceptance work, not an external access blocker.
 - The remaining V1 families in the Build 01 receipt stay incomplete. Authorised
   private Slack channels retain their separate source/visibility acceptance;
   the public browser does not remove that requirement. DMs remain deferred.
 
 ### Blocked externally
 
-- Actual unattended observation, broader source reconciliation and human/business
-  review remain separate from local tests and manually recovered runs.
+- No specific external provider or access blocker is established by this
+  checkpoint. A Drummonds operations/source reviewer still needs to be named for
+  business acceptance after the technical evidence is assembled; this does not
+  stop the independent Build 01 work above.
 
 [Follow-up evidence and rollback](evidence/learn-build01-followup-2026-10-14.json),
 [fresh manual backup acceptance](evidence/learn-communication-daily-2026-10-14.json).
