@@ -7,6 +7,23 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 06:47 BST — normal LIVE worker capacity increased and verified.**
+
+- TEST v28 and LIVE v76 now claim up to ten ordinary jobs per minute rather than
+  three. Exact compiled probes and hosted artifact/authentication checks pass;
+  handlers, permissions, capture gates, schedules and retained sources are preserved.
+- Five consecutive LIVE ticks used the new ten-job batch. The first four settled:
+  35 succeeded, four identity review holds and one ineligible mailbox. The fifth
+  remained active. Held/blocked records are not reported as successfully processed.
+- By 05:47 UTC, 22 learning-ingestion jobs and 12 Workspace jobs succeeded since
+  release. The oldest queued ingestion advanced from 05:10 to 05:35. The two
+  reviewed Slack sources had already passed ingestion before this release; their
+  final observation receipts remain pending. No manual enqueue or restart was used.
+- Legacy graph-sync diagnosis, broad historical learning, identity review, customer
+  coverage, evidence-backed scoring and operational acceptance remain open.
+
+[Worker release, monitoring and rollback](LEARN-WORKER-THROUGHPUT.md).
+
 **14 October, 06:24 BST — audited operator job search accepted in TEST and LIVE.**
 
 - The Slack context reviewer can now find published jobs by job number, description,

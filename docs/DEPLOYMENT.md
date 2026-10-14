@@ -59,6 +59,11 @@ when reverting the frontend. Do not reverse the earlier contact-separation backe
 its guard preserves protection after real shared-endpoint contacts were published.
 [Prior contact release](operations/LEARN-CONTACT-SEPARATION.md).
 
+The ordinary queue worker is now LIVE v76 and TEST v28, with a default batch of ten
+(previously three). Exact artifact/auth checks and five consecutive normal LIVE
+claims verify deployment and use; complete historical processing remains open.
+[Capacity release and rollback](operations/LEARN-WORKER-THROUGHPUT.md).
+
 The learning scheduler is LIVE v20, aligned with worker mapper `obs-ingest/2` and
 explicit queued mapper versions. Exact runtime readback, authentication and normal
 scheduled dispatch pass; downstream observation acceptance remains pending.

@@ -1,0 +1,266 @@
+{
+  "version": 1,
+  "state": "normal_scheduled_capacity_verified",
+  "deployedAt": "2026-10-14T05:42:42.400Z",
+  "normalScheduledRuns": [
+    {
+      "claimedAt": "2026-10-14T05:47:00.995545+00:00",
+      "jobs": 10,
+      "states": {
+        "running": 4,
+        "succeeded": 3,
+        "dead_letter": 3
+      }
+    },
+    {
+      "claimedAt": "2026-10-14T05:46:00.764316+00:00",
+      "jobs": 10,
+      "states": {
+        "succeeded": 9,
+        "dead_letter": 1
+      }
+    },
+    {
+      "claimedAt": "2026-10-14T05:45:03.641443+00:00",
+      "jobs": 10,
+      "states": {
+        "succeeded": 9,
+        "dead_letter": 1
+      }
+    },
+    {
+      "claimedAt": "2026-10-14T05:44:01.237061+00:00",
+      "jobs": 10,
+      "states": {
+        "succeeded": 8,
+        "dead_letter": 2
+      }
+    },
+    {
+      "claimedAt": "2026-10-14T05:43:01.94635+00:00",
+      "jobs": 10,
+      "states": {
+        "succeeded": 9,
+        "dead_letter": 1
+      }
+    }
+  ],
+  "newPermissions": 0,
+  "manualEnqueues": 0,
+  "manualRestarts": 0,
+  "newProviderScopes": 0,
+  "newPaidAiEnabled": false,
+  "testEvidence": "Exact compiled isolated runtime probe, hosted readback and authorization guard. No synthetic or real hosted jobs were enqueued for this change.",
+  "limitations": [
+    "Consecutive normal batches prove the new capacity is used, not full historical catch-up or long-term capacity sufficiency.",
+    "The two reviewed sources completed ingestion before this change; their observation stage remains pending.",
+    "Legacy graph sync and broader historical learning remain unfinished."
+  ],
+  "observedAt": "2026-10-14T05:47:03.663921+00:00",
+  "settlements": [
+    {
+      "count": 1,
+      "status": "running",
+      "job_type": "customer_card.sync",
+      "error_code": null
+    },
+    {
+      "count": 4,
+      "status": "succeeded",
+      "job_type": "customer_card.sync",
+      "error_code": null
+    },
+    {
+      "count": 3,
+      "status": "dead_letter",
+      "job_type": "email.workspace_sync",
+      "error_code": "source_ineligible"
+    },
+    {
+      "count": 2,
+      "status": "running",
+      "job_type": "email.workspace_sync",
+      "error_code": null
+    },
+    {
+      "count": 12,
+      "status": "succeeded",
+      "job_type": "email.workspace_sync",
+      "error_code": null
+    },
+    {
+      "count": 5,
+      "status": "dead_letter",
+      "job_type": "identity.resolve",
+      "error_code": "identity_review_required"
+    },
+    {
+      "count": 22,
+      "status": "succeeded",
+      "job_type": "intelligence.ingest_interaction",
+      "error_code": null
+    },
+    {
+      "count": 1,
+      "status": "running",
+      "job_type": "recommendation.sync",
+      "error_code": null
+    }
+  ],
+  "rates": [
+    {
+      "due": 0,
+      "running": 0,
+      "job_type": "phone.scheduled_sync",
+      "held_after": 0,
+      "oldest_due": null,
+      "created_after": 1,
+      "succeeded_after": 1
+    },
+    {
+      "due": 0,
+      "running": 1,
+      "job_type": "customer_card.sync",
+      "held_after": 0,
+      "oldest_due": null,
+      "created_after": 4,
+      "succeeded_after": 4
+    },
+    {
+      "due": 1,
+      "running": 0,
+      "job_type": "interactions.sync",
+      "held_after": 0,
+      "oldest_due": "2026-10-14T05:40:01.523623+00:00",
+      "created_after": 0,
+      "succeeded_after": 0
+    },
+    {
+      "due": 4,
+      "running": 0,
+      "job_type": "slack.history_sync",
+      "held_after": 0,
+      "oldest_due": "2026-10-14T05:39:19.183509+00:00",
+      "created_after": 2,
+      "succeeded_after": 2
+    },
+    {
+      "due": 1,
+      "running": 0,
+      "job_type": "email.mailbox_discovery",
+      "held_after": 0,
+      "oldest_due": "2026-10-14T05:40:01.168264+00:00",
+      "created_after": 0,
+      "succeeded_after": 0
+    },
+    {
+      "due": 1,
+      "running": 0,
+      "job_type": "phone.process_pending",
+      "held_after": 0,
+      "oldest_due": "2026-10-14T05:30:03.159314+00:00",
+      "created_after": 0,
+      "succeeded_after": 0
+    },
+    {
+      "due": 0,
+      "running": 1,
+      "job_type": "recommendation.sync",
+      "held_after": 0,
+      "oldest_due": null,
+      "created_after": 0,
+      "succeeded_after": 0
+    },
+    {
+      "due": 0,
+      "running": 1,
+      "job_type": "graph.sync",
+      "held_after": 0,
+      "oldest_due": null,
+      "created_after": 0,
+      "succeeded_after": 0
+    },
+    {
+      "due": 21,
+      "running": 2,
+      "job_type": "email.workspace_sync",
+      "held_after": 0,
+      "oldest_due": "2026-10-14T05:25:04.086753+00:00",
+      "created_after": 8,
+      "succeeded_after": 12
+    },
+    {
+      "due": 0,
+      "running": 0,
+      "job_type": "commusoft.source_sync",
+      "held_after": 0,
+      "oldest_due": null,
+      "created_after": 41,
+      "succeeded_after": 41
+    },
+    {
+      "due": 1,
+      "running": 0,
+      "job_type": "identity.resolve",
+      "held_after": 5,
+      "oldest_due": "2026-10-14T05:47:03.217717+00:00",
+      "created_after": 5,
+      "succeeded_after": 0
+    },
+    {
+      "due": 22,
+      "running": 0,
+      "job_type": "intelligence.ingest_interaction",
+      "held_after": 0,
+      "oldest_due": "2026-10-14T05:35:05.84273+00:00",
+      "created_after": 18,
+      "succeeded_after": 22
+    },
+    {
+      "due": 9,
+      "running": 0,
+      "job_type": "intelligence.observe",
+      "held_after": 0,
+      "oldest_due": "2026-10-14T05:31:01.354619+00:00",
+      "created_after": 6,
+      "succeeded_after": 0
+    },
+    {
+      "due": 3,
+      "running": 0,
+      "job_type": "slack.thread_sync",
+      "held_after": 0,
+      "oldest_due": "2026-10-14T05:42:00.704057+00:00",
+      "created_after": 1,
+      "succeeded_after": 2
+    }
+  ],
+  "httpAfterRelease": [
+    {
+      "duration_ms": 29785,
+      "status": "200",
+      "timestamp": "2026-10-14T05:46:30.133000"
+    },
+    {
+      "duration_ms": 30455,
+      "status": "200",
+      "timestamp": "2026-10-14T05:45:33.752000"
+    },
+    {
+      "duration_ms": 29466,
+      "status": "200",
+      "timestamp": "2026-10-14T05:44:30.219000"
+    },
+    {
+      "duration_ms": 40161,
+      "status": "200",
+      "timestamp": "2026-10-14T05:43:40.529000"
+    },
+    {
+      "duration_ms": 1368,
+      "status": "403",
+      "timestamp": "2026-10-14T05:43:01.326000"
+    }
+  ],
+  "expected403": "Intentional missing-authorization verification request."
+}
