@@ -1,0 +1,23 @@
+{
+  "version": "learn-reviewed-ingestion-selection-release/1",
+  "state": "prepared_not_applied",
+  "project": "tgbnakbxwcqjeimygroz",
+  "source": {
+    "path": "supabase/migrations/20261102160000_learn_reviewed_ingestion_selection.sql",
+    "sha256": "11f4c4a95a5c78604bb976c7ab6d7a1a06421841039c4e297f8c16c2142d7bc2"
+  },
+  "beforeDefinitionMd5": "d5eaf0cd64c12fe790f34de26359b6f3",
+  "afterBodyMd5": "7c853a1c8f7d5d787f0a26d685406472",
+  "authority": {
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres}",
+    "securityDefiner": false
+  },
+  "files": {
+    "apply.sql": "59666243c55288d83dae943a8b42eb34074852e3e8b12495a24c1ceda8c81083",
+    "rollback.sql": "95a6c08fe6a64d527f8ebfc0195efe94cb6a0e22053a72074cdfecdc55c4d4cc",
+    "original-selector.sql": "6cc36dacc40e4c7bd2c9e0703cf545ea5e1a3db0220b32e445da9910e7ba4a27"
+  },
+  "scope": "Read-only candidate ordering only; no record, job, schedule, credential or permission mutations.",
+  "testPrerequisite": "Hosted TEST lacks intelligence_select_uningested; this release is production-only, verified against an isolated full production-schema restore."
+}
