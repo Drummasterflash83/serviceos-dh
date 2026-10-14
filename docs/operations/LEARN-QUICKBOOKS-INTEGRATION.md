@@ -1,8 +1,8 @@
 # QuickBooks Online input — implementation and handover
 
-Updated 13 October 2026. Workstream: `codex/quickbooks-integration`.
+Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
 
-## Current state — 14 October, 05:51 UTC
+## Current state — 14 October, production consent pending
 
 - Intuit app assessment is submitted and **Approved**. Chris explicitly approved
   the security-policy commitment and revised retention wording as pilot targets.
@@ -15,9 +15,14 @@ Updated 13 October 2026. Workstream: `codex/quickbooks-integration`.
   whole-workspace export/deletion and backup expiry. The previous publication
   hold is superseded by this explicit approval; the engineering work remains.
   The private pilot agreement is still unsigned and has not been published.
-- Production Intuit app-details completion, credentials, Drummonds company consent
-  and real accounting acceptance remain outstanding. No production QuickBooks
-  company, import or financial source records have been established by this release.
+- Production Intuit app details and the approved callback are saved. The existing
+  production credential is verified in encrypted Vault, Mac Keychain and the
+  separate concealed LIVE field in the Openfolk ServiceOS 1Password note. The
+  temporary plaintext transfer file was removed.
+- The existing operator opened the real DRUMMOND HEATING consent screen. The
+  production connection is pending authorisation; no import or financial source
+  record exists. The exact company grant and 500-request first import await the
+  separate action-time approval. No schedule or accounting writes are enabled.
 - Stable TEST retains the 77 sandbox records and deliberately revoked grant.
   Sandbox connection, duplicate import, refresh and revocation are verified.
 - Production schema and four handlers remain installed but inert. Finance access
@@ -42,8 +47,9 @@ ready for testing”. Only Accounting was selected; Payments was not selected.
 
 - App ID: `4ef4971d-2a39-4309-8c6c-46510d679c59` (identifier, not a credential).
 - Developer workspace ID: `9341456295810067` (not a QuickBooks accounting realm).
-- Status: development/sandbox ready; production credentials locked pending app
-  details and compliance. No accounting company has authorised this app yet.
+- Status: Intuit assessment Approved and production app details complete.
+  Production credential provisioned and verified; real company consent pending.
+  Earlier sandbox consent/refresh/revocation has been verified separately.
 - Development credentials were provisioned after explicit approval as recorded
   below. The existing Drummonds Dashboard app was not modified.
 
