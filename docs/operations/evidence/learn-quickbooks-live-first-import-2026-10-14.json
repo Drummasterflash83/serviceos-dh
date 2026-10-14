@@ -1,0 +1,128 @@
+{
+  "project": "tgbnakbxwcqjeimygroz",
+  "run": {
+    "id": "0b89d0a8-02de-4f1c-91e9-25b8917eca68",
+    "state": "queued",
+    "entities": [
+      "Customer",
+      "Invoice",
+      "Payment",
+      "CreditMemo",
+      "SalesReceipt",
+      "Estimate",
+      "Vendor",
+      "Bill",
+      "BillPayment",
+      "Purchase",
+      "VendorCredit",
+      "Account",
+      "Item"
+    ],
+    "expiresAt": "2026-10-15T07:00:57.491+00:00",
+    "lastError": null,
+    "pagesSaved": 121,
+    "maxRequests": 500,
+    "requestsUsed": 121,
+    "currentEntity": "Customer",
+    "startPosition": 12101,
+    "recordsObserved": 12100
+  },
+  "counts": [
+    {
+      "entity": "Customer",
+      "records": 12100,
+      "conflicts": 0
+    }
+  ],
+  "checkedAt": "2026-10-14T07:10:16.158594+00:00",
+  "connection": {
+    "id": "04d68333-fc13-42c2-a500-789f386f015c",
+    "realm": "1197397945",
+    "status": "active",
+    "tenant": "00000000-0000-0000-0000-000000000001",
+    "company": "DRUMMOND HEATING",
+    "verifiedAt": "2026-10-14T06:58:20.268033+00:00",
+    "confirmedAt": "2026-10-14T06:59:27.839754+00:00",
+    "environment": "production",
+    "tokenStored": true
+  },
+  "auditEvents": [
+    {
+      "count": 2,
+      "event": "authorization_started"
+    },
+    {
+      "count": 1,
+      "event": "company_verified"
+    },
+    {
+      "count": 1,
+      "event": "confirm"
+    },
+    {
+      "count": 5,
+      "event": "disconnect_status_read"
+    },
+    {
+      "count": 1,
+      "event": "import_started"
+    },
+    {
+      "count": 5,
+      "event": "import_status_read"
+    },
+    {
+      "count": 1,
+      "event": "module_changed"
+    },
+    {
+      "count": 121,
+      "event": "page_saved"
+    },
+    {
+      "count": 5,
+      "event": "status_read"
+    }
+  ],
+  "observations": 12100,
+  "pageEvidence": {
+    "pages": 121,
+    "records": 12100,
+    "distinctPermits": 121
+  },
+  "customerLinks": 0,
+  "privateTables": [
+    {
+      "rls": true,
+      "table": "learn_quickbooks_connections",
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "table": "learn_quickbooks_latest",
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "table": "learn_quickbooks_pages",
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "table": "learn_quickbooks_source_versions",
+      "anonSelect": false,
+      "authenticatedSelect": false
+    }
+  ],
+  "wrongScopePages": 0,
+  "wrongScopeVersions": 0,
+  "state": "live_connection_verified_first_import_in_progress",
+  "limits": [
+    "First scan still running; not complete accounting coverage.",
+    "No ongoing schedule or automatic customer/job linking.",
+    "Read-only provider operations; user-authorised 500-request cap."
+  ]
+}
