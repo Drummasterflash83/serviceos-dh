@@ -1,0 +1,57 @@
+{
+  "environment": "LIVE",
+  "date": "2026-10-14",
+  "gitSha": "4216954205f1482602b2139c210f39faa185a2b2",
+  "vercelDeployment": "dpl_6ShqDNUYSk8hSmTf5Xg8h53sxXDA",
+  "stableAliasesVerified": [
+    "www.openfolk.ai",
+    "openfolk.ai",
+    "app.openfolk.ai",
+    "serviceos-dh.vercel.app"
+  ],
+  "signedInBuildBadge": {
+    "build": "4216954",
+    "environment": "production",
+    "supabaseProject": "tgbnakbxwcqjeimygroz"
+  },
+  "sourceCatalogueAtAcceptance": {
+    "commusoftCustomers": 1553,
+    "quickbooksMainAccounts": 4311,
+    "unreviewedSourceIdentities": 5786,
+    "reviewedCrossProviderLinks": 5,
+    "coverageClaim": "retained source records, not complete unique customer identities"
+  },
+  "signedInAcceptance": {
+    "operatorSearch": "passed",
+    "ordinaryClientImportedRecords": "passed",
+    "reviewedTwoSourceCard": "passed",
+    "commusoftJobs": 2,
+    "commusoftSourceContacts": 3,
+    "publishedCardContacts": 2,
+    "quickbooksFinancialRecords": 4,
+    "canonicalCardJobsAndFinanceTogether": "passed",
+    "financialValuesStoredInThisEvidence": false
+  },
+  "databaseOptimization": {
+    "liveSourceReadBeforeMs": 10324.123,
+    "liveSourceReadAfterMs": 3550.747,
+    "liveCommusoftVersionComparisons": 2426,
+    "differentSummaries": 0,
+    "permissionsPreserved": true,
+    "providerWrites": 0
+  },
+  "automaticRefreshAtLastCheck": {
+    "enabled": true,
+    "state": "queued",
+    "requestsUsed": 1203,
+    "maxRequests": 3000,
+    "completed": false,
+    "lastError": null
+  },
+  "remaining": [
+    "complete and reconcile the second unattended scan",
+    "review further customer identities without automatic merging",
+    "verify wider Commusoft job and contact coverage",
+    "review cross-provider job accounting relationships before profitability claims"
+  ]
+}
