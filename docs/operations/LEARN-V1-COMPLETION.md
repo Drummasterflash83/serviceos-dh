@@ -7,6 +7,11 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October — Build 00 documentation audit:** the [LEARN V2 audit receipt](../roadmap/drummonds-serviceos-builds/receipts/00-2026-10-14.md)
+maps the existing build and every outstanding V1 obligation into the expanded
+stage plan. It adds no runtime acceptance, changes no V1 requirement and starts
+no dependent stage. Proposed business outcome contracts await review.
+
 **14 October, 10:43 BST — ten real public Slack observations committed in LIVE.**
 
 ### Working and verified
