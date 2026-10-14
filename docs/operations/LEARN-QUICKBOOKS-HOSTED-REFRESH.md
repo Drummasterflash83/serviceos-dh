@@ -142,3 +142,26 @@ zero remaining conflicts and unchanged five reviewed financial links. At 11:22 U
 the unattended cycle had 657 pages and 65,269 observations. Full traversal and the
 next six-hour due time still require acceptance; no account reconciliation or
 complete customer matching is claimed.
+
+## First unattended cycle accepted — 14 October, 12:55 UTC
+
+Run `af4983d5-2c01-4cae-a585-d2aa5ae2f841` traversed all 13 requested collections
+at 12:38:09 UTC. The actual hosted scheduler saved 1,353 pages / 134,599
+observations using 1,353 of its 3,000 permitted accounting requests. Pages,
+observations and reserved requests reconcile. The connection paused after
+traversal, token generation is 6, and no refresh lease remains. The recorded
+policy stays enabled; its next due time is exactly six hours later,
+18:38:09 UTC (19:38 UK time). Five reviewed financial links are unchanged.
+
+Final inspection found seven newer computed ledger-balance snapshots and five
+payee-reference display-name variants. Ledger identity/other fields remained
+identical; purchase reference IDs/types and every other field remained identical.
+The tested private-helper update is verified in TEST and LIVE with existing
+permissions/unrelated functions preserved. Twelve checkpointed corrections
+passed pairwise compatibility and immutable-source fingerprint guards, with
+system audit receipts and no provider calls. Unknown differences remain held.
+Readback confirms zero conflicts. All source versions and history remain retained.
+
+[Complete-cycle acceptance](evidence/learn-quickbooks-first-hosted-cycle-2026-10-14.json).
+This verifies unattended capture and next-due calculation; it is not reconciliation
+of financial accounts or complete cross-provider customer/job matching.

@@ -73,6 +73,11 @@ try:
     assert sql("select to_regprocedure('public.learn_quickbooks_payload_variant(text,jsonb,jsonb)') is null") == 't'
     sql(variants)
     sql(source('supabase/migrations/20261102240000_learn_quickbooks_vendor_variants.sql'))
+    ledger = source('supabase/migrations/20261102270000_learn_quickbooks_ledger_variants.sql')
+    ledger_before = sql("select md5(pg_get_functiondef('public.learn_quickbooks_payload_variant(text,jsonb,jsonb)'::regprocedure))")
+    sql(ledger.replace('\ncommit;', '\nrollback;'))
+    assert sql("select md5(pg_get_functiondef('public.learn_quickbooks_payload_variant(text,jsonb,jsonb)'::regprocedure))") == ledger_before
+    sql(ledger)
     sql(source('scripts/verify/learn-quickbooks-source-variants.assert.sql'))
     print('PASS: source-variant rollback, private helpers, actual commit, computed-balance chronology, reference multiplicity, immutable history and unknown-conflict preservation.')
     print('PASS: durable imports, exact financial decimals, replay recovery, version deduplication, module fence and realm-wide throttling.')
@@ -100,6 +105,28 @@ try:
     sql(source('supabase/migrations/20261102220000_learn_quickbooks_initial_refresh.sql'))
     sql(source('scripts/verify/learn-quickbooks-recurring.assert.sql'))
     print('PASS: recurring approval, bounded cycles, pause, authority and connection fences.')
+    sql(source('scripts/verify/learn-imported-customers.fixture.sql'))
+    customer_summary = source('supabase/migrations/20261031130000_learn_business_input_review.sql')
+    sql(customer_summary[customer_summary.index('create function public.learn_business_input_text('):customer_summary.index('create function public.learn_commusoft_review_connections(')])
+    catalog = source('supabase/migrations/20261102250000_learn_imported_customer_catalog.sql')
+    sql(catalog.replace('\ncommit;', '\nrollback;'))
+    assert sql("select to_regprocedure('public.learn_imported_customer_catalog(uuid,text,text,text,text,text,text)') is null") == 't'
+    sql(catalog)
+    sql(source('scripts/verify/learn-imported-customers.assert.sql'))
+    detail = source('supabase/migrations/20261102260000_learn_imported_customer_details.sql')
+    sql(detail.replace('\ncommit;', '\nrollback;'))
+    assert sql("select to_regprocedure('public.learn_imported_customer_detail(uuid,text,text,uuid,text,uuid,text)') is null") == 't'
+    sql(detail)
+    lookup = source('supabase/migrations/20261102280000_learn_imported_customer_detail_lookup.sql')
+    sql(lookup.replace('\ncommit;', '\nrollback;'))
+    assert sql("select to_regprocedure('public.learn_imported_customer_source_ref(uuid,text,text)') is null") == 't'
+    sql(lookup)
+    sql("select fixture_assert((select version_id=fixture_id(991) and not conflicted from learn_imported_customer_source_ref(fixture_id(1),'production','commusoft:'||fixture_id(992)::text||':100')),'direct customer lookup preserves current Commusoft version')")
+    sql("select fixture_assert((select count(*)=1 from learn_imported_customer_source_ref(fixture_id(1),'production','quickbooks:finance-realm:CAT1')),'direct accounting lookup preserves root scope')")
+    sql("select fixture_assert(not has_function_privilege('authenticated','learn_imported_customer_source_ref(uuid,text,text)','execute'),'direct source helper is private')")
+    sql(source('scripts/verify/learn-imported-customer-detail.assert.sql'))
+    print('PASS: captured customer catalogue, reviewed-only grouping, source address provenance, tenant/environment/role fences, identity drift, literal search, paging and rollback.')
+
     # Export is an operations query, not a new RPC/grant. Verify real SQL scope,
     # exact decimals and credential exclusion against the retained fixture.
     sql("reset role;insert into learn_quickbooks_source_versions(tenant_id,environment,realm_id,entity,external_id,content_hash,payload,sync_token) values(fixture_id(2),'production','other-realm','Customer','other','other-hash','{\"Id\":\"other\",\"DisplayName\":\"OTHER_TENANT_EXPORT_SENTINEL\"}',0);")
