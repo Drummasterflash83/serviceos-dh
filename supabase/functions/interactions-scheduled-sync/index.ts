@@ -87,6 +87,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         jobKey: `interactions.sync:${tenantId}:all`,
         connectorId: "openfolk-core",
         moduleId: "core.interactions",
+        payload: { source: "all", limit: 200 },
       },
       counts,
       enqueueJob,

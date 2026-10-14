@@ -110,6 +110,32 @@ test("new held receipt does not count as written or failed", async () => {
   assert.equal(r.result?.review_required, 1);
   assert.equal(r.result?.failed, 0);
 });
+test("a full reviewed batch keeps the hold visible and continues unrelated sources", async () => {
+  const f = fixture({
+    rows: [row(), row(3, "email")],
+    review: { data: 1, error: null },
+    respond: (a: any, r: any) =>
+      a.p_source === "email"
+        ? {
+            data: {
+              ...r,
+              state: "review_required",
+              action: "held",
+              reason: "canonical_fields_changed",
+              eventId: null,
+            },
+            error: null,
+          }
+        : { data: r, error: null },
+  });
+  const r = await f.run({ limit: 2 });
+  assert.equal(r.success, false);
+  assert.equal(r.recordsProcessed, 1);
+  assert.equal(r.result?.reviews_recorded, 1);
+  assert.equal(r.result?.continued, true);
+  assert.equal(r.error?.code, "projection_review_required");
+  assert.equal(r.continuation?.jobType, "interactions.sync");
+});
 test("foreign, stale and contradictory receipts cannot confirm publication", async () => {
   for (const patch of [
     { tenantId: id(8) },
@@ -163,7 +189,7 @@ test("bounded full batch requests continuation; empty or unchanged batches stop"
   assert.deepEqual(r.continuation?.payload, { source: "all", limit: 2 });
   const large = fixture({ rows: [] });
   await large.run({ limit: 2000 });
-  assert.equal(large.calls[0].args.p_limit, 50);
+  assert.equal(large.calls[0].args.p_limit, 200);
   const empty = await fixture({ rows: [] }).run();
   assert.equal(empty.success, true);
   assert.equal(empty.continuation, undefined);

@@ -1,0 +1,62 @@
+{
+  "version": "learn-build01-projection-drain/1",
+  "scope": "Drummonds Build 01 LIVE source-to-interaction backlog; isolated TEST release",
+  "observedAt": "2026-10-14T20:36:32.997625Z",
+  "problem": {
+    "emailMessagesAt1943Utc": 79592,
+    "emailMessagesWithoutInteractionAt1943Utc": 56338,
+    "emailMessagesAt2036Utc": 82340,
+    "emailMessagesWithoutInteractionAt2036Utc": 56826,
+    "phoneCallsWithoutInteractionAt2036Utc": 75,
+    "durableProjectionReviewHolds": 2,
+    "meaning": "Historical email capture was adding retained sources while the reviewed projection queue had stopped on a durable hold. The first repair let unrelated records continue, but its inherited 20-record batch and later 50-record batch were insufficient to clear the backlog promptly."
+  },
+  "repair": {
+    "reviewContinuation": "A fully receipted batch can continue past unrelated durable review holds while leaving its own job in projection_review_required for operator attention. Partial or unconfirmed batches cannot continue.",
+    "automaticBatchLimit": 200,
+    "manualRequestLimitUnchanged": 50,
+    "queuePromotion": "Only one unclaimed, automatically descended LIVE continuation was atomically promoted from 20 to 50 and then one from 50 to 200, with metadata audit markers. No cursor, retained source, held review or provider record was changed."
+  },
+  "test": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "settlementDefinitionHash": "9eec726475760c1e75d1435bcc62f9e2",
+    "rollbackRehearsalPassed": true,
+    "reviewContinuationFixturePassed": true,
+    "platformWorkerVersion": 30,
+    "interactionSchedulerVersion": 2,
+    "downloadedRuntimeStructureMatches": true,
+    "realDrummondsProviderCaptureProven": false
+  },
+  "live": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "settlementDefinitionHash": "9eec726475760c1e75d1435bcc62f9e2",
+    "rollbackRehearsalPassed": true,
+    "ownerAndGrantsPreserved": true,
+    "platformWorkerVersion": 82,
+    "interactionSchedulerVersion": 47,
+    "downloadedRuntimeStructureMatches": true,
+    "recentFiftyRecordBatchesPublished": true,
+    "twoHundredRecordBatchCompleted": true,
+    "firstTwoHundredRecordBatch": {
+      "startedAt": "2026-10-14T20:37:01.184664Z",
+      "settledAt": "2026-10-14T20:37:15.437103Z",
+      "interactionsPublished": 200,
+      "failedPublications": 0,
+      "reviewHoldsStillVisible": 2,
+      "nextTwoHundredRecordChildQueued": true
+    },
+    "backlogDrainingConfirmed": false
+  },
+  "checks": {
+    "focusedTestsPassed": 18,
+    "typescriptPassed": true,
+    "eslintPassed": true,
+    "gitDiffCheckPassed": true
+  },
+  "limitations": [
+    "One completed 200-record LIVE batch is read back; sustained decreasing backlog must still be observed.",
+    "The two durable review holds remain for operator review; a chain of review-required jobs is expected while they remain.",
+    "Source-to-interaction coverage is not source-to-identity, card or scoring acceptance.",
+    "A real full working day of unattended operation and Chris's business sign-off are still required."
+  ]
+}

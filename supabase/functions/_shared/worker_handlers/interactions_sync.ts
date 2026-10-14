@@ -24,7 +24,7 @@ export async function handleInteractionsSync(
   const limit = Math.max(
     1,
     Math.min(
-      50,
+      200,
       typeof payload.limit === "number" && Number.isFinite(payload.limit)
         ? Math.trunc(payload.limit)
         : 20,
@@ -43,6 +43,7 @@ export async function handleInteractionsSync(
     email_processed: 0,
     skipped: 0,
     review_required: 0,
+    reviews_recorded: 0,
     failed: 0,
   };
   try {
@@ -115,7 +116,10 @@ export async function handleInteractionsSync(
         counts.failed++;
         continue;
       }
-      if (receipt.state === "review_required") continue; // durable outstanding count below
+      if (receipt.state === "review_required") {
+        counts.reviews_recorded++;
+        continue; // durable outstanding count below
+      }
       if (receipt.action === "unchanged") {
         counts.skipped++;
         if (row.source_kind === "phone") counts.phone_skipped++;
@@ -139,11 +143,29 @@ export async function handleInteractionsSync(
     if (review.error || !Number.isSafeInteger(review.data) || review.data < 0)
       throw Error("review_inventory");
     counts.review_required = review.data;
+    // A durable hold leaves this revision out of pending selection. Drain other
+    // retained sources while the held record remains visible for review.
+    const continued =
+      counts.failed === 0 &&
+      rows.length === limit &&
+      counts.interactions_upserted + counts.reviews_recorded > 0 &&
+      counts.interactions_upserted + counts.reviews_recorded + counts.skipped === rows.length;
+    const continuation = continued
+      ? {
+          jobType: "interactions.sync",
+          jobKey: `interactions.sync:${tenantId}:${source}`,
+          payload: { source, limit },
+          connectorId: "openfolk-core",
+          moduleId: "core.interactions",
+          priority: 50,
+        }
+      : undefined;
     if (counts.failed || counts.review_required)
       return {
         success: false,
         recordsProcessed: counts.interactions_upserted,
-        result: counts,
+        result: { ...counts, continued },
+        ...(continuation ? { continuation } : {}),
         error: {
           code: counts.failed ? "projection_unconfirmed" : "projection_review_required",
           message: counts.failed
@@ -152,23 +174,11 @@ export async function handleInteractionsSync(
           retryable: counts.failed > 0,
         },
       };
-    const continued = rows.length === limit && counts.interactions_upserted > 0;
     return {
       success: true,
       recordsProcessed: counts.interactions_upserted,
       result: { ...counts, continued },
-      ...(continued
-        ? {
-            continuation: {
-              jobType: "interactions.sync",
-              jobKey: `interactions.sync:${tenantId}:${source}`,
-              payload: { source, limit },
-              connectorId: "openfolk-core",
-              moduleId: "core.interactions",
-              priority: 50,
-            },
-          }
-        : {}),
+      ...(continuation ? { continuation } : {}),
     };
   } catch {
     return {
