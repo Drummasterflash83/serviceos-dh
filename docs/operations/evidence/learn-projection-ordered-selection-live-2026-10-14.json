@@ -1,7 +1,7 @@
 {
   "version": "learn-projection-ordered-selection-live/1",
   "at": "2026-10-14T00:52:08Z",
-  "state": "installed_test_and_live_runtime_acceptance_pending",
+  "state": "live_scheduled_projection_and_continuation_verified",
   "previousRelease": {
     "retryTerminal": "dead_letter",
     "attempts": 5,
@@ -72,16 +72,27 @@
     "error": null
   },
   "runtime": {
-    "nextScheduledJobCreatedAt": "2026-10-14T00:50:02.430488Z",
-    "statusAt0051UTC": "queued",
-    "attempts": 0,
-    "jobManuallyRestarted": false,
-    "productionSelectionPerformanceAccepted": false
+    "observedAt": "2026-10-14T01:13:18.688769+00:00",
+    "successfulBatches": 6,
+    "processed": 120,
+    "committedReceipts": [
+      {
+        "state": "committed",
+        "action": "created",
+        "records": 120,
+        "source_kind": "email",
+        "interaction_links_match": true
+      }
+    ],
+    "continued": true,
+    "nextJobQueued": true,
+    "productionSelectionPerformanceAccepted": true,
+    "completeBacklogDrained": false
   },
   "limitations": [
     "Local early-batch timing is not production acceptance.",
     "A mostly current or held inventory may still require scanning to find eligible rows.",
-    "Runtime projection, identity-review continuation and complete source coverage remain unverified.",
-    "Read-only production explain was denied helper execution; no grants or role bypass were used."
+    "Read-only production explain was denied helper execution; no grants or role bypass were used.",
+    "Six successful email batches do not prove all phone eligibility or full backlog completion; identity-review continuation remains open."
   ]
 }

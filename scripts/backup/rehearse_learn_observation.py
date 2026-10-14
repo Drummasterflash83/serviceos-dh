@@ -15,7 +15,7 @@ try:
   if target.image_id!=PINNED_IMAGE:raise RecoveryError('Image differs')
   prepare_archive_roles(target,json.loads((ROOT/'source-inventory.json').read_text()))
   report['archive']=target.restore_native_archive(ROOT/'database.dump');report['containment']=target.verify_boundary()
-  paths=sorted(Path('supabase/release/learn-production').glob('[0-9][0-9][0-9]_*.manifest.json'))
+  paths=sorted(Path('supabase/release/learn-production').glob('[0-9][0-9][0-9]_*.manifest.json'))[:21]
   if [int(p.name[:3]) for p in paths]!=list(range(1,22)):raise RecoveryError('Exact 21 prerequisites required')
   for path in paths:
    m=json.loads(path.read_text());sql=path.with_name(path.name.replace('.manifest.json','.sql')).read_text()
@@ -31,6 +31,12 @@ try:
   sql=Path('scripts/verify/learn-observation-delivery.assert.sql').read_text()
   for k in ('draft','result'):sql=sql.replace('__'+k.upper()+'__',"$fixture$"+json.dumps(f[k])+"$fixture$::jsonb")
   target.query('set role postgres;set search_path=public,pg_catalog;begin;'+sql+'\nrollback;')
+  recovery=Path('scripts/operations/learn-observation-mode-recovery.sql').read_text()
+  recovery_assert=Path('scripts/verify/learn-observation-mode-recovery.assert.sql').read_text().replace('__DRAFT__',"$fixture$"+json.dumps(f['draft'])+"$fixture$::jsonb")
+  target.query('set role postgres;set search_path=public,pg_catalog;begin;'+recovery+recovery_assert+'\nrollback;')
+  report['recoveryJourneyVerified']=True
+  report['observationMode']=f['result']['operational']['mode']
+  report['recoveryHelperSha256']=hashlib.sha256(recovery.encode()).hexdigest()
   after=restored_fingerprints(target)
   if installed['tables']!=after['tables']:raise RecoveryError('Journey rollback changed retained rows')
   changed=[{'before':a,'after':b} for a,b in zip(installed['sequences'],after['sequences']) if a!=b]

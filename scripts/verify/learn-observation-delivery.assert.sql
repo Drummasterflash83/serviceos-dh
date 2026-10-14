@@ -34,11 +34,18 @@ do $$declare r jsonb;begin
  exception when raise_exception then if sqlerrm<>'learn_observation_source_changed' then raise;end if;end;
  r:=learn_observation_deliver(pg_temp.lo(2),pg_temp.lo(3),'{"claimedBy":"fixture","attemptCount":1}',(select v.r from lo_input v));
  assert r->>'state'='committed' and r->'can_execute'='false' and r->'action_ids'='[]';
+ assert r->>'operational_mode'=(select v.r#>>'{operational,mode}' from lo_input v);
+ assert (select outputs#>>'{operational,mode}' from decision_log where id=(r->>'decision_id')::uuid)=r->>'operational_mode';
+ assert (select outputs#>'{operational,can_execute}' from decision_log where id=(r->>'decision_id')::uuid)='false'::jsonb;
+ assert (select outputs#>'{operational,allowed}' from decision_log where id=(r->>'decision_id')::uuid)='false'::jsonb;
+ assert (select outputs#>>'{operational,blocked_reason}' from decision_log where id=(r->>'decision_id')::uuid)='mode_observe_only';
  assert r=learn_observation_deliver(pg_temp.lo(2),pg_temp.lo(3),null,null);
  -- Even a newly generated package on retry returns the original receipt.
  assert r=learn_observation_deliver(pg_temp.lo(2),pg_temp.lo(3),null,'{}');
  assert (select count(*) from intelligence_objects where tenant_id=pg_temp.lo(2))=1;
  assert (select count(*) from decision_log where tenant_id=pg_temp.lo(2))=1;
+ assert not exists(select 1 from automation_intents where tenant_id=pg_temp.lo(2));
+ assert not exists(select 1 from automation_execution_attempts where tenant_id=pg_temp.lo(2));
  assert (select count(*) from object_state_history where tenant_id=pg_temp.lo(2) and capture_kind='insert')=1;
  assert (select count(*) from object_state_history where tenant_id=pg_temp.lo(2) and decision_id=(r->>'decision_id')::uuid)=1;
  assert (select count(*) from object_state_history where tenant_id=pg_temp.lo(2))=2;

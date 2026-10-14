@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { handleLearnObservation } from "./learn_observation.ts";
 import { buildObservationDraft } from "../observation_ingest.ts";
+import { resolveOperationalMode } from "../intelligence/modes.ts";
 import { shouldCreateIntelligence } from "../intelligence/eligibility.ts";
 const id = (n: number) => `ae256482-aaaa-4000-8000-${String(n).padStart(12, "0")}`;
 const work = {
@@ -47,7 +48,7 @@ function fixture(options: any = {}) {
         Promise.resolve(
           options.failRead
             ? { data: null, error: { message: "PRIVATE" } }
-            : { data: table === "tenants" ? { industry: null } : [], error: null },
+            : { data: table === "tenants" ? { industry: null } : table === "operating_profile_entries" ? (options.entries ?? []) : [], error: null },
         ).then(resolve, reject);
       return chain;
     },
@@ -131,6 +132,36 @@ test("atomic observe-only result uses real decision engine and a single publicat
   assert.equal(f.result.operational.blocked_reason, "mode_observe_only");
   assert.equal(f.calls.filter((x) => x.args.p_result).length, 1);
 });
+test("LEARN keeps each tenant mode while clamping delivery to non-executing evidence", async () => {
+  const behaviours = {
+    discovery: { observe_only: true, allows_execution: false, requires_review: false },
+    recommendation: { observe_only: false, allows_execution: false, requires_review: true },
+    assisted: { observe_only: false, allows_execution: true, requires_review: false },
+    trusted: { observe_only: false, allows_execution: true, requires_review: false },
+    optimisation: { observe_only: false, allows_execution: true, requires_review: false, optimisation: true },
+  };
+  for (const mode of Object.keys(behaviours)) {
+    const profile = { operational_mode: { current: mode, behaviours } };
+    const entries = Object.entries(profile.operational_mode).map(([key, value]) => ({
+      scope_kind: "tenant", scope_ref: id(2), domain: null,
+      namespace: "operational_mode", key, value,
+    }));
+    const before = structuredClone(entries);
+    const f = fixture({ entries });
+    assert.equal((await f.run()).success, true, mode);
+    const op = f.result.operational;
+    const actualTenantMode = resolveOperationalMode(f.result.package, profile);
+    assert.equal(op.mode, mode);
+    assert.equal(op.allowed, false);
+    assert.equal(op.can_execute, false);
+    assert.equal(op.optimisation, false);
+    assert.equal(op.blocked_reason, "mode_observe_only");
+    for (const key of ["requires_openfolk", "requires_customer", "requires_tenant"])
+      assert.equal(op[key], actualTenantMode[key]);
+    assert.deepEqual(entries, before, "tenant configuration is untouched");
+    assert.equal(f.calls.filter((c) => c.args.p_result).length, 1);
+  }
+});
 test("lost acknowledgement recovers receipt; repeating the job does not republish", async () => {
   const f = fixture({ loseReply: true });
   assert.equal((await f.run()).success, true);
@@ -146,7 +177,14 @@ test("context reads and failed publication never report success or expose conten
 });
 if (process.env.LEARN_WRITE_SYNTHETIC_FIXTURE === "1") {
   const { writeFileSync } = await import("node:fs");
-  const f = fixture();
+  const f = fixture(process.env.LEARN_FIXTURE_MODE === "assisted" ? {
+    entries: [
+      { scope_kind: "tenant", scope_ref: id(2), domain: null, namespace: "operational_mode", key: "current", value: "assisted" },
+      { scope_kind: "platform", scope_ref: null, domain: null, namespace: "operational_mode", key: "behaviours", value: {
+        assisted: { observe_only: false, allows_execution: true, requires_review: false, max_risk: "low", optimisation: false },
+      } },
+    ],
+  } : {});
   await f.run();
   writeFileSync(
     ".verification-results/learn-observation-synthetic-fixture.json",

@@ -7,6 +7,38 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 02:14 BST — production projection is progressing; LEARN-only observation repair released.**
+
+- The ordered selector now has actual LIVE acceptance: six consecutive scheduled
+  batches succeeded with 120 committed email projection receipts. Every receipt
+  links to its expected interaction. Continuation is queued; no processing job was
+  manually restarted. Full backlog and phone-selection coverage are not yet proven.
+- Drummonds' assisted mode previously caused the LEARN observation handler to stop.
+  The repaired handler applies an evidence-only ceiling while retaining the real
+  tenant mode and human-review requirements in its audit. Global modes, profiles,
+  policies and other modules' autonomy are unchanged. No action is executed.
+- The exact isolated change is published as TEST worker v26 and LIVE v74. Their
+  distinct prior source closures are preserved outside this handler. Downloaded
+  executable hashes match, offline boots and hosted unauthorised HTTP guards pass.
+  Source identities, Slack versions, permissions, connections, schedules and secret
+  metadata were preserved. No new credential, provider request or paid AI was added.
+- Six handler tests, sixteen ingestion tests and ingestion/mode verifiers pass.
+  The isolated full native schema preserves 1,591,601 archived rows and verifies
+  assisted-mode audit, no automation intents/execution, duplicate and lost-response
+  handling, stale sources, wrong claims, cross-tenant rejection and atomic failure.
+- Four stopped Slack observations were recovered through a bounded maintenance
+  transaction after that rehearsal. Four identical-payload children are queued;
+  original terminal parents and interaction hashes are unchanged, lineage points to
+  each child, and four recovery events are retained. At 01:14 UTC no child observation
+  is complete. Do not resubmit these handles or call this an AI finding yet.
+- Generic operator job retry remains a placeholder: this maintenance repair does
+  not complete that controller requirement. Broader matching/publication, scoring,
+  complete capture/recovery and operational acceptance remain open.
+
+[Observation delivery and recovery evidence](evidence/learn-observation-mode-live-2026-10-14.json).
+[Recovery procedure and limits](LEARN-OBSERVATION-RECOVERY.md).
+
+
 
 **14 October, 01:52 BST — ordered projection repair installed; Slack learning mode mismatch confirmed.**
 

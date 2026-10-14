@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "state": "installed_runtime_acceptance_pending",
+  "state": "live_scheduled_batches_verified",
   "project": "tgbnakbxwcqjeimygroz",
   "source": {
     "path": "supabase/migrations/20261102110000_learn_projection_ordered_selection.sql",
@@ -30,5 +30,5 @@
     "original-selector.sql": "e89a2913b0d6502009a16eba1c3ea285cdc8bec892fd8367e08747b0b71f25c9"
   },
   "scope": "Ordered selector and two non-unique source indexes only; no source, access, schedule or job mutations.",
-  "productionPerformanceAccepted": false
+  "productionPerformanceAccepted": true
 }

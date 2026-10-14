@@ -1,5 +1,24 @@
 # Slack conversation-to-work context
 
+## Latest repair, 14 October 2026 01:14 UTC
+
+The LEARN-only evidence ceiling is now deployed in LIVE worker v74 and TEST v26.
+It preserves Drummonds' assisted mode and human-review requirements while forbidding
+execution for this delivery. Exact artifact readback and auth guards pass; the
+full-schema assisted-mode and recovery journeys preserve all retained rows.
+
+All four original reviewed-message observation jobs stopped at the old mode gate.
+A bounded audited maintenance recovery retained those parents and source hashes,
+queued four identical-payload children and rebound their unobserved ingestion
+ledgers. At 01:14 UTC all four children are still queued. No new observation is
+claimed until the exact child receipt, source binding, graph job link and zero
+execution are verified. The generic operator retry control is still a placeholder;
+earlier references to recovering these jobs through existing controls were plans,
+not proof that such a control was implemented.
+
+See [recovery procedure](LEARN-OBSERVATION-RECOVERY.md) and
+[release evidence](evidence/learn-observation-mode-live-2026-10-14.json).
+
 ## Latest learning diagnostic, 14 October 2026 00:52 UTC
 
 All four reviewed messages now have durable ingestion ledgers. The first downstream

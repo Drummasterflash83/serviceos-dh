@@ -108,17 +108,19 @@ export async function handleLearnObservation(
       supersedes: null,
       now: Date.now(),
     });
-    const operational = resolveOperationalMode(pkg, profile);
-    if (operational.blocked_reason !== "mode_observe_only" || operational.can_execute)
-      return {
-        success: false,
-        error: {
-          code: "learn_observation_mode_review",
-          message:
-            "LEARN analysis requires an observe-only operating profile. No actions were executed.",
-          retryable: false,
-        },
-      };
+    // LEARN delivery only records an observation, its decision and graph evidence.
+    // Apply that stricter execution ceiling even when another module uses a more
+    // capable tenant mode. Keep the real mode and its human-review requirements
+    // in the audit; do not change the tenant profile or pretend it is discovery.
+    const resolvedOperational = resolveOperationalMode(pkg, profile);
+    const operational = {
+      ...resolvedOperational,
+      allowed: false,
+      can_execute: false,
+      optimisation: false,
+      blocked_reason: "mode_observe_only",
+      notes: `${resolvedOperational.notes}; LEARN delivery records evidence only, with no actions`,
+    };
     const publish = await db.rpc("learn_observation_deliver", {
       ...args,
       p_result: { object, package: pkg, operational },

@@ -1,7 +1,7 @@
 {
   "version": "learn-slack-reviewed-context-live/1",
   "at": "2026-10-14T00:24:00Z",
-  "state": "reviewed_links_verified_learning_blocked_by_mode_gate",
+  "state": "reviewed_links_verified_mode_repaired_recovery_queued",
   "scope": {
     "messages": 4,
     "jobs": 3,
@@ -32,7 +32,7 @@
     "firstJobAttemptCountAt0023UTC": 0,
     "newObservationsVerified": 0,
     "existingWorkerProgressObserved": true,
-    "latestReadAt": "2026-10-14T00:51:14Z",
+    "latestReadAt": "2026-10-14T01:14:25.367845+00:00",
     "durableIngestions": 4,
     "firstObservationState": "dead_letter",
     "firstObservationError": "learn_observation_mode_review",
@@ -44,7 +44,10 @@
       "domain": "core",
       "requiresObserveOnly": true,
       "configurationChanged": false
-    }
+    },
+    "modeRepairLiveVersion": 74,
+    "recoveryChildrenQueued": 4,
+    "recoverySourcesPreserved": true
   },
   "commusoftCycle": {
     "at": "2026-10-14T00:19:30Z",
