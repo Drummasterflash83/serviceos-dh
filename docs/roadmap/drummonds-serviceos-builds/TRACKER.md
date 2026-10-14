@@ -12,7 +12,7 @@ stage. Only genuine Build 10 acceptance unlocks Part 2. A plan is not acceptance
 | Build | Stage | State | Highest verified environment | Business outcome | Receipt |
 |---|---|---|---|---|---|
 | 00 | Reconcile the main build and agree outcome contracts | PARTIAL — audit delivered; outcome agreement pending | DOCUMENT REVIEW / LOCAL document validation; dated TEST/LIVE evidence referenced | NOT YET MEASURABLE | [14 October audit](receipts/00-2026-10-14.md) |
-| 01 | Finish and protect the existing LEARN V1 foundation | NOT STARTED | Not assessed | Not assessed | None |
+| 01 | Finish and protect the existing LEARN V1 foundation | IN PROGRESS — public Slack browsing first | LOCAL / ISOLATED DB / TEST / LIVE Slack browsing; broader V1 incomplete | NOT YET MEASURABLE | [14 October delivery](receipts/01-2026-10-14.md) |
 | 02 | Account for company information and its limits | NOT STARTED | Not assessed | Not assessed | None |
 | 03 | Connect the company without guessing identities | NOT STARTED | Not assessed | Not assessed | None |
 | 04 | Understand strategy, ownership and commercial policy | NOT STARTED | Not assessed | Not assessed | None |

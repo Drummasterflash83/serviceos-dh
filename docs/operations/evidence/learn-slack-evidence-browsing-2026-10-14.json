@@ -1,0 +1,104 @@
+{
+  "observedDate": "2026-10-14",
+  "stage": "01",
+  "state": "slack_evidence_browsing_released_and_hosted_journeys_verified",
+  "migration": "20261103010000_learn_slack_evidence_browse.sql",
+  "migrationSha256": "7608eecad18507e9d3f2192f0c92ac0bbc28d7a31ffb0846b5c016faf6cc2ccf",
+  "database": {
+    "test": "saatxzwxvdvqevbnskxy",
+    "live": "tgbnakbxwcqjeimygroz",
+    "additiveReaderAndIndex": true,
+    "providerRequests": 0,
+    "workerChanged": false,
+    "sourceDatasetsChecked": 11,
+    "tenDatasetsUnchanged": true,
+    "changedSlackSources": 1,
+    "earlierSourceExactlyPreservedInImmutableVersion": true,
+    "sourceIdsDeleted": 0,
+    "catalogConcurrentChange": "Three independently released QuickBooks functions exactly reconciled; other definitions/owners/grants unchanged."
+  },
+  "frontend": {
+    "test": {
+      "id": "dpl_4AQQbHsj92X7KCLkD9yF8iaa8WAY",
+      "sha": "7c3a9b91a3353fb52e77004952632948a2ae338e",
+      "aliases": [
+        "serviceos-learn-test-allkin.vercel.app",
+        "test.openfolk.ai"
+      ],
+      "protection": {
+        "deploymentType": "all"
+      },
+      "rollback": [
+        {
+          "alias": "serviceos-learn-test-allkin.vercel.app",
+          "deployment": "dpl_6WBCBMbVVLyv2ayQfxVPyQB4itQD",
+          "redirect": null
+        },
+        {
+          "alias": "test.openfolk.ai",
+          "deployment": "dpl_6WBCBMbVVLyv2ayQfxVPyQB4itQD",
+          "redirect": null
+        }
+      ]
+    },
+    "live": {
+      "id": "dpl_H94PaQFAWXR2w5NzJcAqjmD227aj",
+      "sha": "2eb6971f2f61c595db8e1a4ff402b5261b068817",
+      "aliases": [
+        "app.openfolk.ai",
+        "openfolk.ai",
+        "serviceos-dh.vercel.app",
+        "www.openfolk.ai"
+      ],
+      "protection": {
+        "deploymentType": "all_except_custom_domains"
+      },
+      "rollback": [
+        {
+          "alias": "app.openfolk.ai",
+          "deployment": "dpl_DwxESEPPsP1XpDWXXSLzstN47Byp",
+          "redirect": null
+        },
+        {
+          "alias": "openfolk.ai",
+          "deployment": "dpl_DwxESEPPsP1XpDWXXSLzstN47Byp",
+          "redirect": "www.openfolk.ai"
+        },
+        {
+          "alias": "serviceos-dh.vercel.app",
+          "deployment": "dpl_DwxESEPPsP1XpDWXXSLzstN47Byp",
+          "redirect": null
+        },
+        {
+          "alias": "www.openfolk.ai",
+          "deployment": "dpl_DwxESEPPsP1XpDWXXSLzstN47Byp",
+          "redirect": null
+        }
+      ]
+    }
+  },
+  "verification": {
+    "focusedTests": 9,
+    "typeScript": "passed",
+    "isolatedCandidateBuilds": "both passed",
+    "fullSchemaRehearsal": "passed; 390 tables, 1591601 rows and seven sequences preserved on installation; rollback and reapply passed",
+    "hostedTestAndLiveRollbackRehearsals": "passed",
+    "renderedBackendBindings": "correct for each target",
+    "testOperatorJourney": "reason required; empty page for selected TEST company; one matching list audit",
+    "liveClientJourney": "25 observations on first and second page; exact-revision original message and provenance opened; real view expiry cleared evidence",
+    "liveOperatorJourney": "explicit Drummonds selection; reason required; 25 observations and one original message opened",
+    "liveOperatorAudits": {
+      "list": 1,
+      "source": 26
+    },
+    "consoleErrorsAndWarningsObserved": 0,
+    "liveBranding": "existing Drummonds client workspace and OpenFolk operator navigation observed"
+  },
+  "limits": [
+    "Ordinary-client UI path used existing owner session, not a distinct non-operator staff identity.",
+    "TEST selected company has no eligible observations; positive real-source content accepted in LIVE.",
+    "Not all Slack history, all roles, every linked source or full V1 acceptance.",
+    "No new scores, attribution, actions, processing queue or scope expansion.",
+    "Real unattended working-day and broader recovery/business acceptance remain open."
+  ]
+}

@@ -31,6 +31,16 @@ const envelope = () => ({
 const client = (p: any, error: any = null) => ({
   rpc: () => ({ abortSignal: async () => ({ data: p, error }) }),
 });
+test("an observation cannot open a different current source revision", async () => {
+  const p = envelope();
+  const scoped = { ...args, expectedSourceVersion: "a".repeat(64) };
+  assert.equal(
+    (await readSlackCardSource(client(p), scoped, signal, now)).record.source_version,
+    scoped.expectedSourceVersion,
+  );
+  p.record.source_version = "b".repeat(64);
+  await assert.rejects(readSlackCardSource(client(p), scoped, signal, now));
+});
 test("one bounded authenticated read binds tenant, actor, source and operator audit", async () => {
   const p = envelope();
   let calls = 0;

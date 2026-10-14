@@ -7,6 +7,42 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 12:30 BST — public Slack evidence browsing released and accepted.**
+
+### Working and verified
+
+- The existing Drummonds client Slack tile now opens saved public-source
+  observations and their exact retained messages. Real signed-in acceptance covers
+  two 25-row pages, original-message provenance and one-minute view expiry.
+- Selected operator access uses the same browser with a required reason. Actual
+  LIVE readback verifies one list audit and 26 source audits. TEST operator access,
+  its honest empty selected-company page and audit pass. No new identity or grant.
+- Both isolated Git-built frontends are READY on their existing stable aliases:
+  LIVE `2eb6971`, TEST `7c3a9b9`. Actual rendered backend bindings, LIVE build badge,
+  existing protection/redirects, Drummonds branding and browser console checks pass.
+- Nine focused tests, TypeScript, isolated candidate builds, full-schema and hosted
+  rollback checks pass. Eleven source inventories reconcile with zero deleted IDs:
+  ten unchanged, one Slack change with its exact earlier contents retained immutably.
+  Separately released QuickBooks catalog changes are explicitly reconciled.
+
+### Needs finishing
+
+- This is committed public-source evidence browsing, not full Slack history,
+  reviewed customer/job attribution or completed company learning. Private/shared
+  channels and DMs do not appear; DMs remain deferred. A distinct ordinary staff
+  identity was not exercised; the client check used the existing owner session.
+- All broader V1 obligations remain, including source coverage/recovery, published
+  identity/card coverage and read performance, reviewed scoring and dependable
+  unattended capture/backups. Build 01 remains IN PROGRESS; no later stage starts.
+
+### Blocked externally
+
+- No new access is needed for this released browsing feature. Real elapsed
+  working-day observation and human/business acceptance remain separate gates.
+
+[Release, preservation and hosted acceptance](evidence/learn-slack-evidence-browsing-2026-10-14.json).
+
+
 **14 October — Build 00 documentation audit:** the [LEARN V2 audit receipt](../roadmap/drummonds-serviceos-builds/receipts/00-2026-10-14.md)
 maps the existing build and every outstanding V1 obligation into the expanded
 stage plan. It adds no runtime acceptance, changes no V1 requirement and starts
