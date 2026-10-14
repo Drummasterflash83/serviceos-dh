@@ -119,11 +119,17 @@ do $$declare r jsonb;begin
  assert not exists(select 1 from learning_interactions_before b join interactions i on i.id=b.id where b.h<>md5(to_jsonb(i)::text));
 end$$;
 
--- A thousand proven rows exercise per-row qualification and mixed selection.
+-- Scaled proven rows exercise per-row qualification and mixed selection.
+-- Population has a separate local budget; the selection gate stays ten seconds.
+set local statement_timeout='90s';
 select pg_temp.message(n) from generate_series(20000,20999)n;
+set local statement_timeout='15s';
+create temporary table selection_metric(selected int,elapsed_ms numeric);
 do $$declare started timestamptz:=clock_timestamp();n int;begin
  select count(*) into n from intelligence_select_uningested(pg_temp.sr(1),'perf-fixture',25);
  assert n=25;
+ insert into selection_metric values(n,extract(epoch from clock_timestamp()-started)*1000);
  raise notice 'synthetic_selection_ms=%',extract(epoch from clock_timestamp()-started)*1000;
  assert clock_timestamp()-started<interval '10 seconds','Synthetic selection exceeded the local execution budget';
 end$$;
+select json_build_object('selectionMetric',row_to_json(m)) from selection_metric m;
