@@ -14,6 +14,7 @@ import { readCustomerBusinessContext } from "@/lib/learn-customer-business-conte
 import {
   customerJobBrief,
   visibleCustomerJobBrief,
+  visibleJobRecordBrief,
   type ScopedCustomerJobBrief,
 } from "@/lib/learn-card-job-brief";
 import { LearnScorecardSettings } from "./LearnScorecardSettings";
@@ -512,6 +513,7 @@ function CardDetail({
   }, [tenantId, kind, id, revision]);
   const stale = !!data && clock >= Date.parse(data.validUntil);
   const brief = data ? cardBrief(data) : null;
+  const ownJobBrief = visibleJobRecordBrief(data, clock);
   if (kind === "customer" && relatedJobId) {
     return (
       <>
@@ -595,20 +597,24 @@ function CardDetail({
                 <article>
                   <span>What has been done</span>
                   <strong>
-                    {jobBrief?.completed
-                      ? `${jobBrief.completed} linked job${jobBrief.completed === 1 ? "" : "s"} recorded complete`
-                      : brief.closed.length
-                        ? `${brief.closed.length} action${brief.closed.length === 1 ? "" : "s"} marked complete`
-                        : "Completed work not established"}
+                    {ownJobBrief
+                      ? ownJobBrief.headline
+                      : jobBrief?.completed
+                        ? `${jobBrief.completed} linked job${jobBrief.completed === 1 ? "" : "s"} recorded complete`
+                        : brief.closed.length
+                          ? `${brief.closed.length} action${brief.closed.length === 1 ? "" : "s"} marked complete`
+                          : "Completed work not established"}
                   </strong>
                   <small>
-                    {jobBrief?.completed && brief.closed.length
-                      ? `${brief.closed.length} action${brief.closed.length === 1 ? "" : "s"} also marked complete; these may concern the same jobs.`
-                      : brief.closed.length
-                        ? "Recorded outcomes are listed in the findings below."
-                        : jobBrief?.completed
-                          ? "Published job statuses record completion; they do not establish payment, verification or a completion time."
-                          : "Missing completion evidence does not mean no work was done."}
+                    {ownJobBrief
+                      ? `${ownJobBrief.verification} ${ownJobBrief.qualification}${brief.closed.length ? ` ${brief.closed.length} linked action${brief.closed.length === 1 ? "" : "s"} also marked complete.` : ""}`
+                      : jobBrief?.completed && brief.closed.length
+                        ? `${brief.closed.length} action${brief.closed.length === 1 ? "" : "s"} also marked complete; these may concern the same jobs.`
+                        : brief.closed.length
+                          ? "Recorded outcomes are listed in the findings below."
+                          : jobBrief?.completed
+                            ? "Published job statuses record completion; they do not establish payment, verification or a completion time."
+                            : "Missing completion evidence does not mean no work was done."}
                   </small>
                   {kind === "customer" && (
                     <small>
