@@ -29,13 +29,23 @@ export type WorkSource = {
   selectable: boolean;
   contact?: { email: string | null; position: string | null; phones: string[] };
 };
+export type ContactSeparationReview = {
+  mode: "separate_named_person";
+  source_name: string;
+  candidate_ids: string[];
+  evidence: string;
+};
 export type WorkDraft = {
-  version: 1;
+  version: 1 | 2;
   scope: RecoveryScope;
   id: string;
   connection: string;
   kind: WorkKind;
-  items: { version_id: string; target_id: string | null }[];
+  items: {
+    version_id: string;
+    target_id: string | null;
+    identity_review?: ContactSeparationReview;
+  }[];
   reason: string;
 };
 export type WorkReceipt = {
@@ -93,11 +103,38 @@ export function workOutboxKey(scope: RecoveryScope) {
   recoveryOutboxKey(scope);
   return `serviceos:commusoft-work:1:${encodeURIComponent(scope.backend)}:${scope.actorId}:${scope.tenantId}`;
 }
+/** A separate-person decision is evidence, not a fuzzy-name or endpoint merge. */
+export function checkedContactSeparation(value: unknown): ContactSeparationReview {
+  if (
+    !obj(value) ||
+    Object.keys(value).length !== 4 ||
+    value.mode !== "separate_named_person" ||
+    typeof value.source_name !== "string" ||
+    !value.source_name.trim() ||
+    value.source_name.length > 1000 ||
+    typeof value.evidence !== "string" ||
+    value.evidence.trim().length < 20 ||
+    value.evidence.trim().length > 1000 ||
+    !Array.isArray(value.candidate_ids) ||
+    value.candidate_ids.length < 1 ||
+    value.candidate_ids.length > 50 ||
+    value.candidate_ids.some((id: unknown) => !uuid(id)) ||
+    new Set(value.candidate_ids.map((id: string) => id.toLowerCase())).size !==
+      value.candidate_ids.length
+  )
+    throw failure();
+  return {
+    mode: "separate_named_person",
+    source_name: value.source_name,
+    candidate_ids: value.candidate_ids.map((id: string) => id.toLowerCase()).sort(),
+    evidence: value.evidence.trim(),
+  };
+}
 export function checkedWorkDraft(scope: RecoveryScope, d: unknown): WorkDraft {
   workOutboxKey(scope);
   if (
     !obj(d) ||
-    d.version !== 1 ||
+    (d.version !== 1 && d.version !== 2) ||
     !obj(d.scope) ||
     d.scope.backend !== scope.backend ||
     d.scope.actorId !== scope.actorId ||
@@ -119,14 +156,24 @@ export function checkedWorkDraft(scope: RecoveryScope, d: unknown): WorkDraft {
       !obj(i) ||
       !uuid(i.version_id) ||
       seen.has(i.version_id) ||
-      !(i.target_id === null || uuid(i.target_id))
+      !(i.target_id === null || uuid(i.target_id)) ||
+      Object.keys(i).some((key) => !["version_id", "target_id", "identity_review"].includes(key)) ||
+      (i.identity_review !== undefined &&
+        (d.version !== 2 || d.kind !== "contact" || i.target_id !== null))
     )
       throw failure();
     seen.add(i.version_id);
-    return { version_id: i.version_id, target_id: i.target_id };
+    return {
+      version_id: i.version_id,
+      target_id: i.target_id,
+      ...(i.identity_review !== undefined
+        ? { identity_review: checkedContactSeparation(i.identity_review) }
+        : {}),
+    };
   });
-  return {
-    version: 1,
+  if (d.version === 2 && !items.some((i) => i.identity_review)) throw failure();
+  const result: WorkDraft = {
+    version: d.version,
     scope: { ...scope },
     id: d.id,
     connection: d.connection,
@@ -134,6 +181,8 @@ export function checkedWorkDraft(scope: RecoveryScope, d: unknown): WorkDraft {
     items,
     reason: d.reason.trim(),
   };
+  if (JSON.stringify(result).length > 20000) throw failure();
+  return result;
 }
 export function readWorkDraft(storage: Store, scope: RecoveryScope): WorkDraft | null {
   try {
@@ -366,6 +415,12 @@ export function workHoldMessage(reason: string | null | undefined): string {
   const messages: Record<string, string> = {
     contact_identity_needs_review:
       "A matching contact may already exist. Find and select the correct person before linking.",
+    contact_separation_source_changed:
+      "The source contact name changed. Reload and review it again.",
+    contact_separation_candidates_changed:
+      "Possible matches changed. Reload all matches before confirming a separate person.",
+    contact_separation_candidates_incomplete:
+      "More possible matches need review before creating a separate person.",
     contact_target_missing: "The selected person is unavailable in this company.",
     contact_relationship_needs_review: "An existing inactive contact relationship needs review.",
     contact_field_invalid: "The contact details need correction at source.",

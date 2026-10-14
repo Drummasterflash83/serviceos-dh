@@ -11,6 +11,7 @@ import {
 } from "@/lib/learn-commusoft-review";
 import {
   loadWorkPage,
+  checkedContactSeparation,
   readWorkDraft,
   resolveWorkDraft,
   workHoldMessage,
@@ -51,6 +52,7 @@ export function LearnCommusoftWork({
     [matches, setMatches] = useState<
       Record<string, { rows: CustomerCandidate[]; next: string | null }>
     >({});
+  const [separationEvidence, setSeparationEvidence] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<string[]>([]),
     [reason, setReason] = useState(""),
     [approved, setApproved] = useState(false);
@@ -76,6 +78,7 @@ export function LearnCommusoftWork({
   }
   function reset() {
     setTargets({});
+    setSeparationEvidence({});
     setSearches({});
     setMatches({});
     setSelected([]);
@@ -167,20 +170,50 @@ export function LearnCommusoftWork({
     if (!storageReady) return;
     let draft = pending;
     if (!draft) {
-      if (mode !== "apply" || !ready || !approved || !selected.length || reason.trim().length < 3)
+      if (
+        mode !== "apply" ||
+        !ready ||
+        !approved ||
+        !selected.length ||
+        !separationReady ||
+        reason.trim().length < 3
+      )
         return;
-      draft = {
-        version: 1,
-        scope,
-        id: crypto.randomUUID(),
-        connection,
-        kind,
-        items: selected.map((version_id) => ({
-          version_id,
-          target_id: kind === "contact" ? targets[version_id] || null : null,
-        })),
-        reason,
-      };
+      try {
+        draft = {
+          version: selected.some((id) => targets[id] === "separate-person") ? 2 : 1,
+          scope,
+          id: crypto.randomUUID(),
+          connection,
+          kind,
+          items: selected.map((version_id) => ({
+            version_id,
+            target_id:
+              kind === "contact" && targets[version_id] !== "separate-person"
+                ? targets[version_id] || null
+                : null,
+            ...(targets[version_id] === "separate-person"
+              ? {
+                  identity_review: checkedContactSeparation({
+                    mode: "separate_named_person",
+                    source_name: rows.find((r) => r.version_id === version_id)!.title,
+                    candidate_ids: matches[version_id].rows.map((p) => p.id),
+                    evidence: separationEvidence[version_id] ?? "",
+                  }),
+                }
+              : {}),
+          })),
+          reason,
+        };
+      } catch (error) {
+        setNotice(
+          error instanceof Error
+            ? error.message
+            : "Contact review has changed. Reload before applying.",
+        );
+        setApproved(false);
+        return;
+      }
     }
     const request = draft;
     await operation(async (ticket) => {
@@ -214,6 +247,15 @@ export function LearnCommusoftWork({
       setReady(false);
     });
   }
+  const separationReady = selected.every(
+    (id) =>
+      targets[id] !== "separate-person" ||
+      (!(searches[id] ?? "").trim() &&
+        matches[id]?.rows.length > 0 &&
+        matches[id].rows.length <= 50 &&
+        !matches[id].next &&
+        (separationEvidence[id] ?? "").trim().length >= 20),
+  );
   if (!canEdit)
     return <p>Only your company’s owner or administrator can review sites, jobs and contacts.</p>;
   return (
@@ -456,6 +498,14 @@ export function LearnCommusoftWork({
                                   <option value="">
                                     Create a new person if no channel match exists
                                   </option>
+                                  {!(searches[r.version_id] ?? "").trim() &&
+                                    matches[r.version_id].rows.length > 0 &&
+                                    !matches[r.version_id].next &&
+                                    matches[r.version_id].rows.length <= 50 && (
+                                      <option value="separate-person">
+                                        Create a separate named person after review
+                                      </option>
+                                    )}
                                   {matches[r.version_id].rows.map((p) => (
                                     <option key={p.id} value={p.id}>
                                       {p.name ?? "Unnamed person"} ·{" "}
@@ -464,6 +514,36 @@ export function LearnCommusoftWork({
                                   ))}
                                 </select>
                               </label>
+                              {targets[r.version_id] === "separate-person" && (
+                                <div className="space-y-2">
+                                  <p>
+                                    This confirms a different named person, even though a name,
+                                    email or phone matches. Review every suggestion above. Do not
+                                    use this for a household, department or business label. Saved
+                                    channels stay unverified; this does not grant permission to
+                                    contact anyone.
+                                  </p>
+                                  <label className="block">
+                                    Why these are different people
+                                    <textarea
+                                      aria-label={`Separation evidence for contact ${r.external_id}`}
+                                      value={separationEvidence[r.version_id] ?? ""}
+                                      maxLength={1000}
+                                      onChange={(e) => {
+                                        setApproved(false);
+                                        setSeparationEvidence((old) => ({
+                                          ...old,
+                                          [r.version_id!]: e.target.value,
+                                        }));
+                                      }}
+                                    />
+                                  </label>
+                                  <p>
+                                    Record source evidence for the person's name and role, and
+                                    explain any shared contact details (at least 20 characters).
+                                  </p>
+                                </div>
+                              )}
                               {!matches[r.version_id].rows.length && (
                                 <p>
                                   No matching person found. Search by name or email to check another
@@ -574,7 +654,9 @@ export function LearnCommusoftWork({
             </p>
             <button
               className="cp-primary"
-              disabled={!selected.length || !approved || reason.trim().length < 3}
+              disabled={
+                !selected.length || !approved || !separationReady || reason.trim().length < 3
+              }
               onClick={() => void resolve("apply")}
             >
               Check and link selected
