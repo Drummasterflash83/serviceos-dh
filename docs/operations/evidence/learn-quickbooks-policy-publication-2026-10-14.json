@@ -1,0 +1,26 @@
+{
+  "checkedAt": "2026-10-14T05:50:36.202257+00:00",
+  "state": "approved_policies_published_intuit_assessment_approved",
+  "releaseSha": "e81575a04065199928cf7dbaf8afcb439a247c9c",
+  "deployment": "dpl_BtQPXQYCacqVyzmHL311J5F3Pw9E",
+  "preservedLiveBase": "0659046d55abeb8bbddd5ae2b5c174b8fca2ba45",
+  "rollbackDeployment": "dpl_F34AYUtewmQubgbQCu2LQwqahSNQ",
+  "urls": [
+    "https://www.openfolk.ai/privacy/drummonds",
+    "https://www.openfolk.ai/terms/drummonds"
+  ],
+  "checks": [
+    "TypeScript and production build passed",
+    "Desktop and mobile policy layouts checked",
+    "Both anonymous public pages HTTP 200 with no-store HTML",
+    "Live sign-in production backend confirmed; TEST backend absent",
+    "All four live aliases verified",
+    "Intuit UI: submission Completed; results Approved"
+  ],
+  "privateAgreementPublished": false,
+  "productionQuickBooksConnected": false,
+  "limits": [
+    "Retention timings are owner-approved pilot targets, not completed automatic deletion or full workspace export",
+    "Real production accounting acceptance remains pending"
+  ]
+}
