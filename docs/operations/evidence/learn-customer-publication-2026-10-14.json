@@ -1,0 +1,121 @@
+{
+  "version": "learn-customer-publication-2026-10-14/1",
+  "customerSiteJobAcceptance": {
+    "at": "2026-10-14T02:41:34.404866+00:00",
+    "state": "verified_live_customer_site_job_publication",
+    "customers": 20,
+    "sites": 2,
+    "jobs": 17,
+    "checks": {
+      "sourceVersionsAndActorVerified": true,
+      "reviewedAccountHolderEvidenceRetained": true,
+      "allOwnershipAndCardReferencesVerified": true,
+      "jobNumbersAndDescriptionsPreserved": true,
+      "newIdentitiesRemainUnverified": true
+    },
+    "preservation": {
+      "priorIdentityProjections": 4472,
+      "priorCustomerLinks": 30,
+      "priorContactPoints": 52,
+      "retainedCustomerSourceHeads": 1552,
+      "scope": "Selected identity fields, customer links/contact points and retained customer source snapshots; not every production field."
+    },
+    "privateEvidenceSha256": "1f6e3b4b6239747a197551e338f235662258d830dc7e7d30ae8978f68c200c10"
+  },
+  "contactAcceptance": {
+    "version": "learn-reviewed-customer-contact-publication/1",
+    "state": "verified_live_contact_relationships",
+    "at": "2026-10-14T02:58:31.68008+00:00",
+    "publishedSourceLinks": 19,
+    "reviewedPersonReuses": 14,
+    "newPeople": 5,
+    "cardRelationships": 19,
+    "siteRelationships": 1,
+    "sourceContactPoints": 41,
+    "priorContactLinksRetained": 33,
+    "held": 3,
+    "allSourcePayloadsVersionsAndActorsVerified": true,
+    "allIdentitiesRemainUnverified": true,
+    "allNewContactPointsNonPrimaryAndUnverified": true,
+    "privateEvidenceSha256": "fe6a9420a02bdaf370fb61407511a0774a2ea03c77d1e0d0a40c1fcc2f93da26"
+  },
+  "totals": {
+    "at": "2026-10-14T03:07:45.188332+00:00",
+    "publishedSourceLinks": {
+      "job": 644,
+      "site": 48,
+      "contact": 52,
+      "customer": 50
+    }
+  },
+  "reconciliation": {
+    "sources": 1552,
+    "exportAccounts": 1650,
+    "states": {
+      "linked": 49,
+      "held": 804,
+      "linked_account_needs_review": 1,
+      "ready_for_operator_review": 796
+    },
+    "reasons": {
+      "existing_identity_candidates": 417,
+      "account_postcode_not_corroborated": 18,
+      "account_holder_differs_or_uncertain": 327,
+      "other_account_candidates": 102,
+      "category_needs_review": 11,
+      "person_category_has_company_name": 18,
+      "not_in_retained_api_sources": 98
+    },
+    "ambiguousRelationships": 0,
+    "reviewBatches": 40,
+    "applied": 0
+  },
+  "postContactPreservation": {
+    "priorIdentityProjections": 4492,
+    "priorCustomerLinks": 50,
+    "priorContactPoints": 52,
+    "priorCustomerVersionPayloads": 1552,
+    "customerObservationsAdvanced": 1552,
+    "scope": "Selected canonical identity/link/contact-point projections and retained customer version payloads. Ongoing capture advanced observation times; this is not a whole-database preservation claim."
+  },
+  "signedInLiveBrowser": {
+    "checkedAt": "2026-10-14T03:01:44Z",
+    "reviewedPersonCard": {
+      "publishedJobsShown": 2,
+      "linkedContactShown": 1,
+      "savedContactChannelsShown": 3,
+      "leadingZeroDescriptionPreserved": true,
+      "historicalDescriptionPreserved": true,
+      "jobDrilldownAndReturn": true,
+      "missingCommunicationDisclosed": true,
+      "unconfirmedTimezoneExcludedFromPerformance": true
+    },
+    "reviewedCompanyCard": {
+      "publishedJobsShown": 2,
+      "siteAddressShown": true,
+      "linkedSiteContactShown": true,
+      "savedContactChannelsShown": 2
+    },
+    "scope": "Representative signed-in operator session viewing existing LIVE customer UI. No claim of a new founder sign-in or complete customer/provider coverage."
+  },
+  "holds": {
+    "groupLabel": 1,
+    "businessLabel": 1,
+    "differentPeopleSharedOfficeNumber": 1
+  },
+  "limitations": [
+    "Remaining customer and contact reconciliation is not complete.",
+    "98 export customer accounts are absent from retained API customer sources.",
+    "Shared-office and household identity handling still needs a usable reviewed path.",
+    "This publication does not establish current outstanding actions, assigned ownership, complete communication matching or usable performance scores.",
+    "No frontend deployment, credentials, permissions, provider writes or capture schedule changes were made in this publication."
+  ],
+  "privateEvidenceHashes": {
+    "before.private.json": "8354ef1f37c8371957e10880b04dda02831027659f1aa3e9ba202b9ea4da792d",
+    "after-contacts.private.json": "082ec6b02cc73a0af3d7658af37127c82eca906f8d9b35311bc443e67851539c",
+    "contact-outcomes.private.json": "ca79a78259cbf8e37ff0cd003c3edd20880d8cf3d53193185bec5e3a8755be00",
+    "holder-contact-live.png": "66933c571987e8f0ed0b76b830f0032a7ade3627bedcd118a3e309fb761e046d",
+    "company-site-live.png": "10fec58fe89b10dfe58501b91e4fccc9f8ba8299b0b34aa99726ecfa326c16b6",
+    "company-contact-live.png": "a42441579c7a123b7548682a48e64f3bcdb641eb3136bebe710549da8a106bfc"
+  }
+}

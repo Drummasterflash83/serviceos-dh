@@ -7,6 +7,37 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 04:08 BST — another complete customer/site/job/contact publication group accepted in LIVE.**
+
+- Twenty reviewed customer accounts, two sites and seventeen jobs were published
+  through existing logged OpenFolk controls. Nineteen retained contacts then linked
+  to their customer cards: fourteen reused the corroborated account-holder person,
+  five created separate named contacts, and forty-one non-primary unverified contact
+  channels were retained. Three ambiguous/group/shared-office contacts remain held.
+- Readback verifies every source revision/payload, actor, customer/card/site owner
+  and original job number/description. All 4,492 pre-contact identity projections,
+  fifty customer links, fifty-two existing contact points and 1,552 retained
+  customer-version payloads remain intact. Ongoing capture advanced observations;
+  these scoped comparisons do not certify every production field.
+- Signed-in LIVE person and company cards show the linked jobs, service address,
+  contacts and saved email/telephone details. Job drill-down and return pass. Leading
+  zeros and historical source descriptions are preserved. Missing communications,
+  unverified records and completion-time limitations remain explicit.
+- At 03:07 UTC the published source-link totals are fifty customers, forty-eight
+  sites, 644 jobs and fifty-two contacts. The refreshed reconciliation has 796
+  proposals awaiting individual review, 804 held export accounts and one linked
+  account needing review. Ninety-eight export customers remain absent from API
+  source coverage. These are not complete-provider or ready-to-score claims.
+- Current identity-processing receipts show continued bounded progress with a queued
+  child; ambiguous events are held rather than counted as matches. The second
+  Commusoft cycle has completed properties/jobs and is traversing customer contacts.
+  No restart was issued. Remaining broad publication/matching, shared-contact review,
+  full input acceptance, scorecards, operator recovery and scheduled independent
+  recovery remain part of the active goal.
+
+[Publication and preservation evidence](evidence/learn-customer-publication-2026-10-14.json)
+· [Reconciliation procedure](LEARN-CUSTOMER-RECONCILIATION.md).
+
 **14 October, 03:25 BST — original Slack source drill-down accepted on LIVE and TEST.**
 
 - Customer cards now open retained Slack text beyond the short interaction excerpt,

@@ -155,3 +155,42 @@ Commusoft descriptions, including historical code labels, are retained exactly.
 Current taxonomy must not be inferred from those labels or silently replace them.
 
 [Additional real journey and preservation evidence](evidence/learn-customer-reconciliation-second-2026-10-13.json).
+
+
+## Further LIVE publication — 14 October, 03:07 UTC
+
+The next twenty individually reviewed export proposals now have canonical customer
+identities and cards, with two sites and seventeen jobs linked through explicit
+provider relationships. Nineteen contacts were subsequently published: fourteen
+explicit primary contacts reuse their corroborated account-holder person, while
+five independently named company/site contacts became separate people after both
+current name and source-endpoint candidate checks. Their forty-one contact channels
+are non-primary and unverified; no consent or verification was inferred.
+
+Two source labels represent a household or a business rather than one identified
+person. A third named contact shares an office number with a different named
+person. All three remain unlinked. In particular, selecting the other office
+contact merely because its phone matches would merge different people. A reviewed
+shared-endpoint and group-contact path remains required, not silently deferred.
+
+Signed-in LIVE acceptance covers a person with two jobs and three saved channels,
+and a company with two jobs, its service address and one site contact. Customer to
+job and back is usable. Original descriptions, including both leading-zero current
+codes and historical codes actually retained by Commusoft, are unchanged. Unknown
+completion timezones are explicitly excluded from duration/performance evidence.
+No linked communications on these sample cards is reported as missing context.
+
+The refreshed planner observes forty-nine corroborated linked accounts, one linked
+account requiring review, 796 proposals, and 804 held export accounts. Hold reasons
+can overlap. The source-link totals are fifty customers, forty-eight sites, 644 jobs
+and fifty-two contacts. Earlier proposal lists must not be reused as blanket
+approval: new identities have created further possible matches.
+
+Readback and scoped before/after preservation pass. Every pre-contact identity
+projection, customer link and contact point remains; all prior customer source
+versions and payloads remain, although recurring capture advanced observation
+timestamps. This is not a whole-database preservation or complete coverage claim.
+Private source manifests, receipts and screenshots remain outside Git under
+`/private/tmp/serviceos-customer-publication-20261014-0230/`.
+
+[Sanitised acceptance](evidence/learn-customer-publication-2026-10-14.json).
