@@ -1,0 +1,22 @@
+{
+  "status": "approved_prepared_for_publication",
+  "owner": "Chris Drummond",
+  "approvedOn": "2026-10-14",
+  "approval": "Approve both the revised policy wording with retention timings as pilot targets and the Intuit security-policy commitment. Keep pushing and get Drummonds QuickBooks connected please.",
+  "scope": "Public Drummonds privacy notice and authorised-user terms; retention times are support-led pilot targets. Private pilot agreement remains unsigned and unpublished.",
+  "contentChangeFromApprovedCandidates": "Only candidate status sentence replaced by effective date.",
+  "documents": {
+    "PRIVACY": {
+      "approvedCandidateSha256": "d66192de5182338be15087e83b2a5411b45b10b165bb577e932026a4a66ba359",
+      "publishedSource": "docs/legal/published/DRUMMONDS-PRIVACY-2026-10-14.md",
+      "publishedSha256": "1ece1f709833539d32aaad2887eae3d9b9852cfe4e83ee3365370d5bf1f2a33d",
+      "route": "/privacy/drummonds"
+    },
+    "TERMS": {
+      "approvedCandidateSha256": "07e5537a5b72c2ad8484692dc5dc2204ae7ca85367818ac46e65543d73179f03",
+      "publishedSource": "docs/legal/published/DRUMMONDS-TERMS-2026-10-14.md",
+      "publishedSha256": "b9c329694dc1633a65b08cd213ac185ac2acdcb56e02cd4c04177571c9f5acf2",
+      "route": "/terms/drummonds"
+    }
+  }
+}

@@ -187,6 +187,10 @@ function QuickBooksGuide() {
               >
                 chris@drummondheating.co.uk
               </a>
+              <nav aria-label="Drummonds policies" className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[#514268]">
+                <a href="/privacy/drummonds" className="underline underline-offset-4">Privacy notice</a>
+                <a href="/terms/drummonds" className="underline underline-offset-4">User terms</a>
+              </nav>
               <p className="mt-3 text-xs leading-5 text-[#766e81]">
                 Other clients should use their own workspace administrator or agreed support
                 contact.
