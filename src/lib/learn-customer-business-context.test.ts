@@ -34,7 +34,7 @@ const response = () => ({
 function db(data: any) {
   return {
     rpc(name: string, params: any) {
-      assert.equal(name, "learn_customer_business_context");
+      assert.equal(name, params.p_collection === "jobs" ? "learn_customer_jobs_recent" : "learn_customer_business_context");
       assert.equal(params.p_tenant, args.tenant);
       assert.equal(params.p_card, args.card);
       return {
@@ -105,4 +105,52 @@ test("expired, malformed, private extra fields and invented source references fa
     mutate(p);
     await assert.rejects(readCustomerBusinessContext(db(p), args, new AbortController().signal));
   }
+});
+
+const jobsArgs = { ...args, collection: "jobs" as const };
+const job = (n: number, created: string | null) => ({ id: id(n), fields: {
+  title: "001. Recorded Commusoft description", job_number: "0008", description: null,
+  status: "completed", priority: null, site_id: null, verified: false, source_system: "commusoft",
+  external_id: "8", created_date: created, completed_date: null, updated_at: null,
+  time_evidence: { created: { state: "absent", source: null, instant: null },
+    completed: { state: "timezone_required", source: "2026-10-01 12:00:00", instant: null } },
+}, truncated_fields: [], sources: [] });
+const jobsResponse = (rows: any[]) => ({ ...response(), version: "learn-customer-jobs-recent/1",
+  collection: "jobs", order: "created_desc", rows, total: rows.length });
+test("recent jobs use recorded creation, exact job codes, tied UUIDs and undated rows last", async () => {
+  const p = jobsResponse([job(90,"2026-10-01T10:00:00Z"),job(91,"2026-10-01T11:00:00+01:00"),
+    job(10,"2026-09-01T00:00:00Z"),job(2,null),job(3,null)]);
+  const r = await readCustomerBusinessContext(db(p),jobsArgs,new AbortController().signal);
+  assert.deepEqual(r.rows.map(x=>x.id),p.rows.map(x=>x.id));
+  assert.equal(r.order,"created_desc");
+  assert.equal(r.rows[0].fields.job_number,"0008");
+  assert.equal(r.rows[0].fields.title,"001. Recorded Commusoft description");
+  assert.equal(r.rows[0].fields.time_evidence.completed.state,"timezone_required");
+});
+test("incorrect chronological order, ambiguous dates, repeated rows and wrong protocol fail visibly", async () => {
+  const good = jobsResponse([job(90,"2026-10-01T10:00:00Z"),job(10,"2026-09-01T00:00:00Z"),job(2,null)]);
+  for (const change of [
+    (p:any)=>p.rows.reverse(),
+    (p:any)=>p.rows[0].fields.created_date="not-a-date",
+    (p:any)=>p.rows[0].fields.created_date="2026-10-01T10:00:00",
+    (p:any)=>p.rows[0].fields.created_date=null,
+    (p:any)=>p.rows[1]=p.rows[0],
+    (p:any)=>p.version="learn-customer-business-context/1",
+    (p:any)=>p.order="id_asc",
+    (p:any)=>p.rows[1]=job(1,"2026-10-01T10:00:00Z"),
+  ]) {
+    const p=structuredClone(good);change(p);
+    await assert.rejects(readCustomerBusinessContext(db(p),jobsArgs,new AbortController().signal));
+  }
+});
+test("recent-job continuation binds the cursor without assuming UUID chronological order", async () => {
+  const p:any=jobsResponse([job(2,"2026-09-01T00:00:00Z")]);p.after=id(90);
+  assert.equal((await readCustomerBusinessContext(db(p),{...jobsArgs,after:id(90)},new AbortController().signal)).rows[0].id,id(2));
+  p.rows=[job(90,"2026-09-01T00:00:00Z")];
+  await assert.rejects(readCustomerBusinessContext(db(p),{...jobsArgs,after:id(90)},new AbortController().signal));
+  const full:any=jobsResponse(Array.from({length:25},(_,n)=>job(100-n,new Date(Date.UTC(2026,9,25-n)).toISOString())));
+  full.next_after=id(76);full.total=26;
+  assert.equal((await readCustomerBusinessContext(db(full),jobsArgs,new AbortController().signal)).next_after,id(76));
+  full.next_after=id(100);
+  await assert.rejects(readCustomerBusinessContext(db(full),jobsArgs,new AbortController().signal));
 });
