@@ -32,6 +32,8 @@ const slack=rows.filter(x=>x.source_connector_id==='slack');
 const committed=slack.filter(x=>x.receipt_state==='committed'&&x.observe_job_status==='succeeded'&&
  x.ingestion_status==='observed'&&x.can_execute===false&&Array.isArray(x.action_ids)&&x.action_ids.length===0&&
  x.retained_source_context?.scope==='company_source'&&x.retained_source_context?.attribution==='unresolved'&&
+ x.retained_source_context?.tenant_id===tenant&&x.retained_source_context?.interaction_id===x.id&&
+ x.retained_source_context?.source_version===x.source_version&&
  x.processing_status==='identity_review'&&x.direction==='unknown'&&x.related_person_id===null&&
  x.related_company_id===null&&x.related_job_id===null);
 const states=Object.fromEntries([...new Set(slack.map(x=>x.observe_job_status??x.ingestion_status??'not_dispatched'))]

@@ -45,8 +45,8 @@ Cloudflare-flavoured.
 The public Slack source-learning package now installs LIVE worker **v77** with the
 matching guarded qualifier, observer and ordered selector. Exact executable readback,
 missing-auth denial and eleven canonical-source preservation checks pass. A real
-25-record selection takes 1,582 ms including API overhead. Real observation receipts
-remain pending. TEST remains v28 and lacks the selector prerequisite; this isolated
+25-record selection takes 1,582 ms including API overhead. Ten real source-only observation receipts now pass through normal scheduling;
+unassigned company-source browsing and broader history learning remain pending. TEST remains v28 and lacks the selector prerequisite; this isolated
 package was not applied there. No frontend, capture schedule, provider write or user
 permission change occurred. The exact original v76 executable and schema rollback
 are retained privately under `.verification-results/learn-public-slack-live-release-20261014-04/`;

@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 10:43 BST — ten real public Slack observations committed in LIVE.**
+
+### Working and verified
+
+- All ten selected eligible messages now have mapper-2 observed ledgers, succeeded
+  ordinary observe jobs and committed receipts. Tenant, interaction and retained
+  source-revision bindings pass. Direction stays unknown, identity-review holds
+  remain and no customer/person/job link is invented. Every receipt has zero actions.
+- The other fifteen selected messages retain audited skips under the existing
+  eligibility policy. No job was manually enqueued, restarted or reprioritised.
+  Aggregate ordinary worker evidence also confirms processing after v77 publication.
+- Signed-in operator selection and Drummonds client navigation work in a separate
+  verification tab. The live input tiles show 48,519 saved emails, 4,473 calls,
+  2,992 recording rows, 32,023 Slack messages and 255 visible voicemails. These are
+  dated saved totals, not complete-history, playback or universal-learning claims.
+
+### Needs finishing
+
+- The Slack panel currently provides import/capture/recovery controls, not a browser
+  for these unassigned company-source observations. The existing authorised, audited
+  public-source reader can be reused; add a clear company-evidence journey without
+  fabricating customer/job attribution or exposing private/shared/DM sources.
+- Current eligibility relies on its established value/noise policy; comprehensive
+  company learning, edited-source revision recovery, broader customer/job mapping,
+  scorecards, operator recovery and dependable backups remain open.
+
+### Blocked externally
+
+- No new user decision or login is needed for the next source-evidence UX step.
+
+[Real source-learning acceptance](evidence/learn-public-slack-live-2026-10-14.json).
+
+
 **14 October — LIVE public Slack source-learning package deployed; real receipts pending.**
 
 ### Working and verified

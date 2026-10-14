@@ -4,6 +4,9 @@ LIVE worker v77 and the exact functions in `manifest.json` are installed. The
 tested executable is retained privately, with exact v76 rollback bytes, under
 `.verification-results/learn-public-slack-runtime-20261014-1000/`. Deployment and
 preservation acceptance is separate from committed real observation receipts.
+Ten selected source-only observations now have succeeded jobs, source-bound
+committed receipts and zero actions; fifteen others retain audited skips. A
+company-source browsing journey is still missing from the current import panel.
 See `docs/operations/evidence/learn-public-slack-live-2026-10-14.json`.
 
 Only exact retained public, nonshared source versions with capture-time proof and

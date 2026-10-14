@@ -1,6 +1,6 @@
 {
   "version": "learn-public-slack-live/1",
-  "state": "deployed_artifact_and_preservation_verified_observations_pending",
+  "state": "live_source_only_observations_verified_source_browse_pending",
   "verifiedAt": "2026-10-14T09:21:40.988Z",
   "project": "tgbnakbxwcqjeimygroz",
   "workerVersion": 77,
@@ -9,7 +9,7 @@
     "selected": 25,
     "elapsedMs": 1582
   },
-  "selectedSourceObservations": "not yet accepted",
+  "selectedSourceObservations": "Ten committed; fifteen retained audited skips under existing eligibility policy.",
   "preservation": {
     "datasets": 11,
     "priorCounts": {
@@ -168,9 +168,37 @@
     "automaticApprovalReview": "Initial revised preservation command rejected pending rehearsal; exact keyset implementation later rehearsed, then promotion accepted"
   },
   "limitations": [
-    "Real observation receipts, source opening and scheduled throughput still need acceptance.",
+    "Committed source-only receipts verified for ten selected sources; unassigned company-source browse and broader scheduled/history coverage remain incomplete.",
     "Unresolved customer/person/job attribution remains unchanged.",
     "Hosted TEST lacks the original selector prerequisite; this isolated package was not applied there.",
     "Full LEARN V1, customer coverage, scoring, operator recovery and recurring-backup acceptance remain incomplete."
-  ]
+  ],
+  "realObservations": {
+    "observedAt": "2026-10-14T09:43:42.055Z",
+    "selectedSlack": 25,
+    "committedSourceOnly": 10,
+    "states": {
+      "succeeded": 10,
+      "skipped": 15
+    },
+    "tenantInteractionRevisionBindingVerified": true,
+    "existingIdentityHoldsPreserved": true,
+    "actionIds": 0,
+    "normalScheduling": true,
+    "manuallyEnqueuedOrRestarted": false
+  },
+  "signedInBrowser": {
+    "operatorClientSelection": "verified",
+    "inputTotalsVisible": true,
+    "savedCountsObserved": {
+      "email": 48519,
+      "phone": 4473,
+      "recordings": 2992,
+      "slack": 32023,
+      "voicemail": 255
+    },
+    "slackImportControls": "verified",
+    "sourceOnlyObservationBrowse": "missing; existing source-reader RPC can be reused but the import panel has no source-opening journey",
+    "privateCustomerContentSavedToGit": false
+  }
 }

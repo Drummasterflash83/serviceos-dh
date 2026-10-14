@@ -1,6 +1,6 @@
 {
   "version": "learn-public-slack-observation-release/1",
-  "state": "live_artifact_and_preservation_verified_observations_pending",
+  "state": "live_source_only_observations_verified_source_browse_pending",
   "project": "tgbnakbxwcqjeimygroz",
   "source": {
     "path": "supabase/migrations/20261102190000_learn_public_slack_observation_context.sql",
@@ -134,8 +134,9 @@
     },
     "artifactReadbackMatched": true,
     "preservedDatasets": 11,
-    "observationAcceptance": "pending",
-    "evidence": "docs/operations/evidence/learn-public-slack-live-2026-10-14.json"
+    "observationAcceptance": "ten real source-only observations committed through normal scheduling; fifteen audited skips",
+    "evidence": "docs/operations/evidence/learn-public-slack-live-2026-10-14.json",
+    "observationVerifiedAt": "2026-10-14T09:43:42.055Z"
   },
   "sourceFingerprintProtocol": {
     "sourceSha256": "6728c18e6894c41c14ee1a9ce3320b560d4edd2d93357d187a132b307202e5eb",
