@@ -2,7 +2,7 @@
 
 Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
 
-## Current state — 14 October, production consent pending
+## Current state — 14 October, first LIVE import running
 
 - Intuit app assessment is submitted and **Approved**. Chris explicitly approved
   the security-policy commitment and revised retention wording as pilot targets.
@@ -19,10 +19,13 @@ Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
   production credential is verified in encrypted Vault, Mac Keychain and the
   separate concealed LIVE field in the Openfolk ServiceOS 1Password note. The
   temporary plaintext transfer file was removed.
-- The existing operator opened the real DRUMMOND HEATING consent screen. The
-  production connection is pending authorisation; no import or financial source
-  record exists. The exact company grant and 500-request first import await the
-  separate action-time approval. No schedule or accounting writes are enabled.
+- Chris approved the real DRUMMOND HEATING company grant and bounded first import.
+  Fresh OAuth completed at 06:58 UTC; CompanyInfo verified realm `1197397945`,
+  encrypted tokens stored, identity confirmed through logged operator controls.
+  The first LIVE import is running across 13 accounting record types with a
+  500-request cap, 100 records/page and 24-hour expiry. The first 27 pages saved
+  2,700 customer records without an error. This is progress, not complete coverage.
+  No ongoing schedule, accounting writes, AI or automatic matching is enabled.
 - Stable TEST retains the 77 sandbox records and deliberately revoked grant.
   Sandbox connection, duplicate import, refresh and revocation are verified.
 - Production schema and four handlers remain installed but inert. Finance access
@@ -48,7 +51,7 @@ ready for testing”. Only Accounting was selected; Payments was not selected.
 - App ID: `4ef4971d-2a39-4309-8c6c-46510d679c59` (identifier, not a credential).
 - Developer workspace ID: `9341456295810067` (not a QuickBooks accounting realm).
 - Status: Intuit assessment Approved and production app details complete.
-  Production credential provisioned and verified; real company consent pending.
+  Production credential provisioned and verified; real Drummonds consent completed.
   Earlier sandbox consent/refresh/revocation has been verified separately.
 - Development credentials were provisioned after explicit approval as recorded
   below. The existing Drummonds Dashboard app was not modified.
