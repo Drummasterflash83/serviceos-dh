@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "state": "backend_installed_frontend_prepared",
-  "at": "2026-10-14T01:45:10Z",
+  "state": "backend_and_frontend_live_verified",
+  "at": "2026-10-14T01:56:35.415952+00:00",
   "backend": {
     "version": 1,
-    "state": "backend_installed_frontend_prepared",
+    "state": "backend_and_frontend_live_verified",
     "source": {
       "path": "supabase/migrations/20261102130000_learn_customer_jobs_recent.sql",
       "sha256": "f327d3a3de104285afd385173156f38f44bf4161a6a9723e1594b091f1ab9643"
@@ -74,7 +74,103 @@
       }
     ],
     "scope": "Read-only recent published customer jobs with existing tenant/role authority and logged operator selection. No provider, source, credential, schedule or existing-reader changes.",
-    "rollbackSha256": "f4d7f12ebe689a462da9fd78891c563f314bbf7e641e07e4c2533d6c21f191de"
+    "rollbackSha256": "f4d7f12ebe689a462da9fd78891c563f314bbf7e641e07e4c2533d6c21f191de",
+    "verifiedAt": "2026-10-14T01:56:35.415952+00:00",
+    "frontend": {
+      "live": {
+        "at": "2026-10-14T01:52:28.917Z",
+        "production": "dpl_o6r8arDgsx9D1nJjwiuouasa3LBR",
+        "aliases": [
+          {
+            "host": "app.openfolk.ai",
+            "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+            "deployment": "dpl_o6r8arDgsx9D1nJjwiuouasa3LBR",
+            "redirect": null
+          },
+          {
+            "host": "openfolk.ai",
+            "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+            "deployment": "dpl_o6r8arDgsx9D1nJjwiuouasa3LBR",
+            "redirect": "www.openfolk.ai"
+          },
+          {
+            "host": "serviceos-dh.vercel.app",
+            "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+            "deployment": "dpl_o6r8arDgsx9D1nJjwiuouasa3LBR",
+            "redirect": null
+          },
+          {
+            "host": "www.openfolk.ai",
+            "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+            "deployment": "dpl_o6r8arDgsx9D1nJjwiuouasa3LBR",
+            "redirect": null
+          }
+        ],
+        "id": "dpl_o6r8arDgsx9D1nJjwiuouasa3LBR",
+        "sha": "d33cfe56b0804fc3c69c12030474661d4ca9f344",
+        "protection": {
+          "deploymentType": "all_except_custom_domains"
+        },
+        "ready": "READY",
+        "aliasAssigned": true,
+        "state": "aliases_verified"
+      },
+      "test": {
+        "state": "aliases_verified",
+        "at": "2026-10-14T01:51:20.236Z",
+        "candidate": "dpl_264tnwefoJ9A5ULFzgj1z56ePiQC",
+        "sha": "97d78f697e5597ac9c243859e9dc7c0bad277afb",
+        "renderedAuthTarget": "https://saatxzwxvdvqevbnskxy.supabase.co",
+        "bindingObserved": "CUA login data-auth-target",
+        "before": [
+          {
+            "host": "test.openfolk.ai",
+            "prior": "dpl_49UmtYRwQtyyoFFujRtwmuBPWGpf"
+          },
+          {
+            "host": "serviceos-learn-test-allkin.vercel.app",
+            "prior": "dpl_49UmtYRwQtyyoFFujRtwmuBPWGpf"
+          }
+        ],
+        "completed": [
+          "test.openfolk.ai",
+          "serviceos-learn-test-allkin.vercel.app"
+        ]
+      }
+    },
+    "signedInAcceptance": {
+      "at": "2026-10-14T01:54:55.243Z",
+      "state": "signed_in_live_recent_jobs_verified",
+      "test": {
+        "url": "https://test.openfolk.ai/openfolk",
+        "signedIn": true,
+        "build": "97d78f6",
+        "backend": "saatxzwxvdvqevbnskxy"
+      },
+      "liveCandidateAuthTarget": "tgbnakbxwcqjeimygroz",
+      "pages": [
+        {
+          "count": 25,
+          "descending": true
+        },
+        {
+          "count": 25,
+          "descending": true
+        }
+      ],
+      "duplicatesAcrossPages": 0,
+      "pageBoundaryOrdered": true,
+      "linkedCount": 585,
+      "refreshReturnsFirstPage": true,
+      "jobDrilldownAndReturn": true,
+      "recordedCompletionAndTimezoneLimitsVisible": true,
+      "originalSourceDescriptionsPreserved": true,
+      "notes": [
+        "This is published linked coverage, not complete provider coverage.",
+        "Linked Slack original source viewer and findings remain incomplete."
+      ],
+      "screenshotSha256": "23b6cb8ddafe911a1369b2290541962edf7d1aa0142285519cba45686d9f75f3"
+    }
   },
   "verification": {
     "focusedTests": 14,
@@ -142,9 +238,104 @@
     }
   },
   "limitations": [
-    "Frontend not yet published or accepted in signed-in browser.",
     "Published jobs are incomplete compared with provider inventory.",
     "Ordering uses recorded creation only, not completion or payment.",
-    "Undated jobs remain accessible at the end; source descriptions/codes and timezone limitations are retained."
-  ]
+    "Undated jobs remain accessible at the end; source descriptions/codes and timezone limitations are retained.",
+    "Signed-in recent-job pagination is accepted in LIVE; TEST sign-in/build binding and hosted database journey passed, but real TEST customer pagination was not separately clicked."
+  ],
+  "frontend": {
+    "live": {
+      "at": "2026-10-14T01:52:28.917Z",
+      "production": "dpl_o6r8arDgsx9D1nJjwiuouasa3LBR",
+      "aliases": [
+        {
+          "host": "app.openfolk.ai",
+          "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+          "deployment": "dpl_o6r8arDgsx9D1nJjwiuouasa3LBR",
+          "redirect": null
+        },
+        {
+          "host": "openfolk.ai",
+          "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+          "deployment": "dpl_o6r8arDgsx9D1nJjwiuouasa3LBR",
+          "redirect": "www.openfolk.ai"
+        },
+        {
+          "host": "serviceos-dh.vercel.app",
+          "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+          "deployment": "dpl_o6r8arDgsx9D1nJjwiuouasa3LBR",
+          "redirect": null
+        },
+        {
+          "host": "www.openfolk.ai",
+          "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+          "deployment": "dpl_o6r8arDgsx9D1nJjwiuouasa3LBR",
+          "redirect": null
+        }
+      ],
+      "id": "dpl_o6r8arDgsx9D1nJjwiuouasa3LBR",
+      "sha": "d33cfe56b0804fc3c69c12030474661d4ca9f344",
+      "protection": {
+        "deploymentType": "all_except_custom_domains"
+      },
+      "ready": "READY",
+      "aliasAssigned": true,
+      "state": "aliases_verified"
+    },
+    "test": {
+      "state": "aliases_verified",
+      "at": "2026-10-14T01:51:20.236Z",
+      "candidate": "dpl_264tnwefoJ9A5ULFzgj1z56ePiQC",
+      "sha": "97d78f697e5597ac9c243859e9dc7c0bad277afb",
+      "renderedAuthTarget": "https://saatxzwxvdvqevbnskxy.supabase.co",
+      "bindingObserved": "CUA login data-auth-target",
+      "before": [
+        {
+          "host": "test.openfolk.ai",
+          "prior": "dpl_49UmtYRwQtyyoFFujRtwmuBPWGpf"
+        },
+        {
+          "host": "serviceos-learn-test-allkin.vercel.app",
+          "prior": "dpl_49UmtYRwQtyyoFFujRtwmuBPWGpf"
+        }
+      ],
+      "completed": [
+        "test.openfolk.ai",
+        "serviceos-learn-test-allkin.vercel.app"
+      ]
+    }
+  },
+  "signedInAcceptance": {
+    "at": "2026-10-14T01:54:55.243Z",
+    "state": "signed_in_live_recent_jobs_verified",
+    "test": {
+      "url": "https://test.openfolk.ai/openfolk",
+      "signedIn": true,
+      "build": "97d78f6",
+      "backend": "saatxzwxvdvqevbnskxy"
+    },
+    "liveCandidateAuthTarget": "tgbnakbxwcqjeimygroz",
+    "pages": [
+      {
+        "count": 25,
+        "descending": true
+      },
+      {
+        "count": 25,
+        "descending": true
+      }
+    ],
+    "duplicatesAcrossPages": 0,
+    "pageBoundaryOrdered": true,
+    "linkedCount": 585,
+    "refreshReturnsFirstPage": true,
+    "jobDrilldownAndReturn": true,
+    "recordedCompletionAndTimezoneLimitsVisible": true,
+    "originalSourceDescriptionsPreserved": true,
+    "notes": [
+      "This is published linked coverage, not complete provider coverage.",
+      "Linked Slack original source viewer and findings remain incomplete."
+    ],
+    "screenshotSha256": "23b6cb8ddafe911a1369b2290541962edf7d1aa0142285519cba45686d9f75f3"
+  }
 }

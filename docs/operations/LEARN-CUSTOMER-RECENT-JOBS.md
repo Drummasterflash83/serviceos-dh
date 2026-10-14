@@ -23,8 +23,21 @@ Fourteen focused tests, TypeScript and the Vercel-targeted local build pass. The
 native-schema rehearsal preserves 1,591,601 archived rows and verifies existing and
 new journeys. Hosted TEST separately confirms the actual effective-source reader,
 chronological pagination and access checks, rolling back all synthetic fixtures.
-The new backend reader is installed in TEST and LIVE. Frontend publication and
-signed-in customer acceptance remain pending at this checkpoint.
+The new backend reader and isolated Git frontends are now installed in TEST and
+LIVE. All four LIVE aliases and both protected TEST aliases are verified. Signed-in
+LIVE acceptance traversed two chronological 25-job pages without duplicates,
+refreshed to the newest page, opened its job and returned to the customer. Recorded
+completion, original descriptions and timezone limitations remain visible. This
+verifies the published linked subset, not complete provider inventory. TEST sign-in,
+build identity/backend binding and hosted database journeys pass; its real customer
+pagination was not separately clicked.
+
+LIVE frontend: `d33cfe56b0804fc3c69c12030474661d4ca9f344` /
+`dpl_o6r8arDgsx9D1nJjwiuouasa3LBR`. TEST frontend:
+`97d78f697e5597ac9c243859e9dc7c0bad277afb` /
+`dpl_264tnwefoJ9A5ULFzgj1z56ePiQC`. Existing deployment protection is unchanged.
+Post-release reads confirm the original backend reader and access remain unchanged,
+and every source identity from the installation baseline is retained.
 
 Reproduce with `node --test src/lib/learn-customer-business-context.test.ts
 src/lib/learn-card-job-brief.test.ts` and

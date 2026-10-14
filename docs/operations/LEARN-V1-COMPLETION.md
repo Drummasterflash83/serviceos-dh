@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 02:56 BST — recent-job journey verified on LIVE; first Slack recovery observation committed.**
+
+- TEST and LIVE now serve the isolated recent-job frontends from verified Git.
+  All existing aliases and deployment protection are verified. Two LIVE 25-job
+  pages are chronological without duplicates; refresh, job drill-down and return
+  pass in the existing signed-in operator session. Original codes/descriptions,
+  recorded status and timezone limitations remain visible. Backend/source/access
+  preservation checks pass again after release.
+- One of the four original Slack recovery children succeeded at 01:55 UTC with a
+  committed observation receipt, matching interaction/work/job references, assisted
+  tenant mode and zero executable actions or automation intents. Three remain
+  queued. This is actual evidence processing, not yet an accepted displayed finding.
+- The signed-in source totals at 01:52 UTC were 37,524 emails, 4,462 calls, 2,984
+  recordings, 16,616 Slack messages and 255 visible voicemails. These are retained
+  counts, not complete historical or audio coverage. Email's latest failure at
+  01:52 was followed by a completed update at 01:53; per-account coverage still needs
+  reconciliation, and one success does not establish every mailbox is healthy.
+- Full provider coverage, canonical publication/matching, source inspection,
+  scorecards, operator recovery and unattended backup acceptance remain open.
+  This release does not narrow or complete the LEARN V1 goal.
+
+[Verified recent jobs](LEARN-CUSTOMER-RECENT-JOBS.md).
+
+
 **14 October, 02:45 BST — identity continuation accepted in LIVE; Commusoft incremental cycle complete.**
 
 - Eleven scheduled identity batches have committed 104 customer-card updates and
