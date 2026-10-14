@@ -1,0 +1,46 @@
+{
+  "state": "passed_offline_not_live",
+  "fullNativeArchive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "preservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 401,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "35ef9a8e4ca825b09fce814f6f62d6c9114d25308e87067801f75a12823f90fc",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "withholdingEquivalenceCases": 42,
+  "existingJourneyCount": 15,
+  "guardChecks": [
+    "wrong_target",
+    "wrong_digest",
+    "definition_drift",
+    "access_drift",
+    "late_failure"
+  ],
+  "transactionRollback": true,
+  "definitionRollback": true,
+  "permissionsPreserved": true,
+  "sourceSha256": "7913dd9be692c12bb4402716e7f15d6cd8fa18a8927a6ce1f9f300091d9201a7",
+  "releaseSha256": "0737c5ac9b44432c11984050a9ad718d1f4987ec2a96ee45fd1339c782d9c4d6",
+  "containersRemoved": true
+}

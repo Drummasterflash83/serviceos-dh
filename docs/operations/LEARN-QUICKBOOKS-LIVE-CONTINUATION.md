@@ -1,0 +1,83 @@
+# Drummonds QuickBooks LIVE history continuation — prepared 14 October 2026
+
+Status: approved by Chris on 14 October; continuation started at 07:56 UTC. The first approved 500-request run is
+verified at `limit_reached`, with its connection paused and Payment position
+15,101 retained. Customer and Invoice traversals are complete. Do not alter
+that run's definition or request budget.
+
+## Proposed scope
+
+Use the existing verified DRUMMOND HEATING connection
+`04d68333-fc13-42c2-a500-789f386f015c`, production tenant
+`00000000-0000-0000-0000-000000000001`, realm `1197397945`.
+Create one new import through the logged OpenFolk operator controls, continuing
+`0b89d0a8-02de-4f1c-91e9-25b8917eca68` from its saved entity and position.
+Keep the original entity order, page size 100 and minor version 75:
+Customer, Invoice, Payment, CreditMemo, SalesReceipt, Estimate, Vendor, Bill,
+BillPayment, Purchase, VendorCredit, Account and Item.
+
+Permit up to **2,000 additional read-only accounting page requests** within
+**24 hours**. Failed requests consume the budget. This is an upper bound, not a
+promise that every source type or all history will fit. No repeated full scan of
+already traversed Customer pages. Stop at traversal, cap, expiry or unresolved
+failure; pause capture and retain source versions and evidence.
+
+The existing OAuth grant stays unchanged. Permit ordinary refresh of its existing
+access token through Intuit's token endpoint, with the same app/company/scope and
+production Vault destination, at most 24 refresh attempts during this run. An
+uncertain refresh result stops for inspection; do not blindly retry rotating
+refresh tokens. Accounting endpoints remain GET-only.
+
+## Execution and verification
+
+Use the existing repository worker with a local adapter pinned to the new run.
+Before execution verify the exact parent checkpoint, entities, page size, minor
+version, request ceiling, expiry, tenant, realm and current operator authority.
+Restrict provider calls to the verified company's query endpoint and the official
+Intuit token endpoint for an unchanged-grant refresh. The local adapter must
+support the worker's refresh RPCs before this longer run; the first-pass adapter
+was intentionally limited to a shorter token lifetime. Do not reuse it unchanged.
+
+Verify persisted page/observation totals, source scope, conflicts, source
+references, terminal checkpoint and paused connection. Preserve the former run
+and report which entity types have and have not been traversed. Save aggregate
+proof and the implementation checkpoint to the approved Git branches.
+
+## Excluded
+
+No new users, access grants, app/company consent, credential destination,
+accounting writes, payments, payroll, AI/model training, automatic customer/job
+matching or recurring schedule. Hosted unattended dispatch remains separate work.
+Retained financial information stays limited to company owners/admins and logged
+OpenFolk support. Source QuickBooks job codes do not replace Commusoft job codes.
+
+## Execution
+
+- Continuation ID: `ed8ae29c-aee6-455b-8904-1caac9ef3f8e`; scope readback
+  confirmed Payment position 15,101, original entities/page size/minor version,
+  2,000 maximum requests and expiry 15 October 07:55:05 UTC.
+- Ordinary token refresh succeeded and was durably saved as generation 2. The
+  local adapter initially mishandled an empty successful RPC response; status
+  inspection proved the saved refresh before processing resumed.
+- Payments completed at 17,628 records. Credit notes, estimates and suppliers
+  were traversed next; supplier bills are still importing. No final whole-scan
+  completion claim is made.
+- A later local execution stopped with an expired page lease and no receipt;
+  read-only inspection established a static 98-request/97-page checkpoint. The
+  same approved run resumed using the existing database lease/receipt guards,
+  keeping the original cap and counting the unsettled request.
+- The reusable local adapter is saved at
+  `scripts/operations/quickbooks-bounded-runner.mjs`; attempt journals remain
+  ignored. Hosted dispatch and recurring refresh are separate finishing work.
+
+## Completed — 14 October, 09:04 UTC
+
+Continuation traversed all remaining collections using 854 of 2,000 approved
+requests and saved 853 pages / 84,676 observations. Combined with the first pass:
+1,354 requests, 1,353 pages and 134,569 latest records. One expired uncertain page
+reservation consumes a request but has no receipt; its retained checkpoint was
+explicitly reviewed before resumption. Counts and references reconcile, no version
+conflicts or outstanding refresh lease; capture paused after traversal. Two
+ordinary token renewals persisted. Aggregate proof is in
+[evidence](evidence/learn-quickbooks-live-history-2026-10-14.json). Ongoing refresh
+was separately approved and activated later; it does not alter these run limits.

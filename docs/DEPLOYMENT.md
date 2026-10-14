@@ -40,21 +40,66 @@ and switches to the Vercel preset** (`λ __server`). So: build **remotely on Ver
 upload or Git push). Do **not** ship a locally-prebuilt `.output` to Vercel — it would be
 Cloudflare-flavoured.
 
-## Current live checkpoint — 13 October 2026
+## Current live checkpoint — 14 October 2026
 
-The latest verified LIVE frontend is Git
-9091ce4970a319aacb6959227382532688957e93, deployment
-dpl_BdmR3wuhjf1ghYYN58sQQgeYbMpG, serving the four existing openfolk.ai aliases.
-Matching account-holder review SQL is installed in TEST and production. One real
-LIVE account-to-card journey verifies separate account/contact identities and
-logged review; broader customer/job publication and provider coverage remain
-incomplete. The preceding Slack worker v9/platform worker v70 release remains.
-Use **https://www.openfolk.ai** for LIVE and **https://test.openfolk.ai** for TEST.
-This release does not update the TEST frontend.
+The public Slack source-learning package now installs LIVE worker **v77** with the
+matching guarded qualifier, observer and ordered selector. Exact executable readback,
+missing-auth denial and eleven canonical-source preservation checks pass. A real
+25-record selection takes 1,582 ms including API overhead. Ten real source-only observation receipts now pass through normal scheduling;
+unassigned company-source browsing and broader history learning remain pending. TEST remains v28 and lacks the selector prerequisite; this isolated
+package was not applied there. No frontend, capture schedule, provider write or user
+permission change occurred. The exact original v76 executable and schema rollback
+are retained privately under `.verification-results/learn-public-slack-live-release-20261014-04/`;
+do not use the earlier temporary throughput paths after the Mac restart.
+[Current release evidence](operations/evidence/learn-public-slack-live-2026-10-14.json).
 
-See the [live release log](operations/LEARN-LIVE-RELEASE-2026-10-13.md) and
-[release evidence](operations/evidence/learn-customer-account-holder-production-2026-10-13.json).
-Older preview sections below are historical preparation, not current live status.
+
+LIVE frontend is `e81575a04065199928cf7dbaf8afcb439a247c9c` /
+`dpl_BtQPXQYCacqVyzmHL311J5F3Pw9E`, following the QuickBooks workstream’s
+approved policy-page publication. All four LIVE aliases and protection were
+reverified at 06:17 UTC. The prior job-search baseline remains included. TEST is
+`e7fdc2a6518dc17db6b70b823160a2ed50d81e2a` /
+`dpl_6WBCBMbVVLyv2ayQfxVPyQB4itQD`. All existing aliases, protections and rendered
+Supabase targets are verified. The isolated three-file releases add audited job
+search to Slack context review while retaining the existing design and separate
+TEST-only changes. Signed-in TEST and LIVE search/context-reading acceptance passes.
+[Release, preservation and rollback](operations/LEARN-OPERATOR-JOB-SEARCH.md).
+
+Frontend rollback for the latest policy publication: LIVE
+`0659046d55abeb8bbddd5ae2b5c174b8fca2ba45` /
+`dpl_F34AYUtewmQubgbQCu2LQwqahSNQ`; TEST
+`778f7ad828086888ba4d355319a4a538725e3eff` /
+`dpl_DpvxmPfubUNPbTbUnpHgasNwD5BP`. The additive search backend can stay installed
+when reverting the frontend. Do not reverse the earlier contact-separation backend:
+its guard preserves protection after real shared-endpoint contacts were published.
+[Prior contact release](operations/LEARN-CONTACT-SEPARATION.md).
+
+Workspace directory discovery now has a two-function dependency repair in LIVE.
+The existing retry completed with a durable success receipt at 06:14 UTC. Function
+permissions, source preservation and mailbox choices passed before/after checks;
+hosted TEST lacks this legacy dependency and was not changed.
+[Release and exact rollback](operations/LEARN-WORKSPACE-DISCOVERY-RECOVERY.md).
+
+The ordinary queue worker is now LIVE v76 and TEST v28, with a default batch of ten
+(previously three). Exact artifact/auth checks and five consecutive normal LIVE
+claims verify deployment and use; complete historical processing remains open.
+[Capacity release and rollback](operations/LEARN-WORKER-THROUGHPUT.md).
+
+The learning scheduler is LIVE v20, aligned with worker mapper `obs-ingest/2` and
+explicit queued mapper versions. Exact runtime readback, authentication and normal
+scheduled dispatch pass. Two reviewed public Slack sources now also pass committed
+observation receipt, job/context binding and zero-action acceptance. Broader
+historical learning remains open.
+[Runtime evidence](../supabase/release/learn-reviewed-ingestion/runtime.manifest.json).
+The matching selector reserves bounded capacity for recorded Slack reviews while
+continuing historical processing and preserving existing permissions.
+[SQL release and rollback](../supabase/release/learn-production-patches/reviewed-ingestion-selection-v1/README.md).
+
+Stable-domain release-query navigation verified the exact builds. The earlier
+stale-document behaviour on normal reload remains a separate open issue.
+QuickBooks production registration/company acceptance, broad publication/matching,
+scoring and operational acceptance remain incomplete. Use **https://www.openfolk.ai**
+for LIVE and **https://test.openfolk.ai** for TEST.
 
 ## Preview deployments
 
@@ -90,13 +135,40 @@ and [completion checklist](operations/LEARN-V1-COMPLETION.md).
 
 ### Isolated LEARN TEST project (updated 13 October 2026)
 
-**Latest TEST deployment:** `dpl_821QqBty3MAXSeiJN8dhtDAsHQqD`, Git
-`65ef71dee3d2a43bb1fab924d1120a81fe3bd5a6`, now serves both stable TEST aliases.
-Its build badge and actual signed-in operator screen target TEST. Matched package
-092 and worker/scheduler installation passed preservation and idle HTTP checks.
-Campaign state reads are audited; no broader import was started. Protection
-remains `all`, and live production is unchanged.
-[Current TEST evidence](operations/evidence/learn-slack-campaign-hosted-2026-10-13.json).
+**QuickBooks checkpoint, 22:29 UTC:** both stable TEST aliases now serve
+`dpl_4V1Jw7cyxwdqb6u4DdZ8eCU5zbFP`, Git
+`e048b49ea95c87d0eedb23881065196336275970`. Existing-session acceptance verifies
+that build, the Preview environment, correct TEST backend, 77 retained sandbox
+records and the deliberately revoked connection. This supersedes the older TEST
+frontend identifiers below. The TEST project's public authentication settings are
+**Preview-only**: omit `target: production` when creating its Git deployments.
+No LIVE frontend promotion is implied. QuickBooks production foundation/runtime
+are installed but inert, with no Intuit production app or company connection.
+[Release evidence](operations/evidence/learn-quickbooks-stable-test-cache-2026-10-13.json).
+
+
+**Latest observed TEST deployment:** `dpl_8oV6zsNRRRbSiUdwsxgDBLHfoqV5`, Git
+`119b13d81b91f6b87cfead0a5bbd8445f671517d`, serves both stable TEST aliases
+(verified 13 October, 22:07 UTC). Protection remains `all`. This adds the six-file
+reviewed job-refresh frontend to the prior QuickBooks/contact checkpoint.
+The existing signed-in operator session can find a linked job and verify that it
+already uses the latest retained Commusoft version. Applying a changed source is
+not yet verified in hosted TEST. The old stable page rendered `c7744a8` after a
+reload; navigation with `release=119b13d` rendered the new build. The underlying
+cache cause remains unresolved; alias readiness alone is not browser acceptance.
+Two temporary retained-data review windows have closed, restoring the original
+disabled module / active account configuration. Capture was disabled during review;
+no provider requests or canonical job updates occurred.
+Rollback frontend: `dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq`, Git `c7744a8`.
+[TEST release and partial browser evidence](operations/evidence/learn-business-job-refresh-test-2026-10-13.json).
+
+The prior TEST checkpoint includes QuickBooks callback guidance from `91c2f3a`.
+Its rotated development app and Intuit sandbox authorization were verified for
+`Sandbox Company_US_1`, not Drummonds' live accounts. Callback runtime v7 and the
+remaining endpoints' v2 releases are unchanged by this frontend release.
+See [integration evidence and limits](operations/LEARN-QUICKBOOKS-INTEGRATION.md#hosted-gateway-callback-correction-and-sandbox-connection--13-october-1936-utc).
+Production QuickBooks is not installed or connected by this release.
+
 Older deployment details below are historical acceptance records.
 
 

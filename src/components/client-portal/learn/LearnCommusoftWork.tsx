@@ -1,3 +1,4 @@
+import { LearnJobRefresh } from "./LearnJobRefresh";
 import { LearnCommusoftJobDetails } from "./LearnCommusoftJobDetails";
 import { RetainedSourceSearch } from "./RetainedSourceSearch";
 import { useEffect, useRef, useState } from "react";
@@ -595,6 +596,20 @@ export function LearnCommusoftWork({
                           ? "Updated source needs review"
                           : workHoldMessage(null)}
                   </p>
+                  {kind === "job" && r.linked_id && (
+                    <LearnJobRefresh
+                      key={`${tenantId}:${actorId}:${r.linked_id}`}
+                      tenant={tenantId}
+                      actor={actorId}
+                      link={r.linked_id}
+                      canEdit={canEdit && !busy}
+                      client={client}
+                      onSaved={() => {
+                        onSaved?.();
+                        void reload();
+                      }}
+                    />
+                  )}
                   {workTimingMessage(r.last_result) && <p>{workTimingMessage(r.last_result)}</p>}
                   {r.last_result?.state === "held" && (
                     <p>Last check: {workHoldMessage(r.last_result.reason)}</p>

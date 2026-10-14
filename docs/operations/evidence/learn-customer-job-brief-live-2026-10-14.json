@@ -1,0 +1,87 @@
+{
+  "version": "learn-customer-job-brief-live/1",
+  "observedAt": "2026-10-13T23:42:03.806Z",
+  "live": {
+    "gitSha": "b3a74c4662dd3d3c2e51e6ef5bd874368a34d427",
+    "deployment": "dpl_21eztEFiDNUKj1MmZRmqy61K4Dhh",
+    "aliases": [
+      {
+        "host": "app.openfolk.ai",
+        "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+        "deployment": "dpl_21eztEFiDNUKj1MmZRmqy61K4Dhh",
+        "redirect": null
+      },
+      {
+        "host": "openfolk.ai",
+        "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+        "deployment": "dpl_21eztEFiDNUKj1MmZRmqy61K4Dhh",
+        "redirect": "www.openfolk.ai"
+      },
+      {
+        "host": "serviceos-dh.vercel.app",
+        "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+        "deployment": "dpl_21eztEFiDNUKj1MmZRmqy61K4Dhh",
+        "redirect": null
+      },
+      {
+        "host": "www.openfolk.ai",
+        "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+        "deployment": "dpl_21eztEFiDNUKj1MmZRmqy61K4Dhh",
+        "redirect": null
+      }
+    ],
+    "protection": {
+      "deploymentType": "all_except_custom_domains"
+    },
+    "renderedBackend": "tgbnakbxwcqjeimygroz",
+    "previousFrontend": "dpl_8JpXxooWUKEWdvg7RKehn9JENsRW",
+    "preFeatureRollback": "dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR"
+  },
+  "test": {
+    "gitSha": "f783f431d22696d4feac9bb7a0196939b8ad8026",
+    "deployment": "dpl_EuUZso7KtiG3vaiTqxp2v7CTw92s",
+    "aliases": [
+      "test.openfolk.ai",
+      "serviceos-learn-test-allkin.vercel.app"
+    ],
+    "protection": "all",
+    "renderedBackend": "saatxzwxvdvqevbnskxy",
+    "signedInStableBuild": "f783f43"
+  },
+  "scope": {
+    "files": [
+      "src/components/client-portal/learn/LearnCards.tsx",
+      "src/lib/learn-card-job-brief.ts",
+      "src/lib/learn-card-job-brief.test.ts"
+    ],
+    "databaseChanges": false,
+    "runtimeChanges": false,
+    "accessChanges": false,
+    "providerRequestsInitiatedByRelease": 0,
+    "existingQuickBooksFrontendPreserved": true,
+    "heldJobRefreshFrontendIncluded": false
+  },
+  "verification": {
+    "focusedTests": 27,
+    "typescript": "passed",
+    "localBuild": "passed",
+    "remoteGitInstallAndBuild": "Both corrected isolated candidates READY",
+    "realLiveCustomer": {
+      "completedJobsShown": 2,
+      "publishedJobsInRead": 2,
+      "verificationPendingShown": 2,
+      "linkedEmailsRetainedInView": 2,
+      "originalJobDescriptionsPreserved": true,
+      "jobDrilldownAndReturn": "verified",
+      "coverageClaim": "Only this published read; not complete Commusoft coverage"
+    },
+    "testLimit": "The existing TEST operator session verifies permanent-domain build, backend and navigation. It does not supply the customer-only summary journey; that was verified with the existing LIVE customer session.",
+    "correction": "Initial browser acceptance exposed that the separate verified flag remains false on published completed jobs. The corrected implementation displays recorded completion and verification separately; no stored flag was changed."
+  },
+  "remaining": [
+    "Individual job-card brief still omits its own recorded completion status; customer summary now includes linked job statuses.",
+    "Broader customer/contact/job publication and owner-name resolution remain incomplete.",
+    "Summary reads the first 25 published linked jobs and labels partial coverage; it is not a whole-provider aggregate.",
+    "Source freshness, findings, configurable scorecards and overall LEARN acceptance remain open."
+  ]
+}

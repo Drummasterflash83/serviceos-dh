@@ -1,0 +1,120 @@
+{
+  "date": "2026-10-13",
+  "scope": "Local synthetic verification and hosted TEST deployment; no real company authorization",
+  "files": [
+    {
+      "path": "supabase/migrations/20261102030000_learn_quickbooks_disconnect.sql",
+      "sha256": "5a75324ea900a06d4bfb31edae26d85e0d9bc00eab80a4d1c2fb4d7014fb2e18"
+    },
+    {
+      "path": "supabase/functions/_shared/quickbooks/disconnect.ts",
+      "sha256": "831bc485bf768474e08c53f484c1eac855ca83e2365a59d7612cc6737c5b1dbf"
+    },
+    {
+      "path": "supabase/functions/_shared/quickbooks/disconnect_http.ts",
+      "sha256": "827f9e89454a33a48df73630a1dc7eac19268371574252eaeaa0a9ac54857c06"
+    },
+    {
+      "path": "supabase/functions/quickbooks-disconnect/index.ts",
+      "sha256": "d7c9d1f89d3ea8af2b8356f0d60e9d499c7a0a3ca2fe5db575d2a50f1463f4fb"
+    },
+    {
+      "path": "scripts/verify/learn-quickbooks-disconnect-flow.mjs",
+      "sha256": "3447474aa60e9ae8e3694e3ac41e03740b370f990c27f4a7f56c86f17bb5fa71"
+    }
+  ],
+  "verified": [
+    "58 targeted TypeScript tests passed",
+    "Full frontend TypeScript check passed",
+    "Dedicated disconnect endpoint Deno check passed",
+    "Actual TypeScript and PostgreSQL lifecycle with synthetic provider responses passed: disconnect, one-shot provider request, replay, reconnect, manual recovery, shared-grant isolation, expiry, permissions and retained source counts",
+    "Two concurrent revocation acquisitions released credentials once; ended operator grants denied subsequent acquisition",
+    "Four migrations installed and rolled back under non-superuser postgres in an isolated augmented clone of the 257-table local schema"
+  ],
+  "limitations": [
+    "Provider responses are synthetic; no real QuickBooks company has authorized this application",
+    "Disconnected state alone means local capture stopped; provider revocation is separately evidenced",
+    "Frontend signed-in and mobile verification remain outstanding",
+    "Real sandbox connection/disconnection/reconnection and production release remain outstanding",
+    "Manual review is an operator attestation, not an independently verified provider response",
+    "Hosted probes verify denial paths and source/grants, not signed-in successful revocation; TEST contains zero app registrations or connections"
+  ],
+  "hostedSchema": {
+    "state": "installed_metadata_verified",
+    "project": "saatxzwxvdvqevbnskxy",
+    "installedAt": "2026-10-13 17:33:23.508781+00",
+    "sourceSha256": "5a75324ea900a06d4bfb31edae26d85e0d9bc00eab80a4d1c2fb4d7014fb2e18",
+    "matchingFunctions": 8,
+    "apps": 0,
+    "sources": 0,
+    "requests": 0,
+    "triggers": true,
+    "connections": 0,
+    "privateTable": true,
+    "runtimeDenials": "passed"
+  },
+  "hostedRuntime": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-13T17:34:48.105Z",
+    "endpoints": [
+      {
+        "name": "quickbooks-disconnect",
+        "status": "ACTIVE",
+        "version": 1,
+        "verifyJwt": false,
+        "artifactHash": "a2d49119783e3b6b35fee7ac6e55f10b4ab28543b986747bbaca04de41574990"
+      }
+    ],
+    "probes": [
+      {
+        "name": "quickbooks-disconnect",
+        "method": "OPTIONS",
+        "status": 204,
+        "origin": "https://test.openfolk.ai"
+      },
+      {
+        "name": "quickbooks-disconnect",
+        "method": "POST",
+        "status": 401,
+        "origin": "https://test.openfolk.ai"
+      },
+      {
+        "name": "quickbooks-disconnect",
+        "method": "POST",
+        "status": 403,
+        "origin": "https://example.invalid"
+      }
+    ],
+    "productionChanges": 0,
+    "providerRequests": 0,
+    "sourceBundleSha256": "6942d833ffdf5158c3b89e5e5f69e06c3ef9a4017f2aa40f97b0b249431abc03",
+    "otherEndpointsUnchanged": true,
+    "counts": {
+      "apps": 0,
+      "connections": 0,
+      "imports": 0,
+      "pages": 0
+    },
+    "state": "deployed_public_guards_verified",
+    "completedAt": "2026-10-13T17:34:54.881Z"
+  },
+  "runtimeReadback": {
+    "state": "downloaded_runtime_closures_verified",
+    "project": "saatxzwxvdvqevbnskxy",
+    "checkedAt": "2026-10-13T17:36:33.980Z",
+    "reports": [
+      {
+        "name": "quickbooks-disconnect",
+        "version": 1,
+        "artifactHash": "a2d49119783e3b6b35fee7ac6e55f10b4ab28543b986747bbaca04de41574990",
+        "matchingRuntimeModules": 4,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "71eb03aee24b0405568bce830e6a5aea788e4baf4d2a45a6d2116696ef6c5fe3"
+      }
+    ],
+    "providerRequests": 0,
+    "limitations": [
+      "Source closure readback and public guards only; no company OAuth, accounting requests or hosted token rotation."
+    ]
+  }
+}

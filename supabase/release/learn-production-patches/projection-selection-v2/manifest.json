@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "state": "live_scheduled_batches_verified",
+  "project": "tgbnakbxwcqjeimygroz",
+  "source": {
+    "path": "supabase/migrations/20261102110000_learn_projection_ordered_selection.sql",
+    "sha256": "ab2bd371806fc77ec05226d6a1a164c2f92c806e44f4389608b9be331844e3a0"
+  },
+  "beforeDefinitionMd5": "877329985a486be46a47285554307f57",
+  "afterBodyMd5": "6bf08273de032cb80f5e73ab9f66a543",
+  "authority": {
+    "owner": "postgres",
+    "acl": [
+      "postgres=X/postgres",
+      "service_role=X/postgres"
+    ],
+    "config": [
+      "search_path=pg_catalog",
+      "TimeZone=UTC"
+    ],
+    "securityDefiner": true
+  },
+  "indexDefinitions": {
+    "learn_email_projection_order_idx": "CREATE INDEX learn_email_projection_order_idx ON public.email_messages USING btree (tenant_id, COALESCE(received_at, sent_at, created_at), id)",
+    "learn_phone_projection_order_idx": "CREATE INDEX learn_phone_projection_order_idx ON public.phone_calls USING btree (tenant_id, COALESCE(started_at, created_at), id)"
+  },
+  "files": {
+    "apply.sql": "7b06ae1d0f92f55304a63fae4162def9a0f4f86e82b3706bfb75341397e02a07",
+    "rollback.sql": "802aea3dc84c2a80351476ec0ee6296c24277c1953f4962bb9318cdfae6e4cda",
+    "original-selector.sql": "e89a2913b0d6502009a16eba1c3ea285cdc8bec892fd8367e08747b0b71f25c9"
+  },
+  "scope": "Ordered selector and two non-unique source indexes only; no source, access, schedule or job mutations.",
+  "productionPerformanceAccepted": true
+}

@@ -1,0 +1,47 @@
+{
+  "state": "passed",
+  "productionChanged": false,
+  "providerRequests": 0,
+  "releaseSha256": "3542a24fc95a4f389b10075cdf798c43912ea331d1bbc384f09c19b5033b54eb",
+  "rollbackSha256": "8cd3028dd0975d85d09229aa98afd790bee77680507811b16d0f3c850ca92af1",
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "guards": [
+    "wrong_target",
+    "wrong_digest",
+    "function_drift",
+    "late_failure"
+  ],
+  "rollbackVerified": true,
+  "sourcePreservation": {
+    "state": "all_archived_copy_rows_and_sequences_match",
+    "tables": 401,
+    "rows": 1591580,
+    "sequences": 7,
+    "comparisonSha256": "9dca8af7ee6f94ec5497077f2a0932b4f550310ca2adcbcd0aa283cf3cc66127",
+    "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+  },
+  "heldRollbackRejected": true,
+  "containerRemoved": true,
+  "runtimeTestsPassed": 106,
+  "runtimeSourceClosureSha256": "e999ab36b7069debc51443bb69e734fd4c91d547d626bd9cf877bab6bc3a3df5",
+  "scope": "Local isolated rehearsal only; not production acceptance"
+}

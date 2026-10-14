@@ -90,7 +90,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         jobKey: `intelligence.ingest_interaction:${tenantId}:${row.interaction_id}`,
         connectorId: "openfolk-core",
         moduleId: "core.intelligence",
-        payload: { interaction_id: row.interaction_id },
+        payload: { interaction_id: row.interaction_id, mapper_version: MAPPER_VERSION },
       });
       if (r.duplicate) duplicates += 1;
       else if (r.id) queued += 1;

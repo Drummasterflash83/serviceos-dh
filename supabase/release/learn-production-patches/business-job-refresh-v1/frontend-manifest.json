@@ -1,0 +1,49 @@
+{
+  "state": "test_deployed_live_candidate_held_for_acceptance",
+  "sourceCheckpoint": "2cae71ad9ff5d38259f4c5eb7c4d5e5caa7ac3ac",
+  "files": [
+    "src/components/client-portal/learn/LearnCommusoftWork.tsx",
+    "src/components/client-portal/learn/LearnJobRefresh.tsx",
+    "src/lib/learn-commusoft-work.ts",
+    "src/lib/learn-job-refresh.ts",
+    "src/lib/learn-job-refresh.test.ts",
+    "src/lib/openfolk-business-review.ts"
+  ],
+  "targets": {
+    "live": {
+      "base": "a11f2041b84cb572a5ce8b65c97057e005bf4da3",
+      "patchSha256": "823ed755580f8fea03de1e711721429b7fdd1087b0aa0ce0d99a3e0d7e76f657",
+      "fileCount": 7,
+      "candidate": "41a22e651b5b6c41a373926cd4a84df76f81bbaf",
+      "deployment": "dpl_8aNn41L5xKaZADdN1YhNtxHTnrjt",
+      "state": "protected_ready_not_promoted",
+      "files": [
+        "src/components/client-portal/learn/LearnCommusoftWork.tsx",
+        "src/components/client-portal/learn/LearnJobRefresh.tsx",
+        "src/lib/learn-commusoft-work.ts",
+        "src/lib/learn-job-refresh.test.ts",
+        "src/lib/learn-job-refresh.ts",
+        "src/lib/openfolk-business-review.ts",
+        "vercel.json"
+      ],
+      "additionalScope": "vercel.json: HTML no-store response rules; runtime response verification still pending",
+      "realChangedSourceAcceptance": false
+    },
+    "test": {
+      "base": "c7744a8b0808bfb64b737e4b9ee453782cd2efa0",
+      "patchSha256": "aed7a72b87059ec68f30e7c50d9523709276d9ac6f412d8aa98fe9e670c95941",
+      "fileCount": 6,
+      "candidate": "119b13d81b91f6b87cfead0a5bbd8445f671517d",
+      "deployment": "dpl_8oV6zsNRRRbSiUdwsxgDBLHfoqV5",
+      "state": "stable_aliases_deployed_partial_browser_acceptance",
+      "files": [
+        "src/components/client-portal/learn/LearnCommusoftWork.tsx",
+        "src/components/client-portal/learn/LearnJobRefresh.tsx",
+        "src/lib/learn-commusoft-work.ts",
+        "src/lib/learn-job-refresh.test.ts",
+        "src/lib/learn-job-refresh.ts",
+        "src/lib/openfolk-business-review.ts"
+      ]
+    }
+  }
+}

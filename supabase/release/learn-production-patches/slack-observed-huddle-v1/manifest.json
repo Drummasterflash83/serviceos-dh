@@ -1,0 +1,27 @@
+{
+  "project": "tgbnakbxwcqjeimygroz",
+  "sourcePath": "supabase/migrations/20261102090000_learn_slack_observed_huddle_source.sql",
+  "sourceSha256": "6e6e7446d224839535dbc5f97acf1d88c525fe91ab3807aa28fbd654c8a85a91",
+  "rollbackSha256": "bf6bf82dc518de0c8d24e6dac8e3beb1d6ff769dd51be436e9d094efe0a42d10",
+  "changedSignatures": [
+    "learn_slack_message_kind(jsonb)",
+    "learn_slack_campaign_read(uuid,uuid)"
+  ],
+  "version": "slack-observed-huddle-release/1",
+  "state": "production_applied_verified",
+  "applySha256": "bd300e64235527714f0ffff9b102aac839229567afd930559b71dee95639414a",
+  "newPermissions": false,
+  "newSchedules": false,
+  "newTables": false,
+  "runtimeChangedFiles": [
+    "_shared/slack/slack_message_kind.ts"
+  ],
+  "baselineVersions": {
+    "learn-slack-worker": 11,
+    "platform-worker": 72
+  },
+  "reviewedSubtype": "automatic_ai_huddle_notes_enabled",
+  "classification": "source_needs_review",
+  "rollbackLimitation": "After any exact huddle marker is retained, preserve additive SQL and roll back runtime only.",
+  "productionEvidence": "docs/operations/evidence/learn-slack-observed-huddle-production-2026-10-14.json"
+}

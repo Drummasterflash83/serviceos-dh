@@ -54,7 +54,9 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const DEFAULT_BATCH = 3;
+// The ordinary one-minute tick must leave capacity for learning alongside capture.
+// Explicit callers retain their existing 1–20 bound.
+const DEFAULT_BATCH = 10;
 const MAX_BATCH = 20;
 const LEASE_SECONDS = 300;
 
@@ -123,6 +125,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const inputWork = runLearnInputTick({
     enabled: Deno.env.get("LEARN_INPUT_DISPATCH_ENABLED"),
     slackEnabled: Deno.env.get("LEARN_SLACK_DISPATCH_ENABLED"),
+    quickbooksEnabled: Deno.env.get("LEARN_QUICKBOOKS_DISPATCH_ENABLED"),
+    quickbooksKey: Deno.env.get("LEARN_QUICKBOOKS_WORKER_KEY"),
     url: Deno.env.get("SUPABASE_URL"),
     serviceKey,
     commusoftKey: Deno.env.get("LEARN_COMMUSOFT_WORKER_KEY"),

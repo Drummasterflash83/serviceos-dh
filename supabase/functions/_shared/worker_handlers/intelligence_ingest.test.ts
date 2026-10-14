@@ -20,7 +20,17 @@ function fixture(options: Record<string, any> = {}) {
   let savedJob: string | null = options.savedJob ?? null;
   let ledger: any = options.ledger ?? null;
   let lineageFailures = options.lineageFailures ?? 0;
+  const rpcCalls: any[] = [];
   const db = {
+    rpc(name: string, args: any) {
+      rpcCalls.push({ name, args });
+      if (options.proofError) return Promise.resolve(failure);
+      const proofs = options.proofs ?? [options.proof ?? null];
+      return Promise.resolve({
+        data: proofs[Math.min(rpcCalls.length - 1, proofs.length - 1)],
+        error: null,
+      });
+    },
     from(table: string) {
       const q: any = { table, operation: "read", filters: [], single: false };
       const chain: any = {};
@@ -83,6 +93,7 @@ function fixture(options: Record<string, any> = {}) {
   };
   return {
     queries,
+    rpcCalls,
     run: (payload: any = { interaction_id: id }) =>
       handleIntelligenceIngest({
         supabaseAdmin: db as any,
@@ -195,4 +206,104 @@ test("an observed ledger missing its job link needs review, never a new observat
   assert.equal(r.success, false);
   assert.equal(r.error?.retryable, false);
   assert.ok(!f.queries.some((q) => q.table === "platform_jobs"));
+});
+
+const held = {
+  ...row,
+  processing_status: "identity_review",
+  direction: "unknown",
+  source_type: "chat",
+  source_connector_id: "slack",
+  source_table: "slack_messages",
+  interaction_type: "slack_message",
+  source_id: "00000000-0000-4000-8000-000000000020",
+  subject: null,
+  body_preview: "The heating is broken again",
+  related_person_id: null,
+  related_company_id: null,
+  related_job_id: null,
+  updated_at: "2026-10-14T06:00:00.123456+00:00",
+  metadata: { source_version: "a".repeat(64) },
+};
+const proof = {
+  version: "learn-retained-source-context/1",
+  tenant_id: tenant,
+  interaction_id: id,
+  source_id: held.source_id,
+  source_version: held.metadata.source_version,
+  interaction_updated_at: held.updated_at,
+  scope: "company_source",
+  attribution: "unresolved",
+};
+test("verified retained source queues an unresolved observation after two tenant-scoped checks", async () => {
+  const before = structuredClone(held),
+    f = fixture({ row: held, proof });
+  assert.equal((await f.run()).success, true);
+  assert.equal(f.rpcCalls.length, 2);
+  for (const call of f.rpcCalls)
+    assert.deepEqual(call, {
+      name: "learn_public_slack_observation_context",
+      args: { p_tenant: tenant, p_interaction: id },
+    });
+  const draft = f.queries.find((q) => q.table === "platform_jobs" && q.operation === "insert")
+    .values.payload.observation;
+  assert.deepEqual(draft.attributes.retained_source_context, proof);
+  assert.deepEqual(draft.attributes.resolution, {
+    resolved: false,
+    person_id: null,
+    company_id: null,
+    job_id: null,
+  });
+  assert.equal(draft.attributes.customer_context, null);
+  assert.equal(draft.attributes.direction, "unknown");
+  assert.deepEqual(held, before);
+  assert.ok(!f.queries.some((q) => q.table === "interactions" && q.operation !== "read"));
+  assert.equal((await f.run()).success, true);
+  assert.equal(
+    f.queries.filter((q) => q.table === "platform_jobs" && q.operation === "insert").length,
+    1,
+  );
+});
+for (const options of [
+  { proof: null },
+  { proofError: true },
+  { proof: { ...proof, tenant_id: person } },
+  { proof: { ...proof, source_version: "b".repeat(64) } },
+  { proof: { ...proof, interaction_updated_at: "2026-10-14T06:00:00.123455Z" } },
+  { proofs: [proof, null] },
+  { proofs: [proof, { ...proof, source_id: person }] },
+])
+  test(
+    "retained source requires current independent proof: " + JSON.stringify(options),
+    async () => {
+      const f = fixture({ row: held, ...options });
+      assert.equal((await f.run()).success, false);
+      assert.equal(f.ledger, null);
+      assert.ok(!f.queries.some((q) => q.table === "platform_jobs"));
+    },
+  );
+test("payload, metadata and raw row proof cannot grant eligibility", async () => {
+  const f = fixture({
+    row: {
+      ...held,
+      retainedSourceContext: proof,
+      metadata: { ...held.metadata, retained_source_context: proof },
+    },
+  });
+  assert.equal((await f.run({ interaction_id: id, retainedSourceContext: proof })).success, false);
+  assert.equal(f.ledger, null);
+});
+test("withdrawn proof cannot create a durable skipped verdict", async () => {
+  const f = fixture({
+    row: { ...held, body_preview: "newsletter unsubscribe" },
+    proofs: [proof, null],
+  });
+  assert.equal((await f.run()).success, false);
+  assert.equal(f.ledger, null);
+});
+test("public retained source may be audited as skipped only after fresh proof", async () => {
+  const f = fixture({ row: { ...held, body_preview: "newsletter unsubscribe" }, proof });
+  assert.equal((await f.run()).success, true);
+  assert.equal(f.ledger.status, "skipped");
+  assert.equal(f.rpcCalls.length, 2);
 });

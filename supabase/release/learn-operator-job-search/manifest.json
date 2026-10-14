@@ -1,0 +1,50 @@
+{
+  "version": "learn-operator-job-search-release/1",
+  "state": "test_and_live_signed_in_verified",
+  "source": {
+    "path": "supabase/migrations/20261102170000_learn_operator_job_search.sql",
+    "sha256": "a2f03581e979e235fb6dc41bb2ca882d884be04dc92b6e5fa8f3bda464bccd26"
+  },
+  "bodyMd5": "68b7bd5405d9b0876525ed41f276edd5",
+  "rehearsal": {
+    "state": "operator_job_search_full_schema_rehearsed",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "archive": {
+      "bytes": 196872981,
+      "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+    },
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "preservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 387,
+      "rows": 1591601,
+      "sequences": 7,
+      "comparisonSha256": "71fa33ec46dc0e873315b5edb04efefd10aa3117448b07a78048963ddf4ecf99",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "operatorSearchJourney": "passed",
+    "migrationSha256": "a2f03581e979e235fb6dc41bb2ca882d884be04dc92b6e5fa8f3bda464bccd26",
+    "journeyRollbackVerified": true,
+    "functionRollbackReapplyVerified": true,
+    "containerRemoved": true
+  },
+  "scope": "New authenticated operator RPC guarded by existing controlplane-admin checks; read-only published job search with mandatory audit. No new accounts/grants, automatic linking or source changes.",
+  "rollback": "Revert frontend first. Drop only public.learn_operator_job_search(uuid,text,text,uuid) after checking the exact installed definition. Existing job/context records and read audit remain retained.",
+  "acceptance": "docs/operations/evidence/learn-operator-job-search-live-2026-10-14.json"
+}

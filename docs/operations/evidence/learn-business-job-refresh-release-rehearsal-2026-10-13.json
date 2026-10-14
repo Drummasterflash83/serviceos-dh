@@ -1,0 +1,75 @@
+{
+  "state": "verified_offline",
+  "liveCandidate": {
+    "applySha256": "26189934601e192be3eaad01e12e128cf5a1b876aab1368cb41568f25244c1d3",
+    "guards": [
+      "wrong_target",
+      "wrong_digest",
+      "function_drift",
+      "preexisting_object",
+      "late_failure"
+    ],
+    "emptyRollback": true,
+    "transactionRollback": true,
+    "retainedHistoryBlocksSchemaRemoval": true,
+    "pauseRetainsSavedChecksAndCancellation": true,
+    "pauseBlocksNewApply": true,
+    "journeys": 15,
+    "withholdingComparisons": 42,
+    "preservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 401,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "865267f892bad6bd5b85853c09f753fd859fdb7f8c0a557c8dfec694bee353d1",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "recoveryFixtureSha256": "6af8df3d9ad148d8f240ce43a5c4b945fda5c61e26757d82fc29f30f96295d79"
+  },
+  "testCandidate": {
+    "alignmentGuards": [
+      "wrong_target",
+      "wrong_digest",
+      "late_failure"
+    ],
+    "bothEmptyRollbacks": true,
+    "membershipsRestored": true,
+    "refreshCancellationAndContextJourney": true,
+    "preservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 396,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "b71c4b786e33ff0deb3e3048e872c45d47807ffa62caa1874aead47366a535f2",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "baselineScope": "Native retained archive with exact observed TEST prerequisite function definitions and role membership; not an export of all current TEST data"
+  },
+  "archive": {
+    "bytes": 196872981,
+    "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+  },
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedLibraries": [
+      "pg_cron",
+      "pg_net",
+      "pgsodium",
+      "supabase_vault",
+      "supautils"
+    ],
+    "maxWorkerProcesses": 0,
+    "networkWorkerDatabaseAbsent": true,
+    "containerLogging": "none"
+  },
+  "bothContainersRemoved": true,
+  "providerRequests": 0,
+  "limitations": [
+    "Actual concurrent request race and later unambiguous repeated-content transitions remain unverified",
+    "No signed-in acceptance of the refresh UI yet",
+    "LIVE refresh feature not installed"
+  ]
+}

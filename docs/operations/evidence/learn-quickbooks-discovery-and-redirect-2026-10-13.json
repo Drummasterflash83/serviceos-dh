@@ -1,0 +1,67 @@
+{
+  "checkedAt": "2026-10-13T21:04:59.131Z",
+  "state": "official_discovery_endpoints_match",
+  "checks": [
+    {
+      "environment": "sandbox",
+      "url": "https://developer.api.intuit.com/.well-known/openid_sandbox_configuration",
+      "status": 200,
+      "endpoints": {
+        "authorization_endpoint": {
+          "url": "https://appcenter.intuit.com/connect/oauth2",
+          "matchesSource": true
+        },
+        "token_endpoint": {
+          "url": "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
+          "matchesSource": true
+        },
+        "revocation_endpoint": {
+          "url": "https://developer.api.intuit.com/v2/oauth2/tokens/revoke",
+          "matchesSource": true
+        }
+      }
+    },
+    {
+      "environment": "production",
+      "url": "https://developer.api.intuit.com/.well-known/openid_configuration",
+      "status": 200,
+      "endpoints": {
+        "authorization_endpoint": {
+          "url": "https://appcenter.intuit.com/connect/oauth2",
+          "matchesSource": true
+        },
+        "token_endpoint": {
+          "url": "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
+          "matchesSource": true
+        },
+        "revocation_endpoint": {
+          "url": "https://developer.api.intuit.com/v2/oauth2/tokens/revoke",
+          "matchesSource": true
+        }
+      }
+    }
+  ],
+  "callback": {
+    "version": 9,
+    "project": "saatxzwxvdvqevbnskxy",
+    "verifiedAt": "2026-10-13T21:13:45.973Z",
+    "sourceClosureSha256": "fadcd0fe9f01c8dc2558f63244c11add0d31b05d43c09b498f7c35a449a31460",
+    "artifactHash": "23c70b7ebdd231a9bd10f56cc4469e2511dc41459156056e1f1bcebd2226b7b5",
+    "matchingRuntimeModules": 10,
+    "httpStatus": 302,
+    "bodyBytes": 0,
+    "cacheControl": "no-store",
+    "referrerPolicy": "no-referrer",
+    "location": "https://test.openfolk.ai/quickbooks?mode=connect&result=needs_check#",
+    "probe": "GET without credentials or OAuth parameters",
+    "otherEndpointsUnchanged": true,
+    "secretFingerprintsUnchanged": true,
+    "retainedCountsUnchanged": true,
+    "focusedTestsPassed": 6,
+    "productionChanges": 0
+  },
+  "references": [
+    "https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-openid-discovery-doc",
+    "https://developer.intuit.com/app/developer/qbo/docs/go-live/publish-app/security-requirements"
+  ]
+}

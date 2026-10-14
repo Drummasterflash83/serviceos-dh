@@ -25,6 +25,7 @@ export type WorkSource = {
   relationship_reason: string | null;
   source_status: string | null;
   linked_version_id: string | null;
+  linked_id?: string | null;
   last_result: Outcome | null;
   selectable: boolean;
   contact?: { email: string | null; position: string | null; phones: string[] };
@@ -299,6 +300,7 @@ export async function loadWorkPage(
       (last !== null && r.external_id <= last) ||
       !(r.version_id === null || uuid(r.version_id)) ||
       !(r.linked_version_id === null || uuid(r.linked_version_id)) ||
+      !(r.linked_id === undefined || r.linked_id === null || uuid(r.linked_id)) ||
       typeof r.title !== "string" ||
       r.title.length > 1000 ||
       typeof r.selectable !== "boolean" ||
@@ -326,6 +328,7 @@ export async function loadWorkPage(
       relationship_reason: r.relationship_reason,
       source_status: r.source_status,
       linked_version_id: r.linked_version_id,
+      ...(r.linked_id !== undefined ? { linked_id: r.linked_id } : {}),
       last_result: r.last_result === null ? null : outcome(r.last_result),
       selectable: r.selectable,
       ...(kind === "contact"

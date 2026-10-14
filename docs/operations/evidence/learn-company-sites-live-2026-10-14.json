@@ -1,0 +1,24 @@
+{
+  "version": "commusoft-customer-review-batch/1",
+  "state": "verified_live_publication",
+  "at": "2026-10-13T23:58:35.764824+00:00",
+  "customers": 1,
+  "sites": 13,
+  "jobs": 1,
+  "checks": {
+    "allSourceVersionsAndOwnersVerified": true,
+    "existingSignedInOperatorRecorded": true,
+    "allCreatedIdentitiesRemainUnverified": true,
+    "jobSiteRelationshipsVerified": true,
+    "reviewedCompanySourceAndExportCorroborated": true,
+    "priorIdentityProjectionsAndCustomerLinksPreserved": true,
+    "customerSourceVersionsPreserved": true,
+    "signedInCompanySitesAndJobVisible": true,
+    "companyToJobAndBackVerified": true
+  },
+  "privateEvidenceSha256": "4c88f60d50a016e3cb3df0c6f498504b9c5854066f44337deebe62d1583eb974",
+  "limits": [
+    "Not complete customer/contact or communication coverage",
+    "Unknown completion timezone withheld from performance calculations"
+  ]
+}

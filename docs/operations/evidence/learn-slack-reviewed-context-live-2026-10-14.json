@@ -1,0 +1,69 @@
+{
+  "version": "learn-slack-reviewed-context-live/1",
+  "at": "2026-10-14T00:24:00Z",
+  "state": "reviewed_links_verified_mode_repaired_recovery_queued",
+  "scope": {
+    "messages": 4,
+    "jobs": 3,
+    "customers": 1,
+    "publicChannelsOnly": true,
+    "providerRequests": 0,
+    "newPermissions": false,
+    "paidAi": false,
+    "runtimeOrSchemaChange": false
+  },
+  "checks": {
+    "fullRetainedMessageReviewedForEveryLink": true,
+    "previewEqualsFullSource": true,
+    "noRetainedReplies": true,
+    "currentPublicVisibilityProof": true,
+    "currentJobSiteCustomerProvenance": true,
+    "exactSiteNameCorroborated": true,
+    "immutableReviewReceipts": 4,
+    "originalSourceHashesPreserved": true,
+    "unknownDirectionPreserved": true,
+    "customerSpeakerAttributionUnchanged": true,
+    "liveCustomerTimelineMessages": 4,
+    "liveJobTimelineCheckedMessages": 1
+  },
+  "pipeline": {
+    "scheduledSelectorEnabled": true,
+    "firstReviewedInteractionQueued": true,
+    "firstJobAttemptCountAt0023UTC": 0,
+    "newObservationsVerified": 0,
+    "existingWorkerProgressObserved": true,
+    "latestReadAt": "2026-10-14T01:14:25.367845+00:00",
+    "durableIngestions": 4,
+    "firstObservationState": "dead_letter",
+    "firstObservationError": "learn_observation_mode_review",
+    "remainingObservationJobsQueued": 3,
+    "modeDiagnostic": {
+      "at": "2026-10-14T00:52:08Z",
+      "platformDefault": "discovery",
+      "tenantOverride": "assisted",
+      "domain": "core",
+      "requiresObserveOnly": true,
+      "configurationChanged": false
+    },
+    "modeRepairLiveVersion": 74,
+    "recoveryChildrenQueued": 4,
+    "recoverySourcesPreserved": true
+  },
+  "commusoftCycle": {
+    "at": "2026-10-14T00:19:30Z",
+    "customerContactTargetsCompleted": 1552,
+    "customerContactTerminalReceiptVerified": true,
+    "siteContactTargets": 871,
+    "siteContactPagesCompleted": 107,
+    "phase": 4,
+    "watermarkAdvanced": false
+  },
+  "limitations": [
+    "This is four reviewed messages, not automatic matching or complete Slack coverage.",
+    "No new downstream observation or AI finding has yet been verified.",
+    "Remaining explicit-reference candidates need canonical job/customer publication and whole-message review.",
+    "Current site source companyName is not exposed in the generic operator record projection; exact metadata comparisons corroborated it.",
+    "Full original Slack source reader is still unavailable from customer timeline; the retained interaction excerpt and provenance are visible.",
+    "Scoring, broader contact publication, source coverage and operational acceptance remain open."
+  ]
+}

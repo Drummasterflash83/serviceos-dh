@@ -1,0 +1,55 @@
+{
+  "version": "learn-own-job-status-release/1",
+  "state": "verified_live_and_test",
+  "at": "2026-10-14T00:05:01.261Z",
+  "live": {
+    "sha": "397d3c689ceb8b7cf980f00bdd70782d32628235",
+    "deployment": "dpl_TM6sYHnQJNbkzc6cpX31kreGiZ3T",
+    "aliases": [
+      "app.openfolk.ai",
+      "openfolk.ai",
+      "serviceos-dh.vercel.app",
+      "www.openfolk.ai"
+    ],
+    "protection": {
+      "deploymentType": "all_except_custom_domains"
+    }
+  },
+  "test": {
+    "sha": "a193dbdf1be3a12b62b8a8f76ac77061faf25304",
+    "deployment": "dpl_49UmtYRwQtyyoFFujRtwmuBPWGpf",
+    "aliases": [
+      "test.openfolk.ai",
+      "serviceos-learn-test-allkin.vercel.app"
+    ],
+    "protection": "all"
+  },
+  "scope": {
+    "files": 4,
+    "backendChanges": false,
+    "providerOrCaptureChanges": false,
+    "credentialOrPermissionChanges": false
+  },
+  "checks": {
+    "focusedTests": 30,
+    "typeScript": true,
+    "localVercelBuild": true,
+    "bothRemoteGitBuildsReady": true,
+    "bothRenderedBackendBindingsVerified": true,
+    "testExistingOperatorSessionAndBuildVerified": true,
+    "liveRealCompanyToJobShowsRecordedCompletion": true,
+    "unverifiedFlagRemainsVisible": true,
+    "unconfirmedCompletionTimezoneRemainsVisible": true,
+    "original012DescriptionAndJobNumberPreserved": true,
+    "liveExpiredStatusWithheldAndRefreshRestored": true
+  },
+  "rollback": {
+    "live": "dpl_21eztEFiDNUKj1MmZRmqy61K4Dhh",
+    "test": "dpl_EuUZso7KtiG3vaiTqxp2v7CTw92s"
+  },
+  "limitations": [
+    "No new source-to-communication matching or full customer coverage",
+    "Recorded completion does not establish payment, a confirmed time or verification",
+    "Scoring and operational acceptance remain open"
+  ]
+}

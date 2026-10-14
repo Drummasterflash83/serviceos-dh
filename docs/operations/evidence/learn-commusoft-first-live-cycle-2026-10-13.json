@@ -1,0 +1,92 @@
+{
+  "at": "2026-10-13T20:40:15.75005+00:00",
+  "cycle": {
+    "phase": 0,
+    "state": "cycle_complete",
+    "enabled": true,
+    "nextCheck": "2026-10-13T21:28:01.333352+00:00",
+    "watermark": "2026-10-13T16:02:03.332+00:00",
+    "completedAt": "2026-10-13T20:28:01.333352+00:00"
+  },
+  "stages": [
+    {
+      "pages": 25,
+      "phase": 1,
+      "resource": "properties",
+      "terminal": {
+        "complete": true,
+        "successfulWorkerReceipt": true,
+        "retainedPageReceiptMatches": true,
+        "pages": 25,
+        "propertiesCompleted": null
+      },
+      "contactType": null,
+      "propertyTypes": {
+        "customer": 1552,
+        "workaddress": 871
+      },
+      "retainedRecords": 2423,
+      "targetProperties": 0,
+      "unfilteredInitialCycle": true
+    },
+    {
+      "pages": 127,
+      "phase": 2,
+      "resource": "jobs",
+      "terminal": {
+        "complete": true,
+        "successfulWorkerReceipt": true,
+        "retainedPageReceiptMatches": true,
+        "pages": 127,
+        "propertiesCompleted": null
+      },
+      "contactType": null,
+      "propertyTypes": null,
+      "retainedRecords": 12637,
+      "targetProperties": 0,
+      "unfilteredInitialCycle": true
+    },
+    {
+      "pages": 1552,
+      "phase": 3,
+      "resource": "propertyContacts",
+      "terminal": {
+        "complete": true,
+        "successfulWorkerReceipt": true,
+        "retainedPageReceiptMatches": true,
+        "pages": 1552,
+        "propertiesCompleted": 1552
+      },
+      "contactType": "customer",
+      "propertyTypes": null,
+      "retainedRecords": 2402,
+      "targetProperties": 1552,
+      "unfilteredInitialCycle": true
+    },
+    {
+      "pages": 871,
+      "phase": 4,
+      "resource": "propertyContacts",
+      "terminal": {
+        "complete": true,
+        "successfulWorkerReceipt": true,
+        "retainedPageReceiptMatches": true,
+        "pages": 871,
+        "propertiesCompleted": 871
+      },
+      "contactType": "workaddress",
+      "propertyTypes": null,
+      "retainedRecords": 567,
+      "targetProperties": 871,
+      "unfilteredInitialCycle": true
+    }
+  ],
+  "state": "verified_first_complete_live_recurring_cycle",
+  "providerCoverageComplete": false,
+  "limitations": [
+    "Complete cycle covers the inventory returned by the authorized API. Previously observed UI/API customer and site count differences remain unresolved.",
+    "The initial unfiltered traversal is not an atomic snapshot; later incremental cycles must overlap the retained watermark.",
+    "Canonical card publication, identity review and communication linkage remain separate and incomplete."
+  ],
+  "privateEvidenceSha256": "e51ba589e07c4e15f2d43ffdbafda07a6028526e21784bb830c962e644ee6a5a"
+}

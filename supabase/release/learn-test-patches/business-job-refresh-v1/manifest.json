@@ -1,0 +1,25 @@
+{
+  "state": "backend_installed_verified_frontend_pending",
+  "target": "saatxzwxvdvqevbnskxy",
+  "alignmentSourceSha256": "e79685c57b546c9fde4eb904aee6fc7d8f68865f3d18db065b660848d7614851",
+  "alignmentApplySha256": "99d4c25950b3abcf4b288d3818f7049d47b781ad02088d5310ee78bea53d6c20",
+  "refreshSourceSha256": "2441325c79dc575647fd567e42123f337270b2de5002b25a77f29b741cf38e4a",
+  "refreshApplySha256": "257900ddb68450fd8891add9e7aac6ebc0b69e285fb30a61c81cbd23f50d69fc",
+  "scope": [
+    "Add private capture-proof tables and fenced attestation writer",
+    "Align existing customer communication reader with reviewed current-version Slack job context",
+    "Install the identical job-refresh source body after alignment"
+  ],
+  "noProviderRequests": true,
+  "noSourceOrCanonicalWritesOnInstall": true,
+  "remaining": [
+    "Matching frontend deployment and signed-in feature acceptance"
+  ],
+  "limits": [
+    "TEST Slack source storage/classification/runtime remain older; this does not certify full TEST/LIVE connector parity",
+    "Existing sources without durable capture proof remain withheld; no retrospective proof is fabricated"
+  ],
+  "alignmentEmptyRollbackSha256": "eb22e8e280d7747e64793a26a6a12eb0fedf7063ea552dfbb7fed25b042ce91e",
+  "installedAt": "2026-10-13T21:52:02.318521+00:00",
+  "evidence": "docs/operations/evidence/learn-business-job-refresh-test-2026-10-13.json"
+}

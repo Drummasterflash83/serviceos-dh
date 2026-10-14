@@ -1,0 +1,62 @@
+{
+  "state": "live_verified",
+  "at": "2026-10-13T23:08:37.468521+00:00",
+  "sourceSha256": "d91fed0a03d16c39100f36aba12f5eb89651678e47b4649c4e97d5867a0a8ecc",
+  "applySha256": "f957c153d61aea58796118fb3795f467fcffed987479ca04b95bc71b0925cbac",
+  "rollbackSha256": "129f3def2f840fb7ab0498e865a657ef16d58fe72e8b31d7c7d39784bf620e2f",
+  "installation": {
+    "clientWaitTimedOut": true,
+    "mutationRetried": false,
+    "readOnlyReconciliationConfirmedCommittedFunction": true,
+    "ownerAndAclMatch": true,
+    "membershipsExactlyRestored": true,
+    "dependentFunctionsUnchanged": true
+  },
+  "preservation": {
+    "tablesGuardedInAtomicTransaction": 22,
+    "sourceAndAccessAssertionsPrecedeCommit": true,
+    "guardedCommitEstablishedBySubsequentCatalogRead": true,
+    "perTableReceiptAvailable": false,
+    "limitation": "The client timed out before receiving the SQL result. Exact function installation was reconciled read-only; transaction guards verify equal before/after data fingerprints and access/schedules before commit, but individual LIVE table counts/digests were not returned to the runner."
+  },
+  "offline": {
+    "journeysPassed": 16,
+    "negativeReleaseChecks": [
+      "wrong_target",
+      "wrong_digest",
+      "function_drift",
+      "before_role_restore_failure",
+      "late_failure"
+    ],
+    "inverseRollbackVerified": true,
+    "preservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 403,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "53eb387ce24f33ab26be68ad7007da9a8bc90daac6cae2513bee74c38a8bedfc",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "containerRemoved": true
+  },
+  "realCustomerRead": {
+    "rows": 2,
+    "responseDigestUnchanged": true,
+    "beforeElapsedMs": 5625,
+    "afterElapsedMs": 639,
+    "forcedGenericPlan": true,
+    "statementTimeoutSeconds": 8,
+    "limitation": "One paired management-API probe, including network latency; not a load test or service-level guarantee."
+  },
+  "browser": {
+    "existingLiveSession": true,
+    "firstRefreshAt": "2026-10-13T23:08:47Z",
+    "secondRefreshAt": "2026-10-13T23:09:12Z",
+    "linkedJobsVisible": 2,
+    "retainedEmailTimelineEntriesVisible": 2,
+    "communicationReadWarningAbsent": true,
+    "remainingOwnerResolutionGapVisible": true,
+    "remainingCompletedWorkBriefGapVisible": true
+  },
+  "fullGoalComplete": false
+}

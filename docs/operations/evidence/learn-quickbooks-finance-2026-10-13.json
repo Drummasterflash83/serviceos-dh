@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-13",
+  "scope": "Local synthetic finance acceptance and hosted TEST schema verification",
+  "productionChanged": false,
+  "providerRequests": 0,
+  "source": "20261102020000_learn_quickbooks_customer_finance.sql",
+  "sourceSha256": "d6b7c742b7520533ebdd0f1b5ce956fd91a7c37f75065a2a0abf692c84666a0f",
+  "bundleSha256": "b61341c864eee4551666a0f85f01daf1a189e7568ded9de4085c391297d61836",
+  "local": {
+    "typescriptTests": { "passed": 52, "failed": 0 },
+    "frontendTypecheck": "passed",
+    "frontendBuild": "passed with 47 existing prebuild checks",
+    "postgres": "Passed isolated synthetic OAuth, import and finance suites",
+    "fullSchema": "Three migrations installed and rolled back as non-superuser postgres in a network-isolated 257-table local schema clone, with two explicitly added repository prerequisite helpers",
+    "financeChecks": [
+      "No automatic customer linking; reviewed source version and tenant-owned card required",
+      "Concurrent revision mismatch denied; correction and unlink retain audit",
+      "Identity change withholds finances; balance-only update retains review",
+      "Sandbox, parent/subcustomer and conflicted records excluded from unrelated totals",
+      "9007199254740993.01 plus 0.10 preserved as 9007199254740993.11",
+      "Invoice balances 0.10 plus 0.20 equal 0.30 without subtracting payments twice",
+      "GBP/USD totals separate; unknown currency and malformed amounts withhold aggregate",
+      "Tenant admin own-card read allowed; staff, banned actor, other tenant and unauthorized linking denied",
+      "Direct source-link table access denied; audit mutation denied",
+      "Browser parsers reject foreign actor, tenant, card, environment, mode, missing audit and misleading totals"
+    ],
+    "unresolvedObservation": "The first local OAuth fixture run rejected timestamp validation. A precise clock probe and subsequent complete run passed; cause not established. Added explicit fixture clock/lifetime diagnostics without relaxing production validation. Real OAuth acceptance must recheck."
+  },
+  "hostedTest": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "release": "quickbooks_customer_finance_v1",
+    "rollbackRehearsal": "passed",
+    "installedAt": "2026-10-13 16:55:24.359864+00",
+    "matchingFunctionBodies": 6,
+    "privateTables": true,
+    "runtimeDenials": "passed",
+    "apps": 0,
+    "connections": 0,
+    "sourceRecords": 0,
+    "customerLinks": 0,
+    "financeEvents": 0
+  },
+  "remaining": [
+    "Frontend signed-in and visual acceptance, then reconciled TEST/live release",
+    "Intuit production details and compliance declaration, public policy/terms, real company OAuth",
+    "Secure real app credential provisioning and provider acceptance",
+    "Real customer matching, reconciliation and deleted-transaction handling",
+    "No claim of live finance completeness or accounting reconciliation"
+  ]
+}

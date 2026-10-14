@@ -1,0 +1,47 @@
+{
+  "version": "learn-projection-selection-release/1",
+  "project": "tgbnakbxwcqjeimygroz",
+  "state": "superseded_after_runtime_cancellation",
+  "source": {
+    "path": "supabase/migrations/20261102100000_learn_projection_selection_work.sql",
+    "sha256": "a38809a3ee8495bb131884558bd1c16703a8ab5c7adec7d9467d8869f60dc1df"
+  },
+  "files": {
+    "apply.sql": "5f58df54401316d5339ce6d6c9409304de3f8665fcf0dcc438d79742f16f365c",
+    "rollback.sql": "22a46f6c49dd39fc9b541ccdf03a3619f1078334849e3f3c1f5e9f2a86cc7cf9",
+    "original-selector.sql": "fc7a5a9d3e925449b799f9f70600ae5093d3f5a555369639bd8c473d6cb6784d"
+  },
+  "beforeDefinitionMd5": "d29ee3fd8c75ebbb52734d13b03f1b4e",
+  "afterBodyMd5": "5317ae1c1b25bb53bdf8c2b6ff202daa",
+  "authority": {
+    "owner": "postgres",
+    "acl": [
+      "postgres=X/postgres",
+      "service_role=X/postgres"
+    ],
+    "config": [
+      "search_path=pg_catalog",
+      "TimeZone=UTC"
+    ],
+    "securityDefiner": true
+  },
+  "acceptance": {
+    "localSyntheticEmails": 36500,
+    "localEquivalenceCases": 19,
+    "testFullSchemaRollback": true,
+    "testSelectedRows": 2,
+    "productionPerformanceAccepted": false,
+    "productionInstalled": true,
+    "exactPatchRollbackVerifiedOffline": true,
+    "wrongTargetAndLateFailureRollbackVerified": true,
+    "testInstalled": true,
+    "testInstalledAt": "2026-10-14T00:40:28.180Z",
+    "productionInstalledAt": "2026-10-14T00:41:21.950Z"
+  },
+  "limitations": [
+    "Synthetic timings do not prove the production timeout resolved.",
+    "Current identity review holds still stop continuation and require separate work.",
+    "Retained data preservation and scheduled production runtime acceptance remain required."
+  ],
+  "supersededBy": "projection-selection-v2"
+}

@@ -35,7 +35,7 @@ export function slackMessageKind(message: Record<string, unknown>): 'conversatio
   // data is not silently skipped or reported as captured conversation content.
   // Observed provider subtype, undocumented in the reviewed official reference.
   // Retain it for review; do not infer activity or conversation semantics.
-  if (message.subtype === 'welcome_party') return 'source_needs_review';
+  if (message.subtype === 'welcome_party' || message.subtype === 'tabbed_canvas_updated' || message.subtype === 'automatic_ai_huddle_notes_enabled') return 'source_needs_review';
   if (message.subtype === 'ekm_access_denied') throw new SlackHistoryTransportError('slack_history_content_unavailable', false);
   unsupported(message, 'slack_history_message_subtype_unsupported');
 }

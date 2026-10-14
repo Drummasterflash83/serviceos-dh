@@ -1,0 +1,52 @@
+{
+  "state": "incremental_cycle_in_progress",
+  "observedAt": "2026-10-13T21:37:03.95126+00:00",
+  "productionChangedByCheck": false,
+  "cycle": {
+    "phase": 3,
+    "state": "window_active",
+    "enabled": true,
+    "cycleEnd": "2026-10-13T21:26:01.79+00:00",
+    "nextCheck": "2026-10-13T21:37:04.069201+00:00",
+    "watermark": "2026-10-13T16:02:03.332+00:00",
+    "cycleStart": "2026-10-13T15:57:03.332+00:00",
+    "stateUpdatedAt": "2026-10-13T21:36:04.069201+00:00"
+  },
+  "stages": [
+    {
+      "phase": 1,
+      "resource": "properties",
+      "contactType": null,
+      "pages": 25,
+      "records": 2423,
+      "targetProperties": 0,
+      "unfilteredInitialCycle": false,
+      "terminalVerified": true
+    },
+    {
+      "phase": 2,
+      "resource": "jobs",
+      "contactType": null,
+      "pages": 1,
+      "records": 27,
+      "targetProperties": 0,
+      "unfilteredInitialCycle": false,
+      "terminalVerified": true
+    },
+    {
+      "phase": 3,
+      "resource": "propertyContacts",
+      "contactType": "customer",
+      "pages": 31,
+      "records": 0,
+      "targetProperties": 1552,
+      "unfilteredInitialCycle": false,
+      "terminalVerified": false
+    }
+  ],
+  "limits": [
+    "Current contact traversal is unfinished",
+    "Capture does not imply canonical publication or complete communication matching",
+    "Previous UI/API inventory differences remain unresolved"
+  ]
+}

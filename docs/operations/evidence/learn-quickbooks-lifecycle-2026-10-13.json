@@ -1,0 +1,171 @@
+{
+  "state": "sandbox_refresh_and_api_revocation_verified",
+  "checkedAt": "2026-10-13T21:51:21.343Z",
+  "project": "saatxzwxvdvqevbnskxy",
+  "failedRefresh": {
+    "checkedAt": "2026-10-13T20:31:35.880Z",
+    "project": "saatxzwxvdvqevbnskxy",
+    "environment": "sandbox",
+    "outcome": "unconfirmed",
+    "providerRequests": 0,
+    "traces": [],
+    "generationBefore": 1,
+    "generationAfter": 1,
+    "expiryExtended": false,
+    "leaseClear": false,
+    "captureStatus": "paused",
+    "productionChanges": 0,
+    "verified": false
+  },
+  "correction": {
+    "reason": "A small database clock lead made a two-minute lease appear longer than the old strict 120000ms local limit.",
+    "maximumAcceptedClockSkewMs": 5000,
+    "maximumExecutionBudgetMs": 115000,
+    "databaseLeaseEnforcementUnchanged": true,
+    "testsPassed": 60,
+    "typescript": "passed",
+    "frontendBuild": "passed",
+    "deployedTestRuntimes": [
+      {
+        "name": "quickbooks-disconnect",
+        "version": 3,
+        "artifactHash": "c7fb6bf8c6cc08c08e8bf655f23d2f511c2a54265e212122029761ded10ac4c5",
+        "matchingRuntimeModules": 6,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "ca66d2dcdcb7fc8028f462192ca1717a28b194b3acac9edcba533f88cd32a103"
+      },
+      {
+        "name": "learn-quickbooks-worker",
+        "version": 3,
+        "artifactHash": "67507e876bc42f56d9dba31095f9cb356d74aea9c4a690033a4bd95d81c82b11",
+        "matchingRuntimeModules": 10,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "00bcb060fd99710880610edd26ec4dcc818429d1ac6dfd0f1146d0dafb10cf63"
+      },
+      {
+        "name": "quickbooks-oauth-callback",
+        "version": 8,
+        "artifactHash": "7bf41672dd553e38375e67f3530a403d8c44ad27c2f672c88e09d0c8b6d9ed70",
+        "matchingRuntimeModules": 10,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "a9857a1152c41bd69d43df17911f80aa2c5b37fb39b6a8022a4c12ed979a10e4"
+      }
+    ]
+  },
+  "providerRecovery": {
+    "company": "Sandbox Company_US_1",
+    "app": "OpenFolk ServiceOS",
+    "method": "QuickBooks Manage integrations removal, verified app absent; logged operator review in TEST",
+    "apiRevocationVerified": false,
+    "otherAppChanged": false,
+    "freshConsent": "User explicitly approved sandbox reconnection; Intuit returned company and saved tokens",
+    "scope": "com.intuit.quickbooks.accounting"
+  },
+  "readback": {
+    "checkedAt": "2026-10-13T20:51:51.354Z",
+    "project": "saatxzwxvdvqevbnskxy",
+    "savedPages": 8,
+    "connections": [
+      {
+        "id": "5b5e7505-fb77-4b38-b928-9f5c76eaea71",
+        "realm": "9341456295767559",
+        "status": "paused",
+        "revision": 9,
+        "generation": 2,
+        "leaseClear": true,
+        "environment": "sandbox",
+        "accessExpiresAt": "2026-10-13T21:49:03.888+00:00"
+      }
+    ],
+    "disconnects": [
+      {
+        "code": "operator_verified_provider_disconnect",
+        "state": "reviewed",
+        "finishedAt": "2026-10-13T20:47:14.663071+00:00"
+      }
+    ],
+    "activeImports": 0,
+    "latestRecords": 77,
+    "sourceVersions": 77
+  },
+  "pending": [
+    "Production Intuit access and approved policy publication",
+    "Live company consent, bounded import/reconciliation and release acceptance"
+  ],
+  "productionChanges": 0,
+  "refreshAcceptance": {
+    "providerResponse": {
+      "checkedAt": "2026-10-13T21:44:10.667Z",
+      "project": "saatxzwxvdvqevbnskxy",
+      "environment": "sandbox",
+      "outcome": "unconfirmed",
+      "providerRequests": 1,
+      "traces": [
+        {
+          "event": "quickbooks_provider_response",
+          "operation": "token",
+          "environment": "oauth",
+          "observedAt": "2026-10-13T21:44:09.656Z",
+          "status": 200,
+          "intuitTid": "1-6acea629-21bf22173f7bf9474705744d",
+          "outcome": "response"
+        }
+      ],
+      "generationBefore": 2,
+      "generationAfter": 3,
+      "expiryExtended": true,
+      "leaseClear": true,
+      "captureStatus": "paused",
+      "productionChanges": 0,
+      "verified": false
+    },
+    "savedEvent": {
+      "event": "refresh_saved",
+      "detail": {
+        "generation": 3
+      },
+      "created_at": "2026-10-13 21:44:09.821647+00"
+    },
+    "interpretation": "Provider returned HTTP 200; generation 3 and extended expiry were committed atomically and the lease cleared. The temporary test adapter attempted JSON parsing on the void finish RPC response, yielding a false-negative outcome. Production uses the Supabase SDK RPC adapter, not that temporary adapter. No token request was replayed.",
+    "persistenceVerified": true,
+    "hostedScheduledRenewalVerified": false
+  },
+  "apiRevocation": {
+    "method": "Existing signed-in TEST operator control; approved sandbox lifecycle check",
+    "providerAcceptance": "Intuit confirmed access revocation; persisted disconnection state revoked",
+    "readback": {
+      "checkedAt": "2026-10-13T21:51:21.343Z",
+      "project": "saatxzwxvdvqevbnskxy",
+      "savedPages": 8,
+      "connections": [
+        {
+          "id": "5b5e7505-fb77-4b38-b928-9f5c76eaea71",
+          "realm": "9341456295767559",
+          "status": "disconnected",
+          "revision": 10,
+          "generation": 3,
+          "leaseClear": true,
+          "environment": "sandbox",
+          "accessExpiresAt": null
+        }
+      ],
+      "disconnects": [
+        {
+          "code": "operator_verified_provider_disconnect",
+          "state": "reviewed",
+          "finishedAt": "2026-10-13T20:47:14.663071+00:00"
+        },
+        {
+          "code": null,
+          "state": "revoked",
+          "finishedAt": "2026-10-13T21:51:09.497228+00:00"
+        }
+      ],
+      "activeImports": 0,
+      "latestRecords": 77,
+      "sourceVersions": 77
+    },
+    "sampleRecordsRetained": 77,
+    "productionChanges": 0
+  }
+}

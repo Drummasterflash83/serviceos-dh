@@ -1,0 +1,210 @@
+{
+  "version": "learn-slack-observed-canvas-production/1",
+  "observedAt": "2026-10-13T19:54:40.361148+00:00",
+  "project": "tgbnakbxwcqjeimygroz",
+  "scope": "Exact observed canvas source retention; existing public-channel campaign recovery only. No new source scope, DMs, files, AI, credentials, permissions, schedules or frontend release.",
+  "schema": {
+    "state": "applied_verified",
+    "completedAt": "2026-10-13T19:51:36.285Z",
+    "planSha256": "bfbdaf559c2cfecad17073d32e470b9c78398f7e46b595b467cd82d890161bc4",
+    "countsBefore": {
+      "calls": 4462,
+      "emails": 32209,
+      "recordings": 2984,
+      "voicemails": 255,
+      "slackMessages": 12040,
+      "slackVersions": 12040
+    },
+    "countsAfter": {
+      "calls": 4462,
+      "emails": 32209,
+      "recordings": 2984,
+      "voicemails": 255,
+      "slackMessages": 12040,
+      "slackVersions": 12040
+    },
+    "changedFunctions": [
+      "learn_slack_message_kind",
+      "learn_slack_campaign_read"
+    ],
+    "preservation": "All prior Slack source IDs and immutable version digests preserved; existing ownership/ACL, roles, policies, grants, connections and schedules unchanged. Other source counts did not decrease."
+  },
+  "runtime": {
+    "state": "published_and_verified",
+    "completedAt": "2026-10-13T19:52:22.838Z",
+    "preparationSha256": "6dd007e6a1402cdec191e91a79a947e73606b97e831d785fb86454530eee988e",
+    "sourceClosureSha256": "e999ab36b7069debc51443bb69e734fd4c91d547d626bd9cf877bab6bc3a3df5",
+    "changedFiles": [
+      "_shared/slack/slack_message_kind.ts"
+    ],
+    "endpoints": [
+      {
+        "name": "learn-slack-worker",
+        "version": 10,
+        "wireSha256": "6447b52d51e151c0be5fc1b6a96eccf9ad8e7640f8f43d4735c5a08808475578"
+      },
+      {
+        "name": "platform-worker",
+        "version": 71,
+        "wireSha256": "6d0dee739a614fc557d893be1458e35af175b09d9680618885fdcd74580456ac"
+      }
+    ],
+    "unrelatedFunctionsUnchanged": true,
+    "voicemailPreservation": {
+      "messages": {
+        "before": 255,
+        "after": 255,
+        "appended": 0
+      },
+      "sources": {
+        "before": 255,
+        "after": 255,
+        "appended": 0
+      }
+    },
+    "preservation": "Existing runtime-secret fingerprints, access, connection bindings, schedules, original campaign scope and budgets preserved; all prior Slack source IDs/version digests retained."
+  },
+  "acceptance": {
+    "runtimeTests": 106,
+    "isolatedNativeRowsPreserved": 1591580,
+    "isolatedNativeSequencesPreserved": 7,
+    "exactEnvelopeRehearsal": "passed",
+    "bothExactWorkersBootedAndRejectedMissingAuthentication": true,
+    "signedInLiveOperatorRecovery": "committed; queued, not provider acceptance",
+    "recoveryJobs": [
+      {
+        "channel": "C08975CN6BY",
+        "state": "needs_review",
+        "latest": {
+          "id": "197a31a7-1297-4319-b90c-be0689ea2e31",
+          "status": "queued",
+          "job_type": "slack.history_sync",
+          "error_code": null,
+          "updated_at": "2026-10-13T19:53:08.079738+00:00",
+          "attempt_count": 0
+        }
+      },
+      {
+        "channel": "C0A8M3G5NKX",
+        "state": "window_active",
+        "latest": {
+          "id": "12df1bd3-d9cf-4379-8e7f-199faf0b6b19",
+          "status": "queued",
+          "job_type": "slack.history_sync",
+          "error_code": null,
+          "updated_at": "2026-10-13T19:38:40.951735+00:00",
+          "attempt_count": 0
+        }
+      }
+    ],
+    "providerCanvasCaptureVerified": false
+  },
+  "currentInputProgress": {
+    "at": "2026-10-13T19:54:08.13143+00:00",
+    "commusoft": [
+      {
+        "phase": 4,
+        "state": "window_active",
+        "account": "46644d30-4780-4855-956a-fabd0bcdd8cc",
+        "enabled": true,
+        "cycleEnd": "2026-10-13T16:02:03.332+00:00",
+        "nextCheck": "2026-10-13T19:54:31.51269+00:00",
+        "updatedAt": "2026-10-13T19:53:31.51269+00:00",
+        "watermark": null
+      }
+    ],
+    "slackCampaign": [
+      {
+        "id": "a3980d74-29fa-4655-a914-61219cdf7dad",
+        "budget": 10000,
+        "closed": null,
+        "enabled": true,
+        "expires": "2026-10-20T09:30:00+00:00",
+        "threads": {
+          "queued": 16,
+          "captured": 263,
+          "observed": 246
+        },
+        "channels": {
+          "thread_queued": 5,
+          "campaign_window_complete": 15
+        },
+        "requests": 3068,
+        "discoveryComplete": 20
+      },
+      {
+        "id": "b54d246b-2818-44d1-ba05-ccbe2c6bd6c9",
+        "budget": 20000,
+        "closed": null,
+        "enabled": true,
+        "expires": "2026-10-20T09:30:00+00:00",
+        "threads": {
+          "queued": 50,
+          "captured": 16,
+          "observed": 89
+        },
+        "channels": {
+          "needs_review": 1,
+          "thread_active": 38,
+          "thread_queued": 1,
+          "window_active": 21,
+          "campaign_window_complete": 99
+        },
+        "requests": 1861,
+        "discoveryComplete": 138
+      }
+    ],
+    "slackMessages": 12045,
+    "jobOutcomesLastHour": [
+      {
+        "total": 54,
+        "status": "succeeded",
+        "job_type": "slack.thread_sync"
+      },
+      {
+        "total": 13,
+        "status": "queued",
+        "job_type": "slack.thread_sync"
+      },
+      {
+        "total": 578,
+        "status": "succeeded",
+        "job_type": "commusoft.source_sync"
+      },
+      {
+        "total": 5,
+        "status": "queued",
+        "job_type": "slack.history_sync"
+      },
+      {
+        "total": 1,
+        "status": "queued",
+        "job_type": "commusoft.source_sync"
+      },
+      {
+        "total": 1,
+        "status": "running",
+        "job_type": "slack.thread_sync"
+      },
+      {
+        "total": 5,
+        "status": "succeeded",
+        "job_type": "slack.history_sync"
+      }
+    ],
+    "canonicalSourceLinks": {
+      "job": 31,
+      "site": 11,
+      "contact": 22,
+      "customer": 24
+    },
+    "slackReviewedContexts": 1
+  },
+  "rollback": "Keep additive SQL after any canvas source is retained. Restore exact previous worker artifacts if needed; never delete retained sources or restore old readers over held sources.",
+  "remaining": [
+    "Observe both existing recovery handles through their authoritative terminal state; do not restart them.",
+    "Complete public-channel history and replies, then verified ongoing capture handoff.",
+    "Complete Commusoft site contacts, full-cycle watermark and expected-vs-captured reconciliation.",
+    "Publish wider evidenced customer/site/job/contact links; configurable scorecard and operational acceptance remain incomplete."
+  ]
+}

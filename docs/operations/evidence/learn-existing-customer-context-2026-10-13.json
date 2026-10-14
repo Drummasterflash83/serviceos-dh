@@ -1,0 +1,35 @@
+{
+  "state": "verified_existing_customer_live",
+  "at": "2026-10-13T22:46:04.127539+00:00",
+  "checks": {
+    "existingPersonRowUnchanged": true,
+    "existingCardRowUnchanged": true,
+    "retainedCommunicationRowsUnchanged": true,
+    "allNewLinksReuseExistingCard": true
+  },
+  "publishedLinks": {
+    "customer": 1,
+    "jobs": 2
+  },
+  "preservationScope": "One existing person, its original customer card and two existing communication records, including their complete row digests; not all production records.",
+  "privateEvidenceSha256": {
+    "before": "23b1f799726ceac1ed614f3fe0b0a73c3e99f6a26450609a9ba78791fecd49d6",
+    "after": "b0afe06fd8821ba51e3b82497385bb13fe95c378d848f14efa43c535ee2b1dd3"
+  },
+  "browser": {
+    "existingLiveSession": true,
+    "verifiedAt": "2026-10-13T22:52:53Z",
+    "jobsVisible": 2,
+    "emailTimelineEntriesVisible": 2,
+    "priorCommunicationReadFailed": true,
+    "existingRefreshRecovered": true,
+    "readerFixDeployed": false
+  },
+  "limitations": [
+    "Transient communication-reader failure observed; exact cause not yet proven.",
+    "Owner resolution remains incomplete.",
+    "Customer brief does not yet incorporate the linked completed-job status.",
+    "Completion timezone remains unconfirmed and excluded from duration/performance calculations.",
+    "This single-card acceptance does not establish full customer, contact or communication coverage."
+  ]
+}

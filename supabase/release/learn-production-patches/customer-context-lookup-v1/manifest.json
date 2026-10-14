@@ -1,0 +1,22 @@
+{
+  "state": "applied_and_signed_in_verified",
+  "project": "tgbnakbxwcqjeimygroz",
+  "source": "supabase/migrations/20261102050000_learn_customer_context_lookup.sql",
+  "sourceSha256": "bde5a0421b8f200a0a9c361c1a8cf11ef2c641ee06674891ef9f72572fbd2274",
+  "applySha256": "aa52a23eaea663a45aa90f733acc5078d9a4a5026d3663f223023e67142b0e40",
+  "rollbackSha256": "8e82ab7fd11dc1d2ae69a5c78356a1c41cb92efd470d17c243f28538ce181a89",
+  "before": {
+    "md5": "17ee19d5f244e41cbf243532b5b0e5b6",
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,learn_card_communication_reader=X/postgres}"
+  },
+  "after": {
+    "acl": "{postgres=X/postgres,learn_card_communication_reader=X/postgres}",
+    "md5": "c9c46bc594b5008a9642bbcaa09d7e06",
+    "owner": "postgres"
+  },
+  "runtimeChanges": false,
+  "frontendChanges": false,
+  "sourceDataWrites": false,
+  "productionEvidence": "docs/operations/evidence/learn-customer-context-lookup-production-2026-10-13.json"
+}

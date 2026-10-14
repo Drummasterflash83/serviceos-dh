@@ -80,3 +80,24 @@ test('exact textless tombstone retains absent provider text; malformed text and 
  for(const page of await readBoth(marker)){assert.equal(page.records[0].text,'');assert.deepEqual(page.records[0].provider_payload,marker);assert.equal('text' in page.records[0].provider_payload,false);}
  for(const m of [{...marker,text:null},{...marker,text:42},{...marker,text:{}},{...marker,subtype:'bot_message'},{...marker,hidden:false}])await assert.rejects(readBoth(m));
 });
+
+// Real production diagnostics establish this subtype, not its business semantics.
+test('observed canvas subtype is retained without becoming conversation or performance evidence',async()=>{
+ const message={...record('tabbed_canvas_updated'),reply_count:2,canvas:{id:'F_SYNTHETIC'},text:'Synthetic canvas source'};
+ assert.equal(slackMessageKind(message),'source_needs_review');
+ for(const page of await readBoth(message)) assert.deepEqual(page.records[0].provider_payload,message);
+ for(const m of [{...message,hidden:true},{...message,hidden:null},{...message,type:'event_callback'},
+ {...message,subtype:'tabbed_canvas_updated_v2'},{...message,subtype:'TABBED_CANVAS_UPDATED'}]) {
+  await assert.rejects(readBoth(m),(e:any)=>e.retryable===false);
+ }
+});
+
+// Production diagnostic: type=message, hidden absent, exact subtype below.
+// The name is not evidence that any meeting notes, AI content or staff action exists.
+test('observed huddle-notes marker is retained for review across channel and thread imports',async()=>{
+ const message={...record('automatic_ai_huddle_notes_enabled'),reply_count:2,text:'Synthetic setting marker',blocks:[{type:'section',text:{type:'plain_text',text:'Uninterpreted source'}}]};
+ assert.equal(slackMessageKind(message),'source_needs_review');
+ for(const page of await readBoth(message))assert.deepEqual(page.records[0].provider_payload,message);
+ for(const m of [{...message,hidden:true},{...message,hidden:null},{...message,type:'event_callback'},
+  {...message,subtype:'automatic_ai_huddle_notes_enabled_v2'},{...message,subtype:'AUTOMATIC_AI_HUDDLE_NOTES_ENABLED'}])await assert.rejects(readBoth(m),(e:any)=>e.retryable===false);
+});

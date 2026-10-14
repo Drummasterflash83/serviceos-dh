@@ -1,0 +1,144 @@
+{
+  "version": "learn-contact-details-production/1",
+  "state": "live_and_test_reader_verified",
+  "observedAt": "2026-10-13T19:34:39.352Z",
+  "sourceSha256": "90b47cf7bea1e290e5b9f5d9f1364f73fb341b04c317eb4e122c271af586fcb9",
+  "backend": {
+    "test": {
+      "state": "applied_verified",
+      "startedAt": "2026-10-13T19:16:02.620Z",
+      "finishedAt": "2026-10-13T19:16:28.509Z",
+      "preservation": {
+        "retainedVersions": 18014,
+        "retainedPages": 4157,
+        "retainedLinks": 62,
+        "retainedPeople": 16254,
+        "retainedCompanies": 16,
+        "retainedCards": 16251,
+        "accessSchedulesConnectionsAndFlagsUnchanged": true,
+        "unrelatedFunctionsUnchanged": true
+      },
+      "releaseSha256": "8c892a5cef903b7ba56ca0551cfee22a8b82effdd20f289eb82e2104e9f69326"
+    },
+    "production": {
+      "state": "applied_verified",
+      "startedAt": "2026-10-13T19:22:01.451Z",
+      "finishedAt": "2026-10-13T19:22:10.563Z",
+      "preservation": {
+        "retainedVersions": 18053,
+        "retainedPages": 4505,
+        "retainedLinks": 88,
+        "retainedPeople": 3268,
+        "retainedCompanies": 1188,
+        "retainedCards": 3269,
+        "accessSchedulesConnectionsAndFlagsUnchanged": true,
+        "unrelatedFunctionsUnchanged": true
+      },
+      "releaseSha256": "52b876838a4e8348c53c2e205484de16844f9c5a3ae1ee9796e16ce66746b449"
+    }
+  },
+  "liveFrontend": {
+    "observedAt": "2026-10-13T19:30:14.048Z",
+    "id": "dpl_FEvZQUizXBraRu71hJtGciJTPZER",
+    "url": "serviceos-d1sd3k6m8-allkin.vercel.app",
+    "readyState": "READY",
+    "gitSha": "a11f2041b84cb572a5ce8b65c97057e005bf4da3",
+    "productionTarget": "dpl_FEvZQUizXBraRu71hJtGciJTPZER",
+    "protection": "all_except_custom_domains"
+  },
+  "liveAliases": [
+    {
+      "host": "app.openfolk.ai",
+      "deployment": "dpl_FEvZQUizXBraRu71hJtGciJTPZER"
+    },
+    {
+      "host": "openfolk.ai",
+      "deployment": "dpl_FEvZQUizXBraRu71hJtGciJTPZER"
+    },
+    {
+      "host": "serviceos-dh.vercel.app",
+      "deployment": "dpl_FEvZQUizXBraRu71hJtGciJTPZER"
+    },
+    {
+      "host": "www.openfolk.ai",
+      "deployment": "dpl_FEvZQUizXBraRu71hJtGciJTPZER"
+    }
+  ],
+  "testFrontend": {
+    "at": "2026-10-13T19:32:35.726Z",
+    "id": "dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq",
+    "url": "serviceos-learn-test-2txq8alux-allkin.vercel.app",
+    "sha": "c7744a8b0808bfb64b737e4b9ee453782cd2efa0",
+    "readyState": "READY",
+    "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "protection": "all",
+    "aliases": [
+      {
+        "name": "test.openfolk.ai",
+        "deployment": "dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq"
+      },
+      {
+        "name": "serviceos-learn-test-allkin.vercel.app",
+        "deployment": "dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq"
+      }
+    ]
+  },
+  "liveBrowserAcceptance": {
+    "stableDomain": true,
+    "existingSignedInOperator": true,
+    "realSavedDetails": 2,
+    "unverifiedStateShown": true,
+    "primarySelectionsUnchanged": true,
+    "auditedReadVerified": true,
+    "observedAt": "2026-10-13T19:25:23.2409+00:00"
+  },
+  "testBrowserAcceptance": {
+    "stableDomain": true,
+    "existingSignedInOperator": true,
+    "realCustomerCard": true,
+    "emptyAdditionalDetails": true,
+    "primaryShownSeparately": true,
+    "quickbooksPanelPreserved": true,
+    "auditVerified": true
+  },
+  "localVerification": {
+    "clientTestsPassed": 10,
+    "typecheckPassed": true,
+    "buildPassed": true,
+    "mergedTestBuildPassed": true,
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 394,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "36f2096c8089e45be45ee45d44a5ce6fcb69722520765bc2670682902cffd61a",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "envelopeChecks": [
+      "test:wrong_target",
+      "test:wrong_digest",
+      "test:reader_drift",
+      "test:late_failure",
+      "test:rollback",
+      "production:wrong_target",
+      "production:wrong_digest",
+      "production:reader_drift",
+      "production:late_failure",
+      "production:rollback"
+    ],
+    "containerRemoved": true
+  },
+  "rollback": {
+    "livePreviousDeployment": "dpl_BdmR3wuhjf1ghYYN58sQQgeYbMpG",
+    "testPreviousDeployment": "dpl_FxxyFqJaMM4bzkRAhXScmajU1cN7",
+    "backend": "Keep unused additive reader; restore verified frontend only; do not revert customer data."
+  },
+  "limitations": [
+    "Operator browser acceptance only; ordinary client browser acceptance remains separate.",
+    "TEST accepted existing empty additional-detail coverage; LIVE accepted two saved endpoints.",
+    "No claim of complete customer, contact, communication or provider coverage.",
+    "QuickBooks changes are preserved in TEST; not included in the LIVE contact frontend.",
+    "First production apply response timed out; absence and no matching query were established before an identical guarded retry committed. No guard was weakened.",
+    "No new login, operator grant, provider write, paid AI request or capture schedule change."
+  ]
+}

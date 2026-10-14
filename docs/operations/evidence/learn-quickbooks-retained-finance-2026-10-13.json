@@ -1,0 +1,62 @@
+{
+  "state": "retained_finance_read_fix_verified",
+  "source": "supabase/migrations/20261102040000_learn_quickbooks_retained_finance.sql",
+  "localPostgres": "complete OAuth/import/finance/export/disconnect suite passed, including migration rollback and paused-intake regression",
+  "hosted": {
+    "test": {
+      "state": "installed_verified",
+      "project": "saatxzwxvdvqevbnskxy",
+      "release": "quickbooks_retained_finance_v1",
+      "sourceSha256": "3ddbc1349f8bb207d7c9d298eba8b6112ed766979747a0b6a9d98cc1b7cb315f",
+      "installedAt": "2026-10-13 22:39:30.124396+00",
+      "checkedAt": "2026-10-13T22:39:30.945Z",
+      "readerBodiesMatched": true,
+      "existingFunctionPermissionsUnchanged": true,
+      "otherQuickBooksFunctionsUnchanged": true,
+      "retainedSourcesAndLinksUnchanged": true,
+      "featureFlagsAndGrantsUnchanged": true,
+      "sources": 77,
+      "privateHelper": true,
+      "unauthorisedRpcDenials": "passed",
+      "providerRequests": 0
+    },
+    "production": {
+      "state": "installed_verified",
+      "project": "tgbnakbxwcqjeimygroz",
+      "release": "quickbooks_retained_finance_v1",
+      "sourceSha256": "3ddbc1349f8bb207d7c9d298eba8b6112ed766979747a0b6a9d98cc1b7cb315f",
+      "installedAt": "2026-10-13 22:41:36.736253+00",
+      "checkedAt": "2026-10-13T22:41:58.540Z",
+      "readerBodiesMatched": true,
+      "existingFunctionPermissionsUnchanged": true,
+      "otherQuickBooksFunctionsUnchanged": true,
+      "retainedSourcesAndLinksUnchanged": true,
+      "featureFlagsAndGrantsUnchanged": true,
+      "sources": 0,
+      "privateHelper": true,
+      "unauthorisedRpcDenials": "passed",
+      "providerRequests": 0
+    }
+  },
+  "browser": {
+    "environment": "TEST",
+    "existingOperatorSession": true,
+    "intakeEnabled": false,
+    "financeReadSucceeded": true,
+    "reviewedCustomerLinks": 0,
+    "linkedFinancialRecords": 0,
+    "sandboxCandidatePageCounts": [
+      25,
+      4
+    ],
+    "remainingCandidatePage": false,
+    "readAuditReasonMatched": true,
+    "customerLinksChanged": false,
+    "providerRequests": 0
+  },
+  "limits": [
+    "No sandbox customer was linked to a real Drummonds customer card.",
+    "Production has no QuickBooks accounting records or connected company; this verifies installed reader semantics, not live accounting coverage.",
+    "LEARN master availability and all existing user/tenant checks remain; linking still requires the original input-enabled guard."
+  ]
+}

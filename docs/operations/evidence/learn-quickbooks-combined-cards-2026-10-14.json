@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-10-14T10:36:05Z",
+  "state": "reviewed_live_card_acceptance",
+  "reviewedFinancialCustomerLinks": 5,
+  "additionalCommusoftCustomersPublished": 1,
+  "additionalCommusoftJobsPublished": 10,
+  "jobBatch": {
+    "linked": 10,
+    "held": 0
+  },
+  "ordinaryLiveClientJobsShown": 10,
+  "reviewedNewCardDirectFinancialRecords": 0,
+  "unrelatedJobExcluded": true,
+  "completionTimezoneUnconfirmed": true,
+  "performanceDurationClaimsExcluded": true,
+  "originalTwoFinancialLinksPreserved": true,
+  "automaticMatching": false,
+  "financialValuesIncluded": false,
+  "privateContactsIncluded": false,
+  "broaderCustomerCoverageComplete": false
+}

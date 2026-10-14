@@ -1,0 +1,98 @@
+{
+  "version": "learn-projection-ordered-selection-live/1",
+  "at": "2026-10-14T00:52:08Z",
+  "state": "live_scheduled_projection_and_continuation_verified",
+  "previousRelease": {
+    "retryTerminal": "dead_letter",
+    "attempts": 5,
+    "errorCode": "projection_inventory_unconfirmed",
+    "databaseSqlState": "57014",
+    "databaseErrorAt": "2026-10-14T00:45:11.960Z",
+    "pendingSelectorContext": true,
+    "exactCancellationCauseConfirmed": false
+  },
+  "change": {
+    "source": {
+      "path": "supabase/migrations/20261102110000_learn_projection_ordered_selection.sql",
+      "sha256": "ab2bd371806fc77ec05226d6a1a164c2f92c806e44f4389608b9be331844e3a0"
+    },
+    "bodyMd5": "6bf08273de032cb80f5e73ab9f66a543",
+    "nonUniqueOrderingIndexes": 2,
+    "scope": "First eligible N records per source, then identical global order and limit. Current revision, drafts, review holds and optional campaign handling unchanged."
+  },
+  "local": {
+    "command": "python3 scripts/verify/learn-projection-selection-local.py --ordered",
+    "network": "none",
+    "syntheticEmails": 36500,
+    "equivalenceCases": 25,
+    "originalSeconds": 2.546,
+    "orderedSeconds": 0.067,
+    "earlyEligibleBatchEmailRowsVisited": 20,
+    "exactApplyRollbackPassed": true,
+    "wrongTargetRejected": true,
+    "lateFailureRestoresFunctionAndIndexes": true,
+    "tenantIsolationAndDeniedClientExecution": true,
+    "crossSourceTiesAndTimestampFallbacks": true
+  },
+  "hostedTest": {
+    "at": "2026-10-14T00:49:50.289Z",
+    "state": "test_full_schema_rehearsed_and_rolled_back",
+    "originalSelectorRestored": true,
+    "selected": 2,
+    "error": null,
+    "sourceWrites": 0,
+    "newPermissions": 0,
+    "providerCalls": 0,
+    "productionChanged": false
+  },
+  "testInstallation": {
+    "at": "2026-10-14T00:50:49.433Z",
+    "state": "test_installed_verified",
+    "project": "saatxzwxvdvqevbnskxy",
+    "sourceSha": "ab2bd371806fc77ec05226d6a1a164c2f92c806e44f4389608b9be331844e3a0",
+    "bodyMd5": "6bf08273de032cb80f5e73ab9f66a543",
+    "authorityPreserved": true,
+    "sourceWrites": 0,
+    "providerCalls": 0,
+    "productionChanged": false,
+    "error": null
+  },
+  "productionInstallation": {
+    "at": "2026-10-14T00:50:59.730Z",
+    "state": "live_selector_installed_runtime_acceptance_pending",
+    "project": "tgbnakbxwcqjeimygroz",
+    "sourceSha": "ab2bd371806fc77ec05226d6a1a164c2f92c806e44f4389608b9be331844e3a0",
+    "bodyMd5": "6bf08273de032cb80f5e73ab9f66a543",
+    "authorityPreserved": true,
+    "sourceWrites": 0,
+    "newPermissions": 0,
+    "scheduleChanges": 0,
+    "jobsRestarted": 0,
+    "providerCalls": 0,
+    "error": null
+  },
+  "runtime": {
+    "observedAt": "2026-10-14T01:13:18.688769+00:00",
+    "successfulBatches": 6,
+    "processed": 120,
+    "committedReceipts": [
+      {
+        "state": "committed",
+        "action": "created",
+        "records": 120,
+        "source_kind": "email",
+        "interaction_links_match": true
+      }
+    ],
+    "continued": true,
+    "nextJobQueued": true,
+    "productionSelectionPerformanceAccepted": true,
+    "completeBacklogDrained": false
+  },
+  "limitations": [
+    "Local early-batch timing is not production acceptance.",
+    "A mostly current or held inventory may still require scanning to find eligible rows.",
+    "Read-only production explain was denied helper execution; no grants or role bypass were used.",
+    "Six successful email batches do not prove all phone eligibility or full backlog completion; identity-review continuation remains open."
+  ]
+}

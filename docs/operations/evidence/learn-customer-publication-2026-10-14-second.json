@@ -1,0 +1,104 @@
+{
+  "version": "learn-customer-publication/1",
+  "state": "verified_live_reviewed_publication",
+  "at": "2026-10-14T06:38:36.925736+00:00",
+  "customerSiteJobAcceptance": {
+    "at": "2026-10-14T06:34:26.066469+00:00",
+    "state": "verified_live_customer_site_job_publication",
+    "customers": 20,
+    "sites": 4,
+    "jobs": 32,
+    "checks": {
+      "sourceVersionsAndActorVerified": true,
+      "reviewedAccountHolderEvidenceRetained": true,
+      "allOwnershipAndCardReferencesVerified": true,
+      "jobNumbersPreserved": true,
+      "sourceDescriptionsRetained": true,
+      "displayTitlesMatchSourceAfterBoundaryWhitespaceTrim": true,
+      "newIdentitiesRemainUnverified": true
+    },
+    "preservation": {
+      "priorIdentityProjections": 4511,
+      "priorCustomerLinks": 52,
+      "priorContactPoints": 115,
+      "retainedCustomerSourcePayloads": 1552,
+      "scope": "Selected identity fields, customer links/contact points and retained customer source snapshots; not every production field."
+    },
+    "privateEvidenceSha256": "27664b23265e1a83d5efac1ae00c0bbbab8280db9fe104b4cca4fe3f958a6bad"
+  },
+  "contactAcceptance": {
+    "version": "learn-reviewed-customer-contact-publication/1",
+    "state": "verified_live_contact_relationships",
+    "at": "2026-10-14T06:38:36.925736+00:00",
+    "publishedSourceLinks": 13,
+    "reviewedPersonReuses": 13,
+    "newPeople": 0,
+    "cardRelationships": 13,
+    "siteRelationships": 0,
+    "sourceContactPoints": 28,
+    "priorContactLinksRetained": 63,
+    "held": 7,
+    "allSourcePayloadsVersionsAndActorsVerified": true,
+    "allIdentitiesRemainUnverified": true,
+    "allNewContactPointsNonPrimaryAndUnverified": true,
+    "privateEvidenceSha256": "5b3cce320e3904b4a8582c5ec13f79a364fabc958358d81b3c68119273a57a56"
+  },
+  "finalPreservation": {
+    "priorIdentitiesPreserved": 4511,
+    "priorCustomerLinksPreserved": 52,
+    "priorContactPointsPreserved": 115,
+    "customerSourcePayloadsPreserved": 1552,
+    "scope": "Selected identity fields, customer links, contact points, retained customer source payloads; not every production field."
+  },
+  "publishedSourceLinkTotals": {
+    "at": "2026-10-14T06:38:37.406975+00:00",
+    "publishedSourceLinks": {
+      "job": 931,
+      "site": 78,
+      "contact": 76,
+      "customer": 72
+    }
+  },
+  "nextReconciliation": {
+    "sources": 1552,
+    "exportAccounts": 1650,
+    "states": {
+      "linked": 71,
+      "held": 819,
+      "linked_account_needs_review": 1,
+      "ready_for_operator_review": 759
+    },
+    "reasons": {
+      "existing_identity_candidates": 437,
+      "account_postcode_not_corroborated": 18,
+      "account_holder_differs_or_uncertain": 327,
+      "other_account_candidates": 102,
+      "category_needs_review": 11,
+      "person_category_has_company_name": 18,
+      "not_in_retained_api_sources": 98
+    },
+    "ambiguousRelationships": 0,
+    "reviewBatches": 38,
+    "applied": 0
+  },
+  "browser": {
+    "environment": "production",
+    "stableOrigin": "https://app.openfolk.ai",
+    "signedInOperator": true,
+    "customerShowsSixJobs": true,
+    "jobDrilldownAndReturn": true,
+    "contactVisible": true,
+    "savedContactChannelRead": true,
+    "missingCommunicationsDisclosed": true,
+    "unknownCompletionTimezoneExcluded": true
+  },
+  "limitations": [
+    "The provider UI/export has 98 customer accounts absent from retained API traversal; full provider coverage is unproven.",
+    "Seven contacts in this group remain held: one generic label, one possible duplicate and five current identity-candidate collisions.",
+    "No linked communication or finding was returned for the inspected customer; broader attribution remains required.",
+    "The customer summary records six completed jobs but its secondary status breakdown omits a completed category; this presentation gap remains to fix.",
+    "Original Commusoft descriptions remain unchanged, including historical code labels actually retained by that provider.",
+    "Scoring, broader historical coverage, operator recovery and recurring-backup acceptance remain open."
+  ],
+  "mutations": "Existing logged operator customer and work review controls only; no code, schema, permissions, credentials, provider writes or schedules changed."
+}

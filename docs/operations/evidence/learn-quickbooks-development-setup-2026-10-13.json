@@ -1,0 +1,39 @@
+{
+  "state": "registered_and_verified",
+  "project": "saatxzwxvdvqevbnskxy",
+  "app": "4ef4971d-2a39-4309-8c6c-46510d679c59",
+  "environment": "sandbox",
+  "redirect": "https://saatxzwxvdvqevbnskxy.supabase.co/functions/v1/quickbooks-oauth-callback",
+  "revision": 1,
+  "secretEqualityVerified": true,
+  "connections": 1,
+  "imports": 0,
+  "at": "2026-10-13T18:28:41.214Z",
+  "callbackSavedAndVerified": true,
+  "defaultPlaygroundCallbackPreserved": true,
+  "keychainSavedAndVerified": true,
+  "onePassword": "unsaved recovery edit cancelled; no QuickBooks recovery field saved",
+  "temporaryPlaintextRemoved": true,
+  "signedInSandboxRegistrationVisible": true,
+  "keyRotation": false,
+  "productionChanges": false,
+  "currentState": "inactive_pending_owner_development_secret_rotation",
+  "active": false,
+  "secretIncident": {
+    "description": "Development secret appeared in a tool diagnostic selected-text block",
+    "scope": "Development sandbox app only",
+    "temporaryFileRemoved": true,
+    "testAppDisabled": true,
+    "ownerRotationRequested": true,
+    "productionCredentialsInvolved": false
+  },
+  "oauthStart": {
+    "createdAt": "2026-10-13T18:38:11.966932Z",
+    "environment": "sandbox",
+    "status": "authorizing",
+    "tokenGeneration": 0,
+    "companyBound": false,
+    "tokenSaved": false,
+    "providerConsentGranted": false
+  }
+}

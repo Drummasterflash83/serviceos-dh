@@ -1,0 +1,131 @@
+{
+  "version": "learn-customer-estate-publication/1",
+  "state": "verified_live",
+  "at": "2026-10-14T04:28:02.153523+00:00",
+  "frontend": "5375262266445fc9d913b96242d4c7a51387d0d4",
+  "customerSitesAndJobs": {
+    "at": "2026-10-14T04:26:26.684072+00:00",
+    "state": "verified_live_customer_site_job_publication",
+    "customers": 1,
+    "sites": 26,
+    "jobs": 208,
+    "checks": {
+      "sourceVersionsAndActorVerified": true,
+      "reviewedAccountHolderEvidenceRetained": true,
+      "allOwnershipAndCardReferencesVerified": true,
+      "jobNumbersPreserved": true,
+      "sourceDescriptionsRetained": true,
+      "displayTitlesMatchSourceAfterBoundaryWhitespaceTrim": true,
+      "newIdentitiesRemainUnverified": true
+    },
+    "preservation": {
+      "priorIdentityProjections": 4503,
+      "priorCustomerLinks": 51,
+      "priorContactPoints": 101,
+      "retainedCustomerSourcePayloads": 1552,
+      "scope": "Selected identity fields, customer links/contact points and retained customer source snapshots; not every production field."
+    },
+    "privateEvidenceSha256": "fc3adcfb7c838f32e9643a23c25685616480363a30eef51352093901f03faf25"
+  },
+  "contacts": {
+    "version": "learn-reviewed-customer-contact-publication/1",
+    "state": "verified_live_contact_relationships",
+    "at": "2026-10-14T04:28:01.628653+00:00",
+    "publishedSourceLinks": 7,
+    "reviewedPersonReuses": 0,
+    "newPeople": 7,
+    "cardRelationships": 7,
+    "siteRelationships": 0,
+    "sourceContactPoints": 14,
+    "priorContactLinksRetained": 56,
+    "held": 5,
+    "allSourcePayloadsVersionsAndActorsVerified": true,
+    "allIdentitiesRemainUnverified": true,
+    "allNewContactPointsNonPrimaryAndUnverified": true,
+    "privateEvidenceSha256": "b480f9d6a9d9ba3878c772d942b72e4abf31e9824ef1fce856a855612af81b7f"
+  },
+  "sharedOfficeReview": {
+    "at": "2026-10-14T04:28:57.540134+00:00",
+    "linked": true,
+    "sameCustomer": true,
+    "loggedResults": 2,
+    "distinctPeople": 3,
+    "separateReviews": 2,
+    "primaryFieldsUnset": true,
+    "exactReviewedCandidates": true
+  },
+  "finalPreservation": {
+    "state": "verified",
+    "priorIdentityProjections": 4503,
+    "priorCustomerLinks": 51,
+    "priorContactPoints": 101,
+    "retainedCustomerSourcePayloads": 1552,
+    "scope": "Selected identity fields, original customer links, contact points and customer source payloads; not every production table or field."
+  },
+  "publicationTotals": {
+    "job": 899,
+    "site": 74,
+    "contact": 63,
+    "customer": 52
+  },
+  "nextReconciliation": {
+    "sources": 1552,
+    "exportAccounts": 1650,
+    "states": {
+      "linked": 51,
+      "held": 804,
+      "linked_account_needs_review": 1,
+      "ready_for_operator_review": 794
+    },
+    "reasons": {
+      "existing_identity_candidates": 417,
+      "account_postcode_not_corroborated": 18,
+      "account_holder_differs_or_uncertain": 327,
+      "other_account_candidates": 102,
+      "category_needs_review": 11,
+      "person_category_has_company_name": 18,
+      "not_in_retained_api_sources": 98
+    },
+    "ambiguousRelationships": 0,
+    "reviewBatches": 40,
+    "applied": 0
+  },
+  "jobReview": {
+    "savedBatches": 31,
+    "distinctJobs": 208,
+    "currentPropertyAndOwnerChecked": true,
+    "unrelatedSearchMatchesExcluded": true,
+    "normalReviewExpiryResumedWithoutDuplicatePublication": true
+  },
+  "signedInBrowser": {
+    "liveBrandingRetained": true,
+    "jobTotal": 208,
+    "sitePages": [
+      25,
+      1
+    ],
+    "contactTotal": 7,
+    "customerToJobAndReturn": true,
+    "leadingZeroServiceCodeVisible": true,
+    "sharedOfficeDetailsVisible": true,
+    "missingCommunicationDisclosed": true,
+    "unconfirmedCompletionTimezoneDisclosed": true
+  },
+  "limits": [
+    "One customer estate, not complete provider/customer coverage.",
+    "Five generic occupier/location labels remain unlinked pending appropriate role handling.",
+    "No communications are linked to this estate card yet.",
+    "Historical roles and job statuses do not establish current instructions, payment or verified performance.",
+    "Unzoned completion times remain excluded from duration/scoring."
+  ],
+  "validationNote": "The first exact-title assertion rejected three display titles with trimmed trailing source spaces. The existing published normaliser trims boundary whitespace; original source descriptions remain retained. The corrected assertion checks that documented presentation transformation and all original job IDs/relationships. No production rewrite was needed.",
+  "newAccess": false,
+  "providerWrites": false,
+  "schemaOrFrontendChanges": false,
+  "screenshotsSha256": {
+    "live-overview.png": "01ba391695f222a591713d994d61b33beaa8af66ecfa06fb876977d0c572316b",
+    "live-jobs.png": "46b7a423de6743f7d93b5d39a4bb866283a1b1e065bb55135ee661746ec0545d",
+    "live-contacts.png": "f4a2dbd24f72ea73e73c3c30c474be9bb5b1a984a40b1f14e727250528a5605f",
+    "live-shared-contact.png": "24d669975311a784dfc61b9995d339f633b1975cf9463ae81039fc50e799c735"
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "version": "learn-slack-observed-huddle-production/1",
+  "observedAt": "2026-10-13T23:26:17.303423+00:00",
+  "project": "tgbnakbxwcqjeimygroz",
+  "scope": "Exact observed automatic_ai_huddle_notes_enabled retention as source_needs_review, followed by one logged recovery under the existing public-channel campaign. No DMs, private channels, file downloads, paid AI, new credentials/access, schedules or frontend release.",
+  "schema": {
+    "state": "applied_verified",
+    "completedAt": "2026-10-13T23:23:59.584Z",
+    "planSha256": "6f9cf14f40912b281e8f442940e4ecfdfa2fd69cdcc6b7d6aebd014f01f627dc",
+    "countsBefore": {
+      "calls": 4462,
+      "emails": 35616,
+      "recordings": 2984,
+      "voicemails": 255,
+      "slackMessages": 14344,
+      "slackVersions": 14344
+    },
+    "countsAfter": {
+      "calls": 4462,
+      "emails": 35616,
+      "recordings": 2984,
+      "voicemails": 255,
+      "slackMessages": 14344,
+      "slackVersions": 14344
+    },
+    "changedFunctions": [
+      "learn_slack_message_kind",
+      "learn_slack_campaign_read"
+    ],
+    "preservation": "All retained Slack IDs and immutable version digests preserved; function owners/ACL, roles, public policies, profile/grants, connections and schedules unchanged. Other source counts did not decrease."
+  },
+  "runtime": {
+    "state": "published_and_verified",
+    "completedAt": "2026-10-13T23:24:58.288Z",
+    "preparationSha256": "4e5f7812bcc51315046b9a80b282d92d3840d1df1e32785e22f7086fe20409f4",
+    "sourceClosureSha256": "3956dd0c5db06857796d2d22b93ec80828dd71573584d398b06f3520019f1df8",
+    "changedFiles": [
+      "_shared/slack/slack_message_kind.ts"
+    ],
+    "endpoints": [
+      {
+        "name": "learn-slack-worker",
+        "version": 12,
+        "wireSha256": "20bb551f8c397fcdd9119b474981561bea533045b160f239becf2f32a05842aa"
+      },
+      {
+        "name": "platform-worker",
+        "version": 73,
+        "wireSha256": "aa47e8bbe8c6e96235699afcde92f04cfe3001e5d574b8f64f53c31504d84f57"
+      }
+    ],
+    "unrelatedFunctionsUnchanged": true,
+    "voicemailPreservation": {
+      "messages": {
+        "before": 255,
+        "after": 255,
+        "appended": 0
+      },
+      "sources": {
+        "before": 255,
+        "after": 255,
+        "appended": 0
+      }
+    },
+    "preservation": "Runtime-secret fingerprints, access, connection bindings, schedules and campaign scope/budgets unchanged; prior Slack IDs/version digests preserved."
+  },
+  "localAcceptance": {
+    "runtimeTests": 107,
+    "fullSchemaJourneys": 18,
+    "exactEnvelope": {
+      "state": "passed",
+      "guards": [
+        "wrong_target",
+        "wrong_digest",
+        "function_drift",
+        "late_failure"
+      ],
+      "rollbackVerified": true,
+      "heldRollbackRejected": true,
+      "sourcePreservation": {
+        "state": "all_archived_copy_rows_and_sequences_match",
+        "tables": 403,
+        "rows": 1591580,
+        "sequences": 7,
+        "comparisonSha256": "d3d976d8d301252eb86b73d8df2e1e928b3181240d57e09a81784251002bd89e",
+        "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+      },
+      "containerRemoved": true
+    },
+    "exactRuntimeBoot": "Both immutable artifacts booted offline and rejected missing authentication."
+  },
+  "liveRecovery": {
+    "channel": "C0A8M3G5NKX",
+    "failedJob": "12df1bd3-d9cf-4379-8e7f-199faf0b6b19",
+    "job": {
+      "id": "fb47041d-ee55-478c-a655-6463921fdc4f",
+      "status": "queued",
+      "job_type": "slack.history_sync",
+      "error_code": null,
+      "updated_at": "2026-10-13T23:25:55.126698+00:00",
+      "attempt_count": 0
+    },
+    "channelState": "needs_review",
+    "checkpointUnchanged": true,
+    "signedInOperatorSubmissionVerified": true,
+    "providerAcceptanceVerified": false,
+    "note": "Queued is not capture acceptance. Read this same durable job; do not submit a duplicate recovery."
+  },
+  "remaining": [
+    "Verify recovered page capture, retained marker and continued genuine replies from the actual provider.",
+    "Complete historical windows and ongoing capture handoff.",
+    "Complete Commusoft incremental contact/site-contact pass and watermark.",
+    "Broader card publication, useful customer summaries, configurable scoring and overall operational acceptance remain incomplete."
+  ]
+}

@@ -1,6 +1,15 @@
 # Drummonds Slack production intake — approved and started
 
-## Latest LIVE observation — 13 October, 18:06 BST
+## Latest LIVE observation — 13 October, 20:55 BST
+
+Canvas-source retention is installed with matched LIVE workers (Slack v10, platform
+v71). The exact held-page recovery is committed and queued; provider acceptance
+remains unverified. Both pending recovery handles and current coverage are in the
+[release evidence](evidence/learn-slack-observed-canvas-production-2026-10-13.json).
+The original campaign scopes and DMs exclusion remain intact. After any canvas
+source is retained, keep additive SQL and roll back runtime only.
+
+## Previous LIVE observation — 13 October, 18:06 BST
 
 The unavailable-source schema and matching workers are deployed and verified.
 The logged operator's exact recovery succeeded in one attempt with 80 records,

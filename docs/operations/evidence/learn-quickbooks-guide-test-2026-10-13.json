@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-13",
+  "scope": "TEST frontend and Intuit Development App URLs only",
+  "git": "3817044c4a5d2dd893769c8aa239169f4526181f",
+  "deployment": "dpl_HnmKvRxyTC79N3jBWQ4vVExpoRn5",
+  "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+  "target": null,
+  "readyState": "READY",
+  "aliases": [
+    "test.openfolk.ai",
+    "serviceos-learn-test-allkin.vercel.app"
+  ],
+  "aliasReadbackMatched": true,
+  "protection": "all",
+  "checks": {
+    "build": true,
+    "typecheck": true,
+    "mobileWidth": 390,
+    "mobileScrollWidth": 390,
+    "connectAndDisconnectRendered": true,
+    "hostedGuideRendered": true,
+    "consoleWarningsOrErrors": 0,
+    "signInTarget": "/login?redirect=%2Fopenfolk"
+  },
+  "intuitDevelopmentUrls": {
+    "host": "test.openfolk.ai",
+    "launch": "https://test.openfolk.ai/quickbooks",
+    "reconnect": "https://test.openfolk.ai/quickbooks?mode=connect",
+    "disconnect": "https://test.openfolk.ai/quickbooks?mode=disconnect",
+    "savedAndReloadVerified": true
+  },
+  "productionChanged": false,
+  "limitations": [
+    "Development app remains inactive pending owner secret rotation",
+    "No company authorized, no token or accounting import",
+    "No legal policies published or production keys released",
+    "Guide does not itself connect or revoke access"
+  ],
+  "previousTestDeployment": "dpl_5agREx9pF4kCMmC52BLmDzo8t31w"
+}

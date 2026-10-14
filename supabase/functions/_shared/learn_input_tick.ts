@@ -7,6 +7,9 @@ type Config = {
   // Explicit Slack override; absent preserves the original shared switch.
   // Enabling Slack alone never enables the Commusoft dispatcher.
   slackEnabled?: string;
+  // QuickBooks never inherits another provider’s activation.
+  quickbooksEnabled?: string;
+  quickbooksKey?: string;
   url?: string;
   serviceKey?: string;
   commusoftKey?: string;
@@ -20,7 +23,7 @@ const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v ===
 /** A tick may settle several distinct pages, never retry an uncertain page.
  * SQL still owns admission, per-credential pacing, leases and successor creation.
  * Keep the whole sequence below the one-minute scheduler interval. */
-export async function drainCommusoftPages(
+export async function drainInputPages(
   invoke: (timeoutMs: number) => Promise<Outcome>,
   clock: () => number = () => performance.now(),
   sleep: (ms: number) => Promise<void> = ms => new Promise(resolve => setTimeout(resolve, ms)),
@@ -45,21 +48,25 @@ export async function drainCommusoftPages(
   return outcome(progressed ? "processed" : "idle");
 }
 
+export const drainCommusoftPages = drainInputPages;
+
 export async function runLearnInputTick(config: Config, jobTypes: string[] | null, request: Fetch = fetch) {
   const all = (state: Outcome["state"]) => ({
-    commusoft: outcome(state), slackSchedule: outcome(state), slack: outcome(state),
+    commusoft: outcome(state), slackSchedule: outcome(state), slack: outcome(state), quickbooks: outcome(state),
   });
   // Explicitly filtered invocations must never start unrelated input work, even
   // if a caller supplies an empty list. Only the ordinary cron tick dispatches.
   if (jobTypes !== null) return all("skipped");
   const commusoftEnabled = config.enabled === "true";
   const slackEnabled = config.slackEnabled === undefined ? commusoftEnabled : config.slackEnabled === "true";
-  if (!commusoftEnabled && !slackEnabled) return all("disabled");
+  const quickbooksEnabled = config.quickbooksEnabled === "true";
+  if (!commusoftEnabled && !slackEnabled && !quickbooksEnabled) return all("disabled");
   if (!/^https:\/\/[a-z]{20}\.supabase\.co$/.test(config.url ?? "") || !config.serviceKey)
     return {
       commusoft: outcome(commusoftEnabled ? "unconfirmed" : "disabled"),
       slackSchedule: outcome(slackEnabled ? "unconfirmed" : "disabled"),
       slack: outcome(slackEnabled ? "unconfirmed" : "disabled"),
+      quickbooks: outcome(quickbooksEnabled ? "unconfirmed" : "disabled"),
     };
 
   async function invoke(name: string, key: string | undefined, schedule = false, timeoutMs = schedule ? 15000 : 100000): Promise<Outcome> {
@@ -75,6 +82,12 @@ export async function runLearnInputTick(config: Config, jobTypes: string[] | nul
       const value: unknown = await response.json();
       if (!object(value) || value.ok !== true || !object(value.result)) return outcome("unconfirmed");
       const result = value.result;
+      if (name === "learn-quickbooks-worker") {
+        if (result.claimed === 0 && ["idle", "waiting"].includes(String(result.state))) return outcome("idle");
+        if (result.claimed === 1 && result.state === "saved") return outcome("processed");
+        if ([0, 1].includes(result.claimed as number) && ["held", "attention"].includes(String(result.state))) return outcome("attention");
+        return outcome("unconfirmed");
+      }
       if (schedule) {
         const { checked, queued, held } = result;
         if (![checked, queued, held].every(v => Number.isSafeInteger(v) && Number(v) >= 0 && Number(v) <= 10) ||
@@ -95,7 +108,7 @@ export async function runLearnInputTick(config: Config, jobTypes: string[] | nul
       return outcome("unconfirmed");
     }
   }
-  const [commusoft, slack] = await Promise.all([
+  const [commusoft, slack, quickbooks] = await Promise.all([
     commusoftEnabled ? drainCommusoftPages(timeoutMs => invoke("learn-commusoft-worker", config.commusoftKey, false, timeoutMs)) : outcome("disabled"),
     (async () => {
       if (!slackEnabled) return { slackSchedule: outcome("disabled"), slack: outcome("disabled") };
@@ -103,6 +116,7 @@ export async function runLearnInputTick(config: Config, jobTypes: string[] | nul
       // Existing history jobs can continue even if creating a new window failed.
       return { slackSchedule, slack: await invoke("learn-slack-worker", config.slackKey) };
     })(),
+    quickbooksEnabled ? drainInputPages(timeoutMs => invoke("learn-quickbooks-worker", config.quickbooksKey, false, timeoutMs)) : outcome("disabled"),
   ]);
-  return { commusoft, ...slack };
+  return { commusoft, ...slack, quickbooks };
 }

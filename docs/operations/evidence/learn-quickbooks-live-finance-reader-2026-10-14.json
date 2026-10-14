@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-10-14T07:25:31.368Z",
+  "events": [
+    {
+      "event": "customer.finance.read",
+      "count": 1,
+      "latest": "2026-10-14 07:21:06.714362+00"
+    },
+    {
+      "event": "customers.read",
+      "count": 2,
+      "latest": "2026-10-14 07:24:28.799842+00"
+    }
+  ],
+  "liveOperatorReader": true,
+  "candidatePageSize": 25,
+  "hasNextPage": true,
+  "unlinkedCardExplained": true,
+  "linksCreated": false,
+  "privateScreenshotCaptured": false
+}

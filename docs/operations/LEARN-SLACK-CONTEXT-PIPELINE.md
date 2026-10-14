@@ -1,6 +1,132 @@
 # Slack conversation-to-work context
 
-Inspection on 13 October 2026. **Diagnostic and implementation proposal only; no production mutations, paid AI or UI changes.**
+**14 October, 06:08 BST — LIVE scheduled learning now uses the current mapper.**
+
+- The downloaded production scheduler v19 used `obs-ingest/1`, while the current
+  learning worker uses `obs-ingest/2`. Version 20 aligns selection to mapper 2 and
+  explicitly puts that version on newly queued jobs. The two newly reviewed
+  messages had no ledger under either mapper; no legacy ledger was assumed.
+- The exact compiled artifact passed isolated runtime checks for tenant-scoped
+  selection, explicit payload version, duplicate reuse and missing-auth rejection.
+  LIVE artifact readback matches, and an unauthenticated request returns 403.
+  Other deployed functions, access, review receipts and schedules are unchanged.
+- At 05:10 UTC the next normal scheduled cycle queued the second reviewed source
+  with explicit mapper 2 and retained the first source's existing queued job.
+  Both original texts, source revisions and immutable reviews remain intact.
+  Neither has a current-mapper observation yet; dispatch is verified, downstream
+  processing remains pending. No manual enqueue or restart was used, and no new
+  source reads, permission changes or paid AI were enabled by this runtime release.
+
+[Runtime release evidence](../../supabase/release/learn-reviewed-ingestion/runtime.manifest.json).
+
+## Reviewed selection release, 14 October 2026 04:54 UTC
+
+**14 October, 05:54 BST — bounded reviewed-context selection deployed in LIVE.**
+
+- The existing learning selector now reserves up to one fifth of a batch for
+  recorded Slack context reviews whose retained source revision still matches.
+  Remaining capacity continues oldest-first processing; unused review slots return
+  to historical work. Mapper-ledger exclusion and the 1–200 batch bounds remain.
+- Exact LIVE readback selected the two recently reviewed messages plus twenty-three
+  historical records. The 25-row read took **129 ms** on current production data.
+  Selector ownership, service-only permissions and invocation security remain
+  unchanged; the search path is now fixed. Source/review and schedule fingerprints
+  passed before/after comparison. No jobs were manually enqueued or restarted.
+- The final isolated full-schema rehearsal passes selection fairness, stale sources,
+  retained tombstones, tenant isolation, mapper states, limits, target/checksum
+  guards, injected failure after replacement and exact rollback/reapply. All
+  1,591,601 archived rows across 387 tables and seven sequences remain intact.
+  Two earlier rehearsal-only rollback packaging issues were fixed before promotion.
+- Hosted TEST lacks the activation selector prerequisite and was not changed. This
+  is isolated production-schema validation plus LIVE readback, not hosted TEST
+  acceptance. **Normally scheduled ingestion and downstream observation acceptance
+  remain pending**; selection alone does not establish learning completion.
+
+[Release and preservation evidence](evidence/learn-reviewed-ingestion-selection-live-2026-10-14.json)
+· [Exact release and rollback](../../supabase/release/learn-production-patches/reviewed-ingestion-selection-v1/README.md).
+
+## Latest timeline acceptance and queue diagnostic, 14 October 2026 04:42 UTC
+
+**14 October, 05:42 BST — two more public Slack messages connected to LIVE customer/job context.**
+
+- Reviewed two complete retained messages that explicitly concern one published
+  Commusoft job: a parts-location question and a follow-up reporting the stock
+  movement. Existing logged OpenFolk controls saved two immutable review receipts.
+  No provider calls, new permissions, schema change or runtime release were needed.
+- LIVE customer and job timelines both show the two messages. Full retained source
+  reading and customer-to-job-to-customer navigation pass. Original message text,
+  source-version hashes, Slack author attribution and unknown direction remain
+  intact; the customer is derived through the current reviewed job ownership.
+- Review scope requires exact-version public-channel capture proof. DMs, private
+  and shared channels are excluded. Reported stock movements/prices remain source
+  statements, not independently verified inventory or performance measurements.
+- Downstream learning is **not yet accepted for these two messages**. They have no
+  ingestion ledger or matching single/batch ingestion job at this check. The
+  existing five-minute selector is active and orders oldest first; **23,764 enriched
+  interactions** await a current-mapper ledger. The earlier four Slack recovery
+  observations still pass source/job binding, zero-action and preservation checks.
+- Next processing work: provide bounded priority for explicit context reviews while
+  continuing historical ingestion. The source-link result does not close this gate.
+  Operator job selection also currently requires paging through UUID-ordered jobs;
+  a usable job search remains needed for review at scale.
+
+[Public Slack context and handoff evidence](evidence/learn-public-slack-job-links-2026-10-14.json).
+
+## Latest repair, 14 October 2026 01:14 UTC
+
+The LEARN-only evidence ceiling is now deployed in LIVE worker v74 and TEST v26.
+It preserves Drummonds' assisted mode and human-review requirements while forbidding
+execution for this delivery. Exact artifact readback and auth guards pass; the
+full-schema assisted-mode and recovery journeys preserve all retained rows.
+
+All four original reviewed-message observation jobs stopped at the old mode gate.
+A bounded audited maintenance recovery retained those parents and source hashes,
+queued four identical-payload children and rebound their unobserved ingestion
+ledgers. At 01:14 UTC all four children are still queued. No new observation is
+claimed until the exact child receipt, source binding, graph job link and zero
+execution are verified. The generic operator retry control is still a placeholder;
+earlier references to recovering these jobs through existing controls were plans,
+not proof that such a control was implemented.
+
+See [recovery procedure](LEARN-OBSERVATION-RECOVERY.md) and
+[release evidence](evidence/learn-observation-mode-live-2026-10-14.json).
+
+## Latest learning diagnostic, 14 October 2026 00:52 UTC
+
+All four reviewed messages now have durable ingestion ledgers. The first downstream
+observation failed with `learn_observation_mode_review`; three remain queued. The
+current platform default is discovery, but Drummonds has a tenant-wide assisted
+mode override. The LEARN observation handler requires `mode_observe_only` and therefore
+rejects this result before publication. No new observation has been verified.
+
+The four source-bound timeline links remain valid and unchanged. Do not replay their
+reviews or alter Drummonds' global autonomy just to pass this gate. Complete the
+LEARN-only non-executing observation path, verify its audit and unchanged permissions,
+then recover the original failed delivery through the existing logged controls.
+
+## Timeline acceptance, 14 October 2026 00:24 UTC
+
+Four full retained public Slack conversations now have logged, source-revision-bound
+reviews against three corroborated canonical jobs and their current site/customer
+provenance. Readback verifies four committed receipts, unchanged source hashes,
+unknown direction and unchanged customer-speaker attribution. Signed-in LIVE shows
+all four on the customer timeline and the first on its job timeline. The existing
+customer job-context reader is therefore accepted for these actual relationships.
+
+The scheduled intelligence selector queued the first new review at 00:15 UTC; that
+exact job remains queued at 00:23 UTC, while other ingest jobs are succeeding.
+No new observation is verified yet. Do not restart it or describe the link itself
+as an AI finding. The standalone candidate helper remains unwired: this is explicit
+review, not automatic matching or comprehensive coverage. Timeline source excerpts
+are available; a full original Slack source reader remains unfinished.
+
+See [aggregate evidence](evidence/learn-slack-reviewed-context-live-2026-10-14.json)
+and the authoritative completion checklist. Earlier observations below are historical
+and do not override this later acceptance.
+
+## Historical inspection, 13 October 2026
+
+The initial diagnostic made no production mutations, paid AI or UI changes.
 
 ## Current evidence
 

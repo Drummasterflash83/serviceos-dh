@@ -1,0 +1,453 @@
+{
+  "version": 1,
+  "state": "backend_and_frontend_live_verified",
+  "source": {
+    "path": "supabase/migrations/20261102150000_learn_contact_separation.sql",
+    "sha256": "882704f352c47f0d86e853bae51138d2710fa7831def98cf288bb255b71b24cb"
+  },
+  "installSha256": "91c43ad7c81a8d6196e3b60f285d4a68df03870efacc1837e444273e2a485a0d",
+  "rollbackSha256": "1fed2639d05d0d6bafc77fe224cb94cdd323ec2465eb5cccf4e9d0e0091d0f0a",
+  "expectedBefore": [
+    {
+      "signature": "learn_business_input_projection_result(uuid,uuid,jsonb,jsonb)",
+      "hash": "62dcb225af750876b9a7be1bc7fbc821",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "learn_business_input_review_access(uuid,uuid)",
+      "hash": "a25a68be9299c292927072d5808dd4f0",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "learn_business_review_authority(uuid,uuid)",
+      "hash": "26872e3b0d18cc9b9eaf436a83e1b8ce",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "learn_commusoft_confirm_contact(uuid,uuid,uuid,text)",
+      "hash": "4cd4cc353c6403f2fe3f0124dc88c23a",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "signature": "learn_commusoft_contact_candidates(uuid,uuid,text,text,uuid,integer)",
+      "hash": "bbe5182bcd6dca5aa5103563f8cf0b48",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "signature": "learn_commusoft_property_owner(uuid,uuid,text,boolean)",
+      "hash": "7bfcf0fbaa474082cd5d0bca92e7a56f",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "learn_commusoft_work_batch(uuid,uuid,uuid,text,jsonb,text,boolean,uuid)",
+      "hash": "a9945afcaef0bb4702cf8b37172cd50c",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "signature": "learn_identity_deliver(uuid,uuid,uuid,text,text)",
+      "hash": "26ab0a27118b22a78d5bb3e07a405f3a",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "signature": "learn_identity_deliver_internal(uuid,uuid,uuid,text,text,uuid)",
+      "hash": "8a1a4612ecc06c82676687e69fbdd5b0",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "learn_identity_revision(interactions)",
+      "hash": "b5adccd05a33debdc3de642288c077dc",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "openfolk_business_review(uuid,text,text,jsonb)",
+      "hash": "c623f4b271406811f7e32b96077d07d7",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    }
+  ],
+  "expectedAfter": [
+    {
+      "acl": "{postgres=X/postgres}",
+      "hash": "740db099b4cb70b2660a3c02510e0183",
+      "owner": "postgres",
+      "signature": "learn_commusoft_separate_contact(uuid,uuid,text,jsonb)"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "hash": "a28b4b2681011321d7ea3ec989ee9653",
+      "owner": "postgres",
+      "signature": "learn_commusoft_work_batch(uuid,uuid,uuid,text,jsonb,text,boolean,uuid)"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "hash": "60adf2eca5be0f1c0aaa97765364eeca",
+      "owner": "postgres",
+      "signature": "learn_identity_deliver_internal(uuid,uuid,uuid,text,text,uuid)"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "hash": "66956079de9e9094f88ce921d303ec1c",
+      "owner": "postgres",
+      "signature": "learn_identity_shared_contact_channel(uuid,text,text)"
+    }
+  ],
+  "native": {
+    "state": "passed",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "baseline": "retained native archive plus 24 reviewed packages; later unrelated Slack runtime changes excluded",
+    "archive": {
+      "bytes": 196872981,
+      "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+    },
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "sourceSha256": "882704f352c47f0d86e853bae51138d2710fa7831def98cf288bb255b71b24cb",
+    "transactionRollback": true,
+    "existingIdentityRegressions": "passed",
+    "journeys": [
+      "original_contact_projection",
+      "shared_channel_distinct_people",
+      "complete_candidate_snapshot",
+      "changed_source_name",
+      "exact_replay_and_conflict",
+      "cancel_fence",
+      "invalid_endpoint_no_orphan",
+      "retained_original_people_and_channels",
+      "tenant_viewer_and_private_helper_denial",
+      "logged_operator_publication",
+      "late_receipt_rollback",
+      "late_operator_audit_rollback",
+      "revoked_operator_denied",
+      "shared_endpoint_identity_hold",
+      "reviewed_identity_attribution",
+      "source_region_and_tenant_isolation"
+    ],
+    "sourcePreservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 394,
+      "rows": 1591580,
+      "sequences": 7,
+      "comparisonSha256": "1194de8026b4ced83bbc196f3ffd1b0232018f5527b5fe0353a926e9e3a85b36",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "containmentAfter": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "containerRemoved": true
+  },
+  "hostedTestRehearsal": {
+    "at": "2026-10-14T03:37:01.716Z",
+    "state": "rehearsed_and_rolled_back",
+    "project": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "882704f352c47f0d86e853bae51138d2710fa7831def98cf288bb255b71b24cb",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "providerRequests": 0,
+    "baselineAndRecordsUnchanged": true,
+    "definitions": [
+      {
+        "acl": "{postgres=X/postgres}",
+        "hash": "740db099b4cb70b2660a3c02510e0183",
+        "owner": "postgres",
+        "signature": "learn_commusoft_separate_contact(uuid,uuid,text,jsonb)"
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "hash": "a28b4b2681011321d7ea3ec989ee9653",
+        "owner": "postgres",
+        "signature": "learn_commusoft_work_batch(uuid,uuid,uuid,text,jsonb,text,boolean,uuid)"
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "hash": "60adf2eca5be0f1c0aaa97765364eeca",
+        "owner": "postgres",
+        "signature": "learn_identity_deliver_internal(uuid,uuid,uuid,text,text,uuid)"
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "hash": "66956079de9e9094f88ce921d303ec1c",
+        "owner": "postgres",
+        "signature": "learn_identity_shared_contact_channel(uuid,text,text)"
+      }
+    ],
+    "error": null
+  },
+  "frontend": {
+    "typecheck": "passed",
+    "focusedTests": 12,
+    "vercelModeBuild": "passed",
+    "signedInAcceptance": "TEST and LIVE verified",
+    "test": {
+      "sha": "778f7ad828086888ba4d355319a4a538725e3eff",
+      "deployment": "dpl_DpvxmPfubUNPbTbUnpHgasNwD5BP",
+      "host": "test.openfolk.ai",
+      "rollback": "dpl_GxKWS5zVMVEuogKuMXs8HTGNqkoz"
+    },
+    "live": {
+      "sha": "5375262266445fc9d913b96242d4c7a51387d0d4",
+      "deployment": "dpl_AuCREnJ5GQNVN8YodUAYhNsnvqcB",
+      "rollback": "dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS",
+      "aliasesVerified": [
+        "app.openfolk.ai",
+        "openfolk.ai",
+        "serviceos-dh.vercel.app",
+        "www.openfolk.ai"
+      ]
+    }
+  },
+  "explicitRollbackRehearsal": {
+    "at": "2026-10-14T03:39:39.149Z",
+    "state": "install_and_explicit_reversal_rehearsed",
+    "project": "saatxzwxvdvqevbnskxy",
+    "installSha256": "91c43ad7c81a8d6196e3b60f285d4a68df03870efacc1837e444273e2a485a0d",
+    "rollbackSha256": "1fed2639d05d0d6bafc77fe224cb94cdd323ec2465eb5cccf4e9d0e0091d0f0a",
+    "restoredFunctionsAndGrants": true,
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "error": null
+  },
+  "productionChanged": true,
+  "postPublicationRollbackGuard": {
+    "at": "2026-10-14T03:40:34.383Z",
+    "state": "post_publication_sql_reversal_refused",
+    "project": "saatxzwxvdvqevbnskxy",
+    "rollbackSha256": "1fed2639d05d0d6bafc77fe224cb94cdd323ec2465eb5cccf4e9d0e0091d0f0a",
+    "functionsAndFixtureUnchanged": true,
+    "productionChanged": false,
+    "hostedTestChanged": false
+  },
+  "targets": [
+    {
+      "at": "2026-10-14T03:45:14.596Z",
+      "state": "installed_verified",
+      "project": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "882704f352c47f0d86e853bae51138d2710fa7831def98cf288bb255b71b24cb",
+      "installSha256": "91c43ad7c81a8d6196e3b60f285d4a68df03870efacc1837e444273e2a485a0d",
+      "functions": [
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "62dcb225af750876b9a7be1bc7fbc821",
+          "owner": "postgres",
+          "signature": "learn_business_input_projection_result(uuid,uuid,jsonb,jsonb)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "a25a68be9299c292927072d5808dd4f0",
+          "owner": "postgres",
+          "signature": "learn_business_input_review_access(uuid,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "26872e3b0d18cc9b9eaf436a83e1b8ce",
+          "owner": "postgres",
+          "signature": "learn_business_review_authority(uuid,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "4cd4cc353c6403f2fe3f0124dc88c23a",
+          "owner": "postgres",
+          "signature": "learn_commusoft_confirm_contact(uuid,uuid,uuid,text)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "bbe5182bcd6dca5aa5103563f8cf0b48",
+          "owner": "postgres",
+          "signature": "learn_commusoft_contact_candidates(uuid,uuid,text,text,uuid,integer)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "7bfcf0fbaa474082cd5d0bca92e7a56f",
+          "owner": "postgres",
+          "signature": "learn_commusoft_property_owner(uuid,uuid,text,boolean)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "740db099b4cb70b2660a3c02510e0183",
+          "owner": "postgres",
+          "signature": "learn_commusoft_separate_contact(uuid,uuid,text,jsonb)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "a28b4b2681011321d7ea3ec989ee9653",
+          "owner": "postgres",
+          "signature": "learn_commusoft_work_batch(uuid,uuid,uuid,text,jsonb,text,boolean,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "hash": "26ab0a27118b22a78d5bb3e07a405f3a",
+          "owner": "postgres",
+          "signature": "learn_identity_deliver(uuid,uuid,uuid,text,text)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "60adf2eca5be0f1c0aaa97765364eeca",
+          "owner": "postgres",
+          "signature": "learn_identity_deliver_internal(uuid,uuid,uuid,text,text,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "b5adccd05a33debdc3de642288c077dc",
+          "owner": "postgres",
+          "signature": "learn_identity_revision(interactions)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "66956079de9e9094f88ce921d303ec1c",
+          "owner": "postgres",
+          "signature": "learn_identity_shared_contact_channel(uuid,text,text)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "c623f4b271406811f7e32b96077d07d7",
+          "owner": "postgres",
+          "signature": "openfolk_business_review(uuid,text,text,jsonb)"
+        }
+      ],
+      "accessUnchanged": true,
+      "retained": {
+        "links": 62,
+        "people": 16254,
+        "points": 6,
+        "versions": 18014
+      },
+      "existingRecordsPreserved": true,
+      "error": null
+    },
+    {
+      "at": "2026-10-14T03:52:57.647Z",
+      "state": "installed_verified",
+      "project": "tgbnakbxwcqjeimygroz",
+      "sourceSha256": "882704f352c47f0d86e853bae51138d2710fa7831def98cf288bb255b71b24cb",
+      "installSha256": "91c43ad7c81a8d6196e3b60f285d4a68df03870efacc1837e444273e2a485a0d",
+      "functions": [
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "62dcb225af750876b9a7be1bc7fbc821",
+          "owner": "postgres",
+          "signature": "learn_business_input_projection_result(uuid,uuid,jsonb,jsonb)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "a25a68be9299c292927072d5808dd4f0",
+          "owner": "postgres",
+          "signature": "learn_business_input_review_access(uuid,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "26872e3b0d18cc9b9eaf436a83e1b8ce",
+          "owner": "postgres",
+          "signature": "learn_business_review_authority(uuid,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "4cd4cc353c6403f2fe3f0124dc88c23a",
+          "owner": "postgres",
+          "signature": "learn_commusoft_confirm_contact(uuid,uuid,uuid,text)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "bbe5182bcd6dca5aa5103563f8cf0b48",
+          "owner": "postgres",
+          "signature": "learn_commusoft_contact_candidates(uuid,uuid,text,text,uuid,integer)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "7bfcf0fbaa474082cd5d0bca92e7a56f",
+          "owner": "postgres",
+          "signature": "learn_commusoft_property_owner(uuid,uuid,text,boolean)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "740db099b4cb70b2660a3c02510e0183",
+          "owner": "postgres",
+          "signature": "learn_commusoft_separate_contact(uuid,uuid,text,jsonb)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "a28b4b2681011321d7ea3ec989ee9653",
+          "owner": "postgres",
+          "signature": "learn_commusoft_work_batch(uuid,uuid,uuid,text,jsonb,text,boolean,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "hash": "26ab0a27118b22a78d5bb3e07a405f3a",
+          "owner": "postgres",
+          "signature": "learn_identity_deliver(uuid,uuid,uuid,text,text)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "60adf2eca5be0f1c0aaa97765364eeca",
+          "owner": "postgres",
+          "signature": "learn_identity_deliver_internal(uuid,uuid,uuid,text,text,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "b5adccd05a33debdc3de642288c077dc",
+          "owner": "postgres",
+          "signature": "learn_identity_revision(interactions)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "66956079de9e9094f88ce921d303ec1c",
+          "owner": "postgres",
+          "signature": "learn_identity_shared_contact_channel(uuid,text,text)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "c623f4b271406811f7e32b96077d07d7",
+          "owner": "postgres",
+          "signature": "openfolk_business_review(uuid,text,text,jsonb)"
+        }
+      ],
+      "accessUnchanged": true,
+      "retained": {
+        "links": 794,
+        "people": 3302,
+        "points": 93,
+        "versions": 18079
+      },
+      "existingRecordsPreserved": true,
+      "error": null
+    }
+  ],
+  "sqlRollbackAfterPublication": "Refused: retain shared-endpoint protection and use a forward correction; frontend rollback remains available."
+}

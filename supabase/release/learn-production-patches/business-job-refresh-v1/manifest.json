@@ -1,0 +1,153 @@
+{
+  "state": "verified_offline_not_deployed",
+  "project": "tgbnakbxwcqjeimygroz",
+  "sourceSha256": "2441325c79dc575647fd567e42123f337270b2de5002b25a77f29b741cf38e4a",
+  "applySha256": "26189934601e192be3eaad01e12e128cf5a1b876aab1368cb41568f25244c1d3",
+  "emptyRollbackSha256": "6b73aec5f09f529bf33ddaebb6170c28dacfd029723f1a206099d1ae64b9f411",
+  "pauseRollbackSha256": "dbc9e28f1032dea33629fc2991b69b277a932669a3fb768f9b536e00f9f62d28",
+  "prerequisites": [
+    {
+      "name": "learn_business_input_review_access",
+      "signature": "learn_business_input_review_access(uuid,uuid)",
+      "md5": "a25a68be9299c292927072d5808dd4f0",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "name": "learn_business_input_time_detail",
+      "signature": "learn_business_input_time_detail(jsonb)",
+      "md5": "7ddecc80b1969c17cdfcee8293c5b11c",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "name": "learn_card_slack_job_context",
+      "signature": "learn_card_slack_job_context(uuid,uuid,uuid)",
+      "md5": "c9c46bc594b5008a9642bbcaa09d7e06",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,learn_card_communication_reader=X/postgres}"
+    },
+    {
+      "name": "learn_commusoft_confirm_work_record",
+      "signature": "learn_commusoft_confirm_work_record(uuid,uuid,uuid,text)",
+      "md5": "84fc396441209fec479204f7c44a14d8",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "name": "learn_commusoft_property_owner",
+      "signature": "learn_commusoft_property_owner(uuid,uuid,text,boolean)",
+      "md5": "7bfcf0fbaa474082cd5d0bca92e7a56f",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "name": "learn_commusoft_work_review_page",
+      "signature": "learn_commusoft_work_review_page(uuid,uuid,text,text,integer)",
+      "md5": "0245d7c999f4393a42c58578d101085c",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "name": "learn_commusoft_work_review_search",
+      "signature": "learn_commusoft_work_review_search(uuid,uuid,text,text,text,integer)",
+      "md5": "b488b788541a41110f485b04cb72febe",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "name": "learn_customer_business_context",
+      "signature": "learn_customer_business_context(uuid,uuid,text,uuid,text)",
+      "md5": "0aca3dac49b265d26a51034b00a7ce12",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "name": "learn_slack_document_withheld",
+      "signature": "learn_slack_document_withheld(uuid,jsonb)",
+      "md5": "dcd5606ed5fab4214ce581b4e7f610b8",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "name": "openfolk_business_review",
+      "signature": "openfolk_business_review(uuid,text,text,jsonb)",
+      "md5": "c6a8d25c80288fd65a0b602750ef99ac",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    }
+  ],
+  "requiredBeforeExecution": [
+    "Signed-in TEST frontend acceptance",
+    "Fresh LIVE definition and preservation snapshots",
+    "Matched frontend release from the existing LIVE tree, excluding unrelated branch changes"
+  ],
+  "newProviderRequests": 0,
+  "sourceWritesOnInstall": false,
+  "afterFunctions": [
+    {
+      "acl": "{postgres=X/postgres,learn_card_communication_reader=X/postgres}",
+      "md5": "2adbf3b163734e7a92efff84ae140b94",
+      "name": "learn_card_slack_job_context",
+      "owner": "postgres",
+      "signature": "learn_card_slack_job_context(uuid,uuid,uuid)"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "9281951f956bd9c7eec12636d27edaad",
+      "name": "learn_commusoft_confirm_work_record",
+      "owner": "postgres",
+      "signature": "learn_commusoft_confirm_work_record(uuid,uuid,uuid,text)"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "8e2cb43fe4fda4c24926399c3ef8917b",
+      "name": "learn_commusoft_work_review_page",
+      "owner": "postgres",
+      "signature": "learn_commusoft_work_review_page(uuid,uuid,text,text,integer)"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "4385d308eb96da5891d0c59143fa2bd6",
+      "name": "learn_commusoft_work_review_search",
+      "owner": "postgres",
+      "signature": "learn_commusoft_work_review_search(uuid,uuid,text,text,text,integer)"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "0176020ae98545133b07c0a841f5862b",
+      "name": "learn_customer_business_context",
+      "owner": "postgres",
+      "signature": "learn_customer_business_context(uuid,uuid,text,uuid,text)"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "c623f4b271406811f7e32b96077d07d7",
+      "name": "openfolk_business_review",
+      "owner": "postgres",
+      "signature": "openfolk_business_review(uuid,text,text,jsonb)"
+    },
+    {
+      "name": "learn_commusoft_job_fields",
+      "signature": "learn_commusoft_job_fields(jsonb,text)",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "md5": "3fe8bdb8623aafa6f71890101c71c97e"
+    },
+    {
+      "name": "learn_commusoft_job_refresh_plan",
+      "signature": "learn_commusoft_job_refresh_plan(uuid,uuid)",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "36cb885d292a8b9a80ce467e26027ec4"
+    },
+    {
+      "name": "learn_commusoft_job_refresh",
+      "signature": "learn_commusoft_job_refresh(uuid,uuid,uuid,uuid,text,text,text)",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "md5": "cd4fdf833ca4c4d6f513307ff158a49a"
+    }
+  ],
+  "rehearsalEvidence": "docs/operations/evidence/learn-business-job-refresh-release-rehearsal-2026-10-13.json"
+}

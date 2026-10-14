@@ -7,6 +7,1247 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October — Build 00 documentation audit:** the [LEARN V2 audit receipt](../roadmap/drummonds-serviceos-builds/receipts/00-2026-10-14.md)
+maps the existing build and every outstanding V1 obligation into the expanded
+stage plan. It adds no runtime acceptance, changes no V1 requirement and starts
+no dependent stage. Proposed business outcome contracts await review.
+
+**14 October, 10:43 BST — ten real public Slack observations committed in LIVE.**
+
+### Working and verified
+
+- All ten selected eligible messages now have mapper-2 observed ledgers, succeeded
+  ordinary observe jobs and committed receipts. Tenant, interaction and retained
+  source-revision bindings pass. Direction stays unknown, identity-review holds
+  remain and no customer/person/job link is invented. Every receipt has zero actions.
+- The other fifteen selected messages retain audited skips under the existing
+  eligibility policy. No job was manually enqueued, restarted or reprioritised.
+  Aggregate ordinary worker evidence also confirms processing after v77 publication.
+- Signed-in operator selection and Drummonds client navigation work in a separate
+  verification tab. The live input tiles show 48,519 saved emails, 4,473 calls,
+  2,992 recording rows, 32,023 Slack messages and 255 visible voicemails. These are
+  dated saved totals, not complete-history, playback or universal-learning claims.
+
+### Needs finishing
+
+- The Slack panel currently provides import/capture/recovery controls, not a browser
+  for these unassigned company-source observations. The existing authorised, audited
+  public-source reader can be reused; add a clear company-evidence journey without
+  fabricating customer/job attribution or exposing private/shared/DM sources.
+- Current eligibility relies on its established value/noise policy; comprehensive
+  company learning, edited-source revision recovery, broader customer/job mapping,
+  scorecards, operator recovery and dependable backups remain open.
+
+### Blocked externally
+
+- No new user decision or login is needed for the next source-evidence UX step.
+
+[Real source-learning acceptance](evidence/learn-public-slack-live-2026-10-14.json).
+
+
+**14 October — LIVE public Slack source-learning package deployed; real receipts pending.**
+
+### Working and verified
+
+- LIVE worker v77 and the guarded source qualifier/observer/selector are installed.
+  Exact executable readback and missing-auth 403 pass. A real selection of 25
+  records took 1,582 ms including the API round trip. The isolated 15,000-source
+  selection takes 45 ms; full-schema rollback/authority checks preserve all
+  1,591,601 archived rows across 390 tables and seven sequences.
+- Every pre-existing scoped source ID and canonical digest passes readback across
+  eleven datasets, including message bodies/headers, retained Slack payloads and
+  versions, voicemail/phone transcripts and audio/storage pointers. Gmail's mutable
+  history/labels are separate metadata. New arrivals are permitted; missing or
+  changed earlier records fail acceptance. Audio bytes remain a separate backup claim.
+- Twelve adversarial keyset guards and actual offline archive traversal passed.
+  Synthetic email-body and voicemail-pointer/transcript tampering is detected;
+  synthetic changes roll back. The release journal and original executable remain
+  private and recoverable locally, rather than in reboot-cleared temporary files.
+
+### Needs finishing
+
+- Real source-only observation receipts and signed-in source opening remain pending.
+  The first two exact-selection checks have no dispatched ledger yet. Follow normal
+  scheduling; do not claim successful learning from selector/runtime checks alone.
+- Customer/job/person attribution is still unresolved for these sources. Full
+  customer coverage, scorecards, operator recovery and recurring backups stay open.
+
+### Blocked externally
+
+- No new user action is needed. An automatic approval-review rejection required
+  rehearsal of the revised keysets; that gate passed and the subsequent LIVE
+  promotion was accepted. Two earlier schema attempts restored the exact previous
+  functions before worker change because the diagnostic login lacked EXECUTE; the
+  corrected check uses the existing admin connection in a READ ONLY transaction.
+
+[Deployment and preservation evidence](evidence/learn-public-slack-live-2026-10-14.json).
+
+
+**14 October — compiled public Slack learning journey verified; hosted release pending.**
+
+### Working and verified
+
+- Recovered all 124 original worker modules by their pinned byte hashes after the
+  Mac restart cleared temporary build files. Independently read back the exact
+  LIVE v76 executable and retained it privately for rollback. Only the three
+  reviewed Slack-learning files change; the candidate retains 125 modules.
+- The rebuilt executable passes four network-isolated synthetic journeys: proven
+  public source hand-off, duplicate reuse, missing proof denial and proof withdrawal
+  denial. Tenant filters and unresolved customer/job attribution pass. The ordinary
+  queue probe also passes authentication, ten-job capacity, lease and batch bounds.
+  Both test containers were removed; no real credentials or provider calls were used.
+- Forty binding/handler tests pass. All four LIVE function definition/permission
+  baselines still match the exact prepared schema release. LIVE remains v76.
+
+### Needs finishing
+
+- Measure the selector at production scale, publish the matching guarded schema
+  and worker, and verify real source opening, committed observations and scheduled
+  throughput. These new results are **local only**, not hosted acceptance.
+- Today's recording backup has two retained failed attempts: source read unconfirmed,
+  then inventory changed during scanning. Yesterday's successful aggregate remains
+  retained. Daily fresh coverage and dependable backup recurrence remain unverified.
+
+### Blocked externally
+
+- No new user access or decision is required for the current learning step.
+
+[Compiled runtime evidence](evidence/learn-public-slack-runtime-local-2026-10-14.json).
+
+
+**14 October, 08:26 BST — public Slack source learning verified locally; release pending.**
+
+### Working and verified
+
+- The existing LIVE operator session remains signed in. Chris confirmed that the
+  1Password item **Openfolk Test is TEST-only**; do not use its password on LIVE,
+  even though the saved website points to app.openfolk.ai. No password was copied.
+- Prepared source-only observations admit an exact retained public Slack version
+  with immutable capture proof and an unrevoked matching connection. They leave
+  direction, identity-review holds and customer/person/job links unchanged. Private,
+  shared, withheld, unproven and unsupported sources remain excluded.
+- Forty source-binding/worker tests, six existing observation-handler tests and
+  twenty-six pure-mapper checks passed. The exact guarded package passed an isolated
+  full-schema rehearsal using the current LIVE observer and withholding guard.
+  All 1,591,601 retained rows across 390 tables and seven sequences were preserved
+  by installation. Synthetic journeys roll back; only the expected local capture
+  sequence's called flag advances. Release rollback/reapply and unchanged existing
+  function permissions passed. Wrong target, source digest and late verification
+  failures each roll back at their intended guard.
+- The thousand-source local selection gate passed after fixing broad proof scans.
+  Reviewed messages retain reserved capacity, recent proven sources get a separate
+  reserve, and older history keeps progressing. Existing selection regression
+  checks passed. The three-file worker candidate compiles on the verified LIVE v76
+  source baseline; no other worker files were changed.
+
+### Needs finishing
+
+- **Not deployed to hosted TEST or LIVE.** Validate the candidate runtime, measure
+  production-scale selection, release matching schema/worker with preservation
+  evidence, then verify a real source-only observation and scheduled throughput.
+- These are retained-source observations, not confirmed customer/job attribution
+  or complete business analysis. Customer coverage, scoring, operator recovery and
+  full LEARN V1 acceptance remain open.
+
+### Blocked externally
+
+- No new user access is needed for this step. LIVE sign-in is working; TEST remains
+  a separate credential and runtime baseline.
+
+[Local source-learning evidence](evidence/learn-public-slack-observation-local-2026-10-14.json).
+
+
+**14 October, 07:42 BST — twenty more LIVE customer journeys published.**
+
+- Twenty individually reviewed customers, four sites and thirty-two jobs are now
+  linked through the existing audited OpenFolk controls. Thirteen corroborated
+  account-holder contacts reuse their exact identities, with twenty-eight retained
+  non-primary, unverified contact channels.
+- Saved source versions, actors, ownership and descriptions pass readback. Final
+  scoped comparison preserves 4,511 previous identity projections, fifty-two customer
+  links, 115 contact points, all sixty-three previous contact links and all 1,552
+  retained customer source payloads. No provider writes or access changes occurred.
+- Signed-in LIVE customer verification passes six-job display, job drill-down and
+  return, contact display and saved-channel reading. Missing communications and
+  unknown completion timezones remain visible. The secondary status breakdown omits
+  completed jobs despite the correct headline; fix that presentation gap separately.
+- Published totals are now **72 customers, 78 sites, 931 jobs and 76 contacts**.
+  Seven contacts in this group still need identity/role review. A fresh planner has
+  759 proposals, 819 held export accounts and one linked account needing review;
+  fifteen previously ready proposals acquired candidate holds after publication.
+- The 98 API-missing customers, broader attribution, scorecards, operator recovery
+  and recurring-backup acceptance remain unresolved. Full LEARN V1 is not complete.
+
+[Customer publication and preservation evidence](evidence/learn-customer-publication-2026-10-14-second.json).
+
+
+**14 October, 07:14 BST — LIVE Workspace directory discovery recovered automatically.**
+
+- The existing job succeeded on its normal fourth attempt, with a durable receipt
+  for 29 directory users, zero new mailboxes and four addresses absent from that
+  directory. Its connection verification timestamp advanced. No job was manually
+  enqueued or restarted, and old failed attempts remain retained as history.
+- The root cause was an unqualified sender-authority helper called from the
+  existing mailbox-update trigger under a restricted search path. Only two helper
+  definitions changed; their business rules, invoker security and service-only
+  permissions remain intact. Missing/revoked senders and sandbox limits still hold.
+- The full restored production schema reproduces the exact original exception,
+  passes the repaired trigger journey, preserves all 1,591,601 archived rows and
+  seven sequences, and proves exact helper rollback/reapply and unchanged grants.
+  Hosted TEST lacks these legacy helpers and was not changed.
+- LIVE checks preserve source identities, mailbox enablement/identity choices,
+  sender authority, operator access, modes and schedules. The four absent addresses
+  are not declared permanently retired, and saved communications remain intact.
+- Complete historical email coverage, other connection/mailbox acceptance, broader
+  source matching, scorecards and operational recovery still need completion.
+
+[Discovery recovery and evidence](LEARN-WORKSPACE-DISCOVERY-RECOVERY.md).
+
+**14 October, 06:50 BST — two reviewed public Slack sources accepted through observation.**
+
+- Both existing reviewed messages now have current-mapper ingestion ledgers,
+  succeeded observation jobs and committed observation receipts. Normal scheduling
+  processed them; no manual queue insertion, restart or source rewrite was used.
+- Each observation retains the reviewed customer/job context and points to the
+  correct canonical Commusoft job graph node. Original text, source revision,
+  speaker/direction and the two immutable audited reviews remain unchanged.
+- Both receipts prohibit execution and have zero action IDs. This proves stored
+  observations with source context, not autonomous follow-up, stock verification,
+  financial conclusions or a complete company picture.
+- Eight normal ten-job batches yielded 64 successes, 15 retained holds/ineligible
+  outcomes and one mailbox-discovery retry (`db_error`) needing diagnosis.
+- The prior queued status below is superseded for these two sources only. Broad
+  coverage, historical learning, identity review, scorecards, operator recovery and
+  recurring-backup acceptance still remain open; the full launch goal is active.
+
+[Observation acceptance](evidence/learn-reviewed-slack-observations-live-2026-10-14.json).
+
+**14 October, 06:47 BST — normal LIVE worker capacity increased and verified.**
+
+- TEST v28 and LIVE v76 now claim up to ten ordinary jobs per minute rather than
+  three. Exact compiled probes and hosted artifact/authentication checks pass;
+  handlers, permissions, capture gates, schedules and retained sources are preserved.
+- Five consecutive LIVE ticks used the new ten-job batch. The first four settled:
+  35 succeeded, four identity review holds and one ineligible mailbox. The fifth
+  remained active. Held/blocked records are not reported as successfully processed.
+- By 05:47 UTC, 22 learning-ingestion jobs and 12 Workspace jobs succeeded since
+  release. The oldest queued ingestion advanced from 05:10 to 05:35. The two
+  reviewed Slack sources had already passed ingestion before this release; their
+  final observation receipts remain pending. No manual enqueue or restart was used.
+- Legacy graph-sync diagnosis, broad historical learning, identity review, customer
+  coverage, evidence-backed scoring and operational acceptance remain open.
+
+[Worker release, monitoring and rollback](LEARN-WORKER-THROUGHPUT.md).
+
+**14 October, 06:24 BST — audited operator job search accepted in TEST and LIVE.**
+
+- The Slack context reviewer can now find published jobs by job number, description,
+  customer, address or postcode. Customer/location labels help disambiguate results;
+  source codes retain leading zeros. Searches do not create links automatically.
+- Signed-in TEST passes paged results, direct lookup, the existing context reader,
+  clearing a proposed link when the search changes and explicit empty results.
+  LIVE finds the reviewed Commusoft job directly, replacing nineteen pages of manual
+  selection. Both environments have matching real-operator read audit evidence.
+- Isolated full-schema tests preserve all 1,591,601 archived rows and seven sequences
+  while verifying tenant isolation, revocation, View-As denial, mandatory auditing
+  and function rollback/reapply. The frontend build and ten focused tests pass.
+  Hosted release preserves existing job/source records, access and source reviews.
+- Both stable TEST aliases and all four LIVE aliases serve their isolated candidates
+  with existing protection. Broader customer publication, attribution, scorecards,
+  reliable processing throughput and operational acceptance remain open. The two
+  reviewed Slack sources are still queued, not yet accepted as new observations.
+
+[Job search release and verification](LEARN-OPERATOR-JOB-SEARCH.md).
+
+**14 October, 06:08 BST — LIVE scheduled learning now uses the current mapper.**
+
+- The downloaded production scheduler v19 used `obs-ingest/1`, while the current
+  learning worker uses `obs-ingest/2`. Version 20 aligns selection to mapper 2 and
+  explicitly puts that version on newly queued jobs. The two newly reviewed
+  messages had no ledger under either mapper; no legacy ledger was assumed.
+- The exact compiled artifact passed isolated runtime checks for tenant-scoped
+  selection, explicit payload version, duplicate reuse and missing-auth rejection.
+  LIVE artifact readback matches, and an unauthenticated request returns 403.
+  Other deployed functions, access, review receipts and schedules are unchanged.
+- At 05:10 UTC the next normal scheduled cycle queued the second reviewed source
+  with explicit mapper 2 and retained the first source's existing queued job.
+  Both original texts, source revisions and immutable reviews remain intact.
+  Neither has a current-mapper observation yet; dispatch is verified, downstream
+  processing remains pending. No manual enqueue or restart was used, and no new
+  source reads, permission changes or paid AI were enabled by this runtime release.
+
+[Runtime release evidence](../../supabase/release/learn-reviewed-ingestion/runtime.manifest.json).
+
+**14 October, 05:54 BST — bounded reviewed-context selection deployed in LIVE.**
+
+- The existing learning selector now reserves up to one fifth of a batch for
+  recorded Slack context reviews whose retained source revision still matches.
+  Remaining capacity continues oldest-first processing; unused review slots return
+  to historical work. Mapper-ledger exclusion and the 1–200 batch bounds remain.
+- Exact LIVE readback selected the two recently reviewed messages plus twenty-three
+  historical records. The 25-row read took **129 ms** on current production data.
+  Selector ownership, service-only permissions and invocation security remain
+  unchanged; the search path is now fixed. Source/review and schedule fingerprints
+  passed before/after comparison. No jobs were manually enqueued or restarted.
+- The final isolated full-schema rehearsal passes selection fairness, stale sources,
+  retained tombstones, tenant isolation, mapper states, limits, target/checksum
+  guards, injected failure after replacement and exact rollback/reapply. All
+  1,591,601 archived rows across 387 tables and seven sequences remain intact.
+  Two earlier rehearsal-only rollback packaging issues were fixed before promotion.
+- Hosted TEST lacks the activation selector prerequisite and was not changed. This
+  is isolated production-schema validation plus LIVE readback, not hosted TEST
+  acceptance. **Normally scheduled ingestion and downstream observation acceptance
+  remain pending**; selection alone does not establish learning completion.
+
+[Release and preservation evidence](evidence/learn-reviewed-ingestion-selection-live-2026-10-14.json)
+· [Exact release and rollback](../../supabase/release/learn-production-patches/reviewed-ingestion-selection-v1/README.md).
+
+**14 October, 05:42 BST — two more public Slack messages connected to LIVE customer/job context.**
+
+- Reviewed two complete retained messages that explicitly concern one published
+  Commusoft job: a parts-location question and a follow-up reporting the stock
+  movement. Existing logged OpenFolk controls saved two immutable review receipts.
+  No provider calls, new permissions, schema change or runtime release were needed.
+- LIVE customer and job timelines both show the two messages. Full retained source
+  reading and customer-to-job-to-customer navigation pass. Original message text,
+  source-version hashes, Slack author attribution and unknown direction remain
+  intact; the customer is derived through the current reviewed job ownership.
+- Review scope requires exact-version public-channel capture proof. DMs, private
+  and shared channels are excluded. Reported stock movements/prices remain source
+  statements, not independently verified inventory or performance measurements.
+- Downstream learning is **not yet accepted for these two messages**. They have no
+  ingestion ledger or matching single/batch ingestion job at this check. The
+  existing five-minute selector is active and orders oldest first; **23,764 enriched
+  interactions** await a current-mapper ledger. The earlier four Slack recovery
+  observations still pass source/job binding, zero-action and preservation checks.
+- Next processing work: provide bounded priority for explicit context reviews while
+  continuing historical ingestion. The source-link result does not close this gate.
+  Operator job selection also currently requires paging through UUID-ordered jobs;
+  a usable job search remains needed for review at scale.
+
+[Public Slack context and handoff evidence](evidence/learn-public-slack-job-links-2026-10-14.json).
+
+**14 October, 05:30 BST — larger customer estate accepted in LIVE.**
+
+- Published one corroborated company account, all twenty-six retained sites and all
+  208 retained related jobs through existing logged OpenFolk controls. Each visible
+  job owner/property and source ID was checked against the fresh relationship
+  inventory. Unrelated numeric/description search matches were excluded. A normal
+  five-minute review expiry was renewed without replaying saved groups.
+- Seven named source contacts now link to the customer card with fourteen saved
+  unverified, non-primary contact-point records. Two explicit separation reviews
+  keep three people sharing an office number distinct; both exact candidate sets
+  and operator result audits pass. Five generic occupier/location labels remain
+  unlinked and still require suitable role handling.
+- Signed-in LIVE acceptance covers the 208-job count, both site pages (25 + 1),
+  seven contacts, saved shared-office details, job drill-down and return. The
+  leading-zero code is preserved. No linked communication is yet present; the
+  card discloses that gap and the completion-time limitations.
+- Source versions/actors, customer/site/job ownership and retained descriptions
+  pass readback. Three display titles trim trailing spaces through the existing
+  normaliser; their original descriptions remain unchanged. Scoped final comparison
+  preserves 4,503 earlier identity projections, 51 customer links, 101 contact
+  points and 1,552 customer source payloads; all 56 prior contact links remain.
+- Current published totals: **52 customers, 74 sites, 899 jobs and 63 contacts**.
+  Fresh reconciliation still has 794 individual-review proposals, 804 held export
+  accounts and one linked account needing review, including 98 API-missing accounts.
+  Broader publication/matching, generic role handling, scorecards and operational
+  acceptance remain requirements of the active goal.
+
+[Estate publication and preservation evidence](evidence/learn-customer-estate-publication-2026-10-14.json).
+
+**14 October, 05:15 BST — another complete retained customer/job/contact group accepted in LIVE.**
+
+- One corroborated company account, all forty-seven of its currently retained jobs,
+  and three explicitly related contacts were published through existing logged
+  OpenFolk controls. Job number 690 was excluded because its property was a
+  different account: number equality alone was not used as an identity match.
+- Signed-in LIVE acceptance shows both job pages (25 + 22), three contacts and
+  working customer-to-job navigation and return. Original source descriptions,
+  including historical codes and leading zeros, are preserved. Missing linked
+  communications and unconfirmed completion timezones remain visible; these times
+  do not support duration or scoring claims.
+- Exact source/actor/card ownership checks pass. All 4,499 earlier identity
+  projections, fifty customer links, ninety-five contact points and 1,552 customer
+  source payloads are preserved; all fifty-three prior contact links remain.
+  Six new non-primary, unverified contact-point records were added.
+- Current publication totals: **51 customers, 48 sites, 691 jobs, 56 contacts**.
+  A fresh reconciliation leaves 795 proposals for individual review, 804 held
+  export accounts and one linked account needing review. Ninety-eight export
+  customers are still absent from retained API coverage. Wider publication,
+  communication matching, scorecards and operator/operational acceptance remain open.
+- Backup health is within its daily window and the monthly voicemail sample is
+  current. The combined 09:00 local follow-up still awaits observed unattended
+  execution. No duplicate backup or capture runner was started.
+
+[Publication, browser and preservation evidence](evidence/learn-customer-history-publication-2026-10-14.json).
+
+**14 October, 05:00 BST — distinct shared-office contacts accepted in LIVE.**
+
+- Matched TEST/LIVE backend and isolated three-file frontends are released. Signed-in
+  TEST proves the default collision hold, required evidence, renewed approval, saved
+  result and customer-card details. The real LIVE contact then linked through logged
+  OpenFolk controls to its existing customer/site, retaining the other person.
+- Both named contacts now appear on the LIVE customer card. Two new unverified,
+  non-primary contact points are retained. Source/actor/relationships and the exact
+  operator audit pass. Fifty-two earlier contact links remain; fifty-three total.
+- Installation preserves all checked pre-release business sources, links, people,
+  points and account access. All four LIVE and both TEST aliases and their existing
+  protections are verified. SQL reversal refuses to remove ambiguity protection
+  after publication; the prior frontend remains the rollback option.
+- Capture/identity processing continues without restart or unexpected errors in the
+  observed sample. This resolves one shared-office hold, not overall matching or
+  coverage. Group labels, broader customer/job publication, source coverage gaps,
+  scorecards, operator recovery and scheduled independent recovery remain open.
+
+[Release, preservation and acceptance](LEARN-CONTACT-SEPARATION.md).
+
+
+**14 October, 04:40 BST — shared-contact separation and attribution guard rehearsed; release pending.**
+
+- Added an evidenced review for distinct named contacts sharing an office endpoint.
+  The source name/version and full candidate set are checked again at save; existing
+  people, primary choices and source links remain intact. Group labels remain held.
+- Automatic communication delivery now holds shared contact-point/primary matches
+  for review. Existing authorised per-communication attribution still works.
+- Native full-schema and hosted TEST rollback journeys pass, including receipt
+  recovery, stale reviews, permission denials, audit failures and downstream cards.
+  Existing identity regressions, twelve library tests, TypeScript and build pass.
+- Guarded installation/reversal is prepared and rehearsed. SQL reversal refuses to
+  remove the matching protection after distinct-contact publication. No hosted
+  installation or LIVE change has occurred. Signed-in TEST/LIVE acceptance and
+  real shared-office publication remain next, alongside the wider goal requirements.
+
+[Shared-contact release and acceptance](LEARN-CONTACT-SEPARATION.md).
+
+
+**14 October, 04:08 BST — another complete customer/site/job/contact publication group accepted in LIVE.**
+
+- Twenty reviewed customer accounts, two sites and seventeen jobs were published
+  through existing logged OpenFolk controls. Nineteen retained contacts then linked
+  to their customer cards: fourteen reused the corroborated account-holder person,
+  five created separate named contacts, and forty-one non-primary unverified contact
+  channels were retained. Three ambiguous/group/shared-office contacts remain held.
+- Readback verifies every source revision/payload, actor, customer/card/site owner
+  and original job number/description. All 4,492 pre-contact identity projections,
+  fifty customer links, fifty-two existing contact points and 1,552 retained
+  customer-version payloads remain intact. Ongoing capture advanced observations;
+  these scoped comparisons do not certify every production field.
+- Signed-in LIVE person and company cards show the linked jobs, service address,
+  contacts and saved email/telephone details. Job drill-down and return pass. Leading
+  zeros and historical source descriptions are preserved. Missing communications,
+  unverified records and completion-time limitations remain explicit.
+- At 03:07 UTC the published source-link totals are fifty customers, forty-eight
+  sites, 644 jobs and fifty-two contacts. The refreshed reconciliation has 796
+  proposals awaiting individual review, 804 held export accounts and one linked
+  account needing review. Ninety-eight export customers remain absent from API
+  source coverage. These are not complete-provider or ready-to-score claims.
+- Current identity-processing receipts show continued bounded progress with a queued
+  child; ambiguous events are held rather than counted as matches. The second
+  Commusoft cycle has completed properties/jobs and is traversing customer contacts.
+  No restart was issued. Remaining broad publication/matching, shared-contact review,
+  full input acceptance, scorecards, operator recovery and scheduled independent
+  recovery remain part of the active goal.
+
+[Publication and preservation evidence](evidence/learn-customer-publication-2026-10-14.json)
+· [Reconciliation procedure](LEARN-CUSTOMER-RECONCILIATION.md).
+
+**14 October, 03:25 BST — original Slack source drill-down accepted on LIVE and TEST.**
+
+- Customer cards now open retained Slack text beyond the short interaction excerpt,
+  with dated provenance and historical limitations. Two actual LIVE messages pass;
+  the same source opens through explicit OpenFolk client selection with a verified
+  actor/reason/revision audit. No production source, identity, capture or permission changes.
+- Matched additive backend and five-file frontends are released and verified. Native
+  archive preservation, hosted TEST rollback, synthetic signed-in TEST acceptance,
+  missing-proof denial and post-release authority/source checks pass. A single
+  clearly labelled credential-free synthetic TEST fixture is retained.
+- Existing browser documents can remain stale after normal reload. A fresh stable
+  URL loaded the exact candidate. General stale-document recovery remains open.
+- Next priority is broader current-source matching and canonical customer/job
+  publication, not another isolated visual polish milestone. Full connector
+  coverage, scorecards, usable operator recovery and scheduled independent recovery
+  remain requirements. The identity queue is continuing; review holds are not
+  treated as successful matches. The full goal remains active.
+
+[Release and limits](LEARN-SLACK-CARD-SOURCE.md).
+
+**14 October, 03:13 BST — retained Slack source reader verified and installed; frontend acceptance pending.**
+
+- Native and hosted TEST permission/visibility/audit journeys pass. The additive
+  reader is installed with identical definitions in TEST and LIVE. Existing source
+  identities and user access are preserved; no provider requests or capture changes.
+- The customer timeline and explicit OpenFolk communication selection now have a
+  prepared original-message reader, with dated text and provenance. Five frontend
+  files pass focused tests, TypeScript and the Vercel-target build. Stable-site
+  deployment and signed-in source acceptance remain pending.
+- This closes an evidence drill-down gap only. Wider current-source matching,
+  publication, capture coverage, scoring, operator recovery and scheduled independent
+  backup acceptance still need completion. The full goal stays active.
+
+[Retained Slack source journey](LEARN-SLACK-CARD-SOURCE.md).
+
+**14 October, 03:00 BST — four real Slack observations accepted through the LIVE customer card.**
+
+- All four original recovery children succeeded once, with committed observations,
+  matching reviewed customer/job context, retained sources/parents and audit lineage.
+  No actions or automation intents were created. No duplicate recovery was issued.
+- Signed-in LIVE shows all four observations and evidence links. Following one link
+  opens its dated source excerpt and provenance. These are historical 2022 messages;
+  they do not establish present-day outstanding requests or assigned ownership.
+- The recent-job frontend is verified on LIVE/TEST and checkpointed to GitHub. Two
+  LIVE 25-job pages, refresh, job drill-down and return passed. The exact deployments
+  and rollback sequence are recorded in `docs/DEPLOYMENT.md`.
+- Next delivery work is broader current-source/customer/job matching and publication,
+  complete capture/reconciliation, a usable original Slack source reader, evidence-led
+  scoring and logged operator recovery. Daily independent backup/restore operation
+  still needs its scheduled acceptance. No goal requirement is complete by proxy.
+
+[Slack acceptance](LEARN-OBSERVATION-RECOVERY.md) ·
+[Recent-job release](LEARN-CUSTOMER-RECENT-JOBS.md).
+
+
+**14 October, 02:56 BST — recent-job journey verified on LIVE; first Slack recovery observation committed.**
+
+- TEST and LIVE now serve the isolated recent-job frontends from verified Git.
+  All existing aliases and deployment protection are verified. Two LIVE 25-job
+  pages are chronological without duplicates; refresh, job drill-down and return
+  pass in the existing signed-in operator session. Original codes/descriptions,
+  recorded status and timezone limitations remain visible. Backend/source/access
+  preservation checks pass again after release.
+- One of the four original Slack recovery children succeeded at 01:55 UTC with a
+  committed observation receipt, matching interaction/work/job references, assisted
+  tenant mode and zero executable actions or automation intents. Three remain
+  queued. This is actual evidence processing, not yet an accepted displayed finding.
+- The signed-in source totals at 01:52 UTC were 37,524 emails, 4,462 calls, 2,984
+  recordings, 16,616 Slack messages and 255 visible voicemails. These are retained
+  counts, not complete historical or audio coverage. Email's latest failure at
+  01:52 was followed by a completed update at 01:53; per-account coverage still needs
+  reconciliation, and one success does not establish every mailbox is healthy.
+- Full provider coverage, canonical publication/matching, source inspection,
+  scorecards, operator recovery and unattended backup acceptance remain open.
+  This release does not narrow or complete the LEARN V1 goal.
+
+[Verified recent jobs](LEARN-CUSTOMER-RECENT-JOBS.md).
+
+
+**14 October, 02:45 BST — identity continuation accepted in LIVE; Commusoft incremental cycle complete.**
+
+- Eleven scheduled identity batches have committed 104 customer-card updates and
+  446 durable review holds, with no unconfirmed delivery and a verified next child
+  each time. Held records stay review-required. This proves continuation, not full
+  backlog completion or resolution of the outstanding identity reviews.
+- Commusoft completed all four stages: 2,423 properties (1,552 customers and 871
+  sites), 27 changed jobs, and all customer/site contact targets. Terminal receipts
+  match their successful jobs. The watermark advanced to 13 October 21:26 UTC;
+  ongoing capture remains enabled and the next check is scheduled for 02:37 UTC.
+  This traversal does not establish complete canonical publication or all contacts.
+- Signed-in LIVE LEARN shows current source totals and the reviewed Slack timeline.
+  Four downstream Slack observation recovery jobs remain queued at 01:45 UTC.
+- Recent-job ordering is prepared to replace random internal-ID ordering on the
+  customer card. The additive reader is installed in TEST/LIVE, with unchanged
+  original reader and access. Fourteen focused tests, TypeScript, local build,
+  native-schema and hosted TEST rollback journeys pass. Frontend publication and
+  signed-in recent-job acceptance are still pending.
+- Full input coverage, broader matching/publication, scoring, operator recovery
+  and operational acceptance remain unfinished; the whole goal stays active.
+
+[Recent jobs release](LEARN-CUSTOMER-RECENT-JOBS.md) ·
+[Commusoft cycle evidence](evidence/learn-commusoft-incremental-cycle-complete-2026-10-14.json).
+
+
+**14 October, 02:32 BST — identity continuation repair released to TEST and LIVE; scheduled acceptance pending.**
+
+- An old identity-review hold no longer requires unrelated full batches to stop.
+  Each held outcome stays explicitly review-required; the atomic settlement permits
+  one continuation only after a full batch of distinct durable publications with
+  exact counts and no unconfirmed delivery. No ambiguous customer is approved.
+- TEST worker v27 and LIVE v75 contain the two isolated runtime changes; downloaded
+  executable hashes and HTTP auth guards pass. The backward-compatible SQL patch is
+  installed with unchanged authority. Source identities, retained Slack versions,
+  modes, access, schedules, connections and unrelated functions are preserved.
+- Twenty-one focused tests and TypeScript pass. A full native-schema rehearsal
+  preserves 1,591,601 rows; legacy queue and new failure/continuation cases pass.
+  The exact patch/reversal also passes in hosted TEST with synthetic rollback.
+- The original scheduled identity job remains queued at 01:32 UTC. Its real
+  continued-batch receipt is still required. Four Slack observation recovery
+  children also remain queued; none has been restarted or called an AI finding.
+- The projection chain continues: 18 completed batches plus one running batch at
+  01:26 UTC, with 380 committed email projection receipts at that observation.
+  Commusoft's existing incremental pass has checked 824/871 site-contact targets
+  at 01:31 UTC; its cycle watermark has not yet advanced.
+- Broader publication/matching, complete capture, scorecards, operator recovery and
+  operational acceptance remain open. No goal requirement has been deferred.
+
+[Identity continuation release and limits](LEARN-IDENTITY-CONTINUATION.md).
+
+
+**14 October, 02:14 BST — production projection is progressing; LEARN-only observation repair released.**
+
+- The ordered selector now has actual LIVE acceptance: six consecutive scheduled
+  batches succeeded with 120 committed email projection receipts. Every receipt
+  links to its expected interaction. Continuation is queued; no processing job was
+  manually restarted. Full backlog and phone-selection coverage are not yet proven.
+- Drummonds' assisted mode previously caused the LEARN observation handler to stop.
+  The repaired handler applies an evidence-only ceiling while retaining the real
+  tenant mode and human-review requirements in its audit. Global modes, profiles,
+  policies and other modules' autonomy are unchanged. No action is executed.
+- The exact isolated change is published as TEST worker v26 and LIVE v74. Their
+  distinct prior source closures are preserved outside this handler. Downloaded
+  executable hashes match, offline boots and hosted unauthorised HTTP guards pass.
+  Source identities, Slack versions, permissions, connections, schedules and secret
+  metadata were preserved. No new credential, provider request or paid AI was added.
+- Six handler tests, sixteen ingestion tests and ingestion/mode verifiers pass.
+  The isolated full native schema preserves 1,591,601 archived rows and verifies
+  assisted-mode audit, no automation intents/execution, duplicate and lost-response
+  handling, stale sources, wrong claims, cross-tenant rejection and atomic failure.
+- Four stopped Slack observations were recovered through a bounded maintenance
+  transaction after that rehearsal. Four identical-payload children are queued;
+  original terminal parents and interaction hashes are unchanged, lineage points to
+  each child, and four recovery events are retained. At 01:14 UTC no child observation
+  is complete. Do not resubmit these handles or call this an AI finding yet.
+- Generic operator job retry remains a placeholder: this maintenance repair does
+  not complete that controller requirement. Broader matching/publication, scoring,
+  complete capture/recovery and operational acceptance remain open.
+
+[Observation delivery and recovery evidence](evidence/learn-observation-mode-live-2026-10-14.json).
+[Recovery procedure and limits](LEARN-OBSERVATION-RECOVERY.md).
+
+
+
+**14 October, 01:52 BST — ordered projection repair installed; Slack learning mode mismatch confirmed.**
+
+- The earlier selector repair did not clear production acceptance: the original job
+  exhausted its fifth attempt at 00:45 UTC, with another SQLSTATE 57014 cancellation
+  in the pending selector. Its terminal receipt is retained, not restarted.
+- The second repair takes the first eligible batch from each source in indexed
+  occurrence order before merging. Twenty-five exact-selection cases pass on 36,500
+  synthetic emails, including tied timestamps, fallback dates, drafts, review holds,
+  current phone versions and tenant isolation. The early eligible batch visits 20
+  email rows and measured 0.067 s versus 2.546 s for the original query locally.
+- Hosted TEST full-schema rehearsal preserved existing selections and source hashes
+  and restored the original function/index state. Exact guarded patch/rollback,
+  wrong-target rejection and late-failure rollback passed offline. TEST and LIVE
+  installations at 00:50 UTC verify the function and both indexes, with unchanged
+  authority. No source records, schedules, credentials or permissions were changed.
+- The scheduler's new projection job is queued with zero attempts at 00:51 UTC.
+  Its eventual result is required before claiming production performance acceptance.
+  A mostly current or held inventory may still require scanning for eligible work.
+- All four reviewed Slack messages now have durable ingestion ledgers. The first
+  observation was held by `learn_observation_mode_review`; three remain queued.
+  The actual tenant override is `assisted`, while this LEARN handler requires an
+  observe-only result. Links and source hashes remain intact. No mode configuration
+  was altered and no new observation or AI finding is claimed. Resolve the LEARN-only
+  observation constraint without silently changing other modules' autonomy.
+- Capture continues: 15,599 Slack sources at 00:48 UTC; 18/20 active and 122/160
+  archived channel windows complete. Commusoft has checked 398/871 site-contact
+  targets after all 1,552 customer-contact targets; the full-cycle watermark remains
+  unchanged. Broader publication, matching, scoring and operational acceptance stay open.
+
+[Ordered projection evidence](evidence/learn-projection-ordered-selection-live-2026-10-14.json).
+
+
+**14 October, 01:41 BST — projection selection repair installed in TEST and LIVE; runtime acceptance pending.**
+
+- The existing production projection job is retrying with inventory unconfirmed;
+  database logs identify cancellation (SQLSTATE 57014) in its pending selector at
+  23:44 UTC. The exact cause of the entire production delay remains unproven.
+- The selector now avoids unnecessary revision work for missing projection markers
+  and computes final fingerprints after choosing its bounded batch. Exact review
+  holds, drafts, current authoritative phone versions, tenant scope, ordering and
+  optional campaign-column compatibility are preserved.
+- On 36,500 synthetic emails, 19 equivalence cases passed; measured legacy selection
+  fell from 2.535 s to 1.363 s. Hosted TEST full-schema rollback compared exact current
+  selections and preserved its email/phone/interaction fingerprints. The exact pinned
+  production patch, reversal, wrong target and late-failure rollback pass offline.
+- TEST installed at 00:40 UTC and LIVE at 00:41 UTC. Readback confirms the expected
+  function body with unchanged owner, ACL, settings and security-definer status. No
+  source, schedule, credential, grant or job was changed/restarted by the release.
+- The original projection retry remains scheduled; acceptance requires its current
+  worker result, not merely the installed query. The first newly reviewed Slack
+  conversation now has an ingestion ledger and queued observation job, but no new
+  observation was verified at 00:35 UTC. Identity-review continuation remains open.
+
+[Projection selection evidence](evidence/learn-projection-selection-live-2026-10-14.json).
+
+
+**14 October, 01:24 BST — four reviewed Slack conversations verified on a LIVE customer timeline.**
+
+- Four complete public-channel messages were reviewed against three current published
+  jobs, their exact site names and customer ownership. Existing logged OpenFolk controls
+  recorded four immutable decisions. Readback confirms all source hashes, unknown
+  direction and customer-speaker attribution are preserved; no identity was invented.
+- Signed-in LIVE verification shows all four entries on the customer timeline and the
+  first on its job timeline, including the correct source excerpt and provenance.
+  These are reviewed context links, not new AI findings or complete Slack matching.
+- The scheduled intelligence selector has queued the first reviewed interaction.
+  Its exact job is still queued with zero attempts at 00:23 UTC. Other ingest jobs
+  are completing, so no duplicate or replacement was started. Observation acceptance
+  remains open until its committed downstream receipt is verified.
+- Commusoft's current cycle has completed all 1,552 customer-contact targets with a
+  terminal receipt. The site-contact pass reached 107 of 871 at 00:19 UTC; the full
+  cycle watermark remains unchanged until all stages complete.
+- No code, deployment, credentials, permissions, provider records or capture settings
+  changed. Wider publication, automated matching, scoring and operational acceptance
+  remain open. Private source text/screenshots are excluded from Git.
+
+[Reviewed Slack context evidence](evidence/learn-slack-reviewed-context-live-2026-10-14.json).
+
+
+
+**14 October, 01:06 BST — own-job status correction verified on LIVE and protected TEST.**
+
+- The real company → site job journey now shows “Job recorded complete” from the
+  existing scoped canonical read, with the unchanged pending verification and
+  unknown completion timezone alongside it. Open, pending, held, closed and unknown
+  statuses do not become completion. Expired/malformed reads withhold that status.
+- Thirty focused tests, TypeScript, local Vercel build and both remote Git builds
+  passed. LIVE `397d3c6` is verified on all four existing aliases and its production
+  target; TEST `a193dbd` is verified on both stable aliases, with the existing operator
+  session and About build/backend checks. Both rendered backend targets are correct.
+- The release contains four isolated frontend files. Source data, capture, schemas,
+  credentials and permissions are unchanged. Prior QuickBooks/customer summaries are
+  preserved and the held job-refresh frontend is still excluded from LIVE. Rollback
+  is the immediately preceding deployment in the release evidence.
+- Wider canonical publication, source-to-communication matching, ownership, findings,
+  scorecards and complete operational acceptance remain open. Commusoft's ongoing
+  customer-contact traversal reached 1,520 of 1,552 at 00:05 UTC; its watermark has
+  not advanced and full cycle completion must still be verified.
+- At 00:06 UTC Slack retained 14,982 sources: 18 of 20 active channel windows and
+  120 of 160 archived windows are complete. Replies and the existing held-page
+  recovery remain queued/running under their original campaign scope.
+
+[Own-job status release evidence](evidence/learn-own-job-status-live-2026-10-14.json).
+
+
+**14 October, 01:03 BST — company/site/job journey verified LIVE; job summary correction staged.**
+
+- One further corroborated company customer, thirteen explicit sites and their
+  retained site job were published through the existing logged OpenFolk controls.
+  Database readback verifies all fifteen links, provider ownership and the original
+  operator. Prior customer identities, links, contact points and customer source
+  versions are preserved. LIVE signed-in review shows all thirteen site addresses,
+  the job's unchanged `012` description, customer summary and job drilldown/return.
+- There are now thirty Commusoft customer links. This is incomplete publication,
+  not full contact/communication coverage. Missing ownership, source gaps and
+  unconfirmed completion timezone remain visible; no mapping or contact was invented.
+- The real journey exposed the known own-job brief contradiction: a recorded
+  completed job still says completion is not established. The four-file correction
+  preserves recorded status separately from verification, payment and timing. Thirty
+  focused checks, TypeScript and local build pass. Isolated LIVE `397d3c6` and TEST
+  `a193dbd` builds are staged, not yet accepted or promoted at this observation.
+- Slack is processing replies each minute. The existing recovery remains queued;
+  pacing and recent successful settlements confirm live work rather than a missing
+  worker. No duplicate job was started. Commusoft's contact pass reached 1,420 of
+  1,552 targets at 23:55 UTC; full cycle completion is not yet established.
+
+[Company/site publication evidence](evidence/learn-company-sites-live-2026-10-14.json).
+
+
+**14 October, 00:54 BST — two further customer identities and five explicit jobs verified LIVE.**
+
+- The existing logged OpenFolk review published two corroborated account holders
+  and their five explicitly owned jobs. The authenticated customer export and
+  current candidate checks supported each identity. A read-only database check
+  verified all seven source versions, customer/card relationships and original actor.
+- Provider job numbers and descriptions are preserved exactly, including leading
+  zeros in current codes and historical descriptions. A job whose number happens
+  to equal the searched customer number was excluded when ownership differed.
+  No QuickBooks mapping was guessed. Unknown completion timezones remain withheld
+  from duration/performance calculations and verification flags remain unchanged.
+- Before/after comparison preserved all prior identity projections, contact points
+  and customer links. There are now 29 customer links; one still needs account
+  review. The refreshed planner has 823 proposals and 798 held accounts, including
+  98 exported accounts absent from retained API sources. Full coverage remains open.
+- This is publication through the existing LIVE controls, with no code, schema,
+  provider, credential, permission or capture-schedule change.
+
+[Customer coverage evidence](evidence/learn-customer-coverage-live-2026-10-14.json).
+
+
+**14 October, 00:44 BST — completed job status visible in LIVE customer summaries.**
+
+- The customer brief now combines its linked communications/actions with a scoped,
+  expiring read of published job statuses. A real LIVE customer shows two recorded
+  completed jobs alongside its two retained email entries. Both jobs' pending
+  verification remains explicit; no status, verification flag, payment or date was
+  invented. Opening a job and returning to the customer still works.
+- Twenty-seven focused tests, TypeScript and the local build pass. Both isolated
+  Git candidates built successfully on Vercel. LIVE `b3a74c4` is verified on all
+  four existing aliases; protected TEST `f783f43` is verified on both stable aliases
+  and in the existing signed-in operator session. Each retains its own previous
+  frontend features and correct backend binding. No database/runtime/access changes.
+- The initial LIVE check revealed that the source-completed jobs have a separate
+  pending verification flag. The corrected release preserves and shows both facts.
+  Completion counts describe up to 25 published linked jobs; the summary labels
+  further jobs outside that read and does not establish full provider coverage.
+- The individual job-card brief still needs its own recorded status, and unresolved
+  owner names, wider publication, findings and scorecards remain open. This does
+  not close the independent changed-job frontend acceptance gate.
+- Slack at 23:40 UTC retained 14,838 sources, with 18 active and 118 archived windows
+  complete. Recovery `fb47041d-ee55-478c-a655-6463921fdc4f` was still queued at the
+  23:39 UTC read; no duplicate submission was made.
+
+[Customer summary LIVE evidence](evidence/learn-customer-job-brief-live-2026-10-14.json).
+
+
+**14 October, 00:26 BST — Slack notification handling verified LIVE; recovery queued.**
+
+- The exact observed `automatic_ai_huddle_notes_enabled` message is now retained
+  for source review by both LIVE workers and matching SQL. Its original payload
+  stays intact and is not interpreted as customer activity or performance evidence.
+  Existing records, access, credentials, schedules and campaign limits were preserved.
+- All 107 Slack runtime tests, 18 full-schema journeys, exact release/rollback
+  checks and both offline worker boots passed. All 1,591,580 archived COPY rows
+  and seven sequences matched. These checks do not establish full provider coverage.
+- The existing signed-in operator queued one recovery for the held archived channel.
+  Job `fb47041d-ee55-478c-a655-6463921fdc4f` is queued at attempt zero; retain this
+  handle and observe its outcome rather than submit another request. Provider
+  acceptance for this particular marker is still unproven.
+- The latest overall Slack read at 23:23 UTC retained 14,344 sources, with 18 active
+  and 115 archived channel windows complete. Commusoft at 23:26 UTC has verified
+  property/job stage receipts; customer contacts are 1,126 / 1,552 targets. Its
+  current cycle watermark remains held until all remaining phases complete.
+- Customer summary/ownership, broader linked coverage, findings and configurable
+  scoring remain unfinished. The separate changed-job frontend acceptance gate
+  remains open; this release does not satisfy it.
+
+[Slack LIVE release evidence](evidence/learn-slack-observed-huddle-production-2026-10-14.json)
+· [Exact release and rollback](../../supabase/release/learn-production-patches/slack-observed-huddle-v1/README.md).
+
+
+**14 October, 00:10 BST — scoped communication reader verified LIVE.**
+
+- The exact rehearsed reader is installed. A paired real-customer read returned
+  the same two-row digest in 639 ms versus 5,625 ms before. Two existing-session
+  LIVE refreshes show both emails and both Commusoft jobs without the communication
+  read warning. This is measured acceptance for this card, not a broad latency SLA.
+- All sixteen full-schema journeys and five release failure guards passed, including
+  inverse rollback and membership restoration. The atomic LIVE release checks equal
+  before/after fingerprints for 22 tables plus access/policies/schedules before commit.
+  The client timed out waiting for its response; no mutation was repeated. Read-only
+  reconciliation confirmed the exact committed function, owner/ACL, dependencies and
+  original membership. The per-table fingerprint receipt was not returned, which is
+  explicitly recorded as an evidence limitation.
+- The customer brief still does not combine completed-job status into its summary;
+  owner-name resolution, broader linked customer/contact coverage, findings and scoring
+  remain unfinished. The unrelated changed-job frontend acceptance gate is still open.
+- At 23:05 UTC Slack held 14,007 sources, with 18 active and 112 archived channel
+  windows complete. One recovery job succeeded at 23:01 UTC; the other remains held
+  for `automatic_ai_huddle_notes_enabled`. No failed job was blindly retried. The
+  ongoing Commusoft customer-contact pass reached 910 pages, without advancing its
+  cycle watermark prematurely.
+
+[Verified LIVE reader](evidence/learn-card-reader-live-2026-10-14.json) ·
+[Release and rollback procedure](LEARN-CARD-READER-CANDIDATES.md).
+
+
+
+**13 October, 23:59 BST — existing customer context verified; reader fix rehearsed.**
+
+- LIVE refresh now shows two retained email timeline entries alongside two newly
+  linked Commusoft jobs on an existing customer card. The original person, card
+  and both communication rows are unchanged. This establishes one real combined
+  journey, not comprehensive client coverage. Owner resolution and the brief's
+  completed-work summary still need integration.
+- A transient LIVE communication read failed before the successful refresh. The
+  exact error remains unconfirmed. The proposed reader now materialises linked
+  candidates before source inspection. Its 5,000-record regression reproduces
+  unnecessary unrelated-source inspection in the old query and prevents it in
+  the candidate, with equivalent person/company/explicit-ID results.
+- All sixteen offline full-schema journeys pass, including drafts, foreign-tenant
+  reads, source withholding and reviewed Slack context. All 1,591,580 archived
+  rows across 403 tables and seven sequences match. Transaction rollback and
+  role-membership restoration pass. The reader change is **not installed LIVE**;
+  a guarded release and signed-in post-install verification remain necessary.
+- Slack at 22:54 UTC retained 13,857 records, with 17 active and 112 archived
+  channel windows complete. One recovered job reached a newly observed
+  `automatic_ai_huddle_notes_enabled` subtype and stopped at its checkpoint.
+  Its handling needs implementation/verification before logged recovery; another
+  recovery job remains queued. No blind retries were made. Commusoft's current
+  customer-contact pass reached 805 pages, with its watermark still held until
+  cycle completion.
+- The separate refresh frontend remains held behind its pending sign-in
+  clarification. Automatic approval review also rejected reopening that preview;
+  this does not prevent the independent reader and ingestion work above.
+
+[Existing LIVE customer context](evidence/learn-existing-customer-context-2026-10-13.json)
+· [Offline reader acceptance](evidence/learn-card-communication-candidates-2026-10-13.json)
+· [Slack follow-up](evidence/learn-slack-intake-followup-2026-10-13.json).
+
+
+**13 October, 23:40 BST — further customer/job journey verified LIVE.**
+
+- One more corroborated customer and its three explicit Commusoft jobs are published
+  through the existing signed-in, logged LIVE operator controls. The LIVE card shows
+  all three jobs. Totals are 26 published customers and 619 jobs; broader publication,
+  contact/communication context, findings and scoring remain unfinished.
+- Readback verifies source versions, actor, card ownership and account-holder
+  evidence. The before/after comparison preserves 4,466 earlier identity projections,
+  25 customer links, 1,552 customer payloads and 52 contact points within its stated
+  scope. Original historical descriptions are retained; unknown completion timezones
+  remain excluded from duration/performance calculations.
+- The preceding read-only freshness audit found 615/616 published jobs current and
+  one changed completion status; all 25 customer, 33 site and 33 contact links were
+  current. This narrows the immediate refresh need without establishing full coverage.
+- Slack at 22:34 UTC retains 13,673 sources, with 17 active and 110 archived windows
+  complete. Both existing recovery jobs remain queued, attempt 0. Commusoft's next
+  contact pass has reached 610 pages; its existing cycle is continuing without restart.
+- New refresh frontend remains held, and its preview still shows sign-in. The
+  ambiguous saved LIVE/TEST credential clarification remains pending. The existing
+  LIVE session used here does not verify the new preview or satisfy its changed-job gate.
+
+[Additional LIVE journey](evidence/learn-customer-reconciliation-second-2026-10-13.json)
+· [Published projection freshness](evidence/learn-projection-freshness-2026-10-13.json).
+
+
+**13 October, 23:24 BST — job-refresh backend preserved in LIVE; frontend held.**
+
+- The exact guarded backend is installed in production. All nine function bodies,
+  ownership and ACLs match; all 133,019 rows across sixteen compared tables retain
+  identical digests. Both refresh ledgers remain empty. No job was changed.
+- Isolated frontend `41a22e6` is READY at protected candidate
+  `dpl_8aNn41L5xKaZADdN1YhNtxHTnrjt`, with verified rendered production binding.
+  It contains the six reviewed UI files plus HTML no-store rules; the matching
+  local build passes. LIVE aliases still serve `a11f204` / `dpl_FEvZQUizXBraRu71hJtGciJTPZER`.
+- Automatic approval review rejected promotion before real changed-source
+  acceptance. The saved credential named “Openfolk Test” points to app.openfolk.ai;
+  copying it was separately rejected as ambiguous. Chris was asked to identify it.
+  No password was copied, no session extracted, and no credential/grant changed.
+- TEST has no linked jobs with newer retained source versions. Its current-source
+  check passes; it cannot supply genuine changed-source acceptance without more
+  provider input. The protected production preview is available for that check,
+  using existing LIVE authority, before any alias change.
+- Slack at 22:22 UTC retains 13,643 sources: 17/20 active and 110/160 archived
+  windows are complete. The two recorded recovery jobs remain queued at attempt 0.
+  The next Commusoft cycle has terminal property/job receipts; contacts are at
+  phase 3, 490 pages against 1,552 customer targets, still running.
+- Additional isolated two-session races and a later return to prior source content
+  now pass. All three races observed actual lock waits and one durable outcome;
+  all 15 native journeys and 1,591,580 archived rows / seven sequences are preserved.
+  The disposable container was removed. This remains offline acceptance.
+
+[Production backend and held frontend evidence](evidence/learn-business-job-refresh-production-2026-10-13.json).
+[Concurrent/recurrence checks](evidence/learn-business-job-refresh-concurrency-2026-10-13.json).
+
+The queued Slack recoveries were evaluated in a rolled-back read-only transaction
+under the actual service-worker role context. Both are eligible with priority 60;
+11 and 15 eligible jobs respectively were ahead at that observation. Their existing
+handles remain authoritative. The initial administrative-role probe returned false
+because the function requires service-role claims; it was not a production defect.
+
+
+
+**13 October, 23:11 BST — TEST job-refresh UI partially verified; LIVE unchanged.**
+
+- The isolated frontend `119b13d` is READY on both protected stable TEST aliases.
+  Its rendered build and TEST backend binding were verified in the existing
+  signed-in operator session. Linked-job search and the “already latest” review
+  result pass. An actual changed-source apply remains unverified in hosted TEST.
+- The stable page initially served the older build after reload. An exact release
+  query loaded the correct build; the underlying cache cause still needs resolving.
+  Do not infer browser acceptance from Vercel alias metadata alone.
+- Both bounded review windows restored the original module/account settings.
+  Capture remained disabled during each review; no new provider calls, access grants
+  or canonical writes occurred. Raw browser evidence stays private and outside Git.
+- The isolated LIVE frontend candidate `535ba3e` passes 24 tests, TypeScript and
+  build, but is not deployed. Continue changed-source acceptance, fresh production
+  preservation and the real source-to-card journey before promotion.
+- Commusoft job-code authority and leading-zero preservation remain recorded in
+  AGENTS and the QuickBooks integration notes. Historical financial codes require
+  evidenced mappings; examples are not an automatic crosswalk.
+
+[TEST deployment and partial browser evidence](evidence/learn-business-job-refresh-test-2026-10-13.json).
+
+
+**13 October, 22:52 BST — job-refresh backend installed and preserved in TEST.**
+
+- The exact LIVE package passes target/digest/definition/existing-object/late-failure
+  guards, empty rollback, all 15 native journeys and a retained-history pause check.
+  The TEST alignment and job-refresh journey also pass, including both empty
+  rollbacks and restoration of restricted-reader role membership.
+- TEST installation matches all nine expected definitions and access settings.
+  All 78,378 rows across sixteen scoped source/canonical/access tables are unchanged;
+  new refresh, cancellation and capture-proof tables remain empty. No provider
+  requests, real refreshes, production changes or frontend feature release occurred.
+- The existing TEST operator session is signed in. The six-file frontend candidate
+  from the current TEST base passes 24 tests, TypeScript and build. Its deployment
+  and signed-in feature acceptance remain next, before the LIVE source/card journey.
+- LIVE Slack at 21:47 UTC retains 13,316 sources; 16/20 active and 107/160 archived
+  channel windows are complete. Two observed recovery jobs remain queued, attempt 0;
+  their authoritative handles were read without restarting them.
+
+[Exact release rehearsal](evidence/learn-business-job-refresh-release-rehearsal-2026-10-13.json)
+· [TEST backend readback](evidence/learn-business-job-refresh-test-2026-10-13.json).
+
+**13 October — durable job-refresh cancellation passes offline.**
+
+- The full native-schema rehearsal now covers cancelling obsolete previews,
+  delayed apply fencing, late cancellation of committed work, a second source
+  transition, ambiguous observations and revoked actor/module/connection access.
+  All 15 journeys and the archived-row/sequence preservation checks pass.
+- The matching client has 24 passing checks; TypeScript and build pass. This remains
+  local evidence: TEST and LIVE have not received the refresh feature.
+- Exact release guards and history-preserving recovery still need rehearsal. TEST
+  lacks two LIVE Slack context helpers, so its baseline must be aligned deliberately
+  before claiming cross-source browser acceptance. Broader LEARN work remains active.
+
+**13 October, 22:11 BST — source-to-job refresh and matching review UX pass offline.**
+
+- Added an append-only effective projection history and a reviewed Commusoft job
+  refresh. The full-schema scenario advances open to completed and restores the
+  proven customer/Slack context, without changing original identity links or source
+  history. Owner/site changes and local edits are held; uncertain dates do not
+  become invented instants. The real LIVE job has not been refreshed yet.
+- The existing review UI now has a saved/latest comparison, review reason and durable
+  scoped request recovery. Twenty-one client tests, TypeScript and frontend build
+  pass. No new frontend, hosted schema or runtime was deployed.
+- Full native-schema acceptance passes all 15 journeys, 42 withholding comparisons,
+  the 600-job regression and the new reviewed refresh path. Installation preserves
+  all 1,591,580 archived rows and seven sequences; the additional ledger is empty.
+  The first rehearsal caught a comparison that treated the new empty table as a data
+  change; the second caught a synthetic feature-flag constraint mismatch. Both were
+  corrected before the third complete passing run; no hosted data was involved.
+- Still needed before release: durable cancellation of obsolete pending requests,
+  additional transition/revocation cases, exact matching guards/rollback and hosted
+  TEST/browser acceptance. Then verify the actual LIVE completed-job/Slack journey.
+  Broader customer/site/contact refresh, unattended reconciliation and the remaining
+  LEARN coverage/scoring/operations requirements remain active.
+
+[Refresh design and release work](LEARN-BUSINESS-SOURCE-REFRESH.md) ·
+[Offline evidence](evidence/learn-business-job-refresh-rehearsal-2026-10-13.json).
+
+**13 October, 21:53 BST — customer communication timeout fixed and verified LIVE.**
+
+- The scoped `learn_card_slack_job_context` optimization is installed with its exact
+  rehearsed definition, owner and execute ACL. The signed-in customer card with
+  585 jobs now loads findings and communications without the earlier timeout;
+  nine contacts remain visible. It honestly returns no linked communications.
+- Full native-schema acceptance passed 15 journeys, 42 withholding comparisons
+  and the 600-unrelated-job regression. All 1,591,580 archived rows and seven
+  sequences were preserved. Rollback and target/digest/definition/access guards
+  passed. LIVE readback separately preserves all 33 contact source links, people,
+  endpoint choices, source payloads, actors and relationships.
+- A real reviewed Slack conversation is still correctly withheld from its customer
+  timeline because the linked Commusoft job version is stale. Exact source comparison
+  shows the job changed from `ongoing` to `completed`; only status/completed/closed
+  fields changed, while provider identity and property reference stayed the same.
+  The current canonical job remains open. This is a missing source-refresh workflow,
+  not a reason to bypass freshness checks or rewrite immutable source links.
+- Next: implement an audited, versioned refresh of published business records,
+  retaining original links and source history, checking current ownership and local
+  edits, and exposing held changes for review. Update source-aware card readers and
+  verify the real completed-job/Slack journey. Broader publication, communication
+  matching, capture coverage, scoring and operational readiness remain unfinished.
+- Latest observed LIVE inputs at 20:51 UTC: 33,111 emails, 4,462 calls, 2,984 recording
+  records, 12,470 Slack sources and 255 visible voicemails. Saved totals are not
+  historical coverage or completed-learning claims.
+
+[Production acceptance](evidence/learn-customer-context-lookup-production-2026-10-13.json)
+and [full-schema rehearsal](evidence/learn-customer-context-lookup-rehearsal-2026-10-13.json).
+
+**13 October, 21:44 BST — first complete scheduled Commusoft traversal verified LIVE.**
+
+- All four stages in the first unfiltered scheduled cycle have durable terminal
+  checkpoints backed by successful worker/page receipts. The cycle completed at
+  20:28:01 UTC and advanced its watermark to 16:02:03 UTC. Capture remains enabled;
+  the next scheduled check is 21:28:01 UTC. No job was manually restarted.
+- Properties: 25 pages, 1,552 customer records and 871 work addresses. Jobs: 127
+  pages, 12,637 records. Customer contacts: all 1,552 frozen customer targets,
+  2,402 distinct contact records. Site contacts: all 871 frozen site targets,
+  567 distinct contact records. Both contact terminal counts equal their plans.
+- This proves traversal of the authorized API inventory, not complete agreement
+  with Commusoft's UI. The previously observed 98 customer/111 site count differences
+  remain unresolved. Initial capture is not an atomic snapshot; subsequent cycles
+  must overlap the retained watermark. Canonical publication and communication
+  matching remain separate: 25 customers, 33 sites, 616 jobs and 33 contact source
+  links are currently published.
+- Slack continues: 12,321 retained sources at 20:39 UTC; 15/20 active and 103/160
+  archived channel windows complete. Thread capture has 298 active-campaign and 18
+  archived-campaign captured threads; other observed/queued threads remain unfinished.
+- The communication-reader candidate passed the 600-unrelated-job regression,
+  preserving the reviewed conversation while refusing unnecessary source traversal.
+  Full-schema acceptance is rerunning its final checks after the superseded rollback
+  correctly refused to overwrite the newly changed helper. No context patch is LIVE
+  yet; the previous visibility-helper release remains installed.
+
+[First complete cycle evidence](evidence/learn-commusoft-first-live-cycle-2026-10-13.json).
+
+**13 October, 21:36 BST — visibility lookup fix LIVE; separate communication lookup remains.**
+
+- Replaced only the private `learn_slack_document_withheld` helper. Its exact
+  definition, owner and execute ACL match the rehearsed package. Existing callers,
+  visibility rules, source rows, runtime artifacts and frontend are unchanged.
+- Full native-schema rehearsal passed all 15 existing journeys and 42 comparisons
+  against the original withholding semantics. All 1,591,580 archived rows and seven
+  sequences were preserved. Exact wrapper guards, transaction rollback and
+  definition rollback passed; both isolated containers were removed. Production
+  contact preservation readback confirms all 33 source links, people, endpoint
+  choices, payloads, actors and relationships remain unchanged.
+- Signed-in LIVE now reads the reviewed company's findings successfully. The
+  independent communication read still times out (57014 at 20:33:52 UTC) inside
+  `learn_business_input_latest`, called while `learn_card_slack_job_context` checks
+  all 585 owned jobs. Its materialized input needs restricting to jobs with reviewed
+  Slack interactions before current-source validation. A candidate is prepared
+  privately, not tested or applied; retain every final source/visibility check.
+- The card still shows nine contacts and 585 jobs. These useful published records
+  do not establish a complete communication timeline. No missing communications
+  or findings are converted into successful-learning claims.
+- Both known Slack recovery jobs were still queued with zero attempts at 20:35:34
+  UTC. Their handles remain unchanged. Do not duplicate or restart them just because
+  the archive queue is taking time.
+- Next priority: rehearse and release the scoped communication lookup fix, verify
+  the full signed-in card read, then continue contact/communication reconciliation,
+  remaining capture coverage, scoring and operating-readiness gates.
+
+[Production evidence](evidence/learn-slack-visibility-lookup-production-2026-10-13.json)
+and [full-schema rehearsal](evidence/learn-slack-visibility-lookup-rehearsal-2026-10-13.json).
+
+**13 October, 21:26 BST — company contacts verified LIVE; card read timeout diagnosed.**
+
+- Eleven reviewed source-contact links now represent nine distinct people on the
+  previously linked company card; two site sources reuse existing people after
+  explicit name, individual-email and company/site corroboration. The LIVE client
+  view shows nine contacts. All source payloads, versions, actors and customer/site
+  ownership were checked. Reuse preserves original card/endpoint evidence; the
+  additional site relationship and immutable source link retain the newer evidence.
+- All 22 previous contact links, 4,457 identity projections, 1,552 customer source
+  heads, 25 customer links and 35 contact points remain unchanged. Nine people and
+  17 non-primary, unverified contact points were added. No permissions, capture
+  settings or provider records changed. This is scoped preservation evidence.
+- A separate named contact sharing an office phone remains held. Do not merge
+  different people because they share a reception number. Explicit shared-office
+  endpoint review and department/non-person contacts still need completion.
+- The LIVE card's findings read reproducibly times out (Postgres 57014 at 20:20:24
+  and 20:22:17 UTC). Server error context identifies `learn_slack_document_withheld`
+  through the source-visibility policy. One communication read also timed out;
+  the subsequent read succeeded but returned no linked communications. Do not
+  describe this as a complete or healthy customer timeline.
+- A semantics-preserving candidate scopes withholding dependency checks to UUID
+  references present in the requested document. It is under isolated full-schema
+  rehearsal; **not deployed**. Keep source-withholding protection and existing ACLs.
+- The two known Slack recovery handles remain queued, attempt zero, verified at
+  20:19:08 UTC. No duplicate recovery was created. LIVE UI later showed 12,249
+  retained Slack sources, 32,616 emails, 4,462 calls, 2,984 recordings and 255
+  voicemails; counts do not prove historical coverage or completed learning.
+- Next: finish/release the card-read fix with preservation and signed-in evidence,
+  extend meaningful contact/communication reconciliation, finish connector coverage,
+  scoring and unattended operational acceptance. The full goal remains active.
+
+[Contact publication evidence](evidence/learn-company-contact-publication-2026-10-13.json).
+
+**13 October, 21:11 BST — one substantial customer journey linked and verified LIVE.**
+
+- One company account was corroborated against its retained Commusoft source,
+  current customer export and full existing-identity snapshot, then saved through
+  the existing logged operator review. No possible identity collisions were merged.
+- All 22 sites and 585 jobs belonging to that account in the retained snapshot are
+  now linked. Every job's explicit property reference and customer/site ownership
+  was verified; the database readback checks every source link, original actor,
+  customer card and site relationship. Source descriptions and historical codes
+  remain unchanged. These are unverified canonical records with explicit source
+  evidence, not independently verified job-completion facts.
+- The signed-in LIVE card shows 585 linked jobs (25 on its first page) and 22 sites.
+  Source completion times without confirmed timezones remain excluded from duration
+  and performance calculations. Communications and contacts are not complete for
+  this customer. Complete provider coverage is not claimed.
+- All 4,456 previous identity projections, 1,552 retained customer heads, 24 prior
+  customer links and 35 contact points were unchanged. No new grant, schema/runtime
+  deployment, provider write or paid AI was involved. This is scoped preservation,
+  not a hash comparison of every production row.
+- Total published business links are now 25 customers, 33 sites, 616 jobs and 22
+  contacts. LIVE Slack has 12,127 sources; 102 archived windows and 15 active windows
+  are complete. Commusoft site-contact capture remains active with no full-cycle
+  watermark yet. Both known Slack recoveries were still queued at 21:03 BST.
+- Next: extend evidence-backed customer/contact/communication reconciliation,
+  make long job histories easier to scan by current work and date, complete input
+  coverage and ongoing capture, then scoring and operational acceptance. The full
+  goal remains incomplete; this account is not a substitute for broad coverage.
+
+[Live customer/site/job evidence](evidence/learn-customer-site-job-publication-2026-10-13.json).
+
+**13 October, 20:55 BST — observed Slack canvas retention released; recovery queued.**
+
+- LIVE `learn-slack-worker` v10 and `platform-worker` v71 now retain the exact
+  observed `tabbed_canvas_updated` subtype as source needing review. Matching SQL
+  classifies and counts it consistently; it cannot create conversation/performance
+  evidence. Genuine observed replies remain eligible. Other unknown or hidden
+  shapes stay held. No undocumented business semantics are inferred.
+- Exact transaction/rollback/guard and source/thread journeys passed on the isolated
+  full native schema; all 1,591,580 archived rows and seven sequences were preserved.
+  All 106 Slack runtime tests passed, and both exact artifacts booted without
+  network and rejected missing authentication. Production definitions, worker
+  hashes, existing permissions, secrets metadata, schedules and retained Slack
+  versions were verified; all 255 voicemail/source pairs were preserved.
+- One recovery was committed through the signed-in LIVE operator controls:
+  `197a31a7-1297-4319-b90c-be0689ea2e31`. It is queued. The earlier recovery
+  `12df1bd3-d9cf-4379-8e7f-199faf0b6b19` also remains queued. Observe these handles;
+  do not create duplicates or claim the affected provider page has succeeded yet.
+- At 20:54 BST LIVE held 12,045 Slack sources; 15/20 active and 99/160 archived
+  campaign windows were complete. Observed replies and ongoing capture handoff
+  remain unfinished. Commusoft phase 4 site-contact capture is active with no
+  completed first-cycle watermark. Its latest browser observation showed 526/871
+  site-contact pages retained. Existing worker progress must not be restarted.
+- Wider source publication remains 24 customers, 11 sites, 31 jobs and 22 contacts.
+  Customer/job reconciliation, coverage exceptions, scoring and unattended
+  operational acceptance remain substantial unfinished requirements. The LIVE
+  frontend was not changed by this backend release; parallel QuickBooks TEST
+  work was preserved in Git but excluded from the two LIVE runtime artifacts.
+
+[Production evidence](evidence/learn-slack-observed-canvas-production-2026-10-13.json).
+
+**13 October, 20:39 BST — ingestion advancing; two archived Slack holds diagnosed.**
+
+- LIVE has 11,900 saved Slack messages. The active-channel campaign has 15 of 20
+  approved channel windows complete; the archive campaign has 98 of 160 complete.
+  Thread discovery is complete for 20 active and 138 archived channels. Remaining
+  history/replies and the ongoing-capture handoff are not complete.
+- In the preceding hour, 576 Commusoft jobs, 53 Slack reply jobs and six Slack
+  history jobs succeeded. Commusoft has a currently leased running job in phase 4
+  (site contacts); its first full-cycle watermark is still absent. Do not restart
+  this active cycle merely because full coverage remains unfinished.
+- Two archived channels were held for an unsupported subtype. One retained
+  diagnostic identifies `tabbed_canvas_updated`; official documentation reviewed
+  does not establish its semantics. Prepare exact source-only retention and
+  explicit review accounting, retaining hidden/content-availability guards;
+  do not infer conversation, customer or performance meaning from the name.
+- The other failure had no structural diagnostic. One exact recovery was committed
+  through the existing logged operator UI under the original campaign allowance.
+  Job `12df1bd3-d9cf-4379-8e7f-199faf0b6b19` is queued as last verified at 20:39 BST.
+  Observe that handle before further action; do not create another recovery or
+  restart the campaign. No history page or unsupported record was skipped.
+- Published source relationships remain 24 customers, 11 sites, 31 jobs and 22
+  contacts, with one reviewed Slack work-context link. Broad source-to-card
+  reconciliation is a major remaining delivery requirement, not a cosmetic task.
+
+[Current input evidence](evidence/learn-input-progress-2026-10-13-2036.json).
+
+**13 October, 20:35 BST — saved contact details verified in LIVE and stable TEST.**
+
+- LIVE now shows additional saved email/phone details beneath each contact, with
+  pagination, source and verification state. A signed-in operator opened two real
+  unverified endpoints; primary selections stayed unchanged and the read was audited.
+- The additive reader is installed in both environments. LIVE Git `a11f204`,
+  deployment `dpl_FEvZQUizXBraRu71hJtGciJTPZER`, serves all four existing aliases.
+  TEST Git `c7744a8`, deployment `dpl_6Vb2z8TyE43LuyMevbZnuhvtG8sq`, serves both
+  stable TEST aliases with protection `all`. It preserves the parallel QuickBooks
+  callback fix and finance panel; that QuickBooks work is not promoted to LIVE here.
+- Stable TEST signed-in acceptance shows an existing contact's primary email and
+  honestly reports zero additional details. Its matching operator audit is verified.
+  LIVE preservation retains 18,053 prior business-source versions, 4,505 pages,
+  88 links and all prior customer identity IDs. Access, schedules, connections,
+  flags and unrelated functions are unchanged. This is scoped preservation,
+  not a full-row hash of every production table.
+- Ten contact/context tests, TypeScript and both frontend builds passed. Exact
+  SQL envelopes and isolated access/pagination/rollback journeys preserve all
+  1,591,580 archived rows and seven sequences. No new hosted login or grant.
+- The saved-contact display gap and this TEST parity gap are fixed. Broader
+  customer publication, communication attribution, full historical/recurring
+  coverage, scoring and operational acceptance remain unfinished. Browser
+  acceptance here uses the operator; Heidi's own acceptance remains separate.
+
+[Release evidence](evidence/learn-contact-details-production-2026-10-13.json).
+
 **13 October — saved contact details candidate verified; release in progress.**
 
 - The contact card now distinguishes primary selections from additional saved
@@ -4711,13 +5952,16 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   mailbox reconciliation remain open. The 12 October retained TEST sample now
   proves nineteen real email-to-card deliveries; it does not prove full history
   or recurring capture.
-- [ ] **Commusoft:** jobs traversal reaches 127 pages / 12,611 unique jobs;
-  the original 1,547-customer contact plan and refreshed 2,421-property traversal
-  are complete. Finish the 871-site contact plan and refreshed 1,550-customer
-  contact traversal; reconcile
-  missing customer/property references and unzoned timestamps; publish valid
-  customer/contact/site/job relationships with held records visible for review.
-  Verify incremental updates and a real source-to-card journey without provider writes.
+- [ ] **Commusoft:** the first full LIVE scheduled cycle is verified complete:
+  1,552 customers, 871 sites, 12,637 jobs, 2,402 customer-contact records and 567
+  site-contact records. All four terminal checkpoints match successful page receipts.
+  At 21:37 UTC on 13 October the next overlapping incremental cycle had completed
+  properties and a 27-record jobs pass; its contact traversal was still running.
+  Reconcile the remaining UI/API inventory differences, missing relationships and
+  unzoned timestamps. Finish canonical publication, reviewed/unattended refresh,
+  source-to-card matching and signed-in acceptance; retained coverage alone does not
+  make the customer cards comprehensive. No provider writes are authorized here.
+  [Current incremental evidence](evidence/learn-commusoft-next-cycle-2026-10-13.json).
 - [ ] **Phone:** verify existing account binding, calls, recording download,
   transcription, playable audio, retry/recovery and recurring capture with the
   real Birchill account. Preserve existing IDs and distinguish capture from shadow

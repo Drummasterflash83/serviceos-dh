@@ -1,4 +1,15 @@
 import type { RecurringClient, RecurringLock, RecurringScope } from "./learn-slack-recurring.ts";
+export type CampaignCapabilities = { sourceReplay: boolean; pageRecovery: boolean };
+export function campaignActionAvailable(
+  capabilities: CampaignCapabilities,
+  operation: CampaignAction["operation"],
+): boolean {
+  return operation === "replay_source"
+    ? capabilities.sourceReplay
+    : operation === "recover_page"
+      ? capabilities.pageRecovery
+      : true;
+}
 export type CampaignDefinition = {
   connectionId: string;
   connectionRevision: string;
@@ -217,6 +228,10 @@ export async function listCampaigns(
       d.version !== "learn-slack-campaign-list/1" ||
       d.tenantId !== tenantId ||
       typeof d.canWrite !== "boolean" ||
+      (d.capabilities !== undefined &&
+        (!object(d.capabilities) ||
+          typeof d.capabilities.sourceReplay !== "boolean" ||
+          typeof d.capabilities.pageRecovery !== "boolean")) ||
       !Array.isArray(d.campaigns) ||
       d.campaigns.length > 20
     )
@@ -242,6 +257,10 @@ export async function listCampaigns(
     return {
       campaigns: d.campaigns as CampaignSummary[],
       canWrite: d.canWrite as boolean,
+      capabilities: (d.capabilities ?? {
+        sourceReplay: false,
+        pageRecovery: false,
+      }) as CampaignCapabilities,
       next: d.next as string | null,
     };
   } catch {
@@ -420,6 +439,10 @@ export async function resolveCampaign(
     const authority = await listCampaigns(db, s.tenantId);
     if (!allowed() || !authority.canWrite)
       throw Error("Current editing access could not be confirmed. Saved request retained.");
+    if (!campaignActionAvailable(authority.capabilities, frozen.operation))
+      throw Error(
+        "This recovery tool is unavailable in this environment. Saved request retained for OpenFolk review.",
+      );
     let r = await dispatch(db, frozen, mode === "apply" ? "check" : mode);
     if (mode === "apply" && r.state === "pending") {
       if (!allowed() || store.getItem(key) !== encoded)

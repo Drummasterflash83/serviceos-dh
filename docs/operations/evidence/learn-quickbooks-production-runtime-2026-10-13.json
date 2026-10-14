@@ -1,0 +1,219 @@
+{
+  "checkedAt": "2026-10-13T21:51:20.191Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "endpoints": [
+    {
+      "name": "learn-quickbooks-worker",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": false,
+      "hash": "67507e876bc42f56d9dba31095f9cb356d74aea9c4a690033a4bd95d81c82b11"
+    },
+    {
+      "name": "quickbooks-disconnect",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": false,
+      "hash": "c7fb6bf8c6cc08c08e8bf655f23d2f511c2a54265e212122029761ded10ac4c5"
+    },
+    {
+      "name": "quickbooks-oauth-callback",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": false,
+      "hash": "23c70b7ebdd231a9bd10f56cc4469e2511dc41459156056e1f1bcebd2226b7b5"
+    },
+    {
+      "name": "quickbooks-oauth-start",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": false,
+      "hash": "4680498497bb00ea1ce9e7993500d7210fa9ea8076e58ec1e9b58bbc45821f19"
+    }
+  ],
+  "existingEndpointsUnchanged": false,
+  "existingSecretFingerprintsUnchanged": true,
+  "settings": [
+    {
+      "name": "QUICKBOOKS_SITE_ORIGIN",
+      "present": true,
+      "fingerprintLength": 64,
+      "sha256Matches": true,
+      "sha256UpperMatches": true,
+      "sha1Matches": false
+    },
+    {
+      "name": "QUICKBOOKS_MINOR_VERSION",
+      "present": true,
+      "fingerprintLength": 64,
+      "sha256Matches": true,
+      "sha256UpperMatches": true,
+      "sha1Matches": false
+    }
+  ],
+  "counts": {
+    "apps": 0,
+    "connections": 0,
+    "imports": 0,
+    "pages": 0,
+    "versions": 0
+  },
+  "countsUnchanged": true,
+  "recentOtherFunctions": [],
+  "recentInventory": [
+    {
+      "name": "simwood-test-connection",
+      "version": 62,
+      "updatedAt": 1791921141686,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "simwood-sync-calls",
+      "version": 65,
+      "updatedAt": 1791921141686,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "simwood-sync-recordings",
+      "version": 68,
+      "updatedAt": 1791921141686,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "simwood-download-recording",
+      "version": 64,
+      "updatedAt": 1791921141686,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "phone-transcribe-recording",
+      "version": 55,
+      "updatedAt": 1791921141686,
+      "status": "ACTIVE"
+    }
+  ],
+  "state": "quickbooks_runtime_and_preservation_verified",
+  "closureReadback": {
+    "state": "downloaded_runtime_closures_verified",
+    "project": "tgbnakbxwcqjeimygroz",
+    "checkedAt": "2026-10-13T21:50:16.237Z",
+    "reports": [
+      {
+        "name": "quickbooks-oauth-start",
+        "version": 1,
+        "artifactHash": "4680498497bb00ea1ce9e7993500d7210fa9ea8076e58ec1e9b58bbc45821f19",
+        "matchingRuntimeModules": 9,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "3b797b4802961a4b839ca50d3459582295872d644a2012b3fa606592e90ffe03"
+      },
+      {
+        "name": "quickbooks-oauth-callback",
+        "version": 1,
+        "artifactHash": "23c70b7ebdd231a9bd10f56cc4469e2511dc41459156056e1f1bcebd2226b7b5",
+        "matchingRuntimeModules": 10,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "fadcd0fe9f01c8dc2558f63244c11add0d31b05d43c09b498f7c35a449a31460"
+      },
+      {
+        "name": "learn-quickbooks-worker",
+        "version": 1,
+        "artifactHash": "67507e876bc42f56d9dba31095f9cb356d74aea9c4a690033a4bd95d81c82b11",
+        "matchingRuntimeModules": 10,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "00bcb060fd99710880610edd26ec4dcc818429d1ac6dfd0f1146d0dafb10cf63"
+      },
+      {
+        "name": "quickbooks-disconnect",
+        "version": 1,
+        "artifactHash": "c7fb6bf8c6cc08c08e8bf655f23d2f511c2a54265e212122029761ded10ac4c5",
+        "matchingRuntimeModules": 6,
+        "omittedTypeOnlyModules": [],
+        "sourceClosureSha256": "ca66d2dcdcb7fc8028f462192ca1717a28b194b3acac9edcba533f88cd32a103"
+      }
+    ],
+    "providerRequests": 0,
+    "limitations": [
+      "Source closure readback and public guards only; no company OAuth, accounting requests or hosted token rotation."
+    ]
+  },
+  "limitations": [
+    "The raw original version counters advanced uniformly by one; the original fingerprint is exactly recovered by reversing that single metadata increment.",
+    "Code hashes, JWT settings, names, statuses and existing secret fingerprints are preserved. This is not a health check of every provider workflow.",
+    "No production Intuit credential, connected company, imports or worker key were created."
+  ],
+  "httpGuards": {
+    "checkedAt": "2026-10-13T21:53:25.863Z",
+    "project": "tgbnakbxwcqjeimygroz",
+    "unauthenticated": true,
+    "providerCredentialsSupplied": false,
+    "reports": [
+      {
+        "name": "quickbooks-oauth-start",
+        "status": 401,
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer",
+        "location": null,
+        "emptyBody": false,
+        "body": "{\"error\":\"sign_in_required\"}"
+      },
+      {
+        "name": "quickbooks-oauth-callback",
+        "status": 302,
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer",
+        "location": "https://www.openfolk.ai/quickbooks?mode=connect&result=needs_check#",
+        "emptyBody": true
+      },
+      {
+        "name": "learn-quickbooks-worker",
+        "status": 503,
+        "cacheControl": "no-store",
+        "referrerPolicy": null,
+        "location": null,
+        "emptyBody": false,
+        "body": "{\"ok\":false,\"code\":\"worker_unavailable\"}"
+      },
+      {
+        "name": "quickbooks-disconnect",
+        "status": 401,
+        "cacheControl": "no-store",
+        "referrerPolicy": "no-referrer",
+        "location": null,
+        "emptyBody": false,
+        "body": "{\"error\":\"sign_in_required\"}"
+      }
+    ]
+  },
+  "reconciliation": {
+    "checkedAt": "2026-10-13T22:10:38.559Z",
+    "project": "tgbnakbxwcqjeimygroz",
+    "state": "runtime_preservation_reconciled",
+    "originalAttemptState": "requires_inspection",
+    "proof": {
+      "verified": true,
+      "endpointCount": 97,
+      "versionIncrement": 1,
+      "reconstructedDigest": "115d66624633a1efacb6bf83938eb5e5db7b13362c55f84acfff7eeac258f461",
+      "originalDigest": "115d66624633a1efacb6bf83938eb5e5db7b13362c55f84acfff7eeac258f461"
+    },
+    "currentExistingDigest": "4d5b982b3c65d2b56ff77073d1a9d147168e5574e3f3fcbbac9ae6606ddd543c",
+    "codeHashesJwtSettingsNamesAndStatusesUnchanged": true,
+    "existingSecretFingerprintsUnchanged": true,
+    "nonSecretSettingsMatch": true,
+    "inertCounts": {
+      "apps": 0,
+      "connections": 0,
+      "imports": 0,
+      "pages": 0,
+      "versions": 0
+    },
+    "quickBooksRuntimeMetadataMatches": true,
+    "productionWrites": 0,
+    "providerRequests": 0,
+    "interpretation": "The complete original inventory fingerprint is recovered by subtracting exactly one from all 97 prior version counters. No other protected metadata differs. The increment followed adding the two runtime settings; attribution to platform configuration propagation is an inference, not a retrieved platform audit event.",
+    "limits": [
+      "Metadata/code-preservation evidence, not proof that every existing provider workflow is healthy.",
+      "No production QuickBooks company is connected."
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "version": "learn-projection-selection-live/1",
+  "at": "2026-10-14T00:41:21.950Z",
+  "state": "installed_test_and_live_runtime_acceptance_pending",
+  "diagnosis": {
+    "liveInventoryError": "projection_inventory_unconfirmed",
+    "databaseSqlState": "57014",
+    "databaseEventAt": "2026-10-13T23:44:08.991Z",
+    "query": "learn_projection_pending",
+    "meaning": "query cancellation observed; local tests do not reproduce the complete production delay"
+  },
+  "change": {
+    "boundedFinalFingerprints": true,
+    "skipFingerprintForMissingMarker": true,
+    "optionalCampaignColumnCompatible": true,
+    "sourceWrites": 0,
+    "authorityChanges": 0,
+    "scheduleChanges": 0,
+    "restartedJobs": 0
+  },
+  "verification": {
+    "syntheticEmails": 36500,
+    "baselineEquivalenceCases": 19,
+    "baselineSeconds": 2.535,
+    "candidateSeconds": 1.363,
+    "performanceScope": "local synthetic legacy markers; not production performance acceptance",
+    "testFullSchemaRollbackPassed": true,
+    "testExactSelectionsCompared": 2,
+    "testEmailPhoneInteractionFingerprintsPreserved": true,
+    "testPriorDefinitionRestoredAfterRehearsal": true,
+    "testInstalled": true,
+    "liveInstalled": true,
+    "liveBodyMd5": "5317ae1c1b25bb53bdf8c2b6ff202daa",
+    "ownerAclConfigSecurityDefinerPreserved": true,
+    "productionPatchRollbackVerifiedOffline": true,
+    "wrongTargetAndLateFailureRollbackVerified": true
+  },
+  "runtime": {
+    "existingProjectionRetryPending": true,
+    "firstNewSlackIngestion": "enqueued_observation",
+    "newSlackObservationVerified": false
+  },
+  "limitations": [
+    "Await the existing production projection retry before claiming recovery.",
+    "Do not confuse the local timing improvement with a proven production timeout fix.",
+    "Identity review holds still prevent continuation and remain separate work.",
+    "Full provider coverage, broad customer publication, scoring and operational acceptance remain open."
+  ]
+}

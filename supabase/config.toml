@@ -354,3 +354,23 @@ verify_jwt = true
 # Retained call audio requires a real signed-in company owner/admin.
 [functions.learn-phone-playback]
 verify_jwt = true
+
+# QuickBooks connection start verifies the caller with Auth and invokes the
+# operator RPC under that caller's JWT; it never substitutes service authority.
+[functions.quickbooks-oauth-start]
+verify_jwt = false
+
+# Intuit redirects without a Supabase JWT. A hashed, expiring, one-use database
+# state claim binds the callback to the app, tenant, connection and current actor.
+[functions.quickbooks-oauth-callback]
+verify_jwt = false
+
+[functions.quickbooks-disconnect]
+# Validates the caller JWT through auth.getUser; only operator-authorised SQL
+# can stop capture and issue the single-use server-side revocation lease.
+verify_jwt = false
+
+# A dedicated infrastructure trigger key protects the bounded QuickBooks worker.
+# The request cannot select a client, supply credentials or change import scope.
+[functions.learn-quickbooks-worker]
+verify_jwt = false

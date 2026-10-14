@@ -1,0 +1,213 @@
+{
+  "version": "learn-observation-mode-live/1",
+  "at": "2026-10-14T01:14:25.367845+00:00",
+  "state": "four_real_slack_observations_and_live_customer_display_verified",
+  "cause": {
+    "platformMode": "discovery",
+    "tenantOverride": "assisted",
+    "oldHandlerError": "learn_observation_mode_review"
+  },
+  "change": "LEARN records only evidence regardless of tenant-wide operational mode. Retains actual mode and resolved human-review requirements; clamps allowed, can_execute and optimisation false. No profile or policy changes.",
+  "targets": [
+    {
+      "environment": "test",
+      "project": "saatxzwxvdvqevbnskxy",
+      "version": 26,
+      "priorVersion": 25,
+      "wireSha256": "a63a6e56f7781233e01771abbf53d0427262616a30fa02f9ba5c579218168520",
+      "eszipSha256": "67c464ca3ac15c63642f92cea8328224e59498a752342185b1a0aa8d53b7b2fd",
+      "sourceClosureSha256": "4e88d0a20b12ea426ceb6ce9de264c0f9d6a651a1cec4caa3f878b639c4da218",
+      "changedFiles": [
+        "_shared/worker_handlers/learn_observation.ts"
+      ],
+      "authUnchanged": true,
+      "missingAuthStatus": 403,
+      "artifactReadbackMatched": true,
+      "publishedAt": "2026-10-14T01:04:17.306Z",
+      "sourceIdentitiesPreserved": {
+        "email": 254,
+        "phone": 14,
+        "slack": 24,
+        "recording": 15,
+        "voicemail": 1
+      },
+      "tenantModesUnchanged": true,
+      "accessAndSchedulesUnchanged": true,
+      "unrelatedFunctionsUnchanged": true,
+      "rollback": {
+        "wireSha256": "4dfac96ca3ab2fa3d2730eafdeaffc50dd2f7dbee9c89ac49e8f9293a156735d",
+        "eszipSha256": "6b07f8e46c3fd68bb82675b3905bb348811e71ac0c8dc1d6eb2ea2fee328f0b6",
+        "originalCompressionMatched": false,
+        "localArtifact": "/private/tmp/serviceos-learn-observation-mode-20261014/test-runtime/artifacts/platform-worker.rollback.ezbr",
+        "originalEntrypoint": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_e7abc6aa-7341-4cbc-9a54-ea1c9c907503_24/source/supabase/functions/platform-worker/index.ts"
+      }
+    },
+    {
+      "environment": "live",
+      "project": "tgbnakbxwcqjeimygroz",
+      "version": 74,
+      "priorVersion": 73,
+      "wireSha256": "9bdce293cbf9bc9e4214741852905d3fe2a8aeac86475ab06da5efad244c87e7",
+      "eszipSha256": "5e43c8fe2b22a0b2128fb9637a8b76b96b2f59640cf8f0ab8fa94e4e0b584b3a",
+      "sourceClosureSha256": "c2adcd3e92918a2fee679a83153d7ff48775a20251bf8b09f05e05de57c66537",
+      "changedFiles": [
+        "_shared/worker_handlers/learn_observation.ts"
+      ],
+      "authUnchanged": true,
+      "missingAuthStatus": 403,
+      "artifactReadbackMatched": true,
+      "publishedAt": "2026-10-14T01:05:26.478Z",
+      "sourceIdentitiesPreserved": {
+        "email": 37203,
+        "phone": 4462,
+        "slack": 15932,
+        "recording": 2984,
+        "voicemail": 255
+      },
+      "tenantModesUnchanged": true,
+      "accessAndSchedulesUnchanged": true,
+      "unrelatedFunctionsUnchanged": true,
+      "rollback": {
+        "wireSha256": "aa47e8bbe8c6e96235699afcde92f04cfe3001e5d574b8f64f53c31504d84f57",
+        "eszipSha256": "56c9cb7cfdaaf624323dce0121f89458df0b3fa1a54829c7349299a9c258f42b",
+        "originalCompressionMatched": true,
+        "localArtifact": "/private/tmp/serviceos-learn-observation-mode-20261014/live-runtime/artifacts/platform-worker.rollback.ezbr",
+        "originalEntrypoint": "file:///work/supabase/functions/platform-worker/index.ts"
+      }
+    }
+  ],
+  "tests": {
+    "handlerTests": 6,
+    "ingestHandlerTests": 16,
+    "observationIngestVerifier": "passed",
+    "operationalModeVerifier": "passed",
+    "exactArtifactsBootedOffline": true,
+    "fullSchema": {
+      "state": "learn_observation_full_schema_rehearsed",
+      "archivedRowsPreserved": 1591601,
+      "tables": 387,
+      "recoveryJourneyVerified": true,
+      "journeyRollbackVerified": true,
+      "network": "none",
+      "containerRemoved": true,
+      "syntheticSequenceAdvanceExpected": true,
+      "assistedMode": true
+    }
+  },
+  "recovery": {
+    "submittedAt": "2026-10-14T01:11:18.665450Z",
+    "jobs": 4,
+    "originalParentsPreserved": true,
+    "sourcesPreserved": true,
+    "identicalPayloads": true,
+    "ledgerBindingsVerified": true,
+    "auditEvents": 4,
+    "states": [
+      "succeeded",
+      "succeeded",
+      "succeeded",
+      "succeeded"
+    ],
+    "observationsVerified": 4,
+    "newPermissions": 0,
+    "paidAi": false,
+    "providerRequests": 0,
+    "receipts": [
+      {
+        "job": "d727da7d-5165-4266-a0e9-6eabffc21697",
+        "completedAt": "2026-10-14T01:57:01.279846+00:00",
+        "attempts": 1,
+        "receipt": {
+          "mode": "assisted",
+          "state": "committed",
+          "canExecute": false,
+          "jobMatches": true,
+          "actionCount": 0,
+          "sourceMatches": true,
+          "jobNodeMatches": true,
+          "automationIntents": 0,
+          "observationMatches": true,
+          "workContextMatches": true,
+          "sourceReferenceMatches": true
+        }
+      },
+      {
+        "job": "45efa7f7-e060-4f57-b330-6bd50ce712a5",
+        "completedAt": "2026-10-14T01:58:01.483884+00:00",
+        "attempts": 1,
+        "receipt": {
+          "mode": "assisted",
+          "state": "committed",
+          "canExecute": false,
+          "jobMatches": true,
+          "actionCount": 0,
+          "sourceMatches": true,
+          "jobNodeMatches": true,
+          "automationIntents": 0,
+          "observationMatches": true,
+          "workContextMatches": true,
+          "sourceReferenceMatches": true
+        }
+      },
+      {
+        "job": "de7e9225-1afa-4590-b260-d22656c31aa8",
+        "completedAt": "2026-10-14T01:55:03.006029+00:00",
+        "attempts": 1,
+        "receipt": {
+          "mode": "assisted",
+          "state": "committed",
+          "canExecute": false,
+          "jobMatches": true,
+          "actionCount": 0,
+          "sourceMatches": true,
+          "jobNodeMatches": true,
+          "automationIntents": 0,
+          "observationMatches": true,
+          "workContextMatches": true,
+          "sourceReferenceMatches": true
+        }
+      },
+      {
+        "job": "e8f41411-1739-4ffe-81dc-b1b874c90318",
+        "completedAt": "2026-10-14T01:56:01.2565+00:00",
+        "attempts": 1,
+        "receipt": {
+          "mode": "assisted",
+          "state": "committed",
+          "canExecute": false,
+          "jobMatches": true,
+          "actionCount": 0,
+          "sourceMatches": true,
+          "jobNodeMatches": true,
+          "automationIntents": 0,
+          "observationMatches": true,
+          "workContextMatches": true,
+          "sourceReferenceMatches": true
+        }
+      }
+    ]
+  },
+  "limitations": [
+    "The generic operator retry control remains an unimplemented placeholder. This bounded maintenance recovery is audited but is not a completed operator UX.",
+    "This repair does not establish automatic Slack matching, complete coverage, scoring, recommendations or automation execution.",
+    "Rollback artifacts are retained locally; this is not a claim of independent runtime-artifact backup.",
+    "These four reviewed source messages date from 2022. Their observations are retained evidence, not confirmation of current outstanding requests or inferred ownership.",
+    "The timeline excerpt/provenance opens; a dedicated original Slack source reader is still absent.",
+    "Worker versions 26 TEST/74 LIVE describe the original repair. The subsequent identity-continuation release preserves it in 27 TEST/75 LIVE."
+  ],
+  "acceptedAt": "2026-10-14T01:58:51.656963+00:00",
+  "signedInAcceptance": {
+    "at": "2026-10-14T01:59:15.900Z",
+    "state": "signed_in_live_four_observations_visible",
+    "observationsVisible": 4,
+    "evidenceLinks": 4,
+    "datedHistoricalEvidence": true,
+    "evidenceYear": 2022,
+    "oneEvidenceLinkAndExcerptInspected": true,
+    "ownershipUnconfirmedVisible": true,
+    "ruleConfidenceNotFactVisible": true,
+    "originalSlackSourceReaderUnavailable": true,
+    "currentOutstandingWorkNotEstablished": true,
+    "screenshotSha256": "18beceed4e2e53a3cf38ab769dae8683b2e7f149de1eb622cfb7ba5d7f1224b0"
+  }
+}

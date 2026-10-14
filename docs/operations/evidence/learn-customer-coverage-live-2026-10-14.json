@@ -1,0 +1,31 @@
+{
+  "state": "verified_live_publication",
+  "at": "2026-10-13T23:54:20.755332+00:00",
+  "customers": 2,
+  "jobs": 5,
+  "checks": {
+    "allSourceVersionsAndOwnersVerified": true,
+    "existingSignedInOperatorRecorded": true,
+    "allCreatedIdentitiesRemainUnverified": true,
+    "reviewedAccountHolderEvidenceRetained": true,
+    "originalJobDescriptionsRetained": true,
+    "unknownCompletionTimezoneWithheld": true,
+    "priorIdentityProjectionsAndCustomerLinksPreserved": true
+  },
+  "privateEvidenceSha256": "1d4738705f00a67c7f410216608f0c42acf59b27e3d7da778e8206841f0a1d5f",
+  "coverage": {
+    "retainedCustomers": 1552,
+    "exportAccounts": 1650,
+    "linkedAccounts": 29,
+    "linkedAccountsNeedingReview": 1,
+    "readyForIndividualReview": 823,
+    "heldAccounts": 798,
+    "exportAccountsMissingFromAPI": 98
+  },
+  "limitations": [
+    "No complete customer/contact coverage claim",
+    "Uncertain identities remain held",
+    "Completion timestamps with unknown timezone cannot support duration or performance calculations",
+    "No cross-provider code mappings inferred"
+  ]
+}

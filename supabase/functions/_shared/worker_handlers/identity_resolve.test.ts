@@ -174,3 +174,49 @@ test("persisted holds remain visible even when no new identity work is pending",
   assert.equal(failed.success, false);
   assert.equal(failed.error?.code, "identity_inventory_unconfirmed");
 });
+
+const heldReceipt = (r: any) => ({ ...r, state: "review_required", reason: "direction_unverified",
+  cardId: null, cardEnriched: false, personCreated: false, companyCreated: false,
+  recommendations: 0, suggestions: 0, eventsConsumed: 0 });
+test("a full mixed batch continues without declaring held identities complete", async () => {
+  const r = await fixture({ rows: [row(2), row(3)], respond: (a: any, r: any) =>
+    ({ data: a.p_interaction === id(3) ? heldReceipt(r) : r, error: null }) }).run({ limit: 2 });
+  assert.equal(r.success, false);
+  assert.equal(r.error?.code, "identity_review_required");
+  assert.equal(r.error?.retryable, false);
+  assert.equal(r.recordsProcessed, 1);
+  assert.equal(r.result?.events_consumed, 1);
+  assert.equal(r.result?.reviews_recorded, 1);
+  assert.equal(r.result?.review_required, 1);
+  assert.equal(r.result?.continued, true);
+  assert.equal(r.continuation?.jobKey, `identity.resolve:${id(1)}`);
+});
+test("all-held full batch progresses, but a partial batch and empty inventory stop", async () => {
+  for (const rows of [[row(2), row(3)], [row(2)], []]) {
+    const r = await fixture({ rows, review: { data: 7, error: null },
+      respond: (_: any, r: any) => ({ data: heldReceipt(r), error: null }) }).run({ limit: 2 });
+    assert.equal(r.success, false);
+    assert.equal(r.recordsProcessed, 0);
+    assert.equal(r.result?.events_consumed, 0);
+    assert.equal(r.result?.reviews_recorded, rows.length);
+    assert.equal(r.result?.review_required, 7);
+    assert.equal(!!r.continuation, rows.length === 2);
+  }
+});
+test("existing unrelated holds cannot stop a full batch of confirmed cards", async () => {
+  const r = await fixture({ rows: [row(2), row(3)], review: { data: 4, error: null } }).run({ limit: 2 });
+  assert.equal(r.success, false);
+  assert.equal(r.recordsProcessed, 2);
+  assert.equal(r.result?.reviews_recorded, 0);
+  assert.equal(r.result?.review_required, 4);
+  assert.ok(r.continuation);
+});
+test("a review hold plus an unconfirmed delivery never continues or hides the failure", async () => {
+  const r = await fixture({ rows: [row(2), row(3)], respond: (a: any, r: any) =>
+    a.p_interaction === id(2) ? { data: heldReceipt(r), error: null } : { data: null, error: {} }
+  }).run({ limit: 2 });
+  assert.equal(r.error?.code, "identity_delivery_unconfirmed");
+  assert.equal(r.result?.review_required, 1);
+  assert.equal(r.result?.failed, 1);
+  assert.equal(r.continuation, undefined);
+});

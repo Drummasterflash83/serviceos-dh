@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-10-14T07:32:18.926972+00:00",
+  "transactions": [
+    {
+      "entity": "Invoice",
+      "records": 21635,
+      "missingcurrency": 0,
+      "missingcustomerreference": 0,
+      "unmatchedcustomerreference": 0
+    },
+    {
+      "entity": "Payment",
+      "records": 15100,
+      "missingcurrency": 0,
+      "missingcustomerreference": 0,
+      "unmatchedcustomerreference": 0
+    }
+  ],
+  "customerRecords": 13158,
+  "subcustomersOrJobs": 8848,
+  "missingCustomerParents": 0,
+  "inactiveCustomerRecords": 315
+}

@@ -1,0 +1,106 @@
+{
+  "version": "learn-customer-job-contact-publication/1",
+  "state": "verified_live",
+  "at": "2026-10-14T04:14:16.68053+00:00",
+  "frontend": "5375262266445fc9d913b96242d4c7a51387d0d4",
+  "customerAndJobs": {
+    "at": "2026-10-14T04:11:56.865309+00:00",
+    "state": "verified_live_customer_site_job_publication",
+    "customers": 1,
+    "sites": 0,
+    "jobs": 47,
+    "checks": {
+      "sourceVersionsAndActorVerified": true,
+      "reviewedAccountHolderEvidenceRetained": true,
+      "allOwnershipAndCardReferencesVerified": true,
+      "jobNumbersAndDescriptionsPreserved": true,
+      "newIdentitiesRemainUnverified": true
+    },
+    "preservation": {
+      "priorIdentityProjections": 4499,
+      "priorCustomerLinks": 50,
+      "priorContactPoints": 95,
+      "retainedCustomerSourcePayloads": 1552,
+      "scope": "Selected identity fields, customer links/contact points and retained customer source snapshots; not every production field."
+    },
+    "privateEvidenceSha256": "6f333c2f1366151c508e3caece0eac86c998fa4f800d14ed35c946c63c79bdbe"
+  },
+  "contacts": {
+    "version": "learn-reviewed-customer-contact-publication/1",
+    "state": "verified_live_contact_relationships",
+    "at": "2026-10-14T04:12:49.430992+00:00",
+    "publishedSourceLinks": 3,
+    "reviewedPersonReuses": 0,
+    "newPeople": 3,
+    "cardRelationships": 3,
+    "siteRelationships": 0,
+    "sourceContactPoints": 6,
+    "priorContactLinksRetained": 53,
+    "held": 0,
+    "allSourcePayloadsVersionsAndActorsVerified": true,
+    "allIdentitiesRemainUnverified": true,
+    "allNewContactPointsNonPrimaryAndUnverified": true,
+    "privateEvidenceSha256": "4836e4a9f3f5b3dd3ff3fc68e32b5f25a356abbb5b2a4f7826b734a840b712c8"
+  },
+  "finalPreservation": {
+    "state": "verified",
+    "priorIdentityProjections": 4499,
+    "priorCustomerLinks": 50,
+    "priorContactPoints": 95,
+    "retainedCustomerSourcePayloads": 1552,
+    "scope": "Selected identity fields, original customer links, contact points and customer source payloads; not every production table or field."
+  },
+  "publicationTotals": {
+    "job": 691,
+    "site": 48,
+    "contact": 56,
+    "customer": 51
+  },
+  "nextReconciliation": {
+    "sources": 1552,
+    "exportAccounts": 1650,
+    "states": {
+      "linked": 50,
+      "held": 804,
+      "linked_account_needs_review": 1,
+      "ready_for_operator_review": 795
+    },
+    "reasons": {
+      "existing_identity_candidates": 417,
+      "account_postcode_not_corroborated": 18,
+      "account_holder_differs_or_uncertain": 327,
+      "other_account_candidates": 102,
+      "category_needs_review": 11,
+      "person_category_has_company_name": 18,
+      "not_in_retained_api_sources": 98
+    },
+    "ambiguousRelationships": 0,
+    "reviewBatches": 40,
+    "applied": 0
+  },
+  "signedInBrowser": {
+    "liveBrandingRetained": true,
+    "jobPages": [
+      25,
+      22
+    ],
+    "totalLinkedJobs": 47,
+    "contacts": 3,
+    "customerToJobAndReturn": true,
+    "missingCommunicationDisclosed": true,
+    "completionTimezoneLimitationVisible": true
+  },
+  "limits": [
+    "These records do not establish complete provider coverage.",
+    "No communications are linked to this new customer yet.",
+    "Published completion statuses are retained source evidence, not payment or independently verified performance.",
+    "Completion timestamps lack confirmed timezone and remain excluded from duration/scoring."
+  ],
+  "newAccess": false,
+  "providerWrites": false,
+  "schemaOrFrontendChanges": false,
+  "screenshotsSha256": {
+    "live-jobs.png": "e101e6ff62b8c88dfece150ee45199461bed9aa1d1dcc4446c376362995d6b39",
+    "live-contacts.png": "87667ccad51d3edda89479869564f2b65bd0ca7cd9e3b4b1c893a35e480a8fcf"
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "project": "tgbnakbxwcqjeimygroz",
+  "run": {
+    "id": "0b89d0a8-02de-4f1c-91e9-25b8917eca68",
+    "state": "limit_reached",
+    "entities": [
+      "Customer",
+      "Invoice",
+      "Payment",
+      "CreditMemo",
+      "SalesReceipt",
+      "Estimate",
+      "Vendor",
+      "Bill",
+      "BillPayment",
+      "Purchase",
+      "VendorCredit",
+      "Account",
+      "Item"
+    ],
+    "expiresAt": "2026-10-15T07:00:57.491+00:00",
+    "lastError": null,
+    "pagesSaved": 500,
+    "maxRequests": 500,
+    "requestsUsed": 500,
+    "currentEntity": "Payment",
+    "startPosition": 15101,
+    "recordsObserved": 49893
+  },
+  "counts": [
+    {
+      "entity": "Customer",
+      "records": 13158,
+      "conflicts": 0
+    },
+    {
+      "entity": "Invoice",
+      "records": 21635,
+      "conflicts": 0
+    },
+    {
+      "entity": "Payment",
+      "records": 15100,
+      "conflicts": 0
+    }
+  ],
+  "checkedAt": "2026-10-14T07:32:19.780575+00:00",
+  "connection": {
+    "id": "04d68333-fc13-42c2-a500-789f386f015c",
+    "realm": "1197397945",
+    "status": "paused",
+    "tenant": "00000000-0000-0000-0000-000000000001",
+    "company": "DRUMMOND HEATING",
+    "verifiedAt": "2026-10-14T06:58:20.268033+00:00",
+    "confirmedAt": "2026-10-14T06:59:27.839754+00:00",
+    "environment": "production",
+    "tokenStored": true
+  },
+  "auditEvents": [
+    {
+      "count": 2,
+      "event": "authorization_started"
+    },
+    {
+      "count": 1,
+      "event": "company_verified"
+    },
+    {
+      "count": 1,
+      "event": "confirm"
+    },
+    {
+      "count": 5,
+      "event": "disconnect_status_read"
+    },
+    {
+      "count": 1,
+      "event": "import_started"
+    },
+    {
+      "count": 6,
+      "event": "import_status_read"
+    },
+    {
+      "count": 1,
+      "event": "module_changed"
+    },
+    {
+      "count": 500,
+      "event": "page_saved"
+    },
+    {
+      "count": 5,
+      "event": "status_read"
+    }
+  ],
+  "observations": 49893,
+  "pageEvidence": {
+    "pages": 500,
+    "records": 49893,
+    "distinctPermits": 500
+  },
+  "customerLinks": 0,
+  "privateTables": [
+    {
+      "rls": true,
+      "table": "learn_quickbooks_connections",
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "table": "learn_quickbooks_latest",
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "table": "learn_quickbooks_pages",
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "table": "learn_quickbooks_source_versions",
+      "anonSelect": false,
+      "authenticatedSelect": false
+    }
+  ],
+  "wrongScopePages": 0,
+  "wrongScopeVersions": 0
+}
