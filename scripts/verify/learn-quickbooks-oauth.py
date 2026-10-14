@@ -72,6 +72,7 @@ try:
     assert sql("select md5(pg_get_functiondef('public.learn_quickbooks_import_commit(uuid,uuid,text)'::regprocedure))") == commit_before_variants
     assert sql("select to_regprocedure('public.learn_quickbooks_payload_variant(text,jsonb,jsonb)') is null") == 't'
     sql(variants)
+    sql(source('supabase/migrations/20261102240000_learn_quickbooks_vendor_variants.sql'))
     sql(source('scripts/verify/learn-quickbooks-source-variants.assert.sql'))
     print('PASS: source-variant rollback, private helpers, actual commit, computed-balance chronology, reference multiplicity, immutable history and unknown-conflict preservation.')
     print('PASS: durable imports, exact financial decimals, replay recovery, version deduplication, module fence and realm-wide throttling.')

@@ -2,7 +2,7 @@
 
 Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
 
-## Current LIVE position — 14 October 2026, 10:58 UTC
+## Current LIVE position — 14 October 2026, 11:22 UTC
 
 - DRUMMOND HEATING is connected and confirmed in LIVE. Both approved history
   runs have finished: 1,354 requests, 1,353 saved pages and 134,569 retained
@@ -30,7 +30,7 @@ Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
 - Chris enabled ongoing LIVE refresh through logged controls: immediately, then
   six hours after each completed cycle, max 3,000 reads/cycle, 24h expiry. Hosted
   tick created run `af4983d5-2c01-4cae-a585-d2aa5ae2f841` at 10:14 UTC and renewed
-  the existing grant. The normal hosted scheduler has saved more than 42,000 observations and
+  the existing grant. The normal hosted scheduler has saved more than 65,000 observations and
   completed the Customer traversal without an import error. Full verification
   cycle completion and its next due time are still pending. No accounting writes, payroll, AI or automatic matching.
 - Stable TEST retains 77 sandbox records and its deliberately revoked grant.

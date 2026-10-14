@@ -51,3 +51,13 @@ select fixture_variant_page(964,'{"Id":"VARIANT","SyncToken":"0","DisplayName":"
 select fixture_assert((select conflicted from learn_quickbooks_latest where external_id='VARIANT'),'compatible later observation cannot erase an existing unknown conflict');
 select fixture_assert((select count(*)=4 from learn_quickbooks_source_versions where external_id='VARIANT') and (select count(*)=5 from learn_quickbooks_observations o join learn_quickbooks_source_versions v on v.id=o.version_id where v.external_id='VARIANT'),'all exact versions and repeat observations retained');
 reset role;
+
+select fixture_assert(learn_quickbooks_payload_variant('Vendor',
+ '{"Id":"V1","SyncToken":"0","DisplayName":"Synthetic supplier","Balance":10,"MetaData":{"LastUpdatedTime":"2026-10-13T10:00:00Z"}}',
+ '{"Id":"V1","SyncToken":"0","DisplayName":"Synthetic supplier","Balance":20,"MetaData":{"LastUpdatedTime":"2026-10-13T11:00:00Z"}}'),'newer supplier computed balance compatible');
+select fixture_assert(not learn_quickbooks_payload_variant('Vendor',
+ '{"Id":"V1","DisplayName":"Supplier","Balance":10,"MetaData":{"LastUpdatedTime":"2026-10-13T10:00:00Z"}}',
+ '{"Id":"V1","DisplayName":"Changed supplier","Balance":20,"MetaData":{"LastUpdatedTime":"2026-10-13T11:00:00Z"}}'),'supplier identity change held');
+select fixture_assert(not learn_quickbooks_payload_variant('Vendor',
+ '{"Id":"V1","Balance":10,"BalanceWithJobs":10,"MetaData":{"LastUpdatedTime":"2026-10-13T10:00:00Z"}}',
+ '{"Id":"V1","Balance":20,"BalanceWithJobs":20,"MetaData":{"LastUpdatedTime":"2026-10-13T11:00:00Z"}}'),'supplier does not inherit customer-only ignored fields');

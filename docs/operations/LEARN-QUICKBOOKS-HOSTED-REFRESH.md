@@ -126,3 +126,19 @@ hosted scan had 430 saved pages and 42,907 observations, zero current conflicts
 and preserved reviewed links. Full traversal and next-due verification remain
 pending. The read-only hosted-refresh evidence script verifies both before
 writing completed acceptance evidence.
+
+## Supplier balance variants — 14 October, 11:22 UTC
+
+The first hosted scan later observed four Vendor balance/update-time variants.
+The supplier-specific extension is verified in TEST and LIVE; it permits only
+Balance and a distinct explicit LastUpdatedTime with otherwise identical supplier
+identity/metadata. Customer-only BalanceWithJobs changes are not ignored for
+suppliers. The complete existing synthetic regression suite and supplier identity/
+field-boundary checks pass. No new helpers/grants or accounting writes were added.
+
+Four checkpointed supplier flags were reconciled only after pairwise compatibility
+and retained-version fingerprint checks. Readback confirms four system receipts,
+zero remaining conflicts and unchanged five reviewed financial links. At 11:22 UTC
+the unattended cycle had 657 pages and 65,269 observations. Full traversal and the
+next six-hour due time still require acceptance; no account reconciliation or
+complete customer matching is claimed.
