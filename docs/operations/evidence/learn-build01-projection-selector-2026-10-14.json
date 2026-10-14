@@ -1,0 +1,56 @@
+{
+  "version": "learn-build01-projection-selector/1",
+  "observedAt": "2026-10-14T21:28:47Z",
+  "scope": "Drummonds LIVE retained email projection and independent Phone scheduling",
+  "problem": {
+    "retainedEmailsAt2105Utc": 83644,
+    "emailsWithoutInteractionAt2105Utc": 53540,
+    "oldSelector": "The combined and email selectors exceeded a 25-second statement timeout while revisiting already-linked email revisions.",
+    "phoneOnlySelector": "Returned 200 pending revisions in 2.4 seconds during diagnosis.",
+    "ordinaryRetryCode": "projection_inventory_unconfirmed"
+  },
+  "repair": {
+    "selector": "A bounded oldest unlinked-email window is checked first; exact source revisions and matching review holds are still checked on the selected window. The original full selector remains installed for changed already-linked sources when no unlinked work remains.",
+    "automaticPhoneSchedule": "A separate tenant-scoped Phone projection key runs alongside the existing combined key, with a 100-record limit and shared reviewed publication path.",
+    "noSourceOrIdentityMutationByMigration": true,
+    "testSql": {
+      "rehearsalRolledBack": true,
+      "syntheticTransactionRolledBack": true,
+      "syntheticChecks": ["eligible email selected", "draft excluded", "held revision excluded", "changed held revision selected"],
+      "functionHash": "fed572c5a96eeaf99fdceddc528a8caa",
+      "fullSelectorHash": "0f47484bedfcbb80c8b6967233435c46"
+    },
+    "liveSql": {
+      "rehearsalRolledBack": true,
+      "ownerAndGrantsPreserved": true,
+      "functionHash": "fed572c5a96eeaf99fdceddc528a8caa",
+      "fullSelectorHash": "0f47484bedfcbb80c8b6967233435c46",
+      "rollbackProbeSelected": 200,
+      "rollbackProbeElapsedMs": 1179,
+      "installedEmailSelectorSelected": 200,
+      "installedPhoneSelectorSelected": 200,
+      "installedCombinedSelectorSelected": 200
+    },
+    "scheduler": {
+      "testVersion": 3,
+      "liveVersion": 48,
+      "status": "ACTIVE",
+      "verifyJwt": false,
+      "downloadedModulesStructurallyMatched": 5
+    }
+  },
+  "ordinaryLiveReadbackAt212830Utc": {
+    "retainedEmails": 84644,
+    "emailsWithoutInteraction": 51541,
+    "projectionContinuationQueued": true,
+    "cardSuccessCount": 792,
+    "identityReadyCount": 1092,
+    "phoneLaneFirstScheduledCycleVerified": true,
+    "phoneLaneFirstScheduledCycle": "100 legacy calls selected, 100 held for review, zero published. A later separate Phone selector repair published all 75 unlinked calls in an ordinary scheduled cycle; the global legacy review count remains open."
+  },
+  "remaining": [
+    "Observe the 75 new Phone interactions through identity and cards; reconcile retained legacy holds.",
+    "Drain the historical email gap and verify changed already-linked message revisions after the fast path empties.",
+    "Complete the full working-day unattended source-to-card observation and case-specific review holds."
+  ]
+}

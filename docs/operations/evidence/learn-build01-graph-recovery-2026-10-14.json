@@ -1,0 +1,108 @@
+{
+  "version": "learn-build01-graph-recovery/1",
+  "observedAt": "2026-10-14T21:45:56Z",
+  "scope": "Drummonds LIVE business graph refresh and isolated TEST queue route",
+  "problem": {
+    "liveJobCreatedAt": "2026-10-14T03:09:03.544004Z",
+    "stateBefore": "running",
+    "attemptCount": 0,
+    "claimOrLeasePresent": false,
+    "lastUpdateAt": "2026-10-14T03:09:03.576171Z",
+    "lastConfirmedSuccessAt": "2026-10-14T03:08:07.903Z",
+    "effect": "The active job key prevented scheduled graph refreshes from being queued. Partial direct-run graph writes are unconfirmed."
+  },
+  "repair": {
+    "internalCalls": "enqueue the existing leased graph worker instead of running a direct edge invocation",
+    "manualCalls": "retain direct user operation with a 30-minute recoverable lease and return an existing active job without concurrent execution",
+    "terminalHelpers": "clear the optional lease on success or failure",
+    "tests": "4 focused lease/claim checks, TypeScript, ESLint and production build passed; a 200-interaction TEST runtime run passed after bounded-write/event repair",
+    "testBackend": {
+      "functionVersion": 4,
+      "status": "ACTIVE",
+      "verifyJwt": false,
+      "downloadedModulesStructurallyMatched": 8,
+      "syntheticCrossTenantStatus": 403,
+      "syntheticInternalStatus": 200,
+      "queuedJobCount": 1,
+      "repeatedRequestReusedJob": true,
+      "directRun": false,
+      "syntheticFixtureRemoved": true
+    },
+    "liveBackend": {
+      "functionVersion": 45,
+      "status": "ACTIVE",
+      "verifyJwt": false,
+      "downloadedModulesStructurallyMatched": 8
+    },
+    "manualDirectRun": "A direct operator request now requires a confirmed queued-to-running 30-minute claim before graph writes. Unconfirmed claims return 503. Failed handler results mark the job failed, including a safe result summary.",
+    "workerLeaseExtension": {
+      "behavior": "Before graph writes, the worker extends only its current unexpired tenant/job/worker/attempt claim from five to at most fifteen minutes; an unconfirmed extension leaves the job for lease recovery.",
+      "testVersion": 34,
+      "liveVersion": 85,
+      "status": "ACTIVE",
+      "verifyJwt": false,
+      "testDownloadedModulesStructurallyMatched": 116,
+      "liveDownloadedModulesStructurallyMatched": 119,
+      "ordinaryGraphRunAfterReleaseVerified": true
+    }
+  },
+  "boundedWriteAndEventRepair": {
+    "problem": "The 21:30 ordinary graph attempt updated 801 nodes but stopped progressing after 21:35, near the observed five-minute runtime boundary. Its fifteen-minute lease delays safe reclaim until 21:45.",
+    "writeConcurrency": 8,
+    "dependencyPhasesRemainOrdered": true,
+    "completionEvent": "A graph.enriched event is keyed by tenant and job. A lost response is checked against the keyed row; an unconfirmed event makes the job retryable rather than falsely successful.",
+    "testIndexRollbackAndApply": true,
+    "liveIndexRollbackAndApply": true,
+    "syntheticTest16": "16 graph nodes, one event, one succeeded job; fixture removed",
+    "syntheticTest200": "200 graph nodes, one keyed event, one succeeded job; fixture removed",
+    "testWorkerVersion": 34,
+    "liveWorkerVersion": 85,
+    "testDirectVersion": 4,
+    "liveDirectVersion": 45,
+    "downloadedSourceMatches": true
+  },
+  "oldJobRecovery": {
+    "guardedTransactionRolledBackInRehearsal": true,
+    "rehearsalPreservedOriginalRow": true,
+    "appliedAt": "2026-10-14T21:01:50.636257Z",
+    "stateAfter": "failed",
+    "errorCode": "direct_graph_interrupted",
+    "auditReceipts": 1,
+    "sourceRowsDeleted": 0,
+    "successfulGraphRunClaimed": true,
+    "firstQueuedSuccessor": {
+      "createdAt": "2026-10-14T21:02:21.323065Z",
+      "claimedAt": "2026-10-14T21:07:00.940389Z",
+      "completedAt": "2026-10-14T21:09:52.877Z",
+      "status": "succeeded",
+      "attempts": 1,
+      "recordsProcessed": 1479
+    },
+    "secondOrdinaryGraphRun": {
+      "createdAt": "2026-10-14T21:10:01.88049Z",
+      "claimedAt": "2026-10-14T21:15:04.433614Z",
+      "leaseReclaimedBeforeWorkerFix": true,
+      "attempts": 2,
+      "completedAt": "2026-10-14T21:22:36.822Z",
+      "status": "succeeded",
+      "recordsProcessed": 1476
+    },
+    "thirdOrdinaryGraphRun": {
+      "createdAt": "2026-10-14T21:23:20.918552Z",
+      "claimedAt": "2026-10-14T21:30:03.117233Z",
+      "stateAtObservation": "succeeded after lease reclaim with bounded-write worker",
+      "reclaimedAt": "2026-10-14T21:45:05.683021Z",
+      "completedAt": "2026-10-14T21:45:32.374Z",
+      "attempts": 2,
+      "recordsProcessed": 1440,
+      "leaseCleared": true,
+      "errorCodeCleared": true,
+      "keyedCompletionEvents": 1
+    }
+  },
+  "remaining": [
+    "Observe further ordinary graph runs without runtime interruption across the full working-day window.",
+    "Reconcile graph coverage beyond the bounded latest-record windows.",
+    "Continue full working-day source-to-card observation and Chris's eventual business sign-off."
+  ]
+}

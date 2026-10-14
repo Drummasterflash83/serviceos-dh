@@ -94,16 +94,36 @@ export async function createPlatformJob(
   }
 }
 
-/** Mark a job running. Best-effort. */
-export async function startPlatformJob(client: SupabaseClient, jobId: string): Promise<void> {
-  if (!jobId) return;
+/** Mark a job running. Leased direct jobs require a confirmed queued claim. */
+export async function startPlatformJob(
+  client: SupabaseClient,
+  jobId: string,
+  leaseSeconds?: number,
+): Promise<boolean> {
+  if (!jobId) return false;
   try {
-    await client
-      .from("platform_jobs")
-      .update({ status: "running", started_at: new Date().toISOString() })
-      .eq("id", jobId);
+    const now = Date.now();
+    const leased =
+      Number.isSafeInteger(leaseSeconds) && leaseSeconds! >= 300 && leaseSeconds! <= 3600;
+    const patch = {
+      status: "running",
+      started_at: new Date(now).toISOString(),
+      ...(leased ? { lease_expires_at: new Date(now + leaseSeconds! * 1000).toISOString() } : {}),
+    };
+    if (leased) {
+      const { data, error } = await client
+        .from("platform_jobs")
+        .update(patch)
+        .eq("id", jobId)
+        .eq("status", "queued")
+        .select("id")
+        .maybeSingle();
+      return !error && data?.id === jobId;
+    }
+    const { error } = await client.from("platform_jobs").update(patch).eq("id", jobId);
+    return !error;
   } catch {
-    // swallow — job tracking must never break the sync
+    return false;
   }
 }
 
@@ -118,6 +138,7 @@ export async function completePlatformJob(
     const patch: Record<string, unknown> = {
       status: "succeeded",
       completed_at: new Date().toISOString(),
+      lease_expires_at: null,
       result: result.result ?? {},
     };
     if (typeof result.recordsProcessed === "number") {
@@ -146,6 +167,7 @@ export async function failPlatformJob(
       .update({
         status: "failed",
         failed_at: new Date().toISOString(),
+        lease_expires_at: null,
         error_count: 1,
         last_error: typeof error === "string" ? error.slice(0, 2000) : "unknown_error",
         ...(result ? { result } : {}),

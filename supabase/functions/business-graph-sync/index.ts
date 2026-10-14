@@ -22,6 +22,7 @@ import {
   startPlatformJob,
 } from "../_shared/platform_jobs.ts";
 import { handleBusinessGraphSync } from "../_shared/worker_handlers/business_graph_sync.ts";
+import { enqueueJob } from "../_shared/platform_queue.ts";
 
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -44,6 +45,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
 
+  // Internal notifications only request a refresh. Run the graph through the
+  // leased queue, where an interrupted edge invocation can be reclaimed.
+  if (auth.ctx.userId === "service") {
+    const queued = await enqueueJob(admin, {
+      tenantId,
+      connectorId: "openfolk-core",
+      moduleId: "core.graph",
+      jobType: "graph.sync",
+      jobKey: `graph.sync:${tenantId}`,
+      payload: { source, limit: typeof body.limit === "number" ? body.limit : null },
+    });
+    if (!queued.id)
+      return failResponse("graph_enqueue_unconfirmed", "Graph refresh could not be queued.", 503);
+    return jsonResponse({ success: true, queued: !queued.duplicate, job_id: queued.id });
+  }
+
   const job = await createPlatformJob(admin, {
     tenantId,
     connectorId: "openfolk-core",
@@ -53,8 +70,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
     payload: { source, limit: typeof body.limit === "number" ? body.limit : null },
     createdBy: auth.ctx.userId !== "service" ? auth.ctx.userId : null,
   });
-  const jobId = job.duplicate ? null : job.id;
-  if (jobId) await startPlatformJob(admin, jobId);
+  if (!job.id)
+    return failResponse("graph_job_unconfirmed", "Graph refresh could not be tracked.", 503);
+  if (job.duplicate)
+    return jsonResponse({ success: true, queued: true, duplicate: true, job_id: job.id });
+  const jobId = job.id;
+  if (!(await startPlatformJob(admin, jobId, 1800)))
+    return failResponse(
+      "graph_claim_unconfirmed",
+      "Graph refresh claim could not be confirmed.",
+      503,
+    );
 
   const res = await handleBusinessGraphSync({
     supabaseAdmin: admin,
@@ -63,16 +89,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
     payload: body as Record<string, unknown>,
   });
 
-  if (res.result) {
-    if (jobId) {
-      await completePlatformJob(admin, jobId, {
-        recordsProcessed: res.recordsProcessed ?? 0,
-        result: res.result,
-      });
-    }
-    return jsonResponse({ success: res.success, ...res.result });
+  if (res.success && res.result) {
+    await completePlatformJob(admin, jobId, {
+      recordsProcessed: res.recordsProcessed ?? 0,
+      result: res.result,
+    });
+    return jsonResponse({ success: true, ...res.result });
   }
   const message = res.error?.message ?? "business-graph-sync failed";
-  if (jobId) await failPlatformJob(admin, jobId, message);
+  await failPlatformJob(admin, jobId, message, res.result);
   return failResponse(res.error?.code ?? "graph_sync_error", message, 500);
 });

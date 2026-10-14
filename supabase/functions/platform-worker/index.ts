@@ -40,6 +40,7 @@ import {
   completeJob,
   deadLetterJob,
   enqueueJob,
+  extendClaimedGraphLease,
   failJob,
   releaseExpiredLeases,
   type JobRow,
@@ -122,16 +123,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const background = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } })
     .EdgeRuntime;
   background?.waitUntil?.(discoveryWork);
-  const inputWork = runLearnInputTick({
-    enabled: Deno.env.get("LEARN_INPUT_DISPATCH_ENABLED"),
-    slackEnabled: Deno.env.get("LEARN_SLACK_DISPATCH_ENABLED"),
-    quickbooksEnabled: Deno.env.get("LEARN_QUICKBOOKS_DISPATCH_ENABLED"),
-    quickbooksKey: Deno.env.get("LEARN_QUICKBOOKS_WORKER_KEY"),
-    url: Deno.env.get("SUPABASE_URL"),
-    serviceKey,
-    commusoftKey: Deno.env.get("LEARN_COMMUSOFT_WORKER_KEY"),
-    slackKey: Deno.env.get("LEARN_SLACK_WORKER_KEY"),
-  }, jobTypes);
+  const inputWork = runLearnInputTick(
+    {
+      enabled: Deno.env.get("LEARN_INPUT_DISPATCH_ENABLED"),
+      slackEnabled: Deno.env.get("LEARN_SLACK_DISPATCH_ENABLED"),
+      quickbooksEnabled: Deno.env.get("LEARN_QUICKBOOKS_DISPATCH_ENABLED"),
+      quickbooksKey: Deno.env.get("LEARN_QUICKBOOKS_WORKER_KEY"),
+      url: Deno.env.get("SUPABASE_URL"),
+      serviceKey,
+      commusoftKey: Deno.env.get("LEARN_COMMUSOFT_WORKER_KEY"),
+      slackKey: Deno.env.get("LEARN_SLACK_WORKER_KEY"),
+    },
+    jobTypes,
+  );
   background?.waitUntil?.(inputWork);
   const discovery = await discoveryWork;
 
@@ -209,6 +213,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
     // Preferred: a shared handler runs the business logic IN-PROCESS (no HTTP).
     const handler = getWorkerHandler(jobType);
     if (handler) {
+      if (jobType === "graph.sync") {
+        const extended = await extendClaimedGraphLease(admin, {
+          tenantId,
+          jobId: id,
+          claimedBy: job.claimed_by as string,
+          attemptCount: attempt,
+        });
+        if (!extended) {
+          counts.unconfirmed += 1;
+          return;
+        }
+      }
       const payload = (job.payload as Record<string, unknown> | null) ?? {};
       // The one place every pipeline stage reports health: map the job to its sensor
       // component and emit healthy on success / degraded (retry) / failed (dead-letter).
@@ -439,7 +455,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
     success:
       failed === 0 &&
       counts.unconfirmed === 0 &&
-      Object.values(inputs).every(result => !["attention", "unconfirmed"].includes(result.state)) &&
+      Object.values(inputs).every(
+        (result) => !["attention", "unconfirmed"].includes(result.state),
+      ) &&
       !["unconfirmed", "attention"].includes(discovery.state),
     input_dispatch: inputs,
     voicemail_discovery: discovery,

@@ -333,3 +333,41 @@ export async function heartbeatLease(
     // swallow
   }
 }
+
+/** A graph sweep can exceed the ordinary five-minute lease under load. Confirm
+ * one bounded extension against the exact claim before doing any graph writes. */
+export async function extendClaimedGraphLease(
+  client: SupabaseClient,
+  claim: { tenantId: string; jobId: string; claimedBy: string; attemptCount: number },
+  leaseSeconds = 900,
+): Promise<boolean> {
+  if (
+    !claim.tenantId ||
+    !claim.jobId ||
+    !claim.claimedBy ||
+    !Number.isSafeInteger(claim.attemptCount) ||
+    claim.attemptCount < 1 ||
+    !Number.isSafeInteger(leaseSeconds) ||
+    leaseSeconds < 300 ||
+    leaseSeconds > 900
+  )
+    return false;
+  const now = Date.now();
+  try {
+    const { data, error } = await client
+      .from("platform_jobs")
+      .update({ lease_expires_at: new Date(now + leaseSeconds * 1000).toISOString() })
+      .eq("id", claim.jobId)
+      .eq("tenant_id", claim.tenantId)
+      .eq("job_type", "graph.sync")
+      .eq("status", "running")
+      .eq("claimed_by", claim.claimedBy)
+      .eq("attempt_count", claim.attemptCount)
+      .gt("lease_expires_at", new Date(now).toISOString())
+      .select("id")
+      .maybeSingle();
+    return !error && data?.id === claim.jobId;
+  } catch {
+    return false;
+  }
+}

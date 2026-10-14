@@ -74,11 +74,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
   );
   if (tenantIds.length === 0) return json({ success: true, tenants: 0, results: [] });
 
-  // ENQUEUE + return fast — the platform-worker claims and runs interactions-sync
-  // asynchronously. job_key includes the source ('all') to match interactions-sync's
-  // own key, so the worker's run owns the single job row.
+  // Keep the existing all-source drain and give Phone its own bounded key.
+  // Historical email work can predate every Phone input for hours; a separate
+  // Phone queue lets current call revisions continue without changing source
+  // order or abandoning the retained email backlog.
   const counts = emptySchedulerCounts();
   for (const tenantId of tenantIds) {
+    await scheduleAndCount(
+      supabase,
+      {
+        tenantId,
+        jobType: "interactions.sync",
+        jobKey: `interactions.sync:${tenantId}:phone`,
+        connectorId: "openfolk-core",
+        moduleId: "core.interactions",
+        priority: 50,
+        payload: { source: "phone", limit: 100 },
+      },
+      counts,
+      enqueueJob,
+    );
     await scheduleAndCount(
       supabase,
       {

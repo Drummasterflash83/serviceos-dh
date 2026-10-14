@@ -1,0 +1,41 @@
+{
+  "version": "learn-build01-phone-first/1",
+  "observedAt": "2026-10-14T21:28:47Z",
+  "scope": "Drummonds LIVE Phone retained-source projection",
+  "problem": {
+    "firstScheduledCycle": "100 selected, 100 held for legacy projection review, zero published; reviewed batches continued without hiding the holds",
+    "unlinkedPhoneCallsBeforeRepair": 75
+  },
+  "repair": {
+    "selector": "The existing Phone lane now selects a bounded oldest unlinked-call window first, with exact source revisions and exact-revision review holds; it falls back to the original selector when that window has no eligible rows.",
+    "test": {
+      "rollbackRehearsal": true,
+      "syntheticTransactionRolledBack": true,
+      "syntheticChecks": ["two eligible calls selected", "held revision excluded", "changed held revision selected"],
+      "selectorHash": "8ea6962d53df7e121a36b4771fe87689"
+    },
+    "live": {
+      "rollbackRehearsal": true,
+      "ownerAndGrantsPreserved": true,
+      "originalFullSelectorPreserved": true,
+      "selectorHash": "8ea6962d53df7e121a36b4771fe87689",
+      "rollbackProbeSelected": 75
+    }
+  },
+  "ordinaryScheduledResult": {
+    "claimedAt": "2026-10-14T21:28:01.618022Z",
+    "selected": 75,
+    "published": 75,
+    "newReviewReceipts": 0,
+    "unlinkedPhoneCallsAfter": 0,
+    "newInteractionStatusesAt212847Utc": { "ready": 75, "attributed": 0 },
+    "jobStatus": "dead_letter",
+    "jobErrorCode": "projection_review_required",
+    "reasonForJobStatus": "The global Phone review count remains nonzero from legacy records even though all 75 selected calls published. The job result is not an all-green acceptance."
+  },
+  "remaining": [
+    "Observe these 75 interactions through ordinary identity, card and recommendation work.",
+    "Reconcile the 700 recorded legacy Phone projection review holds without overwriting canonical data.",
+    "Complete full working-day unattended operation and business acceptance."
+  ]
+}

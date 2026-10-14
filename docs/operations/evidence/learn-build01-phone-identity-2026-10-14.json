@@ -1,0 +1,35 @@
+{
+  "version": "learn-build01-phone-identity/1",
+  "observedAt": "2026-10-14T21:36:03Z",
+  "scope": "Drummonds LIVE ordinary Phone interaction-to-identity/card progress",
+  "problem": "All 75 newly published Phone interactions were ready while older email interactions occupied the oldest-first 200-record identity batches.",
+  "repair": {
+    "selector": "The existing identity queue reserves at most one quarter of each batch for pending or ready Phone interactions, leaving the other slots in original oldest-first order. It does not change identity decisions or bypass holds.",
+    "test": {
+      "rollbackRehearsal": true,
+      "syntheticTransactionRolledBack": true,
+      "syntheticBatch": 8,
+      "syntheticPhoneSelected": 2,
+      "syntheticEmailSelected": 6,
+      "exactRevisionsVerified": true
+    },
+    "live": {
+      "rollbackRehearsal": true,
+      "ownerAndGrantsPreserved": true,
+      "selectorHash": "756ac1a5a7b493ebcd13c68791d59354"
+    }
+  },
+  "ordinaryReadback": {
+    "newPhoneInteractions": 75,
+    "enrichedAndAttributedAt213510Utc": 50,
+    "readyAndUnattributedAt213510Utc": 25,
+    "enrichedAt213603Utc": 75,
+    "committedExactCardReceiptsAt213603Utc": 75,
+    "identityReviewReceiptsForTheseCalls": 0,
+    "globalIdentityReviewHoldsRemain": true
+  },
+  "remaining": [
+    "Verify card-read visibility and recommendation evidence for these calls; do not infer a new recommendation is required for every call.",
+    "Reconcile ambiguous identities and complete the full-day acceptance window."
+  ]
+}

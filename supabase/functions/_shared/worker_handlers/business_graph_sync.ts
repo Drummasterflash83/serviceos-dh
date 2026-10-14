@@ -13,6 +13,7 @@ import type { WorkerHandlerContext, WorkerHandlerResult } from "./index.ts";
 
 const DEFAULT_LIMIT = 200;
 const MAX_LIMIT = 1000;
+const WRITE_CONCURRENCY = 8;
 
 type Row = Record<string, unknown>;
 
@@ -21,10 +22,27 @@ function clampLimit(v: unknown): number {
   return Math.max(1, Math.min(MAX_LIMIT, n));
 }
 
+// Keep each dependency phase complete before its edges, while avoiding one
+// remote round trip per row in series. A bounded group also limits DB pressure.
+async function eachBounded<T>(rows: T[], write: (row: T) => Promise<void>): Promise<void> {
+  for (let i = 0; i < rows.length; i += WRITE_CONCURRENCY) {
+    await Promise.all(rows.slice(i, i + WRITE_CONCURRENCY).map(write));
+  }
+}
+
 export async function handleBusinessGraphSync(
   ctx: WorkerHandlerContext,
 ): Promise<WorkerHandlerResult> {
-  const { supabaseAdmin: admin, tenantId, payload } = ctx;
+  const { supabaseAdmin: admin, tenantId, jobId, payload } = ctx;
+  if (!jobId)
+    return {
+      success: false,
+      error: {
+        code: "graph_job_unconfirmed",
+        message: "Graph refresh requires a tracked job.",
+        retryable: true,
+      },
+    };
   const source =
     payload.source === "interaction" || payload.source === "identity" ? payload.source : "all";
   const limit = clampLimit(payload.limit);
@@ -120,11 +138,11 @@ export async function handleBusinessGraphSync(
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false })
         .limit(limit);
-      for (const c of (companies ?? []) as Row[]) {
+      await eachBounded((companies ?? []) as Row[], async (c) => {
         await node(companyNode, "company", "companies", c, null, {
           domain: (c.domain as string | null) ?? null,
         });
-      }
+      });
 
       const { data: people } = await admin
         .from("people")
@@ -132,13 +150,13 @@ export async function handleBusinessGraphSync(
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false })
         .limit(limit);
-      for (const p of (people ?? []) as Row[]) {
+      await eachBounded((people ?? []) as Row[], async (p) => {
         // Minimal, non-PII properties (raw email/phone are NOT stored in the graph).
         await node(personNode, "person", "people", p, null, {
           has_email: Boolean(p.primary_email),
           has_phone: Boolean(p.primary_phone),
         });
-      }
+      });
 
       const { data: cards } = await admin
         .from("customer_cards")
@@ -146,7 +164,7 @@ export async function handleBusinessGraphSync(
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false })
         .limit(limit);
-      for (const c of (cards ?? []) as Row[]) {
+      await eachBounded((cards ?? []) as Row[], async (c) => {
         await node(cardNode, "customer_card", "customer_cards", c, null, {
           status: (c.status as string | null) ?? null,
           priority: (c.priority as string | null) ?? null,
@@ -154,7 +172,7 @@ export async function handleBusinessGraphSync(
         const pid = c.person_id as string | null;
         const cardNodeId = cardNode.get(c.id as string);
         if (pid && cardNodeId) cardByPerson.set(pid, cardNodeId);
-      }
+      });
 
       const { data: recs } = await admin
         .from("recommendations")
@@ -162,24 +180,24 @@ export async function handleBusinessGraphSync(
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false })
         .limit(limit);
-      for (const r of (recs ?? []) as Row[]) {
+      await eachBounded((recs ?? []) as Row[], async (r) => {
         await node(recommendationNode, "recommendation", "recommendations", r, null, {
           type: (r.type as string | null) ?? null,
           severity: (r.severity as string | null) ?? null,
           status: (r.status as string | null) ?? null,
         });
-      }
+      });
 
       // Identity edges (all direct FKs → confidence 1.0).
-      for (const p of (people ?? []) as Row[]) {
+      await eachBounded((people ?? []) as Row[], async (p) => {
         const cid = p.company_id as string | null;
         if (cid) {
           await edge("works_for", personNode.get(p.id as string), companyNode.get(cid), 1, [
             { source: "people.company_id", detail: "person is linked to a company" },
           ]);
         }
-      }
-      for (const c of (cards ?? []) as Row[]) {
+      });
+      await eachBounded((cards ?? []) as Row[], async (c) => {
         const cardId = cardNode.get(c.id as string);
         const pid = c.person_id as string | null;
         const coid = c.company_id as string | null;
@@ -191,15 +209,15 @@ export async function handleBusinessGraphSync(
           await edge("represents", cardId, companyNode.get(coid), 1, [
             { source: "customer_cards.company_id", detail: "card represents a company" },
           ]);
-      }
-      for (const r of (recs ?? []) as Row[]) {
+      });
+      await eachBounded((recs ?? []) as Row[], async (r) => {
         const recId = recommendationNode.get(r.id as string);
         const cardId = r.card_id as string | null;
         if (cardId)
           await edge("concerns", recId, cardNode.get(cardId), 1, [
             { source: "recommendations.card_id", detail: "recommendation concerns a card" },
           ]);
-      }
+      });
     }
 
     if (wantInteractions) {
@@ -213,19 +231,19 @@ export async function handleBusinessGraphSync(
         .order("occurred_at", { ascending: false })
         .limit(limit);
 
-      for (const i of (interactions ?? []) as Row[]) {
+      await eachBounded((interactions ?? []) as Row[], async (i) => {
         await node(interactionNode, "interaction", "interactions", i, null, {
           interaction_type: (i.interaction_type as string | null) ?? null,
           occurred_at: (i.occurred_at as string | null) ?? null,
           processing_status: (i.processing_status as string | null) ?? null,
           source_connector_id: (i.source_connector_id as string | null) ?? null,
         });
-      }
+      });
 
       // Interaction edges. person/company use the in-run identity maps when 'all';
       // for source='interaction' a missing endpoint is counted as skipped (never
       // fabricated).
-      for (const i of (interactions ?? []) as Row[]) {
+      await eachBounded((interactions ?? []) as Row[], async (i) => {
         const iid = interactionNode.get(i.id as string);
         const pid = i.related_person_id as string | null;
         const coid = i.related_company_id as string | null;
@@ -247,31 +265,46 @@ export async function handleBusinessGraphSync(
           await edge("relates_to", iid, companyNode.get(coid), 1, [
             { source: "interactions.related_company_id", detail: "call linked to a company" },
           ]);
-      }
+      });
     }
 
     const avgConfidence = confCount > 0 ? Math.round((confSum / confCount) * 1000) / 1000 : null;
 
     // ── graph.enriched event (bounded — one per sync, not per node) ─────────
-    const eventId = await publishGraphEvent(admin, {
-      tenantId,
-      eventType: "graph.enriched",
-      payload: {
-        source,
-        nodes_upserted: nodesUpserted,
-        nodes_created: nodesCreated,
-        edges_upserted: edgesUpserted,
-        edges_created: edgesCreated,
-        skipped,
-        failed,
-        avg_confidence: avgConfidence,
-        by_type: byType,
-      },
-    });
+    const existingEvent = async (): Promise<string | null> => {
+      const { data, error } = await admin
+        .from("graph_events")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("event_type", "graph.enriched")
+        .eq("source_event_id", jobId)
+        .maybeSingle();
+      return error ? null : ((data?.id as string | undefined) ?? null);
+    };
+    let eventId = await existingEvent();
+    for (let attempt = 0; !eventId && attempt < 2; attempt++) {
+      eventId = await publishGraphEvent(admin, {
+        tenantId,
+        eventType: "graph.enriched",
+        sourceEventId: jobId,
+        payload: {
+          source,
+          nodes_upserted: nodesUpserted,
+          nodes_created: nodesCreated,
+          edges_upserted: edgesUpserted,
+          edges_created: edgesCreated,
+          skipped,
+          failed,
+          avg_confidence: avgConfidence,
+          by_type: byType,
+        },
+      });
+      if (!eventId) eventId = await existingEvent();
+    }
     const eventsPublished = eventId ? 1 : 0;
 
     return {
-      success: failed === 0,
+      success: failed === 0 && eventsPublished === 1,
       recordsProcessed: nodesUpserted + edgesUpserted,
       result: {
         nodes_upserted: nodesUpserted,
@@ -284,11 +317,14 @@ export async function handleBusinessGraphSync(
         by_type: byType,
         avg_confidence: avgConfidence,
       },
-      ...(failed > 0
+      ...(failed > 0 || eventsPublished === 0
         ? {
             error: {
-              code: "graph_partial_failure",
-              message: `${failed} node write(s) failed`,
+              code: failed > 0 ? "graph_partial_failure" : "graph_event_unconfirmed",
+              message:
+                failed > 0
+                  ? `${failed} node write(s) failed`
+                  : "Graph completion evidence could not be confirmed.",
               retryable: true,
             },
           }

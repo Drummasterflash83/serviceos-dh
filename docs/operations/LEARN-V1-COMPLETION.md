@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**14 October, 20:45 UTC — Build 01 source-to-card drain recovery is in progress.**
+**14 October, 21:46 UTC — Build 01 source-to-card and graph recovery are in progress.**
 
 ### Working and verified
 
@@ -30,6 +30,44 @@ override a later release observation. No requirement is silently deferred.
   Removed mailbox rows, sync preferences and all source history remain intact.
   The next unattended Workspace scheduler cycle succeeded with nine eligible
   mailboxes queued and zero ineligible or unconfirmed.
+- The continuing 200-record identity batches delivered confirmed identities/cards;
+  a normal card refresh completed at 20:55 UTC despite queue pressure. A graph
+  refresh record from 03:09 UTC had remained `running` with no claim or lease,
+  preventing scheduled graph refreshes. Internal triggers now enqueue the leased
+  graph worker in TEST and LIVE; a synthetic TEST call queued once and rejected
+  cross-tenant scope. The exact orphaned LIVE record was marked failed in a
+  rehearsed, audited transaction. Its replacement succeeded at 21:09 UTC with
+  1,479 processed graph items; a later ordinary run is active. Direct operator
+  graph work now requires a confirmed leased claim before writes; a failed
+  handler result records failure.
+- The email selector began timing out when it repeatedly checked revisions of
+  already-linked messages. A bounded unlinked-email path now returns 200 LIVE
+  candidates in about a second, preserving exact revision/hold checks on the
+  selected window and the original full selector for later changed-source review.
+  TEST synthetic draft/hold/revision checks and LIVE rollback/installed query
+  checks pass. Ordinary projection continuation has resumed; the email gap fell
+  to 53,491 by 21:16 UTC while 550 more saved emails arrived.
+- A separate Phone projection lane is deployed in TEST and LIVE. Its first
+  unattended batch selected 100 legacy calls, all held for review and none
+  published. A bounded unlinked-first selector then passed TEST fixture and
+  LIVE rollback checks; the next ordinary Phone job published all 75 previously
+  unlinked calls at 21:28 UTC. The unlinked Phone count is now zero. All 75 new
+  interactions were still `ready`, with no confirmed card attribution at readback.
+- A second ordinary graph run succeeded after a five-minute lease reclaim. The
+  next attempt stopped making writes near five minutes, despite its extended
+  lease. Graph node/edge work now runs in bounded groups while dependency phases
+  remain ordered. A job-keyed completion event is confirmed or leaves the job
+  retryable. A 200-interaction TEST runtime run produced 200 nodes and one event;
+  TEST v34 and LIVE v85 packages match downloaded source. The stalled LIVE claim
+  was reclaimed at 21:45 UTC; its bounded-write retry succeeded in 27 seconds,
+  processing 1,440 items with exactly one keyed completion event and a cleared
+  lease. A new normal graph job queued afterward.
+- The existing identity selector now reserves at most a quarter of its normal
+  batch for ready Phone calls, leaving the remaining slots for oldest-first work.
+  TEST synthetic 2-Phone/6-Email selection and LIVE rollback checks pass. Of the
+  75 newly published Phone interactions, all 75 reached `enriched` with exact
+  committed customer-card receipts by 21:36 UTC. This proves the scheduled
+  source-to-card path for those calls, not complete Phone history or scoring.
 
 ### Needs finishing
 
@@ -39,6 +77,13 @@ override a later release observation. No requirement is silently deferred.
   `direction_unverified`; do not call them linked customer-card evidence.
 - Continue the real full working-day Phone/Email observation, wider source/card/
   scoring acceptance, dependable unattended backups and full app/Auth recovery.
+- Reconcile graph coverage beyond its bounded latest-record windows against
+  required large histories, and observe repeated normal runs over the full
+  working-day window.
+- Complete the unlinked email drain, then prove changed already-linked revisions
+  are selected; the original full selector can still be expensive once the fast
+  path is empty. Verify card-read and recommendation evidence for the new Phone
+  group, and reconcile 700 recorded legacy Phone projection review holds.
 - Chris is the named Drummonds business reviewer and will sign off once the
   evidence is ready. His confirmation of that role is not a sign-off.
 
@@ -50,7 +95,13 @@ override a later release observation. No requirement is silently deferred.
 [Alias recovery](evidence/learn-build01-alias-recovery-2026-10-14.json),
 [projection drain](evidence/learn-build01-projection-drain-2026-10-14.json), and
 [identity drain](evidence/learn-build01-identity-drain-2026-10-14.json), and
-[removed-account reconciliation](evidence/learn-build01-removed-mailbox-reconciliation-2026-10-14.json).
+[removed-account reconciliation](evidence/learn-build01-removed-mailbox-reconciliation-2026-10-14.json),
+and [graph recovery](evidence/learn-build01-graph-recovery-2026-10-14.json),
+and [projection selector recovery](evidence/learn-build01-projection-selector-2026-10-14.json).
+The [Phone unlinked-first receipt](evidence/learn-build01-phone-first-2026-10-14.json)
+records the ordinary 75-call publication and its separate downstream limit.
+[Phone identity evidence](evidence/learn-build01-phone-identity-2026-10-14.json)
+records the bounded downstream priority and ordinary attributed progress.
 
 **14 October — Build 01 follow-up: job breakdown corrected; fresh manual backup verified.**
 
