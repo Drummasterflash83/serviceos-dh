@@ -1,0 +1,90 @@
+{
+  "version": "learn-public-slack-runtime-local/1",
+  "state": "runtime_verified_not_deployed",
+  "verifiedAt": "2026-10-14T08:33:57.930889+00:00",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "baseline": {
+    "name": "platform-worker",
+    "id": "d4a0b71f-262d-4ede-9485-2621893b6c90",
+    "version": 76,
+    "wireSha256": "0af2ebd53f0de1426c2d451f0dfbae767661f9d268d4a67672704784ffb98c8a",
+    "verifyJwt": false
+  },
+  "sourceClosureSha256": "df0b224a6a34df3d93516c0b81003a27c6222d75481619cbc5bbd8876f2c865d",
+  "changedFiles": [
+    "_shared/observation_ingest.ts",
+    "_shared/worker_handlers/intelligence_ingest.ts",
+    "_shared/observation_source_context.ts"
+  ],
+  "modules": 125,
+  "artifact": {
+    "name": "platform-worker",
+    "verifyJwt": false,
+    "eszipSha256": "d2cd53660e670884d5b260badd1be972f8b2630a1544f35a3d5835a62d0e2276",
+    "bytes": 19346672
+  },
+  "exactHostedRollbackRetained": {
+    "name": "platform-worker",
+    "verifyJwt": false,
+    "eszipSha256": "5285aa524dca32044cdd917323b55dad4c90ba156abb5802e47b76ab63bb05b6",
+    "bytes": 19337616,
+    "sourceClosureSha256": "db813cd26b69d7627fe0c1eca51f9432342f1ba8e418bededd2908923086f969",
+    "exactHostedArtifact": true
+  },
+  "ordinaryQueueRuntimeProbe": {
+    "state": "passed",
+    "defaultBatch": 10,
+    "explicitBatchBounds": [
+      1,
+      20
+    ],
+    "leaseSeconds": 300,
+    "cases": 8,
+    "syntheticJobsSettled": 10,
+    "missingAuthStatus": 403,
+    "noDatabaseBeforeAuth": true,
+    "serviceAuthVerified": true,
+    "jobTypeFilterPreserved": true,
+    "network": "none",
+    "realCredentials": false,
+    "providerCalls": 0,
+    "containerRemoved": true,
+    "sourceClosureSha256": "df0b224a6a34df3d93516c0b81003a27c6222d75481619cbc5bbd8876f2c865d",
+    "artifact": {
+      "name": "platform-worker",
+      "verifyJwt": false,
+      "eszipSha256": "d2cd53660e670884d5b260badd1be972f8b2630a1544f35a3d5835a62d0e2276",
+      "bytes": 19346672
+    },
+    "harnessSha256": "66078727d2c3cc33635fe59695b07833357b00f7b56aef0696b470ad05e5d3ac"
+  },
+  "retainedSourceRuntimeProbe": {
+    "state": "passed",
+    "compiledSourceHandOff": true,
+    "duplicateRecovery": true,
+    "unprovenSourceDenied": true,
+    "withdrawnProofDenied": true,
+    "tenantFiltersVerified": true,
+    "customerAndJobAttribution": "unresolved",
+    "network": "none",
+    "realCredentials": false,
+    "providerCalls": 0,
+    "cases": 4,
+    "containerRemoved": true,
+    "sourceClosureSha256": "df0b224a6a34df3d93516c0b81003a27c6222d75481619cbc5bbd8876f2c865d",
+    "artifact": {
+      "name": "platform-worker",
+      "verifyJwt": false,
+      "eszipSha256": "d2cd53660e670884d5b260badd1be972f8b2630a1544f35a3d5835a62d0e2276",
+      "bytes": 19346672
+    },
+    "harnessSha256": "451ad661b9c8f1776a3466ecc15f72772c3e79c1e20b725f28b1ca0aaeb0c855"
+  },
+  "currentLiveSqlBaselineMatches": true,
+  "limitations": [
+    "Synthetic executable verification only; no hosted candidate deployment or real observation acceptance.",
+    "Production-scale selector timing, matching schema/worker publication and scheduled real-source acceptance remain required.",
+    "Source-only observation leaves customer/job/person attribution unresolved."
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "version": "learn-public-slack-observation-release/1",
-  "state": "locally_verified_not_deployed",
+  "state": "runtime_verified_not_deployed",
   "project": "tgbnakbxwcqjeimygroz",
   "source": {
     "path": "supabase/migrations/20261102190000_learn_public_slack_observation_context.sql",
@@ -103,7 +103,7 @@
     "state": "compiled_with_public_dependency_resolution",
     "image": "public.ecr.aws/supabase/edge-runtime:v1.74.3",
     "imageId": "sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c",
-    "sourceClosureSha256": "6327b7096640139cb0f31a08dd7b62badd18c384f891771a734320b5d601e096",
+    "sourceClosureSha256": "df0b224a6a34df3d93516c0b81003a27c6222d75481619cbc5bbd8876f2c865d",
     "changedFiles": [
       "_shared/observation_ingest.ts",
       "_shared/worker_handlers/intelligence_ingest.ts",
@@ -113,8 +113,10 @@
       {
         "name": "platform-worker",
         "verifyJwt": false,
-        "eszipSha256": "d2cd53660e670884d5b260badd1be972f8b2630a1544f35a3d5835a62d0e2276"
+        "eszipSha256": "d2cd53660e670884d5b260badd1be972f8b2630a1544f35a3d5835a62d0e2276",
+        "bytes": 19346672
       }
-    ]
+    ],
+    "verificationEvidence": "docs/operations/evidence/learn-public-slack-runtime-local-2026-10-14.json"
   }
 }
