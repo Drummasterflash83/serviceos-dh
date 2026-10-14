@@ -59,9 +59,16 @@ when reverting the frontend. Do not reverse the earlier contact-separation backe
 its guard preserves protection after real shared-endpoint contacts were published.
 [Prior contact release](operations/LEARN-CONTACT-SEPARATION.md).
 
+The ordinary queue worker is now LIVE v76 and TEST v28, with a default batch of ten
+(previously three). Exact artifact/auth checks and five consecutive normal LIVE
+claims verify deployment and use; complete historical processing remains open.
+[Capacity release and rollback](operations/LEARN-WORKER-THROUGHPUT.md).
+
 The learning scheduler is LIVE v20, aligned with worker mapper `obs-ingest/2` and
 explicit queued mapper versions. Exact runtime readback, authentication and normal
-scheduled dispatch pass; downstream observation acceptance remains pending.
+scheduled dispatch pass. Two reviewed public Slack sources now also pass committed
+observation receipt, job/context binding and zero-action acceptance. Broader
+historical learning remains open.
 [Runtime evidence](../supabase/release/learn-reviewed-ingestion/runtime.manifest.json).
 The matching selector reserves bounded capacity for recorded Slack reviews while
 continuing historical processing and preserving existing permissions.

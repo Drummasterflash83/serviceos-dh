@@ -7,6 +7,42 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 06:50 BST — two reviewed public Slack sources accepted through observation.**
+
+- Both existing reviewed messages now have current-mapper ingestion ledgers,
+  succeeded observation jobs and committed observation receipts. Normal scheduling
+  processed them; no manual queue insertion, restart or source rewrite was used.
+- Each observation retains the reviewed customer/job context and points to the
+  correct canonical Commusoft job graph node. Original text, source revision,
+  speaker/direction and the two immutable audited reviews remain unchanged.
+- Both receipts prohibit execution and have zero action IDs. This proves stored
+  observations with source context, not autonomous follow-up, stock verification,
+  financial conclusions or a complete company picture.
+- Eight normal ten-job batches yielded 64 successes, 15 retained holds/ineligible
+  outcomes and one mailbox-discovery retry (`db_error`) needing diagnosis.
+- The prior queued status below is superseded for these two sources only. Broad
+  coverage, historical learning, identity review, scorecards, operator recovery and
+  recurring-backup acceptance still remain open; the full launch goal is active.
+
+[Observation acceptance](evidence/learn-reviewed-slack-observations-live-2026-10-14.json).
+
+**14 October, 06:47 BST — normal LIVE worker capacity increased and verified.**
+
+- TEST v28 and LIVE v76 now claim up to ten ordinary jobs per minute rather than
+  three. Exact compiled probes and hosted artifact/authentication checks pass;
+  handlers, permissions, capture gates, schedules and retained sources are preserved.
+- Five consecutive LIVE ticks used the new ten-job batch. The first four settled:
+  35 succeeded, four identity review holds and one ineligible mailbox. The fifth
+  remained active. Held/blocked records are not reported as successfully processed.
+- By 05:47 UTC, 22 learning-ingestion jobs and 12 Workspace jobs succeeded since
+  release. The oldest queued ingestion advanced from 05:10 to 05:35. The two
+  reviewed Slack sources had already passed ingestion before this release; their
+  final observation receipts remain pending. No manual enqueue or restart was used.
+- Legacy graph-sync diagnosis, broad historical learning, identity review, customer
+  coverage, evidence-backed scoring and operational acceptance remain open.
+
+[Worker release, monitoring and rollback](LEARN-WORKER-THROUGHPUT.md).
+
 **14 October, 06:24 BST — audited operator job search accepted in TEST and LIVE.**
 
 - The Slack context reviewer can now find published jobs by job number, description,

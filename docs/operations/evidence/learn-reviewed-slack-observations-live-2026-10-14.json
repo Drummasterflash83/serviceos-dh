@@ -1,0 +1,22 @@
+{
+  "version": "learn-public-slack-context-acceptance/1",
+  "at": "2026-10-14T05:50:36.076Z",
+  "state": "two_reviewed_sources_observed_with_job_context",
+  "messages": 2,
+  "jobs": 1,
+  "sourceTextAndVersionPreserved": true,
+  "speakerAndDirectionPreserved": true,
+  "exactPublicVisibilityProof": true,
+  "immutableAuditedReviews": 2,
+  "committedObservationReceipts": 2,
+  "observationJobsSucceeded": 2,
+  "mapperVersion": "obs-ingest/2",
+  "sourceInteractionBindingsVerified": true,
+  "reviewContextPreservedOnObservations": true,
+  "canonicalJobGraphBindingsVerified": true,
+  "canExecute": false,
+  "actionsCreated": 0,
+  "manualEnqueuesOrRestarts": 0,
+  "automaticCauseOrPerformanceConclusionClaimed": false,
+  "scopeLimit": "Two reviewed public-channel messages concerning one published job. Not complete Slack learning or customer coverage."
+}
