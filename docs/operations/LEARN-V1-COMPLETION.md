@@ -7,6 +7,38 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October — compiled public Slack learning journey verified; hosted release pending.**
+
+### Working and verified
+
+- Recovered all 124 original worker modules by their pinned byte hashes after the
+  Mac restart cleared temporary build files. Independently read back the exact
+  LIVE v76 executable and retained it privately for rollback. Only the three
+  reviewed Slack-learning files change; the candidate retains 125 modules.
+- The rebuilt executable passes four network-isolated synthetic journeys: proven
+  public source hand-off, duplicate reuse, missing proof denial and proof withdrawal
+  denial. Tenant filters and unresolved customer/job attribution pass. The ordinary
+  queue probe also passes authentication, ten-job capacity, lease and batch bounds.
+  Both test containers were removed; no real credentials or provider calls were used.
+- Forty binding/handler tests pass. All four LIVE function definition/permission
+  baselines still match the exact prepared schema release. LIVE remains v76.
+
+### Needs finishing
+
+- Measure the selector at production scale, publish the matching guarded schema
+  and worker, and verify real source opening, committed observations and scheduled
+  throughput. These new results are **local only**, not hosted acceptance.
+- Today's recording backup has two retained failed attempts: source read unconfirmed,
+  then inventory changed during scanning. Yesterday's successful aggregate remains
+  retained. Daily fresh coverage and dependable backup recurrence remain unverified.
+
+### Blocked externally
+
+- No new user access or decision is required for the current learning step.
+
+[Compiled runtime evidence](evidence/learn-public-slack-runtime-local-2026-10-14.json).
+
+
 **14 October, 08:26 BST — public Slack source learning verified locally; release pending.**
 
 ### Working and verified
