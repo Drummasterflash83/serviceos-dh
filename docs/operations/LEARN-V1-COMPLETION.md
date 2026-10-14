@@ -7,6 +7,44 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October — LIVE public Slack source-learning package deployed; real receipts pending.**
+
+### Working and verified
+
+- LIVE worker v77 and the guarded source qualifier/observer/selector are installed.
+  Exact executable readback and missing-auth 403 pass. A real selection of 25
+  records took 1,582 ms including the API round trip. The isolated 15,000-source
+  selection takes 45 ms; full-schema rollback/authority checks preserve all
+  1,591,601 archived rows across 390 tables and seven sequences.
+- Every pre-existing scoped source ID and canonical digest passes readback across
+  eleven datasets, including message bodies/headers, retained Slack payloads and
+  versions, voicemail/phone transcripts and audio/storage pointers. Gmail's mutable
+  history/labels are separate metadata. New arrivals are permitted; missing or
+  changed earlier records fail acceptance. Audio bytes remain a separate backup claim.
+- Twelve adversarial keyset guards and actual offline archive traversal passed.
+  Synthetic email-body and voicemail-pointer/transcript tampering is detected;
+  synthetic changes roll back. The release journal and original executable remain
+  private and recoverable locally, rather than in reboot-cleared temporary files.
+
+### Needs finishing
+
+- Real source-only observation receipts and signed-in source opening remain pending.
+  The first two exact-selection checks have no dispatched ledger yet. Follow normal
+  scheduling; do not claim successful learning from selector/runtime checks alone.
+- Customer/job/person attribution is still unresolved for these sources. Full
+  customer coverage, scorecards, operator recovery and recurring backups stay open.
+
+### Blocked externally
+
+- No new user action is needed. An automatic approval-review rejection required
+  rehearsal of the revised keysets; that gate passed and the subsequent LIVE
+  promotion was accepted. Two earlier schema attempts restored the exact previous
+  functions before worker change because the diagnostic login lacked EXECUTE; the
+  corrected check uses the existing admin connection in a READ ONLY transaction.
+
+[Deployment and preservation evidence](evidence/learn-public-slack-live-2026-10-14.json).
+
+
 **14 October — compiled public Slack learning journey verified; hosted release pending.**
 
 ### Working and verified

@@ -6,7 +6,10 @@ from restore_production_database import ROOT,IMAGE,PINNED_IMAGE,write_private
 from inspect_production_release_baseline import prepare_archive_roles
 from rehearse_production_rules import prefix
 from native_copy_fingerprints import restored_fingerprints,compare_native_data
-p=argparse.ArgumentParser();p.add_argument('--output',required=True);out=Path(p.parse_args().output).resolve()
+from rehearse_source_keysets import rehearse_source_keysets
+p=argparse.ArgumentParser();p.add_argument('--output',required=True);p.add_argument('--selection-rows',type=int,default=1000)
+args=p.parse_args();out=Path(args.output).resolve()
+if not 1000<=args.selection_rows<=30000:raise SystemExit('Synthetic selection scale must be 1000–30000')
 if out.parent!=Path('.verification-results').resolve() or out.exists():raise SystemExit('Fresh private output required')
 out.mkdir(mode=0o700);report={'state':'started','productionChanged':False,'hostedTestChanged':False};target=None
 try:
@@ -58,12 +61,17 @@ try:
   installed=restored_fingerprints(target)
   report['preservation']=compare_native_data(before,installed)
   sql=Path('scripts/verify/learn-public-slack-observation.assert.sql').read_text()
+  sql=sql.replace('generate_series(20000,20999)',f'generate_series(20000,{19999+args.selection_rows})')
   fixture=json.loads(subprocess.run(['node','scripts/verify/learn-public-slack-observation-fixture.ts'],capture_output=True,check=True,text=True).stdout)
   for k in ('draft','result'):sql=sql.replace('__'+k.upper()+'__','$fixture$'+json.dumps(fixture[k])+'$fixture$::jsonb')
-  target.query('set role postgres;set search_path=public,pg_catalog;begin;'+sql+'\nrollback;')
+  result=target.query('set role postgres;set search_path=public,pg_catalog;begin;'+sql+'\nrollback;')
+  metrics=[json.loads(line) for line in result.splitlines() if line.startswith('{"selectionMetric"')]
+  if len(metrics)!=1 or metrics[0]['selectionMetric']['selected']!=25:raise RecoveryError('Selection timing evidence missing')
+  report['syntheticSelection']={**metrics[0]['selectionMetric'],'sourceRows':args.selection_rows,'scope':'isolated synthetic tenant on restored full schema; hosted latency unverified'}
   existing=Path('scripts/verify/learn-reviewed-ingestion-selection.assert.sql').read_text()
   target.query('set role postgres;set search_path=public,pg_catalog;begin;'+existing+'\nrollback;')
   report['existingReviewedAndHistoricalSelection']='passed'
+  report['sourceFingerprintProtocol']=rehearse_source_keysets(target)
   report['sourceJourney']='passed'
   report['sourceAuthorityAndVisibility']='passed'
   after=restored_fingerprints(target)

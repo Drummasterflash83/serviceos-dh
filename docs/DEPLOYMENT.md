@@ -42,6 +42,18 @@ Cloudflare-flavoured.
 
 ## Current live checkpoint — 14 October 2026
 
+The public Slack source-learning package now installs LIVE worker **v77** with the
+matching guarded qualifier, observer and ordered selector. Exact executable readback,
+missing-auth denial and eleven canonical-source preservation checks pass. A real
+25-record selection takes 1,582 ms including API overhead. Real observation receipts
+remain pending. TEST remains v28 and lacks the selector prerequisite; this isolated
+package was not applied there. No frontend, capture schedule, provider write or user
+permission change occurred. The exact original v76 executable and schema rollback
+are retained privately under `.verification-results/learn-public-slack-live-release-20261014-04/`;
+do not use the earlier temporary throughput paths after the Mac restart.
+[Current release evidence](operations/evidence/learn-public-slack-live-2026-10-14.json).
+
+
 LIVE frontend is `e81575a04065199928cf7dbaf8afcb439a247c9c` /
 `dpl_BtQPXQYCacqVyzmHL311J5F3Pw9E`, following the QuickBooks workstream’s
 approved policy-page publication. All four LIVE aliases and protection were

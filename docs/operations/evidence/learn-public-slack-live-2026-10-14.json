@@ -1,0 +1,176 @@
+{
+  "version": "learn-public-slack-live/1",
+  "state": "deployed_artifact_and_preservation_verified_observations_pending",
+  "verifiedAt": "2026-10-14T09:21:40.988Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "workerVersion": 77,
+  "sourceSha256": "05a818e7e8e5002215b0cee9a9195041ab5b22c17e83397045290faf488a6775",
+  "liveSelection": {
+    "selected": 25,
+    "elapsedMs": 1582
+  },
+  "selectedSourceObservations": "not yet accepted",
+  "preservation": {
+    "datasets": 11,
+    "priorCounts": {
+      "companies": 1205,
+      "customer_cards": 3324,
+      "email_messages": 47748,
+      "jobs": 931,
+      "people": 3331,
+      "phone_calls": 4472,
+      "phone_recordings": 2991,
+      "phone_transcripts": 2991,
+      "receptionist_voicemails": 255,
+      "slack_message_versions": 31965,
+      "slack_messages": 31964
+    },
+    "protocol": "Every existing fixed-cutoff source ID and canonical field digest retained; new arrivals allowed. Gmail labels/history are mutable metadata, separately evidenced.",
+    "fieldsProtected": "Canonical message bodies/headers/provider IDs, retained Slack payload/version, transcripts and recording/storage pointers.",
+    "storageFileBytes": "separate backup acceptance"
+  },
+  "artifactReadbackMatched": true,
+  "missingAuthStatus": 403,
+  "fullSchema": {
+    "state": "public_slack_observation_full_schema_rehearsed",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "archive": {
+      "bytes": 196872981,
+      "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+    },
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "targetDigestAndLateFailureGuards": true,
+    "installedFunctions": [
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=pg_catalog"
+        ],
+        "bodyMd5": "e17e76aaf05e37546f9d8e50ae44ae94",
+        "signature": "public.intelligence_select_uningested(uuid,text,integer)",
+        "definitionMd5": "f8d21e82d687990edbc2830eebce0d56",
+        "securityDefiner": false
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=pg_catalog, public"
+        ],
+        "bodyMd5": "41fd2e0a95faabec25949cf9b1dbdac3",
+        "signature": "public.learn_observation_deliver(uuid,uuid,jsonb,jsonb)",
+        "definitionMd5": "c164522bddf22b92f79edf533a4b30cc",
+        "securityDefiner": true
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=pg_catalog",
+          "TimeZone=UTC"
+        ],
+        "bodyMd5": "dfbeaaf3a11fd6aded83e2a0b60217e4",
+        "signature": "public.learn_public_slack_observation_context(uuid,uuid)",
+        "definitionMd5": "d3dd3067ba19231f81a7cc02f69ed16e",
+        "securityDefiner": true
+      }
+    ],
+    "preservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 390,
+      "rows": 1591601,
+      "sequences": 7,
+      "comparisonSha256": "1949a8afb543bad343b9c0f576a8ff7a661d9179180de7602370f7e18c626910",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "syntheticSelection": {
+      "selected": 25,
+      "elapsed_ms": 44.806,
+      "sourceRows": 15000,
+      "scope": "isolated synthetic tenant on restored full schema; hosted latency unverified"
+    },
+    "existingReviewedAndHistoricalSelection": "passed",
+    "sourceFingerprintProtocol": {
+      "state": "source_keyset_protocol_rehearsed",
+      "datasets": {
+        "email_messages": 18598,
+        "phone_calls": 4328,
+        "phone_recordings": 2882,
+        "phone_transcripts": 2882,
+        "slack_messages": 0,
+        "slack_message_versions": 0,
+        "receptionist_voicemails": 0,
+        "customer_cards": 3170,
+        "jobs": 0,
+        "people": 3170,
+        "companies": 1136
+      },
+      "pages": 33,
+      "archivedCoverageMatches": true,
+      "mutableEmailLabelsExcluded": true,
+      "canonicalEmailBodyChangesDetected": true,
+      "voicemailPointerAndTranscriptChangesDetected": true,
+      "sourceSha256": "6728c18e6894c41c14ee1a9ce3320b560d4edd2d93357d187a132b307202e5eb",
+      "syntheticChangesRolledBack": true,
+      "network": "none",
+      "sourceCredentials": false
+    },
+    "sourceJourney": "passed",
+    "sourceAuthorityAndVisibility": "passed",
+    "syntheticSequenceChanges": [
+      {
+        "before": {
+          "name": "public.learn_work_capture_sequence",
+          "lastValue": 1,
+          "isCalled": false
+        },
+        "after": {
+          "name": "public.learn_work_capture_sequence",
+          "lastValue": 1,
+          "isCalled": true
+        }
+      }
+    ],
+    "migrationRollbackVerified": true,
+    "existingFunctionAuthorityPreserved": true,
+    "migrationSha256": "05a818e7e8e5002215b0cee9a9195041ab5b22c17e83397045290faf488a6775",
+    "journeyRollbackVerified": true,
+    "containerRemoved": true
+  },
+  "runtimeEvidence": "learn-public-slack-runtime-local-2026-10-14.json",
+  "providerCalls": 0,
+  "accountsOrGrantsCreated": 0,
+  "captureSchedulesChanged": false,
+  "frontendChanged": false,
+  "testChanged": false,
+  "earlierAttempts": {
+    "joinedProofScale": "failed at 15000 rows; per-version receipt lookup introduced",
+    "twoSchemaPromotions": "rolled back before worker change because diagnostic login lacked service-function EXECUTE",
+    "diagnosticCorrection": "Existing admin connection fenced in a READ ONLY transaction; no new grants",
+    "sourceMetadataDifference": "73 retained emails refreshed history/labels during earlier metadata comparison; current release instead verifies their canonical content and identities",
+    "automaticApprovalReview": "Initial revised preservation command rejected pending rehearsal; exact keyset implementation later rehearsed, then promotion accepted"
+  },
+  "limitations": [
+    "Real observation receipts, source opening and scheduled throughput still need acceptance.",
+    "Unresolved customer/person/job attribution remains unchanged.",
+    "Hosted TEST lacks the original selector prerequisite; this isolated package was not applied there.",
+    "Full LEARN V1, customer coverage, scoring, operator recovery and recurring-backup acceptance remain incomplete."
+  ]
+}
