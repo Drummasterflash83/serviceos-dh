@@ -78,6 +78,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       tenantId,
       jobType: "graph.sync",
       jobKey: `graph.sync:${tenantId}`,
+      priority: 50,
       connectorId: "openfolk-core",
       moduleId: "core.graph",
     });

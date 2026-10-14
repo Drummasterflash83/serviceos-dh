@@ -47,6 +47,7 @@ export async function handleBusinessGraphSync(
   const source =
     payload.source === "interaction" || payload.source === "identity" ? payload.source : "all";
   const limit = clampLimit(payload.limit);
+  const historyDrain = payload.historyDrain === true && source === "interaction";
 
   const wantIdentity = source === "identity" || source === "all";
   const wantInteractions = source === "interaction" || source === "all";
@@ -387,7 +388,7 @@ export async function handleBusinessGraphSync(
         by_type: byType,
         avg_confidence: avgConfidence,
       },
-      ...(source === "all" &&
+      ...((source === "all" || historyDrain) &&
       missingInteractionCount === MISSING_INTERACTION_PAGE &&
       failed === 0 &&
       eventsPublished === 1
@@ -395,7 +396,11 @@ export async function handleBusinessGraphSync(
             continuation: {
               jobType: "graph.sync",
               jobKey: `graph.sync:${tenantId}`,
-              payload: { source: "all", limit },
+              // Full refresh runs normally every five minutes. Backfill pages
+              // only touch interactions and their exact existing FK endpoints,
+              // rather than repeating 800 identity/recommendation writes each
+              // minute while a large retained history drains.
+              payload: { source: "interaction", limit: 50, historyDrain: true },
               priority: 50,
               availableAt: new Date(Date.now() + 60_000).toISOString(),
             },

@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**14 October, 21:55 UTC — bounded graph-history drain released; LIVE observation pending.**
+**14 October, 22:07 UTC — graph history has a confirmed LIVE page; recovery observation continues.**
 
 ### Working and verified
 
@@ -21,15 +21,33 @@ override a later release observation. No requirement is silently deferred.
   synthetic TEST run reached 116 nodes on its first ordinary worker pass, then
   all 120 on its one serial continuation, with two succeeded jobs, two keyed
   completion events, no remaining missing nodes and complete fixture removal.
-  The LIVE selector was separately rehearsed before installation. TEST graph
-  endpoint v5 / worker v35 and LIVE endpoint v46 / worker v86 are ACTIVE, and
-  every downloaded package matches its staged source. The production build and
-  its prebuild checks pass.
+  The LIVE selector was separately rehearsed before installation. The first
+  ordinary LIVE run succeeded at 22:01:35 UTC: 300 interactions touched, 109
+  nodes and 653 edges newly created, one completion event, and a serial child.
+  TEST graph endpoint v7 / worker v36 and LIVE endpoint v48 / worker v87 are
+  ACTIVE, and every downloaded package matches its staged source. The production
+  build and its prebuild checks pass.
+- The queued graph job initially waited behind continuing priority-50 email/card
+  work. Internal and existing five-minute scheduler graph enqueues now use that
+  same priority; TEST confirms the exact queued priority, tenant rejection and
+  de-duplication. The second LIVE run repeated the full identity window and was
+  still running without recent writes at 22:07 UTC. A lighter interaction-only
+  continuation then passed TEST's two-page drain and was released in both
+  environments; an already-running old-code claim remains fenced until recovery.
 
 ### Needs finishing
 
-- Confirm actual LIVE ordinary drain, rate and terminal evidence over repeated
-  runs; the first post-release job was still queued at the 21:55 UTC baseline.
+- Confirm the second LIVE claim settles or is safely reclaimed, then measure
+  repeated lighter continuation jobs, rate and terminal evidence. New email
+  interactions were arriving faster than the first 100-row history page, so
+  full graph catch-up is not yet established.
+- At 21:58 UTC the retained-email-without-interaction count had fallen to
+  46,799, while the ordinary projection queue was still active. All 75 newly
+  published Phone calls still had exact committed card receipts. A later
+  aggregate audit found 3,600 distinct legacy Phone calls and 13 emails with
+  `legacy_projection_review` receipts, more than the earlier 700-Phone snapshot.
+  These old canonical records require reconciliation; no broad overwrite or
+  automatic approval is implied.
   Reconcile graph recommendations and edges separately. This change does not
   establish complete source-to-card, scoring or unattended working-day coverage.
 

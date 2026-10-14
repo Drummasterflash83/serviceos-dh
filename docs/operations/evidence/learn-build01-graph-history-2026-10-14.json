@@ -1,6 +1,6 @@
 {
   "date_utc": "2026-10-14",
-  "status": "released_observation_in_progress",
+  "status": "released_first_live_page_verified_recovery_observation_in_progress",
   "purpose": "Drain eligible retained interactions outside the graph's latest-record window without changing canonical sources or inferred identities.",
   "test": {
     "selector_rollback_rehearsed": true,
@@ -12,25 +12,39 @@
     "job_keyed_events": 2,
     "remaining_missing": 0,
     "fixture_removed": true,
-    "downloaded_graph_endpoint_version": 5,
-    "downloaded_worker_version": 35,
+    "downloaded_graph_endpoint_version": 7,
+    "downloaded_worker_version": 36,
     "downloaded_packages_match_staged_source": true
   },
   "live": {
     "selector_rollback_rehearsed": true,
     "selector_service_role_only": true,
-    "downloaded_graph_endpoint_version": 46,
-    "downloaded_worker_version": 86,
+    "downloaded_graph_endpoint_version": 48,
+    "downloaded_graph_scheduler_version": 43,
+    "downloaded_worker_version": 87,
     "downloaded_packages_match_staged_source": true,
     "baseline_at_utc": "2026-10-14T21:55:15.803Z",
     "eligible_ready_or_enriched_interactions": 36645,
     "eligible_interactions_without_graph": 13905,
-    "first_ordinary_post_release_job": "queued_at_baseline",
+    "first_ordinary_post_release_job": {
+      "claimed_at_utc": "2026-10-14T22:01:00.873Z",
+      "completed_at_utc": "2026-10-14T22:01:35.080Z",
+      "status": "succeeded",
+      "interactions_touched": 300,
+      "nodes_created": 109,
+      "edges_created": 653,
+      "records_processed": 2208,
+      "completion_events": 1,
+      "continuation_created": true
+    },
+    "second_ordinary_job": "claimed_at_2026-10-14T22:03:00Z_remained_running_without_recent_writes_at_22:07Z",
+    "queue_priority": "future scheduled and internal graph enqueues use priority 50; TEST synthetic enqueue and downloaded TEST/LIVE packages confirmed",
+    "lighter_continuation": "TEST verified interaction-only continuation, then released to LIVE worker and graph endpoint; an already-running old-code job must settle or reach its guarded lease recovery",
     "full_history_and_unattended_acceptance": "not_yet_verified"
   },
   "limits": [
     "The service-only selector returns at most 100 oldest missing canonical interactions per run.",
-    "A successful full page requests one serial follow-on job after 60 seconds; the existing active job key prevents parallel graph drains.",
+    "A successful full page requests one serial interaction-only follow-on job after 60 seconds; the existing active job key prevents parallel graph drains.",
     "The latest-record refresh remains active; this does not establish complete edge, recommendation, scoring or source coverage.",
     "No working-day observation or human business sign-off is implied."
   ]

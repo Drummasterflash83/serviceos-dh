@@ -54,6 +54,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       moduleId: "core.graph",
       jobType: "graph.sync",
       jobKey: `graph.sync:${tenantId}`,
+      priority: 50,
       payload: { source, limit: typeof body.limit === "number" ? body.limit : null },
     });
     if (!queued.id)
