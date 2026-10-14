@@ -7,6 +7,21 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 03:13 BST — retained Slack source reader verified and installed; frontend acceptance pending.**
+
+- Native and hosted TEST permission/visibility/audit journeys pass. The additive
+  reader is installed with identical definitions in TEST and LIVE. Existing source
+  identities and user access are preserved; no provider requests or capture changes.
+- The customer timeline and explicit OpenFolk communication selection now have a
+  prepared original-message reader, with dated text and provenance. Five frontend
+  files pass focused tests, TypeScript and the Vercel-target build. Stable-site
+  deployment and signed-in source acceptance remain pending.
+- This closes an evidence drill-down gap only. Wider current-source matching,
+  publication, capture coverage, scoring, operator recovery and scheduled independent
+  backup acceptance still need completion. The full goal stays active.
+
+[Retained Slack source journey](LEARN-SLACK-CARD-SOURCE.md).
+
 **14 October, 03:00 BST — four real Slack observations accepted through the LIVE customer card.**
 
 - All four original recovery children succeeded once, with committed observations,
