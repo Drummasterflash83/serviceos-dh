@@ -93,6 +93,12 @@ function CardWorkspace({
   const [failed, setFailed] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   useEffect(() => {
+    if (!canEdit) {
+      setImported(false);
+      setSelected(null);
+    }
+  }, [canEdit]);
+  useEffect(() => {
     let active = true;
     setResult(null);
     setFailed(false);

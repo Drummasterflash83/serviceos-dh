@@ -35,6 +35,7 @@ export function OperatorClientInformation({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [pendingCard, setPendingCard] = useState<string | null>(null);
   const request = useRef<AbortController | null>(null);
   const generation = useRef(0);
   const scope = `${tenantId}:${actorId}:${collection}:${record.trim()}`;
@@ -57,7 +58,7 @@ export function OperatorClientInformation({
       generation.current++;
       request.current?.abort();
     };
-  }, [tenantId, actorId, collection]);
+  }, [tenantId, actorId]);
   // Private content is not cached across background sessions or account switches.
   useEffect(() => {
     const hide = () => {
@@ -108,6 +109,11 @@ export function OperatorClientInformation({
       if (ticket === generation.current) setBusy(false);
     }
   }
+  useEffect(() => {
+    if (pendingCard === null || collection !== "customers" || record !== pendingCard) return;
+    setPendingCard(null);
+    void load();
+  }, [pendingCard, collection, record]);
   const title = (fields: Record<string, unknown>, id: string) =>
     String(
       fields.title ??
@@ -130,10 +136,6 @@ export function OperatorClientInformation({
       className={embedded ? "min-w-0 space-y-5" : "op-embedded cp-root min-w-0 space-y-5"}
       aria-labelledby="client-information-heading"
     >
-      <div className="space-y-3">
-        <button className="cp-secondary" disabled={reason.trim().length<3||reason.trim().length>500} onClick={()=>{setImportsReason(reason.trim());setImportsOpen(v=>!v);}}>{importsOpen?'Close imported customers':'Browse imported customer records'}</button>
-        {importsOpen&&<LearnImportedCustomers key={tenantId+':'+actorId+':'+importsReason} tenantId={tenantId} actorId={actorId} operatorReason={importsReason} onOpenCard={id=>{setImportsOpen(false);setCollection('customers');setRecord(id);}}/>}
-      </div>
       <header>
         <p className="op-eyebrow">OPENFOLK · CLIENT INFORMATION</p>
         <h1 id="client-information-heading" className="text-2xl font-semibold">
@@ -157,6 +159,8 @@ export function OperatorClientInformation({
             onChange={(e) => {
               clear();
               setCollection(e.target.value as InformationCollection);
+              setRecord("");
+              setPendingCard(null);
             }}
           >
             {Object.entries(clientInformationCollections).map(([key, label]) => (
@@ -176,6 +180,10 @@ export function OperatorClientInformation({
             onChange={(e) => setReason(e.target.value)}
           />
         </label>
+      </div>
+      <div className="space-y-3">
+        <button className="cp-secondary" disabled={reason.trim().length<3||reason.trim().length>500} onClick={()=>{setImportsReason(reason.trim());setImportsOpen(v=>!v);}}>{importsOpen?'Close imported customers':'Browse imported customer records'}</button>
+        {importsOpen&&<LearnImportedCustomers key={tenantId+':'+actorId+':'+importsReason} tenantId={tenantId} actorId={actorId} operatorReason={importsReason} onOpenCard={id=>{setImportsOpen(false);setReason(importsReason);setCollection('customers');setRecord(id);setPendingCard(id);}}/>}
       </div>
       <label className="block space-y-1">
         Find a specific record (optional)
