@@ -1,10 +1,15 @@
+import {
+  retainedSourceContext,
+  type RetainedSourceContext,
+  type SourceContextInput,
+} from "./observation_source_context.ts";
 import { reviewedWorkContext } from "./learn_work_context.ts";
 // ServiceOS — Observation Ingest (PURE core of the interaction → intelligence bridge).
 //
 // The channel-neutral seam between the canonical `interactions` projection and the
 // existing `intelligence.observe` pipeline. `interactions` is the UNIVERSAL inbound
 // boundary: phone, email, chat, form and every future connector project into the same
-// row, so this module maps an already-enriched interaction into a channel-neutral
+// row, so this module maps an eligible interaction into a channel-neutral
 // ObservationDraft that `intelligence.observe` consumes unchanged.
 //
 // PURITY: this module performs NO database, event, queue or network I/O and imports
@@ -29,9 +34,9 @@ export const MAPPER_VERSION = "obs-ingest/2";
 // (the decision engine always loads core policies). A caller may override per tenant.
 export const DEFAULT_INGEST_DOMAIN = "core";
 
-// Interactions the bridge will map. Deliberately narrow: only fully-enriched rows
-// (identity + context resolved) are eligible, so historical/unenriched rows are never
-// swept in implicitly — a backfill must pass explicit ids.
+// Fully enriched rows retain their existing eligibility. An unresolved row
+// additionally requires an independently checked
+// retained-source binding; its attribution hold and source direction remain intact.
 export const ELIGIBLE_PROCESSING_STATUSES: ReadonlySet<string> = new Set(["enriched"]);
 
 export const OBSERVATION_CREATED_FROM = "intelligence.ingest_interaction";
@@ -42,6 +47,7 @@ export const OBSERVE_JOB_TYPE = "intelligence.observe";
 /** The connector-agnostic interaction facts the mapper needs. Channel lives in
  *  `source_type` and is provenance ONLY. */
 export interface IngestInteraction {
+  retainedSourceContext?: RetainedSourceContext | null;
   updated_at?: string;
   metadata?: unknown;
   related_job_id?: string | null;
@@ -143,16 +149,20 @@ export function observeJobKey(
   return `${OBSERVE_JOB_TYPE}:${tenantId}:${interactionId}:${mapperVersion}`;
 }
 
-/** Pure eligibility predicate — enriched interactions only (channel-independent). */
-export function isEligibleForIngest(interaction: { processing_status: string | null }): boolean {
+/** Lifecycle or independently checked retained-source evidence; never a guessed identity. */
+export function isEligibleForIngest(
+  interaction: { processing_status: string | null } & SourceContextInput,
+): boolean {
   return (
     interaction.processing_status != null &&
-    ELIGIBLE_PROCESSING_STATUSES.has(interaction.processing_status)
+    (ELIGIBLE_PROCESSING_STATUSES.has(interaction.processing_status) ||
+      (interaction.processing_status === "identity_review" &&
+        retainedSourceContext(interaction) !== null))
   );
 }
 
 /**
- * Map an enriched interaction + its resolved context into a channel-neutral
+ * Map an eligible interaction + its available context into a channel-neutral
  * ObservationDraft. Deterministic: same inputs → deep-equal output. Fabricates
  * nothing — missing context is represented as explicit nulls/empties. Rejects
  * cross-tenant references. Scores are derived transparently from PRESENCE of
@@ -245,6 +255,7 @@ export function buildObservationDraft(input: IngestBuildInput): ObservationDraft
         }
       : null,
     work_context: reviewedWorkContext(i),
+    ...(retainedSourceContext(i) ? { retained_source_context: retainedSourceContext(i) } : {}),
     graph_context: { entity_node_count: input.graphNodeRefs.length },
     // Domain-neutral authority block: an inbound observation requests no delegated
     // financial authority and needs no explicit customer approval to be evaluated.

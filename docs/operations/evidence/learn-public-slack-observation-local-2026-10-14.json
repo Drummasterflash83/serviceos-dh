@@ -1,0 +1,133 @@
+{
+  "version": "learn-public-slack-observation-local/1",
+  "verifiedAt": "2026-10-14T07:26:58.268911+00:00",
+  "state": "locally_verified_not_deployed",
+  "productionChanged": false,
+  "hostedTestChanged": false,
+  "tests": {
+    "sourceBindingAndWorker": 40,
+    "existingObserveOnlyHandler": 6,
+    "pureMapperChecks": 26,
+    "fullSchema": {
+      "state": "public_slack_observation_full_schema_rehearsed",
+      "productionChanged": false,
+      "hostedTestChanged": false,
+      "archive": {
+        "bytes": 196872981,
+        "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+      },
+      "containment": {
+        "network": "none",
+        "hostMounts": 0,
+        "publishedPorts": 0,
+        "cronLaunchActiveJobs": false,
+        "preloadedLibraries": [
+          "pg_cron",
+          "pg_net",
+          "pgsodium",
+          "supabase_vault",
+          "supautils"
+        ],
+        "maxWorkerProcesses": 0,
+        "networkWorkerDatabaseAbsent": true,
+        "containerLogging": "none"
+      },
+      "targetDigestAndLateFailureGuards": true,
+      "installedFunctions": [
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=pg_catalog"
+          ],
+          "bodyMd5": "a7d5df37fe9fe78f8cf55da5d67a48a5",
+          "signature": "public.intelligence_select_uningested(uuid,text,integer)",
+          "definitionMd5": "be6633660a9470dbfebe92f8099a52f7",
+          "securityDefiner": false
+        },
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=pg_catalog, public"
+          ],
+          "bodyMd5": "41fd2e0a95faabec25949cf9b1dbdac3",
+          "signature": "public.learn_observation_deliver(uuid,uuid,jsonb,jsonb)",
+          "definitionMd5": "c164522bddf22b92f79edf533a4b30cc",
+          "securityDefiner": true
+        },
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=pg_catalog",
+            "TimeZone=UTC"
+          ],
+          "bodyMd5": "a6c722aba45bc8290462d9649726fd9c",
+          "signature": "public.learn_public_slack_observation_context(uuid,uuid)",
+          "definitionMd5": "1c67f3afb423b83bc586dc82bdcad953",
+          "securityDefiner": true
+        }
+      ],
+      "preservation": {
+        "state": "all_archived_copy_rows_and_sequences_match",
+        "tables": 390,
+        "rows": 1591601,
+        "sequences": 7,
+        "comparisonSha256": "c3844b0d34159fdeba7e04a190e7d0bcfd588a113a851c2628d6f3fb04949d4b",
+        "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+      },
+      "existingReviewedAndHistoricalSelection": "passed",
+      "sourceJourney": "passed",
+      "sourceAuthorityAndVisibility": "passed",
+      "syntheticSequenceChanges": [
+        {
+          "before": {
+            "name": "public.learn_work_capture_sequence",
+            "lastValue": 1,
+            "isCalled": false
+          },
+          "after": {
+            "name": "public.learn_work_capture_sequence",
+            "lastValue": 1,
+            "isCalled": true
+          }
+        }
+      ],
+      "migrationRollbackVerified": true,
+      "existingFunctionAuthorityPreserved": true,
+      "migrationSha256": "17047281e70605fde9db69df821f5db5528088b5a8b79a447f133c8968e8b932",
+      "journeyRollbackVerified": true,
+      "containerRemoved": true
+    }
+  },
+  "runtimeCandidate": {
+    "state": "compiled_with_public_dependency_resolution",
+    "image": "public.ecr.aws/supabase/edge-runtime:v1.74.3",
+    "imageId": "sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c",
+    "sourceClosureSha256": "6327b7096640139cb0f31a08dd7b62badd18c384f891771a734320b5d601e096",
+    "changedFiles": [
+      "_shared/observation_ingest.ts",
+      "_shared/worker_handlers/intelligence_ingest.ts",
+      "_shared/observation_source_context.ts"
+    ],
+    "endpoints": [
+      {
+        "name": "platform-worker",
+        "verifyJwt": false,
+        "eszipSha256": "d2cd53660e670884d5b260badd1be972f8b2630a1544f35a3d5835a62d0e2276"
+      }
+    ]
+  },
+  "limits": [
+    "Local synthetic and full-schema verification only; no hosted acceptance yet.",
+    "Thousand-source local selection completed under its ten-second gate; production-scale selection still needs measuring.",
+    "Unresolved identity holds remain; source-only observations do not imply verified customer/job/staff attribution.",
+    "Private/shared channels and DMs are excluded from this path."
+  ],
+  "next": [
+    "Verify current hosted baselines and candidate runtime behavior.",
+    "Release guarded schema and matching worker, with preservation checks.",
+    "Verify actual retained public-source observation, source opening, duplicate recovery and normal scheduled throughput."
+  ]
+}

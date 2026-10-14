@@ -7,6 +7,48 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 08:26 BST — public Slack source learning verified locally; release pending.**
+
+### Working and verified
+
+- The existing LIVE operator session remains signed in. Chris confirmed that the
+  1Password item **Openfolk Test is TEST-only**; do not use its password on LIVE,
+  even though the saved website points to app.openfolk.ai. No password was copied.
+- Prepared source-only observations admit an exact retained public Slack version
+  with immutable capture proof and an unrevoked matching connection. They leave
+  direction, identity-review holds and customer/person/job links unchanged. Private,
+  shared, withheld, unproven and unsupported sources remain excluded.
+- Forty source-binding/worker tests, six existing observation-handler tests and
+  twenty-six pure-mapper checks passed. The exact guarded package passed an isolated
+  full-schema rehearsal using the current LIVE observer and withholding guard.
+  All 1,591,601 retained rows across 390 tables and seven sequences were preserved
+  by installation. Synthetic journeys roll back; only the expected local capture
+  sequence's called flag advances. Release rollback/reapply and unchanged existing
+  function permissions passed. Wrong target, source digest and late verification
+  failures each roll back at their intended guard.
+- The thousand-source local selection gate passed after fixing broad proof scans.
+  Reviewed messages retain reserved capacity, recent proven sources get a separate
+  reserve, and older history keeps progressing. Existing selection regression
+  checks passed. The three-file worker candidate compiles on the verified LIVE v76
+  source baseline; no other worker files were changed.
+
+### Needs finishing
+
+- **Not deployed to hosted TEST or LIVE.** Validate the candidate runtime, measure
+  production-scale selection, release matching schema/worker with preservation
+  evidence, then verify a real source-only observation and scheduled throughput.
+- These are retained-source observations, not confirmed customer/job attribution
+  or complete business analysis. Customer coverage, scoring, operator recovery and
+  full LEARN V1 acceptance remain open.
+
+### Blocked externally
+
+- No new user access is needed for this step. LIVE sign-in is working; TEST remains
+  a separate credential and runtime baseline.
+
+[Local source-learning evidence](evidence/learn-public-slack-observation-local-2026-10-14.json).
+
+
 **14 October, 07:42 BST — twenty more LIVE customer journeys published.**
 
 - Twenty individually reviewed customers, four sites and thirty-two jobs are now
