@@ -91,5 +91,17 @@
     "scheduledAcceptance": false,
     "unrelatedFunctionsUnchanged": true,
     "accessSchedulesAndReviewsUnchanged": true
+  },
+  "normalScheduledDispatch": {
+    "checkedAt": "2026-10-14T05:10:20.969Z",
+    "reviewedMessages": 2,
+    "queuedIngestionJobs": 2,
+    "newExplicitMapperJobs": 1,
+    "existingJobPreserved": true,
+    "queuedAt": "2026-10-14T05:10:04.466542Z",
+    "sourceTextAndVersionPreserved": true,
+    "immutableAuditedReviews": 2,
+    "observationAccepted": false,
+    "manualEnqueueOrRestart": false
   }
 }

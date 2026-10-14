@@ -17,10 +17,12 @@ override a later release observation. No requirement is silently deferred.
   selection, explicit payload version, duplicate reuse and missing-auth rejection.
   LIVE artifact readback matches, and an unauthenticated request returns 403.
   Other deployed functions, access, review receipts and schedules are unchanged.
-- At 05:08 UTC one of the two sources still has its original queued ingestion job;
-  neither has a current-mapper observation yet. Normal scheduled processing is the
-  next acceptance step. No manual enqueue or restart was used, and no new source
-  reads, permission changes or paid AI were enabled by this runtime release.
+- At 05:10 UTC the next normal scheduled cycle queued the second reviewed source
+  with explicit mapper 2 and retained the first source's existing queued job.
+  Both original texts, source revisions and immutable reviews remain intact.
+  Neither has a current-mapper observation yet; dispatch is verified, downstream
+  processing remains pending. No manual enqueue or restart was used, and no new
+  source reads, permission changes or paid AI were enabled by this runtime release.
 
 [Runtime release evidence](../../supabase/release/learn-reviewed-ingestion/runtime.manifest.json).
 

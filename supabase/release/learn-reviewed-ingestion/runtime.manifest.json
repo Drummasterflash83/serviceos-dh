@@ -1,6 +1,6 @@
 {
   "version": "learn-reviewed-ingestion-runtime/1",
-  "state": "live_runtime_verified_scheduled_acceptance_pending",
+  "state": "live_scheduled_dispatch_verified_observation_pending",
   "project": "tgbnakbxwcqjeimygroz",
   "endpoint": "intelligence-ingestion-scheduled-sync",
   "beforeVersion": 19,
@@ -71,5 +71,17 @@
     "scheduledAcceptance": false
   },
   "unrelatedFunctionsUnchanged": true,
-  "accessSchedulesAndReviewsUnchanged": true
+  "accessSchedulesAndReviewsUnchanged": true,
+  "normalScheduledDispatch": {
+    "checkedAt": "2026-10-14T05:10:20.969Z",
+    "reviewedMessages": 2,
+    "queuedIngestionJobs": 2,
+    "newExplicitMapperJobs": 1,
+    "existingJobPreserved": true,
+    "queuedAt": "2026-10-14T05:10:04.466542Z",
+    "sourceTextAndVersionPreserved": true,
+    "immutableAuditedReviews": 2,
+    "observationAccepted": false,
+    "manualEnqueueOrRestart": false
+  }
 }
