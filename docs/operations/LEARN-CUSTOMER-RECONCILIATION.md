@@ -194,3 +194,24 @@ Private source manifests, receipts and screenshots remain outside Git under
 `/private/tmp/serviceos-customer-publication-20261014-0230/`.
 
 [Sanitised acceptance](evidence/learn-customer-publication-2026-10-14.json).
+
+## Further LIVE customer history — 14 October, 04:14 UTC
+
+A freshly corroborated company account now has all forty-seven of its currently
+retained jobs and three source contacts on its LIVE card. Publication used the
+existing signed-in operator, current candidate searches and explicit Commusoft
+property relationships. An unrelated job whose number matched the property number
+was excluded. The partial source contact name was preserved without inventing a
+surname or merging unrelated people returned by a broad first-name search.
+
+Readback verifies source revisions, original actor, card ownership and all six
+new unverified non-primary contact-point records. Existing identity projections,
+customer links/contact points, contact links and customer source payloads pass
+scoped before/after comparison. Signed-in acceptance covers both job pages,
+contacts, job drill-down and return. No communication is yet linked to this card,
+and unzoned completion times remain excluded from performance calculations.
+
+Current publication totals are 51 customers, 48 sites, 691 jobs and 56 contacts.
+The fresh plan has 795 proposals, 804 held export accounts and one already-linked
+account requiring review. This remains partial customer coverage.
+[Acceptance evidence](evidence/learn-customer-history-publication-2026-10-14.json).

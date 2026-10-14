@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 05:15 BST — another complete retained customer/job/contact group accepted in LIVE.**
+
+- One corroborated company account, all forty-seven of its currently retained jobs,
+  and three explicitly related contacts were published through existing logged
+  OpenFolk controls. Job number 690 was excluded because its property was a
+  different account: number equality alone was not used as an identity match.
+- Signed-in LIVE acceptance shows both job pages (25 + 22), three contacts and
+  working customer-to-job navigation and return. Original source descriptions,
+  including historical codes and leading zeros, are preserved. Missing linked
+  communications and unconfirmed completion timezones remain visible; these times
+  do not support duration or scoring claims.
+- Exact source/actor/card ownership checks pass. All 4,499 earlier identity
+  projections, fifty customer links, ninety-five contact points and 1,552 customer
+  source payloads are preserved; all fifty-three prior contact links remain.
+  Six new non-primary, unverified contact-point records were added.
+- Current publication totals: **51 customers, 48 sites, 691 jobs, 56 contacts**.
+  A fresh reconciliation leaves 795 proposals for individual review, 804 held
+  export accounts and one linked account needing review. Ninety-eight export
+  customers are still absent from retained API coverage. Wider publication,
+  communication matching, scorecards and operator/operational acceptance remain open.
+- Backup health is within its daily window and the monthly voicemail sample is
+  current. The combined 09:00 local follow-up still awaits observed unattended
+  execution. No duplicate backup or capture runner was started.
+
+[Publication, browser and preservation evidence](evidence/learn-customer-history-publication-2026-10-14.json).
+
 **14 October, 05:00 BST — distinct shared-office contacts accepted in LIVE.**
 
 - Matched TEST/LIVE backend and isolated three-file frontends are released. Signed-in
