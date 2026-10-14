@@ -8,7 +8,8 @@ Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
 
 - The stable `www.openfolk.ai` site serves the protected Git release with the
   imported customer catalogue. The signed-in OpenFolk Drummonds view shows
-  1,553 retained Commusoft customer records and 4,310 QuickBooks main accounts.
+  1,553 retained Commusoft customer records and 4,311 QuickBooks main accounts
+  at the latest acceptance check; these totals can rise with ongoing capture.
   These are source records, not 5,863 verified unique people or businesses.
 - Reviewed identities are combined in one card; the other accounts remain
   source-labelled and separate. A signed-in LIVE check of the reviewed Belvoir
@@ -25,6 +26,13 @@ Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
   10.3 to 3.55 seconds; all 2,426 retained LIVE Commusoft versions gave exactly
   the same summary before and after. The same TEST check had zero differences
   across 2,421 versions. A signed-in TEST and LIVE name search then succeeded.
+- The final production Git build `4216954205f1482602b2139c210f39faa185a2b2`
+  is assigned to all four stable live aliases. Its signed-in build badge showed
+  production and the intended Supabase project. The ordinary Drummonds LEARN
+  page opens **Customers → Imported customer records** and the reviewed
+  canonical card: jobs, published contacts and finance all loaded together.
+  Source-only contact evidence remains separate when publication is incomplete.
+  [Aggregate release evidence](evidence/learn-quickbooks-combined-live-2026-10-14.json).
 
 ### Needs finishing
 
