@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 01:41 BST — projection selection repair installed in TEST and LIVE; runtime acceptance pending.**
+
+- The existing production projection job is retrying with inventory unconfirmed;
+  database logs identify cancellation (SQLSTATE 57014) in its pending selector at
+  23:44 UTC. The exact cause of the entire production delay remains unproven.
+- The selector now avoids unnecessary revision work for missing projection markers
+  and computes final fingerprints after choosing its bounded batch. Exact review
+  holds, drafts, current authoritative phone versions, tenant scope, ordering and
+  optional campaign-column compatibility are preserved.
+- On 36,500 synthetic emails, 19 equivalence cases passed; measured legacy selection
+  fell from 2.535 s to 1.363 s. Hosted TEST full-schema rollback compared exact current
+  selections and preserved its email/phone/interaction fingerprints. The exact pinned
+  production patch, reversal, wrong target and late-failure rollback pass offline.
+- TEST installed at 00:40 UTC and LIVE at 00:41 UTC. Readback confirms the expected
+  function body with unchanged owner, ACL, settings and security-definer status. No
+  source, schedule, credential, grant or job was changed/restarted by the release.
+- The original projection retry remains scheduled; acceptance requires its current
+  worker result, not merely the installed query. The first newly reviewed Slack
+  conversation now has an ingestion ledger and queued observation job, but no new
+  observation was verified at 00:35 UTC. Identity-review continuation remains open.
+
+[Projection selection evidence](evidence/learn-projection-selection-live-2026-10-14.json).
+
+
 **14 October, 01:24 BST — four reviewed Slack conversations verified on a LIVE customer timeline.**
 
 - Four complete public-channel messages were reviewed against three current published
