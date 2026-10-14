@@ -117,6 +117,13 @@ try:
     sql(detail.replace('\ncommit;', '\nrollback;'))
     assert sql("select to_regprocedure('public.learn_imported_customer_detail(uuid,text,text,uuid,text,uuid,text)') is null") == 't'
     sql(detail)
+    lookup = source('supabase/migrations/20261102280000_learn_imported_customer_detail_lookup.sql')
+    sql(lookup.replace('\ncommit;', '\nrollback;'))
+    assert sql("select to_regprocedure('public.learn_imported_customer_source_ref(uuid,text,text)') is null") == 't'
+    sql(lookup)
+    sql("select fixture_assert((select version_id=fixture_id(991) and not conflicted from learn_imported_customer_source_ref(fixture_id(1),'production','commusoft:'||fixture_id(992)::text||':100')),'direct customer lookup preserves current Commusoft version')")
+    sql("select fixture_assert((select count(*)=1 from learn_imported_customer_source_ref(fixture_id(1),'production','quickbooks:finance-realm:CAT1')),'direct accounting lookup preserves root scope')")
+    sql("select fixture_assert(not has_function_privilege('authenticated','learn_imported_customer_source_ref(uuid,text,text)','execute'),'direct source helper is private')")
     sql(source('scripts/verify/learn-imported-customer-detail.assert.sql'))
     print('PASS: captured customer catalogue, reviewed-only grouping, source address provenance, tenant/environment/role fences, identity drift, literal search, paging and rollback.')
 
