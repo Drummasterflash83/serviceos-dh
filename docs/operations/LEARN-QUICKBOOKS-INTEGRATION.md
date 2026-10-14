@@ -2,23 +2,26 @@
 
 Updated 13 October 2026. Workstream: `codex/quickbooks-integration`.
 
-## Current state — 13 October, 22:59 UTC
+## Current state — 14 October, 05:51 UTC
 
-- QuickBooks frontend is now LIVE on the existing openfolk.ai aliases, Git
-  `f03a9632`, deployment `dpl_EhqKY1Qdbp28pXBM5Z31K2GrPuqR`. Existing live operator
-  sign-in, connection/import controls, audited empty finance reads, customer
-  workspace and LEARN navigation pass. Real HTML no-store headers and immutable
-  hashed-asset caching are verified. This release enables no provider connection.
-- Stable TEST remains on e048b49 with the correct TEST backend, 77 retained sandbox
-  records and a deliberately revoked sandbox grant. Real sandbox connection,
-  repeat import, token refresh and API revocation are verified.
-- Production schema and four handlers are installed but inert. Runtime preservation
-  is reconciled. The retained-finance reader fix is verified in both environments.
-- No production Intuit registration, credential, company connection, imports,
-  customer links or financial source records exist. The live screens say so.
-- Policy adoption/publication, owner Intuit security-policy commitment, production
-  keys/company consent and real accounting acceptance remain open. Original
-  retention verification gate is unchanged. The full integration is not complete.
+- Intuit app assessment is submitted and **Approved**. Chris explicitly approved
+  the security-policy commitment and revised retention wording as pilot targets.
+- Approved Drummonds privacy and authorised-user terms are published at
+  `https://www.openfolk.ai/privacy/drummonds` and
+  `https://www.openfolk.ai/terms/drummonds`. Both return 200 and no-store HTML.
+  Publication preserves the latest live baseline `0659046d`; release `e81575a0`,
+  deployment `dpl_BtQPXQYCacqVyzmHL311J5F3Pw9E`. Live sign-in uses production.
+- The owner-approved wording discloses support-led retention targets, incomplete
+  whole-workspace export/deletion and backup expiry. The previous publication
+  hold is superseded by this explicit approval; the engineering work remains.
+  The private pilot agreement is still unsigned and has not been published.
+- Production Intuit app-details completion, credentials, Drummonds company consent
+  and real accounting acceptance remain outstanding. No production QuickBooks
+  company, import or financial source records have been established by this release.
+- Stable TEST retains the 77 sandbox records and deliberately revoked grant.
+  Sandbox connection, duplicate import, refresh and revocation are verified.
+- Production schema and four handlers remain installed but inert. Finance access
+  remains restricted to company owners/admins and logged authorised support.
 
 Earlier dated sections below are implementation history and may describe stages
 superseded by later evidence; they are not current launch claims.
