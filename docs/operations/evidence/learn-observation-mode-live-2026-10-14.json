@@ -1,7 +1,7 @@
 {
   "version": "learn-observation-mode-live/1",
   "at": "2026-10-14T01:14:25.367845+00:00",
-  "state": "runtime_verified_four_recoveries_queued_delivery_pending",
+  "state": "four_real_slack_observations_and_live_customer_display_verified",
   "cause": {
     "platformMode": "discovery",
     "tenantOverride": "assisted",
@@ -103,20 +103,111 @@
     "ledgerBindingsVerified": true,
     "auditEvents": 4,
     "states": [
-      "queued",
-      "queued",
-      "queued",
-      "queued"
+      "succeeded",
+      "succeeded",
+      "succeeded",
+      "succeeded"
     ],
-    "observationsVerified": 0,
+    "observationsVerified": 4,
     "newPermissions": 0,
     "paidAi": false,
-    "providerRequests": 0
+    "providerRequests": 0,
+    "receipts": [
+      {
+        "job": "d727da7d-5165-4266-a0e9-6eabffc21697",
+        "completedAt": "2026-10-14T01:57:01.279846+00:00",
+        "attempts": 1,
+        "receipt": {
+          "mode": "assisted",
+          "state": "committed",
+          "canExecute": false,
+          "jobMatches": true,
+          "actionCount": 0,
+          "sourceMatches": true,
+          "jobNodeMatches": true,
+          "automationIntents": 0,
+          "observationMatches": true,
+          "workContextMatches": true,
+          "sourceReferenceMatches": true
+        }
+      },
+      {
+        "job": "45efa7f7-e060-4f57-b330-6bd50ce712a5",
+        "completedAt": "2026-10-14T01:58:01.483884+00:00",
+        "attempts": 1,
+        "receipt": {
+          "mode": "assisted",
+          "state": "committed",
+          "canExecute": false,
+          "jobMatches": true,
+          "actionCount": 0,
+          "sourceMatches": true,
+          "jobNodeMatches": true,
+          "automationIntents": 0,
+          "observationMatches": true,
+          "workContextMatches": true,
+          "sourceReferenceMatches": true
+        }
+      },
+      {
+        "job": "de7e9225-1afa-4590-b260-d22656c31aa8",
+        "completedAt": "2026-10-14T01:55:03.006029+00:00",
+        "attempts": 1,
+        "receipt": {
+          "mode": "assisted",
+          "state": "committed",
+          "canExecute": false,
+          "jobMatches": true,
+          "actionCount": 0,
+          "sourceMatches": true,
+          "jobNodeMatches": true,
+          "automationIntents": 0,
+          "observationMatches": true,
+          "workContextMatches": true,
+          "sourceReferenceMatches": true
+        }
+      },
+      {
+        "job": "e8f41411-1739-4ffe-81dc-b1b874c90318",
+        "completedAt": "2026-10-14T01:56:01.2565+00:00",
+        "attempts": 1,
+        "receipt": {
+          "mode": "assisted",
+          "state": "committed",
+          "canExecute": false,
+          "jobMatches": true,
+          "actionCount": 0,
+          "sourceMatches": true,
+          "jobNodeMatches": true,
+          "automationIntents": 0,
+          "observationMatches": true,
+          "workContextMatches": true,
+          "sourceReferenceMatches": true
+        }
+      }
+    ]
   },
   "limitations": [
-    "Queued recovery is not observation acceptance. Follow the four retained child handles; do not create replacements while they remain queued/running/retrying.",
     "The generic operator retry control remains an unimplemented placeholder. This bounded maintenance recovery is audited but is not a completed operator UX.",
     "This repair does not establish automatic Slack matching, complete coverage, scoring, recommendations or automation execution.",
-    "Rollback artifacts are retained locally; this is not a claim of independent runtime-artifact backup."
-  ]
+    "Rollback artifacts are retained locally; this is not a claim of independent runtime-artifact backup.",
+    "These four reviewed source messages date from 2022. Their observations are retained evidence, not confirmation of current outstanding requests or inferred ownership.",
+    "The timeline excerpt/provenance opens; a dedicated original Slack source reader is still absent.",
+    "Worker versions 26 TEST/74 LIVE describe the original repair. The subsequent identity-continuation release preserves it in 27 TEST/75 LIVE."
+  ],
+  "acceptedAt": "2026-10-14T01:58:51.656963+00:00",
+  "signedInAcceptance": {
+    "at": "2026-10-14T01:59:15.900Z",
+    "state": "signed_in_live_four_observations_visible",
+    "observationsVisible": 4,
+    "evidenceLinks": 4,
+    "datedHistoricalEvidence": true,
+    "evidenceYear": 2022,
+    "oneEvidenceLinkAndExcerptInspected": true,
+    "ownershipUnconfirmedVisible": true,
+    "ruleConfidenceNotFactVisible": true,
+    "originalSlackSourceReaderUnavailable": true,
+    "currentOutstandingWorkNotEstablished": true,
+    "screenshotSha256": "18beceed4e2e53a3cf38ab769dae8683b2e7f149de1eb622cfb7ba5d7f1224b0"
+  }
 }

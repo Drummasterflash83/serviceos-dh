@@ -59,6 +59,26 @@ ledger pointer. It has not been executed or separately rehearsed. Once a child
 starts, inspect its authoritative state and use a forward repair; never delete a
 committed observation or reset its source merely to undo this maintenance batch.
 
+## Actual scheduled LIVE acceptance — 14 October, 01:58 UTC
+
+All four original recovery children succeeded on their first attempt between 01:55
+and 01:58 UTC. Their ledgers are observed; committed receipts match the source,
+reviewed work context, observation and job graph node. Tenant mode is still assisted,
+`can_execute=false`, action IDs are empty and no automation intents were created.
+Original terminal parents, interaction hashes, identical payloads and audit lineage
+remain intact. No repeated recovery or forced restart was used.
+
+The existing signed-in LIVE customer card now displays all four observations and
+four evidence links. One link was followed to its dated Slack interaction excerpt
+and provenance. These sources date from 2022: their historical requests are not
+proof of current outstanding work or ownership. The displayed rule confidence is
+explicitly not confirmation of fact. A dedicated original Slack source reader is
+still unavailable; the current interaction excerpt is accessible.
+
+The identity-continuation release subsequently preserves this repair in TEST worker
+v27 and LIVE v75. The original v26/v74 evidence above remains release history.
+[Real-provider and signed-in acceptance](evidence/learn-observation-mode-live-2026-10-14.json).
+
 ## Remaining operator work
 
 `retryPlatformJob` in the browser library remains an explicit unimplemented

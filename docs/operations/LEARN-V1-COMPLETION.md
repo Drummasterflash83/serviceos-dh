@@ -7,6 +7,26 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 03:00 BST — four real Slack observations accepted through the LIVE customer card.**
+
+- All four original recovery children succeeded once, with committed observations,
+  matching reviewed customer/job context, retained sources/parents and audit lineage.
+  No actions or automation intents were created. No duplicate recovery was issued.
+- Signed-in LIVE shows all four observations and evidence links. Following one link
+  opens its dated source excerpt and provenance. These are historical 2022 messages;
+  they do not establish present-day outstanding requests or assigned ownership.
+- The recent-job frontend is verified on LIVE/TEST and checkpointed to GitHub. Two
+  LIVE 25-job pages, refresh, job drill-down and return passed. The exact deployments
+  and rollback sequence are recorded in `docs/DEPLOYMENT.md`.
+- Next delivery work is broader current-source/customer/job matching and publication,
+  complete capture/reconciliation, a usable original Slack source reader, evidence-led
+  scoring and logged operator recovery. Daily independent backup/restore operation
+  still needs its scheduled acceptance. No goal requirement is complete by proxy.
+
+[Slack acceptance](LEARN-OBSERVATION-RECOVERY.md) ·
+[Recent-job release](LEARN-CUSTOMER-RECENT-JOBS.md).
+
+
 **14 October, 02:56 BST — recent-job journey verified on LIVE; first Slack recovery observation committed.**
 
 - TEST and LIVE now serve the isolated recent-job frontends from verified Git.
