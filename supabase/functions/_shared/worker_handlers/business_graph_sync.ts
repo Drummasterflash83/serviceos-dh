@@ -14,6 +14,7 @@ import type { WorkerHandlerContext, WorkerHandlerResult } from "./index.ts";
 const DEFAULT_LIMIT = 200;
 const MAX_LIMIT = 1000;
 const WRITE_CONCURRENCY = 8;
+const MISSING_INTERACTION_PAGE = 100;
 
 type Row = Record<string, unknown>;
 
@@ -59,6 +60,7 @@ export async function handleBusinessGraphSync(
   let failed = 0;
   let confSum = 0;
   let confCount = 0;
+  let missingInteractionCount = 0;
   const byType: Record<string, number> = {};
 
   // In-run source_id → graph node id maps (per type).
@@ -221,7 +223,7 @@ export async function handleBusinessGraphSync(
     }
 
     if (wantInteractions) {
-      const { data: interactions } = await admin
+      const { data: recent, error: recentError } = await admin
         .from("interactions")
         .select(
           "id, interaction_type, occurred_at, processing_status, source_connector_id, related_person_id, related_company_id",
@@ -230,8 +232,76 @@ export async function handleBusinessGraphSync(
         .in("processing_status", ["ready", "enriched"])
         .order("occurred_at", { ascending: false })
         .limit(limit);
+      if (recentError) throw recentError;
 
-      await eachBounded((interactions ?? []) as Row[], async (i) => {
+      // The latest-window refresh keeps current evidence fresh, but cannot
+      // reach older retained interactions. Fill a bounded missing-node page on
+      // ordinary jobs, using the exact canonical source key to avoid duplicates.
+      const { data: missing, error: missingError } = await admin.rpc(
+        "learn_graph_missing_interactions",
+        { p_tenant: tenantId, p_limit: MISSING_INTERACTION_PAGE },
+      );
+      if (missingError) throw missingError;
+      missingInteractionCount = (missing ?? []).length;
+      const interactionRows = new Map<string, Row>();
+      for (const row of [...((recent ?? []) as Row[]), ...((missing ?? []) as Row[])]) {
+        if (row.id) interactionRows.set(row.id as string, row);
+      }
+      const interactions = [...interactionRows.values()];
+
+      // An older interaction may point to a graph identity outside this run's
+      // newest identity window. Load only existing, same-tenant endpoints;
+      // never infer a person, company or card link from the source text.
+      const personIds = [
+        ...new Set(
+          interactions
+            .map((i) => i.related_person_id as string | null)
+            .filter((v): v is string => Boolean(v)),
+        ),
+      ];
+      const companyIds = [
+        ...new Set(
+          interactions
+            .map((i) => i.related_company_id as string | null)
+            .filter((v): v is string => Boolean(v)),
+        ),
+      ];
+      async function loadExistingNodes(
+        sourceIds: string[],
+        nodeType: string,
+        sourceTable: string,
+        map: Map<string, string>,
+      ): Promise<void> {
+        for (let start = 0; start < sourceIds.length; start += 100) {
+          const { data, error } = await admin
+            .from("graph_nodes")
+            .select("id,source_id")
+            .eq("tenant_id", tenantId)
+            .eq("node_type", nodeType)
+            .eq("source_table", sourceTable)
+            .in("source_id", sourceIds.slice(start, start + 100));
+          if (error) throw error;
+          for (const n of data ?? []) map.set(n.source_id as string, n.id as string);
+        }
+      }
+      await loadExistingNodes(personIds, "person", "people", personNode);
+      await loadExistingNodes(companyIds, "company", "companies", companyNode);
+      for (let start = 0; start < personIds.length; start += 100) {
+        const { data: linkedCards, error } = await admin
+          .from("customer_cards")
+          .select("id,person_id")
+          .eq("tenant_id", tenantId)
+          .in("person_id", personIds.slice(start, start + 100));
+        if (error) throw error;
+        const cardIds = (linkedCards ?? []).map((c) => c.id as string);
+        await loadExistingNodes(cardIds, "customer_card", "customer_cards", cardNode);
+        for (const c of linkedCards ?? []) {
+          const graphId = cardNode.get(c.id as string);
+          if (graphId) cardByPerson.set(c.person_id as string, graphId);
+        }
+      }
+
+      await eachBounded(interactions, async (i) => {
         await node(interactionNode, "interaction", "interactions", i, null, {
           interaction_type: (i.interaction_type as string | null) ?? null,
           occurred_at: (i.occurred_at as string | null) ?? null,
@@ -243,7 +313,7 @@ export async function handleBusinessGraphSync(
       // Interaction edges. person/company use the in-run identity maps when 'all';
       // for source='interaction' a missing endpoint is counted as skipped (never
       // fabricated).
-      await eachBounded((interactions ?? []) as Row[], async (i) => {
+      await eachBounded(interactions, async (i) => {
         const iid = interactionNode.get(i.id as string);
         const pid = i.related_person_id as string | null;
         const coid = i.related_company_id as string | null;
@@ -317,6 +387,20 @@ export async function handleBusinessGraphSync(
         by_type: byType,
         avg_confidence: avgConfidence,
       },
+      ...(source === "all" &&
+      missingInteractionCount === MISSING_INTERACTION_PAGE &&
+      failed === 0 &&
+      eventsPublished === 1
+        ? {
+            continuation: {
+              jobType: "graph.sync",
+              jobKey: `graph.sync:${tenantId}`,
+              payload: { source: "all", limit },
+              priority: 50,
+              availableAt: new Date(Date.now() + 60_000).toISOString(),
+            },
+          }
+        : {}),
       ...(failed > 0 || eventsPublished === 0
         ? {
             error: {

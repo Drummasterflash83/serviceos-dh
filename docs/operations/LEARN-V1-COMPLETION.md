@@ -7,6 +7,38 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 21:55 UTC — bounded graph-history drain released; LIVE observation pending.**
+
+### Working and verified
+
+- The graph's latest-record window omitted 13,905 of 36,645 eligible retained
+  interactions at LIVE baseline. A service-role-only, tenant-bound selector now
+  pages the oldest missing exact source identities in groups of 100 while the
+  ordinary refresh still updates recent rows. Existing same-tenant person,
+  company and card endpoints are loaded by their direct saved IDs for older
+  interaction edges; no source text is used to infer a link.
+- TEST rollback and service-only permission checks passed. A 120-interaction
+  synthetic TEST run reached 116 nodes on its first ordinary worker pass, then
+  all 120 on its one serial continuation, with two succeeded jobs, two keyed
+  completion events, no remaining missing nodes and complete fixture removal.
+  The LIVE selector was separately rehearsed before installation. TEST graph
+  endpoint v5 / worker v35 and LIVE endpoint v46 / worker v86 are ACTIVE, and
+  every downloaded package matches its staged source. The production build and
+  its prebuild checks pass.
+
+### Needs finishing
+
+- Confirm actual LIVE ordinary drain, rate and terminal evidence over repeated
+  runs; the first post-release job was still queued at the 21:55 UTC baseline.
+  Reconcile graph recommendations and edges separately. This change does not
+  establish complete source-to-card, scoring or unattended working-day coverage.
+
+### Blocked externally
+
+- No new provider or access blocker is established by this graph release.
+
+[Sanitised graph-history evidence](evidence/learn-build01-graph-history-2026-10-14.json).
+
 **14 October, 21:46 UTC — Build 01 source-to-card and graph recovery are in progress.**
 
 ### Working and verified
