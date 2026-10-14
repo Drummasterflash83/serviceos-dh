@@ -69,3 +69,17 @@ source preservation. The older graph-sync handle requires separate diagnosis;
 its age alone does not authorise treating it as a failed lease. Broad historical
 learning, identity review, customer coverage, scoring and operational acceptance
 remain separate open requirements.
+
+## Reviewed-source follow-through
+
+The two reviewed sources subsequently completed their normal observation jobs.
+Their committed receipts, current mapper ledgers, unchanged review context and
+canonical job graph bindings passed at 2026-10-14T05:50:36.076Z. Both disallow execution and
+contain zero action IDs. Source text, versions, speaker and direction are preserved.
+This closes the two-source acceptance gate, not broad historical learning.
+[Exact acceptance](evidence/learn-reviewed-slack-observations-live-2026-10-14.json).
+
+At 05:50 UTC, eight ten-job batches had settled: 64 successes, eight identity
+review holds, six ineligible-mailbox outcomes, one projection review hold and one
+mailbox-discovery retry (`db_error`). The retry still needs diagnosis; do not infer
+all connector health from the increased throughput. Historical backlog remains.

@@ -66,7 +66,9 @@ claims verify deployment and use; complete historical processing remains open.
 
 The learning scheduler is LIVE v20, aligned with worker mapper `obs-ingest/2` and
 explicit queued mapper versions. Exact runtime readback, authentication and normal
-scheduled dispatch pass; downstream observation acceptance remains pending.
+scheduled dispatch pass. Two reviewed public Slack sources now also pass committed
+observation receipt, job/context binding and zero-action acceptance. Broader
+historical learning remains open.
 [Runtime evidence](../supabase/release/learn-reviewed-ingestion/runtime.manifest.json).
 The matching selector reserves bounded capacity for recorded Slack reviews while
 continuing historical processing and preserving existing permissions.
