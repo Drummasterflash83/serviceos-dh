@@ -7,6 +7,28 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 07:14 BST — LIVE Workspace directory discovery recovered automatically.**
+
+- The existing job succeeded on its normal fourth attempt, with a durable receipt
+  for 29 directory users, zero new mailboxes and four addresses absent from that
+  directory. Its connection verification timestamp advanced. No job was manually
+  enqueued or restarted, and old failed attempts remain retained as history.
+- The root cause was an unqualified sender-authority helper called from the
+  existing mailbox-update trigger under a restricted search path. Only two helper
+  definitions changed; their business rules, invoker security and service-only
+  permissions remain intact. Missing/revoked senders and sandbox limits still hold.
+- The full restored production schema reproduces the exact original exception,
+  passes the repaired trigger journey, preserves all 1,591,601 archived rows and
+  seven sequences, and proves exact helper rollback/reapply and unchanged grants.
+  Hosted TEST lacks these legacy helpers and was not changed.
+- LIVE checks preserve source identities, mailbox enablement/identity choices,
+  sender authority, operator access, modes and schedules. The four absent addresses
+  are not declared permanently retired, and saved communications remain intact.
+- Complete historical email coverage, other connection/mailbox acceptance, broader
+  source matching, scorecards and operational recovery still need completion.
+
+[Discovery recovery and evidence](LEARN-WORKSPACE-DISCOVERY-RECOVERY.md).
+
 **14 October, 06:50 BST — two reviewed public Slack sources accepted through observation.**
 
 - Both existing reviewed messages now have current-mapper ingestion ledgers,

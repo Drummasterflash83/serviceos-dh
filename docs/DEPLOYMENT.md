@@ -59,6 +59,12 @@ when reverting the frontend. Do not reverse the earlier contact-separation backe
 its guard preserves protection after real shared-endpoint contacts were published.
 [Prior contact release](operations/LEARN-CONTACT-SEPARATION.md).
 
+Workspace directory discovery now has a two-function dependency repair in LIVE.
+The existing retry completed with a durable success receipt at 06:14 UTC. Function
+permissions, source preservation and mailbox choices passed before/after checks;
+hosted TEST lacks this legacy dependency and was not changed.
+[Release and exact rollback](operations/LEARN-WORKSPACE-DISCOVERY-RECOVERY.md).
+
 The ordinary queue worker is now LIVE v76 and TEST v28, with a default batch of ten
 (previously three). Exact artifact/auth checks and five consecutive normal LIVE
 claims verify deployment and use; complete historical processing remains open.

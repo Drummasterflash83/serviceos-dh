@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "state": "live_scheduled_recovery_verified",
+  "project": "tgbnakbxwcqjeimygroz",
+  "appliedAt": "2026-10-14T06:11:00.793Z",
+  "migration": "supabase/migrations/20261102180000_learn_workspace_discovery_sender_helpers.sql",
+  "migrationSha256": "2f751631abdc89e161b3f7ecd35b7a4105dddaccde9fb0efd9689698b3134974",
+  "functions": [
+    {
+      "signature": "public.marketing_sender_readiness(uuid,uuid)",
+      "beforeMd5": "a035325bc8634f1e886999918c0180f5",
+      "afterMd5": "9db6f5a8603e00f61bb090ec27523098",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "securityDefiner": false
+    },
+    {
+      "signature": "public.marketing_sender_authority_state(uuid,text,text)",
+      "beforeMd5": "b2cf1cebab17860e73fd6d9e760fc7c9",
+      "afterMd5": "23fc3f0c0b1f5573c4cc8ef8f449fb27",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "securityDefiner": false
+    }
+  ],
+  "rollback": {
+    "path": "supabase/release/learn-workspace-discovery-helpers/rollback.sql",
+    "sha256": "b6b87d4d8ef99aa378cbaac45ac759523be7c5eb3dfdd909e7380634a59a8640",
+    "consequence": "Restores prior definitions and known discovery error; no data rollback."
+  },
+  "rehearsal": {
+    "state": "workspace_discovery_helpers_full_schema_rehearsed",
+    "productionChanged": false,
+    "hostedTestChanged": false,
+    "archive": {
+      "bytes": 196872981,
+      "sha256": "b76d652209ac62cf901b388a4defe3a3a839694a0252b36c8e2887a25c02efbd"
+    },
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "preservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 387,
+      "rows": 1591601,
+      "sequences": 7,
+      "comparisonSha256": "af0d77fb3bb869376ee050e8de34aa43a5d7c657785b9a0bb4163ca3349d1f78",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "discoveryAndSenderSafetyJourney": "passed",
+    "assertionSha256": "db317aff80692756e2799f4dabd6ea2e0d3d174b52cd5bf7ea3746e423fbddf3",
+    "exactHelperCatalogRollbackReapply": true,
+    "unrelatedFunctionsAndPermissionsPreserved": true,
+    "migrationSha256": "2f751631abdc89e161b3f7ecd35b7a4105dddaccde9fb0efd9689698b3134974",
+    "journeyRollbackVerified": true,
+    "functionRollbackReapplyVerified": true,
+    "containerRemoved": true
+  },
+  "hostedTest": "No change: TEST lacks these legacy Marketing helper dependencies. Validated against a full restored production schema.",
+  "preservation": {
+    "sourceIdentities": {
+      "calls": 4462,
+      "slack": 24410,
+      "emails": 40169,
+      "recordings": 2984,
+      "voicemails": 255
+    },
+    "mailboxChoices": true,
+    "senderAuthority": true,
+    "operatorAccess": true,
+    "tenantModes": true,
+    "schedules": true,
+    "unrelatedFunctions": true,
+    "functionOwnersAndPermissions": true
+  },
+  "newCredentials": 0,
+  "newAccessGrants": 0,
+  "manualProviderRequests": 0,
+  "manualEnqueues": 0,
+  "manualRestarts": 0,
+  "normalScheduledAcceptance": {
+    "observedAt": "2026-10-14T06:14:30.137421+00:00",
+    "existingJob": "408b385c-ea88-4194-8544-03edb033f16a",
+    "attempt": 4,
+    "completedAt": "2026-10-14T06:14:02.104+00:00",
+    "runReceipt": "f74e4b2f-3b6a-4151-8fc8-20c51b585a6e",
+    "directoryUsers": 29,
+    "newMailboxes": 0,
+    "absentMailboxes": 4,
+    "manualEnqueueOrRestart": false,
+    "scope": "Saved connection/domain only; not every tenant domain or historical mail coverage."
+  }
+}
