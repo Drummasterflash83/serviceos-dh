@@ -2,7 +2,47 @@
 
 Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
 
-## Current LIVE position — 14 October 2026, 11:22 UTC
+## Current LIVE position — 14 October 2026, evening
+
+### Working and verified
+
+- The stable `www.openfolk.ai` site serves the protected Git release with the
+  imported customer catalogue. The signed-in OpenFolk Drummonds view shows
+  1,553 retained Commusoft customer records and 4,310 QuickBooks main accounts.
+  These are source records, not 5,863 verified unique people or businesses.
+- Reviewed identities are combined in one card; the other accounts remain
+  source-labelled and separate. A signed-in LIVE check of the reviewed Belvoir
+  card opened two retained Commusoft jobs, three contacts and four QuickBooks
+  financial records. Native source relationships are displayed without claiming
+  that a QuickBooks transaction belongs to a particular Commusoft job.
+- The first unattended QuickBooks production scan completed all 13 collections
+  within its 3,000-request approval. The next six-hour cycle is enabled and was
+  observed capturing again, with no recorded error and 621 of 3,000 requests
+  reserved at that check. Completion of that second cycle remains to verify.
+- The source detail reader's targeted lookup is installed in TEST and LIVE.
+  Its access scope, audit, owner and grants remained intact. A further private
+  customer-summary optimization reduced the LIVE full source read from roughly
+  10.3 to 3.55 seconds; all 2,426 retained LIVE Commusoft versions gave exactly
+  the same summary before and after. The same TEST check had zero differences
+  across 2,421 versions. A signed-in TEST and LIVE name search then succeeded.
+
+### Needs finishing
+
+- Identity review is still substantial: only five QuickBooks-to-canonical links
+  are approved, and only a subset of Commusoft customers have canonical cards.
+  The wider source catalogue makes records browsable without silently merging
+  names or financial activity. Finance stays limited to company admins and
+  logged OpenFolk support.
+- The second unattended scan must finish and reconcile. Commusoft job/contact
+  coverage and an evidenced crosswalk between Commusoft jobs and accounting
+  subaccounts need further review before full-picture or per-job profitability
+  claims. Intuit's developer app is still owned in Drummonds' workspace; a
+  future OpenFolk-owned app would need separate reauthorisation.
+
+The prior snapshot below records implementation history and is superseded where
+the newer signed-in release evidence differs.
+
+## Prior LIVE snapshot — 14 October 2026, 11:22 UTC
 
 - DRUMMOND HEATING is connected and confirmed in LIVE. Both approved history
   runs have finished: 1,354 requests, 1,353 saved pages and 134,569 retained
