@@ -106,9 +106,11 @@ export async function runLearnProcessingJob(
         ? `identity.resolve:${ctx.tenantId}`
         : `interactions.sync:${ctx.tenantId}:${source}`;
     const reviewContinuation =
-      ctx.jobType === "identity.resolve" &&
       result.success === false &&
-      result.error?.code === "identity_review_required" &&
+      result.error?.code ===
+        (ctx.jobType === "identity.resolve"
+          ? "identity_review_required"
+          : "projection_review_required") &&
       result.error?.retryable === false &&
       result.result?.failed === 0 &&
       Number.isSafeInteger(result.result?.review_required) &&

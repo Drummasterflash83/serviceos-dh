@@ -146,15 +146,27 @@ test("partial failure is not counted as a successful job", async () => {
   assert.equal(f.calls[0].a.p_definition.success, false);
 });
 
-const reviewContinuationResult = () => ({ success: false, recordsProcessed: 0,
+const reviewContinuationResult = () => ({
+  success: false,
+  recordsProcessed: 0,
   result: { resolved: 0, failed: 0, review_required: 20, reviews_recorded: 20, continued: true },
   error: { code: "identity_review_required", message: "Review remains required", retryable: false },
-  continuation: { jobType: "identity.resolve", jobKey: `identity.resolve:${id(1)}`,
-    connectorId: "openfolk-core", moduleId: "core.identity", payload: { limit: 20 } } });
+  continuation: {
+    jobType: "identity.resolve",
+    jobKey: `identity.resolve:${id(1)}`,
+    connectorId: "openfolk-core",
+    moduleId: "core.identity",
+    payload: { limit: 20 },
+  },
+});
 test("review continuation settles atomically as dead-letter with one child, including lost reply", async () => {
   for (const lost of [false, true]) {
-    const f = fixture({ result: reviewContinuationResult(), continue: true, lost,
-      patch: { state: "dead_letter" } });
+    const f = fixture({
+      result: reviewContinuationResult(),
+      continue: true,
+      lost,
+      patch: { state: "dead_letter" },
+    });
     const r = await f.run();
     assert.equal(r.state, "dead_letter");
     assert.equal(r.continuationJobId, id(4));
@@ -166,17 +178,32 @@ test("review continuation settles atomically as dead-letter with one child, incl
     if (lost) assert.equal(f.calls[0].a.p_request, f.calls[1].a.p_request);
   }
 });
-test("only the explicit non-retryable identity review can continue a non-successful batch", async () => {
+test("only a fenced non-retryable review can continue a non-successful batch", async () => {
   for (const change of [
-    (r: any) => { r.error.code = "identity_delivery_unconfirmed"; },
-    (r: any) => { r.error.retryable = true; },
-    (r: any) => { r.result.failed = 1; },
-    (r: any) => { r.result.review_required = 0; },
-    (r: any) => { delete r.result.reviews_recorded; },
-    (r: any) => { r.result.continued = false; },
-    (r: any) => { r.continuation.jobKey = `identity.resolve:${id(9)}`; },
+    (r: any) => {
+      r.error.code = "identity_delivery_unconfirmed";
+    },
+    (r: any) => {
+      r.error.retryable = true;
+    },
+    (r: any) => {
+      r.result.failed = 1;
+    },
+    (r: any) => {
+      r.result.review_required = 0;
+    },
+    (r: any) => {
+      delete r.result.reviews_recorded;
+    },
+    (r: any) => {
+      r.result.continued = false;
+    },
+    (r: any) => {
+      r.continuation.jobKey = `identity.resolve:${id(9)}`;
+    },
   ]) {
-    const result = reviewContinuationResult(); change(result);
+    const result = reviewContinuationResult();
+    change(result);
     const f = fixture({ result });
     assert.equal((await f.run()).state, "unconfirmed");
     assert.equal(f.calls.length, 0);
@@ -185,4 +212,30 @@ test("only the explicit non-retryable identity review can continue a non-success
   f.ctx.jobType = "interactions.sync";
   assert.equal((await f.run()).state, "unconfirmed");
   assert.equal(f.calls.length, 0);
+  const projection = fixture({
+    result: {
+      success: false,
+      recordsProcessed: 0,
+      result: { failed: 0, review_required: 20, reviews_recorded: 20, continued: true },
+      error: {
+        code: "projection_review_required",
+        message: "Review remains required",
+        retryable: false,
+      },
+      continuation: {
+        jobType: "interactions.sync",
+        jobKey: `interactions.sync:${id(1)}:all`,
+        connectorId: "openfolk-core",
+        moduleId: "core.interactions",
+        payload: { source: "all", limit: 20 },
+      },
+    },
+    continue: true,
+    patch: { job_type: "interactions.sync", state: "dead_letter" },
+  });
+  projection.ctx.jobType = "interactions.sync";
+  projection.ctx.payload = { source: "all", limit: 20 };
+  const outcome = await projection.run();
+  assert.equal(outcome.state, "dead_letter");
+  assert.equal(outcome.continuationJobId, id(4));
 });
