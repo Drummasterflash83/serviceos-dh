@@ -79,10 +79,32 @@
       "completion_events": 1,
       "next_continuation_queued_at_utc": "2026-10-14T22:29:14.881Z"
     },
+    "larger_page_second_ordinary_job": {
+      "claimed_at_utc": "2026-10-14T22:31:00.807Z",
+      "completed_at_utc": "2026-10-14T22:31:16.333Z",
+      "status": "succeeded",
+      "attempts": 1,
+      "by_type": {"interaction": 250},
+      "nodes_created": 200,
+      "edges_created": 568,
+      "records_processed": 918,
+      "completion_events": 1,
+      "next_continuation_queued_at_utc": "2026-10-14T22:31:16.384Z"
+    },
+    "later_repeated_pages": {
+      "through_utc": "2026-10-14T22:41:13.476Z",
+      "most_recent_two": "both succeeded on first claim with 250 interactions touched, 200 nodes created, one completion event and a serial child each",
+      "latest_new_edges": 509,
+      "next_continuation_queued": true
+    },
     "coverage_snapshot_at_utc": "2026-10-14T22:29:25.241Z",
     "eligible_interactions": 42240,
     "missing_graph_interactions": 18600,
     "unlinked_emails": 41877,
+    "later_coverage_snapshot_at_utc": "2026-10-14T22:41:51.368Z",
+    "later_eligible_interactions": 44224,
+    "later_missing_graph_interactions": 19398,
+    "later_unlinked_emails": 40029,
     "full_history_and_unattended_acceptance": "not_yet_verified"
   },
   "limits": [

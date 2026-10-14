@@ -1,0 +1,46 @@
+{
+  "date_utc": "2026-10-14",
+  "status": "single_live_alias_fenced_recovery_and_following_ordinary_capture_verified_full_day_pending",
+  "issue": "One active Gmail alias entered a blocked recent checkpoint at 19:54 UTC after a fetch_failed result. A later scheduled job was dead-lettered as source_ineligible because the blocked checkpoint required explicit recovery. This is a real unattended-operation failure, not an account-coverage success.",
+  "source_authority": {
+    "mailbox_active_and_sync_enabled": true,
+    "directory_identity_conflict": false,
+    "connection_active_and_recently_verified": true,
+    "alias_domain_and_primary_domain_match": true,
+    "read_only_alias_delegation_profile_matches_primary": true,
+    "read_only_primary_delegation_profile_matches_primary": true,
+    "provider_message_requests": 0,
+    "provider_writes": 0
+  },
+  "recovery": {
+    "target": "one blocked recent checkpoint with exact fetch_failed code, revision 53, saved update timestamp, absent owner and active current directory binding",
+    "transaction_rollback_rehearsed": true,
+    "audited_protocol": "existing email_ingestion_transition_v2 claim/release with operator_resume and requested_yield",
+    "query_accepted": true,
+    "post_recovery_checkpoint": "ready, revision 55, no owner, no block code, original refetch_all continuation retained",
+    "exact_operator_attempts": 1,
+    "claim_receipts": 1,
+    "release_receipts": 1,
+    "source_page_receipts": 0,
+    "records_processed_by_recovery": 0,
+    "prior_failure_retained": true,
+    "private_intent_and_result": ".verification-results/learn-build01-alias-fetch-recovery-20261014/"
+  },
+  "following_ordinary_capture": {
+    "started_at_utc": "2026-10-14T22:41:00.827Z",
+    "completed_at_utc": "2026-10-14T22:41:03.519Z",
+    "status": "success",
+    "records_processed": 25,
+    "checkpoint_ready": true,
+    "block_code": null,
+    "coverage_complete": false,
+    "continuation_pending": true,
+    "new_continuation_queued": true,
+    "other_active_alias_same_tick": "success, 25 records, checkpoint ready"
+  },
+  "limits": [
+    "A manual recovery before the observation window is not proof of unattended operation.",
+    "One ordinary scheduled capture passed; a full real working-day run remains to be observed.",
+    "This recovery did not change the root cause or automatically resume future transient failures."
+  ]
+}

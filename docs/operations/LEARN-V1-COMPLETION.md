@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**14 October, 22:29 UTC — frontend recovery released; larger bounded graph history page verified.**
+**14 October, 22:41 UTC — frontend and bounded graph release verified; Gmail alias resumed.**
 
 ### Working and verified
 
@@ -35,7 +35,19 @@ override a later release observation. No requirement is silently deferred.
   match downloaded source. The first LIVE 200-missing page finished in about
   14 seconds at 22:29 UTC, created 200 nodes/578 edges, published one completion
   event and queued the next child. Its identity/card/recommendation phases did
-  not repeat.
+  not repeat. The second LIVE 200-missing page also succeeded at 22:31:16 UTC,
+  created 200 nodes/568 edges, published one event and queued a third page.
+- A current read found one active Gmail alias blocked after a `fetch_failed`
+  capture at 19:54 UTC. The latest scheduled job had dead-lettered as
+  `source_ineligible` while that checkpoint remained blocked. Its directory
+  binding and both read-only delegated Gmail profiles were valid. A single
+  revision-fenced operator claim/release was rollback-rehearsed and applied;
+  the checkpoint is ready at revision 55 with no owner or block. Exact readback
+  finds one successful audited recovery attempt, one claim, one release, zero
+  source-page receipts and zero records processed. Prior failed runs remain
+  visible. Its next ordinary scheduled capture succeeded at 22:41 UTC with 25
+  records and a ready checkpoint; the other active alias also succeeded with 25.
+  Both have continuing pages and do not yet prove complete mailbox coverage.
 
 ### Needs finishing
 
@@ -47,13 +59,18 @@ override a later release observation. No requirement is silently deferred.
   At 22:29 UTC, 18,600 of 42,240 eligible interactions still lacked a graph node,
   and 41,877 retained emails lacked an interaction. These are current gaps, not
   complete coverage claims.
+- The recovered Gmail alias must remain healthy through a real working-day
+  window. This manual recovery before the
+  window does not establish unattended reliability; recurrent transient fetch
+  failure would require a separate durable recovery correction.
 
 ### Blocked externally
 
 - No specific provider or access blocker was established by these releases.
 
-[Frontend recovery evidence](evidence/learn-build01-frontend-recovery-2026-10-14.json)
-and [graph history evidence](evidence/learn-build01-graph-history-2026-10-14.json).
+[Frontend recovery evidence](evidence/learn-build01-frontend-recovery-2026-10-14.json),
+[graph history evidence](evidence/learn-build01-graph-history-2026-10-14.json),
+and [alias recovery evidence](evidence/learn-build01-alias-fetch-recovery-2026-10-14.json).
 
 **14 October, 22:07 UTC — graph history has a confirmed LIVE page; recovery observation continues.**
 
