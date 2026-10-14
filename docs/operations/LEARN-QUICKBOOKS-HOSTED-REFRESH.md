@@ -103,3 +103,42 @@ stores; any required local Touch ID must be completed by Chris.
 At 10:16 UTC the scheduled run had ten saved pages and 1,000 observations, no
 import error, matching recorded actor/tenant, token generation 4 and unchanged
 reviewed-link fingerprint. No local provider runner was used for these pages.
+
+## Source-variant correction — 14 October, 10:58 UTC
+
+The first repeat scan exposed 13 newer computed Customer balance/update-time
+variants and two Invoice reference-list permutations under unchanged SyncTokens.
+The tested source-variant migration is verified in TEST and LIVE, with private
+helpers and unchanged original commit permissions/unrelated functions. It
+recognises only those narrowly compatible cases. Identity/amount changes,
+unknown same-time changes, malformed dates and changes to invoice line order
+remain held; existing unknown flags are never automatically erased.
+
+Fifteen earlier false flags were checkpointed and corrected only after all pairs
+of their retained versions passed compatibility. Locked pointer and immutable
+version fingerprint checks passed; 15 system-maintenance receipts were read back,
+zero flags remained, and the five reviewed financial links were unchanged. All
+original versions remain retained. No provider call or new authority was used.
+
+Actual-commit and rollback regression checks pass alongside the existing complete
+OAuth/import/finance/refresh/export/disconnect checks. At 10:58 UTC the normal
+hosted scan had 430 saved pages and 42,907 observations, zero current conflicts
+and preserved reviewed links. Full traversal and next-due verification remain
+pending. The read-only hosted-refresh evidence script verifies both before
+writing completed acceptance evidence.
+
+## Supplier balance variants — 14 October, 11:22 UTC
+
+The first hosted scan later observed four Vendor balance/update-time variants.
+The supplier-specific extension is verified in TEST and LIVE; it permits only
+Balance and a distinct explicit LastUpdatedTime with otherwise identical supplier
+identity/metadata. Customer-only BalanceWithJobs changes are not ignored for
+suppliers. The complete existing synthetic regression suite and supplier identity/
+field-boundary checks pass. No new helpers/grants or accounting writes were added.
+
+Four checkpointed supplier flags were reconciled only after pairwise compatibility
+and retained-version fingerprint checks. Readback confirms four system receipts,
+zero remaining conflicts and unchanged five reviewed financial links. At 11:22 UTC
+the unattended cycle had 657 pages and 65,269 observations. Full traversal and the
+next six-hour due time still require acceptance; no account reconciliation or
+complete customer matching is claimed.
