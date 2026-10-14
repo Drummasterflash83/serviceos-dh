@@ -113,6 +113,13 @@ try:
     assert sql("select to_regprocedure('public.learn_imported_customer_catalog(uuid,text,text,text,text,text,text)') is null") == 't'
     sql(catalog)
     sql(source('scripts/verify/learn-imported-customers.assert.sql'))
+    faster_summary = source('supabase/migrations/20261102290000_learn_imported_customer_summary_fast.sql')
+    catalog_before = sql("select md5(pg_get_functiondef('public.learn_imported_customer_sources(uuid,text)'::regprocedure))")
+    sql(faster_summary.replace('\ncommit;', '\nrollback;'))
+    assert sql("select md5(pg_get_functiondef('public.learn_imported_customer_sources(uuid,text)'::regprocedure))") == catalog_before
+    assert sql("select to_regprocedure('public.learn_imported_customer_summary(jsonb)') is null") == 't'
+    sql(faster_summary)
+    sql(source('scripts/verify/learn-imported-customer-summary-fast.assert.sql'))
     detail = source('supabase/migrations/20261102260000_learn_imported_customer_details.sql')
     sql(detail.replace('\ncommit;', '\nrollback;'))
     assert sql("select to_regprocedure('public.learn_imported_customer_detail(uuid,text,text,uuid,text,uuid,text)') is null") == 't'
