@@ -42,6 +42,13 @@ Cloudflare-flavoured.
 
 ## Current live checkpoint — 14 October 2026
 
+The separately deployed learning selector now reserves bounded capacity for recorded
+Slack context reviews, preserving historical processing and existing permissions.
+The exact SQL release and rollback are in
+[`reviewed-ingestion-selection-v1`](../supabase/release/learn-production-patches/reviewed-ingestion-selection-v1/README.md).
+[Current acceptance evidence](operations/evidence/learn-reviewed-ingestion-selection-live-2026-10-14.json).
+This backend-only release does not change the frontend checkpoint below.
+
 LIVE frontend Git `5375262266445fc9d913b96242d4c7a51387d0d4`, deployment
 `dpl_AuCREnJ5GQNVN8YodUAYhNsnvqcB`, is verified on the production target and all
 four existing aliases. This isolated three-file release adds evidenced review of

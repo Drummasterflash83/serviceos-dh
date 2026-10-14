@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 05:54 BST — bounded reviewed-context selection deployed in LIVE.**
+
+- The existing learning selector now reserves up to one fifth of a batch for
+  recorded Slack context reviews whose retained source revision still matches.
+  Remaining capacity continues oldest-first processing; unused review slots return
+  to historical work. Mapper-ledger exclusion and the 1–200 batch bounds remain.
+- Exact LIVE readback selected the two recently reviewed messages plus twenty-three
+  historical records. The 25-row read took **129 ms** on current production data.
+  Selector ownership, service-only permissions and invocation security remain
+  unchanged; the search path is now fixed. Source/review and schedule fingerprints
+  passed before/after comparison. No jobs were manually enqueued or restarted.
+- The final isolated full-schema rehearsal passes selection fairness, stale sources,
+  retained tombstones, tenant isolation, mapper states, limits, target/checksum
+  guards, injected failure after replacement and exact rollback/reapply. All
+  1,591,601 archived rows across 387 tables and seven sequences remain intact.
+  Two earlier rehearsal-only rollback packaging issues were fixed before promotion.
+- Hosted TEST lacks the activation selector prerequisite and was not changed. This
+  is isolated production-schema validation plus LIVE readback, not hosted TEST
+  acceptance. **Normally scheduled ingestion and downstream observation acceptance
+  remain pending**; selection alone does not establish learning completion.
+
+[Release and preservation evidence](evidence/learn-reviewed-ingestion-selection-live-2026-10-14.json)
+· [Exact release and rollback](../../supabase/release/learn-production-patches/reviewed-ingestion-selection-v1/README.md).
+
 **14 October, 05:42 BST — two more public Slack messages connected to LIVE customer/job context.**
 
 - Reviewed two complete retained messages that explicitly concern one published

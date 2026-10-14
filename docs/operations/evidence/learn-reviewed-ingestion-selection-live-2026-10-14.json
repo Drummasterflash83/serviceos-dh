@@ -1,0 +1,78 @@
+{
+  "version": "learn-reviewed-ingestion-live/1",
+  "at": "2026-10-14T04:53:30.755476+00:00",
+  "state": "installed_selector_verified",
+  "sourceSha256": "11f4c4a95a5c78604bb976c7ab6d7a1a06421841039c4e297f8c16c2142d7bc2",
+  "beforeDefinitionMd5": "d5eaf0cd64c12fe790f34de26359b6f3",
+  "afterDefinitionMd5": "8b9fca6f388b599604881b3f9b4c5651",
+  "afterBodyMd5": "7c853a1c8f7d5d787f0a26d685406472",
+  "authorityPreserved": true,
+  "sourceAndReviewFingerprintsPreserved": true,
+  "scheduleFingerprintPreserved": true,
+  "selectedCount": 25,
+  "newReviewedMessagesSelected": 2,
+  "firstTwoAreReviewed": true,
+  "historicalSelections": 23,
+  "scheduledIngestionAccepted": false,
+  "newObservationsAccepted": false,
+  "scope": "Selector only; no queue restart or source write.",
+  "performance": {
+    "at": "2026-10-14T04:54:06.653Z",
+    "rows": 25,
+    "executionMs": 129.082,
+    "planningMs": 0.062
+  },
+  "rehearsal": {
+    "state": "reviewed_ingestion_full_schema_rehearsed",
+    "containment": {
+      "network": "none",
+      "hostMounts": 0,
+      "publishedPorts": 0,
+      "cronLaunchActiveJobs": false,
+      "preloadedLibraries": [
+        "pg_cron",
+        "pg_net",
+        "pgsodium",
+        "supabase_vault",
+        "supautils"
+      ],
+      "maxWorkerProcesses": 0,
+      "networkWorkerDatabaseAbsent": true,
+      "containerLogging": "none"
+    },
+    "preservation": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tables": 387,
+      "rows": 1591601,
+      "sequences": 7,
+      "comparisonSha256": "a436717e70104b42f7040f8b35c827d4a4290e604abbd9c8f8c029d18006dad7",
+      "scope": "all COPY table data present in the native archive; omitted source objects are not covered"
+    },
+    "targetDigestAndLateFailureGuards": true,
+    "migrationRollbackVerified": true,
+    "authorityPreserved": true,
+    "journeyRollbackVerified": true,
+    "containerRemoved": true,
+    "releaseFiles": {
+      "apply.sql": "59666243c55288d83dae943a8b42eb34074852e3e8b12495a24c1ceda8c81083",
+      "rollback.sql": "95a6c08fe6a64d527f8ebfc0195efe94cb6a0e22053a72074cdfecdc55c4d4cc",
+      "original-selector.sql": "6cc36dacc40e4c7bd2c9e0703cf545ea5e1a3db0220b32e445da9910e7ba4a27"
+    }
+  },
+  "hostedTest": "Not changed: activation selector prerequisite is absent. Verification used an isolated complete production-schema restore.",
+  "selectionPolicy": {
+    "limitMin": 1,
+    "limitMax": 200,
+    "reviewQuota": "floor(N/5)",
+    "defaultBatch": 25,
+    "unusedReviewSlots": "return to oldest historical records",
+    "limitsBelowFive": "oldest first",
+    "priorityIsNotNewReviewOrAuthorization": true
+  },
+  "limitations": [
+    "Selection is not observation acceptance. Follow exact scheduled ingestion and observation handles.",
+    "Worker queue priority, processing throughput and existing eligibility checks are unchanged.",
+    "No claim of complete Slack or customer coverage.",
+    "Full-schema preservation covers the archived restore; LIVE fingerprint comparison covers the two reviewed sources, their review receipts and cron definitions."
+  ]
+}

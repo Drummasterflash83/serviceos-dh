@@ -1,0 +1,60 @@
+{
+  "version": "learn-reviewed-ingestion-runtime/1",
+  "state": "prepared",
+  "project": "tgbnakbxwcqjeimygroz",
+  "endpoint": "intelligence-ingestion-scheduled-sync",
+  "beforeVersion": 19,
+  "beforeWireSha256": "e9cc39bea8fec62768c09e8577ea6e1c26830ebb84b01fa20430db910cc38ede",
+  "afterWireSha256": "fab9681d7daf551a814d4bc4469ef84ec2b34ca6712620d4e3dac1ebf2391461",
+  "rollbackWireSha256": "d2b0298935ca90e56a25d50b1798b6e34dc85abd1247063df2170adf600fe00a",
+  "sourceClosureSha256": "50367017050c8b8f1191b65931d33764e17cc39b518da98783e923ceba09eb34",
+  "sources": [
+    {
+      "path": "intelligence-ingestion-scheduled-sync/index.ts",
+      "sha256": "1dfbccf0a1c55c45824d4df6285efe832e850ec3711263d0d7ee663b2e5bafe0",
+      "beforeSha256": "0d2bdd86d688f653d46d7d4a2544bfcda8c01e7a99b74330581b6c06a195bc6f"
+    },
+    {
+      "path": "_shared/simwood.ts",
+      "sha256": "e89db013e78010c7858021c584645fb76a6ae56c9901af599e5d1e316fe41ed9",
+      "beforeSha256": "e89db013e78010c7858021c584645fb76a6ae56c9901af599e5d1e316fe41ed9"
+    },
+    {
+      "path": "_shared/platform_queue.ts",
+      "sha256": "0b1b8299c3ce800a5b8623804fc1c7e1bf7e1e90ccc564ac5585aa4ab7d53a4d",
+      "beforeSha256": "0b1b8299c3ce800a5b8623804fc1c7e1bf7e1e90ccc564ac5585aa4ab7d53a4d"
+    },
+    {
+      "path": "_shared/observation_ingest.ts",
+      "sha256": "56097d828bb067087c166aa389862ee4d7f258cbe5280f32e4cb189c0e2e47ac",
+      "beforeSha256": "92d1799abf2946406f8635bbac4c59b5272255e56bf6069eea3689cbf1622f5a"
+    }
+  ],
+  "artifact": {
+    "name": "intelligence-ingestion-scheduled-sync",
+    "verifyJwt": false,
+    "eszipSha256": "e50cbe313da26839f95a0526b718f1b2cf0bcbdb677266f0b9879fe569239559"
+  },
+  "probe": {
+    "state": "passed",
+    "mapperVersion": "obs-ingest/2",
+    "selectorRequests": 2,
+    "queued": 2,
+    "duplicateReuse": 2,
+    "missingAuthStatus": 403,
+    "tenantFence": true,
+    "explicitPayloadMapper": true,
+    "network": "none",
+    "realCredentials": false,
+    "providerCalls": 0,
+    "containerRemoved": true,
+    "sourceClosureSha256": "50367017050c8b8f1191b65931d33764e17cc39b518da98783e923ceba09eb34",
+    "artifact": {
+      "name": "intelligence-ingestion-scheduled-sync",
+      "verifyJwt": false,
+      "eszipSha256": "e50cbe313da26839f95a0526b718f1b2cf0bcbdb677266f0b9879fe569239559"
+    },
+    "harnessSha256": "e4f2851d29b6488c7b63e480364a3f8179cd5b1f907e06e2f29e6b46d78e296f"
+  },
+  "scope": "Only the deployed scheduler mapper constant changes from obs-ingest/1 to obs-ingest/2, and queued payloads explicitly carry that version. Other files in the retained four-file closure are unchanged. No provider reads, new access, schedules or paid AI enabled."
+}
