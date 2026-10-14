@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "state": "backend_installed_frontend_pending",
+  "state": "backend_and_frontend_live_verified",
   "source": {
     "path": "supabase/migrations/20261102140000_learn_slack_card_source.sql",
     "sha256": "a220a3e365427cb8c0d011e05360d403c0ce11e658007ea8e2aa617092b9f202"
@@ -145,6 +145,104 @@
         "src/components/client-portal/learn/LearnSlackSource.tsx",
         "src/lib/learn-slack-card-source.test.ts",
         "src/lib/learn-slack-card-source.ts"
+      ]
+    }
+  },
+  "verifiedAt": "2026-10-14T02:26:43.879942+00:00",
+  "frontend": {
+    "live": {
+      "at": "2026-10-14T02:22:47.831Z",
+      "production": "dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS",
+      "aliases": [
+        {
+          "host": "app.openfolk.ai",
+          "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+          "deployment": "dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS",
+          "redirect": null
+        },
+        {
+          "host": "openfolk.ai",
+          "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+          "deployment": "dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS",
+          "redirect": "www.openfolk.ai"
+        },
+        {
+          "host": "serviceos-dh.vercel.app",
+          "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+          "deployment": "dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS",
+          "redirect": null
+        },
+        {
+          "host": "www.openfolk.ai",
+          "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+          "deployment": "dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS",
+          "redirect": null
+        }
+      ],
+      "id": "dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS",
+      "sha": "c45c95a6188555d470f7c22146128be23471b531",
+      "protection": {
+        "deploymentType": "all_except_custom_domains"
+      },
+      "ready": "READY",
+      "aliasAssigned": true,
+      "state": "aliases_verified"
+    },
+    "test": {
+      "state": "aliases_verified",
+      "at": "2026-10-14T02:16:03.394Z",
+      "candidate": "dpl_GxKWS5zVMVEuogKuMXs8HTGNqkoz",
+      "sha": "8f99829de7de78fcc3d47b9e75884ad0dced02fe",
+      "renderedAuthTarget": "https://saatxzwxvdvqevbnskxy.supabase.co",
+      "bindingObserved": "CUA login data-auth-target",
+      "before": [
+        {
+          "host": "test.openfolk.ai",
+          "prior": "dpl_264tnwefoJ9A5ULFzgj1z56ePiQC"
+        },
+        {
+          "host": "serviceos-learn-test-allkin.vercel.app",
+          "prior": "dpl_264tnwefoJ9A5ULFzgj1z56ePiQC"
+        }
+      ],
+      "completed": [
+        "test.openfolk.ai",
+        "serviceos-learn-test-allkin.vercel.app"
+      ]
+    }
+  },
+  "signedInAcceptance": {
+    "test": {
+      "at": "2026-10-14T02:22:39.709483+00:00",
+      "state": "signed_in_test_source_journey_verified",
+      "build": "8f99829",
+      "backend": "saatxzwxvdvqevbnskxy",
+      "stableHost": "test.openfolk.ai",
+      "fixture": "one retained synthetic TEST source; no new login or grant",
+      "fullTextAndDateVisible": true,
+      "literalMarkupVisible": true,
+      "provenanceVisible": true,
+      "closeClearsText": true,
+      "unattestedRealTestSourceDenied": true,
+      "operatorAuditVerified": true,
+      "screenshotSha256": "88d16e3e37d65a70b2f1a955babdaaf0c1a33d8345e28a855d2c2b51b36bacd9",
+      "staleDocumentNote": "Normal reload retained old build; fresh stable URL with release query loaded exact candidate."
+    },
+    "live": {
+      "at": "2026-10-14T02:26:43.879942+00:00",
+      "state": "signed_in_live_customer_and_operator_source_verified",
+      "build": "c45c95a",
+      "backend": "tgbnakbxwcqjeimygroz",
+      "customerMessagesOpened": 2,
+      "longerThanExcerptTextVisible": true,
+      "messageDatesAndProvenanceVisible": true,
+      "operatorSourceMatchesCustomerSource": true,
+      "operatorAuditVerified": true,
+      "existingBrandingPreserved": true,
+      "screenshotSha256": "e0e7b26278b6b58e9e6883476011a5b0756039da8e7188ae8c5832ac8d2b041a",
+      "limits": [
+        "Two reviewed historical messages accepted; not full Slack coverage.",
+        "No current task status, customer identity or ownership inferred from historical source text."
       ]
     }
   }

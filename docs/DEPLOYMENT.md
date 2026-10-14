@@ -42,41 +42,41 @@ Cloudflare-flavoured.
 
 ## Current live checkpoint — 14 October 2026
 
-LIVE frontend Git `d33cfe56b0804fc3c69c12030474661d4ca9f344`, deployment
-`dpl_o6r8arDgsx9D1nJjwiuouasa3LBR`, is verified on all four existing aliases and
-the production target. The three-file recent-jobs release orders published customer
-jobs by recorded creation, newest first, with undated jobs last. Signed-in LIVE
-acceptance covers two 25-job pages without duplicates, refresh, job drill-down and
-return. Original descriptions/codes, recorded completion and timezone limitations
-are retained. This remains a bounded published-job view, not full provider coverage.
+LIVE frontend Git `c45c95a6188555d470f7c22146128be23471b531`, deployment
+`dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS`, is verified on all four existing aliases and
+the production target. This five-file release adds retained Slack source inspection
+to customer timelines and logged OpenFolk communication selection, preserving the
+prior recent-job ordering, branding and QuickBooks foundation. Two actual historical
+LIVE messages opened with full retained text, dates and provenance; an operator read
+of the same source produced its verified audit entry. This is not complete Slack
+coverage or proof that historical requests remain open.
 
-The additive `learn_customer_jobs_recent` reader is separately installed in both
-Supabase environments. Its exact definition, original-reader preservation, source
-identities and unchanged existing authority are verified. The native and hosted TEST
-journeys cover scoped cursors, tied/undated dates and operator/tenant isolation.
-[Backend manifest and guarded reversal](../supabase/release/learn-customer-jobs-recent/manifest.json).
+The additive `learn_slack_card_source_read` function is installed separately in TEST
+and LIVE with the same exact definition. Original classification/authority helpers,
+source identities and user access remain unchanged. Native-schema, hosted TEST
+rollback and signed-in synthetic TEST acceptance pass.
+[Backend manifest and guarded reversal](../supabase/release/learn-slack-card-source/manifest.json).
 
-LIVE frontend rollback: `397d3c689ceb8b7cf980f00bdd70782d32628235` /
-`dpl_TM6sYHnQJNbkzc6cpX31kreGiZ3T`. Restore that frontend before optionally dropping
-only the new reader with the guarded SQL reversal; the prior frontend uses the
-unchanged legacy reader. Production SQL reversal has not been executed.
+LIVE frontend rollback: `d33cfe56b0804fc3c69c12030474661d4ca9f344` /
+`dpl_o6r8arDgsx9D1nJjwiuouasa3LBR`. Restore that frontend before optionally dropping
+only the new source reader with the guarded SQL reversal. Existing sources and
+visibility proofs remain retained. No production SQL reversal has been executed.
 
-Protected TEST separately serves `97d78f697e5597ac9c243859e9dc7c0bad277afb` /
-`dpl_264tnwefoJ9A5ULFzgj1z56ePiQC` on both permanent aliases. Its existing operator
-sign-in, About build identifier and TEST backend binding are verified. TEST retains
-its earlier job-refresh controls; LIVE does not include that held frontend.
-TEST rollback: `a193dbdf1be3a12b62b8a8f76ac77061faf25304` /
-`dpl_49UmtYRwQtyyoFFujRtwmuBPWGpf`. Deployment protection is unchanged.
+Protected TEST serves `8f99829de7de78fcc3d47b9e75884ad0dced02fe` /
+`dpl_GxKWS5zVMVEuogKuMXs8HTGNqkoz` on both permanent aliases. TEST retains its
+earlier job-refresh controls; LIVE does not include that held frontend. TEST rollback:
+`97d78f697e5597ac9c243859e9dc7c0bad277afb` / `dpl_264tnwefoJ9A5ULFzgj1z56ePiQC`.
+Deployment protection is unchanged. A normal browser reload retained an old TEST
+document; a fresh stable-domain release-query navigation verified the exact new
+build. Reliable stale-document recovery remains a separate open issue.
 
-QuickBooks frontend/foundation remain preserved; actual production app registration,
-credentials, company connection and real accounting acceptance remain outstanding.
-Wider publication, communication matching, scoring and operational acceptance remain
-incomplete. Use **https://www.openfolk.ai** for LIVE and **https://test.openfolk.ai**
-for TEST.
+QuickBooks production app registration, credentials, company connection and real
+accounting acceptance remain outstanding. Wider publication, communication matching,
+scoring and operational acceptance remain incomplete. Use **https://www.openfolk.ai**
+for LIVE and **https://test.openfolk.ai** for TEST.
 
-[Recent-jobs release evidence](operations/evidence/learn-customer-recent-jobs-2026-10-14.json)
-· [Own-job status release](operations/evidence/learn-own-job-status-live-2026-10-14.json)
-· [Customer summary release](operations/evidence/learn-customer-job-brief-live-2026-10-14.json).
+[Slack source release evidence](operations/evidence/learn-slack-card-source-live-2026-10-14.json)
+· [Prior recent-jobs release](operations/evidence/learn-customer-recent-jobs-2026-10-14.json).
 
 ## Preview deployments
 

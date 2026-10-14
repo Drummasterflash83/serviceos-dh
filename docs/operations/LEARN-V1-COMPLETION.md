@@ -7,6 +7,26 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 03:25 BST — original Slack source drill-down accepted on LIVE and TEST.**
+
+- Customer cards now open retained Slack text beyond the short interaction excerpt,
+  with dated provenance and historical limitations. Two actual LIVE messages pass;
+  the same source opens through explicit OpenFolk client selection with a verified
+  actor/reason/revision audit. No production source, identity, capture or permission changes.
+- Matched additive backend and five-file frontends are released and verified. Native
+  archive preservation, hosted TEST rollback, synthetic signed-in TEST acceptance,
+  missing-proof denial and post-release authority/source checks pass. A single
+  clearly labelled credential-free synthetic TEST fixture is retained.
+- Existing browser documents can remain stale after normal reload. A fresh stable
+  URL loaded the exact candidate. General stale-document recovery remains open.
+- Next priority is broader current-source matching and canonical customer/job
+  publication, not another isolated visual polish milestone. Full connector
+  coverage, scorecards, usable operator recovery and scheduled independent recovery
+  remain requirements. The identity queue is continuing; review holds are not
+  treated as successful matches. The full goal remains active.
+
+[Release and limits](LEARN-SLACK-CARD-SOURCE.md).
+
 **14 October, 03:13 BST — retained Slack source reader verified and installed; frontend acceptance pending.**
 
 - Native and hosted TEST permission/visibility/audit journeys pass. The additive
