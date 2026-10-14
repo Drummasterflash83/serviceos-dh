@@ -1,7 +1,8 @@
 # Reviewed shared contact details
 
-Status: prepared and rehearsed; not installed in hosted TEST or LIVE. The current
-LIVE customer cards and capture workers remain on their existing release.
+Status: released and verified in TEST and LIVE on 14 October 2026. The exact
+backend package and isolated three-file frontend are installed; existing branding,
+provider capture and account access remain intact.
 
 ## User journey
 
@@ -53,8 +54,20 @@ rollout observation; the rehearsals are not a load/concurrency certification.
   user access, retained business versions/links, people and contact points match.
 - Exact guarded installation and explicit SQL reversal pass in a TEST rollback
   transaction. Reversal after a synthetic separate contact exists is refused.
-- Hosted installation, signed-in UI acceptance and real-contact publication remain
-  pending. No provider request, credential or production change occurred.
+- Signed-in TEST first held the default shared-number import, required new evidence
+  and renewed approval, then published the distinct synthetic contact. Its original
+  customer card shows two unverified saved details and unchanged primary choices.
+- Signed-in LIVE published one reviewed real contact to its original customer and
+  site; both distinct people are visible on the customer card. Exact source, actor,
+  graph relationships and append-only review receipts pass readback. All fifty-two
+  prior contact links remain; the total is fifty-three.
+- Before/after installation preserved 18,079 business source-version hashes, 794
+  source links, 3,302 people and 93 contact points, plus account access. These are
+  scoped release comparisons, not a whole-production snapshot claim.
+- Provider capture remains active. A post-release identity sample has eleven settled
+  batches, one committed match and a queued continuation with no unexpected error
+  code; review holds remain separate from successful attribution.
+- No provider request or new credential/account/grant was created by this release.
 
 [Release manifest](../../supabase/release/learn-contact-separation/manifest.json)
 contains exact source, installation, reversal and accepted function fingerprints.
@@ -68,6 +81,9 @@ VERCEL=1 npm run build
 ```
 
 ## Rollout and rollback
+
+The following sequence has been completed for this release. Retain it for later
+changes; repeat checks against their actual current baselines.
 
 1. Recheck the exact function definitions, owners/grants, existing records and
    provider state. Install the guarded package in TEST with the explicit project
@@ -91,3 +107,23 @@ the two new helpers. It refuses to run once a separated contact has been publish
 removing the ambiguity guard at that point could misattribute the shared endpoint.
 After publication, retain the backend and prepare a forward correction. Neither
 rollback path deletes people, source history, review receipts or contact points.
+
+## Released frontends
+
+LIVE `5375262266445fc9d913b96242d4c7a51387d0d4` /
+`dpl_AuCREnJ5GQNVN8YodUAYhNsnvqcB` is verified on all four existing aliases.
+LIVE frontend rollback is `c45c95a6188555d470f7c22146128be23471b531` /
+`dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS`.
+
+TEST `778f7ad828086888ba4d355319a4a538725e3eff` /
+`dpl_DpvxmPfubUNPbTbUnpHgasNwD5BP` is verified on both stable TEST aliases.
+TEST frontend rollback is `8f99829de7de78fcc3d47b9e75884ad0dced02fe` /
+`dpl_GxKWS5zVMVEuogKuMXs8HTGNqkoz`. Existing deployment protections are unchanged.
+TEST retains its earlier job-refresh controls; LIVE does not gain them.
+
+SQL reversal now intentionally refuses in both environments because separate
+contacts have been published. Keep the compatible backend with a frontend rollback.
+The synthetic TEST evidence is clearly labelled and has no provider credential,
+input account, schedule, processing job, new login or grant.
+
+[Sanitised acceptance evidence](evidence/learn-contact-separation-live-2026-10-14.json).

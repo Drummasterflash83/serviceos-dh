@@ -1,0 +1,329 @@
+{
+  "version": "learn-contact-separation-release/1",
+  "state": "live_verified",
+  "at": "2026-10-14T03:58:06.930102+00:00",
+  "source": {
+    "path": "supabase/migrations/20261102150000_learn_contact_separation.sql",
+    "sha256": "882704f352c47f0d86e853bae51138d2710fa7831def98cf288bb255b71b24cb"
+  },
+  "backend": {
+    "test": {
+      "at": "2026-10-14T03:45:14.596Z",
+      "state": "installed_verified",
+      "project": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "882704f352c47f0d86e853bae51138d2710fa7831def98cf288bb255b71b24cb",
+      "installSha256": "91c43ad7c81a8d6196e3b60f285d4a68df03870efacc1837e444273e2a485a0d",
+      "functions": [
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "62dcb225af750876b9a7be1bc7fbc821",
+          "owner": "postgres",
+          "signature": "learn_business_input_projection_result(uuid,uuid,jsonb,jsonb)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "a25a68be9299c292927072d5808dd4f0",
+          "owner": "postgres",
+          "signature": "learn_business_input_review_access(uuid,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "26872e3b0d18cc9b9eaf436a83e1b8ce",
+          "owner": "postgres",
+          "signature": "learn_business_review_authority(uuid,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "4cd4cc353c6403f2fe3f0124dc88c23a",
+          "owner": "postgres",
+          "signature": "learn_commusoft_confirm_contact(uuid,uuid,uuid,text)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "bbe5182bcd6dca5aa5103563f8cf0b48",
+          "owner": "postgres",
+          "signature": "learn_commusoft_contact_candidates(uuid,uuid,text,text,uuid,integer)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "7bfcf0fbaa474082cd5d0bca92e7a56f",
+          "owner": "postgres",
+          "signature": "learn_commusoft_property_owner(uuid,uuid,text,boolean)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "740db099b4cb70b2660a3c02510e0183",
+          "owner": "postgres",
+          "signature": "learn_commusoft_separate_contact(uuid,uuid,text,jsonb)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "a28b4b2681011321d7ea3ec989ee9653",
+          "owner": "postgres",
+          "signature": "learn_commusoft_work_batch(uuid,uuid,uuid,text,jsonb,text,boolean,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "hash": "26ab0a27118b22a78d5bb3e07a405f3a",
+          "owner": "postgres",
+          "signature": "learn_identity_deliver(uuid,uuid,uuid,text,text)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "60adf2eca5be0f1c0aaa97765364eeca",
+          "owner": "postgres",
+          "signature": "learn_identity_deliver_internal(uuid,uuid,uuid,text,text,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "b5adccd05a33debdc3de642288c077dc",
+          "owner": "postgres",
+          "signature": "learn_identity_revision(interactions)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "66956079de9e9094f88ce921d303ec1c",
+          "owner": "postgres",
+          "signature": "learn_identity_shared_contact_channel(uuid,text,text)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "c623f4b271406811f7e32b96077d07d7",
+          "owner": "postgres",
+          "signature": "openfolk_business_review(uuid,text,text,jsonb)"
+        }
+      ],
+      "accessUnchanged": true,
+      "retained": {
+        "links": 62,
+        "people": 16254,
+        "points": 6,
+        "versions": 18014
+      },
+      "existingRecordsPreserved": true,
+      "error": null
+    },
+    "live": {
+      "at": "2026-10-14T03:52:57.647Z",
+      "state": "installed_verified",
+      "project": "tgbnakbxwcqjeimygroz",
+      "sourceSha256": "882704f352c47f0d86e853bae51138d2710fa7831def98cf288bb255b71b24cb",
+      "installSha256": "91c43ad7c81a8d6196e3b60f285d4a68df03870efacc1837e444273e2a485a0d",
+      "functions": [
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "62dcb225af750876b9a7be1bc7fbc821",
+          "owner": "postgres",
+          "signature": "learn_business_input_projection_result(uuid,uuid,jsonb,jsonb)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "a25a68be9299c292927072d5808dd4f0",
+          "owner": "postgres",
+          "signature": "learn_business_input_review_access(uuid,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "26872e3b0d18cc9b9eaf436a83e1b8ce",
+          "owner": "postgres",
+          "signature": "learn_business_review_authority(uuid,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "4cd4cc353c6403f2fe3f0124dc88c23a",
+          "owner": "postgres",
+          "signature": "learn_commusoft_confirm_contact(uuid,uuid,uuid,text)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "bbe5182bcd6dca5aa5103563f8cf0b48",
+          "owner": "postgres",
+          "signature": "learn_commusoft_contact_candidates(uuid,uuid,text,text,uuid,integer)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "7bfcf0fbaa474082cd5d0bca92e7a56f",
+          "owner": "postgres",
+          "signature": "learn_commusoft_property_owner(uuid,uuid,text,boolean)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "740db099b4cb70b2660a3c02510e0183",
+          "owner": "postgres",
+          "signature": "learn_commusoft_separate_contact(uuid,uuid,text,jsonb)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "a28b4b2681011321d7ea3ec989ee9653",
+          "owner": "postgres",
+          "signature": "learn_commusoft_work_batch(uuid,uuid,uuid,text,jsonb,text,boolean,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "hash": "26ab0a27118b22a78d5bb3e07a405f3a",
+          "owner": "postgres",
+          "signature": "learn_identity_deliver(uuid,uuid,uuid,text,text)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "60adf2eca5be0f1c0aaa97765364eeca",
+          "owner": "postgres",
+          "signature": "learn_identity_deliver_internal(uuid,uuid,uuid,text,text,uuid)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "b5adccd05a33debdc3de642288c077dc",
+          "owner": "postgres",
+          "signature": "learn_identity_revision(interactions)"
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "hash": "66956079de9e9094f88ce921d303ec1c",
+          "owner": "postgres",
+          "signature": "learn_identity_shared_contact_channel(uuid,text,text)"
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+          "hash": "c623f4b271406811f7e32b96077d07d7",
+          "owner": "postgres",
+          "signature": "openfolk_business_review(uuid,text,text,jsonb)"
+        }
+      ],
+      "accessUnchanged": true,
+      "retained": {
+        "links": 794,
+        "people": 3302,
+        "points": 93,
+        "versions": 18079
+      },
+      "existingRecordsPreserved": true,
+      "error": null
+    }
+  },
+  "frontend": {
+    "typecheck": "passed",
+    "focusedTests": 12,
+    "vercelModeBuild": "passed",
+    "signedInAcceptance": "TEST and LIVE verified",
+    "test": {
+      "sha": "778f7ad828086888ba4d355319a4a538725e3eff",
+      "deployment": "dpl_DpvxmPfubUNPbTbUnpHgasNwD5BP",
+      "host": "test.openfolk.ai",
+      "rollback": "dpl_GxKWS5zVMVEuogKuMXs8HTGNqkoz"
+    },
+    "live": {
+      "sha": "5375262266445fc9d913b96242d4c7a51387d0d4",
+      "deployment": "dpl_AuCREnJ5GQNVN8YodUAYhNsnvqcB",
+      "rollback": "dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS",
+      "aliasesVerified": [
+        "app.openfolk.ai",
+        "openfolk.ai",
+        "serviceos-dh.vercel.app",
+        "www.openfolk.ai"
+      ]
+    }
+  },
+  "testAcceptance": {
+    "state": "signed_in_contact_separation_verified",
+    "build": "778f7ad",
+    "sha": "778f7ad828086888ba4d355319a4a538725e3eff",
+    "host": "test.openfolk.ai",
+    "backend": "saatxzwxvdvqevbnskxy",
+    "defaultCollisionHeld": true,
+    "emptyEvidencePreventsSave": true,
+    "evidenceEditClearsApproval": true,
+    "distinctNamedPersonLinked": true,
+    "sourceLinkRetainedAfterReload": true,
+    "cardContactAndTwoUnverifiedDetailsVisible": true,
+    "operatorAuditVerified": true,
+    "newAccessCreated": false,
+    "providerRequests": 0,
+    "publication": {
+      "at": "2026-10-14T03:51:10.600416+00:00",
+      "points": 2,
+      "batches": [
+        {
+          "held": 1,
+          "linked": 0,
+          "reviewMode": null,
+          "actorMatches": true
+        },
+        {
+          "held": 0,
+          "linked": 1,
+          "reviewMode": "separate_named_person",
+          "actorMatches": true
+        }
+      ],
+      "newPerson": {
+        "name": "Synthetic Taylor Separate",
+        "unverified": true,
+        "actorMatches": true,
+        "evidenceMode": "separate_named_person",
+        "primaryUnset": true,
+        "ownerCardMatches": true
+      },
+      "sourceLinked": true,
+      "noCaptureJobs": true,
+      "operatorAudits": 2,
+      "oldPersonUnchanged": true,
+      "sharedEndpointPeople": 2
+    },
+    "limitation": "Client portal has no programme for this synthetic tenant; the existing logged operator customer-card view was verified."
+  },
+  "liveAcceptance": {
+    "state": "signed_in_live_contact_separation_verified",
+    "build": "5375262",
+    "sha": "5375262266445fc9d913b96242d4c7a51387d0d4",
+    "backend": "tgbnakbxwcqjeimygroz",
+    "brandedClientWorkspaceVerified": true,
+    "distinctSourceContactPublishedThroughLoggedOperator": true,
+    "bothContactsVisibleOnOriginalCustomerCard": true,
+    "twoNewUnverifiedDetailsVisible": true,
+    "originalPrimaryChoicesRetained": true,
+    "existingSourceRolesRetained": true,
+    "operatorAuditVerified": true,
+    "noNewAccountsGrantsOrProviderRequests": true
+  },
+  "livePublication": {
+    "state": "live_separate_contact_publication_verified",
+    "at": "2026-10-14T03:58:06.930102+00:00",
+    "sourceLinks": 1,
+    "priorContactLinksRetained": 52,
+    "distinctNamedPerson": true,
+    "sourceVersionPayloadAndActorVerified": true,
+    "customerAndSiteRelationshipsVerified": true,
+    "newUnverifiedNonPrimaryContactPoints": 2,
+    "appendOnlySeparationReviewVerified": true,
+    "totalPublishedContactLinks": 53,
+    "privateEvidenceSha256": "683eeec734352907011bc16cf0e34292b7ad5344d82d1ce3e66e11035867d717"
+  },
+  "liveAudit": {
+    "linked": true,
+    "batches": 1,
+    "loggedResult": 1,
+    "newPersonPrimaryUnset": true
+  },
+  "initialOperation": {
+    "at": "2026-10-14T03:59:55.507729+00:00",
+    "latestJobStatus": "queued",
+    "recentSettlements": 11,
+    "committedInRecentSample": 1,
+    "unexpectedErrorCodes": [],
+    "restarted": false
+  },
+  "limits": [
+    "Not complete customer/contact/provider coverage.",
+    "Household and business labels remain held.",
+    "No retroactive communication reassignment.",
+    "Concurrent publisher load is not certified by these rehearsals.",
+    "TEST synthetic tenant has no client programme; its signed-in card acceptance used existing logged operator access."
+  ],
+  "screenshotsSha256": {
+    "test-review.png": "73b2f47ede953630a40153feef4ff44b1edece47ee86bb1f598b99d25a313c8f",
+    "test-card.png": "0c19d232d6f08ba971437792a5aea1d098f3b50d5e97237c3954d44cc2bdb72e",
+    "live-review.png": "c383fa5accbc224c83fa19384fcb05d70500c4325276d70127afae4c5c728b92",
+    "live-card.png": "d473d2b5ab8245f7b03c9ac4efedd8c103d2be2e2b0b2b2f24ee153a0cbb2830",
+    "live-contacts.png": "dd8fbfded45ba57fa3db99693d12fac5b12777d69df012bc7bccda825409e284"
+  }
+}

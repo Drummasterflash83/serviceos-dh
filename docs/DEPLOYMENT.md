@@ -42,41 +42,39 @@ Cloudflare-flavoured.
 
 ## Current live checkpoint — 14 October 2026
 
-LIVE frontend Git `c45c95a6188555d470f7c22146128be23471b531`, deployment
-`dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS`, is verified on all four existing aliases and
-the production target. This five-file release adds retained Slack source inspection
-to customer timelines and logged OpenFolk communication selection, preserving the
-prior recent-job ordering, branding and QuickBooks foundation. Two actual historical
-LIVE messages opened with full retained text, dates and provenance; an operator read
-of the same source produced its verified audit entry. This is not complete Slack
-coverage or proof that historical requests remain open.
+LIVE frontend Git `5375262266445fc9d913b96242d4c7a51387d0d4`, deployment
+`dpl_AuCREnJ5GQNVN8YodUAYhNsnvqcB`, is verified on the production target and all
+four existing aliases. This isolated three-file release adds evidenced review of
+distinct named contacts sharing a phone/email, preserving the existing design,
+branding, recent-job ordering and Slack/QuickBooks foundations.
 
-The additive `learn_slack_card_source_read` function is installed separately in TEST
-and LIVE with the same exact definition. Original classification/authority helpers,
-source identities and user access remain unchanged. Native-schema, hosted TEST
-rollback and signed-in synthetic TEST acceptance pass.
-[Backend manifest and guarded reversal](../supabase/release/learn-slack-card-source/manifest.json).
+The matching backend is separately installed in TEST and LIVE with exact definitions
+and grants. It preserves existing source history and people, records the review,
+and holds shared-endpoint automatic attribution for operator review. Signed-in TEST
+and one real LIVE publication pass, including the customer card, source/customer/site
+links, saved contact details and operator audit. This is not complete source coverage.
+[Release and acceptance](operations/LEARN-CONTACT-SEPARATION.md).
 
-LIVE frontend rollback: `d33cfe56b0804fc3c69c12030474661d4ca9f344` /
-`dpl_o6r8arDgsx9D1nJjwiuouasa3LBR`. Restore that frontend before optionally dropping
-only the new source reader with the guarded SQL reversal. Existing sources and
-visibility proofs remain retained. No production SQL reversal has been executed.
+LIVE frontend rollback: `c45c95a6188555d470f7c22146128be23471b531` /
+`dpl_DwKyTb8sUSWhcqgXQuJm1Uej5hDS`. Keep the compatible backend when reverting the
+frontend. The guarded SQL reversal intentionally refuses once separate contacts
+have been published, preventing removal of shared-endpoint protection. Preserve
+pending version-two browser drafts and recover/cancel them with a compatible client.
 
-Protected TEST serves `8f99829de7de78fcc3d47b9e75884ad0dced02fe` /
-`dpl_GxKWS5zVMVEuogKuMXs8HTGNqkoz` on both permanent aliases. TEST retains its
-earlier job-refresh controls; LIVE does not include that held frontend. TEST rollback:
-`97d78f697e5597ac9c243859e9dc7c0bad277afb` / `dpl_264tnwefoJ9A5ULFzgj1z56ePiQC`.
-Deployment protection is unchanged. A normal browser reload retained an old TEST
-document; a fresh stable-domain release-query navigation verified the exact new
-build. Reliable stale-document recovery remains a separate open issue.
+Protected TEST serves `778f7ad828086888ba4d355319a4a538725e3eff` /
+`dpl_DpvxmPfubUNPbTbUnpHgasNwD5BP` on both permanent aliases. TEST retains its earlier
+job-refresh controls; LIVE does not include that held frontend. TEST rollback:
+`8f99829de7de78fcc3d47b9e75884ad0dced02fe` /
+`dpl_GxKWS5zVMVEuogKuMXs8HTGNqkoz`. Deployment protection is unchanged.
 
-QuickBooks production app registration, credentials, company connection and real
-accounting acceptance remain outstanding. Wider publication, communication matching,
+Stable-domain release-query navigation verified the exact builds. The earlier
+stale-document behaviour on normal reload remains a separate open issue.
+QuickBooks production registration/company acceptance, broad publication/matching,
 scoring and operational acceptance remain incomplete. Use **https://www.openfolk.ai**
 for LIVE and **https://test.openfolk.ai** for TEST.
 
-[Slack source release evidence](operations/evidence/learn-slack-card-source-live-2026-10-14.json)
-· [Prior recent-jobs release](operations/evidence/learn-customer-recent-jobs-2026-10-14.json).
+[Contact release evidence](operations/evidence/learn-contact-separation-live-2026-10-14.json)
+· [Prior Slack release](operations/evidence/learn-slack-card-source-live-2026-10-14.json).
 
 ## Preview deployments
 

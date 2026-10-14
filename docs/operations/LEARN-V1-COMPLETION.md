@@ -7,6 +7,27 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**14 October, 05:00 BST — distinct shared-office contacts accepted in LIVE.**
+
+- Matched TEST/LIVE backend and isolated three-file frontends are released. Signed-in
+  TEST proves the default collision hold, required evidence, renewed approval, saved
+  result and customer-card details. The real LIVE contact then linked through logged
+  OpenFolk controls to its existing customer/site, retaining the other person.
+- Both named contacts now appear on the LIVE customer card. Two new unverified,
+  non-primary contact points are retained. Source/actor/relationships and the exact
+  operator audit pass. Fifty-two earlier contact links remain; fifty-three total.
+- Installation preserves all checked pre-release business sources, links, people,
+  points and account access. All four LIVE and both TEST aliases and their existing
+  protections are verified. SQL reversal refuses to remove ambiguity protection
+  after publication; the prior frontend remains the rollback option.
+- Capture/identity processing continues without restart or unexpected errors in the
+  observed sample. This resolves one shared-office hold, not overall matching or
+  coverage. Group labels, broader customer/job publication, source coverage gaps,
+  scorecards, operator recovery and scheduled independent recovery remain open.
+
+[Release, preservation and acceptance](LEARN-CONTACT-SEPARATION.md).
+
+
 **14 October, 04:40 BST — shared-contact separation and attribution guard rehearsed; release pending.**
 
 - Added an evidenced review for distinct named contacts sharing an office endpoint.
