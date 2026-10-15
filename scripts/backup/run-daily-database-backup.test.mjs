@@ -85,3 +85,31 @@ test("hosted export failure reports only an allowlisted diagnostic and does not 
     assert.equal(JSON.stringify(failure).includes("private"), false);
   } finally { await rm(base, { recursive: true, force: true }); }
 });
+
+test("hosted native restore failure exposes only an allowlisted stage and code", async () => {
+  const base = await mkdtemp(join(tmpdir(), "daily-backup-test-"));
+  let calls = 0;
+  try {
+    await assert.rejects(runDailyDatabaseBackup({ base, runId: ID, day: "20261015",
+      execute: async () => {
+        calls++;
+        if (calls === 1) return JSON.stringify(outputs[0]);
+        const error = Error("private restore error must not escape");
+        error.safeDiagnostic = { restoreStage: "restoring_native_archive",
+          code: "restore_container_command_failed", privateText: "never logged" };
+        throw error;
+      },
+    }), (error) => {
+      assert.equal(error.message, "daily_backup_not_verified");
+      assert.deepEqual(error.safeDiagnostic, { stage: "native_restore",
+        restoreStage: "restoring_native_archive",
+        code: "restore_container_command_failed" });
+      return true;
+    });
+    assert.equal(calls, 2);
+    const failure = JSON.parse(await readFile(join(base, `database-daily-run-${ID}`,
+      "failed.json"), "utf8"));
+    assert.equal(failure.code, "restore_container_command_failed");
+    assert.equal(JSON.stringify(failure).includes("private"), false);
+  } finally { await rm(base, { recursive: true, force: true }); }
+});

@@ -18,10 +18,25 @@ const SAFE_EXPORT_CODES = new Set(["native_export_diagnostic_unavailable",
   "export_disk_preflight_failed", "export_image_pin_failed",
   "export_source_reader_unavailable", "export_snapshot_query_timeout",
   "export_snapshot_connection_failed", "export_failure_unclassified"]);
+const SAFE_RESTORE_STAGES = new Set(["preflight", "preparing_local_roles",
+  "restoring_native_archive", "comparing_native_archive_rows",
+  "verifying_all_table_fingerprints"]);
+const SAFE_RESTORE_CODES = new Set(["restore_command_unavailable_or_timeout",
+  "restore_container_command_failed", "restore_database_startup_failed",
+  "restore_containment_failed", "restore_image_pin_failed",
+  "restore_archive_integrity_failed", "restore_archive_changed",
+  "restore_row_mismatch", "restore_sequence_mismatch",
+  "restore_catalog_mismatch", "restore_extension_mismatch",
+  "restore_cleanup_unconfirmed", "restore_failure_unclassified"]);
 function safeExportDiagnostic(value) {
   return value && SAFE_EXPORT_STAGES.has(value.exportStage) &&
     SAFE_EXPORT_CODES.has(value.code)
     ? { exportStage: value.exportStage, code: value.code } : null;
+}
+function safeRestoreDiagnostic(value) {
+  return value && SAFE_RESTORE_STAGES.has(value.restoreStage) &&
+    SAFE_RESTORE_CODES.has(value.code)
+    ? { restoreStage: value.restoreStage, code: value.code } : null;
 }
 const STAGES = [
   ["export", "node", (source) => ["scripts/backup/export-production-database.mjs", "--export-unattended-daily", source], 100],
@@ -63,6 +78,8 @@ async function runStage(command, args, minutes) {
           const last = JSON.parse(Buffer.concat(chunks).toString("utf8").trim().split("\n").at(-1));
           if (last?.state === "export_failed_safe" && last.secretsPrinted === false)
             safe = safeExportDiagnostic({ exportStage: last.stage, code: last.code });
+          else if (last?.state === "native_restore_failed_safe" && last.secretsPrinted === false)
+            safe = safeRestoreDiagnostic({ restoreStage: last.stage, code: last.code });
         } catch { /* Unknown child output never enters hosted logs. */ }
         const error = Error("daily_stage_unconfirmed");
         error.safeDiagnostic = safe;
@@ -123,7 +140,8 @@ export async function runDailyDatabaseBackup({
     }
     throw Error("daily_pipeline_incomplete");
   } catch (error) {
-    const diagnosis = stage === "export" ? safeExportDiagnostic(error?.safeDiagnostic) : null;
+    const diagnosis = stage === "export" ? safeExportDiagnostic(error?.safeDiagnostic)
+      : stage === "native_restore" ? safeRestoreDiagnostic(error?.safeDiagnostic) : null;
     const failure = { contract: "database-daily-attempt/1",
       state: "daily_backup_not_verified", runId, stage,
       ...(diagnosis ? diagnosis : { code: "stage_unconfirmed" }),

@@ -1,6 +1,6 @@
 {
   "version": "learn-build01-hosted-daily-export/1",
-  "observedAt": "2026-10-15T18:00:42Z",
+  "observedAt": "2026-10-15T18:19:38Z",
   "environment": "GitHub Actions main, manual-only backup workflow",
   "firstRun": {
     "id": 38778120658,
@@ -16,17 +16,25 @@
     "safeCode": "native_export_failed_unclassified",
     "interpretation": "The approximately three-minute export duration is consistent with the existing three-minute no-archive-output guard, but the available public diagnostic does not prove that was the exact cause."
   },
+  "boundedExportRun": {
+    "id": 38782343771,
+    "headSha": "4cb93267222c354009446da66640754e84f606ca",
+    "conclusion": "failure",
+    "safeStage": "native_restore",
+    "safeCode": "stage_unconfirmed",
+    "interpretation": "The bounded export completed and the isolated restore step failed. The former wrapper intentionally withheld the detailed private restore error, so no further cause is claimed."
+  },
   "offsiteInspection": {
     "identity": "approved_restore_only",
     "since": "2026-10-15T17:54:00Z",
-    "observedAt": "2026-10-15T18:00:42Z",
+    "observedAt": "2026-10-15T18:19:38Z",
     "newObjects": 0,
     "keysPrinted": false
   },
   "correction": {
     "scope": "Extend only the no-output export guard to fifteen minutes under the unchanged ninety-minute total export limit, and emit an allowlisted safe code if either limit fires.",
     "localChecks": ["export script syntax", "3 daily supervisor tests"],
-    "hostedRetest": "pending"
+    "hostedRetest": "bounded export reached isolated restore; a safe restore-stage diagnostic is being added before the next rehearsal"
   },
   "acceptedAsDailyOperation": false,
   "productionWrites": false,

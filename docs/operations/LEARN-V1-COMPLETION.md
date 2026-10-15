@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 18:18 UTC — hosted export passed; isolated restore needs diagnosis.**
+
+### Working and verified
+
+- The third manual hosted backup run, using the bounded export guard, reached
+  the isolated native restore step. It failed there with the former generic
+  restore diagnostic. Restore-only S3 inspection found no new off-site object.
+  This establishes hosted export progress, not backup success. A narrow
+  allowlisted restore-stage diagnostic now passes four supervisor tests and a
+  synthetic private-text redaction check; its hosted retest is pending.
+  [Hosted run evidence](evidence/learn-build01-hosted-daily-export-2026-10-15.json).
+
+### Needs finishing
+
+- Identify and correct the exact isolated restore failure, then verify the
+  full hosted export, restore, encrypted copy and independent download before
+  enabling a daily schedule or claiming recovery. The local copy remains one
+  verified attempt only.
+- Complete saved-reply and recovery evidence, source/card/scoring coverage,
+  full application/Auth recovery and the real unattended day.
+
+### Blocked externally
+
+- Chris retains the final business sign-off after the technical evidence and
+  first eligible full working day, Friday 16 October 09:00–17:00 London.
+
 **15 October, 18:00 UTC — hosted backup export failed; bounded guard correction prepared.**
 
 ### Working and verified
