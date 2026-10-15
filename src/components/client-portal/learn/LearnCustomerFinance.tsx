@@ -230,7 +230,7 @@ export function LearnCustomerFinance({
         </div>
       )}
       {environment === "sandbox" && (
-        <p className="font-semibold">Sandbox records — these are not Drummonds’ live accounts.</p>
+        <p className="font-semibold">Sandbox records — these are not your live company accounts.</p>
       )}
       {busy && <p role="status">Checking QuickBooks records…</p>}
       {notice && (
