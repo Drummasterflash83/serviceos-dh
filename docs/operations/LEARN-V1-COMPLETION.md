@@ -7,6 +7,31 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 18:38 UTC — hosted backup's fourth run isolated a redundant scan timeout.**
+
+### Working and verified
+
+- The manual hosted run reached native restore, completed the archived COPY and
+  sequence comparison, then timed out in a later per-table JSON fingerprint
+  scan. That scan has no same-snapshot source baseline in the daily path, so it
+  cannot establish an additional source/restore match. Restore-only inspection
+  found no off-site object from this failed run.
+- The narrow correction retains native row/sequence and pg_net supplement
+  comparisons, complete physical-table coverage, catalog checks and offline
+  containment. Its synthetic native restore and four supervisor checks pass.
+  [Fourth-run evidence](evidence/learn-build01-hosted-backup-fourth-run-2026-10-15.json).
+
+### Needs finishing
+
+- Push and rehearse this correction in the approved manual hosted workflow.
+  No hosted encrypted copy, independent download or daily continuity is proven
+  by the failed run. Continue the source/card, Slack, scoring and Auth gates.
+
+### Blocked externally
+
+- The first full unattended working-day window and Chris's business sign-off
+  remain outstanding.
+
 **15 October, 18:34 UTC — Email source backlog grew while all-source projection awaited retry.**
 
 ### Working and verified

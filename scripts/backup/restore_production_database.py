@@ -141,31 +141,39 @@ def run(*, combined_audio=False, compare_native=False, source_root=None,
                         raise RecoveryError('Native capture does not cover the physical table inventory')
                     report['allInventoriedPhysicalTablesCaptured'] = True
                 report['knownArchiveOmissions'] = []
-            report['state'] = 'verifying_all_table_fingerprints'
-            write_private(report_path, report)
-            actual = []
-            comparisons = expected if expected is not None else [
-                {'schema': x['schema'], 'table': x['name']} for x in inventory['tables']]
-            for table in comparisons:
-                qualified = ident(table['schema']) + '.' + ident(table['table'])
-                query = ("set timezone='UTC';set datestyle='ISO, MDY';set extra_float_digits=3;"
-                         "set bytea_output='hex';select json_build_object('schema',"
-                         + literal(table['schema']) + ",'table'," + literal(table['table'])
-                         + ",'rows',count(*),'fingerprint',md5(coalesce(string_agg("
-                         "md5(to_jsonb(t)::text),'' order by md5(to_jsonb(t)::text)),''))) from only "
-                         + qualified + ' t;')
-                observed = json.loads(target.query(query))
-                actual.append(observed)
-                if expected is not None and observed != table:
-                    write_private(evidence / 'restore-fingerprints.json', actual)
-                    report['mismatch'] = {'schema': table['schema'], 'table': table['table'],
-                                          'expectedRows': table['rows'], 'actualRows': observed['rows']}
-                    raise RecoveryError('Source snapshot and restored table differ')
-                if len(actual) % 25 == 0:
-                    print(json.dumps({'stage': report['state'], 'tablesRead': len(actual)}), flush=True)
-            write_private(evidence / 'restore-fingerprints.json', actual)
-            report['tablesMatched'] = len(actual) if expected is not None else 0
-            report['tablesRead'] = len(actual)
+            if expected is not None:
+                # Only a same-snapshot source baseline gives this second scan a
+                # comparison target. Daily archives have no such baseline: the
+                # native COPY/sequence comparison above already covers every
+                # archived row, including duplicates, and the coverage check
+                # includes the separately captured net tables.
+                report['state'] = 'verifying_all_table_fingerprints'
+                write_private(report_path, report)
+                actual = []
+                for table in expected:
+                    qualified = ident(table['schema']) + '.' + ident(table['table'])
+                    query = ("set timezone='UTC';set datestyle='ISO, MDY';set extra_float_digits=3;"
+                             "set bytea_output='hex';select json_build_object('schema',"
+                             + literal(table['schema']) + ",'table'," + literal(table['table'])
+                             + ",'rows',count(*),'fingerprint',md5(coalesce(string_agg("
+                             "md5(to_jsonb(t)::text),'' order by md5(to_jsonb(t)::text)),''))) from only "
+                             + qualified + ' t;')
+                    observed = json.loads(target.query(query))
+                    actual.append(observed)
+                    if observed != table:
+                        write_private(evidence / 'restore-fingerprints.json', actual)
+                        report['mismatch'] = {'schema': table['schema'], 'table': table['table'],
+                                              'expectedRows': table['rows'], 'actualRows': observed['rows']}
+                        raise RecoveryError('Source snapshot and restored table differ')
+                    if len(actual) % 25 == 0:
+                        print(json.dumps({'stage': report['state'], 'tablesRead': len(actual)}), flush=True)
+                write_private(evidence / 'restore-fingerprints.json', actual)
+                report['tablesMatched'] = len(actual)
+                report['tablesRead'] = len(actual)
+            else:
+                report['sourceFingerprintComparison'] = 'unavailable_without_same_snapshot_baseline'
+                report['tablesMatched'] = 0
+                report['tablesRead'] = 0
             # Read back schema boundaries, owners and extension versions.
             tables = json.loads(target.query("select json_agg(json_build_object('schema',n.nspname,"
                 "'name',c.relname,'kind',c.relkind,'rls',c.relrowsecurity,'forceRls',c.relforcerowsecurity,"

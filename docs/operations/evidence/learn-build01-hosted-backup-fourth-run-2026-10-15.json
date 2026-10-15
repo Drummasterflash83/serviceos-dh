@@ -1,0 +1,31 @@
+{
+  "version": "learn-build01-hosted-backup-fourth-run/1",
+  "observedAt": "2026-10-15T18:38:20Z",
+  "environment": "GitHub-hosted manual rehearsal against LIVE source",
+  "runUrl": "https://github.com/Drummasterflash83/serviceos-dh/actions/runs/38784883039",
+  "workflowMainHead": "acc5c6f693e962c19c9cb0f324ffc84a30d10ede",
+  "checkedOutTestSource": "c9f8e8ef02043e6aa3336c4e365888d165e66234",
+  "runConclusion": "failure",
+  "safeFailure": {
+    "stage": "native_restore",
+    "restoreStage": "verifying_all_table_fingerprints",
+    "code": "restore_command_unavailable_or_timeout"
+  },
+  "interpretation": "The native archive and its full COPY/sequence comparison passed before a redundant per-table JSON fingerprint scan timed out. No same-snapshot source fingerprint baseline exists for daily exports, so that later scan could not prove a source/restore match.",
+  "offSiteInspection": {
+    "observedAt": "2026-10-15T18:37:51.784Z",
+    "since": "2026-10-15T18:21:00Z",
+    "restoreIdentityOnly": true,
+    "objectsSince": 0,
+    "productionWrites": false
+  },
+  "correctionPrepared": "Skip the redundant per-table JSON fingerprint scan only where the same-snapshot source baseline is absent; retain native archive row/sequence comparison, supplement comparison, physical table coverage, catalog and containment checks.",
+  "verification": {
+    "syntheticNativeRestore": "passed; archived and restored rows/sequences matched, tampering rejected, offline boundary held",
+    "hostedSupervisorTests": "four passed",
+    "pythonSyntax": "passed",
+    "gitDiffCheck": "passed"
+  },
+  "hostedSuccessProven": false,
+  "dailyContinuityProven": false
+}
