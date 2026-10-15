@@ -7,6 +7,31 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 22:36 UTC — saved Slack freshness is visible in LIVE.**
+
+### Working and verified
+
+- The Ongoing Slack capture control now displays each selected channel's saved
+  next unchecked time and warns when it is more than an hour behind the check.
+  The exact frontend passed eight focused tests, TypeScript and the production
+  build, then signed-in operator checks on protected TEST and real Drummonds LIVE.
+  LIVE Git `79d87208` and Vercel deployment `dpl_AsGnvRT7tXutyx9RVrd3QfWn8scq`
+  are Ready on all four existing production aliases. The selected LIVE channel
+  showed an unchecked boundary of 13 October, 11:00 local and no checked thread
+  window; no capture authority, pacing or provider request changed.
+  [Release and browser evidence](evidence/learn-build01-slack-freshness-warning-2026-10-15.json).
+
+### Needs finishing
+
+- The warning makes stale coverage explicit but does not shorten it. The
+  160-channel throughput gap, post-cutoff source-to-card proof and reply-window
+  coverage remain open.
+
+### Blocked externally
+
+- None for this display correction. The final business acceptance still needs
+  Chris's review after the technical evidence is representative.
+
 **15 October, 22:26 UTC — Slack catch-up advances but is not yet sustainable.**
 
 ### Working and verified

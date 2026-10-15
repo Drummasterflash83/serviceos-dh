@@ -1,0 +1,43 @@
+{
+  "version": "learn-build01-slack-freshness-warning/1",
+  "observedAtUtc": "2026-10-15T22:36:42Z",
+  "change": "The Ongoing Slack capture panel now shows the saved next unchecked channel time and warns when that boundary is more than one hour behind the last status read. It states that later channel messages and replies may still be missing.",
+  "source": "src/components/client-portal/learn/LearnSlackRecurring.tsx",
+  "captureScopeOrPacingChanged": false,
+  "providerCalls": 0,
+  "test": {
+    "gitSha": "90a03074f14704756025d3e7e30fac3ae73feb01",
+    "remoteTestCheckpointVerified": true,
+    "focusedTestsPassed": 8,
+    "typescript": "passed",
+    "productionBuildAndPrebuildChecks": "passed",
+    "deployment": "dpl_9Q3r3CL87wRc3RJ7nZNyoMp8Jueg",
+    "state": "READY protected Preview",
+    "aliases": ["test.openfolk.ai", "serviceos-learn-test-allkin.vercel.app"],
+    "aliasReadback": "Both aliases point to the exact deployment; all-deployment protection, project domains and production target preserved.",
+    "backendBinding": "Vercel's existing preview VITE_SUPABASE_URL was decrypted in memory and compared exactly to the Supabase TEST URL without outputting its value or other configuration. The variable predates the candidate build; the preview rendered OpenFolk login and the signed-in stable alias loaded the same index-B7bSGlpm.js asset.",
+    "signedInOperatorRead": "On Drummonds — Commusoft TEST, a temporary disabled-only channel row exposed the old next unchecked time and the more-than-one-hour warning. The control remained paused with no capture job or provider request.",
+    "syntheticFixtureCleanup": "The disabled row was deleted and independent readback found zero remaining recurring subscriptions for that account.",
+    "privateScreenshot": "/private/tmp/learn-build01-slack-stale-test-browser-full-20261015.png",
+    "privateScreenshotSha256": "9cd5f7104b63f5d7fd838a7d74296b91f362a76c1ee81aaf8505fc712e21a6ab"
+  },
+  "live": {
+    "gitSha": "79d872084e089cc037dd4d5c06235951b028dfd4",
+    "remoteMainHeadVerified": true,
+    "focusedTestsPassed": 8,
+    "typescript": "passed",
+    "productionBuildAndPrebuildChecks": "passed",
+    "deployment": "dpl_AsGnvRT7tXutyx9RVrd3QfWn8scq",
+    "state": "READY production at 22:36:35 UTC",
+    "aliases": ["app.openfolk.ai", "openfolk.ai", "www.openfolk.ai", "serviceos-dh.vercel.app"],
+    "aliasReadback": "All four existing LIVE aliases point to the exact deployment; app and apex redirects, project protection and production target preserved.",
+    "signedInOperatorRead": "On Drummond Heating in the LIVE OpenFolk operator workspace, the selected enabled channel CRT5DQKQX showed next unchecked channel time 13/10/2026 11:00:00 local and the more-than-one-hour warning. It also showed that no thread window had been checked yet. No capture setting or provider request was changed by this read.",
+    "privateScreenshot": "/private/tmp/learn-build01-slack-stale-live-browser-full-20261015.png",
+    "privateScreenshotSha256": "ff44304144ed24e3f5baa10a798e5617ddb9b7346e5138ba910e5fba6932ea9d"
+  },
+  "limits": [
+    "This display uses the saved next unchecked interval, not a claim that Slack contains no later messages.",
+    "The TEST fixture was disabled and cannot prove live provider capture or sustainable freshness.",
+    "The 160-channel capacity and post-cutoff evidence gaps remain independent of this UI change."
+  ]
+}
