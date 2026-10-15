@@ -14,8 +14,13 @@ test('foreign scope and thread, missing parent association, duplicate and out-of
  }
 });
 test('older observed parents may scope in-window replies but their out-of-window content is refused',async()=>{
- const old={...scope,parentTimestamp:'90.000001'},r=await readSlackThreadPage(old,tenant,'C123',null,async()=>({ok:true,has_more:false,messages:[{...reply,thread_ts:old.parentTimestamp}]}));assert.equal(r.records.length,1);
- await assert.rejects(readSlackThreadPage(old,tenant,'C123',null,async()=>({ok:true,has_more:false,messages:[{ts:old.parentTimestamp,text:'Outside window'}]})),/thread_page_integrity/);
+ const old={...scope,parentTimestamp:'90.000001'};
+ const r=await readSlackThreadPage(old,tenant,'C123',null,async()=>({ok:true,has_more:false,messages:[{ts:old.parentTimestamp,text:'Outside window'},{...reply,thread_ts:old.parentTimestamp}]}));
+ assert.equal(r.records.length,1);assert.equal(r.records[0].provider_timestamp,reply.ts);
+ const empty=await readSlackThreadPage(old,tenant,'C123',null,async()=>({ok:true,has_more:false,messages:[{ts:old.parentTimestamp,text:'Outside window'}]}));
+ assert.equal(empty.records.length,0);assert.equal(empty.threadComplete,true);
+ await assert.rejects(readSlackThreadPage(old,tenant,'C123',null,async()=>({ok:true,has_more:false,messages:[{ts:old.parentTimestamp,thread_ts:'80.000001',text:'Wrong parent'}]})),/thread_page_integrity/);
+ await assert.rejects(readSlackThreadPage(old,tenant,'C123',null,async()=>({ok:true,has_more:false,messages:[{ts:'95.000001',thread_ts:old.parentTimestamp,text:'Outside window'}]})),/thread_page_integrity/);
 });
 test('pagination does not confuse page budget with completeness; malformed/cyclic cursors fail',async()=>{
  const r=await readSlackThreadPage(scope,tenant,'C123','previous',async(_,args)=>{assert.equal(args.cursor,'previous');return {ok:true,has_more:true,messages:[reply],response_metadata:{next_cursor:'next'}};});assert.equal(r.threadComplete,false);assert.equal(r.nextCursor,'next');

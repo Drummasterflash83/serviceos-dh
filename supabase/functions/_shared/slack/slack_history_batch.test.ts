@@ -5,3 +5,17 @@ test('revocation before publication prevents persist; persistence failure preven
 test('cursor cycles fail before second checkpoint; provider denial is never retried',async()=>{let writes=0;await assert.rejects(readSlackHistoryBatch(scope,T,'C123',initial,3,{authorised:async()=>true,request:async()=>({ok:true,has_more:true,messages:[],response_metadata:{next_cursor:'same'}}),persist:async()=>{writes++;}}),/cursor_cycle/);assert.equal(writes,1);let calls=0;await assert.rejects(readSlackHistoryBatch(scope,T,'C123',initial,3,{authorised:async()=>true,request:async()=>{calls++;return {ok:false,error:'ratelimited'};},persist:async()=>{}}));assert.equal(calls,1);});
 
 test('completed and exhausted checkpoints cannot bypass tenant, scope or authority validation',async()=>{for(const checkpoint of [{...initial,pages:1,complete:true},{...initial,pages:2,complete:false}]){const ports={authorised:async()=>false,request:async()=>{throw Error('unexpected request');},persist:async()=>{throw Error('unexpected persist');}};await assert.rejects(readSlackHistoryBatch(scope,T,'C123',checkpoint,2,ports),/authority_unavailable/);await assert.rejects(readSlackHistoryBatch(scope,'foreign','C123',checkpoint,2,{...ports,authorised:async()=>true}),/scope_unavailable/);await assert.rejects(readSlackHistoryBatch(scope,T,'C123',{...checkpoint,scopeKey:'other-window'},2,{...ports,authorised:async()=>true}),/checkpoint_scope_mismatch/);}});
+
+test('a later reply window checkpoints even when Slack includes only the older parent',async()=>{
+ const later={...scope,oldest:'180.1',parentTimestamp:'110.1'};
+ const checkpoint={...initial,scopeKey:historyScopeKey(later,'C123')};
+ const published:any[]=[];
+ const result=await readSlackHistoryBatch(later,T,'C123',checkpoint,2,{
+  authorised:async()=>true,
+  request:async(method,args)=>{assert.equal(method,'conversations.replies');assert.equal(args.oldest,'180.1');return {ok:true,has_more:false,messages:[{ts:'110.1',text:'previously saved parent'}]};},
+  persist:async(page,expected,next)=>{published.push({page,expected,next});},
+ });
+ assert.equal(published.length,1);assert.deepEqual(published[0].page.records,[]);
+ assert.equal(published[0].expected.complete,false);assert.equal(published[0].next.complete,true);
+ assert.equal(result.stopReason,'window_pages_complete');
+});
