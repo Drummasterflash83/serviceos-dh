@@ -64,6 +64,18 @@ where j.tenant_id='${tenant}'::uuid and j.job_type='identity.resolve'
   and j.status='retrying'
 group by p.attempt,coalesce(p.receipt->>'state','unclassified')
 order by p.attempt,receipt_state`;
+const publicationWindowQuery = `select p.attempt,count(*)::int receipts,
+  min(p.created_at) first_publication_at,
+  max(p.created_at) last_publication_at,
+  extract(epoch from max(p.created_at)-min(p.created_at))::int publication_span_seconds,
+  max(j.lease_expires_at) lease_expires_at
+from public.platform_jobs j
+join public.learn_processing_publications p on p.job_id=j.id
+  and p.tenant_id=j.tenant_id
+where j.tenant_id='${tenant}'::uuid and j.job_type='identity.resolve'
+  and j.status='retrying'
+group by p.attempt
+order by p.attempt`;
 async function read(sql) {
   const response = await fetch(`https://api.supabase.com/v1/projects/${project}/database/query/read-only`, {
     method: "POST",
@@ -91,6 +103,13 @@ if (!Array.isArray(receiptShape) || !receiptShape.every(row =>
     Number.isInteger(row.receipts) && row.receipts >= 0 &&
     Number.isInteger(row.failed_js_shape_checks) && row.failed_js_shape_checks >= 0))
   throw Error("Identity receipt-shape readback changed");
+const publicationWindows = await read(publicationWindowQuery);
+if (!Array.isArray(publicationWindows) || !publicationWindows.every(row =>
+    Number.isInteger(row.attempt) && row.attempt > 0 &&
+    Number.isInteger(row.receipts) && row.receipts >= 0 &&
+    Number.isInteger(row.publication_span_seconds) && row.publication_span_seconds >= 0))
+  throw Error("Identity publication-window readback changed");
 console.log(JSON.stringify({ observedAt: new Date().toISOString(), project, tenant,
-  rows, activeRetryPublications, receiptShape, productionDataWrites: false,
+  rows, activeRetryPublications, receiptShape, publicationWindows,
+  productionDataWrites: false,
   scope: "Queued/retrying timing and review holds only; no manual rescue implied." }));
