@@ -1,0 +1,42 @@
+{
+  "version": "learn-build01-hosted-database-daily-activation/1",
+  "observedAt": "2026-10-15T18:56:00Z",
+  "environment": "GitHub-hosted manual rehearsal against LIVE source",
+  "backup": {
+    "runUrl": "https://github.com/Drummasterflash83/serviceos-dh/actions/runs/38787584369",
+    "mainWorkflowHead": "d7a306b47d646f40b658660a4cae7b44924e66eb",
+    "testSourceHead": "d10ea63bcf84964dfc17f5039ce7694ae30677e8",
+    "conclusion": "success",
+    "state": "one_unattended_copy_verified_restore_pending",
+    "runId": "10ff4dbb-f786-4ed3-a160-29bbac0fbd0d",
+    "encryptedBytes": 1222749848,
+    "independentStorageVerified": true,
+    "recoveryKeyRead": false,
+    "databaseRestoreVerified": false,
+    "sustainedDailyOperationVerified": false,
+    "fullApplicationRecoveryVerified": false
+  },
+  "independentRestoreIdentityReadback": {
+    "observedAt": "2026-10-15T18:54:01.500Z",
+    "objectsSinceRunStart": 1,
+    "newestObjectAt": "2026-10-15T18:51:31Z",
+    "newestEncryptedBytes": 1222749848,
+    "objectKeysPrinted": false,
+    "productionWrites": false
+  },
+  "missedSuccessMonitor": {
+    "runUrl": "https://github.com/Drummasterflash83/serviceos-dh/actions/runs/38789650424",
+    "manualWorkflowHead": "48b20ba796dd870e6cd53947058676a0158568cb",
+    "conclusion": "success",
+    "state": "database_daily_success_current",
+    "lastSuccessAt": "2026-10-15T18:53:41Z",
+    "staleAndMissingSyntheticChecks": "passed"
+  },
+  "schedulePrepared": {
+    "backupUtc": "15 3 * * *",
+    "monitorUtc": "23 * * * *",
+    "activationReadbackPending": true,
+    "firstRealScheduledRunPending": true,
+    "humanNotificationDeliveryUnverified": true
+  }
+}

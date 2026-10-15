@@ -7,6 +7,36 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 18:56 UTC — first hosted database copy passed; daily cadence prepared.**
+
+### Working and verified
+
+- The fifth manual hosted backup run passed the full native export, isolated
+  restore and archived row/sequence check, encryption, approved London bucket
+  upload and independent Restore download. It produced one 1,222,749,848-byte
+  encrypted object; a separate Restore-only listing confirmed one new object of
+  that size. It read no recovery key and wrote no production data.
+- The separately published manual missed-success monitor passed on its hosted
+  run and reported this copy current. Its stale/missing cases pass tests.
+  [Hosted backup and monitor evidence](evidence/learn-build01-hosted-database-daily-activation-2026-10-15.json).
+
+### Needs finishing
+
+- Publish and read back the prepared daily backup and hourly monitor schedules,
+  then observe actual scheduled execution and a missed-run alert path. One
+  manual hosted run cannot establish sustained daily operation. Recovery-key/
+  Vault restore, full application/Auth recovery and the working-day window
+  remain open.
+- The ordinary Email projection retry resumed with two 200-record batches
+  and continuations, but the eligible saved-Email gap was still 8,046 at
+  18:52. Continue observing backlog reduction and identity/graph lanes; preserve
+  the 4,412 outstanding review holds.
+
+### Blocked externally
+
+- The first full unattended working-day window and Chris's business sign-off
+  remain outstanding.
+
 **15 October, 18:38 UTC — hosted backup's fourth run isolated a redundant scan timeout.**
 
 ### Working and verified

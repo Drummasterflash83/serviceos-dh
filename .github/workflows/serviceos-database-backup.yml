@@ -1,9 +1,11 @@
 name: ServiceOS independent database backup
 
-# Manual hosted rehearsal only. Enable the daily schedule after source, restore,
-# off-site copy and missed-success monitoring have been verified end to end.
+# Daily hosted backup. The first manual source, restore, encrypted off-site copy
+# and independent download and the manual missed-success monitor have passed.
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '15 3 * * *'
 
 permissions:
   contents: read
