@@ -1,0 +1,41 @@
+{
+  "version": "learn-build01-restore-and-frontend-regression/1",
+  "observedAtUtc": "2026-10-15T19:21:39Z",
+  "databaseRecovery": {
+    "state": "independent_database_snapshot_verified",
+    "sourceSnapshotAt": "2026-10-15T16:17:21.570978+00:00",
+    "encryptedBytes": 1181810568,
+    "independentStorageVerified": true,
+    "recoveryKeyReadbackVerified": true,
+    "nativeRows": 4202713,
+    "operationalRows": 1927,
+    "recordingRelationships": 3111,
+    "vaultSecretsVerified": 20,
+    "isolatedContainerRemoved": true,
+    "productionWrites": false,
+    "dailyOperationVerified": false,
+    "fullServiceRecoveryVerified": false,
+    "privateReceipt": ".verification-results/database-backup-911be91a-8569-4fa6-ab26-cac68014a999/verified-5598a80d-e33c-4f92-8d49-81be96d05008.json"
+  },
+  "frontendRegression": {
+    "liveBadgeCommit": "f85288a818c8900820b0ae05bf1ad1eddded52e3",
+    "liveBadgeBuiltAt": "2026-10-15T18:58:57.898Z",
+    "liveBackend": "tgbnakbxwcqjeimygroz",
+    "affectedAliasesObserved": ["app.openfolk.ai", "www.openfolk.ai"],
+    "finding": "The current main-branch client navigation and section validator omit LEARN. Both observed LIVE aliases serve the same main-branch asset and omit LEARN in the signed-in menu.",
+    "lastVerifiedLearnDeployment": "dpl_G9RjaJdT5NqQvPCKgAC5ZULTbZpR",
+    "lastVerifiedLearnCommit": "cb2b7f7873d30c98992b589a8bdd625092de37da",
+    "lastVerifiedAliasesAtUtc": "2026-10-15T12:26:59.631Z",
+    "recoveryState": "awaiting_exact_force_promote_approval",
+    "reviewBlock": "Automatic approval review rejected Force Promote because Vercel says it bypasses Lint and TypeCheck promotion requirements.",
+    "exactCandidateTypeScript": "passed",
+    "exactCandidateRepositoryLint": "failed_with_23148_errors_and_106_warnings_across_repositories_and_preview_files",
+    "exactCandidateChangedFileLint": "failed_with_4_existing_no_explicit_any_errors_and_3_react_hook_warnings",
+    "productionChangeMade": false
+  },
+  "ordinaryProcessing": {
+    "graphRetry": "The existing fifth retry succeeded at 19:16:23 UTC; a fresh child was queued at 19:20:14 UTC. Two succeeded jobs in the last two hours had reached attempt five, and no manual Graph rescue was invoked.",
+    "identityRetry": "The existing fifth attempt ended dead_letter with identity_delivery_unconfirmed at 19:14:35 UTC. One new identity job queued at 19:15:01 UTC; review-held records remain explicit. Do not count this as a successful delivery."
+  },
+  "acceptance": "Build 01 remains in progress. Recovery-key and Vault restore is proven for one approved snapshot, but daily continuity, full Auth/application recovery, source/graph/identity coverage, frontend menu repair, scoring policy, full working day and business sign-off remain open."
+}

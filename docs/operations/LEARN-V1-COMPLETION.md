@@ -7,6 +7,41 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 19:22 UTC — isolated database recovery passed; LIVE LEARN menu regressed.**
+
+### Working and verified
+
+- The approved encrypted production snapshot was downloaded through the separate
+  Restore identity, decrypted with the recovery key, and restored into an isolated
+  container. It verified 4,202,713 native rows, 1,927 operational rows, 3,111
+  recording relationships and 20 Vault secrets; the container was removed with
+  zero production writes. The earlier manual hosted backup and missed-success
+  monitor pass, and their schedules are active. The existing Graph job also
+  succeeded on its fifth ordinary retry at 19:16 UTC and queued its next page.
+  [Recovery and release readback](evidence/learn-build01-restore-and-frontend-regression-2026-10-15.json).
+
+### Needs finishing
+
+- `app.openfolk.ai` and `www.openfolk.ai` now serve main commit `f85288a`, whose
+  client menu and route validator omit LEARN. The last verified LEARN frontend
+  remains READY at `cb2b7f7`, but it is not serving the aliases. Restore the
+  reviewed LIVE frontend after the exact Vercel promotion-gate decision, then
+  stop subsequent main-only backup-workflow pushes from replacing that release.
+- The ordinary identity job exhausted its fifth retry with
+  `identity_delivery_unconfirmed`; a new job is queued, but its delivery is
+  unproved. Continue source, card, Graph, Slack and scoring reconciliation.
+  The isolated database restore does not prove daily continuity or full
+  application/Auth recovery; the working-day window and business acceptance
+  remain open.
+
+### Blocked externally
+
+- Vercel's Force Promote UI says it bypasses Lint and TypeCheck requirements.
+  Automatic approval review rejected that action; Chris was asked to approve
+  the exact return to the previously verified LEARN release. Full repository
+  lint does not pass (23,148 errors and 106 warnings); exact candidate
+  TypeScript does pass. Chris's final business sign-off is still outstanding.
+
 **15 October, 19:03 UTC — Auth recovery must use a new signing key and fresh login.**
 
 ### Working and verified
