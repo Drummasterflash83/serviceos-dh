@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 21:03 UTC — bounded Slack worker change released, backlog still open.**
+
+### Working and verified
+
+- A one-module Slack dispatch change passed 18 focused tests, TypeScript, and
+  networkless compiled-worker probes. The exact prepared artifacts are hosted
+  on TEST v39 and LIVE v90, with the existing missing-auth denial preserved.
+  The ordinary LIVE cron and real Slack jobs continued to succeed; no job failed
+  after release through the initial 21:02 UTC check, and the workspace was not
+  provider-blocked. Exact original executables are retained privately for
+  guarded rollback. [Runtime and queue evidence](evidence/learn-build01-slack-double-tick-2026-10-15.json).
+
+### Needs finishing
+
+- This is **not a Slack throughput acceptance**. In the first six minutes, the
+  queue rose from 773 to 788 jobs. Most real pages took about 13–16 seconds,
+  so the conservative second-call path usually did not run. Reconcile finite
+  discovery work versus ongoing arrivals, then rehearse and measure a capacity
+  adjustment within the approved Slack app's actual method limits and tenant
+  scope. Prove source/reply coverage and sustained unattended drain.
+
+### Blocked externally
+
+- No new external approval is needed for this read-only, approved-source work.
+  Full working-day observation and Chris's business review remain later gates.
+
 **15 October, 20:45 UTC — LIVE LEARN menu restored and production Git baseline repaired.**
 
 ### Working and verified

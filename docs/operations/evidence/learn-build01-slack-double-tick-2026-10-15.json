@@ -1,0 +1,43 @@
+{
+  "version": "learn-build01-slack-double-tick/1",
+  "observedAtUtc": "2026-10-15T21:03:01Z",
+  "scope": "Approved read-only Slack channel and observed-reply capture; DMs excluded",
+  "sourceChange": "The ordinary platform tick may make one additional serial Slack worker call after a successful page and a 31-second wait, only when its local time budget permits. Existing database claims, 30-second internal-app cooldown, workspace lease, request reservations and provider Retry-After remain authoritative.",
+  "validation": {
+    "focusedTestsPassed": 18,
+    "typescript": "passed",
+    "priorLiveModuleMatchesReviewedSourceAst": true,
+    "sourceFilesChangedPerHostedWorker": ["learn_input_tick.ts"],
+    "offlineCompiledWorkerProbe": "TEST and LIVE candidate bundles loaded, respected filtered-input isolation and completed a synthetic empty tick with network disabled, no real credentials and no provider calls.",
+    "binaryReproductionLimit": "Rebundling the management-downloaded transpiled LIVE source did not reproduce the prior ESZIP byte for byte. The exact deployed original ESZIP was downloaded and retained privately for rollback; all staged source files except the one intended module matched the downloaded source."
+  },
+  "test": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "beforeVersion": 38,
+    "afterVersion": 39,
+    "candidateArtifactSha256": "3e02afbe9312a4d0f5f71df159ad37aad6735a216a02ff13122d65e3d0b8120a",
+    "exactReadback": true,
+    "missingAuthHttp": 403,
+    "ordinaryScheduledCaptureVerified": false,
+    "reason": "TEST lacks the LIVE serviceos-worker cron history and does not mirror the LIVE internal-rate profile; its release proves exact artifact and runtime smoke, not production throughput."
+  },
+  "live": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "beforeVersion": 89,
+    "afterVersion": 90,
+    "candidateArtifactSha256": "91e2b71ea95efcfc500252212caad6b687cddad4e0754a5d7cfce19011519269",
+    "exactReadback": true,
+    "missingAuthHttp": 403,
+    "normalCron": "serviceos-worker succeeded after release",
+    "normalSlackJobs": "History/reply jobs continued to succeed at approximately one per minute in the initial observation.",
+    "providerBlockedAt210220Utc": false,
+    "failedJobsSinceReleaseAt210220Utc": 0,
+    "queueBeforeAt205541Utc": { "historyQueued": 115, "threadQueued": 658 },
+    "queueAfterAt210229Utc": { "historyQueued": 116, "threadQueued": 672 },
+    "sustainedDrainVerified": false
+  },
+  "interpretation": "The narrow release is healthy but has not raised sustained throughput. Most observed pages took roughly 13-16 seconds, beyond the conservative first-call threshold for a second attempt. Initial reply discovery is still generating work faster than it settles. A new capacity design must be separately rehearsed and measured; do not call the 160-channel handoff complete.",
+  "rollback": "Private exact TEST and LIVE original ESZIP artifacts and guarded release journals are retained; rollback must verify the current version and candidate hash first.",
+  "manualProviderCalls": 0,
+  "sourceProviderWrites": 0
+}

@@ -103,3 +103,16 @@ argument names and policy expressions render differently by session; profile act
 needed statement_timestamp for its verification time so its immediate stable eligibility
 read did not see a future timestamp. The original activation rolled back completely;
 the corrected statement passed an isolated reproduction and production readback.
+
+## Build 01 capacity continuation — 15 October 2026
+
+The ordinary platform tick's single Slack call became a conservative maximum of
+two serial calls after a successful first page. This changes only the private
+platform worker input-dispatch module; SQL rate profile, provider safeguards,
+schedule, source history and access remain unchanged. TEST v39 and LIVE v90
+were verified against exact hosted artifacts and the previous versions are
+retained for guarded rollback. Initial LIVE jobs succeeded with no new failure
+or provider block, but observed pages were usually too slow for the second
+call's time budget. The backlog was still growing at 21:02 UTC. This release
+does **not** establish sustainable catch-up. See the
+[Build 01 runtime and queue evidence](evidence/learn-build01-slack-double-tick-2026-10-15.json).
