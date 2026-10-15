@@ -34,6 +34,55 @@ export async function handleIdentityResolve(
     failed: 0,
     continued: false,
   };
+  const validReceipt = (data: any, args: {
+    p_request: string; p_interaction: string; p_revision: string;
+  }) =>
+    data?.version === "learn-identity-delivery/1" &&
+    ["committed", "review_required"].includes(data.state) &&
+    data.tenantId === tenantId &&
+    data.requestId === args.p_request &&
+    data.interactionId === args.p_interaction &&
+    data.sourceRevision === args.p_revision &&
+    typeof data.personCreated === "boolean" &&
+    typeof data.companyCreated === "boolean" &&
+    typeof data.cardEnriched === "boolean" &&
+    [data.recommendations, data.suggestions, data.eventsConsumed].every(integer) &&
+    data.eventsConsumed <= 1 &&
+    (data.state === "committed"
+      ? data.cardEnriched && uuid(data.cardId)
+      : !data.cardEnriched &&
+        data.cardId === null &&
+        !data.personCreated &&
+        !data.companyCreated &&
+        data.recommendations === 0 &&
+        data.suggestions === 0 &&
+        data.eventsConsumed === 0 &&
+        typeof data.reason === "string");
+  async function deliver(row: { interaction_id: string; source_revision: string }) {
+    const args = {
+      p_tenant: tenantId,
+      p_request: crypto.randomUUID(),
+      p_interaction: row.interaction_id,
+      p_revision: row.source_revision,
+    };
+    let missing = false;
+    for (const phase of ["publish", "inspect"]) {
+      try {
+        const { data, error } = await admin.rpc("learn_identity_deliver", {
+          ...args, p_phase: phase,
+        });
+        if (!error && validReceipt(data, args)) return { receipt: data, missing: false };
+        // Only a definite missing immutable publication permits a new request.
+        // A lost inspect response or malformed receipt must remain unconfirmed.
+        if (phase === "inspect" && error?.code === "PT409" &&
+          ["processing_receipt_missing", "identity_receipt_missing"].includes(error.message))
+          missing = true;
+      } catch {
+        /* Inspect the same immutable request after response loss; never republish. */
+      }
+    }
+    return { receipt: null, missing };
+  }
   try {
     const { data: rows, error } = await admin.rpc("learn_identity_pending", {
       p_tenant: tenantId,
@@ -48,49 +97,26 @@ export async function handleIdentityResolve(
     )
       throw Error("identity_inventory_unconfirmed");
     for (const row of rows) {
-      const requestId = crypto.randomUUID();
-      const args = {
-        p_tenant: tenantId,
-        p_request: requestId,
-        p_interaction: row.interaction_id,
-        p_revision: row.source_revision,
-      };
-      let receipt: any = null;
-      for (const phase of ["publish", "inspect"]) {
+      let { receipt, missing } = await deliver(row);
+      if (!receipt && missing) {
+        // A source can change after inventory and before publication. Re-read
+        // the bounded pending set; publish at most once with a different,
+        // verified revision and a new request. The original request had no
+        // durable publication, so this cannot double-count a committed card.
         try {
-          const { data, error } = await admin.rpc("learn_identity_deliver", {
-            ...args,
-            p_phase: phase,
+          const refreshed = await admin.rpc("learn_identity_pending", {
+            p_tenant: tenantId, p_limit: batch,
           });
-          if (
-            !error &&
-            data?.version === "learn-identity-delivery/1" &&
-            ["committed", "review_required"].includes(data.state) &&
-            data.tenantId === tenantId &&
-            data.requestId === requestId &&
-            data.interactionId === row.interaction_id &&
-            data.sourceRevision === row.source_revision &&
-            typeof data.personCreated === "boolean" &&
-            typeof data.companyCreated === "boolean" &&
-            typeof data.cardEnriched === "boolean" &&
-            [data.recommendations, data.suggestions, data.eventsConsumed].every(integer) &&
-            data.eventsConsumed <= 1 &&
-            (data.state === "committed"
-              ? data.cardEnriched && uuid(data.cardId)
-              : !data.cardEnriched &&
-                data.cardId === null &&
-                !data.personCreated &&
-                !data.companyCreated &&
-                data.recommendations === 0 &&
-                data.suggestions === 0 &&
-                data.eventsConsumed === 0 &&
-                typeof data.reason === "string")
-          ) {
-            receipt = data;
-            break;
+          if (!refreshed.error && Array.isArray(refreshed.data) &&
+            refreshed.data.length <= batch &&
+            new Set(refreshed.data.map((r: any) => r?.interaction_id)).size === refreshed.data.length) {
+            const current = refreshed.data.find((r: any) => r?.interaction_id === row.interaction_id);
+            if (current && revision(current.source_revision) &&
+              current.source_revision !== row.source_revision)
+              ({ receipt } = await deliver(current));
           }
         } catch {
-          /* Inspect the same immutable request after response loss; never republish. */
+          /* Uncertain inventory leaves this row for the ordinary retry. */
         }
       }
       if (!receipt) {

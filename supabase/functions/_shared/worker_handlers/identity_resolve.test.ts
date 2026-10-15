@@ -7,6 +7,7 @@ const row = (n = 2) => ({ interaction_id: id(n), source_revision: String(n % 10)
 function fixture(options: any = {}) {
   const calls: any[] = [];
   const reviews = new Set();
+  let inventoryCall = 0;
   const admin: any = {
     from() {
       throw Error("Direct identity/card writes forbidden");
@@ -14,7 +15,8 @@ function fixture(options: any = {}) {
     async rpc(name: string, args: any) {
       calls.push({ name, args });
       if (name === "learn_identity_pending")
-        return options.inventory ?? { data: options.rows ?? [row()], error: null };
+        return options.inventories?.[inventoryCall++] ??
+          options.inventory ?? { data: options.rows ?? [row()], error: null };
       if (name === "learn_identity_review_count")
         return options.review ?? { data: reviews.size, error: null };
       assert.equal(name, "learn_identity_deliver");
@@ -70,6 +72,50 @@ test("lost publication reply inspects exact request once without republishing", 
     ["publish", "inspect"],
   );
   assert.equal(f.calls[1].args.p_request, f.calls[2].args.p_request);
+});
+test("definitely missing stale revision is re-inventoried and published once with a fresh request", async () => {
+  const old = row(2), current = { ...old, source_revision: "a".repeat(64) };
+  const f = fixture({
+    inventories: [
+      { data: [old], error: null },
+      { data: [current], error: null },
+    ],
+    respond: (a: any, r: any) => a.p_revision === old.source_revision
+      ? { data: null, error: { code: "PT409", message: a.p_phase === "inspect"
+        ? "processing_receipt_missing" : "identity_source_changed" } }
+      : { data: r, error: null },
+  });
+  const result = await f.run({ limit: 1 });
+  assert.equal(result.success, true);
+  assert.equal(result.recordsProcessed, 1);
+  const deliveries = f.calls.filter((c) => c.name === "learn_identity_deliver");
+  assert.deepEqual(deliveries.map((c) => c.args.p_phase), ["publish", "inspect", "publish"]);
+  assert.equal(deliveries[0].args.p_request, deliveries[1].args.p_request);
+  assert.notEqual(deliveries[1].args.p_request, deliveries[2].args.p_request);
+  assert.equal(deliveries[2].args.p_revision, current.source_revision);
+});
+test("uncertain inspect response cannot trigger a second publication", async () => {
+  const f = fixture({
+    respond: (a: any) => a.p_phase === "inspect"
+      ? { data: null, error: { code: "PGRST000", message: "transport unavailable" } }
+      : { data: null, error: { code: "PT409", message: "identity_source_changed" } },
+  });
+  const result = await f.run({ limit: 1 });
+  assert.equal(result.error?.code, "identity_delivery_unconfirmed");
+  assert.equal(f.calls.filter((c) => c.name === "learn_identity_pending").length, 1);
+  assert.deepEqual(f.calls.filter((c) => c.name === "learn_identity_deliver")
+    .map((c) => c.args.p_phase), ["publish", "inspect"]);
+});
+test("missing publication with unchanged inventory remains retryable without republishing", async () => {
+  const f = fixture({
+    respond: (a: any) => ({ data: null, error: { code: "PT409", message:
+      a.p_phase === "inspect" ? "processing_receipt_missing" : "identity_source_changed" } }),
+  });
+  const result = await f.run({ limit: 1 });
+  assert.equal(result.error?.code, "identity_delivery_unconfirmed");
+  assert.equal(f.calls.filter((c) => c.name === "learn_identity_pending").length, 2);
+  assert.deepEqual(f.calls.filter((c) => c.name === "learn_identity_deliver")
+    .map((c) => c.args.p_phase), ["publish", "inspect"]);
 });
 test("a mixed batch reports partial failure and does not emit a successful continuation", async () => {
   const f = fixture({
