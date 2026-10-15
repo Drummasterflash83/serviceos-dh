@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**15 October, 14:43 UTC — Build 01 checks continue without Touch ID; Slack handoff prepared.**
+**15 October, 14:46 UTC — Build 01 checks continue without Touch ID; Slack handoff prepared.**
 
 ### Working and verified
 
@@ -19,6 +19,11 @@ override a later release observation. No requirement is silently deferred.
   `source_ineligible` Workspace jobs in the last hour, all no later than 14:26,
   before the 14:35 mailbox recovery. There were no blocked `fetch_failed`
   checkpoints at 14:42. This is a point-in-time result, not a full-day pass.
+- An independent 14:46 aggregate read found 4,360 eligible email sources
+  without interactions, down from 4,891 at 14:42. All were created within
+  the past day, and none had a review-required or committed projection
+  receipt. This is an active backfill queue, not proof of final coverage;
+  continue checking that its oldest age and total fall as new mail arrives.
 - The saved public Slack campaign `b54d246b` displays 160 captured channels,
   a fixed end boundary of 13 October 2026, 09:30 UTC, and a prepared move to
   ongoing channel and observed-reply capture. Its final application step is
