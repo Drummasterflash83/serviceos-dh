@@ -7,6 +7,42 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 09:14 UTC — identity Phone selection narrowed; broader V1 work remains.**
+
+### Working and verified
+
+- The LIVE identity selector's nearly empty Phone lane scanned 151,329 unrelated
+  interactions to find three calls (2.7 seconds). An equivalent read-only
+  source-index plan found the same three in 12 ms. The exact selector change
+  passed TEST synthetic isolation/order/revision and LIVE real 200-row rollback
+  comparisons, then was installed separately in TEST and LIVE with unchanged
+  access. The first post-install service read returned 200 rows; a newly
+  claimed ordinary page then delivered 141 records and recorded 59 review holds
+  on its first attempt. This is a narrow query repair, not proof that every
+  intermittent retry is fixed.
+- At 09:06 UTC, all 3,705 active LIVE cards had current projection evidence,
+  Phone source/interaction counts both reached 4,537, and ordinary Commusoft,
+  Email, graph and Slack work continued. Review-required identity pages retain
+  explicit holds while delivering eligible rows.
+
+### Needs finishing
+
+- Observe sustained identity continuation and diagnose any remaining inventory
+  retry. The eligible Email-to-interaction gap was 4,592
+  and eligible graph gap 24,652 at 09:06 UTC; capture is still outpacing parts of
+  the downstream catch-up. Card presence does not establish source/scoring
+  completeness. Follow the approved Slack campaign through its continuation.
+- A fresh full unattended working day, broad signed-in source/scoring acceptance,
+  dependable independent database operation, full app/Auth restore and Chris's
+  business review remain required. Build 02 is inactive.
+
+### Blocked externally
+
+- Chris will sign off only after the technical and operational evidence is ready.
+  The Vercel payment warning remains an account risk, although release is serving.
+
+[Identity selector release evidence](evidence/learn-build01-identity-phone-prefetch-2026-10-15.json).
+
 **15 October, 08:56 UTC — exact Slack retry released in TEST/LIVE; second held page recovered.**
 
 ### Working and verified

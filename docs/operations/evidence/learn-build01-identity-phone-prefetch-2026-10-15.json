@@ -1,0 +1,68 @@
+{
+  "version": "learn-build01-identity-phone-prefetch/1",
+  "observed_at_utc": "2026-10-15T09:14:25Z",
+  "status": "test_and_live_installed_first_new_ordinary_page_delivered",
+  "trigger": {
+    "live_pending_ready_at_09_04_utc": {
+      "email": 31373,
+      "phone": 3,
+      "slack": 299
+    },
+    "current_phone_selector": {
+      "actual_rows": 3,
+      "rows_removed_by_filter": 151329,
+      "shared_buffer_hits": 138942,
+      "execution_ms": 2691.862,
+      "plan": "The oldest-first tenant-wide occurred-at index was scanned backwards to find three pending Phone rows."
+    },
+    "identity_job": "The ordinary identity lane intermittently retried with identity_inventory_unconfirmed, although other pages durably delivered cards and recorded review holds. The error can also represent an unconfirmed review-count call; the plan alone does not prove every retry's cause."
+  },
+  "change": {
+    "migration": "supabase/migrations/20261103180000_learn_identity_phone_source_prefetch.sql",
+    "source_sha256": "99be52be63579332e70e882fb67cf1341adbea190f0c6f30e536ac68cd38226e",
+    "scope": "Materialize tenant-scoped pending Phone IDs via the existing source index before ordering the unchanged one-quarter fair-share selection; fetch full rows only for the selected revisions. The general oldest-first lane, draft exclusion and permissions remain unchanged.",
+    "source_data_writes": false,
+    "new_index_or_access_grant": false
+  },
+  "verification": {
+    "read_only_phone_plan_candidate": {
+      "actual_rows": 3,
+      "execution_ms": 12.347,
+      "shared_buffer_hits": 4598,
+      "source_index": "interactions_tenant_id_source_table_source_id_key"
+    },
+    "test": {
+      "project_ref": "saatxzwxvdvqevbnskxy",
+      "rollback_rehearsal": "Four synthetic selected rows had identical ordered IDs and source revisions before and after; a foreign-tenant row was excluded. The transaction rolled back, then the original function digest and ACL were read back.",
+      "installed_digest_md5": "7d08c05179595a69e6f338cd2673856b",
+      "acl_unchanged": true
+    },
+    "live": {
+      "project_ref": "tgbnakbxwcqjeimygroz",
+      "rollback_rehearsal": "All 200 real selected rows had identical ordered IDs and revisions before and after. Rollback restored the original digest and ACL.",
+      "installed_digest_md5": "7d08c05179595a69e6f338cd2673856b",
+      "acl_unchanged": true,
+      "service_selector_after_install": {
+        "http": 200,
+        "selected": 200,
+        "elapsed_ms": 3724
+      },
+      "ordinary_lane_at_09_12_utc": "A previously queued identity page recorded 140 resolved deliveries and 60 durable review holds, then queued the next page. Its selector may have run before this installation, so it is not attributed to the repair.",
+      "first_new_ordinary_page": {
+        "created_at_utc": "2026-10-15T09:12:53Z",
+        "settled_at_utc": "2026-10-15T09:14:08Z",
+        "attempts": 1,
+        "resolved_deliveries": 141,
+        "new_review_holds": 59,
+        "infrastructure_error": false,
+        "serial_continuation_queued": true
+      }
+    }
+  },
+  "limitations": [
+    "The full identity RPC also performs general selection, draft checks and revision hashing; the 12 ms phone-only plan is not its end-to-end latency.",
+    "One newly claimed ordinary page delivered on its first attempt. Intermittent inventory retries require sustained observation; no full working-day result is claimed.",
+    "The 09:06 UTC LIVE source snapshot showed 4,592 eligible Email rows without interactions and 24,652 eligible interactions without graph nodes despite 3,705 of 3,705 active cards having projection evidence. Card projection presence does not establish complete source or scoring coverage.",
+    "Full application/Auth recovery and Chris's business acceptance remain open."
+  ]
+}
