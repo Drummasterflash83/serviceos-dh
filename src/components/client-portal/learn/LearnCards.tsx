@@ -328,6 +328,9 @@ function CardWorkspace({
             <span className="lc-record-state">{card.recordState}</span>
             <h3>{card.title}</h3>
             {card.subtitle && <p>{card.subtitle}</p>}
+            {card.kind === "job" && card.jobStatus && (
+              <p>{card.jobStatus} · saved status may lag the provider</p>
+            )}
             <span className="lc-updated">Record updated {when(card.updatedAt)}</span>
             <span className="lc-open">
               Read findings & evidence

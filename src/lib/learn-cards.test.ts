@@ -192,6 +192,33 @@ test("job card uses its canonical job identity rather than another customer's co
   assert.equal(detail.card.recordState, "Verified job record");
 });
 
+test("job list distinguishes a saved source status from record verification and does not infer completion", async () => {
+  const db = database({
+    jobs: [
+      row(1, { title: "Service", status: "completed", verified: false }),
+      row(2, {
+        title: "Completed-looking title",
+        status: null,
+        completed_date: "2026-10-08T10:00:00Z",
+        verified: true,
+      }),
+      row(3, { title: "Open job", status: "open", verified: false }),
+      row(4, { title: "Foreign", status: "completed", tenant_id: OTHER }),
+    ],
+  });
+  const page = await readLearnCards(db, T, "job", 0, now);
+  assert.equal(page.cards.length, 3);
+  assert.deepEqual(
+    page.cards.map((card) => [card.jobStatus, card.recordState]),
+    [
+      ["Recorded complete", "Job record needs review"],
+      ["Saved status needs confirmation", "Verified job record"],
+      ["Recorded open", "Job record needs review"],
+    ],
+  );
+  assert.ok(db.calls.every((call) => call.tenant === T));
+});
+
 test("member card joins typed ownership without conflating people, and includes evidence on their owned work", async () => {
   const db = database({
     team_members: [row(1, { display_name: "Engineer", profile_id: id(2) })],

@@ -45,6 +45,8 @@ export interface LearnCard {
   title: string;
   subtitle: string | null;
   recordState: string;
+  /** Saved canonical job status, never a verified outcome or live provider claim. */
+  jobStatus: string | null;
   updatedAt: string | null;
 }
 export interface LearnCardPage {
@@ -101,6 +103,13 @@ async function rows(query: PromiseLike<any>, tenant: string): Promise<Row[]> {
   return result.data;
 }
 function card(row: Row, kind: LearnCardKind, now: number): LearnCard {
+  const savedJobStatuses: Record<string, string> = {
+    completed: "Recorded complete",
+    open: "Recorded open",
+    pending: "Recorded pending",
+    on_hold: "Recorded on hold",
+    closed: "Recorded closed",
+  };
   return {
     id: row.id,
     kind,
@@ -127,6 +136,10 @@ function card(row: Row, kind: LearnCardKind, now: number): LearnCard {
               ? "Verified job record"
               : "Job record needs review"
             : "Stored customer record",
+    jobStatus:
+      kind === "job"
+        ? (savedJobStatuses[text(row.status) ?? ""] ?? "Saved status needs confirmation")
+        : null,
     updatedAt: date(row.updated_at, now),
   };
 }
