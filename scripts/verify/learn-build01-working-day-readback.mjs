@@ -62,7 +62,7 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
       row_number() over(partition by job_type order by created_at desc) n
     from public.platform_jobs where tenant_id='${TENANT}'::uuid
       and job_type in ('email.workspace_sync','commusoft.source_sync','interactions.sync',
-       'identity.resolve','graph.sync','customer_card.sync','slack.history_sync')
+       'identity.resolve','graph.sync','customer_card.sync','slack.history_sync','slack.thread_sync')
   ), history as (
     select job_type,max(completed_at) filter(where status='succeeded') last_success_at,
       max(updated_at) filter(where status in('failed','dead_letter')) last_failure_at,
@@ -76,7 +76,7 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
         and updated_at>=now()-interval '1 hour')::int operational_failures_last_hour
     from public.platform_jobs where tenant_id='${TENANT}'::uuid
       and job_type in ('email.workspace_sync','commusoft.source_sync','interactions.sync',
-       'identity.resolve','graph.sync','customer_card.sync','slack.history_sync')
+       'identity.resolve','graph.sync','customer_card.sync','slack.history_sync','slack.thread_sync')
     group by job_type
   ) select jsonb_object_agg(s.job_type,jsonb_build_object('status',s.status,'errorCode',s.error_code,
     'updatedAt',s.updated_at,'completedAt',s.completed_at,'attempts',s.attempt_count,
@@ -99,6 +99,22 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
     where a.tenant_id='${TENANT}'::uuid and a.provider='gmail'
       and a.status='active_dwd' and m.mailbox_type='alias'`,
   );
+  const slackOngoing = await query(
+    "slack_ongoing",
+    `select count(*)::int campaign_channels,
+      count(*) filter(where s.enabled and s.include_threads)::int channel_and_reply_enabled,
+      count(*) filter(where s.current_import is not null)::int recurring_windows_started,
+      count(*) filter(where s.next_start>h.ends_at)::int advanced_past_cutoff,
+      count(*) filter(where s.next_start<h.ends_at)::int cutoff_regressions,
+      max(s.updated_at) latest_subscription_update
+    from public.slack_history_campaigns h
+    join public.slack_history_campaign_channels m on m.campaign_id=h.id
+      and m.tenant_id=h.tenant_id
+    left join public.slack_recurring_channels s on s.account_id=m.account_id
+      and s.tenant_id=m.tenant_id
+    where h.id='b54d246b-2818-44d1-ba05-ccbe2c6bd6c9'::uuid
+      and h.tenant_id='${TENANT}'::uuid`,
+  );
   return {
     version: "learn-build01-working-day-readback/1",
     observedAt: new Date().toISOString(),
@@ -108,6 +124,7 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
     cards,
     latestJobs: jobs.latest ?? {},
     gmailAliases: aliases,
+    slackOngoing,
     scope:
       "One read-only instant; full-day continuity, manual intervention, backup and business acceptance require separate evidence.",
   };

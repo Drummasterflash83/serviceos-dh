@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**15 October, 14:52 UTC — Build 01 checks continue without Touch ID; Slack handoff prepared.**
+**15 October, 15:02 UTC — 160-channel Slack handoff verified in LIVE; Build 01 remains open.**
 
 ### Working and verified
 
@@ -28,23 +28,36 @@ override a later release observation. No requirement is silently deferred.
   `graph_sync_error` on its first attempt, then succeeded at 14:52 without a
   manual rescue. The Graph missing-node count grew to 17,267 during this
   email burst; its catch-up rate needs observation rather than a success claim.
-- The saved public Slack campaign `b54d246b` displays 160 captured channels,
-  a fixed end boundary of 13 October 2026, 09:30 UTC, and a prepared move to
-  ongoing channel and observed-reply capture. Its final application step is
-  pending the browser's action-time confirmation; no ongoing subscriptions
-  were active at the last database read. DMs remain excluded.
+- At 14:55 eligible Email sources without an interaction fell again to 3,684,
+  with none older than one day. The last two hours included 44 successful Graph
+  jobs, seven after retry, with no terminal Graph failure; the latest job was
+  queued. These point observations do not establish sustained clearance.
+- An aggregate LIVE scoring read at 14:57 found zero saved Drummonds scorecard
+  definitions, published policies, scorecard measurements or saved assessments.
+  The scoring framework exists, but there is no accepted LIVE scoring baseline
+  or evidence for a real score. [Count receipt](evidence/learn-build01-scoring-readiness-2026-10-15.json).
+- Chris confirmed the exact saved public Slack campaign `b54d246b` handoff.
+  The LIVE browser recorded it at 15:00:33 UTC, and an independent database
+  read found 160 of 160 channel subscriptions enabled with observed replies,
+  all starting at the saved 13 October 2026, 09:30 UTC cutoff. The historical
+  campaign is closed as `ongoing`, with no remaining campaign binding or
+  cutoff regression. By 15:02, 20 recurring channel windows existed; one had
+  succeeded, one was running and 18 were queued. This proves handoff and
+  initial scheduler dispatch, not complete recurring-provider acceptance.
+  Individual and group DMs remain excluded.
+  [Handoff readback](evidence/learn-build01-slack-handoff-2026-10-15.json).
 
 ### Needs finishing
 
-- Verify the exact Slack handoff is applied and that recurring channel/reply
-  jobs run successfully. Continue source, interaction, identity, graph, card,
-  scoring, backup and application/Auth recovery checks and observe the first
+- Observe normal recurring Slack channel/reply jobs through completion and
+  later intervals. Continue source, interaction, identity, graph, card,
+  scoring-policy, backup and application/Auth recovery checks and observe the first
   eligible full working day on 16 October.
 
 ### Blocked externally
 
-- The browser requires action-time confirmation for the ongoing Slack scope.
-  Standing backup-reader and recurring encrypted-copy decisions remain pending.
+- Standing backup-reader and recurring encrypted-copy decisions remain pending.
+  Drummonds' scoring criteria and acceptance baseline need business review;
   Chris will review and sign off the final business result.
 
 **15 October, 14:35 UTC — held Workspace mailbox recovered by ordinary scheduled work; Build 01 remains open.**

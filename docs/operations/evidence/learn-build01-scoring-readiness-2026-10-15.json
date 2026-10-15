@@ -1,0 +1,13 @@
+{
+  "version": "learn-build01-scoring-readiness/1",
+  "observedAt": "2026-10-15T14:57:05.048Z",
+  "environment": "LIVE",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "readOnly": true,
+  "savedDefinitions": 0,
+  "publishedPolicies": 0,
+  "scorecardMeasurements": 0,
+  "savedAssessments": 0,
+  "interpretation": "The deployed framework does not establish an accepted Drummonds scoring baseline or a score for any person, team, job or customer. Business policy and source-backed evidence must be reviewed before publication."
+}
