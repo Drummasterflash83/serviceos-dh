@@ -7,6 +7,41 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 16:09 UTC — hosted backup access approved and manual rehearsal corrected; daily activation remains open.**
+
+### Working and verified
+
+- Chris explicitly approved encrypted Actions secrets for the public repository's
+  main-only `serviceos-database-backup` environment. The dedicated production
+  reader, London S3 Writer and separate Restore credentials are present as three
+  environment secret names; values were not read back or committed. The reader's
+  direct TLS and privilege proof remains valid. This standing scope differs from
+  the earlier single-copy authorization and is recorded as such.
+- Chris separately approved the one manual-only workflow on `main`. Its first
+  hosted run (GitHub run `38766107889`) completed checkout but failed in public
+  tool preparation because the Linux runner could not create a macOS `/private`
+  path. The credential-bearing export step was skipped, so it made no source
+  database read or S3 copy. The Linux path fix and its pinned source are on TEST
+  at `aad0070dc1ca152209757628a154c4a478998673`; the corrected manual-only
+  `main` workflow is commit `b42f93e9019a6832cfa09d7b56cd2331a4526a02`.
+  No daily schedule or missed-success workflow is on `main`.
+- The separate local LIVE backup still exports a native archive with the
+  dedicated keyless reader. Its result, isolated restore, encryption and
+  independent off-site copy are pending; this is not a verified daily backup.
+
+### Needs finishing
+
+- Finish the local backup before dispatching another hosted rehearsal, then
+  prove the hosted export, isolated native restore, encrypted London copy,
+  independent download, recovery-key restore and missed-success notification.
+  Activate daily scheduling only after those gates pass. Continue the Slack,
+  source/card/scoring, full application/Auth recovery and full working-day gates.
+
+### Blocked externally
+
+- Chris's Drummonds scoring criteria and final business acceptance remain
+  pending. The first eligible full working-day observation is 16 October.
+
 **15 October, 15:58 UTC — dedicated database reader verified; fresh keyless backup and hosted-runner preparation underway.**
 
 ### Working and verified
