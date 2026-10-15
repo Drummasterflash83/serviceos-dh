@@ -1,0 +1,45 @@
+{
+  "checkedAt": "2026-10-15T10:09:18Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "migration": "20261102300000_learn_quickbooks_401_recovery.sql",
+  "migrationSha256": "54a4faea4c6e59dcc75678062168e4117a7f630306e499b1c8bc522e497ce85c",
+  "test": {
+    "rolledBackSyntheticCases": [
+      "first_401_one_refresh",
+      "second_401_hard_stop",
+      "held_run_single_recovery",
+      "duplicate_recovery_denied"
+    ],
+    "installedBodyAndPermissionsVerified": true
+  },
+  "live": {
+    "installedBodyAndPermissionsVerified": true,
+    "unrelatedQuickBooksFunctionsPreserved": true,
+    "recoveryAccess": "service_role_only",
+    "failedRun": "179f1030-26ea-4c30-83cd-4e05d4d2a62f",
+    "failedAt": "2026-10-15T03:21:01Z",
+    "failedCode": "authentication_required",
+    "savedPagesBeforeRecovery": 210,
+    "controlledRecoveryResult": "queued_for_one_refresh",
+    "refreshGenerationBefore": 10,
+    "refreshGenerationAfter": 11,
+    "refreshSavedAt": "2026-10-15T10:06:03Z",
+    "hostedScanAtReadback": {
+      "state": "running",
+      "pagesSaved": 234,
+      "requestsUsed": 236,
+      "recordsObserved": 23359,
+      "lastError": null
+    },
+    "scanComplete": false
+  },
+  "providerWrites": 0,
+  "accountingWrites": 0,
+  "customerLinksChanged": 0,
+  "limitations": [
+    "The resumed 13-collection cycle has not yet completed or reconciled.",
+    "A repeated 401 after the fresh token is a hard stop requiring investigation.",
+    "Reviewed identity links remain separate from source-labelled customer records."
+  ]
+}
