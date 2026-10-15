@@ -1,0 +1,46 @@
+{
+  "version": "learn-build01-projection-readpath-recovery/1",
+  "observed_at_utc": "2026-10-15T07:30:21Z",
+  "scope": "Drummonds LIVE and TEST retained Phone/Email source-to-interaction read path. No source/provider write, credential change, private payload export, manual job retry or business acceptance.",
+  "observed_failure": {
+    "before_repair_live_rpc": "The exact service-role mixed inventory for a 200-row worker batch returned HTTP 500 / SQLSTATE 57014 after 8.228 seconds. The all-source review count completed in 7.276 seconds.",
+    "ordinary_fifth_attempt_at_0715_utc": {
+      "mixed_batch": "Dead letter, projection_inventory_unconfirmed, zero records processed after five attempts.",
+      "phone_batch": "One retained call was published, then the review read failed; dead letter, projection_inventory_unconfirmed after five attempts. The partial publication has its normal durable receipt and is not presented as a successful batch."
+    },
+    "source_gap_at_0707_utc": "Of 116,064 retained emails, 4,457 eligible emails had no canonical interaction; this gap grew from 2,716 at 06:36 UTC while capture continued."
+  },
+  "review_count_repair": {
+    "migration": "20261103140000_learn_projection_review_current_first.sql",
+    "sha256": "903b13781c0f7c72a30a22d5a7ec627f42fd2784464a6f3ddf14f00422abb482",
+    "test": "A rollback-only synthetic transaction exercised current, superseded, stale-revision and draft-reason review receipts, plus foreign-tenant denial. Old and new counts matched: all 2, Phone 1, Email 1, foreign 0. TEST installation readback matched the rehearsed function digest.",
+    "live": "Rollback rehearsal preserved the exact old counts, all 4,412, Phone 4,399 and Email 13. LIVE installation readback matched the rehearsed function digest and retained the same owner, service-only ACL, security-definer setting and search path.",
+    "live_service_rpc_after": {
+      "phone_count": 4399,
+      "phone_elapsed_ms": 764,
+      "all_count": 4412,
+      "all_elapsed_ms": 643
+    }
+  },
+  "bounded_selector_repair": {
+    "migration": "20261103150000_learn_projection_bounded_review_prefetch.sql",
+    "sha256": "374708462803c62af1390122093c74961a85906816a5101925ec78fb209e19ff",
+    "semantics": "When no source in the first requested unlinked Email page has a review receipt, calculate only that page's revisions. If any does, use the original wider window and exact-revision filtering. Phone selection, cross-source order, draft exclusion and service-only access are retained.",
+    "test": "Rollback-only synthetic comparison across three 230-email tenants, current and stale review holds, Phone merges and different limits matched all 662 ordered rows. TEST installation readback matched.",
+    "live": "Rollback-only comparison of real mixed, Email and Phone pages matched all 400 ordered rows; installation readback matched. Owner, ACL and function settings were unchanged."
+  },
+  "live_typed_origin_specialization": {
+    "migration": "20261103160000_learn_projection_live_typed_origin.sql",
+    "sha256": "121372fa30d9ebb65cf089343325be593c5373da40d93c3d0d4b06cbfb4f5c1d",
+    "schema_guard": "LIVE has nullable email_messages.origin_campaign_id UUID with a tenant-scoped marketing-campaign foreign key. TEST lacks that marketing schema/column, so the specialization is LIVE-only and TEST keeps the semantically equivalent JSON-row compatibility expression.",
+    "live": "Rollback comparison matched all 400 real ordered rows and revisions; installation readback retained owner, ACL and function settings.",
+    "live_service_rpc_after": {
+      "mixed_200_rows": 200,
+      "mixed_elapsed_ms": 3296,
+      "review_count": 4412,
+      "review_elapsed_ms": 1040
+    }
+  },
+  "ordinary_operation_after_repair": "The existing schedule created Phone jobs at 07:25 and 07:30 UTC; they completed with the expected durable projection_review_required hold instead of infrastructure inventory failure. A mixed 200-row job created at 07:20, before the typed-origin specialization, remains retrying and is due at 07:44 UTC. No manual rescue was counted. Fresh full-working-day evidence must restart after this repair and await ordinary mixed-batch success.",
+  "acceptance": "Build 01 remains IN PROGRESS. Fast direct readback and exact equivalence rehearsals do not establish an uninterrupted unattended day, backlog drain, full app/Auth recovery or Chris's business sign-off."
+}
