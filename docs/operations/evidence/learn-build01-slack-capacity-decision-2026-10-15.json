@@ -1,0 +1,40 @@
+{
+  "observedAtUtc": "2026-10-15T22:58:25Z",
+  "environment": "LIVE read-only aggregate and current scheduler/worker source review",
+  "scope": "The same approved 160 public channel and observed-reply subscriptions; DMs excluded",
+  "savedState": {
+    "enabledChannelAndReplySubscriptions": 160,
+    "channelsAdvancedPastHandoffCutoff": 127,
+    "channelsMoreThanOneDayBehind": 100,
+    "retainedMessagesAfterCutoff": 0,
+    "retainedRepliesAfterCutoff": 0,
+    "channelHistoryJobsSucceededLastHour": 41,
+    "replyJobsSucceededLastHour": 39,
+    "pageExhaustedCurrentWindows": 0
+  },
+  "rateProfile": {
+    "currentConnectionBoundInternalProfile": true,
+    "verifiedAtUtc": "2026-10-13T11:06:29.979205Z",
+    "expiresAtUtc": "2026-11-12T11:06:29.979205Z",
+    "pageLimit": 100,
+    "databaseCooldownSeconds": 30,
+    "oneActiveWorkspaceLease": true
+  },
+  "currentFifteenMinuteDesign": {
+    "channelWindowsPerHour": 640,
+    "observedHistoricalParentRoots": 870,
+    "projectedReplyWindowsPerHourIfEveryRootRemainsEligible": 3480,
+    "totalProjectedWindowsPerHourBeforePaginationAndRetries": 4120,
+    "projectionCaveat": "This is a source-derived lower-bound workload if all observed roots remain eligible each window, not measured hourly API calls. It is far above both observed 80 successful jobs/hour and the current 120/hour cooldown ceiling."
+  },
+  "designConclusion": "Faster worker ticks alone cannot make the approved 15-minute all-channel/all-old-thread polling model sustainable. Prepare signed, exact-roster-filtered public-channel Events delivery and periodic reconciliation, or obtain an explicit slower polling freshness target. No choice has been activated.",
+  "providerDocumentation": [
+    "https://docs.slack.dev/apis/web-api/rate-limits/",
+    "https://docs.slack.dev/reference/events/message/",
+    "https://docs.slack.dev/apis/events-api/",
+    "https://docs.slack.dev/authentication/verifying-requests-from-slack/"
+  ],
+  "productionDataWrites": false,
+  "providerRequests": 0,
+  "captureSettingsChanged": false
+}

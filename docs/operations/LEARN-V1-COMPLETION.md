@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 22:58 UTC — Slack catch-up continues; steady-state choice prepared.**
+
+### Working and verified
+
+- The exact 160 approved public-channel/reply subscriptions remain enabled.
+  Saved boundaries past the handoff cutoff rose to 127; 100 channels remain
+  over a day behind. The previous hour completed 41 channel and 39 reply
+  jobs. The internal-app rate profile is current and connection-bound. A
+  [reviewable capacity decision](LEARN-BUILD01-SLACK-ONGOING-CAPACITY.md)
+  sets out signed public-channel Events with reconciliation and a slower
+  polling fallback. No activation or capture change occurred.
+  [Aggregate evidence](evidence/learn-build01-slack-capacity-decision-2026-10-15.json).
+
+### Needs finishing
+
+- No post-cutoff message or reply has yet been retained. At 15-minute windows,
+  channel polling alone projects 640 requests/hour; revisiting the 870 known
+  parent threads could add 3,480 reply windows/hour before pagination. The
+  observed worker rate is about 80 jobs/hour. Choose and prove a sustainable
+  capture design; do not call current catch-up near-live or complete.
+
+### Blocked externally
+
+- Chris's choice between a signed Slack Events setup and an explicitly slower
+  polling target is pending. Independent Build 01 work continues meanwhile.
+
 **15 October, 22:56 UTC — signed-in LIVE capture and scheduling reads recovered.**
 
 ### Working and verified
