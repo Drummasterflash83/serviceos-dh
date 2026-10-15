@@ -98,6 +98,13 @@ try:
     sql(retained_finance)
     sql(source('scripts/verify/learn-quickbooks-retained-finance.assert.sql'))
     print('PASS: paused intake preserves authorised finance reads; master switch, link-write fence, tenant/role/banned-user checks and source history preserved.')
+    hierarchy = source('supabase/migrations/20261104010000_learn_quickbooks_card_hierarchy.sql')
+    finance_before = sql("select md5(pg_get_functiondef('public.learn_quickbooks_customer_finance(uuid,uuid,text,uuid,text)'::regprocedure))")
+    sql(hierarchy.replace('\ncommit;', '\nrollback;'))
+    assert sql("select md5(pg_get_functiondef('public.learn_quickbooks_customer_finance(uuid,uuid,text,uuid,text)'::regprocedure))") == finance_before
+    sql(hierarchy)
+    sql(source('scripts/verify/learn-quickbooks-card-hierarchy.assert.sql'))
+    print('PASS: reviewed native subaccounts, source-conflict and explicit-child-link boundaries, exact totals, duplicate prevention and rollback.')
     sql(source('supabase/migrations/20261102200000_learn_quickbooks_customer_search.sql'))
     sql(source('scripts/verify/learn-quickbooks-customer-search.assert.sql'))
     print('PASS: bounded retained-customer search, literal filters, pagination, role and tenant isolation, no link mutation.')
