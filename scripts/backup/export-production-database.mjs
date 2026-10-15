@@ -228,7 +228,9 @@ try {
   dump.stderr.on('data', chunk => appendFileSync(root + '/dump-stderr.log', chunk, { mode: 0o600 }));
   const exit = once(dump, 'close');
   dump.stdin.end(prefix); login.password = '';
-  const maxDuration = monitoredCapture ? 1800000 : afterSmallUpgrade ? 180000 : 900000;
+  // A measured whole-project archive exceeded 30 minutes at 959 MB. Keep the
+  // bounded read-only snapshot alive long enough to finish without truncation.
+  const maxDuration = monitoredCapture ? 90 * 60000 : afterSmallUpgrade ? 180000 : 900000;
   const stopDump = reason => { report.stopReason = reason; save(); dump.kill('SIGTERM'); };
   const deadline = setTimeout(() => stopDump('maximum_duration_reached'), maxDuration);
   const progress = monitoredCapture ? setInterval(() => {
