@@ -7,6 +7,33 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 19:02 UTC — ordinary Email projection recovered; Graph lag grew.**
+
+### Working and verified
+
+- The existing all-source job's 18:49 ordinary retry processed 200 saved Emails
+  and queued a continuation. Eleven settled batches through 19:00 processed
+  2,200 Emails, each with zero publication failures and a continuation. The
+  eligible saved-Email gap fell from 8,046 at 18:52 to 6,943 at 19:00 despite
+  concurrent capture. All 3,851 active cards then had projection evidence.
+  No manual processing rescue was counted.
+  [Ordinary recovery evidence](evidence/learn-build01-email-projection-ordinary-recovery-2026-10-15.json).
+
+### Needs finishing
+
+- Continue the Email backlog drain and verify sustained arrivals-to-card lag.
+  Eligible interactions missing Graph links rose to 20,702 while Graph's latest
+  job remained retrying. Review holds are retained; a `dead_letter` label on
+  these fully processed batches represents `projection_review_required`, not
+  200 lost publications. The identity retry and Slack recovery also remain open.
+- Observe the scheduled backup/monitor and complete recovery, scoring and full
+  working-day acceptance gates.
+
+### Blocked externally
+
+- The recovery-key/Vault check awaits one available owner Touch ID session;
+  the full working-day observation and Chris's business sign-off remain open.
+
 **15 October, 18:56 UTC — first hosted database copy passed; daily cadence prepared.**
 
 ### Working and verified

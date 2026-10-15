@@ -1,0 +1,31 @@
+{
+  "version": "learn-build01-email-projection-ordinary-recovery/1",
+  "observedAt": "2026-10-15T19:01:49Z",
+  "environment": "LIVE",
+  "trigger": "Existing all-source projection job's fifth ordinary retry at 18:49 UTC",
+  "before": {
+    "at": "2026-10-15T18:52:06Z",
+    "eligibleSavedEmailsWithoutInteraction": 8046,
+    "withoutProjectionReceipt": 8046
+  },
+  "ordinaryRecovery": {
+    "firstSettledAt": "2026-10-15T18:50:20Z",
+    "lastSettledAt": "2026-10-15T19:00:26Z",
+    "settledBatches": 11,
+    "emailProcessed": 2200,
+    "batchesWithZeroPublicationFailures": 11,
+    "batchesWithContinuation": 11,
+    "reviewRequiredLabel": "Older held inputs remain; each full batch preserved review holds while continuing",
+    "manualRescuePerformed": false
+  },
+  "after": {
+    "at": "2026-10-15T19:00:25Z",
+    "eligibleSavedEmailsWithoutInteraction": 6943,
+    "activeCards": 3851,
+    "projectedCards": 3851,
+    "unprojectedCardsOlderThanOneHour": 0,
+    "eligibleInteractionsMissingGraph": 20702
+  },
+  "interpretation": "Projection resumed without manual processing, and its backlog began falling despite concurrent source capture. Graph link lag grew, and one ten-minute recovery window is not a full unattended working day.",
+  "productionWritesByVerification": false
+}
