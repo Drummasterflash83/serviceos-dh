@@ -7,6 +7,41 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 22:23 UTC — saved open-work review released and verified in LIVE.**
+
+### Working and verified
+
+- A fresh marked synthetic TEST owner signed in through actual Auth and the
+  current client adapter returned the saved Open, on-hold and pending jobs while
+  excluding Complete. Anonymous and cross-tenant reads were denied. In the
+  protected `test.openfolk.ai` OpenFolk operator workspace, a logged client
+  selection and reason opened the deployed review panel; the same three jobs
+  appeared with unresolved customer relationships and no automatic link. The
+  completed job was absent. The temporary synthetic authority and login were
+  retired, and independent readback found zero enabled fixture switches,
+  connectors, connections, owner profiles or canonical links.
+  [TEST acceptance](evidence/learn-build01-commusoft-open-work-review-2026-10-15.json).
+- The exact matcher was guardedly released to LIVE with its prior ownership and
+  grants preserved. The three-file frontend candidate passed 18 focused tests,
+  TypeScript, 47 prebuild checks and production build. Git `main` advanced to
+  `b3ccd5c8`; Vercel deployment `dpl_GF8UcgHsJuJ2c6rSvDLQL4UbfwKA` is
+  Ready on all four existing LIVE aliases. In a signed-in Drummonds operator
+  review, connection 19136 and Jobs exposed the saved-status filter; the
+  filtered first page showed on-hold records and no completed records, with
+  explicit provider-lag and relationship-review cautions. No real job was
+  selected or linked. [Release evidence](evidence/learn-build01-commusoft-open-work-review-2026-10-15.json).
+
+### Needs finishing
+
+- The 282 unmatched real
+  non-complete identities still require evidenced human relationship review;
+  the released filter does not complete real job cards or scoring.
+
+### Blocked externally
+
+- Actual Drummonds relationship review and business acceptance remain
+  with the appropriate human reviewer.
+
 **15 October, 22:09 UTC — approved Slack scope exceeds its near-live request budget.**
 
 ### Working and verified
@@ -79,14 +114,14 @@ override a later release observation. No requirement is silently deferred.
 
 ### Needs finishing
 
-- Verify the changed review surface in signed-in TEST before a guarded LIVE
-  backend/frontend release. Existing TEST browser sessions require application
-  sign-in; immediately after alias assignment, an ordinary cached TEST login
-  also loaded an older asset until a fresh release query was used. A human
-  must review source identity and customer
-  relationship before linking the 282 unmatched non-complete jobs; saved
-  statuses do not prove completion or responsible ownership. Broader completed
-  history and communication attribution remain open.
+- The changed review surface subsequently passed signed-in synthetic TEST
+  operator review as recorded at 22:19 UTC above. The guarded LIVE
+  backend/frontend release and real Drummonds relationship review remain.
+  Immediately after the earlier alias assignment, an ordinary cached TEST
+  login loaded an older asset until a fresh release query was used; the later
+  signed-in page showed the new control, but the cache cause is unproven.
+  Saved statuses do not prove completion or responsible ownership. Broader
+  completed history and communication attribution remain open.
 
 ### Blocked externally
 

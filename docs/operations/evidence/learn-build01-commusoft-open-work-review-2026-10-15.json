@@ -1,7 +1,7 @@
 {
   "version": "learn-build01-commusoft-open-work-review/1",
   "observedAtUtc": "2026-10-15T21:50:27Z",
-  "environment": "LIVE read-only source aggregate; isolated local tests; TEST backend and protected frontend release",
+  "environment": "LIVE read-only source aggregate; isolated local tests; TEST and LIVE backend/frontend release",
   "sourceScope": "Latest unambiguous retained Commusoft job observation for the existing Drummonds tenant and connection; no live provider refresh implied",
   "currentSavedSourceStatuses": {
     "completed": { "observedIdentities": 12361, "reviewedCanonicalLinks": 935 },
@@ -30,7 +30,13 @@
     "liveTransactionalCompileAndStatusAssertions": "passed and rolled back",
     "testReleaseExactReadback": "passed; owner, immutable flag, security-definer setting and execute ACL preserved",
     "testIdempotentMigrationReplay": "passed and rolled back",
-    "liveBackendRelease": false,
+    "liveBackendRelease": {
+      "releaseAtUtc": "2026-10-15T22:22:00Z",
+      "functionSha256Before": "60d97ca1e41dda1da948537e10f7898bc003403a3d9fda457b81c25708503e05",
+      "functionSha256After": "b7e606f26f2b8d1f639e32222b4e30cb1996005974ff0889c63a132d7184b8fb",
+      "exactReadback": "passed; owner postgres, immutable flag, no security definer and prior execute ACL preserved",
+      "providerOrBusinessRowWrites": false
+    },
     "testFrontendRelease": {
       "gitCheckpoint": "3bc5678a671d49f28b9b329b841ab3f2fd8714c1",
       "remoteCheckpointHeadVerified": true,
@@ -41,9 +47,39 @@
       "aliases": ["serviceos-learn-test-allkin.vercel.app", "test.openfolk.ai"],
       "aliasAndProtectionReadback": "Both point to exact deployment; all-deployment protection, project domains and production target unchanged",
       "browserReadback": "Both protected aliases opened the OpenFolk login and a fresh release query loaded the exact preview login asset index-BtnUcLNE.js. Immediately after alias assignment, an ordinary cached test.openfolk.ai login still loaded an older asset until the release query was added.",
-      "signedInReview": false
+      "signedInReview": true,
+      "signedInReviewAtUtc": "2026-10-15T22:18:00Z",
+      "signedInReviewScope": "Authenticated OpenFolk operator selected a marked synthetic TEST company with a recorded reason. The deployed review panel showed the saved Open, on-hold and pending jobs, excluded the completed job, retained the relationship-needs-review warning and left linking disabled with zero selections.",
+      "privateFullPageScreenshot": "/private/tmp/learn-build01-test-open-work-browser-full-20261015.png",
+      "privateFullPageScreenshotSha256": "c829c03d6ea68562d68b83fb7be4d8ade6b33a4b2b0d0d177f03e4085c4dcb67"
     },
-    "liveFrontendRelease": false
+    "testHostedSyntheticReview": {
+      "source": "scripts/verify/learn-build01-test-open-work-hosted.mjs",
+      "run": "1e269877-a48a-4ab1-a7c7-628a3069579b",
+      "authAndAdapter": "Fresh synthetic TEST owner sign-in returned exactly three open/on-hold/pending sources and the unfiltered page returned all four, including Complete.",
+      "access": "Anonymous and cross-tenant review requests denied. OpenFolk operator read used explicit selected client and reason.",
+      "fixtureRetirementReadbackAtUtc": "2026-10-15T22:19:57Z",
+      "retainedSyntheticSourceVersions": 4,
+      "enabledFlagsAfter": 0,
+      "enabledConnectorsAfter": 0,
+      "configuredConnectionsAfter": 0,
+      "ownerProfilesAfter": 0,
+      "canonicalSourceLinksCreated": 0,
+      "providerRequests": 0,
+      "productionWrites": false
+    },
+    "liveFrontendRelease": {
+      "gitCommit": "b3ccd5c8408ef0a492bd0862ef2b188796cdd23f",
+      "remoteMainHeadVerified": true,
+      "focusedClientTestsPassed": 18,
+      "typescriptAndProductionBuild": "passed; 47 prebuild checks passed",
+      "vercelDeployment": "dpl_GF8UcgHsJuJ2c6rSvDLQL4UbfwKA",
+      "state": "READY production",
+      "aliasesVerifiedAgainstExactDeployment": ["app.openfolk.ai", "openfolk.ai", "www.openfolk.ai", "serviceos-dh.vercel.app"],
+      "signedInOperatorReview": "Authenticated Drummonds OpenFolk operator selected Commusoft connection 19136, selected Jobs, then the saved open/pending/on-hold filter. The page identified the filter as latest retained status with a provider-lag warning; the returned first page contained on-hold jobs and no completed jobs. No relationship review, selection or link was submitted.",
+      "privateFullPageScreenshot": "/private/tmp/learn-build01-live-open-work-browser-full-20261015.png",
+      "privateFullPageScreenshotSha256": "80cdfd008a616b7b4a9b6add4f411ff4969163a0e3911453d3280bd29f0c3144"
+    }
   },
   "rollback": "Exact TEST and LIVE pre-release matcher definitions are retained privately; guarded rollback checks the installed candidate digest before restoring.",
   "limits": [
@@ -51,7 +87,7 @@
     "A source status does not verify job completion, payment, staff assignment or progress on the ground.",
     "Filtering the review list does not itself confirm any of the 282 unmatched non-complete job identities; an authorised reviewer must inspect and link them through the existing saved batch path.",
     "Ambiguous latest source versions are excluded from this filter and remain accessible through exact-ID review; they are not counted as successful matches.",
-    "Signed-in TEST and LIVE review behavior remains pending; available TEST browser sessions require application sign-in.",
-    "The ordinary stable TEST login initially used an older cached asset after alias assignment; a release query loaded the exact candidate. Cache freshness remains unresolved."
+    "Signed-in TEST synthetic and LIVE Drummonds operator review passed for the saved-status filter. The LIVE first page showed only on-hold statuses; it is not evidence of complete real job matching or full provider freshness.",
+    "The ordinary stable TEST login initially used an older cached asset after alias assignment; a later signed-in TEST operator session showed the new review control. The original cache condition was not independently root-caused."
   ]
 }
