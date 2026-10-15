@@ -35,7 +35,8 @@ export function LearnSlackRecurring({
   const [writable, setWritable] = useState(false),
     [ready, setReady] = useState(false),
     [loading, setLoading] = useState(false),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [checkedAt, setCheckedAt] = useState(0);
   const [pending, setPending] = useState<SavedRecurring | null>(null),
     [reason, setReason] = useState(""),
     [reviewed, setReviewed] = useState(false);
@@ -79,6 +80,7 @@ export function LearnSlackRecurring({
       setChannels((old) => (after ? [...old, ...page.channels] : page.channels));
       setNext(page.next);
       setWritable(page.canWrite);
+      setCheckedAt(Date.now());
       if (!after) setAccount((old) => old || page.channels[0]?.accountId || "");
     } catch (e) {
       if (ticket === generation.current) {
@@ -257,6 +259,28 @@ export function LearnSlackRecurring({
           <p>
             <strong>Progress:</strong> {recurringStates[selected.state]}
           </p>
+          {selected.nextStart ? (
+            <div className="rounded border p-3 space-y-1" role="status">
+              <p>
+                <strong>Next unchecked channel time:</strong>{" "}
+                {new Date(selected.nextStart).toLocaleString()}
+              </p>
+              {checkedAt > Date.parse(selected.nextStart) + 60 * 60 * 1000 ? (
+                <p>
+                  Saved channel coverage is more than an hour behind this check. Later messages and
+                  replies may still be missing; review window and thread progress before relying on
+                  this channel as current.
+                </p>
+              ) : (
+                <p>
+                  Messages and replies after this time may still be missing until their windows
+                  finish.
+                </p>
+              )}
+            </div>
+          ) : selected.enabled ? (
+            <p role="status">Saved channel coverage time is unavailable. Check source progress.</p>
+          ) : null}
           {selected.updatedAt && (
             <p>Last recorded update: {new Date(selected.updatedAt).toLocaleString()}</p>
           )}
