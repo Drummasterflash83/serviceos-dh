@@ -1,0 +1,56 @@
+{
+  "version": "learn-build01-slack-test-parity/1",
+  "observed_at_utc": "2026-10-15T07:03:44Z",
+  "scope": "TEST Slack exact-page recovery, source-only classification and worker parity for the existing approved channel campaigns. No Slack DM scope, provider write, source record edit, credential change, queued job, or capture handoff.",
+  "project_ref": "saatxzwxvdvqevbnskxy",
+  "starting_state": {
+    "campaign_recovery_present": false,
+    "source_review_huddle_thread_present": false,
+    "source_withholding_guard_present": false,
+    "worker_version": 13,
+    "worker_verify_jwt": true,
+    "slack_queue_pending": 0
+  },
+  "database_release": {
+    "method": "Two exact multi-migration transactions were separately rollback-rehearsed, then installed and read back in TEST. The already-installed capability reader was retained.",
+    "exact_recovery_migrations": [
+      "20261101930000_learn_slack_campaign_recovery.sql",
+      "20261103120000_learn_slack_campaign_exact_recovery_renewal.sql",
+      "20261103130000_learn_slack_campaign_unclassified_exact_retry.sql"
+    ],
+    "source_review_migrations": [
+      "20261101920000_learn_slack_campaign_source_replay.sql",
+      "20261101940000_learn_slack_source_review.sql",
+      "20261101950000_learn_slack_recovery_continuation.sql",
+      "20261101960000_learn_slack_source_withheld.sql",
+      "20261101990000_learn_slack_observed_canvas_source.sql",
+      "20261102090000_learn_slack_observed_huddle_source.sql",
+      "20261103110000_learn_slack_observed_huddle_thread_source.sql"
+    ],
+    "readback": {
+      "recovery_function_present": true,
+      "generic_failure_exact_retry_present": true,
+      "renewal_guard_present": true,
+      "recovery_continuation_present": true,
+      "huddle_thread_kind": "source_needs_review",
+      "tombstone_kind": "source_withheld",
+      "withholding_policy_restrictive": true,
+      "authenticated_recovery_write_denied": true,
+      "authenticated_recovery_read_available": true,
+      "authenticated_receipt_table_read_denied": true
+    }
+  },
+  "worker_release": {
+    "name": "learn-slack-worker",
+    "version_before": 13,
+    "version_after": 14,
+    "source": "Exact LIVE-proven v15 ESZIP, with project URL and service credential supplied by the TEST runtime environment.",
+    "artifact_sha256": "29595aa004b2b7081dfa7db7623ea63295d110a8ef8f85ec9a36d368af5fd348",
+    "wire_sha256": "041b70e24f4ef179f42f03b08ea32f54ddd4e42796a5032627ad822a14fffe77",
+    "previous_artifact_sha256": "b908bf488f375e03be7265fcb1ba73d4ba7078e6b0ed7d44aa50010f632ead77",
+    "verify_jwt": true,
+    "unrelated_functions_unchanged": 40,
+    "hosted_artifact_readback": true
+  },
+  "remaining": "TEST source and worker backend parity is verified for this narrow Slack recovery path. A signed-in TEST operator retry, stable frontend promotion, the second held LIVE channel, ordinary ongoing channel capture, full working-day proof and Build 01 business acceptance remain outstanding."
+}
