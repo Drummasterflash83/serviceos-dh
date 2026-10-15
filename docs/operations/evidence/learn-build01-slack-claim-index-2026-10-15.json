@@ -1,0 +1,49 @@
+{
+  "version": "learn-build01-slack-active-claim-index/1",
+  "observed_at_utc": "2026-10-15T09:37:00Z",
+  "status": "test_live_index_installed_post_index_ordinary_claims_observed_full_day_pending",
+  "trigger": {
+    "approved_campaign_channel": "C0CE2L0BA",
+    "queued_page": "A single LIVE history page created at 09:10:05 UTC remained unclaimed until 09:24:09 UTC. No other active history or reply job was ahead of it at readback.",
+    "runtime_window": "The 09:10–09:20 UTC Edge log window recorded four learn-slack-worker HTTP 503 responses; the platform worker and Slack scheduler also had successful invocations. The 503 response bodies and exact failing SQL stage were not established.",
+    "live_claim_plan_before": {
+      "execution_ms": 7121.663,
+      "plan": "A bitmap scan used the broad platform_jobs_tenant_type_idx and tenant-status indexes before rejecting the one available row. The tenant/type index phase alone took 6,769 ms.",
+      "platform_jobs_rows": 276539
+    },
+    "ordinary_recovery_before_index": "Without a manual worker invocation, the queued page eventually succeeded at 09:24:18 UTC with 100 records on its first claim; its next ordinary page succeeded at 09:25:18 UTC with another 100 records. The delay remains unacceptable for unattended readiness."
+  },
+  "change": {
+    "migration": "supabase/migrations/20261103190000_learn_slack_active_claim_index.sql",
+    "source_sha256": "e38b688fb2589c5837050f22dd11cd28e56c9ba8b08b7045cfd7d073328caffd",
+    "scope": "Partial index only for queued, retrying or running Slack history/reply jobs. Claim function, campaign authority, priority, pacing, source visibility and provider scope are unchanged.",
+    "source_data_writes": false,
+    "access_grants_changed": false
+  },
+  "verification": {
+    "test": {
+      "project_ref": "saatxzwxvdvqevbnskxy",
+      "baseline_claim_function_md5": "fe9afac1a87f256b90d274c63805aa83",
+      "rollback_rehearsal": "The exact index was created within a transaction; the installed TEST claim plan selected it. Rollback removed the index and preserved all 4,274 platform jobs and the claim function.",
+      "installed_readback": "Index present, 4,274 platform jobs retained, claim function unchanged.",
+      "post_install_plan_ms": 3.454,
+      "post_install_index": "learn_slack_active_claim_idx"
+    },
+    "live": {
+      "project_ref": "tgbnakbxwcqjeimygroz",
+      "baseline_claim_function_md5": "ed0b67d6b68d134a0dde49621b30ceff",
+      "rollback_rehearsal": "The exact index was created within a transaction; the installed LIVE claim plan selected it. Rollback removed the index and preserved all 276,539 platform jobs and the claim function.",
+      "installed_readback": "Index present, 276,539 platform jobs retained, claim function unchanged.",
+      "post_install_plan_ms": 0.166,
+      "post_install_index": "learn_slack_active_claim_idx",
+      "campaign_at_09_36_utc": "The approved channel remained window_active with zero campaign needs-review channels and one ordinary continuation, 11,083 of 20,000 requests reserved.",
+      "post_index_ordinary_jobs": "Three consecutive history pages created at 09:33:12, 09:34:12 and 09:35:11 UTC were claimed by ordinary work at 09:34:01, 09:35:01 and 09:36:01 UTC. Each succeeded on attempt one with 100 processed records and queued its next continuation. No manual invocation was used.",
+      "post_index_worker_logs": "In the 09:32–09:37 UTC sanitized Edge log window, the Slack worker had one HTTP 503 at 09:32:09 before the installed index and two HTTP 200 responses by 09:35:11. Logs can arrive late; this is a short observation, not full-day reliability proof."
+    }
+  },
+  "limitations": [
+    "The slow claim plan is a proven timeout hazard and the short post-index window has ordinary successes, but the exact cause of each earlier 503 was not recovered from the response body. Continue observing sustained worker health before attributing all recovery to this index.",
+    "TEST and LIVE claim functions differ in the pre-existing campaign dispatch-priority expression; the index is used in both, but the functions were not made identical by this change.",
+    "The entire 160-channel campaign, replies, a full untouched working day and Chris's business acceptance are still open."
+  ]
+}

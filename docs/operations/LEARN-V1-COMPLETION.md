@@ -7,6 +7,41 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 09:36 UTC — active Slack claim scan narrowed in TEST/LIVE.**
+
+### Working and verified
+
+- A LIVE Slack history page waited about 14 minutes to be claimed while four
+  dedicated-worker requests returned HTTP 503. The exact read-only claim plan
+  took 7.12 seconds across a broad retained-job index. A partial index limited
+  to active Slack history/reply work passed rollback rehearsals, then was
+  installed separately in TEST and LIVE. The equivalent claim plans now take
+  3.45 ms in TEST and 0.17 ms in LIVE, with unchanged claim functions, job
+  counts, approval policy, source scope and access. The held page and its next
+  ordinary continuation each delivered 100 records without a manual worker
+  invocation before the index release. At 09:36 UTC the approved campaign still
+  had zero needs-review channels, one active continuation and 11,083 of 20,000
+  requests reserved. Three fresh post-index history pages then each claimed in
+  the next ordinary minute and succeeded on attempt one with 100 records. The
+  short post-index Edge window had two Slack-worker HTTP 200 responses after a
+  pre-install 503.
+
+### Needs finishing
+
+- Continue observing post-index jobs and dedicated-worker health through the
+  full required window; the exact cause of the earlier 503 responses remains
+  unproven. Finish eligible channel history and replies within the approved
+  campaign, preserving DM exclusion and review holds. Broader source/card/
+  scoring coverage, full application/Auth restore and a real uninterrupted
+  working day still require evidence. Chris's business sign-off is outstanding.
+
+### Blocked externally
+
+- Chris will review and sign off only after the technical and operational
+  evidence pack is ready. Build 02 remains inactive.
+
+[Active Slack claim index evidence](evidence/learn-build01-slack-claim-index-2026-10-15.json).
+
 **15 October, 09:14 UTC — identity Phone selection narrowed; broader V1 work remains.**
 
 ### Working and verified
