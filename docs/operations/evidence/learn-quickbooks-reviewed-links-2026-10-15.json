@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-10-15T10:28:44Z",
+  "environment": "production",
+  "project": "tgbnakbxwcqjeimygroz",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "reviewedCustomerLinks": {
+    "total": 13,
+    "distinctCards": 13,
+    "addedOn15October": 8,
+    "decisionRoute": "signed-in OpenFolk operator customer-card review UI",
+    "corroboration": "unique current Commusoft and QuickBooks source pair; exact normalized customer name, email, phone and full recorded address; existing card title agrees",
+    "sourceConflictOrIdentityDriftAccepted": false,
+    "automaticallyMatched": false
+  },
+  "signedInLiveCardChecks": {
+    "newCardsWithCommusoftJobsAndQuickBooksFinance": 7,
+    "newCardWithReviewedAccountingIdentityAndNoDirectFinance": 1,
+    "examples": [
+      { "commusoftJobs": 3, "quickbooksFinancialRecords": 6 },
+      { "commusoftJobs": 2, "quickbooksFinancialRecords": 4 },
+      { "commusoftJobs": 3, "quickbooksFinancialRecords": 4 },
+      { "commusoftJobs": 2, "quickbooksFinancialRecords": 4 },
+      { "commusoftJobs": 2, "quickbooksFinancialRecords": 4 },
+      { "commusoftJobs": 1, "quickbooksFinancialRecords": 2 },
+      { "commusoftJobs": 1, "quickbooksFinancialRecords": 2 }
+    ],
+    "jobToInvoiceAttributionClaimed": false
+  },
+  "quickbooksSource": {
+    "latestVersionsAcrossApprovedCollections": 134705,
+    "unresolvedConflicts": 0
+  },
+  "thirdRecurringScanAtReadback": {
+    "state": "queued",
+    "savedPages": 410,
+    "requestsUsed": 411,
+    "recordsObserved": 40911,
+    "lastError": null,
+    "complete": false
+  },
+  "limitations": [
+    "This evidence does not prove complete customer matching or historical accounting reconciliation.",
+    "The third recurring scan must complete and the next unattended cycle must be checked.",
+    "QuickBooks transactions are linked to reviewed customers, not to individual Commusoft jobs."
+  ]
+}
