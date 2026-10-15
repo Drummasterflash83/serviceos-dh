@@ -5,6 +5,8 @@ import {
   type RecoveryScope,
 } from "./learn-slack-recovery-outbox.ts";
 export type WorkKind = "site" | "job" | "contact";
+export const OPEN_WORK_QUERY = "status:open-work";
+const OPEN_SOURCE_STATUSES = new Set(["Open", "ongoing", "pending", "on_hold"]);
 type Outcome =
   | { state: "held"; reason: string; attempt_id?: string }
   | {
@@ -257,6 +259,7 @@ export async function loadWorkPage(
     !uuid(tenant) ||
     !uuid(connection) ||
     !["site", "job", "contact"].includes(kind) ||
+    (query === OPEN_WORK_QUERY && kind !== "job") ||
     (after !== null && !/^\d{1,16}$/.test(after))
   )
     throw failure();
@@ -305,7 +308,8 @@ export async function loadWorkPage(
       r.title.length > 1000 ||
       typeof r.selectable !== "boolean" ||
       (r.selectable && !uuid(r.version_id)) ||
-      ![r.property_reference, r.customer_name, r.relationship_reason, r.source_status].every(text)
+      ![r.property_reference, r.customer_name, r.relationship_reason, r.source_status].every(text) ||
+      (query === OPEN_WORK_QUERY && !OPEN_SOURCE_STATUSES.has(r.source_status ?? ""))
     )
       throw failure();
     if (

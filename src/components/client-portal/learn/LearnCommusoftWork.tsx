@@ -18,6 +18,7 @@ import {
   workHoldMessage,
   workTimingMessage,
   workOutboxKey,
+  OPEN_WORK_QUERY,
   type WorkDraft,
   type WorkKind,
   type WorkReceipt,
@@ -118,7 +119,7 @@ export function LearnCommusoftWork({
     reset();
     const result = await loadWorkPage(db, tenantId, id, type, cursors[cursors.length - 1], query);
     if (!current(ticket)) return;
-    setSourceSearch(query);
+    setSourceSearch(query === OPEN_WORK_QUERY ? "" : query);
     setAppliedSearch(query);
     setRows(result.rows);
     setNext(result.next);
@@ -384,7 +385,11 @@ export function LearnCommusoftWork({
           <>
             <RetainedSourceSearch
               value={sourceSearch}
-              applied={appliedSearch}
+              applied={
+                appliedSearch === OPEN_WORK_QUERY
+                  ? "saved open, pending and on-hold jobs"
+                  : appliedSearch
+              }
               hint={
                 kind === "job"
                   ? "Find by job number, property number or description"
@@ -398,6 +403,24 @@ export function LearnCommusoftWork({
               }}
               onSearch={(query) => void operation((t) => page(connection, kind, [null], t, query))}
             />
+            {kind === "job" && (
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  className="cp-secondary"
+                  disabled={appliedSearch === OPEN_WORK_QUERY}
+                  onClick={() =>
+                    void operation((t) => page(connection, "job", [null], t, OPEN_WORK_QUERY))
+                  }
+                >
+                  Show saved open, pending and on-hold jobs
+                </button>
+                <p className="text-sm">
+                  Uses the latest retained Commusoft status. Each job and customer relationship
+                  still needs review; this does not confirm live progress or completion.
+                </p>
+              </div>
+            )}
             <ul className="space-y-3" aria-label="Retained sites, jobs and contacts">
               {rows.map((r) => (
                 <li className="cp-card" key={r.external_id}>
