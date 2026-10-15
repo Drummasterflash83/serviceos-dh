@@ -40,6 +40,13 @@ do $$declare r jsonb;s jsonb;begin
  assert jsonb_array_length(learn_commusoft_work_review_search(fixture_id(1),fixture_id(5),'job','100% _')->'rows')=1;
  assert jsonb_array_length(learn_commusoft_work_review_search(fixture_id(1),fixture_id(5),'job','%invalid%')->'rows')=0;
  assert jsonb_array_length(learn_commusoft_work_review_search(fixture_id(1),fixture_id(5),'job','800001')->'rows')=3;
+ r:=learn_commusoft_work_review_search(fixture_id(1),fixture_id(5),'job','status:open-work','800100',1);
+ assert r->>'search'='status:open-work' and r->'rows'->0->>'external_id'='800101'
+  and r->'rows'->0->>'source_status'='ongoing' and r->>'next_cursor'='800101';
+ s:=learn_commusoft_work_review_search(fixture_id(1),fixture_id(5),'job','status:open-work',r->>'next_cursor',1);
+ assert s->'rows'->0->>'external_id'='800103';
+ r:=learn_commusoft_work_review_search(fixture_id(1),fixture_id(5),'job','status:open-work','800103');
+ assert not exists(select 1 from jsonb_array_elements(r->'rows') x where x->>'external_id' in ('800105','800106'));
  assert learn_commusoft_work_review_search(fixture_id(1),fixture_id(5),'site','52 Oak')->'rows'->0->>'external_id'='800004';
  r:=learn_commusoft_work_review_search(fixture_id(1),fixture_id(5),'contact','site@example.invalid');
  assert r->'rows'->0->>'external_id'='501' and jsonb_array_length(r->'rows'->0->'contact'->'phones')=3;

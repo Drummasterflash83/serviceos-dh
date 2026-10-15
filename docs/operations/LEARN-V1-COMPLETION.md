@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 21:55 UTC — non-complete Commusoft jobs identified for review.**
+
+### Working and verified
+
+- A read-only LIVE latest-observation aggregate found 211 ongoing, 69 on-hold
+  and eight pending retained Commusoft job identities. Only six of those 288
+  have reviewed canonical job links. The existing operator/client review
+  search now has a bounded saved-status filter installed in TEST; its exact
+  function digest, ownership and grants passed readback. An isolated Postgres
+  suite, 13 client tests, TypeScript and the production build pass. The filter
+  does not automatically link a job or change provider data.
+  [Review evidence](evidence/learn-build01-commusoft-open-work-review-2026-10-15.json).
+
+### Needs finishing
+
+- Verify the changed review surface in signed-in TEST before a guarded LIVE
+  backend/frontend release. A human must review source identity and customer
+  relationship before linking the 282 unmatched non-complete jobs; saved
+  statuses do not prove completion or responsible ownership. Broader completed
+  history and communication attribution remain open.
+
+### Blocked externally
+
+- No additional provider permission is needed for this read-only filter.
+  Actual business review and Commusoft completion-time meaning remain open.
+
 **15 October, 21:45 UTC — saved job status is explicit in LIVE cards.**
 
 ### Working and verified

@@ -1,0 +1,45 @@
+{
+  "version": "learn-build01-commusoft-open-work-review/1",
+  "observedAtUtc": "2026-10-15T21:50:27Z",
+  "environment": "LIVE read-only source aggregate; isolated local tests; TEST backend release",
+  "sourceScope": "Latest unambiguous retained Commusoft job observation for the existing Drummonds tenant and connection; no live provider refresh implied",
+  "currentSavedSourceStatuses": {
+    "completed": { "observedIdentities": 12361, "reviewedCanonicalLinks": 935 },
+    "ongoing": { "observedIdentities": 211, "reviewedCanonicalLinks": 5 },
+    "onHold": { "observedIdentities": 69, "reviewedCanonicalLinks": 0 },
+    "pending": { "observedIdentities": 8, "reviewedCanonicalLinks": 1 },
+    "nonCompleteCohort": { "observedIdentities": 288, "reviewedCanonicalLinks": 6, "awaitingReviewedLink": 282 }
+  },
+  "change": {
+    "source": "supabase/migrations/20261103220000_learn_commusoft_open_work_review_filter.sql",
+    "frontend": "src/components/client-portal/learn/LearnCommusoftWork.tsx",
+    "behavior": "Existing review search can return latest saved Open, ongoing, pending and on-hold job sources before bounded pagination. A proposed button labels this as saved source status and retains the existing human review action.",
+    "providerWrites": false,
+    "automaticCanonicalLinks": false,
+    "newAccessGrant": false
+  },
+  "verification": {
+    "focusedClientTestsPassed": 13,
+    "isolatedPostgresReviewSearchSuite": "passed, including latest-source pagination, ambiguous-source exclusion, tenant and role boundaries, rollback and source/canonical preservation",
+    "typescript": "passed",
+    "productionBuildAnd47PrebuildChecks": "passed",
+    "testFunctionSha256Before": "60d97ca1e41dda1da948537e10f7898bc003403a3d9fda457b81c25708503e05",
+    "testFunctionSha256After": "b7e606f26f2b8d1f639e32222b4e30cb1996005974ff0889c63a132d7184b8fb",
+    "liveFunctionSha256Before": "60d97ca1e41dda1da948537e10f7898bc003403a3d9fda457b81c25708503e05",
+    "testTransactionalCompileAndStatusAssertions": "passed and rolled back",
+    "liveTransactionalCompileAndStatusAssertions": "passed and rolled back",
+    "testReleaseExactReadback": "passed; owner, immutable flag, security-definer setting and execute ACL preserved",
+    "testIdempotentMigrationReplay": "passed and rolled back",
+    "liveBackendRelease": false,
+    "testFrontendRelease": false,
+    "liveFrontendRelease": false
+  },
+  "rollback": "Exact TEST and LIVE pre-release matcher definitions are retained privately; guarded rollback checks the installed candidate digest before restoring.",
+  "limits": [
+    "These counts describe latest retained source observations, not Commusoft's complete current universe.",
+    "A source status does not verify job completion, payment, staff assignment or progress on the ground.",
+    "Filtering the review list does not itself confirm any of the 282 unmatched non-complete job identities; an authorised reviewer must inspect and link them through the existing saved batch path.",
+    "Ambiguous latest source versions are excluded from this filter and remain accessible through exact-ID review; they are not counted as successful matches.",
+    "Signed-in TEST and LIVE frontend behavior remains pending."
+  ]
+}

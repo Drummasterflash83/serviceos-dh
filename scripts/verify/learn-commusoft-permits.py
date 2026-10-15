@@ -184,6 +184,16 @@ try:
                     sql(planning)
                     assert sql(contract)==prior_contract,'Search planning changed body, grants or owner'
                     assert sql("select proconfig @> array['plan_cache_mode=force_custom_plan'] from pg_proc where oid="+reader)=='t'
+                    active=(root/'supabase/migrations/20261103220000_learn_commusoft_open_work_review_filter.sql').read_text()
+                    matcher="'public.learn_commusoft_source_matches(jsonb,text,text,text)'::regprocedure"
+                    matcher_def="select pg_get_functiondef("+matcher+");"
+                    matcher_meta="select proacl::text,pg_get_userbyid(proowner),provolatile,prosecdef from pg_proc where oid="+matcher
+                    previous_matcher,previous_meta=sql(matcher_def),sql(matcher_meta)
+                    sql(active.replace('\ncommit;', '\nrollback;'))
+                    assert sql(matcher_def)==previous_matcher,'Open-work filter rollback changed matcher'
+                    sql(active)
+                    assert sql(matcher_def)!=previous_matcher,'Open-work filter did not install'
+                    assert sql(matcher_meta)==previous_meta,'Open-work filter changed matcher authority'
                     print(sql((root/'scripts/verify/learn-commusoft-review-search.assert.sql').read_text()))
                     sql('begin;'+(root/'scripts/verify/learn-review-search-hosted.assert.sql').read_text()+'rollback;')
                     print('PASS: exact hosted search matcher/permission probe')

@@ -8,6 +8,7 @@ import {
   readWorkDraft,
   resolveWorkDraft,
   workOutboxKey,
+  OPEN_WORK_QUERY,
   type WorkDraft,
 } from "./learn-commusoft-work.ts";
 import type { ReviewClient } from "./learn-commusoft-review.ts";
@@ -234,6 +235,50 @@ test("source pages enforce scope, cursor order and typed display fields", async 
     { rows: [{ ...row, customer_name: { private: true } }] },
   ])
     await assert.rejects(loadWorkPage(db({ ...page, ...changed }), id(1), id(4), "job"));
+});
+
+test("open-work review refuses stale or completed rows and keeps the same tenant scope", async () => {
+  const source = {
+    external_id: "101",
+    version_id: id(5),
+    title: "Synthetic open job",
+    property_reference: "1",
+    customer_name: "Synthetic customer",
+    relationship_reason: null,
+    source_status: "ongoing",
+    linked_version_id: null,
+    last_result: null,
+    selectable: true,
+  };
+  const response = {
+    tenant_id: id(1),
+    connection_id: id(4),
+    kind: "job",
+    search: OPEN_WORK_QUERY,
+    rows: [source],
+    next_cursor: null,
+  };
+  const client: ReviewClient = {
+    rpc: async (name, args) => {
+      assert.equal(name, "learn_commusoft_work_review_search");
+      assert.equal(args.p_tenant, id(1));
+      assert.equal(args.p_connection, id(4));
+      assert.equal(args.p_search, OPEN_WORK_QUERY);
+      return { data: response, error: null };
+    },
+  };
+  assert.deepEqual(
+    (await loadWorkPage(client, id(1), id(4), "job", null, OPEN_WORK_QUERY)).rows,
+    [source],
+  );
+  const changed = (data: unknown): ReviewClient => ({ rpc: async () => ({ data, error: null }) });
+  await assert.rejects(
+    loadWorkPage(changed({ ...response, rows: [{ ...source, source_status: "completed" }] }), id(1), id(4), "job", null, OPEN_WORK_QUERY),
+  );
+  await assert.rejects(
+    loadWorkPage(changed({ ...response, tenant_id: id(99) }), id(1), id(4), "job", null, OPEN_WORK_QUERY),
+  );
+  await assert.rejects(loadWorkPage(client, id(1), id(4), "site", null, OPEN_WORK_QUERY));
 });
 
 test("contact summaries retain multiple source phones and reject incomplete contact projections", async () => {
