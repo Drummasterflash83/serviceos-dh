@@ -1,0 +1,68 @@
+{
+  "version": "learn-build01-midday-source-review/1",
+  "observed_at_utc": "2026-10-15T11:46:56Z",
+  "environment": "LIVE read-only management SQL and signed-in OpenFolk operator workspace",
+  "source_to_card_snapshot_at_utc": "2026-10-15T11:39:31.952Z",
+  "source_to_card": {
+    "email_messages": 128342,
+    "eligible_email_without_interaction": 4762,
+    "phone_calls": 4561,
+    "phone_interactions": 4561,
+    "slack_messages": 37850,
+    "slack_interactions": 35043,
+    "eligible_interactions_without_graph_node": 18662,
+    "active_cards": 3744,
+    "cards_with_projection_evidence": 3735,
+    "active_gmail_aliases": 2,
+    "ready_gmail_aliases": 2
+  },
+  "ordinary_work": {
+    "two_hour_successful_email_jobs": 432,
+    "two_hour_successful_email_records": 5511,
+    "two_hour_successful_graph_jobs": 42,
+    "two_hour_successful_card_jobs": 69,
+    "identity_review_required_jobs_last_two_hours": 52,
+    "identity_records_processed_in_review_required_jobs": 5874,
+    "projection_review_required_jobs_last_two_hours": 46,
+    "interaction_records_processed_in_review_required_jobs": 4417,
+    "material_retry_at_observation": [
+      "graph_sync_error",
+      "identity_inventory_unconfirmed",
+      "projection_inventory_unconfirmed"
+    ]
+  },
+  "active_email_hold": {
+    "affected_accounts": 1,
+    "mailbox_type": "user",
+    "account_and_mailbox_active": true,
+    "mailbox_unique_and_sync_enabled": true,
+    "connection_active_domain_matched_and_verified": true,
+    "recent_checkpoint_state": "blocked",
+    "checkpoint_block_code": "persistence_failed",
+    "checkpoint_last_updated_at_utc": "2026-10-15T04:54:04.750854Z",
+    "failed_attempt_persistence_evidence": "unknown",
+    "source_ineligible_jobs_last_two_hours": 15,
+    "safe_recovery_applied": false
+  },
+  "signed_in_operator_workspace": {
+    "client_label": "Drummond Heating",
+    "capture_switches": "LEARN, Email, Phone and Slack recorded On",
+    "capture_status_panel": "unavailable after refresh",
+    "scheduling_status_panel": "could not be verified",
+    "voicemail": "some retained mailbox routes are paused for source or route review",
+    "ongoing_slack": "the selected public channel is not enabled for incremental capture"
+  },
+  "offsite_database_checkpoint": {
+    "encrypted_upload_and_separate_full_download": true,
+    "isolated_offsite_restore_verified": false,
+    "latest_recovery_only_failure_stage": "escrow-readback",
+    "restore_started": false
+  },
+  "limits": [
+    "Review-required terminal jobs processed records and must not be counted as total processing failure; their held rows still require evidence review.",
+    "One active mailbox is genuinely blocked despite valid recorded authority. A guarded recovery and ordinary follow-up capture are still required.",
+    "A read-only point-in-time snapshot is not a full unattended working day or source/card/scoring acceptance.",
+    "The browser health-panel failure is not evidence that all source capture stopped; it is a separate operator-visibility gap."
+  ],
+  "production_data_writes": false
+}
