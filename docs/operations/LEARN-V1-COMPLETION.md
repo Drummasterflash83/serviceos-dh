@@ -25,6 +25,11 @@ override a later release observation. No requirement is silently deferred.
   audit found 30,014 Slack `direction_unverified` and 13,872 Email
   `company_ambiguous` rows, plus smaller unverified/missing/ambiguous email
   groups. None warrants inferred attribution.
+- A LIVE recovery inventory found one active Edge Function without source in
+  this checkout: `phone-operations` v16. Its exact four-file source tree is now
+  retained in the repository recovery archive after comparison with a private
+  read-only download of the deployed source. This closes one source-code gap,
+  not the full application/Auth restore.
 
 ### Needs finishing
 
@@ -35,6 +40,9 @@ override a later release observation. No requirement is silently deferred.
   failures invalidate that period as a full unattended working day.
 - Finish the wider source, scoring, recovery, signed-in release and human
   acceptance gates in the Build 01 receipt. Chris has not signed off.
+- Auth settings, signing-key material, runtime secrets, isolated Auth/frontend
+  startup and controlled capture resumption still require independent recovery
+  proof; the database archive alone cannot supply them.
 
 ### Blocked externally
 
@@ -44,6 +52,7 @@ override a later release observation. No requirement is silently deferred.
   signed-in TEST retry and matching stable TEST/LIVE frontend release remain open.
 
 [Ordered Email scan and ordinary-run evidence](evidence/learn-build01-projection-ordered-anti-join-2026-10-15.json).
+[Runtime recovery inventory](evidence/learn-build01-runtime-recovery-inventory-2026-10-15.json).
 
 **14 October, 22:41 UTC — frontend and bounded graph release verified; Gmail alias resumed.**
 

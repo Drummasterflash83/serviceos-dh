@@ -1,0 +1,45 @@
+{
+  "version": "learn-build01-runtime-recovery-inventory/1",
+  "at": "2026-10-15T07:55:47Z",
+  "environment": "LIVE",
+  "method": "Read-only Supabase Management API inventory; no secret values printed or saved",
+  "auth": {
+    "siteUrl": "https://app.openfolk.ai",
+    "redirectCount": 3,
+    "emailProviderEnabled": true,
+    "mailerAutoconfirm": false,
+    "smtpConfigured": false,
+    "jwtExpirySeconds": 3600,
+    "signingKeys": [
+      { "algorithm": "HS256", "status": "previously_used" },
+      { "algorithm": "ES256", "status": "in_use" }
+    ]
+  },
+  "edgeFunctions": {
+    "active": 101,
+    "verifyJwtFalse": 60,
+    "missingEntryPointBeforeRecoveryArchive": "phone-operations",
+    "sharedHandlerNotDeployed": "data-import",
+    "phoneOperations": {
+      "version": 16,
+      "verifyJwt": false,
+      "bundleSha256": "3253bb7078b9d4e7fa445b96b34e04a4f0c47a8dcd4512b4bf361c82def0d1bd",
+      "sourceArchive": "infrastructure/recovery/edge-functions/phone-operations-v16/functions",
+      "archiveSourceCommit": "b0d4b5f",
+      "downloadedLiveSourceAstMatch": {
+        "entrypointNodes": 1714,
+        "phoneOperationsHelperNodes": 644,
+        "authzHelperNodes": 515,
+        "simwoodHelperNodes": 927,
+        "allFourMatched": true
+      },
+      "embeddedCredentialPatternMatches": 0
+    }
+  },
+  "notProven": [
+    "The Auth configuration, active signing key and runtime secret values are not independently escrowed by this inventory.",
+    "No isolated Auth service or frontend has been started against the independently restored database.",
+    "No controlled capture resumption or full application login has been rehearsed.",
+    "The source archive is exact for one active Edge Function but does not package all 101 deployed artifacts."
+  ]
+}
