@@ -3,7 +3,8 @@ import { savedCliToken, TEST_PROJECT } from "./learn-test-readiness.mjs";
 
 const mode = process.argv.slice(2).join(" ");
 if (!["--live-read-only", "--test-read-only", "--test-candidate-read-only",
-  "--live-candidate-read-only"].includes(mode))
+  "--live-candidate-read-only", "--test-safe-claim-read-only",
+  "--live-safe-claim-read-only"].includes(mode))
   throw Error("Exact read-only mode required");
 const project = mode.endsWith("-live-read-only") || mode.startsWith("--live-")
   ? "tgbnakbxwcqjeimygroz" : TEST_PROJECT;
@@ -19,6 +20,8 @@ const query = `select jsonb_build_object(
     and q.proname='email_ingestion_transition_v2'),
   'syntheticFixtureAbsent',not exists(select 1 from public.tenants
     where id='ec390000-cccc-4000-8000-000000000001'),
+  'safeClaimFixtureAbsent',not exists(select 1 from public.tenants
+    where id='ec393000-cccc-4000-8000-000000000001'),
   'observedAt',clock_timestamp()) as binding
 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
 where n.nspname='public' and p.oid=
@@ -33,13 +36,17 @@ const rows = await response.json();
 const binding = rows?.[0]?.binding;
 if (!Array.isArray(rows) || rows.length !== 1 ||
   !/^[a-f0-9]{32}$/.test(binding?.definitionMd5 ?? "") ||
-  (mode.endsWith("-candidate-read-only") ?
+  (mode.endsWith("-safe-claim-read-only") ?
+    binding?.definitionMd5 !== "9828de434ae0713dfd544da6ce0a1345" ||
+      binding?.oldBlockMatch !== false || binding?.boundedRetryMatch !== true :
+   mode.endsWith("-candidate-read-only") ?
     binding?.definitionMd5 !== "c0f6296f051aada999af147773066cac" ||
       binding?.oldBlockMatch !== false || binding?.boundedRetryMatch !== true :
     binding?.definitionMd5 !== "45a140fffe35e7e3de3597eb848cfbc2" ||
       binding?.oldBlockMatch !== true || binding?.boundedRetryMatch !== false) ||
   binding?.functionCount !== 1 ||
-  binding?.securityDefiner !== true || binding?.syntheticFixtureAbsent !== true)
+  binding?.securityDefiner !== true || binding?.syntheticFixtureAbsent !== true ||
+  binding?.safeClaimFixtureAbsent !== true)
   throw Error("Retry function binding changed");
 console.log(JSON.stringify({ project, ...binding, productionDataWrites: false,
   customerRowsRead: false, credentialsPrinted: false }));
