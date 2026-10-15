@@ -150,6 +150,25 @@ test("a later supervised drill restores the verified public copy without another
   assert.equal(restored.sourceReceiptAttempt, copied.attempt);
   assert.deepEqual(order, ["escrow-read", "database-restore"]);
 });
+test("daily native-only package copies without Vault or private-key proof", async (t) => {
+  const { directory, options, order, preparation } = await setup(t);
+  const descriptor = JSON.parse(await readFile(join(directory, "descriptor.json"), "utf8"));
+  descriptor.format = "serviceos-database-package/2";
+  preparation.descriptor = descriptor;
+  preparation.state = "package_encrypted_native_evidence_verified_vault_pending";
+  preparation.sourceDatabaseRestoreVerified = false;
+  preparation.sourceNativeRestoreVerified = true;
+  preparation.localDatabaseRestoreVerified = false;
+  preparation.recoveryKeysRead = false;
+  await writeFile(join(directory, "descriptor.json"), JSON.stringify(descriptor));
+  await writeFile(join(directory, "preparation.json"), JSON.stringify(preparation));
+  options.escrow.read = async () => { throw Error("Private key must remain unavailable"); };
+  const result = await copyPreparedDatabaseBackup(options);
+  assert.equal(result.independentStorageVerified, true);
+  assert.equal(result.databaseRestoreVerified, false);
+  assert.equal(result.recoveryKeyRead, false);
+  assert.deepEqual(order, ["writer-open", "writer-close", "restore-open", "restore-close"]);
+});
 test("operator does not retry invalid recovery material", async (t) => {
   const { options, order } = await setup(t);
   let reads = 0;

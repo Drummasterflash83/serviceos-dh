@@ -8,9 +8,30 @@ import os
 import sys
 from pathlib import Path
 from database_backup_package import (PackageError, private_directory, restore_package,
-                                     read_json, write_private, canonical, describe, FILES)
+                                     read_json, write_private, canonical, describe,
+                                     FORMAT, DAILY_FORMAT, package_files)
 from database_restore_sandbox import RecoveryError
 from restore_production_database import run as restore_database
+
+
+def expected_vault_count(manifest, extracted):
+    if manifest['format'] == FORMAT:
+        count = read_json(extracted / 'vault-recovery-report.json').get('vaultSecretsVerified')
+    elif manifest['format'] == DAILY_FORMAT:
+        archived = read_json(extracted / 'native-archive-fingerprints.json')
+        recovered = read_json(extracted / 'native-restored-fingerprints.json')
+        if archived != recovered:
+            raise PackageError('vault_ciphertext_inventory_unverified')
+        vault = [t for t in archived['tables'] if t.get('schema') == 'vault'
+                 and t.get('table') == 'secrets']
+        if len(vault) != 1:
+            raise PackageError('vault_count_missing')
+        count = vault[0].get('rows')
+    else:
+        raise PackageError('package_format_invalid')
+    if type(count) is not int or count < 0:
+        raise PackageError('vault_count_missing')
+    return count
 
 
 def recover_database_package(encrypted, destination, *, expected, identity, root_key, age):
@@ -28,9 +49,7 @@ def recover_database_package(encrypted, destination, *, expected, identity, root
         manifest = restore_package(encrypted, extracted, expected=expected, identity=identity, age=age)
         identity = b''
         prior = read_json(extracted / 'restore-native-comparison-report.json')
-        count = read_json(extracted / 'vault-recovery-report.json').get('vaultSecretsVerified')
-        if type(count) is not int or count < 0:
-            raise PackageError('vault_count_missing')
+        count = expected_vault_count(manifest, extracted)
         evidence = destination / 'verification'
         evidence.mkdir(mode=0o700)
         result = restore_database(source_root=extracted, evidence_root=evidence,
@@ -43,7 +62,7 @@ def recover_database_package(encrypted, destination, *, expected, identity, root
         if not result['containerRemoved'] or not result['vaultDecryptionProven']:
             raise RecoveryError('Recovered database cleanup or Vault verification incomplete')
         # Verification reports must not overwrite any of the recovered originals.
-        if {name: describe(extracted / name) for name in FILES} != manifest['files']:
+        if {name: describe(extracted / name) for name in package_files(manifest['format'])} != manifest['files']:
             raise PackageError('recovered_snapshot_was_modified')
         report.update(state='encrypted_package_database_and_vault_restored',
                       snapshotAt=manifest['snapshot']['observedAt'],

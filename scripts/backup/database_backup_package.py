@@ -1,8 +1,9 @@
 """Local age-encrypted database packages. No network, key creation or secret logs.
 
-All inputs must be an already restored, complete snapshot. Recovery extracts only
-an exact flat allowlist after authentication and digest verification. Real key
-escrow, S3 transfer and full-service recovery are separate acceptance gates.
+The original format requires prior Vault decryption. The daily format requires
+a complete native restore and archived/restored Vault ciphertext comparison;
+decryption remains an explicit recovery-time check. Both use an exact flat
+allowlist after authenticated decryption and digest verification.
 """
 import hashlib
 import json
@@ -23,6 +24,15 @@ MAX_JSON = 8 * 1024 ** 2
 FILES = ('database.dump', 'net-tables.sql', 'source-inventory.json', 'report.json',
          'restore-native-comparison-report.json', 'vault-recovery-report.json')
 FORMAT = 'serviceos-database-package/1'
+DAILY_FORMAT = 'serviceos-database-package/2'
+DAILY_FILES = ('database.dump', 'net-tables.sql', 'source-inventory.json', 'report.json',
+               'restore-native-comparison-report.json', 'native-archive-fingerprints.json',
+               'native-restored-fingerprints.json')
+
+
+def package_files(format_version):
+    need(format_version in (FORMAT, DAILY_FORMAT), 'package_format_invalid')
+    return FILES if format_version == FORMAT else DAILY_FILES
 
 
 class PackageError(RuntimeError):
@@ -88,10 +98,10 @@ def containment(value):
          and value.get('maxWorkerProcesses') == 0, 'restore_containment_unverified')
 
 
-def validate_snapshot(directory, entries):
+def validate_snapshot(directory, entries, *, format_version=FORMAT):
     export = read_json(directory / 'report.json')
     restored = read_json(directory / 'restore-native-comparison-report.json')
-    vault = read_json(directory / 'vault-recovery-report.json')
+    vault = read_json(directory / 'vault-recovery-report.json') if format_version == FORMAT else None
     need(export.get('project') == PROJECT
          and export.get('state') == 'export_complete_restore_unverified'
          and export.get('productionDataWrites') is False
@@ -121,24 +131,36 @@ def validate_snapshot(directory, entries):
          'row_comparison_unverified')
     containment(restored.get('containmentBefore'))
     containment(restored.get('containmentAfter'))
-    live_match = (vault.get('state') == 'all_archived_vault_secrets_decrypt_and_match_live'
-                  and vault.get('ciphertextMatchesLive') is True
-                  and vault.get('plaintextComparisonMatches') is True)
-    snapshot_match = (vault.get('state') == 'all_archived_vault_secrets_decrypt_and_match_archive'
-                      and vault.get('snapshotAt') == snapshot['observedAt']
-                      and vault.get('ciphertextMatchesArchive') is True
-                      and vault.get('plaintextDecryptionVerified') is True
-                      and vault.get('ciphertextMatchesLive') is False
-                      and vault.get('plaintextComparisonMatches') is False
-                      and type(vault.get('liveChangedAfterSnapshotCount')) is int
-                      and vault['liveChangedAfterSnapshotCount'] >= 1
-                      and isinstance(vault.get('vaultCopySha256'), str)
-                      and re.fullmatch(r'[a-f0-9]{64}', vault['vaultCopySha256']))
-    need(vault.get('archive') == entries['database.dump']
-         and (live_match or snapshot_match)
-         and vault.get('containerRemoved') is True
-         and vault.get('productionWrites') is False, 'vault_restore_unverified')
-    containment(vault.get('containment'))
+    if format_version == FORMAT:
+        live_match = (vault.get('state') == 'all_archived_vault_secrets_decrypt_and_match_live'
+                      and vault.get('ciphertextMatchesLive') is True
+                      and vault.get('plaintextComparisonMatches') is True)
+        snapshot_match = (vault.get('state') == 'all_archived_vault_secrets_decrypt_and_match_archive'
+                          and vault.get('snapshotAt') == snapshot['observedAt']
+                          and vault.get('ciphertextMatchesArchive') is True
+                          and vault.get('plaintextDecryptionVerified') is True
+                          and vault.get('ciphertextMatchesLive') is False
+                          and vault.get('plaintextComparisonMatches') is False
+                          and type(vault.get('liveChangedAfterSnapshotCount')) is int
+                          and vault['liveChangedAfterSnapshotCount'] >= 1
+                          and isinstance(vault.get('vaultCopySha256'), str)
+                          and re.fullmatch(r'[a-f0-9]{64}', vault['vaultCopySha256']))
+        need(vault.get('archive') == entries['database.dump']
+             and (live_match or snapshot_match)
+             and vault.get('containerRemoved') is True
+             and vault.get('productionWrites') is False, 'vault_restore_unverified')
+        containment(vault.get('containment'))
+    else:
+        archived = read_json(directory / 'native-archive-fingerprints.json')
+        recovered = read_json(directory / 'native-restored-fingerprints.json')
+        need(archived == recovered and isinstance(archived.get('tables'), list)
+             and archived.get('version') == recovered.get('version'), 'native_fingerprints_unverified')
+        vault_rows = [t for t in archived['tables'] if t.get('schema') == 'vault'
+                      and t.get('table') == 'secrets']
+        need(len(vault_rows) == 1 and type(vault_rows[0].get('rows')) is int
+             and vault_rows[0]['rows'] >= 0
+             and re.fullmatch(r'[a-f0-9]{64}', vault_rows[0].get('sha256', '')),
+             'vault_ciphertext_inventory_unverified')
     # The inventory is independently hashed in the package, not reconstructed.
     inventory = read_json(directory / 'source-inventory.json')
     need(isinstance(inventory, dict) and isinstance(inventory.get('tables'), list)
@@ -171,7 +193,7 @@ def copy_bounded(source, destination):
             out.write(chunk)
 
 
-def package_snapshot(source, output, *, recipient, revision, age):
+def package_snapshot(source, output, *, recipient, revision, age, format_version=FORMAT):
     """Create one new encrypted artifact. Never overwrite a prior package."""
     output = Path(output)
     try:
@@ -180,26 +202,27 @@ def package_snapshot(source, output, *, recipient, revision, age):
         need(not output.exists() and not output.is_symlink(), 'output_already_exists')
         need(re.fullmatch(r'age1[0-9a-z]{58}', recipient) is not None, 'recipient_invalid')
         need(re.fullmatch(r'[0-9a-f]{40}', revision) is not None, 'revision_invalid')
+        files = package_files(format_version)
         with tempfile.TemporaryDirectory(prefix='.database-package-', dir=output.parent) as temp:
             work = Path(temp)
             stage = work / 'source'
             stage.mkdir(mode=0o700)
             entries = {}
             total = 0
-            for name in FILES:
+            for name in files:
                 copy_bounded(Path(source) / name, stage / name)
                 entries[name] = describe(stage / name)
                 total += entries[name]['bytes']
                 need(total < MAX_BYTES - MAX_JSON, 'package_size_invalid')
-            snapshot = validate_snapshot(stage, entries)
-            manifest = {'format': FORMAT, 'project': PROJECT, 'snapshot': snapshot,
+            snapshot = validate_snapshot(stage, entries, format_version=format_version)
+            manifest = {'format': format_version, 'project': PROJECT, 'snapshot': snapshot,
                         'sourceRevision': revision, 'restoreImage': IMAGE,
                         'recipient': recipient, 'files': entries}
             write_private(stage / 'manifest.json', canonical(manifest))
             plain = work / 'snapshot.tar'
             with os.fdopen(os.open(plain, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb') as out:
                 with tarfile.open(fileobj=out, mode='w', format=tarfile.USTAR_FORMAT) as tar:
-                    for name in (*FILES, 'manifest.json'):
+                    for name in (*files, 'manifest.json'):
                         path = stage / name
                         info = tarfile.TarInfo(name)
                         info.size = path.stat().st_size
@@ -209,7 +232,7 @@ def package_snapshot(source, output, *, recipient, revision, age):
             encrypted = work / 'snapshot.tar.age'
             with open_read(plain) as inp:
                 call_age(age, ['--encrypt', '--recipient', recipient, '--output', '-'], encrypted, input_file=inp)
-            descriptor = {'format': FORMAT, 'project': PROJECT,
+            descriptor = {'format': format_version, 'project': PROJECT,
                           'snapshotAt': snapshot['observedAt'], 'recipient': recipient,
                           'sourceRevision': revision, **describe(encrypted)}
             os.link(encrypted, output)  # Exclusive publication; an existing file is never replaced.
@@ -233,7 +256,9 @@ def restore_package(encrypted, destination, *, expected, identity, age):
         need(isinstance(identity, bytes) and 0 < len(identity) < 4096, 'identity_invalid')
         lines = [line.strip() for line in identity.splitlines() if line.strip() and not line.startswith(b'#')]
         need(len(lines) == 1 and re.fullmatch(rb'AGE-SECRET-KEY-1[0-9A-Z]{50,100}', lines[0]) is not None, 'identity_invalid')
-        need(expected.get('format') == FORMAT and expected.get('project') == PROJECT, 'descriptor_invalid')
+        format_version = expected.get('format')
+        files = package_files(format_version)
+        need(expected.get('project') == PROJECT, 'descriptor_invalid')
         os.mkdir(destination, 0o700)  # Claims only a new empty recovery directory.
         created = True
         with tempfile.TemporaryDirectory(prefix='.database-recovery-', dir=destination.parent) as temp:
@@ -248,7 +273,7 @@ def restore_package(encrypted, destination, *, expected, identity, age):
             total = 0
             with tarfile.open(plain, 'r:') as tar:
                 for member in tar:
-                    need(member.name in (*FILES, 'manifest.json') and member.name not in names
+                    need(member.name in (*files, 'manifest.json') and member.name not in names
                          and member.isfile() and not member.pax_headers,
                          'package_member_invalid')
                     need(0 < member.size <= (MAX_JSON if member.name.endswith('.json') else MAX_BYTES), 'member_size_invalid')
@@ -259,17 +284,17 @@ def restore_package(encrypted, destination, *, expected, identity, age):
                     with tar.extractfile(member) as inp, os.fdopen(os.open(stage / member.name, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb') as out:
                         shutil.copyfileobj(inp, out, 1024 ** 2)
                     need((stage / member.name).stat().st_size == member.size, 'member_size_mismatch')
-            need(names == set((*FILES, 'manifest.json')), 'package_members_missing')
+            need(names == set((*files, 'manifest.json')), 'package_members_missing')
             manifest = read_json(stage / 'manifest.json')
-            entries = {name: describe(stage / name) for name in FILES}
-            need(manifest.get('format') == FORMAT and manifest.get('project') == PROJECT
+            entries = {name: describe(stage / name) for name in files}
+            need(manifest.get('format') == format_version and manifest.get('project') == PROJECT
                  and manifest.get('restoreImage') == IMAGE
                  and manifest.get('files') == entries
                  and manifest.get('recipient') == expected.get('recipient')
                  and manifest.get('sourceRevision') == expected.get('sourceRevision'), 'manifest_mismatch')
-            snapshot = validate_snapshot(stage, entries)
+            snapshot = validate_snapshot(stage, entries, format_version=format_version)
             need(manifest.get('snapshot') == snapshot and snapshot['observedAt'] == expected.get('snapshotAt'), 'snapshot_mismatch')
-            for name in (*FILES, 'manifest.json'):
+            for name in (*files, 'manifest.json'):
                 os.link(stage / name, destination / name)
             return manifest
     except BaseException as error:

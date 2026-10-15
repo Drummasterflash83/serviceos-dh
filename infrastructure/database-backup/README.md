@@ -463,7 +463,26 @@ A later `--restore-copy-checkpoint` drill takes the exact copy attempt ID and
 the existing private 1Password binding path. It validates that download and
 receipt before asking for one private-key read, then runs the isolated database
 and Vault restore. It makes no new provider export or off-site transfer. The
-routine copy can therefore run unattended while recovery remains supervised.
+routine copy stage can therefore run without a private-key unlock while
+recovery remains supervised. A fresh daily source export, reliable runtime and
+alert still have separate acceptance gates.
+
+The new daily package format (`serviceos-database-package/2`) accepts an
+export whose native archive, operational supplement, catalog and every archived
+COPY row have already passed an offline restore. It carries matching archived
+and restored Vault ciphertext fingerprints, then defers actual Vault
+decryption to the supervised restore. Its `--prepare-daily`, `--copy-daily` and
+`--restore-copy-daily` modes remain inactive until a dedicated source identity
+and an unattended runtime are provisioned and verified. No routine step reads
+the recovery key or claims Vault decryption. See
+[daily source access](DAILY-SOURCE-ACCESS.md) for the exact boundary.
+The inactive `run-daily-database-backup.mjs --run-once` candidate binds the
+export, isolated native restore, public-key encryption and independently
+downloaded copy into one attempt. It stops on an unconfirmed stage and records
+an inspection-required failure; it does not retry source or copy actions.
+There is no installed schedule, age alert, or standing copy authorization for
+new daily objects yet. A successful one-off copy would still leave supervised
+Vault decryption and full application/Auth recovery unverified.
 
 The supervised recovery runner now reads 1Password only once, after the
 downloaded ciphertext is verified, and a failed desktop authorisation does not

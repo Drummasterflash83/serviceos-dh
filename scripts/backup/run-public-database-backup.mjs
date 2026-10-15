@@ -26,10 +26,15 @@ async function privateJson(path) {
   return JSON.parse(await readFile(path, "utf8"));
 }
 async function main() {
-  const restoring = mode === "--restore-copy-checkpoint";
-  need(["--prepare-checkpoint", "--copy-checkpoint", "--restore-copy-checkpoint"].includes(mode) &&
+  const daily = mode?.endsWith("-daily") === true;
+  const restoring = ["--restore-copy-checkpoint", "--restore-copy-daily"].includes(mode);
+  const preparing = ["--prepare-checkpoint", "--prepare-daily"].includes(mode);
+  need(["--prepare-checkpoint", "--copy-checkpoint", "--restore-copy-checkpoint",
+    "--prepare-daily", "--copy-daily", "--restore-copy-daily"].includes(mode) &&
     /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(runId ?? "") &&
-    /^\.verification-results\/production-release-checkpoint-[0-9]{8}-[a-z0-9-]+$/.test(sourceArgument ?? "") &&
+    (daily
+      ? /^\.verification-results\/production-database-daily-[0-9]{8}-[a-f0-9-]{36}$/.test(sourceArgument ?? "")
+      : /^\.verification-results\/production-release-checkpoint-[0-9]{8}-[a-z0-9-]+$/.test(sourceArgument ?? "")) &&
     (restoring ? process.argv.length === 7 &&
       /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(copyAttempt ?? "") &&
       /^\.verification-results\/[a-z0-9-]+\.json$/.test(bindingArgument ?? "") :
@@ -56,15 +61,17 @@ async function main() {
   const git = promisify(execFile);
   const status = await git("git", ["status", "--porcelain"], { cwd: REPO });
   need(status.stdout.trim() === "", "database_runner_requires_committed_checkpoint");
-  if (mode === "--prepare-checkpoint") {
+  if (preparing) {
     const rev = await git("git", ["rev-parse", "HEAD"], { cwd: REPO });
     return preparePublicDatabaseBackup({ source, directory,
       revision: rev.stdout.trim(), recipient: publicKey.recipient,
-      expectedArchive: exported.archive });
+      expectedArchive: exported.archive,
+      formatVersion: daily ? "serviceos-database-package/2" : "serviceos-database-package/1" });
   }
   await privateDirectory(directory);
   const descriptor = await privateJson(join(directory, "descriptor.json"));
-  need(descriptor.recipient === publicKey.recipient,
+  need(descriptor.recipient === publicKey.recipient &&
+    descriptor.format === (daily ? "serviceos-database-package/2" : "serviceos-database-package/1"),
     "database_public_recipient_changed");
   if (restoring) {
     const binding = await privateJson(resolve(REPO, bindingArgument));

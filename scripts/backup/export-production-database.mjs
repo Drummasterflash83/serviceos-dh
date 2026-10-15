@@ -1,6 +1,7 @@
 /** Native, consistent production recovery export. No production data writes.
  * Private files contain real data; never add them to Git or publish raw output.
- * Exactly one existing CLI credential refresh; no automatic mutation retry.
+ * Supervised mode refreshes one existing CLI login. Daily mode uses only the
+ * dedicated scoped reader; neither mode retries an uncertain source action.
  */
 import { spawn, spawnSync, execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
@@ -10,6 +11,8 @@ import { mkdirSync, readFileSync, openSync, writeFileSync, closeSync,
 import { once } from 'node:events';
 import { pipeline } from 'node:stream/promises';
 import { savedCliToken } from '../verify/learn-test-readiness.mjs';
+import { loadDatabaseSourceReader } from './serviceos-database-source-access.mjs';
+import { databaseDumpCommand } from './serviceos-database-export-command.mjs';
 
 const project = 'tgbnakbxwcqjeimygroz';
 const image = 'sha256:28f0e16a019e648089fc1a6d333549a55548f6019c15ae4bd7cd58b989027518';
@@ -17,10 +20,13 @@ const mode = process.argv.slice(2).join(' ');
 const releaseCheckpoint = process.argv[2] === '--export-release-checkpoint'
   && process.argv.length === 4
   && /^\.verification-results\/production-release-checkpoint-[0-9]{8}-[a-z0-9-]+$/.test(process.argv[3]);
-const monitoredCapture = releaseCheckpoint || mode === '--export-complete-capture-small-full';
+const unattendedDaily = process.argv[2] === '--export-unattended-daily'
+  && process.argv.length === 4
+  && /^\.verification-results\/production-database-daily-[0-9]{8}-[a-f0-9-]{36}$/.test(process.argv[3]);
+const monitoredCapture = releaseCheckpoint || unattendedDaily || mode === '--export-complete-capture-small-full';
 const afterSmallUpgrade = monitoredCapture || mode === '--export-complete-capture-small';
 const completeCapture = afterSmallUpgrade || mode === '--export-complete-capture-v2';
-const root = releaseCheckpoint ? process.argv[3] : monitoredCapture
+const root = releaseCheckpoint || unattendedDaily ? process.argv[3] : monitoredCapture
   ? '.verification-results/production-database-complete-capture-small-full-2026-10-12'
   : afterSmallUpgrade
   ? '.verification-results/production-database-complete-capture-small-2026-10-12'
@@ -32,7 +38,7 @@ const report = { version: 'production-database-export/1', project,
   startedAt: new Date().toISOString(), state: 'preflight', customerDataDestination: 'private_local_only',
   productionDataWrites: false, restoreVerified: false };
 const names = [];
-let keeper, login, markerFile;
+let keeper, login, markerFile, dbUser = 'cli_login_postgres';
 const check = (ok, message) => { if (!ok) throw Error(message); };
 const ident = s => '"' + String(s).replaceAll('"', '""') + '"';
 const literal = s => "'" + String(s).replaceAll("'", "''") + "'";
@@ -48,7 +54,7 @@ function clientArgs(name, app, command) {
     '--log-driver', 'none', '--security-opt', 'no-new-privileges',
     '--memory', '512m', '--cpus', '1', '--pids-limit', '64',
     '-e', 'PGHOST=aws-1-eu-west-2.pooler.supabase.com', '-e', 'PGPORT=5432',
-    '-e', `PGUSER=cli_login_postgres.${project}`, '-e', 'PGDATABASE=postgres',
+    '-e', `PGUSER=${dbUser}.${project}`, '-e', 'PGDATABASE=postgres',
     '-e', 'PGSSLMODE=verify-full', '-e', 'PGSSLROOTCERT=/tmp/supabase-root.crt',
     '-e', 'PGCONNECT_TIMEOUT=20', '-e', `PGAPPNAME=${app}`,
     '--entrypoint', 'bash', image, '-c',
@@ -59,6 +65,7 @@ function clientArgs(name, app, command) {
 try {
   check(completeCapture || process.argv.slice(2).join(' ') === '--export-production-for-isolated-restore',
     'Explicit production export mode required');
+  const sourceReader = unattendedDaily ? await loadDatabaseSourceReader() : null;
   execFileSync('git', ['check-ignore', '-q', root + '/database.dump']);
   // Do not reuse a directory/marker after an uncertain previous run.
   mkdirSync(root, { mode: 0o700 });
@@ -70,7 +77,12 @@ try {
   check(createHash('sha256').update(certificate).digest('hex') ===
     '700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7', 'Official CA mismatch');
   execFileSync(docker, ['image', 'inspect', image], { stdio: 'ignore' });
-  const token = savedCliToken();
+  if (unattendedDaily) {
+    const active = execFileSync(docker, ['ps', '-a', '--filter', 'name=serviceos-export-', '--format', '{{.Names}}'],
+      { encoding: 'utf8', timeout: 20000 }).trim();
+    check(!active, 'Existing export container must be reconciled before retry');
+  }
+  const token = unattendedDaily ? null : savedCliToken();
   async function api(path, body) {
     const r = await fetch(`https://api.supabase.com/v1/projects/${project}${path}`, {
       method: body ? 'POST' : 'GET', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -78,7 +90,7 @@ try {
     });
     check(r.ok, `Recovery API request failed (HTTP ${r.status})`); return r.json();
   }
-  if (afterSmallUpgrade) {
+  if (afterSmallUpgrade && !unattendedDaily) {
     const addons = await api('/billing/addons');
     check(addons.selected_addons?.some(a => a.type === 'compute_instance' && a.variant?.id === 'ci_small'),
       'Approved Small compute must still be selected');
@@ -90,6 +102,13 @@ try {
     check(!active, 'Existing export container must be reconciled before retry');
     report.capacityGate = 'approved_small_and_all_services_healthy';
   }
+  if (unattendedDaily) {
+    dbUser = sourceReader.role;
+    login = { role: dbUser, password: sourceReader.password, ttl_seconds: null };
+    sourceReader.password = '';
+    report.sourceCredential = 'dedicated_reader_keychain';
+    report.sourceManagementApiRequests = false;
+  } else {
   const before = await api('/database/query/read-only', { query: `select jsonb_build_object(
     'expired',rolvaliduntil<clock_timestamp(),'name',rolname,'memberships',
     (select jsonb_agg(p.rolname order by p.rolname) from pg_auth_members m
@@ -109,6 +128,7 @@ try {
     && login.password.length >= 16 && !/[\r\n\0]/.test(login.password)
     && login.ttl_seconds > 0 && login.ttl_seconds <= 600, 'Unexpected temporary credential');
   report.credentialTtlSeconds = login.ttl_seconds;
+  }
   report.state = 'opening_snapshot'; save();
   const prefix = certificate.toString('base64') + '\n' + login.password + '\n';
   const nonce = randomUUID().replaceAll('-', '');
@@ -134,15 +154,15 @@ try {
   }
   keeper.stdin.write(prefix);
   const opened = await sql(`begin isolation level repeatable read read only;
-    set local role postgres; set local timezone='UTC'; set local datestyle='ISO, MDY';
+    ${unattendedDaily ? '' : 'set local role postgres;'} set local timezone='UTC'; set local datestyle='ISO, MDY';
     set local extra_float_digits=3; set local bytea_output='hex';
     set local statement_timeout='150s'; set local lock_timeout='5s';
     select json_build_object('snapshot',pg_export_snapshot(),'readOnly',current_setting('transaction_read_only'),
       'currentUser',current_user,'sessionUser',session_user,'observedAt',clock_timestamp());`);
   check(opened.length === 1, 'Snapshot metadata missing');
   const snapshot = JSON.parse(opened[0]);
-  check(snapshot.readOnly === 'on' && snapshot.currentUser === 'postgres'
-    && snapshot.sessionUser === 'cli_login_postgres' && /^[0-9A-F]+-[0-9A-F]+-\d+$/.test(snapshot.snapshot),
+  check(snapshot.readOnly === 'on' && snapshot.currentUser === (unattendedDaily ? dbUser : 'postgres')
+    && snapshot.sessionUser === dbUser && /^[0-9A-F]+-[0-9A-F]+-\d+$/.test(snapshot.snapshot),
     'Read-only snapshot boundary mismatch');
   report.snapshot = snapshot; report.clientTlsVerified = true;
   const inventoryLines = await sql(`select json_build_object(
@@ -197,7 +217,8 @@ try {
   // remain in the native archive when pg_dump has permission to include them.
   const output = createWriteStream(root + '/database.dump.partial', { flags: 'wx', mode: 0o600 });
   const dump = spawn(docker, clientArgs('serviceos-export-dump-' + nonce,
-    'serviceos-recovery-pg-dump', `pg_dump -w --format=custom --compress=6 --role=postgres --snapshot=${snapshot.snapshot} --lock-wait-timeout=5s`),
+    'serviceos-recovery-pg-dump', databaseDumpCommand(snapshot.snapshot,
+      { dedicatedReader: unattendedDaily })),
     { stdio: ['pipe', 'pipe', 'pipe'] });
   let archiveBytes = 0; const archiveHash = createHash('sha256');
   let lastArchiveProgress = Date.now();

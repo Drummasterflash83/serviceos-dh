@@ -179,6 +179,12 @@ async function checkedPreparation(directory, expectedArchive) {
        preparation.state === "package_encrypted_source_evidence_verified_restore_pending" &&
         preparation.sourceDatabaseRestoreVerified === true &&
         preparation.localDatabaseRestoreVerified === false &&
+        preparation.recoveryKeysRead === false ||
+       preparation.state === "package_encrypted_native_evidence_verified_vault_pending" &&
+        d.format === "serviceos-database-package/2" &&
+        preparation.sourceDatabaseRestoreVerified === false &&
+        preparation.sourceNativeRestoreVerified === true &&
+        preparation.localDatabaseRestoreVerified === false &&
         preparation.recoveryKeysRead === false) &&
       preparation.snapshotAt === d.snapshotAt &&
       same(preparation.descriptor, d) &&
@@ -191,18 +197,23 @@ async function checkedPreparation(directory, expectedArchive) {
 /** Package an already restored snapshot with the pinned public age recipient. */
 export async function preparePublicDatabaseBackup({
   source, directory, revision, recipient, expectedArchive,
+  formatVersion = "serviceos-database-package/1",
 }) {
   need(/^[a-f0-9]{40}$/.test(revision ?? "") && /^age1[0-9a-z]{58}$/.test(recipient ?? ""),
+    "database_public_preparation_binding_invalid");
+  need(["serviceos-database-package/1", "serviceos-database-package/2"].includes(formatVersion),
     "database_public_preparation_binding_invalid");
   await privateDirectory(source);
   await mkdir(directory, { mode: 0o700 });
   const result = await pythonStage("prepare_public_database_package.py", {
     source, directory, agePath: AGE, revision, ageRecipient: recipient,
+    formatVersion,
   });
-  need(result.state === "package_encrypted_source_evidence_verified_restore_pending" &&
+  need(["package_encrypted_source_evidence_verified_restore_pending",
+    "package_encrypted_native_evidence_verified_vault_pending"].includes(result.state) &&
     result.recoveryKeysRead === false, "database_public_preparation_unconfirmed");
   const d = await checkedPreparation(directory, expectedArchive);
-  need(d.recipient === recipient, "database_recipient_changed");
+  need(d.recipient === recipient && d.format === formatVersion, "database_recipient_changed");
   return { state: result.state, encryptedBytes: d.bytes, recoveryKeyRead: false };
 }
 /** Routine storage verification. No recovery key or database restore is used. */

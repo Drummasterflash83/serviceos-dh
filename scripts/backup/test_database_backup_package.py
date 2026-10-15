@@ -7,9 +7,11 @@ import tarfile
 import tempfile
 import unittest
 from pathlib import Path
-from database_backup_package import (FILES, FORMAT, IMAGE, PROJECT, PackageError,
+from database_backup_package import (FILES, FORMAT, DAILY_FILES, DAILY_FORMAT,
+    IMAGE, PROJECT, PackageError,
     call_age, canonical, describe, package_snapshot, restore_package, write_private)
 from prepare_public_database_package import prepare as prepare_public
+from restore_database_package import expected_vault_count
 
 AGE = Path('/private/tmp/serviceos-age-1.3.2/age')
 KEYGEN = AGE.with_name('age-keygen')
@@ -115,6 +117,45 @@ class PackageTests(unittest.TestCase):
         manifest = restore_package(directory / 'snapshot.age', self.destination,
             expected=proof['descriptor'], identity=self.identity, age=AGE)
         self.assertEqual(manifest['files'], {n: describe(self.source / n) for n in FILES})
+
+    def test_daily_package_preserves_native_and_vault_ciphertext_evidence_without_private_key(self):
+        fingerprints = {'version': 'native-data-fingerprints/1', 'tables': [
+            {'schema': 'vault', 'table': 'secrets', 'rows': 1, 'sha256': '0' * 64}],
+            'sequences': [], 'rows': 1, 'streamBytes': 10}
+        for name in ('native-archive-fingerprints.json', 'native-restored-fingerprints.json'):
+            write_private(self.source / name, canonical(fingerprints))
+        directory = self.root / 'daily'
+        directory.mkdir(mode=0o700)
+        proof = prepare_public({'source': str(self.source), 'directory': str(directory),
+            'ageRecipient': self.recipient, 'revision': REVISION, 'agePath': str(AGE),
+            'formatVersion': DAILY_FORMAT})
+        self.assertEqual(proof['state'], 'package_encrypted_native_evidence_verified_vault_pending')
+        self.assertFalse(proof['sourceDatabaseRestoreVerified'])
+        self.assertTrue(proof['sourceNativeRestoreVerified'])
+        self.assertFalse(proof['recoveryKeysRead'])
+        self.assertEqual(proof['descriptor']['format'], DAILY_FORMAT)
+        manifest = restore_package(directory / 'snapshot.age', self.destination,
+            expected=proof['descriptor'], identity=self.identity, age=AGE)
+        self.assertEqual(manifest['files'], {n: describe(self.source / n) for n in DAILY_FILES})
+        self.assertNotIn('vault-recovery-report.json', manifest['files'])
+        self.assertEqual(expected_vault_count(manifest, self.destination), 1)
+        altered = json.loads((self.destination / 'native-restored-fingerprints.json').read_text())
+        altered['tables'][0]['rows'] = 2
+        (self.destination / 'native-restored-fingerprints.json').write_bytes(canonical(altered))
+        with self.assertRaisesRegex(PackageError, 'vault_ciphertext_inventory_unverified'):
+            expected_vault_count(manifest, self.destination)
+
+    def test_daily_package_rejects_mismatched_vault_ciphertext_fingerprints(self):
+        archived = {'version': 'native-data-fingerprints/1', 'tables': [
+            {'schema': 'vault', 'table': 'secrets', 'rows': 1, 'sha256': '0' * 64}]}
+        recovered = json.loads(json.dumps(archived))
+        recovered['tables'][0]['sha256'] = '1' * 64
+        write_private(self.source / 'native-archive-fingerprints.json', canonical(archived))
+        write_private(self.source / 'native-restored-fingerprints.json', canonical(recovered))
+        with self.assertRaisesRegex(PackageError, 'native_fingerprints_unverified'):
+            package_snapshot(self.source, self.encrypted, recipient=self.recipient,
+                revision=REVISION, age=AGE, format_version=DAILY_FORMAT)
+        self.assertFalse(self.encrypted.exists())
 
     def test_post_snapshot_vault_change_accepts_archived_decryption_only_with_bound_proof(self):
         self.change_json('vault-recovery-report.json', lambda x: x.update(

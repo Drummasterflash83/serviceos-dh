@@ -1,0 +1,50 @@
+{
+  "contract": "learn-build01-keyless-daily-backup-candidate/1",
+  "observedAt": "2026-10-15T13:10:32.017Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "state": "candidate_verified_locally_not_activated",
+  "productionPreflight": {
+    "observedAt": "2026-10-15T12:58:02Z",
+    "physicalUserTables": 421,
+    "rlsTables": 398,
+    "largeObjects": 0,
+    "databaseBytes": 5200718995,
+    "dedicatedBackupReaderPresent": false,
+    "customerRowsRead": false,
+    "productionDataWrites": false
+  },
+  "existingSnapshotFormat2Test": {
+    "sourceSnapshotAt": "2026-10-15T10:04:20.399639+00:00",
+    "sourceArchiveBytes": 1057045013,
+    "encryptedPackageBytes": 1060652040,
+    "encryptedPackageSha256": "1908602d2af63d6e7281b9525d74a98d5334c5ee3e7098c02b807d9a1efbfb26",
+    "state": "package_encrypted_native_evidence_verified_vault_pending",
+    "nativeSourceRestoreVerified": true,
+    "vaultCiphertextFingerprintMatched": true,
+    "recoveryKeyRead": false,
+    "newPackageDatabaseRestoreVerified": false,
+    "offsiteCopyVerified": false
+  },
+  "syntheticChecks": {
+    "nodePassed": 29,
+    "pythonPassed": 13,
+    "dailyFailureDoesNotRetry": true,
+    "dailySuccessDoesNotClaimRecovery": true
+  },
+  "activation": {
+    "sourceRoleCreated": false,
+    "sourceCredentialCreated": false,
+    "dailyScheduleInstalled": false,
+    "newOffsiteObjectTransferred": false,
+    "standingAccessReviewRequired": true,
+    "missedSuccessAlertVerified": false,
+    "fullApplicationAuthRecoveryVerified": false
+  },
+  "unattendedObservation": {
+    "observedAt": "2026-10-15T13:10:32.017Z",
+    "gmailFetchFailedBlockedCheckpoints": 2,
+    "gmailAdminDelegationBlockedCheckpoints": 1,
+    "recentSourceIneligibleJobsLastTwoHours": 16,
+    "fullWorkingDayAccepted": false
+  }
+}

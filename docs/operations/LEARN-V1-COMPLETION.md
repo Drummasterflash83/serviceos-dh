@@ -7,6 +7,48 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 13:10 UTC — keyless daily backup candidate tested; Build 01 remains open.**
+
+### Working and verified
+
+- A new package format and one-attempt runner can verify an isolated native
+  restore, encrypt with the existing public age recipient, and independently
+  verify a copied ciphertext without reading the recovery key. The real 10:04
+  snapshot was repackaged locally into a 1,060,652,040-byte format-2 artifact;
+  its native archive and archived/restored Vault ciphertext fingerprints match.
+  This was a format test, not a fresh daily source export or new off-site copy.
+- The one-attempt runner stops on an unconfirmed stage and never retries a
+  failed Touch ID read. Twenty-nine focused Node tests and thirteen Python
+  tests pass. The existing 1Password key remains reserved for a separate,
+  supervised Vault/database recovery drill.
+- A read-only LIVE preflight found 421 physical user tables, 398 with RLS,
+  and no dedicated backup-reader role. A 13:10 UTC read-only health check also
+  confirmed the current email checkpoint state without a fingerprint prompt.
+
+### Needs finishing
+
+- A dedicated, reviewed source login, unattended host, standing copy scope,
+  schedule and missed-success alert are not active. The fresh export and
+  source-to-off-site chain have not run. The new package has not been decrypted
+  or restored, and full application/Auth recovery remains unverified.
+- The unattended working-day observation failed again: two recent Workspace
+  checkpoints are blocked after `fetch_failed`, one after
+  `admin_delegation_missing`, and sixteen recent jobs were source-ineligible.
+  The two fetch failures have confirmed zero persistence writes; a bounded,
+  audited automatic recovery still needs implementation and LIVE proof.
+  Source/card/scoring coverage, ongoing Slack handoff and Chris's business
+  acceptance also remain open.
+
+### Blocked externally
+
+- Standing broad database-reader access and recurring encrypted off-site
+  transfer need a specific access review before activation. A supervised
+  recovery drill will need one private-key unlock; the routine backup should
+  not ask for Touch ID.
+
+[Keyless daily backup candidate and current blockers](evidence/learn-build01-keyless-daily-backup-candidate-2026-10-15.json) ·
+[daily source-access design](../../infrastructure/database-backup/DAILY-SOURCE-ACCESS.md).
+
 **15 October, 12:50 UTC — fingerprint-free package preparation verified on the real snapshot; Build 01 remains open.**
 
 ### Working and verified

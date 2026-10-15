@@ -125,5 +125,36 @@ where r.tenant_id='${tenant}'::uuid and r.provider='gmail' and r.status='failed'
       and j.status='dead_letter' and j.error_code='source_ineligible'
       and j.updated_at>=now()-interval '2 hours')
 order by r.completed_at desc limit 1`);
+const emailTransientFailures = await read(`select c.block_code,c.state,
+  count(*)::int checkpoints,min(c.revision)::bigint::text min_revision,
+  max(c.revision)::bigint::text max_revision,max(c.updated_at) latest_blocked_at,
+  coalesce(bool_and(a.status='active_dwd' and m.status in ('pending','active')
+    and m.sync_enabled=true and x.status='active'),false) source_authority_current,
+  coalesce(bool_and(r.error_message='fetch_failed'
+    and r.metadata#>>'{email_ingestion_v2,evidence,persistence}'='confirmed'
+    and (r.metadata#>>'{email_ingestion_v2,evidence,message_upsert_count}')::int=0
+    and (r.metadata#>>'{email_ingestion_v2,evidence,ids_seen}')::int=0),false)
+    latest_attempt_before_persistence,
+  array_agg(distinct coalesce(r.sync_type,'missing')) safe_sync_types,
+  array_agg(distinct coalesce(r.metadata#>>'{email_ingestion_v2,evidence,persistence}',
+    'missing')) persistence_states,
+  array_agg(distinct coalesce(r.metadata#>>'{email_ingestion_v2,evidence,message_upsert_count}',
+    'missing')) message_upsert_counts,
+  array_agg(distinct coalesce(r.metadata#>>'{email_ingestion_v2,evidence,ids_seen}',
+    'missing')) ids_seen_counts
+from public.email_ingestion_checkpoints c
+join public.email_accounts a on a.tenant_id=c.tenant_id and a.id=c.email_account_id
+left join lateral(select status,sync_enabled,connection_id from public.google_workspace_mailboxes m
+  where m.tenant_id=a.tenant_id and lower(m.email_address)=lower(a.email_address)
+  order by m.updated_at desc limit 1) m on true
+left join public.google_workspace_connections x on x.tenant_id=c.tenant_id and x.id=m.connection_id
+left join lateral(select sync_type,error_message,metadata from public.email_sync_runs r
+  where r.tenant_id=c.tenant_id and r.metadata->>'email_account_id'=c.email_account_id::text
+    and r.provider='gmail' and r.status='failed' and r.error_message='fetch_failed'
+  order by r.completed_at desc limit 1) r on true
+where c.tenant_id='${tenant}'::uuid and c.stream='recent' and c.state='blocked'
+  and c.block_code='fetch_failed'
+group by c.block_code,c.state`);
 console.log(JSON.stringify({ observedAt: new Date().toISOString(), scope: "last_two_hours", rows,
-  emailSourceHolds,emailAttemptFailures,emailAuthorityChecks,emailCheckpointHolds,emailBlockedAttempt }));
+  emailSourceHolds,emailAttemptFailures,emailAuthorityChecks,emailCheckpointHolds,
+  emailBlockedAttempt,emailTransientFailures }));

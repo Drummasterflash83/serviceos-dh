@@ -8,25 +8,33 @@ import json
 import sys
 from pathlib import Path
 from database_backup_package import (PackageError, canonical, describe, read_json,
-                                     package_snapshot, private_directory,
+                                     package_snapshot, private_directory, FORMAT,
+                                     DAILY_FORMAT,
                                      write_private)
 
 
 def prepare(data):
     directory = private_directory(Path(data['directory']))
     source = private_directory(Path(data['source']))
+    format_version = data.get('formatVersion', FORMAT)
+    if format_version not in (FORMAT, DAILY_FORMAT):
+        raise PackageError('package_format_invalid')
     descriptor = package_snapshot(source, directory / 'snapshot.age',
                                   recipient=data['ageRecipient'],
-                                  revision=data['revision'], age=Path(data['agePath']))
+                                  revision=data['revision'], age=Path(data['agePath']),
+                                  format_version=format_version)
     archive = read_json(source / 'report.json')['archive']
     if archive != describe(source / 'database.dump'):
         raise PackageError('source_archive_changed')
     write_private(directory / 'descriptor.json', canonical(descriptor))
+    daily = format_version == DAILY_FORMAT
     proof = {'contract': 'database-package-preparation/1',
-             'state': 'package_encrypted_source_evidence_verified_restore_pending',
+             'state': ('package_encrypted_native_evidence_verified_vault_pending' if daily
+                       else 'package_encrypted_source_evidence_verified_restore_pending'),
              'descriptor': descriptor, 'archive': archive,
              'snapshotAt': descriptor['snapshotAt'],
-             'sourceDatabaseRestoreVerified': True,
+             'sourceDatabaseRestoreVerified': not daily,
+             'sourceNativeRestoreVerified': True,
              'localDatabaseRestoreVerified': False,
              'providerRequests': False,
              'recoveryKeysRead': False,

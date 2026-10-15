@@ -1,5 +1,5 @@
 /** Bounded encrypted artifact transfer; never exports a database or reads a key.
- * The caller must first complete local package/restore verification. A successful
+ * The caller must first complete the package's required source verification. A successful
  * result proves stored ciphertext only, not database or full-service recovery. */
 import { createHash } from "node:crypto";
 import { constants } from "node:fs";
@@ -32,7 +32,7 @@ const guard = async (work) => {
 };
 function descriptor(value) {
   need(
-    value?.format === "serviceos-database-package/1" &&
+    ["serviceos-database-package/1", "serviceos-database-package/2"].includes(value?.format) &&
       value.project === binding.project &&
       /^age1[0-9a-z]{58}$/.test(value.recipient ?? "") &&
       /^[0-9a-f]{40}$/.test(value.sourceRevision ?? "") &&
