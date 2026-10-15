@@ -61,15 +61,14 @@ override a later release observation. No requirement is silently deferred.
 
 ### Needs finishing
 
-- Add an **OpenFolk operator-selected, tenant-scoped email import horizon** to
-  new-client onboarding, with three years suggested, one year and complete
-  available as deliberate choices, and an explicit calendar cutoff for a custom
-  choice. Freeze the choice when a mailbox traversal begins, apply it to provider
-  listing and continuation, and display both selected and observed coverage.
-  Do not silently change Drummonds' running traversal or delete saved history.
-  Current/recent evidence must carry more weight than older mail in any eventual
-  health or score calculation; older mail may still establish relationships and
-  provenance. This setting needs TEST and LIVE acceptance before claiming it works.
+- Carry Chris's **OpenFolk operator-selected, tenant-scoped email import horizon**
+  into Build 02's source-scope register and new-client onboarding. Suggest three
+  years, with one year, complete history and an explicit custom cutoff available.
+  Freeze the choice when traversal begins and show selected versus observed
+  coverage. This future-client control is **not a new Build 01 acceptance gate**;
+  do not silently change Drummonds' running traversal or delete saved history.
+  Current evidence should carry more weight than older mail in any later health
+  or score policy; older mail can still establish relationship provenance.
 - Translate the job-first card direction into evidence-backed criteria and
   responsible-owner routing, review the draft with Chris, then publish only
   after score inputs and recipient permissions are verified.

@@ -43,6 +43,14 @@ and still valid, preserve it. Choose the smallest change that advances the outco
 
 2. Create or extend the source scope register required by LEARN-ACCEPTANCE.md: provider/account, entity/fields, history window, freshness, source authority, owner, access, eligibility, denominator and downstream purpose. Reuse current registries rather than creating a second inventory.
 
+   For new-client Email onboarding, make the history window a tenant-scoped
+   OpenFolk operator choice. Suggest three years, and offer one year, complete
+   history and a deliberate custom date. Freeze the chosen boundary before
+   traversal, apply it to provider listing and continuation, and show chosen
+   versus observed coverage. Preserve Drummonds' existing saved history and
+   active traversal; later scoring must favour current evidence without erasing
+   older relationship provenance.
+
 3. Map every retained source to captured, processed, linked, reviewed and usable coverage. Provide numerator/denominator and ambiguous/unmatched/stale populations. A successful no-op poll must remain distinguishable from new useful evidence.
 
 4. Implement or complete bounded refresh, source update/withdrawal propagation and operator diagnostics for in-scope sources. Provide explicit reconciliation for pagination, duplicates and unsupported records. Approved exports are permitted with a visible cadence and limitation.
