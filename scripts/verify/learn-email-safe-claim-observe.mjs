@@ -87,4 +87,4 @@ if (!Array.isArray(rows) || rows.length !== 1 || observation?.targetCount !== 2 
   !Array.isArray(observation.targets) || observation.targets.length !== 2)
   throw Error("Original LIVE fetch-block identity changed");
 console.log(JSON.stringify({ project, ...observation,
-  productionDataWrites: false, customerRowsRead: false }));
+  productionDataWrites: false, customerContentReturned: false }));

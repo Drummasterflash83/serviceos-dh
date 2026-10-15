@@ -1,18 +1,23 @@
 {
   "contract": "learn-build01-email-safe-claim-release/1",
-  "observedAt": "2026-10-15T13:46:28.923602Z",
+  "observedAt": "2026-10-15T14:00:31.144139Z",
   "scope": "Two pre-release blocked Drummonds Workspace recent-mail checkpoints; no provider writes or message content read in the verification",
   "gitTestCheckpoint": "ed911c48133942f6f6e6c1a5a1e9349d1a17d3f5",
+  "failureWindowGitTestCheckpoint": "6ffa3107b1669a14488dd8153c02c2bdcc1b4e6a",
   "migrationSha256": "2b0e87b0a7509caadcd5d879e89efa0daa6a4261cd7ce333c2236ef8f76ef9e6",
   "probeSha256": "2870da826de9ccb78074919f20d8632c56ba73df72a3966a0c9b0078205f9fe2",
   "priorFunctionMd5": "c0f6296f051aada999af147773066cac",
-  "installedFunctionMd5": "9828de434ae0713dfd544da6ce0a1345",
+  "initialInstalledFunctionMd5": "9828de434ae0713dfd544da6ce0a1345",
+  "installedFunctionMd5": "1b978429b0f1ee916b545f5c56953739",
+  "failureWindowMigrationSha256": "a85259af5951503f34da166cecd38d1684837a305c641d6fb680a9d2ca8a921d",
+  "failureWindowProbeSha256": "53835e8f9c65183d7749164dc31fe02eef1744b13c131351464aa7f1faa6b6ea",
   "guard": {
     "stream": "recent",
     "syncType": "workspace_messages",
     "blockCode": "fetch_failed",
     "priorFailure": "matching immutable blocked transition and failed run, persistence confirmed, zero messages, threads, IDs and gone counts",
     "maximumPreviousFailuresInTwoHours": 1,
+    "maximumFailuresInTwoHoursAtOriginalBlock": 2,
     "minimumCooldownMinutes": 5,
     "accountStatus": "active_dwd",
     "humanActorClaimed": false,
@@ -23,7 +28,8 @@
     "rollbackRehearsal": "passed; five synthetic transitions; no fixture retained",
     "installed": true,
     "installedRollbackProbe": "passed; five synthetic transitions including refusal without prior receipt",
-    "independentReadback": "candidate digest, protocol owner, service-role-only grant and fixture absence confirmed"
+    "independentReadback": "candidate digest, protocol owner, service-role-only grant and fixture absence confirmed",
+    "failureWindowFollowup": "installed and independently read back; 11-transition synthetic rollback probe included aged third-failure denial"
   },
   "live": {
     "rollbackRehearsal": "passed; five synthetic transitions; old definition independently read back afterwards",
@@ -31,12 +37,21 @@
     "installedRollbackProbe": "passed; five synthetic transitions including refusal without prior receipt",
     "independentReadbackAt": "2026-10-15T13:42:22.077461Z",
     "independentReadback": "same candidate digest, protocol owner, service-role-only grant and fixture absence confirmed",
+    "failureWindowFollowup": "installed at 2026-10-15T14:00:01.095Z; independently read back at 14:00:30.834875Z; 11-transition installed rollback probe included aged third-failure denial",
     "realScheduledRecovery": [
       { "originalRevision": 759, "currentRevision": 761, "automaticClaims": 1, "runStatus": "success", "checkpointState": "ready" },
       { "originalRevision": 777, "currentRevision": 779, "automaticClaims": 1, "runStatus": "success", "checkpointState": "ready" }
     ],
     "queueAtObservation": { "workspaceQueued": 20, "workspaceRunning": 0, "oldestQueuedAgeSeconds": 326 },
-    "schedulerAtObservation": { "status": "success", "queued": 7, "duplicates": 19, "enqueueUnconfirmed": 0, "knownIneligible": 0 }
+    "schedulerAtObservation": { "status": "success", "queued": 7, "duplicates": 19, "enqueueUnconfirmed": 0, "knownIneligible": 0 },
+    "nextSchedulerAt": "2026-10-15T13:50:06.465Z",
+    "nextScheduler": { "status": "success", "queued": 6, "duplicates": 20, "enqueueUnconfirmed": 0, "knownIneligible": 0, "workspaceQueuedAtNextObservation": 26 },
+    "delegationHoldAt": "2026-10-15T13:49:09.115357Z",
+    "delegationHold": { "count": 1, "checkpointRevision": 825, "accountStatus": "active_dwd", "mailboxStatus": "active", "syncEnabled": true, "directoryIdentityConflict": false, "connectionStatus": "active", "sameConnectionSuccessesInTwoHours": 454, "exactMailboxProviderGrantRechecked": false },
+    "postCorrectionMailboxes": "both remained ready with one audited automatic claim and subsequent successful scheduled runs; revisions 767 and 785 at 14:00:31 UTC",
+    "postCorrectionWorkspaceQueue": { "queued": 26, "running": 0, "oldestQueuedAgeSeconds": 267 },
+    "currentReviewBacklogAt": "2026-10-15T13:54:54.115048Z",
+    "currentReviewBacklog": { "projectionReviewAll": 4412, "projectionReviewEmail": 13, "projectionReviewPhone": 4399, "identityReview": 55731, "projectionPendingSample": 20, "identityPendingSample": 20 }
   },
   "remaining": {
     "adminDelegationBlock": 1,

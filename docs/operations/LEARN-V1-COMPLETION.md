@@ -23,6 +23,12 @@ override a later release observation. No requirement is silently deferred.
   probes included a negative blocked checkpoint lacking the matching receipt;
   it remained blocked. No synthetic fixture persisted, and LIVE installation
   did not alter the two old checkpoints directly.
+- A follow-up guard, installed at 14:00 UTC after separate TEST and LIVE
+  rollback rehearsals and smoke checks, also counts failures in the two hours
+  **at the time of the original block**. Its synthetic aged third-failure case
+  remains blocked even after the rolling window expires. The final installed
+  function digest is `1b978429b0f1ee916b545f5c56953739` in both
+  environments, with the same owner, grant and no retained fixture.
 - The ordinary LIVE 13:45 scheduled work subsequently claimed and completed
   both old `fetch_failed` checkpoints. Their revisions advanced from 759 to
   761 and 777 to 779, with one system-labelled automatic claim and a
@@ -34,16 +40,24 @@ override a later release observation. No requirement is silently deferred.
 
 - The 13:46 observation still showed 20 queued Workspace jobs. Continue
   watching the queue and later capture; a single successful interval is not
-  the required full working day. A separate `admin_delegation_missing` block
-  remains under review. Broader source/card/scoring, Slack incremental
+  the required full working day. The next 13:50 scheduler tick confirmed six
+  more jobs but left 26 queued; queue throughput needs observation. A separate
+  `admin_delegation_missing` block remains under review. Its mailbox and
+  connection are active, with 454 successful same-connection Workspace runs
+  in the preceding two hours; this does not prove delegation for that exact
+  mailbox. Broader source/card/scoring, Slack incremental
   capture, independent daily backup, full application/Auth recovery and
   Chris's business sign-off remain open.
+- A 13:55 read-only review check counted 4,412 current interaction-projection
+  holds, 55,731 identity review holds, and still returned bounded pending
+  projection and identity work. These are not failed processing receipts to
+  clear blindly; attribution and scoring must remain evidence-gated.
 
 ### Blocked externally
 
 - Standing daily backup-reader and recurring encrypted-copy approvals are
-  pending. The permanent Google delegation failure may require Workspace
-  admin action if source-side verification confirms the grant is absent.
+  pending. Mailbox-specific provider verification is needed before resuming
+  the delegation hold; Workspace admin action may be necessary if it fails.
 
 [Guarded automatic recovery evidence](evidence/learn-build01-email-safe-claim-2026-10-15.json).
 
