@@ -1,6 +1,46 @@
 # QuickBooks Online input — implementation and handover
 
-Updated 14 October 2026. Workstream: `codex/quickbooks-integration`.
+Updated 15 October 2026. Workstream: `codex/quickbooks-integration`.
+
+## Current LIVE position — 15 October 2026, 10:09 UTC
+
+### Working and verified
+
+- The LIVE imported-customer catalogue and reviewed combined cards remain
+  available. The last signed-in acceptance displayed Commusoft jobs and contacts
+  beside retained QuickBooks finance on a reviewed Drummonds card.
+- Two unattended 13-collection QuickBooks scans completed on 14 October. The
+  third scan stopped at 03:21 UTC on its first premature Intuit HTTP 401, after
+  210 saved pages; retained source history was not removed.
+- A bounded first-401 recovery was rehearsed with synthetic TEST records in a
+  rolled-back transaction, then installed and read back in TEST and LIVE. It
+  permits one fresh token and read reservation at a checkpoint; a second 401
+  stops for review. Prior function authority and unrelated QuickBooks functions
+  were preserved.
+- The already-approved LIVE run resumed without a new company grant. Intuit
+  saved token generation 11 at 10:06 UTC; the hosted worker advanced to 234
+  pages / 23,359 observations by 10:09 UTC, with no current run error.
+  [Recovery evidence](evidence/learn-quickbooks-401-recovery-2026-10-15.json).
+
+### Needs finishing
+
+- This resumed scan must traverse and reconcile all 13 collections, then prove
+  that the next unattended cycle starts and completes under the same policy.
+- Customer identities still need review before finance may be merged onto
+  additional Commusoft cards. Only five QuickBooks links are approved; the
+  catalogue keeps the remaining source records separately labelled. A 15 October
+  aggregate diagnostic found five uniquely corroborated card/account pairs,
+  already consistent with that reviewed count, and many records without strong
+  identifiers. Do not describe every customer as matched.
+- Commusoft job/contact coverage and an evidenced job-to-accounting crosswalk
+  remain separate acceptance work. No job profitability or complete-company
+  coverage claim follows from the accounting capture.
+
+### Blocked externally
+
+- None for the current token refresh. If Intuit returns a second 401 after the
+  new token, the connection will stop for explicit investigation or renewed
+  company consent.
 
 ## Current LIVE position — 14 October 2026, evening
 
