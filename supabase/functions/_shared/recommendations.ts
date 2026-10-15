@@ -269,9 +269,9 @@ export function buildRecommendationsForCard(input: {
 }
 
 /**
- * Idempotent upsert of one recommendation for a card. Insert as OPEN; on the
- * open-per-(card,type) unique violation, enrich the existing open row instead of
- * duplicating. Never throws. Returns { id, created }.
+ * Idempotent upsert of one recommendation for a card. Enrich an existing OPEN
+ * row first; the unique index still arbitrates a concurrent insert race.
+ * Never throws. Returns { id, created }.
  */
 export async function upsertRecommendation(
   client: SupabaseClient,
@@ -297,6 +297,22 @@ export async function upsertRecommendation(
     interaction_id: rec.interaction_id,
   };
   try {
+    // Most recurring syncs revisit existing cards. Probe once before inserting
+    // so ordinary refreshes do not generate a database unique-violation log for
+    // every recommendation. A concurrent creator is still handled below.
+    const { data: current, error: lookupError } = await client
+      .from("recommendations")
+      .select("id")
+      .eq("tenant_id", tenantId)
+      .eq("card_id", cardId)
+      .eq("type", rec.type)
+      .eq("status", "open")
+      .maybeSingle();
+    if (!lookupError && current?.id) {
+      const { error: updateError } = await client.from("recommendations")
+        .update(shared).eq("tenant_id", tenantId).eq("id", current.id);
+      return { id: updateError ? null : current.id as string, created: false };
+    }
     const { data, error } = await client
       .from("recommendations")
       .insert({
@@ -323,8 +339,10 @@ export async function upsertRecommendation(
         .eq("status", "open")
         .maybeSingle();
       const id = (existing?.id as string | undefined) ?? null;
-      if (id) await client.from("recommendations").update(shared).eq("id", id);
-      return { id, created: false };
+      if (!id) return { id: null, created: false };
+      const { error: updateError } = await client.from("recommendations")
+        .update(shared).eq("tenant_id", tenantId).eq("id", id);
+      return { id: updateError ? null : id, created: false };
     }
     return { id: null, created: false };
   } catch {

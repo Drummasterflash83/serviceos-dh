@@ -7,6 +7,36 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 23:55 UTC — processing timeout diagnosis and local recommendation correction.**
+
+### Working and verified
+
+- A bounded LIVE log aggregate found six PostgreSQL statement timeouts in the
+  23:47–23:51 window, including two projection-selector and two identity-
+  selector calls. The current LIVE definitions were measured against a pinned,
+  network-isolated production archive: identity batches of 50 took 0.40–0.55
+  seconds and projection batches of 200 took 0.34–0.39 seconds in that offline
+  run. The disposable container was removed. This does not reproduce LIVE
+  contention or dismiss the observed failures.
+- The same log source recorded 518 `recommendations_open_uk` conflicts in five
+  minutes. The insert-first recommendation refresh path explains those ordinary
+  conflicts; its contribution to database load or selector timeouts is not
+  established. A local candidate reads the existing tenant/card/type open row
+  before insert, retains the race fallback, and reports a failed update as
+  unconfirmed. Three focused synthetic tests pass.
+  [Sanitised diagnosis](evidence/learn-build01-processing-selector-timeouts-2026-10-15.json).
+
+### Needs finishing
+
+- The recommendation candidate is not deployed in TEST or LIVE. Recheck
+  ordinary projection and identity retries, hosted query load and result
+  preservation before claiming a reliability correction. The Graph retry and
+  source-to-card gaps below are also open.
+
+### Blocked externally
+
+- No overnight user action is needed for this diagnosis.
+
 **15 October, 23:48 UTC — source queues are active, but still have coverage gaps.**
 
 ### Working and verified
