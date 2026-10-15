@@ -22,7 +22,7 @@ jobs:
       - name: Check out reviewed backup source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: eda9e747adb554000b09a9ead1f85fc8ba0ad9db
+          ref: 2c1527da0438b837f477dd7fc888f95cded51c21
           persist-credentials: false
       - name: Select Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -53,7 +53,7 @@ jobs:
           image_id="$(docker image inspect public.ecr.aws/supabase/postgres:17.6.1.141 --format '{{.Id}}')"
           echo "Restoration image ID: $image_id"
           test "$image_id" = \
-            sha256:ba10e934f0a59990379f78ab9ed93926f1c291dd61a12fe4026f4202f1b89770
+            sha256:d5cf4781c958c8155cf57150e0648469c48cd915a9ff462a032c91011b4af8fb
           mkdir -m 700 .verification-results
       - name: Export, restore, encrypt and verify independent off-site copy
         shell: bash
