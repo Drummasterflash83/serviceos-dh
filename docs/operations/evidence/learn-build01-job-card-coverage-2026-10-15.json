@@ -24,6 +24,12 @@
     "linkSharePercent": 7.44,
     "denominatorMeaning": "Distinct retained Commusoft job identities ever observed in the approved API traversal, not proof of the provider's complete current universe."
   },
+  "reviewAttemptDistributionAt2146Utc": {
+    "jobProjectionAttempts": 944,
+    "distinctJobsWithLinkedAttempts": 941,
+    "heldJobAttempts": 0,
+    "meaning": "The large unlinked population has not passed through the explicit reviewed job-projection path; this is not a count of failed automatic projections."
+  },
   "signedInObservation": {
     "liveLearnMenuVisible": true,
     "jobCardListLoaded": true,
@@ -35,17 +41,26 @@
     "sampleJobCompletionTimezoneGapShown": true,
     "scoreDisplayed": false
   },
-  "localImprovementPendingRelease": {
+  "jobStatusListRelease": {
     "behavior": "Job list renders the exact saved canonical status separately from record verification, with a provider-lag qualification.",
-    "focusedTestsPassed": 27,
+    "testCheckpointCommit": "9b682d0b",
+    "productionCommit": "4d7084f202ffc942f354db87ab3e66994ab615c4",
+    "productionBranchRemoteHeadVerified": true,
+    "vercelGitStatus": "success",
+    "vercelProject": "serviceos-dh",
+    "signedInLiveAppObservationUtc": "2026-10-15T21:45:00Z",
+    "signedInDrummondsLearnMenuAndBrandingVisible": true,
+    "signedInJobListShowsSavedStatusSeparateFromReview": true,
+    "focusedTestsPassedOnProductionCandidate": 20,
     "typescriptPassed": true,
     "productionBuildAndPrebuildPassed": true,
-    "liveDeployment": false
+    "liveDeployment": true
   },
   "limits": [
     "Published source status is a saved observation, not proof of payment, a completion time or current provider state.",
     "Only five canonical jobs currently have linked communications; an empty job timeline cannot establish that no conversation exists.",
     "Only 941 of 12,649 retained observed Commusoft job identities have reviewed canonical links; the remaining 11,708 are not erased or counted as reviewed cards.",
+    "Current reviewed job attempts are linked outcomes; most observed source job identities have not yet been explicitly reviewed for canonical projection.",
     "No canonical engineer identity is linked; name-only assignment must not be guessed.",
     "Unzoned source completion values remain retained but cannot support elapsed-time or staff scoring.",
     "This sample and aggregate do not establish complete Commusoft provider coverage or owner business acceptance."

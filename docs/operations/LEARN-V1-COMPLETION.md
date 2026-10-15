@@ -7,6 +7,29 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 21:45 UTC — saved job status is explicit in LIVE cards.**
+
+### Working and verified
+
+- Production Git `4d7084f2` contains only the four-file card-list change. The
+  exact candidate passed 20 focused tests, TypeScript, all 47 prebuild checks
+  and the production build; Vercel reported success. In a signed-in LIVE
+  Drummonds workspace, LEARN and its existing branding remained visible and
+  job cards showed “Recorded complete · saved status may lag the provider”
+  while separately showing “Job record needs review.”
+  [Job-card evidence](evidence/learn-build01-job-card-coverage-2026-10-15.json).
+
+### Needs finishing
+
+- A clearer saved-status label does not confirm completion time, payment,
+  responsible engineer or a linked communication. The underlying job-card
+  coverage and business acceptance gaps below remain.
+
+### Blocked externally
+
+- No additional release permission is needed for this four-file change.
+  Provider timestamp meaning and Chris's final business review remain open.
+
 **15 October, 21:42 UTC — Slack queue fairness released; catch-up remains open.**
 
 ### Working and verified
@@ -43,9 +66,8 @@ override a later release observation. No requirement is silently deferred.
   of which 941 have reviewed canonical links (7.44%). All 941 linked jobs have a
   customer, 775 have a site, and only five have any linked communication.
   The sampled card explicitly showed missing owner, timeline and timezone
-  evidence; no score was displayed. A clearer saved-status label in the card
-  list passes local focused tests, TypeScript and the production build, but
-  awaits a separate frontend release.
+  evidence; no score was displayed. The clearer saved-status label described
+  above is now live.
   [Job-card evidence](evidence/learn-build01-job-card-coverage-2026-10-15.json).
 
 ### Needs finishing
@@ -54,7 +76,11 @@ override a later release observation. No requirement is silently deferred.
   confirm provider completion-time semantics and a reviewed engineer identity
   mapping, then demonstrate useful job progress and responsible-owner routing.
   All 941 job records remain unverified and have no published completion
-  instant. Do not publish staff/job duration or numerical scores from this gap.
+  instant. A 21:46 UTC aggregate found 944 linked job-projection attempts
+  covering those 941 identities and no held attempts: the remaining 11,708
+  source identities have not received reviewed canonical projection, rather
+  than failing a hidden automatic projection. Do not publish staff/job
+  duration or numerical scores from this gap.
 
 ### Blocked externally
 
