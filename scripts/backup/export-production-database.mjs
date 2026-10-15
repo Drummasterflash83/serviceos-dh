@@ -6,7 +6,7 @@
 import { spawn, spawnSync, execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { createInterface } from 'node:readline';
-import { mkdirSync, readFileSync, openSync, writeFileSync, closeSync,
+import { mkdirSync, readFileSync, openSync, writeFileSync, closeSync, statSync,
   appendFileSync, createWriteStream, renameSync, statfsSync } from 'node:fs';
 import { once } from 'node:events';
 import { pipeline } from 'node:stream/promises';
@@ -52,6 +52,28 @@ function privateJson(name, value) {
   renameSync(temp, `${root}/${name}`);
 }
 function save() { privateJson('report.json', report); }
+function safeExportFailureCode(error) {
+  const message = String(error?.message ?? '');
+  if (message === 'Native database export failed; raw output withheld') {
+    try {
+      const path = root + '/dump-stderr.log';
+      if (statSync(path).size > 65536) return 'native_export_diagnostic_unavailable';
+      const detail = readFileSync(path, 'utf8');
+      if (/permission denied|must be owner|insufficient privilege/i.test(detail)) return 'native_export_permission_denied';
+      if (/server version mismatch|unsupported server version/i.test(detail)) return 'native_export_version_mismatch';
+      if (/connection to server.*failed|server closed the connection|could not receive data/i.test(detail)) return 'native_export_connection_lost';
+      if (/no space left on device/i.test(detail)) return 'native_export_disk_full';
+      if (/query failed|error executing query/i.test(detail)) return 'native_export_query_failed';
+    } catch { /* Raw logs stay private even when unavailable. */ }
+    return 'native_export_failed_unclassified';
+  }
+  if (message === 'Insufficient private export disk space') return 'export_disk_preflight_failed';
+  if (message === 'Daily export image pin differs') return 'export_image_pin_failed';
+  if (message === 'database_source_reader_unavailable') return 'export_source_reader_unavailable';
+  if (message === 'Snapshot query timed out') return 'export_snapshot_query_timeout';
+  if (message === 'Snapshot client failed; raw error withheld') return 'export_snapshot_connection_failed';
+  return 'export_failure_unclassified';
+}
 function clientArgs(name, app, command) {
   names.push(name);
   return ['run', '--rm', '-i', '--pull=never', '--name', name,
@@ -295,7 +317,12 @@ try {
   // Keep diagnostic text private; never print the original exception or SQL.
   report.privateFailureDetail = String(error?.message || 'Unknown failure');
   if (markerFile !== undefined) save();
-  console.error(report.failure); process.exitCode = 1;
+  // The hosted supervisor removes private files. Preserve only a bounded,
+  // allowlisted category and stage in its log; no pg_dump or SQL text escapes.
+  if (unattendedDaily) console.log(JSON.stringify({ state: 'export_failed_safe',
+    stage: report.state, code: safeExportFailureCode(error), secretsPrinted: false }));
+  else console.error(report.failure);
+  process.exitCode = 1;
 } finally {
   if (login) login.password = '';
   keeper?.stdin.destroy();

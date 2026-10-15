@@ -58,3 +58,30 @@ test("unconfirmed native restore stops before encryption or copy without retry",
     assert.ok(!files.includes("encrypt.json"));
   } finally { await rm(base, { recursive: true, force: true }); }
 });
+
+test("hosted export failure reports only an allowlisted diagnostic and does not retry", async () => {
+  const base = await mkdtemp(join(tmpdir(), "daily-backup-test-"));
+  let calls = 0;
+  try {
+    await assert.rejects(runDailyDatabaseBackup({ base, runId: ID, day: "20261015",
+      execute: async () => {
+        calls++;
+        const error = Error("private provider text must not escape");
+        error.safeDiagnostic = { exportStage: "exporting_native_archive",
+          code: "native_export_connection_lost", privateText: "never logged" };
+        throw error;
+      },
+    }), (error) => {
+      assert.equal(error.message, "daily_backup_not_verified");
+      assert.deepEqual(error.safeDiagnostic, { stage: "export",
+        exportStage: "exporting_native_archive", code: "native_export_connection_lost" });
+      return true;
+    });
+    assert.equal(calls, 1);
+    const failure = JSON.parse(await readFile(join(base, `database-daily-run-${ID}`,
+      "failed.json"), "utf8"));
+    assert.equal(failure.stage, "export");
+    assert.equal(failure.code, "native_export_connection_lost");
+    assert.equal(JSON.stringify(failure).includes("private"), false);
+  } finally { await rm(base, { recursive: true, force: true }); }
+});

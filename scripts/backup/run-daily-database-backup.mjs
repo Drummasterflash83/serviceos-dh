@@ -8,6 +8,20 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const REPO = fileURLToPath(new URL("../../", import.meta.url));
 const PRIVATE = join(REPO, ".verification-results");
 const ID = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/;
+const SAFE_EXPORT_STAGES = new Set(["preflight", "opening_snapshot",
+  "exporting_native_archive", "export_complete_restore_unverified"]);
+const SAFE_EXPORT_CODES = new Set(["native_export_diagnostic_unavailable",
+  "native_export_permission_denied", "native_export_version_mismatch",
+  "native_export_connection_lost", "native_export_disk_full",
+  "native_export_query_failed", "native_export_failed_unclassified",
+  "export_disk_preflight_failed", "export_image_pin_failed",
+  "export_source_reader_unavailable", "export_snapshot_query_timeout",
+  "export_snapshot_connection_failed", "export_failure_unclassified"]);
+function safeExportDiagnostic(value) {
+  return value && SAFE_EXPORT_STAGES.has(value.exportStage) &&
+    SAFE_EXPORT_CODES.has(value.code)
+    ? { exportStage: value.exportStage, code: value.code } : null;
+}
 const STAGES = [
   ["export", "node", (source) => ["scripts/backup/export-production-database.mjs", "--export-unattended-daily", source], 100],
   ["native_restore", "python3", (source) => ["-B", "scripts/backup/verify_daily_native_export.py", source], 40],
@@ -42,7 +56,17 @@ async function runStage(command, args, minutes) {
       clearTimeout(timer);
       process.removeListener("SIGINT", stop);
       process.removeListener("SIGTERM", stop);
-      if (failed || code !== 0) reject(Error("daily_stage_unconfirmed"));
+      if (failed || code !== 0) {
+        let safe = null;
+        try {
+          const last = JSON.parse(Buffer.concat(chunks).toString("utf8").trim().split("\n").at(-1));
+          if (last?.state === "export_failed_safe" && last.secretsPrinted === false)
+            safe = safeExportDiagnostic({ exportStage: last.stage, code: last.code });
+        } catch { /* Unknown child output never enters hosted logs. */ }
+        const error = Error("daily_stage_unconfirmed");
+        error.safeDiagnostic = safe;
+        reject(error);
+      }
       else resolve(Buffer.concat(chunks).toString("utf8"));
     });
   });
@@ -97,11 +121,16 @@ export async function runDailyDatabaseBackup({
         state: "completed", at: new Date().toISOString(), productionWrites: false });
     }
     throw Error("daily_pipeline_incomplete");
-  } catch {
-    await save(join(journal, "failed.json"), { contract: "database-daily-attempt/1",
+  } catch (error) {
+    const diagnosis = stage === "export" ? safeExportDiagnostic(error?.safeDiagnostic) : null;
+    const failure = { contract: "database-daily-attempt/1",
       state: "daily_backup_not_verified", runId, stage,
-      inspectionRequired: true, productionWrites: false });
-    throw Error("daily_backup_not_verified");
+      ...(diagnosis ? diagnosis : { code: "stage_unconfirmed" }),
+      inspectionRequired: true, productionWrites: false };
+    await save(join(journal, "failed.json"), failure);
+    const reported = Error("daily_backup_not_verified");
+    reported.safeDiagnostic = { stage, ...(diagnosis ?? { code: "stage_unconfirmed" }) };
+    throw reported;
   }
 }
 
@@ -110,8 +139,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     if (process.argv.slice(2).join(" ") !== "--run-once")
       throw Error("daily_backup_mode_invalid");
     console.log(JSON.stringify(await runDailyDatabaseBackup()));
-  } catch {
-    console.error(JSON.stringify({ state: "daily_backup_not_verified", secretsPrinted: false }));
+  } catch (error) {
+    console.error(JSON.stringify({ state: "daily_backup_not_verified",
+      ...(error?.safeDiagnostic ?? { stage: "preflight", code: "stage_unconfirmed" }),
+      secretsPrinted: false }));
     process.exitCode = 1;
   }
 }
