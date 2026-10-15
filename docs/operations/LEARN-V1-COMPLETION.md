@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 18:00 UTC — hosted backup export failed; bounded guard correction prepared.**
+
+### Working and verified
+
+- Two manual hosted rehearsals used the approved main-only backup environment.
+  Both failed before a verified off-site copy. The second emitted a safe stage of
+  `exporting_native_archive`; a separate Restore-only object listing found zero
+  new backup objects after it began. Its three-minute duration is consistent
+  with the export's three-minute no-output guard, but the old diagnostic cannot
+  prove the exact cause. The earlier local full export, native restore and
+  independent encrypted copy remain verified as one attempt.
+- The export no-output guard is now fifteen minutes while the ninety-minute
+  total limit remains. A later stop will expose only an allowlisted reason.
+  Script syntax and three supervisor tests pass; a new hosted run is pending.
+  [Hosted diagnostic evidence](evidence/learn-build01-hosted-daily-export-2026-10-15.json).
+
+### Needs finishing
+
+- Run the exact corrected hosted manual rehearsal, verify an independent
+  off-site copy and restore, then activate and observe daily scheduling and a
+  missed-success alert. Neither failed run counts as unattended backup success.
+- Prove reply ingestion with saved records and the reviewed Slack recovery;
+  continue source/card/scoring and full application/Auth recovery checks.
+
+### Blocked externally
+
+- Friday 16 October, 09:00–17:00 London remains the first full unattended
+  working-day window. Chris retains the final business sign-off.
+
 **15 October, 17:48 UTC — first unattended Slack thread window completed with zero replies; aged card gap is zero at this instant.**
 
 ### Working and verified

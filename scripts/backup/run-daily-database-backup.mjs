@@ -14,6 +14,7 @@ const SAFE_EXPORT_CODES = new Set(["native_export_diagnostic_unavailable",
   "native_export_permission_denied", "native_export_version_mismatch",
   "native_export_connection_lost", "native_export_disk_full",
   "native_export_query_failed", "native_export_failed_unclassified",
+  "native_export_no_progress", "native_export_duration_limit",
   "export_disk_preflight_failed", "export_image_pin_failed",
   "export_source_reader_unavailable", "export_snapshot_query_timeout",
   "export_snapshot_connection_failed", "export_failure_unclassified"]);

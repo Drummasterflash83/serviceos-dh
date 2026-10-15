@@ -54,6 +54,10 @@ function privateJson(name, value) {
 function save() { privateJson('report.json', report); }
 function safeExportFailureCode(error) {
   const message = String(error?.message ?? '');
+  if (report.stopReason === 'no_archive_progress_for_fifteen_minutes')
+    return 'native_export_no_progress';
+  if (report.stopReason === 'maximum_duration_reached')
+    return 'native_export_duration_limit';
   if (message === 'Native database export failed; raw output withheld') {
     try {
       const path = root + '/dump-stderr.log';
@@ -269,7 +273,11 @@ try {
       lastProgressAt: new Date(lastArchiveProgress).toISOString() };
     save();
     console.log(JSON.stringify({ stage: report.state, archiveBytes }));
-    if (Date.now() - lastArchiveProgress >= 180000) stopDump('no_archive_progress_for_three_minutes');
+    // A full-project archive can spend several minutes inside one compressed
+    // table on a slower hosted runner. Bound stalls separately from the 90-minute
+    // total export deadline without treating that normal gap as a failed copy.
+    if (Date.now() - lastArchiveProgress >= 15 * 60000)
+      stopDump('no_archive_progress_for_fifteen_minutes');
   }, 30000) : null;
   try {
     await pipeline(dump.stdout, output);
