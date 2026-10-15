@@ -3,13 +3,20 @@
 ## What is live now
 
 The reusable connector and Drummonds production app registration are installed.
-The real DRUMMOND HEATING grant is verified. The first approved pass retained
-49,893 records and paused at 500 requests: customers and invoices traversed,
-payments checkpointed after 15,100 records. Other entity types remain pending.
-This is not continuous sync.
-Do not equate an enabled module, completed OAuth flow or saved page count with
-complete/reconciled accounts. Current status and counts are in OpenFolk → selected
-client → Modules → QuickBooks accounting connection.
+The real DRUMMOND HEATING grant is verified. Two unattended full scans completed
+on 14 October 2026 across all 13 approved accounting collections. The six-hour
+recurring policy is enabled and a third full scan was still progressing at the
+15 October 11:21 UTC check: 929 saved pages, 930 requests, no run error and no
+source conflicts. Do not call that third scan complete until its final receipts
+and next due time are verified. The current run and connection status are in
+OpenFolk → selected client → Modules → QuickBooks accounting connection.
+
+The LIVE customer catalogue retains roughly 4,311 QuickBooks main accounts
+alongside 1,553 Commusoft customer source records. Those are provider records,
+not deduplicated customers. Twenty-four QuickBooks identities were individually
+reviewed and linked to existing Commusoft customer cards by 15 October. Other
+records remain separate until reviewed; an enabled module, OAuth grant or saved
+page count does not establish complete identity matching or reconciled accounts.
 
 ## Connecting another authorised client
 
@@ -28,18 +35,21 @@ client → Modules → QuickBooks accounting connection.
    types, page/request limits and deadline. Source identities include the tenant,
    environment, realm, entity and provider ID; never merge on display name alone.
 
-## Current processing requirement
+## Current processing arrangement
 
-The hosted QuickBooks worker exists, but its dedicated trigger/dispatch has not
-been enabled. The first Drummonds run uses the exact repository worker with a
-local runner pinned to the approved run ID. Queuing another import in the UI
-alone does not guarantee that it will be processed. Do not leave a queued import
-unattended without a verified worker arrangement.
+The production hosted dispatcher and dedicated accounting worker are enabled.
+They process Drummonds' recorded six-hour recurring policy without this Mac.
+Each cycle is limited to 3,000 read-only accounting requests over 24 hours;
+the next cycle is due six hours after the previous one completes. A held,
+expired, failed or request-limited run requires review. Do not restart or widen
+one simply because a status poll times out. Two completed unattended cycles,
+the third in-progress cycle and normal token renewal are recorded in
+[the V2 handoff](LEARN-QUICKBOOKS-V2-HANDOFF.md) and its linked evidence.
 
-A hosted dispatcher can process already-authorised bounded runs independently of
-this Mac once separately configured and verified. It does not itself create new
-recurring scans. Recurring refresh policy, source-change/deletion reconciliation
-and a sustained operating test are separate finishing work, not completed features.
+The worker retains source versions, page receipts and import checkpoints. It
+does not reconcile provider deletions or automatically approve cross-provider
+customer or job identities. Verify current run state and due time in OpenFolk
+before making a freshness claim to a client.
 
 ## Reviewing the result
 
@@ -52,9 +62,11 @@ and a sustained operating test are separate finishing work, not completed featur
   describe this as 13,158 separate customer businesses.
 - Customer-card finance requires reviewed links. Use Client information, select
   the customer, provide an operator reason, then load retained QuickBooks
-  customers. Compare identifying evidence before saving a link. No automatic
-  links were created by the first capture. Commusoft remains authoritative for
-  current job codes; preserve the original QuickBooks job references.
+  customers. Compare current source identity, name, contact and address evidence
+  before saving a link. Existing reviewed links remain auditable; new candidates
+  must not be silently auto-approved. Commusoft remains authoritative for current
+  job codes; preserve original QuickBooks job references. A customer-level
+  invoice is not proof of its relationship to a particular job.
 - Finance is restricted to company owners/admins and authorised logged support.
   Check dates and currencies; do not sum unlike currencies or describe captured
   balances as reconciled accounts. Disconnect does not delete retained history.
