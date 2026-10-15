@@ -1,0 +1,49 @@
+{
+  "version": "learn-build01-slack-steady-state-capacity/1",
+  "observedAtUtc": "2026-10-15T22:09:00Z",
+  "environment": "LIVE read-only subscription and queue aggregates; repository scheduler and pacing inspection",
+  "readOnly": true,
+  "approvedScope": "160 enabled channel-history and observed-reply subscriptions; individual and group DMs excluded",
+  "liveReadbackAt220819Utc": {
+    "subscriptions": 160,
+    "enabled": 160,
+    "advancedPastHandoffCutoff": 123,
+    "moreThanOneDayBehind": 118,
+    "moreThanOneHourBehind": 160,
+    "oldestNextStart": "2026-10-13T09:30:00Z",
+    "newestNextStart": "2026-10-15T16:44:01Z",
+    "states": { "threadsPending": 39, "windowActive": 113, "windowQueued": 8 }
+  },
+  "liveQueueAt220834Utc": {
+    "channelHistoryQueued": 119,
+    "observedReplyQueued": 655,
+    "observedReplyDueOverOneHour": 215,
+    "historyCreatedLastThirtyMinutes": 16,
+    "historySucceededLastThirtyMinutes": 20,
+    "replyCreatedLastThirtyMinutes": 5,
+    "replySucceededLastThirtyMinutes": 20,
+    "lastHistorySuccessUtc": "2026-10-15T22:08:24Z",
+    "lastReplySuccessUtc": "2026-10-15T22:07:39Z"
+  },
+  "projectHealthAt220900Utc": {
+    "db": "ACTIVE_HEALTHY",
+    "auth": "ACTIVE_HEALTHY",
+    "rest": "ACTIVE_HEALTHY",
+    "storage": "ACTIVE_HEALTHY",
+    "postgresqlRestartsMetric": 0
+  },
+  "steadyStateLowerBound": {
+    "source": "Near-live scheduler returns to windows of up to 15 minutes; each completed history window is gated on observed-parent reply checks. The approved internal Slack app currently uses a 30-second shared workspace request cooldown. The earlier real-source inventory observed 870 parent roots in 69 channels.",
+    "channelWindowsPerHourAtFifteenMinutes": 640,
+    "minimumChannelProviderRequestsPerHour": 640,
+    "maximumProviderRequestsPerHourAtThirtySecondCooldown": 120,
+    "channelOnlyDemandToCapacityRatio": 5.33,
+    "additionalObservedParentChecks": "The current reply scheduler rediscovers every saved parent root within a channel for each recurring history window. If all 870 retained roots are eligible at every 15-minute boundary, this adds up to 3,480 reply-window requests per hour before pagination. This is a design projection, not an observed provider-request count."
+  },
+  "interpretation": "The short-term successful job stream cannot establish sustainable 160-channel near-live capture. Even channel history alone exceeds the current shared pacing limit in steady state. Longer catch-up windows apply while a channel is more than one day behind, but the installed scheduler returns to 15-minute windows near live. Reply checks increase demand. A reviewed freshness/capacity design is required before Build 01 can claim unattended Slack convergence.",
+  "limits": [
+    "The current queue is influenced by historical catch-up, retries and unfinished windows; the lower-bound model describes eventual 15-minute steady state, not measured hourly API traffic.",
+    "A successful or empty provider window does not establish full source coverage in still-lagged channels.",
+    "No capture scope, workspace pacing, provider permission, source record, subscription or schedule was changed by this readback."
+  ]
+}

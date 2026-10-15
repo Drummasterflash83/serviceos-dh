@@ -7,6 +7,36 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 22:09 UTC — approved Slack scope exceeds its near-live request budget.**
+
+### Working and verified
+
+- All 160 ongoing channel/reply subscriptions remain enabled. A bounded LIVE
+  read found 123 advanced past the saved handoff cutoff, while 118 were still
+  more than a day behind. In the preceding half-hour, 20 channel-history and
+  20 reply jobs succeeded, and all four checked project services were healthy
+  at 22:09 UTC. [Capacity readback](evidence/learn-build01-slack-steady-state-capacity-2026-10-15.json).
+
+### Needs finishing
+
+- The installed scheduler returns to at most 15-minute windows near live. Across
+  160 channels, that requires at least 640 channel-history requests per hour
+  before pagination or reply checks. The approved internal app's current
+  30-second shared cooldown permits at most about 120 requests per hour.
+  Existing observed-parent reply discovery rechecks saved roots for each
+  recurring window, adding further demand. Short-term settlements cannot prove
+  that this configuration will sustain unattended capture. Rework the cadence
+  and reply polling with explicit freshness and complete-window guards, test it
+  with the saved 160-channel scope, then observe real catch-up without silently
+  narrowing channels or adding DMs.
+
+### Blocked externally
+
+- No new provider access is needed to diagnose the capacity gap. The acceptable
+  Slack evidence delay is a business tradeoff to present to Chris if the
+  corrected design cannot meet the existing near-live intent within the
+  provider's actual request budget. His final business signoff remains open.
+
 **15 October, 22:04 UTC — transient LIVE database and Storage health failure.**
 
 ### Working and verified
