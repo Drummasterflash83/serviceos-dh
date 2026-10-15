@@ -7,6 +7,47 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 17:35 UTC — one keyless backup copy verified; exact Slack reply recovery queued; Build 01 remains open.**
+
+### Working and verified
+
+- The dedicated-reader daily attempt `911be91a` completed a fresh, read-only
+  full-project export. Its isolated PostgreSQL restore matched every archived
+  physical table, COPY row, sequence and the network supplement; the sandbox
+  was removed. The 1,181,810,568-byte age-encrypted package was copied to the
+  approved private London bucket and downloaded through the separate Restore
+  identity. No recovery key or fingerprint was read. This proves **one**
+  independent copy and native restore, not daily continuity or Vault recovery.
+- The narrow older-parent guard in the Slack reply reader passed 45 focused
+  tests and a synthetic check against the downloaded LIVE worker. TEST v15 and
+  LIVE v16 have the same deployed wire hash and still require JWT. Through the
+  logged OpenFolk operator control, the exact held recurring reply window was
+  continued under its original channel and 13 October 10:30–10:45 scope. The
+  new job is queued; no DM scope was added and real provider success is pending.
+- A 17:30 UTC aggregate found 160 approved ongoing Slack subscriptions, 79
+  channels advanced beyond the saved cutoff and no cutoff regression. Graph
+  processing had two successes in the prior hour. Of 3,843 active customer
+  cards, 3,841 were projected; the latest identity batch retained two
+  unconfirmed deliveries. These are operating measurements, not full coverage.
+  [Interim evidence](evidence/learn-build01-1710-backup-and-slack-recovery-2026-10-15.json).
+
+### Needs finishing
+
+- Verify the queued reply job against Slack and the remaining reply-window
+  progress. The manual recovery must not count as unattended success.
+- Finish the hosted daily backup rehearsal, test decrypt/Vault recovery of a
+  fresh off-site copy, then activate and observe a daily schedule and missed-run
+  alert. Full application/Auth recovery and controlled capture resumption remain
+  separate gates.
+- Reconcile the two unprojected cards, identity delivery failures, source-to-graph
+  lag and scorecard policy/evidence. No score is published from an inferred
+  business rule or missing source.
+
+### Blocked externally
+
+- Friday 16 October, 09:00–17:00 London is the first eligible full unattended
+  working-day observation. Chris will review and sign off the business result.
+
 **15 October, 16:56 UTC — all current LIVE Edge Function sources retained privately for recovery.**
 
 ### Working and verified

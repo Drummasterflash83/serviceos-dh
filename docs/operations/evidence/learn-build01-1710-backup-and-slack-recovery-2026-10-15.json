@@ -1,0 +1,56 @@
+{
+  "version": "learn-build01-interim-evidence/1",
+  "observedAt": "2026-10-15T17:35:18Z",
+  "environment": "LIVE",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "databaseBackup": {
+    "runId": "911be91a-8569-4fa6-ab26-cac68014a999",
+    "completedAt": "2026-10-15T17:10:59.354Z",
+    "source": "dedicated whole-database reader, read-only export",
+    "isolatedNativeRestore": {
+      "state": "all_archived_copy_rows_and_sequences_match",
+      "tableCatalogMatched": true,
+      "extensionVersionsMatched": true,
+      "allInventoriedPhysicalTablesCaptured": true,
+      "containerRemoved": true
+    },
+    "encryptedBytes": 1181810568,
+    "independentLondonStorageDownloadVerified": true,
+    "recoveryKeyRead": false,
+    "recoveryKeyAndVaultRestoreVerifiedForThisCopy": false,
+    "sustainedDailyOperationVerified": false,
+    "productionWrites": false
+  },
+  "slackReplyRelease": {
+    "scope": "one previously observed parent outside an approved recurring reply window",
+    "testWorkerVersion": 15,
+    "liveWorkerVersion": 16,
+    "deployedWireSha256Both": "8ac9af8ac9dc155e63e96c9fbcd0c3f7f8e4383425e1193d445da3339a0e36c8",
+    "focusedTestsPassed": 45,
+    "downloadedLiveHandlerSyntheticCheckPassed": true,
+    "exactApprovedRecoveryJob": "3df5f195-31ae-4aeb-8259-904308ba5661",
+    "recoveryStatusAtObservation": "queued",
+    "originalImportRetained": true,
+    "sameChannelAndWindow": true,
+    "directMessagesIncluded": false,
+    "realProviderCompletionVerified": false
+  },
+  "latestOperatingSnapshot": {
+    "at": "2026-10-15T17:30:34.377Z",
+    "ongoingSlackSubscriptions": 160,
+    "channelsAdvancedPastSavedCutoff": 79,
+    "cutoffRegressions": 0,
+    "activeCustomerCards": 3843,
+    "projectedCustomerCards": 3841,
+    "latestIdentityBatchUnconfirmedDeliveries": 2,
+    "graphSuccessesInPastHour": 2
+  },
+  "hostedDailyRehearsal": {
+    "runId": 38778120658,
+    "stateAtObservation": "in_progress",
+    "acceptanceVerified": false
+  },
+  "fullWorkingDayVerified": false,
+  "applicationAndAuthRecoveryVerified": false,
+  "businessAccepted": false
+}
