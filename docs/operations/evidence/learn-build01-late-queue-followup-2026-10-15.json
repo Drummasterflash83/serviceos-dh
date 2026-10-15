@@ -1,0 +1,34 @@
+{
+  "version": "learn-build01-late-queue-followup/1",
+  "observed_at_utc": "2026-10-15T23:48:00Z",
+  "environment": "LIVE aggregate-only readback",
+  "email": {
+    "eligible_source_without_interaction_at_23_46": 6046,
+    "same_gap_at_23_22": 5552,
+    "without_receipt": 6046,
+    "with_review_hold": 0,
+    "older_than_one_day": 0,
+    "two_hour_projection_jobs_with_review_required_state": 32,
+    "email_interactions_processed_in_those_jobs": 6400,
+    "continued_batches": 32,
+    "source_failures_reported": 0,
+    "interpretation": "A review-required job status can coexist with a fully published 200-item batch and a durable continuation. The source gap rose in this window, so processing throughput alone is not convergence proof."
+  },
+  "graph": {
+    "eligible_interactions_without_nodes_at_23_47": 18419,
+    "older_than_one_day": 810,
+    "history_drain_job": "retrying since 23:28 with its next ordinary attempt due about 00:28 UTC",
+    "interpretation": "The replacement selector has exact-result TEST/LIVE evidence, but there was no ordinary successful history-drain retry after its release at this observation."
+  },
+  "slack": {
+    "enabled_approved_channel_and_reply_subscriptions": 160,
+    "channels_advanced_past_handoff_cutoff": 129,
+    "channels_more_than_one_day_behind": 76,
+    "history_jobs_succeeded_last_hour": 45,
+    "reply_jobs_succeeded_last_hour": 39,
+    "retained_post_cutoff_messages": 0,
+    "retained_post_cutoff_replies": 0,
+    "interpretation": "More channel boundaries advanced and old lag fell, but no post-cutoff message or reply has yet been retained. Provider completeness and steady-state capacity remain unproved."
+  },
+  "access": "No source-provider calls, source writes, direct production writes or credential reads were used in this readback."
+}

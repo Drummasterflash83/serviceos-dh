@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 23:48 UTC — source queues are active, but still have coverage gaps.**
+
+### Working and verified
+
+- In the preceding two hours, 32 ordinary all-source projection batches
+  published 6,400 email interactions, each with a durable continuation and no
+  reported source failure. Their `projection_review_required` terminal labels
+  coexist with successful publications because separate legacy sources remain
+  held for review; the terminal label alone is not a failed-batch count.
+- The approved Slack handoff remains exactly 160 enabled public channel/reply
+  subscriptions. Channel boundaries past the cutoff rose to 129 and those more
+  than a day behind fell to 76. The previous hour completed 45 channel and 39
+  reply jobs. [Aggregate readback](evidence/learn-build01-late-queue-followup-2026-10-15.json).
+
+### Needs finishing
+
+- Eligible email sources without interactions rose from 5,552 at 23:22 to
+  6,046 at 23:46 as new source rows arrived. The eligible Graph gap is 18,419
+  interactions at 23:47, including 810 created over a day ago; ordinary Graph
+  history retry is still due about 00:28 UTC. The Slack read still found zero
+  retained post-cutoff messages or replies. These are current point-in-time
+  limitations, not grounds for business or unattended acceptance.
+
+### Blocked externally
+
+- No overnight user action is needed. The Slack Events-versus-slower-polling
+  choice and Chris's final business acceptance remain open after technical
+  evidence is ready.
+
 **15 October, 23:44 UTC — Graph history selector bounded; ordinary retry pending.**
 
 ### Working and verified
