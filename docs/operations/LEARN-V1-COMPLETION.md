@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**15 October, 19:39 UTC — isolated Auth startup and fresh synthetic login passed.**
+**15 October, 19:50 UTC — isolated Auth and card API tenant boundary passed.**
 
 ### Working and verified
 
@@ -16,14 +16,19 @@ override a later release observation. No requirement is silently deferred.
   against it in the same network-isolated container namespace, with no host
   ports, external email or production writes. A synthetic user was created with
   a new signing secret, signed in with a password, and successfully read back
-  through its new token. The digest of the original user IDs remained unchanged;
-  both disposable containers were removed. This uses no further Touch ID.
+  through its new token. PostgREST then returned zero cards before tenant
+  assignment, five Drummonds cards after assignment, and only one synthetic
+  card after moving that user to a second disposable tenant. The original user
+  ID digest stayed unchanged; all three containers were removed. The offline
+  `authenticator` role's two preload libraries had to be replayed separately
+  to retain its original list semantics. This uses no further Touch ID.
   [Isolated Auth evidence](evidence/learn-build01-isolated-auth-service-recovery-2026-10-15.json).
 
 ### Needs finishing
 
-- Prove isolated PostgREST and frontend access with tenant boundaries, retained
-  application/runtime configuration and controlled capture resumption. No real
+- Prove isolated frontend access, broader operator and ordinary-client tenant
+  boundaries, retained application/runtime configuration and controlled capture
+  resumption. No real
   user's login or old-session continuation was tested, and full service
   recovery is still unproven. The LIVE LEARN menu regression, source/card/Graph
   backlog and scoring/working-day gates remain open.

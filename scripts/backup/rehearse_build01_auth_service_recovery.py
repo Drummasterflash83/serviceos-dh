@@ -27,9 +27,13 @@ DB_IMAGE = 'public.ecr.aws/supabase/postgres:17.6.1.165'
 DB_IMAGE_ID = 'sha256:28f0e16a019e648089fc1a6d333549a55548f6019c15ae4bd7cd58b989027518'
 AUTH_IMAGE = 'public.ecr.aws/supabase/gotrue:v2.196.0'
 AUTH_IMAGE_ID = 'sha256:c0c25187a6b835e65a6f6e6c6b39d090e832d40e6de5186f2c038e0411944232'
+REST_IMAGE = 'public.ecr.aws/supabase/postgrest:v14.5'
+REST_IMAGE_ID = 'sha256:b574528fe109c8343c1247155734d03df8c34b462f342dca0ccc20244fc36ef9'
 LABEL = 'ai.openfolk.serviceos.auth-recovery'
+REST_LABEL = 'ai.openfolk.serviceos.rest-recovery'
 RUN = uuid.uuid4().hex
 AUTH_NAME = 'serviceos-auth-recovery-' + RUN
+REST_NAME = 'serviceos-rest-recovery-' + RUN
 REPORT = ROOT / '.verification-results' / ('learn-build01-auth-recovery-' + RUN + '.json')
 DOCKER = '/usr/local/bin/docker'
 
@@ -57,14 +61,25 @@ def cleanup_auth():
         raise RecoveryError('Offline Auth container cleanup unconfirmed')
 
 
-def curl_inside(db_name, path, *, method='GET', headers=(), payload=None):
+def cleanup_rest():
+    found = checked(['ps', '-aq', '--filter', 'name=^/' + REST_NAME + '$'])
+    if found.strip():
+        meta = json.loads(checked(['inspect', REST_NAME]))[0]
+        if (meta.get('Config', {}).get('Labels') or {}).get(REST_LABEL) != RUN:
+            raise RecoveryError('Refusing to remove unowned REST container')
+        checked(['rm', '-f', REST_NAME])
+    if checked(['ps', '-aq', '--filter', 'name=^/' + REST_NAME + '$']).strip():
+        raise RecoveryError('Offline REST container cleanup unconfirmed')
+
+
+def curl_inside(db_name, path, *, method='GET', headers=(), payload=None, port=9999):
     args = ['exec', '-i', db_name, 'curl', '--silent', '--show-error', '--max-time', '8',
             '--output', '-', '--write-out', '\n%{http_code}', '-X', method]
     for header in headers:
         args.extend(['-H', header])
     if payload is not None:
         args.extend(['--data-binary', '@-'])
-    args.append('http://127.0.0.1:9999' + path)
+    args.append('http://127.0.0.1:' + str(port) + path)
     result = subprocess.run([DOCKER, *args], input=payload, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, timeout=15)
     if result.returncode or b'\n' not in result.stdout:
@@ -94,7 +109,8 @@ def run():
     report = {'version':'learn-build01-auth-recovery/1', 'state':'preflight',
               'productionWrites':False, 'externalNetwork':False, 'hostPorts':0,
               'realUserLoginAttempted':False, 'emailSent':False,
-              'authContainerRemoved':False, 'databaseContainerRemoved':False}
+              'authContainerRemoved':False, 'restContainerRemoved':False,
+              'databaseContainerRemoved':False}
     target = None
     stage = 'preflight'
     try:
@@ -109,6 +125,8 @@ def run():
         inventory = json.loads((SOURCE/'source-inventory.json').read_text())
         if json.loads(checked(['image','inspect',AUTH_IMAGE]))[0]['Id'] != AUTH_IMAGE_ID:
             raise RecoveryError('Auth image pin differs')
+        if json.loads(checked(['image','inspect',REST_IMAGE]))[0]['Id'] != REST_IMAGE_ID:
+            raise RecoveryError('REST image pin differs')
         stage = 'database_restore'
         target = RestoreSandbox(image=DB_IMAGE, network_extension=True,
                                 private_diagnostics=SOURCE/'auth-restore-private-error')
@@ -116,6 +134,12 @@ def run():
             if target.image_id != DB_IMAGE_ID:
                 raise RecoveryError('PostgreSQL image pin differs')
             prepare_archive_roles(target, inventory)
+            # The inventory stores this list-valued GUC as one text field.
+            # Replaying it as one SQL string makes PostgreSQL look for a single
+            # library named "supautils, safeupdate". Preserve both original
+            # libraries as separate list members for the isolated API login.
+            target.query("alter role authenticator set session_preload_libraries "
+                         "to 'supautils', 'safeupdate';")
             archive_receipt = target.restore_native_archive(ARCHIVE)
             if archive_receipt != EXPECTED_ARCHIVE:
                 raise RecoveryError('Restored archive receipt differs')
@@ -203,11 +227,87 @@ def run():
                 " filter(where email not like 'build01-%@invalid.test'),''))) from auth.users;"))
             if users_after['count'] != users_before['count']+1 or users_after['digest'] != users_before['digest']:
                 raise RecoveryError('Preserved Auth user inventory changed')
+            authn_check = target._run(['exec',target.name,'psql','-X','-h','127.0.0.1',
+                '-U','authenticator','-d','postgres','-Atq','-v','ON_ERROR_STOP=1',
+                '-c','select 1;'])
+            if authn_check.strip() != b'1':
+                raise RecoveryError('Restored API database login unconfirmed')
             report.update(state='isolated_auth_fresh_login_verified', syntheticLogin=True,
                           originalUsersPreserved=True, authUsersAfter=users_after['count'],
                           syntheticNewSigningSecretUsed=True,
                           oldSessionContinuationVerified=False)
+            stage = 'tenant_api_boundary'
+            rest_env = {
+                'PGRST_DB_URI':'postgres://authenticator@127.0.0.1:5432/postgres?sslmode=disable',
+                'PGRST_DB_SCHEMAS':'public', 'PGRST_DB_ANON_ROLE':'anon',
+                'PGRST_DB_EXTRA_SEARCH_PATH':'public,extensions',
+                'PGRST_DB_MAX_ROWS':'1000', 'PGRST_JWT_SECRET':secret,
+                'PGRST_DB_USE_LEGACY_GUCS':'false',
+                'PGRST_SERVER_HOST':'127.0.0.1', 'PGRST_SERVER_PORT':'3000',
+                'PGRST_ADMIN_SERVER_HOST':'127.0.0.1', 'PGRST_ADMIN_SERVER_PORT':'3001',
+            }
+            rest_cmd = ['run','-d','--pull=never','--network','container:'+target.name,
+                        '--ipc','private','--name',REST_NAME,'--label',REST_LABEL+'='+RUN,
+                        '--log-driver','local','--log-opt','max-size=1m',
+                        '--log-opt','max-file=2','--security-opt','no-new-privileges',
+                        '--cap-drop','ALL','--memory','512m','--cpus','1','--pids-limit','128']
+            for key,value in rest_env.items():
+                rest_cmd.extend(['-e',key+'='+value])
+            checked([*rest_cmd,REST_IMAGE_ID], timeout=30)
+            rest_meta = json.loads(checked(['inspect',REST_NAME]))[0]
+            if not (rest_meta['Name']=='/'+REST_NAME and rest_meta['State']['Running']
+                    and rest_meta['HostConfig']['NetworkMode']=='container:'+target._inspect()['Id']
+                    and not rest_meta['HostConfig'].get('PortBindings')
+                    and not rest_meta.get('Mounts')
+                    and not rest_meta['HostConfig'].get('Privileged')
+                    and rest_meta['HostConfig']['LogConfig']['Type']=='local'
+                    and rest_meta['Image']==REST_IMAGE_ID):
+                raise RecoveryError('Offline REST containment changed')
+            bearer = 'Authorization: Bearer ' + login['access_token']
+            for _ in range(80):
+                api_status,api_rows = curl_inside(target.name,
+                    '/customer_cards?select=id,tenant_id&limit=5',
+                    headers=(bearer,),port=3000)
+                if api_status == 200:
+                    break
+                if not json.loads(checked(['inspect',REST_NAME]))[0]['State']['Running']:
+                    raise RecoveryError('Offline REST exited before query')
+                time.sleep(.25)
+            if api_status != 200 or api_rows != []:
+                report['restHttpStatus'] = api_status
+                report['restErrorCode'] = api_rows.get('code') if isinstance(api_rows,dict) else None
+                raise RecoveryError('Unassigned synthetic user card access differed: HTTP '+str(api_status))
+            actor = str(uuid.UUID(created['id']))
+            tenant = '00000000-0000-0000-0000-000000000001'
+            changed = target.query("update public.profiles set tenant_id='"+tenant+
+                "'::uuid where id='"+actor+"'::uuid returning id;")
+            if changed != actor:
+                raise RecoveryError('Synthetic profile assignment unconfirmed')
+            api_status,api_rows = curl_inside(target.name,
+                '/customer_cards?select=id,tenant_id&limit=5',headers=(bearer,),port=3000)
+            if api_status != 200 or not isinstance(api_rows,list) or len(api_rows) != 5 or any(
+                    row.get('tenant_id') != tenant for row in api_rows):
+                raise RecoveryError('Restored tenant card read unconfirmed: HTTP '+str(api_status))
+            synthetic_tenant = str(uuid.uuid4())
+            synthetic_card = str(uuid.uuid4())
+            target.query("insert into public.tenants(id,slug,display_name) values('"+
+                synthetic_tenant+"'::uuid,'build01-"+RUN+"','Build 01 offline test');")
+            target.query("insert into public.customer_cards(id,tenant_id,title) values('"+
+                synthetic_card+"'::uuid,'"+synthetic_tenant+"'::uuid,'Offline boundary test');")
+            changed = target.query("update public.profiles set tenant_id='"+synthetic_tenant+
+                "'::uuid where id='"+actor+"'::uuid returning id;")
+            if changed != actor:
+                raise RecoveryError('Synthetic tenant switch unconfirmed')
+            api_status,api_rows = curl_inside(target.name,
+                '/customer_cards?select=id,tenant_id&limit=5',headers=(bearer,),port=3000)
+            if api_status != 200 or api_rows != [{'id':synthetic_card,'tenant_id':synthetic_tenant}]:
+                raise RecoveryError('Cross-tenant card isolation unconfirmed: HTTP '+str(api_status))
+            report.update(state='isolated_auth_and_api_tenant_boundary_verified',
+                          unassignedUserSawCards=0,restoredTenantCardPage=5,
+                          otherTenantCardPage=1,crossTenantCardLeak=0)
             target.verify_boundary()
+            cleanup_rest()
+            report['restContainerRemoved'] = True
             cleanup_auth()
             report['authContainerRemoved'] = True
         report['databaseContainerRemoved'] = target.cleaned
@@ -216,6 +316,23 @@ def run():
         report.update(state='isolated_auth_recovery_unverified',failureStage=stage,
                       safeFailure=(str(exc) if isinstance(exc,RecoveryError)
                                    else type(exc).__name__))
+        if stage == 'tenant_api_boundary':
+            try:
+                observed = subprocess.run([DOCKER,'logs','--tail','120',REST_NAME],
+                    stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=10)
+                raw = observed.stdout + observed.stderr
+                path = SOURCE / ('auth-rest-private-' + RUN + '.log')
+                fd = os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
+                with os.fdopen(fd,'wb') as diagnostic:
+                    diagnostic.write(raw[:131072])
+                report['privateRestDiagnostic'] = str(path.relative_to(ROOT))
+            except BaseException:
+                pass
+        try:
+            cleanup_rest()
+            report['restContainerRemoved'] = True
+        except BaseException:
+            report['restContainerRemoved'] = False
         try:
             cleanup_auth()
             report['authContainerRemoved'] = True

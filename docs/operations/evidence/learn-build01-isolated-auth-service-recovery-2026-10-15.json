@@ -1,7 +1,7 @@
 {
-  "version": "learn-build01-isolated-auth-service-recovery/1",
-  "observedAtUtc": "2026-10-15T19:39:04Z",
-  "state": "isolated_auth_fresh_login_verified",
+  "version": "learn-build01-isolated-auth-service-recovery/2",
+  "observedAtUtc": "2026-10-15T19:50:21Z",
+  "state": "isolated_auth_and_api_tenant_boundary_verified",
   "source": {
     "snapshotAt": "2026-10-15T16:17:21.570978+00:00",
     "archiveBytes": 1179050190,
@@ -10,9 +10,10 @@
   },
   "execution": {
     "reproducibleSource": "scripts/backup/rehearse_build01_auth_service_recovery.py",
-    "privateResult": ".verification-results/learn-build01-auth-recovery-d6890093166f4325a012b59b220c7aa4.json",
+    "privateResult": ".verification-results/learn-build01-auth-recovery-d838d2c094e544a1afc6e76db3102d43.json",
     "postgresImage": "public.ecr.aws/supabase/postgres:17.6.1.165",
     "authImage": "public.ecr.aws/supabase/gotrue:v2.196.0",
+    "restImage": "public.ecr.aws/supabase/postgrest:v14.5",
     "network": "none",
     "hostPorts": 0,
     "externalNetwork": false,
@@ -20,6 +21,7 @@
     "productionWrites": false,
     "realUserLoginAttempted": false,
     "authContainerRemoved": true,
+    "restContainerRemoved": true,
     "databaseContainerRemoved": true
   },
   "verification": {
@@ -29,12 +31,19 @@
     "freshPasswordLogin": "passed",
     "freshUserTokenReadback": "passed",
     "originalUserIdDigestUnchanged": true,
-    "syntheticNewSigningSecretUsed": true
+    "syntheticNewSigningSecretUsed": true,
+    "unassignedUserSawCards": 0,
+    "drummondsAssignedCardPage": 5,
+    "secondSyntheticTenantCardPage": 1,
+    "crossTenantCardLeak": 0,
+    "authenticatorRoleLogin": "passed_after_preserving_both_original_session_preload_libraries"
   },
   "limits": [
     "The prior encrypted-copy check proved Vault decryption; this separate startup reused the plain local archive and did not read the production recovery key again.",
     "No real production user password or existing session was tested. The isolated login proves a fresh synthetic login path only.",
-    "No isolated frontend, PostgREST tenant boundary, Storage byte recovery, Edge Function deployment, third-party Auth configuration or controlled capture resumption was tested by this run.",
+    "A list-valued authenticator role setting required faithful two-library reconstruction in the offline database. No production role setting was changed.",
+    "The restored Drummonds card API page and second synthetic tenant card prove bounded RLS behavior for one recovered synthetic user, not every client and operator flow.",
+    "No isolated frontend, Storage byte recovery, Edge Function deployment, third-party Auth configuration or controlled capture resumption was tested by this run.",
     "The full application/Auth recovery and owner business acceptance gates remain open."
   ]
 }
