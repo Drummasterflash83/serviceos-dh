@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 19:39 UTC — isolated Auth startup and fresh synthetic login passed.**
+
+### Working and verified
+
+- A second, independent offline restoration of the verified production archive
+  preserved both original Auth users. The pinned Supabase Auth service started
+  against it in the same network-isolated container namespace, with no host
+  ports, external email or production writes. A synthetic user was created with
+  a new signing secret, signed in with a password, and successfully read back
+  through its new token. The digest of the original user IDs remained unchanged;
+  both disposable containers were removed. This uses no further Touch ID.
+  [Isolated Auth evidence](evidence/learn-build01-isolated-auth-service-recovery-2026-10-15.json).
+
+### Needs finishing
+
+- Prove isolated PostgREST and frontend access with tenant boundaries, retained
+  application/runtime configuration and controlled capture resumption. No real
+  user's login or old-session continuation was tested, and full service
+  recovery is still unproven. The LIVE LEARN menu regression, source/card/Graph
+  backlog and scoring/working-day gates remain open.
+
+### Blocked externally
+
+- Chris must review fresh login as the disaster-recovery behavior when the old
+  non-exportable Auth signing key is unavailable. The exact LIVE frontend
+  restoration still awaits the requested approval after automatic promotion
+  review rejected Vercel's gate bypass. Business sign-off comes after the full
+  acceptance pack.
+
 **15 October, 19:22 UTC — isolated database recovery passed; LIVE LEARN menu regressed.**
 
 ### Working and verified

@@ -1,0 +1,40 @@
+{
+  "version": "learn-build01-isolated-auth-service-recovery/1",
+  "observedAtUtc": "2026-10-15T19:39:04Z",
+  "state": "isolated_auth_fresh_login_verified",
+  "source": {
+    "snapshotAt": "2026-10-15T16:17:21.570978+00:00",
+    "archiveBytes": 1179050190,
+    "archiveSha256": "31f1e594e9c3b43f3cff0ec0c45095216a4bb6580e8a0e5f2a4a81db99c03fe8",
+    "previousIndependentEncryptedCopyAndVaultRestore": "learn-build01-restore-and-frontend-regression-2026-10-15.json"
+  },
+  "execution": {
+    "reproducibleSource": "scripts/backup/rehearse_build01_auth_service_recovery.py",
+    "privateResult": ".verification-results/learn-build01-auth-recovery-d6890093166f4325a012b59b220c7aa4.json",
+    "postgresImage": "public.ecr.aws/supabase/postgres:17.6.1.165",
+    "authImage": "public.ecr.aws/supabase/gotrue:v2.196.0",
+    "network": "none",
+    "hostPorts": 0,
+    "externalNetwork": false,
+    "emailSent": false,
+    "productionWrites": false,
+    "realUserLoginAttempted": false,
+    "authContainerRemoved": true,
+    "databaseContainerRemoved": true
+  },
+  "verification": {
+    "originalAuthUserRowsPreserved": 2,
+    "authServiceHealth": "passed",
+    "syntheticAdminUserCreated": true,
+    "freshPasswordLogin": "passed",
+    "freshUserTokenReadback": "passed",
+    "originalUserIdDigestUnchanged": true,
+    "syntheticNewSigningSecretUsed": true
+  },
+  "limits": [
+    "The prior encrypted-copy check proved Vault decryption; this separate startup reused the plain local archive and did not read the production recovery key again.",
+    "No real production user password or existing session was tested. The isolated login proves a fresh synthetic login path only.",
+    "No isolated frontend, PostgREST tenant boundary, Storage byte recovery, Edge Function deployment, third-party Auth configuration or controlled capture resumption was tested by this run.",
+    "The full application/Auth recovery and owner business acceptance gates remain open."
+  ]
+}
