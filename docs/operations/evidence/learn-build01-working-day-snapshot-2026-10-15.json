@@ -1,0 +1,49 @@
+{
+  "version": "learn-build01-working-day-snapshot/1",
+  "observed_at_utc": "2026-10-15T06:40:22Z",
+  "status": "pre_working_day_snapshot_not_acceptance",
+  "live_project_ref": "tgbnakbxwcqjeimygroz",
+  "readback_script": "scripts/verify/learn-build01-working-day-readback.mjs --live-read-only",
+  "source_counts_at_0636_utc": {
+    "email_messages": 114313,
+    "email_without_interaction": 3848,
+    "eligible_email_without_interaction": 2716,
+    "phone_calls": 4522,
+    "phone_interactions": 4522,
+    "slack_messages": 32805,
+    "slack_interactions": 30021,
+    "eligible_interactions": 102062,
+    "eligible_missing_graph": 33395
+  },
+  "cards_at_0636_utc": {
+    "active": 3557,
+    "with_projection": 3490,
+    "refreshed_within_day": 3490
+  },
+  "ordinary_processing_at_readback": {
+    "commusoft_source_sync": "600 successful jobs in the preceding hour; no recorded failure in that hour.",
+    "email_workspace_sync": "201 successful jobs and six failed/dead-letter jobs in the preceding hour; coverage is not accepted from successes alone.",
+    "customer_card_sync": "39 successful jobs in the preceding hour after the set-based query repair.",
+    "graph_sync": "30 successful jobs in the preceding hour; 33,395 eligible interactions still lack graph nodes.",
+    "identity_resolve": "45 recent dead letters carry identity_review_required and 6,931 processed records; these are recorded review holds, not proof of lost data or of accepted identity coverage.",
+    "interactions_sync": "36 recent dead letters carry projection_review_required and 3,963 processed records. Two other jobs have projection_inventory_unconfirmed after four attempts and await their ordinary fifth attempt at 07:14 UTC. No manual retry was made."
+  },
+  "diagnostic_read_only_queries": {
+    "generic_worker_slack_exclusion": "Both Slack history and thread job types excluded from the LIVE generic queue claim.",
+    "phone_pending_one_row": "0 rows in 0.7 seconds",
+    "phone_review_count": "4,399 in 5.5 seconds",
+    "all_pending_200_rows": "200 rows in 11.5 seconds",
+    "all_review_count": "4,412 in 1.9 seconds",
+    "limit": "These are later SELECT-only probes, not a successful unattended retry; they do not establish what caused the earlier transient inventory failures."
+  },
+  "backup_health_at_0640_utc": {
+    "status": "observed_inventory_verified",
+    "last_verified_at_utc": "2026-10-14T14:08:44Z",
+    "objects": 3534,
+    "voicemail_pairs": 255,
+    "requires_awake_computer": true,
+    "unattended_daily_success": false,
+    "full_application_auth_restore": "not established"
+  },
+  "observation": "A real 09:00-17:00 Europe/London unattended window has not yet elapsed. The existing hourly observer and daily backup automation are active; a manual rescue must remain distinguishable from ordinary recovery."
+}

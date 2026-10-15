@@ -1,0 +1,57 @@
+{
+  "version": "learn-build01-slack-recovery/1",
+  "observed_at_utc": "2026-10-15T06:41:45Z",
+  "status": "one_live_held_page_recovered_one_still_held_frontend_release_pending",
+  "scope": "Drummonds' already-approved, fixed-window channel-history campaigns only; Slack DMs and group DMs remain excluded. No provider write or access expansion.",
+  "campaigns": {
+    "public_channels": 180,
+    "channel_sets": [20, 160],
+    "approval_expires_at_utc": "2026-10-20T09:30:00Z",
+    "live_needs_review_at_readback": 1,
+    "ongoing_capture_handoff": "Not performed; the separate action-time confirmation remains outstanding."
+  },
+  "live_release": {
+    "project_ref": "tgbnakbxwcqjeimygroz",
+    "capability_discovery": "The installed campaign list now exposes the existing exact-page recovery control to authorised operators.",
+    "huddle_source_classifier_migration": "20261103110000_learn_slack_observed_huddle_thread_source.sql",
+    "huddle_source_classifier_sha256": "3f83bb4e65ac5c598e0a1bbcb56f802c3be86d68e6b6ab20c186d6c6f3b183f4",
+    "exact_recovery_slice_renewal_migration": "20261103120000_learn_slack_campaign_exact_recovery_renewal.sql",
+    "exact_recovery_slice_renewal_sha256": "079c3970eacb8481a49f6b7e67f0a57159cd2ec8d4ded8701612c98052b86ae1",
+    "generic_failure_exact_retry_migration": "20261103130000_learn_slack_campaign_unclassified_exact_retry.sql",
+    "generic_failure_exact_retry_sha256": "1add8f9c1947e290e6ab9e58620bcf895fdcee8b765082214fca635ae4a547ed",
+    "migrations": "Rollback rehearsed and installed in LIVE; generic-failure permission remains fenced to the same campaign, import, checkpoint, failed job and one logged request. No source page or cursor is skipped.",
+    "dedicated_worker": {
+      "version_before": 14,
+      "version_after": 15,
+      "installed_at_utc": "2026-10-15T06:17:41Z",
+      "exact_artifact_sha256": "29595aa004b2b7081dfa7db7623ea63295d110a8ef8f85ec9a36d368af5fd348",
+      "scope": "Only the observed Slack huddle_thread subtype was added to source-needs-review classification."
+    },
+    "generic_worker_routing": "LIVE platform_jobs_claim excludes both slack.history_sync and slack.thread_sync; the dedicated Slack worker owns those jobs."
+  },
+  "ordinary_recovery_readback": {
+    "first_held_channel": "The original huddle-thread failure was retried through the signed-in operator control. The exact job succeeded on its first worker attempt, completed its saved page and advanced the cursor once.",
+    "huddle_source": "One original source retained for review; zero customer-card/performance interactions published from that subtype.",
+    "second_held_channel": "A different saved page remains needs_review after a generic slack_history_failed error. It has no committed page metadata and no structural diagnostic; a reviewed exact retry is prepared but not yet run."
+  },
+  "frontend_release": {
+    "test_candidate_sha": "67e96e108d2f26bda74c225c3bfad836ce6a1d6c",
+    "live_candidate_sha": "cf0b7db3c71ecb2beee0a2fe42ad9c70eee79832",
+    "scope": "Each isolated candidate adds one error code to the existing recovery button allowlist and was based on the exact alias-served Git commit. Both pass TypeScript and were pushed without history rewrite.",
+    "live_preview": "Vercel built the LIVE candidate from Git and displays READY as an unpromoted preview.",
+    "aliases_promoted": false,
+    "release_access": "The saved Vercel CLI token is invalid. Two fresh normal device-authorisation pages showed Allow Access disabled; no bypass or alias change was attempted. TEST remains disconnected from Git and was not deployed."
+  },
+  "test": {
+    "project_ref": "saatxzwxvdvqevbnskxy",
+    "classifier_huddle_recognized": false,
+    "campaign_recovery_function_present": false,
+    "parity": "TEST needs its missing source-only review and recovery prerequisites before the LIVE migrations and operator journey can be verified there."
+  },
+  "validation": {
+    "focused_tests_passed": 35,
+    "typescript": "passed in main workspace and both isolated frontend candidates",
+    "diff_check": "passed"
+  },
+  "acceptance": "Build 01 remains IN PROGRESS. One held channel, TEST parity, routine channel capture, broader V1 coverage, a full unattended working day and Chris's business sign-off remain outstanding."
+}

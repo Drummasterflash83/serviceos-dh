@@ -594,6 +594,7 @@ export function LearnSlackCampaigns({
                       "slack_history_message_subtype_unsupported",
                       "slack_history_message_shape_unsupported",
                       "slack_history_diagnostic_unconfirmed",
+                      "slack_history_failed",
                     ].includes(recovery.errorCode ?? "")
                   }
                   onClick={reviewRecovery}

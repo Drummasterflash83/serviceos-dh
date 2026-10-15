@@ -1,0 +1,72 @@
+{
+  "version": "learn-build01-card-review-hotpath/1",
+  "observed_at_utc": "2026-10-15T05:42:27Z",
+  "status": "test_live_and_two_ordinary_card_batches_verified_identity_and_full_day_pending",
+  "trigger": {
+    "live_oldest_card_associated_interactions": 19320,
+    "live_identity_review_rows": 40867,
+    "before_service_role_rpc": {
+      "identity_review_count": { "http": 500, "sqlstate": "57014", "elapsed_ms": 8436 },
+      "card_projection_inputs": { "http": 500, "sqlstate": "57014", "elapsed_ms": 8090 }
+    },
+    "ordinary_jobs": "Customer-card jobs repeatedly dead-lettered with card_partial_failure; identity jobs repeatedly retried/dead-lettered with identity_inventory_unconfirmed. These were real unattended failures, not accepted coverage."
+  },
+  "change": {
+    "migration": "supabase/migrations/20261103100000_learn_card_review_set_based_drafts.sql",
+    "sha256": "f842ab421aa4fbe86106b64687ec546367d35859b7aa24f26aad7deb975a095f",
+    "scope": "Replace per-row security-definer draft lookup with tenant-scoped set-based email joins in identity review count and customer-card input selection. Preserve source eligibility, bounded card windows, grants and the installed LIVE Slack withheld-recommendation filter. No source data is changed."
+  },
+  "test": {
+    "project_ref": "saatxzwxvdvqevbnskxy",
+    "rollback_rehearsal": "Synthetic full-schema draft exclusion, card bounds, cross-tenant denial and review-count checks passed; function digests and fixture absence restored after rollback.",
+    "installed_at_utc": "2026-10-15T05:38:13Z",
+    "installed_card_digest_md5": "89120a35d19e7b51aab363e9f776ca95",
+    "installed_identity_digest_md5": "fcf76cac657c2245b432cd1199dd48e6",
+    "post_install_synthetic_probe": "Passed with rollback; fixtures removed."
+  },
+  "live": {
+    "project_ref": "tgbnakbxwcqjeimygroz",
+    "rollback_rehearsal": "Existing LIVE function and Slack-withholding guard restored after the transaction; both real aggregate RPCs completed under the 8-second statement limit.",
+    "installed_at_utc": "2026-10-15T05:38:39Z",
+    "installed_card_digest_md5": "e53e86e9a2e18b121b15a7213947b89e",
+    "installed_identity_digest_md5": "fcf76cac657c2245b432cd1199dd48e6",
+    "slack_withholding_guard_retained": true,
+    "service_execute_retained": true,
+    "ordinary_client_execute_denied": true,
+    "source_counts_before_and_after": {
+      "customer_cards": 3484,
+      "interactions": 144220,
+      "email_messages": 111437,
+      "recommendations": 25861
+    },
+    "after_service_role_rpc": {
+      "identity_review_count": { "http": 200, "held": 40889, "elapsed_ms": 798 },
+      "card_projection_inputs": {
+        "http": 200,
+        "elapsed_ms": 242,
+        "eligible_interactions": 19437,
+        "excluded_draft_interactions": 14,
+        "sampled_interaction_limit": 100,
+        "eligible_recommendations": 2
+      }
+    },
+    "ordinary_worker_after_release": {
+      "observed_at_utc": "2026-10-15T05:42:27Z",
+      "job_type": "customer_card.sync",
+      "status": "two_serial_batches_succeeded",
+      "first_batch_attempts": 1,
+      "second_batch_attempts": 2,
+      "second_batch_first_error": "card_sync_error",
+      "cards_projected_total": 400,
+      "failed": 0,
+      "serial_continuation": "A third ordinary customer-card job was queued at 05:42:19 UTC.",
+      "read_only_preload_replay": "The second batch's 200 cards, 197 people, 110 companies, 185 person graph nodes and 1,439 graph edges completed across 20 read-only requests; longest edge page was 84 ms. Its transient first-attempt card_sync_error did not recur on the second attempt.",
+      "identity": "The earlier identity job remained retrying at this observation; its next attempt and review continuation remain to verify."
+    }
+  },
+  "limitations": [
+    "The new function does not resolve source-to-card review holds or establish scoring acceptance.",
+    "Two ordinary customer-card batches succeeded, with one transient retry; sustained full-sweep and identity-job completion remain unproven.",
+    "Full unattended working-day operation and Chris's business sign-off remain outstanding."
+  ]
+}

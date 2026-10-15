@@ -101,3 +101,11 @@ test('observed huddle-notes marker is retained for review across channel and thr
  for(const m of [{...message,hidden:true},{...message,hidden:null},{...message,type:'event_callback'},
   {...message,subtype:'automatic_ai_huddle_notes_enabled_v2'},{...message,subtype:'AUTOMATIC_AI_HUDDLE_NOTES_ENABLED'}])await assert.rejects(readBoth(m),(e:any)=>e.retryable===false);
 });
+
+test('Slack-documented huddle-thread marker is source-only and preserves its original fields',async()=>{
+ const message={...record('huddle_thread'),text:'',room:{id:'R_SYNTHETIC'},reply_count:2};
+ assert.equal(slackMessageKind(message),'source_needs_review');
+ for(const page of await readBoth(message))assert.deepEqual(page.records[0].provider_payload,message);
+ for(const m of [{...message,hidden:true},{...message,type:'event_callback'},
+  {...message,subtype:'huddle_thread_v2'}])await assert.rejects(readBoth(m),(e:any)=>e.retryable===false);
+});
