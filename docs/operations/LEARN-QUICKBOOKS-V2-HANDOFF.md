@@ -1,6 +1,6 @@
 # QuickBooks LIVE integration and LEARN V2 handoff
 
-Status checked 15 October 2026, 10:53 UTC. This is an operational handoff, not
+Status checked 15 October 2026, 11:05 UTC. This is an operational handoff, not
 an assertion that every Drummonds customer or job has been reconciled.
 
 ## Working and verified
@@ -11,9 +11,14 @@ an assertion that every Drummonds customer or job has been reconciled.
   accounting source records and history remain intact.
 - Two unattended full scans completed on 14 October across the 13 approved
   accounting collections. The third scan was resumed after a premature 401 with
-  a single guarded token-refresh allowance. It had advanced from 210 to 655
+  a single guarded token-refresh allowance. It had advanced from 210 to 771
   saved pages at this checkpoint, with no current run error. This third scan is
   still in progress and is **not** a completed-cycle acceptance result.
+- The unattended worker renewed the existing OAuth grant before its 11:06 UTC
+  expiry: token generation 11 became 12, and ten more pages were retained on
+  the same run afterward. All 771 page receipts, unique permits and 76,679
+  observations reconcile with zero wrong-tenant pages and source conflicts.
+  [Refresh evidence](evidence/learn-quickbooks-unattended-refresh-2026-10-15.json).
 - LIVE retains 134,706 latest QuickBooks source records across the collections,
   with zero unresolved source conflicts at this checkpoint. This is a source
   record count, not a count of distinct customers or reconciled transactions.

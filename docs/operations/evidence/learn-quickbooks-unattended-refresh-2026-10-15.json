@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-15T11:05:42Z",
+  "environment": "production",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "runId": "179f1030-26ea-4c30-83cd-4e05d4d2a62f",
+  "beforeRefresh": {
+    "checkedAt": "2026-10-15T11:03:56Z",
+    "savedPages": 760,
+    "tokenGeneration": 11,
+    "accessExpiresAt": "2026-10-15T11:06:02.431Z"
+  },
+  "afterRefresh": {
+    "checkedAt": "2026-10-15T11:05:42Z",
+    "savedPages": 771,
+    "tokenGeneration": 12,
+    "accessExpiresAt": "2026-10-15T12:04:04.374Z",
+    "lastRunError": null,
+    "savedPageReceipts": 771,
+    "uniquePagePermits": 771,
+    "pageRecords": 76679,
+    "retainedObservations": 76679,
+    "wrongTenantPages": 0,
+    "sourceConflicts": 0
+  },
+  "interpretation": "The existing unattended worker renewed the same OAuth grant before expiry and continued the existing bounded scan. This is not a completed-cycle acceptance result.",
+  "credentialsIncluded": false,
+  "providerWrites": 0
+}
