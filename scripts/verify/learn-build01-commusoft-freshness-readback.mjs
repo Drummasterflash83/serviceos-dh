@@ -53,6 +53,28 @@ const recurring = await stateResponse.json();
 if (!Array.isArray(recurring) || recurring.length > 10 || recurring.some(row =>
   !Number.isInteger(row.phase) || typeof row.enabled !== "boolean" ||
   typeof row.last_state !== "string")) throw Error("Commusoft recurring state shape changed");
-console.log(JSON.stringify({ observedAt: new Date().toISOString(), project, tenant, rows, recurring,
+const stepsQuery = `select recent.phase,recent.cycle_start,recent.cycle_end,
+  recent.created_at as phase_started_at,j.status job_status,j.completed_at,
+  (select count(*)::int from public.learn_business_input_pages p
+    where p.tenant_id=recent.tenant_id and p.provider='commusoft'
+    and p.checkpoint_after->>'approvalId'=recent.request_id::text) retained_pages,
+  (select count(*)::int from public.learn_commusoft_contact_targets t
+    where t.tenant_id=recent.tenant_id and t.approval_id=recent.request_id) contact_targets
+from (select * from public.learn_commusoft_recurring_steps
+  where tenant_id='${tenant}'::uuid order by created_at desc limit 8) recent
+left join public.platform_jobs j on j.id=recent.job_id and j.tenant_id=recent.tenant_id
+order by recent.created_at desc`;
+const stepsResponse = await fetch(
+  `https://api.supabase.com/v1/projects/${project}/database/query/read-only`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${savedCliToken()}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ query: stepsQuery }), redirect: "error", signal: AbortSignal.timeout(45000),
+  });
+if (!stepsResponse.ok) throw Error(`Commusoft phase history unavailable (HTTP ${stepsResponse.status})`);
+const steps = await stepsResponse.json();
+if (!Array.isArray(steps) || steps.length > 8 || steps.some(row =>
+  !Number.isInteger(row.phase) || !Number.isInteger(row.retained_pages) ||
+  !Number.isInteger(row.contact_targets))) throw Error("Commusoft phase history shape changed");
+console.log(JSON.stringify({ observedAt: new Date().toISOString(), project, tenant, rows, recurring, steps,
   interpretation: "Retained page commit cadence only; no provider-current job-status or record completeness claim.",
   productionDataWrites: false, customerContentReturned: false }));

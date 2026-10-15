@@ -15,8 +15,10 @@ override a later release observation. No requirement is silently deferred.
   UTC. The recurring connection was in phase 3 of 4, traversing 1,554 customer
   properties for contact updates; 1,337 were complete at the read. About 600
   contact property pages were committed in the previous hour, with zero contact
-  observations in that hour. This is real forward progress, not a current-job
-  refresh. [Aggregate cadence receipt](evidence/learn-build01-commusoft-recurring-cadence-2026-10-15.json).
+  observations in that hour. The two most recent job phases began at 15:33 and
+  21:02 UTC, about 5 hours 29 minutes apart. The prior contact phases covered
+  1,554 and 871 property targets. This is real forward progress, not a current-
+  job refresh. [Aggregate cadence receipt](evidence/learn-build01-commusoft-recurring-cadence-2026-10-15.json).
 - The local signed Slack event boundary now separates event time from original
   message time for documented edits/deletions, rejects unrelated subtypes and
   marks corrections for a fresh public-visibility check. Four synthetic tests
@@ -25,9 +27,11 @@ override a later release observation. No requirement is silently deferred.
 ### Needs finishing
 
 - The four-phase Commusoft cycle must finish contacts before its watermark can
-  advance and start a new property/job pass. Measure completed-cycle cadence
-  before claiming current job progress; the last job-page time and the 282
-  unlinked non-complete jobs are separate limitations. Slack capture capacity,
+  advance and start a new property/job pass. The observed roughly 5.5-hour
+  interval between job phases is too slow to claim timely job-progress or
+  attention routing; a reviewed faster job lane or an explicitly accepted
+  freshness target is still needed. The 282 unlinked non-complete jobs are a
+  separate limitation. Slack capture capacity,
   post-cutoff message/reply proof and the selected event or polling route remain
   open.
 
