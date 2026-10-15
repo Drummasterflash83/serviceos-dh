@@ -32,6 +32,20 @@
     "storage": "ACTIVE_HEALTHY",
     "postgresqlRestartsMetric": 0
   },
+  "followupAt222630Utc": {
+    "all160ChannelAndReplySubscriptionsEnabled": true,
+    "channelsAdvancedPastHandoffCutoff": 125,
+    "channelsMoreThanOneDayBehind": 109,
+    "currentHistoryWindowsWithExhaustedPageBudget": 0,
+    "retainedMessagesAfterHandoffCutoff": 0,
+    "retainedRepliesAfterHandoffCutoff": 0,
+    "historyJobsSucceededLastHour": 31,
+    "replyJobsSucceededLastHour": 47,
+    "meanSuccessfulHistoryJobSeconds": 8.4,
+    "meanSuccessfulReplyJobSeconds": 10.0,
+    "source": "scripts/verify/learn-build01-slack-handoff-readback.mjs and scripts/verify/learn-build01-slack-post-handoff-readback.mjs; aggregate-only LIVE reads",
+    "interpretation": "Historical catch-up is progressing, but zero saved post-cutoff rows in still-lagged channels cannot prove Slack is empty. The observed 78 successful jobs per hour is below the 640-per-hour near-live channel-only demand."
+  },
   "steadyStateLowerBound": {
     "source": "Near-live scheduler returns to windows of up to 15 minutes; each completed history window is gated on observed-parent reply checks. The approved internal Slack app currently uses a 30-second shared workspace request cooldown. The earlier real-source inventory observed 870 parent roots in 69 channels.",
     "channelWindowsPerHourAtFifteenMinutes": 640,

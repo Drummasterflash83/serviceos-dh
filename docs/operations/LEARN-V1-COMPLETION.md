@@ -7,6 +7,29 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 22:26 UTC — Slack catch-up advances but is not yet sustainable.**
+
+### Working and verified
+
+- The approved 160 channel/reply subscriptions remain enabled. Channels past
+  the saved cutoff increased from 123 to 125 and those over a day behind fell
+  from 118 to 109. In the latest hour, 31 channel-history and 47 reply jobs
+  succeeded. The current 160 channel windows show no exhausted page budget.
+  [Aggregate readback](evidence/learn-build01-slack-steady-state-capacity-2026-10-15.json).
+
+### Needs finishing
+
+- No post-cutoff message or reply has yet been retained in the approved channels.
+  This may reflect the still-lagged windows; it does not prove Slack was empty.
+  The observed 78 successful jobs/hour is also below the 640 channel calls/hour
+  needed by the present 15-minute near-live design before reply checks.
+  Capacity and source-to-card proof remain open.
+
+### Blocked externally
+
+- None for the aggregate read. A changed freshness target, if needed after
+  technical options are tested, is a business decision for Chris.
+
 **15 October, 22:23 UTC — saved open-work review released and verified in LIVE.**
 
 ### Working and verified
