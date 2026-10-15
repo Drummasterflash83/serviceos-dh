@@ -1,0 +1,23 @@
+{
+  "date_utc": "2026-10-15",
+  "status": "one_mailbox_recovered_and_operator_account_status_visible_build01_open",
+  "mailbox_recovery": {
+    "prior_state": "one active Workspace user mailbox recent checkpoint blocked at revision 607 with persistence_failed and no owner; prior attempt reported unknown persistence, zero message upserts and zero IDs seen",
+    "authority": "active tenant account, one eligible directory mailbox, active verified connection and existing operator control grant checked",
+    "safeguard": "exact generation, revision, block code, timestamp, continuation and authority fenced in one transaction",
+    "rollback_rehearsal": "passed; independent readback remained blocked at revision 607",
+    "apply": "one audited claim and release; ready at revision 609, no owner or block code, refetch_all continuation unchanged, two transition receipts, recovery attempt successful with zero source records",
+    "ordinary_follow_up": "one subsequent scheduled Workspace capture succeeded at 2026-10-15T12:03:04Z; checkpoint ready at revision 611",
+    "limit": "This was a manual recovery; the unattended observation window restarts after it. The root cause of the original persistence failure remains under review."
+  },
+  "capture_health": {
+    "issue": "Signed-in LIVE operator account status failed while company-wide retained-email and recording-processing summaries exceeded the management query response window; the scheduler panel later loaded normally.",
+    "repair": "The existing operator-only account-status RPC now omits those expensive summaries and returns explicit nulls; per-account Email, Phone and Slack evidence, paging and access checks remain.",
+    "test": "TEST rollback rehearsal, installation, matching function digest and unchanged owner/ACL/security-definer; existing authenticated TEST operator read returned four rows and explicit null summaries.",
+    "live": "LIVE rollback rehearsal and installation matched the same function digest with unchanged owner/ACL/security-definer. Signed-in OpenFolk operator refresh at 2026-10-15T12:03:17Z loaded account cards, Phone evidence and pagination rather than the unavailable error.",
+    "limit": "Company-wide email availability and recording-processing totals are currently marked unverified in the operator panel; a bounded replacement summary is still required."
+  },
+  "verification": "Seven focused frontend reader tests and TypeScript checking passed. No provider write, source deletion, credential, grant or client-scoping expansion was part of these changes.",
+  "backup": "The independently uploaded and downloaded encrypted database object remains intact. The off-site isolated restore still stopped at the 1Password recovery-key read; no restore was started in those retries.",
+  "build01_acceptance": "in_progress"
+}
