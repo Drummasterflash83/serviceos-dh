@@ -7,6 +7,44 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 07:46 UTC — ordered Email projection has resumed in ordinary LIVE work.**
+
+### Working and verified
+
+- The email candidate scan still intermittently timed out after the earlier
+  read-path repairs. An exact query-plan comparison found that the previous
+  LEFT JOIN form hashed and sorted a large retained tenant set before applying
+  the 200-row limit. An equivalent indexed anti-join passed TEST synthetic and
+  LIVE real rollback comparisons with zero ordered-row/revision differences and
+  unchanged function permissions. It is installed in TEST and LIVE. The exact
+  LIVE service call then returned 200 candidates in 1.4 seconds; two ordinary
+  LIVE batches published 400 retained emails and queued serial continuations.
+- The ordinary identity lane is publishing roughly 160–190 records per recent
+  batch. Its terminal `identity_review_required` label also records durable
+  evidence holds; it is not by itself a lost-delivery error. A read-only hold
+  audit found 30,014 Slack `direction_unverified` and 13,872 Email
+  `company_ambiguous` rows, plus smaller unverified/missing/ambiguous email
+  groups. None warrants inferred attribution.
+
+### Needs finishing
+
+- At 07:45:54 UTC, 6,314 eligible retained emails still lacked interactions;
+  new capture increased the gap during the observation. Prove the ordinary
+  continuation can outpace capture, drain the backlog and deliver evidence to
+  cards, while retaining case-specific holds. The earlier 07:15 infrastructure
+  failures invalidate that period as a full unattended working day.
+- Finish the wider source, scoring, recovery, signed-in release and human
+  acceptance gates in the Build 01 receipt. Chris has not signed off.
+
+### Blocked externally
+
+- The Slack exact-retry frontend cannot yet be promoted through the existing
+  TEST release path: the saved Vercel CLI credential is rejected and normal
+  device authorisation is unavailable. Backend TEST parity is installed, but
+  signed-in TEST retry and matching stable TEST/LIVE frontend release remain open.
+
+[Ordered Email scan and ordinary-run evidence](evidence/learn-build01-projection-ordered-anti-join-2026-10-15.json).
+
 **14 October, 22:41 UTC — frontend and bounded graph release verified; Gmail alias resumed.**
 
 ### Working and verified

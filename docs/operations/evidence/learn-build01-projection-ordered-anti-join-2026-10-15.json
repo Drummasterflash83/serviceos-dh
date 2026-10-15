@@ -1,0 +1,95 @@
+{
+  "version": "learn-build01-projection-ordered-anti-join/1",
+  "date": "2026-10-15",
+  "scope": "TEST and LIVE tenant-scoped projection candidate reads; no source-provider or customer data writes by the migration",
+  "source": {
+    "migration": "supabase/migrations/20261103170000_learn_projection_ordered_anti_join.sql",
+    "sha256": "9ab7e153df3db47c0e0804d15fef0889f2bc3b2ab4757541f4fa088abba6743d",
+    "change": "Use an indexed NOT EXISTS anti-probe for the ordered unlinked-email scan in place of the equivalent LEFT JOIN/IS NULL form. Draft, exact revision, current review and Phone selection logic are retained."
+  },
+  "diagnosis": {
+    "beforeServiceRpc": {
+      "at": "2026-10-15T07:38:45Z",
+      "selector": "learn_projection_pending(all,200)",
+      "http": 500,
+      "sqlstate": "57014",
+      "elapsedMs": 8152
+    },
+    "component": {
+      "at": "2026-10-15T07:39:17Z",
+      "selector": "learn_projection_pending(email,200)",
+      "http": 500,
+      "sqlstate": "57014",
+      "elapsedMs": 8168
+    },
+    "oldReadOnlyPlan": "The old form used a right hash join and sort over the tenant's retained email and interaction rows before LIMIT 200; its 200-ID aggregate took 3706 ms in one management read.",
+    "newReadOnlyPlan": "The equivalent NOT EXISTS form used learn_email_projection_order_idx with an index-only anti-probe into interactions_tenant_id_source_table_source_id_key; its 200-ID aggregate took 434 ms in one management read. These are point samples, not a throughput guarantee."
+  },
+  "rollbackRehearsals": {
+    "test": {
+      "at": "2026-10-15T07:42:31Z",
+      "syntheticOrderedRowsCompared": 662,
+      "symmetricDifference": 0,
+      "fixtureRemovedByRollback": true,
+      "ownerAclSecuritySettingsUnchanged": true
+    },
+    "live": {
+      "at": "2026-10-15T07:42:56Z",
+      "realOrderedRowsCompared": 400,
+      "symmetricDifference": 0,
+      "ownerAclSecuritySettingsUnchanged": true,
+      "stateRestoredByRollback": true
+    }
+  },
+  "installed": {
+    "test": {
+      "at": "2026-10-15T07:43:06Z",
+      "functionDigest": "c5cf30c0855e27ce6ca70acf5b41cab3"
+    },
+    "live": {
+      "at": "2026-10-15T07:43:15Z",
+      "functionDigest": "eccd3929d3be927513b7237e503f2d7c"
+    }
+  },
+  "afterServiceRpc": {
+    "at": "2026-10-15T07:43:24Z",
+    "all200": { "http": 200, "orderedRows": 200, "elapsedMs": 1377 },
+    "currentReviewCount": { "http": 200, "count": 4412, "elapsedMs": 680 }
+  },
+  "ordinaryLiveResults": [
+    {
+      "createdAt": "2026-10-15T07:20:00Z",
+      "settledAt": "2026-10-15T07:45:14Z",
+      "attempt": 4,
+      "state": "projection_review_required",
+      "emailSelected": 200,
+      "emailPublished": 200,
+      "unconfirmed": 0,
+      "nextBatchQueued": true
+    },
+    {
+      "createdAt": "2026-10-15T07:45:14Z",
+      "settledAt": "2026-10-15T07:46:12Z",
+      "attempt": 1,
+      "state": "projection_review_required",
+      "emailSelected": 200,
+      "emailPublished": 200,
+      "unconfirmed": 0,
+      "nextBatchQueued": true
+    }
+  ],
+  "reviewHoldAudit": {
+    "at": "2026-10-15T07:38:19Z",
+    "slackDirectionUnverified": 30014,
+    "emailCompanyAmbiguous": 13872,
+    "emailUnverified": 492,
+    "emailContactMissing": 174,
+    "emailPersonAmbiguous": 40,
+    "handling": "No inferred customer, job or staff identity is published for these holds. The worker's review_required terminal label records a durable hold and can coexist with committed unrelated records and a continuation."
+  },
+  "limits": [
+    "Two ordinary LIVE batches and one service API sample do not establish full-day unattended reliability.",
+    "At 07:45:54 UTC, 6314 eligible retained emails still lacked interactions; fresh source capture increased this gap during the observation.",
+    "No business acceptance or full application/Auth restore is claimed."
+  ]
+}
