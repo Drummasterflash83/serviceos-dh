@@ -1,0 +1,65 @@
+{
+  "version": "learn-build01-identity-count/1",
+  "observedAtUtc": "2026-10-15T20:18:46Z",
+  "state": "ordinary_live_retry_continued_without_unconfirmed_delivery",
+  "diagnosis": {
+    "identityJobAttempts": "Three consecutive ordinary attempts retained 198 or 199 of 200 deliveries before retrying",
+    "databaseSqlstate": "57014",
+    "timedOutFunctionLine": 144,
+    "timedOutStatement": "count linked interactions while excluding provider-labelled Gmail drafts",
+    "affectedContactLinkedInteractions": 8712,
+    "providerDrafts": 7,
+    "privateSourceContentReturned": false
+  },
+  "change": {
+    "file": "supabase/migrations/20261104030000_learn_identity_set_based_draft_count.sql",
+    "sha256": "a71c9200da8b500b69b836efe74bf4504a13a25e61774bd08c6d69d9bfde6f52",
+    "beforeFunctionMd5": "60adf2eca5be0f1c0aaa97765364eeca",
+    "afterFunctionMd5": "5011f602b2f116993cae60d291a660bd",
+    "scope": "Replace one per-row security-definer draft lookup in the identity interaction count with an equivalent tenant-bound left join and provider-label predicate",
+    "functionOwnerAndExecuteGrantsPreserved": true
+  },
+  "verification": {
+    "offlineRestoredArchive": "1,179,050,190-byte pinned production snapshot",
+    "offlineEligibleCountsBeforeAndAfter": [99, 99, 98, 97, 95],
+    "offlineContainerRemoved": true,
+    "testPatchState": "test_identity_count_patch_installed",
+    "testHostedSynthetic": {
+      "state": "test_hosted_card_delivery_verified",
+      "cards": 1,
+      "deliveryReceipts": 1,
+      "consumedEvents": 1,
+      "sourceEnriched": 1,
+      "fixtureArchived": true,
+      "providerRequests": 0
+    },
+    "livePatchState": "live_identity_count_patch_installed",
+    "liveSourceRowsDeleted": 0,
+    "liveCardsDeleted": 0,
+    "liveDeliveryReceiptsDeleted": 0,
+    "affectedContactEligibleCount": 8705,
+    "affectedContactSetBasedReadRoundTripMs": 3269,
+    "ordinaryLiveRetryVerified": true,
+    "ordinaryRetry": {
+      "attempt": 4,
+      "finalAttemptReceipts": 200,
+      "committedCards": 124,
+      "reviewHolds": 76,
+      "unconfirmedDeliveries": 0,
+      "durableContinuation": true,
+      "childJobs": 1
+    },
+    "firstChildContinuation": {
+      "finalAttemptReceipts": 200,
+      "committedCards": 157,
+      "reviewHolds": 43,
+      "unconfirmedDeliveries": 0,
+      "durableContinuation": true
+    }
+  },
+  "limits": [
+    "The TEST synthetic journey has one interaction; the 8,712-interaction LIVE count was verified read-only, not by creating a synthetic large contact in TEST.",
+    "The ordinary fourth retry and first child continued without an unconfirmed delivery. This does not prove a complete unattended backlog drain or a full working day of healthy operation; no manual rescue is counted as unattended success.",
+    "Identity review holds remain available to operators and are not silently attributed to customers."
+  ]
+}

@@ -23,8 +23,9 @@ let fixtureWritten = false;
 try {
   const [runtime, inventory, queue] = await Promise.all([
     readRuntimeCatalog(token), edgeInventory(token),
-    communicationQuery(token, `select count(*)::int as active from public.platform_jobs
-      where job_type='identity.resolve' and status in('queued','running','retrying')`),
+    communicationQuery(token, `select count(*)::int as active from public.platform_jobs j
+      join public.tenants t on t.id=j.tenant_id and t.status='active'
+      where j.job_type='identity.resolve' and j.status in('queued','running','retrying')`),
   ]);
   const worker = inventory.find(x => x.slug === "platform-worker");
   check(runtime.fingerprint === "ba3dc925f7f9e1a0149b1a71b9456100",
@@ -123,6 +124,19 @@ try {
       const rows = await communicationQuery(token,
         `select status from public.tenants where id='${tenant}'`);
       check(rows[0]?.status === "archived", "Synthetic tenant retirement unconfirmed");
+      const retired = await communicationQuery(token, `with changed as (
+        update public.platform_jobs set status='cancelled',cancelled_at=clock_timestamp(),
+          last_error='Archived synthetic Build 01 acceptance fixture retired'
+        where tenant_id='${tenant}' and job_type='identity.resolve' and status='queued'
+          and attempt_count=0 and max_attempts=1 and lease_expires_at is null
+        returning id
+      ) select count(*)::int as cancelled from changed`, { readOnly: false });
+      check(retired.length === 1 && retired[0].cancelled <= 1,
+        "Synthetic queued continuation retirement unconfirmed");
+      const pending = await communicationQuery(token, `select count(*)::int as active
+        from public.platform_jobs where tenant_id='${tenant}' and job_type='identity.resolve'
+          and status in('queued','running','retrying')`);
+      check(pending[0]?.active === 0, "Archived fixture still has an active identity job");
       result.fixtureArchived = true;
     } catch {
       result.state = "requires_inspection";

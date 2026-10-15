@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 20:18 UTC — identity count timeout fixed; ordinary LIVE retries continued.**
+
+### Working and verified
+
+- PostgreSQL's saved `57014` errors identified the identity function's
+  per-interaction Gmail draft check during a count of 8,712 linked emails.
+  A single guarded SQL replacement preserves draft-label semantics through a
+  tenant-bound join. It matched the old count for five sampled contacts in an
+  isolated production restore, passed a hosted synthetic TEST card journey,
+  and was installed in LIVE without deleting source, card or receipt rows.
+  The affected contact's read-only set-based count returned 8,705 eligible
+  interactions and seven drafts. The original fourth LIVE retry then retained
+  200 receipts with zero failed deliveries, 124 committed cards and 76 explicit
+  review holds, and queued its child. The child also retained 200 receipts with
+  zero failed deliveries and a further continuation. No manual rescue was
+  needed. [Identity count evidence](evidence/learn-build01-identity-count-2026-10-15.json).
+
+### Needs finishing
+
+- Observe sustained unattended identity drain and resolve review holds through
+  the authorised operator path. The LIVE LEARN menu, broader source
+  coverage, full application recovery, and full-working-day gates remain open.
+
+### Blocked externally
+
+- The exact LIVE frontend promotion still awaits Chris's requested approval
+  after automatic review rejected a Vercel gate bypass. Chris will review the
+  final business acceptance pack after technical and operational checks.
+
 **15 October, 19:50 UTC — isolated Auth and card API tenant boundary passed.**
 
 ### Working and verified
