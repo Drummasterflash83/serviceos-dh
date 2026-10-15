@@ -1,0 +1,51 @@
+{
+  "version": "build01-identity-runtime-evidence/1",
+  "observedAt": "2026-10-15T16:42:37Z",
+  "change": "Guarded retry of a definitely missing identity publication when a fresh bounded inventory proves that the same interaction has a new source revision",
+  "sourceCheckpoint": "ac706bc559270c83016a56dfe4a36fc54cd8a79d",
+  "test": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "workerBefore": 37,
+    "workerAfter": 38,
+    "modulesStructurallyVerified": 111,
+    "missingOrDifferentModules": 0,
+    "deployedHandlerTestsPassed": 16,
+    "hostedSynthetic": {
+      "workerHttpStatus": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "customerCards": 1,
+      "deliveryReceipts": 1,
+      "consumedEvents": 1,
+      "fixtureArchived": true,
+      "providerRequests": 0
+    },
+    "unauthenticatedHttpStatus": 403,
+    "firstSubmission": "CLI returned failure; readback confirmed version 37 and unchanged hash before a diagnosed resubmission",
+    "rollbackEszipSha256": "0c95fc1028a706900f5c14e1d6fd2f7f4a892281a15b0592354033ba4a3a4dc0"
+  },
+  "live": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "workerBefore": 88,
+    "workerAfter": 89,
+    "workerAfterHash": "6c89db3a252370adad4ad6cb927d4d638d14118e254543ca5474c3b2f8b47dd7",
+    "modulesStructurallyVerified": 113,
+    "missingOrDifferentModules": 0,
+    "deployedHandlerTestsPassed": 16,
+    "unauthenticatedHttpStatus": 403,
+    "rollbackEszipSha256": "e5273e2775d69c683214ad79b22f3c2249e75b444921d4d840819582341c36f9",
+    "existingIdentityRetry": {
+      "status": "retrying",
+      "attemptsCompleted": 4,
+      "nextScheduledUtc": "2026-10-15T17:23:23Z",
+      "attemptFourDurableReceipts": 199,
+      "attemptFourReceiptShapeErrors": 0
+    }
+  },
+  "limits": [
+    "The guarded stale-revision branch passed downloaded-source tests but was not deliberately triggered through the hosted worker.",
+    "LIVE has not yet run its next ordinary retry under version 89; the cause of every prior missing delivery is not proven.",
+    "No manual rescue or completed unattended identity drain is claimed."
+  ]
+}

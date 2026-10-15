@@ -7,6 +7,42 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 16:43 UTC — targeted identity worker release verified in TEST and LIVE; ordinary LIVE retry pending.**
+
+### Working and verified
+
+- The downloaded TEST and LIVE workers had the same identity handler but
+  different surrounding modules. Compiled rollback artifacts and original
+  source were retained for each exact version. Candidate packages altered only
+  `identity_resolve.ts`; all 111 TEST and 113 LIVE deployed modules matched their
+  respective staged sources structurally. Sixteen handler tests passed against
+  both downloaded deployed workers, and unauthenticated HTTP calls still returned
+  403 on each.
+- TEST worker 37→38 passed an isolated hosted synthetic journey: one queued
+  interaction produced one customer card, one durable delivery receipt, one
+  consumed event and one succeeded job. No provider was called, and the fixture
+  tenant was archived. LIVE worker 88→89 was then deployed from its own retained
+  source and verified by downloaded readback. TEST and LIVE database identity
+  function digests matched before the LIVE release. [Release evidence](evidence/learn-build01-identity-runtime-2026-10-15.json).
+- The first TEST submission returned a CLI failure; inspection proved version
+  37 and its hash unchanged before the diagnosed resubmission succeeded. No
+  uncertain submission was blindly retried.
+
+### Needs finishing
+
+- Observe the existing LIVE identity job's fifth ordinary retry after 17:23:23
+  UTC and subsequent unattended batches. The new branch handles a provably stale
+  source revision only; prior missing deliveries may have another cause. Do not
+  count this release or the synthetic test as a completed drain, and retain the
+  review-required backlog for operator decisions.
+- Continue the fresh backup export and all remaining source, card, score,
+  application/Auth recovery and full-working-day gates below.
+
+### Blocked externally
+
+- Final business acceptance remains Chris's decision. The first eligible full
+  working-day observation is 16 October.
+
 **15 October, 16:28 UTC — Chris clarified first scorecard priority and email-history choice.**
 
 ### Working and verified
