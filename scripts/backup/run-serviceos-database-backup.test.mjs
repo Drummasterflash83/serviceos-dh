@@ -7,6 +7,7 @@ import { createHash } from "node:crypto";
 import { fixture } from "./test-support/s3-fixture.mjs";
 import {
   runPreparedDatabaseBackup,
+  restoreDownloadedDatabaseBackup,
   parseDatabaseBackupArgs,
 } from "./run-serviceos-database-backup.mjs";
 async function setup(t) {
@@ -133,6 +134,57 @@ test("operator does not retry invalid recovery material", async (t) => {
   await assert.rejects(runPreparedDatabaseBackup(options), /database_backup_not_verified/);
   assert.equal(reads, 1);
   assert.equal(order.length, 0);
+});
+test("a completed separate download resumes after a transient secure-note failure without a second S3 transfer", async (t) => {
+  const { directory, options, f, order } = await setup(t);
+  const originalRead = options.escrow.read;
+  let reads = 0;
+  options.escrow.read = async () => {
+    reads++;
+    if (reads > 1)
+      throw Object.assign(new Error("masked transient"), { code: "onepassword_operation_unconfirmed" });
+    return originalRead();
+  };
+  await assert.rejects(runPreparedDatabaseBackup(options), /database_backup_not_verified/);
+  const priorAttempt = (await readdir(directory))
+    .find((name) => name.startsWith("failed-")).slice(7, -5);
+  const failed = JSON.parse(await readFile(join(directory, `failed-${priorAttempt}.json`)));
+  assert.equal(failed.stage, "escrow-readback");
+  const calls = f.calls.length;
+  options.escrow.read = originalRead;
+  const resumed = await restoreDownloadedDatabaseBackup({
+    directory, priorAttempt, escrow: options.escrow, recover: options.recover,
+  });
+  assert.equal(resumed.state, "independent_database_snapshot_verified");
+  assert.equal(resumed.sourceReceiptAttempt, priorAttempt);
+  assert.equal(f.calls.length, calls);
+  assert.equal(order.filter((v) => v === "database-restore").length, 1);
+  await assert.rejects(stat(join(directory, "active.lock")), { code: "ENOENT" });
+});
+test("resume rejects a changed downloaded byte before key access or restore", async (t) => {
+  const { directory, options, f, order } = await setup(t);
+  const originalRead = options.escrow.read;
+  let reads = 0;
+  options.escrow.read = async () => {
+    reads++;
+    if (reads > 1)
+      throw Object.assign(new Error("masked transient"), { code: "onepassword_operation_unconfirmed" });
+    return originalRead();
+  };
+  await assert.rejects(runPreparedDatabaseBackup(options), /database_backup_not_verified/);
+  const priorAttempt = (await readdir(directory))
+    .find((name) => name.startsWith("failed-")).slice(7, -5);
+  const downloaded = join(directory, `download-${priorAttempt}.age`);
+  const bytes = await readFile(downloaded);
+  bytes[bytes.length - 1] ^= 1;
+  await writeFile(downloaded, bytes);
+  const before = order.length, calls = f.calls.length;
+  await assert.rejects(restoreDownloadedDatabaseBackup({
+    directory, priorAttempt, escrow: options.escrow, recover: options.recover,
+  }), /database_backup_not_verified/);
+  assert.equal(order.length, before);
+  assert.equal(f.calls.length, calls);
+  await assert.rejects(stat(join(directory, "active.lock")), { code: "ENOENT" });
 });
 test("lost upload acknowledgement leaves no acceptance; retry uses exact existing object", async (t) => {
   const { directory, options, f } = await setup(t);

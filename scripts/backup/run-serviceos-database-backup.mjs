@@ -6,12 +6,13 @@ import { constants } from "node:fs";
 import { mkdir, open, lstat, realpath, unlink } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { createRecoveryEscrow } from "./onepassword-database-recovery.mjs";
 import { loadDatabaseCredential } from "./serviceos-database-backup-access.mjs";
 import { createDatabaseS3 } from "./recording-backup-s3.mjs";
 import { uploadDatabasePackage, downloadDatabasePackage } from "./database-backup-transfer.mjs";
 import { RecordingBackupError } from "./recording-backup-core.mjs";
+import { databaseBackupBinding } from "./database-backup-template.mjs";
 const REPO = fileURLToPath(new URL("../../", import.meta.url));
 const PRIVATE = join(REPO, ".verification-results");
 const SOURCE = join(PRIVATE, "production-database-complete-capture-small-full-2026-10-12");
@@ -37,14 +38,17 @@ async function readRecoveryMaterial(escrow) {
   }
 }
 export function parseDatabaseBackupArgs(args) {
-  const checkpoint = ["--prepare-checkpoint", "--copy-and-restore-checkpoint"].includes(args[0]);
-  need(args.length === (checkpoint ? 4 : 3)
+  const resume = args[0] === "--restore-downloaded-checkpoint";
+  const checkpoint = resume || ["--prepare-checkpoint", "--copy-and-restore-checkpoint"].includes(args[0]);
+  need(args.length === (resume ? 5 : checkpoint ? 4 : 3)
     && (checkpoint || ["--prepare-initial", "--copy-and-restore-initial"].includes(args[0]))
     && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(args[1])
-    && (!checkpoint || /^\.verification-results\/production-release-checkpoint-[0-9]{8}-[a-z0-9-]+$/.test(args[3])),
+    && (!checkpoint || /^\.verification-results\/production-release-checkpoint-[0-9]{8}-[a-z0-9-]+$/.test(args[3]))
+    && (!resume || /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(args[4])),
     "database_runner_arguments_invalid");
   return { mode: args[0], runId: args[1], bindingPath: resolve(args[2]),
-    ...(checkpoint ? {sourcePath: resolve(REPO,args[3])} : {}) };
+    ...(checkpoint ? {sourcePath: resolve(REPO,args[3])} : {}),
+    ...(resume ? { priorAttempt: args[4] } : {}) };
 }
 
 async function privateDirectory(path) {
@@ -137,6 +141,45 @@ async function transport(role) {
     signal: AbortSignal.timeout(10 * 60 * 1000),
   });
 }
+function verifiedRecovery(result) {
+  need(
+    result?.state === "encrypted_package_database_and_vault_restored" &&
+      result.containerRemoved === true &&
+      result.originalPackageFilesUnchanged === true &&
+      result.allPhysicalTablesCovered === true &&
+      result.tableCatalogMatched === true &&
+      result.extensionVersionsMatched === true &&
+      [
+        result.vaultSecretsVerified,
+        result.nativeDataComparison?.rows,
+        result.networkSupplementComparison?.rows,
+        result.recordingRelationships?.recordings,
+      ].every((n) => Number.isSafeInteger(n) && n >= 0),
+    "database_independent_restore_unverified",
+  );
+  return {
+    nativeRows: result.nativeDataComparison.rows,
+    operationalRows: result.networkSupplementComparison.rows,
+    recordingRelationships: result.recordingRelationships.recordings,
+    vaultSecretsVerified: result.vaultSecretsVerified,
+    containerRemoved: true,
+  };
+}
+async function checkedPreparation(directory, expectedArchive) {
+  const d = await privateJson(join(directory, "descriptor.json"));
+  const preparation = await privateJson(join(directory, "preparation.json"));
+  need(
+    preparation.contract === "database-package-preparation/1" &&
+      preparation.state === "package_encrypted_and_decrypt_checked" &&
+      preparation.snapshotAt === d.snapshotAt &&
+      preparation.localDatabaseRestoreVerified === true &&
+      same(preparation.descriptor, d) &&
+      preparation.archive.bytes === expectedArchive.bytes &&
+      preparation.archive.sha256 === expectedArchive.sha256,
+    "database_initial_package_not_verified",
+  );
+  return d;
+}
 export async function runPreparedDatabaseBackup({
   directory,
   escrow,
@@ -159,18 +202,7 @@ export async function runPreparedDatabaseBackup({
     completed = false;
   const attempt = randomUUID();
   try {
-    const d = await privateJson(join(directory, "descriptor.json"));
-    const preparation = await privateJson(join(directory, "preparation.json"));
-    need(
-      preparation.contract === "database-package-preparation/1" &&
-        preparation.state === "package_encrypted_and_decrypt_checked" &&
-        preparation.snapshotAt === d.snapshotAt &&
-        preparation.localDatabaseRestoreVerified === true &&
-        same(preparation.descriptor, d) &&
-        preparation.archive.bytes === expectedArchive.bytes &&
-        preparation.archive.sha256 === expectedArchive.sha256,
-      "database_initial_package_not_verified",
-    );
+    const d = await checkedPreparation(directory, expectedArchive);
     const material = await readRecoveryMaterial(escrow);
     need(material.ageRecipient === d.recipient, "database_recipient_changed");
     await saveNew(join(directory, `attempt-${attempt}.json`), {
@@ -205,28 +237,7 @@ export async function runPreparedDatabaseBackup({
       rootKey: saved.vaultRootKey,
       agePath: AGE,
     });
-    need(
-      result?.state === "encrypted_package_database_and_vault_restored" &&
-        result.containerRemoved === true &&
-        result.originalPackageFilesUnchanged === true &&
-        result.allPhysicalTablesCovered === true &&
-        result.tableCatalogMatched === true &&
-        result.extensionVersionsMatched === true &&
-        [
-          result.vaultSecretsVerified,
-          result.nativeDataComparison?.rows,
-          result.networkSupplementComparison?.rows,
-          result.recordingRelationships?.recordings,
-        ].every((n) => Number.isSafeInteger(n) && n >= 0),
-      "database_independent_restore_unverified",
-    );
-    const recovery = {
-      nativeRows: result.nativeDataComparison.rows,
-      operationalRows: result.networkSupplementComparison.rows,
-      recordingRelationships: result.recordingRelationships.recordings,
-      vaultSecretsVerified: result.vaultSecretsVerified,
-      containerRemoved: true,
-    };
+    const recovery = verifiedRecovery(result);
     const receipt = {
       state: "independent_database_snapshot_verified",
       attempt,
@@ -256,6 +267,98 @@ export async function runPreparedDatabaseBackup({
     await lock.close();
     // A failed/uncertain DB subprocess requires explicit cleanup inspection.
     // Upload/download failures cannot have started a DB and may retry safely.
+    if (completed || stage !== "restore") await unlink(lockPath);
+  }
+}
+/** Resume only a completed, hash-checked Restore download whose later CLI read
+ * failed. The prior transfer receipt and failure stage are immutable inputs; no
+ * second S3 transfer or source export is performed. */
+export async function restoreDownloadedDatabaseBackup({
+  directory,
+  priorAttempt,
+  escrow,
+  recover = (data) => pythonStage("restore_database_package.py", data),
+  expectedArchive = ARCHIVE,
+}) {
+  need(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(priorAttempt), "database_prior_attempt_invalid");
+  await privateDirectory(directory);
+  const lockPath = join(directory, "active.lock");
+  const lock = await open(lockPath, "wx", 0o600);
+  const attempt = randomUUID();
+  let stage = "preflight", completed = false;
+  try {
+    const d = await checkedPreparation(directory, expectedArchive);
+    const failure = await privateJson(join(directory, `failed-${priorAttempt}.json`));
+    need(failure.state === "database_backup_not_verified" &&
+      failure.stage === "escrow-readback" && failure.restoreInspectionRequired === false,
+    "database_prior_download_not_confirmed");
+    const receipt = await privateJson(join(directory, `receipt-${priorAttempt}.json`));
+    need(receipt.contract === "database-backup-receipt/1" &&
+      same(receipt.destination, databaseBackupBinding) &&
+      Object.keys(receipt.descriptor ?? {}).length === Object.keys(d).length &&
+      Object.entries(d).every(([key, value]) => receipt.descriptor[key] === value) &&
+      receipt.object?.size === d.bytes && receipt.object?.sha256 === d.sha256 &&
+      receipt.object?.key?.startsWith(databaseBackupBinding.prefix + "objects/") &&
+      receipt.object.key.endsWith("/" + d.sha256) &&
+      typeof receipt.object?.versionId === "string" && receipt.object.versionId.length > 0 &&
+      receipt.object.encryption === "AES256" && receipt.object.retentionMode === "GOVERNANCE" &&
+      Date.parse(receipt.object.retainUntil) >= Date.parse(receipt.object.createdAt) + 30 * 86400000 - 1000,
+    "database_prior_receipt_unverified");
+    const downloaded = join(directory, `download-${priorAttempt}.age`);
+    const file = await open(downloaded, constants.O_RDONLY | constants.O_NOFOLLOW);
+    try {
+      const stat = await file.stat();
+      need(stat.isFile() && stat.uid === process.getuid() &&
+        (stat.mode & 0o077) === 0 && stat.size === d.bytes,
+      "database_prior_download_invalid");
+      const hash = createHash("sha256");
+      for await (const part of file.createReadStream({ start: 0, autoClose: false })) hash.update(part);
+      need(hash.digest("hex") === d.sha256, "database_prior_download_hash_mismatch");
+      const magic = Buffer.alloc(22);
+      await file.read(magic, 0, magic.length, 0);
+      need(magic.toString() === "age-encryption.org/v1\n", "database_package_not_age");
+    } finally {
+      await file.close();
+    }
+    stage = "escrow-readback";
+    const material = await readRecoveryMaterial(escrow);
+    need(material.ageRecipient === d.recipient, "database_recipient_changed");
+    stage = "restore";
+    const result = await recover({
+      encryptedPath: downloaded,
+      destination: join(directory, `restore-${attempt}`),
+      descriptor: d,
+      ageIdentity: material.ageIdentity,
+      rootKey: material.vaultRootKey,
+      agePath: AGE,
+    });
+    const recovery = verifiedRecovery(result);
+    const verified = {
+      state: "independent_database_snapshot_verified",
+      attempt,
+      sourceReceiptAttempt: priorAttempt,
+      snapshotAt: d.snapshotAt,
+      encryptedBytes: d.bytes,
+      independentStorageVerified: true,
+      keyEscrowReadbackVerified: true,
+      recovery,
+      dailyOperationVerified: false,
+      fullServiceRecoveryVerified: false,
+      productionWrites: false,
+    };
+    await saveNew(join(directory, `verified-${attempt}.json`), verified);
+    completed = true;
+    return verified;
+  } catch (error) {
+    await saveNew(join(directory, `failed-${attempt}.json`), {
+      state: "database_backup_not_verified",
+      stage,
+      code: error instanceof RecordingBackupError ? error.code : "database_runner_unconfirmed",
+      restoreInspectionRequired: stage === "restore",
+    });
+    throw new RecordingBackupError("database_backup_not_verified");
+  } finally {
+    await lock.close();
     if (completed || stage !== "restore") await unlink(lockPath);
   }
 }
@@ -297,6 +400,10 @@ async function main(args) {
     );
     return { state: result.state, runId: parsed.runId, uploaded: false };
   }
+  if (parsed.mode === "--restore-downloaded-checkpoint")
+    return restoreDownloadedDatabaseBackup({
+      directory, priorAttempt: parsed.priorAttempt, escrow, expectedArchive,
+    });
   return runPreparedDatabaseBackup({ directory, escrow, expectedArchive });
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
