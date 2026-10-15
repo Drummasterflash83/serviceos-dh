@@ -1,16 +1,16 @@
 /** Read only the dedicated daily-export login from its exact Keychain item. */
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
 
 const PROJECT = "tgbnakbxwcqjeimygroz";
 const ROLE = "serviceos_backup_reader";
-const SERVICE = "OpenFolk.ServiceOS.DatabaseSource.Reader";
+const KEYCHAIN = fileURLToPath(new URL("./database-source-keychain.py", import.meta.url));
 
 export async function loadDatabaseSourceReader(execute = promisify(execFile)) {
   try {
-    const { stdout } = await execute("/usr/bin/security", [
-      "find-generic-password", "-s", SERVICE, "-a", PROJECT, "-w",
-    ], { encoding: "utf8", timeout: 15000, maxBuffer: 4096 });
+    const { stdout } = await execute("python3", ["-B", KEYCHAIN, "--get"],
+      { encoding: "utf8", timeout: 15000, maxBuffer: 4096 });
     const value = JSON.parse(stdout);
     if (value?.project !== PROJECT || value?.role !== ROLE ||
       value?.host !== "aws-1-eu-west-2.pooler.supabase.com" ||

@@ -11,8 +11,10 @@ test("daily source login is bound to the exact dedicated Keychain item", async (
     return { stdout: JSON.stringify(good) };
   });
   assert.deepEqual(value, good);
-  assert.deepEqual(called[1], ["find-generic-password", "-s",
-    "OpenFolk.ServiceOS.DatabaseSource.Reader", "-a", good.project, "-w"]);
+  assert.equal(called[0], "python3");
+  assert.equal(called[1][0], "-B");
+  assert.match(called[1][1], /\/scripts\/backup\/database-source-keychain\.py$/);
+  assert.equal(called[1][2], "--get");
 });
 test("daily source login rejects changed scope, unbounded secret and extra fields", async () => {
   for (const value of [

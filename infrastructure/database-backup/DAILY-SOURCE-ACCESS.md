@@ -1,7 +1,10 @@
-# Daily independent database source access — reviewed candidate
+# Daily independent database source access
 
-Status: **prepared, not activated**. This file does not grant permission to
-create a production login or turn on a schedule.
+Status on 15 October 2026: **dedicated production reader installed and tested;
+daily schedule not activated**. Chris approved this standing access, including
+whole-project Auth and encrypted Vault reads, for the narrowly scoped daily
+runner. The approved runtime still needs a reliable host, missed-success alarm
+and full source-to-off-site rehearsal before daily operation can be accepted.
 
 The 15 October read-only production preflight found 421 physical user tables,
 398 using RLS, no large objects and no `serviceos_backup_reader` role. The
@@ -15,7 +18,7 @@ explains that a complete `pg_dump` of RLS tables needs `BYPASSRLS` plus
 project, including Auth and encrypted Vault rows. `default_transaction_read_only`
 is a safeguard, **not an immutable read-only privilege**: the role can change its
 session setting and may inherit writes through `PUBLIC` functions. This new
-standing access must be reviewed as a specific access expansion before use.
+standing access was approved as a specific access expansion before installation.
 
 The candidate is one login named `serviceos_backup_reader`, with `LOGIN`,
 `BYPASSRLS`, `pg_read_all_data`, no superuser/createdb/createrole/replication
@@ -37,10 +40,18 @@ only for a separate restore drill. The real existing 10:04 UTC snapshot was
 successfully packaged in this keyless daily format locally on 15 October;
 that is a package-format test, not a fresh daily export or off-site acceptance.
 
-Activation requires a reviewed role/secret change, a reliable host and missed
-success alarm, a TEST rehearsal of the full source-to-restore chain, and a
-separate LIVE release with exact access, source and recovery evidence. No
-production login, new secret, schedule, object transfer, or source write was
-created by this candidate. Until those gates pass, daily independent backup is
-**not accepted**. Supabase's own daily backup is a separate provider-managed
-recovery layer and does not prove this independent export.
+The role was created only after TEST and LIVE rollback rehearsals. LIVE readback
+confirmed `LOGIN`, `BYPASSRLS`, `pg_read_all_data`, no administrator/role-creation
+privileges, and `default_transaction_read_only=on`. A direct TLS login proved
+read access to `auth.users` and `vault.secrets` without reading any customer
+rows. Its generated password was stored and read back through the exact local
+Keychain item via Security.framework stdin, without a biometric prompt, command
+argument, log or Git file. This local item is for the first live rehearsal;
+the hosted runtime must receive its own scoped secret before scheduling.
+
+A fresh live source export began at 15:44 UTC on 15 October. It must complete
+its isolated native restore, public-key encryption, off-site copy and independent
+download before this attempt counts. The separate recovery-key restore, reliable
+host, 26-hour missed-success alarm and sustained schedule remain open. Daily
+independent backup is **not accepted** yet. Supabase's provider-managed daily
+backup is a separate recovery layer and does not prove this independent export.

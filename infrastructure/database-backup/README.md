@@ -472,16 +472,18 @@ export whose native archive, operational supplement, catalog and every archived
 COPY row have already passed an offline restore. It carries matching archived
 and restored Vault ciphertext fingerprints, then defers actual Vault
 decryption to the supervised restore. Its `--prepare-daily`, `--copy-daily` and
-`--restore-copy-daily` modes remain inactive until a dedicated source identity
-and an unattended runtime are provisioned and verified. No routine step reads
+`--restore-copy-daily` modes now have an approved, installed dedicated source
+identity for a one-off live rehearsal. A dependable hosted runtime and schedule
+are still pending. No routine step reads
 the recovery key or claims Vault decryption. See
 [daily source access](DAILY-SOURCE-ACCESS.md) for the exact boundary.
-The inactive `run-daily-database-backup.mjs --run-once` candidate binds the
+The `run-daily-database-backup.mjs --run-once` runner binds the
 export, isolated native restore, public-key encryption and independently
 downloaded copy into one attempt. It stops on an unconfirmed stage and records
 an inspection-required failure; it does not retry source or copy actions.
-There is no installed schedule, age alert, or standing copy authorization for
-new daily objects yet. A successful one-off copy would still leave supervised
+There is no installed schedule or age alert yet. Chris approved the standing
+backup access and existing private London destination on 15 October. A
+successful one-off copy would still leave supervised
 Vault decryption and full application/Auth recovery unverified.
 
 The supervised recovery runner now reads 1Password only once, after the
