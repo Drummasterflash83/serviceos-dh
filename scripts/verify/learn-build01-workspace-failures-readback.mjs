@@ -6,20 +6,24 @@ if (process.argv.slice(2).join(" ") !== "--live-read-only")
 
 const project = "tgbnakbxwcqjeimygroz";
 const tenant = "00000000-0000-0000-0000-000000000001";
-const query = `select 'job' kind,status,coalesce(error_code,'none') reason,
-  count(*)::int total,max(updated_at) latest_at
+const query = `with failures as (
+  select 'job' kind,status,case
+    when error_code in ('source_ineligible','fetch_failed','persistence_failed',
+      'admin_delegation_missing') then error_code else 'other' end reason,
+    updated_at event_at
   from public.platform_jobs where tenant_id='${tenant}'::uuid
     and job_type='email.workspace_sync' and updated_at>=now()-interval '1 hour'
     and status in ('failed','dead_letter','retrying')
-  group by status,coalesce(error_code,'none')
   union all
-  select 'source_run' kind,status,coalesce(error_message,'none') reason,
-    count(*)::int total,max(completed_at) latest_at
+  select 'source_run' kind,status,case
+    when error_message in ('source_ineligible','fetch_failed','persistence_failed',
+      'admin_delegation_missing') then error_message else 'other' end reason,
+    completed_at event_at
   from public.email_sync_runs where tenant_id='${tenant}'::uuid
     and provider='gmail' and sync_type='workspace_messages'
     and completed_at>=now()-interval '1 hour' and status='failed'
-  group by status,coalesce(error_message,'none')
-  order by kind,status,reason`;
+) select kind,status,reason,count(*)::int total,max(event_at) latest_at
+  from failures group by kind,status,reason order by kind,status,reason`;
 const response = await fetch(
   `https://api.supabase.com/v1/projects/${project}/database/query/read-only`, {
     method: "POST",
