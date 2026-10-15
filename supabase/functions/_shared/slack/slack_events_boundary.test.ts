@@ -36,13 +36,12 @@ test("signed allowed public-channel root and reply yield bounded hints without s
     const { raw, headers } = await signed(payload);
     const hint = await verifyPublicChannelEvent(raw, headers, binding, nowMs);
     assert.deepEqual(hint, { kind: "message_hint", eventId: event.event_id,
-      channelId: "C12345", ts: event.event.ts, threadTs: threadTs ?? null,
-      correction: false });
+      channelId: "C12345", ts: event.event.ts, threadTs: threadTs ?? null });
     assert.equal(JSON.stringify(hint).includes("Private synthetic text"), false);
   }
 });
 
-test("signed challenge works; edits and deletes remain correction hints", async () => {
+test("signed challenge works; documented edit and delete shapes target the original message", async () => {
   const verification = await signed({ type: "url_verification",
     challenge: "syntheticChallenge_123" });
   assert.deepEqual(await verifyPublicChannelEvent(verification.raw,
@@ -50,13 +49,21 @@ test("signed challenge works; edits and deletes remain correction hints", async 
   { kind: "challenge", challenge: "syntheticChallenge_123" });
   await rejected({ type: "url_verification", team_id: "TOTHER",
     challenge: "syntheticChallenge_123" }, "wrong_connection");
-  for (const subtype of ["message_changed", "message_deleted"]) {
-    const { raw, headers } = await signed({ ...event,
-      event: { ...event.event, subtype } });
-    const hint = await verifyPublicChannelEvent(raw, headers, binding, nowMs);
-    assert.equal(hint.kind, "message_hint");
-    if (hint.kind === "message_hint") assert.equal(hint.correction, true);
-  }
+  const originalTs = "1792090000.000001";
+  const changed = await signed({ ...event, event: { type: "message", subtype: "message_changed",
+    hidden: true, channel: "C12345", ts: event.event.ts,
+    message: { type: "message", ts: originalTs, thread_ts: "1792080000.000001",
+      text: "Private synthetic edit" } } });
+  assert.deepEqual(await verifyPublicChannelEvent(changed.raw, changed.headers, binding, nowMs),
+    { kind: "correction_hint", eventId: event.event_id, channelId: "C12345",
+      eventTs: event.event.ts, sourceTs: originalTs, threadTs: "1792080000.000001",
+      correction: "changed", requiresVisibilityCheck: true });
+  const deleted = await signed({ ...event, event: { type: "message", subtype: "message_deleted",
+    hidden: true, channel: "C12345", ts: event.event.ts, deleted_ts: originalTs } });
+  assert.deepEqual(await verifyPublicChannelEvent(deleted.raw, deleted.headers, binding, nowMs),
+    { kind: "correction_hint", eventId: event.event_id, channelId: "C12345",
+      eventTs: event.event.ts, sourceTs: originalTs, threadTs: null,
+      correction: "deleted", requiresVisibilityCheck: true });
 });
 
 test("raw-byte signature, time and connection binding fail closed", async () => {
@@ -84,5 +91,16 @@ test("DMs, private channels, unapproved channels and malformed events are exclud
     "out_of_scope_event");
   await rejected({ ...event, event_id: "invalid" }, "out_of_scope_event");
   await rejected({ ...event, event: { ...event.event, subtype: { type: "message_changed" } } },
+    "out_of_scope_event");
+  await rejected({ ...event, event: { ...event.event, subtype: "bot_message" } },
+    "out_of_scope_event");
+  await rejected({ ...event, event: { type: "message", subtype: "message_deleted",
+    channel_type: "im", channel: "C12345", ts: event.event.ts,
+    deleted_ts: "1792090000.000001" } }, "out_of_scope_event");
+  await rejected({ ...event, event: { type: "message", subtype: "message_deleted",
+    channel: "COTHER", ts: event.event.ts,
+    deleted_ts: "1792090000.000001" } }, "out_of_scope_event");
+  await rejected({ ...event, event: { type: "message", subtype: "message_changed",
+    channel: "C12345", ts: event.event.ts, message: { text: "missing original ts" } } },
     "out_of_scope_event");
 });

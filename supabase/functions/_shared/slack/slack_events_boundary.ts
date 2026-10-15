@@ -4,7 +4,10 @@
 export type PublicChannelEvent =
   | { kind: "challenge"; challenge: string }
   | { kind: "message_hint"; eventId: string; channelId: string; ts: string;
-      threadTs: string | null; correction: boolean };
+      threadTs: string | null }
+  | { kind: "correction_hint"; eventId: string; channelId: string;
+      eventTs: string; sourceTs: string; threadTs: string | null;
+      correction: "changed" | "deleted"; requiresVisibilityCheck: true };
 
 export class SlackEventBoundaryError extends Error {
   readonly code: string;
@@ -18,7 +21,6 @@ const timestamp = /^\d{10,12}\.\d{1,6}$/;
 const eventId = /^Ev[A-Za-z0-9]{4,100}$/;
 const challenge = /^[A-Za-z0-9_-]{8,256}$/;
 const hex = /^[a-f0-9]{64}$/i;
-const correctionSubtypes = new Set(["message_changed", "message_deleted"]);
 const micros = (value: string): bigint => {
   const [seconds, fraction] = value.split(".");
   return BigInt(seconds) * 1000000n + BigInt(fraction.padEnd(6, "0"));
@@ -77,18 +79,36 @@ export async function verifyPublicChannelEvent(
       typeof payload.event_id !== "string" || !eventId.test(payload.event_id) ||
       payload.is_ext_shared_channel === true ||
       !record(message) || message.type !== "message" ||
-      message.channel_type !== "channel" ||
       typeof message.channel !== "string" || !id.test(message.channel) ||
       !binding.allowedChannels.has(message.channel) ||
       typeof message.ts !== "string" || !timestamp.test(message.ts) ||
-      micros(message.ts) < micros(binding.minTs) ||
-      !(message.thread_ts === undefined ||
-        typeof message.thread_ts === "string" && timestamp.test(message.thread_ts)) ||
-      !(message.subtype === undefined ||
-        typeof message.subtype === "string" && /^[a-z_]{1,64}$/.test(message.subtype)))
+      micros(message.ts) < micros(binding.minTs))
     throw new SlackEventBoundaryError("out_of_scope_event");
-  return { kind: "message_hint", eventId: payload.event_id,
-    channelId: message.channel, ts: message.ts,
-    threadTs: typeof message.thread_ts === "string" ? message.thread_ts : null,
-    correction: correctionSubtypes.has(message.subtype as string) };
+  if (message.subtype === undefined) {
+    if (message.channel_type !== "channel" ||
+        !(message.thread_ts === undefined ||
+          typeof message.thread_ts === "string" && timestamp.test(message.thread_ts)))
+      throw new SlackEventBoundaryError("out_of_scope_event");
+    return { kind: "message_hint", eventId: payload.event_id,
+      channelId: message.channel, ts: message.ts,
+      threadTs: typeof message.thread_ts === "string" ? message.thread_ts : null };
+  }
+  // Slack's edit/delete examples omit channel_type and use event.ts for the
+  // change time. The original message has a different timestamp. A receiver
+  // must recheck current public visibility before acting on these hints.
+  if ((message.subtype !== "message_changed" && message.subtype !== "message_deleted") ||
+      (message.channel_type !== undefined && message.channel_type !== "channel"))
+    throw new SlackEventBoundaryError("out_of_scope_event");
+  const original = message.subtype === "message_changed" && record(message.message)
+    ? message.message.ts : message.deleted_ts;
+  const thread = message.subtype === "message_changed" && record(message.message)
+    ? message.message.thread_ts : undefined;
+  if (typeof original !== "string" || !timestamp.test(original) ||
+      !(thread === undefined || typeof thread === "string" && timestamp.test(thread)))
+    throw new SlackEventBoundaryError("out_of_scope_event");
+  return { kind: "correction_hint", eventId: payload.event_id,
+    channelId: message.channel, eventTs: message.ts, sourceTs: original,
+    threadTs: typeof thread === "string" ? thread : null,
+    correction: message.subtype === "message_changed" ? "changed" : "deleted",
+    requiresVisibilityCheck: true };
 }

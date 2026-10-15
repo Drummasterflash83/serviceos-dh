@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 23:20 UTC — Commusoft recurring cadence exposed; Slack event corrections tightened.**
+
+### Working and verified
+
+- LIVE retained 264 Commusoft job pages, but the latest job page was at 21:02
+  UTC. The recurring connection was in phase 3 of 4, traversing 1,554 customer
+  properties for contact updates; 1,337 were complete at the read. About 600
+  contact property pages were committed in the previous hour, with zero contact
+  observations in that hour. This is real forward progress, not a current-job
+  refresh. [Aggregate cadence receipt](evidence/learn-build01-commusoft-recurring-cadence-2026-10-15.json).
+- The local signed Slack event boundary now separates event time from original
+  message time for documented edits/deletions, rejects unrelated subtypes and
+  marks corrections for a fresh public-visibility check. Four synthetic tests
+  and TypeScript pass; there is still no receiving endpoint or LIVE subscription.
+
+### Needs finishing
+
+- The four-phase Commusoft cycle must finish contacts before its watermark can
+  advance and start a new property/job pass. Measure completed-cycle cadence
+  before claiming current job progress; the last job-page time and the 282
+  unlinked non-complete jobs are separate limitations. Slack capture capacity,
+  post-cutoff message/reply proof and the selected event or polling route remain
+  open.
+
+### Blocked externally
+
+- No new provider-access block was found. Human review of job ownership and
+  Chris's eventual business acceptance remain outstanding.
+
 **15 October, 23:15 UTC — current-job review dependency quantified.**
 
 ### Working and verified

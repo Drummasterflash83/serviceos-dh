@@ -13,6 +13,12 @@ bounded source hint, never message content or a capture receipt. No receiving
 endpoint, durable event deduplication, source-window enqueue, Slack app
 subscription or LIVE activation exists yet. The current polling system is
 unchanged. This preparation does not settle the pending choice or capacity gate.
+At 23:18 UTC its correction branch was tightened against Slack's documented
+edit/delete shapes: those events use the change time in `event.ts`, the original
+message time in `message.ts` or `deleted_ts`, and may omit `channel_type`.
+Correction hints now carry both times, reject unrelated subtypes and explicitly
+require a fresh public-visibility check before reconciliation. Four synthetic
+tests and TypeScript pass. No correction processor or deletion policy is active.
 
 ## Observed baseline and arithmetic
 
