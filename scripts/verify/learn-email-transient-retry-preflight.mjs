@@ -2,9 +2,11 @@
 import { savedCliToken, TEST_PROJECT } from "./learn-test-readiness.mjs";
 
 const mode = process.argv.slice(2).join(" ");
-if (!["--live-read-only", "--test-read-only", "--test-candidate-read-only"].includes(mode))
+if (!["--live-read-only", "--test-read-only", "--test-candidate-read-only",
+  "--live-candidate-read-only"].includes(mode))
   throw Error("Exact read-only mode required");
-const project = mode === "--live-read-only" ? "tgbnakbxwcqjeimygroz" : TEST_PROJECT;
+const project = mode.endsWith("-live-read-only") || mode.startsWith("--live-")
+  ? "tgbnakbxwcqjeimygroz" : TEST_PROJECT;
 const query = `select jsonb_build_object(
   'definitionMd5',md5(pg_get_functiondef(p.oid)),
   'owner',pg_get_userbyid(p.proowner),'acl',p.proacl::text,
@@ -31,7 +33,7 @@ const rows = await response.json();
 const binding = rows?.[0]?.binding;
 if (!Array.isArray(rows) || rows.length !== 1 ||
   !/^[a-f0-9]{32}$/.test(binding?.definitionMd5 ?? "") ||
-  (mode === "--test-candidate-read-only" ?
+  (mode.endsWith("-candidate-read-only") ?
     binding?.definitionMd5 !== "c0f6296f051aada999af147773066cac" ||
       binding?.oldBlockMatch !== false || binding?.boundedRetryMatch !== true :
     binding?.definitionMd5 !== "45a140fffe35e7e3de3597eb848cfbc2" ||

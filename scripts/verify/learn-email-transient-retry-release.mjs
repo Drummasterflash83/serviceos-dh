@@ -1,4 +1,4 @@
-/** Exact TEST rehearsal or activation for bounded Workspace fetch retry. */
+/** Exact TEST/LIVE rehearsal or activation for bounded Workspace fetch retry. */
 import { randomUUID, createHash } from "node:crypto";
 import { readFile, readdir, mkdir, open } from "node:fs/promises";
 import { savedCliToken, TEST_PROJECT } from "./learn-test-readiness.mjs";
@@ -6,10 +6,11 @@ import { emailMigrationAccessBegin, emailMigrationAccessEnd } from
   "./learn-email-migration-access.mjs";
 
 const mode = process.argv.slice(2).join(" ");
-if (!["--rehearse-test", "--apply-test"].includes(mode))
-  throw Error("Exact TEST release mode required");
-const applying = mode === "--apply-test";
-const project = TEST_PROJECT;
+if (!["--rehearse-test", "--apply-test", "--rehearse-live", "--apply-live"].includes(mode))
+  throw Error("Exact retry release mode required");
+const applying = mode.startsWith("--apply-");
+const live = mode.endsWith("-live");
+const project = live ? "tgbnakbxwcqjeimygroz" : TEST_PROJECT;
 const expected = "45a140fffe35e7e3de3597eb848cfbc2";
 const candidate = "c0f6296f051aada999af147773066cac";
 const signature = "public.email_ingestion_transition_v2(uuid,uuid,text,uuid,uuid,text,uuid,bigint,uuid,jsonb)";
@@ -21,24 +22,51 @@ if (!/^begin;\s*$/m.test(migration) || !/^commit;\s*$/m.test(migration))
   throw Error("Retry migration transaction boundary changed");
 const body = migration.replace(/^begin;\s*$/m, "").replace(/^commit;\s*$/m, "");
 const sha = (s) => createHash("sha256").update(s).digest("hex");
+const token = savedCliToken();
 const runId = randomUUID();
 const directory = ".verification-results/learn-build01-email-bounded-retry";
 await mkdir(directory, { recursive: true, mode: 0o700 });
+if (live) {
+  const testBinding = await fetch(
+    `https://api.supabase.com/v1/projects/${TEST_PROJECT}/database/query/read-only`, {
+      method: "POST", headers: { Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json" },
+      body: JSON.stringify({ query: `select md5(pg_get_functiondef(
+        'public.email_ingestion_transition_v2(uuid,uuid,text,uuid,uuid,text,uuid,bigint,uuid,jsonb)'::regprocedure)) as digest` }),
+      redirect: "error", signal: AbortSignal.timeout(45000),
+    });
+  const testRows = testBinding.ok ? await testBinding.json() : null;
+  if (!Array.isArray(testRows) || testRows.length !== 1 ||
+    testRows[0]?.digest !== candidate)
+    throw Error("Installed TEST function binding changed");
+  const checks = (await readdir(directory)).filter((name) =>
+    name.startsWith("test-rollback-") && name.endsWith(".json.result"));
+  let matched = false;
+  for (const name of checks) {
+    const prior = JSON.parse(await readFile(`${directory}/${name}`, "utf8"));
+    if (prior.state === "installed_candidate_probed_and_rolled_back" &&
+      prior.project === TEST_PROJECT && prior.expectedDefinitionMd5 === candidate &&
+      prior.probeSha256 === sha(probe) &&
+      Date.now() - Date.parse(prior.observedAt) < 3600000) matched = true;
+  }
+  if (!matched) throw Error("Fresh installed TEST behavior proof required");
+}
 if (applying) {
   const receipts = (await readdir(directory)).filter((name) =>
-    name.startsWith("rehearse-test-") && name.endsWith(".json.result"));
+    name.startsWith(live ? "rehearse-live-" : "rehearse-test-") &&
+      name.endsWith(".json.result"));
   let matched = false;
   for (const name of receipts) {
     const prior = JSON.parse(await readFile(`${directory}/${name}`, "utf8"));
-    if (prior.state === "rehearsed_transaction_rolled_back" &&
+    if (prior.state === "rehearsed_transaction_rolled_back" && prior.project === project &&
       prior.migrationSha256 === sha(migration) && prior.probeSha256 === sha(probe) &&
       prior.expectedDefinitionMd5 === expected &&
       prior.candidateDefinitionMd5 === candidate &&
       Date.now() - Date.parse(prior.observedAt) < 3600000) matched = true;
   }
-  if (!matched) throw Error("Fresh exact rolled-back TEST rehearsal required");
+  if (!matched) throw Error("Fresh exact rolled-back target rehearsal required");
 }
-const journal = `${directory}/${applying ? "apply-test" : "rehearse-test"}-${runId}.json`;
+const journal = `${directory}/${mode.slice(2)}-${runId}.json`;
 const proof = {
   contract: "learn-email-bounded-retry-rehearsal/1", project, runId,
   migrationSha256: sha(migration), probeSha256: sha(probe),
@@ -68,7 +96,6 @@ select 'bounded_retry_candidate' as marker,
  (select count(*) from public.email_ingestion_transitions
   where tenant_id='ec390000-cccc-4000-8000-000000000001') as fixture_transitions;
 ${applying ? "commit" : "rollback"};`;
-const token = savedCliToken();
 let response;
 try {
   response = await fetch(`https://api.supabase.com/v1/projects/${project}/database/query`, {
