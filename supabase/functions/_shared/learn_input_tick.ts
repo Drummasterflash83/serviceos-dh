@@ -81,6 +81,7 @@ export async function runLearnInputTick(
   jobTypes: string[] | null,
   request: Fetch = fetch,
   timing?: { clock: () => number; sleep: (ms: number) => Promise<void> },
+  options?: { slackWorkerOnly?: boolean },
 ) {
   const all = (state: Outcome["state"]) => ({
     commusoft: outcome(state), slackSchedule: outcome(state), slack: outcome(state), quickbooks: outcome(state),
@@ -143,6 +144,12 @@ export async function runLearnInputTick(
     commusoftEnabled ? drainCommusoftPages(timeoutMs => invoke("learn-commusoft-worker", config.commusoftKey, false, timeoutMs)) : outcome("disabled"),
     (async () => {
       if (!slackEnabled) return { slackSchedule: outcome("disabled"), slack: outcome("disabled") };
+      // Dedicated infrastructure cadence only: one existing, SQL-admitted page.
+      // The ordinary tick still owns recurring window creation.
+      if (options?.slackWorkerOnly) return {
+        slackSchedule: outcome("skipped"),
+        slack: await invoke("learn-slack-worker", config.slackKey, false, 25_000),
+      };
       const slackSchedule = await invoke("learn-slack-schedule", config.slackKey, true);
       // Existing history jobs can continue even if creating a new window failed.
       return { slackSchedule, slack: await drainSlackPages(

@@ -164,6 +164,51 @@ test("Slack-only scheduling reaches the real endpoint guards without invoking Co
   assert.deepEqual(result, { commusoft: { state: "disabled" }, slackSchedule: { state: "idle" }, slack: { state: "idle" }, quickbooks: { state: "disabled" } });
 });
 
+test("dedicated Slack cadence claims one page without recurring scheduling or other inputs", async () => {
+  const calls: string[] = [];
+  const result = await runLearnInputTick(
+    { ...config, enabled: "false", slackEnabled: "true", quickbooksEnabled: "false" },
+    null,
+    async (url, init) => {
+      const name = new URL(url).pathname.split("/").pop()!;
+      calls.push(name);
+      assert.equal(name, "learn-slack-worker");
+      assert.equal(init.body, undefined);
+      assert.equal(new Headers(init.headers).get("x-serviceos-worker-key"), config.slackKey);
+      return ok({ claimed: 1, outcomes: [{ status: "succeeded" }] });
+    },
+    undefined,
+    { slackWorkerOnly: true },
+  );
+  assert.deepEqual(calls, ["learn-slack-worker"]);
+  assert.deepEqual(Object.values(result).map(v => v.state), ["disabled", "skipped", "processed", "disabled"]);
+});
+
+test("dedicated Slack cadence keeps disabled, missing-key and uncertain states visible", async () => {
+  for (const slackEnabled of [undefined, "false", "TRUE"]) {
+    let calls = 0;
+    const result = await runLearnInputTick(
+      { ...config, enabled: "false", slackEnabled }, null,
+      async () => { calls++; throw Error("must not run"); }, undefined, { slackWorkerOnly: true },
+    );
+    assert.equal(calls, 0);
+    assert.equal(result.slack.state, "disabled");
+  }
+  const missing = await runLearnInputTick(
+    { ...config, enabled: "false", slackEnabled: "true", slackKey: undefined }, null,
+    async () => { throw Error("must not run"); }, undefined, { slackWorkerOnly: true },
+  );
+  assert.equal(missing.slack.state, "unconfirmed");
+  let calls = 0;
+  const uncertain = await runLearnInputTick(
+    { ...config, enabled: "false", slackEnabled: "true" }, null,
+    async () => { calls++; return new Response(null, { status: 503 }); },
+    undefined, { slackWorkerOnly: true },
+  );
+  assert.equal(calls, 1);
+  assert.equal(uncertain.slack.state, "unconfirmed");
+});
+
 test("explicit Slack disable, malformed override and filtered invocations fail closed", async () => {
   for (const slackEnabled of ["false", "TRUE", "1", "", " true "]) {
     const calls: string[] = [];

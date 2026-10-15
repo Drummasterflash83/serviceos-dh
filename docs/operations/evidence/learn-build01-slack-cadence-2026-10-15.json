@@ -1,0 +1,59 @@
+{
+  "version": "learn-build01-slack-cadence/1",
+  "environment": "LIVE with separate TEST runtime verification",
+  "observedThroughUtc": "2026-10-15T21:19:15Z",
+  "scope": "Existing approved 160 public Slack channels and observed replies; no individual or group DMs, provider writes, new connection, or campaign reset",
+  "change": {
+    "ordinaryPlatformWorkerSchedule": "* * * * * (unchanged)",
+    "dedicatedSchedule": "serviceos-slack-catchup, 15 seconds",
+    "dedicatedRequest": "platform-worker mode=slack_only, existing Vault WORKER_SECRET, one existing Slack worker call",
+    "databaseWorkspaceCooldownSeconds": 30,
+    "secretValueCopiedOrCommitted": false,
+    "schedulerReference": "https://github.com/citusdata/pg_cron/blob/main/README.md"
+  },
+  "verification": {
+    "focusedTests": 20,
+    "typescript": "passed",
+    "networklessExactBundleProbe": "passed on both TEST and LIVE candidates; missing, mixed and wrong-mode authorization denied; ordinary filtered queue unchanged; zero provider calls",
+    "testPlatformWorkerVersion": 40,
+    "testArtifactSha256": "c793e1658de41b082ba90744c5a659fc09fd1ad33bb6e3a30f1595a5f38fee96",
+    "livePlatformWorkerVersion": 91,
+    "liveArtifactSha256": "6274ea9e383cdb4e92addb77ddcc890bc92f11e07b9f4d6381346e53eaab8925",
+    "exactPreviousBinariesRetainedPrivately": true,
+    "guardedUnscheduleAndRuntimeRollbackAvailable": true,
+    "missingAuthStatusBothProjects": 403,
+    "changedRuntimeFiles": [
+      "supabase/functions/_shared/learn_input_tick.ts",
+      "supabase/functions/platform-worker/index.ts"
+    ],
+    "liveTimerActivatedAtApproxUtc": "2026-10-15T21:14:00Z",
+    "liveTimerRunsThrough211645": { "succeeded": 11, "failed": 0 },
+    "ordinaryTimerContinuedSucceeding": true,
+    "realSlackJobSettlementsBetween2114And211840": {
+      "historySucceeded": 1,
+      "replySucceeded": 6,
+      "newFailureObserved": 0
+    },
+    "workspaceProviderBlockedAt2119": false
+  },
+  "coverageAt2118": {
+    "enabledChannelAndReplySubscriptions": 160,
+    "channelsAdvancedPastApprovedCutoff": 117,
+    "channelsMoreThanOneDayBehind": 132,
+    "newlySavedMessagesAfterCutoff": 0,
+    "newlySavedRepliesAfterCutoff": 0,
+    "note": "Completed empty windows do not prove Slack was quiet in unfinished channels. Historical saved messages and replies remain intact."
+  },
+  "queue": {
+    "beforeAt2113": { "historyQueued": 115, "replyQueued": 662 },
+    "afterAt2119": { "historyQueued": 116, "replyQueued": 676 },
+    "interpretation": "The queue remains material and increased while new reply work was discovered. The first five minutes establish real processing and preserved pacing, not sustained catch-up. Available-at age shrinks when paced jobs are deferred, so it is not used as proof of freshness."
+  },
+  "limits": [
+    "TEST has no equivalent active recurring campaign, so real cadence/throughput acceptance is LIVE-only.",
+    "Cron success confirms HTTP enqueue. Real platform-job settlement and source coverage are the operational evidence.",
+    "Some asynchronous pg_net requests time out while the Edge worker continues; durable job settlement must be inspected separately.",
+    "Provider quietness, complete channel/reply coverage, sustained queue drain and business acceptance remain unproven."
+  ],
+  "slackProviderWrites": false
+}

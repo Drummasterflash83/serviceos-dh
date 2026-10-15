@@ -31,7 +31,8 @@ import { runLearnInputTick } from "../_shared/learn_input_tick.ts";
 // Auth: existing schedule secret OR the exact configured service-role bearer.
 // User JWT claims are never authority here. The queue is cross-tenant infrastructure.
 //
-// Request body: { batch_size?: number, job_types?: string[] }
+// Request body: { batch_size?: number, job_types?: string[] }, or the exact
+// schedule-secret-only { mode: "slack_only" } for one SQL-paced Slack page.
 // Runtime: Supabase Edge Functions (Deno). Deploy with verify_jwt=false.
 
 import { createSupabaseAdmin } from "../_shared/simwood.ts";
@@ -105,11 +106,29 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return fail("config_error", "Service role is not configured", 500);
   const admin = configuredAdmin;
 
-  let body: { batch_size?: unknown; job_types?: unknown } = {};
+  let body: { batch_size?: unknown; job_types?: unknown; mode?: unknown } = {};
   try {
     body = ((await req.json()) ?? {}) as typeof body;
   } catch {
     body = {};
+  }
+  if (body.mode !== undefined) {
+    // The faster timer may only claim one approved Slack page. It cannot enter
+    // the generic queue, create windows or dispatch another provider.
+    if (body.mode !== "slack_only" || Object.keys(body).length !== 1 || !scheduleAuthorized)
+      return fail("forbidden", "Invalid scheduled worker mode", 403);
+    const slackWork = runLearnInputTick({
+      enabled: "false",
+      slackEnabled: Deno.env.get("LEARN_SLACK_DISPATCH_ENABLED"),
+      quickbooksEnabled: "false",
+      url: Deno.env.get("SUPABASE_URL"),
+      serviceKey,
+      slackKey: Deno.env.get("LEARN_SLACK_WORKER_KEY"),
+    }, null, fetch, undefined, { slackWorkerOnly: true });
+    (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } })
+      .EdgeRuntime?.waitUntil?.(slackWork);
+    const input = await slackWork;
+    return json({ success: true, slack: input.slack });
   }
   const batch = num(body.batch_size, DEFAULT_BATCH, 1, MAX_BATCH);
   const jobTypes = Array.isArray(body.job_types)

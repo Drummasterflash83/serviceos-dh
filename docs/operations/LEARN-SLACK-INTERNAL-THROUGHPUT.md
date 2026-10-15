@@ -116,3 +116,26 @@ or provider block, but observed pages were usually too slow for the second
 call's time budget. The backlog was still growing at 21:02 UTC. This release
 does **not** establish sustainable catch-up. See the
 [Build 01 runtime and queue evidence](evidence/learn-build01-slack-double-tick-2026-10-15.json).
+
+## Dedicated Build 01 catch-up cadence — 15 October 2026
+
+The approved campaign's reply discovery kept creating work faster than the
+minute timer could settle it. TEST platform-worker v40 and LIVE v91 add an exact
+schedule-secret-gated `slack_only` mode. It makes **one** call to the existing
+Slack worker, never schedules a window or claims a generic job, and leaves
+Commusoft, QuickBooks, voicemail and the ordinary platform timer untouched.
+The 30-second SQL workspace cooldown, shared lease, reviewed internal-app
+profile and campaign request budgets remain the authority; a 15-second cron
+merely offers a claim when the lock permits it. The cron command reads the
+existing `WORKER_SECRET` from Vault at execution time and stores no secret value.
+
+The exact previous TEST/LIVE worker binaries are retained in ignored private
+verification directories. To stop the extra cadence, first unschedule only
+`serviceos-slack-catchup`; preserve `serviceos-worker`. A runtime rollback is
+then allowed only against the verified current candidate and retained binary.
+Do not reset channel windows, parent-root checkpoints or message history.
+
+The first LIVE minutes show successful cron enqueues and real Slack job
+settlements without a new provider block, but the queue and channel-lag gap
+remain material. The schedule is an operating experiment, not catch-up
+acceptance. [Exact release and early observation](evidence/learn-build01-slack-cadence-2026-10-15.json).

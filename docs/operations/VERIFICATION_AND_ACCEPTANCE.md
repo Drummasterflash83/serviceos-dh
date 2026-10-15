@@ -1,5 +1,13 @@
 # Input Reliability: Verification & Acceptance
 
+**Build 01 observation update, 15 October 2026:** Chris waived the full
+working-day wait for this Build 01 handoff and will review a shorter period
+with enough representative real source-to-card and failure/recovery evidence.
+The one-day framework below remains the original service target, but it is no
+longer a mandatory elapsed-time gate for this specific handoff. This waiver
+does not turn a point-in-time count, a manual rescue or a synthetic test into
+unattended acceptance; actual coverage and honest gaps still need review.
+
 The input layer turns raw Signals into canonical Interactions. This document is the
 single acceptance authority for both input connectors: the Phone / VoIP pipeline and
 the Email connectors (Gmail OAuth and Google Workspace domain-wide delegation). Each

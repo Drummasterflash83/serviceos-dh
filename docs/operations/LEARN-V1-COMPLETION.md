@@ -7,6 +7,37 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 21:14 UTC — Slack-only catch-up cadence under LIVE observation.**
+
+### Working and verified
+
+- A dedicated, schedule-secret-gated platform-worker mode reached only the
+  existing Slack worker in focused and networkless compiled-runtime checks;
+  it did not enter the generic queue, recurring-window scheduler or other
+  provider dispatchers. TEST v40 and LIVE v91 have exact artifact readbacks and
+  preserve missing-auth denial. A separate LIVE 15-second timer now references
+  the existing Vault `WORKER_SECRET`; the ordinary one-minute timer is unchanged
+  and both had successful initial cron enqueue runs. The source and exact
+  previous binaries are retained for guarded rollback.
+  [Early cadence evidence](evidence/learn-build01-slack-cadence-2026-10-15.json).
+- Chris waived the full working-day wait on 15 October. A shorter, real
+  representative observation is acceptable for his review if it shows enough
+  source, card, failure/recovery and operating evidence. This is an acceptance
+  timing change, not a technical or business signoff.
+
+### Needs finishing
+
+- Measure whether the new cadence actually settles more real channel/reply
+  jobs within the existing workspace pacing and campaign budgets. Cron enqueue
+  success alone is insufficient. Show representative customer, job and team
+  evidence and their honest coverage limits; resolve other V1 source/card,
+  score and recovery gaps before presenting the business review pack.
+
+### Blocked externally
+
+- Chris's business decision follows the evidence pack. No additional access
+  approval is needed for the approved read-only capture scope.
+
 **15 October, 21:03 UTC — bounded Slack worker change released, backlog still open.**
 
 ### Working and verified
