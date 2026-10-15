@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-10-15T12:08:38Z",
+  "environment": "production",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "runId": "179f1030-26ea-4c30-83cd-4e05d4d2a62f",
+  "state": "traversed",
+  "completedAt": "2026-10-15T12:07:05.655762Z",
+  "approvedEntityCollections": 13,
+  "entityIndexAfterTraversal": 14,
+  "savedPages": 1354,
+  "uniquePagePermits": 1354,
+  "pageRecords": 134706,
+  "retainedObservations": 134706,
+  "readOnlyProviderRequests": 1355,
+  "approvedRequestLimit": 3000,
+  "wrongTenantPages": 0,
+  "unresolvedSourceConflicts": 0,
+  "lastRunError": null,
+  "connectionStatusAfterTraversal": "paused",
+  "automaticOAuthGeneration": 13,
+  "refreshLeasePresent": false,
+  "recurring": {
+    "enabled": true,
+    "intervalHours": 6,
+    "lastState": "waiting",
+    "lastCompletedAt": "2026-10-15T12:07:05.655762Z",
+    "nextAt": "2026-10-15T18:07:05.655762Z",
+    "actorAndConnectionMatchRun": true
+  },
+  "reviewedLinksAfterScan": {
+    "links": 24,
+    "auditEvents": 24,
+    "distinctExistingCards": 24,
+    "identityDrift": 0,
+    "missingLatestSources": 0,
+    "conflictedLinkedSources": 0
+  },
+  "credentialsIncluded": false,
+  "providerWrites": 0
+}

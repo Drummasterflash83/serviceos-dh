@@ -3,12 +3,12 @@
 ## What is live now
 
 The reusable connector and Drummonds production app registration are installed.
-The real DRUMMOND HEATING grant is verified. Two unattended full scans completed
-on 14 October 2026 across all 13 approved accounting collections. The six-hour
-recurring policy is enabled and a third full scan was still progressing at the
-15 October 11:21 UTC check: 929 saved pages, 930 requests, no run error and no
-source conflicts. Do not call that third scan complete until its final receipts
-and next due time are verified. The current run and connection status are in
+The real DRUMMOND HEATING grant is verified. Three unattended full scans have
+completed across all 13 approved accounting collections. The third finished on
+15 October 2026 at 12:07 UTC with 1,354 saved pages, 134,706 observations,
+zero source conflicts, and matching page/permit receipts. The six-hour policy
+recorded its next due time for 18:07 UTC. The current run and connection status
+are in
 OpenFolk → selected client → Modules → QuickBooks accounting connection.
 
 The LIVE customer catalogue retains roughly 4,311 QuickBooks main accounts
@@ -42,14 +42,20 @@ They process Drummonds' recorded six-hour recurring policy without this Mac.
 Each cycle is limited to 3,000 read-only accounting requests over 24 hours;
 the next cycle is due six hours after the previous one completes. A held,
 expired, failed or request-limited run requires review. Do not restart or widen
-one simply because a status poll times out. Two completed unattended cycles,
-the third in-progress cycle and normal token renewal are recorded in
+one simply because a status poll times out. Three completed unattended cycles
+and normal token renewal are recorded in
 [the V2 handoff](LEARN-QUICKBOOKS-V2-HANDOFF.md) and its linked evidence.
 
 The worker retains source versions, page receipts and import checkpoints. It
 does not reconcile provider deletions or automatically approve cross-provider
 customer or job identities. Verify current run state and due time in OpenFolk
 before making a freshness claim to a client.
+
+An Intuit HTTP 429 keeps the same page checkpoint, consumes its attempted
+request, and pauses that realm's reads for at least 60 seconds or the longer
+`Retry-After` value. The worker permits at most five attempts at one position
+within the approved request/deadline bounds, then stops for operator review.
+Do not bypass the pacing gate or restart a bounded run to evade this limit.
 
 ## Reviewing the result
 
