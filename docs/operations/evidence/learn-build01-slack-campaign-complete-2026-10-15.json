@@ -1,0 +1,30 @@
+{
+  "version": "learn-build01-slack-campaign-complete/1",
+  "observed_at_utc": "2026-10-15T11:18:53Z",
+  "scope": "Read-only LIVE aggregates for the previously approved Drummonds public-channel fixed-window campaign; no provider request, message body, DM read, campaign mutation or manual worker invocation.",
+  "campaign": {
+    "id": "b54d246b-2818-44d1-ba05-ccbe2c6bd6c9",
+    "starts_at": "2015-10-13T00:00:00Z",
+    "ends_at": "2026-10-13T09:30:00Z",
+    "approved_channels": 160,
+    "campaign_window_complete_channels": 160,
+    "needs_review_channels": 0,
+    "requests_reserved": 11695,
+    "request_budget": 20000,
+    "direct_messages_in_scope": false
+  },
+  "reply_discovery": {
+    "thread_scans": 160,
+    "discovery_complete_scans": 160,
+    "observed_threads": 870,
+    "captured_thread_members": 870,
+    "threads_with_complete_import_checkpoints": 870,
+    "open_import_checkpoints": 0
+  },
+  "outcome": "The approved fixed-window public-channel campaign reached its ordinary terminal state with all observed reply threads imported and no campaign channel awaiting review.",
+  "limits": [
+    "This proves the configured fixed window and observed roots, not messages deleted, inaccessible or absent from Slack retention.",
+    "A completed historical campaign does not prove ongoing incremental Slack capture or a full unattended working day.",
+    "Source-to-card, scoring, independent full-service recovery and business sign-off are separate Build 01 gates."
+  ]
+}

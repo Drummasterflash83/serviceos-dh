@@ -1,0 +1,39 @@
+{
+  "version": "learn-build01-offsite-transfer/1",
+  "observed_at_utc": "2026-10-15T11:24:00Z",
+  "authorization": "Chris explicitly approved this exact encrypted package, destination, separate Restore download and isolated restore after automatic approval review had rejected the transfer twice before execution.",
+  "package": {
+    "snapshot_at": "2026-10-15T10:04:20.399639+00:00",
+    "bytes": 1060273064,
+    "sha256": "bb8a0bbc4fd4f98a210fda18148186629c5a225bf38625e94145afc22c6be465",
+    "age_encrypted": true
+  },
+  "storage": {
+    "aws_account": "235099643372",
+    "region": "eu-west-2",
+    "bucket": "openfolk-serviceos-database-235099643372-eu-west-2",
+    "prefix": "projects/tgbnakbxwcqjeimygroz/",
+    "object_version": "8oq8WOYFu06wlqhkZkH0BHmY_e5eFoyv",
+    "size_and_sha256_matched": true,
+    "server_side_encryption": "AES256",
+    "object_lock_mode": "GOVERNANCE",
+    "retain_until": "2026-11-14T10:43:23.596Z"
+  },
+  "separate_restore_identity": {
+    "download_completed": true,
+    "downloaded_bytes": 1060273064,
+    "completed_attempt": "beef6def-45cf-4f95-bfab-a84159616364"
+  },
+  "recovery": {
+    "offsite_isolated_restore_verified": false,
+    "interruption_stage": "escrow-readback",
+    "reason": "1Password requested ordinary desktop Touch ID authorisation for the final exact-note read; the completed download is retained privately and the offline restore did not start.",
+    "resume_mode": "--restore-downloaded-checkpoint",
+    "resume_validation": "A bounded synthetic test verifies prior completed-download receipt, exact ciphertext hash, fresh escrow read and offline restore without another S3 transfer; a changed downloaded byte is rejected before key access."
+  },
+  "production_data_writes": false,
+  "limits": [
+    "Verified transfer and a completed independent download are not an off-site restore acceptance until the isolated database and Vault recovery succeeds.",
+    "Daily unattended backup and full application/Auth recovery remain unproven."
+  ]
+}

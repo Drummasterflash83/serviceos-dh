@@ -7,6 +7,34 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 11:18 UTC — approved LIVE Slack history window complete.**
+
+### Working and verified
+
+- The existing 160-channel public Slack campaign reached
+  `campaign_window_complete` on every approved channel through ordinary work.
+  All 160 thread-discovery scans are complete, and all 870 observed reply
+  threads are `captured` with complete import checkpoints. The request ledger
+  reserved 11,695 of 20,000 approved requests, with zero channels in
+  `needs_review`. Individual and group DMs remained outside scope.
+
+### Needs finishing
+
+- This is the approved fixed history window, not proof of unavailable older
+  messages, ongoing incremental Slack operation, the full unattended day or
+  source-to-card/scoring acceptance. Independent database restore from the
+  fresh off-site package, dependable daily backup and full app/Auth recovery
+  remain separate gates.
+
+### Blocked externally
+
+- Chris's business sign-off follows the completed technical and operational
+  evidence pack. The fresh off-site restore currently awaits the ordinary
+  1Password Touch ID authorization for its recovery-only continuation.
+
+[Completed Slack campaign](evidence/learn-build01-slack-campaign-complete-2026-10-15.json) ·
+[approved off-site transfer and pending restore](evidence/learn-build01-offsite-transfer-2026-10-15.json).
+
 **15 October, 10:37 UTC — exact encrypted recovery package prepared; independent transfer awaits exact approval.**
 
 ### Working and verified
