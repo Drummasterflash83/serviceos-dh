@@ -195,8 +195,9 @@ export function LearnCustomerFinance({
         </button>
       </div>
       <p className="text-sm text-muted-foreground">
-        Invoices, payments and credit notes linked to this customer. Figures reflect captured
-        records; recent changes or deleted transactions may still need reconciliation.
+        Invoices, payments and credit notes recorded against this reviewed QuickBooks customer or
+        its QuickBooks subaccounts. This source hierarchy does not match a transaction to a
+        Commusoft job. Recent changes or deleted transactions may still need reconciliation.
       </p>
       {operatorReason && (
         <div className="flex flex-wrap items-end gap-3">
@@ -346,8 +347,9 @@ export function LearnCustomerFinance({
       {shownCandidates && (
         <div className="space-y-2">
           <p className="text-sm">
-            Check the identity before linking. Sub-customers and jobs need their own reviewed links.
-            Existing links to other cards are shown explicitly.
+            Check the identity before linking. QuickBooks subaccounts under a reviewed main customer
+            can contribute recorded finance through their source hierarchy. Linking a subaccount to
+            a different card still needs its own review; existing links to other cards are shown.
           </p>
           {!shownCandidates.rows.length && <p>No captured QuickBooks customers on this page.</p>}
           {shownCandidates.rows.map((c) => (
