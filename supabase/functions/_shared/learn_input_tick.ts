@@ -50,7 +50,38 @@ export async function drainInputPages(
 
 export const drainCommusoftPages = drainInputPages;
 
-export async function runLearnInputTick(config: Config, jobTypes: string[] | null, request: Fetch = fetch) {
+/** The reviewed internal Slack profile has a 30-second completion cooldown.
+ * A second call may claim only after that SQL gate has elapsed. The ordinary
+ * minute tick remains bounded to two serial calls and its existing deadline. */
+export async function drainSlackPages(
+  invoke: (timeoutMs: number) => Promise<Outcome>,
+  clock: () => number = () => performance.now(),
+  sleep: (ms: number) => Promise<void> = ms => new Promise(resolve => setTimeout(resolve, ms)),
+): Promise<Outcome> {
+  const deadline = clock() + 55_000;
+  let first: Outcome;
+  try { first = await invoke(Math.floor(deadline - clock())); }
+  catch { return outcome("unconfirmed"); }
+  if (first.state !== "processed") return first;
+  // Leave ten seconds for the second worker and settlement. An expired or
+  // unreviewed profile simply returns idle after its longer database cooldown.
+  if (deadline - clock() < 42_000) return first;
+  try { await sleep(31_000); }
+  catch { return outcome("unconfirmed"); }
+  const remaining = Math.floor(deadline - clock());
+  if (remaining < 10_000) return first;
+  let second: Outcome;
+  try { second = await invoke(remaining); }
+  catch { return outcome("unconfirmed"); }
+  return second.state === "idle" ? first : second;
+}
+
+export async function runLearnInputTick(
+  config: Config,
+  jobTypes: string[] | null,
+  request: Fetch = fetch,
+  timing?: { clock: () => number; sleep: (ms: number) => Promise<void> },
+) {
   const all = (state: Outcome["state"]) => ({
     commusoft: outcome(state), slackSchedule: outcome(state), slack: outcome(state), quickbooks: outcome(state),
   });
@@ -114,7 +145,11 @@ export async function runLearnInputTick(config: Config, jobTypes: string[] | nul
       if (!slackEnabled) return { slackSchedule: outcome("disabled"), slack: outcome("disabled") };
       const slackSchedule = await invoke("learn-slack-schedule", config.slackKey, true);
       // Existing history jobs can continue even if creating a new window failed.
-      return { slackSchedule, slack: await invoke("learn-slack-worker", config.slackKey) };
+      return { slackSchedule, slack: await drainSlackPages(
+        timeoutMs => invoke("learn-slack-worker", config.slackKey, false, timeoutMs),
+        timing?.clock,
+        timing?.sleep,
+      ) };
     })(),
     quickbooksEnabled ? drainInputPages(timeoutMs => invoke("learn-quickbooks-worker", config.quickbooksKey, false, timeoutMs)) : outcome("disabled"),
   ]);

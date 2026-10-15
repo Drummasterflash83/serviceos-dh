@@ -40,7 +40,21 @@ and switches to the Vercel preset** (`λ __server`). So: build **remotely on Ver
 upload or Git push). Do **not** ship a locally-prebuilt `.output` to Vercel — it would be
 Cloudflare-flavoured.
 
-## Current live checkpoint — 14 October 2026
+## Current live checkpoint — 15 October 2026
+
+**Build 01 LEARN menu recovery, 20:45 UTC:** Chris approved restoring exact
+previously verified LEARN deployment `dpl_G9RjaJdT5NqQvPCKgAC5ZULTbZpR`.
+That returned the menu. The cause was an outdated production `main` branch.
+The branch is now fast-forwarded to `5f7d5e0aaa2ba3b05417d411da8cae5830689529`
+with both published histories retained and the existing daily backup workflows
+unchanged. TypeScript, 47 prebuild checks, the production build and hosted
+preview passed. The resulting Git production deployment
+`dpl_EiZMSNjsZukBGRjcTjnPx5zL2fDf` is READY on all four existing LIVE aliases.
+A fresh signed-in Drummonds session shows LEARN in the menu and opens the page.
+This is a frontend recovery, not Build 01 completion. See the
+[release evidence](operations/evidence/learn-build01-main-repair-2026-10-15.json).
+
+## Historical live checkpoint — 14 October 2026
 
 **Later Build 01 root-error recovery, 22:22 UTC:** all four LIVE aliases serve
 `e614eb52375ed44dd0783dc25015799a14a4f922` /

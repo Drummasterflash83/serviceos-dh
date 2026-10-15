@@ -1,0 +1,39 @@
+{
+  "checked_at_utc": "2026-10-15T20:45:22Z",
+  "scope": "LIVE frontend release and production Git baseline repair",
+  "trigger": "A later main-branch build removed LEARN from the customer menu despite the earlier verified release.",
+  "approved_immediate_restore": {
+    "source_commit": "cb2b7f7873d30c98992b589a8bdd625092de37da",
+    "deployment_id": "dpl_G9RjaJdT5NqQvPCKgAC5ZULTbZpR",
+    "action": "User-approved Force Promote of the exact previously verified LEARN deployment",
+    "result": "All four existing LIVE aliases mapped to the READY deployment; a fresh signed-in Drummonds menu and LEARN page opened."
+  },
+  "durable_git_repair": {
+    "previous_main": "f85288a818c8900820b0ae05bf1ad1eddded52e3",
+    "learn_baseline": "0d833591877cc03bd3c3ce55b9ae593f6400581c",
+    "history_merge": "f5f4bde3328433f9ba432cbea8631412fbb8a4d2",
+    "new_main": "5f7d5e0aaa2ba3b05417d411da8cae5830689529",
+    "method": "Fast-forward main to a merge commit retaining both published histories and the verified LEARN source tree, then retain main's two public environment example files.",
+    "backup_workflows": "Both existing database backup and missed-success monitor workflow files matched the previous main byte for byte.",
+    "local_verification": "TypeScript passed; production build passed with all 47 prebuild checks.",
+    "hosted_preview": {
+      "deployment_id": "dpl_kv8NAdTXfEDcCDfRGLTz1RaM3Jmi",
+      "state": "READY"
+    },
+    "git_remote_check": "Previous main and LEARN checkpoint remote heads matched the reviewed IDs immediately before the fast-forward push. No force push or published-history rewrite was used."
+  },
+  "final_live_readback": {
+    "deployment_id": "dpl_EiZMSNjsZukBGRjcTjnPx5zL2fDf",
+    "target": "production",
+    "state": "READY",
+    "aliases": [
+      "app.openfolk.ai",
+      "www.openfolk.ai",
+      "openfolk.ai",
+      "serviceos-dh.vercel.app"
+    ],
+    "signed_in": "Fresh app.openfolk.ai reload showed the Drummonds LEARN menu and opened the LEARN page with saved records and Slack evidence controls.",
+    "backend_or_data_changed": false
+  },
+  "limits": "This frontend repair does not complete Slack backlog coverage, the full working-day observation, full application recovery, scoring acceptance, or Chris's business signoff."
+}

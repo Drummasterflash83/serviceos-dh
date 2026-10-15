@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 20:45 UTC — LIVE LEARN menu restored and production Git baseline repaired.**
+
+### Working and verified
+
+- Chris approved restoring the exact previously verified LEARN frontend. The
+  approved promotion returned the menu immediately. The stale `main` branch
+  that caused the regression was then advanced without rewriting either
+  published history. Its two daily database-backup workflows are byte-identical
+  to the prior production branch. TypeScript, all 47 prebuild checks, local
+  production build and hosted preview passed. Vercel's new Git production build
+  is READY, all four LIVE aliases resolve to it, and a fresh signed-in Drummonds
+  session shows the LEARN menu and opens the saved-records page.
+  [Release evidence](evidence/learn-build01-main-repair-2026-10-15.json).
+
+### Needs finishing
+
+- Build 01 still needs sustainable Slack channel/reply capture, broader source
+  and card coverage, dependable unattended operation, full application recovery,
+  a full working-day observation and business acceptance. The menu repair does
+  not establish those outcomes.
+
+### Blocked externally
+
+- Chris's business signoff follows the completed evidence pack. The real
+  full-working-day observation cannot be shortened into a point-in-time check.
+
 **15 October, 20:26 UTC — Slack capture is alive but its queue is growing.**
 
 ### Working and verified
@@ -27,8 +53,9 @@ override a later release observation. No requirement is silently deferred.
 
 ### Blocked externally
 
-- The LIVE frontend return still awaits the exact Vercel promotion approval;
-  final business acceptance remains Chris's review after the working-day proof.
+- At this earlier checkpoint, the LIVE frontend return awaited the exact
+  Vercel promotion approval; that approval and release are recorded above.
+  Final business acceptance remains Chris's review after working-day proof.
 
 **15 October, 20:18 UTC — identity count timeout fixed; ordinary LIVE retries continued.**
 
@@ -55,9 +82,10 @@ override a later release observation. No requirement is silently deferred.
 
 ### Blocked externally
 
-- The exact LIVE frontend promotion still awaits Chris's requested approval
-  after automatic review rejected a Vercel gate bypass. Chris will review the
-  final business acceptance pack after technical and operational checks.
+- At this earlier checkpoint, the exact LIVE frontend promotion awaited Chris's
+  approval after automatic review rejected a Vercel gate bypass. That approval
+  and release are recorded above. Chris will review the final business
+  acceptance pack after technical and operational checks.
 
 **15 October, 19:50 UTC — isolated Auth and card API tenant boundary passed.**
 

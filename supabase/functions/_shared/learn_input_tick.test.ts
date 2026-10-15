@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { runLearnInputTick } from "./learn_input_tick.ts";
+import { drainSlackPages, runLearnInputTick } from "./learn_input_tick.ts";
 import { slackWorkerEndpoint } from "./slack/slack_worker_http.ts";
 
 const config = {
@@ -46,15 +46,80 @@ test("server dispatch reaches actual empty-body guards and schedules Slack befor
 
 test("failed scheduler and provider do not stop independent work or disclose private errors", async () => {
   const calls: string[] = [];
+  let now = 0;
   const result = await runLearnInputTick(config, null, async url => {
     calls.push(url);
     if (url.endsWith("commusoft-worker")) throw Error("secret and private customer content");
     if (url.endsWith("slack-schedule")) return new Response("private failure", { status: 503 });
+    now = 20_000; // A slow first worker leaves no safe second-call slot.
     return ok({ claimed: 1, outcomes: [{ status: "succeeded", job_id: "private-id" }] });
-  });
+  }, { clock: () => now, sleep: async ms => { now += ms; } });
   assert.deepEqual(result, { commusoft: { state: "unconfirmed" }, slackSchedule: { state: "unconfirmed" }, slack: { state: "processed" }, quickbooks: { state: "disabled" } });
   assert.equal(calls.length, 3);
   assert.doesNotMatch(JSON.stringify(result), /secret|private/);
+});
+
+test("Slack may settle two serial pages only after the reviewed cooldown", async () => {
+  let now = 0;
+  const starts: number[] = [], deadlines: number[] = [];
+  const result = await drainSlackPages(async remaining => {
+    starts.push(now); deadlines.push(remaining); now += 1_000;
+    return { state: starts.length === 1 ? "processed" : "idle" };
+  }, () => now, async ms => { assert.equal(ms, 31_000); now += ms; });
+  assert.deepEqual(starts, [0, 32_000]);
+  assert.deepEqual(deadlines, [55_000, 23_000]);
+  assert.deepEqual(result, { state: "processed" });
+});
+
+test("ordinary Slack-only tick wires the second call through the authenticated empty-body worker", async () => {
+  let now = 0, workerCalls = 0;
+  const calls: Array<{ name: string; at: number }> = [];
+  const result = await runLearnInputTick(
+    { ...config, enabled: "false", slackEnabled: "true", commusoftKey: undefined },
+    null,
+    async (url, init) => {
+      const name = new URL(url).pathname.split("/").pop()!;
+      calls.push({ name, at: now });
+      assert.equal(init.body, undefined);
+      assert.equal(new Headers(init.headers).get("x-serviceos-worker-key"), config.slackKey);
+      if (name === "learn-slack-schedule") return ok(schedule);
+      assert.equal(name, "learn-slack-worker");
+      workerCalls++;
+      now += 1_000;
+      return ok(workerCalls === 1 ? { claimed: 1, outcomes: [{ status: "succeeded" }] } : idle);
+    },
+    { clock: () => now, sleep: async ms => { now += ms; } },
+  );
+  assert.deepEqual(calls, [
+    { name: "learn-slack-schedule", at: 0 },
+    { name: "learn-slack-worker", at: 0 },
+    { name: "learn-slack-worker", at: 32_000 },
+  ]);
+  assert.deepEqual(result, {
+    commusoft: { state: "disabled" }, slackSchedule: { state: "idle" },
+    slack: { state: "processed" }, quickbooks: { state: "disabled" },
+  });
+});
+
+test("Slack does not repeat holds, uncertain outcomes, slow work or an expired tick", async () => {
+  for (const state of ["attention", "unconfirmed", "idle"] as const) {
+    let calls = 0;
+    assert.equal((await drainSlackPages(async () => { calls++; return { state }; },
+      () => 0, async () => { throw Error("must not sleep"); })).state, state);
+    assert.equal(calls, 1);
+  }
+  let now = 0, calls = 0;
+  assert.equal((await drainSlackPages(async () => { calls++; now += 14_000; return { state: "processed" }; },
+    () => now, async () => { throw Error("must not sleep"); })).state, "processed");
+  assert.equal(calls, 1);
+  now = 0; calls = 0;
+  await drainSlackPages(async () => { calls++; return { state: "processed" }; },
+    () => now, async () => { now += 60_000; });
+  assert.equal(calls, 1);
+  now = 0; calls = 0;
+  assert.equal((await drainSlackPages(async () => ({ state: ++calls === 1 ? "processed" : "unconfirmed" }),
+    () => now, async ms => { now += ms; })).state, "unconfirmed");
+  assert.equal(calls, 2);
 });
 
 test("HTTP success without matching settlement is unconfirmed; retries and holds need attention", async () => {
