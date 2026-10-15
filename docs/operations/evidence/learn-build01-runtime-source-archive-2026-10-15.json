@@ -1,0 +1,24 @@
+{
+  "version": "learn-build01-runtime-source-archive/1",
+  "observedAt": "2026-10-15T16:56:07.919Z",
+  "environment": "LIVE",
+  "project": "tgbnakbxwcqjeimygroz",
+  "method": "Read-only Management API inventory before and after; Supabase CLI download of each deployed function into ignored private local storage; no source or secrets printed",
+  "inventoryStable": true,
+  "activeFunctions": 102,
+  "archivedFunctions": 102,
+  "sourceFilesRehashed": 720,
+  "sourceBytesRehashed": 4783913,
+  "privateManifestSha256": "2412a48946f2c8aa28af23bd9dad22bf62bcc55cbd5988503fc5abb7da031105",
+  "privateManifest": ".verification-results/build01-runtime-archive-2026-10-15T16-53-44-486Z/manifest.private.json",
+  "selectedVersions": {
+    "platform-worker": 89,
+    "phone-operations": 16
+  },
+  "productionWrites": false,
+  "limits": [
+    "The local source archive is not an independent off-site application backup or a verified compiled-bundle rollback for every function.",
+    "Runtime secret values, active Auth signing-key material and Auth settings are not recovered by this source download.",
+    "No isolated Auth service or frontend has been started against the independent database restore, and controlled capture resumption remains unverified."
+  ]
+}

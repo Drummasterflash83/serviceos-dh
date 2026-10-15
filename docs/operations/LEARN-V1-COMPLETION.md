@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 16:56 UTC — all current LIVE Edge Function sources retained privately for recovery.**
+
+### Working and verified
+
+- A read-only inventory before and after downloading found the same 102 active
+  LIVE functions and versions. Each deployed source was downloaded into ignored
+  private local storage; 720 files (4,783,913 bytes) passed an independent
+  SHA-256 readback against the private manifest. The inventory includes the
+  current platform worker and previously missing phone-operations source.
+  [Sanitised archive evidence](evidence/learn-build01-runtime-source-archive-2026-10-15.json).
+
+### Needs finishing
+
+- Preserve an independent application copy and prove isolated Auth/frontend
+  startup, runtime configuration and secrets, signed-in access, and controlled
+  capture resumption against the restored database. Source files alone do not
+  establish full application/Auth recovery. Continue the fresh database backup
+  and the remaining Build 01 acceptance gates.
+
+### Blocked externally
+
+- The full working-day observation cannot finish before 16 October 17:00
+  London, and Chris will review the final business evidence.
+
 **15 October, 16:43 UTC — targeted identity worker release verified in TEST and LIVE; ordinary LIVE retry pending.**
 
 ### Working and verified
