@@ -1,6 +1,6 @@
 {
   "version": "learn-build01-hosted-database-daily-activation/1",
-  "observedAt": "2026-10-15T18:56:00Z",
+  "observedAt": "2026-10-15T18:58:35Z",
   "environment": "GitHub-hosted manual rehearsal against LIVE source",
   "backup": {
     "runUrl": "https://github.com/Drummasterflash83/serviceos-dh/actions/runs/38787584369",
@@ -35,7 +35,11 @@
   "schedulePrepared": {
     "backupUtc": "15 3 * * *",
     "monitorUtc": "23 * * * *",
-    "activationReadbackPending": true,
+    "activationReadbackPending": false,
+    "monitorMainCommit": "50bbbc1f7269f9d5b7ec8cd36ae8468b60c00047",
+    "backupMainCommit": "f85288a818c8900820b0ae05bf1ad1eddded52e3",
+    "mainHeadVerified": "f85288a818c8900820b0ae05bf1ad1eddded52e3",
+    "workflowsActive": true,
     "firstRealScheduledRunPending": true,
     "humanNotificationDeliveryUnverified": true
   }

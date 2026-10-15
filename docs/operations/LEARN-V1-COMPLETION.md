@@ -22,8 +22,9 @@ override a later release observation. No requirement is silently deferred.
 
 ### Needs finishing
 
-- Publish and read back the prepared daily backup and hourly monitor schedules,
-  then observe actual scheduled execution and a missed-run alert path. One
+- The daily backup (03:15 UTC) and hourly monitor (:23 UTC) schedules are
+  published on main and both workflows are active. Observe actual scheduled
+  execution and a missed-run alert path. One
   manual hosted run cannot establish sustained daily operation. Recovery-key/
   Vault restore, full application/Auth recovery and the working-day window
   remain open.
