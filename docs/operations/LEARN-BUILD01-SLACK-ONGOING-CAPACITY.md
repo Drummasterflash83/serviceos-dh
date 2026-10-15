@@ -5,6 +5,15 @@ permission, event subscription, provider write or capture-scope change has been
 made. The approved scope is 160 public channel histories and their observed
 replies. Individual and group DMs remain excluded.
 
+At 23:09 UTC the local preparatory
+[`slack_events_boundary.ts`](../../supabase/functions/_shared/slack/slack_events_boundary.ts)
+passed four synthetic signature, timestamp, app/workspace, exact-roster, public-
+channel, DM exclusion and reply-hint tests plus TypeScript. It only returns a
+bounded source hint, never message content or a capture receipt. No receiving
+endpoint, durable event deduplication, source-window enqueue, Slack app
+subscription or LIVE activation exists yet. The current polling system is
+unchanged. This preparation does not settle the pending choice or capacity gate.
+
 ## Observed baseline and arithmetic
 
 - The handoff has 160 enabled channel/reply subscriptions. Of those, 127 saved

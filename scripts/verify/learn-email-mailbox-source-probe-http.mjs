@@ -7,7 +7,7 @@ const TENANT = "00000000-0000-0000-0000-000000000001";
 const NAME = "learn-email-mailbox-source-probe";
 const mode = process.argv.slice(2).join(" ");
 const project = mode === "--test-negative" ? TEST_PROJECT :
-  ["--live-negative", "--live-held-profile"].includes(mode) ? LIVE_PROJECT : null;
+  ["--live-negative", "--live-held-profile", "--live-held-profiles"].includes(mode) ? LIVE_PROJECT : null;
 if (!project) throw Error("Explicit hosted TEST or LIVE diagnostic acceptance required");
 const mgmtToken = savedCliToken();
 async function management(path, body) {
@@ -50,7 +50,7 @@ async function invoke(method, body, variant) {
     assert.equal(response.headers.get("access-control-allow-origin"), null);
   return { status: response.status, code: payload?.code ?? null, ok: payload?.ok ?? null };
 }
-if (mode !== "--live-held-profile") {
+if (mode !== "--live-held-profile" && mode !== "--live-held-profiles") {
   const checks = [
     ["missing_service", await invoke("POST", { account_id: crypto.randomUUID() }, "none"), 401, null],
     ["missing_internal", await invoke("POST", { account_id: crypto.randomUUID() }, "bearer"), 403, "forbidden"],
@@ -73,28 +73,36 @@ if (mode !== "--live-held-profile") {
   const held = await sql(`select c.email_account_id::text account_id,c.generation::text generation,
     c.revision::int revision from public.email_ingestion_checkpoints c
     where c.tenant_id='${TENANT}'::uuid and c.stream='recent' and c.state='blocked'
-      and c.block_code='admin_delegation_missing' limit 2`);
-  assert.equal(held.length, 1, "exactly one held mailbox required");
-  assert.match(held[0].account_id, /^[a-f0-9-]{36}$/i);
-  const startedAt = new Date().toISOString();
-  const result = await invoke("POST", { account_id: held[0].account_id }, "full");
-  const audit = await sql(`select action,status,detail->>'code' code,
-    detail->>'checkpoint_revision' revision from public.audit_logs where tenant_id='${TENANT}'::uuid
-    and resource_type='email_account' and resource_id='${held[0].account_id}'
-    and action in ('learn.email.mailbox_source_probe','learn.email.mailbox_source_probe_result')
-    and created_at>='${startedAt}'::timestamptz order by created_at,id`);
-  const after = await sql(`select generation::text generation,revision::int revision,state,block_code
-    from public.email_ingestion_checkpoints where tenant_id='${TENANT}'::uuid
-    and email_account_id='${held[0].account_id}'::uuid and stream='recent'`);
-  assert.equal(after.length, 1);
-  assert.equal(after[0].generation, held[0].generation);
-  assert.equal(after[0].revision, held[0].revision);
-  assert.equal(after[0].state, "blocked");
-  assert.equal(after[0].block_code, "admin_delegation_missing");
-  assert.equal(audit.filter((row) => row.action === "learn.email.mailbox_source_probe").length, 1);
-  assert.equal(audit.filter((row) => row.action === "learn.email.mailbox_source_probe_result").length, 1);
-  assert.equal(audit.at(-1).code, result.code);
-  console.log(JSON.stringify({ project, state: "held_mailbox_provider_checked", result,
-    checkpointRevision: held[0].revision, checkpointUnchanged: true,
-    auditRows: audit.length, customerContentReturned: false, sourceProviderWrites: 0 }));
+      and c.block_code='admin_delegation_missing' order by c.email_account_id limit 3`);
+  const expected = mode === "--live-held-profile" ? 1 : 2;
+  assert.equal(held.length, expected, `exactly ${expected} held mailbox(es) required`);
+  const outcomes = [];
+  for (const item of held) {
+    assert.match(item.account_id, /^[a-f0-9-]{36}$/i);
+    const startedAt = new Date().toISOString();
+    const result = await invoke("POST", { account_id: item.account_id }, "full");
+    const audit = await sql(`select action,status,detail->>'code' code,
+      detail->>'checkpoint_revision' revision from public.audit_logs where tenant_id='${TENANT}'::uuid
+      and resource_type='email_account' and resource_id='${item.account_id}'
+      and action in ('learn.email.mailbox_source_probe','learn.email.mailbox_source_probe_result')
+      and created_at>='${startedAt}'::timestamptz order by created_at,id`);
+    const after = await sql(`select generation::text generation,revision::int revision,state,block_code
+      from public.email_ingestion_checkpoints where tenant_id='${TENANT}'::uuid
+      and email_account_id='${item.account_id}'::uuid and stream='recent'`);
+    assert.equal(after.length, 1);
+    assert.equal(after[0].generation, item.generation);
+    assert.equal(after[0].revision, item.revision);
+    assert.equal(after[0].state, "blocked");
+    assert.equal(after[0].block_code, "admin_delegation_missing");
+    if (result.code !== "probe_cooldown") {
+      assert.equal(audit.filter((row) => row.action === "learn.email.mailbox_source_probe").length, 1);
+      assert.equal(audit.filter((row) => row.action === "learn.email.mailbox_source_probe_result").length, 1);
+      assert.equal(audit.at(-1).code, result.code);
+    }
+    outcomes.push({ result, checkpointRevision: item.revision,
+      checkpointUnchanged: true, auditRows: audit.length });
+  }
+  console.log(JSON.stringify({ project, state: "held_mailbox_provider_checked",
+    heldMailboxCount: outcomes.length, outcomes, customerContentReturned: false,
+    sourceProviderWrites: 0 }));
 }

@@ -7,6 +7,44 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 23:11 UTC — two Workspace holds recovered without manual resume; Build 01 still open.**
+
+### Working and verified
+
+- The existing audited mailbox-profile endpoint confirmed read access for the
+  exact two active, held Drummonds Workspace accounts. It returned no message
+  content and left both checkpoints unchanged. The following ordinary scheduled
+  claims independently cleared both `admin_delegation_missing` holds, advanced
+  both revisions and completed two successful post-proof runs, without Touch ID
+  or a manual resume. Its five LIVE negative access/shape checks still pass.
+- The 23:04 LIVE aggregate had 164,290 retained emails, 4,618 Phone sources
+  with 4,618 interactions, 3,953 projected cards out of 3,960 active cards,
+  and zero unprojected cards older than an hour. The 23:06 email gap was 6,677
+  eligible messages without interactions, all less than a day old while 1,979
+  source rows arrived in the prior hour. The Graph gap was 15,571. This is a
+  point-in-time read, not a steady-state clearance claim.
+- A local Slack Events boundary now passes synthetic signature, time, app/team,
+  exact public-roster, reply and DM/private exclusion tests. It is preparatory
+  code only: there is no receiving endpoint, Slack subscription or LIVE switch.
+  [Sanitised readback](evidence/learn-build01-overnight-readback-2026-10-15.json).
+
+### Needs finishing
+
+- Source-to-interaction and Graph backlogs remain material. The approved 160-
+  channel Slack poller still has no retained post-cutoff message or reply, and
+  its 15-minute steady-state demand exceeds observed worker capacity. The
+  pending route needs implementation and representative source-to-card proof.
+  Commusoft reviewed job coverage, scored-policy acceptance, full app/Auth
+  recovery, and the first scheduled daily backup result are also outstanding.
+- Chris waived the full-working-day observation requirement. Use sufficient
+  representative source, failure and recovery evidence instead; this does not
+  waive technical gaps or his final business sign-off. Build 02 is not active.
+
+### Blocked externally
+
+- Chris's choice of signed Events or explicitly slower Slack polling, and later
+  his business acceptance, remain pending. No overnight fingerprint is needed.
+
 **15 October, 22:58 UTC — Slack catch-up continues; steady-state choice prepared.**
 
 ### Working and verified

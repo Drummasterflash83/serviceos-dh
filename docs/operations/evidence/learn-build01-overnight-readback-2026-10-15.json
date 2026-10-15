@@ -1,0 +1,73 @@
+{
+  "version": "learn-build01-overnight-readback/1",
+  "environment": "LIVE",
+  "observedAtUtc": "2026-10-15T23:11:13Z",
+  "method": "Saved Supabase CLI login, aggregate-only read-only Management SQL; approved Drummonds Workspace mailbox profile checks through the existing audited, content-free endpoint",
+  "sourceAndCards": {
+    "emailMessagesAt2304Utc": 164290,
+    "eligibleEmailWithoutInteractionAt2304Utc": 6280,
+    "eligibleEmailWithoutInteractionAt2306Utc": 6677,
+    "newEmailSourcesInPriorHourAt2306Utc": 1979,
+    "emailMissingOlderThanDay": 0,
+    "phoneCalls": 4618,
+    "phoneInteractions": 4618,
+    "slackMessages": 37850,
+    "slackInteractions": 35043,
+    "eligibleInteractionsMissingGraph": 15571,
+    "activeCustomerCards": 3960,
+    "cardsWithProjectionEvidence": 3953,
+    "unprojectedCardsOlderThanHour": 0,
+    "workspaceAliasesReady": "2 of 2"
+  },
+  "ordinaryJobsLastHourAt2304Utc": {
+    "commusoftSourceSuccesses": 589,
+    "emailWorkspaceSuccesses": 250,
+    "graphSuccesses": 21,
+    "cardSuccesses": 39,
+    "slackChannelSuccesses": 42,
+    "slackReplySuccesses": 39,
+    "emailWorkspaceSourceIneligibleDeadLetters": 18,
+    "identityReviewHolds": 26,
+    "interactionProjectionReviewHolds": 21
+  },
+  "emailAuthority": {
+    "affectedHeldMailboxes": 2,
+    "recentCheckpointBlock": "admin_delegation_missing",
+    "accountAndMailboxState": "active, sync enabled, no directory identity conflict",
+    "connectionState": "active and recently verified; 510 same-connection successes in prior two hours",
+    "providerProfileChecks": [
+      { "checkpointRevision": 819, "result": "provider_verified", "auditRows": 2 },
+      { "checkpointRevision": 871, "result": "provider_verified", "auditRows": 2 }
+    ],
+    "checkpointUnchangedByChecks": true,
+    "ordinaryScheduledRecovery": {
+      "observedAtUtc": "2026-10-15T23:11:13Z",
+      "verifiedProofs": 2,
+      "stillHeld": 0,
+      "clearedHolds": 2,
+      "checkpointStates": ["ready"],
+      "advancedRevisions": 2,
+      "automaticRecoveryClaims": 2,
+      "latestRunsSuccess": 2,
+      "postProofSuccesses": 2,
+      "latestPostProofSuccessAtUtc": "2026-10-15T23:11:04Z",
+      "manualResume": false
+    }
+  },
+  "slack": {
+    "approvedChannelAndReplySubscriptions": 160,
+    "channelBoundariesPastSavedCutoff": 127,
+    "retainedPostCutoffMessages": 0,
+    "retainedPostCutoffReplies": 0,
+    "steadyStateNearLiveCapacityProven": false
+  },
+  "scope": [
+    "A one-time snapshot does not establish sustained unattended operation or complete source/card coverage.",
+    "The full working-day observation requirement was waived by Chris; representative technical evidence and his business sign-off still remain necessary.",
+    "The two mailbox probes read profile boundaries only, return no message content, and leave source checkpoints unchanged.",
+    "Slack has no retained post-cutoff source yet; an approved ongoing delivery path and source-to-card proof remain open."
+  ],
+  "sourceProviderWrites": false,
+  "productionAuditRowsWrittenByProfileChecks": 4,
+  "productionDataWritesByReadback": false
+}
