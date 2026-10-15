@@ -7,6 +7,36 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 17:48 UTC — first unattended Slack thread window completed with zero replies; aged card gap is zero at this instant.**
+
+### Working and verified
+
+- One unattended LIVE thread job completed its approved provider window and
+  durable checkpoint at 17:46 UTC. It saved **zero** replies because none were
+  present in that window; this proves the worker can complete a real thread
+  read, not reply ingestion with records. The separately reviewed recovery job
+  remains queued, and channel/reply scope remains unchanged.
+- The Build 01 readback now distinguishes new unprojected cards from cards
+  missing a projection for over one hour. At 17:48 UTC, 3,841 of 3,850 active
+  cards had projections; all nine unprojected cards were less than one hour old,
+  with no missing linked person or company in a read-only aggregate. This is a
+  single freshness observation, not sustained card acceptance. The partial
+  failure job is still retrying. [Interim evidence](evidence/learn-build01-1748-operating-readback-2026-10-15.json).
+
+### Needs finishing
+
+- Verify an unattended reply job that saves real replies and the exact reviewed
+  recovery, then measure channel/reply coverage across the full campaign.
+  Resolve persistent pipeline failures and prove card/source freshness over the
+  required full working day. The hosted backup rehearsal is still running.
+- Continue recovery-key/Vault, full application/Auth, daily schedule and
+  missed-run checks; withhold unapproved business scores.
+
+### Blocked externally
+
+- Friday 16 October, 09:00–17:00 London is the first eligible full unattended
+  working-day observation. Chris will review and sign off the business result.
+
 **15 October, 17:35 UTC — one keyless backup copy verified; exact Slack reply recovery queued; Build 01 remains open.**
 
 ### Working and verified

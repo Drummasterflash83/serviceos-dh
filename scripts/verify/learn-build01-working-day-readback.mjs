@@ -57,6 +57,9 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
     "cards",
     `select count(*)::int active_cards,
     count(*) filter(where context?'projection')::int projected_cards,
+    count(*) filter(where not context?'projection'
+      and updated_at<now()-interval '1 hour')::int unprojected_over_one_hour,
+    min(updated_at) filter(where not context?'projection') oldest_unprojected_update,
     count(*) filter(where (context#>>'{projection,generated_at}')::timestamptz>now()-interval '1 day')::int refreshed_last_day,
     count(*) filter(where context#>>'{projection,evidence,version}'='learn-card-inputs/1')::int evidence_v1
     from public.customer_cards where tenant_id='${TENANT}'::uuid and status<>'archived'`,

@@ -1,0 +1,40 @@
+{
+  "version": "learn-build01-interim-operating-readback/1",
+  "observedAt": "2026-10-15T17:48:28Z",
+  "environment": "LIVE",
+  "method": "Read-only management and saved-job/checkpoint observations; no source-provider write or manual queue override",
+  "cards": {
+    "active": 3850,
+    "projected": 3841,
+    "unprojected": 9,
+    "unprojectedOverOneHour": 0,
+    "oldestUnprojectedUpdatedAt": "2026-10-15T17:24:12.673902Z",
+    "interpretation": "All unprojected cards were less than one hour old at this instant; the retrying partial-failure job and full-day freshness remain open."
+  },
+  "slack": {
+    "approvedOngoingChannelsAndReplies": 160,
+    "channelsAdvancedPastSavedCutoff": 88,
+    "firstUnattendedThreadWindow": {
+      "completedAt": "2026-10-15T17:46:16.63323Z",
+      "stopReason": "window_pages_complete",
+      "checkpointComplete": true,
+      "recordsProcessed": 0,
+      "savedRepliesInWindow": 0
+    },
+    "specificReviewedRecovery": "queued",
+    "replyIngestionWithSavedRecordsVerified": false,
+    "fullCampaignCoverageVerified": false
+  },
+  "pipeline": {
+    "eligibleEmailWithoutInteraction": 5458,
+    "eligibleInteractionsMissingGraph": 18902,
+    "latestIdentityJob": "retrying_identity_delivery_unconfirmed",
+    "latestCardJob": "retrying_card_partial_failure"
+  },
+  "hostedDatabaseBackupRehearsal": {
+    "githubRun": 38778120658,
+    "state": "in_progress_export_restore_encrypt_copy",
+    "acceptedAsDailyOperation": false
+  },
+  "scope": "An interim snapshot, not a full unattended working day, reply ingestion proof, daily backup, full application/Auth recovery or business sign-off."
+}
