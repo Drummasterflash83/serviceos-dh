@@ -17,12 +17,12 @@ jobs:
     if: github.repository == 'Drummasterflash83/serviceos-dh' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04-arm
     environment: serviceos-database-backup
-    timeout-minutes: 180
+    timeout-minutes: 300
     steps:
       - name: Check out reviewed backup source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: 79d0352a27ba93dacdf8cba4bfa4ee6cd0457f1c
+          ref: eda9e747adb554000b09a9ead1f85fc8ba0ad9db
           persist-credentials: false
       - name: Select Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
