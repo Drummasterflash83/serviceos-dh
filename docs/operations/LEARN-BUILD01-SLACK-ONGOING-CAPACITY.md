@@ -8,7 +8,7 @@ replies. Individual and group DMs remain excluded.
 At 23:09 UTC the local preparatory
 [`slack_events_boundary.ts`](../../supabase/functions/_shared/slack/slack_events_boundary.ts)
 passed four synthetic signature, timestamp, app/workspace, exact-roster, public-
-channel, DM exclusion and reply-hint tests plus TypeScript. It only returns a
+channel, saved-cutoff, DM exclusion and reply-hint tests plus TypeScript. It only returns a
 bounded source hint, never message content or a capture receipt. No receiving
 endpoint, durable event deduplication, source-window enqueue, Slack app
 subscription or LIVE activation exists yet. The current polling system is

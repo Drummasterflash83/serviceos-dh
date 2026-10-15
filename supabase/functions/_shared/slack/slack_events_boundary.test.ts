@@ -4,7 +4,7 @@ import { verifyPublicChannelEvent, SlackEventBoundaryError } from "./slack_event
 
 const secret = "synthetic-signing-secret-long-enough-123456789";
 const binding = { signingSecret: secret, teamId: "T12345", appId: "A12345",
-  allowedChannels: new Set(["C12345"]) };
+  allowedChannels: new Set(["C12345"]), minTs: "1792100000.000000" };
 const nowMs = 1792105200000;
 const sent = String(nowMs / 1000);
 const event = { type: "event_callback", team_id: "T12345", api_app_id: "A12345",
@@ -80,6 +80,8 @@ test("DMs, private channels, unapproved channels and malformed events are exclud
   await rejected({ ...event, is_ext_shared_channel: true }, "out_of_scope_event");
   await rejected({ ...event, event: { ...event.event, channel: "COTHER" } }, "out_of_scope_event");
   await rejected({ ...event, event: { ...event.event, ts: "not-a-timestamp" } }, "out_of_scope_event");
+  await rejected({ ...event, event: { ...event.event, ts: "1792099999.999999" } },
+    "out_of_scope_event");
   await rejected({ ...event, event_id: "invalid" }, "out_of_scope_event");
   await rejected({ ...event, event: { ...event.event, subtype: { type: "message_changed" } } },
     "out_of_scope_event");

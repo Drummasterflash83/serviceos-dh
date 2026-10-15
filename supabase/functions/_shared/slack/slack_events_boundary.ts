@@ -19,6 +19,10 @@ const eventId = /^Ev[A-Za-z0-9]{4,100}$/;
 const challenge = /^[A-Za-z0-9_-]{8,256}$/;
 const hex = /^[a-f0-9]{64}$/i;
 const correctionSubtypes = new Set(["message_changed", "message_deleted"]);
+const micros = (value: string): bigint => {
+  const [seconds, fraction] = value.split(".");
+  return BigInt(seconds) * 1000000n + BigInt(fraction.padEnd(6, "0"));
+};
 
 function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -29,13 +33,14 @@ export async function verifyPublicChannelEvent(
   raw: Uint8Array,
   headers: Headers,
   binding: { signingSecret: string; teamId: string; appId: string;
-    allowedChannels: ReadonlySet<string> },
+    allowedChannels: ReadonlySet<string>; minTs: string },
   nowMs = Date.now(),
 ): Promise<PublicChannelEvent> {
   if (raw.byteLength < 2 || raw.byteLength > 131072 ||
       !Number.isFinite(nowMs) ||
       typeof binding.signingSecret !== "string" || binding.signingSecret.length < 32 ||
-      !id.test(binding.teamId) || !id.test(binding.appId))
+      !id.test(binding.teamId) || !id.test(binding.appId) ||
+      !timestamp.test(binding.minTs))
     throw new SlackEventBoundaryError("invalid_boundary");
   const sent = headers.get("x-slack-request-timestamp") ?? "";
   const signature = headers.get("x-slack-signature") ?? "";
@@ -76,6 +81,7 @@ export async function verifyPublicChannelEvent(
       typeof message.channel !== "string" || !id.test(message.channel) ||
       !binding.allowedChannels.has(message.channel) ||
       typeof message.ts !== "string" || !timestamp.test(message.ts) ||
+      micros(message.ts) < micros(binding.minTs) ||
       !(message.thread_ts === undefined ||
         typeof message.thread_ts === "string" && timestamp.test(message.thread_ts)) ||
       !(message.subtype === undefined ||
