@@ -1,12 +1,12 @@
 {
-  "checkedAt": "2026-10-15T10:28:44Z",
+  "checkedAt": "2026-10-15T10:53:18Z",
   "environment": "production",
   "project": "tgbnakbxwcqjeimygroz",
   "tenant": "00000000-0000-0000-0000-000000000001",
   "reviewedCustomerLinks": {
-    "total": 13,
-    "distinctCards": 13,
-    "addedOn15October": 8,
+    "total": 24,
+    "distinctCards": 24,
+    "addedOn15October": 19,
     "decisionRoute": "signed-in OpenFolk operator customer-card review UI",
     "corroboration": "unique current Commusoft and QuickBooks source pair; exact normalized customer name, email, phone and full recorded address; existing card title agrees",
     "sourceConflictOrIdentityDriftAccepted": false,
@@ -15,6 +15,9 @@
   "signedInLiveCardChecks": {
     "newCardsWithCommusoftJobsAndQuickBooksFinance": 7,
     "newCardWithReviewedAccountingIdentityAndNoDirectFinance": 1,
+    "furtherCardsWithBothPublishedJobsAndCapturedFinance": 3,
+    "furtherCardsWithPublishedJobsAndNoDirectCapturedFinance": 4,
+    "furtherCardsWithoutPublishedJobsOrDirectCapturedFinance": 4,
     "examples": [
       { "commusoftJobs": 3, "quickbooksFinancialRecords": 6 },
       { "commusoftJobs": 2, "quickbooksFinancialRecords": 4 },
@@ -26,21 +29,29 @@
     ],
     "jobToInvoiceAttributionClaimed": false
   },
+  "linkIntegrityAt20261015T104618Z": {
+    "linkAuditEvents": 24,
+    "existingDistinctCards": 24,
+    "missingLatestCustomerSources": 0,
+    "changedQuickBooksIdentities": 0,
+    "conflictedLinkedSources": 0
+  },
   "quickbooksSource": {
-    "latestVersionsAcrossApprovedCollections": 134705,
+    "latestVersionsAcrossApprovedCollections": 134706,
     "unresolvedConflicts": 0
   },
   "thirdRecurringScanAtReadback": {
-    "state": "queued",
-    "savedPages": 410,
-    "requestsUsed": 411,
-    "recordsObserved": 40911,
+    "state": "running",
+    "savedPages": 655,
+    "requestsUsed": 657,
+    "recordsObserved": 65079,
     "lastError": null,
     "complete": false
   },
   "limitations": [
     "This evidence does not prove complete customer matching or historical accounting reconciliation.",
     "The third recurring scan must complete and the next unattended cycle must be checked.",
-    "QuickBooks transactions are linked to reviewed customers, not to individual Commusoft jobs."
+    "QuickBooks transactions are linked to reviewed customers, not to individual Commusoft jobs.",
+    "A surname-only household and a name/address-only organisation remain unlinked pending stronger identity evidence."
   ]
 }
