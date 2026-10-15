@@ -7,6 +7,40 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 14:35 UTC — held Workspace mailbox recovered by ordinary scheduled work; Build 01 remains open.**
+
+### Working and verified
+
+- A successful, read-only Gmail profile proof can now permit the ordinary
+  scheduled worker to claim only the exact `admin_delegation_missing` Workspace
+  checkpoint generation and revision. Missing, mismatched and later failed
+  proofs remain blocked. The claim records
+  `confirmed_mailbox_profile_recovery` as a system action and preserves the
+  saved continuation; it does not attribute a rescue to Chris.
+- The exact rule passed rollback rehearsals, installed synthetic smoke checks
+  and earlier bounded-fetch regression checks in both TEST and LIVE. Independent
+  readback found matching function digest `da6714f06b6287a80950329c7f4c43d1`,
+  unchanged protocol owner and grant, a helper callable only by that owner,
+  and no retained synthetic tenant.
+- The real 14:30 queued job then ran without manual intervention. At 14:35 it
+  recorded one system-labelled automatic claim, completed successfully with
+  no new messages, and advanced the saved checkpoint from revision 825 to 828
+  with no remaining block. The zero-record pass verifies renewed access and
+  continuation, not new message coverage.
+
+### Needs finishing
+
+- Continue observing normal intervals and the full real working day; this one
+  successful pass does not establish sustained operation. Continue the broader
+  Build 01 source/card/scoring, Slack, backup and Auth acceptance work.
+
+### Blocked externally
+
+- Standing daily backup-reader and recurring encrypted-copy approvals remain
+  pending. Chris's business sign-off follows the technical acceptance pack.
+
+[Guarded recovery release evidence](evidence/learn-build01-email-verified-delegation-recovery-2026-10-15.json).
+
 **15 October, 14:22 UTC — exact held Workspace mailbox verified without a fingerprint; Build 01 remains open.**
 
 ### Working and verified

@@ -1,0 +1,45 @@
+{
+  "version": "learn-build01-email-verified-delegation-recovery/1",
+  "observed_at_utc": "2026-10-15T14:35:27Z",
+  "source_proof": "learn-build01-email-held-mailbox-proof-2026-10-15.json",
+  "candidate_definition_md5": "da6714f06b6287a80950329c7f4c43d1",
+  "test": {
+    "project_ref": "saatxzwxvdvqevbnskxy",
+    "rollback_rehearsal": "passed",
+    "installed_smoke": "passed",
+    "fetch_retry_regression": "passed",
+    "candidate_definition_verified": true,
+    "protocol_owner_and_grant_preserved": true,
+    "helper_grant": "email_ingestion_protocol_owner only",
+    "synthetic_fixture_retained": false
+  },
+  "live": {
+    "project_ref": "tgbnakbxwcqjeimygroz",
+    "rollback_rehearsal": "passed",
+    "installed_smoke": "passed",
+    "fetch_retry_regression": "passed",
+    "candidate_definition_verified": true,
+    "protocol_owner_and_grant_preserved": true,
+    "helper_grant": "email_ingestion_protocol_owner only",
+    "synthetic_fixture_retained": false,
+    "held_checkpoint_original_revision": 825,
+    "held_checkpoint_at_observation": "completed",
+    "held_checkpoint_revision_at_observation": 828,
+    "ordinary_automatic_claims_at_observation": 1,
+    "automatic_claim_marker": "confirmed_mailbox_profile_recovery",
+    "latest_ordinary_job_at_observation": "succeeded",
+    "latest_ordinary_job_completed_at_utc": "2026-10-15T14:35:07.435905Z",
+    "latest_ordinary_run_at_observation": "success",
+    "latest_ordinary_run_records_processed": 0,
+    "manual_resume": false
+  },
+  "safety": [
+    "Only the exact blocked recent Workspace mailbox with a matching generation and revision can use the audited profile proof.",
+    "A missing, stale, mismatched or later failed probe leaves the hold in place.",
+    "The original mailbox continuation is retained; the prior bounded fetch retry behavior remains verified."
+  ],
+  "limitations": [
+    "The successful scheduled pass processed zero new messages; it proves authority and continuation, not new message coverage.",
+    "The full unattended working day, broader Build 01 acceptance, independent daily backup, full application/Auth recovery and business sign-off remain open."
+  ]
+}
