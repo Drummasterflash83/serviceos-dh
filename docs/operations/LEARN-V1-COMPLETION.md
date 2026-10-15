@@ -7,6 +7,43 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 15:58 UTC — dedicated database reader verified; fresh keyless backup and hosted-runner preparation underway.**
+
+### Working and verified
+
+- Chris approved the standing, whole-project production backup-reader access.
+  The exact role passed TEST and LIVE rollback rehearsals, then installed in
+  LIVE. Its password was stored and read back from the scoped local Keychain
+  item without Touch ID or command-argument exposure. A direct verified-TLS
+  login confirmed the role's read access to Auth and encrypted Vault, default
+  read-only setting and lack of administrator privileges without reading rows.
+  The source-access checkpoint is `bb95dd59`, with ARM runner compatibility at
+  `9575af80` and manual-only workflow/monitor candidates at `ddb74fa0` on the
+  TEST branch.
+- A fresh LIVE export began at 15:44 UTC using that reader without a Management
+  API login refresh. Its native archive is still being written; isolated restore,
+  encryption and off-site verification are not yet proven for this attempt.
+  The public GitHub repository has an empty `serviceos-database-backup`
+  environment restricted to `main`. No credential was placed there and no
+  hosted workflow or daily schedule was activated.
+- The missed-success checker now evaluates the latest successful hosted backup
+  completion against a 26-hour threshold. Its boundary cases pass local tests;
+  no hosted alert has run yet.
+
+### Needs finishing
+
+- Complete the fresh source-to-off-site attempt and a separate recovery-key
+  restore, then prove a reliable hosted runner and missed-success alert before
+  daily activation. Continue Slack reply/catch-up, source/card/scoring, full
+  app/Auth recovery and the eligible 16 October working-day observation.
+
+### Blocked externally
+
+- Automatic approval review rejected sending the whole-database and AWS
+  credentials into the public repository's Actions environment; it requires an
+  explicit decision on that exact destination. The environment remains empty.
+  Chris's scoring criteria and final business acceptance also remain pending.
+
 **15 October, 15:34 UTC — guarded Slack catch-up scheduler installed in TEST and LIVE; provider catch-up remains open.**
 
 ### Working and verified
