@@ -1,0 +1,37 @@
+{
+  "contract": "learn-build01-email-bounded-retry-release/1",
+  "observedAt": "2026-10-15T13:27:30.050Z",
+  "scope": "Drummonds Workspace recent email capture; protocol function only",
+  "migrationSha256": "91dd5c8d400db59d426fcf14bd790615e5925aeb2c78ac9ab3e17d2b9810883e",
+  "priorFunctionMd5": "45a140fffe35e7e3de3597eb848cfbc2",
+  "installedFunctionMd5": "c0f6296f051aada999af147773066cac",
+  "behavior": {
+    "firstTwoConfirmedZeroWriteFetchFailures": "attempt fails and is audited; same recent continuation remains ready for the next scheduled job",
+    "thirdFetchFailureWithinTwoHours": "attempt fails and checkpoint blocks for operator review",
+    "permanentDelegationFailure": "checkpoint blocks on first failure",
+    "unknownPersistence": "checkpoint blocks on first failure",
+    "sourceProviderWrites": false,
+    "historicalCaptureChanged": false
+  },
+  "test": {
+    "rolledBackRehearsal": "passed with 10 synthetic transition receipts",
+    "installed": true,
+    "installedSyntheticRollbackProbe": "passed with 10 transition receipts; no fixture retained",
+    "independentReadback": "candidate digest, original protocol owner, service_role-only grant and security-definer setting verified"
+  },
+  "live": {
+    "rolledBackRehearsal": "passed with 10 synthetic transition receipts",
+    "installed": true,
+    "installedSyntheticRollbackProbe": "passed with 10 transition receipts; no fixture retained",
+    "independentReadbackAt": "2026-10-15T13:27:00.595399Z",
+    "independentReadback": "same candidate digest, original protocol owner, service_role-only grant and security-definer setting verified"
+  },
+  "remaining": {
+    "preexistingFetchFailedBlockedCheckpoints": 2,
+    "preexistingAdminDelegationBlockedCheckpoints": 1,
+    "sourceIneligibleJobsLastTwoHours": 22,
+    "preexistingCheckpointsMutatedByRelease": false,
+    "realAutomaticRetryObserved": false,
+    "fullUnattendedWorkingDayAccepted": false
+  }
+}

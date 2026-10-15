@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 13:27 UTC — bounded Workspace fetch retry released in TEST and LIVE; Build 01 remains open.**
+
+### Working and verified
+
+- A confirmed zero-write recent Workspace fetch failure now leaves its exact
+  continuation ready for a later scheduled job. A third such failure within
+  two hours blocks for review. Permanent delegation errors and unknown
+  persistence still block immediately; every failed attempt retains its audit
+  receipt and failed status.
+- The exact function change passed rollback rehearsals and installed-function
+  synthetic probes in both TEST and LIVE. Independent readback found the same
+  candidate digest in both, unchanged protocol owner and service-role grant,
+  and no retained synthetic rows. The release changed no existing checkpoint.
+
+### Needs finishing
+
+- Two checkpoints blocked before this release on `fetch_failed` still need an
+  exact, auditable recovery; a third remains blocked on
+  `admin_delegation_missing` and needs provider-authority diagnosis. At 13:27
+  UTC, 22 source-ineligible jobs in the preceding two hours reflected these
+  holds. A real scheduled retry under the new rule has not yet been observed.
+- The full unattended working day, broader source/card/scoring acceptance,
+  ongoing Slack handoff, independent backup and full app/Auth recovery, and
+  Chris's business sign-off remain outstanding.
+
+### Blocked externally
+
+- Standing daily backup-reader and recurring encrypted-copy approvals are
+  pending. A permanent Google delegation failure may require Workspace admin
+  action if fresh server-side verification confirms the grant is absent.
+
+[Bounded retry TEST/LIVE evidence](evidence/learn-build01-email-bounded-retry-2026-10-15.json).
+
 **15 October, 13:10 UTC — keyless daily backup candidate tested; Build 01 remains open.**
 
 ### Working and verified
