@@ -4,7 +4,8 @@ import { savedCliToken, TEST_PROJECT } from "./learn-test-readiness.mjs";
 const mode = process.argv.slice(2).join(" ");
 if (!["--live-read-only", "--test-read-only", "--test-candidate-read-only",
   "--live-candidate-read-only", "--test-safe-claim-read-only",
-  "--live-safe-claim-read-only"].includes(mode))
+  "--live-safe-claim-read-only", "--test-safe-window-read-only",
+  "--live-safe-window-read-only"].includes(mode))
   throw Error("Exact read-only mode required");
 const project = mode.endsWith("-live-read-only") || mode.startsWith("--live-")
   ? "tgbnakbxwcqjeimygroz" : TEST_PROJECT;
@@ -36,7 +37,10 @@ const rows = await response.json();
 const binding = rows?.[0]?.binding;
 if (!Array.isArray(rows) || rows.length !== 1 ||
   !/^[a-f0-9]{32}$/.test(binding?.definitionMd5 ?? "") ||
-  (mode.endsWith("-safe-claim-read-only") ?
+  (mode.endsWith("-safe-window-read-only") ?
+    binding?.definitionMd5 !== "1b978429b0f1ee916b545f5c56953739" ||
+      binding?.oldBlockMatch !== false || binding?.boundedRetryMatch !== true :
+   mode.endsWith("-safe-claim-read-only") ?
     binding?.definitionMd5 !== "9828de434ae0713dfd544da6ce0a1345" ||
       binding?.oldBlockMatch !== false || binding?.boundedRetryMatch !== true :
    mode.endsWith("-candidate-read-only") ?
