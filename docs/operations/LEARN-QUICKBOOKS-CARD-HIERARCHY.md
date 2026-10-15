@@ -1,7 +1,7 @@
 # QuickBooks customer finance across native subaccounts
 
-Status checked 15 October 2026, 11:38 UTC. The read-only card reader is installed
-and verified in TEST and LIVE. Frontend wording remains a separate release gate.
+Status checked 15 October 2026, 11:57 UTC. The read-only card reader and
+matching customer-card wording are released to TEST and LIVE.
 
 ## Why this was needed
 
@@ -52,7 +52,32 @@ then installed and read back release `quickbooks_card_hierarchy_v1`:
 No provider request, new account, grant, source import or card link was made by
 this release. LIVE readback after installation found all 24 links, 24 audit
 events, zero missing cards, zero identity drift and zero source conflicts. The
-third unattended accounting scan continued at 1,082 saved pages with no error.
+third unattended accounting scan later completed all 13 collections; the
+post-scan link readback found the same 24 links and audit events with zero
+identity drift or linked-source conflicts.
+
+The frontend candidates were built against the current V2 code and promoted
+only after checking that each deployment was READY and bound to its intended
+Supabase project. A subsequent copy-only correction made the sandbox warning
+tenant-neutral for future clients. The final `test.openfolk.ai` and stable TEST
+Vercel alias serve Git commit `b559a44c58084838c3f51f1f98fcbb551f50c32d`;
+`www.openfolk.ai`, `app.openfolk.ai`, the apex redirect and stable LIVE Vercel
+alias serve `ac8842caf788ffd32dfab60e2ef4e30f56115431`. All aliases were
+read back after both promotions. The existing Drummonds branding and navigation
+remain, and LIVE LEARN loaded again after the final release.
+
+Signed in at the stable LIVE site, Dan Breen's customer card showed three
+published Commusoft jobs, three QuickBooks invoices totalling GBP 401.05, and
+three QuickBooks payments totalling GBP 401.05. The finance panel displayed the
+new QuickBooks subaccount boundary and explicitly said no individual Commusoft
+job match had been established. This card has no QuickBooks child accounts, so
+it verifies the unchanged direct-account path; the child-account path was
+verified in the isolated PostgreSQL suite, not with a LIVE linked child card.
+The signed-in Belvoir card independently showed two Commusoft jobs, two contacts,
+two QuickBooks invoices and two payments, confirming that jobs, contacts and
+finance are available together in the existing client UX.
+[Release evidence](evidence/learn-quickbooks-card-hierarchy-release-2026-10-15.json)
+contains no credential or private source payload.
 
 The first TEST verification reported an expected-digest mismatch after a
 successful installation. Its local JavaScript replacement calculation treated

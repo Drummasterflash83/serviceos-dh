@@ -2,45 +2,54 @@
 
 Updated 15 October 2026. Workstream: `codex/quickbooks-integration`.
 
-## Current LIVE position — 15 October 2026, 10:09 UTC
+## Current LIVE position — 15 October 2026, 12:08 UTC
 
 ### Working and verified
 
 - The LIVE imported-customer catalogue and reviewed combined cards remain
-  available. The last signed-in acceptance displayed Commusoft jobs and contacts
-  beside retained QuickBooks finance on a reviewed Drummonds card.
-- Two unattended 13-collection QuickBooks scans completed on 14 October. The
-  third scan stopped at 03:21 UTC on its first premature Intuit HTTP 401, after
-  210 saved pages; retained source history was not removed.
+  available. Twenty-four QuickBooks customer identities are individually
+  reviewed and linked to 24 existing Commusoft customer cards. A signed-in
+  Drummonds card showed three Commusoft jobs beside three QuickBooks invoices
+  and three payments. Card finance is restricted to company admins and logged
+  OpenFolk support; no transaction is inferred to belong to a specific job.
+  A second signed-in card, Belvoir, showed two published jobs, two contacts,
+  two invoices and two payments within the same customer view.
+- Three unattended 13-collection QuickBooks scans have completed. The third
+  stopped at 03:21 UTC on its first premature Intuit HTTP 401, after 210 saved
+  pages; retained source history was not removed.
 - A bounded first-401 recovery was rehearsed with synthetic TEST records in a
   rolled-back transaction, then installed and read back in TEST and LIVE. It
   permits one fresh token and read reservation at a checkpoint; a second 401
   stops for review. Prior function authority and unrelated QuickBooks functions
   were preserved.
-- The already-approved LIVE run resumed without a new company grant. Intuit
-  saved token generation 11 at 10:06 UTC; the hosted worker advanced to 234
-  pages / 23,359 observations by 10:09 UTC, with no current run error.
-  [Recovery evidence](evidence/learn-quickbooks-401-recovery-2026-10-15.json).
+- The already-approved LIVE run resumed without a new company grant. The hosted
+  worker renewed the same OAuth grant unattended twice (generation 11 to 13).
+  The third full scan traversed 1,354 pages and 134,706 observations by 12:07
+  UTC, with no run error, source conflicts or wrong-tenant pages. The existing
+  six-hour policy recorded the next due time for 18:07 UTC.
+  [Completed-cycle evidence](evidence/learn-quickbooks-third-unattended-cycle-2026-10-15.json).
+- The guarded QuickBooks finance reader now includes native subaccounts under a
+  reviewed parent account, with explicit identity and link boundaries. It is
+  installed in TEST and LIVE; matching UI wording is promoted to both stable
+  sites and has signed-in LIVE acceptance on a direct-account card.
+  [Release evidence](evidence/learn-quickbooks-card-hierarchy-release-2026-10-15.json).
 
-### Needs finishing
+### Needs finishing in LEARN V2
 
-- This resumed scan must traverse and reconcile all 13 collections, then prove
-  that the next unattended cycle starts and completes under the same policy.
 - Customer identities still need review before finance may be merged onto
-  additional Commusoft cards. Only five QuickBooks links are approved; the
-  catalogue keeps the remaining source records separately labelled. A 15 October
-  aggregate diagnostic found five uniquely corroborated card/account pairs,
-  already consistent with that reviewed count, and many records without strong
-  identifiers. Do not describe every customer as matched.
+  additional Commusoft cards. The catalogue keeps the remaining source records
+  separately labelled. A 15 October diagnostic found 576 conservative unique
+  source-pair candidates, of which 552 lacked a published Commusoft card at that
+  checkpoint. These are review candidates, not automatically authorised links.
+  Do not describe every customer as matched.
 - Commusoft job/contact coverage and an evidenced job-to-accounting crosswalk
   remain separate acceptance work. No job profitability or complete-company
   coverage claim follows from the accounting capture.
 
 ### Blocked externally
 
-- None for the current token refresh. If Intuit returns a second 401 after the
-  new token, the connection will stop for explicit investigation or renewed
-  company consent.
+- None for current QuickBooks operation. A second 401 after a new token would
+  stop the connection for explicit investigation or renewed company consent.
 
 ## Current LIVE position — 14 October 2026, evening
 
