@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**15 October, 21:55 UTC — non-complete Commusoft jobs identified for review.**
+**15 October, 22:00 UTC — non-complete Commusoft jobs identified for review.**
 
 ### Working and verified
 
@@ -15,15 +15,23 @@ override a later release observation. No requirement is silently deferred.
   and eight pending retained Commusoft job identities. Only six of those 288
   have reviewed canonical job links. The existing operator/client review
   search now has a bounded saved-status filter installed in TEST; its exact
-  function digest, ownership and grants passed readback. An isolated Postgres
-  suite, 13 client tests, TypeScript and the production build pass. The filter
-  does not automatically link a job or change provider data.
+  function digest, ownership and grants passed readback. The exact Git
+  checkpoint `3bc5678a` built as a Ready protected TEST Preview
+  `dpl_mJCupqBMCYc8AbVYzJtv8P6MxB34`, configured for Supabase TEST. Both
+  existing TEST aliases read back to that deployment with protection, project
+  domains and production target unchanged. A fresh browser query on both
+  aliases loaded the candidate login asset. An isolated Postgres suite, 13
+  client tests, TypeScript and the production build pass. The filter does not
+  automatically link a job or change provider data.
   [Review evidence](evidence/learn-build01-commusoft-open-work-review-2026-10-15.json).
 
 ### Needs finishing
 
 - Verify the changed review surface in signed-in TEST before a guarded LIVE
-  backend/frontend release. A human must review source identity and customer
+  backend/frontend release. Existing TEST browser sessions require application
+  sign-in; immediately after alias assignment, an ordinary cached TEST login
+  also loaded an older asset until a fresh release query was used. A human
+  must review source identity and customer
   relationship before linking the 282 unmatched non-complete jobs; saved
   statuses do not prove completion or responsible ownership. Broader completed
   history and communication attribution remain open.

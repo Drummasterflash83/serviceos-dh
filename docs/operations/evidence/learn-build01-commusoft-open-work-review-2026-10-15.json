@@ -1,7 +1,7 @@
 {
   "version": "learn-build01-commusoft-open-work-review/1",
   "observedAtUtc": "2026-10-15T21:50:27Z",
-  "environment": "LIVE read-only source aggregate; isolated local tests; TEST backend release",
+  "environment": "LIVE read-only source aggregate; isolated local tests; TEST backend and protected frontend release",
   "sourceScope": "Latest unambiguous retained Commusoft job observation for the existing Drummonds tenant and connection; no live provider refresh implied",
   "currentSavedSourceStatuses": {
     "completed": { "observedIdentities": 12361, "reviewedCanonicalLinks": 935 },
@@ -31,7 +31,18 @@
     "testReleaseExactReadback": "passed; owner, immutable flag, security-definer setting and execute ACL preserved",
     "testIdempotentMigrationReplay": "passed and rolled back",
     "liveBackendRelease": false,
-    "testFrontendRelease": false,
+    "testFrontendRelease": {
+      "gitCheckpoint": "3bc5678a671d49f28b9b329b841ab3f2fd8714c1",
+      "remoteCheckpointHeadVerified": true,
+      "vercelProject": "serviceos-learn-test",
+      "deployment": "dpl_mJCupqBMCYc8AbVYzJtv8P6MxB34",
+      "state": "READY Preview",
+      "configuredSupabaseProject": "saatxzwxvdvqevbnskxy",
+      "aliases": ["serviceos-learn-test-allkin.vercel.app", "test.openfolk.ai"],
+      "aliasAndProtectionReadback": "Both point to exact deployment; all-deployment protection, project domains and production target unchanged",
+      "browserReadback": "Both protected aliases opened the OpenFolk login and a fresh release query loaded the exact preview login asset index-BtnUcLNE.js. Immediately after alias assignment, an ordinary cached test.openfolk.ai login still loaded an older asset until the release query was added.",
+      "signedInReview": false
+    },
     "liveFrontendRelease": false
   },
   "rollback": "Exact TEST and LIVE pre-release matcher definitions are retained privately; guarded rollback checks the installed candidate digest before restoring.",
@@ -40,6 +51,7 @@
     "A source status does not verify job completion, payment, staff assignment or progress on the ground.",
     "Filtering the review list does not itself confirm any of the 282 unmatched non-complete job identities; an authorised reviewer must inspect and link them through the existing saved batch path.",
     "Ambiguous latest source versions are excluded from this filter and remain accessible through exact-ID review; they are not counted as successful matches.",
-    "Signed-in TEST and LIVE frontend behavior remains pending."
+    "Signed-in TEST and LIVE review behavior remains pending; available TEST browser sessions require application sign-in.",
+    "The ordinary stable TEST login initially used an older cached asset after alias assignment; a release query loaded the exact candidate. Cache freshness remains unresolved."
   ]
 }
