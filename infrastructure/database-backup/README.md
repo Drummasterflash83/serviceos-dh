@@ -22,6 +22,14 @@ missed-run monitoring and full application/service recovery remain incomplete.**
 The initial approval creates no recurring database schedule. The implementation
 and remaining operating requirements are described below.
 
+The later standing whole-project backup approval covers fresh daily captures.
+That path now has a **2 GiB** hard limit for its encrypted package and storage
+transfer because the current production archive is approaching the original
+1 GiB first-copy limit. It still fails closed rather than truncating a growing
+database. The original first-copy measurement and authorization below are
+historical and unchanged. Reassess runner disk space and transfer time before
+raising the 2 GiB limit again.
+
 ## Exact proposed destination and contents
 
 | Item | Proposed value |

@@ -12,7 +12,7 @@ import { loadDatabaseCredential } from "./serviceos-database-backup-access.mjs";
 import { createDatabaseS3 } from "./recording-backup-s3.mjs";
 import { uploadDatabasePackage, downloadDatabasePackage } from "./database-backup-transfer.mjs";
 import { RecordingBackupError } from "./recording-backup-core.mjs";
-import { databaseBackupBinding } from "./database-backup-template.mjs";
+import { databaseBackupBinding, MAX_DATABASE_PACKAGE_BYTES } from "./database-backup-template.mjs";
 const REPO = fileURLToPath(new URL("../../", import.meta.url));
 const PRIVATE = join(REPO, ".verification-results");
 const SOURCE = join(PRIVATE, "production-database-complete-capture-small-full-2026-10-12");
@@ -228,7 +228,7 @@ export async function copyPreparedDatabaseBackup({
 }) {
   expectedArchive = structuredClone(expectedArchive);
   need(Number.isSafeInteger(expectedArchive.bytes) && expectedArchive.bytes > 0 &&
-    expectedArchive.bytes <= 1024 ** 3 && /^[a-f0-9]{64}$/.test(expectedArchive.sha256 ?? ""),
+    expectedArchive.bytes <= MAX_DATABASE_PACKAGE_BYTES && /^[a-f0-9]{64}$/.test(expectedArchive.sha256 ?? ""),
   "database_expected_archive_invalid");
   await privateDirectory(directory);
   const lockPath = join(directory, "active.lock");
@@ -280,7 +280,7 @@ export async function runPreparedDatabaseBackup({
 }) {
   expectedArchive = structuredClone(expectedArchive);
   need(Number.isSafeInteger(expectedArchive.bytes) && expectedArchive.bytes > 0
-    && expectedArchive.bytes <= 1024 ** 3 && /^[a-f0-9]{64}$/.test(expectedArchive.sha256 ?? ""),
+    && expectedArchive.bytes <= MAX_DATABASE_PACKAGE_BYTES && /^[a-f0-9]{64}$/.test(expectedArchive.sha256 ?? ""),
     "database_expected_archive_invalid");
   await privateDirectory(directory);
   const lockPath = join(directory, "active.lock");

@@ -9,6 +9,8 @@ export const databaseBackupBinding = Object.freeze({
   bucket: "openfolk-serviceos-database-235099643372-eu-west-2",
   prefix: "projects/tgbnakbxwcqjeimygroz/",
 });
+// Bounded room for current whole-project growth; S3 uses a single PUT (<5 GiB).
+export const MAX_DATABASE_PACKAGE_BYTES = 2 * 1024 ** 3;
 const b = databaseBackupBinding;
 const ref = (name) => ({ Ref: name });
 const arn = `arn:aws:s3:::${b.bucket}`;

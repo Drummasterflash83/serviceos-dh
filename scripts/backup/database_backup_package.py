@@ -23,7 +23,7 @@ AGE_SHA256 = {
     ('Darwin', 'arm64'): '4012dfc2725883beafb710894af4f599b7a94f8c8e0f51f02cc96ab8df33915e',
     ('Linux', 'aarch64'): '41b072352f4561018949623c674d16ef704019b9108a9bbdbd21292efebfc94f',
 }.get((platform.system(), platform.machine()))
-MAX_BYTES = 1024 ** 3
+MAX_BYTES = 2 * 1024 ** 3
 MAX_JSON = 8 * 1024 ** 2
 FILES = ('database.dump', 'net-tables.sql', 'source-inventory.json', 'report.json',
          'restore-native-comparison-report.json', 'vault-recovery-report.json')

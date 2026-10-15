@@ -5,7 +5,7 @@ import { STSClient, GetCallerIdentityCommand } from "@aws-sdk/client-sts";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { createHash } from "node:crypto";
 import { recordingContext, RecordingBackupError } from "./recording-backup-core.mjs";
-import { databaseBackupBinding } from "./database-backup-template.mjs";
+import { databaseBackupBinding, MAX_DATABASE_PACKAGE_BYTES } from "./database-backup-template.mjs";
 const MAX_JSON = 32 * 1024 * 1024;
 const sha = (b) => createHash("sha256").update(b).digest("hex");
 const requireValue = (ok, code = "s3_response_unverified") => {
@@ -68,7 +68,7 @@ export function createDatabaseS3(options = {}) {
     ),
     "s3_database_principal_required",
   );
-  return createPrivateS3({ ...databaseBackupBinding }, 1024 ** 3, options, 480000);
+  return createPrivateS3({ ...databaseBackupBinding }, MAX_DATABASE_PACKAGE_BYTES, options, 480000);
 }
 function createPrivateS3(
   context,

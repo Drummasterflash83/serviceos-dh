@@ -7,6 +7,7 @@ import { join, resolve } from "node:path";
 import { preparePublicDatabaseBackup, copyPreparedDatabaseBackup,
   restoreDownloadedDatabaseBackup } from "./run-serviceos-database-backup.mjs";
 import { createRecoveryEscrow } from "./onepassword-database-recovery.mjs";
+import { MAX_DATABASE_PACKAGE_BYTES } from "./database-backup-template.mjs";
 
 const REPO = fileURLToPath(new URL("../../", import.meta.url));
 const PRIVATE = join(REPO, ".verification-results");
@@ -49,7 +50,7 @@ async function main() {
     exported.state === "export_complete_restore_unverified" &&
     exported.productionDataWrites === false &&
     Number.isSafeInteger(exported.archive?.bytes) &&
-    exported.archive.bytes > 0 && exported.archive.bytes <= 1024 ** 3 &&
+    exported.archive.bytes > 0 && exported.archive.bytes <= MAX_DATABASE_PACKAGE_BYTES &&
     /^[a-f0-9]{64}$/.test(exported.archive.sha256 ?? ""),
   "database_source_export_unverified");
   const publicKey = JSON.parse(await readFile(join(REPO,

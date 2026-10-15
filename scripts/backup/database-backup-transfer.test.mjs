@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { fixture } from "./test-support/s3-fixture.mjs";
 import { databaseBackupBinding as binding } from "./database-backup-template.mjs";
+import { MAX_DATABASE_PACKAGE_BYTES } from "./database-backup-template.mjs";
 import { createDatabaseS3 } from "./recording-backup-s3.mjs";
 import { uploadDatabasePackage, downloadDatabasePackage } from "./database-backup-transfer.mjs";
 const sha = (b) => createHash("sha256").update(b).digest("hex");
@@ -94,6 +95,13 @@ test("failed download leaves no partial artifact and modified descriptor is reje
   const downloaded = join(directory, "downloaded.age");
   await assert.rejects(downloadDatabasePackage(result.receipt, downloaded, f, { now: f.now }));
   await assert.rejects(stat(downloaded), { code: "ENOENT" });
+});
+
+test("database package remains bounded at two GiB before any storage request", async (t) => {
+  const { path, descriptor, f } = await setup(t);
+  await assert.rejects(uploadDatabasePackage(path,
+    { ...descriptor, bytes: MAX_DATABASE_PACKAGE_BYTES + 1 }, f));
+  assert.equal(f.calls.length, 0);
 });
 
 test("database factory requires exact account and identity path; foreign keys never reach SDK", async () => {

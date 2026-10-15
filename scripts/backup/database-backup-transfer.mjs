@@ -5,9 +5,8 @@ import { createHash } from "node:crypto";
 import { constants } from "node:fs";
 import { open, lstat, unlink } from "node:fs/promises";
 import { dirname } from "node:path";
-import { databaseBackupBinding as binding } from "./database-backup-template.mjs";
+import { databaseBackupBinding as binding, MAX_DATABASE_PACKAGE_BYTES } from "./database-backup-template.mjs";
 import { RecordingBackupError } from "./recording-backup-core.mjs";
-const MAX_BYTES = 1024 ** 3;
 const sha = (value) => createHash("sha256").update(value).digest("hex");
 const canonical = (value) =>
   JSON.stringify(value, (_k, v) =>
@@ -40,7 +39,7 @@ function descriptor(value) {
       /^[0-9a-f]{64}$/.test(value.sha256 ?? "") &&
       Number.isSafeInteger(value.bytes) &&
       value.bytes > 0 &&
-      value.bytes <= MAX_BYTES,
+      value.bytes <= MAX_DATABASE_PACKAGE_BYTES,
     "database_descriptor_invalid",
   );
   return {
