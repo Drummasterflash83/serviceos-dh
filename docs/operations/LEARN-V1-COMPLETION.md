@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**15 October, 12:29 UTC — one LIVE mailbox recovered; separate operator totals released; Build 01 remains open.**
+**15 October, 12:50 UTC — fingerprint-free package preparation verified on the real snapshot; Build 01 remains open.**
 
 ### Working and verified
 
@@ -31,6 +31,10 @@ override a later release observation. No requirement is silently deferred.
   already verified database snapshot. Synthetic package and separate-role copy
   tests pass without a recovery-key read. The supervised restore path now asks
   1Password once after download and does not retry a failed Touch ID prompt.
+  The real 10:04 UTC checkpoint was repackaged locally into a new
+  1,060,273,064-byte encrypted artifact with no private-key access or fingerprint
+  prompt. The new package is still local and has not been independently restored;
+  it is not a second off-site acceptance.
 
 ### Needs finishing
 

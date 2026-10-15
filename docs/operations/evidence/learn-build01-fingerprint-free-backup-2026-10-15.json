@@ -1,0 +1,33 @@
+{
+  "contract": "learn-build01-fingerprint-free-backup-evidence/1",
+  "observedAt": "2026-10-15T12:48:00Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "testCheckpointHead": "7c76c526fc74a091c412d07c98854553adb4ddbd",
+  "sourceCheckpointAt": "2026-10-15T10:04:20.399639+00:00",
+  "publicOnlyRunId": "71cc7c66-9910-4a1d-b694-2d43373ae3ef",
+  "publicOnlyPreparation": {
+    "state": "package_encrypted_source_evidence_verified_restore_pending",
+    "encryptedBytes": 1060273064,
+    "encryptedSha256": "2ed9dfd243a147d20f7a3f685cd575c12b1ba87aa4eb2a312e93843aed53babc",
+    "sourceDatabaseRestoreVerified": true,
+    "newPackageDatabaseRestoreVerified": false,
+    "recoveryKeysRead": false,
+    "offsiteCopyVerified": false
+  },
+  "syntheticChecks": {
+    "nodeTestsPassed": 22,
+    "pythonTestsPassed": 11,
+    "scope": "Public-key preparation, separate-role copy/download, one-key-read supervised restore and failure boundaries"
+  },
+  "latestApprovedOffsiteCopy": {
+    "encryptedPackageUnchanged": true,
+    "isolatedRestoreVerified": false,
+    "reason": "The supervised recovery reached the offline database comparison and was interrupted; its disposable container and decrypted working copy were removed"
+  },
+  "remaining": [
+    "Fresh unattended production export and off-site transfer",
+    "Daily success-age alert",
+    "Independent isolated restore of a new off-site package",
+    "Full application and authentication recovery"
+  ]
+}
