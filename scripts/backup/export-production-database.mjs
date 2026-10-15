@@ -15,7 +15,6 @@ import { loadDatabaseSourceReader } from './serviceos-database-source-access.mjs
 import { databaseDumpCommand } from './serviceos-database-export-command.mjs';
 
 const project = 'tgbnakbxwcqjeimygroz';
-const image = 'sha256:28f0e16a019e648089fc1a6d333549a55548f6019c15ae4bd7cd58b989027518';
 const mode = process.argv.slice(2).join(' ');
 const releaseCheckpoint = process.argv[2] === '--export-release-checkpoint'
   && process.argv.length === 4
@@ -23,6 +22,11 @@ const releaseCheckpoint = process.argv[2] === '--export-release-checkpoint'
 const unattendedDaily = process.argv[2] === '--export-unattended-daily'
   && process.argv.length === 4
   && /^\.verification-results\/production-database-daily-[0-9]{8}-[a-f0-9-]{36}$/.test(process.argv[3]);
+// The daily runner restores with this same pinned PostgreSQL 17.6 image.
+// One reviewed image avoids a second public-registry dependency each day.
+const image = unattendedDaily
+  ? 'public.ecr.aws/supabase/postgres:17.6.1.141'
+  : 'sha256:28f0e16a019e648089fc1a6d333549a55548f6019c15ae4bd7cd58b989027518';
 const monitoredCapture = releaseCheckpoint || unattendedDaily || mode === '--export-complete-capture-small-full';
 const afterSmallUpgrade = monitoredCapture || mode === '--export-complete-capture-small';
 const completeCapture = afterSmallUpgrade || mode === '--export-complete-capture-v2';
@@ -78,6 +82,11 @@ try {
     '700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7', 'Official CA mismatch');
   execFileSync(docker, ['image', 'inspect', image], { stdio: 'ignore' });
   if (unattendedDaily) {
+    const imageId = execFileSync(docker, ['image', 'inspect', image, '--format', '{{.Id}}'],
+      { encoding: 'utf8', timeout: 20000 }).trim();
+    check(imageId === 'sha256:ba10e934f0a59990379f78ab9ed93926f1c291dd61a12fe4026f4202f1b89770'
+      || imageId === 'sha256:d5cf4781c958c8155cf57150e0648469c48cd915a9ff462a032c91011b4af8fb',
+    'Daily export image pin differs');
     const active = execFileSync(docker, ['ps', '-a', '--filter', 'name=serviceos-export-', '--format', '{{.Names}}'],
       { encoding: 'utf8', timeout: 20000 }).trim();
     check(!active, 'Existing export container must be reconciled before retry');
