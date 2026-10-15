@@ -28,7 +28,7 @@ export async function checkDailyBackupSuccess({ token = process.env.GITHUB_TOKEN
     process.env.GITHUB_REF !== "refs/heads/main" ||
     process.env.GITHUB_ACTIONS !== "true")
     throw Error("database_daily_monitor_environment_invalid");
-  const url = `https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/runs?status=success&per_page=5`;
+  const url = `https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/runs?branch=main&status=success&per_page=5`;
   const response = await request(url, { headers: {
     Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28" },
