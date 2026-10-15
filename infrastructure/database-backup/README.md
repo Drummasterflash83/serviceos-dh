@@ -403,6 +403,16 @@ length/hash bound to the preparation. It downloads and restores that exact new
 snapshot; it cannot silently substitute the original initial archive. An uncertain
 restore retains its inspection lock. No keys, resources or schedules are created.
 
+For an active source, Vault ciphertext may change after the export snapshot.
+`check-production-vault-recovery.mjs` first tests equality with current LIVE
+Vault. If it differs, a checkpoint can still pass only when LIVE records an
+update after the snapshot, archived and restored `vault.secrets` COPY fingerprints
+match, and every archived secret decrypts in the isolated container. Its report
+then says `all_archived_vault_secrets_decrypt_and_match_archive` and explicitly
+records that later-LIVE equality was not proven. The package gate accepts that
+scoped result; it rejects an unexplained mismatch, incomplete decryption or
+unbound snapshot. A new local snapshot still needs independent copy and restore.
+
 The first release checkpoint (13 October 00:16 UTC) exported 201,420,792 bytes
 and passed the native, operational-table and Vault restore checks. Its recording
 versions and references match the already verified audio inventory. The runner's

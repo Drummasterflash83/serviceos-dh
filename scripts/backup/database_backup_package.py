@@ -121,10 +121,21 @@ def validate_snapshot(directory, entries):
          'row_comparison_unverified')
     containment(restored.get('containmentBefore'))
     containment(restored.get('containmentAfter'))
+    live_match = (vault.get('state') == 'all_archived_vault_secrets_decrypt_and_match_live'
+                  and vault.get('ciphertextMatchesLive') is True
+                  and vault.get('plaintextComparisonMatches') is True)
+    snapshot_match = (vault.get('state') == 'all_archived_vault_secrets_decrypt_and_match_archive'
+                      and vault.get('snapshotAt') == snapshot['observedAt']
+                      and vault.get('ciphertextMatchesArchive') is True
+                      and vault.get('plaintextDecryptionVerified') is True
+                      and vault.get('ciphertextMatchesLive') is False
+                      and vault.get('plaintextComparisonMatches') is False
+                      and type(vault.get('liveChangedAfterSnapshotCount')) is int
+                      and vault['liveChangedAfterSnapshotCount'] >= 1
+                      and isinstance(vault.get('vaultCopySha256'), str)
+                      and re.fullmatch(r'[a-f0-9]{64}', vault['vaultCopySha256']))
     need(vault.get('archive') == entries['database.dump']
-         and vault.get('state') == 'all_archived_vault_secrets_decrypt_and_match_live'
-         and vault.get('ciphertextMatchesLive') is True
-         and vault.get('plaintextComparisonMatches') is True
+         and (live_match or snapshot_match)
          and vault.get('containerRemoved') is True
          and vault.get('productionWrites') is False, 'vault_restore_unverified')
     containment(vault.get('containment'))

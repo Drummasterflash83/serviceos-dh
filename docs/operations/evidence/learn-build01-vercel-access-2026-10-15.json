@@ -1,0 +1,16 @@
+{
+  "version": "learn-build01-vercel-access/1",
+  "observed_at_utc": "2026-10-15T10:03:33Z",
+  "user_report": "Chris confirmed that Vercel has been paid and instructed Build 01 to continue.",
+  "read_only_verification": {
+    "test_project_http_status": 200,
+    "test_project_and_team_matched": true,
+    "live_project_http_status": 200,
+    "live_project_and_team_matched": true,
+    "credential_printed": false
+  },
+  "limits": [
+    "This verifies read-only project access, not a new deployment, write permission or a billing ledger state.",
+    "Existing TEST and LIVE frontend release evidence remains the deployment baseline."
+  ]
+}

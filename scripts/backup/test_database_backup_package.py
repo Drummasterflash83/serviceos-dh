@@ -98,6 +98,27 @@ class PackageTests(unittest.TestCase):
         self.assertEqual(self.encrypted.stat().st_mode & 0o777, 0o600)
         self.assertFalse(list(self.root.glob('.database-*')))
 
+    def test_post_snapshot_vault_change_accepts_archived_decryption_only_with_bound_proof(self):
+        self.change_json('vault-recovery-report.json', lambda x: x.update(
+            state='all_archived_vault_secrets_decrypt_and_match_archive',
+            snapshotAt='2026-10-12T00:00:00Z', ciphertextMatchesArchive=True,
+            plaintextDecryptionVerified=True, ciphertextMatchesLive=False,
+            plaintextComparisonMatches=False, liveChangedAfterSnapshotCount=1,
+            vaultCopySha256='0' * 64))
+        descriptor = self.package()
+        self.assertEqual(self.recover(descriptor)['format'], FORMAT)
+        self.encrypted.unlink()
+        for change in [
+            lambda x: x.update(liveChangedAfterSnapshotCount=0),
+            lambda x: x.update(snapshotAt='2026-10-11T00:00:00Z'),
+            lambda x: x.update(plaintextDecryptionVerified=False),
+        ]:
+            original = (self.source / 'vault-recovery-report.json').read_bytes()
+            self.change_json('vault-recovery-report.json', change)
+            with self.assertRaisesRegex(PackageError, 'vault_restore_unverified'):
+                self.package()
+            (self.source / 'vault-recovery-report.json').write_bytes(original)
+
     def test_wrong_key_and_existing_destination_preserve_sources(self):
         descriptor = self.package()
         with self.assertRaisesRegex(PackageError, 'age_operation_failed'):

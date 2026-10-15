@@ -1,0 +1,50 @@
+{
+  "version": "learn-build01-fresh-database-recovery/1",
+  "observed_at_utc": "2026-10-15T10:29:14Z",
+  "environment": "LIVE source, private local network-isolated restore",
+  "snapshot_at_utc": "2026-10-15T10:04:20.399639+00:00",
+  "source_export": {
+    "read_only": true,
+    "production_data_writes": false,
+    "archive_bytes": 1057045013,
+    "archive_sha256": "c65e4dc9cba1f0883d90628691fd62f0c1ed1b08eb90506b833fe6e5d18daf58",
+    "inventoried_tables": 421,
+    "private_path": ".verification-results/production-release-checkpoint-20261015-build01"
+  },
+  "isolated_restore": {
+    "state": "native_archive_restored_full_recovery_unverified",
+    "archived_copy_tables": 418,
+    "archived_copy_rows": 3844006,
+    "archived_sequences": 7,
+    "network_supplement_tables": 2,
+    "network_supplement_rows": 2652,
+    "network_supplement_sequences": 1,
+    "all_archived_copy_rows_and_sequences_match": true,
+    "table_catalog_matched": true,
+    "extension_versions_matched": true,
+    "recording_relationships": 3057,
+    "missing_storage_metadata": 0,
+    "network_isolated_container_removed": true
+  },
+  "vault": {
+    "archived_secrets_decrypted": 20,
+    "archived_vault_copy_sha256": "8c94cfce44d68bb6f531cfaabfc31a30e39e07790ce358b17887fa9230ddf2ec",
+    "archived_and_restored_copy_rows_matched": true,
+    "plaintext_persisted_or_printed": false,
+    "live_ciphertext_comparison_matched": false,
+    "live_rows_updated_after_snapshot": 1,
+    "interpretation": "The source Vault changed after the export snapshot. The first verifier correctly withheld a live-equality claim. The revised snapshot-bound verifier authenticated all 20 archived ciphertexts in an isolated restore and checked the archived/restored Vault COPY fingerprint, without claiming equality to the later live state."
+  },
+  "verification": {
+    "snapshot_bound_package_and_tamper_tests": 10,
+    "supervised_runner_tests": 10,
+    "age_distribution_sha256_verified": "e2020b073c44f692685a24d6abc378817eb81ffaaf49fd0531ef8565f767f2f5",
+    "age_binary_sha256_verified": "4012dfc2725883beafb710894af4f599b7a94f8c8e0f51f02cc96ab8df33915e"
+  },
+  "limits": [
+    "This checkpoint is local and ignored by Git. It has not yet been encrypted, copied to the independent London destination, downloaded or restored from that destination.",
+    "The archive is 16,696,811 bytes below the existing 1 GiB package ceiling before supplemental evidence and encryption; package fit is not assumed.",
+    "The export has no live source row fingerprint baseline; the isolated restore proves archive-to-restored COPY equality, catalog and extension fidelity, not a later live-database equality claim.",
+    "A database and Vault restore does not prove Auth configuration, signing keys, application runtime, external secrets, controlled capture resumption or an unattended daily schedule."
+  ]
+}

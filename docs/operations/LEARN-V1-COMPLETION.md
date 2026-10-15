@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 10:29 UTC — fresh independent database checkpoint restored locally; off-site copy pending.**
+
+### Working and verified
+
+- A new LIVE read-only snapshot produced a 1,057,045,013-byte native archive.
+  Its network-isolated restore matched 3,844,006 archived COPY rows, 2,652
+  supplemental operational rows, every archived sequence, the catalog and
+  extensions, and all 3,057 recording relationships without missing Storage
+  metadata. The disposable container was removed.
+- One Vault row changed after the snapshot, so a comparison to later LIVE state
+  correctly failed. A snapshot-bound recovery path now proves that the archived
+  and restored Vault COPY rows match and all 20 archived secrets decrypt, while
+  explicitly withholding a later-LIVE equality claim. Ten focused package and
+  tamper checks and ten runner checks pass; no key or plaintext was saved.
+- Chris reports Vercel is paid. The saved account credential returned HTTP 200
+  for both exact TEST and LIVE Vercel projects with the expected team. This
+  verifies read access; the next release still needs its own write/readback gate.
+
+### Needs finishing
+
+- Encrypt this new checkpoint, measure the exact package against the existing
+  1 GiB ceiling, copy it to the independent London destination and restore that
+  exact copy. The archive alone leaves 16,696,811 bytes before evidence and
+  encryption. Dependable daily database operation, full Auth/application
+  recovery, source/scoring acceptance and the real unattended day remain open.
+
+### Blocked externally
+
+- Chris's business sign-off follows the completed technical and operational pack.
+
+[Fresh recovery evidence](evidence/learn-build01-fresh-database-recovery-2026-10-15.json) ·
+[Vercel access readback](evidence/learn-build01-vercel-access-2026-10-15.json).
+
 **15 October, 09:58 UTC — stale completed-reply labels repaired in TEST/LIVE.**
 
 ### Working and verified
