@@ -19,6 +19,7 @@ from pathlib import Path
 
 PROJECT = 'tgbnakbxwcqjeimygroz'
 IMAGE = 'sha256:ba10e934f0a59990379f78ab9ed93926f1c291dd61a12fe4026f4202f1b89770'
+HOSTED_ARM_IMAGE_ID = 'sha256:d5cf4781c958c8155cf57150e0648469c48cd915a9ff462a032c91011b4af8fb'
 AGE_SHA256 = {
     ('Darwin', 'arm64'): '4012dfc2725883beafb710894af4f599b7a94f8c8e0f51f02cc96ab8df33915e',
     ('Linux', 'aarch64'): '41b072352f4561018949623c674d16ef704019b9108a9bbdbd21292efebfc94f',
@@ -129,7 +130,7 @@ def validate_snapshot(directory, entries, *, format_version=FORMAT):
          and restored.get('tableCatalogMatched') is True
          and restored.get('extensionVersionsMatched') is True
          and restored.get('containerRemoved') is True
-         and restored.get('imageId') == IMAGE, 'native_restore_unverified')
+         and restored.get('imageId') in (IMAGE, HOSTED_ARM_IMAGE_ID), 'native_restore_unverified')
     need(restored.get('nativeDataComparison', {}).get('state') == 'all_archived_copy_rows_and_sequences_match'
          and restored.get('networkSupplementComparison', {}).get('state') == 'all_archived_copy_rows_and_sequences_match',
          'row_comparison_unverified')

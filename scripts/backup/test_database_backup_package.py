@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from database_backup_package import (FILES, FORMAT, DAILY_FILES, DAILY_FORMAT,
-    IMAGE, PROJECT, PackageError,
+    IMAGE, HOSTED_ARM_IMAGE_ID, PROJECT, PackageError,
     call_age, canonical, describe, package_snapshot, restore_package, write_private)
 from prepare_public_database_package import prepare as prepare_public
 from restore_database_package import expected_vault_count
@@ -144,6 +144,17 @@ class PackageTests(unittest.TestCase):
         (self.destination / 'native-restored-fingerprints.json').write_bytes(canonical(altered))
         with self.assertRaisesRegex(PackageError, 'vault_ciphertext_inventory_unverified'):
             expected_vault_count(manifest, self.destination)
+
+    def test_hosted_arm_restore_image_is_accepted_but_unreviewed_image_is_rejected(self):
+        self.change_json('restore-native-comparison-report.json',
+                         lambda x: x.update(imageId=HOSTED_ARM_IMAGE_ID))
+        descriptor = self.package()
+        self.assertEqual(self.recover(descriptor)['restoreImage'], IMAGE)
+        self.encrypted.unlink()
+        self.change_json('restore-native-comparison-report.json',
+                         lambda x: x.update(imageId='sha256:' + 'f' * 64))
+        with self.assertRaisesRegex(PackageError, 'native_restore_unverified'):
+            self.package()
 
     def test_daily_package_rejects_mismatched_vault_ciphertext_fingerprints(self):
         archived = {'version': 'native-data-fingerprints/1', 'tables': [

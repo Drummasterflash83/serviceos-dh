@@ -16,6 +16,7 @@ from native_copy_fingerprints import archive_fingerprints, restored_fingerprints
 ROOT = Path('.verification-results/production-database-export-2026-10-12')
 IMAGE = 'public.ecr.aws/supabase/postgres:17.6.1.141'
 PINNED_IMAGE = 'sha256:ba10e934f0a59990379f78ab9ed93926f1c291dd61a12fe4026f4202f1b89770'
+HOSTED_ARM_IMAGE_ID = 'sha256:d5cf4781c958c8155cf57150e0648469c48cd915a9ff462a032c91011b4af8fb'
 
 
 def ident(value):
@@ -78,7 +79,9 @@ def run(*, combined_audio=False, compare_native=False, source_root=None,
         target = RestoreSandbox(image=IMAGE, private_diagnostics=evidence / 'restore-private-error',
                                 network_extension=True, root_key=vault_root_key)
         with target:
-            if target.image_id != PINNED_IMAGE:
+            # Docker Desktop reports the OCI index ID; the GitHub ARM runner
+            # reports this index's verified linux/arm64 manifest config ID.
+            if target.image_id not in (PINNED_IMAGE, HOSTED_ARM_IMAGE_ID):
                 raise RecoveryError('Production-matching image pin differs')
             report['imageId'] = target.image_id
             report['containmentBefore'] = target.verify_boundary()
