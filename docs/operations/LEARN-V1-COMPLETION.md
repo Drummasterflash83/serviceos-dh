@@ -7,6 +7,42 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 16:28 UTC — Chris clarified first scorecard priority and email-history choice.**
+
+### Working and verified
+
+- Chris chose **job progress and completion** as the first LIVE scorecard priority.
+  Job, customer and team cards have distinct purposes: customer health needs its
+  own evidence, while an actionable card should surface for the responsible team
+  member and move to the next owner only after a verified handoff. This is a
+  business direction, not approval of an unreviewed scoring formula or publication.
+- A read-only LIVE aggregate found 143,456 saved Drummonds emails: 95,039 from
+  the last year, 23,569 from years one to three, and 24,848 older than three
+  years. Of the older-than-three-year set, 18,780 were saved in the past 24
+  hours. The oldest observed year is 2015. Current Gmail list requests have no
+  date cutoff; ordinary Workspace message sync is actively traversing mail,
+  while the separate historical-backfill accounts currently report idle.
+
+### Needs finishing
+
+- Add an **OpenFolk operator-selected, tenant-scoped email import horizon** to
+  new-client onboarding, with three years suggested, one year and complete
+  available as deliberate choices, and an explicit calendar cutoff for a custom
+  choice. Freeze the choice when a mailbox traversal begins, apply it to provider
+  listing and continuation, and display both selected and observed coverage.
+  Do not silently change Drummonds' running traversal or delete saved history.
+  Current/recent evidence must carry more weight than older mail in any eventual
+  health or score calculation; older mail may still establish relationships and
+  provenance. This setting needs TEST and LIVE acceptance before claiming it works.
+- Translate the job-first card direction into evidence-backed criteria and
+  responsible-owner routing, review the draft with Chris, then publish only
+  after score inputs and recipient permissions are verified.
+
+### Blocked externally
+
+- Final business acceptance remains Chris's decision. The first eligible full
+  working-day observation is 16 October.
+
 **15 October, 16:22 UTC — first keyless daily attempt stopped at its export limit; bounded retry running.**
 
 ### Working and verified
