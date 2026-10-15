@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 10:37 UTC — exact encrypted recovery package prepared; independent transfer awaits exact approval.**
+
+### Working and verified
+
+- The fresh checkpoint was age-encrypted into 1,060,273,064 bytes, 13,468,760
+  bytes inside the existing 1 GiB limit. The package was decrypted and the
+  exact database/Vault archive restored again in an isolated local container.
+  The committed recovery fix and the concurrent QuickBooks commits were merged
+  without rewriting history; GitHub TEST checkpoint `2ac4c31a` was verified.
+
+### Needs finishing
+
+- The prepared package has no transfer attempt, independent download or off-site
+  restore receipt. The ordinary Slack campaign, source/card/scoring coverage,
+  full app/Auth recovery and full unattended day remain open.
+
+### Blocked externally
+
+- Automatic approval review rejected the exact encrypted production database
+  upload to the existing private London backup destination twice before
+  execution. It requires explicit, destination-specific user authorization for
+  this payload. No alternate transfer route was used. Chris's later business
+  sign-off remains a separate gate.
+
+[Prepared package and approval gate](evidence/learn-build01-offsite-package-prepared-2026-10-15.json).
+
 **15 October, 10:29 UTC — fresh independent database checkpoint restored locally; off-site copy pending.**
 
 ### Working and verified

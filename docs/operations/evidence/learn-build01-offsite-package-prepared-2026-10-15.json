@@ -1,0 +1,35 @@
+{
+  "version": "learn-build01-offsite-package-prepared/1",
+  "observed_at_utc": "2026-10-15T10:37:20Z",
+  "state": "encrypted_package_locally_restored_offsite_transfer_not_started",
+  "source_snapshot_at_utc": "2026-10-15T10:04:20.399639+00:00",
+  "package": {
+    "format": "serviceos-database-package/1",
+    "bytes": 1060273064,
+    "sha256": "bb8a0bbc4fd4f98a210fda18148186629c5a225bf38625e94145afc22c6be465",
+    "under_existing_1_gib_ceiling_by_bytes": 13468760,
+    "age_encrypted": true,
+    "local_decrypt_and_isolated_restore_verified": true,
+    "private_ignored_run_id": "09b2e0b7-fc70-4340-8c90-8a86eb9aa6be"
+  },
+  "intended_existing_destination": {
+    "owner": "OpenFolk",
+    "aws_account": "235099643372",
+    "region": "eu-west-2",
+    "bucket": "openfolk-serviceos-database-235099643372-eu-west-2",
+    "prefix": "projects/tgbnakbxwcqjeimygroz/",
+    "same_as_previous_verified_independent_copy": true
+  },
+  "transfer": {
+    "attempt_files": 0,
+    "verified_transfer_files": 0,
+    "uploaded": false,
+    "downloaded_from_independent_destination": false,
+    "independent_restore_verified": false,
+    "automatic_approval_review": "Rejected twice before execution. It classified this production database package as a sensitive external transfer and required exact payload-and-destination authorization in trusted user instructions despite the standing recovery goal and earlier approved destination evidence. No alternate route was used."
+  },
+  "limits": [
+    "The local recovery package is a complete verified checkpoint but not an independent off-site backup until exact transfer, download and restore pass.",
+    "Dependable unattended daily database operation and full application/Auth recovery remain unproven."
+  ]
+}
