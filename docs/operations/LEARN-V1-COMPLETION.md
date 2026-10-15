@@ -7,6 +7,37 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 14:43 UTC — Build 01 checks continue without Touch ID; Slack handoff prepared.**
+
+### Working and verified
+
+- The existing saved macOS Keychain CLI login supports production read-only
+  diagnostics without opening 1Password. The current snapshot found both
+  monitored Workspace aliases ready; email source volume rose from 137,265 at
+  14:33 to 137,667 at 14:42, and eligible missing graph nodes fell from
+  17,067 to 16,434. A separate aggregate failure readback found six
+  `source_ineligible` Workspace jobs in the last hour, all no later than 14:26,
+  before the 14:35 mailbox recovery. There were no blocked `fetch_failed`
+  checkpoints at 14:42. This is a point-in-time result, not a full-day pass.
+- The saved public Slack campaign `b54d246b` displays 160 captured channels,
+  a fixed end boundary of 13 October 2026, 09:30 UTC, and a prepared move to
+  ongoing channel and observed-reply capture. Its final application step is
+  pending the browser's action-time confirmation; no ongoing subscriptions
+  were active at the last database read. DMs remain excluded.
+
+### Needs finishing
+
+- Verify the exact Slack handoff is applied and that recurring channel/reply
+  jobs run successfully. Continue source, interaction, identity, graph, card,
+  scoring, backup and application/Auth recovery checks and observe the first
+  eligible full working day on 16 October.
+
+### Blocked externally
+
+- The browser requires action-time confirmation for the ongoing Slack scope.
+  Standing backup-reader and recurring encrypted-copy decisions remain pending.
+  Chris will review and sign off the final business result.
+
 **15 October, 14:35 UTC — held Workspace mailbox recovered by ordinary scheduled work; Build 01 remains open.**
 
 ### Working and verified
