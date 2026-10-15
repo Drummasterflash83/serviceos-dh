@@ -1,6 +1,6 @@
 # QuickBooks LIVE integration and LEARN V2 handoff
 
-Status checked 15 October 2026, 10:28 UTC. This is an operational handoff, not
+Status checked 15 October 2026, 10:41 UTC. This is an operational handoff, not
 an assertion that every Drummonds customer or job has been reconciled.
 
 ## Working and verified
@@ -19,12 +19,14 @@ an assertion that every Drummonds customer or job has been reconciled.
   record count, not a count of distinct customers or reconciled transactions.
 - The protected LIVE customer catalogue shows Commusoft and QuickBooks sources
   together, but groups them only through reviewed canonical-card links. The
-  OpenFolk operator UI now has 13 audited QuickBooks customer links to 13 cards.
-  Eight links were added on 15 October after unique exact name, email, phone and
-  recorded-address corroboration with the current Commusoft source and card.
-  Seven of those new cards were signed-in verified with both published Commusoft
+  OpenFolk operator UI now has 24 audited QuickBooks customer links to 24 cards.
+  Nineteen links were added on 15 October after unique exact name, email, phone
+  and recorded-address corroboration with the current Commusoft source and card.
+  Seven of the first eight new cards were signed-in verified with both published Commusoft
   jobs and captured QuickBooks financial records. The eighth has a reviewed
-  accounting customer identity but no direct captured finance.
+  accounting customer identity but no direct captured finance. The latest
+  eleven links have verified identity decisions but have not all been checked
+  for direct financial records; one checked card has no usable transactions.
 - Customer finance is readable only by Drummonds admins and logged OpenFolk
   support operators. The reader withholds figures when a linked QuickBooks
   identity changes or a source is conflicted. Invoices, payments and credits
@@ -42,7 +44,7 @@ an assertion that every Drummonds customer or job has been reconciled.
   subsequent six-hour unattended cycle starts and completes under the same
   3,000-request, 24-hour policy. If a fresh token also receives 401, investigate
   the Intuit grant instead of retrying indefinitely.
-- Recheck the 13 reviewed links after the scan, including source-identity drift,
+- Recheck the 24 reviewed links after the scan, including source-identity drift,
   actor audit and ordinary signed-in customer-card access. Do not silently
   auto-approve additional identities.
 - Keep the first client app's ownership visible: its Intuit registration is in
@@ -55,14 +57,16 @@ an assertion that every Drummonds customer or job has been reconciled.
 - QuickBooks and Commusoft are retained as separate provider inputs. The LIVE
   source catalogue has approximately 4,311 QuickBooks main accounts and 1,553
   Commusoft customer records. Those records are not a deduplicated customer
-  total. Only the 13 reviewed pairs above may display as combined canonical
+  total. Only the 24 reviewed pairs above may display as combined canonical
   cards today. Other sources remain browsable under their provider labels.
 - A read-only 15 October diagnostic found 576 uniquely corroborated candidate
   source pairs under conservative field rules; 552 lacked a published Commusoft
   card at that moment. These are review candidates, not authorised links. V2's
   current card-publication work may change those counts. Generic organisational
   names or address-only matches need extra evidence, even when many financial
-  records are present.
+  records are present. Two currently published candidates remain deliberately
+  unlinked: a surname-only household and an organisation with name/address but
+  no corroborating email or phone.
 - LEARN V2 should own the broader customer identity publication/review queue,
   contacts and sites, and the job-to-accounting crosswalk. Commusoft remains
   authoritative for current job codes; older QuickBooks references stay source
