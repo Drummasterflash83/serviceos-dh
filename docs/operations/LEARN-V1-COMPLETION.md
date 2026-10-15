@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 22:50 UTC — operator scheduling recovered; capture read remains intermittent.**
+
+### Working and verified
+
+- Recent LIVE PostgREST timeouts coincided with the OpenFolk scheduling and
+  capture panels. Guarded latest-job indexes were rolled back in rehearsal and
+  then installed in TEST and LIVE, preserving the existing reader definitions,
+  owners and grants. The LIVE scheduling query now uses its new index without a
+  large sort, and the signed-in Drummonds scheduling panel loads. A later
+  signed-in capture refresh also returned the first account page and company
+  totals. [Guarded release and browser evidence](evidence/learn-build01-operator-health-index-2026-10-15.json).
+
+### Needs finishing
+
+- The first LIVE capture reload still timed out. A cold measured account read
+  took 8.15 seconds and read 13,984 blocks before a warm repeat took 0.28
+  seconds; it evaluates 211 account candidates for a 50-row page. Make the
+  capture reader reliable under cold cache and investigate the scheduling
+  panel's real overdue/needs-attention pipeline entries. These indexes alone
+  do not establish unattended operation or full source coverage.
+
+### Blocked externally
+
+- None for operator-health diagnosis. Chris's business acceptance follows
+  representative technical evidence; no overnight signoff is needed.
+
 **15 October, 22:36 UTC — saved Slack freshness is visible in LIVE.**
 
 ### Working and verified

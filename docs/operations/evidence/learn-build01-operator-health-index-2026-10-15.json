@@ -1,0 +1,42 @@
+{
+  "observedAtUtc": "2026-10-15T22:50:03Z",
+  "scope": "Build 01 operator capture and scheduling reads for the Drummonds tenant",
+  "change": {
+    "migration": "supabase/migrations/20261104030000_learn_operator_health_latest_jobs.sql",
+    "sha256": "e3f9e3d5d64d29f036428756af4c8fa1dbec88af193139ef1047127fea1758c7",
+    "indexes": [
+      "learn_scheduler_latest_jobs_idx",
+      "learn_slack_health_account_latest_idx"
+    ],
+    "rowWrites": false,
+    "functionOrGrantChanges": false,
+    "captureScopeOrScheduleChanges": false
+  },
+  "release": {
+    "testRollbackRehearsalUtc": "2026-10-15T22:45:12Z",
+    "testInstalledVerifiedUtc": "2026-10-15T22:45:16Z",
+    "liveRollbackRehearsalUtc": "2026-10-15T22:45:46Z",
+    "liveInstalledVerifiedUtc": "2026-10-15T22:45:56Z",
+    "bothIndexesValidAndReadyInBothProjects": true,
+    "originalFunctionDigestsOwnershipAndGrantsPreserved": true,
+    "privateReleaseJournal": ".verification-results/learn-build01-operator-health-index/"
+  },
+  "diagnosis": {
+    "livePlatformJobsEstimatedRows": 291360,
+    "testPlatformJobsEstimatedRows": 4274,
+    "recentLivePostgrestStatementTimeoutsInTenMinutes": 13,
+    "schedulerBefore": "Latest-job lookup sorted an estimated 17,139 tenant/type rows; plan cost 86,112.01.",
+    "schedulerAfter": "Latest-job lookup uses learn_scheduler_latest_jobs_idx without a sort; plan cost 17.32.",
+    "captureAfter": "The Slack per-account lookup uses learn_slack_health_account_latest_idx. A cold measured full account read took 8,154.646 ms and read 13,984 blocks; a repeat from warm cache took 276.568 ms. Without per-account Phone evidence the same read took 113.581 ms from warm cache. The page still evaluates 211 account candidates before returning 50 rows. Cold-cache reliability is unproved."
+  },
+  "signedInBrowser": {
+    "testOperatorCaptureAndScheduling": "Loaded after TEST installation.",
+    "liveScheduling": "Loaded after LIVE installation, showing recorded phone, email and pipeline schedules and explicit overdue/needs-attention items.",
+    "liveCapture": "Initial reload timed out; a later operator Refresh capture status returned the first 50-account page and company totals, including 163,764 retained email records. This is recovery evidence, not sustained reliability proof."
+  },
+  "remaining": [
+    "Make cold-cache operator capture health reliably bounded; do not interpret an intermittent successful page as complete recovery.",
+    "Investigate and resolve distinct overdue/needs-attention pipeline statuses.",
+    "Verify sustained source capture, projection, card coverage and backup continuity before Build 01 business acceptance."
+  ]
+}
