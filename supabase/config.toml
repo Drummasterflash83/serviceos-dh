@@ -271,6 +271,12 @@ verify_jwt = false
 [functions.gmail-workspace-backfill-messages]
 verify_jwt = false
 
+# Internal-only, audited Gmail profile proof for an exact held Workspace mailbox.
+# Requires a gateway-verified service JWT, then independently confirms its
+# service role with Auth Admin. No browser CORS is offered.
+[functions.learn-email-mailbox-source-probe]
+verify_jwt = true
+
 # Generic async queue worker — invoked by cron with NO Supabase JWT, gated by the
 # `x-schedule-secret` header checked against WORKER_SECRET. Claims + dispatches
 # queued platform_jobs. Not tenant-bound (cross-tenant infrastructure).

@@ -1,0 +1,41 @@
+{
+  "version": "learn-build01-email-held-mailbox-proof/1",
+  "observed_at_utc": "2026-10-15T14:22:19Z",
+  "purpose": "Verify exact held Drummonds Workspace mailbox authority without 1Password or Touch ID and without clearing a checkpoint",
+  "test": {
+    "project_ref": "saatxzwxvdvqevbnskxy",
+    "endpoint": "learn-email-mailbox-source-probe",
+    "installed_version": 2,
+    "verify_jwt": true,
+    "existing_endpoints_preserved": true,
+    "negative_checks": ["missing_service", "missing_internal", "invalid_body", "not_held", "method_guard"],
+    "provider_requests": 0
+  },
+  "live": {
+    "project_ref": "tgbnakbxwcqjeimygroz",
+    "endpoint": "learn-email-mailbox-source-probe",
+    "installed_version": 1,
+    "verify_jwt": true,
+    "existing_endpoints_preserved": true,
+    "negative_checks": ["missing_service", "missing_internal", "invalid_body", "not_held", "method_guard"],
+    "held_mailboxes_matching_exact_block": 1,
+    "held_checkpoint_revision": 825,
+    "exact_mailbox_profile_result": "provider_verified",
+    "provider_check_audit_rows": 2,
+    "checkpoint_unchanged": true,
+    "source_provider_writes": 0,
+    "customer_content_returned": false
+  },
+  "credential_handling": {
+    "existing_saved_cli_login": true,
+    "touch_id_used": false,
+    "service_key_returned_or_logged": false,
+    "test_runtime_secret_mismatch_detected_and_fail_closed": true,
+    "final_gate": "gateway JWT verification plus an independent Supabase Auth service-role check"
+  },
+  "limitations": [
+    "This is point-in-time, mailbox-specific provider evidence; it does not clear the hold or claim a successful Gmail sync.",
+    "The exact blocked checkpoint still needs a guarded, system-labelled recovery and an ordinary scheduled completion.",
+    "A full unattended working day and Chris's business sign-off remain outstanding."
+  ]
+}

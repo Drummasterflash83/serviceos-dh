@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 14:22 UTC — exact held Workspace mailbox verified without a fingerprint; Build 01 remains open.**
+
+### Working and verified
+
+- A new internal, read-only Gmail profile diagnostic uses the saved macOS
+  Keychain CLI login, then verifies the caller's existing service role with
+  Supabase Auth. It never returns a key, mailbox address, history ID or message.
+  TEST exposed a mismatch between its runtime service-key secret and the
+  currently valid project key; the first version failed closed. The corrected
+  version passed five hosted access checks in TEST before its exact source was
+  released to LIVE. Every pre-existing Edge endpoint remained unchanged.
+- LIVE passed the same five access checks. One exact held Drummonds mailbox
+  returned `provider_verified` from Gmail. Two audit records bind the check to
+  checkpoint revision 825. The checkpoint remained blocked and unchanged;
+  no Gmail write, message read or manual resume occurred.
+
+### Needs finishing
+
+- Use this exact, recent proof for a guarded system-labelled recovery of the
+  `admin_delegation_missing` hold, then verify an ordinary scheduled capture
+  completes. The profile result alone is not a successful mailbox sync.
+- Broader source/card/scoring coverage, Slack continuation, independent daily
+  backup, full application/Auth recovery, the real unattended working day and
+  Chris's business review remain open.
+
+### Blocked externally
+
+- Standing daily backup-reader and recurring encrypted-copy approvals remain
+  pending. The mailbox's Google grant no longer appears to require an admin
+  change, based on this point-in-time profile check.
+
+[Exact mailbox proof evidence](evidence/learn-build01-email-held-mailbox-proof-2026-10-15.json).
+
 **15 October, 13:46 UTC — two legacy Workspace fetch blocks recovered by ordinary scheduled work; Build 01 remains open.**
 
 ### Working and verified
