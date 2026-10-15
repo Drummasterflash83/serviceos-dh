@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   captureHealthSignal,
   readCaptureHealth,
+  readCaptureTotals,
   type CaptureHealthRow,
 } from "./learn-operator-capture-health.ts";
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -136,6 +137,56 @@ test("reader rejects foreign tenants, mixed provider identities, duplicate rows 
   await assert.rejects(
     readCaptureHealth({ rpc: async () => ({ data: page, error: { code: "denied" } }) }, id(9)),
   );
+});
+test("separate company totals require tenant-bound, internally consistent evidence", async () => {
+  const totals = {
+    version: "learn-operator-capture-totals/1",
+    tenant_id: id(9),
+    checked_at: "2026-10-10T12:00:00Z",
+    email_retention: {
+      version: "learn-email-retention/1",
+      tenant_id: id(9),
+      scope: "company",
+      total: 2,
+      available: 1,
+      unavailable: 0,
+      unverified: 1,
+      unbound: 1,
+      archived_versions: 0,
+    },
+    phone_processing: {
+      version: "learn-phone-processing-evidence/1",
+      tenant_id: id(9),
+      scope: "company",
+      total: 2,
+      complete: 1,
+      download_pending: 0,
+      transcribe_pending: 1,
+      analyse_pending: 0,
+      needs_review: 1,
+      cooling_down: 0,
+      recent_processing: 0,
+      ready: 0,
+      waiting_provider: 0,
+      unknown_retry: 0,
+    },
+  };
+  const client = (data: unknown, error: unknown = null) => ({
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      assert.equal(name, "learn_operator_capture_totals");
+      assert.deepEqual(args, { p_tenant: id(9) });
+      return { data, error };
+    },
+  });
+  assert.equal((await readCaptureTotals(client(totals), id(9))).email_retention.total, 2);
+  for (const invalid of [
+    { ...totals, tenant_id: id(8) },
+    { ...totals, email_retention: { ...totals.email_retention, available: 2 } },
+    { ...totals, phone_processing: { ...totals.phone_processing, needs_review: 0 } },
+    { ...totals, extra: "unbounded" },
+  ])
+    await assert.rejects(readCaptureTotals(client(invalid), id(9)));
+  await assert.rejects(readCaptureTotals(client(totals, { code: "denied" }), id(9)));
 });
 
 test("Workspace diagnostic explains grant uncertainty without overriding newer, paused or future evidence", async () => {

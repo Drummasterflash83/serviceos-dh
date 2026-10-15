@@ -6,8 +6,10 @@ import { getSupabaseClient } from "@/lib/supabase";
 import {
   captureHealthSignal,
   readCaptureHealth,
+  readCaptureTotals,
   type CaptureHealthPage,
   type CaptureHealthRow,
+  type CaptureTotals,
 } from "@/lib/learn-operator-capture-health";
 import type { OperatorInputClient } from "@/lib/learn-operator-inputs";
 import { emailRetentionAction } from "@/lib/learn-email-retention";
@@ -27,9 +29,30 @@ export function OperatorCaptureHealth({
     [rows, setRows] = useState<CaptureHealthRow[]>([]),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
+    [totals, setTotals] = useState<CaptureTotals | null>(null),
+    [totalsBusy, setTotalsBusy] = useState(false),
+    [totalsError, setTotalsError] = useState(false),
     [now, setNow] = useState(Date.now());
   const generation = useRef(0),
+    totalsGeneration = useRef(0),
     working = useRef(false);
+  async function loadTotals() {
+    const ticket = ++totalsGeneration.current;
+    setTotals(null);
+    setTotalsBusy(true);
+    setTotalsError(false);
+    try {
+      const next = await readCaptureTotals(client ?? getSupabaseClient(), tenantId);
+      if (ticket === totalsGeneration.current) setTotals(next);
+    } catch {
+      if (ticket === totalsGeneration.current) {
+        setTotals(null);
+        setTotalsError(true);
+      }
+    } finally {
+      if (ticket === totalsGeneration.current) setTotalsBusy(false);
+    }
+  }
   async function load(after: string | null = null) {
     if (working.current) return;
     working.current = true;
@@ -42,6 +65,7 @@ export function OperatorCaptureHealth({
       setRows((old) => (after ? [...old, ...next.rows] : next.rows));
       setPage(next);
       setNow(Date.now());
+      if (!after) void loadTotals();
     } catch {
       if (ticket === generation.current) {
         setPage(null);
@@ -62,14 +86,19 @@ export function OperatorCaptureHealth({
     setPage(null);
     setRows([]);
     setError("");
+    setTotals(null);
+    setTotalsError(false);
     void load();
     const timer = setInterval(() => setNow(Date.now()), 30000);
     return () => {
       generation.current++;
+      totalsGeneration.current++;
       clearInterval(timer);
     };
   }, [tenantId, actorId, client]);
   const stamp = (v: string | null) => (v ? new Date(v).toLocaleString("en-GB") : "Not recorded");
+  const retention = totals?.email_retention ?? page?.email_retention;
+  const processing = totals?.phone_processing ?? page?.phone_processing;
   return (
     <section className="cp-card space-y-4" aria-labelledby="operator-capture-heading">
       <header className="flex flex-wrap justify-between gap-3">
@@ -108,7 +137,22 @@ export function OperatorCaptureHealth({
               setup before assuming capture is running.
             </p>
           )}
-          {page.email_retention ? (
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <button
+              className="cp-secondary"
+              disabled={totalsBusy}
+              onClick={() => void loadTotals()}
+            >
+              {totalsBusy ? "Checking company totals…" : "Refresh company totals"}
+            </button>
+            {totalsError && (
+              <span role="status">
+                Company-wide totals could not be verified. Account status remains available.
+              </span>
+            )}
+            {totals && <span>Company totals checked {stamp(totals.checked_at)}</span>}
+          </div>
+          {retention ? (
             <section
               className="rounded-xl border p-4 space-y-3"
               aria-label="Retained email availability"
@@ -121,12 +165,12 @@ export function OperatorCaptureHealth({
               <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
                 {(
                   [
-                    ["Stored emails", page.email_retention.total],
-                    ["Available at last observation", page.email_retention.available],
-                    ["Unavailable at last observation", page.email_retention.unavailable],
-                    ["Availability not verified", page.email_retention.unverified],
-                    ["Mailbox binding not verified", page.email_retention.unbound],
-                    ["Retained earlier versions", page.email_retention.archived_versions],
+                    ["Stored emails", retention.total],
+                    ["Available at last observation", retention.available],
+                    ["Unavailable at last observation", retention.unavailable],
+                    ["Availability not verified", retention.unverified],
+                    ["Mailbox binding not verified", retention.unbound],
+                    ["Retained earlier versions", retention.archived_versions],
                   ] as const
                 ).map(([label, count]) => (
                   <div key={label}>
@@ -135,7 +179,7 @@ export function OperatorCaptureHealth({
                   </div>
                 ))}
               </dl>
-              <p className="text-sm">{emailRetentionAction(page.email_retention)}</p>
+              <p className="text-sm">{emailRetentionAction(retention)}</p>
               <p className="text-xs text-muted-foreground">
                 Unverified mailbox bindings are included in unverified availability. Earlier
                 versions are separate from the stored-email total. This read does not contact the
@@ -144,54 +188,51 @@ export function OperatorCaptureHealth({
             </section>
           ) : (
             <p className="text-sm">
-              Retained email availability is not verified by this health response. Check the service
-              deployment before treating any missing count as zero.
+              Retained email availability is not verified yet. Refresh company totals before
+              treating any missing count as zero.
             </p>
           )}
-          {page.phone_processing &&
-            (page.phone_processing.total > 0 || rows.some((r) => r.source === "phone")) && (
-              <section
-                className="rounded-xl border p-4 space-y-3"
-                aria-label="Company phone recording processing"
-              >
-                <div>
-                  <h3 className="font-semibold">Phone recording processing</h3>
-                  <p className="text-sm">
-                    Company-wide retained recordings, across its phone accounts.
-                  </p>
-                </div>
-                <p className="font-medium">{phoneProcessingSignal(page.phone_processing).label}</p>
-                <p className="text-sm">{phoneProcessingSignal(page.phone_processing).action}</p>
-                <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-                  {(
-                    [
-                      ["Stored recordings", page.phone_processing.total],
-                      ["Audio, transcript and analysis saved", page.phone_processing.complete],
-                      ["Audio download pending", page.phone_processing.download_pending],
-                      ["Transcript pending", page.phone_processing.transcribe_pending],
-                      ["Analysis pending", page.phone_processing.analyse_pending],
-                      ["Held for review", page.phone_processing.needs_review],
-                    ] as const
-                  ).map(([label, value]) => (
-                    <div key={label}>
-                      <dt className="text-muted-foreground">{label}</dt>
-                      <dd className="font-semibold">{value.toLocaleString("en-GB")}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <p className="text-xs text-muted-foreground">
-                  Pending work: {page.phone_processing.ready.toLocaleString("en-GB")} ready ·{" "}
-                  {page.phone_processing.cooling_down.toLocaleString("en-GB")} waiting to retry ·{" "}
-                  {page.phone_processing.recent_processing.toLocaleString("en-GB")} with recent
-                  processing attempts ·{" "}
-                  {page.phone_processing.waiting_provider.toLocaleString("en-GB")} awaiting a
-                  provider ID or readiness ·{" "}
-                  {page.phone_processing.unknown_retry.toLocaleString("en-GB")} not classified.
-                  Review holds are included in the stage counts above.
+          {processing && (processing.total > 0 || rows.some((r) => r.source === "phone")) && (
+            <section
+              className="rounded-xl border p-4 space-y-3"
+              aria-label="Company phone recording processing"
+            >
+              <div>
+                <h3 className="font-semibold">Phone recording processing</h3>
+                <p className="text-sm">
+                  Company-wide retained recordings, across its phone accounts.
                 </p>
-              </section>
-            )}
-          {!page.phone_processing && rows.some((r) => r.source === "phone") && (
+              </div>
+              <p className="font-medium">{phoneProcessingSignal(processing).label}</p>
+              <p className="text-sm">{phoneProcessingSignal(processing).action}</p>
+              <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+                {(
+                  [
+                    ["Stored recordings", processing.total],
+                    ["Audio, transcript and analysis saved", processing.complete],
+                    ["Audio download pending", processing.download_pending],
+                    ["Transcript pending", processing.transcribe_pending],
+                    ["Analysis pending", processing.analyse_pending],
+                    ["Held for review", processing.needs_review],
+                  ] as const
+                ).map(([label, value]) => (
+                  <div key={label}>
+                    <dt className="text-muted-foreground">{label}</dt>
+                    <dd className="font-semibold">{value.toLocaleString("en-GB")}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="text-xs text-muted-foreground">
+                Pending work: {processing.ready.toLocaleString("en-GB")} ready ·{" "}
+                {processing.cooling_down.toLocaleString("en-GB")} waiting to retry ·{" "}
+                {processing.recent_processing.toLocaleString("en-GB")} with recent processing
+                attempts · {processing.waiting_provider.toLocaleString("en-GB")} awaiting a provider
+                ID or readiness · {processing.unknown_retry.toLocaleString("en-GB")} not classified.
+                Review holds are included in the stage counts above.
+              </p>
+            </section>
+          )}
+          {!processing && rows.some((r) => r.source === "phone") && (
             <p className="text-sm">
               Phone processing counts are not verified. Check the health service before treating the
               backlog as empty.

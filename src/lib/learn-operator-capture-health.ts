@@ -41,6 +41,13 @@ export type CaptureHealthPage = {
   phone_processing?: PhoneProcessingEvidence | null;
   email_retention?: EmailRetention | null;
 };
+export type CaptureTotals = {
+  version: "learn-operator-capture-totals/1";
+  tenant_id: string;
+  checked_at: string;
+  email_retention: EmailRetention;
+  phone_processing: PhoneProcessingEvidence;
+};
 const emailFailureActions: Record<string, string> = {
   sa_config_missing:
     "Check the existing Workspace service-account configuration in the worker's secret store before resuming capture.",
@@ -68,7 +75,8 @@ const emailFailureCodes = new Set([
   "unexpected_failure",
   "capture_failed",
 ]);
-const object = (v: any) => !!v && typeof v === "object" && !Array.isArray(v);
+const object = (v: unknown): v is Record<string, unknown> =>
+  !!v && typeof v === "object" && !Array.isArray(v);
 const uuid = (v: any) =>
   typeof v === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(v);
 const cursor = (v: any) =>
@@ -160,6 +168,31 @@ export async function readCaptureHealth(
     )
   )
     throw Error("Capture status could not be verified. Refresh or check the service deployment.");
+  return v;
+}
+/** Company totals are independent so a slow large-history read cannot hide account status. */
+export async function readCaptureTotals(
+  db: OperatorInputClient,
+  tenant: string,
+): Promise<CaptureTotals> {
+  if (!uuid(tenant)) throw Error("Invalid capture totals request.");
+  const { data, error } = await db.rpc("learn_operator_capture_totals", { p_tenant: tenant });
+  const v = data as CaptureTotals;
+  if (
+    error ||
+    !object(data) ||
+    Object.keys(data).some(
+      (k) =>
+        !["version", "tenant_id", "checked_at", "email_retention", "phone_processing"].includes(k),
+    ) ||
+    v.version !== "learn-operator-capture-totals/1" ||
+    v.tenant_id !== tenant ||
+    !date(v.checked_at) ||
+    Date.parse(v.checked_at) > Date.now() + 60000 ||
+    !validEmailRetention(v.email_retention, tenant) ||
+    !validPhoneProcessingEvidence(v.phone_processing, tenant)
+  )
+    throw Error("Company-wide capture totals could not be verified.");
   return v;
 }
 export function captureHealthSignal(
