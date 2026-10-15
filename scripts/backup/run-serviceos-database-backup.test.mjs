@@ -7,6 +7,7 @@ import { createHash } from "node:crypto";
 import { fixture } from "./test-support/s3-fixture.mjs";
 import {
   runPreparedDatabaseBackup,
+  copyPreparedDatabaseBackup,
   restoreDownloadedDatabaseBackup,
   parseDatabaseBackupArgs,
 } from "./run-serviceos-database-backup.mjs";
@@ -90,11 +91,10 @@ async function setup(t) {
   };
   return { directory, f, order, options, preparation, material };
 }
-test("operator separates writer, restore and fresh escrow reads, then records bounded acceptance", async (t) => {
+test("operator copies with separate identities and reads recovery escrow once after download", async (t) => {
   const { directory, options, order } = await setup(t);
   const result = await runPreparedDatabaseBackup(options);
   assert.deepEqual(order, [
-    "escrow-read",
     "writer-open",
     "writer-close",
     "restore-open",
@@ -109,20 +109,46 @@ test("operator separates writer, restore and fresh escrow reads, then records bo
   await assert.rejects(stat(join(directory, "active.lock")), { code: "ENOENT" });
   assert.equal((await readdir(directory)).filter((n) => n.startsWith("verified-")).length, 1);
 });
-test("operator retries only transient secure-note reads, including the post-download read", async (t) => {
+test("operator does not repeat a failed Touch ID read", async (t) => {
   const { options, order } = await setup(t);
-  const originalRead = options.escrow.read;
   let reads = 0;
   options.escrow.read = async () => {
     reads++;
-    if (reads === 1 || reads === 3)
-      throw Object.assign(new Error("masked transient"), { code: "onepassword_operation_unconfirmed" });
-    return originalRead();
+    throw Object.assign(new Error("masked transient"), { code: "onepassword_operation_unconfirmed" });
   };
-  const result = await runPreparedDatabaseBackup(options);
-  assert.equal(result.state, "independent_database_snapshot_verified");
-  assert.equal(reads, 4);
-  assert.equal(order.filter((v) => v === "escrow-read").length, 2);
+  await assert.rejects(runPreparedDatabaseBackup(options), /database_backup_not_verified/);
+  assert.equal(reads, 1);
+  assert.deepEqual(order, ["writer-open", "writer-close", "restore-open", "restore-close"]);
+});
+test("public-key routine verifies off-site copy with separate identities and no escrow read", async (t) => {
+  const { directory, options, order, preparation } = await setup(t);
+  preparation.state = "package_encrypted_source_evidence_verified_restore_pending";
+  preparation.localDatabaseRestoreVerified = false;
+  preparation.sourceDatabaseRestoreVerified = true;
+  preparation.recoveryKeysRead = false;
+  await writeFile(join(directory, "preparation.json"), JSON.stringify(preparation));
+  options.escrow.read = async () => { throw Error("Recovery key must not be read"); };
+  const result = await copyPreparedDatabaseBackup(options);
+  assert.equal(result.state, "encrypted_offsite_copy_and_download_verified_restore_pending");
+  assert.equal(result.recoveryKeyRead, false);
+  assert.equal(result.databaseRestoreVerified, false);
+  assert.deepEqual(order, ["writer-open", "writer-close", "restore-open", "restore-close"]);
+  await assert.rejects(stat(join(directory, "active.lock")), { code: "ENOENT" });
+});
+test("a later supervised drill restores the verified public copy without another transfer", async (t) => {
+  const { directory, options, order, preparation } = await setup(t);
+  preparation.state = "package_encrypted_source_evidence_verified_restore_pending";
+  preparation.localDatabaseRestoreVerified = false;
+  preparation.sourceDatabaseRestoreVerified = true;
+  preparation.recoveryKeysRead = false;
+  await writeFile(join(directory, "preparation.json"), JSON.stringify(preparation));
+  const copied = await copyPreparedDatabaseBackup(options);
+  order.length = 0;
+  const restored = await restoreDownloadedDatabaseBackup({ ...options,
+    priorAttempt: copied.attempt, publicCopy: true });
+  assert.equal(restored.state, "independent_database_snapshot_verified");
+  assert.equal(restored.sourceReceiptAttempt, copied.attempt);
+  assert.deepEqual(order, ["escrow-read", "database-restore"]);
 });
 test("operator does not retry invalid recovery material", async (t) => {
   const { options, order } = await setup(t);
@@ -133,17 +159,13 @@ test("operator does not retry invalid recovery material", async (t) => {
   };
   await assert.rejects(runPreparedDatabaseBackup(options), /database_backup_not_verified/);
   assert.equal(reads, 1);
-  assert.equal(order.length, 0);
+  assert.deepEqual(order, ["writer-open", "writer-close", "restore-open", "restore-close"]);
 });
 test("a completed separate download resumes after a transient secure-note failure without a second S3 transfer", async (t) => {
   const { directory, options, f, order } = await setup(t);
   const originalRead = options.escrow.read;
-  let reads = 0;
   options.escrow.read = async () => {
-    reads++;
-    if (reads > 1)
-      throw Object.assign(new Error("masked transient"), { code: "onepassword_operation_unconfirmed" });
-    return originalRead();
+    throw Object.assign(new Error("masked transient"), { code: "onepassword_operation_unconfirmed" });
   };
   await assert.rejects(runPreparedDatabaseBackup(options), /database_backup_not_verified/);
   const priorAttempt = (await readdir(directory))
@@ -163,13 +185,8 @@ test("a completed separate download resumes after a transient secure-note failur
 });
 test("resume rejects a changed downloaded byte before key access or restore", async (t) => {
   const { directory, options, f, order } = await setup(t);
-  const originalRead = options.escrow.read;
-  let reads = 0;
   options.escrow.read = async () => {
-    reads++;
-    if (reads > 1)
-      throw Object.assign(new Error("masked transient"), { code: "onepassword_operation_unconfirmed" });
-    return originalRead();
+    throw Object.assign(new Error("masked transient"), { code: "onepassword_operation_unconfirmed" });
   };
   await assert.rejects(runPreparedDatabaseBackup(options), /database_backup_not_verified/);
   const priorAttempt = (await readdir(directory))

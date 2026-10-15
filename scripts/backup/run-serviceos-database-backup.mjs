@@ -26,16 +26,10 @@ const need = (ok, code) => {
 };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 async function readRecoveryMaterial(escrow) {
-  for (let attempt = 1; ; attempt++) {
-    try {
-      return await escrow.read();
-    } catch (error) {
-      // Desktop CLI authorisation can fail transiently while 1Password is open.
-      // Retry only the read; never treat an invalid or changed key as transient.
-      if (error?.code !== "onepassword_operation_unconfirmed" || attempt >= 3)
-        throw error;
-    }
-  }
+  // A failed desktop authorisation is a completed human decision for this run.
+  // Automatic retries can open repeated Touch ID prompts while the operator is
+  // away. A later, explicit recovery-only run may read the escrow once again.
+  return escrow.read();
 }
 export function parseDatabaseBackupArgs(args) {
   const resume = args[0] === "--restore-downloaded-checkpoint";
@@ -96,6 +90,14 @@ function pythonStage(name, data) {
     const chunks = [];
     let length = 0,
       failed = false;
+    // An interactive stop must reach Python so its RestoreSandbox context can
+    // remove the exact isolated database container before this process exits.
+    const interrupt = () => {
+      failed = true;
+      child.kill("SIGINT");
+    };
+    process.once("SIGINT", interrupt);
+    process.once("SIGTERM", interrupt);
     // SIGINT lets Python unwind the disposable container context before exiting.
     const timeout = setTimeout(
       () => {
@@ -120,6 +122,8 @@ function pythonStage(name, data) {
     });
     child.once("close", (code) => {
       clearTimeout(timeout);
+      process.removeListener("SIGINT", interrupt);
+      process.removeListener("SIGTERM", interrupt);
       try {
         need(!failed && code === 0, "database_python_stage_unconfirmed");
         resolveResult(JSON.parse(Buffer.concat(chunks).toString("utf8").trim().split("\n").at(-1)));
@@ -170,15 +174,87 @@ async function checkedPreparation(directory, expectedArchive) {
   const preparation = await privateJson(join(directory, "preparation.json"));
   need(
     preparation.contract === "database-package-preparation/1" &&
-      preparation.state === "package_encrypted_and_decrypt_checked" &&
+      (preparation.state === "package_encrypted_and_decrypt_checked" &&
+        preparation.localDatabaseRestoreVerified === true ||
+       preparation.state === "package_encrypted_source_evidence_verified_restore_pending" &&
+        preparation.sourceDatabaseRestoreVerified === true &&
+        preparation.localDatabaseRestoreVerified === false &&
+        preparation.recoveryKeysRead === false) &&
       preparation.snapshotAt === d.snapshotAt &&
-      preparation.localDatabaseRestoreVerified === true &&
       same(preparation.descriptor, d) &&
       preparation.archive.bytes === expectedArchive.bytes &&
       preparation.archive.sha256 === expectedArchive.sha256,
     "database_initial_package_not_verified",
   );
   return d;
+}
+/** Package an already restored snapshot with the pinned public age recipient. */
+export async function preparePublicDatabaseBackup({
+  source, directory, revision, recipient, expectedArchive,
+}) {
+  need(/^[a-f0-9]{40}$/.test(revision ?? "") && /^age1[0-9a-z]{58}$/.test(recipient ?? ""),
+    "database_public_preparation_binding_invalid");
+  await privateDirectory(source);
+  await mkdir(directory, { mode: 0o700 });
+  const result = await pythonStage("prepare_public_database_package.py", {
+    source, directory, agePath: AGE, revision, ageRecipient: recipient,
+  });
+  need(result.state === "package_encrypted_source_evidence_verified_restore_pending" &&
+    result.recoveryKeysRead === false, "database_public_preparation_unconfirmed");
+  const d = await checkedPreparation(directory, expectedArchive);
+  need(d.recipient === recipient, "database_recipient_changed");
+  return { state: result.state, encryptedBytes: d.bytes, recoveryKeyRead: false };
+}
+/** Routine storage verification. No recovery key or database restore is used. */
+export async function copyPreparedDatabaseBackup({
+  directory,
+  expectedArchive = ARCHIVE,
+  openWriter = () => transport("Writer"),
+  openRestore = () => transport("Restore"),
+  now = Date.now,
+}) {
+  expectedArchive = structuredClone(expectedArchive);
+  need(Number.isSafeInteger(expectedArchive.bytes) && expectedArchive.bytes > 0 &&
+    expectedArchive.bytes <= 1024 ** 3 && /^[a-f0-9]{64}$/.test(expectedArchive.sha256 ?? ""),
+  "database_expected_archive_invalid");
+  await privateDirectory(directory);
+  const lockPath = join(directory, "active.lock");
+  const lock = await open(lockPath, "wx", 0o600);
+  const attempt = randomUUID();
+  let writer, reader, stage = "preflight";
+  try {
+    const d = await checkedPreparation(directory, expectedArchive);
+    stage = "copy";
+    writer = await openWriter();
+    const copied = await uploadDatabasePackage(join(directory, "snapshot.age"), d, writer, { now });
+    writer.close(); writer = undefined;
+    await saveNew(join(directory, `receipt-${attempt}.json`), copied.receipt);
+    stage = "download";
+    reader = await openRestore();
+    await downloadDatabasePackage(copied.receipt, join(directory, `download-${attempt}.age`), reader, { now });
+    reader.close(); reader = undefined;
+    const verified = {
+      state: "encrypted_offsite_copy_and_download_verified_restore_pending",
+      attempt, snapshotAt: d.snapshotAt, encryptedBytes: d.bytes,
+      encryptedSha256: d.sha256, independentStorageVerified: true,
+      recoveryKeyRead: false, databaseRestoreVerified: false,
+      dailyOperationVerified: false, fullServiceRecoveryVerified: false,
+      productionWrites: false,
+    };
+    await saveNew(join(directory, `copy-verified-${attempt}.json`), verified);
+    return verified;
+  } catch (error) {
+    await saveNew(join(directory, `failed-${attempt}.json`), {
+      state: "database_offsite_copy_not_verified", stage,
+      code: error instanceof RecordingBackupError ? error.code : "database_runner_unconfirmed",
+      restoreInspectionRequired: false,
+    });
+    throw new RecordingBackupError("database_offsite_copy_not_verified");
+  } finally {
+    writer?.close(); reader?.close();
+    await lock.close();
+    await unlink(lockPath);
+  }
 }
 export async function runPreparedDatabaseBackup({
   directory,
@@ -203,8 +279,6 @@ export async function runPreparedDatabaseBackup({
   const attempt = randomUUID();
   try {
     const d = await checkedPreparation(directory, expectedArchive);
-    const material = await readRecoveryMaterial(escrow);
-    need(material.ageRecipient === d.recipient, "database_recipient_changed");
     await saveNew(join(directory, `attempt-${attempt}.json`), {
       state: "started",
       at: new Date(now()).toISOString(),
@@ -224,10 +298,11 @@ export async function runPreparedDatabaseBackup({
     await downloadDatabasePackage(copied.receipt, downloaded, reader, { now });
     reader.close();
     reader = undefined;
-    // Read back from the separate secret store again after independent download.
+    // The public recipient suffices for copy/download. Unlock the recovery key
+    // once, only after the independently downloaded bytes have been verified.
     stage = "escrow-readback";
     const saved = await readRecoveryMaterial(escrow);
-    need(same(saved, material), "database_recovery_material_changed");
+    need(saved.ageRecipient === d.recipient, "database_recipient_changed");
     stage = "restore";
     const result = await recover({
       encryptedPath: downloaded,
@@ -276,6 +351,7 @@ export async function runPreparedDatabaseBackup({
 export async function restoreDownloadedDatabaseBackup({
   directory,
   priorAttempt,
+  publicCopy = false,
   escrow,
   recover = (data) => pythonStage("restore_database_package.py", data),
   expectedArchive = ARCHIVE,
@@ -288,10 +364,20 @@ export async function restoreDownloadedDatabaseBackup({
   let stage = "preflight", completed = false;
   try {
     const d = await checkedPreparation(directory, expectedArchive);
-    const failure = await privateJson(join(directory, `failed-${priorAttempt}.json`));
-    need(failure.state === "database_backup_not_verified" &&
-      failure.stage === "escrow-readback" && failure.restoreInspectionRequired === false,
-    "database_prior_download_not_confirmed");
+    if (publicCopy) {
+      const copy = await privateJson(join(directory, `copy-verified-${priorAttempt}.json`));
+      need(copy.state === "encrypted_offsite_copy_and_download_verified_restore_pending" &&
+        copy.attempt === priorAttempt && copy.snapshotAt === d.snapshotAt &&
+        copy.encryptedBytes === d.bytes && copy.encryptedSha256 === d.sha256 &&
+        copy.independentStorageVerified === true && copy.recoveryKeyRead === false &&
+        copy.databaseRestoreVerified === false,
+      "database_prior_download_not_confirmed");
+    } else {
+      const failure = await privateJson(join(directory, `failed-${priorAttempt}.json`));
+      need(failure.state === "database_backup_not_verified" &&
+        failure.stage === "escrow-readback" && failure.restoreInspectionRequired === false,
+      "database_prior_download_not_confirmed");
+    }
     const receipt = await privateJson(join(directory, `receipt-${priorAttempt}.json`));
     need(receipt.contract === "database-backup-receipt/1" &&
       same(receipt.destination, databaseBackupBinding) &&

@@ -449,7 +449,28 @@ The existing local binding file is
 `database-escrow-binding.json` commands are examples, not an existing local file.
 Routine unattended backup encryption should need only the public recipient and
 scoped Writer access. Private recovery material belongs in a separate restore
-workflow; that unattended database workflow remains to be implemented and tested.
+workflow. The public recipient is now pinned in
+`infrastructure/database-backup/public-recipient.json`. For an already exported,
+locally restored and Vault-verified checkpoint, the separate
+`scripts/backup/run-public-database-backup.mjs` runner has `--prepare-checkpoint`
+and `--copy-checkpoint` stages. These stages encrypt with the public recipient,
+then use the existing scoped Writer and Restore identities to verify the
+off-site ciphertext and independent download. They never read the private
+recovery key or claim that this new package has been restored. Its actual daily
+schedule, alerting and a fresh real-provider run still need acceptance.
+
+A later `--restore-copy-checkpoint` drill takes the exact copy attempt ID and
+the existing private 1Password binding path. It validates that download and
+receipt before asking for one private-key read, then runs the isolated database
+and Vault restore. It makes no new provider export or off-site transfer. The
+routine copy can therefore run unattended while recovery remains supervised.
+
+The supervised recovery runner now reads 1Password only once, after the
+downloaded ciphertext is verified, and a failed desktop authorisation does not
+trigger another Touch ID prompt in the same run. Stopping a Python restore
+forwards interruption so the isolated container can clean up. The 15 October
+interrupted drill was inspected: its offline container and decrypted working
+copy were removed; the original encrypted object and download remain intact.
 
 ### Database object transfer deadline — 13 October
 

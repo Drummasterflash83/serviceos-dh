@@ -27,6 +27,10 @@ override a later release observation. No requirement is silently deferred.
   were preserved. The signed-in LIVE operator view showed 130,895 stored emails
   and 3,075 stored recordings, including six held for review. The totals carry
   their own observation time; missing totals do not hide account cards.
+- The backup runner now has a public-key-only preparation/copy path for an
+  already verified database snapshot. Synthetic package and separate-role copy
+  tests pass without a recovery-key read. The supervised restore path now asks
+  1Password once after download and does not retry a failed Touch ID prompt.
 
 ### Needs finishing
 
@@ -36,16 +40,23 @@ override a later release observation. No requirement is silently deferred.
   recordings are held for review. Scheduling status now loads but reports
   overdue Gmail OAuth and recommendations plus signal, identity and graph work
   needing attention. These are operational gaps, not a completed green state.
+- The public-key path has not yet completed an actual fresh daily off-site run
+  or alert check. The current off-site restore got past the 1Password read and
+  started in an offline container, but was interrupted before verification.
+  Its container and decrypted working copy were removed. This is not a passed
+  isolated restore or full application/Auth recovery.
 - Source-to-interaction, graph, card and scoring gaps, ongoing eligible Slack
   channel/reply capture, voicemail source/route holds, daily backup, full
   application/Auth recovery and signed-in business acceptance remain open.
-  The already downloaded off-site database package has not passed its isolated
-  restore because the 1Password recovery-key read did not complete.
+  The already downloaded latest off-site database package has not passed its
+  isolated restore: the key read succeeded, but the drill was interrupted
+  before the database comparison completed.
 
 ### Blocked externally
 
-- The off-site restore needs a Touch ID approval while its current CLI process
-  is running. Chris's business sign-off follows the technical acceptance pack.
+- A supervised off-site restore still needs one private-key unlock at the start
+  of that actual recovery drill. Chris's business sign-off follows the
+  technical acceptance pack.
 
 [Mailbox recovery and operator-health evidence](evidence/learn-build01-mailbox-and-health-recovery-2026-10-15.json) ·
 [separate company-totals backend](evidence/learn-build01-separated-capture-totals-2026-10-15.json).

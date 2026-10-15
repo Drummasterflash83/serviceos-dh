@@ -9,6 +9,7 @@ import unittest
 from pathlib import Path
 from database_backup_package import (FILES, FORMAT, IMAGE, PROJECT, PackageError,
     call_age, canonical, describe, package_snapshot, restore_package, write_private)
+from prepare_public_database_package import prepare as prepare_public
 
 AGE = Path('/private/tmp/serviceos-age-1.3.2/age')
 KEYGEN = AGE.with_name('age-keygen')
@@ -97,6 +98,23 @@ class PackageTests(unittest.TestCase):
             self.assertEqual((self.destination / name).stat().st_mode & 0o777, 0o600)
         self.assertEqual(self.encrypted.stat().st_mode & 0o777, 0o600)
         self.assertFalse(list(self.root.glob('.database-*')))
+
+    def test_public_only_preparation_needs_no_private_key_and_labels_restore_pending(self):
+        directory = self.root / 'routine'
+        directory.mkdir(mode=0o700)
+        proof = prepare_public({'source': str(self.source), 'directory': str(directory),
+            'ageRecipient': self.recipient, 'revision': REVISION, 'agePath': str(AGE)})
+        self.assertEqual(proof['state'],
+            'package_encrypted_source_evidence_verified_restore_pending')
+        self.assertFalse(proof['recoveryKeysRead'])
+        self.assertFalse(proof['localDatabaseRestoreVerified'])
+        self.assertEqual(proof['archive'], describe(self.source / 'database.dump'))
+        self.assertEqual(json.loads((directory / 'descriptor.json').read_text()),
+                         proof['descriptor'])
+        self.assertNotIn(self.identity, (directory / 'snapshot.age').read_bytes())
+        manifest = restore_package(directory / 'snapshot.age', self.destination,
+            expected=proof['descriptor'], identity=self.identity, age=AGE)
+        self.assertEqual(manifest['files'], {n: describe(self.source / n) for n in FILES})
 
     def test_post_snapshot_vault_change_accepts_archived_decryption_only_with_bound_proof(self):
         self.change_json('vault-recovery-report.json', lambda x: x.update(
