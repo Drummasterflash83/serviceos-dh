@@ -1,0 +1,68 @@
+{
+  "version": "learn-build01-working-day-and-test-preview/1",
+  "observedAtUtc": "2026-10-15T08:20:52Z",
+  "scope": "Dated read-only LIVE observations, today's separate scheduled local backup, and an unpromoted protected TEST frontend preview. This is not full-day or business acceptance.",
+  "liveTenant": "00000000-0000-0000-0000-000000000001",
+  "scheduledLocalBackup": {
+    "runStartedAtUtc": "2026-10-15T07:59:23Z",
+    "lastVerifiedAtUtc": "2026-10-15T08:18:39.377Z",
+    "healthState": "observed_inventory_verified",
+    "latestAttemptState": "succeeded",
+    "phoneFiles": 3044,
+    "phoneRecordingRows": 3038,
+    "phoneNewObjects": 20,
+    "voicemailSourceFiles": 255,
+    "voicemailAudioFiles": 255,
+    "missingObjectReferences": 0,
+    "monthlyChecks": "The separate recording and voicemail restore checks remain current; this daily run did not repeat them.",
+    "limits": "The three inventories have different observation times. The health report says backupComplete=false because this is an observed inventory, not proof of future arrivals or a full application restore. The Mac and Codex runner must remain awake."
+  },
+  "liveReadbacks": [
+    {
+      "atUtc": "2026-10-15T08:07:33.407Z",
+      "eligibleEmailWithoutInteraction": 3804,
+      "phoneCalls": 4529,
+      "phoneInteractions": 4529,
+      "eligibleMissingGraph": 27022,
+      "activeCards": 3672,
+      "projectedCards": 3626
+    },
+    {
+      "atUtc": "2026-10-15T08:19:51.129Z",
+      "eligibleEmailWithoutInteraction": 4037,
+      "phoneCalls": 4529,
+      "phoneInteractions": 4529,
+      "eligibleMissingGraph": 25984,
+      "activeCards": 3680,
+      "projectedCards": 3643
+    }
+  ],
+  "projectionObservation": {
+    "ordinaryMixedJob": "A queued 200-row mixed continuation entered retrying after projection_inventory_unconfirmed at 08:16 UTC; its next ordinary retry was due 08:31 UTC. No manual retry was counted.",
+    "lastConfirmedMixedPage": "A prior ordinary mixed page selected and published 200 Email interactions before its durable review-required terminal state.",
+    "currentServiceProbe": "At 08:20 UTC, the exact service-role mixed pending RPC returned 200 candidates in 4.8 seconds and the review count returned 4,412 in 0.7 seconds. An intermittent failure remains possible.",
+    "phoneScheduledJobs": "Separate Phone jobs returned zero selected and preserved 4,399 durable review holds. Their dead-letter label is not a new source-loss claim.",
+    "unattendedPass": false
+  },
+  "testFrontendPreview": {
+    "project": "serviceos-learn-test",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "repository": "Drummasterflash83/serviceos-dh",
+    "gitConnection": "Linked through the Vercel project's existing GitHub integration after disabling and reloading its automatic custom-production-domain assignment setting.",
+    "autoAssignCustomProductionDomains": false,
+    "candidateCommit": "67e96e108d2f26bda74c225c3bfad836ce6a1d6c",
+    "candidateParent": "c3ed81d7c433c9f77337c4eb18f7bdb838be3e5d",
+    "diff": "One allowlisted error code in the existing Slack held-page recovery control.",
+    "deploymentId": "HGAqMTkH6U1w7otERV9EM35TR1aw",
+    "environment": "Preview",
+    "state": "READY",
+    "protectedPreviewHost": "serviceos-learn-test-a9s8f61c0-allkin.vercel.app",
+    "stableAliasesPromoted": false,
+    "notYetVerified": [
+      "Rendered TEST backend binding and signed-in held-page retry",
+      "Exact stable TEST alias and protection readback after promotion",
+      "Matching LIVE candidate release and second held-page recovery"
+    ]
+  },
+  "acceptance": "Build 01 remains IN PROGRESS. Full 09:00–17:00 Europe/London unattended observation, broader V1 coverage, full application/Auth recovery, and Chris's business sign-off remain open."
+}

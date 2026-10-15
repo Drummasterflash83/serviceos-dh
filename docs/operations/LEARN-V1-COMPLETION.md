@@ -7,6 +7,41 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 08:20 UTC — scheduled files verified; TEST exact-retry candidate built but not promoted.**
+
+### Working and verified
+
+- The independent 09:00 BST local recording/voicemail run completed at 09:18
+  BST. Its health readback verified 3,044 Phone files and 255 matched voicemail
+  email/audio pairs, with zero missing references in those inventories. Monthly
+  restore checks remain current. This is one successful scheduled day, not proof
+  that the Mac stays awake or that the whole application can be restored.
+- The separate TEST Vercel project is linked to the already approved GitHub
+  repository. Automatic production-domain assignment was disabled and read back;
+  the one-line exact Slack retry candidate built READY as a protected Preview.
+  Stable TEST aliases were not promoted.
+- LIVE Phone calls and interactions both reached 4,529. The eligible graph gap
+  fell from 27,022 at 08:07 UTC to 25,984 at 08:19 UTC.
+
+### Needs finishing
+
+- The eligible Email gap rose from 3,804 to 4,037 over those readbacks. A mixed
+  continuation entered retrying after an intermittent inventory error, due
+  again at 08:31 UTC. Its prior 200-row page was committed; the new retry is
+  not yet an unattended recovery success. Full-day operation remains open.
+- Verify the TEST preview's rendered backend binding and signed-in held-page
+  journey before assigning stable aliases. Complete the matching LIVE release,
+  second held Slack page, broad V1 source/card/scoring acceptance, full app/Auth
+  recovery, and Chris's business review.
+
+### Blocked externally
+
+- The Vercel account shows an overdue-payment warning. It has not stopped the
+  protected TEST preview build, but could affect future releases; no payment
+  was made. Normal Vercel CLI device authorisation is still unavailable.
+
+[Scheduled-run, LIVE readback and TEST preview evidence](evidence/learn-build01-working-day-and-test-preview-2026-10-15.json).
+
 **15 October, 07:46 UTC — ordered Email projection has resumed in ordinary LIVE work.**
 
 ### Working and verified
