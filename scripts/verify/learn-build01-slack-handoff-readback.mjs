@@ -14,6 +14,15 @@ const query = `select
   x.created_at closure_at,
   x.snapshot->>'complete' historical_complete,
   x.snapshot->>'threadsComplete' historical_threads_complete,
+  (select count(*)::int from public.slack_history_campaign_requests r
+    cross join lateral jsonb_array_elements(r.receipt->'subscriptions') entry
+    where r.id=x.request_id and r.tenant_id=h.tenant_id)
+    recorded_handoff_subscriptions,
+  (select count(*)::int from public.slack_history_campaign_requests r
+    cross join lateral jsonb_array_elements(r.receipt->'subscriptions') entry
+    where r.id=x.request_id and r.tenant_id=h.tenant_id
+      and (entry->>'start')::timestamptz=h.ends_at
+      and entry->>'includeThreads'='true') recorded_cutoff_and_reply_matches,
   (select count(*)::int from public.slack_history_campaign_channels m
     where m.campaign_id=h.id and m.tenant_id=h.tenant_id) campaign_channels,
   (select count(*)::int from public.slack_history_campaign_channels m
@@ -25,7 +34,7 @@ const query = `select
     join public.slack_recurring_channels s on s.account_id=m.account_id
       and s.tenant_id=m.tenant_id
     where m.campaign_id=h.id and m.tenant_id=h.tenant_id
-      and s.next_start=h.ends_at) subscriptions_at_saved_cutoff,
+      and s.next_start>=h.ends_at) subscriptions_at_or_past_cutoff,
   (select count(*)::int from public.slack_history_campaign_channels m
     join public.slack_recurring_channels s on s.account_id=m.account_id
       and s.tenant_id=m.tenant_id
@@ -71,8 +80,9 @@ if (!response.ok) throw Error(`Slack handoff readback failed (HTTP ${response.st
 const rows = await response.json();
 const row = rows?.[0];
 if (!Array.isArray(rows) || rows.length !== 1 || !row ||
-    !["campaign_channels", "enabled_channel_and_reply_subscriptions",
-      "subscriptions_at_saved_cutoff", "channels_with_recurring_window",
+    !["campaign_channels", "recorded_handoff_subscriptions",
+      "recorded_cutoff_and_reply_matches", "enabled_channel_and_reply_subscriptions",
+      "subscriptions_at_or_past_cutoff", "channels_with_recurring_window",
       "channels_advanced_past_cutoff", "cutoff_regressions",
       "retained_campaign_bindings"]
       .every(key => Number.isInteger(row[key]) && row[key] >= 0))

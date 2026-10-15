@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**15 October, 15:02 UTC — 160-channel Slack handoff verified in LIVE; Build 01 remains open.**
+**15 October, 15:19 UTC — all 160 Slack recurring windows started; source identity remains evidence-gated.**
 
 ### Working and verified
 
@@ -41,11 +41,31 @@ override a later release observation. No requirement is silently deferred.
   read found 160 of 160 channel subscriptions enabled with observed replies,
   all starting at the saved 13 October 2026, 09:30 UTC cutoff. The historical
   campaign is closed as `ongoing`, with no remaining campaign binding or
-  cutoff regression. By 15:02, 20 recurring channel windows existed; one had
-  succeeded, one was running and 18 were queued. This proves handoff and
-  initial scheduler dispatch, not complete recurring-provider acceptance.
+  cutoff regression. By 15:16, the ordinary scheduler had created all 160
+  first recurring windows: 16 channel jobs had succeeded and 144 were queued.
+  This proves complete first-window dispatch, not complete recurring-provider
+  or observed-reply acceptance. The immutable handoff request independently
+  records 160 exact cutoff/reply approvals; at 15:19 nine channels had already
+  advanced their next start beyond that cutoff with zero regression.
   Individual and group DMs remain excluded.
   [Handoff readback](evidence/learn-build01-slack-handoff-2026-10-15.json).
+- The noninteractive hourly working-day observer now includes the exact
+  recurring Slack scope and reply job type. A separate LIVE source/status
+  readback found 84,923 enriched Email interactions, 30,127 still ready for
+  identity work and 21,226 held for review. Of the Email review holds,
+  19,830 are `company_ambiguous`; 508 lack a contact, 836 have unverified
+  email and 52 have ambiguous people. Slack has 35,036 `direction_unverified`
+  identity holds. These are explicit evidence restrictions, not silently linked
+  customer conversations. The latest identity job was retrying, while recent
+  identity batches had recorded review-required outcomes; trend and recovery
+  still need observation. The single active identity retry has a saved next run
+  at 15:39:49 UTC after attempt four of five. Its tenant job key prevents a
+  second concurrent identity batch, so the ready queue cannot be called
+  unattended-clearing until that ordinary retry settles. Four older identity
+  inventory jobs remain terminal, separate from 1,141 identity jobs ending in
+  a review-required outcome.
+  [Coverage distribution](evidence/learn-build01-interaction-coverage-2026-10-15.json) ·
+  [queue timing](evidence/learn-build01-identity-queue-2026-10-15.json).
 
 ### Needs finishing
 
@@ -53,6 +73,9 @@ override a later release observation. No requirement is silently deferred.
   later intervals. Continue source, interaction, identity, graph, card,
   scoring-policy, backup and application/Auth recovery checks and observe the first
   eligible full working day on 16 October.
+- Resolve the ready Email identity queue through ordinary bounded work and
+  review ambiguous cases using their source evidence. Do not infer company or
+  person links merely to clear the counts.
 
 ### Blocked externally
 

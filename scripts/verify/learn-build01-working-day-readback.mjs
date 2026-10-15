@@ -42,6 +42,12 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
     (select count(*)::int from public.interactions where tenant_id='${TENANT}'::uuid and source_table='phone_calls') phone_interactions,
     (select count(*)::int from public.slack_messages where tenant_id='${TENANT}'::uuid) slack_messages,
     (select count(*)::int from public.interactions where tenant_id='${TENANT}'::uuid and source_table='slack_messages') slack_interactions,
+    (select count(*)::int from public.interactions where tenant_id='${TENANT}'::uuid
+      and source_table='email_messages' and processing_status='ready') email_identity_ready,
+    (select count(*)::int from public.interactions where tenant_id='${TENANT}'::uuid
+      and source_table='email_messages' and processing_status='identity_review') email_identity_review,
+    (select count(*)::int from public.interactions where tenant_id='${TENANT}'::uuid
+      and source_table='slack_messages' and processing_status='identity_review') slack_identity_review,
     (select count(*)::int from public.interactions where tenant_id='${TENANT}'::uuid and processing_status in('ready','enriched')) eligible_interactions,
     (select count(*)::int from public.interactions i where i.tenant_id='${TENANT}'::uuid
       and i.processing_status in('ready','enriched') and not exists(select 1 from public.graph_nodes n
