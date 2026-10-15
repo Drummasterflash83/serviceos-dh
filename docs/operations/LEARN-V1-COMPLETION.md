@@ -7,6 +7,33 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 23:44 UTC — Graph history selector bounded; ordinary retry pending.**
+
+### Working and verified
+
+- The fourth ordinary Graph history-drain attempt at 23:28 coincided with a
+  PostgreSQL `57014` timeout in the missing-interaction selector. A LIVE
+  read-only plan showed the old query probing the already-projected prefix
+  before finding the next page. A materialised tenant-scoped source-key
+  comparison, with a 25-second function limit, preserved the exact results
+  for 1, 50 and 200 records in an isolated restored production archive.
+  TEST and LIVE rollback rehearsals and installations preserved the function
+  owner and service-only grant. A LIVE read-only before/after comparison
+  returned the same 200 source identities. No provider or source writes occurred.
+  [Sanitised release evidence](evidence/learn-build01-graph-selector-bounded-2026-10-15.json).
+
+### Needs finishing
+
+- The timed-out job's next ordinary retry is due around 00:28 UTC. The code
+  and matching result do not prove that unattended Graph catch-up has resumed;
+  observe the retry, terminal state and source-to-node gap before closing this
+  reliability issue. The change avoids repeated prefix probes but still scans
+  the eligible tenant set, so later representative performance matters.
+
+### Blocked externally
+
+- No user or provider action is required for this retry observation.
+
 **15 October, 23:28 UTC — three exact Commusoft jobs reviewed and linked.**
 
 ### Working and verified

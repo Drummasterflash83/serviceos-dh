@@ -1,0 +1,24 @@
+{
+  "version": "learn-build01-graph-selector-bounded/1",
+  "observed_at_utc": "2026-10-15T23:44:27.497Z",
+  "trigger": "A history-drain Graph job's fourth ordinary attempt failed at 23:28 UTC. PostgreSQL logs show SQLSTATE 57014 at the missing-interaction selector. The worker's generic error text did not identify that stage.",
+  "isolated_rehearsal": {
+    "source": "Pinned local production archive in network-disabled disposable PostgreSQL container",
+    "before_after_exact_result_sets_equal_at_limits": [1, 50, 200],
+    "service_role_only_execute_preserved": true,
+    "container_removed": true,
+    "source_or_production_writes": false
+  },
+  "release": {
+    "package_sha256": "2f47426c98d8255aa79c6f042cd7b49e69433ebea45029f196c8693b1a2dd742",
+    "test": "Rolled-back rehearsal then installed with owner and ACL preserved",
+    "live": "Rolled-back rehearsal then installed with owner and ACL preserved",
+    "installed_function_digest_test_and_live": "2c6d16eb311d2caff7517284729ababb",
+    "function_statement_timeout": "25s",
+    "live_prior_and_installed_page_count": 200,
+    "live_exact_identity_set_equal": true,
+    "provider_requests": 0,
+    "source_data_writes": false
+  },
+  "interpretation": "The selector no longer probes an ever-growing already-projected prefix for each page. Exact output and service-only access are verified. The 23:28 retry occurred before this release; ordinary retry success and backlog convergence remain to be observed."
+}
