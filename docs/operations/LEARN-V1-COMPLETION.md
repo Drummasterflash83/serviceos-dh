@@ -7,6 +7,31 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 18:34 UTC — Email source backlog grew while all-source projection awaited retry.**
+
+### Working and verified
+
+- The current LIVE projection inventory returned 200 distinct Email candidates
+  with valid revisions in 4.1 seconds inside a read-only transaction. At 18:31,
+  3,850 of 3,851 active cards had evidence projections and none of the one
+  missing card was over one hour old. These are instant checks.
+
+### Needs finishing
+
+- 7,621 eligible saved Email messages lacked an interaction and any projection
+  receipt; 3,128 of them had arrived within the previous hour. The active
+  all-source projection job was retrying `projection_inventory_unconfirmed`,
+  attempt four of five, with its next ordinary run due 18:49 UTC. This read-only
+  inventory result cannot be substituted for that worker outcome. Observe the
+  retry and reduce the backlog without disguising the wait as unattended
+  processing. [Lag evidence](evidence/learn-build01-source-card-lag-2026-10-15.json).
+- Continue identity, graph, Slack, backup, score and application/Auth gates.
+
+### Blocked externally
+
+- The first full unattended working-day window and Chris's business sign-off
+  remain outstanding.
+
 **15 October, 18:28 UTC — job-first score has source status, not verified timing.**
 
 ### Working and verified

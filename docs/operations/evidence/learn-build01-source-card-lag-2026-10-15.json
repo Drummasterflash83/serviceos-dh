@@ -1,0 +1,39 @@
+{
+  "version": "learn-build01-source-card-lag/1",
+  "observedAt": "2026-10-15T18:33:45Z",
+  "environment": "LIVE",
+  "method": "Tenant-scoped read-only source, receipt, job and bounded pending-function aggregates",
+  "emailProjection": {
+    "eligibleSavedEmailsWithoutInteraction": 7621,
+    "withoutProjectionReceipt": 7621,
+    "createdWithinPreviousHour": 3128,
+    "olderThanOneDay": 0,
+    "oldestSavedSourceAt": "2026-10-15T05:44:03Z"
+  },
+  "allSourceProjectionJob": {
+    "state": "retrying",
+    "code": "projection_inventory_unconfirmed",
+    "attempts": 4,
+    "maximumAttempts": 5,
+    "nextOrdinaryRetryAt": "2026-10-15T18:49:09Z",
+    "lastAttemptAt": "2026-10-15T17:49:09Z",
+    "manualRescuePerformed": false
+  },
+  "independentInventoryRecheck": {
+    "observedAt": "2026-10-15T18:33:45Z",
+    "elapsedMs": 4135,
+    "returned": 200,
+    "email": 200,
+    "phone": 0,
+    "distinctSources": 200,
+    "invalidRevisions": 0,
+    "transactionReadOnly": true
+  },
+  "cardProjection": {
+    "activeCards": 3851,
+    "projectedCards": 3850,
+    "unprojectedOlderThanOneHour": 0
+  },
+  "productionWrites": false,
+  "interpretation": "The current inventory query is healthy, but this is not proof that the ordinary 18:49 retry will settle. New Email source arrival outpaced projection while the all-source job waited; cards already created remain fresh at this instant."
+}
