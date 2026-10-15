@@ -34,7 +34,9 @@ override a later release observation. No requirement is silently deferred.
   761 and 777 to 779, with one system-labelled automatic claim and a
   successful Workspace sync for each. Both are ready again. This is real
   unattended recovery after the release, without a fingerprint or manual
-  rescue.
+  rescue. The first 14:05 scheduler interval after the tightened guard found
+  both still ready with later successful runs, zero unconfirmed enqueues and
+  26 acknowledged duplicate active jobs.
 
 ### Needs finishing
 
@@ -52,6 +54,10 @@ override a later release observation. No requirement is silently deferred.
   holds, 55,731 identity review holds, and still returned bounded pending
   projection and identity work. These are not failed processing receipts to
   clear blindly; attribution and scoring must remain evidence-gated.
+- The existing hourly working-day monitor now uses the noninteractive
+  read-only checks and explicitly avoids 1Password/Touch ID. Friday 16 October,
+  09:00–17:00 Europe/London is the first eligible full-day observation window
+  after today's recovery releases; it has not yet elapsed.
 
 ### Blocked externally
 

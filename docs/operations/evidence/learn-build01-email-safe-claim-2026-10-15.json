@@ -1,6 +1,6 @@
 {
   "contract": "learn-build01-email-safe-claim-release/1",
-  "observedAt": "2026-10-15T14:00:31.144139Z",
+  "observedAt": "2026-10-15T14:05:23.706539Z",
   "scope": "Two pre-release blocked Drummonds Workspace recent-mail checkpoints; no provider writes or message content read in the verification",
   "gitTestCheckpoint": "ed911c48133942f6f6e6c1a5a1e9349d1a17d3f5",
   "failureWindowGitTestCheckpoint": "6ffa3107b1669a14488dd8153c02c2bdcc1b4e6a",
@@ -50,10 +50,12 @@
     "delegationHold": { "count": 1, "checkpointRevision": 825, "accountStatus": "active_dwd", "mailboxStatus": "active", "syncEnabled": true, "directoryIdentityConflict": false, "connectionStatus": "active", "sameConnectionSuccessesInTwoHours": 454, "exactMailboxProviderGrantRechecked": false },
     "postCorrectionMailboxes": "both remained ready with one audited automatic claim and subsequent successful scheduled runs; revisions 767 and 785 at 14:00:31 UTC",
     "postCorrectionWorkspaceQueue": { "queued": 26, "running": 0, "oldestQueuedAgeSeconds": 267 },
+    "firstPostCorrectionSchedule": { "startedAt": "2026-10-15T14:05:06.337Z", "status": "success", "queued": 0, "duplicates": 26, "knownIneligible": 0, "enqueueUnconfirmed": 0, "bothRecoveredMailboxesReady": true, "bothLatestRunsSuccessful": true, "checkpointRevisions": [769, 787] },
     "currentReviewBacklogAt": "2026-10-15T13:54:54.115048Z",
     "currentReviewBacklog": { "projectionReviewAll": 4412, "projectionReviewEmail": 13, "projectionReviewPhone": 4399, "identityReview": 55731, "projectionPendingSample": 20, "identityPendingSample": 20 }
   },
   "remaining": {
+    "workingDayMonitor": { "id": "learn-build-01-working-day-observation", "status": "ACTIVE", "usesNoninteractiveReadOnlyChecks": true, "touchIdRequested": false, "firstEligibleFullDay": "2026-10-16 09:00–17:00 Europe/London" },
     "adminDelegationBlock": 1,
     "fullUnattendedWorkingDayAccepted": false,
     "broaderSourceCardsScoringAccepted": false,
