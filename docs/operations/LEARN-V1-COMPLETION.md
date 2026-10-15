@@ -7,6 +7,33 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 23:28 UTC — three exact Commusoft jobs reviewed and linked.**
+
+### Working and verified
+
+- The three retained non-complete jobs that already referenced a reviewed
+  customer property were inspected by exact Commusoft identity
+  and source version. Each was submitted separately through the signed-in LIVE
+  review flow; each saved batch reported one link and zero holds. Independent
+  read-only database checks found three distinct canonical job links on the
+  expected customer card and source versions. No service/job-type code or
+  cross-provider mapping was inferred.
+  [Sanitised receipt](evidence/learn-build01-three-reviewed-job-links-2026-10-15.json).
+
+### Needs finishing
+
+- The other 279 of 288 retained non-complete jobs lack reviewed links: 254
+  reference observed but unreviewed property sources, and 25 reference
+  property sources absent from the retained collection. The three linked
+  jobs' status observations are from 13 October, not current progress proof.
+  Job freshness, routing and scoring acceptance remain open.
+
+### Blocked externally
+
+- No new provider or credential block was found. Source coverage and reviewed
+  ownership for the 279 jobs remain technical/evidence work; Chris's final
+  business signoff comes after that work, not instead of it.
+
 **15 October, 23:22 UTC — unattended projection follow-up.**
 
 ### Working and verified

@@ -1,0 +1,35 @@
+{
+  "version": "learn-build01-three-reviewed-job-links/1",
+  "observed_at_utc": "2026-10-15T23:28:10.705Z",
+  "environment": "LIVE",
+  "tenant": "Drummonds",
+  "provider": "Commusoft",
+  "reviewed_job_count": 3,
+  "review_basis": "Each exact retained source version references the same previously reviewed customer property. Each job was inspected and submitted separately through the signed-in audited review UI. No job-type code or cross-provider mapping was inferred.",
+  "ui_batch_results": [
+    {"batch": 1, "linked": 1, "needs_attention": 0},
+    {"batch": 2, "linked": 1, "needs_attention": 0},
+    {"batch": 3, "linked": 1, "needs_attention": 0}
+  ],
+  "independent_read_only_readback": {
+    "links": 3,
+    "distinct_jobs": 3,
+    "canonical_job_links": 3,
+    "expected_card_links": 3,
+    "reviewed_versions": 3,
+    "distinct_canonical_jobs": 3
+  },
+  "non_complete_retained_jobs": 288,
+  "reviewed_non_complete_links": 9,
+  "unlinked_non_complete_jobs": 279,
+  "unlinked_with_observed_property_source_unreviewed": 254,
+  "unlinked_with_property_source_absent": 25,
+  "total_observed_job_identities": 12649,
+  "total_reviewed_job_links": 944,
+  "private_source_review_sha256": "b48565a6ce7825f377ec3492f0887b997507d9326dff6b031a9e40fa10c25636",
+  "limits": [
+    "The latest retained source status for each of these three jobs was observed on 13 October, so these links do not prove current job progress.",
+    "The other 279 non-complete jobs still require reviewed ownership or source coverage.",
+    "A saved canonical link does not constitute business signoff, scoring-policy approval or engineer assignment."
+  ]
+}
