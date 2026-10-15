@@ -8,6 +8,7 @@ allowlist after authenticated decryption and digest verification.
 import hashlib
 import json
 import os
+import platform
 import re
 import shutil
 import stat
@@ -18,7 +19,10 @@ from pathlib import Path
 
 PROJECT = 'tgbnakbxwcqjeimygroz'
 IMAGE = 'sha256:ba10e934f0a59990379f78ab9ed93926f1c291dd61a12fe4026f4202f1b89770'
-AGE_SHA256 = '4012dfc2725883beafb710894af4f599b7a94f8c8e0f51f02cc96ab8df33915e'
+AGE_SHA256 = {
+    ('Darwin', 'arm64'): '4012dfc2725883beafb710894af4f599b7a94f8c8e0f51f02cc96ab8df33915e',
+    ('Linux', 'aarch64'): '41b072352f4561018949623c674d16ef704019b9108a9bbdbd21292efebfc94f',
+}.get((platform.system(), platform.machine()))
 MAX_BYTES = 1024 ** 3
 MAX_JSON = 8 * 1024 ** 2
 FILES = ('database.dump', 'net-tables.sql', 'source-inventory.json', 'report.json',
@@ -169,7 +173,8 @@ def validate_snapshot(directory, entries, *, format_version=FORMAT):
 
 
 def validate_tool(age):
-    need(describe(age)['sha256'] == AGE_SHA256, 'age_binary_pin_mismatch')
+    need(AGE_SHA256 is not None and describe(age)['sha256'] == AGE_SHA256,
+         'age_binary_pin_mismatch')
 
 
 def call_age(age, args, output, *, input_file=None, identity=None):

@@ -26,3 +26,17 @@ test("daily source login rejects changed scope, unbounded secret and extra field
   ]) await assert.rejects(loadDatabaseSourceReader(async () => ({ stdout: JSON.stringify(value) })),
     /database_source_reader_unavailable/);
 });
+test("hosted reader accepts only the exact ARM main-branch environment", async () => {
+  const hosted = { GITHUB_ACTIONS: "true", GITHUB_REPOSITORY: "Drummasterflash83/serviceos-dh",
+    GITHUB_REF: "refs/heads/main", RUNNER_ARCH: "ARM64",
+    SERVICEOS_DATABASE_SOURCE_READER_JSON: JSON.stringify(good) };
+  const noKeychain = async () => { throw Error("keychain_must_not_be_called"); };
+  assert.deepEqual(await loadDatabaseSourceReader(noKeychain, hosted), good);
+  for (const changed of [
+    { GITHUB_REF: "refs/heads/codex/learn-v1-test" },
+    { GITHUB_REPOSITORY: "other/repo" },
+    { RUNNER_ARCH: "X64" },
+    { SERVICEOS_DATABASE_SOURCE_READER_JSON: JSON.stringify({ ...good, role: "postgres" }) },
+  ]) await assert.rejects(loadDatabaseSourceReader(noKeychain, { ...hosted, ...changed }),
+    /database_source_reader_unavailable/);
+});

@@ -33,7 +33,7 @@ const root = releaseCheckpoint || unattendedDaily ? process.argv[3] : monitoredC
   : completeCapture
   ? '.verification-results/production-database-complete-capture-v2-2026-10-12'
   : '.verification-results/production-database-export-2026-10-12';
-const docker = '/usr/local/bin/docker';
+const docker = process.platform === 'linux' ? '/usr/bin/docker' : '/usr/local/bin/docker';
 const report = { version: 'production-database-export/1', project,
   startedAt: new Date().toISOString(), state: 'preflight', customerDataDestination: 'private_local_only',
   productionDataWrites: false, restoreVerified: false };
