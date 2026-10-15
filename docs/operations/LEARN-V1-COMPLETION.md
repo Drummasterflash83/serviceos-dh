@@ -7,6 +7,36 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 22:56 UTC — signed-in LIVE capture and scheduling reads recovered.**
+
+### Working and verified
+
+- The existing Phone evidence result was preserved byte-for-byte for the LIVE
+  account and absent-account case. A synthetic TEST rehearsal exercised valid
+  settlement, refusal, replay, mismatch and role boundaries, then rolled back.
+  The guarded Phone reader was installed in TEST and LIVE with the same owner
+  and restricted grant. Its measured warm query stopped scanning 15,000-plus
+  historical attempts twice and fell from 204 ms to 16 ms.
+- A guarded latest terminal-email-run index was rollback-rehearsed and installed
+  in TEST and LIVE. The LIVE operator account query selected it, avoiding about
+  548 irrelevant runs per mailbox in the prior plan. A measured account read
+  took 0.82 seconds with 1,314 block reads versus an earlier 4.78 seconds and
+  9,236 reads after the Phone fix. On a fresh signed-in LIVE navigation, the
+  Drummonds account page, company totals and scheduling list all loaded.
+  [Release and browser evidence](evidence/learn-build01-capture-health-bounded-2026-10-15.json).
+
+### Needs finishing
+
+- This is one fresh LIVE journey plus measured plans, not sustained unattended
+  reliability. The scheduling panel still records Gmail OAuth overdue and
+  Signal/Identity jobs needing attention; source completeness, card freshness
+  and 160-channel Slack capacity remain separate Build 01 gates.
+
+### Blocked externally
+
+- None for this recovery. Chris's final business acceptance still follows
+  representative technical evidence.
+
 **15 October, 22:50 UTC — operator scheduling recovered; capture read remains intermittent.**
 
 ### Working and verified

@@ -1,0 +1,37 @@
+{
+  "observedAtUtc": "2026-10-15T22:56:16Z",
+  "scope": "Existing OpenFolk operator Phone and email account-health reads for Drummonds",
+  "phoneReader": {
+    "migration": "supabase/migrations/20261104040000_learn_phone_evidence_bounded.sql",
+    "sha256": "f51f5ff88c5bc74f38e5f9b7aa54dcff14d825c69429e1e196d8cca80ed2d2da",
+    "oldFunctionDigest": "5f5450fa87b0459188c811807a966133",
+    "testAndLiveFunctionDigest": "1a5cac8bfce4f2a8721d470fab9e0df1",
+    "release": "TEST synthetic fixture and rollback rehearsal, TEST install, LIVE rollback rehearsal, LIVE install all verified; original owner and restricted execute ACL retained.",
+    "resultParity": "The proposed SQL returned byte-equivalent JSON for the actual LIVE Phone account and an absent-account case before release. Existing TEST settlement, refusal, replay, mismatch, role and rollback assertions passed against the replacement.",
+    "warmPlanBefore": "204.215 ms, 91,516 shared buffer hits; the latest and last-confirmed branches scanned 15,444 and 14,505 Phone runs respectively.",
+    "warmPlanAfter": "15.601 ms, 3,443 shared buffer hits; latest Phone lookup returned one indexed run and settlement-guided lookup used 756 primary-key probes. The exact confirmation checks remain in place."
+  },
+  "emailLookup": {
+    "migration": "supabase/migrations/20261104050000_learn_email_health_latest_runs.sql",
+    "sha256": "f4a15c2537f0f815b9d05bf8045ba6435e23e79a3de25c175f6df99c2d35720f",
+    "release": "TEST and LIVE rollback rehearsals and installations verified; index valid and ready; reader definitions, ownership and grants unchanged.",
+    "before": "Existing index examined about 548 irrelevant runs per mailbox in a measured 30-mailbox plan; a full account read took 4,783.575 ms and read 9,236 blocks after the Phone release.",
+    "after": "LIVE plan selected learn_email_health_latest_runs_idx, returned one terminal run per mailbox without the irrelevant scan, and the full account read took 819.889 ms with 1,314 read blocks. These are observations under differing cache/load states, not a guaranteed latency bound."
+  },
+  "signedInLiveAcceptance": {
+    "origin": "app.openfolk.ai",
+    "operator": "Existing authorised OpenFolk owner selected Drummond Heating.",
+    "freshReload": "Capture account page, separate company totals and scheduling list loaded on a new browser navigation without an unavailable-state message.",
+    "retainedEmailTotalAtCheck": 164014,
+    "recordedExceptions": ["Gmail OAuth sync overdue", "Signal build needs attention", "Identity engine needs attention"],
+    "screenshot": "/private/tmp/learn-build01-operator-health-live-results-20261015.png"
+  },
+  "boundaries": {
+    "sourceDataWrites": false,
+    "captureScopeOrScheduleChanges": false,
+    "providerRequests": 0,
+    "syntheticTestFixtureRemains": false,
+    "sustainedUnattendedReliabilityProved": false,
+    "completeSourceCoverageProved": false
+  }
+}
