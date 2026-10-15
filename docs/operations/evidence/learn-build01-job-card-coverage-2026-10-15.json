@@ -1,0 +1,54 @@
+{
+  "version": "learn-build01-job-card-coverage/1",
+  "observedAtUtc": "2026-10-15T21:31:08Z",
+  "environment": "LIVE read-only aggregate and signed-in client workspace",
+  "source": "scripts/verify/learn-build01-job-card-coverage.mjs --live-read-only",
+  "tenant": "Drummonds",
+  "canonicalJobs": {
+    "total": 941,
+    "commusoftCompleted": 934,
+    "commusoftOpen": 6,
+    "commusoftPending": 1,
+    "customerLinked": 941,
+    "siteLinked": 775,
+    "jobsWithLinkedCommunications": 5,
+    "linkedCommunications": 7,
+    "engineerPersonLinked": 0,
+    "jobRecordsVerified": 0,
+    "publishedCompletionInstants": 0
+  },
+  "retainedSourceCoverage": {
+    "observedDistinctCommusoftJobIdentities": 12649,
+    "reviewedCanonicalJobLinks": 941,
+    "unlinkedObservedIdentities": 11708,
+    "linkSharePercent": 7.44,
+    "denominatorMeaning": "Distinct retained Commusoft job identities ever observed in the approved API traversal, not proof of the provider's complete current universe."
+  },
+  "signedInObservation": {
+    "liveLearnMenuVisible": true,
+    "jobCardListLoaded": true,
+    "boundedJobDetailLoaded": true,
+    "sampleJobRecordedComplete": true,
+    "sampleJobVerificationPending": true,
+    "sampleJobLinkedCommunication": false,
+    "sampleJobOwnerConfirmed": false,
+    "sampleJobCompletionTimezoneGapShown": true,
+    "scoreDisplayed": false
+  },
+  "localImprovementPendingRelease": {
+    "behavior": "Job list renders the exact saved canonical status separately from record verification, with a provider-lag qualification.",
+    "focusedTestsPassed": 27,
+    "typescriptPassed": true,
+    "productionBuildAndPrebuildPassed": true,
+    "liveDeployment": false
+  },
+  "limits": [
+    "Published source status is a saved observation, not proof of payment, a completion time or current provider state.",
+    "Only five canonical jobs currently have linked communications; an empty job timeline cannot establish that no conversation exists.",
+    "Only 941 of 12,649 retained observed Commusoft job identities have reviewed canonical links; the remaining 11,708 are not erased or counted as reviewed cards.",
+    "No canonical engineer identity is linked; name-only assignment must not be guessed.",
+    "Unzoned source completion values remain retained but cannot support elapsed-time or staff scoring.",
+    "This sample and aggregate do not establish complete Commusoft provider coverage or owner business acceptance."
+  ],
+  "productionWrites": false
+}

@@ -1,0 +1,51 @@
+{
+  "version": "learn-build01-slack-claim-fairness/1",
+  "releasedAtApproxUtc": "2026-10-15T21:38:00Z",
+  "scope": "Existing approved Slack channel and observed-reply jobs; no DMs, provider writes, source expansion, queue-row rewrite, connection or pacing change",
+  "change": "For equal-priority ready jobs, alternate which of history and reply work is first by UTC statement minute, before created_at; retain existing priority, oldest-100 candidate limit and database workspace pacing.",
+  "source": "supabase/migrations/20261103210000_learn_slack_ongoing_claim_fairness.sql",
+  "test": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "functionSha256Before": "68654740b6f9fb81823ffe126303295f1840be089183f73799f6647fb9685aa8",
+    "functionSha256After": "fbd27e342d35332b3eac149cf0b897d09a07901a25ef64211307b0a2d640919e",
+    "transactionalCompileRollbackPassed": true,
+    "guardedReleaseExactReadbackPassed": true,
+    "transactionalClaimProbeRolledBack": true,
+    "idempotentMigrationReplayRolledBack": true
+  },
+  "live": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "functionSha256Before": "afcbe7262a7dc99f272e776c299b73d1c86448e8aaaea8c46f776686fa19178d",
+    "functionSha256After": "cd3b6f36aa95da23c518e439a23d2e55932a3b80bcad20188179f79f4edfe2c7",
+    "transactionalCompileRollbackPassed": true,
+    "guardedReleaseExactReadbackPassed": true,
+    "idempotentMigrationReplayRolledBack": true,
+    "ownerAndExecuteGrantsPreserved": true,
+    "functionSecurityDefinerUnchanged": true,
+    "queueAt2137": {
+      "historyQueued": 123,
+      "replyQueued": 671
+    },
+    "queueAt2141": {
+      "historyQueued": 120,
+      "replyQueued": 668
+    },
+    "settlementsThrough2141": {
+      "historySucceededSince2114": 4,
+      "historySucceededAfterRelease": 3,
+      "replySucceededSince2114": 32,
+      "newFailedOrDeadLetterObserved": 0
+    },
+    "ordinaryAndDedicatedCronContinuing": true,
+    "workspaceProviderBlockedAt2141": false,
+    "newlySavedMessagesAfterCutoffAt2140": 0,
+    "newlySavedRepliesAfterCutoffAt2140": 0
+  },
+  "rollback": "Exact pre-release TEST and LIVE function definitions are retained privately; the guarded rollback refuses an unexpected current SHA.",
+  "limits": [
+    "The short post-release decline from 794 to 788 queued jobs does not establish sustained backlog convergence.",
+    "Completed empty channel windows are not proof that unprocessed channels were quiet.",
+    "A real post-cutoff message or reply has not yet been observed in the retained source; source-to-card acceptance remains open.",
+    "This correction improves equal-priority dispatch fairness; it does not change the 30-second Slack workspace request pacing or increase provider capacity."
+  ]
+}

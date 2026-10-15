@@ -7,6 +7,61 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 21:42 UTC — Slack queue fairness released; catch-up remains open.**
+
+### Working and verified
+
+- The approved 160-channel recurring capture retained its 30-second workspace
+  pacing. TEST and LIVE now alternate equal-priority channel-history and reply
+  dispatch by minute. Exact pre-release definitions were retained privately;
+  transactional compile, TEST claim probe, guarded release/readback and
+  migration-replay checks passed. LIVE settled three channel windows after the
+  release, alongside the existing reply lane, with no new failed job or provider
+  block in this short observation. Queued Slack jobs fell from 794 at 21:37 to
+  788 at 21:41 UTC. [Fairness evidence](evidence/learn-build01-slack-claim-fairness-2026-10-15.json).
+
+### Needs finishing
+
+- Show sustained queue convergence, channels caught up to the saved cutoff and
+  source-to-card evidence when real new messages arrive. There were still no
+  newly saved post-cutoff messages or replies at 21:40 UTC; empty windows do
+  not establish full source coverage. Continue the other V1 source, card,
+  scoring and recovery work below.
+
+### Blocked externally
+
+- No additional Slack permission is required for this approved read-only
+  scope. Chris's business signoff waits for a representative evidence pack.
+
+**15 October, 21:31 UTC — job-card business evidence is visible but incomplete.**
+
+### Working and verified
+
+- A signed-in LIVE LEARN job card opens and distinguishes its recorded complete
+  status from record verification, payment and a confirmed completion time. A
+  read-only aggregate finds 12,649 distinct retained Commusoft job identities,
+  of which 941 have reviewed canonical links (7.44%). All 941 linked jobs have a
+  customer, 775 have a site, and only five have any linked communication.
+  The sampled card explicitly showed missing owner, timeline and timezone
+  evidence; no score was displayed. A clearer saved-status label in the card
+  list passes local focused tests, TypeScript and the production build, but
+  awaits a separate frontend release.
+  [Job-card evidence](evidence/learn-build01-job-card-coverage-2026-10-15.json).
+
+### Needs finishing
+
+- Reconcile the communication links against the actual approved sources,
+  confirm provider completion-time semantics and a reviewed engineer identity
+  mapping, then demonstrate useful job progress and responsible-owner routing.
+  All 941 job records remain unverified and have no published completion
+  instant. Do not publish staff/job duration or numerical scores from this gap.
+
+### Blocked externally
+
+- Provider timestamp semantics and Chris's final business judgment remain
+  outstanding. Source and identity corrections that do not require those
+  decisions can continue.
+
 **15 October, 21:14 UTC — Slack-only catch-up cadence under LIVE observation.**
 
 ### Working and verified
