@@ -108,6 +108,32 @@ test("operator separates writer, restore and fresh escrow reads, then records bo
   await assert.rejects(stat(join(directory, "active.lock")), { code: "ENOENT" });
   assert.equal((await readdir(directory)).filter((n) => n.startsWith("verified-")).length, 1);
 });
+test("operator retries only transient secure-note reads, including the post-download read", async (t) => {
+  const { options, order } = await setup(t);
+  const originalRead = options.escrow.read;
+  let reads = 0;
+  options.escrow.read = async () => {
+    reads++;
+    if (reads === 1 || reads === 3)
+      throw Object.assign(new Error("masked transient"), { code: "onepassword_operation_unconfirmed" });
+    return originalRead();
+  };
+  const result = await runPreparedDatabaseBackup(options);
+  assert.equal(result.state, "independent_database_snapshot_verified");
+  assert.equal(reads, 4);
+  assert.equal(order.filter((v) => v === "escrow-read").length, 2);
+});
+test("operator does not retry invalid recovery material", async (t) => {
+  const { options, order } = await setup(t);
+  let reads = 0;
+  options.escrow.read = async () => {
+    reads++;
+    throw Object.assign(new Error("masked invalid material"), { code: "recovery_material_invalid" });
+  };
+  await assert.rejects(runPreparedDatabaseBackup(options), /database_backup_not_verified/);
+  assert.equal(reads, 1);
+  assert.equal(order.length, 0);
+});
 test("lost upload acknowledgement leaves no acceptance; retry uses exact existing object", async (t) => {
   const { directory, options, f } = await setup(t);
   f.loss = true;

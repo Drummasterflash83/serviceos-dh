@@ -24,6 +24,18 @@ const need = (ok, code) => {
   if (!ok) throw new RecordingBackupError(code);
 };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+async function readRecoveryMaterial(escrow) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await escrow.read();
+    } catch (error) {
+      // Desktop CLI authorisation can fail transiently while 1Password is open.
+      // Retry only the read; never treat an invalid or changed key as transient.
+      if (error?.code !== "onepassword_operation_unconfirmed" || attempt >= 3)
+        throw error;
+    }
+  }
+}
 export function parseDatabaseBackupArgs(args) {
   const checkpoint = ["--prepare-checkpoint", "--copy-and-restore-checkpoint"].includes(args[0]);
   need(args.length === (checkpoint ? 4 : 3)
@@ -159,7 +171,7 @@ export async function runPreparedDatabaseBackup({
         preparation.archive.sha256 === expectedArchive.sha256,
       "database_initial_package_not_verified",
     );
-    const material = await escrow.read();
+    const material = await readRecoveryMaterial(escrow);
     need(material.ageRecipient === d.recipient, "database_recipient_changed");
     await saveNew(join(directory, `attempt-${attempt}.json`), {
       state: "started",
@@ -181,7 +193,8 @@ export async function runPreparedDatabaseBackup({
     reader.close();
     reader = undefined;
     // Read back from the separate secret store again after independent download.
-    const saved = await escrow.read();
+    stage = "escrow-readback";
+    const saved = await readRecoveryMaterial(escrow);
     need(same(saved, material), "database_recovery_material_changed");
     stage = "restore";
     const result = await recover({
@@ -267,7 +280,7 @@ async function main(args) {
   const expectedArchive = parsed.sourcePath ? exported.archive : ARCHIVE;
   if (["--prepare-initial", "--prepare-checkpoint"].includes(parsed.mode)) {
     await mkdir(directory, { mode: 0o700 });
-    const material = await escrow.read();
+    const material = await readRecoveryMaterial(escrow);
     const { stdout } = await execute("git", ["rev-parse", "HEAD"], { cwd: REPO });
     const result = await pythonStage("prepare_database_package.py", {
       source,
