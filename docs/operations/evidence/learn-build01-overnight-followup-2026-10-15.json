@@ -1,0 +1,33 @@
+{
+  "version": "learn-build01-overnight-followup/1",
+  "productionDataWrites": false,
+  "observations": {
+    "emailProjection": {
+      "observedAt": "2026-10-15T23:22:17.465Z",
+      "eligibleMissing": 5552,
+      "priorEligibleMissingAt2306": 6677,
+      "reviewHolds": 0,
+      "committedReceipts": 0,
+      "olderThanOneDay": 0,
+      "createdLastHour": 807,
+      "sourceCommand": "node scripts/verify/learn-build01-email-projection-gap-readback.mjs --live-read-only"
+    },
+    "graph": {
+      "observedAt": "2026-10-15T23:22:14.231Z",
+      "successfulJobsLastTwoHours": 31,
+      "nodesUpsertedLastTwoHours": 7750,
+      "retryingJobs": 1,
+      "terminalFailuresInReturnedRows": 0,
+      "sourceCommand": "node scripts/verify/learn-build01-graph-retry-readback.mjs --live-read-only"
+    },
+    "slack": {
+      "observedAt": "2026-10-15T23:22:16.263Z",
+      "retainedAfterCutoff": 0,
+      "retainedRepliesAfterCutoff": 0,
+      "historySuccessesLastHour": 42,
+      "replySuccessesLastHour": 40,
+      "sourceCommand": "node scripts/verify/learn-build01-slack-post-handoff-readback.mjs --live-read-only"
+    }
+  },
+  "interpretation": "Email and Graph show unattended progress at this instant. Slack post-cutoff capture is still unproven. These bounded readbacks do not establish steady-state completeness or a full working day."
+}

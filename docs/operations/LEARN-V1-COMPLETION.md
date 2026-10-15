@@ -7,6 +7,28 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 23:22 UTC — unattended projection follow-up.**
+
+### Working and verified
+
+- The eligible email source-to-interaction gap fell from 6,677 at 23:06 to
+  5,552 at 23:22 while 807 new source rows arrived in the previous hour;
+  none of the remaining gap was over a day old or carried a review hold in the
+  bounded read. Graph added 7,750 nodes in 31 successful jobs over two hours,
+  with one retrying job and no terminal failure in the returned rows.
+  [Aggregate follow-up](evidence/learn-build01-overnight-followup-2026-10-15.json).
+
+### Needs finishing
+
+- Convergence is promising but not proof of full coverage or stable operation.
+  The same follow-up still found zero retained post-cutoff Slack messages and
+  replies despite 42 successful channel and 40 reply jobs in the previous
+  hour. Slack capacity and source-to-card proof remain open.
+
+### Blocked externally
+
+- No new provider-access block was observed in this readback.
+
 **15 October, 23:20 UTC — Commusoft recurring cadence exposed; Slack event corrections tightened.**
 
 ### Working and verified
