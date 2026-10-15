@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-15T11:48:14Z",
+  "checkedAt": "2026-10-15T11:57:47Z",
   "environment": "TEST and LIVE",
   "backend": {
     "release": "quickbooks_card_hierarchy_v1",
@@ -10,12 +10,13 @@
     "ownerGrantsAndUnauthorisedDenialsPreserved": true
   },
   "frontend": {
-    "testAliasCommit": "eec1e86968250c1106be7124b1a7f4965d6e79e5",
-    "liveAliasCommit": "723daaeae69d9c606a8dd33adee6f68f2dd1ec2d",
-    "testDeployment": "dpl_3XL5B8jNW7PFCwKuyfYK6zyEkxSx",
-    "liveDeployment": "dpl_Cg9tPLgRCFzQ5DxpVamd59sPnsUg",
+    "testAliasCommit": "b559a44c58084838c3f51f1f98fcbb551f50c32d",
+    "liveAliasCommit": "ac8842caf788ffd32dfab60e2ef4e30f56115431",
+    "testDeployment": "dpl_2evAzvQf2hCnnvMhBYvoEn6JyhXx",
+    "liveDeployment": "dpl_CsNteJU8AGAc8ZXjQzK7424yDVdS",
     "aliasReadbackVerified": true,
     "backendBindingCheckedBeforePromotion": true,
+    "signedInLiveCardRecheckedAfterFinalAliasPromotion": true,
     "signedInLiveCard": {
       "name": "Dan Breen",
       "commusoftJobs": 3,

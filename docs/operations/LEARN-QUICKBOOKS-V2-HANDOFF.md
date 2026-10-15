@@ -1,6 +1,6 @@
 # QuickBooks LIVE integration and LEARN V2 handoff
 
-Status checked 15 October 2026, 11:49 UTC. This is an operational handoff, not
+Status checked 15 October 2026, 12:08 UTC. This is an operational handoff, not
 an assertion that every Drummonds customer or job has been reconciled.
 
 ## Working and verified
@@ -9,17 +9,17 @@ an assertion that every Drummonds customer or job has been reconciled.
   separate OpenFolk ServiceOS Intuit app. The connector is tenant-scoped and
   performs accounting reads only. Production Vault retains the OAuth grant;
   accounting source records and history remain intact.
-- Two unattended full scans completed on 14 October across the 13 approved
-  accounting collections. The third scan was resumed after a premature 401 with
-  a single guarded token-refresh allowance. It had advanced from 210 to 1,208
-  saved pages at this checkpoint, with no current run error. This third scan is
-  still in progress and is **not** a completed-cycle acceptance result.
-- The unattended worker renewed the existing OAuth grant before its 11:06 UTC
-  expiry: token generation 11 became 12, and more pages were retained on the
-  same run afterward. At 11:48 UTC, 1,193 saved page receipts, unique permits
-  and 118,855 observations reconciled with zero wrong-tenant pages and source
-  conflicts.
-  [Refresh evidence](evidence/learn-quickbooks-unattended-refresh-2026-10-15.json).
+- Three unattended full scans have now completed across the 13 approved
+  accounting collections. The third resumed from a premature 401 at page 210,
+  then traversed all 13 collections at 12:07 UTC on 15 October. It saved 1,354
+  pages and 134,706 observations, with 1,355 of 3,000 allowed read-only requests.
+  Page receipts, unique permits and observations match; there are zero
+  wrong-tenant pages, source conflicts or run errors.
+- The unattended worker renewed the same OAuth grant twice during this run,
+  advancing token generation 11 to 13 without a fresh company consent. The
+  completed run paused capture and the existing six-hour policy recorded its
+  next due time as 15 October 18:07 UTC. No local Mac or human session is needed.
+  [Completed-cycle evidence](evidence/learn-quickbooks-third-unattended-cycle-2026-10-15.json).
 - LIVE retains 134,706 latest QuickBooks source records across the collections,
   with zero unresolved source conflicts at this checkpoint. This is a source
   record count, not a count of distinct customers or reconciled transactions.
@@ -57,16 +57,15 @@ an assertion that every Drummonds customer or job has been reconciled.
   failed LIVE run. A second 401 at the same checkpoint hard-stops for review.
   [Recovery evidence](evidence/learn-quickbooks-401-recovery-2026-10-15.json).
 
-## Needs finishing before QuickBooks operational sign-off
+## Operational closeout and ongoing guardrails
 
-- Let the resumed third scan traverse all 13 collections and reconcile saved
-  pages, observations, unique permits and source conflicts. Verify an ordinary
-  subsequent six-hour unattended cycle starts and completes under the same
-  3,000-request, 24-hour policy. If a fresh token also receives 401, investigate
-  the Intuit grant instead of retrying indefinitely.
-- Recheck the 24 reviewed links after the scan, including source-identity drift
-  and actor audit. Ordinary signed-in customer-card access has been verified;
-  do not silently auto-approve additional identities.
+- The third unattended scan and six-hour scheduler handoff pass the connector
+  acceptance checks. Keep monitoring future runs through OpenFolk; a fresh 401
+  after the bounded recovery stops for review rather than looping indefinitely.
+- The 24 reviewed links were rechecked after completion: 24 audit events,
+  24 existing cards, zero identity drift and zero missing or conflicted linked
+  sources. Ordinary signed-in customer-card access passed. Do not silently
+  auto-approve additional identities.
 - Keep the first client app's ownership visible: its Intuit registration is in
   Drummonds' developer workspace. Future OpenFolk-owned app migration requires
   separate client reauthorisation; connector code and source identity keys are
@@ -92,6 +91,10 @@ an assertion that every Drummonds customer or job has been reconciled.
   authoritative for current job codes; older QuickBooks references stay source
   evidence. Do not attach a customer-level invoice to a specific job without a
   verified source relationship.
+- On the 15 October signed-in LIVE LEARN page, the newest-card list included
+  bounce-mail addresses as customer titles. This is a separate customer-card
+  source/classification quality issue for V2 to inspect before claiming the
+  whole catalogue is clean. It did not alter the 24 reviewed QuickBooks links.
 
 The QuickBooks connector is reusable for future client tenants; no Drummonds
 realm, credential or mapping is hard-coded into shared customer identity keys.

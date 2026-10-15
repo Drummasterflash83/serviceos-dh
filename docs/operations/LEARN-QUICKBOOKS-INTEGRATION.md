@@ -2,7 +2,7 @@
 
 Updated 15 October 2026. Workstream: `codex/quickbooks-integration`.
 
-## Current LIVE position — 15 October 2026, 11:50 UTC
+## Current LIVE position — 15 October 2026, 12:08 UTC
 
 ### Working and verified
 
@@ -14,30 +14,28 @@ Updated 15 October 2026. Workstream: `codex/quickbooks-integration`.
   OpenFolk support; no transaction is inferred to belong to a specific job.
   A second signed-in card, Belvoir, showed two published jobs, two contacts,
   two invoices and two payments within the same customer view.
-- Two unattended 13-collection QuickBooks scans completed on 14 October. The
-  third scan stopped at 03:21 UTC on its first premature Intuit HTTP 401, after
-  210 saved pages; retained source history was not removed.
+- Three unattended 13-collection QuickBooks scans have completed. The third
+  stopped at 03:21 UTC on its first premature Intuit HTTP 401, after 210 saved
+  pages; retained source history was not removed.
 - A bounded first-401 recovery was rehearsed with synthetic TEST records in a
   rolled-back transaction, then installed and read back in TEST and LIVE. It
   permits one fresh token and read reservation at a checkpoint; a second 401
   stops for review. Prior function authority and unrelated QuickBooks functions
   were preserved.
 - The already-approved LIVE run resumed without a new company grant. The hosted
-  worker renewed the same OAuth grant unattended (generation 11 to 12), and its
-  third full scan advanced to 1,217 saved pages and 121,204 observations by
-  11:50 UTC, with no current run error. This is not a completed-cycle result.
-  [Recovery evidence](evidence/learn-quickbooks-401-recovery-2026-10-15.json).
+  worker renewed the same OAuth grant unattended twice (generation 11 to 13).
+  The third full scan traversed 1,354 pages and 134,706 observations by 12:07
+  UTC, with no run error, source conflicts or wrong-tenant pages. The existing
+  six-hour policy recorded the next due time for 18:07 UTC.
+  [Completed-cycle evidence](evidence/learn-quickbooks-third-unattended-cycle-2026-10-15.json).
 - The guarded QuickBooks finance reader now includes native subaccounts under a
   reviewed parent account, with explicit identity and link boundaries. It is
   installed in TEST and LIVE; matching UI wording is promoted to both stable
   sites and has signed-in LIVE acceptance on a direct-account card.
   [Release evidence](evidence/learn-quickbooks-card-hierarchy-release-2026-10-15.json).
 
-### Needs finishing
+### Needs finishing in LEARN V2
 
-- This resumed third scan must traverse and reconcile all 13 collections under
-  the existing six-hour recurring policy. The first two unattended full scans
-  have already completed; the third is the subsequent-cycle acceptance check.
 - Customer identities still need review before finance may be merged onto
   additional Commusoft cards. The catalogue keeps the remaining source records
   separately labelled. A 15 October diagnostic found 576 conservative unique
@@ -50,9 +48,8 @@ Updated 15 October 2026. Workstream: `codex/quickbooks-integration`.
 
 ### Blocked externally
 
-- None for the current token refresh. If Intuit returns a second 401 after the
-  new token, the connection will stop for explicit investigation or renewed
-  company consent.
+- None for current QuickBooks operation. A second 401 after a new token would
+  stop the connection for explicit investigation or renewed company consent.
 
 ## Current LIVE position — 14 October 2026, evening
 
