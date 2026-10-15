@@ -7,6 +7,42 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 12:04 UTC — one LIVE mailbox recovered; operator account status visible; Build 01 remains open.**
+
+### Working and verified
+
+- One active Workspace mailbox's blocked `persistence_failed` recent checkpoint
+  passed an exact rollback rehearsal and a guarded, audited claim/release. It
+  moved from revision 607 blocked to 609 ready without clearing its saved
+  continuation. Its next ordinary scheduled capture succeeded at 12:03 UTC;
+  the checkpoint advanced to revision 611 ready. No source provider write or
+  captured history was discarded. This manual recovery restarts the unattended
+  observation window.
+- The signed-in LIVE OpenFolk operator can again load paged Email, Phone and
+  Slack account evidence. The same bounded reader passed TEST before LIVE,
+  with unchanged function owner and grants. Scheduling checks are also visible.
+
+### Needs finishing
+
+- The original mailbox persistence error still needs root-cause prevention and
+  a full real working day without manual rescue. Company-wide retained-email
+  availability and Phone processing totals currently show **unverified** in
+  the operator panel: their former on-demand scans exceeded the response
+  window, so a bounded replacement summary is needed. The panel does not
+  present absent counts as zero.
+- Source-to-interaction, graph, card and scoring gaps, ongoing eligible Slack
+  channel/reply capture, voicemail source/route holds, daily backup, full
+  application/Auth recovery and signed-in business acceptance remain open.
+  The already downloaded off-site database package has not passed its isolated
+  restore because the 1Password recovery-key read did not complete.
+
+### Blocked externally
+
+- The off-site restore needs a Touch ID approval while its current CLI process
+  is running. Chris's business sign-off follows the technical acceptance pack.
+
+[Mailbox recovery and operator-health evidence](evidence/learn-build01-mailbox-and-health-recovery-2026-10-15.json).
+
 **15 October, 11:47 UTC — LIVE midday source review; Build 01 remains open.**
 
 ### Working and verified
