@@ -1,8 +1,11 @@
 name: ServiceOS database backup missed-success check
 
-# Enable an hourly schedule only after the first hosted backup succeeds.
+# Check the last successful hosted backup every hour; a stale or missing copy
+# fails this workflow without loading database or AWS credentials.
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '23 * * * *'
 
 permissions:
   actions: read
