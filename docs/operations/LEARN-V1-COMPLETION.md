@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**15 October, 12:04 UTC — one LIVE mailbox recovered; operator account status visible; Build 01 remains open.**
+**15 October, 12:29 UTC — one LIVE mailbox recovered; separate operator totals released; Build 01 remains open.**
 
 ### Working and verified
 
@@ -21,15 +21,21 @@ override a later release observation. No requirement is silently deferred.
 - The signed-in LIVE OpenFolk operator can again load paged Email, Phone and
   Slack account evidence. The same bounded reader passed TEST before LIVE,
   with unchanged function owner and grants. Scheduling checks are also visible.
+- The independent company-totals service and its isolated three-file frontend
+  change passed TEST, then were released to LIVE through verified Vercel Git
+  candidates. Existing domain redirects, access protection and backend bindings
+  were preserved. The signed-in LIVE operator view showed 130,895 stored emails
+  and 3,075 stored recordings, including six held for review. The totals carry
+  their own observation time; missing totals do not hide account cards.
 
 ### Needs finishing
 
 - The original mailbox persistence error still needs root-cause prevention and
-  a full real working day without manual rescue. Company-wide retained-email
-  availability and Phone processing totals currently show **unverified** in
-  the operator panel: their former on-demand scans exceeded the response
-  window, so a bounded replacement summary is needed. The panel does not
-  present absent counts as zero.
+  a full real working day without manual rescue. The retained-email summary
+  reports 1,549 mailbox bindings whose availability is unverified; six Phone
+  recordings are held for review. Scheduling status now loads but reports
+  overdue Gmail OAuth and recommendations plus signal, identity and graph work
+  needing attention. These are operational gaps, not a completed green state.
 - Source-to-interaction, graph, card and scoring gaps, ongoing eligible Slack
   channel/reply capture, voicemail source/route holds, daily backup, full
   application/Auth recovery and signed-in business acceptance remain open.
@@ -41,7 +47,8 @@ override a later release observation. No requirement is silently deferred.
 - The off-site restore needs a Touch ID approval while its current CLI process
   is running. Chris's business sign-off follows the technical acceptance pack.
 
-[Mailbox recovery and operator-health evidence](evidence/learn-build01-mailbox-and-health-recovery-2026-10-15.json).
+[Mailbox recovery and operator-health evidence](evidence/learn-build01-mailbox-and-health-recovery-2026-10-15.json) ·
+[separate company-totals backend](evidence/learn-build01-separated-capture-totals-2026-10-15.json).
 
 **15 October, 11:47 UTC — LIVE midday source review; Build 01 remains open.**
 

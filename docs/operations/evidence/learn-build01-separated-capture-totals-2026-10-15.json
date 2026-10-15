@@ -1,0 +1,17 @@
+{
+  "date_utc": "2026-10-15",
+  "status": "separate_operator_totals_released_and_live_operator_verified",
+  "problem": "Large company-wide Email and Phone summaries could make the paged operator account-status response unavailable. Account status now loads independently and explicitly marks those totals unverified.",
+  "backend": {
+    "function": "learn_operator_capture_totals(uuid)",
+    "scope": "Existing operator access gate; aggregate retained Email availability and Phone recording-processing evidence only. No raw content, credentials, provider writes or new grants.",
+    "test": "Rollback rehearsal and installation passed with exact bounded-reader prerequisite and owner/ACL/security-definer readback. Existing TEST operator received both versioned summaries; an ordinary TEST client was denied.",
+    "live": "Rollback rehearsal and installation passed with the same function digest and operator-only ACL. The independent LIVE aggregate queries returned counts."
+  },
+  "frontend": {
+    "state": "isolated_test_then_live_vercel_release_verified",
+    "behavior": "Fetch company totals separately after account status, retain visible account cards if the totals request fails, and show the summary observation time and an independent refresh action.",
+    "verification": "TypeScript, focused reader tests and full local frontend build passed. Isolated three-file candidates built and were promoted from verified Git SHAs c169715fa5a19d77896476c4b14d4373b25efed5 (TEST) and cb2b7f7873d30c98992b589a8bdd625092de37da (LIVE). Exact backend bindings were observed in rendered protected candidate login pages. Existing aliases, redirects, domains and access protection were read back after each release. The signed-in LIVE operator panel loaded account pages and separate company totals: 130895 stored emails, 129333 available, 13 unavailable and 1549 availability-unverified at the last observation; 3075 stored recordings, 3069 complete and 6 held for review. The panel retained the unverified distinction and displayed the company-totals observation time. A transient scheduling read error cleared on the same signed-in panel; the returned scheduling results still show overdue and failed work."
+  },
+  "acceptance": "incomplete"
+}
