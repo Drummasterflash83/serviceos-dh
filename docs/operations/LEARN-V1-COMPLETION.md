@@ -7,6 +7,36 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 18:28 UTC — job-first score has source status, not verified timing.**
+
+### Working and verified
+
+- A LIVE read-only aggregate found 941 Commusoft-linked job records: 934 marked
+  completed, six open and one pending. All 934 completed records retain a
+  completion wall-clock value classified `timezone_required`; none has a
+  published completion instant, and all 941 have `verified=false`. Their
+  captured status can support a limited job-card breakdown, not an elapsed or
+  on-time measure. [Source readiness](evidence/learn-build01-job-first-scoring-readiness-2026-10-15.json).
+- Commusoft's current public v2 documentation describes UTC ISO timestamps, but
+  the observed nested completion values lack a timezone. That general rule does
+  not resolve the actual field's inconsistent shape. Preserve the original text
+  and keep duration calculations withheld until the field semantics are confirmed.
+
+### Needs finishing
+
+- Establish the provider/account completion-time meaning and job progression,
+  ownership, revisit and target definitions. Present job-first rules and evidence
+  coverage for Chris's review before publishing any score. No guessed timezone,
+  SLA or score weights are accepted.
+- Continue the hosted backup, unattended Slack, source/card and Auth recovery
+  gates below.
+
+### Blocked externally
+
+- The provider's observed unzoned completion-time semantics and Chris's scoring
+  policy/targets need explicit confirmation; the real full day and final business
+  sign-off remain outstanding.
+
 **15 October, 18:22 UTC — historical Slack replies retained; ongoing windows remain record-empty.**
 
 ### Working and verified

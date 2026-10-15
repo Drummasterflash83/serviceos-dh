@@ -1,0 +1,27 @@
+{
+  "version": "learn-build01-job-first-scoring-readiness/1",
+  "observedAt": "2026-10-15T18:27:56Z",
+  "environment": "LIVE",
+  "method": "Tenant-scoped read-only aggregate of saved Commusoft-linked job records, published date fields and retained source-time classifications",
+  "savedJobs": {
+    "completed": 934,
+    "open": 6,
+    "pending": 1,
+    "allVerifiedFlagFalse": true,
+    "completedWithPublishedCompletionInstant": 0,
+    "completedWithRetainedUnzonedCompletionTime": 934
+  },
+  "sourceDocumentation": {
+    "generalV2TimestampRule": "https://developer.commusoft.com/requests-and-responses-1985359m0",
+    "jobExample": "https://developer.commusoft.com/jobs-24695919e0",
+    "observedLimit": "The account's actual nested completedOnDateTime values lack a zone even though the current public v2 documentation describes UTC ISO timestamps. The general documentation alone does not establish how to interpret these observed unzoned values."
+  },
+  "businessDirection": "Job progress and completion is the first scorecard priority; responsible-owner attention and handoff matter.",
+  "acceptedForDisplay": "Captured job statuses can be shown with their source and freshness limits.",
+  "notAccepted": [
+    "Completion duration or on-time result from unzoned values",
+    "A first-time-fix result without verified visit/return evidence",
+    "A published numerical job score without reviewed policy and source coverage"
+  ],
+  "productionWrites": false
+}
