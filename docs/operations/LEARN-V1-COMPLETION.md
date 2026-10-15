@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 19:03 UTC — Auth recovery must use a new signing key and fresh login.**
+
+### Working and verified
+
+- LIVE currently uses an ES256 signing key. Supabase's
+  [signing-key guidance](https://supabase.com/docs/guides/auth/signing-keys)
+  says its private material cannot be extracted from the platform after creation. Its
+  [platform-to-self-hosted restore guide](https://supabase.com/docs/guides/self-hosting/restore-from-platform)
+  says database backups retain `auth.users`, while recovery with new JWT keys
+  requires users to sign in again if new keys are used. No separately retained
+  original private key has been proven, so recovery must prove preserved users
+  and a fresh login rather than claim continuation of old sessions.
+  [Auth recovery boundary evidence](evidence/learn-build01-auth-recovery-key-boundary-2026-10-15.json).
+
+### Needs finishing
+
+- Start an isolated Auth service against the independently restored production
+  database with new recovery keys, prove a fresh signed-in journey and tenant
+  boundaries, then verify runtime configuration and controlled capture
+  resumption. The current application/Auth recovery gate remains open.
+
+### Blocked externally
+
+- Chris must review forced re-authentication as the disaster-recovery behavior;
+  the full working-day window and business sign-off remain open.
+
 **15 October, 19:02 UTC — ordinary Email projection recovered; Graph lag grew.**
 
 ### Working and verified

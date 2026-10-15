@@ -1,0 +1,29 @@
+{
+  "version": "learn-build01-auth-recovery-key-boundary/1",
+  "observedAt": "2026-10-15T19:03:15Z",
+  "environment": "Recovery design against current LIVE inventory; no production mutation",
+  "liveInventory": "learn-build01-runtime-recovery-inventory-2026-10-15.json",
+  "currentSigningKey": {
+    "algorithm": "ES256",
+    "status": "in_use",
+    "privateKeyExported": false
+  },
+  "providerGuidance": {
+    "signingKeys": "https://supabase.com/docs/guides/auth/signing-keys",
+    "restoreFromPlatform": "https://supabase.com/docs/guides/self-hosting/restore-from-platform",
+    "facts": [
+      "Supabase does not export the private material of a platform signing key after creation.",
+      "A database restore includes auth.users but not the running Auth service configuration or JWT key material.",
+      "A self-hosted recovery with new JWT keys requires existing users to re-authenticate."
+    ]
+  },
+  "recoveryDesignImplication": "Do not claim escrow of the current ES256 private key from Supabase. Unless a separately retained original key is proven, rehearse isolated Auth startup with a new recovery key, preserved user rows and tenant boundaries, explicitly invalidated old sessions, and a fresh signed-in login before controlled provider resumption.",
+  "notYetProven": [
+    "Isolated Auth service startup against the independently restored production database",
+    "Fresh signed-in user journey and tenant isolation against that service",
+    "Runtime secret recovery and controlled capture resumption",
+    "Business acceptance of forced re-authentication in disaster recovery"
+  ],
+  "productionWrites": false,
+  "secretsPrinted": false
+}
