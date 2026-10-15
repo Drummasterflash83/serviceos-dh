@@ -30,10 +30,22 @@
       "historyQueued": 120,
       "replyQueued": 668
     },
+    "queueAt2148": {
+      "historyQueued": 117,
+      "replyQueued": 664
+    },
     "settlementsThrough2141": {
       "historySucceededSince2114": 4,
       "historySucceededAfterRelease": 3,
       "replySucceededSince2114": 32,
+      "newFailedOrDeadLetterObserved": 0
+    },
+    "settlementsThrough2148": {
+      "historySucceededSince2114": 9,
+      "historySucceededAfterRelease": 8,
+      "replySucceededSince2114": 37,
+      "channelsAdvancedPastCutoff": 123,
+      "channelsMoreThanOneDayBehind": 131,
       "newFailedOrDeadLetterObserved": 0
     },
     "ordinaryAndDedicatedCronContinuing": true,
@@ -43,7 +55,7 @@
   },
   "rollback": "Exact pre-release TEST and LIVE function definitions are retained privately; the guarded rollback refuses an unexpected current SHA.",
   "limits": [
-    "The short post-release decline from 794 to 788 queued jobs does not establish sustained backlog convergence.",
+    "The short post-release decline from 794 at 21:37 to 781 at 21:48 UTC does not establish sustained backlog convergence; 131 channels were still over a day behind.",
     "Completed empty channel windows are not proof that unprocessed channels were quiet.",
     "A real post-cutoff message or reply has not yet been observed in the retained source; source-to-card acceptance remains open.",
     "This correction improves equal-priority dispatch fairness; it does not change the 30-second Slack workspace request pacing or increase provider capacity."

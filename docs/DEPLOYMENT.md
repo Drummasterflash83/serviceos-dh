@@ -45,8 +45,9 @@ Cloudflare-flavoured.
 **Build 01 job-card status clarity, 21:45 UTC:** production Git
 `4d7084f202ffc942f354db87ab3e66994ab615c4` changed only the saved job
 status presentation and focused fixtures. Twenty focused tests, TypeScript,
-all 47 prebuild checks and the production build passed. The Vercel Git status
-completed successfully; a signed-in `app.openfolk.ai` Drummonds workspace
+all 47 prebuild checks and the production build passed. The Vercel Git
+deployment `dpl_8936hCd1mvpZvW2ZsRxu3ZX9GcLA` is Ready; all four LIVE
+aliases exposed the same public login asset set. A signed-in `app.openfolk.ai` Drummonds workspace
 retained LEARN and showed the saved “Recorded complete” status separately from
 “Job record needs review.” Source coverage, completion timing and score policy
 remain open. See the [current Build 01 evidence](operations/evidence/learn-build01-job-card-coverage-2026-10-15.json).

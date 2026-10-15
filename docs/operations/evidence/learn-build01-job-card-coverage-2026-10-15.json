@@ -45,9 +45,14 @@
     "behavior": "Job list renders the exact saved canonical status separately from record verification, with a provider-lag qualification.",
     "testCheckpointCommit": "9b682d0b",
     "productionCommit": "4d7084f202ffc942f354db87ab3e66994ab615c4",
+    "productionDeploymentId": "dpl_8936hCd1mvpZvW2ZsRxu3ZX9GcLA",
     "productionBranchRemoteHeadVerified": true,
     "vercelGitStatus": "success",
+    "vercelDeploymentState": "Ready",
     "vercelProject": "serviceos-dh",
+    "fourLiveAliasLoginAssetSetSha256": "29c5621a8616531602d13c32ef90fc01f246fc5861e408cc75ef228e7a70b049",
+    "fourLiveAliasesMatched": ["app.openfolk.ai", "www.openfolk.ai", "openfolk.ai", "serviceos-dh.vercel.app"],
+    "testProjectGitDeployment": "dpl_5Dv6YP9gi981q257cW7FBP3U3vzb was Ready on staged domains; custom-domain assignment was skipped. test.openfolk.ai remained a protected separate alias; its signed-in card-list change was not verified.",
     "signedInLiveAppObservationUtc": "2026-10-15T21:45:00Z",
     "signedInDrummondsLearnMenuAndBrandingVisible": true,
     "signedInJobListShowsSavedStatusSeparateFromReview": true,
@@ -63,7 +68,8 @@
     "Current reviewed job attempts are linked outcomes; most observed source job identities have not yet been explicitly reviewed for canonical projection.",
     "No canonical engineer identity is linked; name-only assignment must not be guessed.",
     "Unzoned source completion values remain retained but cannot support elapsed-time or staff scoring.",
-    "This sample and aggregate do not establish complete Commusoft provider coverage or owner business acceptance."
+    "This sample and aggregate do not establish complete Commusoft provider coverage or owner business acceptance.",
+    "The four LIVE public aliases shared the same asset set, but only app.openfolk.ai received a signed-in job-list check; TEST signed-in verification of this UI release remains open."
   ],
-  "productionWrites": false
+  "productionDataWrites": false
 }

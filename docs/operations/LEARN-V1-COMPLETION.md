@@ -13,7 +13,8 @@ override a later release observation. No requirement is silently deferred.
 
 - Production Git `4d7084f2` contains only the four-file card-list change. The
   exact candidate passed 20 focused tests, TypeScript, all 47 prebuild checks
-  and the production build; Vercel reported success. In a signed-in LIVE
+  and the production build; Vercel's exact deployment was Ready. All four LIVE
+  aliases shared the same public login asset set. In a signed-in LIVE
   Drummonds workspace, LEARN and its existing branding remained visible and
   job cards showed “Recorded complete · saved status may lag the provider”
   while separately showing “Job record needs review.”
@@ -23,7 +24,9 @@ override a later release observation. No requirement is silently deferred.
 
 - A clearer saved-status label does not confirm completion time, payment,
   responsible engineer or a linked communication. The underlying job-card
-  coverage and business acceptance gaps below remain.
+  coverage and business acceptance gaps below remain. The separate TEST Git
+  build was Ready only on staged domains; this particular card-list release
+  has not had a signed-in TEST alias check.
 
 ### Blocked externally
 
@@ -41,7 +44,8 @@ override a later release observation. No requirement is silently deferred.
   migration-replay checks passed. LIVE settled three channel windows after the
   release, alongside the existing reply lane, with no new failed job or provider
   block in this short observation. Queued Slack jobs fell from 794 at 21:37 to
-  788 at 21:41 UTC. [Fairness evidence](evidence/learn-build01-slack-claim-fairness-2026-10-15.json).
+  781 at 21:48 UTC, with eight channel windows settled after the release.
+  [Fairness evidence](evidence/learn-build01-slack-claim-fairness-2026-10-15.json).
 
 ### Needs finishing
 
