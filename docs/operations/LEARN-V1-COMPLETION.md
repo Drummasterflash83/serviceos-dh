@@ -7,6 +7,59 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 09:58 UTC — stale completed-reply labels repaired in TEST/LIVE.**
+
+### Working and verified
+
+- The 68 `queued` reply members observed in the approved campaign, and 84
+  receipt-complete `queued` members across LIVE campaigns at release time, had
+  complete import checkpoints and matching successful worker jobs. The campaign
+  step's early return skipped its existing label normalization. An exact guarded
+  change passed TEST and LIVE rollback rehearsals, then was installed separately
+  in both. LIVE now has zero receipt-complete `queued` members and all 837
+  observed threads in its 159 completed channels say `captured`. The 1,362
+  retained thread members, campaign authority, provider scope and restricted
+  function access were preserved.
+
+### Needs finishing
+
+- The final approved channel still has active history continuation; its reply
+  discovery and ordinary terminal transition remain to be observed. TEST had
+  no campaign members for a synthetic status journey, so the actual retained-row
+  repair is evidenced by LIVE rollback/install readback. Continue the real
+  unattended-day and broader Build 01 gates.
+
+### Blocked externally
+
+- Chris's business sign-off follows the completed technical and operational pack.
+
+[Completed-thread label evidence](evidence/learn-build01-slack-completed-thread-labels-2026-10-15.json).
+
+**15 October, 09:51 UTC — approved Slack campaign near its final channel.**
+
+### Working and verified
+
+- The LIVE fixed-window campaign has 159 of 160 approved public channels in
+  `campaign_window_complete`. Their 159 thread scans are complete, and all 837
+  observed threads have complete checkpoints with matching successful worker
+  jobs. At 09:51 UTC, 11,218 of 20,000 requests were reserved, with zero
+  campaign channels in needs-review. No DM was included.
+
+### Needs finishing
+
+- The last channel remains queued for its next history page, with 6,200 retained
+  messages observed so far; it has not completed its approved history window or
+  reply discovery. Sixty-eight thread-member rows still say `queued` despite
+  complete checkpoints and successful jobs, so review status presentation before
+  claiming a clean operator handover. Keep the campaign under its fixed approval
+  and budget. A real full unattended day remains required.
+
+### Blocked externally
+
+- Chris's business sign-off follows the complete technical and operational pack.
+
+[Slack campaign coverage evidence](evidence/learn-build01-slack-campaign-coverage-2026-10-15.json).
+
 **15 October, 09:43 UTC — source/card catch-up is active but incomplete.**
 
 ### Working and verified

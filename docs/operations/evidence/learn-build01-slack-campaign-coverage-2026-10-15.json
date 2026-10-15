@@ -1,0 +1,40 @@
+{
+  "version": "learn-build01-slack-campaign-coverage/1",
+  "observed_at_utc": "2026-10-15T09:51:21Z",
+  "scope": "Read-only aggregates for the existing approved LIVE Drummonds public-channel campaign. No provider request, message body, DM read, campaign mutation or manual worker invocation.",
+  "approved_window": {
+    "starts_at": "2015-10-13T00:00:00Z",
+    "ends_at": "2026-10-13T09:30:00Z",
+    "expires_at": "2026-10-20T09:30:00Z",
+    "channels": 160,
+    "request_budget": 20000,
+    "requests_reserved_at_09_51_utc": 11218
+  },
+  "completed_channels": {
+    "campaign_window_complete": 159,
+    "thread_discovery_scans": 159,
+    "discovery_complete": 159,
+    "observed_threads": 837,
+    "complete_thread_checkpoints": 837,
+    "matching_successful_thread_jobs": 837,
+    "retained_member_states": {"captured": 769, "queued": 68},
+    "interpretation": "The 159 channels have durable history and observed-thread completion evidence. The 68 queued member labels retain completed import checkpoints and matching successful jobs; progress is based on those durable receipts rather than the label alone."
+  },
+  "remaining_channel": {
+    "count": 1,
+    "state_at_09_51_utc": "window_queued",
+    "active_history_jobs": 1,
+    "campaign_needs_review_channels": 0,
+    "retained_messages_in_window_at_09_51_utc": 6200,
+    "oldest_observed_provider_timestamp": "1473092680.000040",
+    "newest_observed_provider_timestamp": "1777506821.748259",
+    "history_complete": false,
+    "reply_discovery_complete": false
+  },
+  "limits": [
+    "The last channel has not reached the fixed-window lower bound or completed reply discovery. Observed message count cannot establish unavailable or older provider history.",
+    "Completion covers the campaign's approved fixed window and observed roots; it does not infer deleted, inaccessible or retention-expired source messages.",
+    "The 68 retained queued member labels warrant UI/status review even though their completed checkpoints and successful jobs satisfy the campaign progress contract.",
+    "A short ordinary-run sample is not a full uninterrupted working-day observation or business acceptance."
+  ]
+}

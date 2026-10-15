@@ -1,0 +1,39 @@
+{
+  "version": "learn-build01-slack-completed-thread-labels/1",
+  "observed_at_utc": "2026-10-15T09:58:16Z",
+  "status": "test_live_installed_live_retained_labels_reconciled_final_campaign_channel_open",
+  "cause": "The campaign thread step returned immediately when receipt-based aggregate progress was complete, before changing the last completed thread members from queued to captured. The progress reader correctly counted their checkpoints and successful worker jobs, but the retained member labels remained stale.",
+  "change": {
+    "migration": "supabase/migrations/20261103200000_learn_slack_completed_thread_labels.sql",
+    "source_sha256": "ebe13930b30c88c6bb2fe12a38a2f780881b3adcb46d5107056ccd7c1144ac6d",
+    "scope": "Move the existing receipt-complete label normalization before the campaign step's complete early return, then update only retained queued members with complete imports and matching successful worker receipts.",
+    "member_state_rows_changed_live": 84,
+    "provider_requests": 0,
+    "source_messages_changed": 0,
+    "campaign_approval_or_budget_changed": false,
+    "access_grants_changed": false
+  },
+  "verification": {
+    "test": {
+      "installed_function_before_md5": "cbc8c540043042d736f53d5cc5971e53",
+      "rolled_back_rehearsal_function_md5": "2298a3a9149ec202dfc2b258edefcc3d",
+      "rollback_preserved_original_function_and_zero_members": true,
+      "installed_function_after_md5": "2298a3a9149ec202dfc2b258edefcc3d",
+      "synthetic_member_fixture": false
+    },
+    "live": {
+      "installed_function_before_md5": "cbc8c540043042d736f53d5cc5971e53",
+      "rolled_back_rehearsal": "All 84 receipt-complete queued member labels would become captured, with zero remaining; rollback restored all 84 and the original function. The 1,362 total campaign thread members were preserved.",
+      "installed_function_after_md5": "2298a3a9149ec202dfc2b258edefcc3d",
+      "post_install_completed_queued_members": 0,
+      "total_campaign_thread_members_preserved": 1362,
+      "approved_campaign_at_09_58_utc": "159 of 160 channels remained campaign_window_complete; one continued its approved history window. Its 159 completed thread scans retained 837 observed threads, all now labeled captured with complete checkpoints.",
+      "function_access": "Owner postgres, SECURITY DEFINER, search_path pg_catalog, and postgres-only explicit EXECUTE in TEST and LIVE; anon, authenticated and service_role have no direct execute grant."
+    }
+  },
+  "limits": [
+    "TEST has no retained campaign members, so its rollback rehearsal establishes function compilation, digest and zero-row preservation; LIVE real rows establish the retained-data repair.",
+    "The repaired order of the future terminal step is installed, but the final campaign channel has not yet completed history and reply discovery to exercise that exact terminal transition in ordinary LIVE work.",
+    "No expanded Slack source scope, DM access, full working-day reliability, complete Build 01 recovery or business sign-off is claimed."
+  ]
+}
