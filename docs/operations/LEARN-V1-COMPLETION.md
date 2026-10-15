@@ -7,6 +7,29 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 18:22 UTC — historical Slack replies retained; ongoing windows remain record-empty.**
+
+### Working and verified
+
+- LIVE retains 3,353 real Slack replies across 1,395 thread roots. Twenty-seven
+  unattended ongoing reply windows have completed exact checkpoints. None saved
+  a new record. The saved source has no message or reply whose provider time
+  falls after the approved 13 October 09:30 UTC cutoff; this does not prove
+  unfinished channels are quiet at Slack. The exact reviewed recovery remains
+  queued. [Read-only aggregate](evidence/learn-build01-slack-reply-availability-2026-10-15.json).
+
+### Needs finishing
+
+- Let the approved 160-channel queue advance under its existing pacing. Verify
+  the exact recovery and either a genuinely new reply capture or retain the
+  explicit absence-of-event limit; do not manufacture provider activity.
+- Finish hosted backup restore diagnosis and all other Build 01 gates below.
+
+### Blocked externally
+
+- A new real reply event is outside our control. Chris's business acceptance
+  and the first full unattended working day remain outstanding.
+
 **15 October, 18:18 UTC — hosted export passed; isolated restore needs diagnosis.**
 
 ### Working and verified

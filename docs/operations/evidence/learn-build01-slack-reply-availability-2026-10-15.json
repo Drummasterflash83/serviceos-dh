@@ -1,0 +1,26 @@
+{
+  "version": "learn-build01-slack-reply-availability/1",
+  "observedAt": "2026-10-15T18:22:15Z",
+  "environment": "LIVE",
+  "method": "Tenant-scoped read-only database aggregates over saved Slack source records, approved recurring window jobs and checkpoints",
+  "approvedHandoffCutoff": "2026-10-13T09:30:00Z",
+  "savedSource": {
+    "messages": 37850,
+    "replies": 3353,
+    "replyRoots": 1395,
+    "latestSavedMessageAt": "2026-10-13T09:08:40.987869Z",
+    "latestSavedReplyAt": "2026-10-13T05:51:21.720799Z",
+    "messagesWithProviderTimeAfterCutoff": 0,
+    "repliesWithProviderTimeAfterCutoff": 0
+  },
+  "ongoingJobsSinceHandoff": {
+    "unattendedCompletedReplyWindows": 27,
+    "durableCompleteCheckpoints": 27,
+    "processedRecords": 0,
+    "windowsWithSavedRecords": 0,
+    "latestCompletedAt": "2026-10-15T18:21:21.709067Z"
+  },
+  "exactReviewedRecovery": "queued at observation",
+  "productionWrites": false,
+  "interpretation": "Historical real replies are retained. Completed ongoing provider windows had no records to save; neither a new real reply ingestion nor full 160-channel catch-up is proven. Zero saved records after the cutoff is not proof that Slack has no later messages in unfinished channels."
+}
