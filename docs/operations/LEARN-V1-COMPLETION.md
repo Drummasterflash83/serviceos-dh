@@ -7,6 +7,47 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 16:22 UTC — first keyless daily attempt stopped at its export limit; bounded retry running.**
+
+### Working and verified
+
+- The first fresh dedicated-reader attempt (`4d4105ea`) opened a read-only LIVE
+  snapshot and wrote 959 MB of a native archive. Its 30-minute timer stopped
+  `pg_dump` before completion. The failed attempt is recorded as unverified;
+  temporary containers were removed and its incomplete archive was deleted.
+  The exporter now allows up to 90 minutes, with a 100-minute outer export
+  bound and a 300-minute manual hosted-job bound. The new keyless attempt
+  (`911be91a`) began at 16:17 UTC and is still exporting; no completed copy or
+  restore can be claimed yet.
+- The whole-project daily package/transfer ceiling was raised from 1 to 2 GiB
+  to leave measured growth room without truncation. Forty-one focused Node
+  transport/package tests, 19 Python package tests and daily-runner tests pass.
+  The corrected manual-only `main` workflow is pinned to TEST source `eda9e747`
+  at main commit `529c778c`; no hosted retry or schedule has run since the
+  first public-tool path failure.
+- An aggregate LIVE identity read found 197–199 valid durable receipts per
+  200-row retry attempt, with zero receipt-shape errors; one to three deliveries
+  per attempt remain unconfirmed. A bounded revision-refresh handler passed
+  local tests and is checkpointed at `ac706bc5` on TEST. It has **not** been
+  deployed to TEST or LIVE, and the actual cause of every failed row is still
+  unproven. LIVE worker and TEST worker versions differ, so a full runtime
+  preservation rehearsal is required before any promotion.
+
+### Needs finishing
+
+- Complete the new backup, isolated native restore, encrypted off-site copy,
+  independent download and later recovery-key/Vault restore. Rehearse the hosted
+  runner without overlapping the local source export; prove a missed-success
+  alert before enabling a daily schedule.
+- Diagnose the ordinary identity retry after 16:21 UTC and safely rehearse the
+  code change across the actual TEST/LIVE worker baselines. Continue source,
+  Slack, cards, scoring, full application/Auth and full-day observation gates.
+
+### Blocked externally
+
+- Chris's Drummonds scoring criteria and final business acceptance remain
+  pending. The first eligible full working-day observation is 16 October.
+
 **15 October, 16:09 UTC — hosted backup access approved and manual rehearsal corrected; daily activation remains open.**
 
 ### Working and verified
