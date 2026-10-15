@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 23:15 UTC — current-job review dependency quantified.**
+
+### Working and verified
+
+- A new aggregate LIVE read confirms 288 latest retained non-complete Commusoft
+  job identities, with six reviewed canonical links. Of the other 282, three
+  already have a reviewed customer-property link, 254 reference an observed
+  property source without a reviewed property link, and 25 reference properties
+  not present in the retained property collection. No job/customer IDs, new
+  provider requests or canonical writes were involved.
+  [Dependency receipt](evidence/learn-build01-open-work-dependency-2026-10-15.json).
+
+### Needs finishing
+
+- The review sequence is now concrete: inspect the three linked-property jobs,
+  review property ownership before the 254 dependent job links, and establish
+  source coverage for the other 25. A retained source reference alone does not
+  confirm owner, job progress or current Commusoft status. Human/operator
+  evidence review and explicit links remain necessary; no bulk inference was
+  applied.
+
+### Blocked externally
+
+- No provider-access block was proven by this aggregate. Source absence for 25
+  properties and reviewed ownership for the other jobs remain open.
+
 **15 October, 23:11 UTC — two Workspace holds recovered without manual resume; Build 01 still open.**
 
 ### Working and verified

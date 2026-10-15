@@ -1,0 +1,31 @@
+{
+  "version": "learn-build01-open-work-dependency/1",
+  "observedAtUtc": "2026-10-15T23:14:49Z",
+  "environment": "LIVE",
+  "method": "Aggregate-only read of latest unambiguous retained Commusoft job versions, exact connection-scoped canonical job/property links and retained property source presence; no raw job, property or customer IDs returned",
+  "savedNonCompleteCohort": {
+    "total": 288,
+    "reviewedCanonicalJobs": 6,
+    "unlinkedJobs": 282,
+    "unlinkedWithReviewedPropertyCustomerLink": 3,
+    "unlinkedWithoutPropertyLinkButPropertySourcePresent": 254,
+    "unlinkedWithoutPropertyLinkOrObservedPropertySource": 25,
+    "all282HaveSyntacticallyValidNumericPropertyReference": true
+  },
+  "breakdown": {
+    "onHold": { "total": 69, "unlinkedPropertySourcePresent": 65, "unlinkedPropertySourceAbsent": 4 },
+    "ongoing": { "total": 211, "linkedJobs": 5, "unlinkedPropertyLinkPresent": 2,
+      "unlinkedPropertySourcePresent": 183, "unlinkedPropertySourceAbsent": 21 },
+    "pending": { "total": 8, "linkedJobs": 1, "unlinkedPropertyLinkPresent": 1,
+      "unlinkedPropertySourcePresent": 6, "unlinkedPropertySourceAbsent": 0 }
+  },
+  "interpretation": [
+    "The upstream property-review dependency dominates this cohort: 254 unlinked jobs reference an observed property source but lack a reviewed property link. A source row is not proof that its customer/site owner is ready or unchanged.",
+    "Twenty-five unlinked jobs reference property IDs whose property source has not been observed in the retained collection. Missing source cannot be guessed into an owner.",
+    "Three unlinked jobs have a reviewed customer-property link; they still need explicit job review before a canonical job card is claimed.",
+    "Most latest retained observations are over a day old. This is not a live Commusoft state check or proof of current completion."
+  ],
+  "providerRequests": 0,
+  "productionDataWrites": false,
+  "automaticCanonicalLinks": 0
+}
