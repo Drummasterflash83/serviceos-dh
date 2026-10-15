@@ -1,0 +1,42 @@
+{
+  "version": "learn-build01-live-transient-db-health/1",
+  "environment": "LIVE",
+  "observedAtUtc": "2026-10-15T22:04:14Z",
+  "readOnly": true,
+  "event": {
+    "atApproxUtc": "2026-10-15T22:02:32Z",
+    "slackQueueAggregate": "Supabase Management SQL returned HTTP 544, connection terminated due to connection timeout",
+    "channelCoverageAggregate": "Read-only request timed out",
+    "serviceHealthAt220325Utc": {
+      "db": "UNHEALTHY",
+      "storage": "UNHEALTHY",
+      "auth": "ACTIVE_HEALTHY",
+      "rest": "ACTIVE_HEALTHY"
+    }
+  },
+  "recovery": {
+    "serviceHealthAt220408Utc": {
+      "db": "ACTIVE_HEALTHY",
+      "storage": "ACTIVE_HEALTHY",
+      "auth": "ACTIVE_HEALTHY",
+      "rest": "ACTIVE_HEALTHY"
+    },
+    "readOnlySelectOneAt220414Utc": "passed",
+    "slackQueueAt220439Utc": {
+      "historyQueued": 113,
+      "replyQueued": 654,
+      "replyQueuedDueOverHour": 215,
+      "lastHistorySuccessUtc": "2026-10-15T22:02:49Z",
+      "lastReplySuccessUtc": "2026-10-15T22:03:58Z"
+    },
+    "postgresRestartsMetric": 0,
+    "poolerWaitingConnectionsAt220408Utc": 0
+  },
+  "interpretation": "A short project-specific database and Storage health failure recovered without an observed PostgreSQL restart. The immediate cause and impact on unattended job execution are not established by these checks.",
+  "productionMutation": false,
+  "limits": [
+    "The global Supabase status page reported all systems operational when checked, but it does not override project-specific health evidence.",
+    "One recovered health read and a SELECT 1 are not sustained operational acceptance.",
+    "The later read-only queue snapshot shows successful Slack jobs during the interval, but 767 queued jobs and 215 overdue replies remain; it does not prove stable capture or source completeness."
+  ]
+}

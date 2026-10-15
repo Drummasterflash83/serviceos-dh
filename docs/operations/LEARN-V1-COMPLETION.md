@@ -7,6 +7,28 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 22:04 UTC — transient LIVE database and Storage health failure.**
+
+### Working and verified
+
+- After two read-only aggregate timeouts, the LIVE project reported database
+  and Storage unhealthy at 22:03 UTC while Auth and REST were healthy. All four
+  services reported healthy at 22:04, and one bounded read-only `SELECT 1`
+  succeeded. Slack history and reply jobs had both succeeded during the
+  interval; the 22:04 queue was down to 767 but still included 215 overdue
+  replies. The metrics scrape reported no PostgreSQL restart or waiting pooler
+  client at that later instant. No production setting or data changed.
+  [Health readback](evidence/learn-build01-live-transient-db-health-2026-10-15.json).
+
+### Needs finishing
+
+- Determine whether this affected real unattended jobs and whether health stays
+  stable. A recovered point-in-time probe does not pass the operating gate.
+
+### Blocked externally
+
+- No new access or operator action is required for the read-only diagnosis.
+
 **15 October, 22:00 UTC — non-complete Commusoft jobs identified for review.**
 
 ### Working and verified
