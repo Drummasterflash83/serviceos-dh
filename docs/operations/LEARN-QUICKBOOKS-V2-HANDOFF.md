@@ -1,6 +1,6 @@
 # QuickBooks LIVE integration and LEARN V2 handoff
 
-Status checked 15 October 2026, 11:05 UTC. This is an operational handoff, not
+Status checked 15 October 2026, 11:49 UTC. This is an operational handoff, not
 an assertion that every Drummonds customer or job has been reconciled.
 
 ## Working and verified
@@ -11,13 +11,14 @@ an assertion that every Drummonds customer or job has been reconciled.
   accounting source records and history remain intact.
 - Two unattended full scans completed on 14 October across the 13 approved
   accounting collections. The third scan was resumed after a premature 401 with
-  a single guarded token-refresh allowance. It had advanced from 210 to 771
+  a single guarded token-refresh allowance. It had advanced from 210 to 1,208
   saved pages at this checkpoint, with no current run error. This third scan is
   still in progress and is **not** a completed-cycle acceptance result.
 - The unattended worker renewed the existing OAuth grant before its 11:06 UTC
-  expiry: token generation 11 became 12, and ten more pages were retained on
-  the same run afterward. All 771 page receipts, unique permits and 76,679
-  observations reconcile with zero wrong-tenant pages and source conflicts.
+  expiry: token generation 11 became 12, and more pages were retained on the
+  same run afterward. At 11:48 UTC, 1,193 saved page receipts, unique permits
+  and 118,855 observations reconciled with zero wrong-tenant pages and source
+  conflicts.
   [Refresh evidence](evidence/learn-quickbooks-unattended-refresh-2026-10-15.json).
 - LIVE retains 134,706 latest QuickBooks source records across the collections,
   with zero unresolved source conflicts at this checkpoint. This is a source
@@ -43,6 +44,14 @@ an assertion that every Drummonds customer or job has been reconciled.
   identity changes or a source is conflicted. Invoices, payments and credits
   stay distinct; no job profit is inferred from a customer-level accounting
   link.
+- The native QuickBooks subaccount hierarchy is now included under a reviewed
+  parent card, within explicit source, identity and review boundaries. TEST and
+  LIVE readers have matching verified definitions, and their stable frontend
+  aliases show the matching source-limit wording. The signed-in Dan Breen LIVE
+  card shows three Commusoft jobs with three QuickBooks invoices and three
+  payments; that card has no child account, so child inclusion is proven by
+  isolated PostgreSQL tests rather than a LIVE example.
+  [Release evidence](evidence/learn-quickbooks-card-hierarchy-release-2026-10-15.json).
 - The SQL 401 recovery was rehearsed in a rolled-back synthetic TEST case,
   installed and body/permission-verified in TEST and LIVE, then used once on the
   failed LIVE run. A second 401 at the same checkpoint hard-stops for review.
@@ -55,9 +64,9 @@ an assertion that every Drummonds customer or job has been reconciled.
   subsequent six-hour unattended cycle starts and completes under the same
   3,000-request, 24-hour policy. If a fresh token also receives 401, investigate
   the Intuit grant instead of retrying indefinitely.
-- Recheck the 24 reviewed links after the scan, including source-identity drift,
-  actor audit and ordinary signed-in customer-card access. Do not silently
-  auto-approve additional identities.
+- Recheck the 24 reviewed links after the scan, including source-identity drift
+  and actor audit. Ordinary signed-in customer-card access has been verified;
+  do not silently auto-approve additional identities.
 - Keep the first client app's ownership visible: its Intuit registration is in
   Drummonds' developer workspace. Future OpenFolk-owned app migration requires
   separate client reauthorisation; connector code and source identity keys are

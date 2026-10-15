@@ -65,8 +65,11 @@ before making a freshness claim to a client.
   customers. Compare current source identity, name, contact and address evidence
   before saving a link. Existing reviewed links remain auditable; new candidates
   must not be silently auto-approved. Commusoft remains authoritative for current
-  job codes; preserve original QuickBooks job references. A customer-level
-  invoice is not proof of its relationship to a particular job.
+  job codes; preserve original QuickBooks job references. A reviewed parent
+  customer card includes transactions on its QuickBooks-native child accounts,
+  unless a child was explicitly linked elsewhere, unlinked, changed identity or
+  has conflicted source evidence. This hierarchy is not a Commusoft job link. A
+  customer-level invoice is not proof of its relationship to a particular job.
 - Finance is restricted to company owners/admins and authorised logged support.
   Check dates and currencies; do not sum unlike currencies or describe captured
   balances as reconciled accounts. Disconnect does not delete retained history.

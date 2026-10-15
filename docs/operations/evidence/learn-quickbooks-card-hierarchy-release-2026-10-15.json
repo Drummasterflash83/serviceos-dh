@@ -1,0 +1,52 @@
+{
+  "checkedAt": "2026-10-15T11:48:14Z",
+  "environment": "TEST and LIVE",
+  "backend": {
+    "release": "quickbooks_card_hierarchy_v1",
+    "readerMd5": "d61d449f5a08d6ec90a3ac1b184b76a0",
+    "testInstalledAt": "2026-10-15T11:35:02Z",
+    "liveInstalledAt": "2026-10-15T11:36:59Z",
+    "rollbackRehearsed": true,
+    "ownerGrantsAndUnauthorisedDenialsPreserved": true
+  },
+  "frontend": {
+    "testAliasCommit": "eec1e86968250c1106be7124b1a7f4965d6e79e5",
+    "liveAliasCommit": "723daaeae69d9c606a8dd33adee6f68f2dd1ec2d",
+    "testDeployment": "dpl_3XL5B8jNW7PFCwKuyfYK6zyEkxSx",
+    "liveDeployment": "dpl_Cg9tPLgRCFzQ5DxpVamd59sPnsUg",
+    "aliasReadbackVerified": true,
+    "backendBindingCheckedBeforePromotion": true,
+    "signedInLiveCard": {
+      "name": "Dan Breen",
+      "commusoftJobs": 3,
+      "quickbooksInvoices": 3,
+      "quickbooksPayments": 3,
+      "invoiceTotalGbp": "401.05",
+      "paymentTotalGbp": "401.05",
+      "nativeSubaccountsOnThisCard": 0,
+      "nativeHierarchyBoundaryDisplayed": true,
+      "noInferredJobFinancialMatchDisplayed": true
+    },
+    "signedInCombinedJobsContactsFinanceCard": {
+      "name": "Belvoir Estate & Lettings Agent (Andover)",
+      "commusoftJobs": 2,
+      "commusoftContacts": 2,
+      "quickbooksInvoices": 2,
+      "quickbooksPayments": 2,
+      "invoiceTotalGbp": "591.00",
+      "paymentTotalGbp": "591.00",
+      "checkedAt": "2026-10-15T11:51:42Z"
+    }
+  },
+  "linkedCardIntegrity": {
+    "reviewedLinks": 24,
+    "auditEvents": 24,
+    "existingDistinctCards": 24,
+    "identityDrift": 0,
+    "missingLatestSources": 0,
+    "sourceConflicts": 0
+  },
+  "providerRequestsForThisRelease": 0,
+  "providerWrites": 0,
+  "credentialsIncluded": false
+}
