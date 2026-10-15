@@ -67,7 +67,13 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
     select job_type,max(completed_at) filter(where status='succeeded') last_success_at,
       max(updated_at) filter(where status in('failed','dead_letter')) last_failure_at,
       count(*) filter(where status='succeeded' and completed_at>=now()-interval '1 hour')::int successes_last_hour,
-      count(*) filter(where status in('failed','dead_letter') and updated_at>=now()-interval '1 hour')::int failures_last_hour
+      count(*) filter(where status in('failed','dead_letter') and updated_at>=now()-interval '1 hour')::int failures_last_hour,
+      count(*) filter(where status='dead_letter' and error_code in
+        ('identity_review_required','projection_review_required')
+        and updated_at>=now()-interval '1 hour')::int review_holds_last_hour,
+      count(*) filter(where status in('failed','dead_letter') and error_code is distinct from
+        'identity_review_required' and error_code is distinct from 'projection_review_required'
+        and updated_at>=now()-interval '1 hour')::int operational_failures_last_hour
     from public.platform_jobs where tenant_id='${TENANT}'::uuid
       and job_type in ('email.workspace_sync','commusoft.source_sync','interactions.sync',
        'identity.resolve','graph.sync','customer_card.sync','slack.history_sync')
@@ -76,7 +82,8 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
     'updatedAt',s.updated_at,'completedAt',s.completed_at,'attempts',s.attempt_count,
     'recordsProcessed',s.records_processed,'lastSuccessAt',h.last_success_at,
     'lastFailureAt',h.last_failure_at,'successesLastHour',h.successes_last_hour,
-    'failuresLastHour',h.failures_last_hour)) latest
+    'failuresLastHour',h.failures_last_hour,'reviewHoldsLastHour',h.review_holds_last_hour,
+    'operationalFailuresLastHour',h.operational_failures_last_hour)) latest
     from selected s join history h on h.job_type=s.job_type where s.n=1`,
   );
   const aliases = await query(

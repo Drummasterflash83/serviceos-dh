@@ -7,6 +7,45 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 11:47 UTC — LIVE midday source review; Build 01 remains open.**
+
+### Working and verified
+
+- The completed public Slack history window remains 160/160 channels and 870/870
+  observed reply threads. Ordinary Email, Commusoft, graph and card work continues.
+  At 11:39 UTC, all 4,561 Phone calls had interactions, 3,735 of 3,744 active
+  cards carried projection evidence, and 2/2 active Gmail aliases were ready.
+  Review-required identity and projection jobs still delivered thousands of
+  records rather than failing wholesale.
+- The exact encrypted database object remains independently uploaded and
+  downloaded. Recovery-only retries did not re-export or re-upload it.
+
+### Needs finishing
+
+- An active Workspace user mailbox has a `persistence_failed` recent checkpoint
+  blocked since 04:54 UTC; 15 ordinary jobs in the last two hours ended
+  `source_ineligible` against it. Recorded account, mailbox and connection
+  authority still passes. Its failed attempt has unknown persistence evidence,
+  so recovery must preserve the checkpoint, use an exact guard, and prove the
+  next ordinary capture. No recovery has been applied yet.
+- At 11:39 UTC, 4,762 eligible Emails still lacked interactions, 18,662 eligible
+  interactions lacked graph nodes and nine active cards lacked projection
+  evidence. The signed-in operator capture and scheduling health panels returned
+  unavailable after refresh. Some voicemail routes need source review, and the
+  selected ongoing Slack channel is not enabled. Source-to-card/scoring acceptance,
+  dependable operation, full app/Auth recovery and the full unattended day remain open.
+- The off-site isolated database restore still stops at the recovery-key read;
+  no database restore was started on those recovery-only attempts.
+
+### Blocked externally
+
+- The encrypted backup's isolated restore needs a successful ordinary 1Password
+  Touch ID read in the same running process. Chris's business review and sign-off
+  follow the technical and operational evidence pack.
+
+[Midday LIVE source review](evidence/learn-build01-midday-source-review-2026-10-15.json) ·
+[off-site transfer](evidence/learn-build01-offsite-transfer-2026-10-15.json).
+
 **15 October, 11:18 UTC — approved LIVE Slack history window complete.**
 
 ### Working and verified
