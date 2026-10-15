@@ -1,0 +1,47 @@
+{
+  "version": "learn-build01-exact-slack-release-and-retry/1",
+  "observedAtUtc": "2026-10-15T08:56:31Z",
+  "scope": "Existing public-channel campaign and one-line frontend recovery control only. No Slack DMs, private/shared channels, provider writes, new access, ongoing-capture handoff or score publication.",
+  "release": {
+    "change": "Add slack_history_failed to the existing reviewed exact-page recovery button allowlist; both candidates differ from their exact previously serving Git commit by one line in one file.",
+    "test": {
+      "sha": "67e96e108d2f26bda74c225c3bfad836ce6a1d6c",
+      "deploymentId": "dpl_HGAqMTkH6U1w7otERV9EM35TR1aw",
+      "aliases": ["serviceos-learn-test-allkin.vercel.app", "test.openfolk.ai"],
+      "previousDeploymentId": "dpl_5v1UQiMqVxfwwxVdVHZrtmr3XBQ9",
+      "verification": "READY protected Preview, exact Git source, all SSO protection, automatic custom-production-domain assignment disabled, both exact aliases and unchanged redirects read back. Preview login rendered the TEST backend reference; the signed-in stable alias loaded Drummonds — Commusoft TEST, its operator LEARN view and an audited public Slack evidence read returning zero observations for that TEST tenant.",
+      "limit": "The zero-observation TEST tenant could not exercise the particular held-page retry in a signed-in browser. Backend TEST parity and focused tests are separate evidence."
+    },
+    "live": {
+      "sha": "cf0b7db3c71ecb2beee0a2fe42ad9c70eee79832",
+      "deploymentId": "dpl_4aioFagPc6xvpoKft726HHaNJXVg",
+      "aliases": ["app.openfolk.ai", "openfolk.ai", "serviceos-dh.vercel.app", "www.openfolk.ai"],
+      "previousDeploymentId": "dpl_EcUCHusjTKceNQ2DSPAokoDHDJ3N",
+      "verification": "READY exact Git candidate and rendered LIVE backend reference. Four exact aliases, existing openfolk.ai to www redirect and all_except_custom_domains protection were read back after one-at-a-time assignment. The signed-in www.openfolk.ai Drummond's LEARN workspace loaded with existing branding; public Slack evidence showed 25 observations on the first page, opened a retained original message and loaded the next page."
+    },
+    "credentials": "Normal Vercel CLI device sign-in succeeded; no credential value is retained in this evidence. No payment was made."
+  },
+  "liveHeldPage": {
+    "campaign": "b54d246b-2818-44d1-ba05-ccbe2c6bd6c9",
+    "channel": "C0CE2L0BA",
+    "failedJob": "33dc212e-13b0-437b-9f57-b0a02eab42dd",
+    "failedCode": "slack_history_failed",
+    "review": "The signed-in OpenFolk operator form displayed the failed job, preserved checkpoint and no structural diagnostic. A reasoned one-page recovery was reviewed and submitted once under the existing approved 160-channel window. The UI receipt was separate from execution.",
+    "requestId": "58f2822d-7026-4a44-b47c-650474030cb1",
+    "jobId": "9cf31634-ade5-41b0-8fc4-072300093eea",
+    "ordinaryWorkerOutcome": "succeeded at 08:53:16 UTC on attempt one, 100 records processed. The worker claimed this queued job without a manual worker invocation.",
+    "campaignReadback": "At 08:56 UTC the channel was window_active, the 160-channel campaign had zero needs_review channels and one active ordinary continuation job. The fixed campaign request allowance was 10,975 of 20,000 reserved, expiring 20 October 09:30 UTC. This is not whole-campaign completion."
+  },
+  "workingDayReadback": {
+    "atUtc": "2026-10-15T08:47:43.204Z",
+    "eligibleEmailWithoutInteraction": 3660,
+    "phoneCalls": 4534,
+    "phoneInteractions": 4534,
+    "eligibleMissingGraph": 24855,
+    "activeCards": 3705,
+    "projectedCards": 3680,
+    "ordinaryProjection": "The 08:07 mixed continuation recovered on its ordinary retry and subsequent mixed jobs published four 200-email pages between 08:32 and 08:36 UTC, each retaining durable review holds. No manual projection retry was invoked.",
+    "identity": "Recent ordinary 200-row identity batches delivered 135–183 cards each and kept review-required records visible. At 08:49 a later batch was retrying after an intermittent inventory error; an exact read-only service selector returned 200 rows in 8.0 seconds. Do not count review-required terminal labels as lost delivery or the retry as settled."
+  },
+  "acceptance": "Build 01 remains IN PROGRESS. Today's 09:00–17:00 Europe/London unattended window was interrupted by the reasoned manual Slack recovery, so it cannot count as a full untouched working day. Historical source/card/graph gaps, scoring acceptance, full application/Auth restore and Chris's business sign-off remain open. Build 02 is not activated."
+}

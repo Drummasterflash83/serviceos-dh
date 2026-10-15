@@ -7,6 +7,46 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 08:56 UTC — exact Slack retry released in TEST/LIVE; second held page recovered.**
+
+### Working and verified
+
+- Normal Vercel sign-in was restored. The isolated one-line Slack recovery change
+  now serves both protected TEST aliases and all four existing LIVE aliases.
+  Exact Git sources, backend targets, redirects and protection settings passed
+  readback. The signed-in TEST Drummonds workspace and LIVE Drummond's workspace
+  loaded; LIVE public Slack evidence opened an original message and its next
+  page. The TEST tenant had no public observations to exercise that held page.
+- A reasoned, one-page LIVE recovery for the remaining `slack_history_failed`
+  channel was submitted through the authorised operator control. Its ordinary
+  worker job succeeded once with 100 records. Campaign readback shows zero
+  `needs_review` channels and one active continuation, with the approved window
+  and request allowance intact. This does not prove the full campaign is done.
+- After an intermittent inventory retry, ordinary mixed projection delivered
+  four consecutive 200-email pages. At 08:47 UTC the eligible Email gap was
+  3,660, Phone calls/interactions matched at 4,534, the graph gap was 24,855,
+  and 3,680 of 3,705 active cards had current projection evidence. Recent
+  identity pages delivered 135–183 cards each with explicit review holds.
+
+### Needs finishing
+
+- Follow the Slack continuation and all source/card/graph queues to their
+  required coverage. An identity batch was again retrying after an intermittent
+  inventory error; its later outcome and sustained throughput need proof.
+- The reasoned Slack recovery at 09:46 BST interrupts today's 09:00–17:00
+  unattended observation. Start a fresh full working-day window with no manual
+  rescue. Prove full application/Auth restore, source and scoring acceptance,
+  then present the evidence and business result for Chris's sign-off. Build 02
+  remains inactive.
+
+### Blocked externally
+
+- Chris's business acceptance is outstanding. The Vercel account still shows
+  an overdue-payment warning, although today's TEST and LIVE releases worked;
+  no payment was made.
+
+[Exact release and recovery evidence](evidence/learn-build01-exact-slack-release-and-retry-2026-10-15.json).
+
 **15 October, 08:20 UTC — scheduled files verified; TEST exact-retry candidate built but not promoted.**
 
 ### Working and verified
