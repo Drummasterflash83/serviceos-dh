@@ -50,7 +50,9 @@ jobs:
           docker tag \
             public.ecr.aws/supabase/postgres@sha256:ba10e934f0a59990379f78ab9ed93926f1c291dd61a12fe4026f4202f1b89770 \
             public.ecr.aws/supabase/postgres:17.6.1.141
-          test "$(docker image inspect public.ecr.aws/supabase/postgres:17.6.1.141 --format '{{.Id}}')" = \
+          image_id="$(docker image inspect public.ecr.aws/supabase/postgres:17.6.1.141 --format '{{.Id}}')"
+          echo "Restoration image ID: $image_id"
+          test "$image_id" = \
             sha256:ba10e934f0a59990379f78ab9ed93926f1c291dd61a12fe4026f4202f1b89770
           mkdir -m 700 .verification-results
       - name: Export, restore, encrypt and verify independent off-site copy
