@@ -16,7 +16,9 @@ import { databaseBackupBinding } from "./database-backup-template.mjs";
 const REPO = fileURLToPath(new URL("../../", import.meta.url));
 const PRIVATE = join(REPO, ".verification-results");
 const SOURCE = join(PRIVATE, "production-database-complete-capture-small-full-2026-10-12");
-const AGE = "/private/tmp/serviceos-age-1.3.2/age";
+const AGE = process.platform === "linux"
+  ? "/tmp/serviceos-age-1.3.2/age"
+  : "/private/tmp/serviceos-age-1.3.2/age";
 const ARCHIVE = {
   bytes: 197303039,
   sha256: "bdb6be1f2cb934247949d6443305550888e6b4e62f5c55dac419a432616bd3db",

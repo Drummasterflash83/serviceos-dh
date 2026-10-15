@@ -33,19 +33,19 @@ jobs:
         run: |
           set -euo pipefail
           npm ci --prefix scripts/backup --ignore-scripts
-          mkdir -p /private/tmp/serviceos-age-1.3.2
+          mkdir -p /tmp/serviceos-age-1.3.2
           curl --fail --location --silent --show-error \
             https://github.com/FiloSottile/age/releases/download/v1.3.2/age-v1.3.2-linux-arm64.tar.gz \
-            --output /private/tmp/serviceos-age-v1.3.2-linux-arm64.tar.gz
+            --output /tmp/serviceos-age-v1.3.2-linux-arm64.tar.gz
           printf '%s  %s\n' \
             6b8dc4333c53a5a57c9e5834e3a48f92605d7154014cd07269ff3327db5d37f4 \
-            /private/tmp/serviceos-age-v1.3.2-linux-arm64.tar.gz | sha256sum --check --status
-          tar -xOzf /private/tmp/serviceos-age-v1.3.2-linux-arm64.tar.gz age/age \
-            > /private/tmp/serviceos-age-1.3.2/age
-          chmod 700 /private/tmp/serviceos-age-1.3.2/age
+            /tmp/serviceos-age-v1.3.2-linux-arm64.tar.gz | sha256sum --check --status
+          tar -xOzf /tmp/serviceos-age-v1.3.2-linux-arm64.tar.gz age/age \
+            > /tmp/serviceos-age-1.3.2/age
+          chmod 700 /tmp/serviceos-age-1.3.2/age
           printf '%s  %s\n' \
             41b072352f4561018949623c674d16ef704019b9108a9bbdbd21292efebfc94f \
-            /private/tmp/serviceos-age-1.3.2/age | sha256sum --check --status
+            /tmp/serviceos-age-1.3.2/age | sha256sum --check --status
           docker pull public.ecr.aws/supabase/postgres@sha256:28f0e16a019e648089fc1a6d333549a55548f6019c15ae4bd7cd58b989027518
           docker pull public.ecr.aws/supabase/postgres:17.6.1.141
           test "$(docker image inspect public.ecr.aws/supabase/postgres:17.6.1.141 --format '{{.Id}}')" = \
@@ -66,4 +66,4 @@ jobs:
       - name: Remove private runner files
         if: always()
         shell: bash
-        run: rm -rf .verification-results /private/tmp/serviceos-age-1.3.2 /private/tmp/serviceos-age-v1.3.2-linux-arm64.tar.gz
+        run: rm -rf .verification-results /tmp/serviceos-age-1.3.2 /tmp/serviceos-age-v1.3.2-linux-arm64.tar.gz
