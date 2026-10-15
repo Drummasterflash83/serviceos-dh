@@ -1,0 +1,44 @@
+{
+  "version": "learn-build01-slack-queue-pressure/1",
+  "observedAtUtc": "2026-10-15T20:26:37Z",
+  "environment": "LIVE",
+  "scope": "approved read-only 160-channel Slack handoff; individual and group DMs excluded",
+  "readOnly": true,
+  "queue": {
+    "historyQueued": 114,
+    "threadQueued": 660,
+    "historyQueuedDueOverOneHour": 97,
+    "threadQueuedDueOverOneHour": 580,
+    "lastThirtyMinutes": {
+      "historyCreated": 8,
+      "historySucceeded": 4,
+      "threadCreated": 40,
+      "threadSucceeded": 26,
+      "failures": 0
+    }
+  },
+  "workspacePacing": {
+    "singleWorkspaceLease": true,
+    "lastFinishedAtUtc": "2026-10-15T20:26:16Z",
+    "blockedByProviderUntil": false
+  },
+  "olderParentRecovery": {
+    "jobId": "3df5f195-31ae-4aeb-8259-904308ba5661",
+    "status": "queued",
+    "attempts": 0,
+    "createdAtUtc": "2026-10-15T17:29:37Z"
+  },
+  "recurringChannels": {
+    "windowActive": 106,
+    "windowQueued": 8,
+    "threadsPending": 46,
+    "oldestSavedStartUtc": "2026-10-13T09:30:00Z",
+    "newestSavedStartUtc": "2026-10-13T09:45:00Z"
+  },
+  "conclusion": "The scheduled capture is alive, but newly generated work exceeded completions in this half-hour and many jobs are overdue. Unattended backlog convergence and the older-parent recovery are not verified.",
+  "limits": [
+    "Counts reflect one read-only snapshot, not a full working day.",
+    "A succeeded job is a queue outcome and does not by itself prove a new reply was available or stored.",
+    "No provider tier change or source boundary advancement was made to increase throughput."
+  ]
+}

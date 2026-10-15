@@ -7,6 +7,29 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 20:26 UTC — Slack capture is alive but its queue is growing.**
+
+### Working and verified
+
+- The approved, read-only 160-channel capture remains enabled. In a 30-minute
+  LIVE readback, four history jobs and 26 thread jobs succeeded without a
+  failed job; workspace pacing was active and not blocked by a provider
+  retry-after. The older-parent recovery is still queued with zero attempts.
+  [Slack queue evidence](evidence/learn-build01-slack-queue-pressure-2026-10-15.json).
+
+### Needs finishing
+
+- The same interval added eight history and 40 thread jobs. At the snapshot,
+  114 history and 660 thread jobs were queued, including 677 due for over an
+  hour. Observe or repair sustainable capacity and verify saved reply evidence
+  before calling the recurring handoff operationally complete. Preserve Slack
+  rate limits, approved boundaries and source history.
+
+### Blocked externally
+
+- The LIVE frontend return still awaits the exact Vercel promotion approval;
+  final business acceptance remains Chris's review after the working-day proof.
+
 **15 October, 20:18 UTC — identity count timeout fixed; ordinary LIVE retries continued.**
 
 ### Working and verified
