@@ -7,7 +7,7 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
-**15 October, 14:46 UTC — Build 01 checks continue without Touch ID; Slack handoff prepared.**
+**15 October, 14:52 UTC — Build 01 checks continue without Touch ID; Slack handoff prepared.**
 
 ### Working and verified
 
@@ -24,6 +24,10 @@ override a later release observation. No requirement is silently deferred.
   the past day, and none had a review-required or committed projection
   receipt. This is an active backfill queue, not proof of final coverage;
   continue checking that its oldest age and total fall as new mail arrives.
+- At 14:50 the same read fell to 4,009. One ordinary Graph job reported
+  `graph_sync_error` on its first attempt, then succeeded at 14:52 without a
+  manual rescue. The Graph missing-node count grew to 17,267 during this
+  email burst; its catch-up rate needs observation rather than a success claim.
 - The saved public Slack campaign `b54d246b` displays 160 captured channels,
   a fixed end boundary of 13 October 2026, 09:30 UTC, and a prepared move to
   ongoing channel and observed-reply capture. Its final application step is
