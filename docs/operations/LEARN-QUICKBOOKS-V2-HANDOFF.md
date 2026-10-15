@@ -1,6 +1,6 @@
 # QuickBooks LIVE integration and LEARN V2 handoff
 
-Status checked 15 October 2026, 10:41 UTC. This is an operational handoff, not
+Status checked 15 October 2026, 10:53 UTC. This is an operational handoff, not
 an assertion that every Drummonds customer or job has been reconciled.
 
 ## Working and verified
@@ -11,10 +11,10 @@ an assertion that every Drummonds customer or job has been reconciled.
   accounting source records and history remain intact.
 - Two unattended full scans completed on 14 October across the 13 approved
   accounting collections. The third scan was resumed after a premature 401 with
-  a single guarded token-refresh allowance. It had advanced from 210 to 400
+  a single guarded token-refresh allowance. It had advanced from 210 to 655
   saved pages at this checkpoint, with no current run error. This third scan is
   still in progress and is **not** a completed-cycle acceptance result.
-- LIVE retains 134,705 latest QuickBooks source records across the collections,
+- LIVE retains 134,706 latest QuickBooks source records across the collections,
   with zero unresolved source conflicts at this checkpoint. This is a source
   record count, not a count of distinct customers or reconciled transactions.
 - The protected LIVE customer catalogue shows Commusoft and QuickBooks sources
@@ -22,11 +22,17 @@ an assertion that every Drummonds customer or job has been reconciled.
   OpenFolk operator UI now has 24 audited QuickBooks customer links to 24 cards.
   Nineteen links were added on 15 October after unique exact name, email, phone
   and recorded-address corroboration with the current Commusoft source and card.
-  Seven of the first eight new cards were signed-in verified with both published Commusoft
-  jobs and captured QuickBooks financial records. The eighth has a reviewed
-  accounting customer identity but no direct captured finance. The latest
-  eleven links have verified identity decisions but have not all been checked
-  for direct financial records; one checked card has no usable transactions.
+  Seven of the first eight new cards were signed-in verified with both published
+  Commusoft jobs and captured QuickBooks financial records. The eighth has a
+  reviewed accounting customer identity but no direct captured finance. All
+  eleven later cards were also opened and checked: three have both published jobs
+  and captured finance, four have jobs but no direct captured finance, and four
+  have neither a published job nor a direct transaction. An empty result is not
+  a claim that the provider has no work or finance for that customer.
+- A read-only integrity check found 24 link audit events, 24 existing distinct
+  cards, zero changed QuickBooks identities, zero missing latest customer
+  records and zero conflicted linked sources. It did not infer invoice-to-job
+  relationships.
 - Customer finance is readable only by Drummonds admins and logged OpenFolk
   support operators. The reader withholds figures when a linked QuickBooks
   identity changes or a source is conflicted. Invoices, payments and credits

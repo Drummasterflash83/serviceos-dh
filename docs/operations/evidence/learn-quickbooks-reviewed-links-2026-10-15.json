@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-15T10:41:37Z",
+  "checkedAt": "2026-10-15T10:53:18Z",
   "environment": "production",
   "project": "tgbnakbxwcqjeimygroz",
   "tenant": "00000000-0000-0000-0000-000000000001",
@@ -15,7 +15,9 @@
   "signedInLiveCardChecks": {
     "newCardsWithCommusoftJobsAndQuickBooksFinance": 7,
     "newCardWithReviewedAccountingIdentityAndNoDirectFinance": 1,
-    "furtherCardsWithReviewedIdentityPendingFullFinanceInspection": 11,
+    "furtherCardsWithBothPublishedJobsAndCapturedFinance": 3,
+    "furtherCardsWithPublishedJobsAndNoDirectCapturedFinance": 4,
+    "furtherCardsWithoutPublishedJobsOrDirectCapturedFinance": 4,
     "examples": [
       { "commusoftJobs": 3, "quickbooksFinancialRecords": 6 },
       { "commusoftJobs": 2, "quickbooksFinancialRecords": 4 },
@@ -27,15 +29,22 @@
     ],
     "jobToInvoiceAttributionClaimed": false
   },
+  "linkIntegrityAt20261015T104618Z": {
+    "linkAuditEvents": 24,
+    "existingDistinctCards": 24,
+    "missingLatestCustomerSources": 0,
+    "changedQuickBooksIdentities": 0,
+    "conflictedLinkedSources": 0
+  },
   "quickbooksSource": {
-    "latestVersionsAcrossApprovedCollections": 134705,
+    "latestVersionsAcrossApprovedCollections": 134706,
     "unresolvedConflicts": 0
   },
   "thirdRecurringScanAtReadback": {
     "state": "running",
-    "savedPages": 539,
-    "requestsUsed": 541,
-    "recordsObserved": 53577,
+    "savedPages": 655,
+    "requestsUsed": 657,
+    "recordsObserved": 65079,
     "lastError": null,
     "complete": false
   },
