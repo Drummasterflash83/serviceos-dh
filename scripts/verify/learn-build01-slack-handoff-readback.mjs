@@ -45,6 +45,40 @@ const query = `select
       and s.tenant_id=m.tenant_id
     where m.campaign_id=h.id and m.tenant_id=h.tenant_id
       and s.next_start>h.ends_at) channels_advanced_past_cutoff,
+  (select min(s.next_start) from public.slack_history_campaign_channels m
+    join public.slack_recurring_channels s on s.account_id=m.account_id
+      and s.tenant_id=m.tenant_id
+    where m.campaign_id=h.id and m.tenant_id=h.tenant_id) oldest_next_start,
+  (select max(s.next_start) from public.slack_history_campaign_channels m
+    join public.slack_recurring_channels s on s.account_id=m.account_id
+      and s.tenant_id=m.tenant_id
+    where m.campaign_id=h.id and m.tenant_id=h.tenant_id) newest_next_start,
+  (select count(*)::int from public.slack_history_campaign_channels m
+    join public.slack_recurring_channels s on s.account_id=m.account_id
+      and s.tenant_id=m.tenant_id
+    where m.campaign_id=h.id and m.tenant_id=h.tenant_id
+      and s.next_start<clock_timestamp()-interval '1 day') channels_over_day_behind,
+  (select count(*)::int from public.slack_history_imports i
+    join public.slack_history_campaign_channels m on m.account_id=i.account_id
+      and m.tenant_id=i.tenant_id
+    where m.campaign_id=h.id and m.tenant_id=h.tenant_id
+      and i.definition->>'recurringAccountId'=i.account_id::text
+      and (i.definition->>'end')::timestamptz-(i.definition->>'start')::timestamptz>interval '15 minutes') long_catchup_windows_started,
+  (select count(*)::int from public.slack_history_campaign_channels m
+    join public.slack_recurring_channels s on s.account_id=m.account_id
+      and s.tenant_id=m.tenant_id
+    join public.slack_history_imports i on i.id=s.current_import
+    join public.platform_jobs j on j.id=i.job_id and j.tenant_id=i.tenant_id
+    where m.campaign_id=h.id and m.tenant_id=h.tenant_id
+      and j.result->>'stopReason'='page_budget_exhausted') current_windows_page_exhausted,
+  (select coalesce(jsonb_object_agg(last_state,total),'{}'::jsonb) from (
+    select s.last_state,count(*)::int total
+    from public.slack_history_campaign_channels m
+    join public.slack_recurring_channels s on s.account_id=m.account_id
+      and s.tenant_id=m.tenant_id
+    where m.campaign_id=h.id and m.tenant_id=h.tenant_id
+    group by s.last_state
+  ) states) subscription_states,
   (select coalesce(jsonb_object_agg(status, total),'{}'::jsonb) from (
     select j.status, count(*)::int total
     from public.slack_history_campaign_channels m
@@ -83,7 +117,8 @@ if (!Array.isArray(rows) || rows.length !== 1 || !row ||
     !["campaign_channels", "recorded_handoff_subscriptions",
       "recorded_cutoff_and_reply_matches", "enabled_channel_and_reply_subscriptions",
       "subscriptions_at_or_past_cutoff", "channels_with_recurring_window",
-      "channels_advanced_past_cutoff", "cutoff_regressions",
+      "channels_advanced_past_cutoff", "long_catchup_windows_started",
+      "current_windows_page_exhausted", "cutoff_regressions",
       "retained_campaign_bindings"]
       .every(key => Number.isInteger(row[key]) && row[key] >= 0))
   throw Error("Slack handoff readback shape changed");

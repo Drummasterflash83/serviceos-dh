@@ -7,6 +7,49 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 15:34 UTC — guarded Slack catch-up scheduler installed in TEST and LIVE; provider catch-up remains open.**
+
+### Working and verified
+
+- A LIVE aggregate capacity read found the 160-channel historical campaign had
+  no channel-day above 98 messages, with one active reviewed higher-throughput
+  profile. It also found 870 observed reply roots in 69 channels. Repeating those
+  roots for every 15-minute catch-up interval would be costly while the saved
+  13 October cutoff remains more than a day behind all 160 subscriptions.
+- The exact scheduler-only migration passed rollback rehearsal in TEST and LIVE,
+  then installed with one ledger receipt in each. Both installed function hashes
+  match. LIVE retained all 160 subscriptions and the credential, source-completion
+  and observed-reply gates. Existing first windows keep their original 15-minute
+  scope; later windows use up to 72 hours only while over a day behind, then
+  return to 15-minute windows near live. The ten-page limit and incomplete-window
+  hold remain. A read-only check at 15:34 found 11 channels past the cutoff,
+  zero cutoff regressions and 22 current channel jobs succeeded. The larger
+  windows have not yet run to completion, so this is release proof, not ongoing
+  provider acceptance.
+  [Release receipt](evidence/learn-build01-slack-catchup-release-2026-10-15.json) ·
+  [capacity readback](evidence/learn-build01-slack-catchup-2026-10-15.json) ·
+  [handoff readback](evidence/learn-build01-slack-handoff-2026-10-15.json).
+- At 15:34 both Workspace aliases were ready; eligible Email sources without
+  interactions had fallen to 791. All 3,805 active cards retained projection
+  and evidence. Email identity-ready grew to 32,327 while one identity job
+  remained in its scheduled retry until 15:39:49; the source backlog cannot
+  be called clearing until the ordinary job succeeds. Graph missing nodes
+  remain 18,830. These are point observations, not full-day acceptance.
+
+### Needs finishing
+
+- Observe first long Slack window and its reply jobs. If the ten-page cap holds
+  a busy window, recover that exact boundary without advancing or skipping it.
+  Continue Email projection/identity and graph backlog checks after their
+  ordinary retries, plus source/card/scoring, backup, full app/Auth restore
+  and Friday 16 October working-day acceptance.
+
+### Blocked externally
+
+- The proposed standing backup-reader access remains pending Chris's separate
+  answer. Drummonds scoring criteria and final business acceptance require
+  Chris's review.
+
 **15 October, 15:19 UTC — all 160 Slack recurring windows started; source identity remains evidence-gated.**
 
 ### Working and verified

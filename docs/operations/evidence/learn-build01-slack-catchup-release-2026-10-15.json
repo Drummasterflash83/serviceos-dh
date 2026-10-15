@@ -1,0 +1,36 @@
+{
+  "version": "learn-build01-slack-catchup-release/1",
+  "source": "supabase/migrations/20261104020000_learn_slack_recurring_catchup.sql",
+  "sourceSha256": "080e276e52a69e95d9e393301fe6fa227c8862147b6977230cf1ad795b5d91f3",
+  "test": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "rehearsedAndRolledBackAt": "2026-10-15T15:31:41.163Z",
+    "installedAndVerifiedAt": "2026-10-15T15:32:13.413Z",
+    "schedulerBeforeMd5": "2e6d6a47e9eadbcd8e88599c733c89bd",
+    "schedulerAfterMd5": "12fa2c94d69568e7250886c9b3387e45",
+    "enabledSubscriptionsBeforeAndAfter": 0,
+    "exactLedgerReceipts": 1
+  },
+  "live": {
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "fullTransactionRehearsedAndRolledBackAt": "2026-10-15T15:33:26.331Z",
+    "installedAndVerifiedAt": "2026-10-15T15:33:36.379Z",
+    "schedulerBeforeMd5": "2e6d6a47e9eadbcd8e88599c733c89bd",
+    "schedulerAfterMd5": "12fa2c94d69568e7250886c9b3387e45",
+    "enabledSubscriptionsBeforeAndAfter": 160,
+    "exactLedgerReceipts": 1,
+    "replyGatePresent": true,
+    "credentialGatePresent": true,
+    "ordinaryClientExecute": false,
+    "serviceRoleExecute": true
+  },
+  "behavior": "Lagged approved channels use at most 72-hour windows. Near-live capture retains 15-minute windows. Existing windows, the ten-page ceiling, durable completion and observed-reply gates remain unchanged. An exhausted window is held without advancing its start.",
+  "limitations": [
+    "The first 160 windows were already created with the prior 15-minute width and remain subject to their original approval and reply completion.",
+    "Future 72-hour windows need ordinary provider and reply completion observation; a high-volume window may still require recovery.",
+    "This release is not full-day or business acceptance."
+  ],
+  "credentialsRead": 0,
+  "providerRequestsDuringRelease": 0,
+  "sourceDataWritesDuringRelease": 0
+}
