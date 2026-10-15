@@ -250,6 +250,21 @@ failures release the lock and can retry against the same immutable object.
 Preserve earlier receipts and failed-run evidence. No command accepts a recovery
 key as a CLI argument; never print CLI item contents or Keychain values.
 
+If a copy and separate Restore download finish but the following 1Password
+read is interrupted, retain that exact `receipt-<attempt>.json` and
+`download-<attempt>.age`. After completing the normal desktop Touch ID prompt,
+resume only that download with:
+
+```sh
+node scripts/backup/run-serviceos-database-backup.mjs --restore-downloaded-checkpoint <same-run-uuid> .verification-results/database-escrow-binding.json .verification-results/production-release-checkpoint-YYYYMMDD-name <failed-attempt-uuid>
+```
+
+The resume mode requires the prior failure to be at `escrow-readback`, checks the
+immutable transfer receipt and exact downloaded ciphertext hash, rereads the
+bound 1Password item, and performs a fresh offline restore. It makes no new
+source export or S3 transfer. A failed or uncertain restore retains the lock
+for inspection; a completed download alone is never a verified backup.
+
 ## Access created by activation
 
 The reviewed [CloudFormation template](foundation.cloudformation.json) creates
