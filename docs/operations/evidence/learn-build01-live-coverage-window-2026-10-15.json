@@ -1,0 +1,40 @@
+{
+  "version": "learn-build01-live-coverage-window/1",
+  "observed_at_utc": "2026-10-15T09:43:30Z",
+  "scope": "Read-only LIVE Drummonds tenant snapshot and trailing one-hour job aggregate. No provider request, source write, job claim or manual rescue.",
+  "source_snapshot_at_09_40_utc": {
+    "email_messages": 122881,
+    "eligible_email_without_interaction": 4615,
+    "phone_calls": 4544,
+    "phone_interactions": 4543,
+    "slack_messages": 34605,
+    "slack_interactions": 31812,
+    "eligible_interactions": 104463,
+    "eligible_missing_graph": 22506,
+    "active_cards": 3718,
+    "projected_cards": 3708,
+    "comparison": "The eligible Email gap was 4,592 at 09:06 UTC, so it has not drained. The eligible graph gap was 24,652 at 09:06 UTC, so ordinary graph work reduced it by 2,146. Ten newly active cards had no projection evidence at this instant."
+  },
+  "one_hour_jobs_at_09_43_utc": {
+    "graph_successes": 21,
+    "graph_records_processed": 7587,
+    "card_successes": 37,
+    "card_records_processed": 7159,
+    "identity_review_required_jobs": 31,
+    "identity_records_processed": 3310,
+    "projection_review_required_jobs": 22,
+    "projection_records_processed": 2009,
+    "new_inventory_failure_jobs_in_selected_window": 0,
+    "current_card_job": "One card job was running with a retained card_partial_failure error at the instant; its eventual outcome was not yet observed."
+  },
+  "direct_read_only_service_rpc_at_09_41_utc": {
+    "projection_pending_200": {"http_status": 200, "rows": 200, "elapsed_ms": 1170},
+    "projection_review_count_all": {"http_status": 200, "count": 4412, "elapsed_ms": 795}
+  },
+  "limits": [
+    "A single source snapshot plus a trailing-hour job aggregate is not a full uninterrupted working-day observation.",
+    "Review-required terminal job labels can coexist with durable eligible publications and explicit holds; neither label alone proves complete source attribution.",
+    "The Email gap is still present. Neither a short successful RPC probe nor the lack of recent inventory errors proves sustained future reliability.",
+    "Card presence does not prove complete card content, scoring correctness, current branding or human business acceptance."
+  ]
+}

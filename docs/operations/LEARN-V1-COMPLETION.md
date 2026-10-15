@@ -7,6 +7,33 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 09:43 UTC — source/card catch-up is active but incomplete.**
+
+### Working and verified
+
+- At 09:40 UTC, 3,708 of 3,718 active LIVE cards had projection evidence.
+  Ordinary graph work reduced the eligible missing-node gap from 24,652 at
+  09:06 UTC to 22,506. In the trailing hour, 21 graph jobs processed 7,587
+  records and 37 card jobs processed 7,159; identity and interaction projection
+  published 3,310 and 2,009 records respectively while retaining review holds.
+  The exact read-only service projection and review RPCs returned 200 candidates
+  and 4,412 holds in 1.17 and 0.80 seconds at 09:41 UTC.
+
+### Needs finishing
+
+- The eligible Email-to-interaction gap was 4,615 at 09:40 UTC versus 4,592 at
+  09:06 UTC: capture and projection are close over this short interval, but the
+  backlog has not drained. One Phone call and ten newly active cards lacked
+  downstream projection at the snapshot. An in-flight card job retained a prior
+  partial-failure code; observe its final outcome. Continue real-day monitoring
+  and representative content/scoring acceptance.
+
+### Blocked externally
+
+- Chris's business review awaits a completed technical and operational pack.
+
+[Live coverage window](evidence/learn-build01-live-coverage-window-2026-10-15.json).
+
 **15 October, 09:36 UTC — active Slack claim scan narrowed in TEST/LIVE.**
 
 ### Working and verified
