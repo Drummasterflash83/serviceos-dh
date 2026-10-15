@@ -7,6 +7,46 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**15 October, 13:46 UTC — two legacy Workspace fetch blocks recovered by ordinary scheduled work; Build 01 remains open.**
+
+### Working and verified
+
+- The guarded ordinary claim path was committed and verified at GitHub TEST
+  checkpoint `ed911c48133942f6f6e6c1a5a1e9349d1a17d3f5`. It permits only a
+  recent Workspace `fetch_failed` checkpoint with its matching immutable
+  transition receipt, confirmed zero message/thread/ID/gone writes, a live
+  account, a five-minute cooldown and fewer than two failures in two hours.
+  The accepted claim marks `confirmed_zero_write_fetch_retry`; it does not
+  attribute the action to a human or clear the saved continuation.
+- The exact change passed rollback rehearsals, independent definition/grant
+  readbacks and installed synthetic rollback probes in TEST and LIVE. Both
+  probes included a negative blocked checkpoint lacking the matching receipt;
+  it remained blocked. No synthetic fixture persisted, and LIVE installation
+  did not alter the two old checkpoints directly.
+- The ordinary LIVE 13:45 scheduled work subsequently claimed and completed
+  both old `fetch_failed` checkpoints. Their revisions advanced from 759 to
+  761 and 777 to 779, with one system-labelled automatic claim and a
+  successful Workspace sync for each. Both are ready again. This is real
+  unattended recovery after the release, without a fingerprint or manual
+  rescue.
+
+### Needs finishing
+
+- The 13:46 observation still showed 20 queued Workspace jobs. Continue
+  watching the queue and later capture; a single successful interval is not
+  the required full working day. A separate `admin_delegation_missing` block
+  remains under review. Broader source/card/scoring, Slack incremental
+  capture, independent daily backup, full application/Auth recovery and
+  Chris's business sign-off remain open.
+
+### Blocked externally
+
+- Standing daily backup-reader and recurring encrypted-copy approvals are
+  pending. The permanent Google delegation failure may require Workspace
+  admin action if source-side verification confirms the grant is absent.
+
+[Guarded automatic recovery evidence](evidence/learn-build01-email-safe-claim-2026-10-15.json).
+
 **15 October, 13:27 UTC — bounded Workspace fetch retry released in TEST and LIVE; Build 01 remains open.**
 
 ### Working and verified

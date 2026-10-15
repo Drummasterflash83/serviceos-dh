@@ -1,0 +1,49 @@
+{
+  "contract": "learn-build01-email-safe-claim-release/1",
+  "observedAt": "2026-10-15T13:46:28.923602Z",
+  "scope": "Two pre-release blocked Drummonds Workspace recent-mail checkpoints; no provider writes or message content read in the verification",
+  "gitTestCheckpoint": "ed911c48133942f6f6e6c1a5a1e9349d1a17d3f5",
+  "migrationSha256": "2b0e87b0a7509caadcd5d879e89efa0daa6a4261cd7ce333c2236ef8f76ef9e6",
+  "probeSha256": "2870da826de9ccb78074919f20d8632c56ba73df72a3966a0c9b0078205f9fe2",
+  "priorFunctionMd5": "c0f6296f051aada999af147773066cac",
+  "installedFunctionMd5": "9828de434ae0713dfd544da6ce0a1345",
+  "guard": {
+    "stream": "recent",
+    "syncType": "workspace_messages",
+    "blockCode": "fetch_failed",
+    "priorFailure": "matching immutable blocked transition and failed run, persistence confirmed, zero messages, threads, IDs and gone counts",
+    "maximumPreviousFailuresInTwoHours": 1,
+    "minimumCooldownMinutes": 5,
+    "accountStatus": "active_dwd",
+    "humanActorClaimed": false,
+    "continuationReset": false,
+    "otherBlockTypesAutomaticallyRecovered": false
+  },
+  "test": {
+    "rollbackRehearsal": "passed; five synthetic transitions; no fixture retained",
+    "installed": true,
+    "installedRollbackProbe": "passed; five synthetic transitions including refusal without prior receipt",
+    "independentReadback": "candidate digest, protocol owner, service-role-only grant and fixture absence confirmed"
+  },
+  "live": {
+    "rollbackRehearsal": "passed; five synthetic transitions; old definition independently read back afterwards",
+    "installed": true,
+    "installedRollbackProbe": "passed; five synthetic transitions including refusal without prior receipt",
+    "independentReadbackAt": "2026-10-15T13:42:22.077461Z",
+    "independentReadback": "same candidate digest, protocol owner, service-role-only grant and fixture absence confirmed",
+    "realScheduledRecovery": [
+      { "originalRevision": 759, "currentRevision": 761, "automaticClaims": 1, "runStatus": "success", "checkpointState": "ready" },
+      { "originalRevision": 777, "currentRevision": 779, "automaticClaims": 1, "runStatus": "success", "checkpointState": "ready" }
+    ],
+    "queueAtObservation": { "workspaceQueued": 20, "workspaceRunning": 0, "oldestQueuedAgeSeconds": 326 },
+    "schedulerAtObservation": { "status": "success", "queued": 7, "duplicates": 19, "enqueueUnconfirmed": 0, "knownIneligible": 0 }
+  },
+  "remaining": {
+    "adminDelegationBlock": 1,
+    "fullUnattendedWorkingDayAccepted": false,
+    "broaderSourceCardsScoringAccepted": false,
+    "independentDailyBackupAccepted": false,
+    "fullApplicationAuthRecoveryAccepted": false,
+    "businessSignoffReceived": false
+  }
+}
