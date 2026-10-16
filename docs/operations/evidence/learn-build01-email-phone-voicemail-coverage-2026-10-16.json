@@ -1,0 +1,51 @@
+{
+  "version": "learn-build01-communication-coverage/1",
+  "environment": "LIVE",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "email": {
+    "observedAtUtc": "2026-10-16T21:05:22Z",
+    "eligibleUnlinkedMessages": 0,
+    "lastOrdinaryBatch": {
+      "createdAtUtc": "2026-10-16T21:02:27Z",
+      "completedAtUtc": "2026-10-16T21:03:27Z",
+      "selected": 3,
+      "committedPublications": 3,
+      "sourceFailures": 0,
+      "tenantReviewHolds": 13,
+      "continued": false
+    },
+    "postBackfillRevisionLimit": "The scheduled older Email lane's exact full-revision fallback timed out on two subsequent attempts even though the unlinked gap is zero.",
+    "linkedInteractionsAt2106Utc": 192940,
+    "linkedWithProjectionRevisionAt2106Utc": 173812,
+    "distinctCommittedSourcesAt2106Utc": 173812,
+    "legacyLinkedWithoutProjectionRevisionAt2106Utc": 19128,
+    "sourceRowsUpdatedAfterTheirCommittedReceiptAt2107Utc": 40059
+  },
+  "phone": {
+    "observedAtUtc": "2026-10-16T21:03:41Z",
+    "retainedCalls": 4676,
+    "withInteraction": 4676,
+    "eligibleMissing": 0
+  },
+  "voicemail": {
+    "observedAtUtc": "2026-10-16T21:04:08Z",
+    "savedMessages": 257,
+    "recordingPaths": 257,
+    "matchingPrivateAudioObjects": 257,
+    "missingAudioObjects": 0,
+    "publishedIntakes": 257,
+    "failedEmailStatuses": 0,
+    "latestScheduledFileBackupAtUtc": "2026-10-16T08:18:15Z",
+    "pairsInLatestScheduledFileBackup": 256,
+    "newestPairBackupRefresh": "Manual existing-runner refresh in progress; not counted as unattended evidence"
+  },
+  "limits": [
+    "Source-to-interaction coverage is a point-in-time snapshot, not proof of all historical provider coverage.",
+    "The Email full-revision fallback and 19,128 legacy unversioned interactions remain Build 01 review and reliability gaps.",
+    "Audio-object presence is not an independent playback or byte-restore check."
+  ],
+  "messageContentReturned": false,
+  "audioBytesReturned": false,
+  "productionDataWrites": false,
+  "sourceProviderWrites": false
+}

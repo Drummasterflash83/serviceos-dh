@@ -33,6 +33,12 @@ export const reviewedLiveRuntimeSource1911 = Object.freeze({
   key: "projects/tgbnakbxwcqjeimygroz/objects/e89ec35412a8709eadf63142873c204a1369659e7f48717d3def8eccc56f84ed/7cbc837e8e183ceace76cbd5312524c10c0a7f4c10f7dfc1cb1712cbd6e96fac",
 });
 
+export const reviewedLiveRuntimeSource2046 = Object.freeze({
+  bytes: 6022776,
+  sha256: "afc78ae97474bb2c4d0ce885aeff7fedf1c50098193c016b3f369fba35604bf7",
+  key: "projects/tgbnakbxwcqjeimygroz/objects/57b2d97692c211f09a10c1503d71329a89ee03f0e5b0da5afeb7e63fb8c35927/afc78ae97474bb2c4d0ce885aeff7fedf1c50098193c016b3f369fba35604bf7",
+});
+
 const fail = (code) => { throw Error(code); };
 const need = (condition, code) => { if (!condition) fail(code); };
 const canon = (value) => JSON.stringify(value, (_key, entry) =>
@@ -96,7 +102,8 @@ function checkedVersion(version, now, reviewed) {
 export async function copyReviewedLiveRuntimeSource({ sourcePath, downloadPath, writer, restore,
   now = Date.now, reviewed = reviewedLiveRuntimeSource }) {
   need(reviewed === reviewedLiveRuntimeSource || reviewed === reviewedLiveRuntimeSource1705 ||
-    reviewed === reviewedLiveRuntimeSource1828 || reviewed === reviewedLiveRuntimeSource1911,
+    reviewed === reviewedLiveRuntimeSource1828 || reviewed === reviewedLiveRuntimeSource1911 ||
+    reviewed === reviewedLiveRuntimeSource2046,
     "runtime_reviewed_package_invalid");
   need(typeof sourcePath === "string" && typeof downloadPath === "string" &&
     sourcePath !== downloadPath && writer?.destination && restore?.destination,

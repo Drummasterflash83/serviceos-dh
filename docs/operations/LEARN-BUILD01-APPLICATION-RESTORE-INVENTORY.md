@@ -5,6 +5,26 @@ isolated database/Auth/PostgREST rehearsal and the full Edge source-package
 off-site copy prove distinct parts of recovery. Neither proves that an independently
 recovered OpenFolk service can serve clients or resume ingestion.
 
+At 20:48 UTC, a new stable, read-only LIVE source inventory captured **103**
+active functions and **728** files (4,828,391 source bytes), including the
+40-card `platform-worker` version 104. Manifest SHA-256
+`f9dc270c53c5a964b436b70bed3d6da2b06f9810ea330ee45444b8c3de931da8`
+and every retained file hash passed local verification. It was encrypted to
+the existing public recovery recipient as a 6,022,776-byte local package,
+SHA-256 `afc78ae97474bb2c4d0ce885aeff7fedf1c50098193c016b3f369fba35604bf7`.
+The [exact approved off-site copy](LEARN-BUILD01-RUNTIME-2046-OFFSITE-REVIEW.md)
+completed at 21:10 UTC. The separate Restore identity downloaded the stored
+version and matched its bytes and hash. This package has not been decrypted,
+and the full frontend/runtime/Auth restore remains unverified.
+
+The same verified local source inventory was reconstructed into **103 separate
+function trees** with all **728 files / 4,828,391 bytes** hash-checked again.
+Separate trees preserve each deployed function's own `_shared` closure, since
+shared file versions can differ across serving functions. This is local build
+preparation only; no all-function bundle/startup or independently downloaded
+source decryption has been claimed. The repeatable staging tool is
+`scripts/backup/stage_reviewed_live_edge_sources.py`.
+
 At 18:17 UTC, the LIVE `email-workspace-scheduled-sync` function advanced from
 version 62 to 63 for bounded unattended mailbox-authority rechecks. The
 17:07/17:20 source package below predates that release. It remains a verified
@@ -78,7 +98,7 @@ and [off-site copy receipt](evidence/learn-build01-live-runtime-refresh-offsite-
 | --- | --- | --- |
 | Database and Vault | Encrypted independent snapshot; isolated native restore and Vault comparison | Restore from a current off-site version and reconcile its point in time with file/object backups |
 | Auth and tenant access | Offline Auth and PostgREST boot with a new synthetic signing key; fresh synthetic login, tenant RLS and audited operator grant/revocation passed | Recover the supported real-user login path, reset sessions if the non-exportable original signing key is unavailable, and check operator routes through the recovered application |
-| Edge functions | The earlier 102-function, 721-file package was copied, downloaded and decrypted with its manifest verified. A later 103-function, 727-file package was independently copied and downloaded; the newest 103-function, 728-file inventory is encrypted locally. One newest archived route now passes an isolated authenticated tenant read. | Independently copy the newest exact package off site, then decrypt/rebuild all activated functions with their verified flags and secret references and exercise their required routes in an isolated service |
+| Edge functions | The earlier 102-function, 721-file package was copied, downloaded and decrypted with its manifest verified. The current 103-function, 728-file v104 package is encrypted, copied off site and independently downloaded with matching bytes/hash. One archived route passes an isolated authenticated tenant read. | Decrypt/rebuild all activated functions with their verified flags and secret references and exercise their required routes in an isolated service |
 | Frontend | Vercel builds from Git `main`; the four LIVE aliases and protected LEARN/Drummonds view were checked at `0266c7f7`. The later Slack handoff UI revision `ecfa0aa4` passed both TEST and LIVE Git/Vercel build statuses. | Verify the later signed-in LIVE UI, then restore a pinned Git revision to an isolated Vercel target with its production-equivalent public configuration and test login, client cards and operator paths before any alias switch |
 | Runtime configuration | Static source scan found 56 literal Edge environment names plus 18 dynamic lookups across the 102 function archives; the frontend references `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_ENABLE_SIGNUP` | Independently inventory actual configured names, non-exportable and dynamic-name references, escrow/restore secret values through an approved channel, and verify each recovered function's access without printing values |
 | Capture and files | Separate recording/voicemail manifests and database-reference restore checks exist | Match the chosen database point to its corresponding file inventory; keep dispatchers paused until scopes, cursors and credentials are verified; resume one bounded source at a time and prove new data reaches the correct tenant/card |

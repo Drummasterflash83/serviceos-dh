@@ -13,6 +13,53 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 21:12 UTC — current source copy verified; Email revision and card sweeps remain open.**
+
+### Working and verified
+
+- The ordinary ten-row Email continuation linked the final three eligible
+  retained messages by 21:03; a separate 21:05 read-only join found **zero**
+  eligible unlinked Email messages. No manual publication was counted. The
+  final batch retained 13 older tenant review holds and reported no source
+  failure. The direct LIVE Phone join found **4,676/4,676** calls with
+  interactions. A private voicemail inventory found **257/257** saved messages
+  with matching audio objects, zero missing objects and zero failed email
+  statuses. [Sanitised counts](evidence/learn-build01-email-phone-voicemail-coverage-2026-10-16.json).
+- The signed-in Drummonds LIVE LEARN page now displays **37,857 saved Slack
+  messages**, rather than the earlier “Not checked” count, and explicitly
+  separates saved history from ongoing capture/reply checks. The captured
+  Commusoft job view shows 295 recorded open/pending/on-hold of 12,656
+  retained, with per-job source/identity limitations visible. Scores remain
+  unassessed. [Signed-in readback](evidence/learn-build01-live-portal-readback-2026-10-16.json).
+- A current stable, read-only LIVE Edge inventory includes worker v104:
+  103 functions, 728 source files and a locally verified age-encrypted
+  package. Chris approved its exact private London copy; the separate Restore
+  identity downloaded and hash-checked the stored version at 21:10 UTC.
+  [Exact off-site receipt](evidence/learn-build01-runtime-2046-offsite-copy-2026-10-16.json).
+
+### Needs finishing
+
+- The older Email lane's full-revision fallback timed out twice after the
+  unlinked gap reached zero. It must be made dependable before acceptance;
+  19,128 linked legacy interactions have no new projection revision and
+  40,059 source rows were updated after their committed receipts at 21:07.
+  Those counts are review candidates, not a claim of 40,059 changed canonical
+  messages. Graph had 13 newly published Email nodes pending at 21:11; they
+  were all less than a day old and await ordinary catch-up.
+- The 40-card ordinary sweep still has ten older unprojected cards and its
+  21:06 batch retried one `card_partial_failure`; verify the retry and final
+  sweep state. The 160-channel Slack historical backlog,
+  full application/Auth recovery and
+  source-backed job attention/scoring review remain open. A manual refresh
+  of the existing three-bucket communication file backup is running to include
+  the newest voicemail pair; it is not unattended evidence.
+
+### Blocked externally
+
+- No new user action is requested. No new Slack team post or fingerprint is
+  requested. Chris's final business acceptance remains his decision after
+  the technical evidence is ready.
+
 **16 October, 20:41 UTC — ordinary card continuation recovered; full sweep pending.**
 
 ### Working and verified

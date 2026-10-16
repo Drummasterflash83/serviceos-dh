@@ -1,0 +1,30 @@
+{
+  "version": "learn-build01-live-portal-readback/1",
+  "observedAtUtc": "2026-10-16T20:54:18Z",
+  "environment": "LIVE",
+  "surface": "Signed-in Drummonds LEARN in the existing in-app browser",
+  "savedInputTotals": {
+    "email": 194672,
+    "phone": 4676,
+    "voiceRecordings": 3160,
+    "slack": 37857,
+    "voicemailVisibleToAccount": 257
+  },
+  "slackLabel": "Saved history total; current capture and replies are checked separately",
+  "slackFormerNotCheckedCountReplaced": true,
+  "commusoftCapturedJobs": {
+    "lastCheckShownAtUtc": "2026-10-16T20:50:21Z",
+    "retainedTotal": 12656,
+    "matchingRecordedOpenPendingOrOnHold": 295,
+    "individualStatusDisclaimerVisible": true,
+    "customerIdentityGapsVisible": true
+  },
+  "scoresUnassessedUntilApprovedRulesAndVerifiedMeasurements": true,
+  "limits": [
+    "Saved totals do not establish complete historical or current provider capture.",
+    "The 295 jobs are source records; their per-job status observations and customer links still need review.",
+    "This readback did not open a score or alter application data."
+  ],
+  "applicationWrites": false,
+  "sourceProviderWrites": false
+}

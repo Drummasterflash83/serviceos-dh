@@ -20,7 +20,7 @@ from public.platform_jobs j where j.tenant_id='${tenant}'::uuid
  and j.job_type='interactions.sync' and j.payload->>'source'='email'
  and j.payload->>'lane' is null
  and j.created_at>='2026-10-16T19:45:00Z'::timestamptz
-order by j.created_at asc limit 25`;
+order by j.created_at desc limit 25`;
 const response=await fetch(`https://api.supabase.com/v1/projects/${project}/database/query/read-only`,{
   method:'POST',redirect:'error',signal:AbortSignal.timeout(45000),
   headers:{Authorization:`Bearer ${savedCliToken()}`,'Content-Type':'application/json'},
