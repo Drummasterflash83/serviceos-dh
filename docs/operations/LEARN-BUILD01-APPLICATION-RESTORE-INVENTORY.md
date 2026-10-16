@@ -11,7 +11,7 @@ recovered OpenFolk service can serve clients or resume ingestion.
 | --- | --- | --- |
 | Database and Vault | Encrypted independent snapshot; isolated native restore and Vault comparison | Restore from a current off-site version and reconcile its point in time with file/object backups |
 | Auth and tenant access | Offline Auth and PostgREST boot with a new synthetic signing key; fresh synthetic login, tenant RLS and audited operator grant/revocation passed | Recover the supported real-user login path, reset sessions if the non-exportable original signing key is unavailable, and check operator routes through the recovered application |
-| Edge functions | 102 LIVE function sources and 721 files retained in the 06:30 UTC package; the exact age-encrypted package was copied to the existing private London bucket and independently downloaded by the Restore identity with matching bytes and SHA-256; 04:30 UTC metadata readback matched the prior 102-function inventory's slug/version/JWT flags (42 JWT-on, 60 JWT-off) | Decrypt the downloaded package through escrow, rebuild/deploy all activated functions with their verified flags and secret references, and exercise real routes in an isolated service |
+| Edge functions | 102 LIVE function sources and 721 files retained in the 06:30 UTC package; the exact age-encrypted package was copied to the existing private London bucket and independently downloaded by the Restore identity with matching bytes and SHA-256, then decrypted in memory through escrow with its source manifest verified; 04:30 UTC metadata readback matched the prior 102-function inventory's slug/version/JWT flags (42 JWT-on, 60 JWT-off) | Rebuild/deploy all activated functions with their verified flags and secret references, and exercise real routes in an isolated service |
 | Frontend | Vercel builds from Git `main`; four LIVE aliases and protected LEARN/Drummonds view checked at `0266c7f7` | Restore a pinned Git revision to an isolated Vercel target with its production-equivalent public configuration, then test login, client cards and operator paths before any alias switch |
 | Runtime configuration | Static source scan found 56 literal Edge environment names plus 18 dynamic lookups across the 102 function archives; the frontend references `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_ENABLE_SIGNUP` | Independently inventory actual configured names, non-exportable and dynamic-name references, escrow/restore secret values through an approved channel, and verify each recovered function's access without printing values |
 | Capture and files | Separate recording/voicemail manifests and database-reference restore checks exist | Match the chosen database point to its corresponding file inventory; keep dispatchers paused until scopes, cursors and credentials are verified; resume one bounded source at a time and prove new data reaches the correct tenant/card |
@@ -28,8 +28,11 @@ At 07:11 UTC the newer 721-file encrypted source package was independently
 retained and downloaded. Its separate Restore readback matched the exact
 5,971,576 bytes and SHA-256; [the sanitized receipt](evidence/learn-build01-live-runtime-offsite-copy-2026-10-16.json)
 records the fixed object and retention controls. A single 1Password escrow
-read for in-memory decrypt did not complete, so decryption of the downloaded
-object and function startup remain unverified.
+read for in-memory decrypt initially expired. A fresh owner-approved Touch ID
+read at about 08:07 UTC succeeded: the downloaded object's 721 files and 102
+function entries matched the decrypted source manifest, with no key persistence
+or source extraction to disk. [Decryption receipt](evidence/learn-build01-live-runtime-decrypt-2026-10-16.json).
+Function startup and end-to-end application recovery remain unverified.
 
 At 04:23 UTC on 16 October, a separate read-only LIVE secret-metadata readback
 found 54 configured names. Of 53 literal source names that are not platform-

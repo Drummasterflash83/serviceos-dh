@@ -1,0 +1,13 @@
+{
+  "state": "decrypted_live_edge_source_verified",
+  "encryptedBytes": 5971576,
+  "encryptedSha256": "4aa6f7ae538077530caa09cd8509b173dc60b97f28dc14e4ccea7d59665b335c",
+  "sourceBytes": 4792245,
+  "sourceFiles": 721,
+  "functions": 102,
+  "manifestSha256": "fb1e539b009757b4f17ca55715d8ba254f52fe11202ab52eae50b7fdfc845ca4",
+  "sourceExtractedToDisk": false,
+  "keyPersisted": false,
+  "fullApplicationOrAuthRecoveryVerified": false,
+  "offsiteCopyReceipt": "learn-build01-live-runtime-offsite-copy-2026-10-16.json"
+}

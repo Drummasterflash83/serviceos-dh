@@ -1,0 +1,21 @@
+{
+  "state": "installed_inactive_on_test",
+  "project": "saatxzwxvdvqevbnskxy",
+  "migrationSha256": "fc4d2306bc67a66bb74a7954dcc6fb28f40ef63da9de070a6bd69e133f25aa5a",
+  "functionMd5": "3e4aa9685e23d583f11cfd2c70ddce32",
+  "isolatedSource": "2026-10-15 pinned daily production database archive",
+  "isolatedArchiveSha256": "31f1e594e9c3b43f3cff0ec0c45095216a4bb6580e8a0e5f2a4a81db99c03fe8",
+  "isolatedNetwork": "none",
+  "isolatedContainerRemoved": true,
+  "syntheticCurrentSelected": true,
+  "olderAndDraftExcluded": true,
+  "revisionReviewHoldRetained": true,
+  "changedSourceReentered": true,
+  "serviceOnlyExecution": true,
+  "testRollbackRehearsal": "passed",
+  "testInstallReadback": "passed",
+  "schedulerChanged": false,
+  "workerChanged": false,
+  "productionChanged": false,
+  "providerRequests": 0
+}

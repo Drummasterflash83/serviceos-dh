@@ -7,6 +7,15 @@ export function interactionProjectionSchedule(tenantId: string) {
     {
       tenantId,
       jobType: "interactions.sync",
+      jobKey: `interactions.sync:${tenantId}:email:current`,
+      connectorId: "openfolk-core",
+      moduleId: "core.interactions",
+      priority: 40,
+      payload: { source: "email", lane: "current", limit: 50 },
+    },
+    {
+      tenantId,
+      jobType: "interactions.sync",
       jobKey: `interactions.sync:${tenantId}:phone`,
       connectorId: "openfolk-core",
       moduleId: "core.interactions",

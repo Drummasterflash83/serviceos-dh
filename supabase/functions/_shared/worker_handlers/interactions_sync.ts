@@ -19,12 +19,22 @@ export async function handleInteractionsSync(
       },
     };
   const source = payload.source === "phone" || payload.source === "email" ? payload.source : "all";
+  if (payload.lane !== undefined && !(source === "email" && payload.lane === "current"))
+    return {
+      success: false,
+      error: {
+        code: "projection_lane_invalid",
+        message: "Choose the current Email lane only with Email input.",
+        retryable: false,
+      },
+    };
+  const currentEmail = source === "email" && payload.lane === "current";
   // Each publication takes a separate transaction. Keep one Edge run bounded;
   // the queue can drain further batches after confirmed completion.
   const limit = Math.max(
     1,
     Math.min(
-      200,
+      currentEmail ? 100 : 200,
       typeof payload.limit === "number" && Number.isFinite(payload.limit)
         ? Math.trunc(payload.limit)
         : 20,
@@ -47,11 +57,11 @@ export async function handleInteractionsSync(
     failed: 0,
   };
   try {
-    const { data: rows, error } = await admin.rpc("learn_projection_pending", {
-      p_tenant: tenantId,
-      p_source: source,
-      p_limit: limit,
-    });
+    const { data: rows, error } = await admin.rpc(
+      currentEmail ? "learn_projection_pending_current_email" : "learn_projection_pending",
+      currentEmail ? { p_tenant: tenantId, p_limit: limit }
+        : { p_tenant: tenantId, p_source: source, p_limit: limit },
+    );
     if (
       error ||
       !Array.isArray(rows) ||
@@ -136,13 +146,17 @@ export async function handleInteractionsSync(
         else counts.email_updated++;
       }
     }
-    const review = await admin.rpc("learn_projection_review_count", {
-      p_tenant: tenantId,
-      p_source: source,
-    });
-    if (review.error || !Number.isSafeInteger(review.data) || review.data < 0)
-      throw Error("review_inventory");
-    counts.review_required = review.data;
+    // The legacy Email lane still publishes the tenant-wide review count.
+    // Its older holds must not mark this bounded current-mail lane as failed.
+    if (!currentEmail) {
+      const review = await admin.rpc("learn_projection_review_count", {
+        p_tenant: tenantId,
+        p_source: source,
+      });
+      if (review.error || !Number.isSafeInteger(review.data) || review.data < 0)
+        throw Error("review_inventory");
+      counts.review_required = review.data;
+    }
     // A durable hold leaves this revision out of pending selection. Drain other
     // retained sources while the held record remains visible for review.
     const continued =
@@ -153,11 +167,11 @@ export async function handleInteractionsSync(
     const continuation = continued
       ? {
           jobType: "interactions.sync",
-          jobKey: `interactions.sync:${tenantId}:${source}`,
-          payload: { source, limit },
+          jobKey: `interactions.sync:${tenantId}:${source}${currentEmail ? ":current" : ""}`,
+          payload: { source, limit, ...(currentEmail ? { lane: "current" } : {}) },
           connectorId: "openfolk-core",
           moduleId: "core.interactions",
-          priority: 50,
+          priority: currentEmail ? 40 : 50,
         }
       : undefined;
     if (counts.failed || counts.review_required)

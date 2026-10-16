@@ -13,6 +13,37 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 08:07 UTC — Edge source decrypt verified; current Email selector inactive in TEST.**
+
+### Working and verified
+
+- The exact off-site encrypted LIVE Edge source copy was decrypted in memory
+  through the approved one-time recovery key read. Its 721 files and 102
+  function entries matched the retained manifest; no key or extracted source
+  was persisted. [Decryption receipt](evidence/learn-build01-live-runtime-decrypt-2026-10-16.json).
+- A bounded current-message Email selector passed isolated restored-database
+  tests for recent selection, old/draft exclusion, review holds, changed-source
+  reentry and service-only access. Its TEST rollback and inactive installation
+  passed. [TEST selector receipt](evidence/learn-build01-current-email-selector-test-2026-10-16.json).
+
+### Needs finishing
+
+- The current Email worker and scheduler are not deployed. Recent mail still
+  waits behind the older projection backlog; 18,420 eligible messages were
+  unlinked at 08:03 UTC. Build the targeted runtime release from the deployed
+  source baseline, verify TEST, then promote and measure LIVE freshness.
+- No GitHub scheduled backup run appeared for any of today's four configured
+  slots by 08:03 UTC. The successful 04:00 UTC backup was manual. An alternate
+  unattended trigger or an observed scheduled success remains required.
+- Full application/Auth recovery, Slack near-live evidence, Commusoft job/card
+  coverage and final business acceptance remain open.
+
+### Blocked externally
+
+- Chris approved the exact `message.channels` Slack app change after hosted
+  tests; those tests and controlled activation have not yet happened.
+
+
 **16 October, 07:28 UTC — Slack event pacing verified in inactive TEST.**
 
 ### Working and verified

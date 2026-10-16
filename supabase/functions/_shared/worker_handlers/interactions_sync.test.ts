@@ -15,7 +15,7 @@ function fixture(options: any = {}) {
     },
     async rpc(name: string, args: any) {
       calls.push({ name, args });
-      if (name === "learn_projection_pending")
+      if (name === "learn_projection_pending" || name === "learn_projection_pending_current_email")
         return options.inventory ?? { data: options.rows ?? [row()], error: null };
       if (name === "learn_projection_review_count")
         return options.review ?? { data: 0, error: null };
@@ -202,6 +202,24 @@ test("bounded full batch requests continuation; empty or unchanged batches stop"
   assert.equal(unchanged.success, true);
   assert.equal(unchanged.result?.phone_skipped, 1);
   assert.equal(unchanged.continuation, undefined);
+});
+test("current Email lane uses its service-only selector and separate continuation", async () => {
+  const f = fixture({ rows: [row(3, "email")], review: { data: 13, error: null } });
+  const r = await f.run({ source: "email", lane: "current", limit: 1 });
+  assert.equal(r.success, true);
+  assert.equal(f.calls[0].name, "learn_projection_pending_current_email");
+  assert.deepEqual(f.calls[0].args, { p_tenant: id(1), p_limit: 1 });
+  assert.equal(r.continuation?.jobKey, `interactions.sync:${id(1)}:email:current`);
+  assert.equal(r.continuation?.priority, 40);
+  assert.deepEqual(r.continuation?.payload, { source: "email", lane: "current", limit: 1 });
+  assert.equal(f.calls.some((call) => call.name === "learn_projection_review_count"), false);
+  const clamped = fixture({ rows: [] });
+  await clamped.run({ source: "email", lane: "current", limit: 200 });
+  assert.equal(clamped.calls[0].args.p_limit, 100);
+  const invalid = fixture();
+  assert.equal((await invalid.run({ source: "phone", lane: "current" })).error?.code,
+    "projection_lane_invalid");
+  assert.equal(invalid.calls.length, 0);
 });
 test("review inventory failure cannot erase previously confirmed work", async () => {
   for (const review of [

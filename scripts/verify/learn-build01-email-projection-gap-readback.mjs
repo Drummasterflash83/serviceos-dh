@@ -7,7 +7,7 @@ if (process.argv.slice(2).join(" ") !== "--live-read-only")
 const project = "tgbnakbxwcqjeimygroz";
 const tenant = "00000000-0000-0000-0000-000000000001";
 const query = `with missing as (
-  select m.id,m.created_at,
+  select m.id,m.created_at,coalesce(m.received_at,m.sent_at,m.created_at) occurred_at,
     exists(select 1 from public.learn_interaction_projection_receipts r
       where r.tenant_id=m.tenant_id and r.source_kind='email'
         and r.source_id=m.id and r.receipt->>'state'='review_required') review_held,
@@ -26,6 +26,10 @@ const query = `with missing as (
   count(*) filter(where committed_receipt)::int with_committed_receipt,
   count(*) filter(where not review_held and not committed_receipt)::int without_receipt,
   count(*) filter(where created_at>=now()-interval '1 hour')::int created_last_hour,
+  count(*) filter(where created_at>=now()-interval '1 hour'
+    and occurred_at>=now()-interval '1 day')::int current_created_last_hour,
+  count(*) filter(where occurred_at>=now()-interval '1 day')::int current_unlinked_day,
+  count(*) filter(where occurred_at>=now()-interval '7 days')::int current_unlinked_week,
   count(*) filter(where created_at<now()-interval '1 day')::int older_than_day,
   min(created_at) oldest_source_at,max(created_at) newest_source_at
   from missing`;
