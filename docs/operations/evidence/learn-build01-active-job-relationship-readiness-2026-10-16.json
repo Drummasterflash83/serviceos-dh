@@ -5,6 +5,16 @@
   "unlinkedSavedActiveStatusJobs": 279,
   "allHaveValidNumericDirectPropertyReference": true,
   "allLackReviewedDirectPropertyLink": true,
+  "publishedSavedActiveStatusJobs": {
+    "ongoingCurrentVersionAndOpenCanonical": 7,
+    "pendingCurrentVersionAndPendingCanonical": 2,
+    "onHold": 0,
+    "olderEffectiveSourceVersion": 0
+  },
+  "equalTimeLatestPageAmbiguity": {
+    "jobSourceIdentities": 0,
+    "propertySourceIdentities": 0
+  },
   "directPropertySource": {
     "customer": 164,
     "workaddress": 90,
@@ -27,5 +37,5 @@
     "sourceProviderRequests": 0,
     "productionWrites": false
   },
-  "boundary": "This classifies retained source observations, not currently confirmed provider status or reviewed customer identity. Property presence does not prove a canonical match. No job, site, customer or score was published. Equal-time latest-page ambiguity was not independently audited in this aggregate. Missing properties and parents need source reconciliation; the present properties need explicit identity and site review before job projection."
+  "boundary": "This classifies retained source observations, not currently confirmed provider status or reviewed customer identity. Property presence does not prove a canonical match. No job, site, customer or score was published. Equal-time latest-page ambiguity was zero for the retained job and property collections in a separate aggregate check. Missing properties and parents need source reconciliation; the present properties need explicit identity and site review before job projection."
 }

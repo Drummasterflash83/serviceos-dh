@@ -20,6 +20,11 @@ override a later release observation. No requirement is silently deferred.
   the 279 jobs reference 198 distinct direct properties and the work-address
   group references 38 distinct parents. No provider request or production write
   occurred. [Sanitised aggregate](evidence/learn-build01-active-job-relationship-readiness-2026-10-16.json).
+- The nine active-status jobs that do have published links point to their
+  latest retained source versions: seven ongoing jobs are canonical open and
+  two pending jobs are canonical pending. A separate latest-page check found
+  zero equal-time conflicting versions among 12,649 job and 2,425 property
+  identities in the retained inventory.
 
 ### Needs finishing
 
