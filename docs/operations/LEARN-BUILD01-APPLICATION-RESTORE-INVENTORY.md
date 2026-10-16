@@ -5,6 +5,19 @@ isolated database/Auth/PostgREST rehearsal and the full Edge source-package
 off-site copy prove distinct parts of recovery. Neither proves that an independently
 recovered OpenFolk service can serve clients or resume ingestion.
 
+At 22:05 UTC, a newer stable read-only LIVE inventory captured **103** active
+functions and **728** files (4,828,503 source bytes), including
+`platform-worker` v106. Its manifest SHA-256 is
+`ed8ca3970251af3fe843dab9153f9c149a1f824513f245b2492e795a96026da6`.
+All source hashes passed local verification, and the exact source was
+reconstructed into 103 isolated function trees with all 728 files checked
+again. The [exact v106 off-site review](LEARN-BUILD01-RUNTIME-2203-OFFSITE-REVIEW.md)
+describes the locally encrypted package; the copy and separate Restore
+readback remain pending. The local staging does not establish successful
+all-function build/startup, secret recovery or authenticated application use.
+It also does not include the separately released database function/index
+repair for heavy customer cards, which is retained as a Git migration.
+
 At 20:48 UTC, a new stable, read-only LIVE source inventory captured **103**
 active functions and **728** files (4,828,391 source bytes), including the
 40-card `platform-worker` version 104. Manifest SHA-256

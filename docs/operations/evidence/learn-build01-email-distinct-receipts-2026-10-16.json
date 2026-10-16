@@ -1,0 +1,17 @@
+{
+  "contract": "learn-build01-email-distinct-receipts/1",
+  "observedAt": "2026-10-16T22:30:35.069Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "windowStartsAt": "2026-10-16T21:55:00Z",
+  "firstReceiptAt": "2026-10-16 21:56:02.501253+00",
+  "latestReceiptAt": "2026-10-16 22:30:09.880799+00",
+  "committedReceipts": 1750,
+  "unchangedReceipts": 1750,
+  "distinctSources": 1750,
+  "repeatedSources": 0,
+  "maximumReceiptsPerSource": 1,
+  "interpretation": "The ordinary LIVE update chain advanced through distinct retained Email sources. This does not establish that the full update backlog or legacy unversioned-link reconciliation is complete.",
+  "sourceIdsReturned": false,
+  "messageContentReturned": false,
+  "productionDataWrites": false
+}

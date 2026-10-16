@@ -12,9 +12,18 @@ from pathlib import Path, PurePosixPath
 
 from package_live_runtime_archive import PackageError, require, verify_archive, digest
 
-REVIEWED_ROOT = Path('.verification-results/build01-runtime-archive-2026-10-16T20-46-18-125Z')
-REVIEWED_MANIFEST_SHA = 'f9dc270c53c5a964b436b70bed3d6da2b06f9810ea330ee45444b8c3de931da8'
-OUTPUT = Path('.verification-results/build01-edge-staged-v104')
+REVIEWED = {
+    'v104': (
+        Path('.verification-results/build01-runtime-archive-2026-10-16T20-46-18-125Z'),
+        'f9dc270c53c5a964b436b70bed3d6da2b06f9810ea330ee45444b8c3de931da8',
+        Path('.verification-results/build01-edge-staged-v104'),
+    ),
+    'v106': (
+        Path('.verification-results/build01-runtime-archive-2026-10-16T22-03-23-328Z'),
+        'ed8ca3970251af3fe843dab9153f9c149a1f824513f245b2492e795a96026da6',
+        Path('.verification-results/build01-edge-staged-v106'),
+    ),
+}
 
 
 def staged_path(slug, source_path):
@@ -36,12 +45,13 @@ def staged_path(slug, source_path):
     return target
 
 
-def stage():
-    root = REVIEWED_ROOT.resolve(strict=True)
-    raw, _, manifest = verify_archive(root, REVIEWED_MANIFEST_SHA, 103)
-    require(not OUTPUT.exists() and OUTPUT.parent.is_dir()
-            and not OUTPUT.parent.is_symlink(), 'runtime_staging_output_exists_or_invalid')
-    temp = Path(tempfile.mkdtemp(prefix='.edge-staging-', dir=OUTPUT.parent))
+def stage(reviewed):
+    root_path, manifest_sha, output = REVIEWED[reviewed]
+    root = root_path.resolve(strict=True)
+    raw, _, manifest = verify_archive(root, manifest_sha, 103)
+    require(not output.exists() and output.parent.is_dir()
+            and not output.parent.is_symlink(), 'runtime_staging_output_exists_or_invalid')
+    temp = Path(tempfile.mkdtemp(prefix='.edge-staging-', dir=output.parent))
     os.chmod(temp, 0o700)
     files = 0
     copied = 0
@@ -64,7 +74,7 @@ def stage():
                 copied += len(body)
         summary = {
             'contract': 'build01-live-edge-staging/1',
-            'sourceManifestSha256': REVIEWED_MANIFEST_SHA,
+            'sourceManifestSha256': manifest_sha,
             'functions': len(manifest['entries']), 'files': files,
             'sourceBytes': copied,
             'limitation': 'Local per-function source staging only; no all-function build or service restore proof.',
@@ -73,7 +83,7 @@ def stage():
             os.chmod(temp / 'staging-summary.json', 0o600)
             json.dump(summary, out, sort_keys=True)
             out.write('\n')
-        os.replace(temp, OUTPUT)
+        os.replace(temp, output)
         return summary
     except BaseException:
         shutil.rmtree(temp)
@@ -83,9 +93,11 @@ def stage():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--stage-reviewed-v104', action='store_true')
+    parser.add_argument('--stage-reviewed-v106', action='store_true')
     args = parser.parse_args()
-    require(args.stage_reviewed_v104, 'runtime_staging_exact_mode_required')
-    print(json.dumps(stage(), sort_keys=True))
+    require(args.stage_reviewed_v104 != args.stage_reviewed_v106,
+            'runtime_staging_exact_mode_required')
+    print(json.dumps(stage('v104' if args.stage_reviewed_v104 else 'v106'), sort_keys=True))
 
 
 if __name__ == '__main__':

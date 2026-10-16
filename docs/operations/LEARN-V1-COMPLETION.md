@@ -13,7 +13,7 @@ sign-off.
 
 ## Current evidence and priority
 
-**16 October, 22:26 UTC — heavy-card read path narrowed; ordinary sweep still pending.**
+**16 October, 22:31 UTC — heavy-card read path narrowed; ordinary sweep still pending.**
 
 ### Working and verified
 
@@ -28,10 +28,21 @@ sign-off.
   its bounded evidence in 4.5 seconds, under the app's eight-second query
   limit. No source rows, owner, grants or role defaults changed.
   [Sanitised release receipt](evidence/learn-build01-card-company-cover-2026-10-16.json).
-- The TEST checkpoint `267557fc8cc34cca47ace86b2d967cfcb40d8e45` was
-  pushed fast-forward and the remote head matched. It covers the ten-card
-  worker, the first planner setting, backup refresh and Email receipt evidence.
-  The newer covering-index/function release still needs its own checkpoint.
+- The TEST checkpoint `ec13bfb0169657d3505792cfbc8e6fa8f7c7b64c` was
+  pushed fast-forward and the remote head matched. It includes the ten-card
+  worker, covering-index/function repair, backup and Email receipt evidence,
+  and the exact-roster Slack readback. No production Git push was made.
+- A counts-only LIVE check found **1,750 committed Email unchanged receipts
+  for 1,750 distinct source messages** from 21:55 through 22:30, with zero
+  repeated source IDs. This establishes that the ordinary successor chain is
+  advancing through sources, not replaying the same batch. A new queued child
+  remained at 22:30; the full backlog is not yet cleared.
+  [Counts-only receipt](evidence/learn-build01-email-distinct-receipts-2026-10-16.json).
+- The current v106 LIVE Edge source inventory has been reconstructed locally
+  into 103 separate function trees, rechecking all 728 files and 4,828,503
+  bytes against the pinned private manifest. Its exact encrypted off-site
+  copy is still pending; no full application/Auth recovery claim follows from
+  local staging. [Restore inventory](LEARN-BUILD01-APPLICATION-RESTORE-INVENTORY.md).
 
 ### Needs finishing
 
