@@ -28,7 +28,7 @@ jobs:
       - name: Check out reviewed backup source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: c8a1909ad5741738e26ab69221d0c7b0ca345c2a
+          ref: 069d43cb3bee0f7ca3da5cbaa6fbc916e92d2662
           persist-credentials: false
       - name: Select Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
