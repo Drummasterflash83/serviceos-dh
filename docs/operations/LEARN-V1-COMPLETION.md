@@ -7,6 +7,29 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, about 02:04 UTC — current retained job-source gap measured on LIVE.**
+
+### Working and verified
+
+- A tenant-scoped read of latest retained Commusoft job pages counted 12,649
+  distinct source identities. Saved statuses include 211 ongoing, 69 on hold
+  and 8 pending. Only 9 of those 288 active-status identities have published
+  job links: 7 ongoing, none on hold and 2 pending. No provider call or
+  production write was made. [Sanitised aggregate](evidence/learn-build01-current-job-source-coverage-2026-10-16.json).
+
+### Needs finishing
+
+- These are retained source statuses, not current provider confirmations.
+  The 279 unlinked active-status source jobs need property/customer/site
+  evidence, guarded review or an equally defensible source-backed path before
+  job cards and team routing can claim coverage. The published 941-job
+  historical snapshot concealed this current operational gap; Build 01 remains
+  open.
+
+### Blocked externally
+
+- No overnight user action is needed for this read-only measurement.
+
 **16 October, about 01:55 UTC — source-backed customer-card labels released on LIVE.**
 
 ### Working and verified

@@ -1,0 +1,24 @@
+{
+  "version": "learn-build01-current-job-source-coverage/1",
+  "observedAtApproxUtc": "2026-10-16T02:04:00Z",
+  "scope": "LIVE Drummonds aggregate of latest retained Commusoft job page per connection and external identity; no job IDs, titles, people or payloads in this receipt",
+  "distinctRetainedJobSourceIdentities": 12649,
+  "statusRows": [
+    { "savedSourceStatus": "completed", "sourceJobs": 12361, "publishedJobLinks": 935, "latestRetainedPageUtc": "2026-10-14T13:15:08Z" },
+    { "savedSourceStatus": "ongoing", "sourceJobs": 211, "publishedJobLinks": 7, "latestRetainedPageUtc": "2026-10-15T21:02:08Z" },
+    { "savedSourceStatus": "on_hold", "sourceJobs": 69, "publishedJobLinks": 0, "latestRetainedPageUtc": "2026-10-13T16:20:23Z" },
+    { "savedSourceStatus": "pending", "sourceJobs": 8, "publishedJobLinks": 2, "latestRetainedPageUtc": "2026-10-15T15:33:04Z" }
+  ],
+  "activeSavedStatus": {
+    "sourceJobs": 288,
+    "publishedJobLinks": 9,
+    "sourceJobsWithoutPublishedLinks": 279
+  },
+  "verification": {
+    "readOnlySql": true,
+    "tenantAndProviderScoped": true,
+    "providerRequests": 0,
+    "productionWrites": false
+  },
+  "boundary": "This is a retained-page snapshot, not a live provider query or proof that all 288 jobs are still active. The aggregate selects one latest page for each source identity and does not audit equal-time ambiguity. Published links can have older effective source versions. Unlinked source records need explicit relationship evidence and review before customer-facing canonical publication."
+}
