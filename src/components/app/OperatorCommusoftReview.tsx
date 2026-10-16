@@ -3,6 +3,7 @@ import { getSupabaseClient } from "@/lib/supabase";
 import { operatorBusinessReviewClient } from "@/lib/openfolk-business-review";
 import { LearnCommusoftCustomers } from "@/components/client-portal/learn/LearnCommusoftCustomers";
 import { LearnCommusoftWork } from "@/components/client-portal/learn/LearnCommusoftWork";
+import { LearnCommusoftSourceJobs } from "@/components/client-portal/learn/LearnCommusoftSourceJobs";
 
 export function OperatorCommusoftReview({
   tenantId,
@@ -13,7 +14,7 @@ export function OperatorCommusoftReview({
 }) {
   const [reason, setReason] = useState("");
   const [session, setSession] = useState<{ reason: string; generation: number } | null>(null);
-  const [kind, setKind] = useState<"customers" | "work">("customers");
+  const [kind, setKind] = useState<"customers" | "work" | "source-jobs">("customers");
   const generation = useRef(0);
   function close() {
     generation.current++;
@@ -58,9 +59,9 @@ export function OperatorCommusoftReview({
       <header>
         <h2 className="text-xl font-semibold">Turn retained inputs into customer context</h2>
         <p>
-          Review customer identities first, then link their sites, jobs and contacts. Each request
-          records your operator identity and reason. Shared contact details alone do not prove a
-          match.
+          Browse captured jobs even when customer identity is unresolved. Review identities before
+          linking customer, site, job and contact records. Each request records your operator identity
+          and reason. Shared contact details alone do not prove a match.
         </p>
       </header>
       {!session ? (
@@ -92,6 +93,7 @@ export function OperatorCommusoftReview({
             the browser is hidden.
           </p>
           <nav aria-label="Business source review" className="flex gap-3">
+            <button className="cp-secondary" aria-pressed={kind === "source-jobs"} onClick={() => setKind("source-jobs")}>Captured job cards</button>
             <button
               className="cp-secondary"
               aria-pressed={kind === "customers"}
@@ -111,7 +113,7 @@ export function OperatorCommusoftReview({
             </button>
           </nav>
           {client &&
-            (kind === "customers" ? (
+            (kind === "source-jobs" ? <LearnCommusoftSourceJobs key={`${tenantId}:${actorId}:${session.generation}`} tenantId={tenantId} actorId={actorId} client={client} /> : kind === "customers" ? (
               <LearnCommusoftCustomers
                 key={`${tenantId}:${actorId}:${session.generation}`}
                 tenantId={tenantId}
