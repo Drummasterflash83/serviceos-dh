@@ -1,0 +1,23 @@
+{
+  "version": "learn-build01-email-eligible-index-rehearsal/1",
+  "environment": "Pinned 15 October production archive restored to a disposable network-isolated database",
+  "candidate": "Partial ordering index for non-draft email messages; no source or projection records changed",
+  "archive_sha256": "31f1e594e9c3b43f3cff0ec0c45095216a4a81db99c03fe8",
+  "exact_200_source_id_set_preserved": true,
+  "candidate_index_valid_in_isolated_database": true,
+  "controlled_statistics": "ANALYZE email_messages ran before baseline and after index creation",
+  "warm_baseline_execution_ms": 22.477,
+  "warm_candidate_execution_ms": 18.321,
+  "cold_order_limitation": "The first baseline read ran before the later candidate and warmed shared buffers; the apparent 43.6-second versus 16.6-millisecond first-pass contrast is not a controlled cold-cache comparison and is not used as a release claim.",
+  "live_baseline_at_0438_utc": {
+    "execution_ms": 5522.538,
+    "email_index_rows_scanned": 37924,
+    "interaction_index_probes": 37924,
+    "shared_blocks_read": 10057
+  },
+  "decision": "Candidate not deployed. The modest controlled warm improvement and non-comparable cold order do not prove that this index alone will resolve LIVE retry and intake pressure.",
+  "disposable_container_removed": true,
+  "source_provider_requests": 0,
+  "production_writes": false,
+  "private_source_rows_printed": false
+}

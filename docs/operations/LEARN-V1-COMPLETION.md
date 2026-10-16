@@ -27,11 +27,16 @@ sign-off.
 ### Needs finishing
 
 - Eligible email messages without interactions rose from 14,548 at 04:10 to
-  16,028 at 04:33. The current recent-stream initial traversal has `query:null`,
+  16,028 at 04:33 and 16,623 at 04:36. The latter includes 106 messages with
+  source time in the preceding day, so current correspondence is affected too.
+  The current recent-stream initial traversal has `query:null`,
   so the system can walk old mailbox history. Chris's historical horizon
-  preference is being sought; no intake scope has changed. Seven customer
-  cards lacked projection for over an hour, and the active card job's final
-  ordinary retry is due at 04:45. Check its actual result before a repair.
+  preference is being sought; no intake scope has changed. By 04:48 ordinary
+  continuation reduced the email gap to 15,218 and the card job's fifth attempt
+  projected 200 cards, leaving three cards unprojected for over an hour. This
+  is recovery, not sustained convergence. A candidate partial email index
+  retained exact results offline but showed only a modest controlled warm
+  benefit; it was not released.
 
 ### Blocked externally
 

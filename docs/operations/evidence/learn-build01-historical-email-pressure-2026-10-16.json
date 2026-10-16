@@ -19,6 +19,14 @@
     "workspace_backfill_scheduler_records_reported_last_hour": 0
   },
   "checkpoint_readback_at_utc": "2026-10-16T04:35:03.084Z",
+  "eligible_missing_age_readback_at_utc": "2026-10-16T04:36:21.262Z",
+  "eligible_missing_by_source_age": {
+    "total": 16623,
+    "source_last_day": 106,
+    "source_older_day_to_year": 10347,
+    "source_one_to_three_years": 5820,
+    "source_over_three_years": 350
+  },
   "checkpoint_counts": {
     "recent_completed": 14,
     "recent_ready": 12,
@@ -43,7 +51,18 @@
     "max_attempts": 5,
     "next_available_at_utc": "2026-10-16T04:45:39.035Z"
   },
-  "interpretation": "Historical mailbox intake is outpacing email source-to-interaction projection in this short window. No source loss is established. The 3-year onboarding horizon is awaiting Chris's preference; no existing message was deleted and no intake scope was changed. The card retry is scheduled for ordinary recovery, not proof it will succeed.",
+  "ordinary_recovery_readback_at_utc": "2026-10-16T04:48:37.107Z",
+  "ordinary_recovery": {
+    "card_fifth_attempt_succeeded_at_utc": "2026-10-16T04:46:17.085945Z",
+    "cards_projected_by_that_attempt": 200,
+    "continuation_queued": true,
+    "active_cards_at_0448": 4076,
+    "projected_cards_at_0448": 4055,
+    "unprojected_cards_older_than_one_hour_at_0448": 3,
+    "eligible_email_without_interaction_at_0448": 15218,
+    "manual_rescue": false
+  },
+  "interpretation": "Historical mailbox intake outran email projection in the 04:10–04:36 window, including 106 recent-occurrence messages without interactions. The earlier zero older-than-one-day count concerned database created_at, not source occurrence time. Ordinary retry then reduced the eligible email gap from 16,623 at 04:36 to 15,218 at 04:48 and projected 200 cards, reducing cards unprojected for over an hour from seven to three. This short recovery does not prove sustained net catch-up or full card coverage. No source loss is established. The 3-year onboarding horizon is awaiting Chris's preference; no existing message was deleted and no intake scope was changed.",
   "message_content_returned": false,
   "source_provider_writes": false,
   "production_data_writes": false
