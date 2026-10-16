@@ -1,0 +1,17 @@
+{
+  "contract": "learn-build01-card-next-batch-readback/1",
+  "observedAt": "2026-10-16T22:36:33.559Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "sweepSince": "2026-10-16T20:38:02.997Z",
+  "requestedLimit": 40,
+  "effectiveLimit": 10,
+  "batchCards": 10,
+  "inputReadSuccesses": 10,
+  "inputReadFailures": 0,
+  "eligibleInteractionsByPosition": [55115, 7, 164, 3, 1815, 6, 6, 24, 6, 21],
+  "elapsedMillisecondsByPosition": [3275, 194, 329, 193, 525, 335, 195, 325, 208, 203],
+  "interpretation": "The actual next ten-card ordinary sweep batch passes bounded read-only source-input reads, including the 55,115-interaction first card. This does not prove the full worker, card update, graph traversal or scheduled retry succeeds.",
+  "cardIdsReturned": false,
+  "customerContentReturned": false,
+  "productionDataWrites": false
+}

@@ -26,8 +26,13 @@ sign-off.
   company-only and person-only links, while excluding 110 retained drafts.
   The oldest real LIVE card retained its 55,115 eligible count and returned
   its bounded evidence in 4.5 seconds, under the app's eight-second query
-  limit. No source rows, owner, grants or role defaults changed.
+  limit. A later read of the **actual next ten-card sweep batch** returned
+  all ten source inputs successfully; the 55,115-interaction first card took
+  3.3 seconds and the others 0.2–0.5 seconds. This still does not establish
+  that the full worker updates cards successfully. No source rows, owner,
+  grants or role defaults changed.
   [Sanitised release receipt](evidence/learn-build01-card-company-cover-2026-10-16.json).
+  [Batch-input readback](evidence/learn-build01-card-next-batch-readback-2026-10-16.json).
 - The TEST checkpoint `ec13bfb0169657d3505792cfbc8e6fa8f7c7b64c` was
   pushed fast-forward and the remote head matched. It includes the ten-card
   worker, covering-index/function repair, backup and Email receipt evidence,
