@@ -41,6 +41,22 @@ test("signed allowed public-channel root and reply yield bounded hints without s
   }
 });
 
+test("public bot messages and thread broadcasts become source-fetch hints", async () => {
+  for (const subtype of ["bot_message", "thread_broadcast"]) {
+    const payload = { ...event, event: { ...event.event,
+      subtype, channel_type: undefined,
+      thread_ts: subtype === "thread_broadcast" ? "1792105100.000001" : undefined } };
+    const { raw, headers } = await signed(payload);
+    const hint = await verifyPublicChannelEvent(raw, headers, binding, nowMs);
+    assert.equal(hint.kind, "message_hint");
+    if (hint.kind === "message_hint")
+      assert.equal(hint.threadTs, subtype === "thread_broadcast"
+        ? "1792105100.000001" : null);
+    await rejected({ ...payload, event: { ...payload.event,
+      channel_type: "im" } }, "out_of_scope_event");
+  }
+});
+
 test("signed challenge works; documented edit and delete shapes target the original message", async () => {
   const verification = await signed({ type: "url_verification",
     challenge: "syntheticChallenge_123" });
@@ -92,7 +108,7 @@ test("DMs, private channels, unapproved channels and malformed events are exclud
   await rejected({ ...event, event_id: "invalid" }, "out_of_scope_event");
   await rejected({ ...event, event: { ...event.event, subtype: { type: "message_changed" } } },
     "out_of_scope_event");
-  await rejected({ ...event, event: { ...event.event, subtype: "bot_message" } },
+  await rejected({ ...event, event: { ...event.event, subtype: "channel_join" } },
     "out_of_scope_event");
   await rejected({ ...event, event: { type: "message", subtype: "message_deleted",
     channel_type: "im", channel: "C12345", ts: event.event.ts,

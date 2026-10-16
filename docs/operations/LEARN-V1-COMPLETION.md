@@ -13,6 +13,83 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 07:01 UTC — signed Slack Events route prepared and inactive on TEST.**
+
+### Working and verified
+
+- Chris selected near-live public-channel and observed-reply capture for Build 01
+  and asked to review the signed Events route before any Slack app change. The
+  [exact app proposal](LEARN-BUILD01-SLACK-EVENTS-APP-REVIEW.md) limits the
+  subscription to `message.channels` and the approved 160 public channels;
+  DMs and private channels remain excluded.
+- The TEST hint-to-job and source-commit schema is installed with zero event
+  hints and zero event jobs. A restored-database rehearsal passed synthetic
+  queue claim, exact source publication, duplicate acknowledgement and
+  deletion withholding with prior source version retained. All 32 local Slack
+  boundary/worker tests pass. TEST worker v16 and receiver v2 were deployed
+  from exact source closures; all other Edge function versions stayed fixed.
+  The inactive hosted receiver returns 503 to unsigned POST and 405 to GET.
+  No Slack app setting or LIVE endpoint changed.
+- The three-year Email policy still covers all 30 accounts. At 07:00 UTC the
+  retained source count was 194,273, with the pre-cutoff retained count stable
+  at 34,100. Ten bounded account cursors were ready, two claimed, 14 completed
+  and four blocked; 26 normal Email jobs were queued or running. No manual
+  projection rescue was used for this readback.
+
+### Needs finishing
+
+- Exercise a signed hosted TEST delivery under an approved roster; measure
+  queue age, reply and correction latency; then bring the exact reviewed route
+  through controlled LIVE activation and real source-to-card proof. The current
+  paced event lane settles at most roughly one job per minute per workspace,
+  so a sustained burst above that rate needs an explicit lag response and a
+  slower reconciliation sweep. Do not present the route as near-live yet.
+- GitHub has still shown only manual independent backup runs at 07:01 UTC.
+  Observe the next 07:43 scheduled fallback; a manual success does not prove
+  unattended operation. Email projection, Commusoft job coverage and full
+  application/Auth recovery remain open.
+
+### Blocked externally
+
+- The Slack app change waits for Chris's review of the exact proposal after
+  technical gates. No app access change was attempted.
+
+**16 October, 06:23 UTC — three-year Email full-import boundary active; backup alerts reduced.**
+
+### Working and verified
+
+- Drummonds' 30 Gmail accounts now have the fixed full-import boundary
+  `2023-10-16T00:00:00Z`. The schema passed disposable-Postgres protocol tests
+  (74/74), rollback rehearsals on TEST and LIVE, and readback after each
+  install. TEST worker v42 and LIVE worker v93 boot and preserve the existing
+  auth gate. The LIVE activation transaction restarted exactly 12 unfinished
+  unbounded page cursors and wrote 12 audit records, leaving blocked and
+  completed checkpoints and all previously retained messages intact. Ordinary
+  LIVE processing created all 12 saved `after:1697414400` continuations by
+  06:28 UTC; 193,347 messages remained retained and the pre-cutoff retained
+  count stayed at 34,100.
+  [Counts-only receipt](evidence/learn-build01-email-three-year-horizon-2026-10-16.json).
+- The GitHub missed-success monitor now checks once daily at 09:23 UTC,
+  after the final backup fallback slot. Public `main` commit `5a346dd9`
+  changes only that workflow file; all 170 local backup checks pass. This
+  limits duplicate failure emails while retaining a daily missed-run alert.
+
+### Needs finishing
+
+- Observe the bounded Email continuations through ordinary processing and
+  verify the Email source-to-interaction gap converges. The
+  policy change limits future full inventory; it does not claim complete
+  projection or business coverage.
+- A successful **scheduled** independent database backup is still required.
+  The 07:43 UTC fallback slot is next. The last successful copy was manual.
+- Commusoft freshness/card coverage, Slack ongoing replies, source/scoring
+  coverage and full application/Auth recovery remain Build 01 gates.
+
+### Blocked externally
+
+- None for the Email boundary. Chris's final business acceptance remains his
+  decision after the technical evidence is ready.
+
 **16 October, 05:47 UTC — hosted backup missed-run detector works; cron dispatch is still absent.**
 
 ### Working and verified
@@ -38,6 +115,11 @@ sign-off.
   dispatch. Neither manual result proves the recurring service will run.
 - Email's shorter improving interval does not yet establish sustained catch-up
   or complete current-message/card coverage. Source intake continues.
+- A 05:50 LIVE aggregate found 12,649 distinct retained Commusoft job source
+  identities, but only 944 reviewed job links/cards: 934 completed, eight open
+  and two pending. None has a named engineer, a usable completion instant or a
+  verified flag. Job-progress scoring and named-person routing therefore remain
+  withheld. [Sanitised coverage](evidence/learn-build01-job-card-coverage-0550-2026-10-16.json).
 
 ### Blocked externally
 

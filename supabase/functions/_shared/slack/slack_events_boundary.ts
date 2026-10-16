@@ -84,8 +84,10 @@ export async function verifyPublicChannelEvent(
       typeof message.ts !== "string" || !timestamp.test(message.ts) ||
       micros(message.ts) < micros(binding.minTs))
     throw new SlackEventBoundaryError("out_of_scope_event");
-  if (message.subtype === undefined) {
-    if (message.channel_type !== "channel" ||
+  if (message.subtype === undefined || message.subtype === "bot_message" ||
+      message.subtype === "thread_broadcast") {
+    if ((message.channel_type !== "channel" &&
+        !(message.subtype !== undefined && message.channel_type === undefined)) ||
         !(message.thread_ts === undefined ||
           typeof message.thread_ts === "string" && timestamp.test(message.thread_ts)))
       throw new SlackEventBoundaryError("out_of_scope_event");

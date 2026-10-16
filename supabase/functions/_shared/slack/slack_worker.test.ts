@@ -9,7 +9,7 @@ function fixture() {
     job_type: "slack.history_sync",
     claimed_by: `learn-slack:${worker}`,
     attempt_count: 2,
-    payload: { connector_account_id: "account" },
+    payload: { connector_account_id: "account" } as Record<string, string>,
     metadata: {} as Record<string, unknown>,
   };
   const calls: { name: string; args: any }[] = [];
@@ -52,14 +52,18 @@ function fixture() {
           : { data: [job], error: null };
       assert.equal(
         name,
-        job.job_type === "slack.thread_sync"
+        job.job_type === "slack.event_sync"
+          ? "learn_slack_finish_event_job"
+          : job.job_type === "slack.thread_sync"
           ? "learn_slack_finish_thread_job"
           : "learn_slack_finish_job",
       );
       if (state.settleError)
         return { data: null, error: { code: "XX000", message: "private database failure" } };
-      if (args.p_outcome.success && !state.published && !job.metadata.slack_page_v1)
-        return { data: null, error: { code: "PT409", message: "slack_queue_page_missing" } };
+      if (args.p_outcome.success && !state.published && !job.metadata.slack_page_v1 &&
+          !job.metadata.slack_event_v1)
+        return { data: null, error: { code: "PT409", message: job.job_type === "slack.event_sync"
+          ? "slack_event_source_receipt_missing" : "slack_queue_page_missing" } };
       return {
         data: {
           job_id: job.id,
@@ -105,6 +109,30 @@ test("thread jobs carry their trusted type and recover through the thread comple
     throw Error("Unexpected provider request");
   });
   assert.equal(recovered.calls[1].name, "learn_slack_finish_thread_job");
+});
+test("event jobs use their own settlement and retry without exposing provider prose", async () => {
+  const f = fixture();
+  f.job.job_type = "slack.event_sync";
+  f.job.payload = { event_id: "EvSYNTH1234" };
+  await runSlackWorker(f.db, worker, async (ctx) => {
+    assert.equal(ctx.jobType, "slack.event_sync");
+    assert.deepEqual(ctx.payload, { event_id: "EvSYNTH1234" });
+    return { success: false, error: { code: "slack_event_rate_limited",
+      message: "private provider prose", retryable: true, retryAfterSeconds: 90 } };
+  });
+  assert.equal(f.calls[1].name, "learn_slack_finish_event_job");
+  assert.deepEqual(f.calls[2].args.p_outcome, { success: false,
+    code: "slack_event_rate_limited", retryable: true, retry_after_seconds: 90 });
+  assert.equal(JSON.stringify(f.calls).includes("private provider prose"), false);
+
+  const recovered = fixture();
+  recovered.job.job_type = "slack.event_sync";
+  recovered.job.metadata.slack_event_v1 = { outcome: "stored_source" };
+  await runSlackWorker(recovered.db, worker, async () => {
+    throw Error("Committed event fetched again");
+  });
+  assert.equal(recovered.state.admissions, 0);
+  assert.equal(recovered.calls[1].name, "learn_slack_finish_event_job");
 });
 test("a recovered committed page skips the provider entirely", async () => {
   const f = fixture();

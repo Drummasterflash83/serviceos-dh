@@ -1,0 +1,57 @@
+{
+  "version": "learn-build01-slack-events-test/1",
+  "observedAtUtc": "2026-10-16T07:01:00Z",
+  "scope": "approved-public-channels-only",
+  "slackAppChanged": false,
+  "liveChanged": false,
+  "testProject": "saatxzwxvdvqevbnskxy",
+  "schema": {
+    "combinedMigrationSha256": "fdc270864b92e7a40f962e4111469b66abf26d5d333c652ba78cba9ad3d357a7",
+    "rollbackRehearsal": "passed",
+    "installedInactive": true,
+    "eventHints": 0,
+    "eventJobs": 0,
+    "sourceCommitFunctionPresent": true
+  },
+  "isolatedRehearsal": {
+    "state": "isolated_queue_source_delete_verified",
+    "archiveSha256": "31f1e594e9c3b43f3cff0ec0c45095216a4bb6580e8a0e5f2a4a81db99c03fe8",
+    "syntheticEvents": 2,
+    "providerRequests": 0,
+    "productionWrites": false,
+    "originalVersionRetained": true,
+    "deletedCardWithheld": true,
+    "network": "none",
+    "hostPorts": 0,
+    "containerRemoved": true
+  },
+  "runtime": {
+    "worker": {
+      "testVersionBefore": 15,
+      "testVersionAfter": 16,
+      "sourceClosureSha256": "4064a2a351f0b049ee5d58f4f05f39cd4763c735dc4f8b4375358ab1039eb8b9",
+      "wireSha256": "947f3b627593479d3098587577320c54004b745faa2b6bf276841f3919064385"
+    },
+    "receiver": {
+      "testVersionBefore": 1,
+      "testVersionAfter": 2,
+      "sourceClosureSha256": "5269aa61f813551f3b843fc6b7f9f532f10649edc3be0fa72d1c509fcde011d5",
+      "wireSha256": "ec5cbf11210183134805b377626d63d5defc00f9608850bd2062020024237fb2"
+    },
+    "otherFunctionsUnchanged": true,
+    "receiverActive": false,
+    "unsignedPostStatus": 503,
+    "getStatus": 405
+  },
+  "localTests": {
+    "slackBoundaryAndWorkerPassed": 32,
+    "slackBoundaryAndWorkerFailed": 0
+  },
+  "notProved": [
+    "hosted_signed_delivery_under_approved_roster",
+    "real_slack_event_delivery",
+    "near_live_latency_at_load",
+    "live_event_recovery",
+    "missed_event_reconciliation"
+  ]
+}

@@ -26,7 +26,7 @@ export async function runSlackWorker(
   const outcomes: unknown[] = [];
   for (const job of claimed.data as Job[]) {
     if (
-      !["slack.history_sync", "slack.thread_sync"].includes(job.job_type) ||
+      !["slack.history_sync", "slack.thread_sync", "slack.event_sync"].includes(job.job_type) ||
       job.claimed_by !== `learn-slack:${workerId}` ||
       !Number.isSafeInteger(job.attempt_count) ||
       job.attempt_count < 1
@@ -41,7 +41,7 @@ export async function runSlackWorker(
     let result: WorkerHandlerResult = { success: true };
     // A committed page survives an HTTP timeout or process restart. It needs only
     // settlement, never a repeated provider request or another page in this job.
-    if (!job.metadata?.slack_page_v1) {
+    if (!job.metadata?.slack_page_v1 && !job.metadata?.slack_event_v1) {
       const admission = await captureAdmission(db, job.tenant_id, "slack");
       if (!admission.allowed) {
         outcomes.push(
@@ -83,7 +83,9 @@ export async function runSlackWorker(
     // Probe committed state even after a handler failure: publication may have
     // succeeded while its response was lost. SQL derives the result/continuation.
     const finishRpc =
-      job.job_type === "slack.thread_sync"
+      job.job_type === "slack.event_sync"
+        ? "learn_slack_finish_event_job"
+        : job.job_type === "slack.thread_sync"
         ? "learn_slack_finish_thread_job"
         : "learn_slack_finish_job";
     let settled = await db.rpc(finishRpc, { ...args, p_outcome: { success: true } });
@@ -91,14 +93,18 @@ export async function runSlackWorker(
       if (
         result.success ||
         settled.error.code !== "PT409" ||
-        settled.error.message !== "slack_queue_page_missing"
+        settled.error.message !== (job.job_type === "slack.event_sync"
+          ? "slack_event_source_receipt_missing" : "slack_queue_page_missing")
       )
         throw Error("slack_worker_settlement_failed");
       const error = result.error;
       const code =
-        error?.code && /^slack_history_[a-z_]{1,80}$/.test(error.code)
+        error?.code && (job.job_type === "slack.event_sync"
+          ? /^slack_event_[a-z_]{1,80}$/.test(error.code)
+          : /^slack_history_[a-z_]{1,80}$/.test(error.code))
           ? error.code
-          : "slack_history_worker_failed";
+          : job.job_type === "slack.event_sync"
+            ? "slack_event_worker_failed" : "slack_history_worker_failed";
       const delay = error?.retryAfterSeconds;
       const retryAfter =
         Number.isSafeInteger(delay) && delay! >= 0 && delay! <= 31536000 ? delay! : 0;

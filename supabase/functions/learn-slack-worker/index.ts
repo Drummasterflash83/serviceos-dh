@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { handleSlackHistorySync } from "../_shared/worker_handlers/slack_history.ts";
+import { handleSlackEventSync } from "../_shared/slack/slack_event_worker.ts";
 import { runSlackWorker } from "../_shared/slack/slack_worker.ts";
 import { slackWorkerEndpoint } from "../_shared/slack/slack_worker_http.ts";
 
@@ -16,7 +17,8 @@ Deno.serve(
     return await runSlackWorker(
       admin,
       crypto.randomUUID(),
-      handleSlackHistorySync,
+      (ctx) => ctx.jobType === "slack.event_sync"
+        ? handleSlackEventSync(ctx) : handleSlackHistorySync(ctx),
       AbortSignal.timeout(90000),
     );
   }),
