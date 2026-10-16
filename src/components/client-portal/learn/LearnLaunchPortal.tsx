@@ -161,6 +161,12 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
   }
   const display = (v: unknown) =>
     typeof v === "number" ? v.toLocaleString("en-GB") : "Not checked";
+  const savedCountDisplay = (v: unknown) =>
+    typeof v === "number"
+      ? display(v)
+      : savedInputs.isPending || savedInputs.isFetching
+        ? "Checking…"
+        : "Count unavailable";
   const when = (v: unknown) =>
     typeof v === "string" ? new Date(v).toLocaleString("en-GB") : "Not confirmed";
   const attempt = (v: LaunchProcessingAttempt | undefined) => {
@@ -219,7 +225,7 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
             { name: "Email", value: active?.counts.email.record_count, Icon: Mail, note: "Emails saved in LEARN", detail: active?.email.last_successful_message_sync_at ? `Latest capture ${when(active.email.last_successful_message_sync_at)}` : "Capture status awaiting confirmation", href: "#learn-communication-sources" },
             { name: "Phone", value: active?.counts.phone.record_count, Icon: Phone, note: "Call records saved in LEARN", detail: active?.phone.last_successful_call_sync_at ? `Latest capture ${when(active.phone.last_successful_call_sync_at)}` : "Capture status awaiting confirmation", href: "#learn-communication-sources" },
             { name: "Voice recordings", value: active?.recordings.record_count, Icon: Files, note: "Recordings saved", detail: "Audio coverage is checked separately", href: "#learn-communication-sources" },
-            { name: "Slack", value: visibleInputs?.slack, Icon: MessagesSquare, note: "Slack messages saved in LEARN", detail: "History imports and replies are checked separately", href: null },
+            { name: "Slack", value: visibleInputs?.slack, Icon: MessagesSquare, note: "Slack messages saved in LEARN", detail: "Saved history total; current capture and replies are checked separately", href: null },
             { name: "Voicemail", value: visibleInputs?.voicemail, Icon: Voicemail, note: "Saved messages visible to your account", detail: "Open your private inbox to read and listen", href: `/client?tenant=${encodeURIComponent(tenantId)}&section=receptionist&view=voicemails` },
           ].map((c) => (
             <article className="lr-count" key={c.name}>
@@ -228,7 +234,9 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
                 <c.Icon size={17} />
               </div>
               <strong className={typeof c.value === "number" ? "" : "lr-unknown"}>
-                {display(c.value)}
+                {c.name === "Slack" || c.name === "Voicemail"
+                  ? savedCountDisplay(c.value)
+                  : display(c.value)}
               </strong>
               <small>{c.note}</small>
               <p className="lr-input-detail">{c.detail}</p>
