@@ -1,0 +1,21 @@
+{
+  "version": "learn-build01-offline-top-property-candidates/1",
+  "observed_at_utc": "2026-10-16T02:48:00Z",
+  "source": "15 October production database snapshot restored in a disposable network-isolated local database",
+  "scope": "58 distinct direct property references with the highest count of saved active-status unlinked jobs; 141 jobs represented",
+  "distinct_saved_owner_source_versions": 39,
+  "exact_primary_email_candidate_rows": {
+    "one_candidate": 26,
+    "multiple_candidates": 1,
+    "distinct_people_across_one_candidate_rows": 17,
+    "same_display_name_among_one_candidate_rows": 6,
+    "same_postcode_among_one_candidate_rows": 0
+  },
+  "exact_company_name_and_postcode_candidate_rows": 1,
+  "rows_without_either_candidate_kind": 30,
+  "private_worklist": ".verification-results/build01-top-property-identity-candidates-offline-20261015.json, mode 0600; identifiers and source summaries excluded from public receipt",
+  "isolated_container_removed": true,
+  "production_writes": false,
+  "source_provider_requests": 0,
+  "limitation": "These are preliminary matches from a dated snapshot, not reviewed identity links. Reused email addresses and absent/mismatched names or postcodes make automatic linking unsafe. Latest LIVE source, business identity, property owner and explicit reviewer confirmation are required before publishing customer/site/job links."
+}

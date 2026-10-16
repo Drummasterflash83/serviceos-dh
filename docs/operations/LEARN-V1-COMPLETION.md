@@ -13,6 +13,31 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, about 02:49 UTC — top property identity suggestions checked offline.**
+
+### Working and verified
+
+- The 58 highest-impact property references in the dated private worklist
+  represent 141 saved active-status jobs but only 39 distinct saved owner source
+  versions. Exact primary-email lookup found one person candidate in 26 rows
+  (17 distinct people), multiple in one and none in many; only six of those
+  26 also matched the saved person name, and none matched postcode. One row
+  had an exact company-name/postcode candidate. The private candidate sheet
+  stays mode 0600 and the disposable database is removed.
+  [Sanitised candidate counts](evidence/learn-build01-offline-top-property-candidates-2026-10-16.json).
+
+### Needs finishing
+
+- Do **not** infer or bulk-publish those matches. Shared/reused email and
+  missing independent corroboration make the candidate list a review aid only.
+  Current LIVE source version, property/customer/site evidence and explicit
+  identity review are still required before active jobs gain card links.
+
+### Blocked externally
+
+- No overnight user action is needed for this read-only classification. The
+  operator review remains a substantive Build 01 task, not just final signoff.
+
 **16 October, about 02:46 UTC — private active-property review order prepared offline.**
 
 ### Working and verified
