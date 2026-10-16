@@ -1,0 +1,36 @@
+{
+  "observedAtUtc": "2026-10-16T15:56:44.914Z",
+  "scope": "Counts-only LIVE queue and source-to-interaction readbacks; no provider requests, message content or production writes by verifier",
+  "release": {
+    "testCheckpoint": "debaa153e4ede0879f330cc2b20c856acd7499bc",
+    "liveSelectorMd5": "0ffedc2f069d2d594bfb282fdf629985",
+    "liveInstalledAtUtc": "2026-10-16T15:38:43Z"
+  },
+  "before": {
+    "atUtc": "2026-10-16T15:53:37.405Z",
+    "eligibleEmailWithoutInteraction": 12714,
+    "olderJobState": "retrying",
+    "olderJobNextAvailableAtUtc": "2026-10-16T15:53:09.426592Z"
+  },
+  "ordinaryRetry": {
+    "firstCompletedAtUtc": "2026-10-16T15:54:12.891583Z",
+    "firstAttemptCount": 4,
+    "firstEmailSelected": 200,
+    "firstEmailProcessed": 200,
+    "firstSourceFailures": 0,
+    "secondEmailSelected": 200,
+    "secondEmailProcessed": 200,
+    "thirdEmailSelected": 200,
+    "thirdEmailProcessed": 200,
+    "continuationStateAtReadback": "queued",
+    "terminalReviewLabelMeaning": "Existing legacy review count, not a failed 200-message publication",
+    "manualProjectionRescue": false
+  },
+  "after": {
+    "atUtc": "2026-10-16T15:56:44.914Z",
+    "eligibleEmailWithoutInteraction": 12113,
+    "emailReceiptsLastHour": 602,
+    "currentLaneProcessedNewMessageAtUtc": "2026-10-16T15:55:06.424574Z"
+  },
+  "acceptanceLimit": "Ordinary recent-import selection and continuations are working, but the remaining backlog, older full-history fallback and sustained catch-up are still open."
+}

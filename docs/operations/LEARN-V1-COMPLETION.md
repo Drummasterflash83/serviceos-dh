@@ -13,6 +13,36 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 15:57 UTC — the ordinary Email retry is publishing again.**
+
+### Working and verified
+
+- After the schema-only recent-import selector release, the previously retrying
+  LIVE older Email job was claimed by the normal worker at its next available
+  time. It selected and published **200 of 200** messages with zero source
+  failures, then emitted its continuation. Two more ordinary 200-message
+  batches completed and another continuation remained queued at 15:56 UTC.
+  The eligible saved Email gap fell from **12,714 at 15:53** to **12,113 at
+  15:56**. The separate current-mail lane also processed a new message.
+  No manual projection rescue was used. [Queue receipt](evidence/learn-build01-email-unattended-retry-2026-10-16.json).
+
+### Needs finishing
+
+- Continue ordinary Email catch-up and verify that the remaining 12,113
+  messages project, including any older retained messages that require the
+  full-history fallback. The `projection_review_required` terminal labels on
+  these 200-message batches record existing legacy holds, not publication
+  failures; keep the review state visible.
+- The current public Slack roster gap, three older unprojected customer cards,
+  source-backed job routing/scoring and full application/Auth recovery remain
+  Build 01 gates. The saved Slack event ledger still has no real post-cutoff
+  capture proof.
+
+### Blocked externally
+
+- The exact one-channel public Slack scope question is pending. Chris's final
+  business sign-off follows technical acceptance.
+
 **16 October, 15:49 UTC — Commusoft captured-job browsing passed LIVE; Phone coverage is complete for retained calls.**
 
 ### Working and verified
