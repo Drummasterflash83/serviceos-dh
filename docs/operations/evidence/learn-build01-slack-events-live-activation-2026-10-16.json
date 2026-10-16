@@ -1,0 +1,55 @@
+{
+  "version": "learn-build01-slack-events-live-activation/1",
+  "observed_at_utc": "2026-10-16T14:46:27Z",
+  "environment": "LIVE",
+  "project_ref": "tgbnakbxwcqjeimygroz",
+  "tenant_id": "00000000-0000-0000-0000-000000000001",
+  "slack_team_id": "T0CC5V4D7",
+  "slack_app_id": "A0C8G0STUKV",
+  "approved_campaign_id": "b54d246b-2818-44d1-ba05-ccbe2c6bd6c9",
+  "saved_cutoff": "1791883800.000000",
+  "enabled_public_channel_reply_subscriptions": 160,
+  "unique_enabled_public_channels": 160,
+  "roster_sha256": "e1417e972f9a319340446e7410d071cb120e8cc80e23b2a91cd66370183a315b",
+  "schema_rehearsal": "rollback_verified",
+  "receiver": {
+    "version_before_activation": 1,
+    "wire_sha256": "ec5cbf11210183134805b377626d63d5defc00f9608850bd2062020024237fb2",
+    "guarded_configuration_digest_verified": true,
+    "unsigned_post_status_after_activation": 401,
+    "slack_signed_url_verification": "verified"
+  },
+  "worker": {
+    "version": 17,
+    "wire_sha256": "b56abad21a8cac54a02143169a24cf0e8b595b0083c0160339927829d5c755a2",
+    "other_edge_endpoints_unchanged_at_release": true,
+    "ordinary_channel_and_reply_jobs_succeeded_after_release": true
+  },
+  "slack_app": {
+    "events_api": "on",
+    "request_url": "https://tgbnakbxwcqjeimygroz.supabase.co/functions/v1/learn-slack-events",
+    "user_events": ["message.channels"],
+    "bot_events": [],
+    "delayed_events": "off",
+    "new_oauth_scope": false,
+    "source_writes": false,
+    "private_or_dm_events": false
+  },
+  "first_post_activation_observation": {
+    "hints": 0,
+    "event_jobs": 0,
+    "retained_post_cutoff_messages": 0,
+    "retained_post_cutoff_replies": 0,
+    "channel_cutoff_regressions": 0,
+    "channels_advanced_past_cutoff": 159,
+    "channels_over_one_day_behind": 44
+  },
+  "acceptance": "configuration_and_signed_challenge_only",
+  "remaining": [
+    "Observe one actual post-cutoff public-channel event and one actual reply from Slack through hint, read-only provider reconciliation and retained source evidence.",
+    "Measure event-to-source/card latency and retry/age health under real traffic.",
+    "Catch up the older recurring channel windows and verify missed-event reconciliation."
+  ],
+  "credential_values_recorded": false,
+  "customer_message_content_recorded": false
+}

@@ -13,6 +13,39 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 14:46 UTC — signed Drummonds Slack Events route enabled in LIVE; real delivery still unproved.**
+
+### Working and verified
+
+- The existing Drummonds Slack app now has Events API on, the signed LIVE URL
+  verified by Slack, and exactly one user event, `message.channels`, saved and
+  confirmed after reload. No bot, private-channel or DM event was added; the
+  existing installed public-channel history scope was sufficient. The existing
+  signing key is stored only as an encrypted LIVE Edge secret. The receiver
+  rejects unsigned POST with HTTP 401.
+- The LIVE event ledger and gated worker were installed after rollback and
+  serving-source rehearsals. The exact approved roster is 160 unique public
+  channels with reply capture and the saved 13 October 09:30 UTC cutoff. The
+  ordinary channel/reply worker continued to succeed after its event-capable
+  release. [Activation receipt](evidence/learn-build01-slack-events-live-activation-2026-10-16.json).
+
+### Needs finishing
+
+- This is **not** near-live acceptance: the first post-activation readback has
+  zero event hints, jobs and retained post-cutoff channel messages/replies.
+  Observe real public-channel and reply events through read-only provider fetch,
+  source persistence and downstream evidence, measure latency and queue age,
+  and verify missed-event reconciliation. At 14:44 UTC, 44 recurring channels
+  were over a day behind and one window remained incomplete; no cutoff regressed.
+- Six pre-existing Email `persistence_failed` holds, Commusoft/card/graph
+  coverage and full application/Auth recovery remain open.
+
+### Blocked externally
+
+- No new user action is required for the saved Events configuration. Real
+  event-delivery evidence depends on activity in an approved public channel;
+  Chris's business sign-off remains his decision after technical review.
+
 **16 October, 14:21 UTC — two held Workspace mailboxes recovered unattended.**
 
 ### Working and verified

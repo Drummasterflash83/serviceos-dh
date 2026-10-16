@@ -1,13 +1,14 @@
 # Build 01 — Drummonds public Slack Events change for review
 
-**Prepared 16 October 2026. Slack app unchanged.** Chris selected near-live
-channel and observed-reply capture for Build 01 and asked to review the signed
-Events route before any app change. This is the proposed app change, not an
-activation receipt or proof of near-live delivery.
+**Activated 16 October 2026, 14:46 UTC. Real event capture pending.** Chris selected near-live
+channel and observed-reply capture for Build 01 and approved the exact signed
+Events route after hosted tests. The app change below is now applied and
+verified; this is not proof of near-live delivery. See the
+[LIVE activation receipt](evidence/learn-build01-slack-events-live-activation-2026-10-16.json).
 
-## Exact Slack app change proposed
+## Exact Slack app change applied
 
-| Setting | Proposed value |
+| Setting | Applied value |
 | --- | --- |
 | App and workspace | The existing connected Drummonds Slack app and its saved workspace/team ID; no new app or workspace |
 | Events API | Enable Events API with HTTPS Request URL `https://tgbnakbxwcqjeimygroz.supabase.co/functions/v1/learn-slack-events` |
@@ -35,7 +36,7 @@ history; neither may be inferred solely from the event. A changed channel
 visibility, revoked connection or paused subscription holds the hint. A slower
 reconciliation sweep is still needed for missed events and correction gaps.
 
-## Current implementation and gate
+## Implementation and remaining acceptance gate
 
 The signed HTTP parser, exact-roster adapter, durable hint ledger, source
 reconciliation and queue worker have local synthetic tests. The worker verifies
@@ -55,13 +56,12 @@ connection-bound internal-app cooldown, falling back to 60 seconds when that
 profile is not current. [TEST pacing receipt](evidence/learn-build01-slack-event-pacing-test-2026-10-16.json).
 On 16 October at 06:59 UTC the worker moved
 from TEST version 15 to 16 and the receiver from version 1 to 2; inventory
-confirmed all other functions unchanged. The hosted receiver is **inactive**:
-unsigned POST returns 503 and GET returns 405. LIVE has no receiving function
-or signing secret. No Slack app setting has changed. The later hosted TEST
-receipts below establish signed delivery against a synthetic approved roster;
-measured real-provider/queue latency, controlled LIVE activation and real
-post-cutoff channel/reply proof are **not yet complete**. Do not enable the
-Events API until the remaining prerequisite tests pass.
+confirmed all other functions unchanged. At that TEST checkpoint, the hosted
+receiver was inactive (unsigned POST 503, GET 405) and LIVE had no receiver or
+signing secret. The later hosted TEST receipts below established signed delivery
+against a synthetic approved roster. LIVE activation followed those tests on
+16 October; measured real-provider/queue latency and real post-cutoff
+channel/reply proof are **not yet complete**.
 TEST had no recurring channel roster rows at the initial checkpoint, although
 it had 21 Slack accounts and two configured connections. The later hosted
 tests used isolated synthetic rosters and signing keys, then retired them.
@@ -87,7 +87,8 @@ challenge, and ignored a signed DM-shaped event without saving a hint or job.
 The synthetic roster and secrets were removed; the receiver returned to 503
 inactive. This validates the HTTP/signature/scope boundary, but **does not**
 validate accepted public-channel hint persistence, provider reconciliation,
-queue latency, or LIVE delivery. The real Slack app remains unchanged.
+queue latency, or LIVE delivery. The real Slack app was unchanged at that TEST
+checkpoint.
 [Hosted boundary receipt](evidence/learn-build01-slack-signed-boundary-test-2026-10-16.json).
 
 The inactive TEST event settlement now uses the same 30-second cooldown as
@@ -108,14 +109,12 @@ At a fixed 60 jobs/hour an equal burst would build a backlog. The existing
 connection-bound internal-app rate profile permits a nominal 30-second
 cooldown while verified, and falls back to 60 seconds if the profile expires
 or the connection changes. The inactive TEST event settlement now follows
-that rule, but LIVE and the Slack app remain unchanged.
+that rule. LIVE later received the guarded worker and exact app setting in the
+activation receipt above.
 [Counts-only capacity receipt](evidence/learn-build01-slack-event-capacity-2026-10-16.json).
 
-Reviewing this proposal authorises the exact app change **only after** those
-technical gates are ready. Any requested wider scope needs a separate review.
-The Event subscription may require a Slack reinstall if the app does not
-already hold the verified `channels:history` permission; inspect the installed
-scope first and report that requirement before applying it.
+The existing installation already held `channels:history`; no reinstall or new
+OAuth scope was needed. Any requested wider scope needs a separate review.
 
 Slack documentation: [public-channel event and required scope](https://docs.slack.dev/reference/events/message.channels),
 [raw-body signature verification](https://docs.slack.dev/authentication/verifying-requests-from-slack/),
