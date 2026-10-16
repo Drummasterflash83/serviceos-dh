@@ -39,8 +39,13 @@ sign-off.
   Verify it projects the ten older missing cards and terminates cleanly; the
   read-only speedup and TEST equality fixture alone do not close this gate.
 - The approved public Slack capture still had 85 of 160 channels more than a
-  day behind at 22:15. Continue to verify catch-up and actual post-cutoff
-  evidence without new team test posts. Email update receipts continue, but
+  day behind at 22:15. An exact-roster 22:27 read found **zero retained
+  post-cutoff messages, replies or signed Event hints** in those 160 channels;
+  the four settled Event hints belong to a separate public roster and cannot
+  stand in for this acceptance. Continue to verify catch-up and actual
+  post-cutoff evidence without new team test posts.
+  [Counts-only receipt](evidence/learn-build01-slack-160-postcutoff-2026-10-16.json).
+  Email update receipts continue, but
   the legacy unversioned links, Commusoft job mapping, score policy and full
   application/Auth recovery remain open.
 

@@ -1,0 +1,17 @@
+{
+  "contract": "learn-build01-slack-160-postcutoff/1",
+  "observedAt": "2026-10-16T22:27:39.221Z",
+  "campaign": "b54d246b-2818-44d1-ba05-ccbe2c6bd6c9",
+  "approvedPublicChannels": 160,
+  "savedPostCutoffMessages": 0,
+  "savedPostCutoffReplies": 0,
+  "channelsWithPostCutoffSource": 0,
+  "signedEventHintsInRoster": 0,
+  "signedHintsWithSavedSource": 0,
+  "separatePublicRosterSignedHints": 4,
+  "separatePublicRosterHintsSettled": 4,
+  "interpretation": "The exact 160-channel roster has enabled subscriptions and advanced windows, but no retained post-cutoff source or signed Event hint yet. This does not establish whether Slack has been quiet in those channels or whether provider delivery is complete. The separate 20-channel Event success cannot be counted as 160-channel acceptance.",
+  "messageBodiesReturned": false,
+  "individualOrGroupDmsRead": false,
+  "productionWrites": false
+}
