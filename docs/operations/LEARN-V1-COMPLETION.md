@@ -71,8 +71,10 @@ sign-off.
   database and was removed after read-only analysis. Its **dated** active-job
   snapshot contained 281 unlinked active-status jobs across 198 direct property
   references. A private mode-0600 worklist orders the property references by
-  affected job count. The top ten represent 55 jobs; 58 references cover 141
-  of 281. These are review priorities, not inferred customer matches.
+  affected job count. The top ten represent 55 jobs, including 25 on hold; 58
+  references cover 141 of 281, including 37 on hold. Nine of the 58 priority
+  references have no retained property source and sit behind 17 jobs. These are
+  review priorities, not inferred customer matches.
   [Sanitised offline aggregate](evidence/learn-build01-offline-active-property-priority-2026-10-16.json).
 
 ### Needs finishing

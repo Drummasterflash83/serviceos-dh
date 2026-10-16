@@ -15,8 +15,12 @@
   "priority_concentration": {
     "largest_one_property_job_count": 15,
     "top_10_properties_job_count": 55,
+    "top_10_properties_on_hold_job_count": 25,
     "properties_to_cover_at_least_half_of_snapshot_jobs": 58,
-    "jobs_covered_by_those_58_properties": 141
+    "jobs_covered_by_those_58_properties": 141,
+    "on_hold_jobs_covered_by_those_58_properties": 37,
+    "missing_property_references_within_those_58": 9,
+    "jobs_behind_those_9_missing_property_references": 17
   },
   "private_worklist": ".verification-results/build01-active-property-priority-offline-20261015.json, mode 0600; exact source IDs intentionally excluded from this public receipt",
   "isolated_container_removed": true,
