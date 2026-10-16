@@ -13,6 +13,38 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 17:48 UTC — one stuck public Slack window recovered; bounded retry installed.**
+
+### Working and verified
+
+- The original 160-channel ongoing campaign's one incomplete public window
+  still had a valid saved approval, unchanged connection and empty checkpoint.
+  An exact rollback rehearsal preceded requeueing only its failed first-page
+  job. The normal dedicated worker completed the approved 15-minute window on
+  attempt two with a one-page checkpoint. The channel was quiet during that
+  window, so zero retained messages is consistent with the saved page, not a
+  reason to skip the window or invent activity.
+- A guarded automatic retry for a future transient authority read on an
+  unchanged, approved non-campaign recurring window passed TEST and LIVE
+  rollback rehearsals and was installed in both. LIVE service-role readback
+  admitted the valid saved window and rejected a nonexistent job. Retries are
+  bounded by the existing five-attempt job limit; a revoked, expired or changed
+  scope does not receive this retry. [Sanitised recovery receipt](evidence/learn-build01-slack-recurring-recovery-2026-10-16.json).
+
+### Needs finishing
+
+- Let the ordinary scheduler advance this verified checkpoint; at the 17:48
+  readback, the subscription still displayed `window_incomplete` and retained
+  its old `next_start`. Observe a future transient failure before calling the
+  new automatic recovery path operationally proven. Continue catch-up and
+  post-fix near-live Events observation.
+- Finish Email, card, graph and scoring coverage and full application/Auth
+  recovery before Chris's business sign-off.
+
+### Blocked externally
+
+- No new action is needed from Chris for this public Slack recovery.
+
 **16 October, 17:40 UTC — signed Slack messages and reply retained; generic claim bug fixed.**
 
 ### Working and verified
