@@ -1,0 +1,22 @@
+{
+  "version": "learn-build01-live-runtime-refresh/1",
+  "sourceInventoryCompletedAt": "2026-10-16T17:07:32.092Z",
+  "activeFunctions": 103,
+  "sourceFiles": 727,
+  "sourceBytes": 4823461,
+  "sourceManifestSha256": "aae49320a450de450ce56e8b6f8e781cfade9b51bace8d0934edc149beb8cbfc",
+  "inventoryStableAtCapture": true,
+  "encryptedLocalPackage": {
+    "bytes": 6012536,
+    "sha256": "e0c3cbdb8ff2fded1ab5cf879806f8b580a1278f07bfc513290ca3ccab7b2f17",
+    "fileMode": "0600",
+    "recipient": "existing public ServiceOS recovery recipient",
+    "pinnedAgeBinarySha256": "4012dfc2725883beafb710894af4f599b7a94f8c8e0f51f02cc96ab8df33915e",
+    "offSite": false,
+    "decryptedWithEscrow": false
+  },
+  "previousOffSitePackage": "102-function inventory from 06:30 UTC; remains retained and separately verified",
+  "productionWrites": false,
+  "sourceProviderRequests": 0,
+  "fullApplicationRecoveryVerified": false
+}

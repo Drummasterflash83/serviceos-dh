@@ -13,24 +13,36 @@ sign-off.
 
 ## Current evidence and priority
 
-**16 October, 16:58 UTC — one-channel Slack split guard installed; UI access is blocked, while Email catch-up continues.**
+**16 October, 17:09 UTC — Chris approved the completed 20-channel campaign handoff; UI action pending.**
 
 ### Working and verified
 
-- The exact campaign-owned-channel split guard passed a rollback rehearsal and
+- Before the expanded approval, an exact campaign-owned-channel split guard passed a rollback rehearsal and
   schema readback on TEST and LIVE, then was installed on each. It creates no
   account, import, subscription, Slack request or schedule. It permits an
   owner/admin to start a separate ongoing account only for a completed
   historical campaign channel with no active prior jobs or duplicate enabled
   reader. The original campaign's 20 accounts and history remain intact.
-  The approved public `#09-engineer-chat` is the intended one-channel scope;
-  no test post or reply has been sent and no new subscription has been enabled.
+  **Chris has since approved handing off all 20 instead, so the split guard is
+  installed but unused.** No test post or reply has been sent and none of
+  these 20 subscriptions has been enabled.
 - At 16:58 UTC, ordinary Email work had reduced the eligible saved-message
   interaction gap to **5,513**. Phone had 4,675 saved calls and 4,675
   interactions. The original 160 public Slack channel/reply subscriptions
   remain enabled, but signed Events has no demonstrated real post-cutoff
   message or reply hint. One recurring Slack window is incomplete and needs
   ordinary recovery; 36 channel checkpoints are more than a day behind.
+- Read-only inspection pinned that one incomplete approved public-channel
+  window to a `slack_history_authority_unavailable` dead-letter before its
+  first saved page. Its account, Slack connection, scope approval and expiry
+  still appear valid, and the checkpoint is empty. This is a real unattended
+  recovery gap; do not advance its cutoff or claim the window was captured.
+  A content-free readback of the 160 enabled IDs produced roster SHA-256
+  `e1417e972f9a319340446e7410d071cb120e8cc80e23b2a91cd66370183a315b`,
+  matching the activated Events receipt. A fresh disjointness check confirmed
+  the approved historical 20 would produce 180 unique public channel IDs and
+  digest `5b8b7219d8fde33e0219f2348f64e0a6790ca840bb37b244065ae893e1f57dc6`.
+  This candidate has **not** been applied to the receiver.
 - Customer cards stand at **4,151 of 4,168** active projected. One unprojected
   card is older than an hour. The ordinary partial-failure job is still
   retrying and its next attempt is due at 17:34 UTC, so the deployed
@@ -38,13 +50,12 @@ sign-off.
 
 ### Needs finishing
 
-- In the signed-in LIVE LEARN UI, submit the bounded `#09-engineer-chat`
-  import, verify the separate account's worker completion, enable only its
-  ongoing channel/reply reader, update and verify the signed Events roster
-  from 160 to 161 exact channel IDs, then post and verify the authorised
-  labelled public test message and reply. Keep the other 19 historical
-  campaign channels out of the new subscription and keep private channels and
-  DMs excluded.
+- In the signed-in LIVE LEARN UI, use the existing completed-campaign handoff
+  on only the 20-channel `a3980d74` campaign, verify its exact saved 13 October
+  cutoff and reply capture, then update the signed Events receiver from 160 to
+  180 exact public channel IDs. Post and verify the authorised labelled
+  `#09-engineer-chat` test message and reply only after capture is ready.
+  Keep private channels and DMs excluded.
 - Let normal Email, Slack, graph and card workers continue, then read back
   real source-to-interaction/card/graph coverage and recover material failures.
   Complete the remaining Build 01 scoring, source and full application/Auth
@@ -54,9 +65,10 @@ sign-off.
 
 - Automatic browser approval review denied observing the LIVE LEARN tab
   because the requested browser grant covers the entire `app.openfolk.ai`
-  origin, wider than the approved one-channel Slack task. No alternate browser
-  or origin-wide inspection was used. A genuinely narrow tab-scoped route or
-  explicit user action is needed to complete the UI handoff and test posts.
+  origin, wider than the then-approved one-channel Slack task. No alternate
+  browser or origin-wide inspection was used. Chris was given the exact
+  existing campaign control to apply in his signed-in LIVE LEARN UI; its
+  result requires independent readback before any receiver expansion.
 
 **16 October, 16:33 UTC — current public Slack channel has an older campaign binding; Email catch-up continues.**
 

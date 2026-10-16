@@ -5,6 +5,16 @@ isolated database/Auth/PostgREST rehearsal and the full Edge source-package
 off-site copy prove distinct parts of recovery. Neither proves that an independently
 recovered OpenFolk service can serve clients or resume ingestion.
 
+At 17:07 UTC, a fresh read-only LIVE inventory retained the current **103**
+active Edge functions and **727** source files, including the newly released
+worker and signed Slack Events receiver. The exact source hashes and stable
+function inventory were checked, then the package was age-encrypted locally
+to the existing public recovery recipient at mode `0600`. Its SHA-256 is
+`e0c3cbdb8ff2fded1ab5cf879806f8b580a1278f07bfc513290ca3ccab7b2f17`.
+This newer package has **not** been copied off-site or decrypted with escrow;
+the previously verified London copy still covers the older 102-function
+inventory. [Sanitised 17:07 refresh receipt](evidence/learn-build01-live-runtime-refresh-1707-2026-10-16.json).
+
 ## Components that must agree
 
 | Component | Preserved or verified input | Still required for full recovery |
