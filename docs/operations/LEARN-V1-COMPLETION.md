@@ -52,7 +52,10 @@ sign-off.
 ### Needs finishing
 
 - The existing LIVE card job remains queued for its ordinary 23:04 retry.
-  Verify it projects the ten older missing cards and terminates cleanly; the
+  Verify it processes the heavy first batch and creates a successful ordinary
+  continuation. A 22:38 count found 1,995 cards still before this sweep's
+  cutoff, so the ten older unprojected cards may require later batches. Follow
+  that continuation until those cards project and the sweep terminates; the
   read-only speedup and TEST equality fixture alone do not close this gate.
 - The approved public Slack capture still had 85 of 160 channels more than a
   day behind at 22:15. An exact-roster 22:27 read found **zero retained

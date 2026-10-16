@@ -1,0 +1,21 @@
+{
+  "contract": "learn-build01-runtime-manifest-diff/1",
+  "observedAt": "2026-10-16T22:37:00Z",
+  "oldManifestSha256": "f9dc270c53c5a964b436b70bed3d6da2b06f9810ea330ee45444b8c3de931da8",
+  "newManifestSha256": "ed8ca3970251af3fe843dab9153f9c149a1f824513f245b2492e795a96026da6",
+  "oldFunctions": 103,
+  "newFunctions": 103,
+  "unchangedFunctionTrees": 102,
+  "changed": [
+    {
+      "slug": "platform-worker",
+      "oldVersion": 104,
+      "newVersion": 106,
+      "changedSourceFiles": 2,
+      "verifyJwtChanged": false
+    }
+  ],
+  "sourceContentReturned": false,
+  "productionWrites": false,
+  "fullApplicationRecoveryVerified": false
+}

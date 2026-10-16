@@ -37,6 +37,13 @@ if (!Array.isArray(jobs) || jobs.length !== 1 ||
   !Number.isFinite(Date.parse(jobs[0]?.sweep_since)) ||
   !/^[0-9]{1,3}$/.test(jobs[0]?.requested_limit ?? ""))
   throw Error("LIVE ordinary card sweep unconfirmed");
+const remainingRows = await read(`select count(*)::int remaining_in_sweep
+  from public.customer_cards c where c.tenant_id='${tenant}'::uuid
+   and c.status<>'archived'
+   and c.updated_at<'${jobs[0].sweep_since}'::timestamptz`);
+if (!Array.isArray(remainingRows) || remainingRows.length !== 1 ||
+  !Number.isInteger(remainingRows[0]?.remaining_in_sweep))
+  throw Error("LIVE ordinary card sweep count unconfirmed");
 const cards = await read(`select c.id from public.customer_cards c
  where c.tenant_id='${tenant}'::uuid and c.status<>'archived'
   and c.updated_at<'${jobs[0].sweep_since}'::timestamptz
@@ -63,5 +70,6 @@ for (const [position, card] of cards.entries()) {
 }
 console.log(JSON.stringify({ observedAt: new Date().toISOString(), project,
   tenant, sweepSince: jobs[0].sweep_since, requestedLimit: jobs[0].requested_limit,
-  effectiveLimit: 10, batchCards: cards.length, results, cardIdsReturned: false,
+  effectiveLimit: 10, remainingInSweep: remainingRows[0].remaining_in_sweep,
+  batchCards: cards.length, results, cardIdsReturned: false,
   customerContentReturned: false, productionDataWrites: false }));
