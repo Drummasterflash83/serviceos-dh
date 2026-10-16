@@ -28,7 +28,7 @@ jobs:
       - name: Check out reviewed backup source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: 2d8d4afb5077aaac36467f8d1b91302aef7231c2
+          ref: c8a1909ad5741738e26ab69221d0c7b0ca345c2a
           persist-credentials: false
       - name: Select Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -80,6 +80,17 @@ jobs:
           test -n "$SERVICEOS_DATABASE_BACKUP_WRITER_JSON"
           test -n "$SERVICEOS_DATABASE_BACKUP_RESTORE_JSON"
           node scripts/backup/run-daily-database-backup.mjs --run-once
+      - name: Prepare restricted failure diagnostic
+        if: failure()
+        run: node scripts/backup/write-safe-daily-diagnostic.mjs
+      - name: Preserve restricted failure diagnostic
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: serviceos-database-backup-safe-failure-${{ github.run_id }}
+          path: .verification-results/safe-diagnostic.json
+          if-no-files-found: warn
+          retention-days: 7
       - name: Remove private runner files
         if: always()
         shell: bash
