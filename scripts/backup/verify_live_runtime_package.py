@@ -26,6 +26,14 @@ ACTUAL = {
     'files': 721,
     'sourceBytes': 4792245,
 }
+CURRENT = {
+    'encryptedBytes': 6012536,
+    'encryptedSha256': 'e0c3cbdb8ff2fded1ab5cf879806f8b580a1278f07bfc513290ca3ccab7b2f17',
+    'manifestSha256': 'aae49320a450de450ce56e8b6f8e781cfade9b51bace8d0934edc149beb8cbfc',
+    'functions': 103,
+    'files': 727,
+    'sourceBytes': 4823461,
+}
 MAX_IDENTITY_BYTES = 4096
 MAX_CLEAR_BYTES = 64 * 1024 * 1024
 SLUG = re.compile(r'^[a-z0-9][a-z0-9-]{0,99}$')
@@ -141,10 +149,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--encrypted', required=True, type=Path)
     parser.add_argument('--age', required=True, type=Path)
+    parser.add_argument('--package', choices=('previous', 'current'), default='previous')
     args = parser.parse_args()
     identity = sys.stdin.buffer.read(MAX_IDENTITY_BYTES + 1)
     try:
-        print(json.dumps(verify_package(args.encrypted, args.age, identity, ACTUAL), sort_keys=True))
+        expected = CURRENT if args.package == 'current' else ACTUAL
+        print(json.dumps(verify_package(args.encrypted, args.age, identity, expected), sort_keys=True))
     except BaseException as error:
         code = str(error) if isinstance(error, PackageError) else 'runtime_restore_unconfirmed'
         print(json.dumps({'state':'runtime_restore_unverified', 'code':code}))

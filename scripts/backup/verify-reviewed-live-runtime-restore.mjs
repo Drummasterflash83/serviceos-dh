@@ -8,8 +8,10 @@ import { createRecoveryEscrow } from "./onepassword-database-recovery.mjs";
 const repo = fileURLToPath(new URL("../../", import.meta.url));
 const privateRoot = join(repo, ".verification-results");
 const bindingPath = join(privateRoot, "database-backup-onepassword-binding.json");
-const encryptedPath = join(privateRoot,
+const previousPath = join(privateRoot,
   "build01-live-edge-source-restore-b7c9a0e4-8420-4c22-a7f8-58b743d10903.age");
+const currentPath = join(privateRoot,
+  "build01-live-edge-source-restore-26d33cdf-4bc3-44f3-b6c6-6346cb280a2c.age");
 const agePath = "/private/tmp/serviceos-age-1.3.2/age";
 
 async function privateFile(path) {
@@ -21,14 +23,17 @@ async function privateFile(path) {
 }
 
 async function main() {
-  if (process.argv.length !== 2) throw Error("runtime_arguments_invalid");
+  const mode = process.argv.slice(2).join(" ");
+  if (mode !== "" && mode !== "--current-copy") throw Error("runtime_arguments_invalid");
+  const encryptedPath = mode === "--current-copy" ? currentPath : previousPath;
+  const packageName = mode === "--current-copy" ? "current" : "previous";
   await privateFile(bindingPath);
   await privateFile(encryptedPath);
   const binding = JSON.parse(await readFile(bindingPath, "utf8"));
   const material = await createRecoveryEscrow(binding).read();
   return await new Promise((resolve, reject) => {
     const child = spawn("python3", ["-B", join(repo, "scripts/backup/verify_live_runtime_package.py"),
-      "--encrypted", encryptedPath, "--age", agePath], {
+      "--encrypted", encryptedPath, "--age", agePath, "--package", packageName], {
       cwd: repo, stdio: ["pipe", "pipe", "ignore"],
       env: { PATH: "/usr/bin:/bin", LANG: "C" },
     });
