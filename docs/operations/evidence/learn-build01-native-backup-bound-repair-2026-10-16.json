@@ -1,0 +1,51 @@
+{
+  "version": "learn-build01-native-backup-bound-repair/1",
+  "observed_at_utc": "2026-10-16T04:00:42Z",
+  "environment": "GitHub Actions production backup workflow, with nondeploying TEST source checkpoint",
+  "failed_manual_runs": [
+    {
+      "run_id": 38845405700,
+      "result": "failure",
+      "safe_stage": "native_restore",
+      "detail": "The previous generic safe code did not separate stream bounds from truncation"
+    },
+    {
+      "run_id": 38847042247,
+      "result": "failure",
+      "safe_stage": "comparing_native_archive_rows",
+      "safe_code": "restore_native_stream_bound_or_truncated",
+      "restricted_artifact_only": "serviceos-database-backup-safe-failure-38847042247",
+      "cleanup_step": "success"
+    }
+  ],
+  "previous_verified_native_stream_bytes": 7602729318,
+  "change": {
+    "total_stream_bound_bytes_before": 8589934592,
+    "total_stream_bound_bytes_after": 17179869184,
+    "single_line_bound_bytes_before": 67108864,
+    "single_line_bound_bytes_after": 268435456,
+    "distinct_safe_codes": [
+      "restore_native_line_bound",
+      "restore_native_total_bound",
+      "restore_native_line_truncated"
+    ],
+    "boundedness_preserved": true
+  },
+  "checks": {
+    "native_copy_integrity_and_bound_tests": 9,
+    "daily_runner_guard_and_sanitized_artifact_tests": 9,
+    "workflow_yaml_parsed": true,
+    "test_source_pushed_and_verified": "069d43cb3bee0f7ca3da5cbaa6fbc916e92d2662",
+    "test_workflow_checkpoint": "f1eb001415be159dff2c159ad86437ff2a6e6f2b",
+    "main_workflow_only_fast_forward": "499baad8a729f449a07167c2e526414a3a7549e0"
+  },
+  "manual_rehearsal_run": 38848335678,
+  "manual_rehearsal_result": "pending",
+  "scheduled_0415_utc_result": "pending",
+  "today_independent_copy_verified": false,
+  "unattended_daily_operation_verified": false,
+  "full_application_recovery_verified": false,
+  "raw_job_logs_retrieved": false,
+  "customer_content_or_secret_values_in_receipt": false,
+  "production_data_writes": false
+}

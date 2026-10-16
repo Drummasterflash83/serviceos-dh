@@ -1,0 +1,34 @@
+{
+  "version": "learn-build01-live-aggregate/1",
+  "observed_at_utc": "2026-10-16T03:51:29.111Z",
+  "source": "Existing aggregate-only Supabase Management read-only endpoint and scripts/verify/learn-build01-working-day-readback.mjs",
+  "environment": "LIVE Drummonds",
+  "counts": {
+    "email_messages": 182390,
+    "eligible_email_without_interaction": 15090,
+    "phone_calls": 4618,
+    "phone_interactions": 4618,
+    "slack_messages": 37850,
+    "slack_interactions": 35043,
+    "eligible_interactions_missing_graph": 200,
+    "active_customer_cards": 4058,
+    "customer_cards_with_projection": 4051,
+    "unprojected_cards_older_than_one_hour": 0,
+    "approved_ongoing_slack_channels_and_replies": 160,
+    "slack_channels_advanced_past_handoff_cutoff": 142,
+    "slack_cutoff_regressions": 0
+  },
+  "latest_success_at_utc": {
+    "commusoft_source_sync": "2026-10-16T03:50:43.488293Z",
+    "email_workspace_sync": "2026-10-16T03:50:04.995686Z",
+    "slack_history_sync": "2026-10-16T03:50:33.322829Z",
+    "slack_thread_sync": "2026-10-16T03:49:29.141251Z",
+    "graph_sync": "2026-10-16T03:45:34.474Z",
+    "customer_card_sync": "2026-10-16T03:20:25.037Z"
+  },
+  "interpretation": "One bounded read-only instant. Recent ordinary successes and card projection do not establish sustainable Slack coverage, complete source-to-card relationships, or full application recovery. An eligible email without an interaction is an operational gap, not automatically a lost source record. The waived full-working-day wait does not convert this snapshot into business acceptance.",
+  "source_provider_writes": false,
+  "production_data_writes": false,
+  "customer_content_returned": false,
+  "secrets_returned": false
+}
