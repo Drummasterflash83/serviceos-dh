@@ -1,0 +1,27 @@
+{
+  "version": "learn-build01-slack-accepted-hosted-test/1",
+  "observedAtUtc": "2026-10-16T14:02:21Z",
+  "environment": "TEST",
+  "receiver": "learn-slack-events",
+  "syntheticApprovedPublicChannel": true,
+  "signedEventAccepted": true,
+  "duplicateAcknowledgedWithoutExtraWork": true,
+  "durableHints": 1,
+  "queuedEventJobs": 1,
+  "serviceRoleJobGate": true,
+  "eventBodyRetained": false,
+  "slackProviderRequests": 0,
+  "sourceProviderWrites": 0,
+  "cleanup": {
+    "syntheticFixturesRetainedForImmutableSourceAudit": 2,
+    "rosteredFixtures": 0,
+    "enabledConnectors": 0,
+    "unrevokedConnections": 0,
+    "activeJobs": 0,
+    "eventHints": 0,
+    "receiverHttpStatusAfterSecretRemoval": 503
+  },
+  "realSlackAppChanged": false,
+  "liveReceiverChanged": false,
+  "remainingGate": "Real post-cutoff public-channel and reply source-to-card latency, reconciliation and controlled LIVE activation"
+}

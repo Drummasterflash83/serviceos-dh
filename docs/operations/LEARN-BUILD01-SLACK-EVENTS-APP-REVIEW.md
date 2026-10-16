@@ -57,15 +57,26 @@ On 16 October at 06:59 UTC the worker moved
 from TEST version 15 to 16 and the receiver from version 1 to 2; inventory
 confirmed all other functions unchanged. The hosted receiver is **inactive**:
 unsigned POST returns 503 and GET returns 405. LIVE has no receiving function
-or signing secret. No Slack app setting has changed. Hosted signed delivery
-against an approved TEST roster, measured delivery/queue latency under load,
-controlled LIVE activation and real post-cutoff channel/reply proof are **not
-yet complete**. Do not enable the Events API until these gates pass.
-TEST currently has no recurring channel roster rows, although it has 21 Slack
-accounts and two configured connections; a hosted signed challenge or event
-would need a deliberately isolated TEST fixture with a synthetic signing key.
-At that earlier checkpoint, the inactive receiver had not passed a hosted
-signed test.
+or signing secret. No Slack app setting has changed. The later hosted TEST
+receipts below establish signed delivery against a synthetic approved roster;
+measured real-provider/queue latency, controlled LIVE activation and real
+post-cutoff channel/reply proof are **not yet complete**. Do not enable the
+Events API until the remaining prerequisite tests pass.
+TEST had no recurring channel roster rows at the initial checkpoint, although
+it had 21 Slack accounts and two configured connections. The later hosted
+tests used isolated synthetic rosters and signing keys, then retired them.
+
+At 14:02 UTC, a second hosted TEST test passed the accepted-event path with a
+synthetic approved public-channel roster. The signed event created exactly one
+durable hint and one queued event job; a duplicate created no extra work. The
+service-only job gate accepted the saved binding, and neither hint nor job
+retained the message body. No Slack provider request was made. TEST's immutable
+source guards require retaining synthetic connector audit rows, so cleanup
+removed both test hints/jobs/rosters, disabled the synthetic connectors and
+revoked their fake connections. The signing configuration was removed and the
+receiver returned to inactive HTTP 503. This proves hosted acceptance and
+durability, **not** real provider reconciliation, current reply latency or
+near-live delivery. [Hosted accepted-event receipt](evidence/learn-build01-slack-accepted-hosted-test-2026-10-16.json).
 
 On 16 October at about 13:47 UTC, a **hosted signed boundary test** did pass
 on TEST with a temporary synthetic roster and signing key. The deployed

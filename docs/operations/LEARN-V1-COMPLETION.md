@@ -13,6 +13,30 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 14:02 UTC — hosted Slack accepted-event queue verified on TEST.**
+
+### Working and verified
+
+- A signed synthetic approved public-channel event reached the deployed TEST
+  receiver and created one durable hint and queued job. A repeat was safely
+  acknowledged without another job. The service-only job gate passed and no
+  message body was stored in the hint or job. No provider request occurred.
+  Both test fixtures are now inert, with no roster, enabled connector, live
+  fake connection, active job or hint. The TEST receiver returned to inactive
+  HTTP 503. [Hosted accepted-event receipt](evidence/learn-build01-slack-accepted-hosted-test-2026-10-16.json).
+
+### Needs finishing
+
+- Real post-cutoff public-channel and reply capture, queue latency, missed-event
+  reconciliation and controlled LIVE activation remain required before
+  near-live Slack can be accepted. Email holds, Commusoft coverage, card/graph
+  coverage and application/Auth recovery also remain open.
+
+### Blocked externally
+
+- No new user action is required for this hosted TEST proof. The existing
+  Slack app remains unchanged pending the remaining tests.
+
 **16 October, 13:53 UTC — LEARN Slack tile corrected on LIVE.**
 
 ### Working and verified
