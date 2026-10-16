@@ -11,7 +11,7 @@ recovered OpenFolk service can serve clients or resume ingestion.
 | --- | --- | --- |
 | Database and Vault | Encrypted independent snapshot; isolated native restore and Vault comparison | Restore from a current off-site version and reconcile its point in time with file/object backups |
 | Auth and tenant access | Offline Auth and PostgREST boot with a new synthetic signing key; fresh synthetic login, tenant RLS and audited operator grant/revocation passed | Recover the supported real-user login path, reset sessions if the non-exportable original signing key is unavailable, and check operator routes through the recovered application |
-| Edge functions | 102 LIVE function sources and 720 files retained; every file survived a disposable-key encrypt/decrypt round trip | Independently retain and retrieve the exact encrypted archive; rebuild/deploy all activated functions with their verified flags and secret references; exercise real routes in an isolated service |
+| Edge functions | 102 LIVE function sources and 720 files retained; every file survived a disposable-key encrypt/decrypt round trip; 04:30 UTC metadata readback matched all retained slug/version/JWT flags (42 JWT-on, 60 JWT-off) | Independently retain and retrieve the exact encrypted archive; rebuild/deploy all activated functions with their verified flags and secret references; exercise real routes in an isolated service |
 | Frontend | Vercel builds from Git `main`; four LIVE aliases and protected LEARN/Drummonds view checked at `0266c7f7` | Restore a pinned Git revision to an isolated Vercel target with its production-equivalent public configuration, then test login, client cards and operator paths before any alias switch |
 | Runtime configuration | Static source scan found 56 literal Edge environment names plus 18 dynamic lookups across the 102 function archives; the frontend references `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_ENABLE_SIGNUP` | Independently inventory actual configured names, non-exportable and dynamic-name references, escrow/restore secret values through an approved channel, and verify each recovered function's access without printing values |
 | Capture and files | Separate recording/voicemail manifests and database-reference restore checks exist | Match the chosen database point to its corresponding file inventory; keep dispatchers paused until scopes, cursors and credentials are verified; resume one bounded source at a time and prove new data reaches the correct tenant/card |
@@ -37,6 +37,12 @@ The seven constructed OAuth lookups in two functions therefore remain an
 inactive generic-framework recovery path, not an observed active-connection
 failure. This narrows the dynamic-name inventory without proving secret value
 recovery. [Sanitised name readback](evidence/learn-build01-runtime-secret-name-readback-2026-10-16.json).
+
+At 04:30 UTC, a fresh read-only LIVE function-list comparison matched all 102
+retained slug/version/JWT-flag triples exactly; 42 functions require gateway JWT
+verification and 60 do not. This pins deploy flags and shows the saved source
+inventory was still current at that moment. It does not prove a recovered
+runtime can start or authenticate a user.
 
 An acceptance rehearsal must start from independently retrieved ciphertext and
 document the exact database, file, source and Git revisions. It must use an

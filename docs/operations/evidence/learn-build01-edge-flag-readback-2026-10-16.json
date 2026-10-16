@@ -1,0 +1,15 @@
+{
+  "version": "learn-build01-edge-flag-readback/1",
+  "observed_at_utc": "2026-10-16T04:30:09.092Z",
+  "environment": "LIVE Supabase Edge function metadata",
+  "method": "Read-only Management API function list compared in memory to the private, hash-verified 102-function source manifest retained at 00:22 UTC.",
+  "live_active_functions": 102,
+  "retained_manifest_functions": 102,
+  "all_slug_version_and_verify_jwt_flags_match": true,
+  "verify_jwt_true": 42,
+  "verify_jwt_false": 60,
+  "source_or_secret_content_retained_in_receipt": false,
+  "secret_values_read": false,
+  "production_writes": false,
+  "limitation": "This is current metadata and source-inventory agreement, not independent off-site source retrieval, runtime secret recovery, a deployed isolated service, or a full Auth/application restore."
+}
