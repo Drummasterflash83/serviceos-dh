@@ -15,6 +15,24 @@ export type WorkspaceScheduleMailbox = {
   mailbox_type: string | null;
   directory_identity_conflict: boolean | null;
 };
+export type WorkspaceScheduleCheckpoint = {
+  tenant_id: string;
+  email_account_id: string;
+  state: string;
+  block_code: string | null;
+};
+
+/** A blocked recent checkpoint needs its existing recovery protocol, not a new
+ * capture job that is guaranteed to fail before reading the provider. */
+export function isWorkspaceRecentCaptureHeld(
+  account: WorkspaceScheduleAccount,
+  checkpoints: WorkspaceScheduleCheckpoint[],
+): boolean {
+  return checkpoints.some(
+    (checkpoint) => checkpoint.tenant_id === account.tenant_id &&
+      checkpoint.email_account_id === account.id && checkpoint.state === "blocked",
+  );
+}
 
 export function isWorkspaceMailboxEligible(
   account: WorkspaceScheduleAccount,

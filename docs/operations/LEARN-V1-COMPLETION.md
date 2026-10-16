@@ -13,6 +13,42 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 13:40 UTC — repeated held-mailbox scheduling stopped in LIVE.**
+
+### Working and verified
+
+- The deployed Email scheduler now reads blocked recent checkpoints before it
+  submits Workspace capture jobs. It leaves those accounts held for their
+  existing recovery protocol, still schedules eligible accounts, and records
+  the held count as a failed health heartbeat rather than a false success.
+  The exact three-file serving-source closure passed synthetic behavior tests,
+  a hosted TEST invocation with a temporary TEST-only secret, and a guarded
+  LIVE release. Other Edge endpoints were unchanged. At 13:40 UTC the first
+  ordinary LIVE scheduler tick queued 14 eligible captures and reported eight
+  held recoveries. [Release receipt](evidence/learn-build01-email-held-scheduler-2026-10-16.json).
+- The current Email projection lane continues to run unattended: 51 jobs had
+  succeeded and 34 current records were processed by the 13:38 UTC readback,
+  with no failed or active jobs in that lane. The earlier Email history gap
+  still needs to converge.
+
+### Needs finishing
+
+- Eight active mailbox holds still need source-specific recovery: six have an
+  unconfirmed persistence outcome, and two require fresh provider delegation
+  proof. Four additional `delegation_grant_invalid` checkpoints belong to
+  disabled accounts with removed mailboxes and are outside the active
+  schedule. The new scheduler stops resubmitting known holds but does not
+  clear them.
+- Observe further routine ticks and new job outcomes; the prior hour already
+  contained 93 `source_ineligible` dead letters before this release. Complete
+  Slack hosted signed tests and real post-cutoff capture, Commusoft coverage,
+  application/Auth recovery, and business acceptance.
+
+### Blocked externally
+
+- No new user action is required for this scheduler release. Chris's final
+  business sign-off remains outstanding after the technical evidence is ready.
+
 **16 October, 08:07 UTC — Edge source decrypt verified; current Email selector inactive in TEST.**
 
 ### Working and verified

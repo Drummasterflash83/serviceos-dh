@@ -1,0 +1,26 @@
+{
+  "version": "learn-build01-email-held-scheduler/1",
+  "observedAtUtc": "2026-10-16T13:40:14.517Z",
+  "test": {
+    "endpointVersion": 6,
+    "candidateClosureSha256": "00f5bac4e8ffce546ff25b7057cc8c5acf017c87093059d5bb9a64f6cee0b2c4",
+    "syntheticServingSource": "one held mailbox excluded, one eligible mailbox queued, held health marked failed",
+    "hostedEmptyInventory": "invalid secret rejected; temporary TEST-only secret accepted for zero active sources, then removed",
+    "providerRequests": 0
+  },
+  "live": {
+    "endpointVersion": 56,
+    "candidateClosureSha256": "00f5bac4e8ffce546ff25b7057cc8c5acf017c87093059d5bb9a64f6cee0b2c4",
+    "unrelatedEndpointsUnchanged": true,
+    "firstOrdinaryTickUtc": "2026-10-16T13:40:06.891Z",
+    "eligibleCapturesQueued": 14,
+    "heldRecovery": 8,
+    "knownIneligible": 0,
+    "otherBlockedCheckpoints": "four delegation_grant_invalid checkpoints on disabled accounts with removed mailboxes",
+    "healthStatus": "failed because recovery remains required",
+    "earlierSourceIneligibleDeadLettersInHour": 93,
+    "additionalObservationRequired": true
+  },
+  "productionDataWritesByVerification": false,
+  "rawCustomerContentOrCredentialsIncluded": false
+}

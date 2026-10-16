@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isWorkspaceMailboxEligible } from "./workspace_scheduler_selection.ts";
+import {
+  isWorkspaceMailboxEligible,
+  isWorkspaceRecentCaptureHeld,
+} from "./workspace_scheduler_selection.ts";
 
 const account = {
   id: "account-1",
@@ -32,4 +35,14 @@ test("scheduler admits only one currently authorised mailbox", () => {
   }
   assert.equal(isWorkspaceMailboxEligible(account, [mailbox, { ...mailbox }]), false);
   assert.equal(isWorkspaceMailboxEligible(account, []), false);
+});
+
+test("a blocked recent checkpoint is held without excluding another tenant or account", () => {
+  const held = { tenant_id: account.tenant_id, email_account_id: account.id,
+    state: "blocked", block_code: "persistence_failed" };
+  assert.equal(isWorkspaceRecentCaptureHeld(account, [held]), true);
+  assert.equal(isWorkspaceRecentCaptureHeld(account, [{ ...held, state: "ready", block_code: null }]), false);
+  assert.equal(isWorkspaceRecentCaptureHeld(account, [{ ...held, tenant_id: "tenant-2" }]), false);
+  assert.equal(isWorkspaceRecentCaptureHeld(account, [{ ...held, email_account_id: "account-2" }]), false);
+  assert.equal(isWorkspaceRecentCaptureHeld(account, []), false);
 });

@@ -16,8 +16,14 @@ import {
   scheduleAndCount,
 } from "../_shared/email_scheduler_health.ts";
 import type { SchedulerCounts } from "../_shared/email_scheduler_health.ts";
-import { isWorkspaceMailboxEligible } from "../_shared/workspace_scheduler_selection.ts";
-import type { WorkspaceScheduleMailbox } from "../_shared/workspace_scheduler_selection.ts";
+import {
+  isWorkspaceMailboxEligible,
+  isWorkspaceRecentCaptureHeld,
+} from "../_shared/workspace_scheduler_selection.ts";
+import type {
+  WorkspaceScheduleCheckpoint,
+  WorkspaceScheduleMailbox,
+} from "../_shared/workspace_scheduler_selection.ts";
 
 const PROVIDER = "gmail";
 const DWD_STATUSES = ["pending_tokenless_dwd", "active_dwd"];
@@ -77,6 +83,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // silently turn later accounts into absent or eligible sources.
   const accounts: { id: string; tenant_id: string; email_address: string }[] = [];
   const mailboxes: WorkspaceScheduleMailbox[] = [];
+  const checkpoints: WorkspaceScheduleCheckpoint[] = [];
   let inventoryError = false;
   for (let offset = 0; offset < 100000; offset += 500) {
     const { data, error } = await supabase
@@ -112,9 +119,29 @@ Deno.serve(async (req: Request): Promise<Response> => {
       if (offset === 99500) inventoryError = true;
     }
   }
+  if (!inventoryError) {
+    for (let offset = 0; offset < 100000; offset += 500) {
+      const { data, error } = await supabase
+        .from("email_ingestion_checkpoints")
+        .select("tenant_id,email_account_id,state,block_code")
+        .eq("stream", "recent")
+        .eq("state", "blocked")
+        .order("tenant_id")
+        .order("email_account_id")
+        .range(offset, offset + 499);
+      if (error || !data) {
+        inventoryError = true;
+        break;
+      }
+      checkpoints.push(...data);
+      if (data.length < 500) break;
+      if (offset === 99500) inventoryError = true;
+    }
+  }
   const perTenant = new Map<string, SchedulerCounts>();
   const mailboxQueued = new Map<string, number>();
   const ineligibleByTenant = new Map<string, number>();
+  const heldByTenant = new Map<string, number>();
   const discoveryCounts = new Map<string, number>();
   for (const tid of tenantIds) perTenant.set(tid, emptySchedulerCounts());
   for (const acc of inventoryError ? [] : accounts) {
@@ -164,6 +191,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
         ineligibleByTenant.set(tid, (ineligibleByTenant.get(tid) ?? 0) + 1);
         continue;
       }
+      if (isWorkspaceRecentCaptureHeld(acc, checkpoints)) {
+        heldByTenant.set(tid, (heldByTenant.get(tid) ?? 0) + 1);
+        continue;
+      }
       const before = { ...counts };
       await scheduleAndCount(
         supabase,
@@ -197,6 +228,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         },
         inventoryError,
         ineligibleByTenant.get(tid) ?? 0,
+        heldByTenant.get(tid) ?? 0,
       ))
     ) {
       heartbeatConfirmed = false;
@@ -224,5 +256,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     discovery_queued: discoveryQueued,
     capture_paused: counts.reduce((n, c) => n + c.paused, 0),
     known_ineligible: [...ineligibleByTenant.values()].reduce((n, c) => n + c, 0),
+    held_recovery: [...heldByTenant.values()].reduce((n, c) => n + c, 0),
   });
 });
