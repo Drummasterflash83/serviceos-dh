@@ -13,6 +13,33 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 18:32 UTC — current LIVE Edge source is locally encrypted.**
+
+### Working and verified
+
+- A stable read-only LIVE inventory archived 103 functions and 728 source files,
+  including Email scheduler version 63. All files and the private manifest were
+  hash-checked, then packaged to the existing public age recovery recipient.
+  The exact local ciphertext is 6,022,776 bytes, SHA-256
+  `796eb3f9ee44e2f233ca244d8fed1f0a2463d266cb74e8c774d7e7aaa73e5a0a`,
+  mode `0600`. The exact off-site copy and separate Restore readback are
+  [prepared for review](LEARN-BUILD01-RUNTIME-1828-OFFSITE-REVIEW.md); neither
+  has run for this new package.
+- The isolated 18:26 LIVE Email `fetch_failed` left its recent checkpoint
+  ready, with a later normal job active at 18:31; it is not a standing
+  delegation block. The current email source backlog continues to shrink.
+
+### Needs finishing
+
+- Verify this exact source copy off site and decrypt/rebuild an isolated
+  recovered application. Observe the later Email job, card sweep retry,
+  Graph and recurring Slack catch-up; review job progress and score policy.
+
+### Blocked externally
+
+- The new exact off-site ciphertext awaits its separate copy authorization.
+  No fingerprint is needed for the source inventory or local encryption.
+
 **16 October, 18:25 UTC — Slack source-to-interaction gap classified.**
 
 ### Working and verified

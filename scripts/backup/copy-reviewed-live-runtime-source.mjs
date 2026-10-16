@@ -21,6 +21,12 @@ export const reviewedLiveRuntimeSource1705 = Object.freeze({
   key: "projects/tgbnakbxwcqjeimygroz/objects/120b1e3083e80b80e7d623867c1066e782f85a52b7e70c6a8879939245c9833e/e0c3cbdb8ff2fded1ab5cf879806f8b580a1278f07bfc513290ca3ccab7b2f17",
 });
 
+export const reviewedLiveRuntimeSource1828 = Object.freeze({
+  bytes: 6022776,
+  sha256: "796eb3f9ee44e2f233ca244d8fed1f0a2463d266cb74e8c774d7e7aaa73e5a0a",
+  key: "projects/tgbnakbxwcqjeimygroz/objects/58dc9f5d80110646fcd4d7f7922541cd7f1c28b9e1bfafcaf084ebe72e7bb6ce/796eb3f9ee44e2f233ca244d8fed1f0a2463d266cb74e8c774d7e7aaa73e5a0a",
+});
+
 const fail = (code) => { throw Error(code); };
 const need = (condition, code) => { if (!condition) fail(code); };
 const canon = (value) => JSON.stringify(value, (_key, entry) =>
@@ -83,7 +89,8 @@ function checkedVersion(version, now, reviewed) {
  * No application, database, Slack or provider source write occurs here. */
 export async function copyReviewedLiveRuntimeSource({ sourcePath, downloadPath, writer, restore,
   now = Date.now, reviewed = reviewedLiveRuntimeSource }) {
-  need(reviewed === reviewedLiveRuntimeSource || reviewed === reviewedLiveRuntimeSource1705,
+  need(reviewed === reviewedLiveRuntimeSource || reviewed === reviewedLiveRuntimeSource1705 ||
+    reviewed === reviewedLiveRuntimeSource1828,
     "runtime_reviewed_package_invalid");
   need(typeof sourcePath === "string" && typeof downloadPath === "string" &&
     sourcePath !== downloadPath && writer?.destination && restore?.destination,

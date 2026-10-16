@@ -14,6 +14,14 @@ application-source recovery input current. The repository TEST checkpoint
 `ed581c7c` preserves the new scheduler source; it is not a substitute for
 restoring the deployed runtime and configuration.
 
+At 18:29 UTC, a new stable read-only LIVE archive captured 103 functions and
+728 source files, including that version 63 scheduler. Its manifest and every
+file hash passed local packaging to the existing public recovery recipient.
+The resulting 6,022,776-byte age ciphertext has SHA-256
+`796eb3f9ee44e2f233ca244d8fed1f0a2463d266cb74e8c774d7e7aaa73e5a0a`.
+It is still **local only**; the distinct exact off-site copy awaits approval.
+[Exact prepared review](LEARN-BUILD01-RUNTIME-1828-OFFSITE-REVIEW.md).
+
 At 17:07 UTC, a fresh read-only LIVE inventory retained the current **103**
 active Edge functions and **727** source files, including the newly released
 worker and signed Slack Events receiver. The exact source hashes and stable
