@@ -31,7 +31,10 @@ sign-off.
   verify an independent current-job refresh path or an equally safe schedule
   that preserves contact coverage and source history. Do not infer from the
   Commusoft job count that Slack or Email workers are starved; their queues are
-  observed separately.
+  observed separately. An inert, signed job-webhook boundary now has three
+  synthetic passing tests and TypeScript verification, but it has no durable
+  hint recorder, read-only source fetch, source-version commit or provider
+  subscription. [Exact scope and remaining path](LEARN-BUILD01-COMMUSOFT-FRESHNESS.md).
 
 ### Blocked externally
 
