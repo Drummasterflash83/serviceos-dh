@@ -256,6 +256,11 @@ def run(*, combined_audio=False, compare_native=False, source_root=None,
         return report
     except Exception as error:
         report['failure'] = str(error) if isinstance(error, RecoveryError) else 'Restore stopped; raw error withheld'
+        # Only a fixed class label survives to hosted diagnostics. Never copy
+        # exception text, source rows, SQL, or private Docker output into logs.
+        report['failureClass'] = (type(error).__name__ if type(error).__name__ in {
+            'RecoveryError', 'KeyError', 'TypeError', 'ValueError', 'IndexError',
+            'OSError', 'JSONDecodeError', 'TimeoutExpired'} else 'Other')
         report['containerRemoved'] = bool(target and target.cleaned)
         write_private(report_path, report)
         print(json.dumps({'state': report['state'], 'failure': report['failure'],

@@ -27,7 +27,14 @@ const SAFE_RESTORE_CODES = new Set(["restore_command_unavailable_or_timeout",
   "restore_archive_integrity_failed", "restore_archive_changed",
   "restore_row_mismatch", "restore_sequence_mismatch",
   "restore_catalog_mismatch", "restore_extension_mismatch",
-  "restore_cleanup_unconfirmed", "restore_failure_unclassified"]);
+  "restore_cleanup_unconfirmed", "restore_failure_unclassified",
+  "restore_inventory_coverage_mismatch", "restore_no_actor_access_mismatch",
+  "restore_network_supplement_integrity_failed", "restore_native_stream_bound_or_truncated",
+  "restore_native_row_bound", "restore_native_copy_process_failed",
+  "restore_native_statement_unrecognized", "restore_network_columns_mismatch",
+  "restore_network_rows_bound", "restore_unexpected_key", "restore_unexpected_type",
+  "restore_unexpected_value", "restore_unexpected_index", "restore_unexpected_os",
+  "restore_unexpected_json", "restore_unexpected_timeout", "restore_unexpected_other"]);
 function safeExportDiagnostic(value) {
   return value && SAFE_EXPORT_STAGES.has(value.exportStage) &&
     SAFE_EXPORT_CODES.has(value.code)

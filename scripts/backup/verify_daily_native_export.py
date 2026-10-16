@@ -23,6 +23,25 @@ SAFE_FAILURES = {
     'Restored table ownership or RLS catalog differs': 'restore_catalog_mismatch',
     'Restored extension versions differ': 'restore_extension_mismatch',
     'Recovery container cleanup unconfirmed': 'restore_cleanup_unconfirmed',
+    'Native capture does not cover the physical table inventory': 'restore_inventory_coverage_mismatch',
+    'Restored inputs exposed without an authenticated actor': 'restore_no_actor_access_mismatch',
+    'Network table supplement integrity mismatch': 'restore_network_supplement_integrity_failed',
+    'Native COPY stream exceeds bound or is truncated': 'restore_native_stream_bound_or_truncated',
+    'Native COPY table exceeds row bound': 'restore_native_row_bound',
+    'Native COPY export process did not complete': 'restore_native_copy_process_failed',
+    'Unsupported statement outside native COPY data': 'restore_native_statement_unrecognized',
+    'Restored network table columns differ': 'restore_network_columns_mismatch',
+    'Restored network rows exceed comparison bound': 'restore_network_rows_bound',
+}
+SAFE_FAILURE_CLASSES = {
+    'KeyError': 'restore_unexpected_key',
+    'TypeError': 'restore_unexpected_type',
+    'ValueError': 'restore_unexpected_value',
+    'IndexError': 'restore_unexpected_index',
+    'OSError': 'restore_unexpected_os',
+    'JSONDecodeError': 'restore_unexpected_json',
+    'TimeoutExpired': 'restore_unexpected_timeout',
+    'Other': 'restore_unexpected_other',
 }
 
 
@@ -34,6 +53,8 @@ def safe_failure(source_arg):
         if report.get('state') in SAFE_STAGES:
             stage = report['state']
         code = SAFE_FAILURES.get(report.get('failure'), code)
+        if code == 'restore_failure_unclassified':
+            code = SAFE_FAILURE_CLASSES.get(report.get('failureClass'), code)
     except (AttributeError, IndexError, OSError, TypeError, ValueError):
         pass
     return {'state': 'native_restore_failed_safe', 'stage': stage,
