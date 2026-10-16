@@ -1,0 +1,42 @@
+{
+  "version": "learn-build01-live-runtime-offsite-copy/1",
+  "observedAtUtc": "2026-10-16T07:12:00Z",
+  "ownerApproval": "Exact 5,971,576-byte encrypted Edge source copy and separate Restore download approved in this task",
+  "state": "encrypted_live_runtime_source_offsite_copy_verified",
+  "attempt": "b7c9a0e4-8420-4c22-a7f8-58b743d10903",
+  "sourceScope": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "activeFunctions": 102,
+    "sourceFiles": 721,
+    "manifestSha256": "fb1e539b009757b4f17ca55715d8ba254f52fe11202ab52eae50b7fdfc845ca4"
+  },
+  "encryptedPackage": {
+    "bytes": 5971576,
+    "sha256": "4aa6f7ae538077530caa09cd8509b173dc60b97f28dc14e4ccea7d59665b335c",
+    "ageHeaderVerified": true
+  },
+  "destination": {
+    "accountId": "235099643372",
+    "region": "eu-west-2",
+    "bucket": "openfolk-serviceos-database-235099643372-eu-west-2",
+    "key": "projects/tgbnakbxwcqjeimygroz/objects/c384ec8d4be8f271445b68e273197e13bdeaa1655e389f2ef058f88f8b242ab9/4aa6f7ae538077530caa09cd8509b173dc60b97f28dc14e4ccea7d59665b335c",
+    "private": true,
+    "tlsRequired": true,
+    "versioning": "Enabled",
+    "encryption": "AES256",
+    "retentionMode": "GOVERNANCE",
+    "retainUntilUtc": "2026-11-15T07:11:44.160Z",
+    "versionIdRecordedPrivately": true
+  },
+  "independentRestore": {
+    "separateRestoreIdentity": true,
+    "sameObjectVersion": true,
+    "downloadBytes": 5971576,
+    "downloadSha256": "4aa6f7ae538077530caa09cd8509b173dc60b97f28dc14e4ccea7d59665b335c",
+    "downloadMode": "0600"
+  },
+  "productionDataWrites": false,
+  "sourceProviderWrites": false,
+  "decryptionVerified": false,
+  "applicationRecoveryVerified": false
+}

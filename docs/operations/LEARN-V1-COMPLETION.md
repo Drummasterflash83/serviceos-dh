@@ -13,6 +13,43 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 07:17 UTC — approved Edge source copy recovered; Email card lane resumed.**
+
+### Working and verified
+
+- The exact owner-approved 5,971,576-byte age-encrypted LIVE Edge source
+  package is in the existing private London bucket with 30-day governance
+  retention. The separate Restore identity downloaded its exact object version;
+  both copies have SHA-256 `4aa6f7ae538077530caa09cd8509b173dc60b97f28dc14e4ccea7d59665b335c`.
+  This proves encrypted source retention, not application/Auth recovery.
+  [Sanitised receipt](evidence/learn-build01-live-runtime-offsite-copy-2026-10-16.json).
+- The Email full-import cap passed 74 disposable-database protocol checks and
+  34 capture checks after the LIVE release. No old retained messages were
+  removed. Git TEST checkpoint `8bc0538e` is verified on the remote branch.
+- Ordinary Email projection resumed at 07:13 UTC after a transient
+  `projection_inventory_unconfirmed` retry. By 07:17 UTC it had committed 800
+  receipts in the previous hour through 200-record continuations, and the
+  eligible unlinked count fell from 19,847 at 07:09 to 19,099. The current
+  continuation remains queued. No manual projection rescue was used.
+
+### Needs finishing
+
+- The Email card gap is still 19,099 eligible retained sources at 07:17 UTC.
+  Continue ordinary processing to a stable catch-up and verify recent-message
+  card coverage. Jobs with older source review holds settle `dead_letter`
+  with `projection_review_required` even when they publish 200 interactions
+  and enqueue a successor; the review state must remain visible.
+- Decrypt and verify the downloaded Edge source in an isolated rehearsal,
+  then recover the frontend/runtime configuration and Auth/operator access.
+  The package alone cannot restore those runtime secrets. A scheduled hosted
+  database backup has still not been observed; 07:43 UTC is the next fallback.
+
+### Blocked externally
+
+- None for the approved source copy. A single isolated decrypt attempt ended
+  `onepassword_operation_unconfirmed` when the Touch ID window expired. It was
+  not retried automatically; the recovery identity is still in 1Password, not Git.
+
 **16 October, 07:01 UTC — signed Slack Events route prepared and inactive on TEST.**
 
 ### Working and verified

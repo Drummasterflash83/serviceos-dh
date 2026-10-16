@@ -1,0 +1,18 @@
+{
+  "version": "learn-build01-email-projection-resumed/1",
+  "observedAtUtc": "2026-10-16T07:17:09Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "source": "email",
+  "ordinaryQueuedContinuation": true,
+  "receiptsLastHour": 800,
+  "eligibleWithoutInteractionAt0709": 19847,
+  "eligibleWithoutInteractionAt0717": 19099,
+  "reviewHeldAmongCurrentEligible": 0,
+  "recentCapturedLinked": 150,
+  "recentCapturedWindow": "readback's preceding hour",
+  "jobReviewAttention": "projection_review_required on completed 200-record continuations because older review holds remain",
+  "manualProjectionRescue": false,
+  "productionDataWritesByReadback": false,
+  "sourceProviderRequestsByReadback": 0
+}

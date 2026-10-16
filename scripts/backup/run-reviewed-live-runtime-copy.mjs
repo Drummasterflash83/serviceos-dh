@@ -31,14 +31,14 @@ async function main() {
     writer = await port("Writer");
     restore = await port("Restore");
     const result = await copyReviewedLiveRuntimeSource({
-      sourcePath: privatePath("build01-live-edge-source-20261016.age"),
+      sourcePath: privatePath("build01-live-edge-source-2026-10-16-0630.age"),
       downloadPath: privatePath(`build01-live-edge-source-restore-${attempt}.age`),
       writer, restore,
     });
     const receipt = {
       ...result,
       attempt,
-      source: "reviewed LIVE Edge source package; 102 functions and 720 files",
+      source: "reviewed LIVE Edge source package; 102 functions and 721 files",
       escrowDecryptionVerified: false,
     };
     await writeFile(privatePath(`build01-live-edge-source-offsite-${attempt}.json`),
