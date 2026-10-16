@@ -13,6 +13,38 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 07:28 UTC — Slack event pacing verified in inactive TEST.**
+
+### Working and verified
+
+- The 160-channel LIVE saved-source read found 33,189 retained messages in the
+  approved current roster. The latest source timestamp was 30 August; no
+  messages or replies were retained in the week before the 13 October cutoff.
+  An earlier retained week had 115 messages, with a 107-message peak hour.
+  [Counts-only capacity receipt](evidence/learn-build01-slack-event-capacity-2026-10-16.json).
+- The inactive TEST event settlement now follows the existing verified
+  connection-bound internal-app cooldown: nominal 30 seconds while its rate
+  profile is current, otherwise 60 seconds. A pinned isolated database
+  rehearsal, TEST rollback, installation and readback passed. TEST still has
+  zero event hints and jobs; LIVE and the Slack app are unchanged.
+  [Pacing receipt](evidence/learn-build01-slack-event-pacing-test-2026-10-16.json).
+
+### Needs finishing
+
+- A saved-source arrival proxy cannot prove Slack's actual current delivery
+  rate. Hosted signed delivery, 429 handling and queue-age observation, a
+  slower reconciliation sweep, and a real post-cutoff channel/reply journey
+  remain necessary before near-live capture can be accepted.
+- The 07:43 UTC GitHub backup fallback and Email card-gap trend remain under
+  observation. Full application/Auth recovery and Commusoft job/card coverage
+  remain open.
+
+### Blocked externally
+
+- The exact Slack app subscription waits for Chris's review of the prepared
+  proposal. The escrow decrypt needs a fresh Touch ID attempt when he is at
+  the Mac; it was not retried automatically.
+
 **16 October, 07:17 UTC — approved Edge source copy recovered; Email card lane resumed.**
 
 ### Working and verified

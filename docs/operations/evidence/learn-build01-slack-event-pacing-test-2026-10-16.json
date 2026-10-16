@@ -1,0 +1,31 @@
+{
+  "version": "learn-build01-slack-event-pacing-test/1",
+  "observedAtUtc": "2026-10-16T07:28:40Z",
+  "scope": "Pacing-only change to inactive TEST Slack event settlement",
+  "migration": "20261104120000_learn_slack_event_pacing_profile.sql",
+  "sourceSha256": "79e9e845c30768ec3a7c6899f54e87aa1e136e287e32ed16eab333f862207491",
+  "beforeFunctionMd5": "e66e8f5651d7465c3d12e8bac2d569ba",
+  "afterFunctionMd5": "01b44200e9750ac4e004653531661023",
+  "rollbackRehearsalPassed": true,
+  "installedTestReadbackPassed": true,
+  "testEventHints": 0,
+  "testEventJobs": 0,
+  "serviceRoleExecution": true,
+  "authenticatedExecution": false,
+  "disposableRestore": {
+    "pinnedArchiveSha256": "31f1e594e9c3b43f3cff0ec0c45095216a4bb6580e8a0e5f2a4a81db99c03fe8",
+    "syntheticEventHints": 2,
+    "queueSourceAndDeleteVerified": true,
+    "eventPacingFollowsCurrentConnectionProfile": true,
+    "originalVersionRetained": true,
+    "deletedCardWithheld": true,
+    "network": "none",
+    "containerRemoved": true
+  },
+  "receiverActive": false,
+  "slackAppChanged": false,
+  "liveEventRouteChanged": false,
+  "sourceProviderRequests": 0,
+  "productionDataWrites": false,
+  "remaining": "Hosted signed delivery, actual provider rate/latency, LIVE activation, post-cutoff channel/reply proof and reconciliation sweep"
+}

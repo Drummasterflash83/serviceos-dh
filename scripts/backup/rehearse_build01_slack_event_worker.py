@@ -23,6 +23,7 @@ MIGRATIONS = [
     '20261104070000_learn_slack_event_hints.sql',
     '20261104100000_learn_slack_event_jobs.sql',
     '20261104110000_learn_slack_event_worker.sql',
+    '20261104120000_learn_slack_event_pacing_profile.sql',
 ]
 
 
@@ -81,6 +82,7 @@ def run():
              first_id text:={qliteral(first)};delete_id text:={qliteral(deletion)};
              result jsonb;j public.platform_jobs%rowtype;
              worker uuid:=gen_random_uuid();claim text;records jsonb;source_key text;
+             expected_cooldown integer;
             begin
              result:=public.learn_slack_event_record(t,team,first_id,channel,
               'message_hint',source_ts,source_ts,null,null);
@@ -103,6 +105,15 @@ def run():
              if result->>'outcome'<>'stored_source' then raise exception 'synthetic_source_not_saved';end if;
              result:=public.learn_slack_finish_event_job(t,j.id,claim,j.attempt_count,'{{"success":true}}');
              if result->>'status'<>'succeeded' then raise exception 'synthetic_event_not_settled';end if;
+             select case when public.learn_slack_page_limit(t,s.connection_id,team)=100
+               then 30 else 60 end into expected_cooldown
+              from public.slack_recurring_channels s where s.tenant_id=t
+               and s.team_id=team and s.channel_id=channel and s.enabled;
+             if expected_cooldown is null or not exists(
+              select 1 from public.slack_workspace_pacing p where p.team_id=team
+               and abs(extract(epoch from p.next_allowed_at-p.last_finished_at)
+                - expected_cooldown)<1)
+              then raise exception 'synthetic_event_pacing_profile_mismatch';end if;
              result:=public.learn_slack_event_record(t,team,first_id,channel,
               'message_hint',source_ts,source_ts,null,null);
              if result->>'state'<>'duplicate' then raise exception 'synthetic_duplicate_not_recognised';end if;
@@ -137,6 +148,7 @@ def run():
             report['syntheticEvents'] = 2
             report['originalVersionRetained'] = True
             report['deletedCardWithheld'] = True
+            report['eventPacingFollowsCurrentConnectionProfile'] = True
             report['boundary'] = target.verify_boundary()
     finally:
         report['containerRemoved'] = target.cleaned

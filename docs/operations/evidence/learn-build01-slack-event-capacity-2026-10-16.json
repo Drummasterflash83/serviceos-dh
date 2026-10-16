@@ -1,0 +1,27 @@
+{
+  "version": "learn-build01-slack-event-capacity/1",
+  "observedAtUtc": "2026-10-16T07:24:53Z",
+  "environment": "LIVE Drummonds saved public-channel source rows",
+  "enabledRosterChannels": 160,
+  "retainedMessagesAllChannels": 37850,
+  "retainedMessagesInCurrentRoster": 33189,
+  "newestRosterSourceAtUtc": "2026-08-30T06:42:21Z",
+  "cutoffWeek": {
+    "startUtc": "2026-10-06T09:30:00Z",
+    "endUtc": "2026-10-13T09:30:00Z",
+    "retainedMessages": 0,
+    "retainedReplies": 0
+  },
+  "lastRetainedWeek": {
+    "startUtc": "2026-08-23T07:00:00Z",
+    "endUtc": "2026-08-30T07:00:00Z",
+    "retainedMessages": 115,
+    "retainedReplies": 0,
+    "peakMessagesPerHour": 107,
+    "hoursAboveSixtyPerHour": 1
+  },
+  "interpretation": "Saved source history is a lower-bound arrival proxy. No recent retained events exist with which to verify a LIVE signed delivery or reply latency. A 107-message hour would outpace a fixed sixty-job-per-hour event lane; the existing verified internal-app connection profile allows a nominal thirty-second cooldown while current and unchanged, but observed service throughput and burst latency need a real trial.",
+  "sourceIdsOrContentPrinted": false,
+  "sourceProviderRequests": 0,
+  "productionDataWrites": false
+}

@@ -47,7 +47,13 @@ verified hint-to-job claim, source publication, duplicate acknowledgement,
 deletion withholding and prior-version retention without contacting Slack.
 
 The two additive queue/worker migrations were rehearsed in a TEST rollback and
-installed on TEST with zero hints. On 16 October at 06:59 UTC the worker moved
+installed on TEST with zero hints. A third guarded, pacing-only migration was
+rollback-rehearsed and installed at 07:28 UTC; its TEST function digest, service-only
+execution and zero hint/job counts were read back independently. A disposable
+restored-database test verified that event settlement now follows the existing
+connection-bound internal-app cooldown, falling back to 60 seconds when that
+profile is not current. [TEST pacing receipt](evidence/learn-build01-slack-event-pacing-test-2026-10-16.json).
+On 16 October at 06:59 UTC the worker moved
 from TEST version 15 to 16 and the receiver from version 1 to 2; inventory
 confirmed all other functions unchanged. The hosted receiver is **inactive**:
 unsigned POST returns 503 and GET returns 405. LIVE has no receiving function
@@ -55,14 +61,31 @@ or signing secret. No Slack app setting has changed. Hosted signed delivery
 against an approved TEST roster, measured delivery/queue latency under load,
 controlled LIVE activation and real post-cutoff channel/reply proof are **not
 yet complete**. Do not enable the Events API until these gates pass.
+TEST currently has no recurring channel roster rows, although it has 21 Slack
+accounts and two configured connections; a hosted signed challenge or event
+would need a deliberately isolated TEST fixture with a synthetic signing key.
+The current inactive receiver must not be described as a hosted signed test.
 
-The existing paced Slack queue allows roughly one source job per minute after
-settlement. An event wake-up avoids scanning all 160 channels for every new
+The inactive TEST event settlement now uses the same 30-second cooldown as
+channel/reply jobs while the verified internal-app profile is current, and
+falls back to 60 seconds after expiry or connection change. An event wake-up avoids scanning all 160 channels for every new
 message, but a sustained arrival rate above that queue's measured capacity
 will still accumulate a lag. The release must publish queue age and dead-letter
 health and retain a slower reconciliation sweep for missed provider events. It
 must not claim a guaranteed 15-minute freshness target until a real channel
 and reply trial measures that result.
+
+A 16 October counts-only readback found 33,189 retained messages in the current
+160-channel roster, but its newest source timestamp was 30 August. The week
+before the saved October cutoff had **zero retained messages or replies**; that
+is an evidence gap for a LIVE event-latency trial, not proof that Slack was
+empty. The last retained week had 115 messages, including a 107-message hour.
+At a fixed 60 jobs/hour an equal burst would build a backlog. The existing
+connection-bound internal-app rate profile permits a nominal 30-second
+cooldown while verified, and falls back to 60 seconds if the profile expires
+or the connection changes. The inactive TEST event settlement now follows
+that rule, but LIVE and the Slack app remain unchanged.
+[Counts-only capacity receipt](evidence/learn-build01-slack-event-capacity-2026-10-16.json).
 
 Reviewing this proposal authorises the exact app change **only after** those
 technical gates are ready. Any requested wider scope needs a separate review.
