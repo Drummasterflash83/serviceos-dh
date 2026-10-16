@@ -13,6 +13,43 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 15:49 UTC — Commusoft captured-job browsing passed LIVE; Phone coverage is complete for retained calls.**
+
+### Working and verified
+
+- The separate Commusoft release verified **295 open-work records** in LIVE
+  LEARN → Jobs → Captured Commusoft jobs. Search, paging, source detail and
+  audited operator reads passed without classifying unresolved customer links
+  or changing string job codes. Its Git checkpoint is `439b44c1`.
+  [Commusoft receipt](LEARN-COMMUSOFT-SOURCE-JOBS.md).
+- At 15:46 UTC, all **4,668** retained Phone calls had corresponding
+  interactions, and the eligible ready/enriched interaction-to-Graph gap was
+  zero. The 15:45 Phone projection run processed two calls. Its
+  `projection_review_required` terminal label reflects durable older review
+  holds; the normal five-minute scheduler continues to enqueue Phone work.
+- Customer-card coverage was **4,150 projected of 4,155 active** at 15:46 UTC.
+  A counts-only follow-up at 15:47 found three unprojected cards older than an
+  hour, down from four; all three retained their person/company source rows.
+
+### Needs finishing
+
+- The 29 Commusoft open jobs missing customer/site source records still require
+  truthful gap treatment; work-code category and card behaviour remain to be
+  implemented from source-backed rules. Do not infer identities or scores.
+- The Email older-lane retry after the selector release remains due at 15:53
+  UTC. The 12,713 eligible saved messages without interactions had not fallen
+  by 15:46 UTC. Three older unprojected customer cards need a later sweep
+  readback if they persist.
+- The approved Slack roster still has no saved post-cutoff message or reply or
+  Events hint at 15:47 UTC. One of its most recently active channels is
+  archived; it was read only, with no unarchive or test post. Current visible
+  public work remains outside the exact roster.
+
+### Blocked externally
+
+- The one-channel public Slack scope question is pending. Chris's final
+  business sign-off follows technical acceptance; no full-day wait is required.
+
 **16 October, 15:40 UTC — the approved Slack roster misses current public work; the Email selector repair is installed and awaiting an ordinary retry.**
 
 ### Working and verified
