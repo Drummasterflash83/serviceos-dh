@@ -1,4 +1,5 @@
 import { LearnImportedCustomers } from "./LearnImportedCustomers";
+import { LearnCommusoftSourceJobs } from "./LearnCommusoftSourceJobs";
 import { LearnSlackSource } from "./LearnSlackSource";
 import { useEffect, useState } from "react";
 import { ArrowRight, BriefcaseBusiness, Building2, RefreshCw, Users } from "lucide-react";
@@ -182,7 +183,8 @@ function CardWorkspace({
         ))}
       </div>
       {kind === 'customer' && canEdit && <div className="flex flex-wrap gap-2" aria-label="Customer record views"><button className="cp-secondary" aria-pressed={!imported} onClick={()=>setImported(false)}>Cards and identities</button><button className="cp-secondary" aria-pressed={imported} onClick={()=>{setSelected(null);setImported(true);}}>Imported customer records</button></div>}
-      {imported && canEdit ? <LearnImportedCustomers tenantId={tenantId} actorId={actorId} onOpenCard={id=>setSelected(id)}/> : <>
+      {kind === "job" && canEdit && <div className="flex flex-wrap gap-2" aria-label="Job record views"><button className="cp-secondary" aria-pressed={!imported} onClick={() => setImported(false)}>Linked job cards</button><button className="cp-secondary" aria-pressed={imported} onClick={() => { setSelected(null); setImported(true); }}>Captured Commusoft jobs</button></div>}
+      {imported && canEdit ? kind === "job" ? <LearnCommusoftSourceJobs tenantId={tenantId} actorId={actorId} onOpenJob={id => setSelected(id)} /> : <LearnImportedCustomers tenantId={tenantId} actorId={actorId} onOpenCard={id=>setSelected(id)}/> : <>
       {kind === "customer" && (
         <p className="text-sm">
           These cards include saved communication identities as well as reviewed business customers.

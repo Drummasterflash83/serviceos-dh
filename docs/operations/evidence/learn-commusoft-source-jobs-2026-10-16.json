@@ -1,0 +1,100 @@
+{
+  "scope": "Commusoft retained source-job visibility; no person/company inference",
+  "frontend": "local_verified_hosted_pending",
+  "migration": "20261104150000_learn_commusoft_source_job_cards.sql",
+  "checks": {
+    "focusedTests": 32,
+    "typescript": true,
+    "productionBuild": true,
+    "isolatedPostgres": true,
+    "syntheticBrowserSearchAndFailure": true
+  },
+  "environments": {
+    "test": {
+      "environment": "test",
+      "project": "saatxzwxvdvqevbnskxy",
+      "observedAt": "2026-10-16T15:05:27.898Z",
+      "sourceSha256": "73a5e386e9a37fc33c0e249dd51be44a356ec3ac972cbafe2f8f1e98a2771b7b",
+      "installedVerified": true,
+      "coverage": [
+        {
+          "report": {
+            "open_jobs": 282,
+            "relationships": [
+              {
+                "jobs": 109,
+                "open_jobs": 3,
+                "relationship_state": "customer_source_missing"
+              },
+              {
+                "jobs": 6572,
+                "open_jobs": 162,
+                "relationship_state": "customer_source_retained"
+              },
+              {
+                "jobs": 1553,
+                "open_jobs": 31,
+                "relationship_state": "property_source_missing"
+              },
+              {
+                "jobs": 4377,
+                "open_jobs": 86,
+                "relationship_state": "site_customer_source_retained"
+              }
+            ],
+            "retained_jobs": 12611,
+            "reviewed_jobs": 46,
+            "source_job_conflicts": 0,
+            "open_source_relationship_gaps": 34,
+            "open_unreviewed_customer_identities": 276
+          }
+        }
+      ],
+      "providerRequests": 0,
+      "canonicalWrites": 0
+    },
+    "live": {
+      "environment": "live",
+      "project": "tgbnakbxwcqjeimygroz",
+      "observedAt": "2026-10-16T15:15:44.444Z",
+      "sourceSha256": "73a5e386e9a37fc33c0e249dd51be44a356ec3ac972cbafe2f8f1e98a2771b7b",
+      "installedVerified": true,
+      "coverage": [
+        {
+          "report": {
+            "open_jobs": 295,
+            "relationships": [
+              {
+                "jobs": 110,
+                "open_jobs": 4,
+                "relationship_state": "customer_source_missing"
+              },
+              {
+                "jobs": 6609,
+                "open_jobs": 179,
+                "relationship_state": "customer_source_retained"
+              },
+              {
+                "jobs": 1553,
+                "open_jobs": 25,
+                "relationship_state": "property_source_missing"
+              },
+              {
+                "jobs": 4384,
+                "open_jobs": 87,
+                "relationship_state": "site_customer_source_retained"
+              }
+            ],
+            "retained_jobs": 12656,
+            "reviewed_jobs": 1004,
+            "source_job_conflicts": 0,
+            "open_source_relationship_gaps": 29,
+            "open_unreviewed_customer_identities": 284
+          }
+        }
+      ],
+      "providerRequests": 0,
+      "canonicalWrites": 0
+    }
+  }
+}

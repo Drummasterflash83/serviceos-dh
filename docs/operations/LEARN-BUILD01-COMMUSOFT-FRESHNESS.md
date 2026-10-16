@@ -2,6 +2,12 @@
 
 ## Working and verified
 
+**16 October correction:** work/accounting codes describe the work, not customer
+identity. Customer person/company review must not block retained job visibility.
+The additive source-card reader is installed in TEST and LIVE; frontend acceptance
+is tracked in [source job cards](LEARN-COMMUSOFT-SOURCE-JOBS.md). Counts below
+are the earlier 07:20 UTC checkpoint, not current totals.
+
 **16 October 2026, 07:20 UTC (08:20 BST):** the read-only current-jobs scheduler is
 installed in TEST and LIVE and enabled only for Drummonds' existing approved LIVE
 account. Five normal worker windows completed, with no incomplete windows. Latest
@@ -107,19 +113,16 @@ and identities instead of manufacturing scoring evidence.
 
 ## Blocked externally
 
-135 unreviewed customers underlying open work need authoritative person/company
-classification. Earlier provider UI evidence already establishes customerType
-ID-to-label names, including 1 Private customer, 2 Company, 4 School or College,
-5 Property Management, 6 Care Home, 7 Religious building, 8 Hospitality,
-9 Government Building, 10 Private Landlord and 13 Accounting Name. These labels
-and creation routes are not a complete canonical person/company policy. Chris is
-seeking Heidi's confirmation of actual usage, mixed-type exceptions and the
-account-holder versus named-contact distinction. A draft was prepared
-for Chris; no message was sent. Classification and full relationship acceptance
-remain incomplete pending that evidence. The remaining contact identities also
-need corroboration beyond shared endpoints or matching names, and missing source
-parents need provider visibility evidence. Safe links supported by the current
-reviewed-parent and exact account-holder evidence have been exhausted.
+Chris corrected the earlier request for a broad customerType classification policy.
+The income/materials codes supplied on 16 October identify work and allocations;
+they do not establish customer identity. Heidi confirmation is not a prerequisite
+for showing retained jobs. The earlier wording conflated canonical identity review
+with source visibility and is superseded.
+
+Actual missing customer/site sources still need source coverage evidence. Remaining
+ambiguous contact identities still need corroboration before canonical linking.
+These uncertainties must remain visible without hiding the captured work or
+inventing communication links, completion evidence or scores.
 
 ## Release and recovery
 
