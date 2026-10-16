@@ -21,7 +21,12 @@ sign-off.
   its SHA-256, a fixed object key in the existing private London bucket and
   separate Writer/Restore download verification. A no-network local-port
   rehearsal copied and read back all package bytes; syntax and diff checks
-  pass. The exact scope and limitations are in the
+  pass. The full 102-function inventory was also repackaged and decrypted with
+  a disposable key: all 720 extracted source files and 4,788,552 source bytes
+  matched the pinned manifest, and the temporary package/key were removed.
+  This did not read the actual escrow key.
+  [Full-source round trip](evidence/learn-build01-full-edge-source-roundtrip-2026-10-16.json).
+  The exact off-site scope and limitations are in the
   [runtime copy review](LEARN-BUILD01-RUNTIME-OFFSITE-REVIEW.md).
 
 ### Needs finishing

@@ -1,0 +1,21 @@
+{
+  "version": "learn-build01-full-edge-source-roundtrip/1",
+  "observed_at_utc": "2026-10-16T02:26:00Z",
+  "method": "Repackage the exact retained LIVE source inventory with a temporary disposable age recipient, decrypt that temporary package, and independently hash every extracted source file against its pinned manifest",
+  "checks": {
+    "active_functions": 102,
+    "source_files_verified": 720,
+    "source_bytes_verified": 4788552,
+    "archive_entries": 722,
+    "temporary_encrypted_bytes": 5971576,
+    "manifest_sha256": "bf66a05aba6ccf44cf8394261f43dac66ccc2927c5e27f99ccbcedba8c10e303",
+    "all_manifest_hashes_matched": true,
+    "temporary_key_and_package_removed": true
+  },
+  "actual_escrow_encrypted_package_unchanged": true,
+  "actual_escrow_key_read": false,
+  "provider_requests": 0,
+  "production_writes": false,
+  "off_site_copy_verified": false,
+  "hosted_application_recovery_verified": false
+}
