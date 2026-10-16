@@ -12,16 +12,25 @@ const query = `with approved as (
  join public.slack_history_campaign_channels m on m.campaign_id=h.id
   and m.tenant_id=h.tenant_id
  where h.id='${campaign}'::uuid and h.tenant_id='${tenant}'::uuid
-), saved as (
+), all_saved as materialized (
  select s.team_id,s.channel_id,s.provider_timestamp,s.thread_timestamp,
   s.source_external_id
  from public.slack_messages s join approved a
   on a.team_id=s.team_id and a.channel_id=s.channel_id
  where s.tenant_id='${tenant}'::uuid
   and s.provider_timestamp ~ '^[0-9]{10,12}\\.[0-9]{1,6}$'
-  and s.provider_timestamp::numeric >= 1791883800::numeric
+), saved as (
+ select * from all_saved
+ where provider_timestamp::numeric >= 1791883800::numeric
 )
 select (select count(*)::int from approved) approved_channels,
+ (select count(*)::int from all_saved) total_saved_messages,
+ (select max(to_timestamp(provider_timestamp::numeric)) from all_saved)
+   latest_saved_source_any_at,
+ (select count(distinct channel_id)::int from all_saved
+   where provider_timestamp::numeric >= 1791883800::numeric-30*86400
+     and provider_timestamp::numeric < 1791883800::numeric)
+   channels_with_source_in_cutoff_prior_30d,
  (select count(*)::int from saved) saved_postcutoff_messages,
  (select count(*)::int from saved where thread_timestamp is not null
    and thread_timestamp<>provider_timestamp) saved_postcutoff_replies,
@@ -44,7 +53,9 @@ if (!response.ok) throw Error(`LIVE approved Slack evidence HTTP ${response.stat
 const rows = await response.json();
 const result = rows?.[0];
 if (!Array.isArray(rows) || rows.length !== 1 || !result ||
-  ["approved_channels","saved_postcutoff_messages","saved_postcutoff_replies",
+  ["approved_channels","total_saved_messages",
+    "channels_with_source_in_cutoff_prior_30d",
+    "saved_postcutoff_messages","saved_postcutoff_replies",
     "channels_with_postcutoff_source","signed_event_hints_in_roster",
     "signed_hints_with_saved_source"].some((key) =>
       !Number.isInteger(result[key]) || result[key] < 0))

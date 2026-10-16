@@ -38,10 +38,12 @@ inactive until Chris reviews and signs off the business result.
   [Batch proof](evidence/learn-build01-card-next-batch-readback-2026-10-16.json).
 - **Slack freshness:** 85 of the exact 160 channels were more than a day
   behind at 22:31. No post-cutoff message, reply or signed hint had been saved
-  in that exact roster at 22:28; this does not establish whether those
-  channels were quiet. The proven post-fix real Event was a reply in the
-  separate public roster; a new ordinary parent-message event has not yet
-  been observed. [Exact-roster proof](evidence/learn-build01-slack-160-postcutoff-2026-10-16.json).
+  in that exact roster at 22:49. Its latest retained source activity is from
+  30 August, with none in the 30 days before handoff. That makes a quiet roster
+  plausible but does not prove provider delivery. The proven post-fix real
+  Event was a reply in the separate public roster; a new ordinary
+  parent-message event has not yet been observed.
+  [Exact-roster proof](evidence/learn-build01-slack-160-postcutoff-2026-10-16.json).
 - **Jobs and attention:** Commusoft retained 12,656 job identities and 295
   recorded open/pending/on-hold jobs. Only ten of those had reviewed job-card
   links; 285 did not. At 22:31, 272 of the 295 had no observation within a day.

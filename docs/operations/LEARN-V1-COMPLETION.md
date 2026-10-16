@@ -62,11 +62,14 @@ business decision yet.
   cutoff, so the ten older unprojected cards may require later batches. Follow
   that continuation until those cards project and the sweep terminates; the
   read-only speedup and TEST equality fixture alone do not close this gate.
-- The approved public Slack capture still had 85 of 160 channels more than a
-  day behind at 22:15. An exact-roster 22:27 read found **zero retained
-  post-cutoff messages, replies or signed Event hints** in those 160 channels;
-  the four settled Event hints belong to a separate public roster and cannot
-  stand in for this acceptance. Continue to verify catch-up and actual
+- The approved public Slack capture had 80 of 160 channels more than a
+  day behind at 22:45, down from 85 at 22:31. An exact-roster 22:49 read
+  found **zero retained post-cutoff messages, replies or signed Event hints**
+  in those 160 channels. Its latest saved source is from 30 August, with zero
+  channels showing retained messages in the 30 days before handoff; a quiet
+  roster is plausible, not proven. The four settled Event hints belong to a
+  separate public roster and cannot stand in for this acceptance. Continue
+  to verify catch-up and actual
   post-cutoff evidence without new team test posts.
   [Counts-only receipt](evidence/learn-build01-slack-160-postcutoff-2026-10-16.json).
   Email update receipts continue, but
