@@ -30,6 +30,12 @@ sign-off.
   cadence. Complete an event-triggered reconciliation path or obtain an
   explicit slower freshness target, then prove a real post-cutoff source-to-card
   journey. No DM capture or inferred provider silence is accepted.
+- A second aggregate read at 04:54 found 90 subscriptions with an active
+  window, nine with a newly queued window and 61 waiting for observed-thread
+  traversal. Their current channel jobs were 93 queued and 67 succeeded; none
+  reported page-budget exhaustion and no cutoff regressed. This locates the
+  lag in queued channel/reply work rather than a failed handoff, but does not
+  establish a sustainable freshness rate.
 
 ### Blocked externally
 

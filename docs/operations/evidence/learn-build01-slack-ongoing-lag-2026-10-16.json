@@ -13,6 +13,18 @@
   "last_hour_successful_reply_windows": 50,
   "retained_approved_public_messages_after_cutoff": 0,
   "retained_approved_public_replies_after_cutoff": 0,
+  "follow_up_at_utc": "2026-10-16T04:54:54.165Z",
+  "follow_up_subscription_states": {
+    "window_active": 90,
+    "window_queued": 9,
+    "threads_pending": 61
+  },
+  "follow_up_current_channel_job_states": {
+    "queued": 93,
+    "succeeded": 67
+  },
+  "follow_up_current_windows_page_exhausted": 0,
+  "follow_up_cutoff_regressions": 0,
   "individual_or_group_dms_in_scope": false,
   "interpretation": "Saved boundaries continue to advance, but the backlog is material and the measured 82 channel/reply jobs per hour cannot meet a steady 15-minute sweep of all 160 channels and old roots. Zero retained post-cutoff rows cannot distinguish quiet provider channels from incomplete capture. An event-triggered reconciliation path or an explicitly accepted slower freshness target remains necessary; no Slack provider setting was changed.",
   "source_provider_writes": false,
