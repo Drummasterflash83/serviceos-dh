@@ -50,6 +50,14 @@ sign-off.
   were unchanged at 16:46 UTC, so this is a released fix awaiting an ordinary
   retry, not yet a demonstrated LIVE clearance.
   [Sanitised release receipt](evidence/learn-build01-card-revision-release-2026-10-16.json).
+- GitHub Actions job-step metadata at 16:49 UTC shows one real successful
+  **scheduled** independent database export, restore, encryption and off-site
+  verification (08:14 UTC). Three later scheduled runs succeeded by taking
+  their intended **redundant-copy skip** path; they are not three further
+  backups. A scheduled missed-success check succeeded at 14:03 UTC. Earlier
+  failed manual dispatches remain distinct. This verifies the unattended
+  hosted backup path and duplicate guard, not a new isolated application
+  restore.
 
 ### Needs finishing
 
