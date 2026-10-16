@@ -13,6 +13,29 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, about 02:34 UTC — scheduled backup monitor guard prepared.**
+
+### Working and verified
+
+- The existing hosted missed-success check was found to count a manual backup
+  as a daily success. The corrected local checker examines the newest
+  **scheduled** attempt, reports a manual-only period as pending during a
+  bounded first-run grace, and distinguishes a running, failed or overdue
+  scheduled attempt. Four focused tests pass; current GitHub Actions metadata
+  contains no scheduled backup run yet. The first slot remains 03:15 UTC.
+
+### Needs finishing
+
+- Release the tested checker and update the monitor workflow's pinned source
+  after a safe main-branch rehearsal. Verify the actual first scheduled backup
+  and the monitor's hosted readback; do not count the manual rehearsal as
+  unattended success.
+
+### Blocked externally
+
+- None for the monitor preparation. GitHub's scheduled trigger has not yet
+  reached its first eligible slot.
+
 **16 October, about 02:24 UTC — application-source off-site copy prepared, not activated.**
 
 ### Working and verified
@@ -70,7 +93,10 @@ sign-off.
   review source-to-customer/site identities before publishing job links.
   Presence of a source property alone does not prove the right customer card.
   The existing guarded review workflow can consume retained records, but this
-  aggregate is no authority to auto-link them or assert current progress.
+  aggregate is no authority to auto-link them or assert current progress. The
+  [job attention and scorecard draft](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md)
+  sets out source-backed review states for Chris without publishing a numeric
+  policy or assigning an unverified technician.
 
 ### Blocked externally
 
