@@ -23,5 +23,29 @@
     "productionWrites": false,
     "sourceProviderRequests": 0
   },
-  "boundary": "The archive is a point-in-time snapshot, not current LIVE counts. The exact migration hash c1c13bec8bc879a0ffe9f78e8c8b79fe58db0800c142f9f3123b656deb8ffd1a is pinned in a TEST-first release command, but no hosted request was made: the migration and frontend are not released to TEST or LIVE. QuickBooks production links are also accepted by the new reader but are not included in the 73 Commusoft-link count. A reviewed link confirms source identity, not current customer health or job progress."
+  "hostedTest": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "migrationSourceSha256": "c1c13bec8bc879a0ffe9f78e8c8b79fe58db0800c142f9f3123b656deb8ffd1a",
+    "method": "Signed-in Supabase TEST SQL Editor; exact source verified before paste",
+    "transactionalRollbackRehearsalPassed": true,
+    "rollbackLeftFunctionAndIndexAbsent": true,
+    "installationCommitted": true,
+    "installedFunctionOwner": "postgres",
+    "installedFunctionSecurityDefiner": true,
+    "installedFunctionSearchPath": "pg_catalog",
+    "installedFunctionExecuteAuthenticated": true,
+    "installedFunctionExecuteAnon": false,
+    "installedFunctionCommentContainsSourceSha256": true,
+    "indexValidReadyAndExpressionMatches": true,
+    "authenticatedDirectSourceLinkSelect": false,
+    "rollbackOnlyFixture": {
+      "reviewedBusinessCustomerState": true,
+      "communicationIdentityState": true,
+      "duplicateRequestDenied": true,
+      "foreignTenantDenied": true,
+      "anonExecutionDenied": true,
+      "syntheticFixtureRowsPersisted": 0
+    }
+  },
+  "boundary": "The archive is a point-in-time snapshot, not current LIVE counts. The exact migration is installed and security-rehearsed on hosted TEST only. The TEST or LIVE frontend has not yet been verified with this reader, and LIVE has not received this migration. QuickBooks production links are also accepted by the new reader but are not included in the 73 Commusoft-link count. A reviewed link confirms source identity, not current customer health or job progress."
 }

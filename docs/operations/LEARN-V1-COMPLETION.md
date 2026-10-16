@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, about 01:40 UTC — source-backed customer-card reader installed on hosted TEST.**
+
+### Working and verified
+
+- The exact migration source SHA-256 `c1c13bec8bc879a0ffe9f78e8c8b79fe58db0800c142f9f3123b656deb8ffd1a`
+  passed a transaction rollback rehearsal on Supabase TEST. Readback after
+  rollback confirmed no function or index persisted. The same source was then
+  committed on TEST. Catalog readback confirmed the guarded function, source
+  hash comment, valid matching index, authenticated execute grant, denied anon
+  execute and denied direct authenticated source-link reads. A rollback-only
+  authenticated fixture returned reviewed-business and communication-identity
+  states, denied duplicate and foreign-tenant requests, and left zero fixture
+  rows. [Sanitised evidence](evidence/learn-build01-customer-card-provenance-2026-10-16.json).
+
+### Needs finishing
+
+- Verify the matching frontend on signed-in TEST, then prepare an exact LIVE
+  release against the actual alias-served baseline. Current LIVE card coverage,
+  job progress/owner routing and defensible score evidence remain open.
+
+### Blocked externally
+
+- No user action is needed for this TEST database installation.
+
 **16 October, 01:37 UTC — historical job-card coverage measured offline.**
 
 ### Working and verified
@@ -74,10 +98,9 @@ override a later release observation. No requirement is silently deferred.
 
 ### Needs finishing
 
-- The candidate migration and frontend are not released to TEST or LIVE; no
-  usable existing Supabase management credential was present in this overnight
-  process, and browser automation timed out before opening the TEST release
-  route. This does not establish a Supabase outage.
+- This earlier local-only status was superseded by the hosted TEST database
+  installation above. The frontend remains unreleased and LIVE remains
+  unchanged.
   Current LIVE counts, full customer/source coverage, job progress and
   owner routing still need verification. A reviewed source identity does not
   itself prove customer health.
