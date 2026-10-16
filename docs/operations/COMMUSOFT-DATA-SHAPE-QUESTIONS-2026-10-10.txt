@@ -1,11 +1,11 @@
 DRAFT ONLY — not sent
-Subject: Drummonds private application — API v2.1 status, timezone and property coverage clarification
+Subject: Drummonds private application — API v2.1 job, property and appointment clarification
 
 Hi,
 
 We have corrected our request configuration and are now successfully capturing read-only properties and jobs from the hosted OpenFolk integration using the existing private application for client 19136. No key or account changes were needed.
 
-We are validating the mappings before publishing these records into our customer and job views. Could you clarify three details of the current API contract?
+We are validating the mappings before publishing these records into our customer and job views. Could you clarify four details of the current API contract?
 
 1. Job statuses
 GET /api/v2/jobs?limit=100, with Authorization: Bearer [REDACTED], Accept: application/json, User-Agent: OpenFolk-ServiceOS/1.0 (+https://openfolk.ai), and X-API-VERSION: 2.1 returns lowercase status values including ongoing, completed and on_hold. The response schema/example lists Open, Complete and Closed, while the request filter lists ongoing, completed, on_hold and pending. What is the complete set of response values for v2.1, and how should a finally closed job be identified?
@@ -15,6 +15,9 @@ createdOnDateTime arrives as an ISO timestamp with Z. completed.completedOnDateT
 
 3. Property coverage
 Our unfiltered GET /api/v2/properties?limit=100 traversal followed each nextCursor until hasMore=false and returned 2,418 properties, including active and dormant records. Some returned work addresses reference a customer not in that result, and some returned jobs reference a property not in that result. Are deleted or other historical records excluded from that list, and what is the supported read-only way to resolve those references?
+
+4. Appointments and responsible users
+Your relationship guide describes appointments as the time slots assigned to technicians beneath jobs, and a job may have several appointments. What supported read-only v2.1 endpoint, filters and scopes return appointments with their job identity, assigned user identity, schedule and status? How can we distinguish the currently responsible user from a past appointment, and enumerate the corresponding users without relying on matching names? We will not infer an individual assignee from a job's business unit or user group.
 
 These are contract/coverage questions following successful requests, rather than a request to enable access. We can provide correlation IDs for a specific request if helpful. No API keys or customer details are included here.
 
@@ -26,3 +29,10 @@ Rechecked https://developer.commusoft.com/list-jobs-24695917e0. Its published
 completion/closure examples still include explicit timezone offsets. This does
 not establish the timezone of the unzoned values actually retained from Drummonds;
 the timezone and missing historical-property questions remain unresolved.
+
+Internal verification note — 16 October 2026 (not part of the email):
+The public relationship guide at
+https://developer.commusoft.com/key-concepts-and-relationships-1985291m0
+places technician scheduling on appointments. The public navigation inspected
+did not establish a list-appointments endpoint. No message was sent or provider
+access changed; this remains a draft pending Chris's instruction to contact support.

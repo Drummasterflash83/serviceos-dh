@@ -21,6 +21,16 @@ review request, linking controls and holds remain unchanged. In particular, an
 unzoned completion date still cannot publish a canonical completion instant or
 support an elapsed-time score. No new provider request is made.
 
+For team routing, Commusoft's [relationship model](https://developer.commusoft.com/key-concepts-and-relationships-1985291m0)
+places technician scheduling on appointments under a job. A job's business unit
+or user group is not evidence of a named assignee, and one job can have several
+appointments. The current adapter retains jobs, properties and their contacts;
+it has not verified an authorised appointment feed or a source-user-to-OpenFolk
+member mapping. Keep individual team attention and performance unassessed until
+those separate relationships are captured and reviewed. The public developer
+navigation inspected on 16 October did not establish an appointment-list
+endpoint, so its availability and the account's scope remain unverified.
+
 [Commusoft's official job reference](https://developer.commusoft.com/list-jobs-24695917e0)
 includes these source fields and zoned timestamp examples. The actual retained
 Drummonds shape audit found unzoned completion values; this reader does not decide

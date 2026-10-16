@@ -5,6 +5,12 @@ goal: complete and launch Drummonds' LEARN V1 through OpenFolk. Detailed compone
 documents retain implementation history; their older status statements do not
 override a later release observation. No requirement is silently deferred.
 
+Chris waived the real full-working-day observation wait on 16 October: use
+enough representative data to assess the business result. This does not waive
+source coverage, unattended capture and backup checks, recovery, honest scoring
+limits, or his final business sign-off. Build 02 remains inactive until that
+sign-off.
+
 ## Current evidence and priority
 
 **16 October, about 02:06 UTC — active-job relationship blockers classified on LIVE.**
