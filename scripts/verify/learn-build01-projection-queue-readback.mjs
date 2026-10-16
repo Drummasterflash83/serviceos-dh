@@ -50,7 +50,7 @@ if (jobs.length > 12 || summary.length !== 1 || !summary[0] ||
     ? value === null || Number.isFinite(Date.parse(value))
     : Number.isSafeInteger(value) && value >= 0) ||
   jobs.some((job) => !job || !["queued", "running", "retrying", "succeeded",
-    "failed", "dead_letter"].includes(job.status) ||
+    "failed", "dead_letter", "cancelled"].includes(job.status) ||
     !Number.isSafeInteger(job.attempt_count) || !Number.isSafeInteger(job.max_attempts)))
   throw Error("Projection queue readback shape changed");
 console.log(JSON.stringify({ version: "learn-build01-projection-queue/1",

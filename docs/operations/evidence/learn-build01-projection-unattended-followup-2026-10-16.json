@@ -1,0 +1,37 @@
+{
+  "version": "learn-build01-projection-unattended-followup/1",
+  "environment": "LIVE Drummonds",
+  "observed_at_utc": "2026-10-16T05:33:41Z",
+  "legacy_combined_job": {
+    "created_at_utc": "2026-10-16T05:14:20Z",
+    "state_before": "retrying, attempt 3, no lease",
+    "state_after": "cancelled with a timestamped source-lane supersession marker",
+    "reason": "The pre-release all-source continuation could otherwise restart and compete for the same Email candidates as the now-live source-specific lane. The separate Email lane was active before the exact one-row cancellation.",
+    "retained_source_or_published_interactions_changed": false
+  },
+  "ordinary_email_lane": {
+    "first_batch": "200 records_processed, continuation created",
+    "second_batch": "two inventory retries followed by 200 records_processed and continuation created on the normal third attempt",
+    "third_batch_at_0533": "retrying projection_inventory_unconfirmed after two attempts",
+    "eligible_missing_interactions": [
+      { "at_utc": "05:14:34", "count": 15835 },
+      { "at_utc": "05:29:45", "count": 16230 },
+      { "at_utc": "05:33:14", "count": 16304 }
+    ],
+    "interpretation": "The lane publishes retained Email batches, but historical arrivals and selector retries still exceed its sustained progress. Build 01 acceptance is not met."
+  },
+  "read_only_selector_timings": [
+    { "order": "Email then all", "limit": 200, "email_ms": 5308, "all_ms": 1734, "results": "200 each" },
+    { "order": "Email then all", "limit": 100, "email_ms": 8137, "email_sqlstate": "57014", "all_ms": 1395 },
+    { "order": "all then Email", "limit": 200, "all_ms": 2103, "email_ms": 524, "results": "200 Email candidates each" }
+  ],
+  "database_statistics_read_only": {
+    "interactions_estimated_dead_tuples": 35945,
+    "interactions_estimated_all_visible_percent": 63.1,
+    "email_messages_estimated_all_visible_percent": 83.5,
+    "interpretation": "Cold/cache and table-maintenance effects are plausible but not proved by these point samples; no vacuum or index change was made."
+  },
+  "source_provider_requests": 0,
+  "customer_rows_or_credentials_printed": false,
+  "business_acceptance": false
+}

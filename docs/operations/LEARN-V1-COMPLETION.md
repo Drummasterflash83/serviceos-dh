@@ -13,6 +13,40 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 05:29 UTC — independent Email projection lane is live, but catch-up is not proved.**
+
+### Working and verified
+
+- The existing five-minute scheduler now enqueues separate Phone and Email
+  projection keys at the same queue priority. TEST v5 and LIVE v50 have the
+  same executable digest; other Edge endpoints were unchanged. The first LIVE
+  ordinary Email job published 200 interactions and created a same-key
+  continuation. One queued row created before the priority adjustment was
+  moved from priority 100 to 50 under an exact one-row guard. The source
+  selector, identity rules and provider configuration were not changed.
+  Eleven focused tests and TypeScript pass. The checkpoint is `dba23f0a` on
+  `codex/learn-v1-test` with verified remote head.
+  [Sanitised release and queue evidence](evidence/learn-build01-email-source-lane-2026-10-16.json).
+
+### Needs finishing
+
+- The Email continuation has retried `projection_inventory_unconfirmed` twice;
+  the eligible missing-interaction count reached 16,304 at 05:33 UTC while
+  historical intake continued. Its ordinary third attempt published another
+  200, but the following continuation has retried twice. The pre-release
+  combined job was later cancelled under an exact one-row guard while idle and
+  retrying, because it could compete for the same Email candidates; no source
+  or published interaction was discarded. Read-only 100/200-row selector timing
+  ranged from 0.52 to 8.14 seconds, including one SQL statement timeout.
+  Order reversal changed the faster lane, so a source-specific plan defect is
+  unproved. Ordinary retry, net catch-up, recent-message coverage and downstream
+  Graph/card publication still need proof.
+  [Unattended follow-up](evidence/learn-build01-projection-unattended-followup-2026-10-16.json).
+
+### Blocked externally
+
+- No overnight action from Chris is needed for the current Email diagnosis.
+
 **16 October, 05:00 UTC — current Commusoft job freshness waits behind a contact crawl.**
 
 ### Working and verified
