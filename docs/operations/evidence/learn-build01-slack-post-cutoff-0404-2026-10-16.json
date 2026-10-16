@@ -1,0 +1,16 @@
+{
+  "version": "learn-build01-slack-post-cutoff-aggregate/1",
+  "observed_at_utc": "2026-10-16T04:04:38.615Z",
+  "environment": "LIVE Drummonds approved 160-channel public Slack handoff",
+  "source": "Existing aggregate-only read-only management query in scripts/verify/learn-build01-slack-post-handoff-readback.mjs",
+  "retained_messages_after_saved_cutoff": 0,
+  "retained_replies_after_saved_cutoff": 0,
+  "channels_with_retained_messages_after_cutoff": 0,
+  "successful_history_jobs_last_hour": 30,
+  "successful_reply_jobs_last_hour": 50,
+  "interpretation": "Recent ordinary work occurred, but this snapshot cannot prove that the provider had no later messages or that a real post-cutoff channel/reply journey was captured. The currently configured near-live poll volume remains above observed sustainable capacity. Individual and group DMs are excluded.",
+  "source_provider_writes": false,
+  "production_data_writes": false,
+  "customer_content_returned": false,
+  "secrets_returned": false
+}
