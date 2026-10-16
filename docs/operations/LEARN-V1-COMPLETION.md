@@ -13,6 +13,35 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 13:47 UTC — hosted signed Slack boundary verified on TEST.**
+
+### Working and verified
+
+- A temporary synthetic TEST roster and signing configuration exercised the
+  deployed receiver. It rejected an invalid signature, returned the exact
+  challenge for a valid signed request, and ignored a signed DM-shaped event
+  without creating a hint or job. No Slack provider request was made. The
+  temporary roster was removed; the hosted receiver again returns 503 while
+  inactive. [Hosted boundary receipt](evidence/learn-build01-slack-signed-boundary-test-2026-10-16.json).
+- LIVE still has all 160 approved public-channel and reply subscriptions
+  enabled, with no cutoff regression. At 13:44 UTC, 159 channels had advanced
+  past the saved cutoff, but 57 remained over a day behind and one window was
+  incomplete. This is an active backlog, not near-live acceptance.
+
+### Needs finishing
+
+- Test an approved public-channel event through the durable hosted hint and
+  worker path, then measure current message/reply capture and queue age on
+  real post-cutoff evidence. Keep a slower reconciliation sweep for missed
+  events. Only then activate the exact approved `message.channels` change.
+- Email source recovery, remaining card/graph coverage, Commusoft job links,
+  application/Auth recovery and Chris's business review remain open.
+
+### Blocked externally
+
+- No new user action is required for this TEST boundary proof. The Slack app
+  remains unchanged until the remaining technical tests pass.
+
 **16 October, 13:45 UTC — repeated held-mailbox scheduling stopped in LIVE.**
 
 ### Working and verified

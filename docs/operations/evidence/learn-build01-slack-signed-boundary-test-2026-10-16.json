@@ -1,0 +1,18 @@
+{
+  "version": "learn-build01-slack-signed-boundary-test/1",
+  "dateUtc": "2026-10-16",
+  "environment": "TEST",
+  "receiver": "learn-slack-events",
+  "temporarySyntheticRoster": "one public-channel-shaped ID, next check in 2099",
+  "invalidSignatureRejected": true,
+  "signedUrlChallengeAccepted": true,
+  "signedDmShapedEventIgnored": true,
+  "hintsRecorded": 0,
+  "eventJobsCreated": 0,
+  "slackProviderRequests": 0,
+  "syntheticRosterAfterCleanup": 0,
+  "receiverAfterCleanup": "inactive HTTP 503",
+  "realSlackAppChanged": false,
+  "liveReceiverChanged": false,
+  "remainingGate": "accepted public-channel event through durable hosted queue and real post-cutoff source-to-card latency"
+}

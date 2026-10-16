@@ -64,7 +64,18 @@ yet complete**. Do not enable the Events API until these gates pass.
 TEST currently has no recurring channel roster rows, although it has 21 Slack
 accounts and two configured connections; a hosted signed challenge or event
 would need a deliberately isolated TEST fixture with a synthetic signing key.
-The current inactive receiver must not be described as a hosted signed test.
+At that earlier checkpoint, the inactive receiver had not passed a hosted
+signed test.
+
+On 16 October at about 13:47 UTC, a **hosted signed boundary test** did pass
+on TEST with a temporary synthetic roster and signing key. The deployed
+receiver rejected an invalid signature, answered a correctly signed URL
+challenge, and ignored a signed DM-shaped event without saving a hint or job.
+The synthetic roster and secrets were removed; the receiver returned to 503
+inactive. This validates the HTTP/signature/scope boundary, but **does not**
+validate accepted public-channel hint persistence, provider reconciliation,
+queue latency, or LIVE delivery. The real Slack app remains unchanged.
+[Hosted boundary receipt](evidence/learn-build01-slack-signed-boundary-test-2026-10-16.json).
 
 The inactive TEST event settlement now uses the same 30-second cooldown as
 channel/reply jobs while the verified internal-app profile is current, and
