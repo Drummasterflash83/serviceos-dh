@@ -9,14 +9,14 @@ separate application archive.
 
 | Item | Reviewed value |
 | --- | --- |
-| Source | Retained read-only LIVE Edge source inventory: 102 active functions, 720 source files |
-| Local encrypted file | `.verification-results/build01-live-edge-source-20261016.age` (private mode `0600`) |
+| Source | Retained read-only LIVE Edge source inventory completed 06:30:22 UTC: 102 active functions, 721 source files, including `platform-worker` v93 |
+| Local encrypted file | `.verification-results/build01-live-edge-source-2026-10-16-0630.age` (private mode `0600`) |
 | Bytes | `5,971,576` |
-| SHA-256 | `40f3d703e9febd5c2e93f5ec5491b4423e763a3bc808e7539dfd7233343f3ec5` |
+| SHA-256 | `4aa6f7ae538077530caa09cd8509b173dc60b97f28dc14e4ccea7d59665b335c` |
 | Encryption | age X25519 to the existing public ServiceOS recovery recipient; no decryption key in the package or repository |
 | Destination account/region | AWS `235099643372`, London `eu-west-2` |
 | Existing private bucket | `openfolk-serviceos-database-235099643372-eu-west-2` |
-| Proposed exact object key | `projects/tgbnakbxwcqjeimygroz/objects/53aa68e95de4ec1e1a298ed1a835589083c51a58e0934fce4a8d2ba3bd4462c1/40f3d703e9febd5c2e93f5ec5491b4423e763a3bc808e7539dfd7233343f3ec5` |
+| Proposed exact object key | `projects/tgbnakbxwcqjeimygroz/objects/c384ec8d4be8f271445b68e273197e13bdeaa1655e389f2ef058f88f8b242ab9/4aa6f7ae538077530caa09cd8509b173dc60b97f28dc14e4ccea7d59665b335c` |
 | Storage controls | TLS; AES256 server-side encryption; versioning; create-only write; 30-day governance retention |
 | Access | Existing separate scoped Writer uploads and verifies; Restore independently downloads and hashes the exact object version |
 
@@ -24,7 +24,7 @@ The local package was built only after all source hashes and the saved LIVE
 inventory were rechecked. Its age header, byte count and SHA-256 were rechecked
 after packaging. The exact-source proof is in
 [the package receipt](evidence/learn-build01-live-runtime-package-2026-10-16.json).
-The first digest in the key identifies this fixed runtime package descriptor;
+The first digest in the key is SHA-256 of `serviceos-live-edge-source-package/1:` followed by the pinned source manifest SHA-256 (`fb1e539b009757b4f17ca55715d8ba254f52fe11202ab52eae50b7fdfc845ca4`);
 the second is the encrypted file hash. The existing AWS access policy covers
 this project prefix, but using its identities
 for application source is a new purpose requiring explicit approval.

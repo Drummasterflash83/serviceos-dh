@@ -1045,6 +1045,34 @@ test("email client preserves the existing hosted progress protocol", async (t) =
     await verifyEmailEnqueue({ t, sql, sqlAsync, db, queueJob, q });
     await verifyEmailMailboxCoverage({ t, sql, db, queueJob, q });
     await verifyEmailMailboxChanges({ t, sql, db, queueJob, q });
+    await t.test("full-import horizon is pinned to a new continuation and guarded by the account", async () => {
+      const candidate = readFileSync(
+        "supabase/migrations/20261104090000_learn_email_full_import_horizon.sql",
+        "utf8",
+      );
+      sql(candidate.replace(/\ncommit;\s*$/, "\nrollback;"));
+      assert.equal(sql("select count(*) from information_schema.columns where table_name='email_accounts' and column_name='full_import_after_at'"), "0");
+      sql(candidate);
+      const j = queueJob();
+      sql(`update email_accounts set full_import_after_at='2023-10-16T00:00:00Z' where id=${q(j.accountId)}`);
+      const bound = await bindEmailJobAttempt(db, j);
+      const claim = await applyEmailTransition(db,
+        prepareEmailTransition(bound, null, randomUUID(), "claim", { recovery: null }),
+        async (r) => r);
+      assert.equal(claim.accepted.checkpoint_state, "claimed");
+      const boundary = { captured_history_id: "100", captured_at: "2026-10-16T06:00:00.000Z", page_size: 25 };
+      const wrong = await applyEmailTransition(db,
+        prepareEmailTransition(bound, claim.checkpoint, randomUUID(), "initialize_traversal", {
+          ...boundary, query: "after:1729036800",
+        }), async (r) => r);
+      assert.equal(wrong.code, "checkpoint_conflict");
+      const accepted = await applyEmailTransition(db,
+        prepareEmailTransition(bound, claim.checkpoint, randomUUID(), "initialize_traversal", {
+          ...boundary, query: "after:1697414400",
+        }), async (r) => r);
+      assert.equal(accepted.accepted.checkpoint_state, "claimed");
+      assert.equal(accepted.checkpoint.continuation.query, "after:1697414400");
+    });
   } finally {
     if (created) execFileSync(docker, ["rm", "-f", name], { stdio: "pipe", timeout: 30000 });
     rmSync(dir, { recursive: true, force: true });

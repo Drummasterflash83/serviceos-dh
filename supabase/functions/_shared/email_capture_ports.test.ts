@@ -50,6 +50,7 @@ function fixture(oauth = false) {
         auth_state: "unknown",
         backfill_page_token: null,
         backfill_total_fetched: 0,
+        full_import_after_at: null,
       },
     ],
     google_workspace_mailboxes: [
@@ -216,6 +217,16 @@ test("Workspace capture resolves the enabled tenant mailbox and rechecks authori
     ),
   );
   assert.deepEqual(await f.ports.admission(tenant), { allowed: true });
+});
+
+test("a saved import horizon is tenant-bound and rechecked before token access", async () => {
+  const f = fixture();
+  f.rows.email_accounts[0].full_import_after_at = "2023-10-16T00:00:00+00:00";
+  const source = await f.ports.mailbox(f.attempt);
+  assert.equal(source.fullImportQuery, "after:1697414400");
+  f.rows.email_accounts[0].full_import_after_at = "2024-10-16T00:00:00+00:00";
+  await assert.rejects(f.ports.accessToken(f.attempt, source), safeError("source_ineligible"));
+  assert.equal(f.counter.delegate, 0);
 });
 test("disabled, removed, suspended, ambiguous and foreign Workspace relationships never mint a token", async () => {
   const mutations = [

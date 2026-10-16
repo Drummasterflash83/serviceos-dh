@@ -9,10 +9,10 @@ import { databaseBackupBinding as destination } from "./database-backup-template
 
 export const reviewedLiveRuntimeSource = Object.freeze({
   bytes: 5971576,
-  sha256: "40f3d703e9febd5c2e93f5ec5491b4423e763a3bc808e7539dfd7233343f3ec5",
-  // Parent is SHA-256 of the fixed runtime package descriptor. The existing
+  sha256: "4aa6f7ae538077530caa09cd8509b173dc60b97f28dc14e4ccea7d59665b335c",
+  // Parent is SHA-256 of the fixed runtime package contract and manifest digest. The existing
   // scoped S3 port accepts only this two-digest object-key grammar.
-  key: "projects/tgbnakbxwcqjeimygroz/objects/53aa68e95de4ec1e1a298ed1a835589083c51a58e0934fce4a8d2ba3bd4462c1/40f3d703e9febd5c2e93f5ec5491b4423e763a3bc808e7539dfd7233343f3ec5",
+  key: "projects/tgbnakbxwcqjeimygroz/objects/c384ec8d4be8f271445b68e273197e13bdeaa1655e389f2ef058f88f8b242ab9/4aa6f7ae538077530caa09cd8509b173dc60b97f28dc14e4ccea7d59665b335c",
 });
 
 const fail = (code) => { throw Error(code); };

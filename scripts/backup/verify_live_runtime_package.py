@@ -20,11 +20,11 @@ from package_live_runtime_archive import AGE_SHA256, PROJECT, PackageError, dige
 
 ACTUAL = {
     'encryptedBytes': 5971576,
-    'encryptedSha256': '40f3d703e9febd5c2e93f5ec5491b4423e763a3bc808e7539dfd7233343f3ec5',
-    'manifestSha256': 'bf66a05aba6ccf44cf8394261f43dac66ccc2927c5e27f99ccbcedba8c10e303',
+    'encryptedSha256': '4aa6f7ae538077530caa09cd8509b173dc60b97f28dc14e4ccea7d59665b335c',
+    'manifestSha256': 'fb1e539b009757b4f17ca55715d8ba254f52fe11202ab52eae50b7fdfc845ca4',
     'functions': 102,
-    'files': 720,
-    'sourceBytes': 4788552,
+    'files': 721,
+    'sourceBytes': 4792245,
 }
 MAX_IDENTITY_BYTES = 4096
 MAX_CLEAR_BYTES = 64 * 1024 * 1024

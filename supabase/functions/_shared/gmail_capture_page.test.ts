@@ -82,6 +82,25 @@ test("historical listing remains unlabelled and incomplete while a token exists"
   assert.equal(p.calls[0].url.searchParams.has("startHistoryId"), false);
 });
 
+test("a pinned full-import boundary is sent on every inventory page, never history", async () => {
+  const p = provider({ nextPageToken: "next" });
+  await readGmailCapturePage("synthetic", {
+    ...request,
+    label: "ALL",
+    pageToken: "saved-page",
+    query: "after:1697414400",
+  }, p.fetcher);
+  assert.equal(p.calls[0].url.searchParams.get("q"), "after:1697414400");
+  assert.equal(p.calls[0].url.searchParams.get("pageToken"), "saved-page");
+  await assert.rejects(readGmailCapturePage("synthetic", {
+    ...request,
+    mode: "history",
+    originHistoryId: "1",
+    query: "after:1697414400",
+  }, p.fetcher), isError("parse_failed"));
+  assert.equal(p.calls.length, 1);
+});
+
 test("invalid JSON, invalid UTF-8 and oversized responses cannot confirm a page", async () => {
   for (const body of [
     '{"messages":[',

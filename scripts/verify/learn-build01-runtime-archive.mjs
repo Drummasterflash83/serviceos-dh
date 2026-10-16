@@ -55,7 +55,10 @@ async function filesBelow(root) {
 }
 
 export async function archiveLiveRuntime({
-  cli = process.env.SUPABASE_CLI_BIN ?? "supabase",
+  // The newer CLI download path returns one flattened index per function. This
+  // pinned version retains the dependency tree needed for an isolated rebuild.
+  cli = process.env.SUPABASE_CLI_BIN ??
+    "/Users/chrisdrummond/.npm/_npx/f488b5593433aa64/node_modules/supabase/bin/supabase",
   token = savedCliToken(),
   at = new Date(),
 } = {}) {
@@ -76,6 +79,9 @@ export async function archiveLiveRuntime({
     if (!(await stat(source)).isDirectory()) throw Error(`runtime_source_missing:${item.slug}`);
     const files = await filesBelow(source);
     if (files.length === 0) throw Error(`runtime_source_empty:${item.slug}`);
+    if (item.slug === "platform-worker" &&
+        !files.some((file) => file.path === "functions/_shared/email_capture_engine.ts"))
+      throw Error("runtime_worker_dependency_tree_missing");
     entries.push({ ...item, files });
     if (entries.length % 10 === 0) console.log(JSON.stringify({ archived: entries.length,
       expected: before.length, sourcePrinted: false }));

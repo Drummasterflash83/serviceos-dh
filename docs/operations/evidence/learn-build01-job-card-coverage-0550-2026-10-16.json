@@ -1,0 +1,22 @@
+{
+  "version": "learn-build01-job-card-coverage/1",
+  "environment": "LIVE Drummonds",
+  "observed_at_utc": "2026-10-16T05:50:05Z",
+  "read_only_aggregate": {
+    "distinct_retained_commusoft_job_identities": 12649,
+    "reviewed_job_links": 944,
+    "published_commusoft_job_cards": 944,
+    "published_completed": 934,
+    "published_open": 8,
+    "published_pending": 2,
+    "published_with_named_engineer": 0,
+    "published_with_completion_instant": 0,
+    "published_verified_flag": 0,
+    "published_with_related_communication": 5
+  },
+  "interpretation": "The source has broad retained job identity coverage, but linked cards cover a small reviewed subset, largely completed records. This cannot yet support company-wide job-progress scoring or named-person attention routing. A reviewed link is distinct from a verified current provider status.",
+  "source_provider_requests": 0,
+  "production_data_writes": false,
+  "customer_content_or_source_ids_printed": false,
+  "business_acceptance": false
+}

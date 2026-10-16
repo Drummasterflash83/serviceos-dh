@@ -35,6 +35,8 @@ export type EmailMailboxSource = {
   /** Explicit profile identity proved by the current server-side account binding. */
   profileMailbox?: string;
   historical: { pageToken: string | null; total: number } | null;
+  /** Fixed per-account horizon for full inventory, not incremental history. */
+  fullImportQuery?: string | null;
 };
 export interface EmailCapturePorts {
   admission(tenantId: string): Promise<CaptureAdmission>;
@@ -132,7 +134,9 @@ export function recentEmailPage(c: EmailCheckpoint):
     !Number.isInteger(v.page_size) ||
     v.page_size < 1 ||
     v.page_size > 500 ||
-    v.query !== null ||
+    !(v.query === null ||
+      (typeof v.query === "string" && /^after:[1-9][0-9]{9}$/.test(v.query))) ||
+    (v.mode === "history" && v.query !== null) ||
     !Array.isArray(v.labels) ||
     v.labels.length !== labels.length ||
     !labels.every((label, index) => v.labels[index] === label) ||
@@ -161,6 +165,7 @@ export function recentEmailPage(c: EmailCheckpoint):
       pageSize: v.page_size,
       pageToken: v.labels_state[label].next_page_token,
       originHistoryId: v.mode === "history" ? v.origin_history_id : null,
+      query: v.mode === "reconcile" ? v.query : null,
     },
   };
 }
@@ -171,6 +176,9 @@ function checkSource(s: EmailMailboxSource, a: EmailJobAttempt) {
     s.accountId !== a.accountId ||
     typeof s.mailbox !== "string" ||
     !s.mailbox.trim() ||
+    !(s.fullImportQuery === undefined || s.fullImportQuery === null ||
+      (typeof s.fullImportQuery === "string" &&
+        /^after:[1-9][0-9]{9}$/.test(s.fullImportQuery))) ||
     (s.profileMailbox !== undefined &&
       (typeof s.profileMailbox !== "string" || !/^[^\s@]+@[^\s@]+$/.test(s.profileMailbox))) ||
     (a.stream === "historical" &&
@@ -311,6 +319,7 @@ export async function runEmailCaptureJob(
     const classification = (
       {
         history_expired: "provider_expired",
+        continuation_expired: "checkpoint_conflict",
         pagination_no_progress: "pagination_cycle",
         checkpoint_conflict: "checkpoint_conflict",
         fetch_failed: "fetch_failure",
@@ -419,6 +428,10 @@ export async function runEmailCaptureJob(
     let recent = attempt.stream === "recent" ? recentEmailPage(current) : null;
     const source = await ports.mailbox(attempt);
     checkSource(source, attempt);
+    if (recent && !recent.uninitialized && "request" in recent &&
+      recent.request.mode === "reconcile" &&
+      (recent.request.query ?? null) !== (source.fullImportQuery ?? null))
+      throw new GmailCaptureError("continuation_expired");
     const accessToken = await ports.accessToken(attempt, source);
     const boundary = await readGmailCaptureBoundary(
       accessToken,
@@ -430,7 +443,7 @@ export async function runEmailCaptureJob(
         captured_history_id: boundary,
         captured_at: new Date().toISOString(),
         page_size: attempt.payload.max_results ?? 25,
-        query: null,
+        query: source.fullImportQuery ?? null,
       });
       if (!r.accepted || !r.currentMatchesReceipt || !r.checkpoint)
         throw new GmailCaptureError("parse_failed");
@@ -447,6 +460,7 @@ export async function runEmailCaptureJob(
             pageSize: attempt.payload.max_results ?? 25,
             pageToken: source.historical!.pageToken,
             originHistoryId: null,
+            query: source.fullImportQuery ?? null,
           };
     const page = await readGmailCapturePage(accessToken, request, ports.fetcher);
     const fetchPolicy = recent?.fetchPolicy ?? "missing_only";

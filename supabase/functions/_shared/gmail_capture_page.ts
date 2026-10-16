@@ -13,6 +13,8 @@ export type GmailPageRequest = {
   pageSize: number;
   pageToken: string | null;
   originHistoryId: string | null;
+  /** Pinned full-import boundary; Gmail page tokens are scoped to this query. */
+  query?: string | null;
 };
 export type GmailCapturePage = {
   ids: string[];
@@ -56,6 +58,7 @@ export class GmailCaptureError extends Error {
     | "parse_failed"
     | "persistence_failed"
     | "history_expired"
+    | "continuation_expired"
     | "pagination_no_progress"
     | "checkpoint_conflict"
     | "source_ineligible"
@@ -88,6 +91,9 @@ function validateRequest(r: GmailPageRequest) {
     r.pageSize < 1 ||
     r.pageSize > 500 ||
     !(r.pageToken === null || token(r.pageToken)) ||
+    !(r.query === undefined || r.query === null ||
+      (typeof r.query === "string" && /^after:[1-9][0-9]{9}$/.test(r.query))) ||
+    (r.mode === "history" && r.query != null) ||
     (r.mode === "historical"
       ? r.label !== null
       : !["INBOX", "SENT", "ALL"].includes(r.label ?? "")) ||
@@ -180,6 +186,7 @@ export async function readGmailCapturePage(
   validateRequest(r);
   const params = new URLSearchParams({ maxResults: String(r.pageSize) });
   if (r.pageToken !== null) params.set("pageToken", r.pageToken);
+  if (r.query) params.set("q", r.query);
   if (r.mode === "history") {
     params.set("startHistoryId", r.originHistoryId!);
     if (!r.trackChanges) params.set("historyTypes", "messageAdded");

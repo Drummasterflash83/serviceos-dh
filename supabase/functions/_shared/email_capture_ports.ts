@@ -66,7 +66,7 @@ export function createEmailCapturePorts(
       const { data: a, error } = await db
         .from("email_accounts")
         .select(
-          "id,tenant_id,provider,email_address,status,auth_state,backfill_page_token,backfill_total_fetched",
+          "id,tenant_id,provider,email_address,status,auth_state,backfill_page_token,backfill_total_fetched,full_import_after_at",
         )
         .eq("tenant_id", attempt.tenantId)
         .eq("id", attempt.accountId)
@@ -82,7 +82,15 @@ export function createEmailCapturePorts(
       )
         denied();
       const mailbox = a.email_address.toLowerCase();
-      const base = [a.id, a.tenant_id, mailbox, a.status, a.auth_state];
+      const after = a.full_import_after_at;
+      const afterMs = typeof after === "string" ? Date.parse(after) : null;
+      if (after !== null &&
+        (afterMs === null || !Number.isSafeInteger(afterMs) ||
+          afterMs < Date.UTC(2000, 0, 1) || afterMs > Date.UTC(2100, 0, 1))) denied();
+      const fullImportQuery = afterMs === null
+        ? null
+        : `after:${Math.floor(afterMs / 1000)}`;
+      const base = [a.id, a.tenant_id, mailbox, a.status, a.auth_state, fullImportQuery];
       if (attempt.syncType === "messages") {
         if (a.status !== "active" || !["ok", "unknown"].includes(a.auth_state)) denied();
         return {
@@ -91,6 +99,7 @@ export function createEmailCapturePorts(
             accountId: a.id,
             mailbox,
             historical: null,
+            fullImportQuery,
           } as EmailMailboxSource,
           proof: JSON.stringify(base),
         };
@@ -164,6 +173,7 @@ export function createEmailCapturePorts(
         mailbox,
         profileMailbox,
         historical: { pageToken: a.backfill_page_token, total: a.backfill_total_fetched },
+        fullImportQuery,
       };
       return {
         source,
@@ -228,6 +238,7 @@ export function createEmailCapturePorts(
       actual.proof !== proofs.get(source) ||
       actual.source.mailbox !== source.mailbox ||
       actual.source.profileMailbox !== source.profileMailbox
+      || actual.source.fullImportQuery !== source.fullImportQuery
     )
       denied();
   }

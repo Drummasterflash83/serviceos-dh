@@ -1,19 +1,19 @@
 {
   "version": "learn-build01-live-runtime-package/1",
-  "observed_at_utc": "2026-10-16T00:59:47Z",
+  "observed_at_utc": "2026-10-16T06:30:22Z",
   "environment": "Private local package from the retained read-only LIVE Edge source inventory",
   "source_inventory": {
     "active_functions": 102,
-    "source_files": 720,
-    "source_bytes": 4788552,
-    "manifest_sha256": "bf66a05aba6ccf44cf8394261f43dac66ccc2927c5e27f99ccbcedba8c10e303",
+    "source_files": 721,
+    "source_bytes": 4792245,
+    "manifest_sha256": "fb1e539b009757b4f17ca55715d8ba254f52fe11202ab52eae50b7fdfc845ca4",
     "inventory_stable_at_capture": true
   },
   "package": {
     "format": "serviceos-live-edge-source-package/1",
     "encryption": "age X25519 to the existing public recovery recipient; pinned age 1.3.2 binary",
     "bytes": 5971576,
-    "sha256": "40f3d703e9febd5c2e93f5ec5491b4423e763a3bc808e7539dfd7233343f3ec5",
+    "sha256": "4aa6f7ae538077530caa09cd8509b173dc60b97f28dc14e4ccea7d59665b335c",
     "private_file_mode": "0600",
     "current_package_decrypted_with_escrow_key": false,
     "off_site": false
