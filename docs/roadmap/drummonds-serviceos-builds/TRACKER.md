@@ -1,5 +1,15 @@
 # Build execution tracker
 
+Latest Build 01 checkpoint (16 October, 18:40 UTC): the signed public Slack
+reply path, all 160 original handoff cutoffs, ordinary card/email retries and
+scheduled backup/monitor runs are verified. The 1,513-message older Email
+projection backlog, historical Slack reconciliation, source-backed job routing
+and scoring, current Edge package off-site copy, full application/Auth recovery,
+signed-in UI review and Chris's business sign-off remain open. The detailed
+[Build 01 receipt](receipts/01-2026-10-14.md) and
+[operational checklist](../../operations/LEARN-V1-COMPLETION.md) hold the
+timestamped evidence. Build 02 is inactive.
+
 Planning baseline: 13 October 2026. This is not the live product status report.
 Creating the original pack executed no numbered prompt. Current execution is
 recorded below; existing implementation and runtime acceptance remain distinct

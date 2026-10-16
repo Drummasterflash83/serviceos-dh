@@ -13,6 +13,37 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 18:40 UTC — ordinary Email and card retries recovered.**
+
+### Working and verified
+
+- The 18:26 LIVE Workspace `fetch_failed` left its recent checkpoint ready.
+  Ordinary queued work later succeeded for the same account, with no manual
+  requeue or provider write. Both active Gmail aliases remain ready.
+- The 18:23 customer-card partial-failure job succeeded on its scheduled fourth
+  attempt at 18:39, projecting 200 cards with zero reported failures and
+  queuing the next sweep batch. No active card was unprojected for more than
+  an hour at 18:40. Eligible interactions without Graph nodes fell from 293
+  at 18:27 to 93 at 18:37 under ordinary jobs.
+
+### Needs finishing
+
+- The older Email projection lane still has 1,513 eligible messages without
+  interactions; its current job is retrying `projection_inventory_unconfirmed`
+  at 18:46. A separate current-message lane reports no pending current-window
+  work. The 1,513 missing sources were all retained within the past 30 days,
+  but their provider message dates span April to October. Diagnose the older
+  lane without treating current-lane success as full Email coverage.
+- Continue the card sweep and signed Slack/historical reconciliation, then
+  finish isolated application/Auth recovery and source-backed job/scoring review.
+
+### Blocked externally
+
+- The distinct new Edge source copy is awaiting exact off-site authorization.
+  Signed-in LIVE UI inspection was rejected by browser automatic review because
+  it would grant access to the entire `app.openfolk.ai` origin; backend evidence
+  does not substitute for that visual check.
+
 **16 October, 18:32 UTC — current LIVE Edge source is locally encrypted.**
 
 ### Working and verified
