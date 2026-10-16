@@ -6,9 +6,11 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '15 3 * * *'
-    # A second slot covers a dropped/delayed first GitHub schedule. The guard
-    # below skips another export after an earlier scheduled success that day.
+    # Later slots cover delayed/dropped GitHub schedules. The guard below
+    # skips another export after an earlier scheduled success that UTC day.
     - cron: '15 4 * * *'
+    - cron: '37 5 * * *'
+    - cron: '43 7 * * *'
 
 permissions:
   actions: read
@@ -28,7 +30,7 @@ jobs:
       - name: Check out reviewed backup source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: 069d43cb3bee0f7ca3da5cbaa6fbc916e92d2662
+          ref: ff0bacd98266c34e6fb3a1d49e020d134ac35771
           persist-credentials: false
       - name: Select Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
