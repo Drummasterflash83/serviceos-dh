@@ -15,10 +15,14 @@ application-source recovery input current. The repository TEST checkpoint
 restoring the deployed runtime and configuration.
 
 At 19:09 UTC, LIVE `platform-worker` advanced to version 100 for a bounded
-older Email retry. The 18:29 archive below predates it; prepare a fresh stable
-inventory after the remaining release work before calling any source package
-current. Its one-route isolated recovery proof remains valid for that archived
-route, but it is not a full current service restore.
+older Email retry. The 18:29 archive below predates it. A fresh stable
+read-only inventory completed at 19:13 UTC: 103 active functions, 728 files and
+4,827,520 source bytes, including worker v100. It was packaged locally into
+6,022,776 encrypted bytes with SHA-256
+`7cbc837e8e183ceace76cbd5312524c10c0a7f4c10f7dfc1cb1712cbd6e96fac`.
+The copy and separate Restore download are [prepared for exact review](LEARN-BUILD01-RUNTIME-1911-OFFSITE-REVIEW.md),
+not yet performed. The one-route isolated recovery proof remains valid for its
+archived route, but it is not a full current service restore.
 
 At 18:29 UTC, a stable read-only LIVE archive captured 103 functions and
 728 source files, including that version 63 scheduler. Its manifest and every

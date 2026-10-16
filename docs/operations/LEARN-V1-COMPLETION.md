@@ -13,6 +13,29 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 19:13 UTC — latest LIVE Edge source locally encrypted.**
+
+### Working and verified
+
+- A fresh read-only LIVE inventory after worker v100 captured 103 active
+  functions and 728 source files. The before/after function list and every
+  file hash matched. The exact package was age-encrypted locally at mode
+  `0600`: 6,022,776 bytes, SHA-256
+  `7cbc837e8e183ceace76cbd5312524c10c0a7f4c10f7dfc1cb1712cbd6e96fac`.
+  [Exact current copy review](LEARN-BUILD01-RUNTIME-1911-OFFSITE-REVIEW.md).
+
+### Needs finishing
+
+- Copy this exact current package to the existing private London bucket with
+  independent Restore readback after approval. The earlier 18:29 package is
+  superseded and will remain uncopied. Complete the remaining all-function,
+  runtime-configuration, frontend and controlled-capture recovery proof.
+
+### Blocked externally
+
+- Exact off-site copy approval for the new package is pending. The 19:18
+  ordinary Email retry and labelled Slack parent/reply observation are pending.
+
 **16 October, 19:09 UTC — bounded older Email retry installed, awaiting normal run.**
 
 ### Working and verified
