@@ -35,6 +35,20 @@ fail-closed boundary for one route. It does **not** prove authenticated reads,
 frontend startup, 103-function rebuild, secret recovery or capture restart.
 [Sanitised isolated startup receipt](evidence/learn-build01-isolated-edge-startup-2026-10-16.json).
 
+At 18:57 UTC, an opt-in combined drill restored the independently checked
+database archive and started isolated Auth, PostgREST, a pinned local gateway,
+and that exact archived Edge route. A newly created synthetic user logged in,
+the gateway verified the user and tenant REST boundary, and the Edge route
+returned tenant-scoped LEARN status with nonempty Phone and Email counts.
+Unassigned and cross-tenant card reads remained isolated; an operator read was
+audited and denied after the synthetic grant was revoked. All five disposable
+containers were removed. The gateway has no external network or host port, and
+no real user or production write was involved. This is meaningful application
+service recovery evidence, but it covers **one** archived route, a new synthetic
+signing key and a local archive; it does not establish the full frontend,
+all 103 functions, real runtime-secret restoration or source restart.
+[Sanitised combined receipt](evidence/learn-build01-isolated-auth-edge-recovery-2026-10-16.json).
+
 At 17:07 UTC, a fresh read-only LIVE inventory retained the current **103**
 active Edge functions and **727** source files, including the newly released
 worker and signed Slack Events receiver. The exact source hashes and stable
@@ -54,7 +68,7 @@ and [off-site copy receipt](evidence/learn-build01-live-runtime-refresh-offsite-
 | --- | --- | --- |
 | Database and Vault | Encrypted independent snapshot; isolated native restore and Vault comparison | Restore from a current off-site version and reconcile its point in time with file/object backups |
 | Auth and tenant access | Offline Auth and PostgREST boot with a new synthetic signing key; fresh synthetic login, tenant RLS and audited operator grant/revocation passed | Recover the supported real-user login path, reset sessions if the non-exportable original signing key is unavailable, and check operator routes through the recovered application |
-| Edge functions | The earlier 102-function, 721-file package was copied, downloaded and decrypted with its manifest verified. The current 103-function, 727-file LIVE package was independently copied and downloaded with matching bytes and SHA-256. | Decrypt the current package with escrow, rebuild/deploy all activated functions with their verified flags and secret references, and exercise real routes in an isolated service |
+| Edge functions | The earlier 102-function, 721-file package was copied, downloaded and decrypted with its manifest verified. A later 103-function, 727-file package was independently copied and downloaded; the newest 103-function, 728-file inventory is encrypted locally. One newest archived route now passes an isolated authenticated tenant read. | Independently copy the newest exact package off site, then decrypt/rebuild all activated functions with their verified flags and secret references and exercise their required routes in an isolated service |
 | Frontend | Vercel builds from Git `main`; the four LIVE aliases and protected LEARN/Drummonds view were checked at `0266c7f7`. The later Slack handoff UI revision `ecfa0aa4` passed both TEST and LIVE Git/Vercel build statuses. | Verify the later signed-in LIVE UI, then restore a pinned Git revision to an isolated Vercel target with its production-equivalent public configuration and test login, client cards and operator paths before any alias switch |
 | Runtime configuration | Static source scan found 56 literal Edge environment names plus 18 dynamic lookups across the 102 function archives; the frontend references `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_ENABLE_SIGNUP` | Independently inventory actual configured names, non-exportable and dynamic-name references, escrow/restore secret values through an approved channel, and verify each recovered function's access without printing values |
 | Capture and files | Separate recording/voicemail manifests and database-reference restore checks exist | Match the chosen database point to its corresponding file inventory; keep dispatchers paused until scopes, cursors and credentials are verified; resume one bounded source at a time and prove new data reaches the correct tenant/card |

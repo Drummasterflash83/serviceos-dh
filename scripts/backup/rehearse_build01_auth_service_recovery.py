@@ -29,11 +29,24 @@ AUTH_IMAGE = 'public.ecr.aws/supabase/gotrue:v2.196.0'
 AUTH_IMAGE_ID = 'sha256:c0c25187a6b835e65a6f6e6c6b39d090e832d40e6de5186f2c038e0411944232'
 REST_IMAGE = 'public.ecr.aws/supabase/postgrest:v14.5'
 REST_IMAGE_ID = 'sha256:b574528fe109c8343c1247155734d03df8c34b462f342dca0ccc20244fc36ef9'
+GATEWAY_IMAGE = 'public.ecr.aws/supabase/studio:2026.08.24-sha-8ec45b2'
+GATEWAY_IMAGE_ID = 'sha256:4905784b715cb22b265d26405067649544b40faffff89fd8dc7a28736f42afb0'
+EDGE_IMAGE = 'public.ecr.aws/supabase/edge-runtime:v1.74.3'
+EDGE_IMAGE_ID = 'sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c'
+EDGE_ROOT = ROOT / '.verification-results/build01-edge-isolated-20261016'
+EDGE_BUNDLE = EDGE_ROOT / 'output/learn-launch-status.eszip'
+EDGE_BUNDLE_SHA256 = 'abd78823453b1da6ff7c9b8171fe3e95ffcc6b4105eb2cb07aa75de819ab1d99'
+GATEWAY_SOURCE = ROOT / 'scripts/backup/recovery_gateway.mjs'
+GATEWAY_SOURCE_SHA256 = '15ab66f9f20096200efe049e787bac71d4e25d41352b9d10333567a082236ddf'
 LABEL = 'ai.openfolk.serviceos.auth-recovery'
 REST_LABEL = 'ai.openfolk.serviceos.rest-recovery'
+EDGE_LABEL = 'ai.openfolk.serviceos.edge-recovery'
+GATEWAY_LABEL = 'ai.openfolk.serviceos.gateway-recovery'
 RUN = uuid.uuid4().hex
 AUTH_NAME = 'serviceos-auth-recovery-' + RUN
 REST_NAME = 'serviceos-rest-recovery-' + RUN
+EDGE_NAME = 'serviceos-edge-recovery-' + RUN
+GATEWAY_NAME = 'serviceos-gateway-recovery-' + RUN
 REPORT = ROOT / '.verification-results' / ('learn-build01-auth-recovery-' + RUN + '.json')
 DOCKER = '/usr/local/bin/docker'
 
@@ -72,6 +85,17 @@ def cleanup_rest():
         raise RecoveryError('Offline REST container cleanup unconfirmed')
 
 
+def cleanup_optional(name, label):
+    found = checked(['ps', '-aq', '--filter', 'name=^/' + name + '$'])
+    if found.strip():
+        meta = json.loads(checked(['inspect', name]))[0]
+        if (meta.get('Config', {}).get('Labels') or {}).get(label) != RUN:
+            raise RecoveryError('Refusing to remove unowned recovery container')
+        checked(['rm', '-f', name])
+    if checked(['ps', '-aq', '--filter', 'name=^/' + name + '$']).strip():
+        raise RecoveryError('Optional recovery container cleanup unconfirmed')
+
+
 def curl_inside(db_name, path, *, method='GET', headers=(), payload=None, port=9999):
     args = ['exec', '-i', db_name, 'curl', '--silent', '--show-error', '--max-time', '8',
             '--output', '-', '--write-out', '\n%{http_code}', '-X', method]
@@ -96,21 +120,24 @@ def b64url(value):
     return base64.urlsafe_b64encode(value).rstrip(b'=').decode('ascii')
 
 
-def service_token(secret):
+def service_token(secret, role='service_role'):
     now = int(time.time())
     head = b64url(b'{"alg":"HS256","typ":"JWT"}')
-    body = b64url(json.dumps({'role':'service_role','iss':'supabase','aud':'authenticated',
+    body = b64url(json.dumps({'role':role,'iss':'supabase','aud':'authenticated',
                                'iat':now,'exp':now+1800}, separators=(',', ':')).encode())
     signing = (head + '.' + body).encode()
     return head + '.' + body + '.' + b64url(hmac.new(secret.encode(), signing, hashlib.sha256).digest())
 
 
-def run():
+def run(*, with_edge=False):
     report = {'version':'learn-build01-auth-recovery/1', 'state':'preflight',
               'productionWrites':False, 'externalNetwork':False, 'hostPorts':0,
               'realUserLoginAttempted':False, 'emailSent':False,
               'authContainerRemoved':False, 'restContainerRemoved':False,
               'databaseContainerRemoved':False}
+    if with_edge:
+        report.update(edgeContainerRemoved=False,gatewayContainerRemoved=False,
+                      edgeSourceBundleVerified=False,edgeAuthenticatedReadVerified=False)
     target = None
     stage = 'preflight'
     try:
@@ -127,6 +154,13 @@ def run():
             raise RecoveryError('Auth image pin differs')
         if json.loads(checked(['image','inspect',REST_IMAGE]))[0]['Id'] != REST_IMAGE_ID:
             raise RecoveryError('REST image pin differs')
+        if with_edge:
+            if (json.loads(checked(['image','inspect',GATEWAY_IMAGE]))[0]['Id'] != GATEWAY_IMAGE_ID
+                    or json.loads(checked(['image','inspect',EDGE_IMAGE]))[0]['Id'] != EDGE_IMAGE_ID
+                    or hashlib.sha256(EDGE_BUNDLE.read_bytes()).hexdigest() != EDGE_BUNDLE_SHA256
+                    or hashlib.sha256(GATEWAY_SOURCE.read_bytes()).hexdigest() != GATEWAY_SOURCE_SHA256):
+                raise RecoveryError('Archived Edge recovery input pin differs')
+            report['edgeSourceBundleVerified'] = True
         stage = 'database_restore'
         target = RestoreSandbox(image=DB_IMAGE, network_extension=True,
                                 private_diagnostics=SOURCE/'auth-restore-private-error')
@@ -288,6 +322,91 @@ def run():
             if api_status != 200 or not isinstance(api_rows,list) or len(api_rows) != 5 or any(
                     row.get('tenant_id') != tenant for row in api_rows):
                 raise RecoveryError('Restored tenant card read unconfirmed: HTTP '+str(api_status))
+            if with_edge:
+                stage = 'archived_edge_startup'
+                network = 'container:' + target.name
+                gateway_cmd = ['run','-d','--pull=never','--network',network,
+                    '--ipc','private','--name',GATEWAY_NAME,'--label',GATEWAY_LABEL+'='+RUN,
+                    '--log-driver','none','--security-opt','no-new-privileges',
+                    '--cap-drop','ALL','--memory','512m','--cpus','1','--pids-limit','128',
+                    '--mount','type=bind,src='+str(GATEWAY_SOURCE)+',dst=/recovery/gateway.mjs,readonly',
+                    '--entrypoint','node']
+                checked([*gateway_cmd,GATEWAY_IMAGE_ID,'/recovery/gateway.mjs'],timeout=30)
+                edge_env = {
+                    'SUPABASE_URL':'http://127.0.0.1:8000',
+                    'SUPABASE_ANON_KEY':service_token(secret,'anon'),
+                    'SUPABASE_SERVICE_ROLE_KEY':token,
+                }
+                edge_cmd = ['run','-d','--pull=never','--network',network,
+                    '--ipc','private','--name',EDGE_NAME,'--label',EDGE_LABEL+'='+RUN,
+                    '--log-driver','none','--security-opt','no-new-privileges',
+                    '--cap-drop','ALL','--memory','512m','--cpus','1','--pids-limit','128',
+                    '--mount','type=bind,src='+str(EDGE_BUNDLE)+',dst=/recovery/launch.eszip,readonly']
+                for key,value in edge_env.items():
+                    edge_cmd.extend(['-e',key+'='+value])
+                checked([*edge_cmd,EDGE_IMAGE_ID,'start','--main-service','/recovery/launch.eszip',
+                    '--main-entrypoint','/recovery/learn-launch-status/index.ts',
+                    '--ip','127.0.0.1','--port','9000'],timeout=30)
+                for name,image,label in ((GATEWAY_NAME,GATEWAY_IMAGE_ID,GATEWAY_LABEL),
+                                         (EDGE_NAME,EDGE_IMAGE_ID,EDGE_LABEL)):
+                    meta = json.loads(checked(['inspect',name]))[0]
+                    if (meta['Name']!='/'+name or not meta['State']['Running']
+                            or meta['Image']!=image
+                            or meta['HostConfig']['NetworkMode']!='container:'+target._inspect()['Id']
+                            or meta['HostConfig'].get('PortBindings')
+                            or len(meta.get('Mounts') or [])!=1
+                            or meta['HostConfig'].get('Privileged')
+                            or meta['HostConfig']['LogConfig']['Type']!='none'
+                            or (meta.get('Config',{}).get('Labels') or {}).get(label)!=RUN):
+                        raise RecoveryError('Archived Edge boundary changed')
+                gateway_auth_status,gateway_user = 0,{}
+                for _ in range(80):
+                    gateway_auth_status,gateway_user = curl_inside(target.name,
+                        '/auth/v1/user',headers=(bearer,),port=8000)
+                    if gateway_auth_status:
+                        break
+                    if not json.loads(checked(['inspect',GATEWAY_NAME]))[0]['State']['Running']:
+                        raise RecoveryError('Offline gateway exited before readiness')
+                    time.sleep(.25)
+                gateway_rest_status,gateway_rows = curl_inside(target.name,
+                    '/rest/v1/customer_cards?select=id,tenant_id&limit=1',
+                    headers=(bearer,),port=8000)
+                report['gatewayAuthHttpStatus'] = gateway_auth_status
+                report['gatewayRestHttpStatus'] = gateway_rest_status
+                report['gatewayAuthUserMatched'] = (
+                    gateway_auth_status == 200 and isinstance(gateway_user,dict)
+                    and gateway_user.get('id') == actor)
+                report['gatewayRestTenantMatched'] = (
+                    gateway_rest_status == 200 and isinstance(gateway_rows,list)
+                    and len(gateway_rows) == 1
+                    and gateway_rows[0].get('tenant_id') == tenant)
+                if not (report['gatewayAuthUserMatched'] and report['gatewayRestTenantMatched']):
+                    raise RecoveryError('Archived Edge gateway preflight unconfirmed')
+                payload = json.dumps({'tenant_id':tenant}).encode()
+                edge_headers = (bearer,'Content-Type: application/json')
+                edge_status,edge_page = 0,{}
+                for _ in range(80):
+                    edge_status,edge_page = curl_inside(target.name,'/',method='POST',
+                        headers=edge_headers,payload=payload,port=9000)
+                    if edge_status in (200,401,403,503):
+                        break
+                    if not json.loads(checked(['inspect',EDGE_NAME]))[0]['State']['Running']:
+                        raise RecoveryError('Archived Edge runtime exited before read')
+                    time.sleep(.25)
+                if (edge_status != 200 or edge_page.get('version')!='learn-launch/1'
+                        or edge_page.get('tenant_id')!=tenant
+                        or edge_page.get('counts',{}).get('version')!='learn-status/1'
+                        or edge_page.get('counts',{}).get('phone',{}).get('record_count',0)<1
+                        or edge_page.get('counts',{}).get('email',{}).get('record_count',0)<1):
+                    report['edgeHttpStatus'] = edge_status
+                    report['edgeErrorCode'] = edge_page.get('error',{}).get('code') if isinstance(edge_page,dict) else None
+                    raise RecoveryError('Archived Edge authenticated tenant read unconfirmed')
+                report['edgeAuthenticatedReadVerified'] = True
+                report['edgePhoneAndEmailNonempty'] = True
+                cleanup_optional(EDGE_NAME,EDGE_LABEL)
+                report['edgeContainerRemoved'] = True
+                cleanup_optional(GATEWAY_NAME,GATEWAY_LABEL)
+                report['gatewayContainerRemoved'] = True
             synthetic_tenant = str(uuid.uuid4())
             synthetic_card = str(uuid.uuid4())
             target.query("insert into public.tenants(id,slug,display_name) values('"+
@@ -363,6 +482,14 @@ def run():
         report.update(state='isolated_auth_recovery_unverified',failureStage=stage,
                       safeFailure=(str(exc) if isinstance(exc,RecoveryError)
                                    else type(exc).__name__))
+        if with_edge:
+            for name,label,field in ((EDGE_NAME,EDGE_LABEL,'edgeContainerRemoved'),
+                                      (GATEWAY_NAME,GATEWAY_LABEL,'gatewayContainerRemoved')):
+                try:
+                    cleanup_optional(name,label)
+                    report[field] = True
+                except BaseException:
+                    report[field] = False
         if stage in ('tenant_api_boundary','restored_operator_read'):
             try:
                 observed = subprocess.run([DOCKER,'logs','--tail','120',REST_NAME],
@@ -396,7 +523,9 @@ def run():
 
 if __name__=='__main__':
     try:
-        print(json.dumps(run()))
+        if len(sys.argv)>2 or (len(sys.argv)==2 and sys.argv[1]!='--with-archived-edge'):
+            raise RecoveryError('Exact archived Edge rehearsal mode required')
+        print(json.dumps(run(with_edge=len(sys.argv)==2)))
     except BaseException:
         print(json.dumps({'state':'isolated_auth_recovery_unverified','report':str(REPORT)}))
         raise SystemExit(1)

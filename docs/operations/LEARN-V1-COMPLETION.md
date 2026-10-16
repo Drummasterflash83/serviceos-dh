@@ -13,6 +13,40 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 18:57 UTC — isolated archived Edge/Authorization read passed.**
+
+### Working and verified
+
+- The independently verified database archive, restored Auth and PostgREST,
+  pinned local gateway and one archived LIVE Edge route ran together in an
+  isolated network. A fresh synthetic login reached the Edge route and returned
+  tenant-scoped LEARN counts; the gateway verified Auth and REST, and the
+  tenant boundary and audited operator grant/revocation passed. All five
+  disposable containers were removed. No production write, real-user login,
+  external network, host port or email send occurred.
+  [Sanitised receipt](evidence/learn-build01-isolated-auth-edge-recovery-2026-10-16.json).
+- Ordinary LIVE Email projection reduced eligible missing interactions from
+  1,513 at 18:37 to 313 at 18:59. Several ordinary 200-message batches succeeded
+  after 18:47; the next older-lane job is retrying an inventory confirmation
+  error. No manual requeue was used.
+
+### Needs finishing
+
+- Rehearse the complete frontend and all required functions with recovered
+  runtime configuration, a current off-site source package and a bounded
+  capture restart. The combined test proves one archived route with a new
+  synthetic signing key, not full application recovery.
+- Confirm a new public Slack parent and reply through signed Events after the
+  user posts the labelled test; 18:55 aggregate readback showed no hint newer
+  than the earlier organic reply. Continue historical catch-up, Email/Phone
+  projection, source-backed job routing and scoring review.
+
+### Blocked externally
+
+- The newest exact encrypted LIVE Edge package still awaits its separate
+  off-site-copy authorization. A signed-in LIVE frontend check remains blocked
+  by the browser's automatic origin-access review.
+
 **16 October, 18:43 UTC — one archived LIVE Edge route rebuilt and started in isolation.**
 
 ### Working and verified
