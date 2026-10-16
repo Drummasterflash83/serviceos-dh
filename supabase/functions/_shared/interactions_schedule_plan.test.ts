@@ -15,6 +15,6 @@ test("scheduled projection gives current Email its own bounded lane", () => {
     entry.jobType === "interactions.sync" && entry.connectorId === "openfolk-core"));
   assert.deepEqual(plan[0].payload, { source: "email", lane: "current", limit: 50 });
   assert.equal(plan[1].payload.limit, 100);
-  assert.equal(plan[2].payload.limit, 200);
+  assert.equal(plan[2].payload.limit, 10);
   assert.deepEqual(plan.map((entry) => entry.priority), [40, 50, 50]);
 });

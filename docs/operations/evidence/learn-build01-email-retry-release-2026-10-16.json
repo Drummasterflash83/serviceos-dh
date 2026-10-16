@@ -13,8 +13,15 @@
   "testSyntheticCurrentEmailSelectorRolledBack": true,
   "eligibleLiveEmailGapBeforeRetry": 313,
   "nextOrdinaryRetryDueUtc": "2026-10-16T19:18:12Z",
-  "organicRetryOutcomeVerified": false,
+  "firstOrdinaryRetryObservedAtUtc": "2026-10-16T19:20:37Z",
+  "firstOrdinaryRetryAttempt": 4,
+  "firstOrdinaryRetrySelected": 0,
+  "firstOrdinaryRetryErrorCode": "projection_inventory_unconfirmed",
+  "eligibleLiveEmailGapAfterRetry": 313,
+  "nextOrdinaryRetryDueUtcAfterFailure": "2026-10-16T20:19:12Z",
+  "organicRetryOutcomeVerified": true,
+  "operationalRecoveryProven": false,
   "sourceProviderRequests": 0,
   "productionDataWritesByReleaseCheck": false,
-  "limits": "Deployment and source identity verified; the next ordinary LIVE retry must prove backlog reduction before operational acceptance"
+  "limits": "The first ordinary LIVE retry still failed before selection. The smaller batch is not an accepted fix; diagnose the inventory stage before further rollout"
 }

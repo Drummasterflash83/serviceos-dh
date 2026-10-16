@@ -178,6 +178,7 @@ test("missing, duplicate, over-limit or cross-source inventory prevents publicat
       r = await f.run({ source: "phone", limit: 1 });
     assert.equal(r.success, false);
     assert.equal(f.calls.length, 1);
+    assert.equal(r.result?.inventory_step, undefined);
   }
   const invalid = fixture();
   assert.equal((await invalid.run({ source: "slack" })).error?.code, "projection_source_invalid");
@@ -222,16 +223,16 @@ test("current Email lane uses its service-only selector and separate continuatio
     "projection_lane_invalid");
   assert.equal(invalid.calls.length, 0);
 });
-test("a retried older Email batch narrows inventory and keeps its continuation bounded", async () => {
-  const rows = Array.from({ length: 50 }, (_, n) => row(n + 100, "email"));
+test("older Email batches stay within the eight-second selector budget", async () => {
+  const rows = Array.from({ length: 10 }, (_, n) => row(n + 100, "email"));
   const f = fixture({ rows, attemptCount: 3 });
   const r = await f.run({ source: "email", limit: 200 });
   assert.equal(r.success, true);
-  assert.equal(f.calls[0].args.p_limit, 50);
-  assert.deepEqual(r.continuation?.payload, { source: "email", limit: 50 });
+  assert.equal(f.calls[0].args.p_limit, 10);
+  assert.deepEqual(r.continuation?.payload, { source: "email", limit: 10 });
   const first = fixture({ rows: [], attemptCount: 1 });
   await first.run({ source: "email", limit: 200 });
-  assert.equal(first.calls[0].args.p_limit, 200);
+  assert.equal(first.calls[0].args.p_limit, 10);
   const phone = fixture({ rows: [], attemptCount: 3 });
   await phone.run({ source: "phone", limit: 200 });
   assert.equal(phone.calls[0].args.p_limit, 200);
@@ -249,6 +250,24 @@ test("review inventory failure cannot erase previously confirmed work", async ()
     assert.equal(r.success, false);
     assert.equal(r.recordsProcessed, 1);
     assert.equal(r.error?.code, "projection_inventory_unconfirmed");
+    assert.equal(r.result?.inventory_step, undefined);
     assert.ok(!JSON.stringify(r).includes("PRIVATE"));
+  }
+});
+test("inventory diagnosis retains only a safe database code", async () => {
+  const oldWarn = console.warn;
+  const warnings: string[] = [];
+  console.warn = (...args: any[]) => warnings.push(args.join(" "));
+  try {
+    const r = await fixture({ attemptCount: 5, inventory: {
+      data: null, error: { code: "57014", message: "PRIVATE" },
+    } }).run({ source: "email" });
+    assert.equal(r.error?.code, "projection_inventory_unconfirmed");
+    assert.equal(r.result?.inventory_step, undefined);
+    assert.equal(r.result?.database_error_code, undefined);
+    assert.deepEqual(warnings, ["learn_email_inventory_stage=selector_rpc database_code=57014"]);
+    assert.ok(!JSON.stringify(r).includes("PRIVATE"));
+  } finally {
+    console.warn = oldWarn;
   }
 });

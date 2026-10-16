@@ -1,0 +1,48 @@
+{
+  "version": "learn-build01-email-ten-row-release/1",
+  "observedAtUtc": "2026-10-16T20:04:00Z",
+  "cause": "The older Email selector returned SQLSTATE 57014 through the eight-second LIVE authenticator statement timeout. A 50-row selector completed in 6.25 seconds in one bounded read but timed out under load; repeated ten-row reads completed in about 1.1–6.0 seconds.",
+  "diagnosticSettlementCorrection": {
+    "testWorkerVersion": 61,
+    "liveWorkerVersion": 102,
+    "wireSha256": "1ea4b167fe596825829d3abca0b6ab14c0136eed7a59ee138838eaeeffe8d75b",
+    "effect": "The bounded stage and safe SQLSTATE are logged without adding unsupported keys to the fenced queue result. A subsequent LIVE diagnostic retry settled as dead_letter and logged selector_rpc / 57014."
+  },
+  "tenRowWorker": {
+    "testVersion": 62,
+    "liveVersion": 103,
+    "wireSha256": "60c191fe0a2917dfd762f4238b6e22750b2f9b33a355dc5a21189034f7c1d2e2",
+    "changedSourcePaths": ["_shared/worker_handlers/interactions_sync.ts"],
+    "otherEndpointsUnchanged": true,
+    "rollbackExecutableSha256": "ce95cde6c496503fb369a76789bb6f38b96def3441e0126ceb2031ec72e87749"
+  },
+  "tenRowScheduler": {
+    "testVersion": 21,
+    "liveVersion": 56,
+    "wireSha256": "8014c04f25290cb7ad027be42828fc5d00a7df6253c3d2f42331ec9399b10140",
+    "changedSourcePaths": ["_shared/interactions_schedule_plan.ts"],
+    "otherEndpointsUnchanged": true,
+    "rollbackExecutableSha256": "ed093db675f2611aaa1e4663ea336b95339436be558f40a012859a63f7d6515f"
+  },
+  "verification": {
+    "handlerTestsPassed": 13,
+    "schedulerTestsPassed": 1,
+    "testOlderEmailSelectorSyntheticRolledBack": true,
+    "testDraftExcluded": true,
+    "firstOrdinaryLiveBatchPublishedBeforeSettlement": 10,
+    "eligibleGapBeforeFirstBatch": 313,
+    "eligibleGapAfterFirstBatch": 303,
+    "firstOrdinaryJobSettled": false,
+    "firstOrdinaryJobSavedPayloadWas200": true,
+    "oneExactIdleRetryPayloadRehearsedAndCorrectedTo10": true,
+    "correctedPayloadOrdinaryRetryAt1957Settled": false,
+    "correctedPayloadOrdinaryRetryError": "projection_inventory_unconfirmed; selector_rpc / SQLSTATE 57014",
+    "nextOrdinaryRetryPending": true,
+    "nextOrdinaryRetryDueUtc": "2026-10-16T20:12:08.940987Z",
+    "selectorWindowMigrationReceipt": "learn-build01-email-selector-window-2026-10-16.json"
+  },
+  "productionSourceWritesByReleaseChecks": false,
+  "providerRequestsByReleaseChecks": 0,
+  "unattendedRecoveryAccepted": false,
+  "limit": "Ten published source rows do not prove a settled, self-continuing older Email lane. A second ordinary retry timed out, so the selector window was narrowed after TEST and LIVE rehearsals. Confirm the next ordinary retry and further drain before acceptance."
+}

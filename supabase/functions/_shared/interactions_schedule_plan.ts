@@ -29,7 +29,9 @@ export function interactionProjectionSchedule(tenantId: string) {
       connectorId: "openfolk-core",
       moduleId: "core.interactions",
       priority: 50,
-      payload: { source: "email", limit: 200 },
+      // Match the worker's bounded selector and the fenced settlement's
+      // exact full-batch continuation check.
+      payload: { source: "email", limit: 10 },
     },
   ] as const;
 }

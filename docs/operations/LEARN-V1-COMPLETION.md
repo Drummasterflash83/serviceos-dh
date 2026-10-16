@@ -13,6 +13,142 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 20:04 UTC — bounded older Email selector installed; ordinary outcome pending.**
+
+### Working and verified
+
+- The 19:57 ordinary ten-row retry still returned `selector_rpc` / SQLSTATE
+  `57014` and moved to its next automatic retry at 20:12. A read-only
+  measurement showed that the database selector prepared 200 recent-import
+  revisions even for a ten-row request; that candidate scan timed out within
+  eight seconds. The narrower 32-candidate measurement completed under four
+  seconds in one sample, although single-row read time varied under load.
+- An exact migration narrowed only that internal Email candidate window to 32
+  for a ten-row request and gave the service-only selector a 25-second bounded
+  function timeout. TEST and LIVE rollback rehearsals passed; TEST installation
+  and a rollback-only ten-source synthetic/draft fixture passed; LIVE installation
+  preserved owner and execute grants. A read-only ten-row LIVE selector call
+  returned ten valid candidates in under a second. No source or provider write
+  was made by these checks.
+  [Selector release receipt](evidence/learn-build01-email-selector-window-2026-10-16.json).
+
+### Needs finishing
+
+- Observe the 20:12 **ordinary** Email retry, its fenced settlement and a
+  continuing, falling eligible source gap. The selector check is not proof of
+  unattended publication.
+- Continue the Slack, card, Graph, current runtime recovery, job attention,
+  scoring and business-signoff work below. Do not request more Slack team test
+  posts; use retained and natural activity.
+
+### Blocked externally
+
+- No new action is requested from Chris for this Email retry.
+
+**16 October, 19:52 UTC — older Email timeout identified; bounded release awaiting ordinary retry.**
+
+### Working and verified
+
+- The corrected LIVE worker settled the diagnostic retry and recorded a
+  content-free `selector_rpc` / PostgreSQL `57014` marker. LIVE's API
+  authenticator has an eight-second statement timeout. The ten-row selector
+  returned successfully in three bounded read-only samples, and a rollback-only
+  TEST fixture selected ten older messages with valid revisions while excluding
+  a draft.
+- TEST/LIVE worker versions 62/103 and scheduler versions 21/56 now use a
+  ten-row older Email batch. The worker retains the existing current Email and
+  Phone behavior; the scheduler's persisted payload matches the fenced
+  continuation check. Thirteen worker and one scheduler local tests pass. The
+  first ordinary LIVE ten-row job published ten previously unlinked Email
+  sources, reducing the eligible gap from 313 to 303, but its pre-release
+  payload still said 200 and it did not settle. An exact idle retry payload
+  correction from 200 to ten passed a rollback rehearsal and was applied.
+  [Sanitised release receipt](evidence/learn-build01-email-ten-row-release-2026-10-16.json).
+- Chris approved the exact 19:11 encrypted Edge source package. It is now in
+  the existing private London bucket, and a separate Restore identity
+  downloaded the exact bytes and hash. This preserves worker v100 as a
+  point-in-time recovery input; later worker releases are not in that package.
+  [Off-site receipt](evidence/learn-build01-runtime-1911-offsite-copy-2026-10-16.json).
+- The previously posted labelled public Slack parent and thread reply and a
+  later organic reply are already retained with signed Events evidence. Chris
+  prefers no further test posts to a live team channel.
+
+### Needs finishing
+
+- Verify the next **ordinary** older Email retry settles with the corrected
+  ten-row payload, continues itself and drains more of the 303 eligible
+  sources. A manual payload correction is not unattended success.
+- Continue Slack historical catch-up and use natural channel activity to
+  assess post-fix parent freshness. Keep the absence of a newer parent test
+  explicit; do not ask staff to post more verification messages.
+- Finish the card and Graph lag, current all-function/runtime-configuration
+  recovery, source-backed job attention/scoring policy and Chris's business
+  sign-off. The current worker/scheduler releases also require a final source
+  inventory and recovery copy after code stabilises.
+
+### Blocked externally
+
+- No new Slack action is requested from Chris. No user action is needed for
+  the Email retry observation.
+
+**16 October, 19:27 UTC — exact Email inventory diagnostic is running.**
+
+### Working and verified
+
+- A content-free inventory-stage diagnostic was installed in TEST worker v60
+  and LIVE worker v101 with the same exact deployed hash. The only changed
+  source path was the interaction worker handler; the TEST current-mail
+  selector rollback check passed. The diagnostic records only the failing
+  stage and a safe database error code, never source content or provider text.
+- A rollback-only rehearsal passed against one exact idle older Email retry.
+  Its availability was then advanced once so the existing worker can return
+  the diagnostic before the hour-long retry delay. This was a **manual
+  diagnostic intervention**, not proof of unattended recovery. No source,
+  interaction or provider request was made by the advance operation.
+- Current Email jobs continue to finish successfully. Phone jobs are reporting
+  the known tenant-wide 4,399 held legacy reviews, with zero newly selected
+  calls in recent runs; their `projection_review_required` status alone does
+  not establish a new Phone source gap.
+
+### Needs finishing
+
+- Observe the exact older Email retry result, diagnose the stage, fix it in
+  TEST and LIVE, and verify an ordinary unattended run reduces the 313-source
+  eligible Email gap. Verify Phone source/interaction counts separately.
+- The 19:13 encrypted Edge source package predates LIVE worker v101. A final
+  current package and separate exact off-site readback are still required.
+- Observe the clearly labelled public Slack parent and reply through signed
+  Events and retained source evidence after Chris posts them.
+
+### Blocked externally
+
+- The labelled Slack test posts are pending from Chris. No new user action is
+  needed for the Email diagnosis.
+
+**16 October, 19:20 UTC — smaller Email retry did not clear the inventory fault.**
+
+### Working and verified
+
+- The first ordinary LIVE older-Email retry after worker v100 was claimed as
+  attempt four and returned `projection_inventory_unconfirmed` before selecting
+  a source. The eligible gap stayed at 313. A separate counts-only check found
+  ordinary field sizes in the first 50 remaining sources, and an aggregate
+  review scan found only 13 review receipts among 173,506 Email receipts.
+
+### Needs finishing
+
+- Diagnose whether the selector RPC, returned shape or review-count RPC is
+  failing. The conservative 50-message retry is installed but **not accepted
+  as a fix**. Its next automatic attempt is due at 20:19 UTC; do not label a
+  manual diagnostic retry as unattended recovery. Continue current Email,
+  Phone, card, Graph and Slack observation independently.
+
+### Blocked externally
+
+- No user action is needed for the Email diagnosis. The current encrypted
+  source package's exact off-site copy approval and signed-in UI review remain
+  separate pending actions.
+
 **16 October, 19:13 UTC — latest LIVE Edge source locally encrypted.**
 
 ### Working and verified

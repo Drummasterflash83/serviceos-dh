@@ -9,6 +9,10 @@ import { savedCliToken, TEST_PROJECT } from "./learn-test-readiness.mjs";
 import { patchDeployedWorker, patchDeployedScheduler, sha256 } from
   "./learn-build01-current-email-deployed-overlay.mjs";
 import { patchDeployedEmailRetry } from "./learn-build01-email-retry-deployed-overlay.mjs";
+import { patchDeployedEmailDiagnostic } from "./learn-build01-email-diagnostic-deployed-overlay.mjs";
+import { patchDeployedEmailDiagnosticSettlement } from "./learn-build01-email-diagnostic-settlement-overlay.mjs";
+import { patchDeployedEmailTenRow } from "./learn-build01-email-ten-row-overlay.mjs";
+import { patchDeployedEmailTenRowSchedule } from "./learn-build01-email-ten-row-scheduler-overlay.mjs";
 
 const LIVE_PROJECT = "tgbnakbxwcqjeimygroz";
 const cli = "/Users/chrisdrummond/.npm/_npx/f488b5593433aa64/node_modules/supabase/bin/supabase";
@@ -32,6 +36,30 @@ const configs = {
   "--live-retry-worker": { project: LIVE_PROJECT, label: "live-retry-worker", endpoint: "platform-worker",
     priorVersion: 99, priorWire: "6646ccadfec21aff2145284761af6bed0a53f7c5570c4f8188a74b246fe727e4",
     target: "_shared/worker_handlers/interactions_sync.ts", patch: patchDeployedEmailRetry },
+  "--test-diagnostic-worker": { project: TEST_PROJECT, label: "test-diagnostic-worker", endpoint: "platform-worker",
+    priorVersion: 59, priorWire: "bdb72c07324b1c73f6c4f8786f11146afec604a285029692f4cfd4be7c0d91f3",
+    target: "_shared/worker_handlers/interactions_sync.ts", patch: patchDeployedEmailDiagnostic },
+  "--live-diagnostic-worker": { project: LIVE_PROJECT, label: "live-diagnostic-worker", endpoint: "platform-worker",
+    priorVersion: 100, priorWire: "bdb72c07324b1c73f6c4f8786f11146afec604a285029692f4cfd4be7c0d91f3",
+    target: "_shared/worker_handlers/interactions_sync.ts", patch: patchDeployedEmailDiagnostic },
+  "--test-settlement-worker": { project: TEST_PROJECT, label: "test-settlement-worker", endpoint: "platform-worker",
+    priorVersion: 60, priorWire: "bd8a8997ee61e921ce8714cbf6c291081b0a4b7f7c1af13912e4c58c714d51e4",
+    target: "_shared/worker_handlers/interactions_sync.ts", patch: patchDeployedEmailDiagnosticSettlement },
+  "--live-settlement-worker": { project: LIVE_PROJECT, label: "live-settlement-worker", endpoint: "platform-worker",
+    priorVersion: 101, priorWire: "bd8a8997ee61e921ce8714cbf6c291081b0a4b7f7c1af13912e4c58c714d51e4",
+    target: "_shared/worker_handlers/interactions_sync.ts", patch: patchDeployedEmailDiagnosticSettlement },
+  "--test-ten-row-worker": { project: TEST_PROJECT, label: "test-ten-row-worker", endpoint: "platform-worker",
+    priorVersion: 61, priorWire: "1ea4b167fe596825829d3abca0b6ab14c0136eed7a59ee138838eaeeffe8d75b",
+    target: "_shared/worker_handlers/interactions_sync.ts", patch: patchDeployedEmailTenRow },
+  "--live-ten-row-worker": { project: LIVE_PROJECT, label: "live-ten-row-worker", endpoint: "platform-worker",
+    priorVersion: 102, priorWire: "1ea4b167fe596825829d3abca0b6ab14c0136eed7a59ee138838eaeeffe8d75b",
+    target: "_shared/worker_handlers/interactions_sync.ts", patch: patchDeployedEmailTenRow },
+  "--test-ten-row-scheduler": { project: TEST_PROJECT, label: "test-ten-row-scheduler", endpoint: "interactions-scheduled-sync",
+    priorVersion: 20, priorWire: "65f2fcb60b6755c14def07c6794d9cbc074c34ceb0bc877e57e3f64e512e8ba9",
+    target: "_shared/interactions_schedule_plan.ts", patch: patchDeployedEmailTenRowSchedule },
+  "--live-ten-row-scheduler": { project: LIVE_PROJECT, label: "live-ten-row-scheduler", endpoint: "interactions-scheduled-sync",
+    priorVersion: 55, priorWire: "65f2fcb60b6755c14def07c6794d9cbc074c34ceb0bc877e57e3f64e512e8ba9",
+    target: "_shared/interactions_schedule_plan.ts", patch: patchDeployedEmailTenRowSchedule },
 };
 const config = configs[mode];
 if (!config || (config.project === TEST_PROJECT

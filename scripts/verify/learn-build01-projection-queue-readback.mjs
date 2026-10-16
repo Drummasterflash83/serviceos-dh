@@ -22,6 +22,9 @@ const jobs = await read("jobs", `select payload->>'source' source,payload->>'lan
   coalesce((result->>'email_selected')::int,0) email_selected,
   coalesce((result->>'email_processed')::int,0) email_processed,
   coalesce((result->>'reviews_recorded')::int,0) reviews_recorded,
+  coalesce((result->>'review_required')::int,0) review_required,
+  result->>'inventory_step' inventory_step,
+  result->>'database_error_code' database_error_code,
   coalesce((result->>'failed')::int,0) source_failures
 from public.platform_jobs where tenant_id='${tenant}'::uuid
   and job_type='interactions.sync'
@@ -32,6 +35,9 @@ const active = await read("active", `select payload->>'source' source,payload->>
   coalesce((result->>'email_selected')::int,0) email_selected,
   coalesce((result->>'email_processed')::int,0) email_processed,
   coalesce((result->>'reviews_recorded')::int,0) reviews_recorded,
+  coalesce((result->>'review_required')::int,0) review_required,
+  result->>'inventory_step' inventory_step,
+  result->>'database_error_code' database_error_code,
   coalesce((result->>'failed')::int,0) source_failures
 from public.platform_jobs where tenant_id='${tenant}'::uuid
   and job_type='interactions.sync' and status in('queued','running','retrying')

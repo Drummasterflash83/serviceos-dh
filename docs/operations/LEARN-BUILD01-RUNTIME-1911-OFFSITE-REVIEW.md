@@ -1,6 +1,10 @@
 # Build 01 LIVE Edge runtime source: exact post-retry release copy review
 
-**Prepared locally on 16 October 2026. No upload or independent download has run for this exact package.**
+**Approved and copied on 16 October 2026. The independent Restore download matched the exact bytes and SHA-256.**
+
+The [sanitised off-site receipt](evidence/learn-build01-runtime-1911-offsite-copy-2026-10-16.json)
+records the verified point-in-time checkpoint. Later worker and scheduler
+releases mean this package is no longer a current full-runtime source copy.
 
 The read-only LIVE inventory completed at 19:13:40 UTC with 103 active Edge
 functions and 728 source files (4,827,520 source bytes). The function list was

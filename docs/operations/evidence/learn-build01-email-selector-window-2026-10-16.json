@@ -1,0 +1,32 @@
+{
+  "version": "learn-build01-email-selector-window/1",
+  "observedAtUtc": "2026-10-16T20:04:00Z",
+  "problem": "The ordinary ten-row older Email retry still returned selector_rpc / SQLSTATE 57014. The selector internally prepared a 200-candidate revision window even when the worker requested ten rows.",
+  "readOnlyDiagnosis": {
+    "originalCandidateWindow": 200,
+    "originalWindowTimedOutUnderEightSeconds": true,
+    "narrowedCandidateWindow": 32,
+    "narrowedWindowCompletedUnderFourSecondsInOneReadOnlySample": true,
+    "oneRowResultVariedUnderLoad": true,
+    "sourceIdsOrMessageContentReturned": false
+  },
+  "release": {
+    "migration": "20261104200000_learn_email_bounded_revision_window.sql",
+    "packageSha256": "843517a1f9a4d1975d36c315a975b52f2025b72ba166ff3fdf43432084bb763c",
+    "testRollbackRehearsal": true,
+    "testInstalledDigest": "6df5eceae994dec6085656f9a2eb4db9",
+    "testSyntheticTenRowFixtureRolledBack": true,
+    "testDraftExcluded": true,
+    "liveRollbackRehearsal": true,
+    "liveInstalledDigest": "7d073a1af6e1fb5c32478af58e7d6221",
+    "ownerAndServiceRoleExecutePreserved": true,
+    "functionStatementTimeout": "25s",
+    "liveTenRowReadOnlySelectorConfirmed": true,
+    "sourceDataWritesByReleaseChecks": false,
+    "providerRequestsByReleaseChecks": 0
+  },
+  "ordinaryLiveOutcomePending": true,
+  "nextOrdinaryRetryDueUtc": "2026-10-16T20:12:08.940987Z",
+  "unattendedRecoveryAccepted": false,
+  "scope": "Selector-only change. Existing Email sources, interaction publication, review holds, full-selector fallback, current Email lane and Phone behavior remain unchanged."
+}

@@ -1,0 +1,44 @@
+{
+  "version": "learn-build01-email-inventory-stage-diagnostic/1",
+  "observedAtUtc": "2026-10-16T19:28:03Z",
+  "scope": "Content-free diagnostic for the existing older Email projection inventory failure",
+  "testWorker": {
+    "version": 60,
+    "wireSha256": "bd8a8997ee61e921ce8714cbf6c291081b0a4b7f7c1af13912e4c58c714d51e4"
+  },
+  "liveWorker": {
+    "version": 101,
+    "wireSha256": "bd8a8997ee61e921ce8714cbf6c291081b0a4b7f7c1af13912e4c58c714d51e4"
+  },
+  "candidateSourceSha256": "2916f576b316349dd9edcf30cc13aaa9fed87857b489ed9009087d74806cf3d6",
+  "changedSourcePaths": ["_shared/worker_handlers/interactions_sync.ts"],
+  "otherEndpointsUnchanged": true,
+  "rollbackExecutableSha256": "ad3b23e48fd8abefd805d05d7bfedf11ce434659ef9f4a446c59954cd76df175",
+  "localHandlerTestsPassed": 13,
+  "testCurrentEmailSelectorRolledBack": true,
+  "exactLiveRetryRollbackRehearsed": true,
+  "exactLiveRetryAdvancedForDiagnosis": true,
+  "manualAdvanceProviderRequests": 0,
+  "manualAdvanceSourceWrites": 0,
+  "manualAdvanceInteractionWrites": 0,
+  "eligibleEmailWithoutInteractionAtLastRead": 313,
+  "readOnlyServiceRoleChecks": {
+    "selectorOneRowMs": 2948,
+    "selectorOneRowSelected": 1,
+    "selectorFiftyRowsMs": 6250,
+    "selectorFiftyRowsSelected": 50,
+    "reviewCountMs": 721,
+    "outstandingReviewCount": 13,
+    "transactionMode": "BEGIN READ ONLY with ROLLBACK; no source IDs or contents returned"
+  },
+  "manualDiagnosticAttempt": {
+    "attempt": 5,
+    "claimedAtUtc": "2026-10-16T19:28:01Z",
+    "leaseExpiredAtUtc": "2026-10-16T19:33:01Z",
+    "settledResultObserved": false,
+    "interpretation": "The selector and review count themselves finish within seconds as service_role. The worker did not settle within its five-minute lease; the publication/settlement path is still unconfirmed."
+  },
+  "diagnosticRetryResultObserved": false,
+  "unattendedRecoveryProven": false,
+  "limits": "The manual one-job availability advance is a diagnostic intervention. A subsequent ordinary run must succeed and reduce the eligible gap before Email is accepted."
+}

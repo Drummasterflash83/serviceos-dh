@@ -40,12 +40,11 @@ export async function handleInteractionsSync(
         : 20,
     ),
   );
-  // A retried legacy Email inventory can exceed the worker's bounded lease
-  // while computing source revisions. Narrow only that durable retry; carry the
-  // smaller limit into its continuation so later batches drain unattended.
-  const limit = !currentEmail && source === "email" &&
-      (ctx.claim?.attemptCount ?? 1) > 1
-    ? Math.min(requestedLimit, 50) : requestedLimit;
+  // The LIVE API authenticator has an eight-second statement timeout. The
+  // older Email selector crossed it at 50 rows, so bound every legacy batch
+  // and its continuation while leaving current-mail and Phone lanes alone.
+  const limit = !currentEmail && source === "email"
+    ? Math.min(requestedLimit, 10) : requestedLimit;
   const counts = {
     phone_selected: 0,
     phone_created: 0,
@@ -62,14 +61,21 @@ export async function handleInteractionsSync(
     reviews_recorded: 0,
     failed: 0,
   };
+  let inventoryStep = "selector_rpc";
+  let databaseErrorCode: string | null = null;
   try {
     const { data: rows, error } = await admin.rpc(
       currentEmail ? "learn_projection_pending_current_email" : "learn_projection_pending",
       currentEmail ? { p_tenant: tenantId, p_limit: limit }
         : { p_tenant: tenantId, p_source: source, p_limit: limit },
     );
+    if (error) {
+      databaseErrorCode = typeof error.code === "string" &&
+          /^[A-Z0-9_]{3,12}$/.test(error.code) ? error.code : null;
+      throw Error("inventory");
+    }
+    inventoryStep = "selector_shape";
     if (
-      error ||
       !Array.isArray(rows) ||
       rows.length > limit ||
       rows.some(
@@ -155,11 +161,18 @@ export async function handleInteractionsSync(
     // The legacy Email lane still publishes the tenant-wide review count.
     // Its older holds must not mark this bounded current-mail lane as failed.
     if (!currentEmail) {
+      inventoryStep = "review_rpc";
       const review = await admin.rpc("learn_projection_review_count", {
         p_tenant: tenantId,
         p_source: source,
       });
-      if (review.error || !Number.isSafeInteger(review.data) || review.data < 0)
+      if (review.error) {
+        databaseErrorCode = typeof review.error.code === "string" &&
+            /^[A-Z0-9_]{3,12}$/.test(review.error.code) ? review.error.code : null;
+        throw Error("review_inventory");
+      }
+      inventoryStep = "review_shape";
+      if (!Number.isSafeInteger(review.data) || review.data < 0)
         throw Error("review_inventory");
       counts.review_required = review.data;
     }
@@ -201,6 +214,11 @@ export async function handleInteractionsSync(
       ...(continuation ? { continuation } : {}),
     };
   } catch {
+    // The fenced settlement accepts only the established numeric result keys.
+    // Log this bounded diagnostic separately so a failed read can still settle.
+    if (source === "email" && !currentEmail && (ctx.claim?.attemptCount ?? 1) > 1) {
+      console.warn(`learn_email_inventory_stage=${inventoryStep} database_code=${databaseErrorCode ?? "none"}`);
+    }
     return {
       success: false,
       recordsProcessed: counts.interactions_upserted,
