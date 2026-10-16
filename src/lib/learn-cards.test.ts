@@ -25,6 +25,22 @@ function database(data: Record<string, any[]>, failures: string[] = []) {
   return {
     calls,
     async rpc(name: string, args: Record<string, any>) {
+      if (name === "learn_customer_card_provenance") {
+        calls.push({ table: name, tenant: args.p_tenant });
+        return {
+          data: {
+            version: "learn-customer-card-provenance/1",
+            tenantId: args.p_tenant,
+            cards: args.p_cards.map((cardId: string) => ({
+              id: cardId,
+              state: (data.reviewedCustomerIds ?? []).includes(cardId)
+                ? "reviewed_business_customer"
+                : "communication_identity",
+            })),
+          },
+          error: null,
+        };
+      }
       assert.equal(name, "learn_card_communications_read");
       calls.push({ table: name, tenant: args.p_tenant });
       const selected = (data.interactions ?? [])
@@ -176,7 +192,22 @@ test("customer card joins email, phone and Slack evidence and finds the canonica
   assert.equal(result.findings[0].owner, "Fixture owner");
   assert.equal(result.findings[0].overdue, true);
   assert.equal(result.findings[0].evidenceIds.length, 3);
+  assert.equal(result.card.recordState, "Saved communication identity · customer unconfirmed");
+  assert.ok(result.gaps.some((gap) => gap.includes("No reviewed business customer link")));
   assert.ok(db.calls.every((c) => c.tenant === T));
+});
+
+test("reviewed source link is explicit on customer cards without upgrading other identities", async () => {
+  const db = database({
+    customer_cards: [row(1, { title: "Reviewed" }), row(2, { title: "Unreviewed" })],
+    reviewedCustomerIds: [id(1)],
+  });
+  const page = await readLearnCards(db, T, "customer", 0, now);
+  assert.deepEqual(page.cards.map((c) => c.recordState), [
+    "Reviewed business customer link",
+    "Saved communication identity · customer unconfirmed",
+  ]);
+  assert.equal(db.calls.filter((c) => c.table === "learn_customer_card_provenance").length, 1);
 });
 
 test("job card uses its canonical job identity rather than another customer's communications", async () => {
