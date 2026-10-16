@@ -29,7 +29,14 @@ injected, 42 appear in that inventory and 11 do not. This is an exact name
 comparison, not a claim that the 11 are all required: some guarded features
 have a fallback or are inactive. The 18 dynamic lookups still need binding
 analysis. Only names and metadata digests were handled; no plaintext values
-were printed or saved. [Sanitised name readback](evidence/learn-build01-runtime-secret-name-readback-2026-10-16.json).
+were printed or saved. At 04:26 UTC, a read-only tenant-scoped binding check
+found one Drummonds workspace with two distinct dynamic secret names; both are
+configured. None of the generic `PROVIDER_OAUTH_*` names is configured, while
+the current tenant's provider connections contain no active OAuth-mode row.
+The seven constructed OAuth lookups in two functions therefore remain an
+inactive generic-framework recovery path, not an observed active-connection
+failure. This narrows the dynamic-name inventory without proving secret value
+recovery. [Sanitised name readback](evidence/learn-build01-runtime-secret-name-readback-2026-10-16.json).
 
 An acceptance rehearsal must start from independently retrieved ciphertext and
 document the exact database, file, source and Git revisions. It must use an
