@@ -20,6 +20,16 @@
   "savedCheckpointComplete": true,
   "retainedMessagesInQuietWindow": 0,
   "cutoffAdvancedBeforeSchedulerReadback": false,
+  "subsequentOrdinarySchedulerReadback": {
+    "observedAtUtc": "2026-10-16T17:55:24.824Z",
+    "previousNextStartUtc": "2026-10-15T16:03:06.025951Z",
+    "advancedNextStartUtc": "2026-10-15T16:18:06.025951Z",
+    "lastState": "window_queued",
+    "nextWindowQueued": true,
+    "nextWindowStartUtc": "2026-10-15T16:18:06.025951Z",
+    "nextWindowEndUtc": "2026-10-16T17:53:05.142769Z",
+    "cutoffRegression": false
+  },
   "unattendedRetryGuard": {
     "migration": "20261104190000_learn_slack_recurring_authority_retry.sql",
     "sourceSha256": "08f05e268574d328269b75c2cd893b7bd875c8046415ee15936714b8a77b1db5",

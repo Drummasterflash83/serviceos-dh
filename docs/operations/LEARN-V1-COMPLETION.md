@@ -13,6 +13,31 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 17:55 UTC — the ordinary scheduler advanced the recovered public Slack window.**
+
+### Working and verified
+
+- After the exact failed window completed, the ordinary LIVE scheduler advanced
+  its `next_start` from 15 October 16:03 to 16:18 UTC and queued the next
+  approved window without skipping the recovered 15 minutes. The channel and
+  reply subscription remains enabled. This closes the specific stuck-window
+  checkpoint; the larger historical catch-up is still running.
+- A fresh, audited, read-only Gmail profile proof for the one current
+  `admin_delegation_missing` recent mailbox returned `provider_verified` at
+  17:55 UTC, with the checkpoint unchanged and no content or provider write.
+  The ordinary Email scheduler must still claim and sync it before that hold
+  is considered resolved.
+
+### Needs finishing
+
+- Observe subsequent unattended Slack window completion, a post-fix ordinary
+  signed event, and the Email claim. Card projection still had 15 active cards
+  over an hour stale and one partial-failure sweep retry at 17:55 UTC.
+
+### Blocked externally
+
+- No new action is needed from Chris for these checks.
+
 **16 October, 17:48 UTC — one stuck public Slack window recovered; bounded retry installed.**
 
 ### Working and verified
