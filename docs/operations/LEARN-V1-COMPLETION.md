@@ -7,6 +7,29 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, 01:10 UTC — fresh LIVE Commusoft work review.**
+
+### Working and verified
+
+- The signed-in Drummonds review loaded retained sites and jobs. A fresh reload
+  exposed the saved open/pending/on-hold job filter, which returned records.
+  The already-open browser tab had omitted that control; reloading resolved the
+  apparent frontend mismatch. The UI clearly labels the status as the latest
+  retained Commusoft value, not current provider progress.
+  [Sanitised review observation](evidence/learn-build01-live-commusoft-review-2026-10-16.json).
+
+### Needs finishing
+
+- The first sorted filtered page includes unresolved customer relationships
+  and properties needing capture or reconciliation. No relationship was inferred
+  from a property number or job title. This sample does not measure full fleet
+  coverage or job-status freshness; source-backed linking and timely refresh
+  remain open.
+
+### Blocked externally
+
+- No overnight user action is needed for this read-only check.
+
 **16 October, 01:05 UTC — signed-in LIVE card audit confirms remaining business gaps.**
 
 ### Working and verified

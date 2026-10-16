@@ -1,0 +1,22 @@
+{
+  "version": "learn-build01-live-commusoft-review/1",
+  "observed_at_utc": "2026-10-16T01:10:22Z",
+  "environment": "Signed-in LIVE Drummonds client workspace, read-only UI observation",
+  "checks": {
+    "commusoft_review_connection_available": true,
+    "retained_sites_loaded": true,
+    "retained_jobs_loaded": true,
+    "saved_open_pending_on_hold_filter_after_fresh_reload": true,
+    "filtered_page_has_unresolved_customer_relationships": true,
+    "filtered_page_has_missing_or_unreconciled_property_sources": true,
+    "job_rows_label_status_as_latest_retained_not_live_progress": true,
+    "provider_fetch_or_record_change": false
+  },
+  "browser_cache_check": "An already-open page lacked the saved-open-work control. A fresh reload loaded it, so the earlier observation is not evidence of a current LIVE deployment mismatch.",
+  "limits": [
+    "The first sorted page is a sample, not a coverage rate or a provider freshness measurement.",
+    "Unreviewed property ownership cannot be inferred from a property number or job title.",
+    "No job or customer links were approved or changed during this check."
+  ],
+  "customer_content_or_secret_values_in_receipt": false
+}
