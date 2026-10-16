@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, 01:22 UTC — customer-card source distinction rehearsed locally.**
+
+### Working and verified
+
+- A pinned 15 October production archive contained 3,842 Drummonds customer
+  cards: 3,814 person and 28 company cards. Of these, 3,816 had communication
+  projection context, while only 73 had explicit reviewed Commusoft customer
+  links. These are snapshot counts, not current LIVE totals or a measure of
+  customer health. An isolated migration rehearsal classified a reviewed card
+  and a communication-only identity correctly and denied duplicate and foreign
+  tenant requests. The disposable database was removed. The candidate client
+  UI now labels each card by reviewed business link or unconfirmed identity;
+  22 focused tests and TypeScript pass.
+  [Sanitised evidence](evidence/learn-build01-customer-card-provenance-2026-10-16.json).
+
+### Needs finishing
+
+- The candidate migration and frontend are not released to TEST or LIVE.
+  Current LIVE counts, full customer/source coverage, job progress and
+  owner routing still need verification. A reviewed source identity does not
+  itself prove customer health.
+
+### Blocked externally
+
+- No overnight user action is needed for this local check.
+
 **16 October, 01:10 UTC — fresh LIVE Commusoft work review.**
 
 ### Working and verified

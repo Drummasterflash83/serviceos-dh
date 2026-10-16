@@ -1,0 +1,25 @@
+{
+  "version": "learn-build01-customer-card-provenance-evidence/1",
+  "observedAt": "2026-10-16T01:22:14Z",
+  "source": "Pinned 15 October production database archive restored in a disposable, network-isolated local PostgreSQL container",
+  "archiveSha256": "31f1e594e9c3b43f3cff0ec0c45095216a4bb6580e8a0e5f2a4a81db99c03fe8",
+  "scope": "Drummonds aggregate counts; no names, addresses, message bodies or card IDs in this receipt",
+  "snapshot": {
+    "customerCards": 3842,
+    "personCards": 3814,
+    "companyCards": 28,
+    "communicationProjectionContextCards": 3816,
+    "cardsWithExplicitReviewedCommusoftCustomerLinks": 73
+  },
+  "verification": {
+    "migrationAppliedToDisposableRestore": true,
+    "reviewedAndCommunicationIdentityStatesVerified": true,
+    "duplicateAndForeignTenantRequestsDenied": true,
+    "disposableDatabaseRemoved": true,
+    "focusedCardTestsPassed": 22,
+    "typescriptPassed": true,
+    "productionWrites": false,
+    "sourceProviderRequests": 0
+  },
+  "boundary": "The archive is a point-in-time snapshot, not current LIVE counts. This only verifies a candidate classification and UI labels locally; the migration and frontend are not released to TEST or LIVE. QuickBooks production links are also accepted by the new reader but are not included in the 73 Commusoft-link count. A reviewed link confirms source identity, not current customer health or job progress."
+}

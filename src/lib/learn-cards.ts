@@ -135,13 +135,49 @@ function card(row: Row, kind: LearnCardKind, now: number): LearnCard {
             ? row.verified
               ? "Verified job record"
               : "Job record needs review"
-            : "Stored customer record",
+            : "Customer source check unavailable",
     jobStatus:
       kind === "job"
         ? (savedJobStatuses[text(row.status) ?? ""] ?? "Saved status needs confirmation")
         : null,
     updatedAt: date(row.updated_at, now),
   };
+}
+
+type CustomerProvenance =
+  | "reviewed_business_customer"
+  | "communication_identity"
+  | "unconfirmed_identity";
+const customerState: Record<CustomerProvenance, string> = {
+  reviewed_business_customer: "Reviewed business customer link",
+  communication_identity: "Saved communication identity · customer unconfirmed",
+  unconfirmed_identity: "Stored identity · customer unconfirmed",
+};
+
+/** A source-link check must cover the exact visible page. Failure never upgrades
+ * an identity to a customer; the page remains browsable with an honest label. */
+async function applyCustomerProvenance(
+  db: object, tenant: string, cards: LearnCard[],
+): Promise<{ cards: LearnCard[]; verified: boolean }> {
+  if (!cards.length) return { cards, verified: true };
+  const rpc = (db as { rpc?: LearnCardSearchClient["rpc"] }).rpc;
+  if (typeof rpc !== "function") return { cards, verified: false };
+  try {
+    const { data, error } = await rpc.call(db, "learn_customer_card_provenance", {
+      p_tenant: tenant, p_cards: cards.map((c) => c.id),
+    });
+    const response = data as Record<string, any> | null;
+    if (error || !response || response.version !== "learn-customer-card-provenance/1" ||
+        response.tenantId !== tenant || !Array.isArray(response.cards) ||
+        response.cards.length !== cards.length || response.cards.some((row: any, i: number) =>
+          !row || row.id !== cards[i].id || !Object.hasOwn(customerState, row.state)))
+      return { cards, verified: false };
+    return { cards: cards.map((c, i) => ({
+      ...c, recordState: customerState[response.cards[i].state as CustomerProvenance],
+    })), verified: true };
+  } catch {
+    return { cards, verified: false };
+  }
 }
 export async function readLearnCards(
   db: LearnReadClient,
@@ -167,8 +203,9 @@ export async function readLearnCards(
   );
   if (result.length > CARD_PAGE_SIZE + 1 || new Set(result.map((r) => r.id)).size !== result.length)
     throw new Error("Invalid card page");
+  const cards = result.slice(0, CARD_PAGE_SIZE).map((r) => card(r, kind, now));
   return {
-    cards: result.slice(0, CARD_PAGE_SIZE).map((r) => card(r, kind, now)),
+    cards: kind === "customer" ? (await applyCustomerProvenance(db, tenant, cards)).cards : cards,
     hasMore: result.length > CARD_PAGE_SIZE,
     page,
   };
@@ -231,7 +268,9 @@ export async function searchLearnCards(
     new Set(r.rows.map((x: Row) => x.id)).size !== r.rows.length
   )
     throw Error("Card search unavailable");
-  return { cards: r.rows.map((x: Row) => card(x, kind, now)), hasMore: r.hasMore, page };
+  const cards = r.rows.map((x: Row) => card(x, kind, now));
+  return { cards: kind === "customer" ? (await applyCustomerProvenance(db, tenant, cards)).cards : cards,
+    hasMore: r.hasMore, page };
 }
 
 /** Resolve only a unique, typed identity; a profile UUID is not a member UUID. */
@@ -556,7 +595,7 @@ export async function readLearnCardDetail(
     gaps.push("Team name lookup exceeded its limit; assignments need review.");
     teams = [];
   }
-  return projectLearnDetail({
+  const detail = projectLearnDetail({
     tenant,
     kind,
     record,
@@ -569,4 +608,13 @@ export async function readLearnCardDetail(
     moreEvidence: direct.length > DETAIL_LIMIT || missing.length > DETAIL_LIMIT,
     moreFindings,
   });
+  if (kind === "customer") {
+    const classified = await applyCustomerProvenance(db, tenant, [detail.card]);
+    detail.card = classified.cards[0];
+    if (!classified.verified)
+      detail.gaps.push("The reviewed customer-source link could not be checked. Refresh before treating this identity as a customer.");
+    else if (detail.card.recordState !== customerState.reviewed_business_customer)
+      detail.gaps.push("No reviewed business customer link was found for this identity. Communications alone do not confirm a customer relationship.");
+  }
+  return detail;
 }

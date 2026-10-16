@@ -27,6 +27,11 @@ test("sends a bounded literal query as RPC data and validates the returned page"
   const db = {
     rpc: async (name: string, args: Record<string, unknown>) => {
       calls++;
+      if (name === "learn_customer_card_provenance") {
+        assert.deepEqual(args, { p_tenant: T, p_cards: [id(1)] });
+        return { data: { version: "learn-customer-card-provenance/1", tenantId: T,
+          cards: [{ id: id(1), state: "reviewed_business_customer" }] }, error: null };
+      }
       assert.equal(name, "learn_card_search");
       assert.deepEqual(args, {
         p_tenant: T,
@@ -39,9 +44,20 @@ test("sends a bounded literal query as RPC data and validates the returned page"
     },
   };
   const result = await searchLearnCards(db, T, "customer", `  ${query}  `);
-  assert.equal(calls, 1);
+  assert.equal(calls, 2);
   assert.equal(result.cards[0].title, "Customer 1");
+  assert.equal(result.cards[0].recordState, "Reviewed business customer link");
   assert.equal(result.hasMore, false);
+});
+test("a mismatched provenance response never confirms a searched customer", async () => {
+  const db = { rpc: async (name: string) => ({
+    data: name === "learn_card_search" ? payload() : {
+      version: "learn-customer-card-provenance/1", tenantId: T,
+      cards: [{ id: id(2), state: "reviewed_business_customer" }],
+    }, error: null,
+  }) };
+  const page = await searchLearnCards(db, T, "customer", query);
+  assert.equal(page.cards[0].recordState, "Customer source check unavailable");
 });
 test("invalid scope, bounds and controls are refused before requesting data", async () => {
   const db = {
