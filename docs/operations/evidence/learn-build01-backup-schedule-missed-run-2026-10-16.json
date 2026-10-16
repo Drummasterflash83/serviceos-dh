@@ -1,0 +1,27 @@
+{
+  "version": "learn-build01-backup-schedule-missed-run/1",
+  "observed_at_utc": "2026-10-16T05:47:00Z",
+  "environment": "GitHub Actions main",
+  "backup_workflow": {
+    "id": 385741303,
+    "state": "active",
+    "default_branch": "main",
+    "configured_utc_slots": ["03:15", "04:15", "05:37", "07:43"],
+    "scheduled_runs_visible": 0,
+    "latest_manual_success_run_id": 38848335678,
+    "manual_success_is_unattended_evidence": false
+  },
+  "monitor_workflow": {
+    "id": 385892488,
+    "state": "active",
+    "latest_scheduled_run_at_utc": "2026-10-16T01:26:59Z",
+    "manual_failure_path_run_id": 38857506085,
+    "manual_failure_path_result": "failure",
+    "safe_state": "database_daily_scheduled_success_missing",
+    "scheduled_monitor_run_after_0126_visible": false
+  },
+  "interpretation": "The hosted failure detector correctly rejects the manual copy as unattended success. Neither a scheduled backup nor the corrected monitor's scheduled cadence is yet proved. The 07:43 fallback slot remains unobserved.",
+  "database_or_provider_requests_from_diagnostic": 0,
+  "customer_content_or_secret_values_in_receipt": false,
+  "business_acceptance": false
+}

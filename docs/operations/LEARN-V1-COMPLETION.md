@@ -13,6 +13,37 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 05:47 UTC — hosted backup missed-run detector works; cron dispatch is still absent.**
+
+### Working and verified
+
+- GitHub reports both the backup and missed-success monitor workflows active
+  on default `main`. A credential-free manual monitor diagnostic, run
+  `38857506085`, failed with the expected safe state
+  `database_daily_scheduled_success_missing`. It correctly excluded the
+  successful manual backup from unattended acceptance. Four focused monitor
+  tests pass. [Sanitised hosted readback](evidence/learn-build01-backup-schedule-missed-run-2026-10-16.json).
+- The separate Email projection lane has continued normal 200-record
+  continuations. At 05:44 UTC, 3,000 Email receipts had been written in the
+  preceding hour, with 2,151 recently captured emails linked to interactions;
+  eligible missing interactions were 16,445, down from 16,927 at 05:38 UTC.
+  No manual projection rescue was used in this interval.
+
+### Needs finishing
+
+- No scheduled backup has appeared for the 03:15, 04:15 or 05:37 UTC slots as
+  of 05:47 UTC. The hourly monitor has not scheduled since 01:26 UTC, despite
+  its successful earlier scheduled run and today's manual failure diagnostic.
+  Observe the 07:43 fallback and investigate scheduling if it also fails to
+  dispatch. Neither manual result proves the recurring service will run.
+- Email's shorter improving interval does not yet establish sustained catch-up
+  or complete current-message/card coverage. Source intake continues.
+
+### Blocked externally
+
+- GitHub has not dispatched the configured cron runs. No fingerprint or user
+  response is needed for this observation.
+
 **16 October, 05:29 UTC — independent Email projection lane is live, but catch-up is not proved.**
 
 ### Working and verified
