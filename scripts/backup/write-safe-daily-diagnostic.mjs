@@ -26,6 +26,7 @@ const CODES = new Set(["stage_unconfirmed", "native_export_diagnostic_unavailabl
   "restore_cleanup_unconfirmed", "restore_failure_unclassified",
   "restore_inventory_coverage_mismatch", "restore_no_actor_access_mismatch",
   "restore_network_supplement_integrity_failed", "restore_native_stream_bound_or_truncated",
+  "restore_native_line_bound", "restore_native_total_bound", "restore_native_line_truncated",
   "restore_native_row_bound", "restore_native_copy_process_failed",
   "restore_native_statement_unrecognized", "restore_network_columns_mismatch",
   "restore_network_rows_bound", "restore_unexpected_key", "restore_unexpected_type",

@@ -18,10 +18,10 @@ IDENT = r'(?:"(?:[^"]|"")*"|[a-z_][a-z0-9_$]*)'
 HEADER = re.compile(r'^COPY (' + IDENT + r')\.(' + IDENT + r') \((.*)\) FROM stdin;$')
 COLUMN = re.compile(r'\s*(' + IDENT + r')\s*(,|$)')
 SEQUENCE = re.compile(r"^SELECT pg_catalog\.setval\('((?:[^']|'')*)', (-?\d+), (true|false)\);$")
-MAX_LINE = 64 * 1024 * 1024
+MAX_LINE = 256 * 1024 * 1024
 MAX_ROWS_PER_TABLE = 2_000_000
 MAX_TABLES = 1000
-MAX_BYTES = 8 * 1024 * 1024 * 1024
+MAX_BYTES = 16 * 1024 * 1024 * 1024
 
 
 def decode_ident(value):
@@ -37,8 +37,12 @@ def copy_fingerprints(stream):
         if not raw:
             break
         total += len(raw)
-        if len(raw) > MAX_LINE or total > MAX_BYTES or not raw.endswith(b'\n'):
-            raise RecoveryError('Native COPY stream exceeds bound or is truncated')
+        if len(raw) > MAX_LINE:
+            raise RecoveryError('Native COPY line exceeds bound')
+        if total > MAX_BYTES:
+            raise RecoveryError('Native COPY stream exceeds total bound')
+        if not raw.endswith(b'\n'):
+            raise RecoveryError('Native COPY stream line is truncated')
         if current is not None:
             if raw == b'\\.\n':
                 digest = hashlib.sha256(b'native-copy-multiset/1\0')
