@@ -1,0 +1,31 @@
+{
+  "version": "learn-build01-slack-20-handoff-live/1",
+  "observedAtUtc": "2026-10-16T17:29:51Z",
+  "environment": "LIVE",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "teamId": "T0CC5V4D7",
+  "ownerApproval": "Chris approved the existing completed 20-public-channel campaign handoff from its saved cutoff",
+  "campaignId": "a3980d74-29fa-4655-a914-61219cdf7dad",
+  "savedCutoffUtc": "2026-10-13T09:30:00Z",
+  "campaignChannels": 20,
+  "campaignHistoricalWindowsComplete": 20,
+  "campaignObservedReplyThreadsComplete": true,
+  "enabledCampaignSubscriptions": 20,
+  "enabledCampaignReplySubscriptions": 20,
+  "campaignCheckpointsAtOrAfterSavedCutoff": 20,
+  "previousEnabledPublicChannels": 160,
+  "currentEnabledUniquePublicChannels": 180,
+  "currentRosterSha256": "5b8b7219d8fde33e0219f2348f64e0a6790ca840bb37b244065ae893e1f57dc6",
+  "signedEventsReceiver": {
+    "expectedChannels": 180,
+    "rosterDigestMatchedAfterUpdate": true,
+    "signingSecretChanged": false,
+    "realPostActivationHintsAtReadback": 0
+  },
+  "privateChannelsIncluded": false,
+  "individualOrGroupDmsIncluded": false,
+  "slackSourceWrites": false,
+  "customerMessageContentReturned": false,
+  "acceptance": "handoff_and_signed_receiver_configuration_verified; real_event_and_reply_capture_pending"
+}

@@ -13,10 +13,19 @@ sign-off.
 
 ## Current evidence and priority
 
-**16 October, 17:09 UTC — Chris approved the completed 20-channel campaign handoff; UI action pending.**
+**16 October, 17:29 UTC — approved 20-channel handoff and signed receiver configuration verified.**
 
 ### Working and verified
 
+- Chris completed the existing LIVE handoff for the separate 20-public-channel
+  campaign. Readback shows 20 enabled subscriptions, all 20 with observed-reply
+  capture, and all checkpoints at or beyond the saved 13 October 09:30 UTC
+  cutoff. The original 160 remain enabled; 180 unique enabled IDs match exact
+  roster SHA-256 `5b8b7219d8fde33e0219f2348f64e0a6790ca840bb37b244065ae893e1f57dc6`.
+  The signed Events receiver now has the matching count and roster digest;
+  its signing secret was unchanged. No real post-activation Slack event hint has
+  arrived, so message/reply latency and retention remain unproved.
+  [Sanitised handoff receipt](evidence/learn-build01-slack-20-handoff-live-2026-10-16.json).
 - At 17:20 UTC, the current 103-function, 727-file LIVE Edge source inventory
   was encrypted to the existing recovery recipient and copied to the approved
   private London bucket. A separate Restore identity downloaded the exact
@@ -56,12 +65,9 @@ sign-off.
 
 ### Needs finishing
 
-- In the signed-in LIVE LEARN UI, use the existing completed-campaign handoff
-  on only the 20-channel `a3980d74` campaign, verify its exact saved 13 October
-  cutoff and reply capture, then update the signed Events receiver from 160 to
-  180 exact public channel IDs. Post and verify the authorised labelled
-  `#09-engineer-chat` test message and reply only after capture is ready.
-  Keep private channels and DMs excluded.
+- Verify a clearly labelled public `#09-engineer-chat` test message and reply
+  through real signed Events hints, read-only provider reconciliation, saved
+  messages and LEARN interactions/cards. Keep private channels and DMs excluded.
 - Let normal Email, Slack, graph and card workers continue, then read back
   real source-to-interaction/card/graph coverage and recover material failures.
   Complete the remaining Build 01 scoring, source and full application/Auth
@@ -69,12 +75,12 @@ sign-off.
 
 ### Blocked externally
 
-- Automatic browser approval review denied observing the LIVE LEARN tab
-  because the requested browser grant covers the entire `app.openfolk.ai`
-  origin, wider than the then-approved one-channel Slack task. No alternate
-  browser or origin-wide inspection was used. Chris was given the exact
-  existing campaign control to apply in his signed-in LIVE LEARN UI; its
-  result requires independent readback before any receiver expansion.
+- Automatic browser approval review denied direct access to the LIVE LEARN
+  origin because that browser grant was wider than the then-approved Slack
+  task. Chris completed the exact UI handoff; independent database and receiver
+  readbacks now verify it. The connected Slack tool serves a different
+  workspace, so a normal message and reply from the Drummonds public test
+  channel are still needed to prove live signed capture.
 
 **16 October, 16:33 UTC — current public Slack channel has an older campaign binding; Email catch-up continues.**
 
