@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, 00:59 UTC — LIVE Edge source package prepared locally.**
+
+### Working and verified
+
+- The retained 102-function LIVE source archive was rechecked against all 720
+  manifest file hashes, then packaged under the existing public recovery key.
+  The private 5,971,576-byte age file has mode 0600 and an independent SHA-256
+  readback. A disposable-key round trip and changed-source rejection passed.
+  This used no production API or source-provider request.
+  [Sanitised package evidence](evidence/learn-build01-live-runtime-package-2026-10-16.json).
+
+### Needs finishing
+
+- The encrypted package is still local; it has not been copied to an independent
+  destination or decrypted with the escrowed Restore key. Runtime secrets,
+  hosted frontend configuration, recovered operator/Auth flows and controlled
+  capture resumption remain outside this source-package check. Full application
+  recovery is not accepted.
+
+### Blocked externally
+
+- No overnight user action is needed. This preparation does not expand the
+  earlier exact database-copy approval to an application archive upload.
+
 **16 October, 00:53 UTC — Slack event preparation installed in TEST, default-off.**
 
 ### Working and verified
