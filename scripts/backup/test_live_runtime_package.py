@@ -11,6 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from package_live_runtime_archive import PackageError, package
+from verify_live_runtime_package import verify_package
 
 AGE = Path('/private/tmp/serviceos-age-1.3.2/age')
 KEYGEN = Path('/private/tmp/serviceos-age-1.3.2/age-keygen')
@@ -54,6 +55,25 @@ class RuntimePackageTest(unittest.TestCase):
             result = package(archive, encrypted, recipient_path, AGE, manifest_sha, 1)
             self.assertEqual(result['functions'], 1)
             self.assertEqual(result['files'], 1)
+            expected = {'encryptedBytes':result['encryptedBytes'],
+                        'encryptedSha256':result['encryptedSha256'],
+                        'manifestSha256':manifest_sha, 'functions':1,
+                        'files':1, 'sourceBytes':len(body)}
+            verified = verify_package(encrypted, AGE, identity.read_bytes(), expected)
+            self.assertEqual(verified['state'], 'decrypted_live_edge_source_verified')
+            self.assertEqual(verified['sourceFiles'], 1)
+            wrong_identity = root / 'wrong-identity'
+            subprocess.run([str(KEYGEN), '-o', str(wrong_identity)], stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL, check=True)
+            with self.assertRaisesRegex(PackageError, 'runtime_decryption_unconfirmed'):
+                verify_package(encrypted, AGE, wrong_identity.read_bytes(), expected)
+            changed_ciphertext = root / 'changed-ciphertext.age'
+            tampered = bytearray(encrypted.read_bytes())
+            tampered[-1] ^= 1
+            changed_ciphertext.write_bytes(tampered)
+            changed_ciphertext.chmod(0o600)
+            with self.assertRaisesRegex(PackageError, 'runtime_ciphertext_changed'):
+                verify_package(changed_ciphertext, AGE, identity.read_bytes(), expected)
             decrypted = subprocess.run([str(AGE), '-d', '-i', str(identity), str(encrypted)],
                                        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                                        check=True).stdout

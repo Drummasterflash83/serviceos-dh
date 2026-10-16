@@ -33,6 +33,9 @@ After approval, recheck the local file size, hash, mode and age header; inspect
 the bucket's current privacy and retention controls; create the object only if
 absent; verify its returned version and SHA-256; download that version through
 the separate Restore identity; and verify the downloaded byte count and hash.
+The [in-memory source verifier](../../scripts/backup/verify_live_runtime_package.py)
+can then take one escrow identity through stdin and confirm all 102 function
+sources against the pinned manifest without writing the key or source files.
 Keep the receipt private and record only sanitized metadata in the tracker. If
 any check fails, report that off-site copy is unverified and retain the local
 file. Do not overwrite or delete an existing object.

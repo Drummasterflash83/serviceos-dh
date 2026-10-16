@@ -87,7 +87,10 @@ sign-off.
   resumption; a ciphertext copy alone does not meet this gate. The
   [application restore inventory](LEARN-BUILD01-APPLICATION-RESTORE-INVENTORY.md)
   identifies the source, configuration, Auth, frontend and capture pieces that
-  still need to agree.
+  still need to agree. The in-memory restore verifier now passes on a disposable
+  key for all 102 functions and rejects a wrong key or changed ciphertext; it
+  has **not** opened the actual escrow package.
+  [Verifier evidence](evidence/learn-build01-live-runtime-restore-verifier-2026-10-16.json).
 
 ### Blocked externally
 
