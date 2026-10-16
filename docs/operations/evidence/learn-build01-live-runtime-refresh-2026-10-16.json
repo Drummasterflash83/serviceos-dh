@@ -1,0 +1,19 @@
+{
+  "version": "learn-build01-live-runtime-refresh/1",
+  "observed_at_utc": "2026-10-16T00:25:00Z",
+  "method": "Read-only LIVE Edge inventory before and after downloading every active deployed source; independent local rehash of every archived file against the private manifest.",
+  "active_functions": 102,
+  "archived_functions": 102,
+  "source_files_rehashed": 720,
+  "source_bytes_rehashed": 4788552,
+  "private_manifest_sha256": "bf66a05aba6ccf44cf8394261f43dac66ccc2927c5e27f99ccbcedba8c10e303",
+  "selected_current_versions": {
+    "platform_worker": 92,
+    "recommendation_sync": 42
+  },
+  "inventory_stable": true,
+  "production_writes": false,
+  "provider_requests": 0,
+  "limitation": "This is an ignored local source archive, not an independent off-site application copy or an end-to-end application/Auth restore. Runtime secrets, current non-exportable Auth signing key, hosted frontend configuration and controlled capture resumption remain outside this check.",
+  "source_or_secret_content_retained_in_receipt": false
+}

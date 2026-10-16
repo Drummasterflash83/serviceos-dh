@@ -1,0 +1,24 @@
+{
+  "version": "learn-build01-slack-approved-public-spotcheck/1",
+  "observed_at_utc": "2026-10-16T00:24:30Z",
+  "scope": {
+    "campaign": "b54d246b-2818-44d1-ba05-ccbe2c6bd6c9",
+    "tenant": "00000000-0000-0000-0000-000000000001",
+    "saved_end_boundary_utc": "2026-10-13T09:30:00Z",
+    "approved_public_channel_ids": 160,
+    "dm_or_group_dm_searches": 0,
+    "private_channel_searches": 0
+  },
+  "method": "Read the exact 160 campaign channel IDs from LIVE without message content, then use the connected Openfolk Slack public-message search with an exact Unix cutoff in eight batches of 20 channel filters. A 21-filter positive control including one known public channel outside the approved campaign returned a post-cutoff message, confirming the same query shape can return results. No message content was retained in this receipt.",
+  "result": {
+    "approved_batches_searched": 8,
+    "approved_batches_with_public_result_after_cutoff": 0,
+    "outside_campaign_positive_control_found": true,
+    "outside_campaign_channel_id_sha256": "0a65fafeb914dcdc0ade8ad0fc10fbcf7c7fba58fa52c80e1238f75832b794ad",
+    "outside_campaign_membership_in_approved_160": false,
+    "live_retained_approved_channel_messages_after_cutoff": 0,
+    "live_retained_approved_replies_after_cutoff": 0
+  },
+  "interpretation": "Zero retained post-cutoff public messages in the approved 160 channels is consistent with this independent public-search observation; it is not itself evidence of a broken capture. The connector's search visibility may differ from the ingestion credential, deleted or edited messages and private channels were not tested, and 31 approved channel boundaries still had not advanced past the cutoff at the most recent aggregate read. Ongoing reply capture and future activity still need observation.",
+  "customer_content_or_secrets_retained": false
+}

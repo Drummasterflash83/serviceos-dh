@@ -1,0 +1,42 @@
+{
+  "version": "learn-build01-ordinary-retries/1",
+  "observed_at_utc": "2026-10-16T00:30:15Z",
+  "manual_job_rescues": 0,
+  "email_projection": {
+    "prior_inventory_retry_due_utc": "2026-10-16T00:20:15Z",
+    "ordinary_attempt_outcome": "Published 200 email interactions with a durable continuation; subsequent ordinary continuations published four more 200-row batches by approximately 00:25 UTC.",
+    "eligible_gap_at_00_18": 7336,
+    "eligible_gap_at_00_25": 6633,
+    "older_than_day_at_00_25": 0,
+    "new_inventory_timeout_at_00_26": true,
+    "interpretation": "Ordinary processing resumed and the measured gap shrank, but inventory timeouts recur; this is not sustained reliability acceptance."
+  },
+  "identity": {
+    "new_index": "learn_identity_ready_order_idx",
+    "ordinary_retry_due_utc": "2026-10-16T00:27:10Z",
+    "ordinary_attempt": 4,
+    "terminal_code": "identity_review_required",
+    "records_processed": 74,
+    "cards_enriched": 74,
+    "reviews_recorded": 126,
+    "failed": 0,
+    "durable_continuation": true,
+    "interpretation": "The first ordinary index-backed retry passed its inventory stage and processed retained interactions. Review holds remain; later unattended runs must be observed."
+  },
+  "graph": {
+    "bounded_selector_release": "2026-10-15T23:44:27Z",
+    "ordinary_retry_due_utc": "2026-10-16T00:28:09Z",
+    "ordinary_attempt": 5,
+    "outcome": "succeeded",
+    "nodes_upserted": 250,
+    "node_failures": 0,
+    "durable_continuation_queued": true,
+    "eligible_gap_at_00_07": 18476,
+    "eligible_gap_at_00_30": 19279,
+    "older_than_day_at_00_30": 810,
+    "interpretation": "Unattended retry recovered and queued the next page, but projected interaction arrivals outpaced this first recovered Graph batch; source-to-node convergence remains open."
+  },
+  "production_data_writes_by_verification": false,
+  "provider_requests_by_verification": 0,
+  "customer_content_or_secrets_retained": false
+}

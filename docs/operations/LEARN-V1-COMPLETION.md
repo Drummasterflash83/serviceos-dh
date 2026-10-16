@@ -7,6 +7,79 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, 00:30 UTC — scheduled source retries recovered, gaps still open.**
+
+### Working and verified
+
+- The first ordinary Graph retry after the bounded-selector release succeeded
+  on attempt 5, upserting 250 nodes with no reported node failures and queuing
+  its next page. The first ordinary identity retry after the new index passed
+  inventory on attempt 4, processing 74 retained interactions, enriching 74
+  cards, recording 126 review holds and queuing a continuation. No job was
+  manually rescued. The 00:20 ordinary projection retry and four subsequent
+  continuations published five 200-row email batches; the eligible gap fell
+  from 7,336 at 00:18 to 6,633 at 00:25.
+  [Sanitised retry evidence](evidence/learn-build01-ordinary-retries-2026-10-16.json).
+
+### Needs finishing
+
+- A new projection inventory timeout occurred at 00:26 despite the recovered
+  batches. Graph's eligible missing-node gap rose from 18,476 at 00:07 to
+  19,279 at 00:30 because interaction arrivals outpaced this first recovered
+  batch; 810 eligible interactions remain over a day old. Observe the queued
+  continuations and fix sustained throughput before calling these source paths
+  dependable.
+
+### Blocked externally
+
+- No overnight user action is needed for these unattended retry checks.
+
+**16 October, 00:25 UTC — current LIVE Edge sources re-archived after releases.**
+
+### Working and verified
+
+- A read-only before/after inventory held steady at 102 active LIVE functions.
+  All current deployed sources were downloaded into ignored private local
+  storage, and 720 files were independently rehashed; the archive includes
+  the new platform worker v92 and recommendation sync v42. This refreshes the
+  stale 16:56 source archive without touching the hosted application.
+  [Sanitised archive receipt](evidence/learn-build01-live-runtime-refresh-2026-10-16.json).
+
+### Needs finishing
+
+- An independent application copy, restored frontend configuration, full
+  Auth/operator flows and controlled source-capture resumption remain unproved.
+  Local source retention alone does not satisfy full application recovery.
+
+### Blocked externally
+
+- No overnight user action is needed for this read-only archive.
+
+**16 October, 00:24 UTC — approved public Slack channels spot-checked against the cutoff.**
+
+### Working and verified
+
+- A read-only public Slack search scoped to the exact 160 approved campaign
+  channel IDs found no messages after the saved 13 October 09:30 UTC boundary
+  in eight 20-channel batches. The same search shape found a post-cutoff message
+  in a positive-control public channel outside that campaign. This makes zero
+  retained post-cutoff campaign messages plausible for the observed interval;
+  no DMs or private channels were searched. The search credential may have
+  different visibility from ingestion, so this is a spot-check rather than a
+  capture-completeness proof.
+  [Sanitised spot-check](evidence/learn-build01-slack-approved-public-spotcheck-2026-10-16.json).
+
+### Needs finishing
+
+- The latest handoff aggregate still had 31 of 160 channel boundaries at or
+  before the cutoff; scheduled channel/reply polling and future post-cutoff
+  activity must establish continuing capture. The consented scope remains the
+  exact 160 public channels; the positive-control channel was not added.
+
+### Blocked externally
+
+- No overnight user action is needed for this spot-check.
+
 **16 October, 00:16 UTC — identity selector index released; ordinary retry pending.**
 
 ### Working and verified
