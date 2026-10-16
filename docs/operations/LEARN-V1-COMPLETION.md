@@ -13,6 +13,30 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 04:49 UTC — ongoing public Slack capture is still capacity-limited.**
+
+### Working and verified
+
+- All 160 approved channel/reply subscriptions remain enabled. Ordinary jobs
+  succeeded 32 times for channel windows and 50 times for reply windows in the
+  previous hour. Boundaries have advanced past the saved cutoff for 148 channels.
+  [Sanitised exact-roster readback](evidence/learn-build01-slack-ongoing-lag-2026-10-16.json).
+
+### Needs finishing
+
+- Sixty-nine channels remain more than a day behind observation time; zero
+  approved public messages or replies after the cutoff are retained. Measured
+  throughput cannot sustain the projected 15-minute full-channel/old-root
+  cadence. Complete an event-triggered reconciliation path or obtain an
+  explicit slower freshness target, then prove a real post-cutoff source-to-card
+  journey. No DM capture or inferred provider silence is accepted.
+
+### Blocked externally
+
+- Slack app event-subscription activation would change provider settings and
+  requires a separate exact-scope approval after the receiver/processor is
+  reviewable. The existing polling scope remains as approved meanwhile.
+
 **16 October, 04:34 UTC — historical email intake is outrunning projection.**
 
 ### Working and verified

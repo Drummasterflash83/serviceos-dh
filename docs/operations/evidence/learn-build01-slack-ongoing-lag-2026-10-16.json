@@ -1,0 +1,21 @@
+{
+  "version": "learn-build01-slack-ongoing-lag/1",
+  "observed_at_utc": "2026-10-16T04:49:57.416Z",
+  "environment": "LIVE Drummonds; exact approved public-channel campaign",
+  "approved_cutoff_utc": "2026-10-13T09:30:00Z",
+  "recorded_handoff_subscriptions": 160,
+  "enabled_channel_and_reply_subscriptions": 160,
+  "channels_advanced_past_cutoff": 148,
+  "channels_more_than_one_day_behind_observation": 69,
+  "oldest_saved_next_start_utc": "2026-10-13T09:30:00Z",
+  "newest_saved_next_start_utc": "2026-10-15T18:58:06.200813Z",
+  "last_hour_successful_channel_windows": 32,
+  "last_hour_successful_reply_windows": 50,
+  "retained_approved_public_messages_after_cutoff": 0,
+  "retained_approved_public_replies_after_cutoff": 0,
+  "individual_or_group_dms_in_scope": false,
+  "interpretation": "Saved boundaries continue to advance, but the backlog is material and the measured 82 channel/reply jobs per hour cannot meet a steady 15-minute sweep of all 160 channels and old roots. Zero retained post-cutoff rows cannot distinguish quiet provider channels from incomplete capture. An event-triggered reconciliation path or an explicitly accepted slower freshness target remains necessary; no Slack provider setting was changed.",
+  "source_provider_writes": false,
+  "production_data_writes": false,
+  "message_content_returned": false
+}
