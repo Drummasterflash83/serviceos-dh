@@ -1,0 +1,26 @@
+{
+  "contract": "learn-build01-card-heavy-plan/1",
+  "observedAt": "2026-10-16T22:16:00Z",
+  "testProject": "saatxzwxvdvqevbnskxy",
+  "liveProject": "tgbnakbxwcqjeimygroz",
+  "function": "public.learn_card_projection_inputs(uuid,uuid)",
+  "baselineSourceSha256": "756f137b80b5fa9a89c2d47d451a7453b47e238ef588a47ac9dddd269f0aeb5f",
+  "testAndLiveAfterSha256": "a52902eec22ac17ce18b0999bdfa86dc1de30a62003da6a35453112e94673044",
+  "migrationSha256": "ba6c5ff25e664e0626486aad7b625eab3553332610449ca4502b131d9a380039",
+  "testAndLiveRollbackRehearsed": true,
+  "testFunctionShapePassed": true,
+  "ownerAndGrantsPreserved": true,
+  "roleDefaultsChanged": false,
+  "sourceRowsChanged": false,
+  "queryPlanEvidence": {
+    "cardEligibleInteractions": 55115,
+    "coldBitmapHeapSharedReads": 31925,
+    "coldBitmapHeapExecutionMs": 11935,
+    "coldNonBitmapSharedReads": 23874,
+    "coldNonBitmapExecutionMs": 3928,
+    "fullFunctionNoBitmapReadOnlyMs": 2699,
+    "authenticatorStatementTimeoutSeconds": 8
+  },
+  "ordinaryLiveSweepAfterReleaseVerified": false,
+  "customerContentReturned": false
+}

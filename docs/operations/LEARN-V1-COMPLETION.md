@@ -13,6 +13,55 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 22:07 UTC — Email continuation and refreshed file backup verified; card failure isolated for diagnosis.**
+
+### Working and verified
+
+- The ordinary LIVE Email update chain now repeatedly saves 50 committed
+  unchanged receipts per full batch and queues one successor. The 22:05 batch
+  completed at 22:06 with 50 receipts, zero source failures and a queued child.
+  Thirteen existing review holds remain visible on each job; the resulting
+  `projection_review_required` status does not mean those 50 publications
+  failed. This proves unattended continuation, not completion of the wider
+  changed-source audit or the 19,128 legacy unversioned links.
+- The three-bucket communication backup refresh succeeded at 22:03. It
+  verified 3,166 phone objects with no missing referenced recording, plus
+  257 voicemail source and 257 audio objects in matched pairs. Health is
+  `observed_inventory_verified` and the latest attempt has no failure code.
+  A bounded retry of transient S3 read failures passed 28 local tests.
+  [Sanitised receipt](evidence/learn-build01-communication-backup-refresh-2026-10-16.json).
+- The read-only LIVE Graph gap was zero at 22:06. A current LIVE Edge v106
+  source inventory was downloaded and locally verified: 103 functions and
+  728 source files. No new off-site copy or restore claim is made for v106.
+- The heavy-card query plan showed a cold bitmap heap scan taking 11.9 seconds,
+  beyond the app connection's eight-second limit. A function-scoped planner
+  setting passed rollback rehearsal in TEST and LIVE, preserved the function
+  body/grants and role defaults, and brought a read-only LIVE full-function
+  sample to 2.7 seconds. This is a released narrow performance repair,
+  **not yet proof of an ordinary successful card sweep**.
+  [Sanitised plan receipt](evidence/learn-build01-card-heavy-plan-2026-10-16.json).
+
+### Needs finishing
+
+- The ten-card TEST fixture passed a 10-card first batch and one final-card
+  continuation; identical targeted worker source is LIVE v106. The ordinary
+  LIVE retry at 22:04 still reported one `card_partial_failure`, and ten
+  older cards remain without a projection. The existing job is queued for
+  retry at 23:04. Diagnose the specific failure stage and verify an ordinary
+  successful sweep before acceptance; do not count the TEST fixture as LIVE
+  recovery. [Release receipt](evidence/learn-build01-card-ten-release-2026-10-16.json).
+- Let the Email update chain drain and reconcile the legacy unversioned links
+  through a separately reviewed plan. The approved 160-channel Slack history
+  remains behind despite enabled subscriptions; confirm current post-cutoff
+  evidence without another team test post. Current application/Auth source
+  still needs a verified off-site package and isolated recovery. Source-backed
+  job attention/scoring and Commusoft links remain business gates.
+
+### Blocked externally
+
+- No new user action is requested. Chris's final business acceptance remains
+  his decision after technical evidence is ready.
+
 **16 October, 21:53 UTC — Email successor observed; final wrapper and backup outcomes pending.**
 
 ### Working and verified

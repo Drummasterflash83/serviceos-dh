@@ -133,11 +133,11 @@ test('unattended sweep bounds the batch and continues with the same cursor', asy
     return query;
   } };
   const result = await handle({ supabaseAdmin: admin, tenantId: tenant, payload: {} });
-  assert.equal(selectedLimit, 40);
-  assert.equal(advanced, 40);
+  assert.equal(selectedLimit, 10);
+  assert.equal(advanced, 10);
   assert.equal(result.success, true);
-  assert.equal(result.result.skipped, 40);
+  assert.equal(result.result.skipped, 10);
   assert.equal(result.continuation.jobType, 'customer_card.sync');
-  assert.equal(result.continuation.payload.limit, 40);
+  assert.equal(result.continuation.payload.limit, 10);
   assert.ok(Number.isFinite(Date.parse(result.continuation.payload.sweep_since)));
 });

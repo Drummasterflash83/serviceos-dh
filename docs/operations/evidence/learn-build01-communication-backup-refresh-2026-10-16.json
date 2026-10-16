@@ -1,0 +1,31 @@
+{
+  "contract": "learn-build01-communication-backup-refresh/1",
+  "observedAt": "2026-10-16T22:06:45Z",
+  "mode": "existing-three-bucket-supervisor",
+  "state": "observed_inventory_verified",
+  "latestAttempt": "succeeded",
+  "lastVerifiedAt": "2026-10-16T22:03:16.236Z",
+  "phoneRecordings": {
+    "objects": 3166,
+    "bytes": 662472461,
+    "recordingRows": 3160,
+    "missingStoragePointers": 0,
+    "missingObjectReferences": 0,
+    "unreferencedOlderObjects": 6
+  },
+  "voicemailSources": {
+    "objects": 257,
+    "bytes": 23809838,
+    "missingObjectReferences": 0
+  },
+  "voicemailAudio": {
+    "objects": 257,
+    "bytes": 13910085,
+    "missingObjectReferences": 0
+  },
+  "matchedVoicemailPairs": 257,
+  "temporaryS3ReadFailureRetries": "bounded 429/5xx read-only retry verified by 28 local tests",
+  "fullRecoveryProven": false,
+  "requiresAwakeComputer": true,
+  "customerContentReturned": false
+}

@@ -1,0 +1,25 @@
+{
+  "contract": "learn-build01-card-ten-release/1",
+  "observedAt": "2026-10-16T22:00:20Z",
+  "testProject": "saatxzwxvdvqevbnskxy",
+  "liveProject": "tgbnakbxwcqjeimygroz",
+  "testWorkerVersion": 65,
+  "liveWorkerVersion": 106,
+  "testAndLiveWireSha256": "b885e7f1759d8e59df0f552ad9cd685d9bd5e7ed699258f3b568cef7d20ff747",
+  "candidateSourceManifestSha256": "ab0a5e4d78c331e94eeb5d161178def9636b15308b0f90dd6d6d8d93bf90bcf5",
+  "changedSourcePaths": ["_shared/worker_handlers/customer_card_sync.ts"],
+  "otherEdgeFunctionsUnchanged": true,
+  "hostedTest": {
+    "syntheticCards": 11,
+    "firstBatchSwept": 10,
+    "firstBatchSkippedAsSynthetic": 10,
+    "successors": 1,
+    "secondBatchLimit": 10,
+    "secondBatchSwept": 1,
+    "furtherSuccessors": 0,
+    "fixtureArchived": true,
+    "providerRequests": 0
+  },
+  "liveOrdinaryRetryVerified": false,
+  "liveStaleCardGapCleared": false
+}

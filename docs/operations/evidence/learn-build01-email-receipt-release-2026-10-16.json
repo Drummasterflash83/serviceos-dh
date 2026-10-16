@@ -60,7 +60,10 @@
     "unchangedReceiptsInFirstBatch": 10,
     "fiftyRowSuccessorQueued": true,
     "successorRetriedBeforeFinalWrapperRelease": true,
-    "successorAfterFinalWrapperReleaseObserved": false
+    "successorAfterFinalWrapperReleaseObserved": true,
+    "ordinaryFiftyRowBatchesObservedThrough": "2026-10-16T22:06:07.993Z",
+    "eachObservedFullBatchHadCommittedUnchangedReceipts": true,
+    "existingReviewHoldsPerBatch": 13
   },
   "liveOrdinaryBacklogCleared": false,
   "productionSourceRowsChangedByRelease": false

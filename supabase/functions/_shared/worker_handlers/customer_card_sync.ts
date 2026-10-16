@@ -17,11 +17,10 @@ import type { WorkerHandlerContext, WorkerHandlerResult } from "../worker_contra
 
 // A full sweep performs per-card source reads and graph-edge pagination. Keep its
 // unattended batch below the five-minute platform-job lease under LIVE load.
-const DEFAULT_LIMIT = 40;
-const MAX_LIMIT = 500;
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 10;
 const TIMELINE_MAX = 10;
-// Keep URLs bounded at MAX_LIMIT; the doubled 200-UUID graph filter exceeds
-// the production gateway's request-target limit.
+// Keep graph URL filters bounded independently of the card sweep size.
 const ID_BATCH = 40;
 const EDGE_PAGE = 500;
 function batches<T>(values: T[]): T[][] {
