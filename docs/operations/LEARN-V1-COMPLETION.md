@@ -13,6 +13,36 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 14:57 UTC — Email persistence holds classified; Slack real-event proof still pending.**
+
+### Working and verified
+
+- A focused aggregate LIVE readback found exactly six active recent Email
+  `persistence_failed` holds, all created within six seconds at 08:54 UTC:
+  five user mailboxes and one alias. Their saved account and mailbox authority
+  is active. The 14:55 ordinary scheduler queued 16 jobs with zero unconfirmed
+  enqueues; its failed heartbeat is the designed warning for six known holds,
+  not a new scheduler outage. [Counts-only receipt](evidence/learn-build01-email-persistence-holds-2026-10-16.json).
+- The LIVE Slack Events route still has zero hints, event jobs or retained
+  post-cutoff messages/replies at 14:55 UTC. The continuing channel poller has
+  159 of 160 boundaries past cutoff and 43 channels over a day behind.
+
+### Needs finishing
+
+- The six Email attempts report unknown persistence and omit confirmed
+  message-upsert and ID counts. Keep their continuations and holds until an
+  exact, audited recovery can establish safe replay and an ordinary successful
+  capture; do not describe these as confirmed zero-write attempts.
+- Observe real public-channel Slack message and reply delivery, persistence
+  and latency before accepting near-live capture. Commusoft/card/graph,
+  scoring and full application/Auth recovery remain open.
+
+### Blocked externally
+
+- No immediate user action is needed for these readbacks. Real Slack event
+  acceptance still needs activity in an approved public channel, and Chris's
+  business sign-off follows the technical evidence.
+
 **16 October, 14:46 UTC — signed Drummonds Slack Events route enabled in LIVE; real delivery still unproved.**
 
 ### Working and verified

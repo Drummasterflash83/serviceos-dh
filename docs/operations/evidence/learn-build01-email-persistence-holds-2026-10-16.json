@@ -1,0 +1,34 @@
+{
+  "observed_at_utc": "2026-10-16T14:57:16Z",
+  "tenant_scope": "Drummonds LIVE",
+  "active_recent_persistence_holds": 6,
+  "grouping": [
+    {
+      "mailbox_type": "user",
+      "count": 5,
+      "authority": "active DWD account; active, enabled mailbox; no recorded directory identity conflict",
+      "latest_failure": "persistence_failed",
+      "persistence_evidence": "unknown",
+      "message_upsert_count": "missing",
+      "ids_seen": "missing"
+    },
+    {
+      "mailbox_type": "alias",
+      "count": 1,
+      "authority": "active DWD account; active, enabled mailbox; no recorded directory identity conflict",
+      "latest_failure": "persistence_failed",
+      "persistence_evidence": "unknown",
+      "message_upsert_count": "missing",
+      "ids_seen": "missing"
+    }
+  ],
+  "hold_window_utc": "2026-10-16T08:54:34Z–08:54:40Z",
+  "ordinary_scheduler_at_1455_utc": {
+    "mailbox_jobs_queued": 16,
+    "known_held_recovery": 6,
+    "unconfirmed_enqueues": 0,
+    "failed_heartbeat_explanation": "The scheduler deliberately reports failed while any known mailbox capture hold is present; this is not a newly failed scheduler tick."
+  },
+  "decision": "Keep all six holds until a continuation-preserving recovery can prove exact checkpoint and source authority. Unknown persistence and missing per-attempt counts do not establish zero writes.",
+  "scope": "Aggregate-only read-only management query; no mailbox content, IDs, credentials, provider request or production write."
+}
