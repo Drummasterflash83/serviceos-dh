@@ -84,6 +84,8 @@ export function LearnSlackCampaigns({
     generation = useRef(0),
     detailGeneration = useRef(0),
     current = useRef(scope);
+  const reasonInput = useRef<HTMLInputElement>(null);
+  const reviewPanel = useRef<HTMLDivElement>(null);
   current.current = scope;
   const canEditRef = useRef(canEdit);
   canEditRef.current = canEdit;
@@ -179,6 +181,9 @@ export function LearnSlackCampaigns({
       window.removeEventListener("storage", changed);
     };
   }, [tenantId, actorId, backend]);
+  useEffect(() => {
+    if (review) reviewPanel.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [review]);
   const editable = canEdit && writable && ready && !busy && !loading && !saved;
   const base = () => ({ version: 1 as const, ...scope, requestId: crypto.randomUUID() });
   function reviewStart() {
@@ -217,6 +222,11 @@ export function LearnSlackCampaigns({
   }
   function reviewAction(action: "pause" | "resume" | "stop" | "handoff") {
     if (!campaign) return;
+    if (!reason.trim()) {
+      setNotice("Add a reason for this change.");
+      reasonInput.current?.focus();
+      return;
+    }
     try {
       const common = {
         campaignId: campaign.campaignId,
@@ -474,6 +484,26 @@ export function LearnSlackCampaigns({
               </tbody>
             </table>
           </div>
+          <label className="block space-y-1">
+            <span>Reason for the new import or change</span>
+            <input
+              ref={reasonInput}
+              className="block w-full rounded border p-2"
+              value={reason}
+              maxLength={1000}
+              disabled={!editable}
+              onChange={(e) => {
+                setReason(e.target.value);
+                setReview(null);
+                setNotice("");
+              }}
+            />
+          </label>
+          {notice === "Add a reason for this change." && (
+            <p role="status" className="text-sm text-destructive">
+              {notice}
+            </p>
+          )}
           {!campaign.lifecycle && (
             <div className="flex flex-wrap gap-2">
               <button
@@ -501,19 +531,23 @@ export function LearnSlackCampaigns({
           )}
         </div>
       )}
-      <label className="block space-y-1">
-        <span>Reason for the new import or change</span>
-        <input
-          className="block w-full rounded border p-2"
-          value={reason}
-          maxLength={1000}
-          disabled={!editable}
-          onChange={(e) => {
-            setReason(e.target.value);
-            setReview(null);
-          }}
-        />
-      </label>
+      {!campaign && (
+        <label className="block space-y-1">
+          <span>Reason for the new import or change</span>
+          <input
+            ref={reasonInput}
+            className="block w-full rounded border p-2"
+            value={reason}
+            maxLength={1000}
+            disabled={!editable}
+            onChange={(e) => {
+              setReason(e.target.value);
+              setReview(null);
+              setNotice("");
+            }}
+          />
+        </label>
+      )}
       {allowSourceReplay &&
         !loading &&
         (!capabilities.sourceReplay || !capabilities.pageRecovery) && (
@@ -757,6 +791,7 @@ export function LearnSlackCampaigns({
       </details>
       {draft && (
         <div
+          ref={reviewPanel}
           className="space-y-3 rounded-xl border border-border p-4"
           aria-label="Review saved campaign request"
         >
