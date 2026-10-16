@@ -23,6 +23,14 @@ workspace/provider configuration. No secret values were read or saved for this
 inventory. The LIVE Slack Events receiver is still default-off in TEST and is
 outside the 102-function LIVE archive.
 
+At 04:23 UTC on 16 October, a separate read-only LIVE secret-metadata readback
+found 54 configured names. Of 53 literal source names that are not platform-
+injected, 42 appear in that inventory and 11 do not. This is an exact name
+comparison, not a claim that the 11 are all required: some guarded features
+have a fallback or are inactive. The 18 dynamic lookups still need binding
+analysis. Only names and metadata digests were handled; no plaintext values
+were printed or saved. [Sanitised name readback](evidence/learn-build01-runtime-secret-name-readback-2026-10-16.json).
+
 An acceptance rehearsal must start from independently retrieved ciphertext and
 document the exact database, file, source and Git revisions. It must use an
 isolated service, private networking and disposable recipients where feasible,
