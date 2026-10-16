@@ -1,4 +1,4 @@
-/** A second scheduled slot covers a dropped first GitHub cron event. It must
+/** Later scheduled slots cover dropped GitHub cron events. They must
  * not export another full database when an earlier scheduled run succeeded.
  * An API failure runs the backup: duplicate encrypted copies are preferable
  * to silently missing the day's only copy.
