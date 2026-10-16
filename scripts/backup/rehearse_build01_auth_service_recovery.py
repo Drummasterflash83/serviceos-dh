@@ -302,9 +302,56 @@ def run():
                 '/customer_cards?select=id,tenant_id&limit=5',headers=(bearer,),port=3000)
             if api_status != 200 or api_rows != [{'id':synthetic_card,'tenant_id':synthetic_tenant}]:
                 raise RecoveryError('Cross-tenant card isolation unconfirmed: HTTP '+str(api_status))
-            report.update(state='isolated_auth_and_api_tenant_boundary_verified',
+            stage = 'restored_operator_read'
+            target.query("insert into public.platform_authority_grants"
+                "(profile_id,permission,granted_by,reason,source) values('"+actor+
+                "'::uuid,'platform.controlplane.admin','system:offline-restore',"
+                "'Isolated Build 01 operator recovery rehearsal','offline-restore');")
+            operator_request = json.dumps({
+                'p_tenant':tenant, 'p_collection':'customers',
+                'p_reason':'Isolated Build 01 operator recovery rehearsal',
+            }).encode()
+            operator_status,operator_page = curl_inside(target.name,
+                '/rpc/openfolk_client_information',method='POST',
+                headers=(bearer,'Content-Type: application/json'),
+                payload=operator_request,port=3000)
+            if (operator_status != 200 or not isinstance(operator_page,dict)
+                or operator_page.get('tenant_id') != tenant
+                or operator_page.get('actor_id') != actor
+                or operator_page.get('collection') != 'customers'
+                or not isinstance(operator_page.get('rows'),list)
+                or not 1 <= len(operator_page['rows']) <= 25
+                or not isinstance(operator_page.get('audit_id'),str)):
+                raise RecoveryError('Restored operator client selection unconfirmed: HTTP '+str(operator_status))
+            audit_id = str(uuid.UUID(operator_page['audit_id']))
+            audit_count = target.query("select count(*) from public.controlplane_change_log "
+                "where id='"+audit_id+"'::uuid and tenant_id='"+tenant+
+                "'::uuid and actor='"+actor+"' and action='client_information.read' "
+                "and resource_type='customers' and source='openfolk-client-information';")
+            if audit_count != '1':
+                raise RecoveryError('Restored operator read audit unconfirmed')
+            revoked = target.query("update public.platform_authority_grants set "
+                "effective_to=clock_timestamp() where profile_id='"+actor+
+                "'::uuid and permission='platform.controlplane.admin' returning id;")
+            if not revoked:
+                raise RecoveryError('Synthetic operator revocation unconfirmed')
+            denied_status,denied = curl_inside(target.name,
+                '/rpc/openfolk_client_information',method='POST',
+                headers=(bearer,'Content-Type: application/json'),
+                payload=operator_request,port=3000)
+            if denied_status not in (401,403) or denied.get('code') != '42501':
+                raise RecoveryError('Revoked operator read was not denied: HTTP '+str(denied_status))
+            api_status,api_rows = curl_inside(target.name,
+                '/customer_cards?select=id,tenant_id&limit=5',headers=(bearer,),port=3000)
+            if api_status != 200 or api_rows != [{'id':synthetic_card,'tenant_id':synthetic_tenant}]:
+                raise RecoveryError('Operator rehearsal changed raw tenant isolation')
+            report.update(state='isolated_auth_api_and_operator_boundary_verified',
                           unassignedUserSawCards=0,restoredTenantCardPage=5,
-                          otherTenantCardPage=1,crossTenantCardLeak=0)
+                          otherTenantCardPage=1,crossTenantCardLeak=0,
+                          restoredOperatorSelection=True,
+                          restoredOperatorReadAuditCount=1,
+                          revokedOperatorReadDenied=True,
+                          operatorRawCrossTenantRows=0)
             target.verify_boundary()
             cleanup_rest()
             report['restContainerRemoved'] = True
@@ -316,7 +363,7 @@ def run():
         report.update(state='isolated_auth_recovery_unverified',failureStage=stage,
                       safeFailure=(str(exc) if isinstance(exc,RecoveryError)
                                    else type(exc).__name__))
-        if stage == 'tenant_api_boundary':
+        if stage in ('tenant_api_boundary','restored_operator_read'):
             try:
                 observed = subprocess.run([DOCKER,'logs','--tail','120',REST_NAME],
                     stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=10)

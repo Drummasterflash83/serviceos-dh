@@ -1,0 +1,35 @@
+{
+  "version": "learn-build01-isolated-auth-operator-recovery/1",
+  "observed_at_utc": "2026-10-16T01:03:19Z",
+  "source": "Pinned retained production database archive, verified before each isolated restore",
+  "environment": "Disposable local database, Auth and PostgREST containers; no external network or host ports",
+  "recovery": {
+    "archived_auth_users_preserved": 2,
+    "new_synthetic_signing_secret": true,
+    "synthetic_user_created_and_fresh_login_verified": true,
+    "old_session_continuation_verified": false,
+    "unassigned_user_card_rows": 0,
+    "restored_drummonds_card_page_rows": 5,
+    "different_synthetic_tenant_card_rows": 1,
+    "cross_tenant_card_leak_rows": 0,
+    "audited_operator_client_selection": true,
+    "matching_operator_read_audit_rows": 1,
+    "revoked_operator_read_denied": true,
+    "operator_grant_did_not_expand_raw_tenant_card_access": true
+  },
+  "cleanup": {
+    "auth_container_removed": true,
+    "postgrest_container_removed": true,
+    "database_container_removed": true,
+    "independent_auth_and_postgrest_container_listing_empty": true
+  },
+  "production_writes": false,
+  "source_provider_requests": 0,
+  "email_sent": false,
+  "remaining": [
+    "Real users would need a fresh login if the original non-exportable signing key is unavailable; no real login was attempted",
+    "Restore the frontend and runtime configuration, then prove full operator routes and controlled capture resumption in an isolated application",
+    "Independently retain and recover the current encrypted Edge source package"
+  ],
+  "customer_content_or_secret_values_in_receipt": false
+}

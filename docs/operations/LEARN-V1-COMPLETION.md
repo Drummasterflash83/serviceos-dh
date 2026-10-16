@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, 01:03 UTC — isolated Auth and operator recovery extended.**
+
+### Working and verified
+
+- The pinned production archive restored in a network-isolated local database.
+  Auth and PostgREST started with a new synthetic signing secret, preserved both
+  archived users and verified a fresh synthetic login. An unassigned user saw
+  zero cards, a Drummonds assignment saw five, and a different synthetic tenant
+  saw only its own card. A synthetic platform grant then allowed an explicit
+  audited Drummonds customer read; revocation denied the same RPC, while raw
+  tenant-card access remained isolated. The Auth, API and database containers
+  were removed, with independent listing empty. No real user login, production
+  write, source-provider request or email occurred.
+  [Sanitised recovery evidence](evidence/learn-build01-isolated-auth-operator-recovery-2026-10-16.json).
+
+### Needs finishing
+
+- This does not yet prove a recovered frontend, runtime secrets, full operator
+  routes, controlled capture resumption or independent application-source
+  retrieval. Real users would need a fresh login if the original non-exportable
+  Auth signing key is unavailable. Full application recovery remains open.
+
+### Blocked externally
+
+- No overnight user action is needed for the isolated checks.
+
 **16 October, 00:59 UTC — LIVE Edge source package prepared locally.**
 
 ### Working and verified
