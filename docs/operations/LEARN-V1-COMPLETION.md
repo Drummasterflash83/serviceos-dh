@@ -7,6 +7,60 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, 00:53 UTC — Slack event preparation installed in TEST, default-off.**
+
+### Working and verified
+
+- The service-only hint ledger and receiver are installed in TEST after the
+  isolated rehearsal. Separate catalog readbacks confirmed the schema after an
+  initial combined readback failed; no uncertain write was retried. The
+  recorder permits only service-role execution, its table has row security and
+  no client/service SELECT grants, and all 42 prior TEST functions are intact.
+  The new receiver is v1 with its application activation flag absent: a
+  synthetic POST returns 503, GET returns 405 and the hint table is empty.
+  [Sanitised TEST and isolated evidence](evidence/learn-build01-slack-event-preparation-2026-10-16.json).
+
+### Needs finishing
+
+- Signed synthetic delivery, a bounded hint reconciliation processor and
+  correction visibility policy remain unverified. No LIVE receiver/schema or
+  Slack app event subscription is active. The current polling handoff still
+  needs sustainable capacity and real approved post-cutoff source-to-card
+  evidence.
+
+### Blocked externally
+
+- No overnight user action is needed. An exact Slack event subscription and
+  correction policy need review before activation.
+
+**16 October, 00:50 UTC — inactive Slack hint ledger and receiver rehearsed.**
+
+### Working and verified
+
+- A current read-only LIVE aggregate confirms all 160 approved recurring
+  subscriptions have active accounts, current approvers, configured unrevoked
+  connections, matching revisions and scoped user-token credentials. The first
+  local bot-only ledger candidate was excluded in an isolated restore; the
+  correction uses the existing credential-field rule. The rerun on the pinned
+  network-isolated production archive recorded one synthetic hint, recognized
+  a duplicate, rejected a changed event ID and excluded a paused channel;
+  the disposable database was removed. Fourteen focused tests pass and the
+  default-off Edge receiver compiles in the pinned runtime.
+  [Sanitised preparation evidence](evidence/learn-build01-slack-event-preparation-2026-10-16.json).
+
+### Needs finishing
+
+- This remains local preparation: no TEST/LIVE schema or receiver deployment,
+  durable reconciliation processor, correction visibility policy or Slack app
+  subscription. The handler's roster and receipt path must be verified in
+  hosted TEST before activation. Real approved post-cutoff channel/reply capture
+  is still unproved.
+
+### Blocked externally
+
+- No overnight user action is needed. Provider subscription and the exact
+  correction policy require later review; the current polling capture continues.
+
 **16 October, 00:41 UTC — signed Slack HTTP handling prepared locally.**
 
 ### Working and verified

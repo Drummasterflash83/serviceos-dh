@@ -349,6 +349,9 @@ verify_jwt = true
 [functions.learn-slack-schedule]
 verify_jwt = true
 
+[functions.learn-slack-events]
+verify_jwt = false
+
 # Gateway JWT plus explicitly configured infrastructure trigger key. No schedule.
 [functions.learn-commusoft-worker]
 verify_jwt = true

@@ -34,6 +34,34 @@ signing secret, provider write or capture-scope change has been made. A future
 adapter must prove that its roster is current and that its receipt means an
 atomic durable insert before this handler can be enabled.
 
+At 00:50 UTC, the inactive receiver gained an exact-roster digest/expected-
+count adapter, a service-only SQL hint ledger and a default-off Edge entrypoint.
+The ledger rechecks the tenant, approved subscription, account, capture switch,
+credential kind, connection revision and source scope in the insert transaction.
+The existing approved connection uses a user token; the first bot-only candidate
+was excluded in an isolated rehearsal and corrected to the existing credential
+field rule. A pinned, network-isolated production-archive restore with 160
+enabled subscriptions then recorded one synthetic hint, recognized a duplicate,
+rejected a changed event ID and excluded a paused subscription. It was removed
+afterward. Fourteen local boundary/adapter/HTTP tests pass, and the inactive
+receiver compiled in the pinned Edge runtime. [Sanitised evidence](evidence/learn-build01-slack-event-preparation-2026-10-16.json).
+At that rehearsal checkpoint the schema and receiver were **local only**; no
+TEST/LIVE deployment, signing-secret installation, Slack event subscription or
+provider write had occurred.
+A hint processor, edit/delete visibility policy, TEST delivery rehearsal and real
+post-cutoff capture are still required.
+
+At 00:53 UTC, the ledger and default-off receiver were installed in TEST only.
+Exact catalog readback showed service-role-only recorder execution, row security
+and no table SELECT grants to clients or service role. The receiver is TEST v1
+with public gateway JWT verification disabled for future Slack HMAC delivery,
+but its application activation flag is absent: a synthetic unsigned POST returns
+503 and GET returns 405. The TEST hint table is empty and all 42 prior TEST Edge
+functions were preserved. A combined readback query failed after the schema
+submission; separate catalog queries confirmed installation, so it was not
+resubmitted. LIVE and Slack remain unchanged. The hosted signed-delivery and
+source reconciliation gates above still apply.
+
 ## Observed baseline and arithmetic
 
 - The handoff has 160 enabled channel/reply subscriptions. Of those, 127 saved
