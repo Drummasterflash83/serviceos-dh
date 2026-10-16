@@ -1,5 +1,5 @@
 /** Exact additive source-job reader release; no provider request or projection. */
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { savedCliToken } from "./learn-test-readiness.mjs";
 const [mode, environment] = process.argv.slice(2);
@@ -39,7 +39,17 @@ const ledger = environment === "test"
 const before = await q(catalog);
 if (mode === "readback") {
   const installed = read("apply-result"), hashes = await q(ledger);
-  if (installed.sourceSha256 !== digest || JSON.stringify(before) !== JSON.stringify(installed.expected) || hashes.length !== 1 || hashes[0].digest !== digest) throw Error("Installed source jobs contract differs; inspect before continuing");
+  let expected = installed.expected;
+  if (existsSync(`${root}/${environment}-plan-apply-result.json`)) {
+    const plan = read("plan-apply-result");
+    const planDigest = hash(readFileSync("supabase/migrations/20261104151000_learn_commusoft_source_job_plan.sql", "utf8"));
+    const planHashes = await q(environment === "test"
+      ? "select source_sha256 digest from of_test_deploy.migrations where migration_name='learn_commusoft_source_job_plan_v1'"
+      : "select encode(sha256(convert_to(array_to_string(statements,''),'UTF8')),'hex') digest from supabase_migrations.schema_migrations where version='20261104151000'");
+    if (plan.state !== "installed_verified" || plan.sourceSha256 !== planDigest || planHashes.length !== 1 || planHashes[0].digest !== planDigest) throw Error("Reader plan patch differs");
+    expected = plan.expected;
+  }
+  if (installed.sourceSha256 !== digest || JSON.stringify(before) !== JSON.stringify(expected) || hashes.length !== 1 || hashes[0].digest !== digest) throw Error("Installed source jobs contract differs; inspect before continuing");
   // The private helper intentionally has no EXECUTE grant for the management
   // read-only role. Use the owner endpoint inside an enforced read-only transaction.
   const result = { environment, project, observedAt: new Date().toISOString(), sourceSha256: digest, installedVerified: true, coverage: await q(`begin read only;set local statement_timeout=45000;set local enable_nestloop=off;${coverage};commit;`, false), providerRequests: 0, canonicalWrites: 0 };

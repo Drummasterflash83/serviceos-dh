@@ -8,7 +8,7 @@ Unresolved customer identity must not hide retained jobs. No customerType rule o
 QuickBooks crosswalk has been inferred from the supplied reference images.
 
 The additive reader is installed and its exact functions, privileges and migration
-ledger verified in TEST and LIVE. LIVE readback at 15:15 UTC returns 12,656 retained
+ledger verified in TEST and LIVE. LIVE readback at 15:31 UTC returns 12,656 retained
 jobs, including 295 recorded open/pending/on-hold jobs. Of those, 25 reference an
 uncaptured immediate customer/site and four have a retained site whose customer
 source is missing. The other 266 have the source relationship available. Canonical
@@ -31,15 +31,29 @@ completion. Codes retain leading zeros; source job IDs remain separate identitie
 32 focused tests, TypeScript, production build, isolated PostgreSQL authority,
 pagination/conflict/preservation checks and real SQL-to-UI parsing passed. Local
 synthetic browser checks cover visible unclassified work, leading-zero search,
-empty search and honest details failure. This is not hosted acceptance.
+empty search and honest details failure. LIVE signed-in tenant acceptance now
+passes: 295 open-work results, two disjoint
+25-card pages, search, missing-source labels and retained job details. Codes `006`
+and `001` remain exact text. The first hosted read timed out; a function-local
+query-plan repair restored normal reads without raising timeouts or changing grants.
 
 [Timestamped evidence](evidence/learn-commusoft-source-jobs-2026-10-16.json).
 
+Both hosted frontend candidates built successfully, rendered the correct backend,
+and were bound to their existing aliases with protection/redirects preserved.
+LIVE is `92d937df7d646bfaac6d5de986aeb60d7d3aebbf` /
+`dpl_EQn4vTFH6iXMV6conq4nsHM6taSd`; TEST is
+`ff501a812d0c6bcedd1c0deacaa7996357f568cc` /
+`dpl_5mwS1nGSEKQM9ibBgo3E5QByHSeZ`. Authenticated TEST acceptance is
+not established: the saved sign-in was rejected. Chris explicitly directed
+verification on LIVE instead; TEST login is not a release blocker.
+LIVE operator acceptance also passes with explicit Drummonds selection and reason;
+closing review removes the records.
+
 ## Needs finishing
 
-Hosted frontend preview, authenticated TEST/LIVE acceptance and exact frontend
-release remain pending at this checkpoint. Work-category settings and card rules
-are a separate proposed configuration feature, not implemented by this reader.
+Work-category settings and card rules are a separate proposed configuration
+feature, not implemented by this reader.
 Missing sources and ambiguous canonical identity/contact links remain unresolved.
 No score policy is established by this release.
 
@@ -47,7 +61,11 @@ No score policy is established by this release.
 
 Immutable migration `20261104150000_learn_commusoft_source_job_cards.sql`:
 `73a5e386e9a37fc33c0e249dd51be44a356ec3ac972cbafe2f8f1e98a2771b7b`.
-Do not edit or blindly replay it. TEST uses `of_test_deploy.migrations`; LIVE uses
+The additive planner migration `20261104151000_learn_commusoft_source_job_plan.sql`
+has SHA-256 `d60f22862c2a41fbad8ab94af5af6e5c00c12a3997d99a24b5ece6f1a0ea8018`.
+Its setting is scoped to the private reader and restored when the function exits.
+Both migrations are installed and exact-readback verified in both environments.
+Do not edit or blindly replay either. TEST uses `of_test_deploy.migrations`; LIVE uses
 `supabase_migrations.schema_migrations`.
 
 The release tool rehearses the exact baseline in a rolled-back transaction, checks
@@ -68,3 +86,18 @@ python3 scripts/verify/learn-commusoft-source-jobs.py
 node scripts/verify/learn-commusoft-source-jobs-release.mjs readback test
 node scripts/verify/learn-commusoft-source-jobs-release.mjs readback live
 ```
+
+Frontend predecessor rollback: LIVE `dpl_DR3tRETFxNGmCG7DdQLmjDxModpC`
+(commit `a123d349d2e33e47a154d1871328c58659fc886f`), TEST
+`dpl_7yGQFJ64Xk4e4JTTCH519Y8cWJAs` (commit
+`42dbf90c6fd47a5512c8cad73a22dbb387b2a91d`). Rebind only the recorded
+existing aliases after checking for a newer release; retain redirects/protection.
+
+## Production Git pointer
+
+The verified LIVE aliases serve `92d937df`, but remote `main` remains `a123d349`.
+Automatic approval review rejected aligning `main` because it treats the push and
+possible Vercel rebuild as a separately approved action. Chris has been asked for
+that exact approval. The fast-forward changes only the six frontend/test files
+listed in the isolated candidate; it contains no backend or unrelated edits.
+Until reconciled, do not deploy old `main` over this verified release.

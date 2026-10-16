@@ -1,13 +1,104 @@
 {
   "scope": "Commusoft retained source-job visibility; no person/company inference",
-  "frontend": "local_verified_hosted_pending",
+  "frontend": "TEST and LIVE aliases released; authenticated LIVE tenant and operator acceptance passed",
   "migration": "20261104150000_learn_commusoft_source_job_cards.sql",
   "checks": {
     "focusedTests": 32,
     "typescript": true,
     "productionBuild": true,
     "isolatedPostgres": true,
-    "syntheticBrowserSearchAndFailure": true
+    "syntheticBrowserSearchAndFailure": true,
+    "hostedAnonymousAndServiceRoleDenials": {
+      "observedAt": "2026-10-16T15:20:07.836Z",
+      "checks": [
+        {
+          "environment": "test",
+          "role": "anon",
+          "name": "learn_commusoft_source_job_rows",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "environment": "test",
+          "role": "anon",
+          "name": "learn_commusoft_source_job_cards",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "environment": "test",
+          "role": "service_role",
+          "name": "learn_commusoft_source_job_rows",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "environment": "test",
+          "role": "service_role",
+          "name": "learn_commusoft_source_job_cards",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "environment": "live",
+          "role": "anon",
+          "name": "learn_commusoft_source_job_rows",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "environment": "live",
+          "role": "anon",
+          "name": "learn_commusoft_source_job_cards",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "environment": "live",
+          "role": "service_role",
+          "name": "learn_commusoft_source_job_rows",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "environment": "live",
+          "role": "service_role",
+          "name": "learn_commusoft_source_job_cards",
+          "status": 403,
+          "code": "42501"
+        }
+      ]
+    },
+    "liveTenantBrowser": {
+      "matchingOpenJobs": 295,
+      "firstPageCards": 25,
+      "secondPageCards": 25,
+      "pageOverlap": 0,
+      "searchMissingParentJob": true,
+      "retainedDetails": true,
+      "leadingZeroCodesPreserved": [
+        "006",
+        "001"
+      ],
+      "sourceObservationsNotClaimedFresh": true
+    },
+    "liveOperatorBrowser": {
+      "selectedTenant": "Drummonds",
+      "explicitReasonRequired": true,
+      "capturedOpenJobs": 295,
+      "closeReviewRemovesRecords": true
+    },
+    "liveReadAudit": {
+      "observedAt": "2026-10-16T15:38:35.586Z",
+      "status": 201,
+      "result": [
+        {
+          "successful_reader_receipts": 6,
+          "selected_client_operator_receipts": 1,
+          "different_actor_receipts": 0
+        }
+      ]
+    }
   },
   "environments": {
     "test": {
@@ -56,7 +147,7 @@
     "live": {
       "environment": "live",
       "project": "tgbnakbxwcqjeimygroz",
-      "observedAt": "2026-10-16T15:15:44.444Z",
+      "observedAt": "2026-10-16T15:31:56.625Z",
       "sourceSha256": "73a5e386e9a37fc33c0e249dd51be44a356ec3ac972cbafe2f8f1e98a2771b7b",
       "installedVerified": true,
       "coverage": [
@@ -96,5 +187,459 @@
       "providerRequests": 0,
       "canonicalWrites": 0
     }
+  },
+  "testSignedInAcceptance": "Not established; Chris explicitly directed LIVE acceptance instead after saved TEST sign-in was rejected.",
+  "planRepair": {
+    "migration": "20261104151000_learn_commusoft_source_job_plan.sql",
+    "sha256": "d60f22862c2a41fbad8ab94af5af6e5c00c12a3997d99a24b5ece6f1a0ea8018",
+    "originalFailure": "Default latest-observation join plan timed out. Reader-local enable_nestloop=off restores normal signed-in reads. No timeout or privilege increase.",
+    "isolatedTestsPassed": true,
+    "installed": {
+      "test": {
+        "state": "installed_verified",
+        "sourceSha256": "d60f22862c2a41fbad8ab94af5af6e5c00c12a3997d99a24b5ece6f1a0ea8018",
+        "observedAt": "2026-10-16T15:31:08.513Z"
+      },
+      "live": {
+        "state": "installed_verified",
+        "sourceSha256": "d60f22862c2a41fbad8ab94af5af6e5c00c12a3997d99a24b5ece6f1a0ea8018",
+        "observedAt": "2026-10-16T15:31:14.339Z"
+      }
+    }
+  },
+  "releases": {
+    "test": {
+      "environment": "test",
+      "id": "dpl_5mwS1nGSEKQM9ibBgo3E5QByHSeZ",
+      "sha": "ff501a812d0c6bcedd1c0deacaa7996357f568cc",
+      "url": "serviceos-learn-test-3fe5u1aln-allkin.vercel.app",
+      "after": {
+        "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+        "protection": {
+          "deploymentType": "all"
+        },
+        "production": "dpl_AFvr5njNt4hpPUqpBo413zKt3NRr",
+        "domains": [
+          {
+            "name": "serviceos-learn-test.vercel.app",
+            "redirect": null,
+            "gitBranch": null,
+            "verified": true
+          },
+          {
+            "name": "test.openfolk.ai",
+            "redirect": null,
+            "gitBranch": null,
+            "verified": true
+          }
+        ],
+        "aliases": [
+          {
+            "name": "serviceos-learn-test-allkin.vercel.app",
+            "deployment": "dpl_5mwS1nGSEKQM9ibBgo3E5QByHSeZ",
+            "redirect": null
+          },
+          {
+            "name": "test.openfolk.ai",
+            "deployment": "dpl_5mwS1nGSEKQM9ibBgo3E5QByHSeZ",
+            "redirect": null
+          }
+        ]
+      },
+      "state": "aliases_verified",
+      "at": "2026-10-16T15:23:33.896Z",
+      "rollback": [
+        {
+          "name": "serviceos-learn-test-allkin.vercel.app",
+          "deployment": "dpl_7yGQFJ64Xk4e4JTTCH519Y8cWJAs",
+          "redirect": null
+        },
+        {
+          "name": "test.openfolk.ai",
+          "deployment": "dpl_7yGQFJ64Xk4e4JTTCH519Y8cWJAs",
+          "redirect": null
+        }
+      ]
+    },
+    "live": {
+      "environment": "live",
+      "id": "dpl_EQn4vTFH6iXMV6conq4nsHM6taSd",
+      "sha": "92d937df7d646bfaac6d5de986aeb60d7d3aebbf",
+      "url": "serviceos-pq15vd0yk-allkin.vercel.app",
+      "after": {
+        "project": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+        "protection": {
+          "deploymentType": "all_except_custom_domains"
+        },
+        "production": "dpl_DR3tRETFxNGmCG7DdQLmjDxModpC",
+        "domains": [
+          {
+            "name": "app.openfolk.ai",
+            "redirect": null,
+            "gitBranch": null,
+            "verified": true
+          },
+          {
+            "name": "openfolk.ai",
+            "redirect": "www.openfolk.ai",
+            "gitBranch": null,
+            "verified": true
+          },
+          {
+            "name": "serviceos-dh.vercel.app",
+            "redirect": null,
+            "gitBranch": null,
+            "verified": true
+          },
+          {
+            "name": "www.openfolk.ai",
+            "redirect": null,
+            "gitBranch": null,
+            "verified": true
+          }
+        ],
+        "aliases": [
+          {
+            "name": "app.openfolk.ai",
+            "deployment": "dpl_EQn4vTFH6iXMV6conq4nsHM6taSd",
+            "redirect": null
+          },
+          {
+            "name": "openfolk.ai",
+            "deployment": "dpl_EQn4vTFH6iXMV6conq4nsHM6taSd",
+            "redirect": "www.openfolk.ai"
+          },
+          {
+            "name": "serviceos-dh.vercel.app",
+            "deployment": "dpl_EQn4vTFH6iXMV6conq4nsHM6taSd",
+            "redirect": null
+          },
+          {
+            "name": "www.openfolk.ai",
+            "deployment": "dpl_EQn4vTFH6iXMV6conq4nsHM6taSd",
+            "redirect": null
+          }
+        ]
+      },
+      "state": "aliases_verified",
+      "at": "2026-10-16T15:24:20.543Z",
+      "rollback": [
+        {
+          "name": "app.openfolk.ai",
+          "deployment": "dpl_DR3tRETFxNGmCG7DdQLmjDxModpC",
+          "redirect": null
+        },
+        {
+          "name": "openfolk.ai",
+          "deployment": "dpl_DR3tRETFxNGmCG7DdQLmjDxModpC",
+          "redirect": "www.openfolk.ai"
+        },
+        {
+          "name": "serviceos-dh.vercel.app",
+          "deployment": "dpl_DR3tRETFxNGmCG7DdQLmjDxModpC",
+          "redirect": null
+        },
+        {
+          "name": "www.openfolk.ai",
+          "deployment": "dpl_DR3tRETFxNGmCG7DdQLmjDxModpC",
+          "redirect": null
+        }
+      ]
+    }
+  },
+  "preservation": {
+    "currentJobs": {
+      "environment": "live",
+      "project": "tgbnakbxwcqjeimygroz",
+      "observedAt": "2026-10-16T15:24:25.035Z",
+      "sourceSha256": "59c6b1535c34cccc4d4275cf411c1e0f857c096fce562dd9c3c40fb88c72c355",
+      "idleSourceSha256": "349a839000ed90ff7eaf86891320edc83c1e1c68e2b3262fa4b8111afb86df8f",
+      "rows": [
+        {
+          "enabled": true,
+          "last_state": "window_complete",
+          "watermark": "2026-10-16 15:13:26.845+00",
+          "next_check_at": "2026-10-16 15:30:30.890971+00",
+          "active_jobs_window": false,
+          "phase": 3,
+          "recurring_state": "window_active",
+          "full_cycle_watermark": "2026-10-16 07:30:01.123+00",
+          "resource": "propertyContacts",
+          "contact_properties_completed": 1321,
+          "completed_windows": 35,
+          "incomplete_windows": 0,
+          "newest_job_page": "2026-10-16 15:15:29.126619+00"
+        }
+      ],
+      "installedFunctionsAndLedgerVerified": true,
+      "providerSettingsChanged": false,
+      "customerContentReturned": false
+    },
+    "relationships": {
+      "version": "learn-commusoft-build01-readback/1",
+      "environment": "live",
+      "project": "tgbnakbxwcqjeimygroz",
+      "observedAt": "2026-10-16T15:24:28.330Z",
+      "jobs": {
+        "retained": 12656,
+        "published": 1004,
+        "open_source": 295,
+        "open_published": 10,
+        "missing_parent_source": 1553,
+        "missing_reviewed_parent": 11651,
+        "published_latest_version": 1004,
+        "unreviewed_site_customer": 3600,
+        "published_missing_customer": 0,
+        "published_with_explicit_completion_instant": 0
+      },
+      "pages": [
+        {
+          "collection": "jobs",
+          "newest_page_at": "2026-10-16T15:15:29.126619+00:00",
+          "retained_pages": 302,
+          "pages_last_hour": 4,
+          "observations_last_hour": 1
+        },
+        {
+          "collection": "properties",
+          "newest_page_at": "2026-10-16T13:03:23.834524+00:00",
+          "retained_pages": 375,
+          "pages_last_hour": 0,
+          "observations_last_hour": null
+        },
+        {
+          "collection": "propertyContacts",
+          "newest_page_at": "2026-10-16T15:24:25.457315+00:00",
+          "retained_pages": 35256,
+          "pages_last_hour": 593,
+          "observations_last_hour": 0
+        }
+      ],
+      "sources": [
+        {
+          "collection": "jobs",
+          "identities": 12656,
+          "reviewed_links": 1004,
+          "ambiguous_latest": 0,
+          "links_on_latest_version": 1004,
+          "newest_record_observation": "2026-10-16T15:00:23.995784+00:00",
+          "oldest_record_observation": "2026-10-13T16:08:04.060217+00:00"
+        },
+        {
+          "collection": "properties",
+          "identities": 2428,
+          "reviewed_links": 152,
+          "ambiguous_latest": 0,
+          "links_on_latest_version": 152,
+          "newest_record_observation": "2026-10-16T13:03:23.834524+00:00",
+          "oldest_record_observation": "2026-10-16T13:01:06.029195+00:00"
+        },
+        {
+          "collection": "propertyContacts",
+          "identities": 2969,
+          "reviewed_links": 105,
+          "ambiguous_latest": 0,
+          "links_on_latest_version": 105,
+          "newest_record_observation": "2026-10-15T15:48:31.103025+00:00",
+          "oldest_record_observation": "2026-10-13T16:22:04.05973+00:00"
+        }
+      ],
+      "recurring": [
+        {
+          "phase": 3,
+          "state": "window_active",
+          "enabled": true,
+          "resource": "propertyContacts",
+          "watermark": "2026-10-16T07:30:01.123+00:00",
+          "contact_targets": 1557,
+          "contacts_completed": 1322
+        }
+      ],
+      "contact_relationships": {
+        "reviewed": 105,
+        "site_links": 24,
+        "missing_customer_card": 0,
+        "customer_card_mismatch": 0,
+        "site_reference_mismatch": 0,
+        "missing_active_site_edge": 0,
+        "missing_canonical_person": 0,
+        "unreviewed_source_parent": 0,
+        "missing_active_customer_edge": 0
+      },
+      "job_source_field_types": [
+        {
+          "type": "string",
+          "field": "description",
+          "records": 12656
+        },
+        {
+          "type": "number",
+          "field": "id",
+          "records": 12656
+        }
+      ],
+      "open_work_relationships": [
+        {
+          "jobs": 10,
+          "published": 9,
+          "parent_type": "customer",
+          "parent_reviewed": true,
+          "site_customer_reviewed": false
+        },
+        {
+          "jobs": 169,
+          "published": 0,
+          "parent_type": "customer",
+          "parent_reviewed": false,
+          "site_customer_reviewed": false
+        },
+        {
+          "jobs": 25,
+          "published": 0,
+          "parent_type": "missing",
+          "parent_reviewed": false,
+          "site_customer_reviewed": false
+        },
+        {
+          "jobs": 90,
+          "published": 0,
+          "parent_type": "workaddress",
+          "parent_reviewed": false,
+          "site_customer_reviewed": false
+        },
+        {
+          "jobs": 1,
+          "published": 1,
+          "parent_type": "workaddress",
+          "parent_reviewed": true,
+          "site_customer_reviewed": true
+        }
+      ],
+      "missing_open_parent_references": {
+        "jobs": 25,
+        "distinct_references": 17,
+        "zero_reference_values": 0,
+        "missing_reference_values": 0
+      },
+      "interpretation": "Retained source versions and reviewed relationships. A recent empty changed-record page proves the traversal time, not that every job changed or that all cards are reviewed. Unzoned completion dates remain unresolved. No inferred cross-provider mapping.",
+      "providerSettingsChanged": false,
+      "productionDataWrites": false,
+      "customerContentReturned": false
+    }
+  },
+  "productionGitPointer": {
+    "main": "a123d349d2e33e47a154d1871328c58659fc886f",
+    "served": "92d937df7d646bfaac6d5de986aeb60d7d3aebbf",
+    "state": "Fast-forward rejected by automatic approval review; explicit user approval requested. Do not deploy old main over current aliases."
+  },
+  "publicAliases": {
+    "observedAt": "2026-10-16T15:28:46.410Z",
+    "rows": [
+      {
+        "name": "app.openfolk.ai",
+        "status": 200,
+        "finalUrl": "https://app.openfolk.ai/login",
+        "liveBackend": true,
+        "testBackend": false,
+        "scripts": [
+          "/assets/OpenFolkWordmark-BVPUEPLW.js",
+          "/assets/createLucideIcon-C3-9FVOn.js",
+          "/assets/dist-6FHsa19l.js",
+          "/assets/index-B48ITkHy.js",
+          "/assets/input-DyO5HNCa.js",
+          "/assets/jsx-runtime-CaR_m4Xc.js",
+          "/assets/login-DXsVkBGa.js",
+          "/assets/preload-helper-CZgWQFsJ.js",
+          "/assets/rolldown-runtime-CNC7AqOf.js",
+          "/assets/root-nUSLhHW2.js",
+          "/assets/supabase-Bl576DhO.js",
+          "/assets/useQuery-D1SIlbVz.js",
+          "/assets/useSelector-B8eks9ze.js",
+          "/assets/utils-B6KiDbIe.js",
+          "/assets/x-CvZwrRXI.js"
+        ]
+      },
+      {
+        "name": "openfolk.ai",
+        "status": 200,
+        "finalUrl": "https://www.openfolk.ai/login",
+        "liveBackend": true,
+        "testBackend": false,
+        "scripts": [
+          "/assets/OpenFolkWordmark-BVPUEPLW.js",
+          "/assets/createLucideIcon-C3-9FVOn.js",
+          "/assets/dist-6FHsa19l.js",
+          "/assets/index-B48ITkHy.js",
+          "/assets/input-DyO5HNCa.js",
+          "/assets/jsx-runtime-CaR_m4Xc.js",
+          "/assets/login-DXsVkBGa.js",
+          "/assets/preload-helper-CZgWQFsJ.js",
+          "/assets/rolldown-runtime-CNC7AqOf.js",
+          "/assets/root-nUSLhHW2.js",
+          "/assets/supabase-Bl576DhO.js",
+          "/assets/useQuery-D1SIlbVz.js",
+          "/assets/useSelector-B8eks9ze.js",
+          "/assets/utils-B6KiDbIe.js",
+          "/assets/x-CvZwrRXI.js"
+        ]
+      },
+      {
+        "name": "www.openfolk.ai",
+        "status": 200,
+        "finalUrl": "https://www.openfolk.ai/login",
+        "liveBackend": true,
+        "testBackend": false,
+        "scripts": [
+          "/assets/OpenFolkWordmark-BVPUEPLW.js",
+          "/assets/createLucideIcon-C3-9FVOn.js",
+          "/assets/dist-6FHsa19l.js",
+          "/assets/index-B48ITkHy.js",
+          "/assets/input-DyO5HNCa.js",
+          "/assets/jsx-runtime-CaR_m4Xc.js",
+          "/assets/login-DXsVkBGa.js",
+          "/assets/preload-helper-CZgWQFsJ.js",
+          "/assets/rolldown-runtime-CNC7AqOf.js",
+          "/assets/root-nUSLhHW2.js",
+          "/assets/supabase-Bl576DhO.js",
+          "/assets/useQuery-D1SIlbVz.js",
+          "/assets/useSelector-B8eks9ze.js",
+          "/assets/utils-B6KiDbIe.js",
+          "/assets/x-CvZwrRXI.js"
+        ]
+      },
+      {
+        "name": "serviceos-dh.vercel.app",
+        "status": 200,
+        "finalUrl": "https://serviceos-dh.vercel.app/login",
+        "liveBackend": true,
+        "testBackend": false,
+        "scripts": [
+          "/assets/OpenFolkWordmark-BVPUEPLW.js",
+          "/assets/createLucideIcon-C3-9FVOn.js",
+          "/assets/dist-6FHsa19l.js",
+          "/assets/index-B48ITkHy.js",
+          "/assets/input-DyO5HNCa.js",
+          "/assets/jsx-runtime-CaR_m4Xc.js",
+          "/assets/login-DXsVkBGa.js",
+          "/assets/preload-helper-CZgWQFsJ.js",
+          "/assets/rolldown-runtime-CNC7AqOf.js",
+          "/assets/root-nUSLhHW2.js",
+          "/assets/supabase-Bl576DhO.js",
+          "/assets/useQuery-D1SIlbVz.js",
+          "/assets/useSelector-B8eks9ze.js",
+          "/assets/utils-B6KiDbIe.js",
+          "/assets/x-CvZwrRXI.js"
+        ]
+      },
+      {
+        "name": "test.openfolk.ai",
+        "status": 200,
+        "finalUrl": "https://vercel.com/login",
+        "liveBackend": false,
+        "testBackend": false,
+        "scripts": [],
+        "note": "Protection redirect confirmed; transient SSO query omitted."
+      }
+    ]
   }
 }
