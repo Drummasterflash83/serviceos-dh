@@ -1,0 +1,29 @@
+{
+  "version": "learn-build01-runtime-offsite-copy-preparation/1",
+  "observed_at_utc": "2026-10-16T02:24:00Z",
+  "state": "exact_copy_prepared_not_authorized_or_uploaded",
+  "encrypted_source": {
+    "bytes": 5971576,
+    "sha256": "40f3d703e9febd5c2e93f5ec5491b4423e763a3bc808e7539dfd7233343f3ec5",
+    "private_local_mode": "0600",
+    "source_inventory": "102 active LIVE Edge functions and 720 source files"
+  },
+  "destination": {
+    "account_id": "235099643372",
+    "region": "eu-west-2",
+    "bucket": "openfolk-serviceos-database-235099643372-eu-west-2",
+    "key": "projects/tgbnakbxwcqjeimygroz/objects/53aa68e95de4ec1e1a298ed1a835589083c51a58e0934fce4a8d2ba3bd4462c1/40f3d703e9febd5c2e93f5ec5491b4423e763a3bc808e7539dfd7233343f3ec5",
+    "writer_and_restore_roles": "separate existing scoped identities; no credential read in this rehearsal"
+  },
+  "checks": {
+    "local_full_byte_copy_and_restore_port_readback": "passed",
+    "tampered_restore_download": "rejected_and_partial_file_removed",
+    "node_syntax_and_diff": "passed",
+    "remote_object": "not_checked_or_written"
+  },
+  "provider_requests": 0,
+  "production_writes": false,
+  "off_site_verified": false,
+  "application_recovery_verified": false,
+  "user_approval_needed": "Separate exact application-source copy under the reviewed key and existing private London bucket"
+}

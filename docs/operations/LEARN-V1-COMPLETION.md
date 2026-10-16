@@ -13,6 +13,30 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, about 02:24 UTC — application-source off-site copy prepared, not activated.**
+
+### Working and verified
+
+- The exact 5,971,576-byte age-encrypted LIVE Edge source package is pinned to
+  its SHA-256, a fixed object key in the existing private London bucket and
+  separate Writer/Restore download verification. A no-network local-port
+  rehearsal copied and read back all package bytes; syntax and diff checks
+  pass. The exact scope and limitations are in the
+  [runtime copy review](LEARN-BUILD01-RUNTIME-OFFSITE-REVIEW.md).
+
+### Needs finishing
+
+- The runtime archive has **not** been uploaded. It is a separate application
+  asset and the database-copy approvals do not cover it. After exact approval,
+  perform the versioned off-site copy and independent Restore download. Then
+  decrypt and rehearse full application/Auth recovery with controlled capture
+  resumption; a ciphertext copy alone does not meet this gate.
+
+### Blocked externally
+
+- The exact additional off-site copy needs Chris's approval when he is
+  available. No fingerprint or overnight action is needed for this preparation.
+
 **16 October, about 02:06 UTC — active-job relationship blockers classified on LIVE.**
 
 ### Working and verified

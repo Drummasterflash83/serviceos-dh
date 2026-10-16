@@ -1,0 +1,131 @@
+/** Exact encrypted LIVE Edge source copy. No credential or network access is
+ * performed by this module: the caller must supply separately approved Writer
+ * and Restore ports. This proves stored ciphertext, not service recovery. */
+import { createHash } from "node:crypto";
+import { constants } from "node:fs";
+import { lstat, open, unlink } from "node:fs/promises";
+import { dirname } from "node:path";
+import { databaseBackupBinding as destination } from "./database-backup-template.mjs";
+
+export const reviewedLiveRuntimeSource = Object.freeze({
+  bytes: 5971576,
+  sha256: "40f3d703e9febd5c2e93f5ec5491b4423e763a3bc808e7539dfd7233343f3ec5",
+  // Parent is SHA-256 of the fixed runtime package descriptor. The existing
+  // scoped S3 port accepts only this two-digest object-key grammar.
+  key: "projects/tgbnakbxwcqjeimygroz/objects/53aa68e95de4ec1e1a298ed1a835589083c51a58e0934fce4a8d2ba3bd4462c1/40f3d703e9febd5c2e93f5ec5491b4423e763a3bc808e7539dfd7233343f3ec5",
+});
+
+const fail = (code) => { throw Error(code); };
+const need = (condition, code) => { if (!condition) fail(code); };
+const canon = (value) => JSON.stringify(value, (_key, entry) =>
+  entry && typeof entry === "object" && !Array.isArray(entry)
+    ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]]))
+    : entry);
+
+async function privateParent(path) {
+  const stat = await lstat(dirname(path));
+  need(stat.isDirectory() && !stat.isSymbolicLink() && stat.uid === process.getuid() &&
+    (stat.mode & 0o077) === 0, "runtime_private_directory_required");
+}
+
+async function checkedStream(stream, sink) {
+  const hash = createHash("sha256");
+  let bytes = 0;
+  for await (const chunk of stream) {
+    need(chunk instanceof Uint8Array, "runtime_stream_invalid");
+    bytes += chunk.byteLength;
+    need(bytes <= reviewedLiveRuntimeSource.bytes, "runtime_size_mismatch");
+    hash.update(chunk);
+    if (sink) {
+      let offset = 0;
+      while (offset < chunk.byteLength) {
+        const result = await sink.write(chunk, offset, chunk.byteLength - offset);
+        need(result.bytesWritten > 0, "runtime_download_write_failed");
+        offset += result.bytesWritten;
+      }
+    }
+  }
+  need(bytes === reviewedLiveRuntimeSource.bytes &&
+    hash.digest("hex") === reviewedLiveRuntimeSource.sha256, "runtime_integrity_mismatch");
+}
+
+async function inspect(port) {
+  const actual = await port.inspect();
+  need(["accountId", "region", "project", "bucket", "prefix"].every((key) =>
+    actual?.[key] === destination[key]) && actual.private === true &&
+    actual.tlsRequired === true && actual.versioning === "Enabled" &&
+    actual.encryption === "AES256" && actual.retentionMode === "GOVERNANCE" &&
+    actual.retentionDays === 30 && actual.conditionalWritesRequired === true,
+  "runtime_destination_unverified");
+}
+
+function checkedVersion(version, now) {
+  need(version?.key === reviewedLiveRuntimeSource.key &&
+    version.size === reviewedLiveRuntimeSource.bytes &&
+    version.sha256 === reviewedLiveRuntimeSource.sha256 &&
+    typeof version.versionId === "string" && version.versionId.length > 0 &&
+    version.versionId.length <= 1024 && version.versionId !== "null" &&
+    version.encryption === "AES256" &&
+    Number.isFinite(Date.parse(version.createdAt)) &&
+    Number.isFinite(Date.parse(version.retainUntil)) &&
+    Date.parse(version.createdAt) <= now + 60000 &&
+    Date.parse(version.retainUntil) >= Date.parse(version.createdAt) + 30 * 86400000 - 1000,
+  "runtime_object_unverified");
+}
+
+/** The caller must provide a private destination path that does not exist.
+ * No application, database, Slack or provider source write occurs here. */
+export async function copyReviewedLiveRuntimeSource({ sourcePath, downloadPath, writer, restore,
+  now = Date.now }) {
+  need(typeof sourcePath === "string" && typeof downloadPath === "string" &&
+    sourcePath !== downloadPath && writer?.destination && restore?.destination,
+  "runtime_copy_arguments_invalid");
+  await privateParent(sourcePath);
+  await privateParent(downloadPath);
+  const source = await open(sourcePath, constants.O_RDONLY | constants.O_NOFOLLOW);
+  let downloaded;
+  try {
+    const stat = await source.stat();
+    need(stat.isFile() && stat.uid === process.getuid() &&
+      (stat.mode & 0o077) === 0 && stat.size === reviewedLiveRuntimeSource.bytes,
+    "runtime_source_invalid");
+    const header = Buffer.alloc(22);
+    await source.read(header, 0, header.length, 0);
+    need(header.toString() === "age-encryption.org/v1\n", "runtime_age_header_invalid");
+    await checkedStream(source.createReadStream({ start: 0, autoClose: false }));
+    await inspect(writer.destination);
+    await inspect(restore.destination);
+    const { key, sha256, bytes } = reviewedLiveRuntimeSource;
+    let version = await writer.destination.find(key);
+    if (version === null) version = await writer.destination.put({
+      key, size: bytes, sha256,
+      checksumSHA256: Buffer.from(sha256, "hex").toString("base64"),
+      ifNoneMatch: "*", encryption: "AES256",
+      body: () => source.createReadStream({ start: 0, autoClose: false }),
+    });
+    checkedVersion(version, now());
+    const writerReadback = await writer.destination.version(key, version.versionId);
+    checkedVersion(writerReadback, now());
+    need(canon(writerReadback) === canon(version), "runtime_version_changed");
+    await checkedStream(await writer.destination.read(key, version.versionId));
+    const restoreReadback = await restore.destination.version(key, version.versionId);
+    checkedVersion(restoreReadback, now());
+    need(canon(restoreReadback) === canon(version), "runtime_restore_version_changed");
+    downloaded = await open(downloadPath, "wx", 0o600);
+    await checkedStream(await restore.destination.read(key, version.versionId), downloaded);
+    await downloaded.sync();
+    return {
+      state: "encrypted_live_runtime_source_offsite_copy_verified",
+      object: version, destination: { ...destination },
+      bytes, sha256, independentRestoreDownloadVerified: true,
+      applicationRecoveryVerified: false, productionWrites: false,
+    };
+  } catch (error) {
+    if (downloaded) { await downloaded.close(); downloaded = undefined;
+      await unlink(downloadPath).catch(() => {}); }
+    throw error;
+  } finally {
+    await downloaded?.close();
+    await source.close();
+  }
+}
