@@ -13,6 +13,32 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, about 02:37 UTC — scheduled-only backup monitor released on main.**
+
+### Working and verified
+
+- Production `main` fast-forwarded from `0266c7f7` to `7307134a` with only the
+  monitor checker, its focused tests and its pinned workflow source changed.
+  Four focused checks pass. The credential-free hosted rehearsal run
+  `38841269591` passed and explicitly returned
+  `database_first_scheduled_run_pending` with no last scheduled success; the
+  preceding manual backup was not mislabelled. GitHub shows both Vercel Git
+  builds successful, and all four LIVE login aliases returned HTTP 200 after
+  their expected redirects. Frontend source and backup export workflow did not
+  change. [Sanitised release](evidence/learn-build01-scheduled-backup-monitor-release-2026-10-16.json).
+
+### Needs finishing
+
+- Observe the first actual 03:15 UTC scheduled backup through its terminal
+  export, restore and off-site verification outcome. Then verify a subsequent
+  **scheduled** monitor run and its state. The manual monitor rehearsal does not
+  prove its hourly schedule is dependable.
+
+### Blocked externally
+
+- GitHub's first eligible backup schedule has not occurred yet. No user action
+  is needed for this observation.
+
 **16 October, about 02:34 UTC — scheduled backup monitor guard prepared.**
 
 ### Working and verified

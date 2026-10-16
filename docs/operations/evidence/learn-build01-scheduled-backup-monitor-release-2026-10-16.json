@@ -1,0 +1,33 @@
+{
+  "version": "learn-build01-scheduled-backup-monitor-release/1",
+  "observed_at_utc": "2026-10-16T02:37:00Z",
+  "environment": "GitHub main, hosted Actions monitor and Vercel LIVE/TEST Git builds",
+  "release": {
+    "prior_main": "0266c7f746fcece0789f0327f577644dbb4f47d1",
+    "reviewed_source_commit": "1cdabd2a19003e6e12493bd0f49a521710136b12",
+    "main_head": "7307134aa34d6cd4f8c9e11ce8c860201af4dcdb",
+    "changed_files": [
+      "scripts/backup/check-daily-backup-success.mjs",
+      "scripts/backup/check-daily-backup-success.test.mjs",
+      ".github/workflows/serviceos-database-backup-monitor.yml"
+    ],
+    "backup_export_workflow_unchanged": true,
+    "frontend_source_unchanged": true
+  },
+  "checks": {
+    "focused_tests": "4 passed",
+    "syntax_and_diff": "passed",
+    "hosted_monitor_manual_rehearsal_run": 38841269591,
+    "hosted_monitor_result": "success; database_first_scheduled_run_pending; lastSuccessAt null",
+    "vercel_production_git_status": "success",
+    "vercel_test_git_status": "success",
+    "live_login_aliases": "app.openfolk.ai, openfolk.ai, www.openfolk.ai and serviceos-dh.vercel.app returned HTTP 200 after expected redirects",
+    "remote_main_head_verified": true
+  },
+  "first_scheduled_backup_due_utc": "2026-10-16T03:15:00Z",
+  "first_scheduled_backup_verified": false,
+  "scheduled_missed_success_monitor_verified": false,
+  "manual_backup_counted_as_scheduled_success": false,
+  "production_database_writes": false,
+  "source_provider_requests": 0
+}
