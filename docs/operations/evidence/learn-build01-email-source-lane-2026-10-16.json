@@ -1,0 +1,36 @@
+{
+  "version": "learn-build01-email-source-lane/1",
+  "environment": "TEST and LIVE",
+  "observed_at_utc": "2026-10-16T05:21:13Z",
+  "cause": "The five-minute scheduler submitted Phone and combined all-source interaction jobs, while Email had no independent key. A combined job's review hold or inventory retry could delay Email. The first independent Email job initially entered the shared priority-100 backlog.",
+  "change": {
+    "scheduler_sources": ["phone", "email"],
+    "source_scoped_job_keys": true,
+    "priority": 50,
+    "source_selection_or_identity_rules_changed": false,
+    "test_endpoint_version": 5,
+    "live_endpoint_version": 50,
+    "test_and_live_wire_sha256": "5390cc34dfa7231217e7ab5f082d4dfa8622afdc5816bd95310f7f5c5d67d042",
+    "source_closure_sha256": "974691f473fe3ba112b48a94680461e21449b4db6ea27637717aa1291fc684eb",
+    "other_edge_endpoints_unchanged": true,
+    "rollback_executables_preserved_privately": true
+  },
+  "bounded_live_acceptance": {
+    "ordinary_scheduler_created_first_email_job_at": "2026-10-16T05:15:02.6828Z",
+    "first_job_priority_repair": "Exactly one still-queued Email job moved from priority 100 to 50 after its source and attempt were rechecked; no customer/source row changed.",
+    "first_email_job_terminal_state": "projection_review_required with 200 records_processed; a same-key Email continuation was durably created",
+    "next_email_job_at": "2026-10-16T05:20:17.973026Z",
+    "eligible_missing_interactions_at_051434": 15835,
+    "eligible_missing_interactions_at_052113": 15910,
+    "interpretation": "The separate lane is scheduled and has published one bounded batch. The missing count still grew under simultaneous intake, and the continuation later retried an unconfirmed inventory. Sustainable net catch-up remains unproved."
+  },
+  "validation": {
+    "synthetic_scheduler_and_handler_tests_passed": 11,
+    "repository_typescript": "passed",
+    "test_runtime_binding": "deployed and invalid-secret HTTP returned config_error because TEST has no SIGNAL_SYNC_SECRET; no TEST queue work was claimed",
+    "live_schedule": "ordinary five-minute tick created source-scoped jobs"
+  },
+  "source_provider_requests_from_this_change": 0,
+  "raw_customer_content_or_secrets_retained": false,
+  "build01_complete": false
+}

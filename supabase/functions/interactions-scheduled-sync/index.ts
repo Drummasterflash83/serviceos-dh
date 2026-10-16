@@ -18,6 +18,7 @@
 import { createSupabaseAdmin } from "../_shared/simwood.ts";
 import { enqueueJob } from "../_shared/platform_queue.ts";
 import { emptySchedulerCounts, scheduleAndCount } from "../_shared/email_scheduler_health.ts";
+import { interactionProjectionSchedule } from "../_shared/interactions_schedule_plan.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -74,39 +75,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
   );
   if (tenantIds.length === 0) return json({ success: true, tenants: 0, results: [] });
 
-  // Keep the existing all-source drain and give Phone its own bounded key.
-  // Historical email work can predate every Phone input for hours; a separate
-  // Phone queue lets current call revisions continue without changing source
-  // order or abandoning the retained email backlog.
+  // Independent source keys preserve each lane's retained ordering while an
+  // inventory retry in one lane cannot stop the other. The existing all-source
+  // job, if active during rollout, remains recoverable and settles normally.
   const counts = emptySchedulerCounts();
   for (const tenantId of tenantIds) {
-    await scheduleAndCount(
-      supabase,
-      {
-        tenantId,
-        jobType: "interactions.sync",
-        jobKey: `interactions.sync:${tenantId}:phone`,
-        connectorId: "openfolk-core",
-        moduleId: "core.interactions",
-        priority: 50,
-        payload: { source: "phone", limit: 100 },
-      },
-      counts,
-      enqueueJob,
-    );
-    await scheduleAndCount(
-      supabase,
-      {
-        tenantId,
-        jobType: "interactions.sync",
-        jobKey: `interactions.sync:${tenantId}:all`,
-        connectorId: "openfolk-core",
-        moduleId: "core.interactions",
-        payload: { source: "all", limit: 200 },
-      },
-      counts,
-      enqueueJob,
-    );
+    for (const input of interactionProjectionSchedule(tenantId))
+      await scheduleAndCount(supabase, input, counts, enqueueJob);
   }
 
   if (counts.unconfirmed > 0) {
