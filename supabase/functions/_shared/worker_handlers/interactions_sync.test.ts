@@ -223,16 +223,27 @@ test("current Email lane uses its service-only selector and separate continuatio
     "projection_lane_invalid");
   assert.equal(invalid.calls.length, 0);
 });
-test("older Email batches stay within the eight-second selector budget", async () => {
+test("older Email batches remain bounded and advance receipt-checked unchanged rows", async () => {
   const rows = Array.from({ length: 10 }, (_, n) => row(n + 100, "email"));
   const f = fixture({ rows, attemptCount: 3 });
   const r = await f.run({ source: "email", limit: 200 });
   assert.equal(r.success, true);
-  assert.equal(f.calls[0].args.p_limit, 10);
-  assert.deepEqual(r.continuation?.payload, { source: "email", limit: 10 });
+  assert.equal(f.calls[0].args.p_limit, 50);
+  assert.equal(r.continuation, undefined); // a short final batch ends this sweep
   const first = fixture({ rows: [], attemptCount: 1 });
   await first.run({ source: "email", limit: 200 });
-  assert.equal(first.calls[0].args.p_limit, 10);
+  assert.equal(first.calls[0].args.p_limit, 50);
+  const receiptChecked = fixture({ rows: [row(199, "email")],
+    respond: (_: any, selected: any) => ({ data: { ...selected,
+      action: "unchanged", eventId: null }, error: null }) });
+  const unchanged = await receiptChecked.run({ source: "email", limit: 1 });
+  assert.equal(unchanged.success, true);
+  assert.equal(unchanged.result?.skipped, 1);
+  assert.deepEqual(unchanged.continuation?.payload, { source: "email", limit: 50 });
+  const fifty = fixture({ rows: Array.from({ length: 50 }, (_, n) => row(n + 300, "email")) });
+  const next = await fifty.run({ source: "email", limit: 50 });
+  assert.equal(next.success, true);
+  assert.deepEqual(next.continuation?.payload, { source: "email", limit: 50 });
   const phone = fixture({ rows: [], attemptCount: 3 });
   await phone.run({ source: "phone", limit: 200 });
   assert.equal(phone.calls[0].args.p_limit, 200);

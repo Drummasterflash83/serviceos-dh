@@ -1,0 +1,67 @@
+{
+  "contract": "learn-build01-email-receipt-release/1",
+  "observedAt": "2026-10-16T21:52:02Z",
+  "projects": {
+    "test": "saatxzwxvdvqevbnskxy",
+    "live": "tgbnakbxwcqjeimygroz"
+  },
+  "selector": {
+    "emailUpdatedIndexValidInTestAndLive": true,
+    "receiptBoundedFallbackInstalledInTestAndLive": true,
+    "initialLiveReadOnlySelection": 10,
+    "legacyUnversionedLinkedRowsExcludedFromAutomaticUpdateLane": true,
+    "updateFirstPackageSha256": "13437eff37340247cbbbf8bdc1e68bb3c754bcea8bbe1fa8472fccd6ee64760d",
+    "updateFirstTestAndLiveInstalled": true,
+    "updateFirstTestDigest": "dc02928d4700ac5c15f92e81767f4e9f",
+    "updateFirstLiveDigest": "2a0534eb8d0394bbec8b86714f4e7d1e",
+    "testRollbackFixtureRetainedUnlinkedFallback": true,
+    "liveServiceRoleWrapperSelected": 10,
+    "liveServiceRoleWrapperElapsedMs": 1088
+  },
+  "settlement": {
+    "packageSha256": "659abbf0129666ec34d6fb1634f9e00f709e987259737a4089aef5652be7be43",
+    "testRollbackRehearsal": true,
+    "testInstalledDigest": "050be6cdb67f0ba844c6d19ac102f280",
+    "liveRollbackRehearsal": true,
+    "liveInstalledDigest": "050be6cdb67f0ba844c6d19ac102f280",
+    "ownerAndGrantsPreserved": true,
+    "unchangedOnlyContinuationRequiresClaimOwnedDistinctCommittedEmailReceipts": true
+  },
+  "worker": {
+    "testVersion": 64,
+    "liveVersion": 105,
+    "wireSha256": "622d153ce325a7a9288dd4337b08708a354094b49c5a4e594d44409a4e07f467",
+    "candidateSourceManifestSha256": "3015dadcc146485188c7ad28b5287ecce2bb9237145c1d41babb10cbaaf3a3ae",
+    "changedSourcePaths": ["_shared/worker_handlers/interactions_sync.ts"],
+    "otherEdgeFunctionsUnchanged": true
+  },
+  "testHostedFixture": {
+    "syntheticOnly": true,
+    "firstBatch": {
+      "claimed": 1,
+      "succeeded": 1,
+      "skipped": 1,
+      "committedUnchangedReceipts": 1,
+      "successors": 1
+    },
+    "secondBatch": {
+      "claimed": 1,
+      "succeeded": 1,
+      "batchLimit": 50,
+      "skipped": 1,
+      "totalCommittedUnchangedReceipts": 2,
+      "continued": false
+    },
+    "fixtureArchived": true,
+    "forgedContinuationWithoutReceiptsRejectedInRollbackTest": true,
+    "providerRequests": 0
+  },
+  "liveOrdinaryProgress": {
+    "unchangedReceiptsInFirstBatch": 10,
+    "fiftyRowSuccessorQueued": true,
+    "successorRetriedBeforeFinalWrapperRelease": true,
+    "successorAfterFinalWrapperReleaseObserved": false
+  },
+  "liveOrdinaryBacklogCleared": false,
+  "productionSourceRowsChangedByRelease": false
+}

@@ -66,6 +66,26 @@ test("persistent metadata transport failure stops after three reads and policy f
     policy.close();
   }
 });
+test("temporary S3 service failure retries only a bounded read", async () => {
+  let location = 0;
+  const f = fixture({
+    readAttempts: 3,
+    beforeRequest(req) {
+      if ("location" in (req.query ?? {}) && ++location === 1)
+        throw Object.assign(Error("PRIVATE service detail"), {
+          $metadata: { httpStatusCode: 503 },
+        });
+    },
+  });
+  try {
+    await f.destination.inspect();
+    assert.equal(location, 2);
+    assert.equal(f.destination.recovery().readRequestRetries, 1);
+    assert.equal(f.calls.filter((c) => c.method === "PUT").length, 0);
+  } finally {
+    f.close();
+  }
+});
 test("journal stream recovery discards partial JSON and checks the same stored version before returning", async () => {
   const f = fixture({ readAttempts: 3 });
   try {

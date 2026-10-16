@@ -7,6 +7,9 @@ if (!project) throw Error("Exact read-only project mode required");
 const query = `select md5(pg_get_functiondef(p.oid)) digest,
  pg_get_userbyid(p.proowner) owner,p.proacl::text acl,p.proconfig::text settings,
  position('limit least(2000,greatest(32,bound+22))' in pg_get_functiondef(p.oid))>0 window_32,
+ (length(pg_get_functiondef(p.oid))-length(replace(pg_get_functiondef(p.oid),
+  'return query select * from public.learn_projection_pending_full(p_tenant,p_source,bound);','')))
+  /length('return query select * from public.learn_projection_pending_full(p_tenant,p_source,bound);') full_fallback_occurrences,
  position('return query select * from public.learn_projection_pending_full(p_tenant,p_source,bound);' in pg_get_functiondef(p.oid))>0 full_fallback
  from pg_proc p where p.oid='public.learn_projection_pending(uuid,text,integer)'::regprocedure`;
 const response = await fetch(`https://api.supabase.com/v1/projects/${project}/database/query/read-only`, {

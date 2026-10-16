@@ -127,6 +127,9 @@ function createPrivateS3(
   const transportFailure = (e) =>
     ["TimeoutError", "RequestTimeout"].includes(e?.name) ||
     ["ETIMEDOUT", "ESOCKETTIMEDOUT", "ECONNRESET", "EPIPE"].includes(e?.code);
+  const transientReadFailure = (e) =>
+    transportFailure(e) ||
+    [429, 500, 502, 503, 504].includes(e?.$metadata?.httpStatusCode);
   const keyValid = (key) => {
     requireValue(typeof key === "string" && key.startsWith(context.prefix), "s3_key_outside_scope");
     const suffix = key.slice(context.prefix.length);
@@ -157,7 +160,7 @@ function createPrivateS3(
         // keys, headers, credentials, response bodies or SDK exception messages.
         if (signal?.aborted) throw new RecordingBackupError("s3_request_cancelled");
         if (deadline.aborted) throw new RecordingBackupError("s3_request_deadline_exceeded");
-        if (readCommands.has(Command) && transportFailure(error) && attempt < readAttempts) {
+        if (readCommands.has(Command) && transientReadFailure(error) && attempt < readAttempts) {
           readRequestRetries++;
           continue;
         }

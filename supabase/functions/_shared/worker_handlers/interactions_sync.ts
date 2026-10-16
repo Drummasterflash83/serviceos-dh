@@ -40,11 +40,11 @@ export async function handleInteractionsSync(
         : 20,
     ),
   );
-  // The LIVE API authenticator has an eight-second statement timeout. The
-  // older Email selector crossed it at 50 rows, so bound every legacy batch
-  // and its continuation while leaving current-mail and Phone lanes alone.
+  // The older Email selector now uses a receipt-aware, indexed update window.
+  // Keep its publication batch below the five-minute platform-job lease while
+  // allowing the durable continuation to grow from an older ten-row payload.
   const limit = !currentEmail && source === "email"
-    ? Math.min(requestedLimit, 10) : requestedLimit;
+    ? Math.min(requestedLimit, 50) : requestedLimit;
   const counts = {
     phone_selected: 0,
     phone_created: 0,
@@ -181,13 +181,16 @@ export async function handleInteractionsSync(
     const continued =
       counts.failed === 0 &&
       rows.length === limit &&
-      counts.interactions_upserted + counts.reviews_recorded > 0 &&
+      (counts.interactions_upserted + counts.reviews_recorded > 0 ||
+        (!currentEmail && source === "email" && counts.skipped > 0)) &&
       counts.interactions_upserted + counts.reviews_recorded + counts.skipped === rows.length;
     const continuation = continued
       ? {
           jobType: "interactions.sync",
           jobKey: `interactions.sync:${tenantId}:${source}${currentEmail ? ":current" : ""}`,
-          payload: { source, limit, ...(currentEmail ? { lane: "current" } : {}) },
+          payload: { source,
+            limit: !currentEmail && source === "email" ? 50 : limit,
+            ...(currentEmail ? { lane: "current" } : {}) },
           connectorId: "openfolk-core",
           moduleId: "core.interactions",
           priority: currentEmail ? 40 : 50,

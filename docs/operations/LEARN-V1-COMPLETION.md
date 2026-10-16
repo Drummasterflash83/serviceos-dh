@@ -13,7 +13,65 @@ sign-off.
 
 ## Current evidence and priority
 
-**16 October, 21:12 UTC — current source copy verified; Email revision and card sweeps remain open.**
+**16 October, 21:53 UTC — Email successor observed; final wrapper and backup outcomes pending.**
+
+### Working and verified
+
+- The older Email lane's eligible unlinked gap reached zero through its ordinary
+  continuation. The separate source-update selector now has a valid indexed,
+  receipt-bounded window in TEST and LIVE. Its exact unchanged-receipt
+  settlement rule was rehearsed and installed in TEST and LIVE. A two-message
+  synthetic hosted TEST run through worker v64 saved two committed unchanged
+  receipts, queued one 50-row successor, then stopped on the short final
+  batch; the fixture was archived. The identical targeted worker closure is
+  LIVE v105, with all other Edge function inventory entries unchanged. This
+  is a released repair, **not yet proof of ordinary LIVE backlog clearance**.
+- The first ordinary LIVE 10-row Email continuation after worker v105 saved
+  **ten unchanged receipts** and queued its 50-row successor without a manual
+  publication. That successor retried twice before the final selector fix.
+  The TEST-first LIVE wrapper now selects indexed updates ahead of the costly
+  historical unlinked audit; an exact service-role LIVE read returned ten
+  64-character revisions in about one second at 21:50. Its 21:55 ordinary
+  successor retry remains to be observed. A guarded duplicate recovery seed
+  correctly refused because that existing successor was active.
+- The 21:19 read-only Graph join had zero eligible interactions lacking nodes.
+  The ordinary card sweep recovered a failed 40-card batch on its third
+  attempt and queued another by 21:39. Ten older cards remain unprojected
+  while that sweep proceeds.
+- The approved v104 LIVE Edge source package was copied to the existing
+  private London bucket and read back by the separate Restore identity at
+  21:10. Worker v105 has since superseded that source inventory; the copy
+  remains a verified historical checkpoint, not a current full recovery claim.
+
+### Needs finishing
+
+- The existing older Email job last retried at 21:29 under the old worker,
+  failed its former inventory selector, and ultimately exhausted its fifth
+  attempt before the wrapper correction. The separate ordinary successor now
+  carries the work. Verify its 21:55 retry, durable further successors, a falling
+  source-update gap and downstream card/Graph freshness. The 19,128 legacy
+  linked interactions without a projection revision remain a separate
+  reviewed reconciliation; do not bulk rewrite them from the current-update
+  lane.
+- The manual three-bucket communication backup refresh failed twice with
+  `s3_request_unconfirmed` in the phone-recordings bucket. The earlier
+  scheduled 08:18 success remains intact but covers 256 voicemail pairs;
+  LIVE now has 257. Writer identity and bucket policy passed a bounded
+  read-only check. A full read-only check found all **3,166** phone-recording
+  receipts, with none absent; a bounded retry for temporary S3 read failures
+  passed its tests. A new three-bucket refresh is running, but only its
+  terminal manifest can restore a healthy status.
+- Ten older cards still need ordinary projection; the approved 160-channel
+  Slack history still lags. Full current application/Auth recovery and
+  source-backed job attention/scoring review remain open.
+
+### Blocked externally
+
+- No new user action is requested. Chris's final business acceptance remains
+  his decision after technical evidence is ready; do not request another
+  Slack team test post or routine fingerprint.
+
+**16 October, 21:12 UTC — earlier source copy and source coverage readback.**
 
 ### Working and verified
 
@@ -51,8 +109,8 @@ sign-off.
   sweep state. The 160-channel Slack historical backlog,
   full application/Auth recovery and
   source-backed job attention/scoring review remain open. A manual refresh
-  of the existing three-bucket communication file backup is running to include
-  the newest voicemail pair; it is not unattended evidence.
+  of the existing three-bucket communication file backup was started to include
+  the newest voicemail pair; its later failed outcome is recorded above.
 
 ### Blocked externally
 
