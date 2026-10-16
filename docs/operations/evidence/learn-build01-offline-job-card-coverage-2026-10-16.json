@@ -1,0 +1,28 @@
+{
+  "version": "learn-build01-offline-job-card-coverage/1",
+  "observedAt": "2026-10-16T01:37:17Z",
+  "source": "Pinned 15 October production database archive restored to a disposable, network-isolated PostgreSQL container",
+  "archiveSha256": "31f1e594e9c3b43f3cff0ec0c45095216a4bb6580e8a0e5f2a4a81db99c03fe8",
+  "scope": "Drummonds active canonical jobs, aggregate counts only",
+  "snapshot": {
+    "activeJobs": 941,
+    "commusoftJobs": 941,
+    "reviewedCommusoftJobLinks": 941,
+    "noncompleteJobs": 7,
+    "noncompleteReviewedJobs": 7,
+    "reviewedJobsWithCustomer": 941,
+    "reviewedJobsWithSite": 775,
+    "reviewedJobsWithEngineerPerson": 0,
+    "reviewedJobsWithDirectCommunication": 5,
+    "reviewedCompletedOrClosedJobs": 934,
+    "reviewedCompletedOrClosedJobsWithZonedCompletedDate": 0
+  },
+  "verification": {
+    "archiveVerified": true,
+    "disposableDatabaseRemoved": true,
+    "productionWrites": false,
+    "sourceProviderRequests": 0,
+    "privateContentPrinted": false
+  },
+  "boundary": "This is a point-in-time historical archive, not current LIVE coverage. Later LIVE job intake includes newer unlinked work, so these counts cannot establish present-day link completeness. The direct-communication count checks interactions.related_job_id only; other customer-linked communications may exist but are not evidence of an explicit job link. Absence of a zoned completed_date prevents duration scoring and does not deny the saved completed status. Engineer-person absence is not a complete measure of team routing."
+}

@@ -1,0 +1,20 @@
+{
+  "version": "learn-build01-backup-scheduled-monitor-evidence/1",
+  "observedAt": "2026-10-16T01:31:52Z",
+  "source": "Public GitHub Actions run and job-step metadata; no credentials, backup bytes or logs read",
+  "repository": "Drummasterflash83/serviceos-dh",
+  "backup": {
+    "latestRunId": 38787584369,
+    "event": "workflow_dispatch",
+    "createdAt": "2026-10-15T18:40:33Z",
+    "conclusion": "success",
+    "exportRestoreEncryptOffsiteStep": "success"
+  },
+  "monitor": {
+    "scheduledRunIds": [38817006113, 38835172054],
+    "latestCreatedAt": "2026-10-16T01:26:59Z",
+    "latestConclusion": "success",
+    "latestMissedSuccessCheckStep": "success"
+  },
+  "boundary": "Two scheduled monitor runs completed, but the latest backup remains a manual dispatch. The first 03:15 UTC scheduled backup has not occurred at this observation. A successful freshness monitor only proves it found a recent qualifying backup; it does not prove scheduled backup execution, application/Auth recovery or a missed-run alert delivered to a human."
+}

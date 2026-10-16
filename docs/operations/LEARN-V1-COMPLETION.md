@@ -7,6 +7,52 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, 01:37 UTC — historical job-card coverage measured offline.**
+
+### Working and verified
+
+- The pinned 15 October archive had 941 active Drummonds Commusoft jobs, all
+  with reviewed source links and customer relationships in that snapshot. Of
+  these, 775 had a site; five had an explicit job-linked interaction. None had
+  an engineer-person assignment. Among 934 recorded complete/closed jobs,
+  none had a zoned completed date for duration scoring. This aggregate used a
+  single interaction scan after the first per-job query timed out; both
+  disposable containers were removed, and no personal content was printed.
+  [Sanitised snapshot](evidence/learn-build01-offline-job-card-coverage-2026-10-16.json).
+
+### Needs finishing
+
+- This older archive is not current LIVE coverage: later job arrivals include
+  unlinked work. Current source-to-card links, job owner/team routing, direct
+  communications, timely status refresh and defensible completion timing
+  remain open. A saved complete status is retained, but no duration score is
+  justified by this snapshot.
+
+### Blocked externally
+
+- No overnight user action is needed for this read-only measurement.
+
+**16 October, 01:31 UTC — scheduled backup monitor observed.**
+
+### Working and verified
+
+- GitHub Actions metadata shows two scheduled missed-success monitor runs
+  completed successfully, at 22:25 on 15 October and 01:26 on 16 October.
+  The latest run's actual check step passed. The most recent backup remains
+  the successful manual dispatch from 15 October 18:40, whose export, isolated
+  restore, encryption and off-site copy step passed.
+  [Sanitised run metadata](evidence/learn-build01-backup-scheduled-monitor-2026-10-16.json).
+
+### Needs finishing
+
+- The first 03:15 UTC scheduled backup has not yet occurred. A successful
+  monitor against a recent manual copy does not prove unattended daily export,
+  a delivered missed-run alert or full application/Auth recovery.
+
+### Blocked externally
+
+- No overnight user action is needed to observe the scheduled run.
+
 **16 October, 01:22 UTC — customer-card source distinction rehearsed locally.**
 
 ### Working and verified
