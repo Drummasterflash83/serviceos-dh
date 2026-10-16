@@ -31,7 +31,7 @@ export async function handleInteractionsSync(
   const currentEmail = source === "email" && payload.lane === "current";
   // Each publication takes a separate transaction. Keep one Edge run bounded;
   // the queue can drain further batches after confirmed completion.
-  const limit = Math.max(
+  const requestedLimit = Math.max(
     1,
     Math.min(
       currentEmail ? 100 : 200,
@@ -40,6 +40,12 @@ export async function handleInteractionsSync(
         : 20,
     ),
   );
+  // A retried legacy Email inventory can exceed the worker's bounded lease
+  // while computing source revisions. Narrow only that durable retry; carry the
+  // smaller limit into its continuation so later batches drain unattended.
+  const limit = !currentEmail && source === "email" &&
+      (ctx.claim?.attemptCount ?? 1) > 1
+    ? Math.min(requestedLimit, 50) : requestedLimit;
   const counts = {
     phone_selected: 0,
     phone_created: 0,

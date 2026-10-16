@@ -1,0 +1,20 @@
+{
+  "version": "learn-build01-email-retry-release/1",
+  "observedAtUtc": "2026-10-16T19:09:16Z",
+  "scope": "Only the older Email interactions.sync retry batch limit in the deployed platform-worker",
+  "testWorker": { "version": 59, "wireSha256": "bdb72c07324b1c73f6c4f8786f11146afec604a285029692f4cfd4be7c0d91f3", "active": true },
+  "liveWorker": { "version": 100, "wireSha256": "bdb72c07324b1c73f6c4f8786f11146afec604a285029692f4cfd4be7c0d91f3", "active": true },
+  "candidateSourceSha256": "7d95c8766c23f509c07de8aa5b96b6f73ccfce3e9107fbd083f1ccc04477c185",
+  "sourceFiles": 119,
+  "changedSourcePaths": ["_shared/worker_handlers/interactions_sync.ts"],
+  "otherEndpointsUnchanged": true,
+  "rollbackExecutableSha256": "149a950fd5aef164e13b7ed0f0039b22990ff709f5beb6564759d3e6ad92e2bd",
+  "localHandlerTestsPassed": 12,
+  "testSyntheticCurrentEmailSelectorRolledBack": true,
+  "eligibleLiveEmailGapBeforeRetry": 313,
+  "nextOrdinaryRetryDueUtc": "2026-10-16T19:18:12Z",
+  "organicRetryOutcomeVerified": false,
+  "sourceProviderRequests": 0,
+  "productionDataWritesByReleaseCheck": false,
+  "limits": "Deployment and source identity verified; the next ordinary LIVE retry must prove backlog reduction before operational acceptance"
+}

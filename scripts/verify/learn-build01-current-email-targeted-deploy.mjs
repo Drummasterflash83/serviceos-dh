@@ -1,4 +1,4 @@
-/** Release only the reviewed Email lane onto the exact downloaded deployed runtime. */
+/** Release reviewed Email worker changes onto the exact downloaded runtime. */
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync,
@@ -8,6 +8,7 @@ import { dirname, join, relative } from "node:path";
 import { savedCliToken, TEST_PROJECT } from "./learn-test-readiness.mjs";
 import { patchDeployedWorker, patchDeployedScheduler, sha256 } from
   "./learn-build01-current-email-deployed-overlay.mjs";
+import { patchDeployedEmailRetry } from "./learn-build01-email-retry-deployed-overlay.mjs";
 
 const LIVE_PROJECT = "tgbnakbxwcqjeimygroz";
 const cli = "/Users/chrisdrummond/.npm/_npx/f488b5593433aa64/node_modules/supabase/bin/supabase";
@@ -25,6 +26,12 @@ const configs = {
   "--live-scheduler": { project: LIVE_PROJECT, label: "live-scheduler", endpoint: "interactions-scheduled-sync",
     priorVersion: 50, priorWire: "5390cc34dfa7231217e7ab5f082d4dfa8622afdc5816bd95310f7f5c5d67d042",
     target: "_shared/interactions_schedule_plan.ts", patch: patchDeployedScheduler },
+  "--test-retry-worker": { project: TEST_PROJECT, label: "test-retry-worker", endpoint: "platform-worker",
+    priorVersion: 58, priorWire: "6646ccadfec21aff2145284761af6bed0a53f7c5570c4f8188a74b246fe727e4",
+    target: "_shared/worker_handlers/interactions_sync.ts", patch: patchDeployedEmailRetry },
+  "--live-retry-worker": { project: LIVE_PROJECT, label: "live-retry-worker", endpoint: "platform-worker",
+    priorVersion: 99, priorWire: "6646ccadfec21aff2145284761af6bed0a53f7c5570c4f8188a74b246fe727e4",
+    target: "_shared/worker_handlers/interactions_sync.ts", patch: patchDeployedEmailRetry },
 };
 const config = configs[mode];
 if (!config || (config.project === TEST_PROJECT

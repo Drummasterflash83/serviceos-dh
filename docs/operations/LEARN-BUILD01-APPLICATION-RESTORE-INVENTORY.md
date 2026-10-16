@@ -14,7 +14,13 @@ application-source recovery input current. The repository TEST checkpoint
 `ed581c7c` preserves the new scheduler source; it is not a substitute for
 restoring the deployed runtime and configuration.
 
-At 18:29 UTC, a new stable read-only LIVE archive captured 103 functions and
+At 19:09 UTC, LIVE `platform-worker` advanced to version 100 for a bounded
+older Email retry. The 18:29 archive below predates it; prepare a fresh stable
+inventory after the remaining release work before calling any source package
+current. Its one-route isolated recovery proof remains valid for that archived
+route, but it is not a full current service restore.
+
+At 18:29 UTC, a stable read-only LIVE archive captured 103 functions and
 728 source files, including that version 63 scheduler. Its manifest and every
 file hash passed local packaging to the existing public recovery recipient.
 The resulting 6,022,776-byte age ciphertext has SHA-256

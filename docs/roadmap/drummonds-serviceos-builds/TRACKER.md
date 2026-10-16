@@ -1,6 +1,9 @@
 # Build execution tracker
 
-Latest Build 01 checkpoint (16 October, 18:57 UTC): one archived LIVE Edge
+Latest Build 01 checkpoint (16 October, 19:09 UTC): a conservative older Email
+retry limit is installed on identical TEST/LIVE worker closures after local
+tests and a rollback-only TEST selector check; its next ordinary LIVE attempt
+is due 19:18, so recovery is not yet accepted. One archived LIVE Edge
 route passed a combined isolated database/Auth/REST recovery with a synthetic
 tenant login and audited operator boundary. Ordinary Email projection reduced
 eligible missing interactions from 1,513 to 313 by 18:59. The signed public

@@ -39,7 +39,8 @@ function fixture(options: any = {}) {
   return {
     calls,
     run: (payload: any = {}) =>
-      handleInteractionsSync({ supabaseAdmin: admin, tenantId: id(1), jobId: id(90), payload }),
+      handleInteractionsSync({ supabaseAdmin: admin, tenantId: id(1), jobId: id(90), payload,
+        ...(options.attemptCount ? { claim: { claimedBy: "fixture-worker", attemptCount: options.attemptCount } } : {}) }),
   };
 }
 test("Phone and Email receipts count only confirmed interaction/event transactions", async () => {
@@ -220,6 +221,23 @@ test("current Email lane uses its service-only selector and separate continuatio
   assert.equal((await invalid.run({ source: "phone", lane: "current" })).error?.code,
     "projection_lane_invalid");
   assert.equal(invalid.calls.length, 0);
+});
+test("a retried older Email batch narrows inventory and keeps its continuation bounded", async () => {
+  const rows = Array.from({ length: 50 }, (_, n) => row(n + 100, "email"));
+  const f = fixture({ rows, attemptCount: 3 });
+  const r = await f.run({ source: "email", limit: 200 });
+  assert.equal(r.success, true);
+  assert.equal(f.calls[0].args.p_limit, 50);
+  assert.deepEqual(r.continuation?.payload, { source: "email", limit: 50 });
+  const first = fixture({ rows: [], attemptCount: 1 });
+  await first.run({ source: "email", limit: 200 });
+  assert.equal(first.calls[0].args.p_limit, 200);
+  const phone = fixture({ rows: [], attemptCount: 3 });
+  await phone.run({ source: "phone", limit: 200 });
+  assert.equal(phone.calls[0].args.p_limit, 200);
+  const current = fixture({ rows: [], attemptCount: 3 });
+  await current.run({ source: "email", lane: "current", limit: 100 });
+  assert.equal(current.calls[0].args.p_limit, 100);
 });
 test("review inventory failure cannot erase previously confirmed work", async () => {
   for (const review of [

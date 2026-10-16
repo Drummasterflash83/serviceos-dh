@@ -13,6 +13,37 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 19:09 UTC — bounded older Email retry installed, awaiting normal run.**
+
+### Working and verified
+
+- A counts-only read found 300 recent unlinked candidates in the older Email
+  selector window, including 200 in its first page and no held row in that
+  page. The 200-message job nevertheless returned
+  `projection_inventory_unconfirmed` on three attempts without selecting a row.
+- The worker now narrows only retried older Email batches to 50 and carries
+  that limit into their continuations. Twelve local handler tests passed; an
+  exact one-file deployed-source patch reached TEST `platform-worker` v59 and
+  LIVE v100 with the same wire hash. Other endpoints were unchanged and a
+  rollback executable was preserved. A rollback-only synthetic TEST check
+  confirmed the current Email selector still excludes older messages and
+  drafts. [Sanitised release receipt](evidence/learn-build01-email-retry-release-2026-10-16.json).
+
+### Needs finishing
+
+- The LIVE older Email job is due for its next **ordinary** retry at 19:18 UTC.
+  Until that attempt selects/publishes retained messages and reduces the 313
+  eligible gap, deployment is not operational acceptance. Continue card/Graph,
+  public Slack parent/reply and recovery checks.
+- The 18:29 encrypted Edge source package predates LIVE worker v100. Prepare a
+  final current inventory after release work stabilises; do not call the older
+  package a complete current runtime copy.
+
+### Blocked externally
+
+- No new user action is needed for this Email retry. The separate exact
+  off-site source-copy approval and signed-in UI access remain outstanding.
+
 **16 October, 18:57 UTC — isolated archived Edge/Authorization read passed.**
 
 ### Working and verified
