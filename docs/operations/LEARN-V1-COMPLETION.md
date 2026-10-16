@@ -7,6 +7,39 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, about 01:55 UTC — source-backed customer-card labels released on LIVE.**
+
+### Working and verified
+
+- The hash-pinned migration passed a rollback rehearsal on LIVE and was then
+  installed. Catalog readback confirmed the restricted reader and valid index;
+  an authenticated, read-only check against existing Drummonds records returned
+  both reviewed-business and communication-identity states. The current check
+  counted 4,014 cards and 73 explicit Commusoft customer links; 3,935
+  communication-projection cards lacked such a Commusoft link. These are scoped
+  counts, not full customer-health coverage.
+- A four-file frontend candidate based on the exact previously served LIVE
+  commit passed 22 focused tests, TypeScript, 47 prebuild checks, local build
+  and protected Vercel preview. All four LIVE aliases now read back to its
+  READY deployment with the existing redirects and protection. The signed-in
+  Drummonds client view retained its brand and LEARN menu. A communication-only
+  card showed its unconfirmed label and source gap; an explicitly linked card
+  showed the reviewed label without a false missing-link warning.
+  [Sanitised LIVE release evidence](evidence/learn-build01-customer-provenance-live-2026-10-16.json).
+
+### Needs finishing
+
+- Reviewed identity is only one input to customer health. Current provider
+  coverage, source-to-card reconciliation, job status freshness, owner/team
+  handoff, completion timing and score policy still need source-backed work.
+  Full application/Auth recovery and unattended capture/backup gates remain
+  open. Build 01 is not ready for business signoff or Build 02.
+
+### Blocked externally
+
+- No overnight user action is needed for this release. Chris's business
+  acceptance remains the final human gate after technical gaps close.
+
 **16 October, about 01:49 UTC — source-backed card frontend released to TEST.**
 
 ### Working and verified
@@ -21,16 +54,14 @@ override a later release observation. No requirement is silently deferred.
 
 ### Needs finishing
 
-- The signed-in operator session opens audited client information, so it did
-  not visually exercise the ordinary customer-card label. That exact view
-  still needs a client-role check before LIVE promotion. LIVE migration and
-  frontend have not changed; current source/card/job coverage remains open.
+- The signed-in TEST operator session opens audited client information, so it
+  did not visually exercise the ordinary customer-card label. The subsequent
+  signed-in LIVE client-card check above exercised both labels and their
+  detail warnings. Current source/card/job coverage remains open.
 
 ### Blocked externally
 
-- No overnight user action is needed for this TEST release. Client-role visual
-  acceptance can be included in Chris's morning business review if a suitable
-  TEST client account is available.
+- No overnight user action is needed for this TEST release.
 
 **16 October, about 01:40 UTC — source-backed customer-card reader installed on hosted TEST.**
 
@@ -48,9 +79,9 @@ override a later release observation. No requirement is silently deferred.
 
 ### Needs finishing
 
-- Verify the ordinary card view with a signed-in TEST client, then prepare an
-  exact LIVE release against the actual alias-served baseline. Current LIVE card coverage,
-  job progress/owner routing and defensible score evidence remain open.
+- The later LIVE release above supersedes this installation-only checkpoint.
+  Current card coverage, job progress/owner routing and defensible score
+  evidence remain open.
 
 ### Blocked externally
 

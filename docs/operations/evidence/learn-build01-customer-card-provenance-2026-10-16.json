@@ -47,5 +47,5 @@
       "syntheticFixtureRowsPersisted": 0
     }
   },
-  "boundary": "The archive is a point-in-time snapshot, not current LIVE counts. The exact migration is installed and security-rehearsed on hosted TEST only. A matching TEST frontend was subsequently released, but ordinary client-card visual acceptance remains open; LIVE has not received this migration or frontend. QuickBooks production links are also accepted by the new reader but are not included in the 73 Commusoft-link count. A reviewed link confirms source identity, not current customer health or job progress."
+  "boundary": "The archive is a point-in-time snapshot, not current LIVE counts. The exact migration and matching frontend were subsequently released to TEST and LIVE; current LIVE checks are in the separate LIVE release receipt. QuickBooks production links are also accepted by the reader but are not included in the 73 Commusoft-link count. A reviewed link confirms source identity, not current customer health or job progress."
 }

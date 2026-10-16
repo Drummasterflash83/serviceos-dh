@@ -25,5 +25,5 @@
     "signedInTestDrummondsOperatorViewLoaded": true,
     "clientCardLabelVisualCheck": false
   },
-  "boundary": "The signed-in TEST session is an OpenFolk operator and routes to an audited client-information view, not the ordinary client card view. Hosted TEST backend RPC classification was separately verified with a rollback-only authenticated fixture. The new card labels still need a signed-in ordinary client visual check; LIVE backend and frontend remain unchanged."
+  "boundary": "The signed-in TEST session is an OpenFolk operator and routes to an audited client-information view, not the ordinary client card view. Hosted TEST backend RPC classification was separately verified with a rollback-only authenticated fixture. A later signed-in LIVE client-card check verified both visible labels; see the separate LIVE release receipt."
 }

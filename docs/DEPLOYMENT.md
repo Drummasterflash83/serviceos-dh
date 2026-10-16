@@ -40,7 +40,18 @@ and switches to the Vercel preset** (`λ __server`). So: build **remotely on Ver
 upload or Git push). Do **not** ship a locally-prebuilt `.output` to Vercel — it would be
 Cloudflare-flavoured.
 
-## Current live checkpoint — 15 October 2026
+## Current live checkpoint — 16 October 2026
+
+**Build 01 customer-card source labels, about 01:55 UTC:** all four LIVE aliases
+serve exact Git `7ef08a5bffdb561350e5830518eee71cbb67b7c8` /
+`dpl_9ynzS2JcCKDA947AivJT4f64MVM8`, based on the preceding alias-served
+`79d87208` source with only four card files changed. The matching restricted
+Supabase reader is installed in LIVE; signed-in Drummonds cards display
+reviewed-business versus communication-identity labels. Redirects and
+protection read back unchanged. This is not Build 01 completion.
+[Exact release evidence](operations/evidence/learn-build01-customer-provenance-live-2026-10-16.json).
+
+## Prior live checkpoint — 15 October 2026
 
 **Build 01 job-card status clarity, 21:45 UTC:** production Git
 `4d7084f202ffc942f354db87ab3e66994ab615c4` changed only the saved job
