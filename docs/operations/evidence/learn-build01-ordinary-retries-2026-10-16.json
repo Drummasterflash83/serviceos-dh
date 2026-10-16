@@ -1,6 +1,6 @@
 {
-  "version": "learn-build01-ordinary-retries/1",
-  "observed_at_utc": "2026-10-16T00:30:15Z",
+  "version": "learn-build01-ordinary-retries/3",
+  "observed_at_utc": "2026-10-16T00:39:00Z",
   "manual_job_rescues": 0,
   "email_projection": {
     "prior_inventory_retry_due_utc": "2026-10-16T00:20:15Z",
@@ -9,7 +9,19 @@
     "eligible_gap_at_00_25": 6633,
     "older_than_day_at_00_25": 0,
     "new_inventory_timeout_at_00_26": true,
-    "interpretation": "Ordinary processing resumed and the measured gap shrank, but inventory timeouts recur; this is not sustained reliability acceptance."
+    "eligible_gap_at_00_37": 7232,
+    "older_than_day_at_00_37": 0,
+    "retrying_job_at_00_37": "projection_inventory_unconfirmed, attempt 2; next ordinary claim overdue but not manually rescued",
+    "ordinary_retry_outcome_at_00_37": {
+      "attempt": 3,
+      "terminal_code": "projection_review_required",
+      "email_processed": 200,
+      "failed": 0,
+      "continued": true
+    },
+    "eligible_gap_at_00_39": 6857,
+    "older_than_day_at_00_39": 0,
+    "interpretation": "The same job recovered on its next ordinary attempt and continued without failed rows; inventory timeouts still recur and recent source arrivals keep the gap volatile. This is not sustained reliability acceptance."
   },
   "identity": {
     "new_index": "learn_identity_ready_order_idx",
@@ -21,7 +33,16 @@
     "reviews_recorded": 126,
     "failed": 0,
     "durable_continuation": true,
-    "interpretation": "The first ordinary index-backed retry passed its inventory stage and processed retained interactions. Review holds remain; later unattended runs must be observed."
+    "second_ordinary_continuation": {
+      "terminal_code": "identity_review_required",
+      "attempt": 2,
+      "records_processed": 122,
+      "cards_enriched": 122,
+      "reviews_recorded": 78,
+      "failed": 0,
+      "continuation_queued": true
+    },
+    "interpretation": "Two ordinary index-backed jobs enriched cards without failed records, but the second needed a transient retry and review holds remain. Sustained reliability is not proved."
   },
   "graph": {
     "bounded_selector_release": "2026-10-15T23:44:27Z",
@@ -34,7 +55,23 @@
     "eligible_gap_at_00_07": 18476,
     "eligible_gap_at_00_30": 19279,
     "older_than_day_at_00_30": 810,
-    "interpretation": "Unattended retry recovered and queued the next page, but projected interaction arrivals outpaced this first recovered Graph batch; source-to-node convergence remains open."
+    "subsequent_ordinary_batches_at_00_38": "Four further 250-node jobs succeeded without reported node failures and queued further work; the 00:37 gap was read just before the fourth completed.",
+    "eligible_gap_at_00_37": 18353,
+    "older_than_day_at_00_37": 810,
+    "eligible_gap_at_00_39": 18447,
+    "older_than_day_at_00_39": 810,
+    "gap_by_source_at_00_37": {
+      "email_ready": 14818,
+      "email_enriched": 3097,
+      "phone_enriched": 438
+    },
+    "interpretation": "The missing-node gap fell across initial continuations, then rose again as new historical email interactions arrived. It remains material and is not yet converging reliably. The older-than-day count has not yet moved because selection orders by source occurrence, not record creation."
+  },
+  "recommendations": {
+    "ordinary_jobs_succeeded_since_fix_at_00_37": 4,
+    "rows_updated": 1988,
+    "failed_writes": 0,
+    "limitation": "This verifies ordinary recommendation refresh, not the independent projection selector or scoring-policy acceptance."
   },
   "production_data_writes_by_verification": false,
   "provider_requests_by_verification": 0,

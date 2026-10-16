@@ -1,0 +1,53 @@
+{
+  "version": "learn-build01-projection-hotpath/1",
+  "observed_at_utc": "2026-10-16T00:37:00Z",
+  "environment": "LIVE read-only diagnosis",
+  "selection_work": {
+    "request": "First 300 eligible unlinked Drummonds emails in source-occurrence order",
+    "existing_plan": {
+      "email_index": "learn_email_projection_order_idx",
+      "email_rows_examined": 48587,
+      "linked_interaction_index_probes": 48587,
+      "unlinked_rows_returned": 300,
+      "first_execution_ms": 4795.65,
+      "second_execution_ms": 688.139,
+      "interpretation": "Repeatedly walking the already-linked historical prefix has substantial cold-cache cost. The two timings are observational, not a controlled change comparison."
+    },
+    "materialized_linked_hash_alternative": {
+      "same_bound": 300,
+      "linked_rows_materialized": 161475,
+      "unlinked_rows_before_limit": 6933,
+      "execution_ms": 3224.339,
+      "interpretation": "This alternative avoided per-row lookup but scanned and hashed the broad linked set. It was not adopted on this single hosted comparison."
+    }
+  },
+  "production_statistics_snapshot": {
+    "hot_postgrest_selector_calls_since_12_00_utc": 344,
+    "total_execution_ms": 1180068.1,
+    "mean_execution_ms": 3430.4,
+    "max_execution_ms": 7992.1,
+    "shared_blocks_read": 1881958,
+    "limitations": "Cumulative statistics mix changing source volume, cache and concurrent load; they are not a before/after experiment."
+  },
+  "bounded_error_log_00_25_to_00_34": {
+    "postgres_statement_timeouts": 5,
+    "projection_selector_timeouts": 3,
+    "identity_selector_timeouts": 0,
+    "active_job_key_unique_conflicts": 72,
+    "active_job_key_conflicts_classification": "The logged SQL was a direct platform_jobs operation; event messages did not identify a job family. Their contribution to selector timeouts is unproved."
+  },
+  "ordinary_operation": {
+    "email_gap_at_00_25": 6633,
+    "email_gap_at_00_37": 7232,
+    "email_gap_older_than_day_at_00_37": 0,
+    "new_email_sources_in_last_hour_at_00_37": 1833,
+    "projection_job_retrying_at_00_37": "projection_inventory_unconfirmed, attempt 2, ordinary retry due from 00:36",
+    "same_job_ordinary_attempt_3": "At 00:37 the retry published 200 email interactions, reported zero failed rows, and queued a continuation; its terminal review_required label is for separately held records.",
+    "email_gap_at_00_39": 6857,
+    "interpretation": "The latest gap grew during a retrying job and ongoing source arrivals, then fell after ordinary recovery. The earlier successful batches do not yet prove sustainable catch-up."
+  },
+  "candidate_deployed": false,
+  "production_data_writes": false,
+  "provider_requests": 0,
+  "customer_content_or_secrets_retained": false
+}

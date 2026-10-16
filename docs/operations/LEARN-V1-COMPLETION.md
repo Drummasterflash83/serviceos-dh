@@ -7,6 +7,41 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, 00:39 UTC — ordinary batches continue; email inventory remains unstable.**
+
+### Working and verified
+
+- Four ordinary LIVE recommendation jobs since the correction updated 1,988
+  rows with zero failed writes. Graph's missing-node gap fell from 19,279 at
+  00:30 to 18,353 at 00:37 across further ordinary batches, then rebounded
+  with new historical arrivals. A second ordinary
+  identity continuation enriched 122 cards without failed records, though it
+  reached that result on attempt 2. No job was manually rescued.
+  [Updated queue evidence](evidence/learn-build01-ordinary-retries-2026-10-16.json).
+- A read-only LIVE email-selector plan found 48,587 historical email index rows
+  traversed to return 300 unlinked sources. The same plan took 4.80 seconds
+  on the first observation and 0.69 seconds on a later warm observation. A
+  materialized hash alternative took 3.22 seconds and was not adopted. Three
+  projection-selector statement timeouts occurred in the bounded 00:25–00:34
+  log window, with no identity-selector timeout in that window.
+  [Sanitised hot-path evidence](evidence/learn-build01-projection-hotpath-2026-10-16.json).
+
+### Needs finishing
+
+- The email source-to-interaction gap grew from 6,633 at 00:25 to 7,232 at
+  00:37 while a projection job retried and new sources arrived. Its third
+  ordinary attempt then published 200 emails with no failed rows and queued a
+  continuation; the gap was 6,857 at 00:39, none over a day old. Graph's gap
+  rose again to 18,447 as historical interactions arrived; 810 were created
+  more than a day earlier. Continue ordinary catch-up, then prove useful
+  source-to-card coverage and stable operation. Do not treat aggregate job
+  successes as Build 01 acceptance.
+
+### Blocked externally
+
+- No overnight user action is needed. Chris waived the full-working-day wait;
+  his business sign-off is still required after the technical evidence is ready.
+
 **16 October, 00:30 UTC — scheduled source retries recovered, gaps still open.**
 
 ### Working and verified
