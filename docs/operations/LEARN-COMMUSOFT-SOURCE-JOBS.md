@@ -95,9 +95,11 @@ existing aliases after checking for a newer release; retain redirects/protection
 
 ## Production Git pointer
 
-The verified LIVE aliases serve `92d937df`, but remote `main` remains `a123d349`.
-Automatic approval review rejected aligning `main` because it treats the push and
-possible Vercel rebuild as a separately approved action. Chris has been asked for
-that exact approval. The fast-forward changes only the six frontend/test files
-listed in the isolated candidate; it contains no backend or unrelated edits.
-Until reconciled, do not deploy old `main` over this verified release.
+Chris explicitly approved aligning `main` with the verified LIVE release.
+Remote `main` is verified at `92d937df7d646bfaac6d5de986aeb60d7d3aebbf`.
+Vercel's automatic production rebuild `dpl_4ukrhsZCMyPwHRoWWefvwqddx3dy`
+is READY and serves all four existing LIVE aliases. At 16:01 UTC each alias
+returned HTTP 200 with the LIVE backend and matching assets; the existing root
+redirect and deployment protection are preserved. The earlier approval hold is
+resolved. The rebuild uses exactly the frontend commit already accepted while
+signed in on LIVE; no additional source changes were promoted.

@@ -528,12 +528,48 @@
     }
   },
   "productionGitPointer": {
-    "main": "a123d349d2e33e47a154d1871328c58659fc886f",
+    "main": "92d937df7d646bfaac6d5de986aeb60d7d3aebbf",
     "served": "92d937df7d646bfaac6d5de986aeb60d7d3aebbf",
-    "state": "Fast-forward rejected by automatic approval review; explicit user approval requested. Do not deploy old main over current aliases."
+    "state": "User explicitly approved main alignment. Fast-forward pushed and remote head verified; automatic production deployment READY with all four LIVE aliases verified.",
+    "observedAt": "2026-10-16T16:01:09.911Z",
+    "deployment": {
+      "id": "dpl_4ukrhsZCMyPwHRoWWefvwqddx3dy",
+      "sha": "92d937df7d646bfaac6d5de986aeb60d7d3aebbf",
+      "ref": "main",
+      "state": "READY",
+      "target": "production",
+      "url": "serviceos-m3qhm8410-allkin.vercel.app",
+      "createdAt": 1792166441277,
+      "aliasError": null
+    },
+    "protection": {
+      "deploymentType": "all_except_custom_domains"
+    },
+    "aliases": [
+      {
+        "name": "app.openfolk.ai",
+        "deployment": "dpl_4ukrhsZCMyPwHRoWWefvwqddx3dy",
+        "redirect": null
+      },
+      {
+        "name": "openfolk.ai",
+        "deployment": "dpl_4ukrhsZCMyPwHRoWWefvwqddx3dy",
+        "redirect": "www.openfolk.ai"
+      },
+      {
+        "name": "serviceos-dh.vercel.app",
+        "deployment": "dpl_4ukrhsZCMyPwHRoWWefvwqddx3dy",
+        "redirect": null
+      },
+      {
+        "name": "www.openfolk.ai",
+        "deployment": "dpl_4ukrhsZCMyPwHRoWWefvwqddx3dy",
+        "redirect": null
+      }
+    ]
   },
   "publicAliases": {
-    "observedAt": "2026-10-16T15:28:46.410Z",
+    "observedAt": "2026-10-16T16:01:24.970Z",
     "rows": [
       {
         "name": "app.openfolk.ai",
@@ -545,15 +581,15 @@
           "/assets/OpenFolkWordmark-BVPUEPLW.js",
           "/assets/createLucideIcon-C3-9FVOn.js",
           "/assets/dist-6FHsa19l.js",
-          "/assets/index-B48ITkHy.js",
+          "/assets/index-CZ64dbVm.js",
           "/assets/input-DyO5HNCa.js",
           "/assets/jsx-runtime-CaR_m4Xc.js",
-          "/assets/login-DXsVkBGa.js",
+          "/assets/login-DIFFAlpc.js",
           "/assets/preload-helper-CZgWQFsJ.js",
           "/assets/rolldown-runtime-CNC7AqOf.js",
           "/assets/root-nUSLhHW2.js",
           "/assets/supabase-Bl576DhO.js",
-          "/assets/useQuery-D1SIlbVz.js",
+          "/assets/useQuery-D8JDKS56.js",
           "/assets/useSelector-B8eks9ze.js",
           "/assets/utils-B6KiDbIe.js",
           "/assets/x-CvZwrRXI.js"
@@ -569,15 +605,15 @@
           "/assets/OpenFolkWordmark-BVPUEPLW.js",
           "/assets/createLucideIcon-C3-9FVOn.js",
           "/assets/dist-6FHsa19l.js",
-          "/assets/index-B48ITkHy.js",
+          "/assets/index-CZ64dbVm.js",
           "/assets/input-DyO5HNCa.js",
           "/assets/jsx-runtime-CaR_m4Xc.js",
-          "/assets/login-DXsVkBGa.js",
+          "/assets/login-DIFFAlpc.js",
           "/assets/preload-helper-CZgWQFsJ.js",
           "/assets/rolldown-runtime-CNC7AqOf.js",
           "/assets/root-nUSLhHW2.js",
           "/assets/supabase-Bl576DhO.js",
-          "/assets/useQuery-D1SIlbVz.js",
+          "/assets/useQuery-D8JDKS56.js",
           "/assets/useSelector-B8eks9ze.js",
           "/assets/utils-B6KiDbIe.js",
           "/assets/x-CvZwrRXI.js"
@@ -593,15 +629,15 @@
           "/assets/OpenFolkWordmark-BVPUEPLW.js",
           "/assets/createLucideIcon-C3-9FVOn.js",
           "/assets/dist-6FHsa19l.js",
-          "/assets/index-B48ITkHy.js",
+          "/assets/index-CZ64dbVm.js",
           "/assets/input-DyO5HNCa.js",
           "/assets/jsx-runtime-CaR_m4Xc.js",
-          "/assets/login-DXsVkBGa.js",
+          "/assets/login-DIFFAlpc.js",
           "/assets/preload-helper-CZgWQFsJ.js",
           "/assets/rolldown-runtime-CNC7AqOf.js",
           "/assets/root-nUSLhHW2.js",
           "/assets/supabase-Bl576DhO.js",
-          "/assets/useQuery-D1SIlbVz.js",
+          "/assets/useQuery-D8JDKS56.js",
           "/assets/useSelector-B8eks9ze.js",
           "/assets/utils-B6KiDbIe.js",
           "/assets/x-CvZwrRXI.js"
@@ -617,15 +653,15 @@
           "/assets/OpenFolkWordmark-BVPUEPLW.js",
           "/assets/createLucideIcon-C3-9FVOn.js",
           "/assets/dist-6FHsa19l.js",
-          "/assets/index-B48ITkHy.js",
+          "/assets/index-CZ64dbVm.js",
           "/assets/input-DyO5HNCa.js",
           "/assets/jsx-runtime-CaR_m4Xc.js",
-          "/assets/login-DXsVkBGa.js",
+          "/assets/login-DIFFAlpc.js",
           "/assets/preload-helper-CZgWQFsJ.js",
           "/assets/rolldown-runtime-CNC7AqOf.js",
           "/assets/root-nUSLhHW2.js",
           "/assets/supabase-Bl576DhO.js",
-          "/assets/useQuery-D1SIlbVz.js",
+          "/assets/useQuery-D8JDKS56.js",
           "/assets/useSelector-B8eks9ze.js",
           "/assets/utils-B6KiDbIe.js",
           "/assets/x-CvZwrRXI.js"
