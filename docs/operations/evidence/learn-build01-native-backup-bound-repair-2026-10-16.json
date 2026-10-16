@@ -1,6 +1,6 @@
 {
   "version": "learn-build01-native-backup-bound-repair/1",
-  "observed_at_utc": "2026-10-16T04:00:42Z",
+  "observed_at_utc": "2026-10-16T04:20:47Z",
   "environment": "GitHub Actions production backup workflow, with nondeploying TEST source checkpoint",
   "failed_manual_runs": [
     {
@@ -40,9 +40,12 @@
     "main_workflow_only_fast_forward": "499baad8a729f449a07167c2e526414a3a7549e0"
   },
   "manual_rehearsal_run": 38848335678,
-  "manual_rehearsal_result": "pending",
-  "scheduled_0415_utc_result": "pending",
-  "today_independent_copy_verified": false,
+  "manual_rehearsal_result": "success_at_2026-10-16T04:15:33Z",
+  "manual_success_basis": "The pinned runner exits successfully only after native source export, isolated native comparison with removed container, public-key encryption, private London S3 upload and separate Restore-identity download comparison. GitHub safe step metadata confirms that combined step and cleanup succeeded; raw logs were not retrieved.",
+  "scheduled_0415_utc_result": "not_dispatched_as_of_2026-10-16T04:20:09Z",
+  "later_guarded_slots_utc": ["05:37", "07:43"],
+  "later_schedule_workflow_only_main_release": "06c4e1f705e5fb53db8a878fe57ab28b360d6a24",
+  "today_independent_copy_verified": true,
   "unattended_daily_operation_verified": false,
   "full_application_recovery_verified": false,
   "raw_job_logs_retrieved": false,
