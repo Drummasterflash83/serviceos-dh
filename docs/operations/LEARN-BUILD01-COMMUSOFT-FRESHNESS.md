@@ -2,10 +2,10 @@
 
 ## Working and verified
 
-**16 October 2026, 06:31 UTC (07:31 BST):** the read-only current-jobs scheduler is
+**16 October 2026, 06:44 UTC (07:44 BST):** the read-only current-jobs scheduler is
 installed in TEST and LIVE and enabled only for Drummonds' existing approved LIVE
-account. Two normal worker windows completed, with no incomplete windows. Latest
-retained jobs page: **06:27:24 UTC**; current-jobs watermark: **06:25:23 UTC**.
+account. Three normal worker windows completed, with no incomplete windows. Latest
+retained jobs page: **06:43:03 UTC**; current-jobs watermark: **06:41:01 UTC**.
 The contact crawl resumed and completed all 871 site-contact targets. The full
 cycle then completed and advanced its independent watermark to 02:13:04 UTC.
 A changed-record page proves that window's traversal, not a new observation of
@@ -15,7 +15,7 @@ every retained job.
 contains separately timestamped scheduler and coverage readbacks. Before the
 change, jobs were waiting behind the contact traversal: at 05:59 UTC their latest
 page was from 02:18 UTC. The first independent window committed four observations
-at 06:12:21 UTC. The second normal completion proves the lane recurs.
+at 06:12:21 UTC. The second normal completion proves the lane recurs; the third completed while the full cycle was idle, with its full-cycle watermark unchanged.
 
 The scheduler makes jobs eligible every 15 minutes during contact traversal and
 between full cycles. It reuses the existing tenant, connection, approval, quota,
@@ -37,10 +37,17 @@ fresh real-provider acceptance.
 
 One existing LIVE job was reviewed in the existing signed-in Drummonds UI and
 updated to the latest retained completed status, preserving its reviewed customer
-and source history. At the 06:17 UTC coverage readback, all **944 published jobs**
+and source history. At the 06:44 UTC coverage readback, all **974 published jobs**
 used their latest effective retained versions, with no missing canonical customer.
 An unzoned source completion date remains excluded from duration and scoring.
 The live Drummonds branding and frontend were unchanged.
+
+One additional source site, its open job and 29 historical jobs with existing
+reviewed customer relationships were linked through the signed-in UI. All saved
+batches returned zero attention items. The new open-job card is visible with code
+`006` preserved; source business-unit code `001` also remains text. The card
+truthfully shows recorded open status, no linked communications, unconfirmed owner
+and unassessed scoring. This verifies card presentation, not independent job progress.
 
 Source codes remain strings, including leading zeros. The observed provider
 business codes are carried in description/business-unit text; numeric source job
@@ -49,11 +56,22 @@ No provider write, webhook registration or provider setting change was made.
 
 ## Needs finishing
 
-LIVE retains 12,649 jobs, including 288 open/pending/on-hold jobs. Only nine of those
-open-work jobs are published: **279 remain unlinked**. The blockers include 25
+LIVE retains 12,649 jobs, including 288 open/pending/on-hold jobs. Ten of those
+open-work jobs are published: **278 remain unlinked**. The blockers include 25
 jobs whose referenced property is absent from the retained source and unreviewed
 customer/site relationships. The full open-work breakdown is in the evidence.
-Retained properties: 2,425, with 151 reviewed links; retained contacts: 2,969, with
+The 25 missing-parent jobs reference 17 distinct nonzero source IDs; no reference
+is null or zero. Five parent IDs (11 jobs) match the 13 October private export/API
+difference. That dated evidence does not establish present visibility for every
+missing property. The provider UI/API discrepancy and a documented-detail HTTP
+404 were previously verified; replaying the same full traversal is not a proven
+fix. See [provider coverage evidence](evidence/learn-commusoft-provider-coverage-2026-10-13.json).
+
+A further 30 historical jobs and 94 contacts have reviewed parents but remain
+unlinked; two contacts have prior identity-review holds. Parent readiness alone
+does not settle contact identity. These remain review work, not external blockers.
+
+Retained properties: 2,425, with 152 reviewed links; retained contacts: 2,969, with
 76 reviewed links. These counts are coverage, not a claim of complete cards.
 
 Investigate missing parents through authorized read-only source evidence, then
@@ -63,9 +81,13 @@ and identities instead of manufacturing scoring evidence.
 ## Blocked externally
 
 134 unreviewed customers underlying open work need authoritative person/company
-classification. Commusoft customerType IDs 1, 2, 4–10 and 13 are configurable;
-the few reviewed examples do not establish a complete mapping. Chris is seeking
-Heidi's customer-type register/settings and mixed-type rules. A draft was prepared
+classification. Earlier provider UI evidence already establishes customerType
+ID-to-label names, including 1 Private customer, 2 Company, 4 School or College,
+5 Property Management, 6 Care Home, 7 Religious building, 8 Hospitality,
+9 Government Building, 10 Private Landlord and 13 Accounting Name. These labels
+and creation routes are not a complete canonical person/company policy. Chris is
+seeking Heidi's confirmation of actual usage, mixed-type exceptions and the
+account-holder versus named-contact distinction. A draft was prepared
 for Chris; no message was sent. Classification and full relationship acceptance
 remain incomplete pending that evidence.
 

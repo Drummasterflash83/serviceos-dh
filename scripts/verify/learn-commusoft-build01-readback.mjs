@@ -52,6 +52,10 @@ const query = `with observed as materialized (
  parent_link is not null parent_reviewed,site_customer_link is not null site_customer_reviewed,
  count(*)::int jobs,count(canonical_job)::int published from jobs where payload->>'status' in('Open','ongoing','pending','on_hold')
  group by parent_type,parent_link is not null,site_customer_link is not null)s),
+ 'missing_open_parent_references',(select jsonb_build_object('jobs',count(*),'distinct_references',count(distinct payload->>'propertyID'),
+ 'missing_reference_values',count(*) filter(where nullif(payload->>'propertyID','') is null),
+ 'zero_reference_values',count(*) filter(where payload->>'propertyID'='0')) from jobs
+ where parent_version is null and payload->>'status' in('Open','ongoing','pending','on_hold')),
  'pages',(select jsonb_agg(s order by collection) from(select collection,count(*)::int retained_pages,
  max(committed_at) newest_page_at,count(*) filter(where committed_at>now()-interval '1 hour')::int pages_last_hour,
  sum(record_count) filter(where committed_at>now()-interval '1 hour') observations_last_hour
