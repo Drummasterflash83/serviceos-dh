@@ -10,6 +10,14 @@ open/pending/on-hold Commusoft jobs, ten with reviewed published job links and
 source record. These counts are timestamped observations, so a company-wide
 job score would be misleading.
 
+A second aggregate read at 22:31 UTC still found **295** retained open,
+pending or on-hold jobs, **10** with reviewed job links and **285** without.
+Of the 295, **272** had no observation within the previous day. The recurring
+changed-job lane is enabled and completed ordinary jobs windows at 22:06 and
+22:21, but those windows do not re-observe every unchanged job. The source-only
+cards should continue to show each record's actual observation time and avoid
+describing an old status as current provider progress.
+
 ## Source-backed attention states
 
 | Saved evidence | Card treatment now | Requirement before assigning an individual or calculating a score |
