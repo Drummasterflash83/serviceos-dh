@@ -1,6 +1,6 @@
 {
   "contract": "learn-build01-card-next-batch-readback/1",
-  "observedAt": "2026-10-16T22:38:25.049Z",
+  "observedAt": "2026-10-16T22:53:03.547Z",
   "project": "tgbnakbxwcqjeimygroz",
   "sweepSince": "2026-10-16T20:38:02.997Z",
   "requestedLimit": 40,
@@ -9,10 +9,11 @@
   "batchCards": 10,
   "inputReadSuccesses": 10,
   "inputReadFailures": 0,
+  "fullInputContractValidations": 10,
   "eligibleInteractionsByPosition": [55115, 7, 164, 3, 1815, 6, 6, 24, 6, 21],
-  "elapsedMillisecondsByPosition": [1663, 226, 265, 262, 714, 335, 349, 480, 217, 227],
+  "elapsedMillisecondsByPosition": [3452, 192, 370, 203, 427, 389, 216, 253, 270, 319],
   "graphEdgesByPositionAt2241": [71, 3, 57, 1, 42, 0, 2, 13, 0, 0],
-  "interpretation": "The actual next ten-card ordinary sweep batch passes bounded read-only source-input reads, including the 55,115-interaction first card. Another 1,995 cards still fall before this sweep boundary, so one retry cannot finish the full sweep. This does not prove the full worker, card update, graph traversal or scheduled retry succeeds.",
+  "interpretation": "The actual next ten-card ordinary sweep batch passes the same input envelope and bounded-array/count validation used by the worker, including the 55,115-interaction first card. Another 1,995 cards still fall before this sweep boundary, so one retry cannot finish the full sweep. This does not prove the full worker, card update, graph traversal or scheduled retry succeeds.",
   "cardIdsReturned": false,
   "customerContentReturned": false,
   "productionDataWrites": false

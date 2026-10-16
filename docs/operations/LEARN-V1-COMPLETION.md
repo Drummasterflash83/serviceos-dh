@@ -31,8 +31,9 @@ business decision yet.
   The oldest real LIVE card retained its 55,115 eligible count and returned
   its bounded evidence in 4.5 seconds, under the app's eight-second query
   limit. A later read of the **actual next ten-card sweep batch** returned
-  all ten source inputs successfully; the 55,115-interaction first card took
-  3.3 seconds and the others 0.2–0.5 seconds. This still does not establish
+  all ten source inputs successfully and validated the worker's input envelope,
+  bounded-array lengths and coverage counts; the 55,115-interaction first card
+  took 3.5 seconds and the others 0.2–0.4 seconds. This still does not establish
   that the full worker updates cards successfully. Their graph edge counts
   were all below the worker's 500-row page size (maximum 71). No source rows,
   owner, grants or role defaults changed.

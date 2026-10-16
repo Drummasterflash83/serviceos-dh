@@ -55,13 +55,41 @@ const results = [];
 for (const [position, card] of cards.entries()) {
   const started = Date.now();
   try {
-    const rows = await readServiceFunction(`select
-      (public.learn_card_projection_inputs('${tenant}'::uuid,'${card.id}'::uuid)
-        #>>'{coverage,eligibleInteractions}')::int eligible`);
+    const rows = await readServiceFunction(`with x as materialized (
+      select public.learn_card_projection_inputs('${tenant}'::uuid,
+        '${card.id}'::uuid) as v
+    ) select
+      (v#>>'{coverage,eligibleInteractions}')::int eligible,
+      v->>'version'='learn-card-inputs/1' version_ok,
+      v->>'tenantId'='${tenant}' and v->>'cardId'='${card.id}' scope_ok,
+      jsonb_typeof(v->'interactions')='array' and
+        jsonb_typeof(v->'recommendations')='array' arrays_ok,
+      case when jsonb_typeof(v->'interactions')='array' and
+        jsonb_typeof(v->'recommendations')='array' then
+        jsonb_array_length(v->'interactions')=least(100,
+          (v#>>'{coverage,eligibleInteractions}')::int) and
+        jsonb_array_length(v->'recommendations')=least(50,
+          (v#>>'{coverage,eligibleRecommendations}')::int)
+      else false end bounds_ok,
+      (select bool_and(jsonb_typeof(v#>'{coverage}'->key)='number' and
+        (v#>'{coverage}'->>key)::numeric>=0)
+       from unnest(array['eligibleInteractions','excludedDraftInteractions',
+        'interactionsLast7','interactionsPrev7','eligibleRecommendations',
+        'excludedDraftRecommendations','urgentRecommendations']) key) counts_ok,
+      (v#>>'{coverage,urgentRecommendations}')::int <=
+        (v#>>'{coverage,eligibleRecommendations}')::int urgency_ok,
+      (v#>>'{coverage,interactionLimit}')::int=100 and
+        (v#>>'{coverage,recommendationLimit}')::int=50 limits_ok,
+      v->>'capturedAt' captured_at from x`);
     if (!Array.isArray(rows) || rows.length !== 1 ||
       !Number.isInteger(rows[0]?.eligible)) throw Error("input_shape_changed");
+    const contractValid = ["version_ok", "scope_ok", "arrays_ok",
+      "bounds_ok", "counts_ok", "urgency_ok", "limits_ok"]
+      .every((key) => rows[0]?.[key] === true) &&
+      Number.isFinite(Date.parse(rows[0]?.captured_at));
     results.push({ position: position + 1, elapsedMs: Date.now() - started,
-      eligibleInteractions: rows[0].eligible, success: true });
+      eligibleInteractions: rows[0].eligible, success: contractValid,
+      ...(!contractValid ? { code: "input_contract_invalid" } : {}) });
   } catch (error) {
     results.push({ position: position + 1, elapsedMs: Date.now() - started,
       success: false, code: error?.name === "TimeoutError"
