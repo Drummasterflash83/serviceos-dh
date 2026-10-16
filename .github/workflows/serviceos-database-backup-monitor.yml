@@ -1,11 +1,12 @@
 name: ServiceOS database backup missed-success check
 
-# Check the last successful hosted backup every hour; a stale or missing copy
-# fails this workflow without loading database or AWS credentials.
+# Check once after the final daily backup fallback slot. A stale or missing
+# scheduled copy fails this workflow without loading database or AWS credentials.
+# One daily alert avoids repeated failure emails for the same missing copy.
 on:
   workflow_dispatch:
   schedule:
-    - cron: '23 * * * *'
+    - cron: '23 9 * * *'
 
 permissions:
   actions: read
