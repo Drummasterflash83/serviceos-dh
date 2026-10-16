@@ -13,7 +13,7 @@ sign-off.
 
 ## Current evidence and priority
 
-**16 October, 13:40 UTC — repeated held-mailbox scheduling stopped in LIVE.**
+**16 October, 13:45 UTC — repeated held-mailbox scheduling stopped in LIVE.**
 
 ### Working and verified
 
@@ -23,9 +23,11 @@ sign-off.
   the held count as a failed health heartbeat rather than a false success.
   The exact three-file serving-source closure passed synthetic behavior tests,
   a hosted TEST invocation with a temporary TEST-only secret, and a guarded
-  LIVE release. Other Edge endpoints were unchanged. At 13:40 UTC the first
-  ordinary LIVE scheduler tick queued 14 eligible captures and reported eight
-  held recoveries. [Release receipt](evidence/learn-build01-email-held-scheduler-2026-10-16.json).
+  LIVE release. Other Edge endpoints were unchanged. Ordinary LIVE ticks at
+  13:40 and 13:45 UTC each queued 14 eligible captures and reported eight held
+  recoveries. Since release, 35 Workspace jobs had succeeded, 18 were queued,
+  and none had newly dead-lettered by 13:45 UTC.
+  [Release receipt](evidence/learn-build01-email-held-scheduler-2026-10-16.json).
 - The current Email projection lane continues to run unattended: 51 jobs had
   succeeded and 34 current records were processed by the 13:38 UTC readback,
   with no failed or active jobs in that lane. The earlier Email history gap
