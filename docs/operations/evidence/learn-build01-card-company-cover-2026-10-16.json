@@ -1,0 +1,37 @@
+{
+  "contract": "learn-build01-card-company-cover/1",
+  "observedAt": "2026-10-16T22:26:00Z",
+  "testProject": "saatxzwxvdvqevbnskxy",
+  "liveProject": "tgbnakbxwcqjeimygroz",
+  "coveringIndex": {
+    "name": "learn_card_company_cover_idx",
+    "ddlSha256": "d0cfe88f3319ef4b412e56f904138aced4ce4e3ab5b8f9a2ce753f7f601fea79",
+    "testAndLiveValidReady": true,
+    "builtConcurrently": true,
+    "liveBytes": 37470208,
+    "sourceRowsChanged": false
+  },
+  "associationFunction": {
+    "migrationSha256": "a64994105eec462f420199ac8694484322a21cf3862b3e68c32a2c5617f27d98",
+    "beforeSha256": "a52902eec22ac17ce18b0999bdfa86dc1de30a62003da6a35453112e94673044",
+    "testAndLiveAfterSha256": "ee93dfa1ef524a71257fde306e57552bb71d1f7dfc7957e7877e3a31b76f30d6",
+    "rollbackRehearsedInTestAndLive": true,
+    "ownerGrantsAndSettingsPreserved": true,
+    "syntheticTestBeforeAndAfterOutputEqual": true,
+    "syntheticTestDualPersonCompanyLinkDeduplicated": true,
+    "syntheticTestPersonOnlyAndCompanyOnlyLinksPreserved": true,
+    "syntheticTestEligibleInteractions": 109,
+    "syntheticTestExcludedDrafts": 110,
+    "syntheticFixtureRolledBack": true
+  },
+  "liveReadOnlyEvidence": {
+    "eligibleInteractionsOnOldestCard": 55115,
+    "beforeColdBitmapHeapSharedReads": 31925,
+    "afterCoverIndexOnlySharedReads": 7893,
+    "afterFullFunctionElapsedMs": 4506,
+    "connectionStatementTimeoutMs": 8000,
+    "customerContentOrIdsReturned": false
+  },
+  "ordinaryLiveSweepAfterReleaseVerified": false,
+  "productionSourceRowsChanged": false
+}

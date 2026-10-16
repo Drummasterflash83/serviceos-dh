@@ -13,6 +13,43 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 22:26 UTC — heavy-card read path narrowed; ordinary sweep still pending.**
+
+### Working and verified
+
+- A function-only planner setting improved one read-only sample but remained
+  variable under load, so it was not accepted as the card fix by itself.
+  TEST and LIVE now have a concurrently built company interaction covering
+  index and an identical, rollback-rehearsed card-input function that reads
+  company and person matches separately. A rollback-only TEST fixture proved
+  equal before/after evidence for 109 eligible interactions, including dual,
+  company-only and person-only links, while excluding 110 retained drafts.
+  The oldest real LIVE card retained its 55,115 eligible count and returned
+  its bounded evidence in 4.5 seconds, under the app's eight-second query
+  limit. No source rows, owner, grants or role defaults changed.
+  [Sanitised release receipt](evidence/learn-build01-card-company-cover-2026-10-16.json).
+- The TEST checkpoint `267557fc8cc34cca47ace86b2d967cfcb40d8e45` was
+  pushed fast-forward and the remote head matched. It covers the ten-card
+  worker, the first planner setting, backup refresh and Email receipt evidence.
+  The newer covering-index/function release still needs its own checkpoint.
+
+### Needs finishing
+
+- The existing LIVE card job remains queued for its ordinary 23:04 retry.
+  Verify it projects the ten older missing cards and terminates cleanly; the
+  read-only speedup and TEST equality fixture alone do not close this gate.
+- The approved public Slack capture still had 85 of 160 channels more than a
+  day behind at 22:15. Continue to verify catch-up and actual post-cutoff
+  evidence without new team test posts. Email update receipts continue, but
+  the legacy unversioned links, Commusoft job mapping, score policy and full
+  application/Auth recovery remain open.
+
+### Blocked externally
+
+- One exact current Edge v106 source-only off-site copy is prepared for Chris's
+  review. It is not required to diagnose the card failure. Chris's final
+  business acceptance remains his decision after technical evidence is ready.
+
 **16 October, 22:07 UTC — Email continuation and refreshed file backup verified; card failure isolated for diagnosis.**
 
 ### Working and verified

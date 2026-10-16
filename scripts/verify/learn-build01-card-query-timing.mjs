@@ -3,7 +3,9 @@ import { savedCliToken } from "./learn-test-readiness.mjs";
 
 const mode = process.argv.slice(2).join(" ");
 if (!["--live-read-only", "--live-read-only --no-bitmap",
-  "--live-read-only --full-no-bitmap"].includes(mode))
+  "--live-read-only --full-no-bitmap",
+  "--live-read-only --recommendations",
+  "--live-read-only --union-plan"].includes(mode))
   throw Error("Exact LIVE read-only mode required");
 const project = "tgbnakbxwcqjeimygroz";
 const tenant = "00000000-0000-0000-0000-000000000001";
@@ -26,10 +28,47 @@ const scan = `with target as materialized (${target}),
  (select count(*)::int from eligible) eligible,
  (select count(*)::int from eligible where occurred_at>=now()-interval '7 days') last7,
  (select count(*)::int from (select id from eligible order by occurred_at desc nulls last,id limit 100) x) sampled`;
-const queries = mode.includes("--full-no-bitmap")
+const unionScan = `with target as materialized (${target}),
+ drafts as materialized (
+  select id from public.email_messages where tenant_id='${tenant}'::uuid
+  and provider='gmail' and raw_payload->'label_ids' @> '["DRAFT"]'::jsonb
+ ), candidates as materialized (
+  select i.id,i.occurred_at,i.source_table,i.source_id from target c
+  join public.interactions i on i.tenant_id='${tenant}'::uuid
+   and i.related_company_id=c.company_id
+  where coalesce(i.status,'') not in('deleted','removed')
+  union all
+  select i.id,i.occurred_at,i.source_table,i.source_id from target c
+  join public.interactions i on i.tenant_id='${tenant}'::uuid
+   and i.related_person_id=c.person_id
+  where i.related_company_id is distinct from c.company_id
+   and coalesce(i.status,'') not in('deleted','removed')
+ ), associated as materialized (
+  select i.id,i.occurred_at,
+    (i.source_table='email_messages' and d.id is not null) draft
+  from candidates i left join drafts d
+   on i.source_table='email_messages' and d.id=i.source_id
+ ), eligible as materialized (select * from associated where not draft)
+ select (select count(*)::int from associated) associated,
+ (select count(*)::int from eligible) eligible,
+ (select count(*)::int from eligible where occurred_at>=now()-interval '7 days') last7,
+ (select count(*)::int from (select id from eligible order by occurred_at desc nulls last,id limit 100) x) sampled`;
+const queries = mode.includes("--recommendations")
+  ? [
+    { label: "recommendations_plain", sql: `with target as (${target})
+      select count(*)::int eligible from public.recommendations r join target c on r.card_id=c.id
+      where r.tenant_id='${tenant}'::uuid and r.status='open'` },
+    { label: "recommendations_withheld", sql: `with target as (${target})
+      select count(*)::int eligible from public.recommendations r join target c on r.card_id=c.id
+      where r.tenant_id='${tenant}'::uuid and r.status='open'
+        and not public.learn_slack_derived_withheld(r.tenant_id,'recommendation',r.id)` },
+  ]
+  : mode.includes("--full-no-bitmap")
   ? [{ label: "full_function_no_bitmap", sql: `with target as (${target})
       select (public.learn_card_projection_inputs('${tenant}'::uuid,id)#>>'{coverage,eligibleInteractions}')::int eligible
       from target` }]
+  : mode.includes("--union-plan")
+  ? [{ label: "union_plan", sql: `explain (analyze,buffers,format json) ${unionScan}` }]
   : [{ label: "associated_plan", sql: `explain (analyze,buffers,format json) ${scan}` }];
 for (const item of queries) {
   const started = Date.now();
@@ -38,7 +77,8 @@ for (const item of queries) {
       method: "POST", redirect: "error", signal: AbortSignal.timeout(30000),
       headers: { Authorization: `Bearer ${savedCliToken()}`,
         "Content-Type": "application/json" },
-      body: JSON.stringify({ query: `begin read only; set local role service_role;
+      body: JSON.stringify({ query: `begin read only;
+        ${mode.includes("--recommendations") ? "" : "set local role service_role;"}
         ${mode.includes("no-bitmap") ? "set local enable_bitmapscan=off;" : ""}
         ${item.sql}; rollback;`, read_only: false }),
     });
@@ -46,7 +86,7 @@ for (const item of queries) {
   if (!response.ok) throw Error(`${item.label} read-only query HTTP ${response.status}`);
   const rows = await response.json();
   if (!Array.isArray(rows) || rows.length !== 1) throw Error(`${item.label} shape changed`);
-  if (mode.includes("--full-no-bitmap")) {
+  if (mode.includes("--full-no-bitmap") || mode.includes("--recommendations")) {
     if (!Number.isInteger(rows[0]?.eligible)) throw Error("Full function shape changed");
     console.log(JSON.stringify({ observedAt: new Date().toISOString(), project,
       label: item.label, elapsedMs, eligible: rows[0].eligible,
