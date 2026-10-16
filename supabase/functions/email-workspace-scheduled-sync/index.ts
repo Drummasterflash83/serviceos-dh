@@ -24,6 +24,7 @@ import type {
   WorkspaceScheduleCheckpoint,
   WorkspaceScheduleMailbox,
 } from "../_shared/workspace_scheduler_selection.ts";
+import { shouldRecheckHeldMailbox } from "../_shared/workspace_held_probe.ts";
 
 const PROVIDER = "gmail";
 const DWD_STATUSES = ["pending_tokenless_dwd", "active_dwd"];
@@ -142,6 +143,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const mailboxQueued = new Map<string, number>();
   const ineligibleByTenant = new Map<string, number>();
   const heldByTenant = new Map<string, number>();
+  const heldRecheckCandidates: { tenantId: string; accountId: string;
+    checkpoint: WorkspaceScheduleCheckpoint }[] = [];
   const discoveryCounts = new Map<string, number>();
   for (const tid of tenantIds) perTenant.set(tid, emptySchedulerCounts());
   for (const acc of inventoryError ? [] : accounts) {
@@ -209,6 +212,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       }
       if (isWorkspaceRecentCaptureHeld(acc, checkpoints, profileProof)) {
         heldByTenant.set(tid, (heldByTenant.get(tid) ?? 0) + 1);
+        if (held?.block_code === "admin_delegation_missing")
+          heldRecheckCandidates.push({ tenantId: tid, accountId: acc.id, checkpoint: held });
         continue;
       }
       const before = { ...counts };
@@ -264,6 +269,42 @@ Deno.serve(async (req: Request): Promise<Response> => {
       "Some scheduling results are uncertain. Check queued jobs before retrying.",
       503,
     );
+  // An intermittent Google token denial can block a mailbox even when its
+  // current delegated profile access works. Recheck at most one exact active
+  // hold per tick, with two attempts in two hours and the probe's independent
+  // 15-minute cooldown. The existing internal endpoint audits its own read,
+  // returns no mailbox content and never clears a checkpoint by itself.
+  const background = (globalThis as { EdgeRuntime?: {
+    waitUntil?: (task: Promise<unknown>) => void;
+  } }).EdgeRuntime;
+  if (heldRecheckCandidates.length && background?.waitUntil) {
+    const recheck = (async () => {
+      for (const candidate of heldRecheckCandidates) {
+        const now = Date.now();
+        const { data: requests, error } = await supabase.from("audit_logs")
+          .select("created_at")
+          .eq("tenant_id", candidate.tenantId)
+          .eq("resource_type", "email_account")
+          .eq("resource_id", candidate.accountId)
+          .eq("action", "learn.email.mailbox_source_probe")
+          .gte("created_at", new Date(now - 2 * 60 * 60 * 1000).toISOString())
+          .order("created_at", { ascending: false }).limit(2);
+        if (error || !requests || !shouldRecheckHeldMailbox(candidate.checkpoint,
+          requests.map((request) => request.created_at), now)) continue;
+        const response = await fetch(`${supabaseUrl}/functions/v1/learn-email-mailbox-source-probe`, {
+          method: "POST", redirect: "error", signal: AbortSignal.timeout(30000),
+          headers: { Authorization: `Bearer ${serviceKey}`,
+            "x-serviceos-internal-key": serviceKey,
+            "x-internal-tenant-id": candidate.tenantId,
+            "Content-Type": "application/json" },
+          body: JSON.stringify({ account_id: candidate.accountId }),
+        });
+        await response.body?.cancel();
+        break;
+      }
+    })().catch(() => { /* No checkpoint or capture job changes on uncertainty. */ });
+    background.waitUntil(recheck);
+  }
   return json({
     success: true,
     mailboxes: accounts.length,

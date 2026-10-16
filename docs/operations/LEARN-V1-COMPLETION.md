@@ -13,6 +13,76 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 18:18 UTC — original Slack cutoffs, Email holds and stale card gap cleared; bounded Email recheck released.**
+
+### Working and verified
+
+- The ordinary LIVE Slack scheduler advanced the last first window after all
+  439 observed reply threads gained complete checkpoints and matching page
+  receipts. All 160 original public-channel subscriptions now sit strictly
+  beyond the saved 13 October 09:30 UTC cutoff, with replies enabled and no
+  cutoff regression. The separate approved 20-channel roster remains enabled.
+  Historical catch-up is ongoing; 72 original channels were still more than
+  a day behind at the 18:18 readback.
+- Both recent Workspace `admin_delegation_missing` holds cleared through fresh
+  audited provider proofs followed by ordinary queued jobs. LIVE has **zero**
+  such current holds at 18:18 UTC. The automatic bounded recheck is now on TEST
+  and LIVE at identical wire SHA-256
+  `db7918832908ec1d4e8d04d5510563f2e1e403e5eb6a9c82193a000808a131fd`.
+  It rechecks only an active exact delegation hold, at most once per scheduler
+  tick and twice per mailbox in two hours, with a 15-minute minimum gap. The
+  existing internal endpoint records the provider proof without message
+  content; the ordinary database claim must still validate its audit and
+  authority. Five focused tests, TypeScript, serving TEST source and TEST/LIVE
+  method/auth boundaries passed; other Edge functions did not change.
+  [Sanitised release receipt](evidence/learn-build01-email-held-auto-probe-release-2026-10-16.json).
+- The ordinary LIVE customer-card sweep reduced active unprojected cards over
+  an hour old from 15 at 17:55 to **zero** at 18:18. The 18:00 partial-failure
+  retry succeeded and its continuation processed further 200-card batches.
+
+### Needs finishing
+
+- The new automatic Email proof branch has not yet been exercised by a real
+  future hold; today's holds cleared after manual read-only proofs. Continue
+  observing ordinary scheduled work and the remaining eligible Email, Graph
+  and Slack catch-up. One card sweep job is retrying after another isolated
+  partial failure despite the zero stale-unprojected count.
+- Verify a new post-fix organic signed Slack event, finish source-backed job
+  progress/routing and scoring review, and complete isolated application/Auth
+  recovery before Chris's business sign-off. The full-day elapsed wait remains
+  waived.
+
+### Blocked externally
+
+- No new user action is needed for these operational checks.
+
+**16 October, 18:05 UTC — the last first-window Slack reply thread recovered.**
+
+### Working and verified
+
+- The only original 160-channel subscription still at the 13 October cutoff
+  had a completed channel page but one dead-letter reply thread among 439
+  observed threads. The exact failed thread had an empty checkpoint, unchanged
+  public-channel approval and connection, and unexpired scope. A rollback
+  rehearsal preceded one bounded requeue. The dedicated LIVE worker then
+  completed it: 439 of 439 thread jobs now succeeded, with no failed thread
+  job in that window. [Sanitised receipt](evidence/learn-build01-slack-first-window-thread-recovery-2026-10-16.json).
+- The 17:55 read-only Gmail proof led the ordinary 18:00 LIVE Email scheduler
+  to queue the exact held mailbox. This is an unattended claim candidate, not
+  yet a successful mailbox sync. The customer-card partial-failure retry also
+  succeeded at 18:00 and resumed its ordinary sweep; stale unprojected cards
+  fell from 15 to 14 by 18:04.
+
+### Needs finishing
+
+- Observe ordinary Slack scheduler advancement of this first window and the
+  queued Email sync outcome. Continue card and Graph catch-up, a new post-fix
+  organic Slack event, and full application/Auth recovery.
+
+### Blocked externally
+
+- No new action is needed from Chris for these operational recoveries.
+
 **16 October, 17:55 UTC — the ordinary scheduler advanced the recovered public Slack window.**
 
 ### Working and verified

@@ -1,0 +1,43 @@
+{
+  "version": "learn-build01-email-held-auto-probe-release/1",
+  "observedAtUtc": "2026-10-16T18:18:41.418Z",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "scope": "Existing approved Workspace recent mailboxes blocked only by admin_delegation_missing",
+  "sourceClosureSha256": "cee02409fd9cd4075e5220be1939cdaba4482e798bd713e6071916c157ff6e6d",
+  "sourceFiles": 6,
+  "readOnlyProviderProof": true,
+  "maximumProbeDispatchesPerSchedulerTick": 1,
+  "maximumProbeRequestsPerMailboxInTwoHours": 2,
+  "minimumMinutesBetweenProbeRequests": 15,
+  "proofAloneDoesNotClearCheckpoint": true,
+  "ordinaryClaimRechecksCurrentAuthorityAndAudit": true,
+  "focusedTestsPassed": 5,
+  "typeScriptCheckPassed": true,
+  "test": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "previousVersion": 22,
+    "releasedVersion": 23,
+    "wireSha256": "db7918832908ec1d4e8d04d5510563f2e1e403e5eb6a9c82193a000808a131fd",
+    "otherEndpointsUnchanged": true,
+    "rollbackExecutablePreserved": true,
+    "servingHelperReadbackMatched": true,
+    "methodBoundaryPassed": true,
+    "unscheduledPostFailedClosedWithoutConfiguredTestSecret": true,
+    "positiveScheduledProbeObserved": false
+  },
+  "live": {
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "previousVersion": 62,
+    "releasedVersion": 63,
+    "wireSha256": "db7918832908ec1d4e8d04d5510563f2e1e403e5eb6a9c82193a000808a131fd",
+    "otherEndpointsUnchanged": true,
+    "rollbackExecutablePreserved": true,
+    "unscheduledPostRejectedWithHttp403": true,
+    "scheduledRunsRemainEnabled": true,
+    "currentRecentDelegationHoldsAtReadback": 0,
+    "organicAutomaticProbeObserved": false
+  },
+  "mailboxContentReturned": false,
+  "sourceProviderWrites": false,
+  "secretValuesPrintedOrSaved": false
+}
