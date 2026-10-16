@@ -1,0 +1,29 @@
+{
+  "version": "learn-build01-customer-provenance-test-frontend/1",
+  "environment": "TEST",
+  "project": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+  "backendProject": "saatxzwxvdvqevbnskxy",
+  "previousAliasDeployment": "dpl_9Q3r3CL87wRc3RJ7nZNyoMp8Jueg",
+  "previousAliasGitSha": "90a03074f14704756025d3e7e30fac3ae73feb01",
+  "candidateGitSha": "42dbf90c6fd47a5512c8cad73a22dbb387b2a91d",
+  "candidateDeployment": "dpl_7yGQFJ64Xk4e4JTTCH519Y8cWJAs",
+  "candidateUrl": "https://serviceos-learn-test-1m0gpyr2x-allkin.vercel.app",
+  "aliases": ["test.openfolk.ai", "serviceos-learn-test-allkin.vercel.app"],
+  "checks": {
+    "candidateDiffOnlyFourCardFiles": true,
+    "focusedTestsPassed": 22,
+    "typescriptPassed": true,
+    "prebuildTestsPassed": 47,
+    "localProductionBuildPassed": true,
+    "vercelPreviewReady": true,
+    "candidateLoginRenderedTestBackend": true,
+    "candidateLoginRenderedLiveBackend": false,
+    "bothAliasesAssignedAndReadBack": true,
+    "projectProtectionUnchanged": true,
+    "productionTargetUnchanged": true,
+    "signedInTestOperatorMenuRetainedLearn": true,
+    "signedInTestDrummondsOperatorViewLoaded": true,
+    "clientCardLabelVisualCheck": false
+  },
+  "boundary": "The signed-in TEST session is an OpenFolk operator and routes to an audited client-information view, not the ordinary client card view. Hosted TEST backend RPC classification was separately verified with a rollback-only authenticated fixture. The new card labels still need a signed-in ordinary client visual check; LIVE backend and frontend remain unchanged."
+}

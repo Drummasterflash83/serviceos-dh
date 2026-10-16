@@ -7,6 +7,31 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, about 01:49 UTC — source-backed card frontend released to TEST.**
+
+### Working and verified
+
+- An isolated four-file candidate based on the exact previously served TEST
+  commit passed 22 focused tests, TypeScript, 47 prebuild checks and a local
+  production build. Vercel built the same Git source as a protected READY
+  preview. Its rendered login used the TEST backend. Both existing TEST aliases
+  were assigned to that deployment and independently read back with unchanged
+  protection and production target. A fresh signed-in Drummonds TEST operator
+  view retained the LEARN menu and loaded. [Sanitised release receipt](evidence/learn-build01-customer-provenance-test-frontend-2026-10-16.json).
+
+### Needs finishing
+
+- The signed-in operator session opens audited client information, so it did
+  not visually exercise the ordinary customer-card label. That exact view
+  still needs a client-role check before LIVE promotion. LIVE migration and
+  frontend have not changed; current source/card/job coverage remains open.
+
+### Blocked externally
+
+- No overnight user action is needed for this TEST release. Client-role visual
+  acceptance can be included in Chris's morning business review if a suitable
+  TEST client account is available.
+
 **16 October, about 01:40 UTC — source-backed customer-card reader installed on hosted TEST.**
 
 ### Working and verified
@@ -23,8 +48,8 @@ override a later release observation. No requirement is silently deferred.
 
 ### Needs finishing
 
-- Verify the matching frontend on signed-in TEST, then prepare an exact LIVE
-  release against the actual alias-served baseline. Current LIVE card coverage,
+- Verify the ordinary card view with a signed-in TEST client, then prepare an
+  exact LIVE release against the actual alias-served baseline. Current LIVE card coverage,
   job progress/owner routing and defensible score evidence remain open.
 
 ### Blocked externally
@@ -99,8 +124,7 @@ override a later release observation. No requirement is silently deferred.
 ### Needs finishing
 
 - This earlier local-only status was superseded by the hosted TEST database
-  installation above. The frontend remains unreleased and LIVE remains
-  unchanged.
+  and frontend releases above. LIVE remains unchanged.
   Current LIVE counts, full customer/source coverage, job progress and
   owner routing still need verification. A reviewed source identity does not
   itself prove customer health.
