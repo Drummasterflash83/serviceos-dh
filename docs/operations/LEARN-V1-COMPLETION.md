@@ -13,6 +13,25 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 02:52 UTC — hourly monitor cadence still unproved.**
+
+### Working and verified
+
+- GitHub reported the monitor workflow active. The corrected manual hosted
+  monitor run succeeded at 02:36 UTC, and the earlier 01:26 UTC run was a real
+  scheduled run on the previous monitor source. These are distinct facts.
+
+### Needs finishing
+
+- At this read, no 02:23 UTC scheduled monitor run was visible; GitHub may
+  delay or omit scheduled triggers. Observe a later scheduled run executing
+  the corrected source, especially after the first daily backup. The manual
+  rehearsal is not evidence of dependable missed-run alerting.
+
+### Blocked externally
+
+- No user action is needed. The next eligible daily export remains 03:15 UTC.
+
 **16 October, about 03:02 UTC — priority-property phone suggestions checked offline.**
 
 ### Working and verified
