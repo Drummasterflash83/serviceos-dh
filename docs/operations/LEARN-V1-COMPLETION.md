@@ -17,6 +17,12 @@ sign-off.
 
 ### Working and verified
 
+- At 17:20 UTC, the current 103-function, 727-file LIVE Edge source inventory
+  was encrypted to the existing recovery recipient and copied to the approved
+  private London bucket. A separate Restore identity downloaded the exact
+  stored version; its 6,012,536 bytes and SHA-256 matched. This verifies the
+  off-site **source copy**, not escrow decryption or full application/Auth
+  recovery. [Sanitised receipt](evidence/learn-build01-live-runtime-refresh-offsite-copy-2026-10-16.json).
 - Before the expanded approval, an exact campaign-owned-channel split guard passed a rollback rehearsal and
   schema readback on TEST and LIVE, then was installed on each. It creates no
   account, import, subscription, Slack request or schedule. It permits an

@@ -15,6 +15,12 @@ export const reviewedLiveRuntimeSource = Object.freeze({
   key: "projects/tgbnakbxwcqjeimygroz/objects/c384ec8d4be8f271445b68e273197e13bdeaa1655e389f2ef058f88f8b242ab9/4aa6f7ae538077530caa09cd8509b173dc60b97f28dc14e4ccea7d59665b335c",
 });
 
+export const reviewedLiveRuntimeSource1705 = Object.freeze({
+  bytes: 6012536,
+  sha256: "e0c3cbdb8ff2fded1ab5cf879806f8b580a1278f07bfc513290ca3ccab7b2f17",
+  key: "projects/tgbnakbxwcqjeimygroz/objects/120b1e3083e80b80e7d623867c1066e782f85a52b7e70c6a8879939245c9833e/e0c3cbdb8ff2fded1ab5cf879806f8b580a1278f07bfc513290ca3ccab7b2f17",
+});
+
 const fail = (code) => { throw Error(code); };
 const need = (condition, code) => { if (!condition) fail(code); };
 const canon = (value) => JSON.stringify(value, (_key, entry) =>
@@ -28,13 +34,13 @@ async function privateParent(path) {
     (stat.mode & 0o077) === 0, "runtime_private_directory_required");
 }
 
-async function checkedStream(stream, sink) {
+async function checkedStream(stream, sink, reviewed) {
   const hash = createHash("sha256");
   let bytes = 0;
   for await (const chunk of stream) {
     need(chunk instanceof Uint8Array, "runtime_stream_invalid");
     bytes += chunk.byteLength;
-    need(bytes <= reviewedLiveRuntimeSource.bytes, "runtime_size_mismatch");
+    need(bytes <= reviewed.bytes, "runtime_size_mismatch");
     hash.update(chunk);
     if (sink) {
       let offset = 0;
@@ -45,8 +51,8 @@ async function checkedStream(stream, sink) {
       }
     }
   }
-  need(bytes === reviewedLiveRuntimeSource.bytes &&
-    hash.digest("hex") === reviewedLiveRuntimeSource.sha256, "runtime_integrity_mismatch");
+  need(bytes === reviewed.bytes &&
+    hash.digest("hex") === reviewed.sha256, "runtime_integrity_mismatch");
 }
 
 async function inspect(port) {
@@ -59,10 +65,10 @@ async function inspect(port) {
   "runtime_destination_unverified");
 }
 
-function checkedVersion(version, now) {
-  need(version?.key === reviewedLiveRuntimeSource.key &&
-    version.size === reviewedLiveRuntimeSource.bytes &&
-    version.sha256 === reviewedLiveRuntimeSource.sha256 &&
+function checkedVersion(version, now, reviewed) {
+  need(version?.key === reviewed.key &&
+    version.size === reviewed.bytes &&
+    version.sha256 === reviewed.sha256 &&
     typeof version.versionId === "string" && version.versionId.length > 0 &&
     version.versionId.length <= 1024 && version.versionId !== "null" &&
     version.encryption === "AES256" &&
@@ -76,7 +82,9 @@ function checkedVersion(version, now) {
 /** The caller must provide a private destination path that does not exist.
  * No application, database, Slack or provider source write occurs here. */
 export async function copyReviewedLiveRuntimeSource({ sourcePath, downloadPath, writer, restore,
-  now = Date.now }) {
+  now = Date.now, reviewed = reviewedLiveRuntimeSource }) {
+  need(reviewed === reviewedLiveRuntimeSource || reviewed === reviewedLiveRuntimeSource1705,
+    "runtime_reviewed_package_invalid");
   need(typeof sourcePath === "string" && typeof downloadPath === "string" &&
     sourcePath !== downloadPath && writer?.destination && restore?.destination,
   "runtime_copy_arguments_invalid");
@@ -87,15 +95,15 @@ export async function copyReviewedLiveRuntimeSource({ sourcePath, downloadPath, 
   try {
     const stat = await source.stat();
     need(stat.isFile() && stat.uid === process.getuid() &&
-      (stat.mode & 0o077) === 0 && stat.size === reviewedLiveRuntimeSource.bytes,
+      (stat.mode & 0o077) === 0 && stat.size === reviewed.bytes,
     "runtime_source_invalid");
     const header = Buffer.alloc(22);
     await source.read(header, 0, header.length, 0);
     need(header.toString() === "age-encryption.org/v1\n", "runtime_age_header_invalid");
-    await checkedStream(source.createReadStream({ start: 0, autoClose: false }));
+    await checkedStream(source.createReadStream({ start: 0, autoClose: false }), undefined, reviewed);
     await inspect(writer.destination);
     await inspect(restore.destination);
-    const { key, sha256, bytes } = reviewedLiveRuntimeSource;
+    const { key, sha256, bytes } = reviewed;
     let version = await writer.destination.find(key);
     if (version === null) version = await writer.destination.put({
       key, size: bytes, sha256,
@@ -103,16 +111,16 @@ export async function copyReviewedLiveRuntimeSource({ sourcePath, downloadPath, 
       ifNoneMatch: "*", encryption: "AES256",
       body: () => source.createReadStream({ start: 0, autoClose: false }),
     });
-    checkedVersion(version, now());
+    checkedVersion(version, now(), reviewed);
     const writerReadback = await writer.destination.version(key, version.versionId);
-    checkedVersion(writerReadback, now());
+    checkedVersion(writerReadback, now(), reviewed);
     need(canon(writerReadback) === canon(version), "runtime_version_changed");
-    await checkedStream(await writer.destination.read(key, version.versionId));
+    await checkedStream(await writer.destination.read(key, version.versionId), undefined, reviewed);
     const restoreReadback = await restore.destination.version(key, version.versionId);
-    checkedVersion(restoreReadback, now());
+    checkedVersion(restoreReadback, now(), reviewed);
     need(canon(restoreReadback) === canon(version), "runtime_restore_version_changed");
     downloaded = await open(downloadPath, "wx", 0o600);
-    await checkedStream(await restore.destination.read(key, version.versionId), downloaded);
+    await checkedStream(await restore.destination.read(key, version.versionId), downloaded, reviewed);
     await downloaded.sync();
     return {
       state: "encrypted_live_runtime_source_offsite_copy_verified",

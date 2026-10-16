@@ -5,7 +5,7 @@ import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { createDatabaseS3 } from "./recording-backup-s3.mjs";
 import { loadDatabaseCredential } from "./serviceos-database-backup-access.mjs";
-import { copyReviewedLiveRuntimeSource } from "./copy-reviewed-live-runtime-source.mjs";
+import { copyReviewedLiveRuntimeSource, reviewedLiveRuntimeSource, reviewedLiveRuntimeSource1705 } from "./copy-reviewed-live-runtime-source.mjs";
 
 const privatePath = (name) => fileURLToPath(new URL(`../../.verification-results/${name}`, import.meta.url));
 
@@ -22,23 +22,29 @@ async function port(role) {
 }
 
 async function main() {
-  if (process.argv.slice(2).join(" ") !== "--copy-approved-exact-package") {
+  const selection = process.argv.slice(2).join(" ");
+  if (!["--copy-approved-exact-package", "--copy-approved-exact-package-1705"].includes(selection)) {
     throw Error("runtime_exact_copy_requires_separate_approval");
   }
+  const fresh = selection === "--copy-approved-exact-package-1705";
   const attempt = randomUUID();
   let writer, restore;
   try {
     writer = await port("Writer");
     restore = await port("Restore");
     const result = await copyReviewedLiveRuntimeSource({
-      sourcePath: privatePath("build01-live-edge-source-2026-10-16-0630.age"),
+      sourcePath: privatePath(fresh
+        ? "build01-live-edge-source-2026-10-16-1705.age"
+        : "build01-live-edge-source-2026-10-16-0630.age"),
       downloadPath: privatePath(`build01-live-edge-source-restore-${attempt}.age`),
-      writer, restore,
+      writer, restore, reviewed: fresh ? reviewedLiveRuntimeSource1705 : reviewedLiveRuntimeSource,
     });
     const receipt = {
       ...result,
       attempt,
-      source: "reviewed LIVE Edge source package; 102 functions and 721 files",
+      source: fresh
+        ? "reviewed LIVE Edge source package; 103 functions and 727 files"
+        : "reviewed LIVE Edge source package; 102 functions and 721 files",
       escrowDecryptionVerified: false,
     };
     await writeFile(privatePath(`build01-live-edge-source-offsite-${attempt}.json`),
