@@ -3,16 +3,16 @@
   "workspace": "Drummonds Slack T0CC5V4D7",
   "saved_campaign_public_channels": 160,
   "latest_retained_message_in_saved_campaign_at_utc": "2026-08-30T06:42:21Z",
-  "current_public_channels_checked_in_signed_in_slack": 5,
-  "current_public_channels_on_saved_campaign": 0,
+  "current_channels_checked_in_signed_in_slack": 5,
+  "current_channels_on_saved_campaign": 0,
+  "visibility_of_sample_at_observation": "not verified; an example was later confirmed private",
   "example_current_channel": {
-    "name": "11-office-ai",
-    "channel_id": "C0BTK64KH54",
     "visible_recent_activity": "2026-10-14",
-    "on_saved_campaign": false
+    "on_saved_campaign": false,
+    "later_provider_visibility": "private; excluded from public test"
   },
   "test_message_posted": false,
   "new_capture_subscription_added": false,
-  "private_channels_or_dms_read": false,
-  "limit": "The five visible current channels are a sample, not a complete workspace inventory. The exact prior 160-channel approval does not cover them. A new public-channel capture scope needs review before a meaningful event test."
+  "private_messages_saved_to_learn_by_test": false,
+  "limit": "The five visible current channels were a sample, not a public-channel inventory. The exact prior 160-channel approval does not cover them. Provider visibility must be confirmed before a new public-channel capture scope or event test."
 }

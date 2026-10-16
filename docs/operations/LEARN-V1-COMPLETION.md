@@ -13,6 +13,57 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 16:07 UTC — private Slack test setup cancelled; Commusoft main alignment verified.**
+
+### Working and verified
+
+- A check in the actual Drummonds Slack workspace established that the
+  previously suggested test channel is **private**. The earlier inference that
+  its `C` prefix and visible activity made it public was wrong. No test message
+  or reply was posted. The one bounded setup job was still queued, with zero
+  attempts, no recurring subscription and no saved messages. With Chris's
+  explicit metadata-only cleanup approval, a transaction rehearsal passed;
+  the exact job was cancelled, the temporary account disabled and its active
+  history scope removed. LIVE readback confirmed the final state without
+  reading private message content.
+- The signed-in DH Slack directory's **Public** filter identified ten joined,
+  unarchived public channels. An ID-only LIVE roster readback found **zero of
+  those ten** in the approved ongoing 160-channel campaign. This independently
+  confirms the current-channel scope gap; no message content was queried.
+- The Commusoft captured-job frontend and tests are now on production `main`
+  at `92d937df`, with Vercel READY and the existing LIVE aliases serving it.
+  The separate release verified LIVE search, paging and audited operator reads.
+  Its 29 recorded open jobs missing customer/site source relationships remain
+  visible as source gaps. See [source-job acceptance](LEARN-COMMUSOFT-SOURCE-JOBS.md).
+- At 16:16 UTC the eligible saved Email-to-interaction gap was **9,913**,
+  down from 12,714 at 15:53. Ordinary Email jobs produced 2,804 projection
+  receipts in the preceding hour; the current-mail lane separately published
+  a new message at 16:15. The older lane's latest continuation was retrying
+  `projection_inventory_unconfirmed` until its next available time, so the
+  remaining 9,913 are not yet accepted as caught up. Phone's latest ordinary
+  job processed one retained call at 16:15.
+- The normal customer-card sweep reduced older unprojected active cards from
+  three to two by 16:12 without manual rescue. Both remaining cards retain
+  linked source identity; the sweep is retrying a partial failure and needs
+  another readback before this gate passes.
+
+### Needs finishing
+
+- One of the verified public, joined channels has been proposed for an exact
+  one-channel read-only scope and labelled message/reply test. The earlier
+  one-channel approval cannot be applied to it. The saved 160-channel roster and signed Events route
+  still need real post-cutoff capture evidence. Private channels and DMs remain
+  excluded.
+- Continue Email catch-up, resolve the two stale customer cards, establish
+  only source-backed job/card routing and scoring, and prove full
+  application/Auth recovery. Chris's final business acceptance remains his.
+
+### Blocked externally
+
+- No action is needed from Chris for this cleanup. A separate one-channel
+  approval is needed only if a verified public test channel is outside the
+  already approved 160-channel roster.
+
 **16 October, 15:57 UTC — the ordinary Email retry is publishing again.**
 
 ### Working and verified
@@ -40,8 +91,9 @@ sign-off.
 
 ### Blocked externally
 
-- The exact one-channel public Slack scope question is pending. Chris's final
-  business sign-off follows technical acceptance.
+- The earlier one-channel scope question was answered, then superseded when
+  provider metadata showed that channel was private. Chris's final business
+  sign-off follows technical acceptance.
 
 **16 October, 15:49 UTC — Commusoft captured-job browsing passed LIVE; Phone coverage is complete for retained calls.**
 
@@ -77,8 +129,9 @@ sign-off.
 
 ### Blocked externally
 
-- The one-channel public Slack scope question is pending. Chris's final
-  business sign-off follows technical acceptance; no full-day wait is required.
+- The earlier one-channel scope question was answered, then superseded when
+  provider metadata showed that channel was private. Chris's final business
+  sign-off follows technical acceptance; no full-day wait is required.
 
 **16 October, 15:40 UTC — the approved Slack roster misses current public work; the Email selector repair is installed and awaiting an ordinary retry.**
 
@@ -93,11 +146,12 @@ sign-off.
   The exact Git TEST checkpoint is `debaa153`. LIVE rollback and catalog checks
   passed, and its planner now chooses the new recent-import index. The full
   historical selector remains available. [Release receipt](evidence/learn-build01-email-recent-selector-2026-10-16.json).
-- Five current, visible public Drummonds channels were compared with the exact
-  160-channel saved campaign: **none** is on it. The saved campaign's newest
-  retained message is 30 August. The currently writable `#11-office-ai` has
-  visible 14 October activity but is outside the roster. No test message was
-  posted, and no private channel or DM was read. [Scope readback](evidence/learn-build01-slack-roster-gap-2026-10-16.json).
+- Five current, visible Drummonds channels were compared with the exact
+  160-channel saved campaign: **none** is on it. Their public/private status
+  was not checked at this point. The saved campaign's newest retained message
+  is 30 August. The suggested channel had visible 14 October activity but was later
+  verified **private**, so it is excluded from the public test. No test message
+  was posted. [Scope readback](evidence/learn-build01-slack-roster-gap-2026-10-16.json).
 
 ### Needs finishing
 
@@ -106,19 +160,19 @@ sign-off.
   release remains in retry delay until 15:53 UTC. Accept the repair only after
   ordinary work selects and publishes messages and the gap falls; retain the
   full-history path and monitor older revisions separately.
-- Reconcile the current public Slack channel roster before near-live capture
+- Reconcile a provider-verified public Slack channel before near-live capture
   can be accepted. The exact 160-channel scope approved earlier excludes the
-  current channels inspected, so a message in `#11-office-ai` would be ignored
-  by design. Existing history remains visible, but its 37,848 saved-message
-  total does not prove live capture.
+  channels inspected, and the suggested channel is private and excluded. Existing
+  history remains visible, but its 37,848 saved-message total does not prove
+  live capture.
 - Commusoft card coverage, first score criteria, and full application/Auth
   recovery remain open. Chris alone decides final business acceptance.
 
 ### Blocked externally
 
-- Chris has been asked whether to add the single current public
-  `#11-office-ai` channel for a clearly labelled message/reply test. No scope
-  change or Slack message has been made while that answer is pending.
+- Chris was asked about adding one then-assumed-public channel for a clearly
+  labelled message/reply test. That question was superseded when its private
+  visibility was verified. No Slack message was posted.
 
 **16 October, 15:16 UTC — eligible interaction-to-Graph gap zero; job/scoring evidence still incomplete.**
 
