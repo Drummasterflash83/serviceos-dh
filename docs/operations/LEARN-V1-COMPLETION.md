@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, 01:05 UTC — signed-in LIVE card audit confirms remaining business gaps.**
+
+### Working and verified
+
+- The Drummonds LEARN client page loaded saved totals of 171,465 emails,
+  4,618 calls, 3,111 recording records, 37,848 Slack messages and 256 visible
+  voicemails. It showed 30 email accounts and 39 selected of 43 discovered
+  mailboxes. An open and a completed job card both opened; recorded status and
+  review warnings were visible, while scores remained unassessed.
+  [Sanitised UI observation](evidence/learn-build01-live-client-card-audit-2026-10-16.json).
+
+### Needs finishing
+
+- Both sampled job cards lacked linked communication and a confirmed owner.
+  The completed sample also lacked a confirmed timezone for completion, so it
+  cannot support duration scoring. The first customer-card page mixed people
+  with mailbox/system identities, making source-backed customer classification
+  a review item. This is a two-card sample, not a measured whole-company rate.
+  Saved totals alone do not prove complete capture, job progress, team routing
+  or customer health.
+
+### Blocked externally
+
+- No overnight user action is needed. Chris's business review still follows
+  verified source-to-card coverage and the technical recovery gates.
+
 **16 October, 01:03 UTC — isolated Auth and operator recovery extended.**
 
 ### Working and verified

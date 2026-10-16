@@ -1,0 +1,32 @@
+{
+  "version": "learn-build01-live-client-card-audit/1",
+  "observed_at_utc": "2026-10-16T01:05:19Z",
+  "environment": "Signed-in LIVE Drummonds LEARN client view; read-only UI inspection",
+  "saved_input_totals": {
+    "email_messages": 171465,
+    "phone_calls": 4618,
+    "phone_recording_records": 3111,
+    "slack_messages": 37848,
+    "visible_voicemails": 256,
+    "email_accounts": 30,
+    "selected_mailboxes": 39,
+    "discovered_mailboxes": 43,
+    "disabled_email_accounts": 4,
+    "interpretation": "These are saved-record totals. The UI explicitly does not claim full provider history, complete audio or Slack reply coverage."
+  },
+  "job_cards_sample": {
+    "sample_size": 2,
+    "recorded_statuses": ["open", "complete"],
+    "both_show_need_for_review": true,
+    "both_lack_linked_communication": true,
+    "both_lack_confirmed_owner": true,
+    "completed_sample_has_unconfirmed_completion_timezone": true,
+    "completed_sample_duration_or_performance_score_available": false,
+    "interpretation": "A current saved job and a completed saved job can open in LIVE, but these two examples do not yet provide the evidence needed for job progress, owner routing or duration scoring. This sample does not measure fleet-wide coverage."
+  },
+  "customer_cards_observation": "The first customer-card page included mailbox/system identities alongside people; source-backed customer classification needs review before those rows are treated as verified customers.",
+  "scoring_ui": "Scores remain unassessed until approved rules and verified measurements are connected.",
+  "production_writes": false,
+  "source_provider_requests": 0,
+  "customer_names_or_message_content_in_receipt": false
+}
