@@ -19,7 +19,7 @@ const query = `with observed as materialized (
  select connection_id,collection,external_id,case when count(distinct id)=1 then min(id::text)::uuid end version_id,max(committed_at) observed_at
  from observed where recency=1 group by connection_id,collection,external_id
 ), linked as materialized (
- select x.*,v.payload,l.id link_id,l.entity_id,l.entity_kind,l.source_version_id linked_version
+ select x.*,v.payload,l.id link_id,l.entity_id,l.entity_kind,l.card_id,l.request link_request,l.source_version_id linked_version
  from latest x left join public.learn_business_input_versions v on v.id=x.version_id and v.tenant_id='${tenant}'
  left join public.learn_business_input_current_links l on l.tenant_id='${tenant}' and l.connection_id=x.connection_id and l.provider='commusoft' and l.collection=x.collection and l.external_id=x.external_id
 ), jobs as materialized (
@@ -56,6 +56,18 @@ const query = `with observed as materialized (
  'missing_reference_values',count(*) filter(where nullif(payload->>'propertyID','') is null),
  'zero_reference_values',count(*) filter(where payload->>'propertyID'='0')) from jobs
  where parent_version is null and payload->>'status' in('Open','ongoing','pending','on_hold')),
+ 'contact_relationships',(select jsonb_build_object('reviewed',count(*),
+ 'unreviewed_source_parent',count(*) filter(where parent.link_id is null),
+ 'customer_card_mismatch',count(*) filter(where x.card_id is distinct from parent.card_id),
+ 'site_reference_mismatch',count(*) filter(where parent.entity_kind='site' and x.link_request#>>'{relationships,site_id}' is distinct from parent.entity_id::text),
+ 'missing_canonical_person',count(*) filter(where not exists(select 1 from public.people person where person.tenant_id='${tenant}' and person.id=x.entity_id)),
+ 'missing_customer_card',count(*) filter(where not exists(select 1 from public.customer_cards card where card.tenant_id='${tenant}' and card.id=x.card_id)),
+ 'missing_active_customer_edge',count(*) filter(where not exists(select 1 from public.graph_nodes pn join public.graph_edges e on e.tenant_id=pn.tenant_id and e.from_node_id=pn.id join public.graph_nodes cn on cn.tenant_id=e.tenant_id and cn.id=e.to_node_id
+ where pn.tenant_id='${tenant}' and pn.node_type='person' and pn.source_table='people' and pn.source_id=x.entity_id and e.edge_type='contact_for' and e.status='active' and cn.node_type='customer_card' and cn.source_table='customer_cards' and cn.source_id=x.card_id)),
+ 'site_links',count(*) filter(where x.link_request#>>'{relationships,site_id}' is not null),
+ 'missing_active_site_edge',count(*) filter(where x.link_request#>>'{relationships,site_id}' is not null and not exists(select 1 from public.graph_nodes pn join public.graph_edges e on e.tenant_id=pn.tenant_id and e.from_node_id=pn.id join public.graph_nodes sn on sn.tenant_id=e.tenant_id and sn.id=e.to_node_id
+ where pn.tenant_id='${tenant}' and pn.node_type='person' and pn.source_table='people' and pn.source_id=x.entity_id and e.edge_type='contact_for' and e.status='active' and sn.node_type='site' and sn.source_table='sites' and sn.source_id::text=x.link_request#>>'{relationships,site_id}')))
+ from linked x left join linked parent on parent.connection_id=x.connection_id and parent.collection='properties' and parent.external_id=x.payload->>'propertyID' where x.collection='propertyContacts' and x.link_id is not null),
  'pages',(select jsonb_agg(s order by collection) from(select collection,count(*)::int retained_pages,
  max(committed_at) newest_page_at,count(*) filter(where committed_at>now()-interval '1 hour')::int pages_last_hour,
  sum(record_count) filter(where committed_at>now()-interval '1 hour') observations_last_hour

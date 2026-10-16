@@ -36,24 +36,24 @@
     "live": {
       "environment": "live",
       "project": "tgbnakbxwcqjeimygroz",
-      "observedAt": "2026-10-16T06:44:24.090Z",
+      "observedAt": "2026-10-16T07:07:29.089Z",
       "sourceSha256": "59c6b1535c34cccc4d4275cf411c1e0f857c096fce562dd9c3c40fb88c72c355",
       "idleSourceSha256": "349a839000ed90ff7eaf86891320edc83c1e1c68e2b3262fa4b8111afb86df8f",
       "rows": [
         {
           "enabled": true,
           "last_state": "window_complete",
-          "watermark": "2026-10-16 06:41:01.095+00",
-          "next_check_at": "2026-10-16 06:58:05.09682+00",
+          "watermark": "2026-10-16 06:58:05.221+00",
+          "next_check_at": "2026-10-16 07:17:09.84121+00",
           "active_jobs_window": false,
           "phase": 0,
           "recurring_state": "cycle_complete",
           "full_cycle_watermark": "2026-10-16 02:13:04.446+00",
           "resource": "propertyContacts",
           "contact_properties_completed": 871,
-          "completed_windows": 3,
+          "completed_windows": 4,
           "incomplete_windows": 0,
-          "newest_job_page": "2026-10-16 06:43:03.339419+00"
+          "newest_job_page": "2026-10-16 07:02:07.968545+00"
         }
       ],
       "installedFunctionsAndLedgerVerified": true,
@@ -66,7 +66,7 @@
       "version": "learn-commusoft-build01-readback/1",
       "environment": "test",
       "project": "saatxzwxvdvqevbnskxy",
-      "observedAt": "2026-10-16T06:44:45.381Z",
+      "observedAt": "2026-10-16T07:09:44.921Z",
       "jobs": {
         "retained": 12611,
         "published": 46,
@@ -132,6 +132,17 @@
         }
       ],
       "recurring": null,
+      "contact_relationships": {
+        "reviewed": 1,
+        "site_links": 0,
+        "missing_customer_card": 0,
+        "customer_card_mismatch": 0,
+        "site_reference_mismatch": 0,
+        "missing_active_site_edge": 0,
+        "missing_canonical_person": 0,
+        "unreviewed_source_parent": 0,
+        "missing_active_customer_edge": 0
+      },
       "job_source_field_types": [
         {
           "type": "string",
@@ -196,15 +207,15 @@
       "version": "learn-commusoft-build01-readback/1",
       "environment": "live",
       "project": "tgbnakbxwcqjeimygroz",
-      "observedAt": "2026-10-16T06:44:25.889Z",
+      "observedAt": "2026-10-16T07:09:46.287Z",
       "jobs": {
-        "retained": 12649,
-        "published": 974,
-        "open_source": 288,
+        "retained": 12650,
+        "published": 1004,
+        "open_source": 289,
         "open_published": 10,
         "missing_parent_source": 1553,
-        "missing_reviewed_parent": 11645,
-        "published_latest_version": 974,
+        "missing_reviewed_parent": 11646,
+        "published_latest_version": 1004,
         "unreviewed_site_customer": 3599,
         "published_missing_customer": 0,
         "published_with_explicit_completion_instant": 0
@@ -212,10 +223,10 @@
       "pages": [
         {
           "collection": "jobs",
-          "newest_page_at": "2026-10-16T06:43:03.339419+00:00",
-          "retained_pages": 268,
-          "pages_last_hour": 3,
-          "observations_last_hour": 5
+          "newest_page_at": "2026-10-16T07:02:07.968545+00:00",
+          "retained_pages": 269,
+          "pages_last_hour": 4,
+          "observations_last_hour": 8
         },
         {
           "collection": "properties",
@@ -228,18 +239,18 @@
           "collection": "propertyContacts",
           "newest_page_at": "2026-10-16T06:29:32.961583+00:00",
           "retained_pages": 31509,
-          "pages_last_hour": 447,
+          "pages_last_hour": 197,
           "observations_last_hour": 0
         }
       ],
       "sources": [
         {
           "collection": "jobs",
-          "identities": 12649,
-          "reviewed_links": 974,
+          "identities": 12650,
+          "reviewed_links": 1004,
           "ambiguous_latest": 0,
-          "links_on_latest_version": 974,
-          "newest_record_observation": "2026-10-16T06:27:24.920538+00:00",
+          "links_on_latest_version": 1004,
+          "newest_record_observation": "2026-10-16T07:02:07.968545+00:00",
           "oldest_record_observation": "2026-10-13T16:08:04.060217+00:00"
         },
         {
@@ -254,9 +265,9 @@
         {
           "collection": "propertyContacts",
           "identities": 2969,
-          "reviewed_links": 76,
+          "reviewed_links": 100,
           "ambiguous_latest": 0,
-          "links_on_latest_version": 76,
+          "links_on_latest_version": 100,
           "newest_record_observation": "2026-10-15T15:48:31.103025+00:00",
           "oldest_record_observation": "2026-10-13T16:22:04.05973+00:00"
         }
@@ -272,16 +283,27 @@
           "contacts_completed": 871
         }
       ],
+      "contact_relationships": {
+        "reviewed": 100,
+        "site_links": 24,
+        "missing_customer_card": 0,
+        "customer_card_mismatch": 0,
+        "site_reference_mismatch": 0,
+        "missing_active_site_edge": 0,
+        "missing_canonical_person": 0,
+        "unreviewed_source_parent": 0,
+        "missing_active_customer_edge": 0
+      },
       "job_source_field_types": [
         {
           "type": "string",
           "field": "description",
-          "records": 12649
+          "records": 12650
         },
         {
           "type": "number",
           "field": "id",
-          "records": 12649
+          "records": 12650
         }
       ],
       "open_work_relationships": [
@@ -293,7 +315,7 @@
           "site_customer_reviewed": false
         },
         {
-          "jobs": 164,
+          "jobs": 165,
           "published": 0,
           "parent_type": "customer",
           "parent_reviewed": false,
@@ -336,8 +358,8 @@
   "customerTypeEvidence": [
     {
       "customer_type": 1,
-      "customers": 90,
-      "unreviewed": 89,
+      "customers": 91,
+      "unreviewed": 90,
       "reviewed_companies": 0,
       "reviewed_people": 1
     },
@@ -406,13 +428,13 @@
     }
   ],
   "remaining": {
-    "unlinkedOpenWorkJobs": 278,
+    "unlinkedOpenWorkJobs": 279,
     "openWorkJobsMissingRetainedParentSource": 25,
-    "unreviewedCustomersUnderlyingOpenWork": 134,
+    "unreviewedCustomersUnderlyingOpenWork": 135,
     "authoritativeCustomerTypeMapping": "Current ID-to-label mapping was evidenced in provider UI on 13 October. Awaiting authoritative person/company policy and account-holder/contact distinction, not a new inference from category labels.",
     "realTestAcceptance": "Historical retained data only; no recurring account activated.",
-    "historicalJobsWithReviewedParentsNotYetLinked": 30,
-    "contactsWithReviewedParentsNotYetLinked": 94,
+    "historicalJobsWithReviewedParentsNotYetLinked": 0,
+    "contactsWithReviewedParentsNotYetLinked": 70,
     "contactsWithPriorIdentityReviewHold": 2
   },
   "changes": {
@@ -423,9 +445,10 @@
     "frontendChanged": false,
     "crossProviderMappingsInferred": false,
     "liveNewReviewedSites": 1,
-    "liveNewReviewedJobs": 30,
+    "liveNewReviewedJobs": 60,
     "liveNewReviewedOpenWorkJobs": 1,
-    "liveNewReviewedHistoricalJobs": 29
+    "liveNewReviewedHistoricalJobs": 59,
+    "liveNewReviewedContacts": 24
   },
   "privacy": "Aggregate evidence only; private runtime manifests, source identifiers, customer content, credentials and screenshots excluded.",
   "liveCardAcceptance": {
@@ -449,5 +472,51 @@
     "productionWrites": 0,
     "meaning": "Exact source-ID comparison with the private 13 October provider export/API difference; prior evidence is dated and does not prove current provider visibility."
   },
-  "currentTaxonomyEvidence": "learn-commusoft-provider-coverage-2026-10-13.json; exact provider UI labels and numeric creation links, not canonical identity policy."
+  "currentTaxonomyEvidence": "learn-commusoft-provider-coverage-2026-10-13.json; exact provider UI labels and numeric creation links, not canonical identity policy.",
+  "contactIdentityAudit": {
+    "checkedOn": "2026-10-16",
+    "remainingWithReviewedParents": 70,
+    "channelOverlap": 34,
+    "noChannelOverlap": 36,
+    "dispositions": [
+      {
+        "records": 18,
+        "parent_kind": "customer",
+        "missing_name": false,
+        "channel_overlap": true
+      },
+      {
+        "records": 23,
+        "parent_kind": "site",
+        "missing_name": false,
+        "channel_overlap": false
+      },
+      {
+        "records": 13,
+        "parent_kind": "customer",
+        "missing_name": false,
+        "channel_overlap": false
+      },
+      {
+        "records": 16,
+        "parent_kind": "site",
+        "missing_name": false,
+        "channel_overlap": true
+      }
+    ],
+    "limitations": "Read-only name/endpoint screening is not identity or merge authority. Remaining source labels include shared mailboxes, buildings, occupiers, partial/joint names and repeated person names. No automatic merges or person creation for those records."
+  },
+  "runtimeRecovery": {
+    "fourthWindowCompleted": true,
+    "normalWorkerAttempts": 2,
+    "durableSourcePage": true,
+    "durableFinishReceipt": true,
+    "manualJobRestart": false,
+    "description": "A missing-page success settlement was rejected. The same queued job later succeeded through the normal retry path; no watermark was advanced by the rejected settlement."
+  },
+  "liveNewSourceObservedDuringReview": {
+    "additionalRetainedJobs": 1,
+    "additionalOpenWorkJobs": 1,
+    "additionalUnreviewedCustomersUnderlyingOpenWork": 1
+  }
 }
