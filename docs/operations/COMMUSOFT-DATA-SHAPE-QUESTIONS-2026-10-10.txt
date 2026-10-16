@@ -14,10 +14,10 @@ GET /api/v2/jobs?limit=100, with Authorization: Bearer [REDACTED], Accept: appli
 createdOnDateTime arrives as an ISO timestamp with Z. completed.completedOnDateTime arrives as a string in the format YYYY-MM-DD HH:MM:SS, with no timezone or offset, and an empty string when not populated. Is a populated completion value UTC or the account's local timezone? We retain the original value and are holding conversion until confirmed, so elapsed-time calculations do not assume the wrong timezone.
 
 3. Property coverage
-Our unfiltered GET /api/v2/properties?limit=100 traversal followed each nextCursor until hasMore=false and returned 2,418 properties, including active and dormant records. Some returned work addresses reference a customer not in that result, and some returned jobs reference a property not in that result. Are deleted or other historical records excluded from that list, and what is the supported read-only way to resolve those references?
+Our unfiltered GET /api/v2/properties?limit=100 traversal followed each nextCursor until hasMore=false and returned 2,418 properties, including active and dormant records. Some returned work addresses reference a customer not in that result, and some returned jobs reference a property not in that result. Are deleted or other historical records excluded from that list? Does documented GET /properties/{propertyID} resolve a missing referenced property, including a deleted one, or is there a different supported read-only route? We will not fabricate a customer relationship for a 404.
 
 4. Appointments and responsible users
-Your relationship guide describes appointments as the time slots assigned to technicians beneath jobs, and a job may have several appointments. What supported read-only v2.1 endpoint, filters and scopes return appointments with their job identity, assigned user identity, schedule and status? How can we distinguish the currently responsible user from a past appointment, and enumerate the corresponding users without relying on matching names? We will not infer an individual assignee from a job's business unit or user group.
+Your relationship guide describes appointments as the time slots assigned to technicians beneath jobs, and a job may have several appointments. What supported read-only v2.1 endpoint, filters and scopes return appointments with their job identity, assigned user identity, schedule and status? How can we distinguish the currently responsible user from a past appointment? We found the documented GET /users endpoint; please confirm which appointment user field is its stable ID and how former/inactive users are represented. GET /scheduledActivities separately documents office/manager tasks, optional job links and `assignedToo` IDs; are these task assignees distinct from the job's current technician responsibility? We will not infer an individual assignee from a job's business unit or user group or from a name match.
 
 These are contract/coverage questions following successful requests, rather than a request to enable access. We can provide correlation IDs for a specific request if helpful. No API keys or customer details are included here.
 
@@ -34,5 +34,19 @@ Internal verification note — 16 October 2026 (not part of the email):
 The public relationship guide at
 https://developer.commusoft.com/key-concepts-and-relationships-1985291m0
 places technician scheduling on appointments. The public navigation inspected
-did not establish a list-appointments endpoint. No message was sent or provider
-access changed; this remains a draft pending Chris's instruction to contact support.
+did not establish a list-appointments endpoint. GET /users is documented at
+https://developer.commusoft.com/list-users-27669355e0 but does not itself prove
+an appointment-to-user relationship or current responsibility. The documented
+GET /scheduledActivities at
+https://developer.commusoft.com/list-scheduled-activities-31575938e0 describes
+office/manager tasks and a job link; it is not evidence of a technician
+appointment. The general
+request/response guide at
+https://developer.commusoft.com/requests-and-responses-1985359m0 says timestamps
+are ISO 8601 UTC, while saved Drummonds completion fields lack a zone; the
+specific observed format still requires provider confirmation. No message was
+sent or provider access changed; this remains a draft pending Chris's instruction
+to contact support.
+GET /properties/{propertyID} is documented at
+https://developer.commusoft.com/properties-24700271e0, but the documentation
+does not establish its behavior for a property absent from the list traversal.

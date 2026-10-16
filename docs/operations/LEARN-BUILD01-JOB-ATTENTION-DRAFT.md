@@ -22,6 +22,12 @@ These are review priorities, not a ranking of employee performance. A source
 relationship and a verified source-user-to-OpenFolk member mapping are needed
 before a job can appear at the top of a particular member's queue or move to
 the next member. Individual/group Slack DMs remain excluded as evidence.
+The [documented read-only `GET /scheduledActivities`](https://developer.commusoft.com/list-scheduled-activities-31575938e0)
+response also has explicit
+office-task assignee IDs and optional job links. Those could support a separate
+task-attention queue after source capture, current-state checks and an ID-based
+member mapping. They do not establish who owns the job or its technician
+appointment; the provider contract and Drummonds data still need verification.
 
 ## Proposed first scorecard boundary
 
