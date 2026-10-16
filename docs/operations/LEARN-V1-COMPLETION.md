@@ -35,7 +35,10 @@ sign-off.
   asset and the database-copy approvals do not cover it. After exact approval,
   perform the versioned off-site copy and independent Restore download. Then
   decrypt and rehearse full application/Auth recovery with controlled capture
-  resumption; a ciphertext copy alone does not meet this gate.
+  resumption; a ciphertext copy alone does not meet this gate. The
+  [application restore inventory](LEARN-BUILD01-APPLICATION-RESTORE-INVENTORY.md)
+  identifies the source, configuration, Auth, frontend and capture pieces that
+  still need to agree.
 
 ### Blocked externally
 
