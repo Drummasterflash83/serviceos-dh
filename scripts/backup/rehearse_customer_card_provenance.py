@@ -30,6 +30,12 @@ def run():
             if target.restore_native_archive(ARCHIVE) != EXPECTED_ARCHIVE:
                 raise RecoveryError('Archive digest differs')
             target.query(MIGRATION.read_text())
+            index_definition = target.query("select pg_get_indexdef("
+                "'public.learn_business_input_customer_card_lookup'::regclass);")
+            if ("ON public.learn_business_input_links USING btree (tenant_id, card_id) "
+                "WHERE ((entity_kind = 'customer'::text) AND (card_id IS NOT NULL))"
+                    not in index_definition):
+                raise RecoveryError('Customer source index differs from release guard')
             scope = "'" + TENANT + "'::uuid"
             baseline = json.loads(target.query("begin read only;select json_build_object("
                 "'cards',count(*),'reviewed',count(*) filter(where exists(select 1 "
@@ -82,6 +88,7 @@ rollback;""" % {'tenant':scope}
                           archiveVerified=True, migrationApplied=True,
                           cards=baseline['cards'], reviewedCommusoftCustomerCards=baseline['reviewed'],
                           reviewedAndIdentityLabelsVerified=True,
+                          indexDefinitionMatchesReleaseGuard=True,
                           duplicateAndForeignScopeDenied=True)
         report['databaseContainerRemoved'] = target.cleaned
         return report

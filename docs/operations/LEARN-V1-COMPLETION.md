@@ -19,12 +19,19 @@ override a later release observation. No requirement is silently deferred.
   and a communication-only identity correctly and denied duplicate and foreign
   tenant requests. The disposable database was removed. The candidate client
   UI now labels each card by reviewed business link or unconfirmed identity;
-  22 focused tests and TypeScript pass.
+  22 focused tests, TypeScript and a production build pass. A TEST-first release
+  command pins the migration hash, requires rollback rehearsal and verifies
+  the actual index definition. Its local API simulation passed TEST-first
+  sequencing and wrong-project rejection; it does not prompt for a fingerprint
+  or store a management credential.
   [Sanitised evidence](evidence/learn-build01-customer-card-provenance-2026-10-16.json).
 
 ### Needs finishing
 
-- The candidate migration and frontend are not released to TEST or LIVE.
+- The candidate migration and frontend are not released to TEST or LIVE; no
+  usable existing Supabase management credential was present in this overnight
+  process, and browser automation timed out before opening the TEST release
+  route. This does not establish a Supabase outage.
   Current LIVE counts, full customer/source coverage, job progress and
   owner routing still need verification. A reviewed source identity does not
   itself prove customer health.
