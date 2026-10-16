@@ -1,0 +1,35 @@
+{
+  "version": "learn-build01-email-proven-scheduler-live/1",
+  "observedAtUtc": "2026-10-16T14:21:17Z",
+  "problem": "The held-mailbox scheduler excluded even exact recent audited delegation proofs, so ordinary claims could not resume them",
+  "scope": "Only Workspace recent checkpoints blocked by admin_delegation_missing with a latest fresh matching successful read-only profile proof may enqueue; the database claim independently verifies the paired request audit and current source authority",
+  "test": {
+    "servingSourceSynthetic": "proven delegation queued, persistence hold retained, ordinary eligible mailbox queued, later failed proof retained",
+    "focusedNodeTests": 4,
+    "hostedEmptyInventoryAndSecretBoundary": true,
+    "providerRequests": 0,
+    "finalEndpointVersion": 22,
+    "candidateClosureSha256": "dc8974337d81330756204f9d1402ade61a02c93e8b58c75e984be1a31d653f4a",
+    "unrelatedEndpointsUnchanged": true
+  },
+  "live": {
+    "finalEndpointVersion": 58,
+    "candidateClosureSha256": "dc8974337d81330756204f9d1402ade61a02c93e8b58c75e984be1a31d653f4a",
+    "unrelatedEndpointsUnchanged": true,
+    "firstRelease": "A strict string comparison missed PostgREST's numeric audit revision; the first ordinary tick held both accounts and caused no recovery job",
+    "correctiveRelease": "One serving-source helper corrected numeric or decimal-string exact revision matching",
+    "ordinaryTickUtc": "2026-10-16T14:20:09Z",
+    "schedulerQueued": 16,
+    "heldRecoveryAfterTick": 6,
+    "postProofJobsForTwoAccounts": 2,
+    "automaticProfileRecoveryClaims": 2,
+    "clearedCheckpoints": 2,
+    "advancedCheckpoints": 2,
+    "postProofSuccessfulSyncs": 2,
+    "remainingActiveHolds": { "persistence_failed": 6 }
+  },
+  "sourceProviderWrites": 0,
+  "manualResume": false,
+  "customerContentInReceipt": false,
+  "remaining": "Reconcile six persistence outcomes individually; observe later ordinary ticks for sustained operation"
+}

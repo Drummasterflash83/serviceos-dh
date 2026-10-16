@@ -123,7 +123,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     for (let offset = 0; offset < 100000; offset += 500) {
       const { data, error } = await supabase
         .from("email_ingestion_checkpoints")
-        .select("tenant_id,email_account_id,state,block_code")
+        .select("tenant_id,email_account_id,generation,revision,state,block_code")
         .eq("stream", "recent")
         .eq("state", "blocked")
         .order("tenant_id")
@@ -191,7 +191,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
         ineligibleByTenant.set(tid, (ineligibleByTenant.get(tid) ?? 0) + 1);
         continue;
       }
-      if (isWorkspaceRecentCaptureHeld(acc, checkpoints)) {
+      const held = checkpoints.find((checkpoint) =>
+        checkpoint.tenant_id === tid && checkpoint.email_account_id === acc.id);
+      let profileProof = null;
+      if (held?.block_code === "admin_delegation_missing") {
+        const { data, error } = await supabase.from("audit_logs")
+          .select("status,created_at,detail")
+          .eq("tenant_id", tid)
+          .eq("resource_type", "email_account")
+          .eq("resource_id", acc.id)
+          .eq("action", "learn.email.mailbox_source_probe_result")
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+          .limit(1).maybeSingle();
+        if (error) counts.unconfirmed++;
+        else profileProof = data;
+      }
+      if (isWorkspaceRecentCaptureHeld(acc, checkpoints, profileProof)) {
         heldByTenant.set(tid, (heldByTenant.get(tid) ?? 0) + 1);
         continue;
       }

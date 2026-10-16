@@ -13,15 +13,74 @@ sign-off.
 
 ## Current evidence and priority
 
-**16 October, 14:02 UTC — hosted Slack accepted-event queue verified on TEST.**
+**16 October, 14:21 UTC — two held Workspace mailboxes recovered unattended.**
+
+### Working and verified
+
+- The Email scheduler now admits only an exact `admin_delegation_missing`
+  checkpoint with a fresh, matching, successful audited read-only profile proof;
+  the existing database claim repeats the stronger paired-audit and authority
+  checks. A numeric audit-revision mismatch in the first serving patch failed
+  closed at the 14:15 ordinary tick, and a one-file correction passed TEST
+  before LIVE. At 14:20 the ordinary LIVE tick queued both proven accounts,
+  reduced its held count from eight to six, and both jobs recorded system-
+  labelled automatic claims, advanced checkpoints and successful post-proof
+  syncs. No manual resume or source write occurred.
+- The six remaining active recent Email holds are all `persistence_failed`;
+  the scheduler continues to hold them for exact outcome review. TEST and LIVE
+  final scheduler closures match, with unrelated Edge endpoints unchanged.
+  [Release and recovery receipt](evidence/learn-build01-email-proven-scheduler-live-2026-10-16.json).
+
+### Needs finishing
+
+- Reconcile the six persistence outcomes individually and observe further
+  ordinary ticks. Slack has no retained post-cutoff public-channel message or
+  reply; Commusoft/card/graph and full application/Auth recovery remain open.
+
+### Blocked externally
+
+- No new user action was required for these two automatic recoveries. Chris's
+  final business acceptance still follows the remaining technical evidence.
+
+**16 October, 14:09 UTC — scheduled database copy and Email provider proof verified.**
+
+### Working and verified
+
+- GitHub's 08:14 UTC **scheduled** backup run completed its export, isolated
+  restore, encryption and independent off-site copy step. Later green scheduled
+  runs skipped redundant copies. The 14:03 scheduled missed-success monitor
+  passed. This closes the missing-scheduled-run observation for today, while
+  full application/Auth recovery remains separate.
+- The local recording/voicemail backup health read at 14:09 reports a successful
+  08:13 inventory verification: 3,117 objects, 649,861,341 bytes and zero
+  missing references among 3,111 recording rows. It still depends on the Mac
+  being awake for its scheduled run.
+- The exact two currently active `admin_delegation_missing` Email holds passed
+  fresh, audited read-only Gmail profile proofs. The probe preserved their
+  checkpoint revisions, returned no mailbox content and made no source write.
+  [Sanitised receipt](evidence/learn-build01-scheduled-backup-and-email-proof-2026-10-16.json).
+
+### Needs finishing
+
+- Observe ordinary scheduler claims and successful post-proof Email syncs, then
+  address the remaining persistence holds. Slack still has no retained
+  post-cutoff message or reply; its LIVE Events route remains inactive.
+
+### Blocked externally
+
+- No new user action is required for these checks.
+
+**16 October, 14:08 UTC — hosted Slack accepted-event queue and bounded burst verified on TEST.**
 
 ### Working and verified
 
 - A signed synthetic approved public-channel event reached the deployed TEST
   receiver and created one durable hint and queued job. A repeat was safely
   acknowledged without another job. The service-only job gate passed and no
-  message body was stored in the hint or job. No provider request occurred.
-  Both test fixtures are now inert, with no roster, enabled connector, live
+  message body was stored in the hint or job. A bounded twelve-event signed
+  burst then created exactly twelve hints and jobs, with 2.131-second p95
+  receiver acknowledgement; this is not provider-to-card latency. No provider
+  request occurred. All three test fixtures are now inert, with no roster, enabled connector, live
   fake connection, active job or hint. The TEST receiver returned to inactive
   HTTP 503. [Hosted accepted-event receipt](evidence/learn-build01-slack-accepted-hosted-test-2026-10-16.json).
 

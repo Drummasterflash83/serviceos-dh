@@ -1,6 +1,6 @@
 {
-  "version": "learn-build01-slack-accepted-hosted-test/1",
-  "observedAtUtc": "2026-10-16T14:02:21Z",
+  "version": "learn-build01-slack-accepted-hosted-test/2",
+  "observedAtUtc": "2026-10-16T14:08:24Z",
   "environment": "TEST",
   "receiver": "learn-slack-events",
   "syntheticApprovedPublicChannel": true,
@@ -12,8 +12,18 @@
   "eventBodyRetained": false,
   "slackProviderRequests": 0,
   "sourceProviderWrites": 0,
+  "hostedSyntheticBurst": {
+    "signedEventsAccepted": 12,
+    "duplicateAcknowledgedWithoutExtraWork": true,
+    "durableHints": 12,
+    "queuedEventJobs": 12,
+    "serviceRoleJobGate": true,
+    "p95ReceiverAcknowledgementMs": 2131,
+    "sourceProviderRequests": 0,
+    "interpretation": "Receiver acknowledgment under a bounded TEST burst; not Slack delivery delay or provider-to-card latency"
+  },
   "cleanup": {
-    "syntheticFixturesRetainedForImmutableSourceAudit": 2,
+    "syntheticFixturesRetainedForImmutableSourceAudit": 3,
     "rosteredFixtures": 0,
     "enabledConnectors": 0,
     "unrevokedConnections": 0,

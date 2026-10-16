@@ -73,8 +73,10 @@ service-only job gate accepted the saved binding, and neither hint nor job
 retained the message body. No Slack provider request was made. TEST's immutable
 source guards require retaining synthetic connector audit rows, so cleanup
 removed both test hints/jobs/rosters, disabled the synthetic connectors and
-revoked their fake connections. The signing configuration was removed and the
-receiver returned to inactive HTTP 503. This proves hosted acceptance and
+revoked their fake connections. A further bounded burst of twelve signed TEST
+events created twelve hints and twelve jobs with no duplication; the 95th
+percentile receiver acknowledgement was 2.131 seconds. The signing configuration
+was removed and the receiver returned to inactive HTTP 503. This proves hosted acceptance and
 durability, **not** real provider reconciliation, current reply latency or
 near-live delivery. [Hosted accepted-event receipt](evidence/learn-build01-slack-accepted-hosted-test-2026-10-16.json).
 

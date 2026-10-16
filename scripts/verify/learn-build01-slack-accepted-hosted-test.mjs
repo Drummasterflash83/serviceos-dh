@@ -7,9 +7,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { savedCliToken, TEST_PROJECT } from "./learn-test-readiness.mjs";
 
-if (process.argv.slice(2).join(" ") !== "--test-synthetic-accepted" ||
+const mode = process.argv.slice(2).join(" ");
+if (!["--test-synthetic-accepted", "--test-synthetic-load"].includes(mode) ||
     process.env.LEARN_TEST_ALLOW_PROJECT_REF !== TEST_PROJECT)
-  throw Error("Exact TEST-only accepted-event mode required");
+  throw Error("Exact TEST-only accepted-event or load mode required");
+const eventCount = mode === "--test-synthetic-load" ? 12 : 1;
 const cli = "/Users/chrisdrummond/.npm/_npx/f488b5593433aa64/node_modules/supabase/bin/supabase";
 const token = savedCliToken();
 const nonce = randomBytes(8).toString("hex").toUpperCase();
@@ -17,7 +19,10 @@ const marker = `build01-slack-accepted-${nonce.toLowerCase()}`;
 const tenant = randomUUID(), connector = randomUUID(), connection = randomUUID();
 const account = randomUUID(), secretRef = randomUUID();
 const team = `TTEST${nonce}`, app = `ATEST${nonce}`, channel = `CTEST${nonce}`;
-const eventId = `EvTEST${nonce}`, signingSecret = randomBytes(48).toString("hex");
+const eventPrefix = `EvTEST${nonce}`;
+const eventIds = Array.from({ length: eventCount }, (_, i) =>
+  eventCount === 1 ? eventPrefix : `${eventPrefix}${String(i).padStart(2, "0")}`);
+const signingSecret = randomBytes(48).toString("hex");
 const minTs = `${Math.floor(Date.now() / 1000) - 3600}.000000`;
 const rosterSha = createHash("sha256").update(channel).digest("hex");
 const work = mkdtempSync(join(tmpdir(), "build01-slack-accepted-"));
@@ -60,7 +65,7 @@ try {
     (select count(*)::int from public.slack_recurring_channels
       where team_id='${team}' or channel_id='${channel}') synthetic_roster,
     (select count(*)::int from public.learn_slack_event_hints
-      where event_id='${eventId}') synthetic_hints`);
+      where event_id like '${eventPrefix}%') synthetic_hints`);
   if (baseline?.cron_present !== false || baseline.synthetic_roster !== 0 ||
       baseline.synthetic_hints !== 0)
     throw Error("TEST isolated event baseline changed");
@@ -130,40 +135,54 @@ try {
   ].join("\n"), { mode: 0o600 });
   secretsMayExist = true;
   secretOperation(["secrets", "set", "--env-file", envFile]);
-  const event = { type: "event_callback", team_id: team, api_app_id: app,
-    event_id: eventId, event: { type: "message", channel_type: "channel",
-      channel, ts: `${Math.floor(Date.now() / 1000)}.123456`,
-      text: "SYNTHETIC BODY MUST NOT BE SAVED" } };
-  const first = await signed(event);
-  assert.deepEqual(first, { status: 200, body: { ok: true } });
-  const duplicate = await signed(event);
+  const events = eventIds.map((eventId, i) => ({ type: "event_callback",
+    team_id: team, api_app_id: app, event_id: eventId,
+    event: { type: "message", channel_type: "channel", channel,
+      ts: `${Math.floor(Date.now() / 1000)}.${String(123456 + i).padStart(6, "0")}`,
+      text: "SYNTHETIC BODY MUST NOT BE SAVED" } }));
+  const acknowledgementMs = [];
+  for (let i = 0; i < events.length; i += 4) {
+    const batch = await Promise.all(events.slice(i, i + 4).map(async (event) => {
+      const started = performance.now();
+      const result = await signed(event);
+      acknowledgementMs.push(performance.now() - started);
+      return result;
+    }));
+    for (const result of batch)
+      assert.deepEqual(result, { status: 200, body: { ok: true } });
+  }
+  const duplicate = await signed(events[0]);
   assert.deepEqual(duplicate, { status: 200, body: { ok: true } });
   const [durable] = await sql(`select
     count(*)::int hints,
     count(*) filter(where h.state='pending' and h.job_id=j.id)::int linked_pending,
     count(*) filter(where j.status='queued' and j.job_type='slack.event_sync'
-      and j.job_key='slack.event:${eventId}')::int queued_jobs,
+      and j.job_key='slack.event:'||h.event_id)::int queued_jobs,
     count(*) filter(where position('SYNTHETIC BODY' in h::text)>0
       or position('SYNTHETIC BODY' in j.payload::text)>0)::int body_retained
     from public.learn_slack_event_hints h
     join public.platform_jobs j on j.id=h.job_id and j.tenant_id=h.tenant_id
-    where h.tenant_id='${tenant}'::uuid and h.event_id='${eventId}'`);
-  if (durable?.hints !== 1 || durable.linked_pending !== 1 ||
-      durable.queued_jobs !== 1 || durable.body_retained !== 0)
+    where h.tenant_id='${tenant}'::uuid and h.event_id like '${eventPrefix}%'`);
+  if (durable?.hints !== eventCount || durable.linked_pending !== eventCount ||
+      durable.queued_jobs !== eventCount || durable.body_retained !== 0)
     throw Error("TEST durable event/queue result changed");
   const gate = await sql(`begin;
     set local role service_role;
     set local request.jwt.claim.role='service_role';
     select public.learn_slack_event_job_allowed('${tenant}'::uuid,j.id) allowed
       from public.platform_jobs j where j.tenant_id='${tenant}'::uuid
-        and j.job_key='slack.event:${eventId}';
+        and j.job_key like 'slack.event:${eventPrefix}%';
     rollback;`, false);
-  if (!gate.some(row => row.allowed === true))
+  if (gate.filter(row => row.allowed === true).length !== eventCount)
     throw Error("TEST service-only event job gate did not confirm");
-  console.log(JSON.stringify({ state: "hosted_accepted_event_pass", project: TEST_PROJECT,
-    signedEventAccepted: true, duplicateAcknowledged: true, hints: 1,
-    queuedJobs: 1, serviceJobGate: true, eventBodyRetained: false,
-    providerRequests: 0, sourceProviderWrites: 0 }));
+  acknowledgementMs.sort((a, b) => a - b);
+  console.log(JSON.stringify({ state: eventCount === 1
+    ? "hosted_accepted_event_pass" : "hosted_event_load_pass", project: TEST_PROJECT,
+    signedEventsAccepted: eventCount, duplicateAcknowledged: true,
+    hints: eventCount, queuedJobs: eventCount, serviceJobGate: true,
+    p95ReceiverAcknowledgementMs: Math.round(acknowledgementMs[
+      Math.ceil(acknowledgementMs.length * 0.95) - 1]),
+    eventBodyRetained: false, providerRequests: 0, sourceProviderWrites: 0 }));
 } finally {
   try {
     if (secretsMayExist) secretOperation(["secrets", "unset",
@@ -178,9 +197,9 @@ try {
       const cleaned = await sql(`begin;
         set local lock_timeout='5s'; set local statement_timeout='30s';
         delete from public.learn_slack_event_hints
-          where tenant_id='${tenant}'::uuid and event_id='${eventId}';
+          where tenant_id='${tenant}'::uuid and event_id like '${eventPrefix}%';
         delete from public.platform_jobs
-          where tenant_id='${tenant}'::uuid and job_key='slack.event:${eventId}';
+          where tenant_id='${tenant}'::uuid and job_key like 'slack.event:${eventPrefix}%';
         delete from public.slack_workspace_pacing where team_id='${team}';
         delete from public.slack_recurring_channels
           where account_id='${account}'::uuid and tenant_id='${tenant}'::uuid;

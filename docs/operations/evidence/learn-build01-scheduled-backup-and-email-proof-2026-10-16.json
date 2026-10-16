@@ -1,0 +1,38 @@
+{
+  "version": "learn-build01-scheduled-backup-and-email-proof/1",
+  "observedAtUtc": "2026-10-16T14:09:03Z",
+  "databaseBackup": {
+    "workflow": "serviceos-database-backup.yml",
+    "scheduledRunId": 38872388978,
+    "scheduledRunUrl": "https://github.com/Drummasterflash83/serviceos-dh/actions/runs/38872388978",
+    "scheduledRunCreatedAtUtc": "2026-10-16T08:14:38Z",
+    "conclusion": "success",
+    "exportRestoreEncryptAndOffsiteStep": "success",
+    "laterScheduledRuns": "successful redundant-copy skips",
+    "monitorWorkflow": "serviceos-database-backup-monitor.yml",
+    "scheduledMonitorRunId": 38912682744,
+    "scheduledMonitorRunUrl": "https://github.com/Drummasterflash83/serviceos-dh/actions/runs/38912682744",
+    "scheduledMonitorConclusion": "success",
+    "scheduledMonitorCreatedAtUtc": "2026-10-16T14:03:23Z"
+  },
+  "localRecordingAndVoicemailBackup": {
+    "healthAtUtc": "2026-10-16T14:09:42Z",
+    "lastVerifiedAtUtc": "2026-10-16T08:13:35Z",
+    "latestAttemptState": "succeeded",
+    "observedInventoryObjects": 3117,
+    "observedInventoryBytes": 649861341,
+    "recordingRows": 3111,
+    "missingObjectReferences": 0,
+    "limitation": "Observed inventory verification depends on an awake local Mac and is not a full application/Auth restore"
+  },
+  "emailDelegationRecovery": {
+    "heldActiveMailboxesProbed": 2,
+    "providerProfileResults": ["provider_verified", "provider_verified"],
+    "checkpointRevisionsBeforeAndAfterProbe": [1382, 1301],
+    "checkpointsChangedByProbe": false,
+    "auditRows": 4,
+    "customerContentReturned": false,
+    "sourceProviderWrites": 0,
+    "remaining": "Observe ordinary scheduled claims and successful post-proof syncs"
+  }
+}
