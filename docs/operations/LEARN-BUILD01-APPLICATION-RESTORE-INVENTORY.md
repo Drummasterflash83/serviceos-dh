@@ -27,6 +27,15 @@ is a source comparison, not a secret-value recovery. It preserves the relevance
 of that one-route rehearsal but does not prove the new worker can restart or
 capture from a recovered service.
 
+At 23:01 UTC, the changed v106 `platform-worker` source was bundled inside
+the pinned Edge runtime image. Its pinned public `esm.sh` dependency was
+fetched for bundling, then the bundle started in a disposable container with
+no network, host ports, runtime secrets or production data. OPTIONS returned
+HTTP 200; an unauthorised POST returned HTTP 403. The container was removed.
+This proves the changed worker can rebuild and start while failing closed
+without credentials; it does not prove authenticated queue execution or a
+full recovered service. [Sanitised startup receipt](evidence/learn-build01-v106-worker-isolated-startup-2026-10-16.json).
+
 At 20:48 UTC, a new stable, read-only LIVE source inventory captured **103**
 active functions and **728** files (4,828,391 source bytes), including the
 40-card `platform-worker` version 104. Manifest SHA-256

@@ -1,0 +1,23 @@
+{
+  "contract": "learn-build01-v106-worker-isolated-startup/1",
+  "observedAt": "2026-10-16T23:01:25Z",
+  "sourceManifestSha256": "ed8ca3970251af3fe843dab9153f9c149a1f824513f245b2492e795a96026da6",
+  "function": "platform-worker",
+  "functionVersion": 106,
+  "runtimeImage": "public.ecr.aws/supabase/edge-runtime:v1.74.3",
+  "runtimeImageId": "sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c",
+  "bundleBytes": 19235909,
+  "bundleSha256": "5dd0433d7021f540f9b823a0ddc6221525f6fcfe72bc562de2bd3b8960746b68",
+  "bundleMethod": "Verified staged source in pinned isolated runtime; pinned public esm.sh dependency fetched during bundle; no production credentials or data mounted",
+  "startupBoundary": {
+    "network": "none",
+    "hostPorts": 0,
+    "runtimeSecrets": 0,
+    "optionsHttp": 200,
+    "unauthorizedPostHttp": 403,
+    "containerRemoved": true
+  },
+  "productionDataWrites": false,
+  "providerWrites": false,
+  "limitations": "Only the changed v106 platform-worker was bundled and started. Its authenticated queue, database access, all other functions, frontend, real Auth recovery and capture restart were not exercised."
+}

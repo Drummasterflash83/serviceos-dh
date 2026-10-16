@@ -27,7 +27,9 @@ inactive until Chris reviews and signs off the business result.
 - An isolated archive rehearsal restored database, Auth and PostgREST, created
   a disposable synthetic login, and exercised one archived Edge route with
   tenant and operator boundaries. The current v106 Edge source is locally
-  verified and staged as 103 function trees. [Recovery inventory](LEARN-BUILD01-APPLICATION-RESTORE-INVENTORY.md).
+  verified and staged as 103 function trees. Its changed worker separately
+  rebuilt, started offline and rejected an unauthorised request.
+  [Recovery inventory](LEARN-BUILD01-APPLICATION-RESTORE-INVENTORY.md).
 
 ## Needs finishing
 
