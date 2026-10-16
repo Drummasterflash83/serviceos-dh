@@ -1,0 +1,21 @@
+{
+  "version": "learn-build01-slack-tile-live/1",
+  "dateUtc": "2026-10-16",
+  "productionBaseGit": "5a346dd9744e47925c72ca1f87266198587819f2",
+  "releaseGit": "a123d349d2e33e47a154d1871328c58659fc886f",
+  "deployment": "dpl_DR3tRETFxNGmCG7DdQLmjDxModpC",
+  "deploymentState": "READY",
+  "productionTargetMatches": true,
+  "allFourExistingLiveAliasesMatch": true,
+  "changedSourcePaths": ["src/components/client-portal/learn/LearnLaunchPortal.tsx"],
+  "verification": {
+    "typescript": "passed",
+    "prebuildChecks": "47 passed",
+    "productionBuild": "passed",
+    "signedInDrummondsBranding": "retained",
+    "signedInSlackSavedCount": 37848,
+    "tileMeaning": "saved history total, not current capture acceptance"
+  },
+  "backendOrSlackAppChanged": false,
+  "build01Complete": false
+}

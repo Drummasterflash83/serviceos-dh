@@ -13,6 +13,32 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 13:53 UTC — LEARN Slack tile corrected on LIVE.**
+
+### Working and verified
+
+- The one-file frontend candidate based on production Git `5a346dd9`
+  changed the saved Slack/voicemail count display from ambiguous “Not checked”
+  to “Checking…” while loading and “Count unavailable” after a failed read.
+  It also labels the Slack total as saved history, separate from current
+  channel/reply capture. TypeScript, all 47 prebuild checks and the production
+  build passed. Git `a123d349` produced READY Vercel deployment
+  `dpl_DR3tRETFxNGmCG7DdQLmjDxModpC`; all four existing LIVE aliases and
+  the production target point to it. A signed-in Drummonds page refresh showed
+  37,848 saved Slack messages and retained branding. This corrects the tile,
+  not Slack freshness. [Release receipt](evidence/learn-build01-slack-tile-live-2026-10-16.json).
+
+### Needs finishing
+
+- The 160-channel ongoing capture remains behind; accepted signed-event
+  persistence, current channel/reply latency and actual post-cutoff evidence
+  still need verification. The Email source holds and broader Build 01 gates
+  below remain open.
+
+### Blocked externally
+
+- No new user action is required for this display correction.
+
 **16 October, 13:47 UTC — hosted signed Slack boundary verified on TEST.**
 
 ### Working and verified
