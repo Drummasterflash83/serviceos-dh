@@ -13,6 +13,7 @@ const actions = new Set([
   "learn_commusoft_work_batch_result",
   "learn_commusoft_work_batch",
   "learn_commusoft_job_details",
+  "learn_commusoft_source_job_cards",
   "learn_commusoft_job_refresh_plan",
   "learn_commusoft_job_refresh",
 ]);
