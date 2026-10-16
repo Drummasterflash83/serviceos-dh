@@ -33,8 +33,9 @@ business decision yet.
   limit. A later read of the **actual next ten-card sweep batch** returned
   all ten source inputs successfully; the 55,115-interaction first card took
   3.3 seconds and the others 0.2–0.5 seconds. This still does not establish
-  that the full worker updates cards successfully. No source rows, owner,
-  grants or role defaults changed.
+  that the full worker updates cards successfully. Their graph edge counts
+  were all below the worker's 500-row page size (maximum 71). No source rows,
+  owner, grants or role defaults changed.
   [Sanitised release receipt](evidence/learn-build01-card-company-cover-2026-10-16.json).
   [Batch-input readback](evidence/learn-build01-card-next-batch-readback-2026-10-16.json).
 - The TEST checkpoint `bfe6ae34f5341fcdecbac5701eb3675e3b0eb962` was
