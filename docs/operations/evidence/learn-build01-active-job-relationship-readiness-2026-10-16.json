@@ -1,0 +1,31 @@
+{
+  "version": "learn-build01-active-job-relationship-readiness/1",
+  "observedAtApproxUtc": "2026-10-16T02:06:00Z",
+  "scope": "LIVE Drummonds aggregate of latest retained Commusoft job and property pages, tenant and connection scoped; no identifiers, names or payloads in this receipt",
+  "unlinkedSavedActiveStatusJobs": 279,
+  "allHaveValidNumericDirectPropertyReference": true,
+  "allLackReviewedDirectPropertyLink": true,
+  "directPropertySource": {
+    "customer": 164,
+    "workaddress": 90,
+    "missing": 25,
+    "distinctDirectPropertyReferences": 198
+  },
+  "workaddressParentSource": {
+    "customerWithReviewedParentLink": 1,
+    "customerWithoutReviewedParentLink": 85,
+    "missing": 4,
+    "distinctParentPropertyReferences": 38
+  },
+  "savedStatusBreakdown": {
+    "on_hold": { "customer": 44, "workaddress": 21, "missing": 4 },
+    "ongoing": { "customer": 116, "workaddress": 67, "missing": 21 },
+    "pending": { "customer": 4, "workaddress": 2, "missing": 0 }
+  },
+  "verification": {
+    "readOnlySql": true,
+    "sourceProviderRequests": 0,
+    "productionWrites": false
+  },
+  "boundary": "This classifies retained source observations, not currently confirmed provider status or reviewed customer identity. Property presence does not prove a canonical match. No job, site, customer or score was published. Equal-time latest-page ambiguity was not independently audited in this aggregate. Missing properties and parents need source reconciliation; the present properties need explicit identity and site review before job projection."
+}

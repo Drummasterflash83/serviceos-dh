@@ -7,6 +7,33 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, about 02:06 UTC — active-job relationship blockers classified on LIVE.**
+
+### Working and verified
+
+- All 279 retained active-status jobs without published links have a numeric
+  property reference, but none has a reviewed link for that direct property.
+  Retained properties exist as 164 customer and 90 work-address job references;
+  25 direct properties are missing. Of the 90 work-address jobs, 85 have a
+  retained but unreviewed parent customer, one has a reviewed parent customer,
+  and four lack the parent source. These are jobs, not distinct identities:
+  the 279 jobs reference 198 distinct direct properties and the work-address
+  group references 38 distinct parents. No provider request or production write
+  occurred. [Sanitised aggregate](evidence/learn-build01-active-job-relationship-readiness-2026-10-16.json).
+
+### Needs finishing
+
+- Reconcile the 25 missing direct properties and four missing parents, then
+  review source-to-customer/site identities before publishing job links.
+  Presence of a source property alone does not prove the right customer card.
+  The existing guarded review workflow can consume retained records, but this
+  aggregate is no authority to auto-link them or assert current progress.
+
+### Blocked externally
+
+- No overnight user action is needed. Final business acceptance remains Chris's
+  decision after the technical job-coverage and recovery gates pass.
+
 **16 October, about 02:04 UTC — current retained job-source gap measured on LIVE.**
 
 ### Working and verified
