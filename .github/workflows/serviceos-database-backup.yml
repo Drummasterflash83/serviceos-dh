@@ -6,8 +6,12 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '15 3 * * *'
+    # A second slot covers a dropped/delayed first GitHub schedule. The guard
+    # below skips another export after an earlier scheduled success that day.
+    - cron: '15 4 * * *'
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
@@ -24,13 +28,19 @@ jobs:
       - name: Check out reviewed backup source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: d10ea63bcf84964dfc17f5039ce7694ae30677e8
+          ref: 2d8d4afb5077aaac36467f8d1b91302aef7231c2
           persist-credentials: false
       - name: Select Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
+      - name: Skip a redundant scheduled copy
+        id: redundancy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/backup/check-daily-backup-redundancy.mjs
       - name: Prepare pinned public tools
+        if: steps.redundancy.outputs.skip != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -58,6 +68,7 @@ jobs:
             sha256:d5cf4781c958c8155cf57150e0648469c48cd915a9ff462a032c91011b4af8fb
           mkdir -m 700 .verification-results
       - name: Export, restore, encrypt and verify independent off-site copy
+        if: steps.redundancy.outputs.skip != 'true'
         shell: bash
         env:
           SERVICEOS_DATABASE_SOURCE_READER_JSON: ${{ secrets.SERVICEOS_DATABASE_SOURCE_READER_JSON }}
