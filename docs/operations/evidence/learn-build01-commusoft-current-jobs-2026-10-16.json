@@ -1,0 +1,412 @@
+{
+  "version": "learn-build01-commusoft-current-jobs/1",
+  "status": "current-jobs-live-verified_relationship-coverage-incomplete",
+  "verification": {
+    "adapterTestsPassed": 138,
+    "adapterTestsFailed": 0,
+    "isolatedPostgres": "passed: real writer, contact resume, idle due-time preservation, pause/failure, duplicate tick, active lease, revocation, private grants and leading-zero codes",
+    "hostedTest": {
+      "environment": "test",
+      "project": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "59c6b1535c34cccc4d4275cf411c1e0f857c096fce562dd9c3c40fb88c72c355",
+      "fixtureSha256": "0f7572e4634e097cbf1f1f07895034171d9479d2210caf7568877cd443db517f",
+      "observedAt": "2026-10-16T06:22:13.305Z",
+      "receipt": [
+        {
+          "marker": "hosted_test_current_jobs_interleave_restore_and_source_history_verified"
+        }
+      ],
+      "rolledBack": true,
+      "preservationPassed": true,
+      "providerRequests": 0
+    }
+  },
+  "installedReadbacks": {
+    "test": {
+      "environment": "test",
+      "project": "saatxzwxvdvqevbnskxy",
+      "observedAt": "2026-10-16T06:25:21.418Z",
+      "sourceSha256": "59c6b1535c34cccc4d4275cf411c1e0f857c096fce562dd9c3c40fb88c72c355",
+      "idleSourceSha256": "349a839000ed90ff7eaf86891320edc83c1e1c68e2b3262fa4b8111afb86df8f",
+      "rows": [],
+      "installedFunctionsAndLedgerVerified": true,
+      "providerSettingsChanged": false,
+      "customerContentReturned": false
+    },
+    "live": {
+      "environment": "live",
+      "project": "tgbnakbxwcqjeimygroz",
+      "observedAt": "2026-10-16T06:31:09.625Z",
+      "sourceSha256": "59c6b1535c34cccc4d4275cf411c1e0f857c096fce562dd9c3c40fb88c72c355",
+      "idleSourceSha256": "349a839000ed90ff7eaf86891320edc83c1e1c68e2b3262fa4b8111afb86df8f",
+      "rows": [
+        {
+          "enabled": true,
+          "last_state": "window_complete",
+          "watermark": "2026-10-16 06:25:23.362+00",
+          "next_check_at": "2026-10-16 06:42:26.677246+00",
+          "active_jobs_window": false,
+          "phase": 0,
+          "recurring_state": "cycle_complete",
+          "full_cycle_watermark": "2026-10-16 02:13:04.446+00",
+          "resource": "propertyContacts",
+          "contact_properties_completed": 871,
+          "completed_windows": 2,
+          "incomplete_windows": 0,
+          "newest_job_page": "2026-10-16 06:27:24.920538+00"
+        }
+      ],
+      "installedFunctionsAndLedgerVerified": true,
+      "providerSettingsChanged": false,
+      "customerContentReturned": false
+    }
+  },
+  "coverageReadbacks": {
+    "test": {
+      "version": "learn-commusoft-build01-readback/1",
+      "environment": "test",
+      "project": "saatxzwxvdvqevbnskxy",
+      "observedAt": "2026-10-16T06:11:38.025Z",
+      "jobs": {
+        "retained": 12611,
+        "published": 46,
+        "open_source": 282,
+        "open_published": 4,
+        "missing_parent_source": 1553,
+        "missing_reviewed_parent": 12565,
+        "published_latest_version": 46,
+        "unreviewed_site_customer": 4371,
+        "published_missing_customer": 0,
+        "published_with_explicit_completion_instant": 0
+      },
+      "pages": [
+        {
+          "collection": "jobs",
+          "newest_page_at": "2026-10-12T09:10:43.828345+00:00",
+          "retained_pages": 127,
+          "pages_last_hour": 0,
+          "observations_last_hour": null
+        },
+        {
+          "collection": "properties",
+          "newest_page_at": "2026-10-12T13:56:01.949037+00:00",
+          "retained_pages": 50,
+          "pages_last_hour": 0,
+          "observations_last_hour": null
+        },
+        {
+          "collection": "propertyContacts",
+          "newest_page_at": "2026-10-12T18:32:02.930713+00:00",
+          "retained_pages": 3968,
+          "pages_last_hour": 0,
+          "observations_last_hour": null
+        }
+      ],
+      "sources": [
+        {
+          "collection": "jobs",
+          "identities": 12611,
+          "reviewed_links": 46,
+          "ambiguous_latest": 0,
+          "links_on_latest_version": 46,
+          "newest_record_observation": "2026-10-12T09:10:43.828345+00:00",
+          "oldest_record_observation": "2026-10-10T20:56:13.749101+00:00"
+        },
+        {
+          "collection": "properties",
+          "identities": 2421,
+          "reviewed_links": 2,
+          "ambiguous_latest": 0,
+          "links_on_latest_version": 2,
+          "newest_record_observation": "2026-10-12T13:56:01.949037+00:00",
+          "oldest_record_observation": "2026-10-12T13:54:11.575413+00:00"
+        },
+        {
+          "collection": "propertyContacts",
+          "identities": 2965,
+          "reviewed_links": 1,
+          "ambiguous_latest": 0,
+          "links_on_latest_version": 1,
+          "newest_record_observation": "2026-10-12T18:32:02.930713+00:00",
+          "oldest_record_observation": "2026-10-12T13:58:40.858531+00:00"
+        }
+      ],
+      "recurring": null,
+      "job_source_field_types": [
+        {
+          "type": "string",
+          "field": "description",
+          "records": 12611
+        },
+        {
+          "type": "number",
+          "field": "id",
+          "records": 12611
+        }
+      ],
+      "open_work_relationships": [
+        {
+          "jobs": 4,
+          "published": 4,
+          "parent_type": "customer",
+          "parent_reviewed": true,
+          "site_customer_reviewed": false
+        },
+        {
+          "jobs": 158,
+          "published": 0,
+          "parent_type": "customer",
+          "parent_reviewed": false,
+          "site_customer_reviewed": false
+        },
+        {
+          "jobs": 31,
+          "published": 0,
+          "parent_type": "missing",
+          "parent_reviewed": false,
+          "site_customer_reviewed": false
+        },
+        {
+          "jobs": 2,
+          "published": 0,
+          "parent_type": "workaddress",
+          "parent_reviewed": false,
+          "site_customer_reviewed": true
+        },
+        {
+          "jobs": 87,
+          "published": 0,
+          "parent_type": "workaddress",
+          "parent_reviewed": false,
+          "site_customer_reviewed": false
+        }
+      ],
+      "interpretation": "Retained source versions and reviewed relationships. A recent empty changed-record page proves the traversal time, not that every job changed or that all cards are reviewed. Unzoned completion dates remain unresolved. No inferred cross-provider mapping.",
+      "providerSettingsChanged": false,
+      "productionDataWrites": false,
+      "customerContentReturned": false
+    },
+    "live": {
+      "version": "learn-commusoft-build01-readback/1",
+      "environment": "live",
+      "project": "tgbnakbxwcqjeimygroz",
+      "observedAt": "2026-10-16T06:17:45.041Z",
+      "jobs": {
+        "retained": 12649,
+        "published": 944,
+        "open_source": 288,
+        "open_published": 9,
+        "missing_parent_source": 1553,
+        "missing_reviewed_parent": 11659,
+        "published_latest_version": 944,
+        "unreviewed_site_customer": 3599,
+        "published_missing_customer": 0,
+        "published_with_explicit_completion_instant": 0
+      },
+      "pages": [
+        {
+          "collection": "jobs",
+          "newest_page_at": "2026-10-16T06:12:21.186018+00:00",
+          "retained_pages": 266,
+          "pages_last_hour": 1,
+          "observations_last_hour": 4
+        },
+        {
+          "collection": "properties",
+          "newest_page_at": "2026-10-16T02:17:18.406477+00:00",
+          "retained_pages": 325,
+          "pages_last_hour": 0,
+          "observations_last_hour": null
+        },
+        {
+          "collection": "propertyContacts",
+          "newest_page_at": "2026-10-16T06:17:33.5999+00:00",
+          "retained_pages": 31391,
+          "pages_last_hour": 593,
+          "observations_last_hour": 0
+        }
+      ],
+      "sources": [
+        {
+          "collection": "jobs",
+          "identities": 12649,
+          "reviewed_links": 944,
+          "ambiguous_latest": 0,
+          "links_on_latest_version": 944,
+          "newest_record_observation": "2026-10-16T06:12:21.186018+00:00",
+          "oldest_record_observation": "2026-10-13T16:08:04.060217+00:00"
+        },
+        {
+          "collection": "properties",
+          "identities": 2425,
+          "reviewed_links": 151,
+          "ambiguous_latest": 0,
+          "links_on_latest_version": 151,
+          "newest_record_observation": "2026-10-16T02:17:18.406477+00:00",
+          "oldest_record_observation": "2026-10-16T02:15:12.632097+00:00"
+        },
+        {
+          "collection": "propertyContacts",
+          "identities": 2969,
+          "reviewed_links": 76,
+          "ambiguous_latest": 0,
+          "links_on_latest_version": 76,
+          "newest_record_observation": "2026-10-15T15:48:31.103025+00:00",
+          "oldest_record_observation": "2026-10-13T16:22:04.05973+00:00"
+        }
+      ],
+      "recurring": [
+        {
+          "phase": 4,
+          "state": "window_active",
+          "enabled": true,
+          "resource": "propertyContacts",
+          "watermark": "2026-10-15T20:56:01.089+00:00",
+          "contact_targets": 871,
+          "contacts_completed": 753
+        }
+      ],
+      "job_source_field_types": [
+        {
+          "type": "string",
+          "field": "description",
+          "records": 12649
+        },
+        {
+          "type": "number",
+          "field": "id",
+          "records": 12649
+        }
+      ],
+      "open_work_relationships": [
+        {
+          "jobs": 9,
+          "published": 9,
+          "parent_type": "customer",
+          "parent_reviewed": true,
+          "site_customer_reviewed": false
+        },
+        {
+          "jobs": 164,
+          "published": 0,
+          "parent_type": "customer",
+          "parent_reviewed": false,
+          "site_customer_reviewed": false
+        },
+        {
+          "jobs": 25,
+          "published": 0,
+          "parent_type": "missing",
+          "parent_reviewed": false,
+          "site_customer_reviewed": false
+        },
+        {
+          "jobs": 1,
+          "published": 0,
+          "parent_type": "workaddress",
+          "parent_reviewed": false,
+          "site_customer_reviewed": true
+        },
+        {
+          "jobs": 89,
+          "published": 0,
+          "parent_type": "workaddress",
+          "parent_reviewed": false,
+          "site_customer_reviewed": false
+        }
+      ],
+      "interpretation": "Retained source versions and reviewed relationships. A recent empty changed-record page proves the traversal time, not that every job changed or that all cards are reviewed. Unzoned completion dates remain unresolved. No inferred cross-provider mapping.",
+      "providerSettingsChanged": false,
+      "productionDataWrites": false,
+      "customerContentReturned": false
+    }
+  },
+  "customerTypeEvidence": [
+    {
+      "customer_type": 1,
+      "customers": 90,
+      "unreviewed": 89,
+      "reviewed_companies": 0,
+      "reviewed_people": 1
+    },
+    {
+      "customer_type": 2,
+      "customers": 12,
+      "unreviewed": 10,
+      "reviewed_companies": 2,
+      "reviewed_people": 0
+    },
+    {
+      "customer_type": 4,
+      "customers": 6,
+      "unreviewed": 5,
+      "reviewed_companies": 1,
+      "reviewed_people": 0
+    },
+    {
+      "customer_type": 5,
+      "customers": 4,
+      "unreviewed": 4,
+      "reviewed_companies": 0,
+      "reviewed_people": 0
+    },
+    {
+      "customer_type": 6,
+      "customers": 4,
+      "unreviewed": 4,
+      "reviewed_companies": 0,
+      "reviewed_people": 0
+    },
+    {
+      "customer_type": 7,
+      "customers": 1,
+      "unreviewed": 1,
+      "reviewed_companies": 0,
+      "reviewed_people": 0
+    },
+    {
+      "customer_type": 8,
+      "customers": 4,
+      "unreviewed": 4,
+      "reviewed_companies": 0,
+      "reviewed_people": 0
+    },
+    {
+      "customer_type": 9,
+      "customers": 10,
+      "unreviewed": 10,
+      "reviewed_companies": 0,
+      "reviewed_people": 0
+    },
+    {
+      "customer_type": 10,
+      "customers": 2,
+      "unreviewed": 2,
+      "reviewed_companies": 0,
+      "reviewed_people": 0
+    },
+    {
+      "customer_type": 13,
+      "customers": 5,
+      "unreviewed": 5,
+      "reviewed_companies": 0,
+      "reviewed_people": 0
+    }
+  ],
+  "remaining": {
+    "unlinkedOpenWorkJobs": 279,
+    "openWorkJobsMissingRetainedParentSource": 25,
+    "unreviewedCustomersUnderlyingOpenWork": 134,
+    "authoritativeCustomerTypeMapping": "Awaiting user report from Heidi; existing reviewed examples do not establish every classification.",
+    "realTestAcceptance": "Historical retained data only; no recurring account activated."
+  },
+  "changes": {
+    "providerWrites": 0,
+    "providerSettingsChanged": false,
+    "liveReviewedCanonicalJobUpdates": 1,
+    "liveCanonicalUpdate": "Existing reviewed customer and job; latest retained completed status applied through guarded UI. Unzoned completion time excluded from duration and scoring.",
+    "frontendChanged": false,
+    "crossProviderMappingsInferred": false
+  },
+  "privacy": "Aggregate evidence only; private runtime manifests, source identifiers, customer content, credentials and screenshots excluded."
+}

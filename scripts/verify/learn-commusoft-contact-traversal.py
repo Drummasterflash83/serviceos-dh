@@ -11,10 +11,10 @@ root = Path(__file__).resolve().parents[2]
 docker = shutil.which('docker') or '/usr/local/bin/docker'
 name = 'serviceos-contact-traversal-' + uuid.uuid4().hex[:8]
 created = False
-if sys.argv[1:] not in ([], ["--legacy-resume"], ["--update-windows"], ["--recurring"]): raise SystemExit("Unexpected mode")
+if sys.argv[1:] not in ([], ["--legacy-resume"], ["--update-windows"], ["--recurring"], ["--current-jobs"]): raise SystemExit("Unexpected mode")
 legacy = sys.argv[1:] == ["--legacy-resume"]
-recurring = sys.argv[1:] == ["--recurring"]
-update_windows = sys.argv[1:] in (["--update-windows"], ["--recurring"])
+recurring = sys.argv[1:] in (["--recurring"], ["--current-jobs"])
+update_windows = sys.argv[1:] in (["--update-windows"], ["--recurring"], ["--current-jobs"])
 
 def sql(text):
     r = subprocess.run([docker, 'exec', '-i', name, 'psql', '-h', '127.0.0.1', '-X', '-qAt', '-U', 'postgres', '-v', 'ON_ERROR_STOP=1'], input=text, text=True, capture_output=True, timeout=40)
@@ -76,6 +76,16 @@ try:
         print(sql(source('scripts/verify/learn-commusoft-recurring.assert.sql')),flush=True)
         subprocess.run(['node','scripts/verify/learn-commusoft-recurring-control-bridge.mjs',docker,name],cwd=root,check=True,timeout=60)
         print('Recurring installation rollback restores all definitions and grants; no hosted changes.',flush=True)
+        if sys.argv[1:] == ["--current-jobs"]:
+            current = source('supabase/migrations/20261103300000_learn_commusoft_current_jobs.sql')
+            original = sql("select md5(pg_get_functiondef('public.learn_commusoft_schedule_recurring(integer)'::regprocedure))")
+            sql(current.replace('\ncommit;', '\nrollback;'))
+            assert sql("select to_regclass('learn_commusoft_current_jobs') is null") == 't'
+            assert original == sql("select md5(pg_get_functiondef('public.learn_commusoft_schedule_recurring(integer)'::regprocedure))")
+            sql(current)
+            sql(source('supabase/migrations/20261103310000_learn_commusoft_current_jobs_idle.sql'))
+            print(sql(source('scripts/verify/learn-commusoft-current-jobs.assert.sql')),flush=True)
+
     overview = sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000180';set role authenticated;select learn_operator_inputs(fixture_id(100));")
     path=root/('.verification-results/commusoft-contact-traversal-overview-legacy.json' if legacy else '.verification-results/commusoft-contact-traversal-overview.json')
     path.write_text(overview+'\n')
