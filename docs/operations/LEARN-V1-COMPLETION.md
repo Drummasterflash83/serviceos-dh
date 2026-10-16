@@ -7,6 +7,32 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, 00:16 UTC — identity selector index released; ordinary retry pending.**
+
+### Working and verified
+
+- A tenant-scoped partial order index for pending/ready interactions preserved
+  the exact selected identities in an isolated restored production archive and
+  reduced three representative identity-selector calls from about 59 ms to
+  about 6 ms. The same concurrent index is valid and ready in TEST and LIVE;
+  the identity function definition is unchanged. Three LIVE read-only calls
+  each selected 50 candidates and completed in 0.4–0.8 seconds including API
+  round trip. A separate eligible-email projection-index experiment preserved
+  results but did not improve timing, so it was not deployed.
+  [Sanitised index evidence](evidence/learn-build01-identity-selector-index-2026-10-16.json).
+
+### Needs finishing
+
+- The due ordinary identity attempt at 00:12 still ended
+  `identity_inventory_unconfirmed` before the index existed. Its next ordinary
+  retry is due around 00:27. Do not count the read-only probes as unattended
+  recovery. Projection and Graph ordinary retries are due around 00:20 and
+  00:28, respectively; their source gaps remain open.
+
+### Blocked externally
+
+- No overnight user action is needed for these retry observations.
+
 **16 October, 00:07 UTC — recommendation refresh correction released with TEST evidence.**
 
 ### Working and verified
@@ -22,15 +48,19 @@ override a later release observation. No requirement is silently deferred.
   failed writes. The exact released LIVE `platform-worker` and
   `recommendation-sync` executable readbacks are versions 92 and 42;
   unsigned calls remain denied. Pre-release executables are retained privately
-  for rollback. [Sanitised release evidence](evidence/learn-build01-recommendation-refresh-release-2026-10-16.json).
+  for rollback. The first ordinary LIVE recommendation job then succeeded at
+  00:10:54, updating 497 rows with zero failed writes. A bounded 00:09–00:12
+  PostgreSQL log sample recorded zero `recommendations_open_uk` conflicts,
+  compared with 518 in 23:49–23:54 around the prior 518-update job.
+  [Sanitised release evidence](evidence/learn-build01-recommendation-refresh-release-2026-10-16.json).
 
 ### Needs finishing
 
-- Observe ordinary LIVE recommendation jobs and bounded unique-conflict logs
-  after release. The earlier 518 conflicts in five minutes identify a real
-  insert-first problem, but their contribution to separate projection and
-  identity inventory timeouts remains unproved. Their ordinary retries, the
-  Graph retry due about 00:28, and source-to-card gaps remain open.
+- Observe later ordinary LIVE recommendation jobs. The first post-release
+  job shows the intended correction, but the contribution of earlier unique
+  conflicts to separate projection and identity inventory timeouts remains
+  unproved. Their ordinary retries, the Graph retry due about 00:28, and
+  source-to-card gaps remain open.
 
 ### Blocked externally
 

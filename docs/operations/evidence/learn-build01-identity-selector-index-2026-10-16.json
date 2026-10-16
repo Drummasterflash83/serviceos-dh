@@ -1,0 +1,45 @@
+{
+  "version": "learn-build01-identity-selector-index/1",
+  "observed_at_utc": "2026-10-16T00:18:00Z",
+  "problem": "LIVE identity inventory repeatedly reached identity_inventory_unconfirmed. Before the index, cumulative query statistics since approximately 12:08 UTC showed 208 calls to learn_identity_pending-related shapes, 788061 ms total execution, 3789 ms average and 7997 ms maximum. These cumulative statistics are not a controlled before/after measurement.",
+  "isolated_rehearsal": {
+    "source_archive_sha256": "31f1e594e9c3b43f3cff0ec0c45095216a4bb6580e8a0e5f2a4a81db99c03fe8",
+    "network": "none",
+    "exact_selected_result_preserved": true,
+    "before_execution_ms": [59.84, 59.34, 59.31],
+    "after_execution_ms": [6.35, 6.25, 6.34],
+    "container_removed": true
+  },
+  "index": {
+    "name": "learn_identity_ready_order_idx",
+    "columns": ["tenant_id", "occurred_at", "id"],
+    "predicate": "processing_status IN ('pending', 'ready')",
+    "test_project": "saatxzwxvdvqevbnskxy",
+    "test_index_valid_and_ready": true,
+    "live_project": "tgbnakbxwcqjeimygroz",
+    "live_index_valid_and_ready": true,
+    "identity_function_definition_preserved_in_both": true,
+    "created_concurrently": true,
+    "customer_rows_modified_by_release": 0,
+    "rollback_sql": "supabase/release/learn-build01-identity-ready-order/rollback.sql"
+  },
+  "live_read_only_probe": {
+    "selected_each_call": 50,
+    "round_trip_ms": [523.74, 777.6, 395.19],
+    "post_release_statistics_snapshot": "Three additional selector calls increased cumulative execution by approximately 167.5 ms, or 55.8 ms per call. This includes the read-only probes, not an ordinary worker retry."
+  },
+  "negative_projection_experiment": {
+    "candidate": "Partial covering eligible-email order index",
+    "isolated_exact_result_preserved": true,
+    "isolated_before_execution_ms": [265.41, 262.92, 269.94],
+    "isolated_after_execution_ms": [264.16, 285.81, 306.77],
+    "deployed_to_test_or_live": false,
+    "reason": "No observed performance benefit in the representative archive."
+  },
+  "needs_followup": [
+    "Observe the next ordinary LIVE identity retry due around 00:27 UTC and do not count a manual probe as unattended success.",
+    "Continue investigating projection inventory timeouts; the tested eligible-email index was rejected.",
+    "Observe Graph's ordinary retry due around 00:28 UTC and source-to-card convergence."
+  ],
+  "customer_content_or_secrets_retained": false
+}
