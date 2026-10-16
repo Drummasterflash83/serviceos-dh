@@ -22,6 +22,19 @@ The resulting 6,022,776-byte age ciphertext has SHA-256
 It is still **local only**; the distinct exact off-site copy awaits approval.
 [Exact prepared review](LEARN-BUILD01-RUNTIME-1828-OFFSITE-REVIEW.md).
 
+At 18:43 UTC, the exact five archived files for serving
+`learn-launch-status` version 10 were reconstructed and hash-checked against
+that manifest. The pinned local Edge runtime image bundled them after fetching
+the source's pinned public `esm.sh` dependency. A fully network-disabled bundle
+failed because that dependency is not inside the source package. The resulting
+bundle started in a disposable container with no network, host ports,
+production credentials or production data. OPTIONS returned HTTP 200 and a
+synthetic POST without configuration returned HTTP 503 `config_error`; cleanup
+removed the container. This proves source reconstruction, bundle/startup and a
+fail-closed boundary for one route. It does **not** prove authenticated reads,
+frontend startup, 103-function rebuild, secret recovery or capture restart.
+[Sanitised isolated startup receipt](evidence/learn-build01-isolated-edge-startup-2026-10-16.json).
+
 At 17:07 UTC, a fresh read-only LIVE inventory retained the current **103**
 active Edge functions and **727** source files, including the newly released
 worker and signed Slack Events receiver. The exact source hashes and stable

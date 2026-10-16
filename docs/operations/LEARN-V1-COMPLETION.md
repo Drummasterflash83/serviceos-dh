@@ -13,6 +13,29 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 18:43 UTC — one archived LIVE Edge route rebuilt and started in isolation.**
+
+### Working and verified
+
+- The current 103-function archive supplied five exact hash-matched files for
+  serving `learn-launch-status` version 10. After fetching its pinned public
+  JavaScript dependency at bundle time, the local pinned Edge runtime started
+  that route with no network, host ports, production credentials or data.
+  OPTIONS returned HTTP 200; a synthetic POST without configuration returned
+  HTTP 503 `config_error`. The disposable container was removed.
+  [Sanitised receipt](evidence/learn-build01-isolated-edge-startup-2026-10-16.json).
+
+### Needs finishing
+
+- Rehearse recovered Auth and real tenant/operator reads through an isolated
+  Edge/frontend service, inventory/recover the required runtime configuration,
+  and prove controlled source capture restart. This one route's fail-closed
+  startup is only a component check.
+
+### Blocked externally
+
+- The refreshed exact source package still awaits its off-site copy approval.
+
 **16 October, 18:40 UTC — ordinary Email and card retries recovered.**
 
 ### Working and verified
