@@ -17,6 +17,41 @@ business decision yet.
 
 ## Current evidence and priority
 
+**16 October, 23:11 UTC — ordinary card retry failed; one heavy card isolated.**
+
+### Working and verified
+
+- The 23:04 ordinary card retry ran and advanced nine cards. The one failed
+  card has 55,115 eligible interactions, but its bounded input contract passed
+  repeatedly under an eight-second SQL statement budget, its pure projection
+  succeeded in an in-memory no-write replay, and its exact update matched one
+  row in a transaction that was rolled back. No customer content or identifier
+  was emitted. These checks narrow the failure to the serving runtime or an
+  intermittent PostgREST path; they do not prove its cause.
+  [Sanitised diagnostic](evidence/learn-build01-card-2304-failure-2026-10-16.json).
+- The current v106 worker archive rebuilt and started in a network-disabled
+  container, returned OPTIONS 200 and rejected an unauthorised POST with 403.
+  [Isolated startup](evidence/learn-build01-v106-worker-isolated-startup-2026-10-16.json).
+
+### Needs finishing
+
+- The fifth ordinary card attempt ended `dead_letter` at 23:05, with **1,986**
+  active cards still before its sweep cutoff and ten older cards still lacking
+  projections. Instrument a safe per-card failure phase, test on TEST, repair
+  the serving failure, then restart and observe the full LIVE sweep. Do not
+  count the nine cards advanced by a failed job as a successful unattended
+  sweep.
+- Email unchanged receipts reached **3,200 distinct messages** by 23:00,
+  with no repeats, but the update backlog and 19,128 legacy unversioned links
+  remain open. Exact 160-channel Slack post-cutoff capture, job mapping and
+  score policy, and full application/Auth recovery remain open as below.
+
+### Blocked externally
+
+- No new user action is needed for the card diagnosis. The current v106 Edge
+  source-only off-site copy awaits the separate exact approval already asked;
+  Chris's business sign-off follows only after technical acceptance is ready.
+
 **16 October, 22:40 UTC — heavy-card read path narrowed; ordinary sweep still pending.**
 
 ### Working and verified

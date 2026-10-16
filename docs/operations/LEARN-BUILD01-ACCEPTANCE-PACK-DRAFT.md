@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 16 October 2026, 22:40 UTC: not ready for business sign-off.**
+**Status at 16 October 2026, 23:11 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -11,8 +11,8 @@ inactive until Chris reviews and signs off the business result.
 - LIVE retained **4,676 Phone calls with 4,676 interactions**, and no eligible
   Email messages lacked interactions in the 22:34 read. No eligible interaction
   lacked a Graph node. [Current technical tracker](LEARN-V1-COMPLETION.md).
-- The ordinary Email update chain committed **2,200 unchanged receipts for
-  2,200 distinct sources** from 21:55 through 22:39, with no repeated source
+- The ordinary Email update chain committed **3,200 unchanged receipts for
+  3,200 distinct sources** from 21:55 through 22:59, with no repeated source
   in that window. It is still running. [Counts-only proof](evidence/learn-build01-email-distinct-receipts-2026-10-16.json).
 - The 160 approved public Slack channels have enabled channel/reply
   subscriptions and completed historical campaign handoff. A separate approved
@@ -33,11 +33,13 @@ inactive until Chris reviews and signs off the business result.
 
 ## Needs finishing
 
-- **Cards:** 4,171 of 4,181 active cards had a projection at 22:34. Ten older
-  cards remained unprojected. The repaired next ten-card input batch passed
-  read-only checks, but its ordinary 23:04 retry and later sweep continuation
-  must succeed. At 22:38, **1,995** cards remained before that sweep cutoff.
-  [Batch proof](evidence/learn-build01-card-next-batch-readback-2026-10-16.json).
+- **Cards:** 4,171 of 4,181 active cards had a projection at 23:06. Ten older
+  cards remained unprojected. The ordinary 23:04 retry advanced nine cards
+  but failed on one heavy card and exhausted its fifth attempt. **1,986** cards
+  remained before the sweep cutoff. That card's bounded input, offline pure
+  projection and rolled-back exact update all passed; the serving failure
+  still needs a safe phase diagnostic, repair and ordinary full-sweep proof.
+  [Retry diagnostic](evidence/learn-build01-card-2304-failure-2026-10-16.json).
 - **Slack freshness:** 85 of the exact 160 channels were more than a day
   behind at 22:31. No post-cutoff message, reply or signed hint had been saved
   in that exact roster at 22:49. Its latest retained source activity is from

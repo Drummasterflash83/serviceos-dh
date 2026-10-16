@@ -1,0 +1,31 @@
+{
+  "contract": "learn-build01-card-ordinary-retry-diagnostic/1",
+  "observedAt": "2026-10-16T23:11:10Z",
+  "ordinaryRetry": {
+    "availableAt": "2026-10-16T23:04:11.371Z",
+    "terminalAt": "2026-10-16T23:05:16.575Z",
+    "status": "dead_letter",
+    "attempts": 5,
+    "safeErrorCode": "card_partial_failure",
+    "reportedFailedCards": 1,
+    "cardsAdvancedDuringLastAttempt": 9,
+    "sweepRemainingBeforeCutoff": 1986,
+    "olderUnprojectedCards": 10
+  },
+  "failedCardReadOnlyChecks": {
+    "eligibleInteractions": 55115,
+    "inputContractValid": true,
+    "inputJsonChars": 21260,
+    "eligibleRecommendations": 4,
+    "threeEightSecondBudgetReadSuccesses": 3,
+    "offlineProjectionWithNoWriteStubSucceeded": true,
+    "offlinePatchJsonChars": 2906,
+    "rollbackOnlyExactUpdateSqlstate": "00000",
+    "rollbackOnlyMatchedRows": 1,
+    "rollbackOnlyCommitted": false
+  },
+  "interpretation": "The failure is isolated to the heavy first card in the ordinary sweep. Its bounded inputs and pure projection pass, and the exact update succeeds in a rolled-back service-role transaction. A serving PostgREST call or intermittent runtime path remains possible but is not yet proven. The ordinary sweep failed and must be repaired, restarted and observed before Build 01 acceptance.",
+  "cardIdsReturned": false,
+  "customerContentReturned": false,
+  "productionDataWrites": false
+}

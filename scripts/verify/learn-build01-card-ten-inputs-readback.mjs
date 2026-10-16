@@ -23,7 +23,8 @@ async function readServiceFunction(query) {
       headers: { Authorization: `Bearer ${token}`,
         "Content-Type": "application/json" },
       body: JSON.stringify({ query: `begin read only;
-        set local role service_role; ${query}; rollback;`, read_only: false }),
+        set local role service_role;
+        set local statement_timeout='8s'; ${query}; rollback;`, read_only: false }),
     });
   if (!response.ok) throw Error(`LIVE card input HTTP ${response.status}`);
   return response.json();
@@ -31,7 +32,7 @@ async function readServiceFunction(query) {
 const jobs = await read(`select payload->>'sweep_since' sweep_since,
   payload->>'limit' requested_limit from public.platform_jobs
   where tenant_id='${tenant}'::uuid and job_type='customer_card.sync'
-    and status='retrying' and payload ? 'sweep_since'
+    and status in ('retrying','dead_letter') and payload ? 'sweep_since'
   order by created_at desc,id desc limit 1`);
 if (!Array.isArray(jobs) || jobs.length !== 1 ||
   !Number.isFinite(Date.parse(jobs[0]?.sweep_since)) ||
@@ -80,6 +81,10 @@ for (const [position, card] of cards.entries()) {
         (v#>>'{coverage,eligibleRecommendations}')::int urgency_ok,
       (v#>>'{coverage,interactionLimit}')::int=100 and
         (v#>>'{coverage,recommendationLimit}')::int=50 limits_ok,
+      length(v::text)::int input_json_chars,
+      (v#>>'{coverage,eligibleRecommendations}')::int eligible_recommendations,
+      (select coalesce(max(length(r->>'recommended_action')),0)::int
+        from jsonb_array_elements(v->'recommendations') r) max_action_chars,
       v->>'capturedAt' captured_at from x`);
     if (!Array.isArray(rows) || rows.length !== 1 ||
       !Number.isInteger(rows[0]?.eligible)) throw Error("input_shape_changed");
@@ -89,6 +94,9 @@ for (const [position, card] of cards.entries()) {
       Number.isFinite(Date.parse(rows[0]?.captured_at));
     results.push({ position: position + 1, elapsedMs: Date.now() - started,
       eligibleInteractions: rows[0].eligible, success: contractValid,
+      inputJsonChars: rows[0].input_json_chars,
+      eligibleRecommendations: rows[0].eligible_recommendations,
+      maxActionChars: rows[0].max_action_chars,
       ...(!contractValid ? { code: "input_contract_invalid" } : {}) });
   } catch (error) {
     results.push({ position: position + 1, elapsedMs: Date.now() - started,
