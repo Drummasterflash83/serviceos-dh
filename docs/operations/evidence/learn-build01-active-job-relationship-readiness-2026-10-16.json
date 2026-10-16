@@ -35,7 +35,8 @@
   "verification": {
     "readOnlySql": true,
     "sourceProviderRequests": 0,
-    "productionWrites": false
+    "productionWrites": false,
+    "separateExactEmailCandidateAggregate": "upstream_timeout_no_result"
   },
-  "boundary": "This classifies retained source observations, not currently confirmed provider status or reviewed customer identity. Property presence does not prove a canonical match. No job, site, customer or score was published. Equal-time latest-page ambiguity was zero for the retained job and property collections in a separate aggregate check. Missing properties and parents need source reconciliation; the present properties need explicit identity and site review before job projection."
+  "boundary": "This classifies retained source observations, not currently confirmed provider status or reviewed customer identity. Property presence does not prove a canonical match. No job, site, customer or score was published. Equal-time latest-page ambiguity was zero for the retained job and property collections in a separate aggregate check. An additional source-email candidate overlap query timed out and contributes no result to these counts. Missing properties and parents need source reconciliation; the present properties need explicit identity and site review before job projection."
 }
