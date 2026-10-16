@@ -13,6 +13,31 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 05:00 UTC — current Commusoft job freshness waits behind a contact crawl.**
+
+### Working and verified
+
+- The exact approved recurring account remains enabled and in phase 3. The
+  previous hour committed 580 customer-contact pages, all empty, through 580
+  successful source jobs. The last retained job page was committed at 02:18
+  UTC. These are aggregate read-only observations with no provider request.
+  [Sanitised worker pressure](evidence/learn-build01-worker-pressure-2026-10-16.json).
+
+### Needs finishing
+
+- The recurring protocol advances its watermark only after the sequential
+  customer- and work-address-contact phases. Current job-source freshness cannot
+  be certified while those phases delay the next job traversal. Design and
+  verify an independent current-job refresh path or an equally safe schedule
+  that preserves contact coverage and source history. Do not infer from the
+  Commusoft job count that Slack or Email workers are starved; their queues are
+  observed separately.
+
+### Blocked externally
+
+- No overnight user action is needed for this diagnosis. A provider contract or
+  product freshness decision may be needed before changing the capture cadence.
+
 **16 October, 04:49 UTC — ongoing public Slack capture is still capacity-limited.**
 
 ### Working and verified

@@ -1,0 +1,33 @@
+{
+  "version": "learn-build01-worker-pressure/1",
+  "observed_at_utc": "2026-10-16T05:00:17.979Z",
+  "environment": "LIVE Drummonds; aggregate read-only",
+  "commusoft": {
+    "enabled_recurring_accounts": 1,
+    "current_phase": 3,
+    "current_state": "window_active",
+    "watermark_utc": "2026-10-15T20:56:01.089Z",
+    "current_cycle_end_utc": "2026-10-16T02:13:04.446Z",
+    "latest_retained_job_page_utc": "2026-10-16T02:18:03.439319Z",
+    "successful_source_jobs_last_hour": 580,
+    "committed_source_pages_last_hour": 580,
+    "committed_source_records_last_hour": 0,
+    "contact_pages_last_hour": 580,
+    "empty_contact_pages_last_hour": 580
+  },
+  "other_lanes": {
+    "email_capture_active_jobs": 24,
+    "email_capture_successes_last_hour": 288,
+    "email_capture_records_from_successful_jobs": 4150,
+    "card_projection_successes_last_hour": 5,
+    "card_projection_records_from_successful_jobs": 1000,
+    "slack_channel_active_jobs": 92,
+    "slack_reply_active_jobs": 547,
+    "slack_channel_successes_last_hour": 33,
+    "slack_reply_successes_last_hour": 49
+  },
+  "interpretation": "The one approved Commusoft recurring account is in customer-contact traversal after its job phase. Repeated empty contact pages are part of the current sequential cycle, so this read does not prove job-source freshness after the last retained job page. The workers are separate; the Commusoft job count alone does not prove Slack or Email worker starvation. A design that refreshes current jobs without waiting for every contact parent is needed before near-current job progress can be claimed.",
+  "source_provider_requests_made_by_readback": 0,
+  "production_data_writes": false,
+  "private_rows_returned": false
+}
