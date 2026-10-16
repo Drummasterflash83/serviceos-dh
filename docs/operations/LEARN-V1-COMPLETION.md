@@ -7,6 +7,35 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, 00:07 UTC — recommendation refresh correction released with TEST evidence.**
+
+### Working and verified
+
+- The shared recommendation code now reads an existing open row before insert,
+  retaining the concurrent-insert conflict fallback. Three focused local tests
+  passed and the exact source delta compiled in the pinned Edge runtime. An
+  initial hosted TEST synthetic job exposed three nullable recommendation
+  columns absent there but present in LIVE and the repository migration; after
+  adding those columns, all 136 existing TEST recommendation rows kept their
+  digest. A second hosted job refreshed the existing open row, created one new
+  rule result, preserved the other archived synthetic card and returned no
+  failed writes. The exact released LIVE `platform-worker` and
+  `recommendation-sync` executable readbacks are versions 92 and 42;
+  unsigned calls remain denied. Pre-release executables are retained privately
+  for rollback. [Sanitised release evidence](evidence/learn-build01-recommendation-refresh-release-2026-10-16.json).
+
+### Needs finishing
+
+- Observe ordinary LIVE recommendation jobs and bounded unique-conflict logs
+  after release. The earlier 518 conflicts in five minutes identify a real
+  insert-first problem, but their contribution to separate projection and
+  identity inventory timeouts remains unproved. Their ordinary retries, the
+  Graph retry due about 00:28, and source-to-card gaps remain open.
+
+### Blocked externally
+
+- No overnight user action is needed for this release or its readback.
+
 **15 October, 23:55 UTC — processing timeout diagnosis and local recommendation correction.**
 
 ### Working and verified

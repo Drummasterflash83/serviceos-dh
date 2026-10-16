@@ -1,0 +1,57 @@
+{
+  "version": "learn-build01-recommendation-refresh-release/1",
+  "observed_at_utc": "2026-10-16T00:07:10Z",
+  "trigger": "The LIVE insert-first recommendation refresh produced 518 recommendations_open_uk conflicts in the bounded 23:49–23:54 UTC log window. Its causal contribution to separate selector timeouts is unproved.",
+  "change": "Look up an existing tenant/card/type open recommendation before inserting, update it in place, retain unique-conflict recovery for concurrent creators, and report a failed update as unconfirmed.",
+  "local_verification": {
+    "focused_synthetic_tests_passed": 3,
+    "pinned_edge_runtime_image": "sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c",
+    "compiled_candidates": 3,
+    "changed_shared_source_files_per_candidate": ["recommendations.ts"]
+  },
+  "test": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "platform_worker_version_before": 40,
+    "platform_worker_version_after": 41,
+    "first_synthetic_job": "Reached the worker but ended recommendation_partial_failure because TEST lacked three nullable columns already present in LIVE and in the repository's 20260709170000_recommendation_engine.sql migration; no recommendation row changed or duplicated.",
+    "schema_parity_repair": {
+      "columns": ["due_at timestamptz", "source_rule text", "impact text"],
+      "existing_rows_preserved": 136,
+      "row_digest_preserved": true,
+      "live_schema_or_data_changed": false
+    },
+    "second_synthetic_job": {
+      "fixture": "Previously archived synthetic tenant and one selected customer card",
+      "worker_http_status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "created": 1,
+      "updated": 1,
+      "failed": 0,
+      "existing_open_recommendation_id_preserved": true,
+      "other_fixture_card_preserved": true,
+      "unsigned_worker_http_status": 403,
+      "provider_requests": 0
+    }
+  },
+  "live": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "platform_worker_version_before": 91,
+    "platform_worker_version_after": 92,
+    "recommendation_sync_version_before": 41,
+    "recommendation_sync_version_after": 42,
+    "exact_artifact_readback": true,
+    "unrelated_edge_functions_unchanged_at_release": true,
+    "unsigned_http_denial": {"platform_worker": 403, "recommendation_sync": 401},
+    "exact_pre_release_executables_retained_privately_for_rollback": true,
+    "schema_changed": false,
+    "source_provider_requests": 0,
+    "release_script_data_writes": 0
+  },
+  "needs_followup": [
+    "Observe ordinary LIVE recommendation jobs after the release and compare recommendation unique-conflict log counts with the earlier bounded window.",
+    "Observe ordinary identity and projection retries; a recommendation conflict reduction alone does not prove their statement-timeout issue is resolved.",
+    "Continue Graph, email, Slack, Commusoft, recovery and business acceptance checks before Build 01 signoff."
+  ],
+  "customer_content_or_secrets_retained": false
+}
