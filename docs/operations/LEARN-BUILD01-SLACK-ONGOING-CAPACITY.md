@@ -20,6 +20,20 @@ Correction hints now carry both times, reject unrelated subtypes and explicitly
 require a fresh public-visibility check before reconciliation. Four synthetic
 tests and TypeScript pass. No correction processor or deletion policy is active.
 
+At 00:41 UTC on 16 October, a local inactive HTTP boundary was added in
+[`slack_event_http.ts`](../../supabase/functions/_shared/slack/slack_event_http.ts).
+It caps the raw request body, verifies signatures and the exact roster supplied
+by its binding loader, acknowledges only a reported durable hint receipt or
+known duplicate, and
+returns a retryable failure when persistence is uncertain. An out-of-scope signed
+DM/private/unapproved event is ignored without writing a hint. Synthetic root,
+correction, challenge, duplicate, outage and exclusion tests pass; TypeScript
+passes. This is a handler with injected binding/storage dependencies, **not a
+deployed receiving function or durable event ledger**. No Slack app subscription,
+signing secret, provider write or capture-scope change has been made. A future
+adapter must prove that its roster is current and that its receipt means an
+atomic durable insert before this handler can be enabled.
+
 ## Observed baseline and arithmetic
 
 - The handoff has 160 enabled channel/reply subscriptions. Of those, 127 saved

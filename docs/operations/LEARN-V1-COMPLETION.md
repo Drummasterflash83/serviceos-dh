@@ -7,6 +7,30 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**16 October, 00:41 UTC — signed Slack HTTP handling prepared locally.**
+
+### Working and verified
+
+- A local inactive handler caps signed Slack Event requests, accepts a hint only
+  after signature/roster checks and a reported durable record result,
+  and returns a retryable failure for uncertain persistence. Root, reply,
+  correction, challenge, duplicate, outage, DM and unapproved-scope tests pass;
+  TypeScript passes. No message body is retained in the hint.
+  [Capacity and activation boundary](LEARN-BUILD01-SLACK-ONGOING-CAPACITY.md).
+
+### Needs finishing
+
+- There is no deployed receiving function, event ledger, reconciliation
+  processor or Slack app event subscription. The future adapter must bind the
+  roster to current approval and prove its durable receipt. Polling alone remains behind its
+  planned 15-minute freshness workload. Keep the exact 160-channel scope and
+  DMs excluded; do not call this local preparation live capture.
+
+### Blocked externally
+
+- No overnight user action is needed for local preparation. A later exact
+  provider subscription and correction policy need review before activation.
+
 **16 October, 00:39 UTC — ordinary batches continue; email inventory remains unstable.**
 
 ### Working and verified
