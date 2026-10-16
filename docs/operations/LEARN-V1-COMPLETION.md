@@ -13,6 +13,32 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 04:34 UTC — historical email intake is outrunning projection.**
+
+### Working and verified
+
+- A read-only LIVE aggregate found Graph caught up to all currently eligible
+  interactions and 147 of 160 approved Slack channel boundaries advanced past
+  their saved cutoff. Ordinary provider jobs continue. Of 4,675 emails newly
+  retained in the preceding hour, 1,125 carry source times older than three
+  years and none carries a source time in the preceding day.
+  [Sanitised intake and coverage readback](evidence/learn-build01-historical-email-pressure-2026-10-16.json).
+
+### Needs finishing
+
+- Eligible email messages without interactions rose from 14,548 at 04:10 to
+  16,028 at 04:33. The current recent-stream initial traversal has `query:null`,
+  so the system can walk old mailbox history. Chris's historical horizon
+  preference is being sought; no intake scope has changed. Seven customer
+  cards lacked projection for over an hour, and the active card job's final
+  ordinary retry is due at 04:45. Check its actual result before a repair.
+
+### Blocked externally
+
+- The Drummonds historical email horizon awaits Chris's choice. Already
+  retained source records remain preserved. No overnight response is needed
+  to investigate the existing queue and ordinary card retry.
+
 **16 October, 04:28 UTC — manual backup works; scheduled dispatch and full recovery remain open.**
 
 ### Working and verified

@@ -1,0 +1,50 @@
+{
+  "version": "learn-build01-historical-email-pressure/1",
+  "environment": "LIVE Drummonds; aggregate-only read-only Management queries",
+  "observed_at_utc": "2026-10-16T04:34:28.860Z",
+  "email_source": {
+    "retained_messages_at_0433": 185965,
+    "eligible_without_interaction_at_0410": 14548,
+    "eligible_without_interaction_at_0433": 16028,
+    "messages_created_in_previous_hour_at_0433": 4675,
+    "created_last_hour_with_source_age_under_one_day": 0,
+    "created_last_hour_with_source_age_one_day_to_one_year": 1175,
+    "created_last_hour_with_source_age_one_to_three_years": 2375,
+    "created_last_hour_with_source_age_over_three_years": 1125,
+    "oldest_source_timestamp_in_created_last_hour": "2015-09-29T13:18:14Z",
+    "newest_source_timestamp_in_created_last_hour": "2026-04-02T20:56:36Z",
+    "workspace_message_sync_runs_last_hour": 332,
+    "workspace_message_sync_records_reported_last_hour": 4775,
+    "workspace_backfill_scheduler_runs_last_hour": 4,
+    "workspace_backfill_scheduler_records_reported_last_hour": 0
+  },
+  "checkpoint_readback_at_utc": "2026-10-16T04:35:03.084Z",
+  "checkpoint_counts": {
+    "recent_completed": 14,
+    "recent_ready": 12,
+    "recent_blocked_delegation_grant_invalid": 4,
+    "historical_stream_checkpoints": 0
+  },
+  "blocked_checkpoint_classification_at_utc": "2026-10-16T04:35:18.894Z",
+  "blocked_checkpoint_classification": "All four invalid-delegation recent checkpoints belong to disabled email accounts whose saved workspace mailbox status is removed and type is user; they are not part of the 26 completed/ready recent checkpoints.",
+  "source_code_observation": "The current saved recent-stream initial traversal passes query:null to the Gmail page reader. Aggregate run types and timestamps are consistent with broad initial mailbox traversal, but these queries do not prove that every newly retained message came from a particular run or mailbox.",
+  "other_live_coverage_at_0433": {
+    "eligible_interactions_missing_graph": 0,
+    "active_customer_cards": 4065,
+    "projected_customer_cards": 4051,
+    "unprojected_cards_older_than_one_hour": 7,
+    "approved_slack_channels": 160,
+    "approved_channels_advanced_past_cutoff": 147
+  },
+  "customer_card_retry": {
+    "status": "retrying",
+    "error_code": "card_partial_failure",
+    "attempt": 4,
+    "max_attempts": 5,
+    "next_available_at_utc": "2026-10-16T04:45:39.035Z"
+  },
+  "interpretation": "Historical mailbox intake is outpacing email source-to-interaction projection in this short window. No source loss is established. The 3-year onboarding horizon is awaiting Chris's preference; no existing message was deleted and no intake scope was changed. The card retry is scheduled for ordinary recovery, not proof it will succeed.",
+  "message_content_returned": false,
+  "source_provider_writes": false,
+  "production_data_writes": false
+}
