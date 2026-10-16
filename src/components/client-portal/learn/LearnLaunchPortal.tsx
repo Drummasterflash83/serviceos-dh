@@ -41,6 +41,17 @@ const EmmaLearnRecap = lazy(() => import("./EmmaLearnRecap").then(m => ({default
 
 export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
   const { user, profile } = useAuth();
+  const slackOperator = useQuery({
+    queryKey: ["learn-slack-operator-admin", user?.id],
+    enabled: !!user,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().rpc("current_user_is_openfolk_operator", {
+        required_permission: "platform.controlplane.admin",
+      });
+      return !error && data === true;
+    },
+  });
   const [result, setResult] = useState<any>(null),
     [state, setState] = useState("loading"),
     [connectState, setConnectState] = useState("idle"),
@@ -375,8 +386,9 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
               actorId={user?.id ?? ""}
               canEdit={
                 !!user &&
-                profile?.tenant_id === tenantId &&
-                ["owner", "admin"].includes(profile.role)
+                ((profile?.tenant_id === tenantId &&
+                  ["owner", "admin"].includes(profile.role)) ||
+                  slackOperator.data === true)
               }
             />
           )}
