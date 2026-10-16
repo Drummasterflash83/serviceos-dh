@@ -13,6 +13,31 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, about 02:46 UTC — private active-property review order prepared offline.**
+
+### Working and verified
+
+- A pinned 15 October production archive restored in a network-isolated local
+  database and was removed after read-only analysis. Its **dated** active-job
+  snapshot contained 281 unlinked active-status jobs across 198 direct property
+  references. A private mode-0600 worklist orders the property references by
+  affected job count. The top ten represent 55 jobs; 58 references cover 141
+  of 281. These are review priorities, not inferred customer matches.
+  [Sanitised offline aggregate](evidence/learn-build01-offline-active-property-priority-2026-10-16.json).
+
+### Needs finishing
+
+- Recheck each candidate against the latest LIVE source and reviewed customer/
+  site evidence before any publication. This older snapshot differs from the
+  16 October LIVE count of 279 unlinked active-status jobs, so it cannot certify
+  current coverage or automatically resolve identities. Missing properties and
+  unverified parent relationships still require source reconciliation.
+
+### Blocked externally
+
+- No user action is needed for this local planning step. Human source-identity
+  review and final business acceptance remain separate later gates.
+
 **16 October, about 02:37 UTC — scheduled-only backup monitor released on main.**
 
 ### Working and verified

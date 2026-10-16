@@ -1,0 +1,26 @@
+{
+  "version": "learn-build01-offline-active-property-priority/1",
+  "observed_at_utc": "2026-10-16T02:45:00Z",
+  "source": "Previously retained 15 October 2026 production database snapshot, SHA-256 31f1e594e9c3b43f3cff0ec0c45095216a4bb6580e8a0e5f2a4a81db99c03fe8",
+  "method": "Network-isolated disposable PostgreSQL restore; tenant/connection-scoped latest retained Commusoft job and property observations grouped by direct property reference; no provider request or LIVE read",
+  "snapshot_active_status_jobs_without_current_published_link": 281,
+  "distinct_direct_property_references": 198,
+  "property_source_kinds": {
+    "customer": 109,
+    "workaddress": 72,
+    "missing": 17
+  },
+  "properties_without_reviewed_direct_link": 197,
+  "workaddresses_with_reviewed_parent_link": 1,
+  "priority_concentration": {
+    "largest_one_property_job_count": 15,
+    "top_10_properties_job_count": 55,
+    "properties_to_cover_at_least_half_of_snapshot_jobs": 58,
+    "jobs_covered_by_those_58_properties": 141
+  },
+  "private_worklist": ".verification-results/build01-active-property-priority-offline-20261015.json, mode 0600; exact source IDs intentionally excluded from this public receipt",
+  "isolated_container_removed": true,
+  "production_writes": false,
+  "source_provider_requests": 0,
+  "limitation": "The 15 October snapshot is a review-priority aid, not the later 16 October LIVE count of 279 unlinked active-status jobs and not current provider status. No source identity, property owner or canonical job was auto-linked. The worklist must be rechecked against latest LIVE source versions before any reviewed publication."
+}
