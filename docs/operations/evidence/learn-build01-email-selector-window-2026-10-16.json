@@ -1,6 +1,6 @@
 {
   "version": "learn-build01-email-selector-window/1",
-  "observedAtUtc": "2026-10-16T20:04:00Z",
+  "observedAtUtc": "2026-10-16T20:14:46Z",
   "problem": "The ordinary ten-row older Email retry still returned selector_rpc / SQLSTATE 57014. The selector internally prepared a 200-candidate revision window even when the worker requested ten rows.",
   "readOnlyDiagnosis": {
     "originalCandidateWindow": 200,
@@ -25,8 +25,22 @@
     "sourceDataWritesByReleaseChecks": false,
     "providerRequestsByReleaseChecks": 0
   },
-  "ordinaryLiveOutcomePending": true,
-  "nextOrdinaryRetryDueUtc": "2026-10-16T20:12:08.940987Z",
-  "unattendedRecoveryAccepted": false,
-  "scope": "Selector-only change. Existing Email sources, interaction publication, review holds, full-selector fallback, current Email lane and Phone behavior remain unchanged."
+  "ordinaryLiveOutcomePending": false,
+  "ordinaryLiveOutcome": {
+    "retryAttempt": 4,
+    "firstSettledAtUtc": "2026-10-16T20:13:02Z",
+    "firstNewlyPublished": 10,
+    "firstDurableChild": true,
+    "childSettledAtUtc": "2026-10-16T20:14:02Z",
+    "childNewlyPublished": 10,
+    "childDurableSuccessor": true,
+    "bothRunsSourceFailures": 0,
+    "existingTenantReviewHolds": 13,
+    "eligibleGapBefore": 303,
+    "eligibleGapAfter": 283,
+    "fullCatchupPending": true
+  },
+  "unattendedContinuationVerified": true,
+  "fullOlderEmailCatchupAccepted": false,
+  "scope": "Selector-only change. Existing Email sources, interaction publication, review holds, full-selector fallback and the separate current Email lane remain unchanged. Phone selection logic is unchanged, but the function-level 25-second timeout also applies to Phone calls of this selector."
 }

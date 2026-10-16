@@ -13,6 +13,99 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 20:41 UTC — ordinary card continuation recovered; full sweep pending.**
+
+### Working and verified
+
+- A LIVE 200-card retry exceeded its lease, then a 40-card TEST fixture verified
+  bounded selection and continuation before the exact one-file worker reached
+  LIVE v104. The old LIVE job still dead-lettered with two failures; a later
+  ordinary retry under the new worker projected 40, followed by two ordinary
+  40-card successes and a queued successor by 20:40. No manual card projection
+  was used to count this recovery.
+- The slowest card had 55,109 company-linked interactions. A partial Email
+  DRAFT index was built concurrently in TEST and LIVE, then the card-input
+  function prefiltered only DRAFT IDs while preserving complete counts and the
+  100-interaction evidence window. TEST rollback rehearsal and synthetic
+  assertions retained 105 eligible interactions and 51 recommendations while
+  excluding 110 drafts and one draft-derived recommendation; tenant isolation
+  passed. The identical TEST/LIVE function digest, owner, grants and index
+  validity were checked. A real heavy LIVE card returned 55,096 eligible
+  interactions, 14 excluded drafts and 100 sampled interactions in 11.3s,
+  where the prior one-card probe exceeded 30s. The count rose by one after an
+  earlier counts-only sample as fresh Email was projected.
+  [Sanitised card release receipt](evidence/learn-build01-card-draft-prefilter-2026-10-16.json).
+
+### Needs finishing
+
+- Let the ordinary 40-card chain reach the ten cards still unprojected for
+  over an hour at 20:40; verify they acquire projections, the sweep terminates
+  cleanly, and fresh Email/Graph evidence keeps cards current. The historical
+  dead-letter stays visible as evidence of the earlier failure.
+- Older Email still publishes ten per unattended continuation but has not
+  proven end-of-backlog behavior. Slack 160-channel historical lag, full
+  runtime recovery, source-backed job attention/scoring and Chris's business
+  sign-off remain open.
+
+### Blocked externally
+
+- No new user action is requested. Do not ask for further Slack team test posts.
+
+**16 October, 20:15 UTC — ordinary older Email continuation is working.**
+
+### Working and verified
+
+- The older Email job's automatic retry after the bounded selector release
+  settled at 20:13 on attempt four: ten selected and published, zero source
+  failures, 13 pre-existing tenant review holds still visible, and a durable
+  ten-row successor. That new job settled at 20:14 with another ten published
+  and another successor, without a manual claim. The eligible Email gap fell
+  from 303 to 283. The `projection_review_required` terminal labels represent
+  those existing holds while the reviewed batch continuation is confirmed;
+  they are not ten failed publications.
+  [Read-only chain receipt](evidence/learn-build01-email-selector-window-2026-10-16.json).
+
+### Needs finishing
+
+- Let the ordinary ten-row chain drain the remaining 283 eligible messages,
+  then confirm end-of-backlog behavior and changed already-linked revisions.
+  Check downstream identity/card and Graph freshness as those sources arrive.
+- Observe the queued 20:10 card sweep and reconcile ten cards over an hour
+  without projection; continue Slack historical catch-up and full runtime
+  recovery, source-backed job attention/scoring and Chris's business review.
+
+### Blocked externally
+
+- No new user action is requested. New Slack team test posts remain off limits
+  at Chris's request.
+
+**16 October, 20:09 UTC — eligible Graph gap cleared by ordinary retry.**
+
+### Working and verified
+
+- The ordinary Graph job settled on attempt eight at 20:07 UTC, processing
+  1,850 records and upserting 1,025 nodes with no reported node failure. A
+  separate read-only source join at 20:09 counted **zero** eligible
+  interactions without a Graph node, down from 25 at 20:04. This is a real
+  catch-up snapshot, not a manual Graph rescue or a future-freshness guarantee.
+  [Sanitised Graph receipt](evidence/learn-build01-graph-ordinary-catchup-2026-10-16.json).
+- The scheduled database backup and missed-success monitor have successful
+  scheduled Actions runs today; the 08:14 backup run is the verified actual
+  copy, while later successful short runs are not additional copies.
+
+### Needs finishing
+
+- Observe Graph under fresh intake and the ten cards still unprojected for
+  over an hour. The 20:12 ordinary Email retry remains the immediate gate.
+- Historical Slack catch-up remains behind: 160/160 approved subscriptions
+  are enabled and past the handoff cutoff, but 109 channels were over a day
+  behind at 20:07. Four signed Events hints settled in the separate public
+  20-channel roster; this does not prove current capture in all 160 channels.
+
+### Blocked externally
+
+- No new user action is requested. Chris prefers no further Slack team posts.
+
 **16 October, 20:04 UTC — bounded older Email selector installed; ordinary outcome pending.**
 
 ### Working and verified

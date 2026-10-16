@@ -1,0 +1,55 @@
+{
+  "contract": "learn-build01-card-draft-prefilter/1",
+  "project": "tgbnakbxwcqjeimygroz",
+  "observedAt": "2026-10-16T20:40:57Z",
+  "problem": {
+    "staleUnprojectedCards": 10,
+    "oldestCardCompanyInteractions": 55109,
+    "oldestCardPersonInteractions": 2202,
+    "formerOneCardInputProbe": "Exceeded 30 seconds",
+    "formerCardJob": "Five-attempt dead letter after 200-card timeouts and partial failures"
+  },
+  "batchRelease": {
+    "changedSourcePath": "_shared/worker_handlers/customer_card_sync.ts",
+    "defaultBatchBefore": 200,
+    "defaultBatchAfter": 40,
+    "testWorkerVersion": 63,
+    "liveWorkerVersion": 104,
+    "testAndLiveWireSha256": "d80c5656fefad63ddca67bc625beeabb004bc505bfdfc781c10072d949028994",
+    "candidateSha256": "f0c33573b49c3be11dd0a2467e5a8915bf0520a7bc096ea8b7fb48d406e8f9d0",
+    "testFixture": "Forty of 41 synthetic cards skipped safely, one durable continuation, fixture tenant archived",
+    "liveRetry": "Exact attempt-four retry advanced after rollback rehearsal; attempt five still had two card failures and dead-lettered before the database optimisation",
+    "ordinaryAfterIndex": "At 20:38, an ordinary retry projected 40 cards with zero failures; two successors projected 40 each with zero failures by 20:40, and the next successor was queued"
+  },
+  "databaseRelease": {
+    "migrationSha256": "150fff63799b2d8f7271f1385e036d1572e3cbca7a540fdb548bcedae14d5e00",
+    "index": "learn_card_email_draft_idx",
+    "indexBuild": "Concurrent in TEST and LIVE; both valid and ready",
+    "functionBeforeSha256": "d47624d89dbb01e7f493c25c1a7f074c3730ed3bf4bf48e51025385e6d39ccfc",
+    "functionAfterSha256": "756f137b80b5fa9a89c2d47d451a7453b47e238ef588a47ac9dddd269f0aeb5f",
+    "rollbackRehearsed": true,
+    "ownerAndExecuteGrantsPreserved": true,
+    "testSyntheticAssertions": {
+      "draftInteractionsExcluded": 110,
+      "eligibleInteractions": 105,
+      "draftRecommendationsExcluded": 1,
+      "eligibleRecommendations": 51,
+      "tenantIsolation": true,
+      "fixtureRolledBack": true
+    },
+    "heavyLiveCardReadback": {
+      "elapsedMilliseconds": 11347,
+      "eligibleInteractions": 55096,
+      "draftInteractionsExcluded": 14,
+      "sampledInteractions": 100,
+      "eligibleRecommendations": 4
+    }
+  },
+  "limitations": [
+    "The ten cards unprojected for over an hour had not yet reached the ordinary sweep by 20:40 UTC; no completion claim is made for them.",
+    "The former dead-lettered card job remains historical evidence; ordinary new jobs must finish the sweep without manual rescue.",
+    "The heavy-card readback is a current snapshot; one new interaction arrived between the earlier 55,095-eligible counts-only probe and this 55,096-eligible function call."
+  ],
+  "sourceContentReturned": false,
+  "providerWrites": false
+}

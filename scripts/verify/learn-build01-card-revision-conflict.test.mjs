@@ -95,3 +95,49 @@ test('missing update without a newer revision still fails visibly', async () => 
   assert.equal(result.error.code, 'card_partial_failure');
   assert.equal(result.result.revision_conflicts, 0);
 });
+
+test('unattended sweep bounds the batch and continues with the same cursor', async () => {
+  const cards = Array.from({ length: 41 }, (_, n) => ({
+    id: `card-${n}`, person_id: `person-${n}`, company_id: null,
+    status: 'grey', updated_at: before,
+  }));
+  let selectedLimit = null;
+  let advanced = 0;
+  const admin = { from(table) {
+    let updating = false;
+    let filterId = null;
+    const query = {
+      select() { return query; }, update() { updating = true; return query; },
+      eq(key, value) { if (key === 'id') filterId = value; return query; },
+      in() { return query; }, neq() { return query; }, lt() { return query; },
+      order() { return query; }, limit(n) {
+        if (table === 'customer_cards') selectedLimit = n;
+        return query;
+      },
+      async maybeSingle() {
+        if (!updating || table !== 'customer_cards') throw Error('Unexpected read');
+        advanced++;
+        return { data: { id: filterId }, error: null };
+      },
+      then(resolve, reject) {
+        let data;
+        if (table === 'customer_cards') data = cards.slice(0, selectedLimit);
+        else if (table === 'people') data = cards.map((card) => ({
+          id: card.person_id, primary_email: 'fixture@example.invalid',
+        }));
+        else if (table === 'graph_nodes') data = [];
+        else throw Error(`Unexpected table ${table}`);
+        return Promise.resolve({ data, error: null }).then(resolve, reject);
+      },
+    };
+    return query;
+  } };
+  const result = await handle({ supabaseAdmin: admin, tenantId: tenant, payload: {} });
+  assert.equal(selectedLimit, 40);
+  assert.equal(advanced, 40);
+  assert.equal(result.success, true);
+  assert.equal(result.result.skipped, 40);
+  assert.equal(result.continuation.jobType, 'customer_card.sync');
+  assert.equal(result.continuation.payload.limit, 40);
+  assert.ok(Number.isFinite(Date.parse(result.continuation.payload.sweep_since)));
+});

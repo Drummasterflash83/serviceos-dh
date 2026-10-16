@@ -15,7 +15,9 @@ import {
 } from "../customer_card.ts";
 import type { WorkerHandlerContext, WorkerHandlerResult } from "../worker_contract.ts";
 
-const DEFAULT_LIMIT = 200;
+// A full sweep performs per-card source reads and graph-edge pagination. Keep its
+// unattended batch below the five-minute platform-job lease under LIVE load.
+const DEFAULT_LIMIT = 40;
 const MAX_LIMIT = 500;
 const TIMELINE_MAX = 10;
 // Keep URLs bounded at MAX_LIMIT; the doubled 200-UUID graph filter exceeds

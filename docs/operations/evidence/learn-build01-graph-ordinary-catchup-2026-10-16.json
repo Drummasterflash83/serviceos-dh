@@ -1,0 +1,18 @@
+{
+  "version": "learn-build01-graph-ordinary-catchup/1",
+  "observedAtUtc": "2026-10-16T20:09:06Z",
+  "tenant": "Drummonds",
+  "ordinaryJob": {
+    "settledAtUtc": "2026-10-16T20:07:37Z",
+    "status": "succeeded",
+    "attemptCount": 8,
+    "recordsProcessed": 1850,
+    "nodesUpserted": 1025,
+    "nodeFailures": 0
+  },
+  "eligibleInteractionGraphGapBefore": 25,
+  "eligibleInteractionGraphGapAfter": 0,
+  "manualGraphRescueInThisCheck": false,
+  "productionDataWritesByReadback": false,
+  "limit": "One complete eligible-interaction snapshot and a settled ordinary job; future intake and broader graph semantics still need observation."
+}

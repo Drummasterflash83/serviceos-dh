@@ -1,6 +1,6 @@
 {
   "version": "learn-build01-email-ten-row-release/1",
-  "observedAtUtc": "2026-10-16T20:04:00Z",
+  "observedAtUtc": "2026-10-16T20:14:46Z",
   "cause": "The older Email selector returned SQLSTATE 57014 through the eight-second LIVE authenticator statement timeout. A 50-row selector completed in 6.25 seconds in one bounded read but timed out under load; repeated ten-row reads completed in about 1.1–6.0 seconds.",
   "diagnosticSettlementCorrection": {
     "testWorkerVersion": 61,
@@ -37,12 +37,15 @@
     "oneExactIdleRetryPayloadRehearsedAndCorrectedTo10": true,
     "correctedPayloadOrdinaryRetryAt1957Settled": false,
     "correctedPayloadOrdinaryRetryError": "projection_inventory_unconfirmed; selector_rpc / SQLSTATE 57014",
-    "nextOrdinaryRetryPending": true,
-    "nextOrdinaryRetryDueUtc": "2026-10-16T20:12:08.940987Z",
+    "nextOrdinaryRetryPending": false,
+    "ordinaryRetryAt2013SettledWithTenPublishedAndChild": true,
+    "ordinarySuccessorAt2014SettledWithTenPublishedAndChild": true,
+    "eligibleGapAfterTwoAdditionalBatches": 283,
     "selectorWindowMigrationReceipt": "learn-build01-email-selector-window-2026-10-16.json"
   },
   "productionSourceWritesByReleaseChecks": false,
   "providerRequestsByReleaseChecks": 0,
-  "unattendedRecoveryAccepted": false,
-  "limit": "Ten published source rows do not prove a settled, self-continuing older Email lane. A second ordinary retry timed out, so the selector window was narrowed after TEST and LIVE rehearsals. Confirm the next ordinary retry and further drain before acceptance."
+  "unattendedContinuationVerified": true,
+  "fullOlderEmailCatchupAccepted": false,
+  "limit": "A second ordinary retry timed out before the selector window was narrowed. Two subsequent ordinary batches each published ten sources and created durable successors; the remaining 283 eligible sources and end-of-backlog behavior still need observation."
 }
