@@ -13,6 +13,36 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, about 03:24 UTC — guarded backup fallback released, unattended result pending.**
+
+### Working and verified
+
+- GitHub's 03:15 daily backup had not dispatched by this check; its workflow is
+  active on default `main`. [GitHub documents](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)
+  that scheduled events may be delayed or dropped. A second 04:15 UTC slot was
+  added with a guard that skips another export only after an earlier **scheduled**
+  success on the same UTC day. Manual recovery requests always run; an API
+  failure runs the backup rather than silently skipping it. Three focused
+  checks, the manual-dispatch CLI output check and YAML parsing pass. The
+  established export/restore runner files are unchanged.
+- Production `main` fast-forwarded from `7307134a` to `e00921e2` with this
+  workflow file only. GitHub readback and both Vercel Git builds passed; the four
+  LIVE login aliases returned HTTP 200. Frontend source did not change. The
+  signed-in LEARN/Drummonds UI was not rechecked in this release.
+  [Sanitised release evidence](evidence/learn-build01-backup-fallback-release-2026-10-16.json).
+
+### Needs finishing
+
+- Observe a terminal scheduled backup that exports, restores, encrypts,
+  independently downloads and verifies the off-site copy. Then observe a
+  **scheduled** missed-success monitor on the corrected source. A configured
+  second cron slot and successful manual runs are not unattended acceptance.
+
+### Blocked externally
+
+- The 03:15 GitHub dispatch may be delayed or omitted; the 04:15 fallback is
+  the next configured slot. No overnight user action is needed for this check.
+
 **16 October, 02:52 UTC — hourly monitor cadence still unproved.**
 
 ### Working and verified

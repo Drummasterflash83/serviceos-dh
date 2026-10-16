@@ -1,0 +1,40 @@
+{
+  "observedAtUtc": "2026-10-16T03:24:00Z",
+  "release": {
+    "priorMain": "7307134aa34d6cd4f8c9e11ce8c860201af4dcdb",
+    "mainHead": "e00921e2ee4ff446eadbccc3395920cbb565a4b9",
+    "guardSourceCommit": "2d8d4afb5077aaac36467f8d1b91302aef7231c2",
+    "testWorkflowCheckpoint": "8f35835ef29115c042229357af6b9e870b126a49",
+    "changedMainFile": ".github/workflows/serviceos-database-backup.yml",
+    "existingExportAndRestoreRunnerFilesChanged": false,
+    "publishedGitHistoryRewritten": false
+  },
+  "guard": {
+    "backupSlotsUtc": ["03:15", "04:15"],
+    "priorScheduledSuccessSameUtcDaySkipsSecondExport": true,
+    "manualRescueSkipped": false,
+    "priorFailedOrRunningScheduledAttemptSkipped": false,
+    "githubApiUnavailableSkipsBackup": false,
+    "focusedTestsPassed": 3,
+    "manualDispatchCliOutputCheck": "skip=false",
+    "yamlParsed": true
+  },
+  "deployment": {
+    "vercelProductionGitStatus": "success",
+    "vercelTestGitStatus": "success",
+    "liveLoginAliasesHttp200": [
+      "app.openfolk.ai",
+      "openfolk.ai",
+      "www.openfolk.ai",
+      "serviceos-dh.vercel.app"
+    ],
+    "signedInLiveUiRechecked": false,
+    "frontendSourceChanged": false
+  },
+  "firstScheduledBackupVisibleAtThisCheck": false,
+  "fallbackScheduledBackupVerified": false,
+  "laterScheduledMissedSuccessMonitorVerified": false,
+  "productionDatabaseWrites": false,
+  "sourceProviderRequests": 0,
+  "limitation": "GitHub documents that schedule events can be delayed or dropped. A second slot reduces the chance of a missed daily backup but neither its dispatch nor its terminal independent-copy result was yet observed. A manual success is not unattended proof."
+}
