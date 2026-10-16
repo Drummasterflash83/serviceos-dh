@@ -13,6 +13,39 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 17:40 UTC — signed Slack messages and reply retained; generic claim bug fixed.**
+
+### Working and verified
+
+- Chris's labelled public `#09-engineer-chat` message and thread reply reached
+  the signed LIVE Slack Events route. Three real channel hints settled; all
+  three have retained Slack source rows and LEARN interactions, including one
+  reply. The approved 180-public-channel roster stayed fixed; private channels
+  and individual/group DMs remain excluded.
+- The first two parent-message jobs were wrongly claimed and dead-lettered by
+  the generic platform worker as `unsupported_job`. An exact claim exclusion
+  passed rollback rehearsals and installed on TEST and LIVE. Only those two
+  pending, source-absent jobs were requeued after a rollback rehearsal; the
+  dedicated Slack worker settled both. The new TEST checkpoint is `2df29038`.
+  [Sanitised Events receipt](evidence/learn-build01-slack-events-live-2026-10-16.json).
+- The reply settled 11.7 seconds after its hint arrived. The two recovered
+  parent messages took several minutes because of the original routing fault.
+  This proves signed capture and recovery, **not yet steady-state near-live
+  latency after the fix**; observe a new ordinary event without asking Chris
+  to post another test.
+
+### Needs finishing
+
+- Observe a new post-fix public-channel message and reply if one occurs, then
+  verify normal near-live settlement and source/card projection. Continue the
+  original recurring-window recovery and Email/card/graph coverage checks.
+- Complete full application/Auth recovery and Chris's business review before
+  Build 01 can be accepted. The full-working-day elapsed wait stays waived.
+
+### Blocked externally
+
+- No new action is needed from Chris for the signed Slack capture check.
+
 **16 October, 17:29 UTC — approved 20-channel handoff and signed receiver configuration verified.**
 
 ### Working and verified

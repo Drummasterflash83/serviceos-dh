@@ -1,0 +1,36 @@
+{
+  "version": "learn-build01-slack-events-live/1",
+  "observedAtUtc": "2026-10-16T17:40:40Z",
+  "environment": "LIVE",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "approvedScope": "180 public Drummonds channels, including the approved 20-channel handoff; observed thread replies; no private channels or DMs",
+  "testChannelId": "C0B0A1MCLBH",
+  "signedHintsReceived": 3,
+  "signedHintsSettled": 3,
+  "retainedSlackSources": 3,
+  "retainedLearnInteractions": 3,
+  "retainedReplies": 1,
+  "initialFailure": {
+    "code": "unsupported_job",
+    "cause": "generic platform worker could claim slack.event_sync without an event handler",
+    "affectedHintCount": 2,
+    "sourceRowsSavedBeforeRecovery": 0
+  },
+  "repair": {
+    "migration": "20261104180000_learn_slack_event_generic_claim_exclusion.sql",
+    "sourceSha256": "50b4d1c76738cc4ba4424a0cac9d4ea4423e9b486c93e9e34127b71cb5b0eade",
+    "testRollbackRehearsalPassed": true,
+    "liveRollbackRehearsalPassed": true,
+    "testInstalled": true,
+    "liveInstalled": true,
+    "exactAffectedJobsRequeued": 2,
+    "allAffectedJobsSettledByDedicatedWorker": true
+  },
+  "latestSettledAtUtc": "2026-10-16T17:40:24Z",
+  "claim": "Signed public-channel message and reply capture is demonstrated; steady-state near-live latency after the repair remains to be observed on a new event.",
+  "privateChannelsIncluded": false,
+  "individualOrGroupDmsIncluded": false,
+  "messageBodiesReturnedInReadback": false,
+  "sourceProviderWrites": false
+}
