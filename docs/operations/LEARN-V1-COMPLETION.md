@@ -21,7 +21,11 @@ override a later release observation. No requirement is silently deferred.
 - A four-file frontend candidate based on the exact previously served LIVE
   commit passed 22 focused tests, TypeScript, 47 prebuild checks, local build
   and protected Vercel preview. All four LIVE aliases now read back to its
-  READY deployment with the existing redirects and protection. The signed-in
+  READY Git `main` deployment `0266c7f7` with the existing redirects and
+  protection. This fast-forward also tracks the exact installed migration;
+  a guarded rollback rehearsal and stored-source digest check then reconciled
+  its Supabase migration ledger entry.
+  The signed-in
   Drummonds client view retained its brand and LEARN menu. A communication-only
   card showed its unconfirmed label and source gap; an explicitly linked card
   showed the reviewed label without a false missing-link warning.
@@ -33,7 +37,8 @@ override a later release observation. No requirement is silently deferred.
   coverage, source-to-card reconciliation, job status freshness, owner/team
   handoff, completion timing and score policy still need source-backed work.
   Full application/Auth recovery and unattended capture/backup gates remain
-  open. Build 01 is not ready for business signoff or Build 02.
+  open. Other historical local/remote migration differences were not audited
+  by this release. Build 01 is not ready for business signoff or Build 02.
 
 ### Blocked externally
 

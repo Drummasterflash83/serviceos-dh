@@ -50,5 +50,22 @@
     "signedInReviewedBusinessCustomerLabelVerified": true,
     "reviewedCardHasNoFalseMissingLinkWarning": true
   },
-  "boundary": "A reviewed source link establishes customer identity, not customer health, progress, completion, owner or score. The aggregate is a current check of one tenant, not full source coverage. TEST ordinary client-role visual acceptance was unavailable under its operator-only session, but LIVE client-card presentation was checked signed in. No source-provider data or customer cards were changed by this release."
+  "durableGitRelease": {
+    "mainGitSha": "0266c7f746fcece0789f0327f577644dbb4f47d1",
+    "mainParentWasPreviousAliasGitSha": true,
+    "mainFastForwardOnly": true,
+    "mainTracksExactInstalledMigration": true,
+    "mainVercelDeployment": "dpl_23FdhK9MDeXJT32zDDk1SQvH3gik",
+    "mainVercelReady": true,
+    "allFourAliasesServeMainDeployment": true,
+    "redirectsPreserved": true,
+    "signedInDrummondsCardViewAndLearnMenuRetained": true,
+    "migrationLedgerTracksThisVersion": true,
+    "migrationLedgerRollbackRehearsalPassed": true,
+    "migrationLedgerStoredSourceMatchesFile": true,
+    "migrationLedgerVersion": "20261104080000",
+    "migrationLedgerSourceLength": 2525,
+    "migrationLedgerSourceMd5": "ab7374272c0d8d97f778e2eca8f6888a"
+  },
+  "boundary": "A reviewed source link establishes customer identity, not customer health, progress, completion, owner or score. The aggregate is a current check of one tenant, not full source coverage. TEST ordinary client-role visual acceptance was unavailable under its operator-only session, but LIVE client-card presentation was checked signed in. This exact manual migration is now tracked, but other historical local/remote migration differences were not audited by this release. No source-provider data or customer cards were changed by this release."
 }

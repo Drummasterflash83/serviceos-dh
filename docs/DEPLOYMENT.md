@@ -42,13 +42,18 @@ Cloudflare-flavoured.
 
 ## Current live checkpoint — 16 October 2026
 
-**Build 01 customer-card source labels, about 01:55 UTC:** all four LIVE aliases
-serve exact Git `7ef08a5bffdb561350e5830518eee71cbb67b7c8` /
-`dpl_9ynzS2JcCKDA947AivJT4f64MVM8`, based on the preceding alias-served
-`79d87208` source with only four card files changed. The matching restricted
-Supabase reader is installed in LIVE; signed-in Drummonds cards display
-reviewed-business versus communication-identity labels. Redirects and
-protection read back unchanged. This is not Build 01 completion.
+**Build 01 customer-card source labels, about 01:59 UTC:** all four LIVE aliases
+serve Git production commit `0266c7f746fcece0789f0327f577644dbb4f47d1` /
+`dpl_23FdhK9MDeXJT32zDDk1SQvH3gik`, a fast-forward from preceding alias
+source `79d87208`. It includes the four tested card files and exact installed
+migration. The matching restricted Supabase reader is installed in LIVE;
+signed-in Drummonds cards display reviewed-business versus
+communication-identity labels. Redirects and protection read back unchanged.
+The preceding manually promoted candidate `7ef08a5b` /
+`dpl_9ynzS2JcCKDA947AivJT4f64MVM8` remains an exact rollback deployment.
+The exact installed migration was added to the Supabase migration ledger after
+a rollback rehearsal; stored source length and digest match the file. Other
+local/remote migrations were not audited here. This is not Build 01 completion.
 [Exact release evidence](operations/evidence/learn-build01-customer-provenance-live-2026-10-16.json).
 
 ## Prior live checkpoint — 15 October 2026

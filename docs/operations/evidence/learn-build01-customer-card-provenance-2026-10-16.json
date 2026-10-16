@@ -38,6 +38,7 @@
     "installedFunctionCommentContainsSourceSha256": true,
     "indexValidReadyAndExpressionMatches": true,
     "authenticatedDirectSourceLinkSelect": false,
+    "migrationLedgerSchemaPresent": false,
     "rollbackOnlyFixture": {
       "reviewedBusinessCustomerState": true,
       "communicationIdentityState": true,
