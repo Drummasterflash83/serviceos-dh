@@ -1,0 +1,22 @@
+{
+  "scope": "Schema-only guard for a separately approved public campaign channel",
+  "sourceSha256": "c47b13e67f12cf36a338feb28ac442a22df871345c2c65f633a3703463499560",
+  "beforeFunctionMd5": "84a55d7e950749ed723320ed0bd5f052",
+  "afterFunctionMd5": "5a2e670d919df2ca0cf6b91ce931d0c8",
+  "test": {
+    "rollbackRehearsalAt": "2026-10-16T16:56:04.273Z",
+    "installedAt": "2026-10-16T16:56:12.492Z",
+    "schemaReadback": "passed",
+    "hostedCampaignBranchTest": "unavailable: TEST has zero historical campaigns"
+  },
+  "live": {
+    "rollbackRehearsalAt": "2026-10-16T16:56:49.599Z",
+    "installedAt": "2026-10-16T16:56:57.752Z",
+    "schemaReadback": "passed"
+  },
+  "enabledChannelSubscriptionsAdded": 0,
+  "accountsOrImportJobsCreatedByRelease": 0,
+  "providerRequestsByRelease": 0,
+  "testMessageOrReplyPosted": false,
+  "privateChannelsOrDmsIncluded": false
+}

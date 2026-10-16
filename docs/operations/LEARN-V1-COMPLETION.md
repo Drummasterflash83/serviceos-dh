@@ -13,6 +13,51 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 16:58 UTC — one-channel Slack split guard installed; UI access is blocked, while Email catch-up continues.**
+
+### Working and verified
+
+- The exact campaign-owned-channel split guard passed a rollback rehearsal and
+  schema readback on TEST and LIVE, then was installed on each. It creates no
+  account, import, subscription, Slack request or schedule. It permits an
+  owner/admin to start a separate ongoing account only for a completed
+  historical campaign channel with no active prior jobs or duplicate enabled
+  reader. The original campaign's 20 accounts and history remain intact.
+  The approved public `#09-engineer-chat` is the intended one-channel scope;
+  no test post or reply has been sent and no new subscription has been enabled.
+- At 16:58 UTC, ordinary Email work had reduced the eligible saved-message
+  interaction gap to **5,513**. Phone had 4,675 saved calls and 4,675
+  interactions. The original 160 public Slack channel/reply subscriptions
+  remain enabled, but signed Events has no demonstrated real post-cutoff
+  message or reply hint. One recurring Slack window is incomplete and needs
+  ordinary recovery; 36 channel checkpoints are more than a day behind.
+- Customer cards stand at **4,151 of 4,168** active projected. One unprojected
+  card is older than an hour. The ordinary partial-failure job is still
+  retrying and its next attempt is due at 17:34 UTC, so the deployed
+  revision-conflict fix has not yet cleared this LIVE gate.
+
+### Needs finishing
+
+- In the signed-in LIVE LEARN UI, submit the bounded `#09-engineer-chat`
+  import, verify the separate account's worker completion, enable only its
+  ongoing channel/reply reader, update and verify the signed Events roster
+  from 160 to 161 exact channel IDs, then post and verify the authorised
+  labelled public test message and reply. Keep the other 19 historical
+  campaign channels out of the new subscription and keep private channels and
+  DMs excluded.
+- Let normal Email, Slack, graph and card workers continue, then read back
+  real source-to-interaction/card/graph coverage and recover material failures.
+  Complete the remaining Build 01 scoring, source and full application/Auth
+  recovery evidence before Chris's business sign-off.
+
+### Blocked externally
+
+- Automatic browser approval review denied observing the LIVE LEARN tab
+  because the requested browser grant covers the entire `app.openfolk.ai`
+  origin, wider than the approved one-channel Slack task. No alternate browser
+  or origin-wide inspection was used. A genuinely narrow tab-scoped route or
+  explicit user action is needed to complete the UI handoff and test posts.
+
 **16 October, 16:33 UTC — current public Slack channel has an older campaign binding; Email catch-up continues.**
 
 ### Working and verified
