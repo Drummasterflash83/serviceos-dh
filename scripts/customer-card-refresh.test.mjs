@@ -213,16 +213,16 @@ function fixture({
       }),
   };
 }
-test("maximum sweep bounds URLs, pages graph edges and counts cross-batch endpoints once", async () => {
-  const graphEdges = Array.from({length: 1001}, (_, i) => ({id: id(10000 + i), from_node_id: id(1001), to_node_id: id(1041)}));
+test("maximum sweep caps ten cards, pages graph edges and counts both endpoints", async () => {
+  const graphEdges = Array.from({length: 1001}, (_, i) => ({id: id(10000 + i), from_node_id: id(1001), to_node_id: id(1009)}));
   graphEdges.push({id: id(20000), from_node_id: id(1001), to_node_id: id(1001)});
   const f = fixture({size: 500, graphEdges});
   const r = await f.run({limit: 500});
   assert.equal(r.success, true);
-  assert.equal(r.recordsProcessed, 500);
+  assert.equal(r.recordsProcessed, 10);
   assert.equal(f.cards[0].context.projection.business.relationship_count, 1003);
-  assert.equal(f.cards[40].context.projection.business.relationship_count, 1001);
-  assert.equal(f.cards[499].context.projection.business.relationship_count, 0);
+  assert.equal(f.cards[8].context.projection.business.relationship_count, 1001);
+  assert.deepEqual(f.cards[499], f.original[499]);
 });
 test("a later graph page failure retains all saved projections", async () => {
   const graphEdges = Array.from({length: 501}, (_, i) => ({id: id(10000 + i), from_node_id: id(1001), to_node_id: id(1041)}));
