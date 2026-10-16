@@ -20,7 +20,7 @@ jobs:
       - name: Check out reviewed monitor
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: 3b586315bffe48973d2f9610e2c7489147752be0
+          ref: 1cdabd2a19003e6e12493bd0f49a521710136b12
           persist-credentials: false
       - name: Check last successful independent database copy
         env:
