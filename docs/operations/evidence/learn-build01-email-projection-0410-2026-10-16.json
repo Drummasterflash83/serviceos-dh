@@ -1,0 +1,29 @@
+{
+  "version": "learn-build01-email-projection-trend/1",
+  "environment": "LIVE Drummonds",
+  "source": "Existing aggregate-only read-only Management queries in learn-build01-working-day-readback.mjs, learn-build01-email-projection-gap-readback.mjs and learn-build01-projection-jobs-readback.mjs",
+  "eligible_email_without_interaction": [
+    { "observed_at_utc": "2026-10-16T03:51:29.111Z", "count": 15090 },
+    { "observed_at_utc": "2026-10-16T04:01:30.355Z", "count": 14230 },
+    { "observed_at_utc": "2026-10-16T04:09:50.467Z", "count": 14548 }
+  ],
+  "last_readback": {
+    "older_than_one_day": 0,
+    "with_review_hold": 0,
+    "with_committed_receipt": 0,
+    "without_projection_receipt": 14548,
+    "created_in_previous_hour": 2559
+  },
+  "projection_jobs_last_two_hours_at_0410_utc": {
+    "all_source_review_continuation_batches": 18,
+    "email_processed_in_those_batches": 3600,
+    "source_failures_in_those_batches": 0,
+    "phone_review_jobs_with_zero_processed": 24,
+    "all_source_retrying_inventory_unconfirmed": 1
+  },
+  "interpretation": "Ordinary email projection is publishing batches, but the eligible backlog fluctuated under ongoing intake and net catch-up was not established. Review-required job terminal states coexist with verified continuation; they are not proof of lost source rows. The single inventory-unconfirmed retry needs ordinary recovery readback. A missing interaction is not automatically a lost email source.",
+  "source_provider_writes": false,
+  "production_data_writes": false,
+  "customer_content_returned": false,
+  "secrets_returned": false
+}
