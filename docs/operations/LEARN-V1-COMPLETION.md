@@ -13,6 +13,41 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 15:14 UTC — six held Email checkpoints recovered and ordinary capture resumed.**
+
+### Working and verified
+
+- All six `persistence_failed` recent checkpoints passed a single exact,
+  authority-checked LIVE transaction with `ROLLBACK`. An independent query
+  confirmed zero recovery rows and six unchanged holds afterward. The same
+  frozen target digest then committed six audited claim/release pairs without
+  resetting any continuation or writing to Gmail. A separate counts-only
+  readback found six successful zero-work recovery attempts, no remaining
+  persistence hold and no reblocked account. [Recovery receipt](evidence/learn-build01-email-persistence-recovery-2026-10-16.json).
+- The next ordinary 15:10 scheduler tick was green, queued 21 jobs with no
+  held-recovery or uncertain enqueue, and all six recovered mailboxes then
+  completed normal syncs. Those runs processed 150 records by 15:14 UTC;
+  none reblocked. This verifies resumed unattended capture after the guarded
+  recovery, not automatic recovery from a future unknown persistence outcome.
+- The signed-in Drummonds LEARN page at 14:59 UTC shows **37,848 saved Slack
+  messages**, replacing the earlier ambiguous “Not checked” tile. It labels
+  that number as saved history, separate from current capture and replies.
+
+### Needs finishing
+
+- Determine the original simultaneous persistence failure cause and establish
+  a safe automatic recovery or an actionable hold alert for a recurrence.
+  The guarded recovery itself was manual; the succeeding captures were ordinary
+  scheduled work.
+- LIVE Slack Events still has no real accepted message or reply hint, and
+  Commusoft/card/graph, scoring and full application/Auth recovery remain open.
+
+### Blocked externally
+
+- No immediate user action is needed for the Email follow-up. Real Slack
+  acceptance needs activity in an approved public channel; Chris's business
+  sign-off remains outstanding after technical evidence is ready.
+
 **16 October, 14:57 UTC — Email persistence holds classified; Slack real-event proof still pending.**
 
 ### Working and verified

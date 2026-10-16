@@ -1,0 +1,43 @@
+{
+  "observed_at_utc": "2026-10-16T15:14:29Z",
+  "tenant_scope": "Drummonds LIVE",
+  "reviewed_batch": "1a4e7128-9a13-4195-8d3b-d36798307908",
+  "scope": "Six exact recent Email checkpoints blocked at 08:54 UTC; five user mailboxes and one alias",
+  "preflight": {
+    "authority": "All six active DWD accounts and unique enabled mailboxes had active verified connections",
+    "saved_replay_policy": "refetch_all on all six; continuation preserved",
+    "failed_persistence_outcome": "unknown; not represented as zero writes",
+    "current_competing_attempts": 0,
+    "legacy_running_rows": "October 2 attempts without checkpoint ownership; no current running Workspace job"
+  },
+  "rollback_rehearsal": {
+    "state": "passed",
+    "batch": "69a3fcbf-49bc-4370-acae-69a3c0450cda",
+    "target_digest": "0341e9ecaa9ebb0abe3ea87cfc8ff416c9957d87520e35df5b89d17cb704c389",
+    "transaction_result": "six_checkpoints_ready before ROLLBACK",
+    "independent_post_rollback_readback": "zero recovery attempts; six original holds unchanged"
+  },
+  "apply": {
+    "state": "committed_and_independently_read_back",
+    "matching_target_digest": true,
+    "audited_recovery_attempts": 6,
+    "claim_and_release_receipts_per_account": 2,
+    "recovery_attempt_source_records": 0,
+    "reblocked_accounts_at_1506_utc": 0,
+    "remaining_persistence_holds_at_1506_utc": 0,
+    "ordinary_post_recovery_successes_at_1506_utc": 0
+  },
+  "ordinary_follow_up": {
+    "scheduler_at_1510_utc": "success; 21 queued, zero held recovery, zero unconfirmed enqueues",
+    "accounts_with_successful_post_recovery_sync_at_1514_utc": 6,
+    "successful_post_recovery_syncs": 6,
+    "records_processed": 150,
+    "latest_completed_at_utc": "2026-10-16T15:14:05Z",
+    "reblocked_accounts": 0,
+    "remaining_persistence_holds": 0
+  },
+  "limit": "This was a guarded operator recovery followed by ordinary scheduled captures. The recovery itself was manual and does not prove automatic recovery from a future uncertain persistence failure. The original database persistence failure cause remains unproven.",
+  "provider_writes": 0,
+  "source_rows_deleted": 0,
+  "customer_content_or_credentials_in_receipt": false
+}

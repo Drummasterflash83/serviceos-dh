@@ -8,6 +8,7 @@ const project = "tgbnakbxwcqjeimygroz";
 const tenant = "00000000-0000-0000-0000-000000000001";
 const query = `with holds as (
   select c.tenant_id,c.email_account_id,c.revision,c.updated_at,
+    c.continuation->>'fetch_policy' fetch_policy,
     a.status account_status,m.status mailbox_status,m.sync_enabled,
     m.mailbox_type,m.directory_identity_conflict,
     r.started_at failed_at,r.error_message failed_code,
@@ -15,7 +16,24 @@ const query = `with holds as (
     r.metadata#>>'{email_ingestion_v2,evidence,persistence}' persistence,
     r.metadata#>>'{email_ingestion_v2,evidence,message_upsert_count}' upserts,
     r.metadata#>>'{email_ingestion_v2,evidence,ids_seen}' ids_seen,
-    x.request_document#>>'{payload,attempt_evidence,persistence}' transition_persistence
+    x.request_document#>>'{payload,attempt_evidence,persistence}' transition_persistence,
+    (select count(*)::int from public.email_sync_runs active
+      where active.tenant_id=c.tenant_id and active.provider='gmail'
+        and active.sync_type='workspace_messages' and active.status='running'
+        and active.metadata->>'email_account_id'=c.email_account_id::text) running_attempts,
+    (select min(active.started_at) from public.email_sync_runs active
+      where active.tenant_id=c.tenant_id and active.provider='gmail'
+        and active.sync_type='workspace_messages' and active.status='running'
+        and active.metadata->>'email_account_id'=c.email_account_id::text) oldest_running_at
+    ,(select count(*)::int from public.email_sync_runs active
+      where active.tenant_id=c.tenant_id and active.provider='gmail'
+        and active.sync_type='workspace_messages' and active.status='running'
+        and active.started_at>now()-interval '1 hour'
+        and active.metadata->>'email_account_id'=c.email_account_id::text) recent_running_attempts
+    ,(select count(*)::int from public.platform_jobs job
+      where job.tenant_id=c.tenant_id and job.job_type='email.workspace_sync'
+        and job.status='running'
+        and job.payload->>'email_account_id'=c.email_account_id::text) running_jobs
   from public.email_ingestion_checkpoints c
   join public.email_accounts a on a.tenant_id=c.tenant_id and a.id=c.email_account_id
   left join lateral (
@@ -53,12 +71,16 @@ select coalesce(account_status,'missing') account_status,
   coalesce(upserts,'missing') upserts,
   coalesce(ids_seen,'missing') ids_seen,
   coalesce(transition_persistence,'missing') transition_persistence,
+  coalesce(fetch_policy,'missing') fetch_policy,
+  running_attempts,min(oldest_running_at) oldest_running_at,
+  recent_running_attempts,running_jobs,
   count(*)::int holds,min(updated_at) oldest_hold_at,max(updated_at) newest_hold_at,
   max(failed_at) newest_failed_attempt_at
 from holds
 group by account_status,mailbox_status,mailbox_type,sync_enabled,
   identity_conflict,failed_code,classification,persistence,upserts,
-  ids_seen,transition_persistence
+  ids_seen,transition_persistence,fetch_policy,running_attempts,
+  recent_running_attempts,running_jobs
 order by holds desc,oldest_hold_at`;
 
 const response = await fetch(
