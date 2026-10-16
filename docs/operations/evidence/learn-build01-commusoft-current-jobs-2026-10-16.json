@@ -36,24 +36,24 @@
     "live": {
       "environment": "live",
       "project": "tgbnakbxwcqjeimygroz",
-      "observedAt": "2026-10-16T07:07:29.089Z",
+      "observedAt": "2026-10-16T07:20:40.481Z",
       "sourceSha256": "59c6b1535c34cccc4d4275cf411c1e0f857c096fce562dd9c3c40fb88c72c355",
       "idleSourceSha256": "349a839000ed90ff7eaf86891320edc83c1e1c68e2b3262fa4b8111afb86df8f",
       "rows": [
         {
           "enabled": true,
           "last_state": "window_complete",
-          "watermark": "2026-10-16 06:58:05.221+00",
-          "next_check_at": "2026-10-16 07:17:09.84121+00",
+          "watermark": "2026-10-16 07:16:03.272+00",
+          "next_check_at": "2026-10-16 07:33:09.385655+00",
           "active_jobs_window": false,
           "phase": 0,
           "recurring_state": "cycle_complete",
           "full_cycle_watermark": "2026-10-16 02:13:04.446+00",
           "resource": "propertyContacts",
           "contact_properties_completed": 871,
-          "completed_windows": 4,
+          "completed_windows": 5,
           "incomplete_windows": 0,
-          "newest_job_page": "2026-10-16 07:02:07.968545+00"
+          "newest_job_page": "2026-10-16 07:18:07.597353+00"
         }
       ],
       "installedFunctionsAndLedgerVerified": true,
@@ -207,7 +207,7 @@
       "version": "learn-commusoft-build01-readback/1",
       "environment": "live",
       "project": "tgbnakbxwcqjeimygroz",
-      "observedAt": "2026-10-16T07:09:46.287Z",
+      "observedAt": "2026-10-16T07:20:41.473Z",
       "jobs": {
         "retained": 12650,
         "published": 1004,
@@ -223,10 +223,10 @@
       "pages": [
         {
           "collection": "jobs",
-          "newest_page_at": "2026-10-16T07:02:07.968545+00:00",
-          "retained_pages": 269,
+          "newest_page_at": "2026-10-16T07:18:07.597353+00:00",
+          "retained_pages": 270,
           "pages_last_hour": 4,
-          "observations_last_hour": 8
+          "observations_last_hour": 7
         },
         {
           "collection": "properties",
@@ -239,7 +239,7 @@
           "collection": "propertyContacts",
           "newest_page_at": "2026-10-16T06:29:32.961583+00:00",
           "retained_pages": 31509,
-          "pages_last_hour": 197,
+          "pages_last_hour": 88,
           "observations_last_hour": 0
         }
       ],
@@ -250,7 +250,7 @@
           "reviewed_links": 1004,
           "ambiguous_latest": 0,
           "links_on_latest_version": 1004,
-          "newest_record_observation": "2026-10-16T07:02:07.968545+00:00",
+          "newest_record_observation": "2026-10-16T07:18:07.597353+00:00",
           "oldest_record_observation": "2026-10-13T16:08:04.060217+00:00"
         },
         {
@@ -265,9 +265,9 @@
         {
           "collection": "propertyContacts",
           "identities": 2969,
-          "reviewed_links": 100,
+          "reviewed_links": 105,
           "ambiguous_latest": 0,
-          "links_on_latest_version": 100,
+          "links_on_latest_version": 105,
           "newest_record_observation": "2026-10-15T15:48:31.103025+00:00",
           "oldest_record_observation": "2026-10-13T16:22:04.05973+00:00"
         }
@@ -284,7 +284,7 @@
         }
       ],
       "contact_relationships": {
-        "reviewed": 100,
+        "reviewed": 105,
         "site_links": 24,
         "missing_customer_card": 0,
         "customer_card_mismatch": 0,
@@ -434,7 +434,7 @@
     "authoritativeCustomerTypeMapping": "Current ID-to-label mapping was evidenced in provider UI on 13 October. Awaiting authoritative person/company policy and account-holder/contact distinction, not a new inference from category labels.",
     "realTestAcceptance": "Historical retained data only; no recurring account activated.",
     "historicalJobsWithReviewedParentsNotYetLinked": 0,
-    "contactsWithReviewedParentsNotYetLinked": 70,
+    "contactsWithReviewedParentsNotYetLinked": 65,
     "contactsWithPriorIdentityReviewHold": 2
   },
   "changes": {
@@ -448,7 +448,8 @@
     "liveNewReviewedJobs": 60,
     "liveNewReviewedOpenWorkJobs": 1,
     "liveNewReviewedHistoricalJobs": 59,
-    "liveNewReviewedContacts": 24
+    "liveNewReviewedContacts": 29,
+    "liveExistingPeopleReusedForContactLinks": 5
   },
   "privacy": "Aggregate evidence only; private runtime manifests, source identifiers, customer content, credentials and screenshots excluded.",
   "liveCardAcceptance": {
@@ -475,12 +476,12 @@
   "currentTaxonomyEvidence": "learn-commusoft-provider-coverage-2026-10-13.json; exact provider UI labels and numeric creation links, not canonical identity policy.",
   "contactIdentityAudit": {
     "checkedOn": "2026-10-16",
-    "remainingWithReviewedParents": 70,
-    "channelOverlap": 34,
+    "remainingWithReviewedParents": 65,
+    "channelOverlap": 29,
     "noChannelOverlap": 36,
     "dispositions": [
       {
-        "records": 18,
+        "records": 13,
         "parent_kind": "customer",
         "missing_name": false,
         "channel_overlap": true
@@ -518,5 +519,16 @@
     "additionalRetainedJobs": 1,
     "additionalOpenWorkJobs": 1,
     "additionalUnreviewedCustomersUnderlyingOpenWork": 1
+  },
+  "contactIdentityReuse": {
+    "reviewedLinksAdded": 5,
+    "newPeopleCreated": 0,
+    "sourceContactIdMatchedReviewedCustomerPrimaryContact": 5,
+    "explicitAccountHolderDecisionWithExportEvidence": 3,
+    "additionalSavedCustomerReviewsCorroboratedAgainstExport": 2,
+    "singleCandidateConfirmedInUi": 5,
+    "savedBatchAttentionItems": 0,
+    "postSaveRelationshipChecks": "105 reviewed contacts; zero missing or mismatched people, customer cards, parent references or active graph edges.",
+    "remainingLimitation": "Other candidate names or shared channels do not provide the same exact provider contact-ID and reviewed account-holder evidence. Remaining ambiguous identities require further authoritative evidence."
   }
 }

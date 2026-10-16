@@ -2,10 +2,10 @@
 
 ## Working and verified
 
-**16 October 2026, 07:09 UTC (08:09 BST):** the read-only current-jobs scheduler is
+**16 October 2026, 07:20 UTC (08:20 BST):** the read-only current-jobs scheduler is
 installed in TEST and LIVE and enabled only for Drummonds' existing approved LIVE
-account. Four normal worker windows completed, with no incomplete windows. Latest
-retained jobs page: **07:02:07 UTC**; current-jobs watermark: **06:58:05 UTC**.
+account. Five normal worker windows completed, with no incomplete windows. Latest
+retained jobs page: **07:18:07 UTC**; current-jobs watermark: **07:16:03 UTC**.
 The contact crawl resumed and completed all 871 site-contact targets. The full
 cycle then completed and advanced its independent watermark to 02:13:04 UTC.
 A changed-record page proves that window's traversal, not a new observation of
@@ -37,7 +37,7 @@ fresh real-provider acceptance.
 
 One existing LIVE job was reviewed in the existing signed-in Drummonds UI and
 updated to the latest retained completed status, preserving its reviewed customer
-and source history. At the 07:09 UTC coverage readback, all **1,004 published jobs**
+and source history. At the 07:20 UTC coverage readback, all **1,004 published jobs**
 used their latest effective retained versions, with no missing canonical customer.
 An unzoned source completion date remains excluded from duration and scoring.
 The live Drummonds branding and frontend were unchanged.
@@ -50,12 +50,21 @@ truthfully shows recorded open status, no linked communications, unconfirmed own
 and unassessed scoring. This verifies card presentation, not independent job progress.
 
 24 clearly named contacts with reviewed parents and no observed name/channel
-collision were then linked through the same UI. LIVE now has 100 reviewed contact
+collision were then linked through the same UI. That brought LIVE to 100 reviewed contact
 links. The expanded readback verifies every linked canonical person, customer card,
 source-parent card match and active contact-to-customer edge. All 24 recorded
 site-contact links match their source-parent site and have active site edges. All
 checks report zero missing or mismatched relationships. TEST reports the same
 checks clean for its one retained reviewed contact, without new provider activation.
+
+Five further contacts were linked to existing reviewed people after checking exact
+provider contact IDs against the customer source and saved account-holder evidence.
+Three had explicit account-holder decisions backed by the customer export; two
+older customer reviews were corroborated against that export. Each current UI
+candidate search returned one matching person, and each saved batch had zero
+attention items. No new person was created by these five links. The final readback
+shows **105 reviewed contacts**, with all relationship checks still clean. The
+fifth normal current-jobs window also completed with no incomplete windows.
 
 The fourth jobs window encountered a missing-page success settlement, which the
 worker correctly rejected. Its normal second attempt then completed with a durable
@@ -83,14 +92,14 @@ missing property. The provider UI/API discrepancy and a documented-detail HTTP
 fix. See [provider coverage evidence](evidence/learn-commusoft-provider-coverage-2026-10-13.json).
 
 No unlinked job with an already reviewed parent remained at the final audit.
-70 contacts with reviewed parents still need identity decisions: 34 have channel
+65 contacts with reviewed parents still need identity decisions: 29 have channel
 overlaps; the other 36 include repeated person names, partial/joint names, buildings,
 shared-mailbox labels and occupier labels. Two contacts have prior identity-review
 holds. Parent readiness and matching names alone do not settle contact identity;
 these records remain available for explicit review.
 
 Retained properties: 2,425, with 152 reviewed links; retained contacts: 2,969, with
-100 reviewed links. These counts are coverage, not a claim of complete cards.
+105 reviewed links. These counts are coverage, not a claim of complete cards.
 
 Investigate missing parents through authorized read-only source evidence, then
 review the customer/site/job relationships. Continue to preserve uncertain dates
@@ -107,7 +116,10 @@ and creation routes are not a complete canonical person/company policy. Chris is
 seeking Heidi's confirmation of actual usage, mixed-type exceptions and the
 account-holder versus named-contact distinction. A draft was prepared
 for Chris; no message was sent. Classification and full relationship acceptance
-remain incomplete pending that evidence.
+remain incomplete pending that evidence. The remaining contact identities also
+need corroboration beyond shared endpoints or matching names, and missing source
+parents need provider visibility evidence. Safe links supported by the current
+reviewed-parent and exact account-holder evidence have been exhausted.
 
 ## Release and recovery
 
