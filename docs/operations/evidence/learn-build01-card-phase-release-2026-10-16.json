@@ -1,0 +1,38 @@
+{
+  "contract": "learn-build01-card-phase-release/1",
+  "observedAt": "2026-10-16T23:19:24Z",
+  "changedSourcePath": "_shared/worker_handlers/customer_card_sync.ts",
+  "candidateClosureSha256": "98f7e39637532acd7a58cc4a921db275dbbcfd747c16344af4b6ed3d55a9fcdf",
+  "sourceFilesInWorkerClosure": 119,
+  "test": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "beforeVersion": 65,
+    "afterVersion": 66,
+    "afterWireSha256": "0f6ffda0c4f98bb9bf815fd835747403105e30cc4669e961b8ed1a1a830cf0ee",
+    "syntheticHostedCardProjected": 1,
+    "syntheticHostedInputRetries": 0,
+    "syntheticHostedFailurePhasesAllZero": true,
+    "fixtureArchived": true
+  },
+  "live": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "beforeVersion": 106,
+    "afterVersion": 107,
+    "afterWireSha256": "0f6ffda0c4f98bb9bf815fd835747403105e30cc4669e961b8ed1a1a830cf0ee",
+    "otherFunctionsUnchanged": true,
+    "ordinarySchedulerSeedAt": "2026-10-16T23:10:03.792Z",
+    "manualRecoverySeeded": false,
+    "ordinarySuccessesBeforeNewWorker": 5,
+    "observedV107TenCardSuccesses": 1,
+    "observedV107InputRetries": 0,
+    "observedV107FailurePhasesAllZero": true,
+    "sweepContinuationQueued": true,
+    "activeCards": 4181,
+    "projectedCardsAtReadback": 4171,
+    "cardsBeforeOldestUnprojected": 19,
+    "fullSweepComplete": false
+  },
+  "mechanism": "One retry is permitted only for the read-only card-input RPC. Failed card phases enter the job ledger as bounded phase names and counts, without IDs or database prose. Ambiguous card updates are not retried.",
+  "sourceProviderRequests": 0,
+  "customerContentReturned": false
+}

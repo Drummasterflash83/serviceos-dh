@@ -173,6 +173,14 @@ export async function handleCustomerCardSync(
     let skipped = 0;
     let failed = 0;
     let revisionConflicts = 0;
+    let inputRetries = 0;
+    type FailurePhase = "identity" | "inputs" | "projection" | "update";
+    const failurePhases: Record<FailurePhase, number> = {
+      identity: 0,
+      inputs: 0,
+      projection: 0,
+      update: 0,
+    };
     const healthCounts: Record<Health, number> = {
       excellent: 0,
       good: 0,
@@ -181,6 +189,7 @@ export async function handleCustomerCardSync(
     };
 
     for (const card of cards) {
+      let phase: FailurePhase = "identity";
       try {
         const cardId = card.id as string;
         const personId = card.person_id as string | null;
@@ -224,10 +233,21 @@ export async function handleCustomerCardSync(
 
         // Filter retained drafts before taking either bounded evidence window.
         // A failed/malformed eligibility read must preserve the saved projection.
-        const { data: inputData, error: inputError } = await admin.rpc(
+        phase = "inputs";
+        let { data: inputData, error: inputError } = await admin.rpc(
           "learn_card_projection_inputs",
           { p_tenant: tenantId, p_card: cardId },
         );
+        // A cold PostgREST statement can time out even when the same bounded
+        // read succeeds warm. Retry one read-only RPC once; never repeat a card
+        // update after an ambiguous write response.
+        if (inputError) {
+          inputRetries += 1;
+          ({ data: inputData, error: inputError } = await admin.rpc(
+            "learn_card_projection_inputs",
+            { p_tenant: tenantId, p_card: cardId },
+          ));
+        }
         const inputs = inputData as {
           version?: string;
           tenantId?: string;
@@ -269,6 +289,7 @@ export async function handleCustomerCardSync(
         const interactions = inputs.interactions;
         const recs = inputs.recommendations;
         const ascending = [...interactions].reverse();
+        phase = "projection";
 
         // ── Communication ────────────────────────────────────────────────
         const last7 = coverage.interactionsLast7;
@@ -422,6 +443,7 @@ export async function handleCustomerCardSync(
         if (!locked.includes("latest_activity_at")) {
           patch.latest_activity_at = lastInteractionAt;
         }
+        phase = "update";
         if (typeof card.updated_at !== "string") throw new Error("card_revision_unavailable");
         const { data: updatedCard, error: updErr } = await admin
           .from("customer_cards")
@@ -433,6 +455,7 @@ export async function handleCustomerCardSync(
           .maybeSingle();
         if (updErr) {
           failed += 1;
+          failurePhases.update += 1;
           continue;
         }
         if (updatedCard?.id !== cardId) {
@@ -453,12 +476,14 @@ export async function handleCustomerCardSync(
             continue;
           }
           failed += 1;
+          failurePhases.update += 1;
           continue;
         }
         cardsProjected += 1;
         healthCounts[health] += 1;
       } catch (_e) {
         failed += 1; // failure-isolated: one bad card never aborts the batch
+        failurePhases[phase] += 1;
       }
     }
 
@@ -473,6 +498,8 @@ export async function handleCustomerCardSync(
         cards_projected: cardsProjected,
         skipped,
         revision_conflicts: revisionConflicts,
+        input_retries: inputRetries,
+        failure_phases: failurePhases,
         failed,
         health_counts: healthCounts,
         swept: cardRows?.length ?? 0,
@@ -490,7 +517,10 @@ export async function handleCustomerCardSync(
         ? {
             error: {
               code: "card_partial_failure",
-              message: `${failed} card projection(s) failed`,
+              // Only phase names and counts enter the durable job ledger.
+              message: `${failed} card projection(s) failed; phases=${Object.entries(failurePhases)
+                .filter(([, count]) => count > 0)
+                .map(([name, count]) => `${name}:${count}`).join(",")}`,
               retryable: true,
             },
           }

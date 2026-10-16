@@ -17,6 +17,46 @@ business decision yet.
 
 ## Current evidence and priority
 
+**16 October, 23:19 UTC — card sweep restarted unattended and is progressing.**
+
+### Working and verified
+
+- The ordinary scheduled card job at 23:10 restarted the sweep without a
+  manual recovery seed. Five consecutive ten-card batches succeeded under the
+  prior worker; the first batch therefore cleared the heavy card before any
+  new worker was released. A guarded manual recovery request refused because
+  the queue had already advanced, and it wrote nothing.
+- A one-file worker change allowing one retry of a failed read-only card-input
+  RPC and recording only safe failure phase counts passed 15 focused tests,
+  TypeScript, isolated bundle/startup, and a hosted non-synthetic TEST card.
+  TEST v66 and LIVE v107 have identical worker wire SHA-256
+  `0f6ffda0c4f98bb9bf815fd835747403105e30cc4669e961b8ed1a1a830cf0ee`;
+  all other Edge functions stayed unchanged. The first ordinary v107 LIVE
+  ten-card batch succeeded with zero input retries or failure phases and queued
+  its successor. [Release receipt](evidence/learn-build01-card-phase-release-2026-10-16.json).
+- The Email update chain reached **4,200 committed receipts for 4,200 distinct
+  sources** at 23:19 with no repeats. The exact 160-channel Slack handoff had
+  72 channels more than a day behind, down from 80 at 22:45; all 160 channel
+  and reply subscriptions remained enabled.
+
+### Needs finishing
+
+- At 23:19, **4,171 of 4,181** active cards had projections. The ordinary
+  sweep had advanced 70 cards past its stable cutoff, with 19 cards still
+  ahead of the oldest unprojected card. Observe the ten missing projections
+  and the full continuation through its final short batch before closing the
+  card gate. An earlier dead-letter remains an honest failure history.
+- The Email update backlog, exact-roster Slack catch-up and actual post-cutoff
+  evidence, reviewed Commusoft links and job-attention policy, and full
+  application/Auth recovery remain open as below.
+
+### Blocked externally
+
+- No user action is needed for the card continuation. The current worker v107
+  supersedes the prepared v106 source-only package; do not copy an obsolete
+  exact package under a prior approval. Chris's business sign-off follows
+  only after the technical acceptance pack is ready.
+
 **16 October, 23:11 UTC — ordinary card retry failed; one heavy card isolated.**
 
 ### Working and verified

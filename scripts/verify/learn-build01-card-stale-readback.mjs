@@ -48,11 +48,13 @@ const recentResponse = await fetch(
       result is null result_absent,
       jsonb_typeof(result) result_type,
       (select array_agg(key order by key) from jsonb_object_keys(result) key) result_keys,
-      case when last_error ~ '^[0-9]+ card projection\\(s\\) failed$'
+      case when last_error ~ '^[0-9]+ card projection\\(s\\) failed(; phases=[a-z0-9:,]+)?$'
         then (substring(last_error from '^[0-9]+'))::int else null end reported_failed_cards,
       coalesce((result->>'cards_projected')::int,0) cards_projected,
       coalesce((result->>'failed')::int,0) cards_failed,
       coalesce((result->>'swept')::int,0) cards_swept,
+      coalesce((result->>'input_retries')::int,0) input_retries,
+      result->'failure_phases' failure_phases,
       available_at,lease_expires_at,updated_at from public.platform_jobs
       where tenant_id='${tenant}'::uuid and job_type='customer_card.sync'
       order by created_at desc,id desc limit 8` }),
@@ -61,7 +63,7 @@ if (!recentResponse.ok) throw Error(`LIVE card jobs readback HTTP ${recentRespon
 const recentJobs = await recentResponse.json();
 if (!Array.isArray(recentJobs) || recentJobs.length > 8 || recentJobs.some((job) =>
   !job || typeof job.status !== "string" ||
-  !["attempt_count","cards_projected","cards_failed","cards_swept"]
+  !["attempt_count","cards_projected","cards_failed","cards_swept","input_retries"]
     .every((key) => Number.isInteger(job[key]) && job[key] >= 0)))
   throw Error("LIVE card jobs readback shape changed");
 console.log(JSON.stringify({ observedAt: new Date().toISOString(), project, tenant,

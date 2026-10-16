@@ -36,6 +36,7 @@ function fixture({
   synthetic = false,
   locked = false,
   inputOverride,
+  rpcFailuresBeforeSuccess = 0,
   conflict = false,
   size = 2,
   graphEdges,
@@ -57,6 +58,7 @@ function fixture({
   }));
   const original = structuredClone(cards),
     writes = [];
+  let rpcCalls = 0;
   const tables = {
     customer_cards: cards,
     people: numbers
@@ -84,6 +86,9 @@ function fixture({
     async rpc(name, args) {
       assert.equal(name, "learn_card_projection_inputs");
       assert.equal(args.p_tenant, id(100));
+      rpcCalls += 1;
+      if (rpcCalls <= rpcFailuresBeforeSuccess)
+        return { data: null, error: { code: "57014" } };
       const card = args.p_card;
       const filter = card === id(1) ? id(11) : id(12);
       if (
@@ -253,11 +258,20 @@ test("one failed interaction or recommendation read keeps that card intact while
     const r = await f.run();
     assert.equal(r.success, false);
     assert.equal(r.result.failed, 1);
+    assert.equal(r.result.failure_phases.inputs, 1);
     assert.equal(r.result.cards_projected, 1);
     assert.deepEqual(f.cards[0], f.original[0]);
     assert.equal(f.writes[0].id, id(2));
     assert.ok(!JSON.stringify(r).includes("PRIVATE"));
   }
+});
+test("one transient input timeout retries only the read and projects both cards", async () => {
+  const f = fixture({ rpcFailuresBeforeSuccess: 1 });
+  const r = await f.run();
+  assert.equal(r.success, true);
+  assert.equal(r.result.input_retries, 1);
+  assert.equal(r.recordsProcessed, 2);
+  assert.equal(f.writes.length, 2);
 });
 test("missing linked identity never replaces a saved card with unresolved zeroes", async () => {
   const f = fixture({ missingPerson: true });

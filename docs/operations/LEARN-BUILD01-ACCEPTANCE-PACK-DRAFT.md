@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 16 October 2026, 23:11 UTC: not ready for business sign-off.**
+**Status at 16 October 2026, 23:20 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -11,9 +11,9 @@ inactive until Chris reviews and signs off the business result.
 - LIVE retained **4,676 Phone calls with 4,676 interactions**, and no eligible
   Email messages lacked interactions in the 22:34 read. No eligible interaction
   lacked a Graph node. [Current technical tracker](LEARN-V1-COMPLETION.md).
-- The ordinary Email update chain committed **3,200 unchanged receipts for
-  3,200 distinct sources** from 21:55 through 22:59, with no repeated source
-  in that window. It is still running. [Counts-only proof](evidence/learn-build01-email-distinct-receipts-2026-10-16.json).
+- The ordinary Email update chain committed **4,200 unchanged receipts for
+  4,200 distinct sources** by 23:19, with no repeated source in that window.
+  It is still running. [Current technical tracker](LEARN-V1-COMPLETION.md).
 - The 160 approved public Slack channels have enabled channel/reply
   subscriptions and completed historical campaign handoff. A separate approved
   20-channel public roster supplied real signed Events, saved source and an
@@ -26,22 +26,21 @@ inactive until Chris reviews and signs off the business result.
   no missing referenced object. [File backup proof](evidence/learn-build01-communication-backup-refresh-2026-10-16.json).
 - An isolated archive rehearsal restored database, Auth and PostgREST, created
   a disposable synthetic login, and exercised one archived Edge route with
-  tenant and operator boundaries. The current v106 Edge source is locally
-  verified and staged as 103 function trees. Its changed worker separately
-  rebuilt, started offline and rejected an unauthorised request.
+  tenant and operator boundaries. The v104 Edge source was independently copied
+  off-site and read back. A later v106 source inventory was locally staged; the
+  changed v107 worker passed TEST, isolated startup and its first LIVE batch.
   [Recovery inventory](LEARN-BUILD01-APPLICATION-RESTORE-INVENTORY.md).
 
 ## Needs finishing
 
-- **Cards:** 4,171 of 4,181 active cards had a projection at 23:06. Ten older
-  cards remained unprojected. The ordinary 23:04 retry advanced nine cards
-  but failed on one heavy card and exhausted its fifth attempt. **1,986** cards
-  remained before the sweep cutoff. That card's bounded input, offline pure
-  projection and rolled-back exact update all passed; the serving failure
-  still needs a safe phase diagnostic, repair and ordinary full-sweep proof.
-  [Retry diagnostic](evidence/learn-build01-card-2304-failure-2026-10-16.json).
-- **Slack freshness:** 85 of the exact 160 channels were more than a day
-  behind at 22:31. No post-cutoff message, reply or signed hint had been saved
+- **Cards:** 4,171 of 4,181 active cards had a projection at 23:20. Ten older
+  cards remained unprojected. The ordinary scheduler restarted the sweep at
+  23:10 and had advanced 80 cards past its stable cutoff; nine remained ahead
+  of the oldest unprojected card. The earlier failed job is retained in the
+  audit history. Observe all ten missing projections and the final sweep batch
+  before closing this gate. [Release and continuation proof](evidence/learn-build01-card-phase-release-2026-10-16.json).
+- **Slack freshness:** 72 of the exact 160 channels were more than a day
+  behind at 23:19. No post-cutoff message, reply or signed hint had been saved
   in that exact roster at 22:49. Its latest retained source activity is from
   30 August, with none in the 30 days before handoff. That makes a quiet roster
   plausible but does not prove provider delivery. The proven post-fix real
@@ -59,8 +58,8 @@ inactive until Chris reviews and signs off the business result.
   revision and need a separate reviewed reconciliation; the current update
   lane must not silently rewrite them. The full changed-source backlog has not
   yet drained.
-- **Recovery:** The latest encrypted v106 Edge source still needs its exact
-  approved off-site copy/readback. More importantly, full frontend, all 103
+- **Recovery:** The latest serving v107 Edge source still needs a fresh
+  encrypted off-site copy/readback. More importantly, full frontend, all 103
   Edge functions, required runtime secrets, real-user/Auth recovery and a
   controlled capture restart have not been proven from independent recovery
   inputs. Byte copies and the one-route isolated rehearsal do not close this.
@@ -71,10 +70,11 @@ inactive until Chris reviews and signs off the business result.
 
 ## Blocked externally
 
-- The exact v106 source-only off-site copy awaits the already requested
-  approval; it requires no routine fingerprint. Chris's business acceptance
-  will be requested **after** the technical pack is ready. No full-working-day
-  elapsed-time wait is being imposed.
+- No user action is needed for the unattended card continuation. The v104
+  source-only off-site copy approved earlier was completed; the prepared v106
+  package has been superseded by v107. Chris's business acceptance will be
+  requested **after** the technical pack is ready. No full-working-day elapsed-time
+  wait is being imposed.
 
 The proposed business check for Chris is whether a held job and a newly
 progressed job surface with truthful source timestamps, go to the right
