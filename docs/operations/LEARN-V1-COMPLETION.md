@@ -13,6 +13,56 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 18:25 UTC — Slack source-to-interaction gap classified.**
+
+### Working and verified
+
+- LIVE retained 37,859 Slack sources and 35,052 interactions. A counts-only
+  source join found all 2,807 source-only rows: 2,796 channel-activity records,
+  nine exact source types held for review and two withheld tombstones. Every
+  retained conversational subtype had an interaction; no orphan Slack
+  interaction appeared. No message text, private channel or DM was read.
+  [Sanitised aggregate receipt](evidence/learn-build01-slack-source-projection-2026-10-16.json).
+- At 18:24 UTC, no Email delegation hold or card unprojected for over an hour
+  remained. One card sweep batch is retrying a partial failure; its next
+  ordinary attempt is scheduled for 18:38 UTC.
+
+### Needs finishing
+
+- Observe the card retry, Email/Graph and historical Slack catch-up, and a new
+  organic post-fix channel-parent event. Full application/Auth recovery and
+  source-backed job/scoring review remain.
+
+### Blocked externally
+
+- No new action is needed from Chris for these checks.
+
+**16 October, 18:21 UTC — an organic post-fix Slack reply settled in 32 seconds.**
+
+### Working and verified
+
+- A new ordinary reply in approved public `#09-engineer-chat` reached the
+  signed LIVE Events receiver at 17:59:54 UTC. The dedicated worker settled
+  it on its first attempt 32.206 seconds later. Its Slack source and LEARN
+  interaction are both saved; no message body was returned in the readback.
+  This proves the repaired near-live **reply** path under real activity.
+  [Updated sanitised Events receipt](evidence/learn-build01-slack-events-live-2026-10-16.json).
+- At 18:20 UTC, LIVE retained 194,666 Email messages with 1,713 eligible
+  messages still lacking an interaction, down from 2,113 at 17:59. Phone had
+  4,676 saved calls and 4,676 interactions. Customer cards stood at 4,169
+  projected of 4,171 active, with none unprojected for more than an hour.
+
+### Needs finishing
+
+- Continue ordinary Email/Graph catch-up and investigate the recurring card
+  partial-failure retry. A new post-fix organic channel parent event has not
+  yet been observed; the signed route's reply path is now proven. Full
+  application/Auth recovery and source-backed job/scoring review remain.
+
+### Blocked externally
+
+- No new action is needed from Chris for these observations.
+
 **16 October, 18:18 UTC — original Slack cutoffs, Email holds and stale card gap cleared; bounded Email recheck released.**
 
 ### Working and verified

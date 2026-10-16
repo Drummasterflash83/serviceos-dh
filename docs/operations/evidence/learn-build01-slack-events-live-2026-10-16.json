@@ -28,7 +28,18 @@
     "allAffectedJobsSettledByDedicatedWorker": true
   },
   "latestSettledAtUtc": "2026-10-16T17:40:24Z",
-  "claim": "Signed public-channel message and reply capture is demonstrated; steady-state near-live latency after the repair remains to be observed on a new event.",
+  "postFixOrganicReply": {
+    "observedAtUtc": "2026-10-16T18:21:21.327Z",
+    "channelId": "C0B0A1MCLBH",
+    "hintReceivedAtUtc": "2026-10-16T17:59:54.608866Z",
+    "hintSettledAtUtc": "2026-10-16T18:00:26.815010Z",
+    "settlementSeconds": 32.206,
+    "dedicatedWorkerAttemptCount": 1,
+    "savedSlackSource": true,
+    "savedLearnInteraction": true,
+    "reply": true
+  },
+  "claim": "Signed public-channel and reply capture is demonstrated; one organic post-fix reply settled in 32.206 seconds. A new post-fix channel parent event has not yet been observed.",
   "privateChannelsIncluded": false,
   "individualOrGroupDmsIncluded": false,
   "messageBodiesReturnedInReadback": false,

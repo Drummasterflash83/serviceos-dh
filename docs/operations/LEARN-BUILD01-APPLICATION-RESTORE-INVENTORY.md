@@ -5,6 +5,15 @@ isolated database/Auth/PostgREST rehearsal and the full Edge source-package
 off-site copy prove distinct parts of recovery. Neither proves that an independently
 recovered OpenFolk service can serve clients or resume ingestion.
 
+At 18:17 UTC, the LIVE `email-workspace-scheduled-sync` function advanced from
+version 62 to 63 for bounded unattended mailbox-authority rechecks. The
+17:07/17:20 source package below predates that release. It remains a verified
+off-site snapshot, but **no longer represents every serving LIVE function**.
+Prepare and independently copy a new exact inventory before calling the
+application-source recovery input current. The repository TEST checkpoint
+`ed581c7c` preserves the new scheduler source; it is not a substitute for
+restoring the deployed runtime and configuration.
+
 At 17:07 UTC, a fresh read-only LIVE inventory retained the current **103**
 active Edge functions and **727** source files, including the newly released
 worker and signed Slack Events receiver. The exact source hashes and stable

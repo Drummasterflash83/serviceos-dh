@@ -1,0 +1,20 @@
+{
+  "version": "learn-build01-slack-source-projection/1",
+  "observedWindowUtc": "2026-10-16T18:24:00Z/18:25:00Z",
+  "environment": "LIVE",
+  "method": "Saved Supabase CLI login, database/query/read-only; aggregate subtype and source-to-interaction join; no message text returned",
+  "savedSources": 37859,
+  "savedInteractions": 35052,
+  "sourceOnly": 2807,
+  "sourceOnlyByReason": {
+    "channelActivity": 2796,
+    "sourceNeedsReview": 9,
+    "withheldTombstones": 2
+  },
+  "conversationSubtypesMissingInteractions": 0,
+  "orphanSlackInteractions": 0,
+  "claim": "The source-to-interaction count gap matches deliberate source-only classifications; it is not an unprojected conversational Slack message gap.",
+  "privateChannelsOrDmsRead": false,
+  "messageBodiesReturned": false,
+  "productionWrites": false
+}
