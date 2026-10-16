@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-10-16T03:02:00Z",
+  "sourceSnapshot": "2026-10-15",
+  "archiveSha256": "31f1e594e9c3b43f3cff0ec0c45095216a4bb6580e8a0e5f2a4a81db99c03fe8",
+  "scope": "58 highest-impact direct property references from the dated private active-job worklist",
+  "sourcePhonePresent": 29,
+  "oneNormalizedPhoneCandidate": 20,
+  "jobsBehindOneNormalizedPhoneCandidate": 43,
+  "multipleNormalizedPhoneCandidates": 0,
+  "sourcePhonePresentWithoutCandidate": 9,
+  "emailAndPhoneCandidateOverlapRows": 0,
+  "candidateOnly": true,
+  "publishedLinks": 0,
+  "providerRequests": 0,
+  "productionWrites": 0,
+  "isolatedContainerRemoved": true,
+  "privateCandidateFile": ".verification-results/build01-top-property-phone-corroboration-offline-20261015.json",
+  "limitations": [
+    "Phone normalization compared digit strings with a UK +44/0044 to leading-zero conversion; it did not establish who controls a number or whether it is shared.",
+    "No phone candidate overlapped the exact primary-email candidate on the same property row. This is not evidence that either candidate is the true customer.",
+    "The archive is a dated snapshot and does not certify the later LIVE source revision or current job count.",
+    "The private source and candidate identifiers are not published in this aggregate."
+  ]
+}

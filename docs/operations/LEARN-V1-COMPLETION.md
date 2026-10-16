@@ -13,6 +13,31 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, about 03:02 UTC — priority-property phone suggestions checked offline.**
+
+### Working and verified
+
+- The same pinned 15 October archive was restored in a network-isolated
+  disposable database and removed after the read. In the private 58-property
+  priority list, 29 saved owners had a phone value. Normalized phone comparison
+  produced one existing person candidate for 20 property rows covering 43 saved
+  active-status jobs; nine populated values found none, and no row found multiple.
+  None of the 20 phone matches overlapped the row's exact primary-email candidate.
+  The candidate IDs remain in a mode-0600 local file; only counts are in the
+  [sanitised evidence](evidence/learn-build01-offline-top-property-phone-corroboration-2026-10-16.json).
+
+### Needs finishing
+
+- Phone values can be shared or stale, and the lack of email corroboration is
+  material. Do not bulk-link these people or use the dated snapshot as current
+  LIVE source proof. Review the original account/property and current retained
+  source before any customer or job link is published.
+
+### Blocked externally
+
+- No overnight user action was required; identity review remains substantive
+  Build 01 work rather than a final sign-off formality.
+
 **16 October, about 02:49 UTC — top property identity suggestions checked offline.**
 
 ### Working and verified
