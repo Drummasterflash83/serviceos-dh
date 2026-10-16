@@ -1,0 +1,33 @@
+{
+  "observed_at_utc": "2026-10-16T15:16:51Z",
+  "tenant_scope": "Drummonds LIVE",
+  "job_source_and_card_coverage": {
+    "retained_commusoft_job_identities": 12656,
+    "published_job_links": 1004,
+    "published_open_or_pending_jobs": 10,
+    "verified_published_jobs": 0,
+    "published_jobs_with_completion_instant": 0,
+    "published_jobs_with_engineer_link": 0
+  },
+  "interactions": {
+    "email_enriched": 140524,
+    "email_identity_review": 39689,
+    "email_ambiguous_company_reviews": 36174,
+    "phone_enriched": 4665,
+    "phone_new_ready": 1,
+    "slack_enriched_job_linked": 7,
+    "slack_direction_review": 35036
+  },
+  "graph": {
+    "eligible_ready_or_enriched_interactions_missing_nodes": 0,
+    "limit": "Identity-review interactions are excluded from the eligible node count; zero missing does not establish identity resolution or job linkage."
+  },
+  "scorecards": {
+    "saved_definitions": 0,
+    "published_policies": 0,
+    "scorecard_measurements": 0,
+    "saved_assessments": 0,
+    "claim": "No numeric LIVE score is justified yet."
+  },
+  "scope": "Aggregate-only read-only LIVE checks. No source provider request, customer content or production write."
+}

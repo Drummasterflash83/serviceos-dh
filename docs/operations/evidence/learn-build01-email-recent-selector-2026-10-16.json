@@ -1,0 +1,26 @@
+{
+  "observed_at_utc": "2026-10-16T15:39:28Z",
+  "scope": "Drummonds TEST and LIVE; schema-only selector repair",
+  "test": {
+    "rollback_rehearsal": "passed",
+    "installed_selector_md5": "c2ca034cf37189240e8a07b30aedd368",
+    "synthetic_old_dated_recent_import_selected": true,
+    "synthetic_draft_excluded": true,
+    "synthetic_fixture_rolled_back": true
+  },
+  "live": {
+    "rollback_rehearsal": "passed",
+    "installed_at_utc": "2026-10-16T15:38:43Z",
+    "installed_selector_md5": "0ffedc2f069d2d594bfb282fdf629985",
+    "recent_import_index_used_by_planner": true,
+    "eligible_email_without_interaction_after_install": 12713,
+    "older_lane_state_after_install": "retrying_prior_job",
+    "older_lane_next_available_at_utc": "2026-10-16T15:53:09Z",
+    "backlog_reduction_verified": false,
+    "full_history_fallback_preserved": true
+  },
+  "git_test_checkpoint": "debaa153e4ede0879f330cc2b20c856acd7499bc",
+  "provider_requests": 0,
+  "source_rows_changed": false,
+  "limit": "The next ordinary older-lane attempt must succeed and reduce the gap before this repair is accepted as unattended recovery."
+}

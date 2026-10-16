@@ -13,6 +13,78 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 15:40 UTC — the approved Slack roster misses current public work; the Email selector repair is installed and awaiting an ordinary retry.**
+
+### Working and verified
+
+- The signed-in in-app browser is on the correct `test.openfolk.ai` Drummonds —
+  Commusoft TEST workspace and the existing `app.openfolk.ai` Drummonds LIVE
+  tenant. No unrelated account or Chrome session is needed for this check.
+- A new Email selector prioritises recently retained messages, even when their
+  original mail dates are years old. TEST rollback rehearsal and a synthetic
+  service-role selector/draft test passed; the synthetic rows were rolled back.
+  The exact Git TEST checkpoint is `debaa153`. LIVE rollback and catalog checks
+  passed, and its planner now chooses the new recent-import index. The full
+  historical selector remains available. [Release receipt](evidence/learn-build01-email-recent-selector-2026-10-16.json).
+- Five current, visible public Drummonds channels were compared with the exact
+  160-channel saved campaign: **none** is on it. The saved campaign's newest
+  retained message is 30 August. The currently writable `#11-office-ai` has
+  visible 14 October activity but is outside the roster. No test message was
+  posted, and no private channel or DM was read. [Scope readback](evidence/learn-build01-slack-roster-gap-2026-10-16.json).
+
+### Needs finishing
+
+- The Email backlog is still **12,713** eligible retained messages without
+  interactions or projection receipts. The older job that began before the
+  release remains in retry delay until 15:53 UTC. Accept the repair only after
+  ordinary work selects and publishes messages and the gap falls; retain the
+  full-history path and monitor older revisions separately.
+- Reconcile the current public Slack channel roster before near-live capture
+  can be accepted. The exact 160-channel scope approved earlier excludes the
+  current channels inspected, so a message in `#11-office-ai` would be ignored
+  by design. Existing history remains visible, but its 37,848 saved-message
+  total does not prove live capture.
+- Commusoft card coverage, first score criteria, and full application/Auth
+  recovery remain open. Chris alone decides final business acceptance.
+
+### Blocked externally
+
+- Chris has been asked whether to add the single current public
+  `#11-office-ai` channel for a clearly labelled message/reply test. No scope
+  change or Slack message has been made while that answer is pending.
+
+**16 October, 15:16 UTC — eligible interaction-to-Graph gap zero; job/scoring evidence still incomplete.**
+
+### Working and verified
+
+- The current LIVE aggregate has **zero** ready/enriched interactions waiting
+  for Graph nodes. Email has 140,524 enriched interactions and Phone 4,665;
+  one newly saved Phone call is still `ready`. [Counts-only coverage](evidence/learn-build01-afternoon-coverage-2026-10-16.json).
+- The signed-in LEARN Slack tile shows the retained 37,848-message history
+  total; the 160 approved public-channel poller advanced to 41 channels more
+  than a day behind at 15:15, with no cutoff regression.
+
+### Needs finishing
+
+- Commusoft retains 12,656 job identities but only 1,004 reviewed published
+  job links, including ten open or pending cards. None of those cards has a
+  verified job flag, engineer link or reliable completion instant. The
+  separate Commusoft release is addressing source-record visibility while
+  keeping unresolved relationships explicit.
+- Email has 39,689 identity-review interactions, including 36,174 ambiguous
+  company matches; Slack has 35,036 direction-review interactions. Those are
+  held for evidence rather than inferred into customers or jobs. LIVE has no
+  saved scorecard definition, published policy, policy measurement or saved
+  assessment. Keep numeric scores withheld.
+- Real post-cutoff Slack event delivery, full application/Auth recovery and
+  defensible first score criteria remain to be proven.
+
+### Blocked externally
+
+- A real public-channel message and reply are needed to prove near-live Slack
+  delivery; Chris has been asked once for that test while independent Build 01
+  work continues. Final business sign-off remains his decision.
+
 **16 October, 15:14 UTC — six held Email checkpoints recovered and ordinary capture resumed.**
 
 ### Working and verified
