@@ -53,7 +53,7 @@ const recentResponse = await fetch(
       coalesce((result->>'cards_projected')::int,0) cards_projected,
       coalesce((result->>'failed')::int,0) cards_failed,
       coalesce((result->>'swept')::int,0) cards_swept,
-      updated_at from public.platform_jobs
+      available_at,updated_at from public.platform_jobs
       where tenant_id='${tenant}'::uuid and job_type='customer_card.sync'
       order by created_at desc,id desc limit 8` }),
   });

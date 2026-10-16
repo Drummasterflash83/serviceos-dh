@@ -13,6 +13,61 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 16:33 UTC — current public Slack channel has an older campaign binding; Email catch-up continues.**
+
+### Working and verified
+
+- Chris approved ongoing read-only message/reply capture and one labelled test
+  message plus reply in the provider-verified public `#09-engineer-chat`
+  channel. It is a joined channel in the signed-in Drummonds Slack workspace;
+  private channels and DMs remain excluded. **No test post has been sent yet.**
+- The channel has a completed historical window in an older 20-channel
+  campaign, including six of six observed thread imports. All 20 campaign
+  channel windows and discovered reply threads show completed checkpoints,
+  with no active jobs. The normal standalone import correctly rejected the
+  attempted 16:20–16:21 UTC one-page boundary because campaign-owned accounts
+  cannot be silently reassigned. The existing 160-channel ongoing roster is
+  unchanged. A decision on a separate one-channel handoff versus the older
+  campaign's whole-roster handoff is pending; the latter would widen and
+  backdate capture beyond this channel's exact new approval.
+- Ordinary Email projection jobs have reduced eligible saved messages without
+  interactions to **8,313** at 16:29 UTC from 9,913 at 16:16, with 4,405
+  Email projection receipts in the preceding hour and a queued continuation.
+  The separate current-mail lane remains active.
+- At 16:33 UTC, **4,151 of 4,167** active customer cards had a saved
+  projection. Sixteen were unprojected, one older than an hour; the stale
+  count had fallen from two. A rollback-only two-card update rehearsal passed
+  and left saved records unchanged. Pure calculations for the oldest remaining
+  card also passed, while the ordinary sweep recorded another partial failure
+  and deferred its fourth retry to 17:34 UTC. This is not full coverage.
+- An exact-source customer-card revision-conflict patch passed two branch
+  tests and TypeScript. TEST worker version 58 completed one hosted synthetic
+  card projection and the fixture was archived. The identical source closure
+  then replaced LIVE worker version 97 with version **98**; both have wire hash
+  `6646ccadfec21aff2145284761af6bed0a53f7c5570c4f8188a74b246fe727e4`,
+  and unrelated Edge function versions were unchanged. The previous LIVE
+  executable is retained for rollback. The LIVE card count and queued retry
+  were unchanged at 16:46 UTC, so this is a released fix awaiting an ordinary
+  retry, not yet a demonstrated LIVE clearance.
+  [Sanitised release receipt](evidence/learn-build01-card-revision-release-2026-10-16.json).
+
+### Needs finishing
+
+- Enable only an authorised near-live Slack scope, send and verify the labelled
+  public-channel message and reply, then verify a real post-cutoff Events hint,
+  retained message, interaction and card evidence. Do not confuse an enabled
+  subscription with actual capture.
+- Finish the Email backlog and last customer card, source-backed job attention
+  and scoring review, and full application/Auth recovery. Chris provides final
+  business sign-off; the full-working-day wait remains waived.
+
+### Blocked externally
+
+- The requested one-channel handoff cannot use the existing standalone import
+  control while its account belongs to the older campaign. Chris is reviewing
+  the concrete whole-campaign versus isolated-channel scope choice. No new
+  fingerprint or provider login is needed.
+
 **16 October, 16:07 UTC — private Slack test setup cancelled; Commusoft main alignment verified.**
 
 ### Working and verified

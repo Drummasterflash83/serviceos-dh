@@ -171,6 +171,7 @@ export async function handleCustomerCardSync(
     let cardsProjected = 0;
     let skipped = 0;
     let failed = 0;
+    let revisionConflicts = 0;
     const healthCounts: Record<Health, number> = {
       excellent: 0,
       good: 0,
@@ -429,7 +430,27 @@ export async function handleCustomerCardSync(
           .eq("updated_at", card.updated_at)
           .select("id")
           .maybeSingle();
-        if (updErr || updatedCard?.id !== cardId) {
+        if (updErr) {
+          failed += 1;
+          continue;
+        }
+        if (updatedCard?.id !== cardId) {
+          // Another normal identity/card writer may have revised this card
+          // during the bounded sweep. Do not publish a projection computed
+          // from the older snapshot, and do not strand the whole sweep behind
+          // a retry: the next sweep will read the new revision.
+          const { data: currentCard, error: currentErr } = await admin
+            .from("customer_cards")
+            .select("updated_at")
+            .eq("tenant_id", tenantId)
+            .eq("id", cardId)
+            .maybeSingle();
+          if (!currentErr && typeof currentCard?.updated_at === "string" &&
+            currentCard.updated_at !== card.updated_at) {
+            revisionConflicts += 1;
+            skipped += 1;
+            continue;
+          }
           failed += 1;
           continue;
         }
@@ -450,6 +471,7 @@ export async function handleCustomerCardSync(
       result: {
         cards_projected: cardsProjected,
         skipped,
+        revision_conflicts: revisionConflicts,
         failed,
         health_counts: healthCounts,
         swept: cardRows?.length ?? 0,

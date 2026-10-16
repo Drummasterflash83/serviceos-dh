@@ -1,0 +1,39 @@
+{
+  "version": "learn-build01-card-revision-release/1",
+  "observedAt": "2026-10-16T16:46:16Z",
+  "change": "A card revised by another writer during projection is skipped and counted for the next sweep; an unconfirmed missing update still fails visibly.",
+  "source": {
+    "deployedHandlerBaselineSha256": "d1e69494f18179b534fdd959aafea25ea67b22d859b6c143392db39a8523adcd",
+    "changedPath": "_shared/worker_handlers/customer_card_sync.ts",
+    "candidateClosureSha256": "c275101dc6dd716aa9546091eac7900166aed98af8fbddf66f9ba000d41d3386",
+    "localBranchTypecheck": "passed",
+    "revisionConflictTests": 2,
+    "revisionConflictTestsPassed": 2
+  },
+  "test": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "beforeVersion": 57,
+    "afterVersion": 58,
+    "wireSha256": "6646ccadfec21aff2145284761af6bed0a53f7c5570c4f8188a74b246fe727e4",
+    "hostedSyntheticCard": "projection_saved_and_job_succeeded",
+    "syntheticFixtureArchived": true,
+    "otherFunctionsUnchanged": true
+  },
+  "live": {
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "beforeVersion": 97,
+    "afterVersion": 98,
+    "wireSha256": "6646ccadfec21aff2145284761af6bed0a53f7c5570c4f8188a74b246fe727e4",
+    "rollbackExecutableRetainedLocally": true,
+    "otherFunctionsUnchanged": true,
+    "activeCardsAtReadback": 4167,
+    "projectedCardsAtReadback": 4151,
+    "unprojectedOlderThanOneHour": 1,
+    "ordinaryRetryState": "retrying_until_2026-10-16T17:34:46Z"
+  },
+  "limitations": [
+    "The hosted TEST fixture verified normal projection, while the concurrency branches were tested with a worker-client simulation.",
+    "The LIVE release was verified by version and wire hash; it has not yet cleared the remaining stale card through an ordinary retry.",
+    "No production source provider was contacted or written to by the release check."
+  ]
+}

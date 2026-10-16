@@ -4,8 +4,11 @@
 job progress and completion as the first LIVE priority, with customer and team
 cards serving different questions. A card should surface for the person who can
 act, then move to the next person only after a verified handoff. The current
-LIVE source relationship audit shows 279 saved active-status Commusoft jobs
-without reviewed job-card links, so a company-wide job score would be misleading.
+LIVE source relationship audit at 15:31 UTC on 16 October found 295 recorded
+open/pending/on-hold Commusoft jobs, ten with reviewed published job links and
+285 without them. Twenty-nine of the 295 also lack a retained customer/site
+source record. These counts are timestamped observations, so a company-wide
+job score would be misleading.
 
 ## Source-backed attention states
 
