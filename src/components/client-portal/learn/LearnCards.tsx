@@ -150,7 +150,7 @@ function CardWorkspace({
         <button
           className="cp-secondary"
           onClick={() => setRevision((r) => r + 1)}
-          aria-label="Refresh company cards"
+          aria-label="Refresh cards"
         >
           <RefreshCw size={15} />
           Refresh cards
@@ -181,12 +181,18 @@ function CardWorkspace({
           </button>
         ))}
       </div>
-      {kind === 'customer' && canEdit && <div className="flex flex-wrap gap-2" aria-label="Customer record views"><button className="cp-secondary" aria-pressed={!imported} onClick={()=>setImported(false)}>Company cards</button><button className="cp-secondary" aria-pressed={imported} onClick={()=>{setSelected(null);setImported(true);}}>Imported customer records</button></div>}
+      {kind === 'customer' && canEdit && <div className="flex flex-wrap gap-2" aria-label="Customer record views"><button className="cp-secondary" aria-pressed={!imported} onClick={()=>setImported(false)}>Cards and identities</button><button className="cp-secondary" aria-pressed={imported} onClick={()=>{setSelected(null);setImported(true);}}>Imported customer records</button></div>}
       {imported && canEdit ? <LearnImportedCustomers tenantId={tenantId} actorId={actorId} onOpenCard={id=>setSelected(id)}/> : <>
+      {kind === "customer" && (
+        <p className="text-sm">
+          These cards include saved communication identities as well as reviewed business customers.
+          Each card shows whether its customer relationship has a reviewed source link.
+        </p>
+      )}
       <form
         className="lc-search"
         role="search"
-        aria-label="Search company cards"
+        aria-label="Search cards"
         onSubmit={(e) => {
           e.preventDefault();
           const term = searchDraft.trim();
