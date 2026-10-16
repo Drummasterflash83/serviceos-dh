@@ -6,6 +6,12 @@
   "oldFunctions": 103,
   "newFunctions": 103,
   "unchangedFunctionTrees": 102,
+  "platformWorkerLiteralEnvironmentNames": {
+    "old": 26,
+    "new": 26,
+    "added": 0,
+    "removed": 0
+  },
   "changed": [
     {
       "slug": "platform-worker",
@@ -16,6 +22,7 @@
     }
   ],
   "sourceContentReturned": false,
+  "secretValuesRead": false,
   "productionWrites": false,
   "fullApplicationRecoveryVerified": false
 }

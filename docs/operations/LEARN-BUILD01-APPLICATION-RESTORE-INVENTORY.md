@@ -21,8 +21,11 @@ A manifest-to-manifest comparison with the independently copied v104 source
 found **102 function trees byte-for-byte unchanged**, including the one route
 used in the earlier isolated Auth/Edge rehearsal. Only `platform-worker`
 advanced from v104 to v106, changing two source files; JWT deployment flags
-were unchanged. This preserves the relevance of that one-route rehearsal but
-does not prove the new worker can restart or capture from a recovered service.
+were unchanged. The changed worker still references the same 26 literal
+environment names as v104; no new literal name was added or removed. This
+is a source comparison, not a secret-value recovery. It preserves the relevance
+of that one-route rehearsal but does not prove the new worker can restart or
+capture from a recovered service.
 
 At 20:48 UTC, a new stable, read-only LIVE source inventory captured **103**
 active functions and **728** files (4,828,391 source bytes), including the

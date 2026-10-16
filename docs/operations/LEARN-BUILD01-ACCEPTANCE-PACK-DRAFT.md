@@ -58,6 +58,10 @@ inactive until Chris reviews and signs off the business result.
   Edge functions, required runtime secrets, real-user/Auth recovery and a
   controlled capture restart have not been proven from independent recovery
   inputs. Byte copies and the one-route isolated rehearsal do not close this.
+- **File-backup host:** the recording and voicemail schedule has succeeded
+  locally, but depends on the Mac and Codex app being awake. The latest
+  three-bucket inventory is a verified file copy, not a matching database
+  restore or proof of an always-on hosted backup service.
 
 ## Blocked externally
 

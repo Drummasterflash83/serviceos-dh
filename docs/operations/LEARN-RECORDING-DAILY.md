@@ -1,5 +1,18 @@
 # Drummonds daily recording backup operations
 
+**16 October, 22:03 UTC — refreshed combined inventory verified.** The
+existing three-bucket supervisor finished a manual refresh after a successful
+scheduled local run at about 08:18 UTC. The newer refresh verified **3,166
+phone objects / 662,472,461 bytes**, matching all **3,160** retained recording
+references with no missing referenced object, plus **257 original voicemail
+sources** and **257 audio objects** in matched pairs. Six older unreferenced
+phone objects remain retained. Its latest attempt succeeded, the daily lock
+was released, and health reports `observed_inventory_verified`. The bounded
+transient S3 read retry passed 28 focused tests. This is a local observed
+inventory, not a simultaneous database snapshot or a full application restore;
+the schedule still depends on the Mac and app remaining available.
+[Sanitised receipt](evidence/learn-build01-communication-backup-refresh-2026-10-16.json).
+
 **14 October, 14:08 UTC — fresh combined manual backup verified.**
 The existing supervisor completed its fifth invocation at 14:08:44.137 UTC,
 checking **3,024 phone files / 631,519,326 bytes**, **255 original voicemail emails /
