@@ -13,6 +13,46 @@ sign-off.
 
 ## Current evidence and priority
 
+**16 October, 04:28 UTC — manual backup works; scheduled dispatch and full recovery remain open.**
+
+### Working and verified
+
+- Manual hosted run `38848335678` passed source export, isolated native row
+  comparison, age encryption, private London upload, independent Restore-identity
+  download comparison and cleanup at 04:15 UTC without Touch ID. Its bounded
+  native parser now accommodates the observed 7.60 GB stream; nine native and
+  nine runner/guard/diagnostic tests pass. The repaired workflow is on `main`
+  at `06c4e1f7` with guarded 05:37 and 07:43 UTC fallback slots. Its pinned
+  source is preserved on TEST. [Sanitised repair evidence](evidence/learn-build01-native-backup-bound-repair-2026-10-16.json).
+- Read-only LIVE recovery metadata shows both of Drummonds' workspace-selected
+  Edge secret names configured. There are no active OAuth-mode provider
+  connections for this tenant; the generic provider OAuth environment path is
+  not evidence of a failing active connection. No secret values were read.
+  [Sanitised inventory](evidence/learn-build01-runtime-secret-name-readback-2026-10-16.json).
+
+### Needs finishing
+
+- As of 04:28 UTC, neither the 03:15 nor 04:15 scheduled backup slot had
+  dispatched, and the hourly monitor had no new scheduled run since 01:26.
+  Observe an actual successful scheduled backup and subsequent monitor result;
+  a manual success does not prove unattended operation. The later slots remain
+  unobserved. Full isolated application/Auth restart from off-site source and
+  corresponding file/database state is also still unproved.
+- Source-to-card and job attention gaps remain substantive: 279 of 288 saved
+  active-status Commusoft jobs lack reviewed card links, email projection intake
+  has not demonstrably converged, and no approved post-cutoff public Slack
+  message or reply has yet been retained. Scores and individual routing stay
+  withheld pending source evidence.
+
+### Blocked externally
+
+- GitHub controls scheduled dispatch; the workflows are active but recent cron
+  slots are absent. The exact encrypted Edge source off-site copy and drafted
+  Commusoft support question await separate responses to earlier approval
+  requests. Chris's business acceptance remains his decision after the
+  technical evidence is ready. No fingerprint or overnight response is needed
+  for the scheduled-run observation.
+
 **16 October, about 03:24 UTC — guarded backup fallback released, unattended result pending.**
 
 ### Working and verified
