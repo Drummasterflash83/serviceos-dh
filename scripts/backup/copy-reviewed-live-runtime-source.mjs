@@ -45,6 +45,12 @@ export const reviewedLiveRuntimeSource2203 = Object.freeze({
   key: "projects/tgbnakbxwcqjeimygroz/objects/b789aecbcce6989e7d6e210abeaa03270bcb3cf65533f227909354eaeae2a546/06205d042fe8a4618ac6d291d654e03cf3ecaadad9d3ae65281069a778cd2ec5",
 });
 
+export const reviewedLiveRuntimeSource2322 = Object.freeze({
+  bytes: 6022776,
+  sha256: "dcfcbb300d0239f379f744e55e989fb1a4bcd2b85ab67f1c8b3fa5a940f55473",
+  key: "projects/tgbnakbxwcqjeimygroz/objects/a4d892a1387b1c19c53caea3cdfb85d7c15dd80929cd2c5defeef7b5621d1656/dcfcbb300d0239f379f744e55e989fb1a4bcd2b85ab67f1c8b3fa5a940f55473",
+});
+
 const fail = (code) => { throw Error(code); };
 const need = (condition, code) => { if (!condition) fail(code); };
 const canon = (value) => JSON.stringify(value, (_key, entry) =>
@@ -109,7 +115,8 @@ export async function copyReviewedLiveRuntimeSource({ sourcePath, downloadPath, 
   now = Date.now, reviewed = reviewedLiveRuntimeSource }) {
   need(reviewed === reviewedLiveRuntimeSource || reviewed === reviewedLiveRuntimeSource1705 ||
     reviewed === reviewedLiveRuntimeSource1828 || reviewed === reviewedLiveRuntimeSource1911 ||
-    reviewed === reviewedLiveRuntimeSource2046 || reviewed === reviewedLiveRuntimeSource2203,
+    reviewed === reviewedLiveRuntimeSource2046 || reviewed === reviewedLiveRuntimeSource2203 ||
+    reviewed === reviewedLiveRuntimeSource2322,
     "runtime_reviewed_package_invalid");
   need(typeof sourcePath === "string" && typeof downloadPath === "string" &&
     sourcePath !== downloadPath && writer?.destination && restore?.destination,

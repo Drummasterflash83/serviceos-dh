@@ -1,0 +1,21 @@
+{
+  "contract": "learn-build01-runtime-2322-local/1",
+  "observedAt": "2026-10-16T23:25:37Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "inventoryStable": true,
+  "activeFunctions": 103,
+  "sourceFiles": 728,
+  "sourceBytes": 4829384,
+  "platformWorkerVersion": 107,
+  "otherFunctionTreesUnchangedFromV106": 102,
+  "sourceManifestSha256": "4008cc502a41f5948cfea8e2d06fa3be26ff4f4f7828839f707724b7c49f1488",
+  "encryptedBytes": 6022776,
+  "encryptedSha256": "dcfcbb300d0239f379f744e55e989fb1a4bcd2b85ab67f1c8b3fa5a940f55473",
+  "stagedFunctionTrees": 103,
+  "stagedFileHashesVerified": 728,
+  "offSiteCopyVerified": false,
+  "fullApplicationRecoveryVerified": false,
+  "sourceContentReturned": false,
+  "runtimeSecretsRead": false,
+  "productionWrites": false
+}

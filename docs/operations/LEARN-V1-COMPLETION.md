@@ -17,10 +17,15 @@ business decision yet.
 
 ## Current evidence and priority
 
-**16 October, 23:19 UTC — card sweep restarted unattended and is progressing.**
+**16 October, 23:27 UTC — card sweep running; current Edge source locally preserved.**
 
 ### Working and verified
 
+- The serving LIVE v107 Edge inventory was captured read-only after the worker
+  release: 103 active functions, 728 files, stable before/after download. Only
+  the worker tree differs from v106. The exact source is locally encrypted and
+  staged into separate verified trees; its off-site copy and full-service
+  recovery are still open. [Local receipt](evidence/learn-build01-runtime-2322-local-2026-10-16.json).
 - The ordinary scheduled card job at 23:10 restarted the sweep without a
   manual recovery seed. Five consecutive ten-card batches succeeded under the
   prior worker; the first batch therefore cleared the heavy card before any
@@ -41,9 +46,9 @@ business decision yet.
 
 ### Needs finishing
 
-- At 23:19, **4,171 of 4,181** active cards had projections. The ordinary
-  sweep had advanced 70 cards past its stable cutoff, with 19 cards still
-  ahead of the oldest unprojected card. Observe the ten missing projections
+- At 23:21, **4,172 of 4,181** active cards had projections: one of the ten
+  earlier missing projections cleared in an ordinary batch. The sweep had
+  advanced 90 cards past its stable cutoff. Observe the nine missing projections
   and the full continuation through its final short batch before closing the
   card gate. An earlier dead-letter remains an honest failure history.
 - The Email update backlog, exact-roster Slack catch-up and actual post-cutoff
@@ -54,7 +59,9 @@ business decision yet.
 
 - No user action is needed for the card continuation. The current worker v107
   supersedes the prepared v106 source-only package; do not copy an obsolete
-  exact package under a prior approval. Chris's business sign-off follows
+  exact package under a prior approval. The v107 package has its own
+  [exact copy review](LEARN-BUILD01-RUNTIME-2322-OFFSITE-REVIEW.md) and has not
+  been uploaded. Chris's business sign-off follows
   only after the technical acceptance pack is ready.
 
 **16 October, 23:11 UTC — ordinary card retry failed; one heavy card isolated.**

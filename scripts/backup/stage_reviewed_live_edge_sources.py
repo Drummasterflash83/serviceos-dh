@@ -23,6 +23,11 @@ REVIEWED = {
         'ed8ca3970251af3fe843dab9153f9c149a1f824513f245b2492e795a96026da6',
         Path('.verification-results/build01-edge-staged-v106'),
     ),
+    'v107': (
+        Path('.verification-results/build01-runtime-archive-2026-10-16T23-22-48-811Z'),
+        '4008cc502a41f5948cfea8e2d06fa3be26ff4f4f7828839f707724b7c49f1488',
+        Path('.verification-results/build01-edge-staged-v107'),
+    ),
 }
 
 
@@ -94,10 +99,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--stage-reviewed-v104', action='store_true')
     parser.add_argument('--stage-reviewed-v106', action='store_true')
+    parser.add_argument('--stage-reviewed-v107', action='store_true')
     args = parser.parse_args()
-    require(args.stage_reviewed_v104 != args.stage_reviewed_v106,
+    modes = [args.stage_reviewed_v104, args.stage_reviewed_v106,
+             args.stage_reviewed_v107]
+    require(sum(modes) == 1,
             'runtime_staging_exact_mode_required')
-    print(json.dumps(stage('v104' if args.stage_reviewed_v104 else 'v106'), sort_keys=True))
+    reviewed = 'v104' if args.stage_reviewed_v104 else (
+        'v106' if args.stage_reviewed_v106 else 'v107')
+    print(json.dumps(stage(reviewed), sort_keys=True))
 
 
 if __name__ == '__main__':
