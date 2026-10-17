@@ -8,6 +8,17 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- At 14:10 UTC, all **4,182** active cards were projected with no older-than-hour
+  gap; Phone had **4,676/4,676** interactions and Graph had zero eligible gaps.
+  The exact 160-channel Slack roster had **zero current dead-letter windows**
+  and 1,556 provider-completed empty windows; its 69 archived fallback
+  channels over a day behind remain a catch-up limit. Four blocked Email
+  cursors belong to disabled accounts with invalid delegation; 26 accounts
+  remain active DWD accounts. One current-day Email source was unlinked, none
+  older than a day. The database backup and missed-success monitor both have
+  successful scheduled runs today.
+  [Current readback](evidence/learn-build01-current-coverage-2026-10-17-1410.json).
+
 - The ordinary LIVE worker cleared the final stale card without a targeted
   manual job: **4,182/4,182** active cards now have projections, and the
   latest completed ten-card batch reported zero failures. The earlier full

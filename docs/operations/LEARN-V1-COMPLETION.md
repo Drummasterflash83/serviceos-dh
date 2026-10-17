@@ -17,6 +17,42 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 14:10 UTC — source coverage and disabled Email cursors separated.**
+
+### Working and verified
+
+- The ordinary LIVE card lane still has **4,182/4,182** active cards projected,
+  zero older-than-hour gaps and 56 successful ordinary jobs in the last hour.
+  Phone is **4,676/4,676** source-to-interaction; Graph has zero eligible gaps.
+  The hosted database backup and missed-success monitor both have successful
+  scheduled runs today, rather than only manual runs.
+- The four `delegation_grant_invalid` Email cursors are attached to **disabled**
+  accounts. The other **26** accounts are active DWD accounts with ready or
+  completed cursors; the one old OAuth `revoked` flag on a DWD account is not
+  treated as DWD capture authority by the tested health projection. All 30
+  accounts retain the three-year policy, and no older-than-cutoff source was
+  newly retained in the preceding hour.
+- The exact 160 approved public Slack channels remain enabled, all have a
+  provider-completed recurring window, and there are **zero current dead-letter
+  windows**. This resolves the earlier failed-window operating gate. The
+  direct provider audit and saved-source readback still show no post-cutoff
+  parent or reply in this archived roster. [Current counts](evidence/learn-build01-current-coverage-2026-10-17-1410.json).
+
+### Needs finishing
+
+- Email's 6,128 eligible historical sources without interactions are still
+  draining; one current-day item was unlinked but none was older than a day.
+  Four disabled accounts are excluded from active capture unless their
+  delegation and account status are separately reviewed. The 160-channel
+  polling fallback still has 69 archived channels over a day behind; continue
+  its historical catch-up and rely on the separately proven active 20-channel
+  signed Events path for present near-live evidence.
+
+### Blocked externally
+
+- No fingerprint or new Slack post is needed for this read-only check. Chris's
+  Owner / MD handoff and final business acceptance remain separate actions.
+
 **17 October, 14:00 UTC — first Owner / MD handoff UI gap released to TEST and LIVE.**
 
 ### Working and verified

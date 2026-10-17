@@ -1,0 +1,48 @@
+{
+  "observed_at_utc": "2026-10-17T14:10:25Z",
+  "scope": "Read-only Drummonds Build 01 current coverage and scheduled-operation check",
+  "cards": {
+    "active": 4182,
+    "projected": 4182,
+    "unprojected_older_than_hour": 0,
+    "ordinary_sweep_recent_successes_last_hour": 56,
+    "ordinary_sweep_failures_last_hour": 0
+  },
+  "phone": {
+    "retained_calls": 4676,
+    "interactions": 4676,
+    "eligible_missing": 0
+  },
+  "graph": {
+    "eligible_missing": 0,
+    "older_than_day": 0
+  },
+  "email": {
+    "accounts": 30,
+    "active_dwd_accounts": 26,
+    "disabled_accounts_with_invalid_delegation": 4,
+    "eligible_without_interaction": 6128,
+    "current_unlinked_day": 1,
+    "current_unlinked_older_than_day": 0,
+    "newly_retained_older_than_three_year_cutoff_last_hour": 0,
+    "delegation_holds": 0
+  },
+  "slack_exact_160_public_roster": {
+    "enabled_channel_and_reply_subscriptions": 160,
+    "channels_with_provider_completed_window": 160,
+    "provider_completed_windows": 1556,
+    "dead_letter_windows": 0,
+    "saved_postcutoff_messages": 0,
+    "saved_postcutoff_replies": 0,
+    "channels_over_day_behind_in_polling_fallback": 69
+  },
+  "scheduled_database_backup": {
+    "latest_scheduled_success_run": 39029918023,
+    "latest_scheduled_success_started_at_utc": "2026-10-17T11:45:35Z",
+    "scheduled_missed_success_monitor_run": 39034977731,
+    "scheduled_missed_success_monitor_result": "success"
+  },
+  "qualification": "Bounded read-only observations between 14:06 and 14:10 UTC; the archived 160-channel roster has no observed post-cutoff source. An enabled subscription and empty provider windows do not prove future signed Events delivery.",
+  "source_ids_or_content_returned": false,
+  "production_data_writes": false
+}
