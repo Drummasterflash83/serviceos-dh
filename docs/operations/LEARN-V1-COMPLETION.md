@@ -40,6 +40,11 @@ business decision yet.
   one source-linked task, accept it as
   Owner / MD and read back the append-only ownership history. Until then this
   is a released control, not a successful human handoff.
+- A dedicated counts-only LIVE readback at 14:03 found one linked Owner / MD
+  login but **zero** confirmations, source-review tasks, creation audits or
+  accepted-owner transitions. It is ready to verify the exact positive path
+  after signed-in actions, without returning a person's identity or job content.
+  [Baseline](evidence/learn-build01-owner-review-handoff-baseline-2026-10-17.json).
 
 ### Blocked externally
 

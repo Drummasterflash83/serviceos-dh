@@ -69,6 +69,9 @@ inactive until Chris reviews and signs off the business result.
   TypeScript, 47 prebuild checks and Vercel Git deployment readback; the
   signed-in positive handoff remains unverified.
   [Release receipt](evidence/learn-build01-review-claim-frontend-release-2026-10-17.json).
+  The post-release counts-only baseline confirms one linked Owner / MD login
+  and zero identity confirmations, open source-review tasks or accepted-owner
+  transitions. [Baseline](evidence/learn-build01-owner-review-handoff-baseline-2026-10-17.json).
   Audited identity confirmation and source-linked review-task controls passed
   isolated SQL tests, rollback rehearsals, and TEST/LIVE install readback.
   TEST Control Plane v28 and LIVE v38 carry the targeted route; the stricter

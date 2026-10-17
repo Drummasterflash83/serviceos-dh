@@ -1,0 +1,14 @@
+{
+  "observedAt": "2026-10-17T14:04:17.367Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "owner_login_links": 1,
+  "confirmed_owner_links": 0,
+  "owner_confirmation_audits": 0,
+  "open_source_reviews": 0,
+  "reviewed_source_creation_audits": 0,
+  "accepted_owner_source_reviews": 0,
+  "sourceContentReturned": false,
+  "identityReturned": false,
+  "productionDataWrites": false
+}
