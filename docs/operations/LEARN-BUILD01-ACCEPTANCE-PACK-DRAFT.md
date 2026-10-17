@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 13:48 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 14:00 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -464,9 +464,9 @@ inactive until Chris reviews and signs off the business result.
   source-review queue is the truthful current route. A fresh 11:53 read also
   found no confirmed Drummonds team member or confirmed signed-in assigner,
   so neither provider-derived nor manual person routing can be claimed yet.
-  The reviewed Owner / MD identity and task controls are now released in TEST
-  and LIVE, but no member confirmation, task creation or acceptance has been
-  recorded. Browser auto-review rejected origin-wide signed-in LIVE access;
+  The reviewed Owner / MD identity, task creation and self-claim controls are
+  now released in TEST and LIVE, but no member confirmation, task creation or
+  acceptance has been recorded. Browser auto-review rejected origin-wide signed-in LIVE access;
   do not bypass that rejection with a privileged database write. The final
   positive handoff still needs a legitimate signed-in action and readback.
   [Policy draft](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md).
