@@ -1,5 +1,14 @@
 # Build execution tracker
 
+Build 01 current-source recovery overlay (17 October, 12:44 UTC): LIVE still
+serves 103 Edge functions; only Control Plane advanced from the independently
+downloaded v107 off-site package. A 4,473-byte reviewed code patch rebuilt all
+24 files in current Control Plane v38 with exact LIVE/archived hashes, without
+exporting another full source package or private manifest. The code-only
+checkpoint is verified at remote TEST head `1b3c94cf14ab85ad19218252cdedae69ddc6b8a4`.
+Credential decrypt and provider restart remain separate unverified gates.
+[Source overlay receipt](../../operations/evidence/learn-build01-controlplane-v38-overlay-2026-10-17.json).
+
 Build 01 active Slack source-to-interaction proof (17 October, 12:38 UTC):
 within the separate approved 20 current public channels, two real signed
 parent hints and two signed reply hints each have a matching retained source

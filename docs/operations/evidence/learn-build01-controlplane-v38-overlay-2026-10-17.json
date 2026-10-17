@@ -13,7 +13,7 @@
   "currentSourceRecoveredLocallyFromOffsiteBaselineAndPatch": true,
   "fromVersion": 37,
   "observedAt": "2026-10-17T12:43:57.523Z",
-  "offsitePatchCopyVerified": false,
+  "codePatchRemoteCheckpoint": "1b3c94cf14ab85ad19218252cdedae69ddc6b8a4",
   "overlayPatchSha256": "c9884af4d71ffa343a039df62cd50662de6b5fcf9f000ae2177dfdb0698ef4d2",
   "patchContainsNoPrivateRuntimeManifestOrCredential": true,
   "privateManifestOrSecretValuesIncluded": false,

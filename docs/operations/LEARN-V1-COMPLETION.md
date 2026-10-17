@@ -32,8 +32,9 @@ business decision yet.
 
 ### Needs finishing
 
-- Verify the patch at the remote Git checkpoint and continue the separate
-  credential/private-key and provider-restart gates. This is source recovery,
+- Continue the separate credential/private-key and provider-restart gates.
+  The patch is at verified TEST Git checkpoint
+  `1b3c94cf14ab85ad19218252cdedae69ddc6b8a4`. This is source recovery,
   not complete application/Auth recovery.
 
 ### Blocked externally
