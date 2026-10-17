@@ -17,6 +17,30 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 13:37 UTC — Commusoft source-job reader verified against its approved attention patch.**
+
+### Working and verified
+
+- The current LIVE and TEST source-job reader, helper, dispatcher, grants and
+  owner match the pinned installation plus the exact reviewed attention-filter
+  patch. The older readback guard was updated to recognize this one approved
+  later function hash. LIVE still exposes 12,656 retained job identities,
+  including 295 recorded open/pending/on-hold, and 1,004 reviewed canonical
+  job links. [Aggregate readback](evidence/learn-build01-commusoft-current-source-coverage-2026-10-17.json).
+
+### Needs finishing
+
+- Among the 295 recorded open jobs, 25 lack an immediate property source and
+  four have a retained site whose customer source is missing. Keep those 29
+  source gaps visible. The readback does not imply a current provider status,
+  named technician or publishable completion score.
+
+### Blocked externally
+
+- No user action was needed to correct the stale verification guard. Specific
+  missing parent records still require provider evidence; no provider request
+  or canonical write was made by this readback.
+
 **17 October, 13:32 UTC — exact archived Slack reply-root audit complete.**
 
 ### Working and verified

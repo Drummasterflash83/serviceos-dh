@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 13:32 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 13:37 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -42,6 +42,13 @@ inactive until Chris reviews and signs off the business result.
   separate current-jobs lane had a completed receipt at 11:48 UTC. This closes
   the stalled contact traversal without treating the retry alone as success.
   [Full-cycle receipt](evidence/learn-build01-commusoft-full-cycle-2026-10-17.json).
+
+- A fresh TEST/LIVE readback verified the source-job reader and its later
+  approved attention-filter patch. LIVE still has 295 recorded open jobs and
+  1,004 reviewed canonical job links; **29 open jobs lack a retained property
+  or customer source relationship**. They remain visible for source review,
+  without inferred ownership or completion.
+  [Coverage receipt](evidence/learn-build01-commusoft-current-source-coverage-2026-10-17.json).
 
 - A counts-only handoff audit found eight active Drummonds team entries but
   **zero confirmed members**, zero signed-in confirmed recipients and zero

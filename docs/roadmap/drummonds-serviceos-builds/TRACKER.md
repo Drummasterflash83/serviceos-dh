@@ -1,5 +1,13 @@
 # Build execution tracker
 
+Build 01 Commusoft source-job contract and coverage (17 October, 13:37 UTC):
+the previous readback guard rejected an approved later attention-filter
+function. It now checks the exact pinned patch hash while preserving the
+base helper, dispatcher, grants and owner. TEST and LIVE readbacks pass.
+LIVE has 295 recorded open jobs, with 29 missing retained property/customer
+source relationships; these remain visible and unscored.
+[Coverage receipt](../../operations/evidence/learn-build01-commusoft-current-source-coverage-2026-10-17.json).
+
 Build 01 provider-quiet Slack and unattended backup readback (17 October,
 13:32 UTC): the exact 160 approved public channels remain archived and
 enabled. Slack returned zero post-cutoff replies across all 870 known saved

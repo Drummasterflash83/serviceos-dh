@@ -49,7 +49,27 @@ if (mode === "readback") {
     if (plan.state !== "installed_verified" || plan.sourceSha256 !== planDigest || planHashes.length !== 1 || planHashes[0].digest !== planDigest) throw Error("Reader plan patch differs");
     expected = plan.expected;
   }
-  if (installed.sourceSha256 !== digest || JSON.stringify(before) !== JSON.stringify(expected) || hashes.length !== 1 || hashes[0].digest !== digest) throw Error("Installed source jobs contract differs; inspect before continuing");
+  // The later reviewed attention-filter migration changed only the public
+  // cards reader. Preserve the exact original helper/dispatcher, privileges
+  // and owner checks, then accept only its pinned post-patch function hash.
+  const attentionReview = JSON.parse(readFileSync(
+    "docs/operations/evidence/learn-build01-job-source-attention-2026-10-17.json", "utf8"));
+  const attentionMigration = "supabase/migrations/20261104223200_learn_commusoft_source_attention_filters.sql";
+  const attentionFunctionSha256 = "9c58f7efa51158baeac5bd0183cf36191b4ee6703f8eaf172e1bf37fe8eab0ef";
+  const attentionSourceMatches = attentionReview.migration === attentionMigration &&
+    attentionReview.migrationSha256 === hash(readFileSync(attentionMigration, "utf8"));
+  const attentionCardsMatch = attentionSourceMatches && before.length === expected.length &&
+    before.every((entry, index) => entry.name === expected[index].name &&
+      (entry.name === "learn_commusoft_source_job_cards"
+        ? entry.acl === expected[index].acl && entry.owner === expected[index].owner &&
+          hash(entry.definition) === attentionFunctionSha256 &&
+          createHash("md5").update(entry.definition).digest("hex") ===
+            attentionReview.installedFunctionMd5OnTestAndLive
+        : JSON.stringify(entry) === JSON.stringify(expected[index])));
+  if (installed.sourceSha256 !== digest ||
+      !(JSON.stringify(before) === JSON.stringify(expected) || attentionCardsMatch) ||
+      hashes.length !== 1 || hashes[0].digest !== digest)
+    throw Error("Installed source jobs contract differs; inspect before continuing");
   // The private helper intentionally has no EXECUTE grant for the management
   // read-only role. Use the owner endpoint inside an enforced read-only transaction.
   const result = { environment, project, observedAt: new Date().toISOString(), sourceSha256: digest, installedVerified: true, coverage: await q(`begin read only;set local statement_timeout=45000;set local enable_nestloop=off;${coverage};commit;`, false), providerRequests: 0, canonicalWrites: 0 };

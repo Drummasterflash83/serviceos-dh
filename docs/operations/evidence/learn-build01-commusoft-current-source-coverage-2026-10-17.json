@@ -1,0 +1,32 @@
+{
+  "version": "learn-build01-commusoft-current-source-coverage/1",
+  "observedAt": "2026-10-17T13:38:49Z",
+  "readbackScript": "scripts/verify/learn-commusoft-source-jobs-release.mjs readback",
+  "contract": {
+    "baseReaderSha256": "73a5e386e9a37fc33c0e249dd51be44a356ec3ac972cbafe2f8f1e98a2771b7b",
+    "approvedAttentionFilterFunctionMd5": "3f3047e65767fa23bd00c224582e708f",
+    "approvedAttentionFilterFunctionSha256": "9c58f7efa51158baeac5bd0183cf36191b4ee6703f8eaf172e1bf37fe8eab0ef",
+    "baseHelperDispatcherAndPrivilegesUnchanged": true,
+    "testAndLiveReadbackPassed": true
+  },
+  "live": {
+    "retainedJobIdentities": 12656,
+    "recordedOpenPendingOrOnHold": 295,
+    "reviewedCanonicalJobs": 1004,
+    "recordedOpenWithMissingPropertySource": 25,
+    "recordedOpenWithMissingCustomerBehindRetainedSite": 4,
+    "recordedOpenSourceRelationshipGaps": 29,
+    "recordedOpenWithUnreviewedCustomerIdentity": 284,
+    "sourceJobConflicts": 0
+  },
+  "test": {
+    "retainedJobIdentities": 12611,
+    "recordedOpenPendingOrOnHold": 282,
+    "recordedOpenSourceRelationshipGaps": 34,
+    "reviewedCanonicalJobs": 46
+  },
+  "providerRequests": 0,
+  "databaseOrCanonicalWrites": false,
+  "sourceIdsOrPayloadsReturned": false,
+  "limitation": "Retained source relationships are still missing for 29 recorded open LIVE jobs. This readback checks stored source and reader integrity; it does not establish current provider state, an individual assignee, a verified completion time or customer identity for unresolved records."
+}
