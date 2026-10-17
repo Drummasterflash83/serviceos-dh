@@ -1,0 +1,19 @@
+{
+  "version": "learn-build01-commusoft-missing-parent-provider/1",
+  "observedAt": "2026-10-17T13:44:27Z",
+  "environment": "LIVE Drummonds read-only provider and source",
+  "documentedEndpoint": "https://developer.commusoft.com/properties-24700271e0",
+  "recordedOpenJobsWithMissingParentSource": 29,
+  "distinctMissingParentPropertyIds": 19,
+  "directGetCompleted": 19,
+  "directGetHttp404": 19,
+  "directGetHttp200": 0,
+  "positiveControlKnownRetainedOpenJobPropertyHttp200": true,
+  "positiveControlReturnedIdMatched": true,
+  "requestMethod": "GET",
+  "targetIdsOrProviderBodiesReturned": false,
+  "targetStatusJournal": "Private, ignored, mode-0600 local checkpoint",
+  "providerWrites": false,
+  "databaseWrites": false,
+  "interpretation": "The exact parent IDs missing from retained source were not available through the documented direct property endpoint at this observation. A current retained property succeeded through the same key and route. This does not prove deletion, permanence, or authorization to invent a parent or link; the 29 job records remain visible as source-review holds."
+}

@@ -1,5 +1,13 @@
 # Build execution tracker
 
+Build 01 exact Commusoft source gap (17 October, 13:44 UTC): the 29 recorded
+open jobs with missing parent source reference 19 distinct property IDs.
+All 19 returned 404 from the documented read-only property-by-ID endpoint;
+a known retained open-job property returned 200 with matching ID through
+the same key and route. The jobs stay visible as review holds. This is not
+proof of deletion or a reason to invent customer/site relationships.
+[Provider result](../../operations/evidence/learn-build01-commusoft-missing-parent-provider-2026-10-17.json).
+
 Build 01 recovery-read preflight (17 October, 13:41 UTC): the independent
 eleven-setting off-site ciphertext, pinned age binary, public recipient and
 private 1Password binding still validate. No key read or fingerprint was

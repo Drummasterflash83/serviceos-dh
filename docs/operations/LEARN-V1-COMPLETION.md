@@ -17,6 +17,27 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 13:44 UTC — missing Commusoft parents checked directly at source.**
+
+### Working and verified
+
+- The 29 recorded open jobs with missing parent source collapse to **19 distinct
+  property IDs**. Each returned HTTP 404 from Commusoft's documented read-only
+  property-by-ID endpoint. One known retained open-job property returned HTTP
+  200 with a matching ID using the same credential and route. No property body
+  or ID was printed or committed. [Content-free result](evidence/learn-build01-commusoft-missing-parent-provider-2026-10-17.json).
+
+### Needs finishing
+
+- Keep all 29 jobs visible as source-review gaps; 404 does not prove deletion
+  or justify inventing a customer/site link. A repeated full crawl is not a
+  demonstrated remedy while the exact IDs are unavailable by direct lookup.
+
+### Blocked externally
+
+- No owner action is needed for this bounded check. Resolution would require
+  provider-side evidence if the parent records later become available.
+
 **17 October, 13:41 UTC — existing Edge credential restore inputs preflighted without Touch ID.**
 
 ### Working and verified

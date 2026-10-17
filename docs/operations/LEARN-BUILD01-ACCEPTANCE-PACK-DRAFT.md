@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 13:40 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 13:44 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -49,6 +49,11 @@ inactive until Chris reviews and signs off the business result.
   or customer source relationship**. They remain visible for source review,
   without inferred ownership or completion.
   [Coverage receipt](evidence/learn-build01-commusoft-current-source-coverage-2026-10-17.json).
+  A bounded direct GET then checked the 19 distinct parent IDs behind those
+  29 gaps: all returned 404, while a known retained property returned 200
+  with the same key and route. The jobs remain visible as source-review holds;
+  no parent or mapping was invented.
+  [Provider result](evidence/learn-build01-commusoft-missing-parent-provider-2026-10-17.json).
 
 - A counts-only handoff audit found eight active Drummonds team entries but
   **zero confirmed members**, zero signed-in confirmed recipients and zero
