@@ -8,6 +8,13 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- The ordinary LIVE worker cleared the final stale card without a targeted
+  manual job: **4,182/4,182** active cards now have projections, and the
+  latest completed ten-card batch reported zero failures. The earlier full
+  ordinary sweep also completed at 06:11. This closes the initial unattended
+  card-sweep proof; continuing freshness remains an operating check.
+  [Zero-stale receipt](evidence/learn-build01-card-ordinary-zero-stale-2026-10-17.json).
+
 - Current LIVE Edge source has one post-v107 change: `openfolk-control-plane`
   v37→v38. A small reviewed Git patch reconstructs all 24 current Control
   Plane files from the pinned v107 archive that underlies the independently
@@ -358,16 +365,15 @@ inactive until Chris reviews and signs off the business result.
 
 ## Needs finishing
 
-- **Use the existing operation before changing it:** the ordinary card sweep
-  is advancing without intervention, and an earlier full sweep has already
-  completed. A proposed priority-scheduler change
+- **Continue using the existing operation:** the ordinary card sweep cleared
+  the last stale card without intervention, and an earlier full sweep had
+  already completed. A proposed priority-scheduler change
   passed local handler checks and the LIVE read-only selector, but TEST has no
   active copy of that endpoint and the installed LIVE source differs from the
-  tracked baseline. It was **not released**. Do not describe a manual targeted
-  card job as unattended success. Keep watching the current one stale card and
-  the rolling worker's failure rate; investigate only if it stops or repeatedly
-  misses that card. Do not reimpose a fresh terminal sweep as a perpetual gate
-  when the completed 06:11 sweep already proves an ordinary full cycle.
+  tracked baseline. It was **not released**. Keep watching the rolling worker's
+  failure rate and future source changes. Do not reimpose a fresh terminal
+  sweep as a perpetual gate when the completed 06:11 sweep and zero-stale
+  readback prove this cycle.
 - **Interpret quiet sources honestly:** the exact 160-channel campaign is now
   confirmed entirely archived at Slack. At 10:41 LIVE still had zero retained
   post-cutoff messages, replies or signed hints in that roster. The current

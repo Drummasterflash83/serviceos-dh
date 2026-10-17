@@ -17,6 +17,25 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 12:56 UTC — ordinary card sweep cleared its last stale card.**
+
+### Working and verified
+
+- LIVE has **4,182/4,182 active cards projected** and zero stale unprojected
+  cards. The worker's latest completed ordinary ten-card job succeeded with
+  zero failed cards or phases; no targeted manual card job was used. An earlier
+  full ordinary sweep had already reached terminal success at 06:11 UTC.
+  [Read-only zero-stale receipt](evidence/learn-build01-card-ordinary-zero-stale-2026-10-17.json).
+
+### Needs finishing
+
+- Continue normal freshness observation as sources change. Do not turn the
+  recurring sweep's next cycle into a new one-time acceptance gate.
+
+### Blocked externally
+
+- No owner action is needed for the card sweep.
+
 **17 October, 12:44 UTC — current LIVE Control Plane source reconstructed from the existing off-site baseline.**
 
 ### Working and verified

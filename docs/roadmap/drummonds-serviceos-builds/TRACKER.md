@@ -1,5 +1,12 @@
 # Build execution tracker
 
+Build 01 ordinary card proof (17 October, 12:56 UTC): 4,182/4,182 active LIVE
+cards are projected and zero are stale after an ordinary ten-card worker job
+with no failures. No targeted manual card job was used; the earlier full
+ordinary sweep completed at 06:11. Future freshness remains monitored, not a
+new terminal acceptance gate.
+[Zero-stale receipt](../../operations/evidence/learn-build01-card-ordinary-zero-stale-2026-10-17.json).
+
 Build 01 current-source recovery overlay (17 October, 12:44 UTC): LIVE still
 serves 103 Edge functions; only Control Plane advanced from the pinned v107
 archive underlying the independently downloaded off-site package. A

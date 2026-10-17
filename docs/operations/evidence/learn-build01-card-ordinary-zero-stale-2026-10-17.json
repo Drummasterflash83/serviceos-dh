@@ -1,0 +1,30 @@
+{
+  "activeCards": 4182,
+  "contract": "learn-build01-ordinary-card-zero-stale/1",
+  "earlierFullOrdinarySweepEvidence": "learn-build01-card-ordinary-sweep-2026-10-17.json",
+  "environment": "LIVE Drummonds read-only",
+  "limit": "Point-in-time zero-stale state; ordinary rolling sweep and future source changes continue.",
+  "manualTargetedJobUsed": false,
+  "missingCompany": 0,
+  "missingPerson": 0,
+  "mostRecentCompletedJob": {
+    "cardsFailed": 0,
+    "cardsProjected": 10,
+    "continuedSweep": true,
+    "failurePhases": {
+      "identity": 0,
+      "inputs": 0,
+      "projection": 0,
+      "update": 0
+    },
+    "requestedLimit": 10,
+    "status": "succeeded",
+    "targetedCard": false
+  },
+  "noIdentity": 0,
+  "observedAt": "2026-10-17T12:56:07.765Z",
+  "productionDataWritesByReadback": false,
+  "projectedCards": 4182,
+  "staleUnprojected": 0,
+  "syntheticPerson": 0
+}
