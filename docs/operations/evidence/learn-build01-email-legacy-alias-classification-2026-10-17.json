@@ -1,0 +1,26 @@
+{
+  "version": "learn-build01-email-legacy-alias-classification/1",
+  "observedAtUtc": "2026-10-17T06:24:52.490Z",
+  "environment": "LIVE",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "method": "Thirty-nine bounded 500-row read-only pages compared the existing interaction's canonical fields with its retained Email source. The private source-field helper ran inside BEGIN READ ONLY and every transaction rolled back. No IDs or message content were returned.",
+  "readbackScript": "scripts/verify/learn-build01-email-legacy-alias-classify.mjs",
+  "legacyLinkedInteractions": 19128,
+  "missingRetainedSourceRows": 12,
+  "allSourceFieldsExact": 128,
+  "sourceFieldsExactExceptConnectorLabel": 19061,
+  "legacyGoogleWorkspaceConnectorLabel": 19000,
+  "otherFieldDifferenceOrMissingSource": 67,
+  "campaignLinked": 0,
+  "partialProjectionMetadata": 0,
+  "threeYearHorizonReadback": {
+    "withinHorizon": 19114,
+    "olderThanHorizon": 2,
+    "missingSource": 12,
+    "sourceUpdatedInPriorDay": 13695,
+    "sourceUpdatedInPriorWeek": 17567
+  },
+  "productionDataWrites": false,
+  "sourceIdsOrMessageContentReturned": false,
+  "limitation": "The 19,061 source-equivalent rows are not yet adopted into the current projection-revision contract. A safe adoption must preserve the existing google-workspace connector provenance and hold the 67 non-equivalent or missing-source records for review. Counts are a snapshot, not permission to bulk rewrite canonical fields."
+}

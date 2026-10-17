@@ -1,0 +1,53 @@
+{
+  "version": "learn-build01-email-legacy-adoption/1",
+  "observedAtUtc": "2026-10-17T06:38:08Z",
+  "environment": "LIVE",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "migration": "supabase/migrations/20261104223000_learn_email_legacy_equivalent_adoption.sql",
+  "migrationSha256": "a248a4d15e9709d8e5a9240433dd626e0e3f2beb4c1717b8c5bcb5638c1c9f91",
+  "schemaRehearsal": {
+    "testSyntheticRollbackPassed": true,
+    "testInstalledSyntheticRollbackPassed": true,
+    "liveSchemaRollbackPassed": true,
+    "installedOnTestAndLive": true,
+    "ownerOnlyExecuteVerified": true,
+    "sameRevisionUnchangedVerified": true,
+    "futureCanonicalChangeHeldVerified": true
+  },
+  "liveDataRehearsal": {
+    "firstPageChecked": 50,
+    "firstPageWouldAdopt": 50,
+    "canonicalFieldsPreserved": true,
+    "rolledBack": true,
+    "retainedAdoptionReceiptsAfterRollback": 0
+  },
+  "liveBoundedRun": {
+    "pages": 383,
+    "checked": 19128,
+    "adopted": 19048,
+    "batchLimit": 50,
+    "providerRequests": 0
+  },
+  "independentReadback": {
+    "immutableAdoptionReceipts": 19048,
+    "distinctSourcesWithAdoptionReceipts": 19048,
+    "adoptedHistoricalGoogleWorkspaceLabelsPreserved": 18920,
+    "adoptedExistingEmailLabelsPreserved": 128,
+    "remainingLegacyLinks": 80,
+    "missingRetainedSource": 12,
+    "existingEquivalentReviewHolds": 13,
+    "nonEquivalentDrafts": 55,
+    "draftDifference": "Historical interaction direction outbound/type email_message versus retained source direction unknown/type email_draft; no draft was adopted."
+  },
+  "ordinaryEmailUpdateChainAtUtc": "2026-10-17T06:37:07.183Z",
+  "ordinaryEmailUnchangedReceipts": 26050,
+  "ordinaryEmailDistinctSources": 26048,
+  "backupPreflight": {
+    "latestScheduledDatabaseBackupAtUtc": "2026-10-16T12:44:49Z",
+    "scheduledDatabaseBackupSucceeded": true,
+    "latestScheduledMissedSuccessMonitorAtUtc": "2026-10-16T14:03:23Z",
+    "scheduledMissedSuccessMonitorSucceeded": true
+  },
+  "sourceIdsOrMessageContentReturned": false,
+  "remainingWork": "Review 55 historical drafts, 12 source-missing links and 13 pre-existing held equivalent links separately; continue ordinary Email changed-source backlog and wider Build 01 gates."
+}

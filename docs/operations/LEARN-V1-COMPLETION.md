@@ -17,6 +17,71 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 06:38 UTC — source-equivalent legacy Email links reconciled without rewriting their history.**
+
+### Working and verified
+
+- The exact owner-only Email adoption migration passed synthetic rollback tests
+  before and after TEST installation, a LIVE schema rollback rehearsal, and a
+  LIVE 50-row data rollback rehearsal. Both hosted schemas now have the guarded
+  helper. It preserves historical connector labels, canonical interaction
+  fields and source content, writes immutable receipts, and holds a later
+  canonical source change for review rather than overwriting legacy provenance.
+- The bounded LIVE pass checked **19,128** legacy links in 383 pages of at most
+  50. **19,048** source-equivalent interactions were adopted. Independent
+  readback found 19,048 immutable receipts, one per source; 18,920 retained
+  `google-workspace` labels and 128 retained `email` labels. The ordinary Email
+  update chain continued to **26,050** unchanged receipts for **26,048**
+  distinct sources. [Adoption evidence](evidence/learn-build01-email-legacy-adoption-2026-10-17.json).
+- Exactly **80** legacy links remain untouched: 55 are historical drafts whose
+  outbound/message classification conflicts with the retained draft source's
+  unknown/draft classification, 12 have no retained source row, and 13 matching
+  links already have review holds. None was silently treated as normal mail.
+
+### Needs finishing
+
+- Review the 55 draft classification differences, 12 source-missing links and
+  13 existing holds through their provenance, without bulk rewriting them.
+  Continue the ordinary changed-source Email backlog. The exact 160-channel
+  Slack proof, reviewed job attention and full application/Auth recovery still
+  govern Build 01 acceptance.
+
+### Blocked externally
+
+- No user action or fingerprint was needed for this reconciliation. Chris's
+  business sign-off remains pending the wider technical acceptance evidence.
+
+**17 October, 06:25 UTC — legacy Email gap reduced to a bounded provenance problem.**
+
+### Working and verified
+
+- A full counts-only LIVE comparison traversed **19,128** legacy linked Email
+  interactions in 39 bounded read-only pages. **19,061** match every retained
+  source field except the historical connector label; **128** of those match
+  every field. The legacy label is `google-workspace` for 19,000 rows, whereas
+  the new projector writes `email`. Twelve interactions lack a retained source
+  row and 55 more have a field difference, so they cannot be silently adopted.
+  [Classification receipt](evidence/learn-build01-email-legacy-alias-classification-2026-10-17.json).
+- Only two of the legacy links are older than the approved three-year horizon;
+  19,114 are inside it, and 13,695 retained source rows changed within the
+  previous day. This is active V1 coverage work, not an archive-only cleanup.
+
+### Needs finishing
+
+- Design and rehearse a bounded, alias-preserving adoption for the 19,061
+  source-equivalent records. Preserve their existing interaction fields and
+  provenance, record an immutable receipt, and route the 67 exceptions to
+  review. Do not convert `google-workspace` labels to generic `email` or stamp
+  projection revisions without a matching future-update guard. The ordinary
+  Email update chain continues separately.
+- The exact 160-channel Slack post-cutoff event and full freshness, reviewed
+  job attention, and full application/Auth recovery gates below remain open.
+
+### Blocked externally
+
+- No user action or fingerprint is needed to develop and test the Email
+  reconciliation. Chris's business sign-off remains pending technical evidence.
+
 **17 October, 06:15 UTC — ordinary card sweep completed; exact Slack window recovered; current source rebuilt in isolation.**
 
 ### Working and verified
