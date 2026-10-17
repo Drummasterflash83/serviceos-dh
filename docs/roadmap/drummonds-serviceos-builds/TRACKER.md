@@ -1,5 +1,12 @@
 # Build execution tracker
 
+Build 01 current worker recovery (17 October, 18:19 UTC): the exact LIVE
+v113 serving bundle booted with no network, ports or credentials in the pinned
+Edge runtime, answered OPTIONS 200 and denied unauthorised POST 403. The
+container was removed. This verifies startup after the one-file settlement
+release, not restored credentials/Auth or provider restart.
+[Isolated receipt](../../operations/evidence/learn-build01-v113-worker-isolated-startup-2026-10-17.json).
+
 Build 01 historical Email identity retry (17 October, 18:16 UTC): the fifth
 ordinary attempt settled as a visible `57014` dead letter after 48 immutable
 publications; logs locate two timeouts in the linked-interaction draft-aware

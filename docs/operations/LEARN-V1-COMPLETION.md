@@ -17,6 +17,28 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 18:19 UTC — current v113 worker starts and fails closed in isolation.**
+
+### Working and verified
+
+- The exact serving LIVE v113 worker bundle was hash-read from the installed
+  function, then booted in the pinned Edge runtime with network disabled,
+  no host ports and no credentials. OPTIONS returned 200, unauthorised POST
+  returned 403, and the disposable container was removed. This updates the
+  earlier v112 startup proof to the current one-file settlement release.
+  [Isolated receipt](evidence/learn-build01-v113-worker-isolated-startup-2026-10-17.json).
+
+### Needs finishing
+
+- This proves current-code startup and fail-closed access. It does not prove
+  restored runtime credentials, authenticated queue execution or provider
+  capture in a replacement project.
+
+### Blocked externally
+
+- No fingerprint was needed for this check. The separately requested recovery
+  credential scope and signed-in Owner / MD handoff remain open.
+
 **17 October, 18:16 UTC — historical identity timeout classified; ordinary source work continued.**
 
 ### Working and verified

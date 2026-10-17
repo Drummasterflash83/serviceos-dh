@@ -10,6 +10,13 @@ sets out the exact LIVE result and limits for that later decision.
 
 ## Working and verified
 
+- The exact current LIVE worker v113 executable booted in a networkless
+  container with no credentials or host ports, returned OPTIONS 200 and
+  unauthorised POST 403, and was removed. This updates the current-code
+  startup proof after the identity settlement correction, while replacement
+  credentials and provider resumption remain unverified.
+  [v113 startup receipt](evidence/learn-build01-v113-worker-isolated-startup-2026-10-17.json).
+
 - The 18:08 historical Email identity retry settled as a visible SQLSTATE
   `57014` dead letter, with 48 immutable publications and two count-statement
   timeouts. Seven later ordinary jobs processed 350 retained inputs without a
