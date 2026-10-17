@@ -550,15 +550,13 @@ inactive until Chris reviews and signs off the business result.
 
 ## Needs finishing
 
-- **Continue using the existing operation:** the ordinary card sweep cleared
-  the last stale card without intervention, and an earlier full sweep had
-  already completed. A proposed priority-scheduler change
-  passed local handler checks and the LIVE read-only selector, but TEST has no
-  active copy of that endpoint and the installed LIVE source differs from the
-  tracked baseline. It was **not released**. Keep watching the rolling worker's
-  failure rate and future source changes. Do not reimpose a fresh terminal
-  sweep as a perpetual gate when the completed 06:11 sweep and zero-stale
-  readback prove this cycle.
+- **Continue ordinary card observation:** the released worker now admits
+  stable new unprojected cards during a full sweep while reserving capacity
+  for older cards. Its first ordinary LIVE jobs cleared the six stale cards;
+  newer cards continued to arrive and must keep progressing. Watch its
+  ordinary failure rate and freshness. The earlier full sweep already
+  completed at 06:11; do not impose another terminal sweep as a perpetual
+  acceptance gate.
 - **Interpret quiet sources honestly:** the exact 160-channel campaign is now
   confirmed entirely archived at Slack. At 10:41 LIVE still had zero retained
   post-cutoff messages, replies or signed hints in that roster. The current
@@ -669,9 +667,11 @@ inactive until Chris reviews and signs off the business result.
   The first handoff recipient is selected as Owner / MD. Browser security review
   blocked agent access to the signed-in LIVE OpenFolk origin because that would
   expose broader private client data; a focused signed-in user action or a
-  narrower approved access path is needed for the positive handoff. Credential-copy
-  scope and off-site transfer are complete; isolated decrypt and provider
-  restart remain technical gates.
+  narrower approved access path is needed for the positive handoff. The
+  approved eleven-setting encrypted copy is off-site, but five additional
+  active bindings remain outside that scope. Their separate one-time LIVE
+  encrypted-copy authorization is pending; the hosted TEST rehearsal is done.
+  Isolated decrypt and provider restart remain technical gates.
   Chris's business acceptance will be
   requested **after** the technical pack is ready. No full-working-day elapsed-time
   wait is being imposed.
