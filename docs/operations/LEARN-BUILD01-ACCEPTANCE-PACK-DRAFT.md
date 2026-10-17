@@ -10,6 +10,14 @@ sets out the exact LIVE result and limits for that later decision.
 
 ## Working and verified
 
+- The exact current LIVE worker v112 executable now has a separate isolated
+  startup check: it booted in the pinned Edge runtime without network, ports
+  or credentials, answered OPTIONS with 200 and denied an unauthorised POST
+  with 403. Its disposable container was removed. This strengthens current
+  source recovery while leaving recovered credentials, replacement-project
+  execution and real provider resumption open.
+  [Current-worker startup receipt](evidence/learn-build01-v112-worker-isolated-startup-2026-10-17.json).
+
 - A diagnostic-only identity worker release passed 18 local handler tests,
   TypeScript, exact TEST executable readback and unsigned-request denial.
   LIVE worker v112 serves the same executable; unrelated Edge functions were

@@ -1,0 +1,19 @@
+{
+  "contract": "learn-build01-v112-worker-isolated-startup/1",
+  "observedAtUtc": "2026-10-17T17:46:21.449573+00:00",
+  "servingLiveWorkerVersion": 112,
+  "sourceClosureSha256": "c0edca159830408cc6fe50f75b561c68126543a2d4862100f045f99036add791",
+  "workerBundleSha256": "e93ddb7f70bec70cd522ffe5298561d23bdf3cd9ca9f6ca47b8d3c869389506b",
+  "workerBundleBytes": 19258978,
+  "pinnedEdgeImageId": "sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c",
+  "network": "none",
+  "hostPorts": 0,
+  "runtimeSecrets": 0,
+  "optionsHttp": 200,
+  "unauthorizedPostHttp": 403,
+  "containerRemovedAndIndependentlyChecked": true,
+  "productionDataWrites": false,
+  "providerWrites": false,
+  "authenticatedQueueExecutionVerified": false,
+  "fullApplicationAuthRecoveryVerified": false
+}

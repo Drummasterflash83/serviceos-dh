@@ -17,6 +17,31 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 17:46 UTC — current worker starts and denies unauthorised work in isolation.**
+
+### Working and verified
+
+- The exact serving LIVE platform-worker v112 executable booted in the pinned
+  Edge runtime with network disabled, no host ports and no runtime credentials.
+  OPTIONS returned 200; an unauthorised POST returned 403. The rehearsal
+  container was removed and independently checked absent. This carries the
+  current one-file identity diagnostic overlay into recovery testing, rather
+  than relying only on the older v107 startup proof.
+  [Sanitised receipt](evidence/learn-build01-v112-worker-isolated-startup-2026-10-17.json).
+
+### Needs finishing
+
+- This is current-source startup and fail-closed evidence only. Recovered
+  credentials, authenticated queue execution in a replacement project and
+  bounded provider restart remain unverified. The ordinary identity retry and
+  fair recommendation sweep are still running.
+
+### Blocked externally
+
+- No fingerprint or provider access was needed for this check. The separately
+  requested five-setting recovery scope and signed-in Owner / MD handoff are
+  still awaiting their existing decisions/actions.
+
 **17 October, 17:30 UTC — identity retry diagnostic released without changing delivery rules.**
 
 ### Working and verified
