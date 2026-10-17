@@ -1,8 +1,33 @@
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { loadCommusoftReviewConnections, type ReviewClient, type ReviewConnection } from "@/lib/learn-commusoft-review";
-import { loadSourceJobPage, SOURCE_JOB_IDENTITIES, SOURCE_JOB_RELATIONSHIPS, type SourceJobPage } from "@/lib/learn-commusoft-source-jobs";
+import { createSourceJobReviewAction, loadSourceJobPage, SOURCE_JOB_IDENTITIES, SOURCE_JOB_RELATIONSHIPS, type SourceJobPage } from "@/lib/learn-commusoft-source-jobs";
 import { LearnCommusoftJobDetails } from "./LearnCommusoftJobDetails";
+
+function ReviewTaskButton({ db, tenant, connection, external, version }: {
+  db: ReviewClient; tenant: string; connection: string; external: string; version: string;
+}) {
+  const [open, setOpen] = useState(false), [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false), [notice, setNotice] = useState("");
+  const [taskId, setTaskId] = useState("");
+  return <div className="space-y-2 rounded-lg border border-[#cbbada] p-3 text-sm">
+    <p>An OpenFolk review task can be assigned to a confirmed team member. It is not a Commusoft appointment or technician assignment.</p>
+    {taskId ? <p role="status">Review task {taskId} is in the Command Centre. <a href="/app#/command" className="underline">Open work queue to assign it</a>.</p> :
+      open ? <form className="space-y-2" onSubmit={e => { e.preventDefault(); setBusy(true); setNotice("");
+        void createSourceJobReviewAction(db, { tenant, connection, external, version, reason })
+          .then(r => { setTaskId(r.id); setOpen(false); })
+          .catch(e => setNotice(e instanceof Error ? e.message : "Review task unavailable"))
+          .finally(() => setBusy(false)); }}>
+        <label className="block">Reason for human source review<input className="mt-1 block w-full rounded-md border border-[#cbbada] p-2"
+          maxLength={1000} value={reason} onChange={e => setReason(e.target.value)}
+          placeholder="e.g. Verify the recorded hold against the latest provider status" /></label>
+        <div className="flex gap-2"><button type="submit" className="cp-secondary" disabled={busy || !reason.trim()}>
+          {busy ? "Creating…" : "Create audited review task"}</button>
+          <button type="button" className="cp-secondary" disabled={busy} onClick={() => { setOpen(false); setReason(""); }}>Cancel</button></div>
+        {notice && <p role="alert">{notice}</p>}
+      </form> : <button type="button" className="cp-secondary" onClick={() => setOpen(true)}>Prepare OpenFolk review task</button>}
+  </div>;
+}
 
 /** Read-only source cards: unresolved identity never hides a retained job. */
 export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob }: {
@@ -71,6 +96,7 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob 
         <p>{SOURCE_JOB_RELATIONSHIPS[row.relationship_state]}</p><p>{SOURCE_JOB_IDENTITIES[row.customer_identity_state]}</p>
         <p className="text-sm">Source observation: {new Date(row.observed_at).toLocaleString("en-GB")}. This does not verify job progress or completion.</p>
         {row.reviewed_job_id && onOpenJob ? <button className="cp-secondary" onClick={() => onOpenJob(row.reviewed_job_id!)}>Open linked job card</button> : <p className="text-sm">Communications and performance assessment are not established for this source view.</p>}
+        {row.version_id && <ReviewTaskButton db={db} tenant={tenantId} connection={connection} external={row.external_id} version={row.version_id} />}
         {row.version_id && <LearnCommusoftJobDetails tenant={tenantId} connection={connection} version={row.version_id} external={row.external_id} client={db} />}
       </article>)}</div>
       {!visible.rows.length && <p>No captured jobs match this view. Clear the open-work filter to include closed work and conflicting source records.</p>}
