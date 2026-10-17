@@ -1,5 +1,24 @@
 # Build execution tracker
 
+Build 01 release and operating check (17 October, 12:33 UTC): the reviewed
+five-file handoff UI is READY on protected TEST `6bdf59e7` and LIVE production
+`702408a4`, with correct separate backend bindings and all existing aliases
+verified. It exposes the Owner / MD member-to-login confirmation and an
+audited, source-versioned Commusoft review-task creator. No actual member
+confirmation, task or accepted handoff has yet occurred; signed-in LIVE browser
+access was blocked by automatic security review, so the action remains a
+genuine user/approval gate. The ordinary card sweep has 4,181/4,182 projected
+and 237 cards ahead of the one stale card; Phone is 4,676/4,676, eligible
+Graph gaps are zero, Email's two aliases are current, and the exact 160
+archived public Slack channels have 1,506 provider-completed empty windows with
+no current dead letter or post-cutoff message/reply. Historical reply catch-up
+continues. Four scheduled database-backup runs succeeded today; the separate
+missed-success monitor is enabled but has not fired its 17 October schedule.
+The independently downloaded Edge credential package now covers 11 active
+Build 01 settings, but private-key decrypt and real provider restart remain
+unverified. [Release receipt](../../operations/evidence/learn-build01-handoff-frontend-release-2026-10-17.json),
+[acceptance pack](../../operations/LEARN-BUILD01-ACCEPTANCE-PACK-DRAFT.md).
+
 Build 01 source-first alternative (17 October, 10:49 UTC): provider metadata
 for the exact approved public rosters found all 160 older campaign channels
 archived and all 20 separate current channels active. The saved user is a
