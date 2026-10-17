@@ -17,6 +17,25 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 13:46 UTC — direct Commusoft job details do not establish the first named handoff.**
+
+### Working and verified
+
+- Three bounded direct GETs (one completed, one on-hold, one ongoing) returned
+  200 with matching current status. The documented assignment array was
+  present but empty in all three; completion/closure timestamps in this
+  sample lacked an explicit zone. [Content-free sample](evidence/learn-build01-commusoft-direct-job-shape-2026-10-17.json).
+
+### Needs finishing
+
+- Do not generalize a three-job sample to every job. The first real
+  person-directed review remains the audited OpenFolk Owner / MD handoff;
+  numerical elapsed-time completion scoring remains withheld.
+
+### Blocked externally
+
+- No staff or provider action was requested by this read-only sample.
+
 **17 October, 13:44 UTC — missing Commusoft parents checked directly at source.**
 
 ### Working and verified

@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 13:44 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 13:46 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -465,6 +465,11 @@ inactive until Chris reviews and signs off the business result.
   do not bypass that rejection with a privileged database write. The final
   positive handoff still needs a legitimate signed-in action and readback.
   [Policy draft](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md).
+  A three-job direct-provider sample found the documented assignment array
+  empty for one completed, one on-hold and one ongoing job, with no explicit
+  zone on completion/closure timestamps. It is a bounded shape check, not
+  company-wide proof of no assignees.
+  [Sample receipt](evidence/learn-build01-commusoft-direct-job-shape-2026-10-17.json).
 - **Attribution limits:** the current 1,004 published canonical Commusoft jobs
   have customer links, but only 793 have site links, five have any linked
   communication, and none has an individual engineer link, completion instant

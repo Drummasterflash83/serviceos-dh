@@ -1,5 +1,13 @@
 # Build execution tracker
 
+Build 01 direct Commusoft job shape (17 October, 13:46 UTC): one completed,
+one on-hold and one ongoing LIVE job each returned 200 with matching status.
+The documented assignment array was empty in all three responses, and the
+completion/closure timestamps lacked explicit zones. This sample cannot
+establish company-wide assignment absence or a numerical completion score;
+the audited Owner / MD OpenFolk handoff remains the first named-person route.
+[Sample](../../operations/evidence/learn-build01-commusoft-direct-job-shape-2026-10-17.json).
+
 Build 01 exact Commusoft source gap (17 October, 13:44 UTC): the 29 recorded
 open jobs with missing parent source reference 19 distinct property IDs.
 All 19 returned 404 from the documented read-only property-by-ID endpoint;

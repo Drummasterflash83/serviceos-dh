@@ -81,6 +81,16 @@ ownership. Chris approved this product distinction and chose the existing
 Owner / MD login for the first confirmed-person handoff. No LIVE review task
 or member confirmation has been created yet.
 
+The official [direct job GET](https://developer.commusoft.com/jobs-24695919e0)
+documents `usersCurrentlyAssignedToJob` and completion/closure timestamps.
+A 17 October bounded LIVE read of one completed, one on-hold and one ongoing
+job found the assignment array present but empty in all three responses.
+All three current statuses matched their retained status; neither completion
+nor closure timestamp carried an explicit zone in this sample. This makes the
+direct endpoint worth separate source investigation, but does **not** support
+an engineer assignment or elapsed-time score for these jobs.
+[Content-free sample](evidence/learn-build01-commusoft-direct-job-shape-2026-10-17.json).
+
 The 17 October 11:53 UTC counts-only handoff audit found eight active
 Drummonds roster entries but no confirmed member, signed-in confirmed
 recipient or signed-in member with confirmed `work.assign` authority. The

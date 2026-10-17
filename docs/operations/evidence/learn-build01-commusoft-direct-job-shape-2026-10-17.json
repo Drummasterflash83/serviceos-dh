@@ -1,0 +1,21 @@
+{
+  "version": "learn-build01-commusoft-direct-job-shape/1",
+  "observedAt": "2026-10-17T13:46:00Z",
+  "environment": "LIVE Drummonds read-only provider",
+  "documentedEndpoint": "https://developer.commusoft.com/jobs-24695919e0",
+  "sample": {
+    "latestRetainedCompleted": 1,
+    "latestRetainedOnHold": 1,
+    "latestRetainedOngoing": 1,
+    "directGetHttp200": 3,
+    "sourceAndCurrentStatusesMatched": 3,
+    "assignmentArrayPresent": 3,
+    "nonemptyAssignmentArrays": 0,
+    "completionTimestampWithExplicitZone": 0,
+    "closureTimestampWithExplicitZone": 0
+  },
+  "jobIdsNamesOrBodiesReturned": false,
+  "providerWrites": false,
+  "databaseWrites": false,
+  "limitation": "The direct job endpoint exposes an assignment field, but all three bounded real responses had an empty array. This sample does not establish that every job is unassigned. It does not verify technician ownership or a completion time zone, so no person routing or elapsed-time score is inferred."
+}
