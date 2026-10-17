@@ -1,12 +1,22 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 17:07 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 17:30 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- A diagnostic-only identity worker release passed 18 local handler tests,
+  TypeScript, exact TEST executable readback and unsigned-request denial.
+  LIVE worker v112 serves the same executable; unrelated Edge functions were
+  unchanged. It records only fixed error-code categories for the repeated
+  historical Email identity retry. The normal recommendation chain continued
+  after release, reducing legacy empty-evidence actions from 271 to 211 by
+  17:29 UTC. This is diagnosis and progress, not a settled identity retry or
+  a completed full-card recommendation sweep.
+  [Release and source proof](evidence/learn-build01-identity-diagnostic-release-2026-10-17.json).
 
 - A fresh LIVE scorecard readback confirmed **zero published scorecard
   policies, job measurements or saved job assessments**; no unreviewed job

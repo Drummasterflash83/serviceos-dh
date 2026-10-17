@@ -32,7 +32,25 @@ export async function handleIdentityResolve(
     review_required: 0,
     reviews_recorded: 0,
     failed: 0,
+    failure_reasons: {} as Record<string, number>,
     continued: false,
+  };
+  // Only fixed protocol markers and validated machine codes may enter a job
+  // result. Provider messages, interaction IDs and source content never do.
+  const failureReason = (error: any, fallback: string) => {
+    const code = error?.code;
+    if (code === "PT409" && [
+      "identity_source_changed", "identity_event_changed",
+      "identity_card_unconfirmed", "identity_tenant_inactive",
+      "identity_receipt_conflict", "identity_review_person_unavailable",
+      "identity_review_company_unavailable", "processing_receipt_missing",
+      "identity_receipt_missing",
+    ].includes(error?.message)) return error.message as string;
+    if (typeof code === "string" && /^[A-Z0-9]{5}$/.test(code))
+      return `sqlstate_${code}`;
+    if (typeof code === "string" && /^PGRST[0-9]{3}$/.test(code))
+      return `postgrest_${code}`;
+    return fallback;
   };
   const validReceipt = (data: any, args: {
     p_request: string; p_interaction: string; p_revision: string;
@@ -66,22 +84,30 @@ export async function handleIdentityResolve(
       p_revision: row.source_revision,
     };
     let missing = false;
+    let diagnostic = "delivery_unconfirmed";
     for (const phase of ["publish", "inspect"]) {
       try {
         const { data, error } = await admin.rpc("learn_identity_deliver", {
           ...args, p_phase: phase,
         });
         if (!error && validReceipt(data, args)) return { receipt: data, missing: false };
+        const reason = error
+          ? failureReason(error, `${phase}_error_unclassified`)
+          : `${phase}_receipt_invalid`;
+        if (phase === "publish" || diagnostic === "delivery_unconfirmed")
+          diagnostic = reason;
         // Only a definite missing immutable publication permits a new request.
         // A lost inspect response or malformed receipt must remain unconfirmed.
         if (phase === "inspect" && error?.code === "PT409" &&
           ["processing_receipt_missing", "identity_receipt_missing"].includes(error.message))
           missing = true;
       } catch {
+        if (phase === "publish" || diagnostic === "delivery_unconfirmed")
+          diagnostic = `${phase}_transport_exception`;
         /* Inspect the same immutable request after response loss; never republish. */
       }
     }
-    return { receipt: null, missing };
+    return { receipt: null, missing, diagnostic };
   }
   try {
     const { data: rows, error } = await admin.rpc("learn_identity_pending", {
@@ -97,7 +123,7 @@ export async function handleIdentityResolve(
     )
       throw Error("identity_inventory_unconfirmed");
     for (const row of rows) {
-      let { receipt, missing } = await deliver(row);
+      let { receipt, missing, diagnostic } = await deliver(row);
       if (!receipt && missing) {
         // A source can change after inventory and before publication. Re-read
         // the bounded pending set; publish at most once with a different,
@@ -113,7 +139,7 @@ export async function handleIdentityResolve(
             const current = refreshed.data.find((r: any) => r?.interaction_id === row.interaction_id);
             if (current && revision(current.source_revision) &&
               current.source_revision !== row.source_revision)
-              ({ receipt } = await deliver(current));
+              ({ receipt, diagnostic } = await deliver(current));
           }
         } catch {
           /* Uncertain inventory leaves this row for the ordinary retry. */
@@ -121,6 +147,8 @@ export async function handleIdentityResolve(
       }
       if (!receipt) {
         counts.failed++;
+        const reason = diagnostic ?? "delivery_unconfirmed";
+        counts.failure_reasons[reason] = (counts.failure_reasons[reason] ?? 0) + 1;
         continue;
       }
       if (receipt.state === "review_required") {

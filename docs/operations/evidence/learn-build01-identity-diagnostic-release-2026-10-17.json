@@ -1,0 +1,32 @@
+{
+  "version": "learn-build01-identity-diagnostic-release/1",
+  "observedAtUtc": "2026-10-17T17:29:57.866Z",
+  "change": "Content-free failure-reason counts in identity.resolve job result; immutable receipt, retry, review and continuation rules unchanged",
+  "localIdentityTestsPassed": 18,
+  "typescriptPassed": true,
+  "test": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "platformWorkerVersion": 71,
+    "unsignedRequestStatus": 403,
+    "servingBodySha256": "e93ddb7f70bec70cd522ffe5298561d23bdf3cd9ca9f6ca47b8d3c869389506b"
+  },
+  "live": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "platformWorkerVersion": 112,
+    "servingBodySha256": "e93ddb7f70bec70cd522ffe5298561d23bdf3cd9ca9f6ca47b8d3c869389506b",
+    "unrelatedFunctionInventoryChanged": false,
+    "sourceFiles": 119,
+    "changedSourceFilesFromV111": 1,
+    "priorV111SourceReconstructedFromApprovedOffsiteBaseAndPinnedGit": true,
+    "ordinaryRecommendationSweepContinuedAfterRelease": true,
+    "latestRecommendationSuccessAtUtc": "2026-10-17T17:29:25.679Z",
+    "legacyEmptyEvidenceActionsRemaining": 211,
+    "activeIdentityJobAttempts": 4,
+    "nextOrdinaryIdentityRetryAtUtc": "2026-10-17T18:08:28.008562Z"
+  },
+  "productionDataWrites": false,
+  "providerRequests": 0,
+  "sourceContentOrCredentialsReturned": false,
+  "identityFailureResolved": false,
+  "fullApplicationRecoveryProven": false
+}

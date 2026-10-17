@@ -76,6 +76,11 @@ where j.tenant_id='${tenant}'::uuid and j.job_type='identity.resolve'
   and j.status in('running','retrying')
 group by p.attempt
 order by p.attempt`;
+const diagnosticQuery = `select status,attempt_count,updated_at,
+  result->'failure_reasons' as reasons
+from public.platform_jobs where tenant_id='${tenant}'::uuid
+  and job_type='identity.resolve' and error_code='identity_delivery_unconfirmed'
+order by updated_at desc limit 3`;
 async function read(sql) {
   const response = await fetch(`https://api.supabase.com/v1/projects/${project}/database/query/read-only`, {
     method: "POST",
@@ -109,7 +114,23 @@ if (!Array.isArray(publicationWindows) || !publicationWindows.every(row =>
     Number.isInteger(row.receipts) && row.receipts >= 0 &&
     Number.isInteger(row.publication_span_seconds) && row.publication_span_seconds >= 0))
   throw Error("Identity publication-window readback changed");
+const rawDiagnostics = await read(diagnosticQuery);
+if (!Array.isArray(rawDiagnostics) || rawDiagnostics.length > 3)
+  throw Error("Identity diagnostic readback changed");
+const deliveryDiagnostics = rawDiagnostics.map(row => {
+  if (!["retrying", "dead_letter", "failed"].includes(row.status) ||
+    !Number.isSafeInteger(row.attempt_count) ||
+    !Number.isFinite(Date.parse(row.updated_at)) ||
+    (row.reasons !== null && (typeof row.reasons !== "object" ||
+      Array.isArray(row.reasons) || Object.entries(row.reasons).some(([key, count]) =>
+        !/^(identity_[a-z_]+|processing_receipt_missing|sqlstate_[A-Z0-9]{5}|postgrest_PGRST[0-9]{3}|(?:publish|inspect)_(?:error_unclassified|receipt_invalid|transport_exception)|delivery_unconfirmed)$/.test(key) ||
+        !Number.isSafeInteger(count) || count < 1 || count > 50))))
+    throw Error("Identity diagnostic code shape changed");
+  return { status: row.status, attempt: row.attempt_count,
+    updatedAt: row.updated_at, reasons: row.reasons ?? {} };
+});
 console.log(JSON.stringify({ observedAt: new Date().toISOString(), project, tenant,
   rows, activeRetryPublications, receiptShape, publicationWindows,
+  deliveryDiagnostics,
   productionDataWrites: false,
   scope: "Queued/running/retrying timing and review holds only; no manual rescue implied." }));

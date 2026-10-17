@@ -129,8 +129,18 @@ test("a mixed batch reports partial failure and does not emit a successful conti
   assert.equal(r.success, false);
   assert.equal(r.recordsProcessed, 1);
   assert.equal(r.result?.failed, 1);
+  assert.deepEqual(r.result?.failure_reasons, { publish_error_unclassified: 1 });
   assert.equal(r.error?.retryable, true);
   assert.equal(r.continuation, undefined);
+  assert.ok(!JSON.stringify(r).includes("PRIVATE"));
+});
+test("a failed delivery records only fixed diagnostic codes, never database detail", async () => {
+  const f = fixture({ respond: (a: any) => ({ data: null, error: a.p_phase === "publish"
+    ? { code: "23514", message: "PRIVATE constraint detail" }
+    : { code: "PT409", message: "identity_receipt_missing" } }) });
+  const r = await f.run();
+  assert.equal(r.error?.code, "identity_delivery_unconfirmed");
+  assert.deepEqual(r.result?.failure_reasons, { sqlstate_23514: 1 });
   assert.ok(!JSON.stringify(r).includes("PRIVATE"));
 });
 test("review-required receipts preserve pending events and never count card completion", async () => {

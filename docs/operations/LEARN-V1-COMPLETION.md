@@ -17,6 +17,39 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 17:30 UTC — identity retry diagnostic released without changing delivery rules.**
+
+### Working and verified
+
+- A narrow diagnostic now records only validated machine error categories for an
+  unconfirmed identity delivery; it never records an interaction ID, provider
+  message or private source content in the job result. All 18 handler tests and
+  TypeScript passed. TEST worker v71 denied an unsigned request with 403 and
+  served the exact candidate executable. LIVE worker v112 now serves the same
+  executable; unrelated Edge functions were unchanged. The approved off-site
+  v107 source and pinned Git patches still establish v111; the v112 stage
+  changes exactly one of its 119 worker source files, with a serving-body match.
+  [Sanitised release receipt](evidence/learn-build01-identity-diagnostic-release-2026-10-17.json).
+- The ordinary LIVE recommendation chain continued across the worker release.
+  At 17:29 it had a new successful page, zero failed pages and **211** legacy
+  empty-evidence actions remaining, down from 271 before the fair sweep.
+
+### Needs finishing
+
+- The historical Email identity job is still at four of five attempts; its
+  fifth ordinary retry is due at 18:08 UTC. The diagnostic will classify the
+  failing RPC without changing publication or hiding an unconfirmed record.
+  Do not claim the identity gate resolved until that retry settles and the
+  pending queue advances. The recommendation sweep also needs to finish its
+  full stable-card pass before full-card freshness is claimed.
+
+### Blocked externally
+
+- No new user action is needed for the diagnostic or ordinary retry. The
+  separate signed-in Owner / MD handoff, five-setting credential recovery
+  decision, archived 160-channel boundary and Chris's final business sign-off
+  remain open.
+
 **17 October, 16:57 UTC — fair recommendation sweep released after hosted TEST proof.**
 
 ### Working and verified
