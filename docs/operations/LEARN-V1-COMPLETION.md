@@ -17,6 +17,145 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 15:17 UTC — first ordinary 50-item identity chain and Email drain verified.**
+
+### Working and verified
+
+- The 15:10 ordinary identity scheduler created a 50-request job. It settled
+  on attempt one with **38 enriched cards, 12 explicit identity-review holds,
+  zero delivery failures and 50 immutable publications**. Its one confirmed
+  child also requests 50 and has priority 50. By 15:16, three such jobs had
+  settled with **123 resolved / 27 held**, and the next 50-job was running.
+  The LIVE scheduler priority fix is v51 (TEST v17); the worker remains v109.
+- Since the indexed Email selector release at 14:31, **44 ordinary LIVE jobs**
+  had succeeded by 15:16, creating **2,200 distinct interactions** with zero
+  failed jobs or unchanged publications. The eligible historical Email gap
+  fell to **5,189**, with zero older-than-day or current-event-day gaps while
+  the three-year import continued. Graph had **109** newly created eligible
+  interactions awaiting nodes, none older than a day; ordinary cards had
+  zero stale/unprojected rows. [Ordinary readback](evidence/learn-build01-ordinary-50-email-2026-10-17.json).
+- Current LIVE worker v109 and scheduler v51 source again reconstructed
+  byte-for-byte from the already approved v107 off-site package and reviewed
+  patches. [Source reconstruction](evidence/learn-build01-processing-source-overlay-2026-10-17.json).
+
+### Needs finishing
+
+- Continue the ordinary Email/identity/Graph lanes until the retained
+  three-year source backlog is adequate for Chris's business review, while
+  keeping source-review holds visible. The first Owner / MD source-job handoff,
+  full credential/provider restart recovery and Chris's business acceptance
+  remain separate open gates.
+
+### Blocked externally
+
+- No user action was needed for these unattended processing proofs. The
+  signed-in Owner / MD handoff and separately scoped credential export still
+  need their approved access paths.
+
+**17 October, 15:09 UTC — legacy identity job settled with a guarded 50-row attempt.**
+
+### Working and verified
+
+- A pre-release identity job requested 200 items, while the smaller worker
+  processed 50. The existing database settlement fence correctly rejected a
+  50-item continuation under a 200-item saved request. A one-file worker
+  compatibility fix now omits continuation only for such older oversized
+  requests; the 50-item scheduler remains the ordinary route. A hosted TEST
+  fixture requested 200 and settled exactly 50 synthetic interactions, with
+  zero child jobs and its tenant archived. TEST worker v68 preceded the same
+  source on LIVE v109; other Edge endpoints stayed unchanged.
+- The exact LIVE legacy job then settled on attempt 3 at 15:08:21: **44
+  resolved, 6 recorded review holds, 0 delivery failures, 0 invalid children**.
+  `identity_review_required` is its truthful terminal hold state. Nine
+  ordinary bounded Graph jobs had succeeded by 15:08 and projected 1,650
+  nodes. [Exact settlement and release](evidence/learn-build01-legacy-identity-settlement-2026-10-17.json).
+- At that release, LIVE worker v109 and scheduler v50 source reconstructed from
+  the already approved v107 encrypted off-site source base plus the committed
+  patches, matching all 124 serving source files.
+  [Source reconstruction](evidence/learn-build01-processing-source-overlay-2026-10-17.json).
+
+### Needs finishing
+
+- Verify the next ordinary scheduler creates and settles a **50-request**
+  identity job, then continue Email and Graph freshness observations. The
+  existing identity-review holds need source-backed human review; no person
+  match or business score is inferred from them. Owner / MD task acceptance
+  and full provider credential recovery remain open.
+
+### Blocked externally
+
+- No new action was needed for this compatibility repair. Signed-in Owner / MD
+  handoff and the separate credential export are still outside this technical
+  readback.
+
+**17 October, 14:57 UTC — bounded Graph/identity release and hosted TEST checks.**
+
+### Working and verified
+
+- The exact installed worker closure was changed only in the Graph and identity
+  handlers: ordinary Graph refresh now defaults to 50 recent rows per identity
+  type and a 100-row missing-interaction page; identity delivery caps each
+  leased run at 50. The scheduled identity request also asks for 50. TEST
+  worker v67 and scheduler v16 preceded identical-source LIVE worker v108 and
+  scheduler v50; all other Edge endpoints stayed unchanged. Both targeted
+  rollback executables are saved locally. TEST synthetic hosted identity and
+  Graph jobs each settled successfully and their fixtures were archived.
+- The current LIVE worker v108 (119 files) and identity scheduler v50 (5 files)
+  were reconstructed byte-for-byte from the already approved v107 off-site
+  source base plus these three reviewed file overlays; every downloaded
+  serving source matched. This removes a need for another encrypted source
+  copy for this release, while credentials and provider restart are still
+  separate recovery gates. [Source reconstruction](evidence/learn-build01-processing-source-overlay-2026-10-17.json).
+- A long-running LIVE Graph job was reclaimed after its first 15-minute lease,
+  then settled on its second attempt. Three ordinary 50-limit Graph jobs had
+  already succeeded by 14:56, upserting 750 nodes. The eligible Graph gap fell
+  from 443 at 14:46 to **111 at 14:56**, none older than a day. Among 769
+  recent enriched Email interactions, **769 linked to a card** and 766 had a
+  Graph node. [Release and readback](evidence/learn-build01-processing-batch-release-2026-10-17.json).
+
+### Needs finishing
+
+- Observe an ordinary LIVE identity job started after the release with a
+  50-row request and confirmed settlement. The current pre-release 200-payload
+  run can still finish through the old claim. Continue the ordinary Graph
+  drain until the gap is zero or bounded freshness is established; one
+  reclaimed lease and three successes are not proof of unattended stability.
+- The first Owner / MD review task remains uncreated and unaccepted. Chris's
+  recipient choice is recorded; the linked identity still needs the guarded
+  signed-in confirmation and source-linked task action. Full credential and
+  provider restart recovery remain open.
+
+### Blocked externally
+
+- No new action is required for the processing lanes. The signed-in Owner / MD
+  handoff and separate credential export still depend on the existing scoped
+  access/approval paths; neither is inferred from the successful TEST jobs.
+
+**17 October, 14:40 UTC — Email repair sustained through ordinary cycles.**
+
+### Working and verified
+
+- Seven ordinary LIVE Email jobs have succeeded since the indexed selector
+  release, publishing **350 new interactions from 350 distinct sources**, with
+  zero failed jobs. The eligible historical gap fell from **6,476 at 14:35** to
+  **6,301 at 14:40** while the three-year import continued. No source with a
+  current-day event time was unlinked in either readback. The ordinary card
+  sweep still had zero stale/unprojected active cards at 14:39.
+  [Ordinary Email run](evidence/learn-build01-email-indexed-sustained-ordinary-2026-10-17.json),
+  [gap readback](evidence/learn-build01-email-indexed-sustained-gap-2026-10-17.json).
+
+### Needs finishing
+
+- Keep the normal Email lane running until retained historical coverage is
+  adequate for Chris's business review; seven successes establish sustained
+  progress, not a completed three-year backfill. Owner / MD handoff and full
+  provider recovery remain open.
+
+### Blocked externally
+
+- No new user action is needed to keep these ordinary Email and card cycles
+  running. The separate signed-in handoff and credential approval are unchanged.
+
 **17 October, 14:35 UTC — indexed recent Email projection released and observed.**
 
 ### Working and verified

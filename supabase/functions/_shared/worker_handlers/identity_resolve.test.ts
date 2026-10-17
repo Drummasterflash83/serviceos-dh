@@ -201,7 +201,7 @@ test("empty inventory succeeds with zero work; a full verified batch continues o
   assert.deepEqual(full.continuation?.payload, { limit: 2 });
   const bounded = fixture({ rows: [] });
   await bounded.run({ limit: 2000 });
-  assert.equal(bounded.calls[0].args.p_limit, 200);
+  assert.equal(bounded.calls[0].args.p_limit, 50);
 });
 test("legacy input without a pending event reports zero events consumed", async () => {
   const r = await fixture({
@@ -251,6 +251,16 @@ test("all-held full batch progresses, but a partial batch and empty inventory st
     assert.equal(r.result?.review_required, 7);
     assert.equal(!!r.continuation, rows.length === 2);
   }
+});
+test("a legacy 200-request settles its bounded 50 without an invalid continuation", async () => {
+  const rows = Array.from({ length: 50 }, (_, i) => row(i + 100));
+  const r = await fixture({ rows, respond: (_: any, receipt: any) =>
+    ({ data: heldReceipt(receipt), error: null }) }).run({ limit: 200 });
+  assert.equal(r.success, false);
+  assert.equal(r.error?.code, "identity_review_required");
+  assert.equal(r.result?.reviews_recorded, 50);
+  assert.equal(r.result?.continued, false);
+  assert.equal(r.continuation, undefined);
 });
 test("existing unrelated holds cannot stop a full batch of confirmed cards", async () => {
   const r = await fixture({ rows: [row(2), row(3)], review: { data: 4, error: null } }).run({ limit: 2 });

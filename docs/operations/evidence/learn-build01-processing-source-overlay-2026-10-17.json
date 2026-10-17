@@ -1,0 +1,31 @@
+{
+  "contract": "learn-build01-processing-source-overlay/1",
+  "observedAt": "2026-10-17T15:16:12.239Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "base": "v107 off-site Edge source package",
+  "results": [
+    {
+      "endpoint": "platform-worker",
+      "version": 109,
+      "sourceFiles": 119,
+      "reconstructedChangedFiles": 2,
+      "unchangedFiles": 117,
+      "closureSha256": "c0e4983f062d58e09ac25e76bbdd811a87e6b5c7e1020064a75f9b11b106d46d",
+      "servingWireSha256": "cc502eabcfb071cb0c3338af66ca5431731f5c8f67dcbc85635fe7870995f1d8"
+    },
+    {
+      "endpoint": "identity-scheduled-sync",
+      "version": 51,
+      "sourceFiles": 5,
+      "reconstructedChangedFiles": 1,
+      "unchangedFiles": 4,
+      "closureSha256": "13d13c321c127af518446daf829c4f30485a0edb46b07d2788739cfc7c7501a6",
+      "servingWireSha256": "0b99266e2bf406a8d2ebca890f52fa7649e092c0e685fba22db13c96cd1f2c72"
+    }
+  ],
+  "sourceReconstructedAndMatchedServing": true,
+  "credentialRecoveryProven": false,
+  "providerRestartProven": false,
+  "productionDataWrites": false,
+  "privateDataReturned": false
+}

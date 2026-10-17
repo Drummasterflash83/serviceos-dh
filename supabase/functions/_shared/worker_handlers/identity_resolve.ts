@@ -15,7 +15,7 @@ export async function handleIdentityResolve(
   const batch = Math.max(
     1,
     Math.min(
-      200,
+      50,
       typeof payload.limit === "number" && Number.isFinite(payload.limit)
         ? Math.trunc(payload.limit)
         : 20,
@@ -145,6 +145,12 @@ export async function handleIdentityResolve(
     // A durable hold removes this revision from pending selection. Keep the
     // review visible, but drain unrelated eligible records in the next batch.
     counts.continued =
+      // Older saved jobs can still request 200. Their database settlement
+      // fence expects 200 receipts, so finish this bounded attempt without a
+      // child; the 50-row scheduler will create the next ordinary job.
+      (payload.limit === undefined ||
+        (typeof payload.limit === "number" && Number.isInteger(payload.limit) &&
+          payload.limit >= 1 && payload.limit <= 50)) &&
       counts.failed === 0 &&
       rows.length === batch &&
       counts.resolved + counts.reviews_recorded === rows.length;

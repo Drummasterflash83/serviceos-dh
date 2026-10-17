@@ -28,9 +28,9 @@ try {
       where j.job_type='identity.resolve' and j.status in('queued','running','retrying')`),
   ]);
   const worker = inventory.find(x => x.slug === "platform-worker");
-  check(runtime.fingerprint === "ba3dc925f7f9e1a0149b1a71b9456100",
+  check(runtime.fingerprint === "ee6881266eb8c7ccf77de6917f38eebb",
     "TEST identity schema changed");
-  check(worker?.version === 38 && worker.status === "ACTIVE" &&
+  check(worker?.version === 67 && worker.status === "ACTIVE" &&
     worker.verify_jwt === false, "TEST worker changed");
   check(queue[0]?.active === 0, "TEST identity queue must be idle");
   const fd = openSync(prefix + "-journal.json", "wx", 0o600);

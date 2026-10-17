@@ -1,12 +1,47 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 14:35 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 15:17 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- The first **ordinary LIVE 50-request identity job** settled with 38
+  enriched cards, 12 recorded review holds, zero delivery failures and one
+  confirmed 50-request priority-50 child. Three such jobs had settled by
+  15:16, resolving 123 interactions and holding 27 for review. Since the
+  indexed Email release, 44 ordinary jobs had published 2,200 distinct new
+  interactions with no failed job; its eligible historical gap fell to 5,189
+  with none older than a day. Graph had 109 newly created eligible gaps, none
+  older than a day, and ordinary cards had zero stale projections. The
+  current worker/scheduler is LIVE v109/v51, with exact source reconstruction
+  from the approved off-site v107 base.
+  [Ordinary readback](evidence/learn-build01-ordinary-50-email-2026-10-17.json),
+  [source reconstruction](evidence/learn-build01-processing-source-overlay-2026-10-17.json).
+
+- TEST/LIVE worker v68/v109 closes an older 200-request identity job without
+  claiming a 50-item continuation that its saved database fence cannot accept.
+  A hosted TEST 50-interaction fixture settled with no child; the exact LIVE
+  legacy job settled at 15:08 with **44 resolved, 6 held for review, zero
+  delivery failures and no child**. The following ordinary 50-request cycle
+  is verified above. At that earlier release, v109/v50
+  source reconstructs exactly from the approved v107 off-site base and reviewed
+  patches. [Settlement](evidence/learn-build01-legacy-identity-settlement-2026-10-17.json),
+  [source reconstruction](evidence/learn-build01-processing-source-overlay-2026-10-17.json).
+
+- The 14:57 TEST/LIVE two-handler worker release capped
+  leased identity batches at 50 and reduces ordinary Graph work to 50 recent
+  identity rows per type plus a 100-row missing-interaction page. The identity
+  scheduler also requests 50. Synthetic hosted TEST identity/card and Graph
+  jobs both succeeded with their fixtures archived. On LIVE, three ordinary
+  50-limit Graph jobs succeeded and the eligible gap fell to **111** by 14:56;
+  **769/769** recently enriched Email interactions linked to cards, and 766
+  had Graph nodes. Its pre-release 200-payload identity job was subsequently
+  settled by the compatibility release above. The next scheduler-created
+  50-request settlement is verified above.
+  [Release/readback](evidence/learn-build01-processing-batch-release-2026-10-17.json).
 
 - The ordinary LIVE Email selector now prioritises newly imported, unlinked
   messages through a bounded indexed helper. Its TEST fixture and LIVE
@@ -16,6 +51,11 @@ inactive until Chris reviews and signs off the business result.
   back before this helper was installed; no ordinary Email job in that window
   failed or dead-lettered.
   [Release receipt](evidence/learn-build01-email-indexed-recent-release-2026-10-17.json).
+  By 14:40, **seven** ordinary jobs had created **350** interactions with no
+  failed job, and the eligible historical gap had fallen from 6,476 to 6,301
+  despite continuing imports. Current-day event-time gaps remained zero.
+  [Sustained ordinary run](evidence/learn-build01-email-indexed-sustained-ordinary-2026-10-17.json),
+  [current gap](evidence/learn-build01-email-indexed-sustained-gap-2026-10-17.json).
 
 - The exact current LIVE frontend Git commit `ca651c3c` now rebuilds as a
   Vercel target against the independently downloaded scheduled database backup.
@@ -50,14 +90,16 @@ inactive until Chris reviews and signs off the business result.
   archived public channels; it does not complete that larger audit.
   [Control receipt](evidence/learn-build01-slack-reply-provider-positive-control-2026-10-17.json).
 
-- Current LIVE Edge source has one post-v107 change: `openfolk-control-plane`
-  v37→v38. A small reviewed Git patch reconstructs all 24 current Control
+- The first post-v107 LIVE Edge change was `openfolk-control-plane` v37→v38.
+  A small reviewed Git patch reconstructs all 24 current Control
   Plane files from the pinned v107 archive that underlies the independently
   downloaded off-site package;
   the three changed-file hashes match the serving runtime and the other 21
   retain their archived hashes. This avoids repeating a whole-source backup
-  for a small release. It does not recover credentials or prove a provider
-  restart. [Source overlay receipt](evidence/learn-build01-controlplane-v38-overlay-2026-10-17.json).
+  for that release. The later worker v108 and identity scheduler v50 overlays
+  are separately verified above. These source patches do not recover
+  credentials or prove a provider restart.
+  [Control Plane overlay receipt](evidence/learn-build01-controlplane-v38-overlay-2026-10-17.json).
 - That reconstructed v38 source also bundled and started in an isolated Edge
   runtime, answering synthetic OPTIONS with HTTP 200; no network or real
   credential was available at startup. This tests the current module's boot

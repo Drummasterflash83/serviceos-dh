@@ -1,0 +1,50 @@
+{
+  "observedAt": "2026-10-17T15:16:58.258Z",
+  "scope": "Counts-only ordinary LIVE processing after the bounded release",
+  "identityPriorityRelease": {
+    "testSchedulerBefore": 16,
+    "testSchedulerAfter": 17,
+    "liveSchedulerBefore": 50,
+    "liveSchedulerAfter": 51,
+    "changedSourcePaths": ["identity-scheduled-sync/index.ts"],
+    "changedIndexSha256": "ce32ec20a3d3a5d2abe134f457023ac8d559f2d482f52df51cc103816744a4d3",
+    "otherEndpointsUnchanged": true
+  },
+  "firstOrdinaryIdentity50": {
+    "createdAt": "2026-10-17T15:10:05.512240Z",
+    "requestedLimit": 50,
+    "attempts": 1,
+    "resolved": 38,
+    "reviewHolds": 12,
+    "failed": 0,
+    "immutablePublications": 50,
+    "settlementCode": "identity_review_required",
+    "confirmedChildren": 1,
+    "childRequestedLimit": 50,
+    "childPriority": 50
+  },
+  "identityChainAt1516": {
+    "settled50JobsWithReviewHolds": 3,
+    "resolved": 123,
+    "reviewHolds": 27,
+    "current50JobState": "running"
+  },
+  "emailSince143138": {
+    "ordinaryJobs": 45,
+    "succeededJobs": 44,
+    "failedJobs": 0,
+    "activeJobs": 1,
+    "createdPublications": 2200,
+    "distinctSources": 2200,
+    "unchangedPublications": 0,
+    "eligibleMissing": 5189,
+    "olderThanDay": 0,
+    "currentEventDayUnlinked": 0
+  },
+  "graphAt1516": { "eligibleMissing": 109, "olderThanDay": 0 },
+  "cardsAt1516": { "staleUnprojected": 0, "ordinaryTenCardJobsFailed": 0 },
+  "sourceContentReturned": false,
+  "identityReturned": false,
+  "productionDataWritesByReadbacks": false,
+  "businessSignoffInferred": false
+}

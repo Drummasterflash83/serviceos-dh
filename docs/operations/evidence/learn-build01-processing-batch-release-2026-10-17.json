@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-10-17T14:56:40Z",
+  "scope": "Counts-only TEST/LIVE processing batch release; no provider content or credentials returned",
+  "test": {
+    "identityScheduler": { "versionBefore": 15, "versionAfter": 16, "changedPaths": ["identity-scheduled-sync/index.ts"], "otherEndpointsUnchanged": true },
+    "platformWorker": { "versionBefore": 66, "versionAfter": 67, "changedPaths": ["_shared/worker_handlers/business_graph_sync.ts", "_shared/worker_handlers/identity_resolve.ts"], "sourceFiles": 119, "otherEndpointsUnchanged": true },
+    "syntheticIdentity": { "state": "test_hosted_card_delivery_verified", "jobStatus": "succeeded", "cards": 1, "receipts": 1, "consumedEvents": 1, "fixtureArchived": true },
+    "syntheticGraph": { "state": "test_hosted_graph_delivery_verified", "jobStatus": "succeeded", "interactionNodes": 1, "events": 1, "fixtureArchived": true },
+    "initialGraphProbe": "The shared worker claimed another queued TEST Graph job. Its untouched synthetic fixture was archived and its exact queued job cancelled before the priority-scoped positive rerun."
+  },
+  "live": {
+    "identityScheduler": { "versionBefore": 49, "versionAfter": 50, "changedPaths": ["identity-scheduled-sync/index.ts"], "otherEndpointsUnchanged": true },
+    "platformWorker": { "versionBefore": 107, "versionAfter": 108, "wireSha256": "601d64f1617d52088cde29e60172ffab65e7f4f2f7e64ae4127df85eb01f4ae8", "changedPaths": ["_shared/worker_handlers/business_graph_sync.ts", "_shared/worker_handlers/identity_resolve.ts"], "sourceFiles": 119, "otherEndpointsUnchanged": true },
+    "ordinaryGraphAtReadback": { "bounded50JobsSucceeded": 3, "nodesUpserted": 750, "eligibleMissing": 111, "olderThanDay": 0 },
+    "recentEmailSince143138": { "enriched": 769, "enrichedCardLinked": 769, "enrichedGraphLinked": 766, "identityReview": 185, "ready": 296 },
+    "identityCaveat": "One pre-release 200-payload identity job remained running; TEST verified the new handler and the next ordinary 50-payload cycle still needs observation."
+  },
+  "productionDataWritesByReadbacks": false,
+  "privateDataReturned": false,
+  "businessSignoffInferred": false
+}

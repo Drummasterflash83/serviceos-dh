@@ -11,10 +11,10 @@ import {
 } from "../business_graph.ts";
 import type { WorkerHandlerContext, WorkerHandlerResult } from "./index.ts";
 
-const DEFAULT_LIMIT = 200;
+const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 1000;
 const WRITE_CONCURRENCY = 8;
-const MISSING_INTERACTION_PAGE = 200;
+const MISSING_INTERACTION_PAGE = 100;
 
 type Row = Record<string, unknown>;
 

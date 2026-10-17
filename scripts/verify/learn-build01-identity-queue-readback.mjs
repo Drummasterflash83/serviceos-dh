@@ -25,7 +25,7 @@ from public.platform_jobs j
 join public.learn_processing_publications p on p.job_id=j.id
   and p.tenant_id=j.tenant_id
 where j.tenant_id='${tenant}'::uuid and j.job_type='identity.resolve'
-  and j.status='retrying'
+  and j.status in('running','retrying')
 group by p.attempt,coalesce(p.receipt->>'state','unclassified')
 order by p.attempt,receipt_state`;
 const receiptShapeQuery = `select p.attempt,
@@ -61,7 +61,7 @@ from public.platform_jobs j
 join public.learn_processing_publications p on p.job_id=j.id
   and p.tenant_id=j.tenant_id
 where j.tenant_id='${tenant}'::uuid and j.job_type='identity.resolve'
-  and j.status='retrying'
+  and j.status in('running','retrying')
 group by p.attempt,coalesce(p.receipt->>'state','unclassified')
 order by p.attempt,receipt_state`;
 const publicationWindowQuery = `select p.attempt,count(*)::int receipts,
@@ -73,7 +73,7 @@ from public.platform_jobs j
 join public.learn_processing_publications p on p.job_id=j.id
   and p.tenant_id=j.tenant_id
 where j.tenant_id='${tenant}'::uuid and j.job_type='identity.resolve'
-  and j.status='retrying'
+  and j.status in('running','retrying')
 group by p.attempt
 order by p.attempt`;
 async function read(sql) {
@@ -112,4 +112,4 @@ if (!Array.isArray(publicationWindows) || !publicationWindows.every(row =>
 console.log(JSON.stringify({ observedAt: new Date().toISOString(), project, tenant,
   rows, activeRetryPublications, receiptShape, publicationWindows,
   productionDataWrites: false,
-  scope: "Queued/retrying timing and review holds only; no manual rescue implied." }));
+  scope: "Queued/running/retrying timing and review holds only; no manual rescue implied." }));

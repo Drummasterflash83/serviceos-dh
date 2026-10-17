@@ -1,0 +1,35 @@
+{
+  "observedAt": "2026-10-17T15:09:17.950Z",
+  "scope": "Exact legacy 200-request compatibility release; counts and statuses only",
+  "test": {
+    "workerBefore": 67,
+    "workerAfter": 68,
+    "changedFiles": ["_shared/worker_handlers/identity_resolve.ts"],
+    "otherEndpointsUnchanged": true,
+    "hostedSyntheticRequestedLimit": 200,
+    "hostedSyntheticEffectiveLimit": 50,
+    "hostedSyntheticStatus": "succeeded",
+    "hostedSyntheticPublications": 50,
+    "hostedSyntheticContinuations": 0,
+    "hostedSyntheticFixtureArchived": true
+  },
+  "live": {
+    "workerBefore": 108,
+    "workerAfter": 109,
+    "workerWireSha256": "cc502eabcfb071cb0c3338af66ca5431731f5c8f67dcbc85635fe7870995f1d8",
+    "otherEndpointsUnchanged": true,
+    "exactLegacyJobCreatedAt": "2026-10-17T14:55:01.216680Z",
+    "exactLegacyJobFinalStatus": "dead_letter",
+    "exactLegacyJobFinalCode": "identity_review_required",
+    "exactLegacyJobAttempts": 3,
+    "exactLegacyFinalAttemptResolved": 44,
+    "exactLegacyFinalAttemptReviewHolds": 6,
+    "exactLegacyFinalAttemptFailed": 0,
+    "exactLegacyJobContinuations": 0,
+    "exactLegacyJobImmutablePublicationsAcrossAttempts": 290
+  },
+  "reviewRequiredIsAHoldNotADeliveryFailure": true,
+  "productionDataWritesByReadbacks": false,
+  "privateDataReturned": false,
+  "businessSignoffInferred": false
+}
