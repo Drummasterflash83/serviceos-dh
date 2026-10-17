@@ -1,5 +1,12 @@
 # Build execution tracker
 
+Latest Build 01 current-source startup checkpoint (17 October, 10:13 UTC): all
+103 reviewed v107 Edge bundles created workers and answered synthetic OPTIONS
+requests in a network-isolated disposable runtime; three QuickBooks routes
+returned expected 503 without provider settings. The container was removed.
+This closes module startup only, not recovered credentials or full failover.
+[Receipt](../../operations/evidence/learn-build01-v107-all-edge-offline-startup-2026-10-17.json).
+
 Latest Build 01 non-secret recovery checkpoint (17 October, 10:07 UTC): 18
 configured LIVE controls match reviewed release values and three Workspace
 controls match pre-backup tenant metadata, all by digest without returning

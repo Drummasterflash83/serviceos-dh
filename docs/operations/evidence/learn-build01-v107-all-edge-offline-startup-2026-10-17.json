@@ -1,0 +1,35 @@
+{
+  "contract": "learn-build01-v107-all-edge-offline-startup/1",
+  "observedAtUtc": "2026-10-17T10:12:56.550Z",
+  "completedAtUtc": "2026-10-17T10:12:59.913Z",
+  "sourceManifestSha256": "4008cc502a41f5948cfea8e2d06fa3be26ff4f4f7828839f707724b7c49f1488",
+  "edgeRuntimeImageId": "sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c",
+  "harnessSha256": "888a679ddc8305613b481a57f3650ad60ce5f7f61ef9b75dc1919cd561097139",
+  "reviewedBundleCount": 103,
+  "createdWorkers": 103,
+  "receivedHttpResponses": 103,
+  "httpStatusCounts": {
+    "200": 82,
+    "204": 3,
+    "302": 1,
+    "400": 1,
+    "401": 1,
+    "405": 12,
+    "503": 3
+  },
+  "expectedSyntheticConfigurationDenials": [
+    "quickbooks-disconnect",
+    "quickbooks-oauth-callback",
+    "quickbooks-oauth-start"
+  ],
+  "network": "none",
+  "hostPorts": 0,
+  "sourceMounted": false,
+  "realCredentials": false,
+  "productionDataWrites": false,
+  "providerWrites": false,
+  "containerRemoved": true,
+  "containerAbsenceIndependentlyChecked": true,
+  "method": "scripts/backup/rehearse_v107_all_edge_startup.mjs --reviewed-v107-offline",
+  "limits": "The exact 103 v107 bundles started and responded to synthetic OPTIONS requests. Three QuickBooks routes returned their configured 503 response because synthetic settings omit provider configuration. This does not prove recovered runtime credentials, authenticated production traffic, provider resumption or full application failover."
+}

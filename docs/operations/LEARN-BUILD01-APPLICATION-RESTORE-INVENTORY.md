@@ -1,5 +1,17 @@
 # Build 01 application and Auth restore inventory
 
+**17 October, 10:13 UTC — all current v107 Edge bundles started offline.** The
+103 reviewed source bundles were rehashed, then every bundle created a user
+worker and returned an HTTP response to a synthetic OPTIONS request in one
+network-isolated disposable runtime. Eighty-two returned 200, three 204, one
+302, one 400, one 401, twelve 405 and three QuickBooks OAuth/disconnect routes
+returned their expected configuration-unavailable 503 because no provider
+configuration was supplied. No source tree, customer data or real credential
+was mounted. The container was independently absent after cleanup. This closes
+the **module startup** check for current source, not runtime-secret recovery,
+authenticated provider capture or full service failover.
+[Sanitised receipt](evidence/learn-build01-v107-all-edge-offline-startup-2026-10-17.json).
+
 **17 October 2026 — bounded off-site service recovery, not full failover.** The
 independently downloaded database and Edge packages pass decryption,
 database/Vault restore and preserved-user Auth/REST/current Edge tenant reads.

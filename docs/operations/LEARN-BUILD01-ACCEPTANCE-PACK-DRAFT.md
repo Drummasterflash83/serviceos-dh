@@ -8,6 +8,13 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- All **103 reviewed LIVE v107 Edge bundles** created workers and returned
+  synthetic HTTP responses in a network-isolated disposable runtime. Three
+  QuickBooks routes correctly returned 503 without provider configuration;
+  the other 100 responded without it. The container was removed. This proves
+  current source module startup, not recovered credentials or real capture.
+  [Offline startup receipt](evidence/learn-build01-v107-all-edge-offline-startup-2026-10-17.json).
+
 - Current read-only reliability checks show **zero Email delegation holds**,
   two ordinary safe claims, **4,676/4,676** Phone calls linked to interactions,
   and zero eligible Graph gaps. Commusoft's changed-job pages are still

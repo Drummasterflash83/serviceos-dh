@@ -17,6 +17,29 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 10:13 UTC — all 103 reviewed v107 Edge modules started in isolation.**
+
+### Working and verified
+
+- Every current v107 bundle was rehashed, created an Edge worker and returned
+  a synthetic OPTIONS response without network or real credentials. Three
+  QuickBooks routes returned their expected configuration-unavailable 503;
+  the remaining 100 returned other HTTP responses. The disposable container
+  was independently absent after cleanup.
+  [Sanitised receipt](evidence/learn-build01-v107-all-edge-offline-startup-2026-10-17.json).
+
+### Needs finishing
+
+- This is a module-startup result, not restored credential parity or a complete
+  application failover. Reconcile the remaining three non-secret Google
+  settings, credential sources, authenticated recovery and controlled provider
+  resumption before claiming that broader gate.
+
+### Blocked externally
+
+- No further action is needed from Chris for this offline source check; the
+  distinct credential-recovery decision remains pending.
+
 **17 October, 10:07 UTC — non-secret runtime controls reconstructed by active hash.**
 
 ### Working and verified
