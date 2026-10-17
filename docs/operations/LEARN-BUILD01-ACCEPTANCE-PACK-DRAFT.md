@@ -1,12 +1,20 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 12:28 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 12:44 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- Current LIVE Edge source has one post-v107 change: `openfolk-control-plane`
+  v37→v38. A small reviewed Git patch reconstructs all 24 current Control
+  Plane files from the pinned, independently downloaded off-site v107 source;
+  the three changed-file hashes match the serving runtime and the other 21
+  retain their archived hashes. This avoids repeating a whole-source backup
+  for a small release. It does not recover credentials or prove a provider
+  restart. [Source overlay receipt](evidence/learn-build01-controlplane-v38-overlay-2026-10-17.json).
 
 - The ordinary Commusoft worker completed **872/872** approved work-address
   contact targets, with the final job succeeded and checkpoint marked complete.

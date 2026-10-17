@@ -17,6 +17,29 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 12:44 UTC — current LIVE Control Plane source reconstructed from the existing off-site baseline.**
+
+### Working and verified
+
+- LIVE still serves 103 Edge functions. Compared with the independently
+  downloaded and verified v107 off-site source package, 102 function versions
+  are unchanged; only `openfolk-control-plane` advanced from v37 to v38.
+  A reviewed 4,473-byte code patch contains its exact three changed files.
+  Applying that patch to the pinned v107 archive reconstructed all 24 current
+  Control Plane source files with the current LIVE SHA-256 for each changed file
+  and the archived hashes for the other 21. The private archive manifest and
+  credentials are excluded from Git. [Sanitised receipt](evidence/learn-build01-controlplane-v38-overlay-2026-10-17.json).
+
+### Needs finishing
+
+- Verify the patch at the remote Git checkpoint and continue the separate
+  credential/private-key and provider-restart gates. This is source recovery,
+  not complete application/Auth recovery.
+
+### Blocked externally
+
+- No new source-copy permission or Touch ID is needed for this code-only patch.
+
 **17 October, 12:38 UTC — active public Slack parent and reply Events reached source and interaction.**
 
 ### Working and verified

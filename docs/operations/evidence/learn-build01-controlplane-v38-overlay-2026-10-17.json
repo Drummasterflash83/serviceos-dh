@@ -1,0 +1,28 @@
+{
+  "baseManifestSha256": "4008cc502a41f5948cfea8e2d06fa3be26ff4f4f7828839f707724b7c49f1488",
+  "baseOffsiteSourcePackage": "v107",
+  "changedFiles": {
+    "index.ts": "00a3476d5488389e35a94306b91b1917c3ed2109c5cf618e288f0af6473583c1",
+    "work/supabase/functions/_shared/controlplane/authz.ts": "784796439ceb49050808b14e981b1cae3ff217b10a6996bba250c5d0dc48cfb6",
+    "work/supabase/functions/_shared/controlplane/roster.ts": "7d3733818cd15ba3415b4ea76542f8064a3a1ed855f07ee5e55edd572c61fc17"
+  },
+  "changedFunction": "openfolk-control-plane",
+  "contract": "learn-build01-control-plane-v38-overlay/1",
+  "credentialRecoveryProven": false,
+  "currentEdgeFunctions": 103,
+  "currentSourceRecoveredLocallyFromOffsiteBaselineAndPatch": true,
+  "fromVersion": 37,
+  "observedAt": "2026-10-17T12:43:57.523Z",
+  "offsitePatchCopyVerified": false,
+  "overlayPatchSha256": "c9884af4d71ffa343a039df62cd50662de6b5fcf9f000ae2177dfdb0698ef4d2",
+  "patchContainsNoPrivateRuntimeManifestOrCredential": true,
+  "privateManifestOrSecretValuesIncluded": false,
+  "productionDataWrites": false,
+  "project": "tgbnakbxwcqjeimygroz",
+  "providerRequests": 0,
+  "providerRestartProven": false,
+  "reconstructedControlPlaneFilesVerified": 24,
+  "toVersion": 38,
+  "unchangedControlPlaneFiles": 21,
+  "unchangedFunctionVersions": 102
+}
