@@ -12,7 +12,7 @@ function ReviewTaskButton({ db, tenant, connection, external, version }: {
   const [taskId, setTaskId] = useState("");
   return <div className="space-y-2 rounded-lg border border-[#cbbada] p-3 text-sm">
     <p>An OpenFolk review task can be assigned to a confirmed team member. It is not a Commusoft appointment or technician assignment.</p>
-    {taskId ? <p role="status">Review task {taskId} is in the Command Centre. <a href="/app#/command" className="underline">Open work queue to assign it</a>.</p> :
+    {taskId ? <p role="status">Review task {taskId} is in the Command Centre. <a href="/app#/command" className="underline">Open work queue to accept it</a>.</p> :
       open ? <form className="space-y-2" onSubmit={e => { e.preventDefault(); setBusy(true); setNotice("");
         void createSourceJobReviewAction(db, { tenant, connection, external, version, reason })
           .then(r => { setTaskId(r.id); setOpen(false); })
