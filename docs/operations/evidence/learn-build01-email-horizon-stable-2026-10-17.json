@@ -1,0 +1,17 @@
+{
+  "version": "learn-build01-email-horizon-stable/1",
+  "observedAt": "2026-10-17T13:48:06Z",
+  "environment": "LIVE Drummonds aggregate read-only",
+  "fullImportCutoff": "2023-10-16T00:00:00Z",
+  "accounts": 30,
+  "accountsWithCutoff": 30,
+  "previouslyBlockedAccountCursors": 4,
+  "retainedMessages": 200552,
+  "previouslyRetainedBeforeCutoff": 34100,
+  "messagesRetainedInLastHour": 1361,
+  "beforeCutoffMessagesRetainedInLastHour": 0,
+  "customerRowsOrCredentialsReturned": false,
+  "providerRequests": 0,
+  "productionDataWrites": false,
+  "limitation": "The configured three-year full-import boundary is holding for newly retained mail in this hour. Historical messages already saved remain intact. Four previously blocked account cursors remain outside the two ready active aliases and are not silently counted as successful intake."
+}

@@ -17,6 +17,26 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 13:48 UTC — three-year full-import boundary holding.**
+
+### Working and verified
+
+- All 30 Drummonds Email accounts retain the approved 16 October 2023 full-
+  import cutoff. No pre-cutoff message was newly retained in the preceding
+  hour, while 1,361 messages within the allowed history were saved. The
+  34,100 older messages already retained remain intact.
+  [Aggregate readback](evidence/learn-build01-email-horizon-stable-2026-10-17.json).
+
+### Needs finishing
+
+- The three-year backfill and interaction projection are still running.
+  Four previously blocked account cursors remain explicit; they are not
+  counted as working aliases.
+
+### Blocked externally
+
+- No user action is needed to maintain the current cutoff.
+
 **17 October, 13:46 UTC — direct Commusoft job details do not establish the first named handoff.**
 
 ### Working and verified

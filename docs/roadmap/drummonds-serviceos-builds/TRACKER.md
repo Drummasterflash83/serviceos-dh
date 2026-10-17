@@ -1,5 +1,12 @@
 # Build execution tracker
 
+Build 01 Email horizon stability (17 October, 13:48 UTC): all 30 accounts
+retain the approved 16 October 2023 full-import cutoff. No pre-cutoff mail
+was newly retained in the preceding hour; 1,361 allowed-history messages
+were retained. The 34,100 older messages already saved remain intact, and
+four previously blocked account cursors stay explicit.
+[Readback](../../operations/evidence/learn-build01-email-horizon-stable-2026-10-17.json).
+
 Build 01 direct Commusoft job shape (17 October, 13:46 UTC): one completed,
 one on-hold and one ongoing LIVE job each returned 200 with matching status.
 The documented assignment array was empty in all three responses, and the
