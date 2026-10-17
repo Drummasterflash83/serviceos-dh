@@ -1,0 +1,16 @@
+{
+  "campaign": "a3980d74-29fa-4655-a914-61219cdf7dad",
+  "channelConfirmedPublicActive": true,
+  "channelOrMessageIdsReturned": false,
+  "contract": "learn-build01-slack-reply-provider-positive-control/1",
+  "dmChannelsRead": false,
+  "environment": "LIVE Drummonds read-only provider and retained source",
+  "knownRetainedReplyMatchedProvider": true,
+  "limitation": "Validates query semantics only; does not establish archived 160-channel reply completeness.",
+  "messageBodiesReturned": false,
+  "observedAt": "2026-10-17T13:09:16.333Z",
+  "privateChannelsRead": false,
+  "productionDataWrites": false,
+  "providerPagesChecked": 1,
+  "providerWrites": false
+}

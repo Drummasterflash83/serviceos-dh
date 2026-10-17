@@ -143,7 +143,9 @@ for (let index = state.completedRoots; index < until; index++) {
   await pause(2000);
 }
 console.log(JSON.stringify({ observedAt: new Date().toISOString(), project, tenant,
-  campaign, approvedPublicArchivedChannels: 160, knownParentRoots: roots.length,
+  campaign, approvedRosterChannels: 160,
+  rootChannelsConfirmedPublicArchivedThisBatch: checkedPublic.size,
+  knownParentRoots: roots.length,
   providerCompleteRoots: state.completedRoots, checkedPages: state.checkedPages,
   postcutoffRepliesObserved: state.postcutoffReplies,
   fullyChecked: state.completedRoots === roots.length,

@@ -1,5 +1,11 @@
 # Build execution tracker
 
+Build 01 Slack reply-audit control (17 October, 13:09 UTC): the bounded
+read-only provider query found a known retained reply in the separate active
+20-channel public roster. The exact 160-channel archived-root audit is still
+running; this control validates its method, not its completion.
+[Control receipt](../../operations/evidence/learn-build01-slack-reply-provider-positive-control-2026-10-17.json).
+
 Build 01 ordinary card proof (17 October, 12:56 UTC): 4,182/4,182 active LIVE
 cards are projected and zero are stale after an ordinary ten-card worker job
 with no failures. No targeted manual card job was used; the earlier full

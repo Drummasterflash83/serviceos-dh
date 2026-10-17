@@ -15,6 +15,12 @@ inactive until Chris reviews and signs off the business result.
   card-sweep proof; continuing freshness remains an operating check.
   [Zero-stale receipt](evidence/learn-build01-card-ordinary-zero-stale-2026-10-17.json).
 
+- A bounded read-only Slack provider query found a known retained reply in
+  the separate approved active 20-channel roster. That positive control
+  validates the method being used to check older threads in the exact 160
+  archived public channels; it does not complete that larger audit.
+  [Control receipt](evidence/learn-build01-slack-reply-provider-positive-control-2026-10-17.json).
+
 - Current LIVE Edge source has one post-v107 change: `openfolk-control-plane`
   v37→v38. A small reviewed Git patch reconstructs all 24 current Control
   Plane files from the pinned v107 archive that underlies the independently

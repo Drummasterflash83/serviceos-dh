@@ -74,6 +74,11 @@ business decision yet.
   all 180 approved public channels. The four interactions are correctly held
   for identity review rather than silently attributed to customer or job
   cards. [Content-free readback](evidence/learn-build01-slack-active-events-source-interactions-2026-10-17.json).
+- The direct provider reply query used for the archived roster found one
+  previously retained reply in the separate approved active public roster.
+  This positive control validates the query's cutoff and thread semantics;
+  it is not an archived-roster completeness claim.
+  [Content-free control](evidence/learn-build01-slack-reply-provider-positive-control-2026-10-17.json).
 
 ### Needs finishing
 
