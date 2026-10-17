@@ -1,0 +1,24 @@
+{
+  "version": "learn-build01-historical-identity-retry/1",
+  "observedAtUtc": "2026-10-17T17:17:04.366Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "activeJob": {
+    "status": "retrying",
+    "errorCode": "identity_delivery_unconfirmed",
+    "attemptsUsed": 4,
+    "maximumAttempts": 5,
+    "nextOrdinaryRetryAtUtc": "2026-10-17T18:08:28.008562Z",
+    "immutablePublicationCountsByAttempt": [49, 48, 49, 49]
+  },
+  "currentPendingWindow": {
+    "count": 50,
+    "sourceType": "email_messages",
+    "earliestOccurredDay": "2023-10-16",
+    "latestOccurredDay": "2023-10-30",
+    "currentRowsWithPriorJobPublication": 0
+  },
+  "interpretation": "The current 50-row selection is old, in-scope Email history. Partial receipts are durable, but this retry is not settled and its exact unconfirmed row/cause is not established. Observe the scheduled final attempt; do not treat a review hold or a receipt count as a completed job.",
+  "manualRetryOrDataWrite": false,
+  "sourceIdsOrMessageContentIncluded": false
+}

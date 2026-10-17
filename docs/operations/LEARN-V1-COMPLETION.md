@@ -42,6 +42,12 @@ business decision yet.
   swept 300 cards without failure and the legacy empty-evidence cohort fell
   from 271 to 258. Observe the remaining chain before claiming full-card
   recommendation freshness. No scorecard policy or job assessment is published.
+- One separate historical Email identity job is retrying after 49, 48, 49
+  and 49 immutable receipts across four attempts; its fifth ordinary retry
+  is due at 18:08 UTC. The next pending 50-item window consists only of
+  messages dated 16–30 October 2023. This is a real catch-up reliability
+  watch, not a current-mail outage or a completed job. Do not manually
+  restart or hide the retry. [Counts-only diagnosis](evidence/learn-build01-historical-identity-retry-2026-10-17.json).
 
 ### Blocked externally
 

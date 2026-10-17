@@ -1,5 +1,13 @@
 # Build execution tracker
 
+Build 01 historical identity retry (17 October, 17:17 UTC): one ordinary
+50-row identity job retained 49, 48, 49 and 49 immutable receipts across four
+attempts but remains retrying. The current pending selection is October 2023
+Email within the approved import horizon, not recent mail; the fifth ordinary
+attempt is due at 18:08. Its exact unconfirmed cause and final settlement
+remain open. No manual retry or production-data write was used.
+[Counts-only diagnosis](../../operations/evidence/learn-build01-historical-identity-retry-2026-10-17.json).
+
 Build 01 recommendation coverage (17 October, 17:08 UTC): a hosted TEST
 fixture swept all eight active cards across three settled jobs, resolved its
 stale marker and cleaned up. The same handler is LIVE in worker v111 and direct

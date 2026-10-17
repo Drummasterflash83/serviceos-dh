@@ -628,6 +628,12 @@ inactive until Chris reviews and signs off the business result.
   three-year historical queue without treating its growing total as a new-mail
   outage. The stage's required source coverage and freshness decision still
   needs explicit acceptance criteria rather than a silently smaller denominator.
+  At 17:17, one identity job handling the oldest allowed October 2023 Email
+  window had four partial attempts with 49, 48, 49 and 49 immutable receipts;
+  its final ordinary retry is due at 18:08. The pending 50 rows are all
+  historical Email, and the exact unconfirmed cause is not yet known. Keep
+  the retry visible and observe its ordinary outcome.
+  [Counts-only diagnosis](evidence/learn-build01-historical-identity-retry-2026-10-17.json).
 
 - **Slack historical catch-up:** 67 of the exact 160 channels were more than a day
   behind at 06:45. The previously dead-lettered window is now completed and
