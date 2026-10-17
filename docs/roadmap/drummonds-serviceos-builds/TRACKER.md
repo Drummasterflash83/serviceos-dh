@@ -5,9 +5,11 @@ LIVE/source review confirms five configured marketing/receptionist secrets
 outside the approved eleven-setting recovery package, including Drummonds'
 two dynamic receptionist bindings. No value was read. Full application
 recovery remains incomplete; a separate exact-scope encrypted-copy review is
-prepared without silently expanding the earlier permission.
+prepared without silently expanding the earlier permission. A synthetic
+five-name hosted TEST seal then passed wrong-nonce denial and cleanup.
 [Review](../../operations/LEARN-BUILD01-ADDITIONAL-RUNTIME-CREDENTIAL-REVIEW.md) ·
-[readback](../../operations/evidence/learn-build01-additional-edge-binding-use-2026-10-17.json).
+[readback](../../operations/evidence/learn-build01-additional-edge-binding-use-2026-10-17.json) ·
+[TEST receipt](../../operations/evidence/learn-build01-additional-edge-seal-test-2026-10-17.json).
 
 Build 01 Slack reply-audit control (17 October, 13:09 UTC): the bounded
 read-only provider query found a known retained reply in the separate active

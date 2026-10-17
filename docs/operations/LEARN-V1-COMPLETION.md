@@ -25,6 +25,12 @@ business decision yet.
   current-source consumers. Drummonds' receptionist workspace points to the
   exact Vapi and Slack binding names. No value or digest was returned.
   [Sanitised readback](evidence/learn-build01-additional-edge-binding-use-2026-10-17.json).
+- The separate five-name sealed export passed a synthetic hosted TEST
+  rehearsal: wrong nonce denied, five synthetic values returned only in an
+  encrypted envelope, temporary function removed, other functions unchanged.
+  The earlier eleven-name mode also passed a fresh hosted TEST rehearsal and
+  its local tests.
+  [TEST receipt](evidence/learn-build01-additional-edge-seal-test-2026-10-17.json).
 
 ### Needs finishing
 

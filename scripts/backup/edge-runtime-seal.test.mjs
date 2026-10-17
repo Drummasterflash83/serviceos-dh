@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash, createDecipheriv, generateKeyPairSync, privateDecrypt,
   randomBytes, constants, webcrypto } from 'node:crypto';
-import { createSealedRuntimeHandler, REQUIRED_NAMES, OPTIONAL_NAMES }
+import { createSealedRuntimeHandler, REQUIRED_NAMES, OPTIONAL_NAMES, ADDITIONAL_NAMES }
   from './edge-runtime-seal.mjs';
 
 const project = 'saatxzwxvdvqevbnskxy';
@@ -50,6 +50,29 @@ test('exact synthetic runtime values are encrypted for the pinned public key', a
   assert.deepEqual(recovered.selected,
     Object.fromEntries([...REQUIRED_NAMES, ...OPTIONAL_NAMES].map(name => [name, env[name]])));
   plain.fill(0); aesKey.fill(0);
+});
+
+test('separate full-runtime scope seals only the five additional synthetic bindings', async () => {
+  const additional = Object.fromEntries(ADDITIONAL_NAMES.map(name =>
+    [name, `synthetic:${name}:never-live`]));
+  const source = { ...env, ...additional };
+  const response = await handler({ scope: 'full-runtime-additional/1' }, source)(request());
+  assert.equal(response.status, 200);
+  const wire = await response.text();
+  for (const value of Object.values(additional)) assert.equal(wire.includes(value), false);
+  const parsed = JSON.parse(wire);
+  const aesKey = privateDecrypt({ key: privateKey, padding: constants.RSA_PKCS1_OAEP_PADDING,
+    oaepHash: 'sha256' }, Buffer.from(parsed.wrappedKey, 'base64'));
+  const encrypted = Buffer.from(parsed.ciphertext, 'base64');
+  const decipher = createDecipheriv('aes-256-gcm', aesKey, Buffer.from(parsed.iv, 'base64'));
+  decipher.setAuthTag(encrypted.subarray(-16));
+  const plain = Buffer.concat([decipher.update(encrypted.subarray(0, -16)), decipher.final()]);
+  const recovered = JSON.parse(plain.toString('utf8'));
+  assert.deepEqual(recovered.selected, additional);
+  plain.fill(0); aesKey.fill(0);
+  const missing = { ...source }; delete missing.RESEND_API_KEY;
+  assert.equal((await handler({ scope: 'full-runtime-additional/1' }, missing)(request())).status, 503);
+  assert.throws(() => handler({ scope: 'unreviewed' }, source));
 });
 
 test('wrong key, nonce, recipient, project or expiry denies before reading a credential', async () => {

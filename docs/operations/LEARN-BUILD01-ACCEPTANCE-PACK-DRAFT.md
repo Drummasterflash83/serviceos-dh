@@ -89,7 +89,10 @@ inactive until Chris reviews and signs off the business result.
   configured bindings are used by current marketing or receptionist paths;
   Drummonds' receptionist workspace points to both dynamic secret names.
   They are outside the approved eleven-setting package, so a full application
-  restore remains incomplete. [Exact-scope review](LEARN-BUILD01-ADDITIONAL-RUNTIME-CREDENTIAL-REVIEW.md) ·
+  restore remains incomplete. The five-name sealed route passed synthetic
+  hosted TEST with wrong-nonce denial and cleanup; no LIVE value was read.
+  [Exact-scope review](LEARN-BUILD01-ADDITIONAL-RUNTIME-CREDENTIAL-REVIEW.md) ·
+  [TEST receipt](evidence/learn-build01-additional-edge-seal-test-2026-10-17.json) ·
   [readback](evidence/learn-build01-additional-edge-binding-use-2026-10-17.json).
 
 - A single authority-read failure had stranded the approved Commusoft

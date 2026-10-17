@@ -34,7 +34,20 @@ recovery recipient; remove the temporary route and verify all other function
 versions are unchanged. No value belongs in Git, logs, shell arguments or a
 plaintext file. Rehearse the exact route with synthetic TEST values first.
 
-Only after a prepared ciphertext has known bytes and SHA-256 should a separate
+**Synthetic gate passed at 13:14 UTC:** the exact five-name scope sealed five
+synthetic values on TEST, denied a wrong nonce, returned only an encrypted
+envelope, then removed its short-lived route. An inventory readback found every
+other TEST function unchanged. The pre-existing eleven-setting mode also
+passed a fresh hosted synthetic TEST rehearsal and its local tests. No real
+credential or provider was contacted.
+[TEST receipt](evidence/learn-build01-additional-edge-seal-test-2026-10-17.json).
+
+The next approval would authorize only a one-time LIVE read of these five
+exact settings into an age-encrypted **local** ciphertext under ignored
+`.verification-results/`, with active-digest comparison and temporary-route
+removal. It would not authorize an off-site upload or standing capture.
+
+Only after that ciphertext has known bytes and SHA-256 should a separate
 exact create-only off-site copy be reviewed for the existing private London
 bucket and independently downloaded with the Restore identity. A later
 recovery-only private-key check and isolated replacement-runtime/provider

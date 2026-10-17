@@ -11,14 +11,20 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, unlinkSync, w
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { savedCliToken, TEST_PROJECT } from '../verify/learn-test-readiness.mjs';
-import { REQUIRED_NAMES, OPTIONAL_NAMES } from './edge-runtime-seal.mjs';
+import { REQUIRED_NAMES, OPTIONAL_NAMES, ADDITIONAL_NAMES } from './edge-runtime-seal.mjs';
 
 const LIVE_PROJECT='tgbnakbxwcqjeimygroz';
 const SLUG=`build01-edge-recovery-${randomBytes(6).toString('hex')}`;
 const CLI='/Users/chrisdrummond/.npm/_npx/f488b5593433aa64/node_modules/supabase/bin/supabase';
 const mode=process.argv.slice(2).join(' ');
-const test=mode==='--synthetic-test',live=mode==='--prepare-approved-live-copy';
-if(!test&&!live)throw Error('Exact synthetic TEST or approved LIVE seal mode required');
+const additional=mode==='--synthetic-test-additional'||
+ mode==='--prepare-reviewed-live-additional-copy';
+const test=mode==='--synthetic-test'||mode==='--synthetic-test-additional';
+const live=mode==='--prepare-approved-live-copy'||
+ mode==='--prepare-reviewed-live-additional-copy';
+if(!test&&!live)throw Error('Exact synthetic TEST or reviewed LIVE seal mode required');
+const requiredNames=additional?ADDITIONAL_NAMES:REQUIRED_NAMES;
+const optionalNames=additional?[]:OPTIONAL_NAMES;
 const project=test?TEST_PROJECT:LIVE_PROJECT;
 if(process.env[test?'LEARN_TEST_ALLOW_PROJECT_REF':'LEARN_LIVE_ALLOW_PROJECT_REF']!==project)
  throw Error('Explicit project allowlist required');
@@ -67,8 +73,9 @@ const {publicKey,privateKey}=generateKeyPairSync('rsa',{modulusLength:3072,publi
 const spki=publicKey.export({type:'spki',format:'der'});
 const nonce=randomBytes(48).toString('base64url');
 const expiresAtMs=Date.now()+15*60*1000;
-const binding={project,serviceSha256:sha(service),nonceSha256:sha(nonce),spkiSha256:sha(spki),expiresAtMs};
-const journalPath=`.verification-results/build01-edge-recovery-${test?'test':'live'}-pending.json`;
+const binding={project,serviceSha256:sha(service),nonceSha256:sha(nonce),spkiSha256:sha(spki),expiresAtMs,
+ ...(additional?{scope:'full-runtime-additional/1'}:{})};
+const journalPath=`.verification-results/build01-edge-recovery-${additional?'additional-':''}${test?'test':'live'}-pending.json`;
 if(existsSync(journalPath))throw Error('Earlier one-time recovery requires inspection before another deployment');
 const root=mkdtempSync(join(tmpdir(),'build01-edge-runtime-seal-'));
 const stage=join(root,'stage'),endpoint=join(stage,'supabase/functions',SLUG);
@@ -77,7 +84,7 @@ const template=readFileSync('scripts/backup/edge-runtime-once.index.template.ts'
 assert(template.includes('__BUILD01_RECOVERY_BINDING__'));
 let index=template.replace('__BUILD01_RECOVERY_BINDING__',JSON.stringify(binding));
 if(test){
- const synthetic=Object.fromEntries([...REQUIRED_NAMES,...OPTIONAL_NAMES]
+ const synthetic=Object.fromEntries([...requiredNames,...optionalNames]
   .map(name=>[name,`synthetic:${name}:never-live`]));
  index=index.replace('env: (name: string) => Deno.env.get(name),',
   `env: (name: string) => name === 'SUPABASE_URL'
@@ -131,13 +138,13 @@ try{
   const recovered=JSON.parse(plain.toString('utf8'));
   const names=Object.keys(recovered.selected??{}).sort();
   if(recovered.format!=='serviceos-build01-edge-runtime-seal/1'||recovered.project!==project||
-     REQUIRED_NAMES.some(name=>!names.includes(name))||
-     names.some(name=>![...REQUIRED_NAMES,...OPTIONAL_NAMES].includes(name)))
+     requiredNames.some(name=>!names.includes(name))||
+     names.some(name=>![...requiredNames,...optionalNames].includes(name)))
    throw Error('Recovered scope changed');
   if(test){
    for(const name of names)if(recovered.selected[name]!==`synthetic:${name}:never-live`)
     throw Error('Synthetic sealed value changed');
-   prepared={state:'synthetic_hosted_seal_verified',selectedCount:names.length,
+   prepared={state:'synthetic_hosted_seal_verified',scope:additional?'full-runtime-additional':'build01',selectedCount:names.length,
     deniedWrongNonce:true,encryptedOnWire:true,realCredentialRead:false};
   }else{
    const selected=Object.fromEntries(names.map(name=>[name,{
@@ -167,6 +174,6 @@ finally{
 if(stageError)throw Error(`${stageError.message}; one-time endpoint removed=${removed}`);
 assert(prepared&&removed&&otherFunctions(await inventory())===baseline,
  'One-time seal cleanup or environment changed');
-console.log(JSON.stringify({...prepared,project,endpointRemoved:true,
+  console.log(JSON.stringify({...prepared,project,scope:additional?'full-runtime-additional':'build01',endpointRemoved:true,
   otherFunctionsUnchanged:true,providerRequests:0,offsiteCopyMade:false,
   completedAt:new Date().toISOString()}));

@@ -1,0 +1,18 @@
+{
+  "completedAt": "2026-10-17T13:14:54.558Z",
+  "contract": "learn-build01-additional-edge-seal-test/1",
+  "deniedWrongNonce": true,
+  "encryptedOnWire": true,
+  "endpointRemoved": true,
+  "environment": "TEST synthetic only",
+  "limitation": "TEST synthetic route rehearsal only; LIVE five-value export and off-site copy require separate review.",
+  "offsiteCopyMade": false,
+  "otherFunctionsUnchanged": true,
+  "originalElevenNameHostedRegressionPassAt": "2026-10-17T13:15:40.492Z",
+  "productionDataWrites": false,
+  "project": "saatxzwxvdvqevbnskxy",
+  "providerRequests": 0,
+  "realCredentialRead": false,
+  "scope": "full-runtime-additional",
+  "selectedCount": 5
+}

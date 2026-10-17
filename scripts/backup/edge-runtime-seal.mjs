@@ -15,6 +15,13 @@ export const REQUIRED_NAMES = Object.freeze([
   'SIMWOOD_USERNAME',
 ]);
 export const OPTIONAL_NAMES = Object.freeze(['GOOGLE_WORKSPACE_CLIENT_ID']);
+export const ADDITIONAL_NAMES = Object.freeze([
+  'MARKETING_TRACKING_SECRET',
+  'OPENAI_EMMA_REVIEW_KEY',
+  'RECEPTIONIST_SLACK_DRUMMONDS',
+  'RECEPTIONIST_VAPI_DRUMMONDS',
+  'RESEND_API_KEY',
+]);
 const encoder = new TextEncoder();
 const header = { 'content-type': 'application/json', 'cache-control': 'no-store',
   pragma: 'no-cache', 'x-content-type-options': 'nosniff' };
@@ -46,6 +53,7 @@ export function createSealedRuntimeHandler(config, ports) {
       !/^[a-f0-9]{64}$/.test(config.spkiSha256) ||
       !/^[a-f0-9]{64}$/.test(config.serviceSha256) ||
       !Number.isSafeInteger(config.expiresAtMs) ||
+      ![undefined, 'full-runtime-additional/1'].includes(config.scope) ||
       typeof ports?.env !== 'function' || typeof ports?.clock !== 'function' ||
       !ports?.crypto?.subtle || typeof ports.crypto.getRandomValues !== 'function')
     throw Error('Sealed runtime binding invalid');
@@ -79,13 +87,17 @@ export function createSealedRuntimeHandler(config, ports) {
     if (!equal(await sha256(ports.crypto.subtle, spki), config.spkiSha256))
       return reply(401, 'unauthorized');
     const selected = {};
-    for (const name of REQUIRED_NAMES) {
+    const required = config.scope === 'full-runtime-additional/1'
+      ? ADDITIONAL_NAMES : REQUIRED_NAMES;
+    const optional = config.scope === 'full-runtime-additional/1'
+      ? [] : OPTIONAL_NAMES;
+    for (const name of required) {
       const value = ports.env(name);
       if (typeof value !== 'string' || value.length < 1 || encoder.encode(value).length > 65536)
         return reply(503, 'required_binding_unavailable');
       selected[name] = value;
     }
-    for (const name of OPTIONAL_NAMES) {
+    for (const name of optional) {
       const value = ports.env(name);
       if (typeof value === 'string' && value.length > 0 && encoder.encode(value).length <= 65536)
         selected[name] = value;
