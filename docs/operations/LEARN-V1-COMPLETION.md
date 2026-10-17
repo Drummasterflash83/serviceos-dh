@@ -17,6 +17,32 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 18:06 UTC — identity diagnostic settlement contract corrected before ordinary retry.**
+
+### Working and verified
+
+- The v112 identity handler added a fixed-code diagnostic map that the existing
+  numeric-only SQL settlement contract cannot accept. The exact one-file worker
+  correction removes that map from the settlement result and encodes a single
+  validated machine reason in the existing error-code field. Publication,
+  retries, review holds and continuation rules are unchanged. Twenty-seven
+  focused tests and TypeScript passed. TEST v72 and LIVE v113 serve the same
+  executable hash, both reject unsigned requests with 403, and all other Edge
+  functions were unchanged. The ordinary recommendation queue succeeded again
+  after release. [Release receipt](evidence/learn-build01-identity-settlement-diagnostic-fix-2026-10-17.json).
+
+### Needs finishing
+
+- The historical Email identity job still awaited its ordinary fifth attempt
+  at 18:08 UTC at the 18:06 readback. Do not infer settlement or card coverage
+  from the successful release; inspect the retry receipt and safe error code.
+
+### Blocked externally
+
+- No new user action is needed for the retry. The separately requested
+  credential-recovery scope, signed-in Owner / MD handoff and 160-channel
+  acceptance boundary remain open.
+
 **17 October, 17:46 UTC — current worker starts and denies unauthorised work in isolation.**
 
 ### Working and verified

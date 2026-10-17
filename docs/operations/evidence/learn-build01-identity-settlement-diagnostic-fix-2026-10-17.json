@@ -1,0 +1,30 @@
+{
+  "version": "learn-build01-identity-settlement-diagnostic-fix/1",
+  "observed_at_utc": "2026-10-17T18:06:24Z",
+  "problem": "The v112 identity diagnostic map was outside the existing fixed numeric SQL settlement result schema. An unconfirmed delivery could leave settlement unconfirmed.",
+  "change": "Remove the fixed-code diagnostic map from the SQL result and encode its single validated machine reason in the existing error_code field. Publication, retry and review rules remain unchanged.",
+  "validation": {
+    "focused_tests_passed": 27,
+    "typescript_passed": true,
+    "test_worker_version": 72,
+    "live_worker_version": 113,
+    "same_candidate_manifest_sha256": "850b55959a24490497f29a34763e2abc7f2f6ae30ef2e3ce5cb3820cda4b891b",
+    "same_serving_executable_sha256": "3b65d76505825086b70905a02bb553ec775b711c9217103e80989825ff0afa8a",
+    "changed_source_files": ["_shared/learn-processing-job.ts"],
+    "source_files_per_worker": 119,
+    "other_edge_functions_unchanged": true,
+    "test_unsigned_status": 403,
+    "live_unsigned_status": 403,
+    "live_recommendation_continued_after_release": true
+  },
+  "existing_identity_job": {
+    "status_at_1806_utc": "retrying",
+    "attempts_so_far": 4,
+    "ordinary_fifth_attempt_at_utc": "2026-10-17T18:08:28.008562Z",
+    "manual_restart": false,
+    "settlement_proven": false
+  },
+  "production_data_writes": false,
+  "provider_requests": 0,
+  "credential_or_source_content_returned": false
+}

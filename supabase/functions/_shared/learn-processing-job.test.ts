@@ -145,6 +145,19 @@ test("partial failure is not counted as a successful job", async () => {
   assert.equal((await f.run()).state, "retrying");
   assert.equal(f.calls[0].a.p_definition.success, false);
 });
+test("identity diagnostic uses the existing settlement contract without leaking detail", async () => {
+  const f = fixture({ failed: true, result: {
+    success: false,
+    recordsProcessed: 0,
+    result: { failed: 1, failure_reasons: { sqlstate_57014: 1 } },
+    error: { code: "identity_delivery_unconfirmed", message: "PRIVATE DB BODY", retryable: true },
+  } });
+  assert.equal((await f.run()).state, "retrying");
+  const definition = f.calls[0].a.p_definition;
+  assert.deepEqual(definition.result, { failed: 1 });
+  assert.equal(definition.error_code, "identity_diag_sqlstate_five_seven_zero_one_four");
+  assert.ok(!JSON.stringify(definition).includes("PRIVATE"));
+});
 
 const reviewContinuationResult = () => ({
   success: false,

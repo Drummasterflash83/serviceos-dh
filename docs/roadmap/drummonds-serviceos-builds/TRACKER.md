@@ -1,5 +1,14 @@
 # Build execution tracker
 
+Build 01 identity settlement contract (17 October, 18:06 UTC): the v112
+fixed-code failure map exceeded the database's numeric-only result schema.
+A one-file TEST v72/LIVE v113 worker correction carries one validated reason
+in the existing error-code field and removes the map from the SQL result.
+Twenty-seven focused tests, TypeScript, matching serving executable hashes,
+unsigned-request denial and unchanged other functions passed. The existing
+historical Email job remained on its ordinary 18:08 retry; no manual restart
+or settlement claim was made. [Release receipt](../../operations/evidence/learn-build01-identity-settlement-diagnostic-fix-2026-10-17.json).
+
 Build 01 current worker recovery boundary (17 October, 17:49 UTC): the exact
 serving LIVE worker v112 executable was reconstructed from the approved
 encrypted v107 source and pinned Git overlays, then booted in a networkless

@@ -129,13 +129,35 @@ export async function runLearnProcessingJob(
       return unconfirmed(result);
   }
   const request = crypto.randomUUID();
+  // The SQL settlement accepts a fixed numeric result schema. Keep the
+  // diagnostic map out of that payload and carry one validated machine reason
+  // through its existing error_code field instead. Never persist provider text.
+  const settledResult = { ...(result.result ?? {}) };
+  const failureReasons = settledResult.failure_reasons;
+  delete settledResult.failure_reasons;
+  let settledErrorCode = result.success ? null : (result.error?.code ?? "processing_handler_failed");
+  if (ctx.jobType === "identity.resolve" &&
+    settledErrorCode === "identity_delivery_unconfirmed" &&
+    failureReasons && typeof failureReasons === "object" &&
+    !Array.isArray(failureReasons)) {
+    const reasons = Object.entries(failureReasons);
+    if (reasons.length === 1 && Number.isSafeInteger(reasons[0][1]) &&
+      Number(reasons[0][1]) > 0 &&
+      /^(?:identity_[a-z_]+|processing_[a-z_]+|sqlstate_[A-Z0-9]{5}|postgrest_PGRST[0-9]{3}|(?:publish|inspect)_(?:error_unclassified|receipt_invalid|transport_exception)|delivery_unconfirmed)$/.test(reasons[0][0])) {
+      const words = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+      const encoded = reasons[0][0].replace(/[0-9]/g, digit => `_${words[Number(digit)]}`)
+        .replace(/__+/g, "_").toLowerCase();
+      const code = `identity_diag_${encoded}`;
+      if (code.length <= 80) settledErrorCode = code;
+    }
+  }
   const definition = {
     success: result.success,
     records_processed: result.recordsProcessed ?? 0,
-    result: result.result ?? {},
+    result: settledResult,
     continue: continued,
     retryable: result.success ? false : result.error?.retryable === true,
-    error_code: result.success ? null : (result.error?.code ?? "processing_handler_failed"),
+    error_code: settledErrorCode,
   };
   for (const phase of ["settle", "inspect"]) {
     try {
