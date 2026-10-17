@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 09:06 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 09:10 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -119,6 +119,13 @@ inactive until Chris reviews and signs off the business result.
   unauthorised POST with 403. This is startup and fail-closed evidence, not an
   authenticated capture restart.
   [Startup receipt](evidence/learn-build01-v107-worker-isolated-startup-2026-10-17.json).
+- The last verified LIVE frontend Git commit `77a73802` rebuilt from an
+  isolated archive with synthetic backend settings. Its generated Vercel server
+  handler returned HTTP 200 for home and the unauthenticated LEARN workspace;
+  all 15 and 20 referenced assets existed. This proves an independent frontend
+  rebuild and boot without a new secret or fingerprint, but it is not a
+  signed-in recovered-system journey.
+  [Frontend receipt](evidence/learn-build01-frontend-git-rebuild-2026-10-17.json).
 - The ordinary stable-cutoff customer-card sweep finished with a successful
   zero-card terminal job at 06:11, and a 06:12 LIVE readback found **zero stale
   unprojected cards**. [Sweep receipt](evidence/learn-build01-card-ordinary-sweep-2026-10-17.json).
@@ -190,10 +197,12 @@ inactive until Chris reviews and signs off the business result.
   copy and in-memory manifest verification; all 103 function trees rebuilt
   from locally staged source. Today's independent scheduled database copy
   now passes decrypted native/Vault restoration and preserved-user Auth/REST/
-  current Edge tenant reads. The full frontend, all-function startup with
-  recovered runtime secrets, original-session policy and controlled capture
-  restart remain unverified. The local database point matches a later verified
-  phone-file inventory and all three file buckets completed, but the points
+  current Edge tenant reads. The last verified LIVE frontend commit now also
+  rebuilds and boots separately. A **connected signed-in frontend journey**,
+  all-function startup with recovered runtime secrets, original-session policy
+  and controlled capture restart remain unverified. The local database point
+  matches a later verified phone-file inventory. All three file buckets
+  completed, but the points
   are not atomic.
 - **File-backup host:** the recording and voicemail schedule has succeeded
   locally, but depends on the Mac and Codex app being awake. The latest

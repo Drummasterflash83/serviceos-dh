@@ -31,6 +31,10 @@ business decision yet.
   subscriptions are enabled and past cutoff; the already proven shared signed
   route has real Events from the separate 20-channel roster. No team test post
   is needed to characterize the exact 160 as currently quiet.
+- The last verified LIVE frontend Git commit rebuilds and boots through its
+  generated Vercel handler with synthetic settings. Home and unauthenticated
+  LEARN workspace returned HTTP 200 with all referenced assets present.
+  [Frontend rebuild receipt](evidence/learn-build01-frontend-git-rebuild-2026-10-17.json).
 
 ### Needs finishing
 
@@ -46,6 +50,9 @@ business decision yet.
   A real Event in the exact 160 Slack roster and full application recovery
   remain unverified. No source, card, score or business acceptance threshold
   has been lowered silently.
+- Frontend boot narrows recovery, but a connected signed-in journey against
+  the restored Auth/REST/Edge services and controlled capture restart remain
+  open.
 
 ### Blocked externally
 
@@ -109,7 +116,7 @@ business decision yet.
 
 - The off-site database, Vault, Auth and one current Edge route now restore in
   isolation; this is not a complete application failover. Runtime secret value
-  recovery for required routes, frontend boot, original-session policy,
+  recovery for required routes, connected signed-in frontend use, original-session policy,
   all-function startup, an atomic three-bucket file point and controlled capture
   restart remain open. The scheduled missed-success monitor and future daily
   continuity still need ordinary observation.

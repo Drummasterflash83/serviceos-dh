@@ -1,0 +1,38 @@
+{
+  "version": "learn-build01-frontend-git-rebuild/1",
+  "observedAtUtc": "2026-10-17T09:10:46Z",
+  "environment": "isolated local Git archive and Vercel-output handler; no production connection",
+  "source": {
+    "lastVerifiedLiveGitCommit": "77a73802a581798441acafd19e2d1fe93ae0a10d",
+    "archiveExtractedOutsideCheckout": true,
+    "installedDependencyTreeReused": true,
+    "productionBuildSucceeded": true,
+    "prebuildChecksSucceeded": true,
+    "backendBuildSetting": "synthetic example.invalid endpoint",
+    "realCredentialUsed": false
+  },
+  "reconstructedArtifact": {
+    "format": "Vercel output v3 with Nitro server handler",
+    "directServerHandlerBooted": true,
+    "publicHome": {
+      "httpStatus": 200,
+      "title": "OpenFolk: Your business working better.",
+      "referencedAssets": 15,
+      "missingReferencedAssets": 0
+    },
+    "unauthenticatedLearnWorkspace": {
+      "httpStatus": 200,
+      "title": "Your workspace · OpenFolk",
+      "referencedAssets": 20,
+      "missingReferencedAssets": 0
+    }
+  },
+  "containment": {
+    "productionDataWrites": false,
+    "productionProviderRequests": 0,
+    "customerDataUsed": false,
+    "localPreviewServerStopped": true,
+    "secretValuesOrCustomerIdentifiersInReceipt": false
+  },
+  "limitations": "This is an isolated rebuild and direct Vercel handler boot of the last verified LIVE Git commit with synthetic settings. It does not prove the current alias still serves that commit, a signed-in frontend journey against the restored Auth/REST/Edge stack, recovered runtime secret values, old-session continuity or controlled capture restart. Generic Vite preview did not serve the Vercel-targeted output; the generated Vercel handler did."
+}

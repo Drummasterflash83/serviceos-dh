@@ -3,8 +3,22 @@
 **17 October 2026 — bounded off-site service recovery, not full failover.** The
 independently downloaded database and Edge packages now pass decryption,
 database/Vault restore and a preserved-user Auth/REST/current Edge tenant read.
-Frontend boot, recovered runtime secret values and controlled ingestion restart
-remain separate.
+The last verified LIVE Git frontend commit also rebuilds and boots as a Vercel
+handler with synthetic settings. A connected signed-in frontend journey,
+recovered runtime secret values and controlled ingestion restart remain separate.
+
+At 09:10 UTC, Git commit `77a73802a581798441acafd19e2d1fe93ae0a10d`
+(the last verified LIVE frontend source) was archived into an isolated local
+directory and rebuilt with synthetic backend settings. Prebuild checks and the
+production Vercel-output build passed. The generated Vercel server handler
+returned HTTP 200 for the public home and unauthenticated LEARN workspace;
+their 15 and 20 referenced assets, respectively, all existed. Generic Vite
+preview was not the serving path for this Vercel-targeted output; it was
+stopped after an adapter-specific 500. No production connection, real secret,
+customer data or production write was used. This proves source reconstruction
+and frontend boot, not a signed-in frontend against the recovered services or
+today's alias-to-commit binding.
+[Frontend rebuild receipt](evidence/learn-build01-frontend-git-rebuild-2026-10-17.json).
 
 At about 08:55 UTC, one recovery escrow read verified the two current packages
 together. The genuinely scheduled 07:52 database package restored **5,960,241**
