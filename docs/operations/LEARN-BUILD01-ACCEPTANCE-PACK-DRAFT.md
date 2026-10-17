@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 17:51 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 18:17 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -9,6 +9,16 @@ The [short business review draft](LEARN-BUILD01-BUSINESS-REVIEW-DRAFT.md)
 sets out the exact LIVE result and limits for that later decision.
 
 ## Working and verified
+
+- The 18:08 historical Email identity retry settled as a visible SQLSTATE
+  `57014` dead letter, with 48 immutable publications and two count-statement
+  timeouts. Seven later ordinary jobs processed 350 retained inputs without a
+  manual start: 283 resolved to cards, 67 stayed in explicit review, and all
+  queued continuations. No October 2023 interaction remained pending at
+  18:16. The original dead letter and a large-contact count risk remain
+  visible; this is automatic source progression, not a claim that the
+  database bottleneck is fixed.
+  [Counts-only readback](evidence/learn-build01-identity-timeout-ordinary-continuation-2026-10-17.json).
 
 - At 17:49 UTC the ordinary LIVE card readback found **zero cards more than an
   hour behind**, with seven recent ten-card jobs succeeding without failed

@@ -1,0 +1,34 @@
+{
+  "version": "learn-build01-identity-timeout-ordinary-continuation/1",
+  "observed_at_utc": "2026-10-17T18:16:07Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "scope": "Counts-only LIVE readback of historical Email identity processing",
+  "fifth_attempt": {
+    "status": "dead_letter",
+    "safe_error_code": "identity_diag_sqlstate_five_seven_zero_one_four",
+    "sqlstate": "57014",
+    "immutable_publications": 48,
+    "committed": 37,
+    "explicit_review_holds": 11,
+    "manual_retry": false
+  },
+  "database_log_classification": {
+    "matching_identity_timeouts": 2,
+    "function": "learn_identity_deliver_internal",
+    "line": 144,
+    "statement_category": "count linked interactions excluding Gmail drafts",
+    "raw_log_messages_returned": false
+  },
+  "ordinary_jobs_after_dead_letter": {
+    "settled_jobs": 7,
+    "items_processed": 350,
+    "resolved_to_cards": 283,
+    "explicit_review_holds": 67,
+    "durable_continuations": 7,
+    "pending_october_2023_at_1816_utc": 0,
+    "manual_job_start": false
+  },
+  "remaining_risk": "The 57014 historical job remains an auditable dead letter. A later bounded read-only sample of 50 pending November 2023 Email interactions found a matched contact with 13,502 linked interactions. Continue watching for another count timeout; do not claim the database count bottleneck is fixed by a successful continuation alone.",
+  "source_ids_or_content_returned": false,
+  "production_data_writes": false
+}

@@ -60,8 +60,12 @@ day, not the remaining technical and business evidence.
 - [ ] The first signed-in Owner / MD task is created, audited and accepted.
 - [ ] The fair ordinary recommendation sweep reaches the older evidence gap
   and settles without failed pages; no unpublished score is implied.
-- [ ] The October 2023 historical Email identity retry settles or its exact
-  failure is corrected, with source and review holds preserved.
+- [ ] The October 2023 historical Email identity retry is accounted for:
+  its fifth attempt dead-lettered on a linked-interaction count timeout,
+  while seven subsequent ordinary jobs advanced 350 retained sources and
+  left no October 2023 interaction pending. The dead letter and risk of
+  another large-contact timeout remain visible; verify stable continuation
+  before closing this gate.
 - [ ] The archived 160-channel boundary is accepted using the direct provider
   absence proof and current polling state, without demanding a staff test post.
 - [ ] The remaining active runtime credentials are preserved under their

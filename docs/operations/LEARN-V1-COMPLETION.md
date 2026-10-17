@@ -17,6 +17,34 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 18:16 UTC — historical identity timeout classified; ordinary source work continued.**
+
+### Working and verified
+
+- The fifth scheduled retry settled as an auditable dead letter with safe
+  SQLSTATE `57014`, rather than leaving its job state uncertain. It retained
+  48 immutable publications: 37 committed and 11 explicit review holds.
+  Database logs classify two canceled statements at the linked-interaction
+  count in `learn_identity_deliver_internal`, line 144. Seven subsequent
+  ordinary 50-item jobs then processed **350** retained inputs without a
+  manual start: 283 resolved to cards, 67 became visible review holds, and
+  all seven queued continuations. At 18:16, no October 2023 interaction
+  remained pending. [Counts-only receipt](evidence/learn-build01-identity-timeout-ordinary-continuation-2026-10-17.json).
+
+### Needs finishing
+
+- The timed-out job remains in dead-letter history, and ordinary continuation
+  does **not** prove the large-contact count is fixed. The next sampled
+  historical Email window includes a contact with 13,502 linked interactions.
+  Watch for recurrence before claiming stable unattended identity processing;
+  keep review-held sources unlinked and unscored.
+
+### Blocked externally
+
+- No new user action is needed to observe ordinary identity work. The
+  separately requested credential-recovery scope and signed-in Owner / MD
+  handoff remain open.
+
 **17 October, 18:06 UTC — identity diagnostic settlement contract corrected before ordinary retry.**
 
 ### Working and verified

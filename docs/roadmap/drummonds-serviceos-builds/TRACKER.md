@@ -1,5 +1,14 @@
 # Build execution tracker
 
+Build 01 historical Email identity retry (17 October, 18:16 UTC): the fifth
+ordinary attempt settled as a visible `57014` dead letter after 48 immutable
+publications; logs locate two timeouts in the linked-interaction draft-aware
+count. Seven subsequent ordinary jobs processed 350 retained inputs, resolved
+283 to cards, held 67 for review and all queued continuations. No October
+2023 interaction remained pending. The old job stays auditable and the
+large-contact count remains a recurrence risk, so unattended identity
+acceptance is still open. [Read-only receipt](../../operations/evidence/learn-build01-identity-timeout-ordinary-continuation-2026-10-17.json).
+
 Build 01 identity settlement contract (17 October, 18:06 UTC): the v112
 fixed-code failure map exceeded the database's numeric-only result schema.
 A one-file TEST v72/LIVE v113 worker correction carries one validated reason
