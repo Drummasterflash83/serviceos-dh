@@ -1,5 +1,14 @@
 # Build execution tracker
 
+Build 01 active Slack source-to-interaction proof (17 October, 12:38 UTC):
+within the separate approved 20 current public channels, two real signed
+parent hints and two signed reply hints each have a matching retained source
+version and canonical interaction. All four remain honest identity-review
+holds. This closes shared-route parent/reply capture proof; the archived 160
+still have no post-cutoff source event and older reply intervals are catching
+up. No DM, private-channel or message body was read.
+[Content-free receipt](../../operations/evidence/learn-build01-slack-active-events-source-interactions-2026-10-17.json).
+
 Build 01 release and operating check (17 October, 12:33 UTC): the reviewed
 five-file handoff UI is READY on protected TEST `6bdf59e7` and LIVE production
 `702408a4`, with correct separate backend bindings and all existing aliases

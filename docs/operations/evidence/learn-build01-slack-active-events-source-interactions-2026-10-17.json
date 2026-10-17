@@ -1,0 +1,37 @@
+{
+  "version": "learn-build01-slack-active-events-source-interactions/1",
+  "observedAtUtc": "2026-10-17T12:37:48Z",
+  "environment": "LIVE Drummonds read-only aggregate",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "campaign": "a3980d74-29fa-4655-a914-61219cdf7dad",
+  "roster": "The separate approved 20 active public channels on the shared 180-channel signed receiver",
+  "parent": {
+    "settledSignedHints": 2,
+    "retainedSourceRows": 2,
+    "exactSourceVersionMatches": 2,
+    "linkedInteractions": 2,
+    "identityReviewHolds": 2,
+    "latestSettledAtUtc": "2026-10-16T17:40:24.810971Z"
+  },
+  "reply": {
+    "settledSignedHints": 2,
+    "retainedSourceRows": 2,
+    "exactSourceVersionMatches": 2,
+    "linkedInteractions": 2,
+    "identityReviewHolds": 2,
+    "latestSettledAtUtc": "2026-10-16T18:00:26.81501Z"
+  },
+  "exactArchived160": {
+    "postcutoffSignedHints": 0,
+    "postcutoffSavedMessages": 0,
+    "postcutoffSavedReplies": 0,
+    "providerCheckedParentAbsenceAcross160Channels": true,
+    "historicalReplyIntervalsComplete": false
+  },
+  "interpretation": "Real signed parent and reply Events reached retained source and canonical interaction in active public channels. Identity review prevents unsupported customer/job attribution. This does not prove a real post-cutoff Event from the separate archived 160-channel roster or finish its older reply catch-up.",
+  "messageBodiesReturned": false,
+  "individualOrGroupDmsIncluded": false,
+  "privateChannelsIncluded": false,
+  "providerRequests": 0,
+  "productionDataWrites": false
+}

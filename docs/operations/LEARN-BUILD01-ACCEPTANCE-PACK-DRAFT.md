@@ -228,10 +228,15 @@ inactive until Chris reviews and signs off the business result.
 - The 160 approved public Slack channels have enabled channel/reply
   subscriptions and completed historical campaign handoff. All **180**
   approved public channels have valid account/connection bindings to one exact
-  signed Events receiver. The separate 20-channel public roster supplied four
-  settled real hints, saved source and an ordinary post-fix reply settled in
-  **32 seconds**. DMs remain excluded. This proves the shared route but not
-  an exact-160 real Event. [Shared-route receipt](evidence/learn-build01-slack-shared-events-boundary-2026-10-17.json).
+  signed Events receiver. The separate 20-channel active public roster now has
+  **two real parent and two real reply Events** whose signed hints, exact
+  retained source versions and canonical interactions all match. The four
+  interactions remain in identity review, so no customer/job attribution is
+  claimed. One post-fix reply settled in **32 seconds**. DMs remain excluded.
+  This proves parent and reply capture on the shared route, but not a real
+  post-cutoff Event in the archived 160.
+  [Source-to-interaction receipt](evidence/learn-build01-slack-active-events-source-interactions-2026-10-17.json),
+  [shared-route receipt](evidence/learn-build01-slack-shared-events-boundary-2026-10-17.json).
 - The signed-in LIVE Drummonds dashboard now displays **37,863 saved Slack
   messages**, with a clear saved-history caveat. Its evidence browser loaded
   25 public observations on the first page and returned to the dashboard.
@@ -372,9 +377,11 @@ inactive until Chris reviews and signs off the business result.
   in the prior 12 hours. The latest retained source activity is from 30 August,
   with none in the 30 days before handoff. All 160 are now confirmed archived,
   so this is a historical completeness task, not the active near-live roster.
-  The shared signed receiver and all 180 bindings are verified. The proven
-  post-fix real Event was a reply in the separate active 20-channel roster;
-  a new ordinary parent-message event has not yet been observed.
+  The shared signed receiver and all 180 bindings are verified. The separate
+  active 20-channel roster has two source-matched parent Events and two
+  source-matched replies; none has yet cleared identity review for card
+  attribution. This positive evidence does not substitute for provider
+  completeness of older threads in the archived 160.
   [Exact-roster proof](evidence/learn-build01-slack-160-postcutoff-2026-10-16.json).
   A later 09:27 observation found **69** channels over a day behind in the
   polling fallback and only **39** with a completed window ending in the prior

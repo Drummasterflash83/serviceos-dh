@@ -17,6 +17,28 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 12:38 UTC — active public Slack parent and reply Events reached source and interaction.**
+
+### Working and verified
+
+- In the separate approved 20 active public channels, two real signed parent
+  hints and two real signed reply hints each match a retained source row, its
+  exact version and a canonical interaction. The shared receiver is bound to
+  all 180 approved public channels. The four interactions are correctly held
+  for identity review rather than silently attributed to customer or job
+  cards. [Content-free readback](evidence/learn-build01-slack-active-events-source-interactions-2026-10-17.json).
+
+### Needs finishing
+
+- The 160-channel saved roster is entirely archived. Its post-cutoff parent
+  absence was checked at Slack; old-thread reply intervals are still catching
+  up. No positive Event from that exact roster or card attribution is claimed.
+
+### Blocked externally
+
+- No new staff test post is needed. Ordinary reply catch-up remains enabled;
+  real customer/job attribution needs reviewed identity evidence.
+
 **17 October, 12:28 UTC — handoff frontend released to TEST and LIVE; human action still unverified.**
 
 ### Working and verified
