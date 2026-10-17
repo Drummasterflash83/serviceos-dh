@@ -5,6 +5,8 @@ This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
+The [short business review draft](LEARN-BUILD01-BUSINESS-REVIEW-DRAFT.md)
+sets out the exact LIVE result and limits for that later decision.
 
 ## Working and verified
 
