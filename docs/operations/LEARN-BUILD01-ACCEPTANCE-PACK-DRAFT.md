@@ -1,12 +1,20 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 11:03 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 11:17 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- A single authority-read failure had stranded the approved Commusoft
+  work-address contact run at 516/872 properties. The unchanged-scope retry
+  passed rollback rehearsals and installed on TEST and LIVE; its one-time,
+  exact-job recovery resumed normal worker capture at **517/872**, with the
+  next page running. The operator UI's unconfirmed request was cancelled.
+  This removes the deadlock, while final contact and cycle completion remain
+  to observe. [Recovery receipt](evidence/learn-build01-commusoft-authority-retry-2026-10-17.json).
 
 - Slack itself returned **no parent message at or after the handoff cutoff**
   from any of the exact 160 saved public channels. Every channel passed a

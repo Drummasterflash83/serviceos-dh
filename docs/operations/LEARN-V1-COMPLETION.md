@@ -17,6 +17,37 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 11:17 UTC — guarded Commusoft contact retry restored actual capture.**
+
+### Working and verified
+
+- The ongoing work-address contact traversal stopped at 516 of 872 properties
+  when one page returned `commusoft_authority_unavailable` without retaining a
+  page. Its approval, connection revision, saved checkpoint and capture flags
+  remained intact. An overlapping current-jobs window was ruled out at that
+  instant. The operator UI could not verify administrator access; its request
+  had no receipt and was explicitly cancelled.
+- A guarded retry and exact-job recovery control passed rollback rehearsal on
+  TEST and LIVE, then installed on both. The guard rejects changed or revoked
+  scope, expired approval, committed-page jobs, active competing jobs and
+  ordinary authenticated callers. Installation changed no source rows or jobs.
+  The one failed LIVE job passed the exact guard and was requeued from the
+  retained 516-page checkpoint. The normal worker then retained the next page:
+  **517 of 872** properties completed, with another page running.
+  [Sanitised receipt](evidence/learn-build01-commusoft-authority-retry-2026-10-17.json).
+
+### Needs finishing
+
+- Verify all 872 targets and a complete four-stage cycle. The first new
+  retained page proves resumption, not completed coverage. Keep the
+  current-jobs freshness lane separately monitored.
+
+### Blocked externally
+
+- No owner action is needed for this bounded recovery. The signed-in operator
+  page currently cannot verify administrator access; diagnose that separately
+  before relying on the UI for future manual continuations.
+
 **17 October, 11:03 UTC — exact archived Slack roster has no post-cutoff parent.**
 
 ### Working and verified

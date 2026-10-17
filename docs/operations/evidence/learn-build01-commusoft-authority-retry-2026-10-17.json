@@ -1,0 +1,49 @@
+{
+  "observedAt": "2026-10-17T11:17:13Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "problem": {
+    "phase": "workaddress contacts",
+    "approvedTargets": 872,
+    "completedTargetsBeforeFailure": 516,
+    "errorCode": "commusoft_authority_unavailable",
+    "failedJobAttempts": 1,
+    "failedJobRetainedPages": 0,
+    "overlappingCurrentJobsWindowAtFailure": false,
+    "recurringApprovalStillActive": true,
+    "connectionRevisionUnchanged": true
+  },
+  "operatorUi": {
+    "continuationAttempt": "no receipt; administrator access unverified",
+    "unresolvedRequest": "cancelled; delayed copy cannot apply"
+  },
+  "guardedRelease": {
+    "migration": "20261105110000_learn_commusoft_recurring_authority_retry.sql",
+    "sourceSha256": "074c275d69f49d9eda1e62f916ef147aac6bd91075220d0a9f0fbb737be5cd8c",
+    "testRollbackRehearsal": "passed",
+    "testInstalled": true,
+    "liveRollbackRehearsal": "passed",
+    "liveInstalled": true,
+    "randomScopeDenied": true,
+    "authenticatedRequeueAllowed": false,
+    "installChangedSourceRows": false,
+    "installProviderRequests": 0
+  },
+  "oneTimeRecovery": {
+    "jobId": "15a4bbe3-c585-46b8-8ad9-d5f04c554b1b",
+    "exactLiveScopeGuard": true,
+    "stateAt111604Utc": "retrying",
+    "nextAvailableAt": "2026-10-17T11:16:37.907904Z",
+    "retainedPagesAfterRequeue": 516,
+    "providerRequestsByRecoveryCommand": 0
+  },
+  "normalWorkerReadback": {
+    "observedAt": "2026-10-17T11:17:13Z",
+    "retainedContactPagesAfterRetry": 1,
+    "completedContactTargets": 517,
+    "approvedContactTargets": 872,
+    "nextJobStatus": "running",
+    "recurringState": "window_active"
+  },
+  "limit": "The regular worker resumed and retained one new page; the 872-target traversal and four-stage cycle are not yet complete."
+}
