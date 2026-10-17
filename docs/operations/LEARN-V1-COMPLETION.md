@@ -35,6 +35,12 @@ business decision yet.
   generated Vercel handler with synthetic settings. Home and unauthenticated
   LEARN workspace returned HTTP 200 with all referenced assets present.
   [Frontend rebuild receipt](evidence/learn-build01-frontend-git-rebuild-2026-10-17.json).
+- The independently downloaded scheduled database package also supported a
+  controlled offline worker restart. All 1,280 inherited active jobs were held
+  in the disposable copy; the current v107 worker successfully projected one
+  synthetic card. No real provider job ran, and all six recovery containers
+  were independently absent afterward.
+  [Worker restart receipt](evidence/learn-build01-controlled-worker-restart-2026-10-17.json).
 
 ### Needs finishing
 
@@ -50,9 +56,9 @@ business decision yet.
   A real Event in the exact 160 Slack roster and full application recovery
   remain unverified. No source, card, score or business acceptance threshold
   has been lowered silently.
-- Frontend boot narrows recovery, but a connected signed-in journey against
-  the restored Auth/REST/Edge services and controlled capture restart remain
-  open.
+- Frontend boot and a controlled no-provider worker restart narrow recovery,
+  but a connected signed-in journey against the restored Auth/REST/Edge
+  services and real provider capture resumption remain open.
 
 ### Blocked externally
 

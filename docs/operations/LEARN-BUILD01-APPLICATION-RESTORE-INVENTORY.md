@@ -20,6 +20,18 @@ and frontend boot, not a signed-in frontend against the recovered services or
 today's alias-to-commit binding.
 [Frontend rebuild receipt](evidence/learn-build01-frontend-git-rebuild-2026-10-17.json).
 
+At 09:19 UTC, the already decrypted **scheduled off-site database package**
+was restored again in an offline disposable stack. All **1,280 inherited active
+jobs** were moved beyond the claim window **only in that disposable database**.
+The pinned current v107 worker bundle then started alongside recovered Auth,
+REST, gateway and Edge, claimed one synthetic tenant/card job, and projected
+that card successfully. No inherited job was due afterward. The worker had no
+external network, host port or provider credential, and all six labelled
+containers were independently absent after cleanup. This proves a controlled
+hold and safe non-provider restart path. It does **not** prove real capture
+resumption, restored provider secret values or a connected signed-in frontend.
+[Controlled worker receipt](evidence/learn-build01-controlled-worker-restart-2026-10-17.json).
+
 At about 08:55 UTC, one recovery escrow read verified the two current packages
 together. The genuinely scheduled 07:52 database package restored **5,960,241**
 archived COPY rows in 421 tables, seven sequences, two captured network tables

@@ -38,17 +38,21 @@ EDGE_BUNDLE = EDGE_ROOT / 'output/learn-launch-status.eszip'
 EDGE_BUNDLE_SHA256 = 'abd78823453b1da6ff7c9b8171fe3e95ffcc6b4105eb2cb07aa75de819ab1d99'
 V107_EDGE_BUNDLE = ROOT / '.verification-results/build01-edge-bundles-v107/learn-launch-status.eszip'
 V107_EDGE_BUNDLE_SHA256 = 'd0e3601d0acbae63a0d0d85dea1327b95ad22d965e592603aca5040ad45f0a25'
+V107_WORKER_BUNDLE = ROOT / '.verification-results/build01-edge-bundles-v107/platform-worker.eszip'
+V107_WORKER_BUNDLE_SHA256 = '7abe5188435f8bab777eb8fc31fb72ede1c191fc8f37c354f122c9680e2acd72'
 GATEWAY_SOURCE = ROOT / 'scripts/backup/recovery_gateway.mjs'
 GATEWAY_SOURCE_SHA256 = '15ab66f9f20096200efe049e787bac71d4e25d41352b9d10333567a082236ddf'
 LABEL = 'ai.openfolk.serviceos.auth-recovery'
 REST_LABEL = 'ai.openfolk.serviceos.rest-recovery'
 EDGE_LABEL = 'ai.openfolk.serviceos.edge-recovery'
 GATEWAY_LABEL = 'ai.openfolk.serviceos.gateway-recovery'
+WORKER_LABEL = 'ai.openfolk.serviceos.worker-recovery'
 RUN = uuid.uuid4().hex
 AUTH_NAME = 'serviceos-auth-recovery-' + RUN
 REST_NAME = 'serviceos-rest-recovery-' + RUN
 EDGE_NAME = 'serviceos-edge-recovery-' + RUN
 GATEWAY_NAME = 'serviceos-gateway-recovery-' + RUN
+WORKER_NAME = 'serviceos-worker-recovery-' + RUN
 REPORT = ROOT / '.verification-results' / ('learn-build01-auth-recovery-' + RUN + '.json')
 DOCKER = '/usr/local/bin/docker'
 
@@ -132,7 +136,10 @@ def service_token(secret, role='service_role'):
 
 
 def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
+        with_worker_fixture=False,
         source_dir=SOURCE, expected_archive=EXPECTED_ARCHIVE):
+    if with_worker_fixture and (not with_edge or not reviewed_v107):
+        raise RecoveryError('Worker fixture requires reviewed current Edge recovery')
     archive = source_dir / 'database.dump'
     edge_bundle = V107_EDGE_BUNDLE if reviewed_v107 else EDGE_BUNDLE
     edge_bundle_sha256 = V107_EDGE_BUNDLE_SHA256 if reviewed_v107 else EDGE_BUNDLE_SHA256
@@ -154,6 +161,11 @@ def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
                       edgeSourceBundleVerified=False,edgeAuthenticatedReadVerified=False,
                       reviewedV107Bundle=reviewed_v107,
                       edgeBundleSha256=edge_bundle_sha256)
+    if with_worker_fixture:
+        report.update(workerContainerRemoved=False, workerBundleVerified=False,
+                      syntheticWorkerJobSucceeded=False,
+                      recoveredCaptureJobsHeld=False,
+                      workerBundleSha256=V107_WORKER_BUNDLE_SHA256)
     target = None
     stage = 'preflight'
     try:
@@ -177,6 +189,10 @@ def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
                     or hashlib.sha256(GATEWAY_SOURCE.read_bytes()).hexdigest() != GATEWAY_SOURCE_SHA256):
                 raise RecoveryError('Archived Edge recovery input pin differs')
             report['edgeSourceBundleVerified'] = True
+        if with_worker_fixture:
+            if hashlib.sha256(V107_WORKER_BUNDLE.read_bytes()).hexdigest() != V107_WORKER_BUNDLE_SHA256:
+                raise RecoveryError('Current worker recovery input pin differs')
+            report['workerBundleVerified'] = True
         stage = 'database_restore'
         target = RestoreSandbox(image=DB_IMAGE, network_extension=True,
                                 private_diagnostics=source_dir/'auth-restore-private-error')
@@ -471,6 +487,117 @@ def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
                             existing_edge_page.get('counts',{}).get('email',{}).get('record_count',0)<1):
                         raise RecoveryError('Existing recovered user current Edge read unconfirmed')
                     report['existingUserCurrentEdgeReadVerified'] = True
+                if with_worker_fixture:
+                    stage = 'controlled_worker_fixture'
+                    # A recovered queue must not resume real source capture merely
+                    # because the worker can start. Hold every inherited active job
+                    # in this disposable database before admitting one synthetic
+                    # tenant/card job. The container has no external network.
+                    hold_at = '2099-01-01T00:00:00Z'
+                    inherited = int(target.query("select count(*) from public.platform_jobs "
+                        "where status in ('queued','retrying','running');"))
+                    target.query("update public.platform_jobs set "
+                        "available_at='"+hold_at+"'::timestamptz, "
+                        "lease_expires_at=case when status='running' then '"+hold_at+
+                        "'::timestamptz else lease_expires_at end "
+                        "where status in ('queued','retrying','running');")
+                    worker_tenant,worker_person,worker_card,worker_job = (
+                        str(uuid.uuid4()) for _ in range(4))
+                    target.query("insert into public.tenants(id,slug,display_name,status) "
+                        "values('"+worker_tenant+"'::uuid,'build01-worker-"+RUN+
+                        "','Synthetic recovery worker','active');")
+                    target.query("insert into public.people(id,tenant_id,display_name,primary_email) "
+                        "values('"+worker_person+"'::uuid,'"+worker_tenant+
+                        "'::uuid,'Synthetic recovery card','recovery@example.test');")
+                    target.query("insert into public.customer_cards(id,tenant_id,person_id,title,status,context) "
+                        "values('"+worker_card+"'::uuid,'"+worker_tenant+"'::uuid,'"+
+                        worker_person+"'::uuid,'Synthetic recovery card','grey','{}'::jsonb);")
+                    target.query("insert into public.platform_jobs(id,tenant_id,connector_id,module_id,"
+                        "job_type,job_key,status,priority,max_attempts,payload) values('"+
+                        worker_job+"'::uuid,'"+worker_tenant+
+                        "'::uuid,'openfolk-core','core.customer_card','customer_card.sync',"
+                        "'customer_card.sync:offline:"+worker_card+"','queued',0,1,"
+                        "jsonb_build_object('customer_card_id','"+worker_card+"'::uuid));")
+                    worker_env = {
+                        'SUPABASE_URL':'http://127.0.0.1:8000',
+                        'SUPABASE_ANON_KEY':service_token(secret,'anon'),
+                        'SUPABASE_SERVICE_ROLE_KEY':token,
+                        'SERVICEOS_INTERNAL_KEY':token,
+                        'WORKER_SECRET':secrets.token_urlsafe(32),
+                    }
+                    worker_cmd = ['run','-d','--pull=never','--network',network,
+                        '--ipc','private','--name',WORKER_NAME,
+                        '--label',WORKER_LABEL+'='+RUN,'--log-driver','none',
+                        '--security-opt','no-new-privileges','--cap-drop','ALL',
+                        '--memory','768m','--cpus','1','--pids-limit','128',
+                        '--mount','type=bind,src='+str(V107_WORKER_BUNDLE)+
+                        ',dst=/recovery/platform-worker.eszip,readonly']
+                    for key,value in worker_env.items():
+                        worker_cmd.extend(['-e',key+'='+value])
+                    checked([*worker_cmd,EDGE_IMAGE_ID,'start',
+                        '--main-service','/recovery/platform-worker.eszip',
+                        '--main-entrypoint','/recovery/platform-worker/index.ts',
+                        '--ip','127.0.0.1','--port','9001'],timeout=30)
+                    worker_meta = json.loads(checked(['inspect',WORKER_NAME]))[0]
+                    if (worker_meta['Name']!='/'+WORKER_NAME or
+                            not worker_meta['State']['Running'] or
+                            worker_meta['Image']!=EDGE_IMAGE_ID or
+                            worker_meta['HostConfig']['NetworkMode']!=
+                                'container:'+target._inspect()['Id'] or
+                            worker_meta['HostConfig'].get('PortBindings') or
+                            len(worker_meta.get('Mounts') or [])!=1 or
+                            (worker_meta.get('Config',{}).get('Labels') or {}).get(WORKER_LABEL)!=RUN):
+                        raise RecoveryError('Controlled worker boundary changed')
+                    worker_ready = 0
+                    for _ in range(80):
+                        worker_ready,_ = curl_inside(target.name,'/',
+                            method='OPTIONS',port=9001)
+                        if worker_ready == 200:
+                            break
+                        if not json.loads(checked(['inspect',WORKER_NAME]))[0]['State']['Running']:
+                            raise RecoveryError('Controlled worker exited before readiness')
+                        time.sleep(.25)
+                    if worker_ready != 200:
+                        raise RecoveryError('Controlled worker readiness unconfirmed')
+                    worker_request = json.dumps({'batch_size':1,
+                        'job_types':['customer_card.sync']}).encode()
+                    worker_http,worker_response = curl_inside(target.name,'/',
+                        method='POST',port=9001,
+                        headers=('Authorization: Bearer '+token,
+                                 'x-serviceos-internal-key: '+token,
+                                 'Content-Type: application/json'),
+                        payload=worker_request)
+                    report['workerHttpStatus'] = worker_http
+                    if worker_http not in (0,200) or (worker_http == 200 and
+                            worker_response.get('claimed') != 1):
+                        raise RecoveryError('Synthetic recovered worker claim unconfirmed')
+                    worker_result = None
+                    for _ in range(120):
+                        worker_result = json.loads(target.query("select json_build_object("
+                            "'status',j.status,'processed',j.records_processed,"
+                            "'projected',coalesce((j.result->>'cards_projected')::int,0),"
+                            "'cardProjected',c.context?'projection') from public.platform_jobs j "
+                            "join public.customer_cards c on c.id='"+worker_card+
+                            "'::uuid and c.tenant_id=j.tenant_id where j.id='"+
+                            worker_job+"'::uuid;"))
+                        if worker_result.get('status') in ('succeeded','dead_letter'):
+                            break
+                        time.sleep(.5)
+                    if worker_result != {'status':'succeeded','processed':1,
+                                         'projected':1,'cardProjected':True}:
+                        raise RecoveryError('Synthetic recovered card projection unconfirmed')
+                    unheld = int(target.query("select count(*) from public.platform_jobs "
+                        "where id<>'"+worker_job+"'::uuid and "
+                        "status in ('queued','retrying','running') and "
+                        "available_at<'"+hold_at+"'::timestamptz;"))
+                    if unheld:
+                        raise RecoveryError('Recovered real queue hold changed')
+                    report.update(syntheticWorkerJobSucceeded=True,
+                                  recoveredCaptureJobsHeld=True,
+                                  inheritedActiveJobsHeld=inherited,
+                                  providerRequests=0)
+                    cleanup_optional(WORKER_NAME,WORKER_LABEL)
+                    report['workerContainerRemoved'] = True
                 cleanup_optional(EDGE_NAME,EDGE_LABEL)
                 report['edgeContainerRemoved'] = True
                 cleanup_optional(GATEWAY_NAME,GATEWAY_LABEL)
@@ -551,8 +678,11 @@ def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
                       safeFailure=(str(exc) if isinstance(exc,RecoveryError)
                                    else type(exc).__name__))
         if with_edge:
-            for name,label,field in ((EDGE_NAME,EDGE_LABEL,'edgeContainerRemoved'),
+            for name,label,field in ((WORKER_NAME,WORKER_LABEL,'workerContainerRemoved'),
+                                     (EDGE_NAME,EDGE_LABEL,'edgeContainerRemoved'),
                                       (GATEWAY_NAME,GATEWAY_LABEL,'gatewayContainerRemoved')):
+                if field == 'workerContainerRemoved' and not with_worker_fixture:
+                    continue
                 try:
                     cleanup_optional(name,label)
                     report[field] = True
@@ -595,7 +725,8 @@ if __name__=='__main__':
         current_source = None
         expected_archive = EXPECTED_ARCHIVE
         if (len(mode) == 3 and
-                mode[0] == '--with-reviewed-v107-edge-and-existing-user-reset' and
+                mode[0] in ('--with-reviewed-v107-edge-and-existing-user-reset',
+                            '--with-reviewed-v107-edge-worker-fixture') and
                 mode[1] == '--current-export-dir' and
                 re.fullmatch(r'\.verification-results/production-database-daily-\d{8}-'
                              r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
@@ -616,7 +747,8 @@ if __name__=='__main__':
                 raise RecoveryError('Current private export boundary unverified')
             mode = mode[:1]
         elif (len(mode) == 3 and
-                mode[0] == '--with-reviewed-v107-edge-and-existing-user-reset' and
+                mode[0] in ('--with-reviewed-v107-edge-and-existing-user-reset',
+                            '--with-reviewed-v107-edge-worker-fixture') and
                 mode[1] == '--offsite-recovered-dir' and
                 mode[2] == '.verification-results/build01-scheduled-database-20261017/offsite-restored'):
             recovered_root = ROOT / mode[2]
@@ -643,13 +775,17 @@ if __name__=='__main__':
             mode = mode[:1]
         if len(mode)>1 or (len(mode)==1 and mode[0] not in
             ('--with-archived-edge','--with-reviewed-v107-edge',
-             '--with-reviewed-v107-edge-and-existing-user-reset')):
+             '--with-reviewed-v107-edge-and-existing-user-reset',
+             '--with-reviewed-v107-edge-worker-fixture')):
             raise RecoveryError('Exact archived Edge rehearsal mode required')
         print(json.dumps(run(with_edge=len(mode)==1,
             reviewed_v107=len(mode)==1 and mode[0] in
-            ('--with-reviewed-v107-edge','--with-reviewed-v107-edge-and-existing-user-reset'),
+            ('--with-reviewed-v107-edge','--with-reviewed-v107-edge-and-existing-user-reset',
+             '--with-reviewed-v107-edge-worker-fixture'),
             recover_existing_user=len(mode)==1 and
             mode[0]=='--with-reviewed-v107-edge-and-existing-user-reset',
+            with_worker_fixture=len(mode)==1 and
+            mode[0]=='--with-reviewed-v107-edge-worker-fixture',
             source_dir=current_source or SOURCE,
             expected_archive=expected_archive)))
     except BaseException:

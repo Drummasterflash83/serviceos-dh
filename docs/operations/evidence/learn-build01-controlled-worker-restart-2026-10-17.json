@@ -1,0 +1,35 @@
+{
+  "version": "learn-build01-controlled-worker-restart/1",
+  "observedAtUtc": "2026-10-17T09:19:05Z",
+  "environment": "disposable offline restore of independently downloaded scheduled database package and reviewed current v107 Edge bundles",
+  "recoveryInputs": {
+    "scheduledDatabaseEncryptedSha256": "40009f3659aa3be728d1a01a8ed614408a3c43afacdfb9668be0941043b0abf1",
+    "restoredNativeArchiveSha256": "af3003bcea592d187d28de8fb5ce1949edf576321a038e2555baf3bb2d6914ef",
+    "currentWorkerBundleSha256": "7abe5188435f8bab777eb8fc31fb72ede1c191fc8f37c354f122c9680e2acd72",
+    "allPinnedInputsVerified": true
+  },
+  "controlledRestart": {
+    "inheritedActiveJobsHeldInDisposableDatabase": 1280,
+    "inheritedDueJobsAfterSyntheticRun": 0,
+    "syntheticTenantAndCardOnly": true,
+    "currentWorkerHttpStatus": 200,
+    "syntheticCardJobClaimedAndSucceeded": true,
+    "syntheticCardProjected": true,
+    "providerRequests": 0,
+    "realRecoveredJobsExecuted": 0
+  },
+  "serviceChecks": {
+    "recoveredAuthHealthy": true,
+    "recoveredGatewayAndRestTenantRead": true,
+    "currentEdgeAuthenticatedPhoneAndEmailRead": true,
+    "tenantIsolationAndOperatorRevocation": true
+  },
+  "containment": {
+    "externalNetwork": false,
+    "hostPorts": 0,
+    "productionDataWrites": false,
+    "allSixContainerLabelsIndependentlyConfirmedAbsent": true,
+    "secretValuesOrCustomerIdentifiersInReceipt": false
+  },
+  "limitation": "The held inherited jobs were changed only in the disposable restore. This proves a controlled no-provider restart boundary and one safe current-worker job, not actual Slack/Email/Phone/Commusoft capture resumption, recovered runtime secret values, all-function startup, original-session continuation or a connected signed-in frontend journey."
+}

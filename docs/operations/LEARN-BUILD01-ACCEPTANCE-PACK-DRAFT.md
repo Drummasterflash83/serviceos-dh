@@ -119,6 +119,13 @@ inactive until Chris reviews and signs off the business result.
   unauthorised POST with 403. This is startup and fail-closed evidence, not an
   authenticated capture restart.
   [Startup receipt](evidence/learn-build01-v107-worker-isolated-startup-2026-10-17.json).
+- A later offline restore used the already decrypted **scheduled off-site**
+  database with the current v107 worker. It held all 1,280 inherited active
+  jobs in the disposable copy, then claimed and completed one synthetic card
+  projection. No real recovered job or provider request ran; all six service
+  containers were independently absent afterward. This verifies a controlled
+  hold and safe worker restart, not real source capture resumption.
+  [Worker restart receipt](evidence/learn-build01-controlled-worker-restart-2026-10-17.json).
 - The last verified LIVE frontend Git commit `77a73802` rebuilt from an
   isolated archive with synthetic backend settings. Its generated Vercel server
   handler returned HTTP 200 for home and the unauthenticated LEARN workspace;
@@ -200,7 +207,8 @@ inactive until Chris reviews and signs off the business result.
   current Edge tenant reads. The last verified LIVE frontend commit now also
   rebuilds and boots separately. A **connected signed-in frontend journey**,
   all-function startup with recovered runtime secrets, original-session policy
-  and controlled capture restart remain unverified. The local database point
+  and **real provider capture resumption** remain unverified. A controlled
+  no-provider worker restart passed. The local database point
   matches a later verified phone-file inventory. All three file buckets
   completed, but the points
   are not atomic.
