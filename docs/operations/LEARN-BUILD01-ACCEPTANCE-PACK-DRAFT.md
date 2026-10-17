@@ -1,12 +1,21 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 14:19 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 14:35 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- The ordinary LIVE Email selector now prioritises newly imported, unlinked
+  messages through a bounded indexed helper. Its TEST fixture and LIVE
+  read-only cost check passed; after guarded release, two unattended jobs
+  created **100 interactions from 100 distinct Email sources** with zero
+  failed jobs. A brief earlier ordering experiment timed out and was rolled
+  back before this helper was installed; no ordinary Email job in that window
+  failed or dead-lettered.
+  [Release receipt](evidence/learn-build01-email-indexed-recent-release-2026-10-17.json).
 
 - The exact current LIVE frontend Git commit `ca651c3c` now rebuilds as a
   Vercel target against the independently downloaded scheduled database backup.
@@ -509,9 +518,11 @@ inactive until Chris reviews and signs off the business result.
   completion score.
 - **Email review and history:** the 55 historical drafts and 12 source-missing
   links require separate provenance treatment. A draft must not be represented
-  as verified sent mail. The 1,595 current eligible unlinked sources are all
-  historical by event date; the changed-source update lane is still running
-  and has not drained.
+  as verified sent mail. At 14:35, **6,476** eligible recently retained
+  historical sources still lacked interactions after the first 100 new
+  projections; none had a current-day event time. The three-year backfill and
+  changed-source update lane still need sustained ordinary progress.
+  [Current gap](evidence/learn-build01-email-indexed-gap-live-2026-10-17.json).
 - **Recovery:** The serving v107 Edge source has a fresh encrypted off-site
   copy and in-memory manifest verification; all 103 function trees rebuilt
   from locally staged source. Today's independent scheduled database copy

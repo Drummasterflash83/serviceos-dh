@@ -17,6 +17,42 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 14:35 UTC — indexed recent Email projection released and observed.**
+
+### Working and verified
+
+- LIVE's ordinary Email selector was spending its bounded batches on linked,
+  unchanged messages while newly imported historical messages remained
+  unlinked. A read-only preflight selected **10 linked / 0 unlinked** despite
+  eligible recent imports. The first attempt to move the older full unlinked
+  branch ahead of updates timed out; its exact TEST and LIVE functions were
+  restored to their prior digests immediately. No ordinary Email job created
+  during that window failed or dead-lettered.
+- The replacement uses the existing recent-import index in a new bounded
+  helper before the unchanged-update pass, preserving the broad historical
+  fallback and Phone selection. TEST rollback rehearsal, installation and a
+  synthetic source-order fixture passed. A read-only LIVE preview examined 200
+  recent candidates in 625 ms; LIVE rollback rehearsal and guarded installation
+  passed with function owner/grants unchanged. The LIVE selector then returned
+  **10 unlinked / 0 linked**. Two subsequent **ordinary unattended jobs**
+  succeeded, publishing **100 new interactions** from distinct Email sources,
+  with zero failed jobs in the release window.
+  [Release receipt](evidence/learn-build01-email-indexed-recent-release-2026-10-17.json),
+  [ordinary readback](evidence/learn-build01-email-indexed-ordinary-live-2026-10-17.json).
+
+### Needs finishing
+
+- The three-year historical Email import remains active. At 14:35, **6,476**
+  eligible recently retained historical sources still lacked interactions,
+  while zero messages whose event time was within the prior day were unlinked.
+  Continue the ordinary indexed lane and verify sustained drain; do not call
+  the first 100 publications a completed backfill.
+
+### Blocked externally
+
+- No user action was needed for this Email selector repair. Owner / MD handoff,
+  runtime credentials and Chris's business acceptance remain separate gates.
+
 **17 October, 14:10 UTC — source coverage and disabled Email cursors separated.**
 
 ### Working and verified

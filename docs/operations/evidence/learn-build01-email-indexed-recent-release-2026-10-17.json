@@ -1,0 +1,38 @@
+{
+  "version": "learn-build01-email-indexed-recent-release/1",
+  "observedAt": "2026-10-17T14:35:35+00:00",
+  "environment": "TEST and LIVE Drummonds",
+  "migrationSha256": "85813b4434498060f8c88e3ee8745be24120ab9a27984703e237bdabe26a8919",
+  "test": {
+    "rehearsedRolledBack": true,
+    "installedVerified": true,
+    "syntheticRollbackFixturePassed": true,
+    "newUnlinkedSelectedBeforeLinkedUpdate": true,
+    "linkedUpdateRetained": true
+  },
+  "live": {
+    "rehearsedRolledBack": true,
+    "installedVerified": true,
+    "beforeSelectorDigest": "2a0534eb8d0394bbec8b86714f4e7d1e",
+    "afterSelectorDigest": "0dbdf0a9791f877de4ace8f10c59fd86",
+    "ownerAndGrantsPreserved": true,
+    "indexedRecentPreviewCandidates": 200,
+    "indexedRecentPreviewElapsedMs": 625,
+    "selectedUnlinkedOfTen": 10,
+    "ordinarySuccessfulJobs": 2,
+    "newInteractionsPublished": 100,
+    "failedJobsAfterRelease": 0,
+    "remainingHistoricalEligibleUnlinked": 6476,
+    "currentDayUnlinked": 0
+  },
+  "scope": {
+    "sourceRowsChangedByMigration": false,
+    "providerRequestsByMigration": 0,
+    "messageBodiesReturned": false,
+    "individualOrGroupSlackDmsRead": false
+  },
+  "limits": [
+    "Historical three-year Email backfill remains in progress.",
+    "Two unattended jobs are positive evidence, not a full historical drain."
+  ]
+}
