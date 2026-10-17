@@ -1,5 +1,11 @@
 # Build execution tracker
 
+Build 01 current processing source recovery (17 October, 16:21 UTC): the
+approved off-site v107 source base plus reviewed overlays reconstructs all
+119 serving LIVE worker v110 files and all five identity scheduler v51 files
+exactly. Runtime credentials, decrypt and provider restart remain open.
+[Read-only receipt](../../operations/evidence/learn-build01-current-processing-source-overlay-2026-10-17.json).
+
 Build 01 card freshness release (17 October, 16:13 UTC): TEST v69 passed a
 hosted synthetic new-card-plus-old-sweep fixture; the exact candidate is
 LIVE v110 with matching 119-file serving source. Ordinary LIVE jobs cleared

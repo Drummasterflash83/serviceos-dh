@@ -16,9 +16,12 @@ inactive until Chris reviews and signs off the business result.
   older-than-hour cards to **zero** by 16:13 UTC, without a manual job start or
   failed card. At that instant, 4,192 of 4,210 active cards had projections;
   the other 18 were newer and still awaiting ordinary catch-up. The exact
-  v109→v110 code patch and local rollback executable are preserved; full
-  credential/provider recovery is still separate.
-  [Release and readback](evidence/learn-build01-card-freshness-release-2026-10-17.json).
+  v109→v110 code patch and local rollback executable are preserved. A fresh
+  file-by-file reconstruction from the approved off-site v107 source base
+  matches all 119 serving LIVE worker files and the unchanged scheduler files;
+  full credential/provider recovery is still separate.
+  [Release and readback](evidence/learn-build01-card-freshness-release-2026-10-17.json) ·
+  [current-source reconstruction](evidence/learn-build01-current-processing-source-overlay-2026-10-17.json).
 
 - The comprehensive LIVE read-only diagnostic now returns its full source,
   card, job, Gmail-alias and 160-channel subscription view after a query

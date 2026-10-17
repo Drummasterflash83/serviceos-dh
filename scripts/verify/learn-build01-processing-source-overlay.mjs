@@ -1,5 +1,5 @@
 /** Verify current LIVE worker/scheduler source from the pinned v107 recovery base. */
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
@@ -13,13 +13,16 @@ const cli='/Users/chrisdrummond/.npm/_npx/f488b5593433aa64/node_modules/supabase
 const archive='.verification-results/build01-edge-staged-v107';
 const token=savedCliToken();
 const hash=data=>createHash('sha256').update(data).digest('hex');
-const expected={"platform-worker":{version:109,count:119,patches:{
+const expected={"platform-worker":{version:110,count:119,patches:{
   '_shared/worker_handlers/identity_resolve.ts':[['Math.min(200,','Math.min(50,'],
     ['counts.continued = counts.failed === 0 && rows.length === batch && counts.resolved + counts.reviews_recorded === rows.length;',
       'counts.continued = (payload.limit === undefined || typeof payload.limit === "number" && Number.isInteger(payload.limit) && payload.limit >= 1 && payload.limit <= 50) && counts.failed === 0 && rows.length === batch && counts.resolved + counts.reviews_recorded === rows.length;']],
   '_shared/worker_handlers/business_graph_sync.ts':[
     ['const DEFAULT_LIMIT = 200;','const DEFAULT_LIMIT = 50;'],
     ['const MISSING_INTERACTION_PAGE = 200;','const MISSING_INTERACTION_PAGE = 100;']],
+},patchFiles:{
+  '_shared/worker_handlers/customer_card_sync.ts':
+    'docs/operations/LEARN-BUILD01-CARD-FRESHNESS-V110.patch',
 }},'identity-scheduled-sync':{version:51,count:5,patches:{
   'identity-scheduled-sync/index.ts':[['limit: 200','limit: 50'],
     ['moduleId: "core.identity",','moduleId: "core.identity",\n      priority: 50,']],
@@ -57,12 +60,21 @@ try{
         if(reconstructed.split(needle).length!==2)throw Error(`${mapped} archive anchor changed`);
         reconstructed=reconstructed.replace(needle,replacement);
       }
+      const patchFile=config.patchFiles?.[mapped];
+      if(patchFile){
+        const target=join(root,'reconstructed-card-handler.ts');
+        writeFileSync(target,reconstructed,{mode:0o600});
+        const applied=spawnSync('patch',[target],{
+          input:readFileSync(patchFile),encoding:'utf8',timeout:30000,maxBuffer:1024*1024});
+        if(applied.status!==0)throw Error(`${mapped} exact source patch failed`);
+        reconstructed=readFileSync(target,'utf8');
+      }
       if(hash(reconstructed)!==hash(readFileSync(file)))
         throw Error(`${mapped} source differs from pinned recovery overlay`);
       if(before!==hash(reconstructed))patched++;else unchanged++;
       manifest.push([mapped,hash(reconstructed)]);
     }
-    if(patched!==Object.keys(config.patches).length)
+    if(patched!==Object.keys(config.patches).length+Object.keys(config.patchFiles??{}).length)
       throw Error(`${endpoint} changed-file count differs`);
     results.push({endpoint,version:config.version,sourceFiles:config.count,
       reconstructedChangedFiles:patched,unchangedFiles:unchanged,

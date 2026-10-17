@@ -1,0 +1,32 @@
+{
+  "contract": "learn-build01-processing-source-overlay/1",
+  "observedAt": "2026-10-17T16:21:24.376Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "base": "v107 independently downloaded off-site Edge source package",
+  "method": "Reconstruct the downloaded serving source file by file from the pinned base and reviewed code-only overlays; compare every file hash with the current LIVE download",
+  "results": [
+    {
+      "endpoint": "platform-worker",
+      "version": 110,
+      "sourceFiles": 119,
+      "reconstructedChangedFiles": 3,
+      "unchangedFiles": 116,
+      "closureSha256": "b25bde06a8d8e0ff260ea9c2cbaeff9c464143dd06bc5e5e5ffd89bcbe27d711",
+      "servingWireSha256": "093b3515ce52ab1979fe0bc04b2d99d3dd28ada1a3f9ed26bd613c55214f1a5a"
+    },
+    {
+      "endpoint": "identity-scheduled-sync",
+      "version": 51,
+      "sourceFiles": 5,
+      "reconstructedChangedFiles": 1,
+      "unchangedFiles": 4,
+      "closureSha256": "13d13c321c127af518446daf829c4f30485a0edb46b07d2788739cfc7c7501a6",
+      "servingWireSha256": "0b99266e2bf406a8d2ebca890f52fa7649e092c0e685fba22db13c96cd1f2c72"
+    }
+  ],
+  "sourceReconstructedAndMatchedServing": true,
+  "credentialRecoveryProven": false,
+  "providerRestartProven": false,
+  "productionDataWrites": false,
+  "privateDataReturned": false
+}

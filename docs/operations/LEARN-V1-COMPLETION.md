@@ -17,6 +17,29 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 16:21 UTC — current processing source recovery verified.**
+
+### Working and verified
+
+- The independently downloaded approved off-site v107 Edge source base plus
+  the reviewed identity, Graph and card-handler overlays now reconstructs
+  the exact serving LIVE platform-worker v110 source **file by file**:
+  three changed files and 116 unchanged files match across its 119-file
+  closure. The five-file identity scheduler v51 also matches. The readback
+  was read-only and returned no private source content or credential.
+  [Current reconstruction receipt](evidence/learn-build01-current-processing-source-overlay-2026-10-17.json).
+
+### Needs finishing
+
+- This completes current processing **source** reconstruction only. The five
+  additional active runtime credentials, recovery-key decrypt and real
+  provider restart remain separate full-application recovery gates.
+
+### Blocked externally
+
+- No fingerprint or new off-site copy approval was needed for this code-only
+  check. The separate five-setting export decision remains pending.
+
 **17 October, 16:13 UTC — new-card priority released without interrupting the ordinary sweep.**
 
 ### Working and verified
