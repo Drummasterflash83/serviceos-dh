@@ -8,6 +8,15 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- A digest-only 09:57 readback found **62** configured LIVE Edge entries and
+  **20** recoverable Vault entries. All **15** names shared by Edge and Vault
+  matched active-value hashes; no Vault row changed after the scheduled backup
+  snapshot. The remaining **47** configured Edge names are outside Vault,
+  spanning public/platform settings and independent sensitive credentials.
+  Supabase exposes their hashes, not restorable values. This narrows the
+  recovery gap without claiming all-function startup.
+  [Secret recovery map](evidence/learn-build01-runtime-secret-restore-map-2026-10-17.json).
+
 - A 09:52 LIVE attribution cutline preserves the distinct denominators:
   **4,676/4,676** Phone calls have interactions and eligible interaction-to-
   Graph gaps are zero. Email has **150,255 enriched interactions** and
@@ -259,6 +268,9 @@ inactive until Chris reviews and signs off the business result.
   controlled no-provider worker restart passed. The local database point
   matches a later verified phone-file inventory. All three file buckets
   completed, but the points are not atomic.
+  The [runtime-secret recovery review](LEARN-BUILD01-EDGE-SECRET-RECOVERY-REVIEW.md)
+  sets out the remaining credential-source decision before any new encrypted
+  secret copy is made.
 - **File-backup host:** the recording and voicemail schedule has succeeded
   locally, but depends on the Mac and Codex app being awake. The latest
   three-bucket inventory is a verified file copy, not a matching database

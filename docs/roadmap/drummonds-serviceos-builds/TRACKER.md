@@ -1,5 +1,14 @@
 # Build execution tracker
 
+Latest Build 01 runtime-recovery checkpoint (17 October, 09:57 UTC): all 15
+LIVE Edge settings also stored in database Vault digest-match the active
+configuration, and no Vault row changed after the scheduled backup snapshot.
+The other 47 configured Edge names are outside Vault; Supabase returns hashes,
+not values. Some are public or platform-managed, while sensitive external
+credentials need a distinct recovery source. No new secret copy has been made.
+[Digest-only receipt](../../operations/evidence/learn-build01-runtime-secret-restore-map-2026-10-17.json)
+and [review](../../operations/LEARN-BUILD01-EDGE-SECRET-RECOVERY-REVIEW.md).
+
 Latest Build 01 attribution checkpoint (17 October, 09:52 UTC): Phone is
 4,676/4,676 linked to interactions and eligible Graph gaps are zero. Email
 has 42,741 held identity-review interactions and Slack has 35,051 held for

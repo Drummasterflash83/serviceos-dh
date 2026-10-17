@@ -17,6 +17,31 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 09:57 UTC — active Edge/Vault values matched by digest; independent runtime settings remain.**
+
+### Working and verified
+
+- Supabase reports 62 configured Edge entries as hashes, not restorable values.
+  The scheduled database backup contains 20 Vault secrets. All 15 names shared
+  by Vault and Edge digest-match current LIVE configuration, and no Vault row
+  changed after the 07:52 UTC scheduled snapshot. No plaintext value was
+  returned or saved. [Read-only map](evidence/learn-build01-runtime-secret-restore-map-2026-10-17.json).
+
+### Needs finishing
+
+- The 47 configured Edge names outside Vault must be classified into
+  platform-provided, reconstructible non-secret, optional and sensitive
+  credentials. The current source/database copies alone cannot restore the
+  sensitive non-Vault values. All-function runtime-secret startup and real
+  provider resumption remain unverified.
+  [Recovery decision review](LEARN-BUILD01-EDGE-SECRET-RECOVERY-REVIEW.md).
+
+### Blocked externally
+
+- Copying a new encrypted package of Edge/provider credentials is a broader
+  action than Chris's earlier exact database/source-copy approvals; request a
+  specific decision before reading those values or uploading such an object.
+
 **17 October, 09:52 UTC — source-to-card attribution denominator checked without inventing links.**
 
 ### Working and verified
