@@ -1,0 +1,66 @@
+{
+  "contract": "learn-build01-operating-followup/1",
+  "environment": "LIVE",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "observedWindowUtc": "2026-10-17T16:19:43Z/2026-10-17T16:24:39Z",
+  "method": "Saved noninteractive login, counts-only read-only scripts and GitHub Actions run metadata",
+  "cards": {
+    "active": 4217,
+    "projected": 4214,
+    "unprojected": 3,
+    "unprojectedOlderThanFiveMinutes": 0,
+    "unprojectedOlderThanOneHour": 0,
+    "latestTwoCompletedOrdinaryTenCardJobs": "succeeded_without_card_failures",
+    "manualJobsStarted": 0
+  },
+  "email": {
+    "immutableReceipts": 55050,
+    "latestReceiptAtUtc": "2026-10-17T16:19:06.789716Z",
+    "historicalFetchDeadLetterHasLaterSameKeySuccesses": true
+  },
+  "graph": {
+    "eligibleMissing": 71,
+    "createdMoreThanDayAgo": 0,
+    "note": "Historical event times may be older; freshness age here refers to the new interaction record."
+  },
+  "slackArchived160": {
+    "approvedChannels": 160,
+    "channelAndReplySubscriptionsEnabled": 160,
+    "providerCompletedWindows": 1601,
+    "completedEmptyWindows": 1601,
+    "deadLetterWindows": 0,
+    "channelsOverDayBehind": 69,
+    "savedPostcutoffMessages": 0,
+    "savedPostcutoffReplies": 0,
+    "signedEventHintsInRoster": 0,
+    "interpretation": "Earlier direct provider metadata confirmed all 160 archived. Empty checked windows and direct provider absence do not prove a positive new event in this exact roster."
+  },
+  "scheduledDatabaseBackup": {
+    "latestRun": 39029918023,
+    "event": "schedule",
+    "conclusion": "success"
+  },
+  "scheduledMissedSuccessMonitor": {
+    "latestRun": 39034977731,
+    "event": "schedule",
+    "conclusion": "success"
+  },
+  "ownerHandoff": {
+    "linkedOwnerLogin": 1,
+    "confirmedOwnerLinks": 0,
+    "openSourceReviewTasks": 0,
+    "acceptedOwnerSourceReviews": 0
+  },
+  "additionalRuntimeRecovery": {
+    "activeConfiguredBindingsOutsideApprovedPackage": 5,
+    "syntheticHostedTestPassed": true,
+    "liveValuesCopied": false
+  },
+  "limitations": [
+    "A representative operating window is not Chris's business sign-off.",
+    "The exact 160 archived Slack channels have no post-cutoff source event to demonstrate positive delivery; the separate active 20-channel Events proof does not change that fact.",
+    "The Owner / MD signed-in handoff, five-setting recovery copy, private-key decrypt and real provider restart remain outstanding."
+  ],
+  "customerContentReturned": false,
+  "productionDataWrites": false
+}

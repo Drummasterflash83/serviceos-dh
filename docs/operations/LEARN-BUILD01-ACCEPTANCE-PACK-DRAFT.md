@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 16:13 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 16:24 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -22,6 +22,12 @@ inactive until Chris reviews and signs off the business result.
   full credential/provider recovery is still separate.
   [Release and readback](evidence/learn-build01-card-freshness-release-2026-10-17.json) ·
   [current-source reconstruction](evidence/learn-build01-current-processing-source-overlay-2026-10-17.json).
+  At 16:24 UTC ordinary LIVE work had projected **4,214/4,217** active cards;
+  the three new cards awaiting projection were all younger than five minutes.
+  The Email receipt ledger continued advancing, today's hosted backup and
+  missed-success monitor were scheduled successes, and the exact archived
+  Slack roster still had zero dead-letter windows and no post-cutoff source.
+  [Operating follow-up](evidence/learn-build01-operating-followup-2026-10-17-1624.json).
 
 - The comprehensive LIVE read-only diagnostic now returns its full source,
   card, job, Gmail-alias and 160-channel subscription view after a query

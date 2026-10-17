@@ -17,6 +17,34 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 16:24 UTC — representative operating follow-up.**
+
+### Working and verified
+
+- Ordinary LIVE card jobs continued after v110: **4,214/4,217** active cards
+  were projected, and the three still awaiting projection were all younger
+  than five minutes. No card was more than an hour stale. Email immutable
+  receipts reached **55,050**; the Graph gap of 71 eligible interactions had
+  no interaction record created more than a day ago. The exact 160-channel
+  Slack roster retained 160 enabled channel/reply subscriptions and **1,601**
+  completed empty provider windows, with zero current dead-letter windows.
+  Today's database backup and missed-success monitor both completed as
+  scheduled GitHub Actions runs, distinct from manual runs.
+  [Counts-only follow-up](evidence/learn-build01-operating-followup-2026-10-17-1624.json).
+
+### Needs finishing
+
+- The archived 160-channel roster still has no real post-cutoff parent or
+  reply; 69 polling windows remain over a day behind. The separate active
+  20-channel signed Events proof does not supply a positive event in the
+  exact 160 roster. Owner / MD handoff and full runtime recovery remain open.
+
+### Blocked externally
+
+- Chris's decision on the archived-roster acceptance boundary and the
+  separate five-setting recovery-copy authorization have been requested.
+  No scope or production write was inferred while awaiting those answers.
+
 **17 October, 16:21 UTC — current processing source recovery verified.**
 
 ### Working and verified
