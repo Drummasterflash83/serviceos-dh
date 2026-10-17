@@ -1,0 +1,60 @@
+{
+  "version": "learn-build01-comprehensive-readback-receipt/1",
+  "environment": "LIVE",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "script": "scripts/verify/learn-build01-working-day-readback.mjs --live-read-only",
+  "method": "Saved noninteractive Supabase management login and read-only SQL; complete source, card, job, alias and Slack subscription fields retained",
+  "completedAtUtc": "2026-10-17T16:04:38.029Z",
+  "result": {
+    "emailSources": 203096,
+    "eligibleEmailMissingInteractions": 3732,
+    "phoneSources": 4676,
+    "phoneInteractions": 4676,
+    "slackSources": 37870,
+    "slackInteractions": 35063,
+    "eligibleInteractionsMissingGraph": 42,
+    "activeCards": 4210,
+    "projectedCards": 4182,
+    "unprojectedCardsOlderThanHour": 6,
+    "activeGmailAliases": 2,
+    "readyGmailAliases": 2,
+    "approved160ChannelReplySubscriptions": 160,
+    "advancedPastSavedCutoff": 160,
+    "cutoffRegressions": 0,
+    "latestOrdinaryCardJobStatus": "queued",
+    "ordinaryCardSuccessesLastHour": 60,
+    "ordinaryCardOperationalFailuresLastHour": 0,
+    "emailWorkspaceSuccessesLastHour": 302,
+    "emailWorkspaceOperationalFailuresLastHour": 1,
+    "identityResolveReviewHoldsLastHour": 30,
+    "identityResolveOperationalFailuresLastHour": 0
+  },
+  "focusedCrossCheck": {
+    "script": "scripts/verify/learn-build01-card-stale-readback.mjs --live-read-only",
+    "observedAtUtc": "2026-10-17T16:03:15.255Z",
+    "unprojectedCardsOlderThanHour": 6,
+    "missingPerson": 0,
+    "missingCompany": 0,
+    "syntheticPerson": 0,
+    "noIdentity": 0,
+    "lastSixCompletedOrdinaryTenCardJobsSucceededWithoutCardFailures": true
+  },
+  "emailFailureFollowUp": {
+    "observedAtUtc": "2026-10-17T16:14:55.471Z",
+    "safeErrorCode": "fetch_failed",
+    "deadLetterJobsInPriorTwoHours": 1,
+    "laterSuccessesWithSameJobKey": 3,
+    "latestSameKeySuccessAtUtc": "2026-10-17T16:14:06.279021Z",
+    "laterActiveJobsWithSameKey": 0,
+    "interpretation": "The exact failed capture lane resumed unattended; the dead-letter remains visible as historical operational evidence."
+  },
+  "interpretation": [
+    "The comprehensive diagnostic previously timed out; splitting independent source reads and replacing the all-job window sort with indexed latest-per-type reads made the complete observation return successfully.",
+    "The six older unprojected cards are a new LIVE freshness gap after the earlier zero-stale observation; successful rolling jobs do not erase that gap.",
+    "The one recent Email fetch failure had three later successes with the same job key by 16:14 UTC; retain the dead-letter for monitoring.",
+    "Enabled Slack subscriptions and empty archived-channel windows do not prove a real post-cutoff message or reply in the exact 160 roster.",
+    "This is one read-only instant, not proof of unattended continuity or business acceptance."
+  ],
+  "privateContentReturned": false,
+  "productionDataWrites": false
+}

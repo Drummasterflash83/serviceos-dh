@@ -1,0 +1,52 @@
+{
+  "contract": "learn-build01-card-freshness-release/1",
+  "observedAtUtc": "2026-10-17T16:13:19.800Z",
+  "problem": "The stable full-sweep cutoff deferred unprojected cards created after the cutoff until the next full pass; six were over one hour old despite successful ordinary jobs.",
+  "change": "Each ordinary ten-card sweep reserves up to five positions for unprojected cards created after its cutoff and stable for five minutes; the remaining positions keep advancing the older full sweep. Tenant and archived-card filters, revision fencing, source reads and per-card failure isolation remain in force.",
+  "test": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "workerBefore": 68,
+    "workerAfter": 69,
+    "hostedSyntheticState": "accepted",
+    "syntheticBatchSwept": 10,
+    "postcutoffCardAdvanced": 1,
+    "olderCardsAdvanced": 9,
+    "continuationCreated": 1,
+    "syntheticFixtureArchived": true
+  },
+  "live": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "workerBefore": 109,
+    "workerAfter": 110,
+    "ordinaryCardJobsStartedManually": 0,
+    "staleUnprojectedBefore": 6,
+    "staleUnprojectedAt1612Utc": 1,
+    "staleUnprojectedAt1613Utc": 0,
+    "activeCardsAt1613Utc": 4210,
+    "projectedCardsAt1613Utc": 4192,
+    "recentUnprojectedCardsAt1613Utc": 18,
+    "latestCompletedOrdinaryTenCardJob": "succeeded",
+    "latestCompletedJobFailedCards": 0
+  },
+  "sourcePreservation": {
+    "changedFunction": "platform-worker",
+    "changedSourcePaths": ["_shared/worker_handlers/customer_card_sync.ts"],
+    "sourceFiles": 119,
+    "beforeServingWireSha256": "cc502eabcfb071cb0c3338af66ca5431731f5c8f67dcbc85635fe7870995f1d8",
+    "afterServingWireSha256": "093b3515ce52ab1979fe0bc04b2d99d3dd28ada1a3f9ed26bd613c55214f1a5a",
+    "afterServingHandlerSha256": "f3d9e5ffc934af10d72056acf40c2401d966cf5e399e139a1baf9e274be79259",
+    "afterServingClosureSha256": "129cb52ab7e64fdc4d92bcb90fbfbac9b4852067ab9f76d2df74c4bbaa78365b",
+    "testAndLiveServingClosuresMatch": true,
+    "otherFunctionsUnchanged": true,
+    "rollbackExecutablesSavedLocally": true,
+    "exactCodePatch": "docs/operations/LEARN-BUILD01-CARD-FRESHNESS-V110.patch",
+    "patchAppliedToV109AndMatchedV110HandlerSha256": true,
+    "fullRuntimeCredentialRecoveryProven": false
+  },
+  "limits": [
+    "The newer 18 unprojected cards were under one hour old at 16:13 UTC and still require ordinary catch-up observation.",
+    "This release does not prove the Owner / MD handoff, exact archived Slack post-cutoff delivery, complete credential recovery, provider restart or Chris's business sign-off."
+  ],
+  "customerContentReturned": false,
+  "providerRequests": 0
+}

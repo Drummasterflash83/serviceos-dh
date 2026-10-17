@@ -1,5 +1,5 @@
-/** Sanitised, read-only LIVE observations for Build 01's elapsed-day gate.
- * A snapshot is evidence at one instant, never proof of a full unattended day.
+/** Sanitised, read-only LIVE observations for Build 01 acceptance.
+ * A snapshot is evidence at one instant, never proof of unattended continuity.
  */
 import { pathToFileURL } from "node:url";
 import { savedCliToken } from "./learn-test-readiness.mjs";
@@ -12,32 +12,44 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
   if (typeof token !== "string" || token.length < 20)
     throw Error("Existing management login required");
   async function query(name, sql) {
-    const response = await fetcher(ENDPOINT, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ query: sql }),
-      redirect: "error",
-      signal: AbortSignal.timeout(45000),
-    });
+    let response;
+    try {
+      response = await fetcher(ENDPOINT, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ query: sql }),
+        redirect: "error",
+        signal: AbortSignal.timeout(45000),
+      });
+    } catch {
+      throw Error(`${name} read-only observation unavailable`);
+    }
     if (!response.ok) throw Error(`${name} read-only observation failed (HTTP ${response.status})`);
     const rows = await response.json();
     if (!Array.isArray(rows) || rows.length !== 1 || !rows[0] || typeof rows[0] !== "object")
       throw Error(`${name} observation shape differs`);
     return rows[0];
   }
-  const source = await query(
-    "source",
+  // Keep every original denominator, but read each large source once. The
+  // previous scalar-subquery statement repeatedly scanned Email and Graph in
+  // one 45-second management call and could time out despite healthy lanes.
+  const emailSource = await query(
+    "email_source",
+    `with flags as materialized (
+      select coalesce(m.provider='gmail' and
+        m.raw_payload->'label_ids' @> '["DRAFT"]'::jsonb,false) draft,
+        exists(select 1 from public.interactions i where i.tenant_id=m.tenant_id
+          and i.source_table='email_messages' and i.source_id=m.id) has_interaction
+      from public.email_messages m where m.tenant_id='${TENANT}'::uuid
+    ) select count(*)::int email_messages,
+      count(*) filter(where not has_interaction)::int email_without_interaction,
+      count(*) filter(where draft)::int email_drafts,
+      count(*) filter(where not draft and not has_interaction)::int eligible_email_without_interaction
+    from flags`,
+  );
+  const communicationSource = await query(
+    "communication_source",
     `select
-    (select count(*)::int from public.email_messages where tenant_id='${TENANT}'::uuid) email_messages,
-    (select count(*)::int from public.email_messages m where m.tenant_id='${TENANT}'::uuid
-      and not exists(select 1 from public.interactions i where i.tenant_id=m.tenant_id
-       and i.source_table='email_messages' and i.source_id=m.id)) email_without_interaction,
-    (select count(*)::int from public.email_messages m where m.tenant_id='${TENANT}'::uuid
-      and m.provider='gmail' and m.raw_payload->'label_ids' @> '["DRAFT"]'::jsonb) email_drafts,
-    (select count(*)::int from public.email_messages m where m.tenant_id='${TENANT}'::uuid
-      and not coalesce(m.provider='gmail' and m.raw_payload->'label_ids' @> '["DRAFT"]'::jsonb,false)
-      and not exists(select 1 from public.interactions i where i.tenant_id=m.tenant_id
-       and i.source_table='email_messages' and i.source_id=m.id)) eligible_email_without_interaction,
     (select count(*)::int from public.phone_calls where tenant_id='${TENANT}'::uuid) phone_calls,
     (select count(*)::int from public.interactions where tenant_id='${TENANT}'::uuid and source_table='phone_calls') phone_interactions,
     (select count(*)::int from public.slack_messages where tenant_id='${TENANT}'::uuid) slack_messages,
@@ -48,11 +60,19 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
       and source_table='email_messages' and processing_status='identity_review') email_identity_review,
     (select count(*)::int from public.interactions where tenant_id='${TENANT}'::uuid
       and source_table='slack_messages' and processing_status='identity_review') slack_identity_review,
-    (select count(*)::int from public.interactions where tenant_id='${TENANT}'::uuid and processing_status in('ready','enriched')) eligible_interactions,
-    (select count(*)::int from public.interactions i where i.tenant_id='${TENANT}'::uuid
-      and i.processing_status in('ready','enriched') and not exists(select 1 from public.graph_nodes n
-       where n.tenant_id=i.tenant_id and n.node_type='interaction' and n.source_table='interactions' and n.source_id=i.id)) eligible_missing_graph`,
+    (select count(*)::int from public.interactions where tenant_id='${TENANT}'::uuid and processing_status in('ready','enriched')) eligible_interactions`,
   );
+  const graphSource = await query(
+    "graph_source",
+    `with existing as materialized (
+      select distinct source_id from public.graph_nodes where tenant_id='${TENANT}'::uuid
+        and node_type='interaction' and source_table='interactions'
+    ) select count(*)::int eligible_missing_graph
+      from public.interactions i left join existing n on n.source_id=i.id
+      where i.tenant_id='${TENANT}'::uuid
+        and i.processing_status in('ready','enriched') and n.source_id is null`,
+  );
+  const source = { ...emailSource, ...communicationSource, ...graphSource };
   const cards = await query(
     "cards",
     `select count(*)::int active_cards,
@@ -64,15 +84,25 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
     count(*) filter(where context#>>'{projection,evidence,version}'='learn-card-inputs/1')::int evidence_v1
     from public.customer_cards where tenant_id='${TENANT}'::uuid and status<>'archived'`,
   );
-  const jobs = await query(
-    "jobs",
-    `with selected as (
-    select job_type,status,error_code,completed_at,updated_at,attempt_count,records_processed,
-      row_number() over(partition by job_type order by created_at desc) n
-    from public.platform_jobs where tenant_id='${TENANT}'::uuid
-      and job_type in ('email.workspace_sync','commusoft.source_sync','interactions.sync',
-       'identity.resolve','graph.sync','customer_card.sync','slack.history_sync','slack.thread_sync')
-  ), history as (
+  const jobsLatest = await query(
+    "jobs_latest",
+    `with types(job_type) as (values
+      ('email.workspace_sync'),('commusoft.source_sync'),('interactions.sync'),
+      ('identity.resolve'),('graph.sync'),('customer_card.sync'),
+      ('slack.history_sync'),('slack.thread_sync'))
+    select jsonb_object_agg(t.job_type,jsonb_build_object(
+      'status',j.status,'errorCode',j.error_code,'updatedAt',j.updated_at,
+      'completedAt',j.completed_at,'attempts',j.attempt_count,
+      'recordsProcessed',j.records_processed)) latest
+    from types t join lateral (
+      select status,error_code,updated_at,completed_at,attempt_count,records_processed
+      from public.platform_jobs where tenant_id='${TENANT}'::uuid
+        and job_type=t.job_type order by created_at desc limit 1
+    ) j on true`,
+  );
+  const jobsHistory = await query(
+    "jobs_history",
+    `with history as (
     select job_type,max(completed_at) filter(where status='succeeded') last_success_at,
       max(updated_at) filter(where status in('failed','dead_letter')) last_failure_at,
       count(*) filter(where status='succeeded' and completed_at>=now()-interval '1 hour')::int successes_last_hour,
@@ -87,14 +117,19 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
       and job_type in ('email.workspace_sync','commusoft.source_sync','interactions.sync',
        'identity.resolve','graph.sync','customer_card.sync','slack.history_sync','slack.thread_sync')
     group by job_type
-  ) select jsonb_object_agg(s.job_type,jsonb_build_object('status',s.status,'errorCode',s.error_code,
-    'updatedAt',s.updated_at,'completedAt',s.completed_at,'attempts',s.attempt_count,
-    'recordsProcessed',s.records_processed,'lastSuccessAt',h.last_success_at,
+  ) select jsonb_object_agg(h.job_type,jsonb_build_object('lastSuccessAt',h.last_success_at,
     'lastFailureAt',h.last_failure_at,'successesLastHour',h.successes_last_hour,
     'failuresLastHour',h.failures_last_hour,'reviewHoldsLastHour',h.review_holds_last_hour,
-    'operationalFailuresLastHour',h.operational_failures_last_hour)) latest
-    from selected s join history h on h.job_type=s.job_type where s.n=1`,
+    'operationalFailuresLastHour',h.operational_failures_last_hour)) history
+    from history h`,
   );
+  const latest = jobsLatest.latest ?? {}, history = jobsHistory.history ?? {};
+  if (!latest || typeof latest !== "object" || Array.isArray(latest) ||
+      !history || typeof history !== "object" || Array.isArray(history))
+    throw Error("jobs read-only observation shape differs");
+  const latestJobs = Object.fromEntries(Object.entries(latest).map(([jobType, row]) => [
+    jobType, { ...row, ...(history[jobType] ?? {}) },
+  ]));
   const aliases = await query(
     "gmail_aliases",
     `select count(*)::int active_aliases,
@@ -131,11 +166,11 @@ export async function readBuild01WorkingDay({ token = savedCliToken(), fetcher =
     tenantId: TENANT,
     source,
     cards,
-    latestJobs: jobs.latest ?? {},
+    latestJobs,
     gmailAliases: aliases,
     slackOngoing,
     scope:
-      "One read-only instant; full-day continuity, manual intervention, backup and business acceptance require separate evidence.",
+      "One read-only instant; unattended continuity, backup and business acceptance require separate evidence.",
   };
 }
 

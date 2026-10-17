@@ -1,12 +1,36 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 15:41 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 16:13 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- The current TEST/LIVE worker now reserves half of each ordinary card sweep
+  batch for new unprojected cards beyond the stable sweep cutoff, without
+  stopping the older full sweep. A hosted TEST fixture passed, then the exact
+  serving source was released to LIVE v110; TEST v69 and LIVE v110 have matching
+  119-file source closures. The ordinary LIVE jobs reduced the six
+  older-than-hour cards to **zero** by 16:13 UTC, without a manual job start or
+  failed card. At that instant, 4,192 of 4,210 active cards had projections;
+  the other 18 were newer and still awaiting ordinary catch-up. The exact
+  v109→v110 code patch and local rollback executable are preserved; full
+  credential/provider recovery is still separate.
+  [Release and readback](evidence/learn-build01-card-freshness-release-2026-10-17.json).
+
+- The comprehensive LIVE read-only diagnostic now returns its full source,
+  card, job, Gmail-alias and 160-channel subscription view after a query
+  repair. At 16:04 UTC it counted 4,676/4,676 Phone interactions, an eligible
+  Email source-to-interaction gap of 3,732, an eligible Graph gap of 42, both
+  Gmail aliases ready and all 160 public channel/reply subscriptions past
+  their saved cutoff. An independent card readback matched the then-current
+  **six** older-than-hour unprojected cards among 4,210 active cards, which
+  the release above subsequently cleared. The one Email `fetch_failed`
+  dead-letter in that hour had three later unattended successes on the exact
+  same job key by 16:14 UTC; it remains visible for monitoring.
+  [Comprehensive receipt](evidence/learn-build01-comprehensive-readback-2026-10-17.json).
 
 - The existing local scheduled three-bucket communication backup succeeded
   again today without Touch ID: 3,166 phone objects cover all 3,160 retained

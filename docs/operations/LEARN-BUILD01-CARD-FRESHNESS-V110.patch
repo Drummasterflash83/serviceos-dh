@@ -1,0 +1,79 @@
+--- a/_shared/worker_handlers/customer_card_sync.ts
++++ b/_shared/worker_handlers/customer_card_sync.ts
+@@ -44,9 +44,11 @@
+   // reprojecting the same most-active subset and never reaching stale cards.
+   const sweepSince = typeof payload.sweep_since === "string" && payload.sweep_since || new Date().toISOString();
+   let isSweep = false;
++  let moreToSweep = false;
+   try {
+     // ── Resolve the target card set ─────────────────────────────────────────
+-    let cardQuery = admin.from("customer_cards").select("id, person_id, company_id, title, status, priority, confidence, due_at, completed_at, locked_fields, context, updated_at").eq("tenant_id", tenantId);
++    const cardFields = "id, person_id, company_id, title, status, priority, confidence, due_at, completed_at, locked_fields, context, updated_at";
++    let cardQuery = admin.from("customer_cards").select(cardFields).eq("tenant_id", tenantId);
+     if (isUuid(payload.customer_card_id)) {
+       cardQuery = cardQuery.eq("id", payload.customer_card_id);
+     } else if (isUuid(payload.graph_node_id)) {
+@@ -63,12 +65,41 @@
+       .lt("updated_at", sweepSince) // only cards not yet refreshed in this sweep
+       .order("updated_at", {
+         ascending: true
+-      }) // oldest-refreshed first → full coverage
+-      .limit(limit);
++      }); // oldest-refreshed first → full coverage
+     }
+-    const { data: cardRows, error: cardErr } = await cardQuery;
+-    if (cardErr) throw new Error("cards_unavailable");
+-    const cards = cardRows ?? [];
++    let cards;
++    if (isSweep) {
++      // New cards can arrive after the stable sweep cursor. Reserve half the
++      // batch for cards without any projection, then continue the old sweep.
++      // This gives fresh cards prompt evidence without starving full coverage.
++      const urgentLimit = Math.max(1, Math.floor(limit / 2));
++      const { data: urgentRows, error: urgentErr } = await admin.from("customer_cards").select(cardFields).eq("tenant_id", tenantId).neq("status", "archived").is("context->>projection", null).gt("updated_at", sweepSince).lt("updated_at", new Date(nowMs - 5 * 60_000).toISOString()).order("updated_at", {
++        ascending: true
++      }).limit(urgentLimit);
++      if (urgentErr) throw new Error("cards_unavailable");
++      const urgent = urgentRows ?? [];
++      const remaining = limit - urgent.length;
++      let ordinary = [];
++      let fullOrdinaryPage = false;
++      if (remaining > 0) {
++        // The old sweep is strictly before the cursor and cannot overlap the
++        // urgent after-cursor group; reserve this remainder for full coverage.
++        const { data: oldRows, error: oldErr } = await cardQuery.limit(remaining);
++        if (oldErr) throw new Error("cards_unavailable");
++        const old = oldRows ?? [];
++        fullOrdinaryPage = old.length >= remaining;
++        ordinary = old;
++      }
++      cards = [
++        ...urgent,
++        ...ordinary
++      ];
++      moreToSweep = urgent.length >= urgentLimit || fullOrdinaryPage;
++    } else {
++      const { data: cardRows, error: cardErr } = await cardQuery;
++      if (cardErr) throw new Error("cards_unavailable");
++      cards = cardRows ?? [];
++    }
+     // ── Batch-load identity rows + graph relationship counts ────────────────
+     const personIds = [
+       ...new Set(cards.map((c)=>c.person_id).filter(Boolean))
+@@ -376,7 +407,6 @@
+     // Self-continue the sweep while a full batch was taken (more stale cards remain);
+     // stops automatically when the final batch is short. Strictly serial via the
+     // idempotent job_key.
+-    const moreToSweep = isSweep && (cardRows?.length ?? 0) >= limit;
+     return {
+       success: failed === 0,
+       recordsProcessed: cardsProjected,
+@@ -388,7 +418,7 @@
+         failure_phases: failurePhases,
+         failed,
+         health_counts: healthCounts,
+-        swept: cardRows?.length ?? 0
++        swept: cards.length
+       },
+       ...moreToSweep ? {
+         continuation: {

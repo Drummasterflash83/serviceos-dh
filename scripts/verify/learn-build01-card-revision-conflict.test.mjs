@@ -38,6 +38,7 @@ function client(currentUpdatedAt) {
       select(fields) { selected = fields; return q; },
       update() { update = true; reads.updates++; return q; },
       eq() { return q; }, in() { return q; }, or() { return q; }, gt() { return q; },
+      is() { return q; },
       neq() { return q; }, lt() { return q; }, order() { return q; }, limit() { return q; },
       async maybeSingle() {
         if (table !== 'customer_cards') throw Error('Unexpected maybeSingle');
@@ -106,10 +107,13 @@ test('unattended sweep bounds the batch and continues with the same cursor', asy
   const admin = { from(table) {
     let updating = false;
     let filterId = null;
+    let afterCursor = false;
     const query = {
       select() { return query; }, update() { updating = true; return query; },
       eq(key, value) { if (key === 'id') filterId = value; return query; },
       in() { return query; }, neq() { return query; }, lt() { return query; },
+      gt() { afterCursor = true; return query; },
+      is() { return query; },
       order() { return query; }, limit(n) {
         if (table === 'customer_cards') selectedLimit = n;
         return query;
@@ -121,7 +125,7 @@ test('unattended sweep bounds the batch and continues with the same cursor', asy
       },
       then(resolve, reject) {
         let data;
-        if (table === 'customer_cards') data = cards.slice(0, selectedLimit);
+        if (table === 'customer_cards') data = afterCursor ? [] : cards.slice(0, selectedLimit);
         else if (table === 'people') data = cards.map((card) => ({
           id: card.person_id, primary_email: 'fixture@example.invalid',
         }));
@@ -140,4 +144,77 @@ test('unattended sweep bounds the batch and continues with the same cursor', asy
   assert.equal(result.continuation.jobType, 'customer_card.sync');
   assert.equal(result.continuation.payload.limit, 10);
   assert.ok(Number.isFinite(Date.parse(result.continuation.payload.sweep_since)));
+});
+
+test('a new unprojected card joins the current sweep while older cards still advance', async () => {
+  const cutoff = '2026-10-17T13:17:01.157Z';
+  const oldCards = Array.from({ length: 10 }, (_, n) => ({
+    id: `old-${n}`, person_id: `old-person-${n}`, company_id: null,
+    status: 'grey', updated_at: before, context: { projection: { version: 1 } },
+  }));
+  const fresh = { id: 'fresh', person_id: 'fresh-person', company_id: null,
+    status: 'grey', updated_at: '2026-10-17T14:48:19.000Z', context: {} };
+  let selectedPersonIds = [];
+  const admin = { from(table) {
+    let urgent = false;
+    let oldSweep = false;
+    let updating = false;
+    let filterId = null;
+    let selectedLimit = 0;
+    const query = {
+      select() { return query; }, update() { updating = true; return query; },
+      eq(key, value) { if (key === 'id') filterId = value; return query; },
+      in(key, values) {
+        if (table === 'people' && key === 'id') selectedPersonIds = values;
+        return query;
+      },
+      neq() { return query; },
+      is(key, value) {
+        assert.equal(key, 'context->>projection');
+        assert.equal(value, null);
+        urgent = true;
+        return query;
+      },
+      lt(key, value) {
+        assert.equal(key, 'updated_at');
+        if (!urgent) {
+          assert.equal(value, cutoff);
+          oldSweep = true;
+        } else assert.ok(Date.parse(value) > Date.parse(fresh.updated_at));
+        return query;
+      },
+      gt(key, value) {
+        assert.equal(key, 'updated_at');
+        assert.equal(value, cutoff);
+        return query;
+      },
+      order() { return query; },
+      limit(n) { selectedLimit = n; return query; },
+      async maybeSingle() {
+        assert.equal(table, 'customer_cards');
+        assert.equal(updating, true);
+        return { data: { id: filterId }, error: null };
+      },
+      then(resolve, reject) {
+        let data;
+        if (table === 'customer_cards') {
+          data = urgent ? [fresh].slice(0, selectedLimit)
+            : oldSweep ? oldCards.slice(0, selectedLimit) : [];
+        } else if (table === 'people') {
+          data = selectedPersonIds.map((id) => ({ id,
+            primary_email: 'fixture@example.invalid' }));
+        } else if (table === 'graph_nodes') data = [];
+        else throw Error(`Unexpected table ${table}`);
+        return Promise.resolve({ data, error: null }).then(resolve, reject);
+      },
+    };
+    return query;
+  } };
+  const result = await handle({ supabaseAdmin: admin, tenantId: tenant,
+    payload: { limit: 10, sweep_since: cutoff } });
+  assert.equal(result.success, true);
+  assert.equal(result.result.swept, 10);
+  assert.deepEqual(selectedPersonIds,
+    ['fresh-person', ...oldCards.slice(0, 9).map((card) => card.person_id)]);
+  assert.equal(result.continuation.payload.sweep_since, cutoff);
 });

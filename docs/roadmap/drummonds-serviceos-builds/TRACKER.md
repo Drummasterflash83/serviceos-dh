@@ -1,5 +1,21 @@
 # Build execution tracker
 
+Build 01 card freshness release (17 October, 16:13 UTC): TEST v69 passed a
+hosted synthetic new-card-plus-old-sweep fixture; the exact candidate is
+LIVE v110 with matching 119-file serving source. Ordinary LIVE jobs cleared
+the six older-than-hour unprojected cards to zero without manual work or
+failed cards. Eighteen newer cards still awaited ordinary catch-up at that
+instant; full recovery and business acceptance remain open.
+[Release receipt](../../operations/evidence/learn-build01-card-freshness-release-2026-10-17.json).
+
+Build 01 comprehensive readback (17 October, 16:05 UTC): the full LIVE
+read-only source/card/job/alias/Slack diagnostic now completes after a
+query repair, preserving its coverage fields. The then-new six-card
+older-than-hour projection gap was independently confirmed and cleared by
+the subsequent release above. One `fetch_failed` Email dead-letter remains
+visible, with three later same-key successes. Build 01 stays IN PROGRESS.
+[Read-only receipt](../../operations/evidence/learn-build01-comprehensive-readback-2026-10-17.json).
+
 Build 01 scheduled communication backup (17 October, 08:19 UTC): the existing
 local 09:00 Europe/London automation completed its third consecutive observed
 scheduled three-bucket run without Touch ID. It verified 3,166 phone objects

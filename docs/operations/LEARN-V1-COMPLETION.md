@@ -17,6 +17,64 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 16:13 UTC — new-card priority released without interrupting the ordinary sweep.**
+
+### Working and verified
+
+- The full-sweep cursor had left six newer cards unprojected for more than an
+  hour while older cards continued to refresh. TEST v69 and LIVE v110 now
+  reserve up to five positions per ten-card batch for stable, post-cursor
+  unprojected cards and continue older full-sweep progress in the rest.
+  The hosted TEST fixture proved one new and nine old cards advanced in one
+  batch; its synthetic tenant was archived. The downloaded serving source
+  closures of TEST and LIVE match exactly, with one changed handler and all
+  other Edge functions unchanged. Ordinary LIVE jobs then reduced the stale
+  count from six to **zero** at 16:13 UTC, without manual job starts or failed
+  cards. At that instant, 4,192/4,210 active cards were projected and the
+  remaining 18 were younger than an hour.
+  [Release and counts](evidence/learn-build01-card-freshness-release-2026-10-17.json) ·
+  [exact v109→v110 source patch](LEARN-BUILD01-CARD-FRESHNESS-V110.patch).
+
+### Needs finishing
+
+- Observe the remaining recent cards clearing through normal jobs and keep
+  freshness visible. The source patch extends the existing recovery chain;
+  it does not recover all runtime credentials or prove provider restart.
+
+### Blocked externally
+
+- No owner action or fingerprint was needed for this code-only correction.
+
+**17 October, 16:05 UTC — comprehensive LIVE acceptance readback repaired.**
+
+### Working and verified
+
+- The full read-only Build 01 diagnostic now returns successfully after
+  splitting independent source scans and using indexed latest-job reads while
+  retaining its historical job counts. At 16:04 UTC, LIVE had **203,096**
+  Email sources with **3,732** eligible sources awaiting interactions,
+  **4,676/4,676** Phone source interactions, **42** eligible Graph gaps, two
+  ready Gmail aliases and 160 enabled channel/reply subscriptions beyond the
+  saved cutoff. A separate focused card readback matched its count of **six**
+  older-than-hour unprojected cards among 4,210 active cards. The recent
+  ordinary ten-card jobs succeeded without card failures.
+  [Sanitised receipt](evidence/learn-build01-comprehensive-readback-2026-10-17.json).
+
+### Needs finishing
+
+- The six-card freshness gap arose after the earlier zero-stale snapshot and
+  was subsequently cleared by the release above. One Email job dead-lettered
+  with `fetch_failed` within the hour, but the exact same job key had three
+  later ordinary successes by 16:14 UTC. Keep the dead-letter visible as
+  historical failure evidence. Neither this diagnostic nor enabled Slack subscriptions
+  prove future continuity or real post-cutoff capture in the exact archived
+  160-channel roster. The Owner / MD signed-in review, full runtime recovery
+  and Chris's business acceptance remain open.
+
+### Blocked externally
+
+- No new action is needed from Chris for this diagnostic repair.
+
 **17 October, 15:55 UTC — scheduled local communication backup checked.**
 
 ### Working and verified
