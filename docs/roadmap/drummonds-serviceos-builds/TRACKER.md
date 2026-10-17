@@ -1,5 +1,18 @@
 # Build execution tracker
 
+Build 01 provider-quiet Slack and unattended backup readback (17 October,
+13:32 UTC): the exact 160 approved public channels remain archived and
+enabled. Slack returned zero post-cutoff replies across all 870 known saved
+pre-cutoff roots; a separate active-public positive control found a retained
+reply through the same query. Direct provider history had already found zero
+post-cutoff parents in all 160. The polling fallback still has 69 archived
+channels over a day behind, so future delivery is not inferred. GitHub's
+17 October scheduled database backup and scheduled missed-success monitor both
+passed, including the monitor's independent-copy step. Neither result closes
+full application/Auth recovery or the Owner / MD signed-in handoff.
+[Slack receipt](../../operations/evidence/learn-build01-slack-160-provider-reply-audit-2026-10-17.json) ·
+[backup monitor](../../operations/evidence/learn-build01-scheduled-backup-monitor-2026-10-17.json).
+
 Build 01 additional runtime-secret scope (17 October, 13:12 UTC): names-only
 LIVE/source review confirms five configured marketing/receptionist secrets
 outside the approved eleven-setting recovery package, including Drummonds'
@@ -13,8 +26,9 @@ five-name hosted TEST seal then passed wrong-nonce denial and cleanup.
 
 Build 01 Slack reply-audit control (17 October, 13:09 UTC): the bounded
 read-only provider query found a known retained reply in the separate active
-20-channel public roster. The exact 160-channel archived-root audit is still
-running; this control validates its method, not its completion.
+20-channel public roster. This validated the method used by the exact
+160-channel archived-root audit completed at 13:32 UTC above; it does not
+substitute for that roster's own provider result.
 [Control receipt](../../operations/evidence/learn-build01-slack-reply-provider-positive-control-2026-10-17.json).
 
 Build 01 ordinary card proof (17 October, 12:56 UTC): 4,182/4,182 active LIVE
