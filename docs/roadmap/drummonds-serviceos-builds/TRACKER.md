@@ -1,5 +1,15 @@
 # Build execution tracker
 
+Latest Build 01 recovery checkpoint (17 October, 09:44 UTC): a disposable
+signed-in browser opened the rebuilt LIVE Git frontend against the
+independently restored scheduled database, recovered Auth/REST and current
+v107 Edge route. It reached LEARN, read five tenant cards and received
+Phone/Email status. A preserved Drummonds user passed fresh recovered
+Auth/REST/Edge reads separately. The browser profile, localhost proxy and
+recovery containers were removed. Full all-function/runtime-secret recovery,
+original sessions and real provider restart are still open; Build 02 stays
+inactive. [Sanitised receipt](../../operations/evidence/learn-build01-connected-frontend-offsite-recovery-2026-10-17.json).
+
 Latest Build 01 operating checkpoint (17 October, 09:27 UTC): the exact
 160-channel Slack roster has 1,410 provider-completed empty windows across
 all channels, no current dead letters, and no post-cutoff source event or

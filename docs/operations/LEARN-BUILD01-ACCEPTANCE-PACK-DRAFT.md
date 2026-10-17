@@ -1,12 +1,24 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 09:27 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 09:44 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- The independently downloaded scheduled off-site database and current v107
+  Edge package now support a **connected signed-in frontend rehearsal**. The
+  last verified LIVE Git frontend rebuilt for Vercel with only an ephemeral
+  localhost backend and public key. A synthetic tenant user signed in through
+  recovered Auth in a disposable browser profile, reached the client LEARN
+  route, read five tenant cards and received current Phone/Email Edge status.
+  A preserved Drummonds account separately passed fresh recovered Auth/REST/
+  Edge reads after a reset only in the disposable copy. The browser profile,
+  loopback proxy and all recovery containers were removed. This is a bounded
+  connected journey, not full application failover.
+  [Browser recovery receipt](evidence/learn-build01-connected-frontend-offsite-recovery-2026-10-17.json).
 
 - The current alternative operating check uses the existing signed Slack
   Events receiver for new activity, provider-completed windows for checked
@@ -142,9 +154,9 @@ inactive until Chris reviews and signs off the business result.
 - The last verified LIVE frontend Git commit `77a73802` rebuilt from an
   isolated archive with synthetic backend settings. Its generated Vercel server
   handler returned HTTP 200 for home and the unauthenticated LEARN workspace;
-  all 15 and 20 referenced assets existed. This proves an independent frontend
-  rebuild and boot without a new secret or fingerprint, but it is not a
-  signed-in recovered-system journey.
+  all 15 and 20 referenced assets existed. That earlier 09:10 checkpoint
+  proved an independent rebuild and boot; the later connected browser
+  rehearsal above adds the signed-in recovered-system journey.
   [Frontend receipt](evidence/learn-build01-frontend-git-rebuild-2026-10-17.json).
 - The ordinary stable-cutoff customer-card sweep finished with a successful
   zero-card terminal job at 06:11, and a 06:12 LIVE readback found **zero stale
@@ -223,9 +235,10 @@ inactive until Chris reviews and signs off the business result.
   from locally staged source. Today's independent scheduled database copy
   now passes decrypted native/Vault restoration and preserved-user Auth/REST/
   current Edge tenant reads. The last verified LIVE frontend commit now also
-  rebuilds and boots separately. A **connected signed-in frontend journey**,
-  all-function startup with recovered runtime secrets, original-session policy
-  and **real provider capture resumption** remain unverified. A controlled
+  rebuilds, boots and connects in an isolated synthetic-user browser journey.
+  A preserved-account browser journey, all-function startup with recovered
+  runtime secrets, original-session policy and **real provider capture
+  resumption** remain unverified. A controlled
   no-provider worker restart passed. The local database point
   matches a later verified phone-file inventory. All three file buckets
   completed, but the points

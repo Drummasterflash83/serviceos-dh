@@ -17,6 +17,32 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 09:44 UTC — connected frontend recovery verified within an isolated off-site restore.**
+
+### Working and verified
+
+- The last verified LIVE Git frontend rebuilt as a Vercel target with an
+  ephemeral localhost backend. A synthetic tenant user signed in through
+  recovered Auth, reached LEARN, read five restored tenant cards and received
+  nonempty current Edge Phone/Email status. The preserved Drummonds user
+  separately passed fresh Auth/REST/Edge reads after a disposable-only reset.
+  The headless browser profile, loopback proxy and all recovery containers
+  were removed. No production data was written, no recovery key was read and
+  recovered services had no provider network connection.
+  [Sanitised browser receipt](evidence/learn-build01-connected-frontend-offsite-recovery-2026-10-17.json).
+
+### Needs finishing
+
+- This bounded browser journey does not prove preserved-account browser
+  redirect, original-session continuation, all 103 functions with recovered
+  runtime secret values, atomic database/file failover or real provider
+  capture restart. Keep those recovery claims unavailable until directly
+  rehearsed or explicitly reviewed as limits.
+
+### Blocked externally
+
+- No fingerprint, password change in LIVE or user action was needed.
+
 **17 October, 09:27 UTC — use existing long-window Slack fallback and signed Events; no repeat team test.**
 
 ### Working and verified
