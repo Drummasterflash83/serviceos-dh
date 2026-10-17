@@ -12,13 +12,15 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob 
   const [connections, setConnections] = useState<ReviewConnection[]>([]);
   const [connection, setConnection] = useState("");
   const [draft, setDraft] = useState(""), [query, setQuery] = useState("");
+  const [view, setView] = useState<"all" | "holds" | "review">("all");
   const [openOnly, setOpenOnly] = useState(true), [revision, setRevision] = useState(0);
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
   const [result, setResult] = useState<{ key: string; data: SourceJobPage } | null>(null);
   const [notice, setNotice] = useState(""), [busy, setBusy] = useState(false);
   const [hidden, setHidden] = useState(false);
   const after = cursors[cursors.length - 1];
-  const key = JSON.stringify([tenantId, actorId, connection, query, openOnly, after, revision]);
+  const viewQuery = view === "holds" ? "status:on-hold" : view === "review" ? "status:needs-review" : query;
+  const key = JSON.stringify([tenantId, actorId, connection, viewQuery, openOnly, after, revision]);
   const visible = !hidden && result?.key === key ? result.data : null;
   useEffect(() => {
     let active = true;
@@ -33,7 +35,7 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob 
     setResult(null);
     if (!connection || hidden) return () => { active = false; };
     setBusy(true); setNotice("");
-    void loadSourceJobPage(db, { tenant: tenantId, actor: actorId, connection, query, openOnly, after }).then(data => {
+    void loadSourceJobPage(db, { tenant: tenantId, actor: actorId, connection, query: viewQuery, openOnly, after }).then(data => {
       if (active) setResult({ key, data });
     }).catch(() => { if (active) setNotice("Captured jobs are unavailable. Refresh or ask OpenFolk to check access."); })
       .finally(() => { if (active) setBusy(false); });
@@ -53,7 +55,13 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob 
     <div className="flex flex-wrap justify-between gap-3"><div><h3 className="font-semibold">Jobs captured from Commusoft</h3>
       <p>Browse the work already captured, including jobs whose customer identity is still unresolved.</p></div>
       <button className="cp-secondary" onClick={() => { setHidden(false); setCursors([null]); setRevision(n => n + 1); }}>Refresh captured jobs</button></div>
-    <form className="flex flex-wrap items-end gap-3" onSubmit={e => { e.preventDefault(); setCursors([null]); setQuery(draft.trim()); }}>
+    <div className="flex flex-wrap gap-2" aria-label="Captured job review views">
+      <button className="cp-secondary" aria-pressed={view === "all"} onClick={() => { setView("all"); setDraft(""); setQuery(""); setCursors([null]); }}>All captured jobs</button>
+      <button className="cp-secondary" aria-pressed={view === "holds"} onClick={() => { setView("holds"); setDraft(""); setQuery(""); setOpenOnly(true); setCursors([null]); }}>Recorded on hold</button>
+      <button className="cp-secondary" aria-pressed={view === "review"} onClick={() => { setView("review"); setDraft(""); setQuery(""); setOpenOnly(true); setCursors([null]); }}>Needs source review</button>
+    </div>
+    <p className="text-sm">These views prioritise saved source evidence for operator review. They do not assign a team member or confirm the provider’s current job status.</p>
+    <form className="flex flex-wrap items-end gap-3" onSubmit={e => { e.preventDefault(); setCursors([null]); setQuery(draft.trim()); setView("all"); }}>
       <label className="min-w-0 flex-1 text-sm">Connection<select className="mt-1 block min-h-11 w-full rounded-lg border border-[#cbbada] bg-white px-3 py-2" value={connection} onChange={e => { setConnection(e.target.value); setCursors([null]); }}><option value="">Choose a connection</option>{connections.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
       <label className="min-w-0 flex-[2] text-sm">Find captured jobs<input type="search" className="mt-1 block min-h-11 w-full rounded-lg border border-[#cbbada] bg-white px-3 py-2" maxLength={200} value={draft} onChange={e => setDraft(e.target.value)} placeholder="Job, customer/site reference or work description" /></label>
       <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={openOnly} onChange={e => { setOpenOnly(e.target.checked); setCursors([null]); }} /> Open, pending and on-hold work</label>
