@@ -601,8 +601,9 @@ inactive until Chris reviews and signs off the business result.
   (`platform-worker` v111, `recommendation-sync` v47) with unchanged unrelated
   functions. Its first ordinary post-release LIVE job succeeded at 17:01 UTC:
   75 swept cards plus 25 recent cards, 70 created actions, three closed actions,
-  zero failures and a queued continuation. The legacy empty-evidence cohort
-  fell from 271 to 266. Full ordinary sweep coverage is still unproven. Keep
+  zero failures and a queued continuation. Four settled ordinary pages had
+  swept 300 cards without failure by 17:08; the legacy empty-evidence cohort
+  fell from 271 to 258. Full ordinary sweep coverage is still unproven. Keep
   the remaining actions visible while the continuation chain completes.
   [Release and TEST receipt](evidence/learn-build01-recommendation-sweep-release-2026-10-17.json).
 

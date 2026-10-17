@@ -1,5 +1,21 @@
 # Build execution tracker
 
+Build 01 recommendation coverage (17 October, 17:08 UTC): a hosted TEST
+fixture swept all eight active cards across three settled jobs, resolved its
+stale marker and cleaned up. The same handler is LIVE in worker v111 and direct
+wrapper v47. Four ordinary LIVE pages then swept 300 cards without a failed
+page; the legacy empty-evidence cohort fell from 271 to 258 and continuation
+remains queued. Full-card coverage and final business acceptance are still
+open. [Release receipt](../../operations/evidence/learn-build01-recommendation-sweep-release-2026-10-17.json).
+
+Build 01 current-runtime preservation (17 October, 17:07 UTC): the approved
+encrypted v107 source base plus pinned Git patches reconstructs the 119-file
+LIVE worker v111 and six-file direct recommendation wrapper v47; both pinned
+builds match serving executables. The unchanged scheduler source matches its
+earlier overlay. No further per-code-change encrypted source copy was needed;
+credential recovery and provider restart remain separate.
+[Reconstruction receipt](../../operations/evidence/learn-build01-current-processing-overlay-2026-10-17-1707.json).
+
 Build 01 representative operating follow-up (17 October, 16:24 UTC):
 ordinary LIVE cards were 4,214/4,217 projected with no unprojected card
 older than five minutes. Email receipts advanced and today's hosted database

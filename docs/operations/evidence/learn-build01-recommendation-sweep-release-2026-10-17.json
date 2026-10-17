@@ -38,6 +38,16 @@
       "continuationQueued": true,
       "legacyEmptyEvidenceOpenAfter": 266
     },
+    "laterOrdinaryObservation": {
+      "observedAtUtc": "2026-10-17T17:08:04.814Z",
+      "settledPostReleasePages": 4,
+      "cardsSweptAcrossPages": 300,
+      "failedPages": 0,
+      "continuationQueued": true,
+      "legacyEmptyEvidenceOpen": 258,
+      "openRecommendationsWithEvidence": 9041,
+      "openRecommendations": 9299
+    },
     "legacyEmptyEvidenceOpenBefore": 271,
     "publishedScorecardPolicies": 0,
     "savedJobAssessments": 0,

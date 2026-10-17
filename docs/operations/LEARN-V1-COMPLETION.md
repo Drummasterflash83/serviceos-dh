@@ -38,8 +38,9 @@ business decision yet.
 
 - The first ordinary LIVE job after release succeeded at 17:01 UTC, with 75
   swept cards, 25 recent cards, 70 created and three closed actions, zero
-  failures, and a queued continuation. The legacy empty-evidence cohort fell
-  from 271 to 266. Observe the remaining chain before claiming full-card
+  failures, and a queued continuation. By 17:08, four ordinary pages had
+  swept 300 cards without failure and the legacy empty-evidence cohort fell
+  from 271 to 258. Observe the remaining chain before claiming full-card
   recommendation freshness. No scorecard policy or job assessment is published.
 
 ### Blocked externally
