@@ -17,6 +17,26 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 13:40 UTC — Email growth is historical backfill, with current intake operating.**
+
+### Working and verified
+
+- Both Gmail aliases remain ready, two ordinary safe claims were observed and
+  there are zero delegation holds. The 5,610 eligible retained messages without
+  interactions include **zero source events from the last day** and only two
+  from the last week; 1,256 of the missing sources were newly retained in the
+  preceding hour. [Aggregate receipt](evidence/learn-build01-email-current-vs-backfill-2026-10-17.json).
+
+### Needs finishing
+
+- The three-year historical queue and source-to-interaction coverage still
+  need to settle. A growing aggregate gap alone does not establish a failure
+  of current-day intake; keep current and historical freshness separate.
+
+### Blocked externally
+
+- No user action or fingerprint is needed for current intake observation.
+
 **17 October, 13:37 UTC — Commusoft source-job reader verified against its approved attention patch.**
 
 ### Working and verified

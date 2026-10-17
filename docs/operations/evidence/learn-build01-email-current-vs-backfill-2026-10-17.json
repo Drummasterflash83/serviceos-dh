@@ -1,0 +1,16 @@
+{
+  "version": "learn-build01-email-current-vs-backfill/1",
+  "observedAt": "2026-10-17T13:40:13Z",
+  "environment": "LIVE Drummonds read-only aggregate",
+  "eligibleRetainedEmailWithoutInteraction": 5610,
+  "missingSourceEventsFromLastDay": 0,
+  "missingSourceEventsFromLastWeek": 2,
+  "missingSourcesCreatedInLastHour": 1256,
+  "missingCurrentEventSourcesCreatedInLastHour": 0,
+  "gmailAliasesReady": 2,
+  "automaticSafeClaims": 2,
+  "delegationHolds": 0,
+  "messageContentOrSourceIdsReturned": false,
+  "productionDataWrites": false,
+  "limitation": "The 5,610 eligible unprojected sources are overwhelmingly newly retained historical mail, not a demonstrated outage of current-day capture. The historical queue still needs to drain and its final source-to-interaction coverage remains open."
+}

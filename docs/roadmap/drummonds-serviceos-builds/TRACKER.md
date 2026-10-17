@@ -1,5 +1,13 @@
 # Build execution tracker
 
+Build 01 Email current-versus-history check (17 October, 13:40 UTC): both
+aliases are ready, two ordinary safe claims occurred, and delegation holds
+are zero. The 5,610 eligible retained messages without interactions include
+no event from the preceding day and only two from the preceding week;
+1,256 missing sources were newly retained in the last hour. The three-year
+historical queue remains incomplete, but this does not show current-day
+capture failure. [Aggregate receipt](../../operations/evidence/learn-build01-email-current-vs-backfill-2026-10-17.json).
+
 Build 01 Commusoft source-job contract and coverage (17 October, 13:37 UTC):
 the previous readback guard rejected an approved later attention-filter
 function. It now checks the exact pinned patch hash while preserving the
