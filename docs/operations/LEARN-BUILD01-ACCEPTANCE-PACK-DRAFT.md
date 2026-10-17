@@ -1,12 +1,22 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 09:49 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 10:09 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- Current read-only reliability checks show **zero Email delegation holds**,
+  two ordinary safe claims, **4,676/4,676** Phone calls linked to interactions,
+  and zero eligible Graph gaps. Commusoft's changed-job pages are still
+  arriving, but its deeper contact traversal is incomplete. The card sweep
+  continues unaided; the exact 160 Slack roster has zero current dead letters
+  and only empty provider-completed windows. Today's database backup has three
+  successful **scheduled** runs; its separate missed-success monitor has not
+  yet appeared today, which is not a pass or a failure.
+  [Aggregate cutline](evidence/learn-build01-source-reliability-2026-10-17-1009.json).
 
 - A 10:07 digest-only reconstruction matched 18 non-secret LIVE Edge controls
   to reviewed release values and three Workspace controls to a pre-snapshot

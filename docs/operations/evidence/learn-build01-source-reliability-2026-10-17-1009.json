@@ -1,0 +1,62 @@
+{
+  "version": "learn-build01-source-reliability/1",
+  "environment": "LIVE aggregate read-only",
+  "observedBetweenUtc": ["2026-10-17T10:03:50Z", "2026-10-17T10:09:30Z"],
+  "email": {
+    "automaticSafeClaims": 2,
+    "observedTargetStates": ["completed", "ready"],
+    "delegationHeldCases": 0,
+    "workspaceQueuedJobs": 8,
+    "unchangedReceiptsAt1004": 36450,
+    "interpretation": "The ready target had a queued ordinary job; this does not assert that all historical mail has projected."
+  },
+  "phone": {
+    "retainedCalls": 4676,
+    "callsWithInteractions": 4676,
+    "eligibleMissingInteractions": 0
+  },
+  "graph": {
+    "eligibleInteractionsMissingGraph": 0
+  },
+  "commusoft": {
+    "recurringEnabled": true,
+    "latestSavedJobsPageAtUtc": "2026-10-17T09:55:06Z",
+    "contactTraversalCompletedTargets": 516,
+    "contactTraversalTargets": 872,
+    "contactTraversalComplete": false,
+    "interpretation": "Current page cadence and a running contact traversal do not prove every job's current provider status or individual assignee."
+  },
+  "customerCards": {
+    "active": 4182,
+    "projected": 4181,
+    "ordinarySuccessfulJobsLastHour": 60,
+    "operationalFailuresLastHour": 0,
+    "sweepTerminalSuccessObserved": false
+  },
+  "exact160PublicSlack": {
+    "enabledChannelAndReplySubscriptions": 160,
+    "providerCompletedWindows": 1428,
+    "completedEmptyWindows": 1428,
+    "currentDeadLetterWindows": 0,
+    "postCutoffSavedMessagesOrRepliesObserved": 0
+  },
+  "databaseBackupActions": {
+    "scheduledSuccessesOn17OctoberObservedBy1009": 3,
+    "scheduledMissedSuccessMonitorOn17OctoberObservedBy1009": false,
+    "interpretation": "The monitor's scheduled start may be delayed; absence at this observation is neither a pass nor a failure."
+  },
+  "methods": [
+    "scripts/verify/learn-email-safe-claim-observe.mjs --live-read-only",
+    "scripts/verify/learn-email-delegation-block-observe.mjs --live-read-only",
+    "scripts/verify/learn-build01-phone-projection-gap-readback.mjs --live-read-only",
+    "scripts/verify/learn-build01-graph-gap-readback.mjs --live-read-only",
+    "scripts/verify/learn-build01-commusoft-freshness-readback.mjs --live-read-only",
+    "scripts/verify/learn-build01-card-stale-readback.mjs --live-read-only",
+    "scripts/verify/learn-build01-slack-160-window-receipts-readback.mjs --live-read-only",
+    "GitHub Actions run-list metadata for both database backup workflows"
+  ],
+  "productionDataWrites": false,
+  "providerWrites": false,
+  "customerContentReturned": false,
+  "businessSignoffInferred": false
+}
