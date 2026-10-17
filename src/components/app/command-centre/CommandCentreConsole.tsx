@@ -184,6 +184,8 @@ const ACTIONS: { verb: WorkVerb; label: string }[] = [
   { verb: "block", label: "Blocked" },
   { verb: "dismiss", label: "Dismiss" },
 ];
+const isCommusoftSourceReview = (item: WorkItem) =>
+  item.title.startsWith("Review captured Commusoft job ");
 function WorkCard({
   item,
   writeCapable,
@@ -326,6 +328,21 @@ function WorkCard({
             </div>
           )}
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {isCommusoftSourceReview(item) && !item.accountableOwner && !item.operationalOwner && (
+              <button
+                disabled={!writeCapable}
+                onClick={() => onTransition?.(item, "accept")}
+                title={!writeCapable ? (writeLabel ?? "Not available") : undefined}
+                className={cn(
+                  "rounded-md border px-2 py-1 text-[11px] font-medium",
+                  writeCapable
+                    ? "border-accent text-accent hover:bg-accent/10"
+                    : "cursor-not-allowed border-hairline/60 text-muted-foreground/50",
+                )}
+              >
+                Accept this review
+              </button>
+            )}
             {ACTIONS.map((a) => (
               <button
                 key={a.verb}
@@ -349,6 +366,42 @@ function WorkCard({
         </div>
       </div>
     </li>
+  );
+}
+function SourceReviewsSection({
+  p,
+  writeCapable,
+  writeLabel,
+  onTransition,
+}: ConsoleProps & { p: WorkProjection }) {
+  const priorityIds = new Set(p.doNext.map((item) => item.id));
+  const reviews = p.all.filter(
+    (item) => isCommusoftSourceReview(item) && !priorityIds.has(item.id),
+  );
+  if (reviews.length === 0) return null;
+  return (
+    <Panel
+      title="Other captured job reviews"
+      icon={<ListChecks className="h-4 w-4" />}
+      count={reviews.length}
+    >
+      <p className="mb-3 text-[12px] text-muted-foreground">
+        These are OpenFolk source-review tasks, not Commusoft appointments or engineer assignments.
+        A confirmed team member can accept an unassigned review.
+      </p>
+      <ol className="space-y-2">
+        {reviews.map((item, i) => (
+          <WorkCard
+            key={item.id}
+            item={item}
+            rank={i + 1}
+            writeCapable={writeCapable}
+            writeLabel={writeLabel}
+            onTransition={onTransition}
+          />
+        ))}
+      </ol>
+    </Panel>
   );
 }
 function DoNextSection({
@@ -746,6 +799,7 @@ export function CommandCentreConsole(props: ConsoleProps) {
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <DoNextSection {...props} p={p} />
+          <SourceReviewsSection {...props} p={p} />
           <WaitingOnMeSection items={p.all} />
           <MyAreaSection items={p.all} isLeadership={p.user.isLeadership} />
           {p.user.isLeadership && <ObjectiveMovementSection items={p.all} extras={extras} />}
