@@ -34,6 +34,14 @@ business decision yet.
   identity; bytes and hash matched. The bucket reported AES-256 encryption and
   governance retention through 16 November. No Touch ID was needed for the
   export or transfer. [Sanitised receipt](evidence/learn-build01-edge-credential-offsite-2026-10-17.json).
+- A names-only LIVE check partitioned all **62** configured Edge settings into
+  disjoint recovery categories: 15 Vault-backed, 11 in this encrypted package,
+  two internal keys to rebind to a replacement project, seven new-project
+  bindings, 21 reviewed non-secret controls, five other configured provider
+  bindings outside this exact package, and one unused global Workspace subject.
+  No setting was unclassified; both internal worker keys still digest-match
+  the current project service key. This is a source map, not a complete restore.
+  [Coverage receipt](evidence/learn-build01-edge-recovery-coverage-2026-10-17.json).
 
 ### Needs finishing
 
@@ -43,6 +51,10 @@ business decision yet.
   readback alone do not prove application recovery. One bounded 1Password
   recovery-only read ended `onepassword_operation_unconfirmed` without reading
   or logging the key. Do not repeat prompts in a loop.
+- Decide separately whether the five additional configured provider bindings
+  are part of the Build 01 replacement-runtime acceptance, then recover or
+  explicitly exclude them with their feature boundaries. The current-source
+  audit found no read of the sixth, legacy Workspace subject.
 
 ### Blocked externally
 

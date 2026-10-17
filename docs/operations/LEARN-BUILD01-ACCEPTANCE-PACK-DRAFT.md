@@ -19,6 +19,13 @@ inactive until Chris reviews and signs off the business result.
   separate checks. One recovery-only 1Password read ended unconfirmed; it did
   not read the key and will not be repeated in a prompt loop.
   [Off-site receipt](evidence/learn-build01-edge-credential-offsite-2026-10-17.json).
+- All **62** configured LIVE Edge names now have an explicit disjoint recovery
+  classification. Fifty-six map to Vault, the new package, replacement-project
+  rebinding or reviewed non-secret controls. Five other configured provider
+  bindings remain outside the exact package, and the one global Workspace
+  subject has no current-source read. This names-only inventory does not prove
+  private-key restore or provider restart.
+  [Coverage receipt](evidence/learn-build01-edge-recovery-coverage-2026-10-17.json).
 
 - A single authority-read failure had stranded the approved Commusoft
   work-address contact run at 516/872 properties. The unchanged-scope retry

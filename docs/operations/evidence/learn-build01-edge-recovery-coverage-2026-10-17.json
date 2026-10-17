@@ -1,0 +1,29 @@
+{
+  "version": "learn-build01-edge-recovery-coverage/1",
+  "observedAtUtc": "2026-10-17T11:40:01.890Z",
+  "environment": "LIVE Drummonds read-only metadata",
+  "configuredEdgeBindings": 62,
+  "exactDisjointCategories": {
+    "vaultBackedAndDigestMatched": 15,
+    "agePackageCopiedAndDownloadedButNotPrivatelyRestored": 11,
+    "internalKeysMatchingCurrentProjectServiceKeyForRebinding": 2,
+    "replacementProjectBindingsToReissue": 7,
+    "reviewedReleaseControls": 18,
+    "databaseSnapshotControls": 3,
+    "additionalConfiguredProviderBindingsOutsideExactPackage": 5,
+    "unusedGlobalWorkspaceSubjectOutsideExactPackage": 1,
+    "unclassified": 0
+  },
+  "additionalProviderBindingNames": [
+    "MARKETING_TRACKING_SECRET",
+    "OPENAI_EMMA_REVIEW_KEY",
+    "RECEPTIONIST_SLACK_DRUMMONDS",
+    "RECEPTIONIST_VAPI_DRUMMONDS",
+    "RESEND_API_KEY"
+  ],
+  "currentSourceReadsGlobalWorkspaceSubject": false,
+  "packagePrivateKeyRestoreVerified": false,
+  "authenticatedProviderRestartVerified": false,
+  "plainValuesOrDigestsPublished": false,
+  "productionDataWrites": false
+}
