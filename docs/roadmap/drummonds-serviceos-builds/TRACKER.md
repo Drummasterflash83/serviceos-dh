@@ -1,5 +1,24 @@
 # Build execution tracker
 
+Build 01 source-first alternative (17 October, 10:49 UTC): provider metadata
+for the exact approved public rosters found all 160 older campaign channels
+archived and all 20 separate current channels active. The saved user is a
+member of 16 current channels; one-message read access passed for the other
+four. The 160 remains a bounded history catch-up, not the active near-live
+denominator. No message body, DM, private channel or Slack write was returned.
+[Roster receipt](../../operations/evidence/learn-build01-slack-provider-roster-state-2026-10-17.json).
+
+Build 01 recovery narrowing (17 October, 10:37 UTC): isolated old-session
+rejection and fresh Auth login passed against the independently restored
+scheduled database and v107 Edge source. Two worker keys can be reissued from
+a replacement project's service key. Chris approved one-time credential
+recovery; exact 1Password items yielded three digest-matched values, encrypted
+locally, but six required settings and two Google identifiers remain without
+a verified protected source. No off-site credential copy was made. Build 01
+and Chris's business sign-off remain open.
+[Auth](../../operations/evidence/learn-build01-auth-session-reentry-2026-10-17.json),
+[credential inventory](../../operations/evidence/learn-build01-scoped-credential-inventory-2026-10-17.json).
+
 Build 01 job-link alternative checked (17 October, 10:29 UTC): all 12,732
 retained Commusoft job versions expose only self/property links and group
 fields, with no appointment or technician key. Named handoff cannot be

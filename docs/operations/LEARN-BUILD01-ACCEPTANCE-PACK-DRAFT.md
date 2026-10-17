@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 10:23 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 10:49 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -26,11 +26,27 @@ inactive until Chris reviews and signs off the business result.
   ongoing check. At 10:23, 4,181/4,182 active cards were projected and 1,685
   remained before the current sweep cutoff. [Completed sweep](evidence/learn-build01-card-ordinary-sweep-2026-10-17.json).
 
-- The one-time Edge credential packager passed an isolated age
-  encrypt/decrypt roundtrip with two **synthetic** values. It checks selected
-  values against current LIVE hashes before creating a real ciphertext, but
-  that mode has not been used and no provider key has been read or copied.
-  [Synthetic receipt](evidence/learn-build01-edge-credential-package-synthetic-2026-10-17.json).
+- The one-time Edge credential packager passed a synthetic age roundtrip.
+  Chris then approved an exact-item protected read. Three active LIVE values
+  matched and were age-encrypted **locally**: QuickBooks's worker key and the
+  two Simwood fields. Six other required values were absent from those two
+  items, so no off-site credential copy or full-recovery claim followed.
+  [Scoped inventory](evidence/learn-build01-scoped-credential-inventory-2026-10-17.json).
+- The independently downloaded scheduled database and v107 Edge source passed
+  an additional isolated Auth re-entry drill. Old refresh and differently
+  signed access tokens were rejected after invalidating disposable restored
+  sessions; a fresh preserved-user login, tenant cards and audited operator
+  boundaries passed. No LIVE account changed.
+  [Auth receipt](evidence/learn-build01-auth-session-reentry-2026-10-17.json).
+
+- Direct, bounded Slack provider metadata checks covered both exact approved
+  public rosters: **160/160 channels in the older campaign are archived**;
+  **20/20 channels in the separate current campaign are active**, with the
+  saved user marked a member of 16. Bounded read-only history access passed
+  for the other four public channels. No bodies, DMs or private channels were
+  returned. The 160's empty near-live ledger is therefore not evidence that an
+  active current channel failed. Its historical catch-up remains necessary
+  until the post-cutoff intervals settle. [Roster receipt](evidence/learn-build01-slack-provider-roster-state-2026-10-17.json).
 
 - An exact v107 source-use audit found the old global Workspace subject has no
   current literal environment read; the live Email path uses the backed-up
@@ -260,15 +276,13 @@ inactive until Chris reviews and signs off the business result.
   the rolling worker's failure rate; investigate only if it stops or repeatedly
   misses that card. Do not reimpose a fresh terminal sweep as a perpetual gate
   when the completed 06:11 sweep already proves an ordinary full cycle.
-- **Interpret quiet sources honestly:** 09:05 LIVE readback again found zero
-  post-cutoff messages, replies or signed hints in the exact 160-channel roster.
-  None of those channels had a retained message in the 30 days before the
-  handoff. The shared signed receiver and 160 bindings are structurally verified,
-  with real delivery in the separate 20-channel roster. No further team test
-  post is needed; an exact-160 real event remains unobserved until ordinary
-  activity occurs. Completed empty provider windows are positive evidence of
-  checking those windows, not of message delivery. Historical polling lag is
-  reported separately from near-live signed-event readiness.
+- **Interpret quiet sources honestly:** the exact 160-channel campaign is now
+  confirmed entirely archived at Slack. At 10:41 LIVE still had zero retained
+  post-cutoff messages, replies or signed hints in that roster. The current
+  20-channel public campaign is separate and active; four real signed hints
+  settled there. No staff test post is needed. Completed empty provider windows
+  prove only those checked intervals, not all post-cutoff history or future
+  delivery if a channel is unarchived.
 - **Keep historical catch-up separate from current intake:** at 09:06, 2,517
   retained eligible Email messages still lacked interactions, while both recent
   alias checkpoints were under eleven minutes old and ordinary receipts were
@@ -277,23 +291,26 @@ inactive until Chris reviews and signs off the business result.
   outage. The stage's required source coverage and freshness decision still
   needs explicit acceptance criteria rather than a silently smaller denominator.
 
-- **Slack freshness:** 67 of the exact 160 channels were more than a day
+- **Slack historical catch-up:** 67 of the exact 160 channels were more than a day
   behind at 06:45. The previously dead-lettered window is now completed and
   no current window was dead-lettered at 06:46. Yet no post-cutoff message,
   reply or signed hint has been saved in this exact roster. All 1,335 checked
   provider windows were empty; 61 channels lacked a completed window ending
   in the prior 12 hours. The latest retained source activity is from 30 August,
-  with none in the 30 days before handoff. This supports checked absence in
-  completed windows. The shared signed receiver and all 180 current bindings
-  are verified, while actual Event delivery for the quiet 160 remains
-  unobserved. The proven post-fix real Event was a reply in the separate
-  public roster; a new ordinary parent-message event has not yet been observed.
+  with none in the 30 days before handoff. All 160 are now confirmed archived,
+  so this is a historical completeness task, not the active near-live roster.
+  The shared signed receiver and all 180 bindings are verified. The proven
+  post-fix real Event was a reply in the separate active 20-channel roster;
+  a new ordinary parent-message event has not yet been observed.
   [Exact-roster proof](evidence/learn-build01-slack-160-postcutoff-2026-10-16.json).
   A later 09:27 observation found **69** channels over a day behind in the
   polling fallback and only **39** with a completed window ending in the prior
-  12 hours. The existing long-window catch-up and signed Events path are the
-  operating route; the fallback itself is not near-live. Do not ask staff to
-  post further team test messages or treat quiet windows as delivered Events.
+  12 hours. Retain the long-window catch-up through the remaining post-cutoff
+  intervals, then treat archived subscriptions as dormant in the operator view.
+  The 20 active channels carry the near-live requirement; all 20 now have
+  provider read access, while reply coverage remains separately observed. Do not ask
+  staff to post further team test messages or treat quiet windows as delivered
+  Events.
 - **Jobs and attention:** Commusoft retained 12,656 job identities and 295
   recorded open/pending/on-hold jobs. Only ten of those had reviewed job-card
   links; 285 did not. At 22:31, 272 of the 295 had no observation within a day.
@@ -322,14 +339,15 @@ inactive until Chris reviews and signs off the business result.
   current Edge tenant reads. The last verified LIVE frontend commit now also
   rebuilds, boots and connects in isolated synthetic- and preserved-user
   browser journeys.
-  All-function startup with recovered runtime secrets, original-session
-  policy and **real provider capture resumption** remain unverified. A
+  All-function startup with recovered runtime secrets and **real provider
+  capture resumption** remain unverified. The offline old-session rejection
+  and fresh-login policy is rehearsed but has not been executed on LIVE. A
   controlled no-provider worker restart passed. The local database point
   matches a later verified phone-file inventory. All three file buckets
   completed, but the points are not atomic.
   The [runtime-secret recovery review](LEARN-BUILD01-EDGE-SECRET-RECOVERY-REVIEW.md)
-  sets out the remaining credential-source decision before any new encrypted
-  secret copy is made.
+  records the approved one-time scope, partial local ciphertext and six exact
+  protected-source or controlled-reissue gaps before an off-site secret copy.
 - **File-backup host:** the recording and voicemail schedule has succeeded
   locally, but depends on the Mac and Codex app being awake. The latest
   three-bucket inventory is a verified file copy, not a matching database
@@ -338,8 +356,9 @@ inactive until Chris reviews and signs off the business result.
 ## Blocked externally
 
 - No new user action is needed for the ordinary card or Slack recovery checks.
-  Earlier scoped decisions on the job-attention hold and Edge credential
-  recovery remain pending; neither is inferred from this checkpoint.
+  The separate job-attention hold decision remains pending. Credential-copy
+  scope is approved, but six required values were not found in the exact
+  protected items; their source or reissue authority remains unresolved.
   Chris's business acceptance will be
   requested **after** the technical pack is ready. No full-working-day elapsed-time
   wait is being imposed.

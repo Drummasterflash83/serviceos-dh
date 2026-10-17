@@ -1,7 +1,8 @@
 # Build 01 — Edge runtime-secret recovery decision
 
-**Prepared 17 October 2026. No runtime secret copy or production change has
-been made under this review.** The independently restored database/Auth/Edge
+**Prepared 17 October 2026. A partial local encrypted credential package exists;
+no off-site credential copy or production change has been made under this
+review.** The independently restored database/Auth/Edge
 and frontend now serve a preserved Drummonds account in an isolated browser.
 This is still not a full application restore because a replacement Supabase
 runtime would need its Edge configuration and provider credentials restored.
@@ -142,6 +143,26 @@ are in the [sanitised inventory](evidence/learn-build01-scoped-credential-invent
 Under the reviewed stop rule, no full-recovery claim or off-site credential
 copy follows until an exact protected source or controlled reissue path is
 established for each required value.
+
+### Narrow recovery routes for the unmatched settings
+
+These are next-source routes, **not completed credential recovery**:
+
+| LIVE setting | Exact next source or reissue route | Acceptance still needed |
+| --- | --- | --- |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Inspect the existing OAuth client in the owning Google Cloud project; Google documents that its ID and current secret can be viewed in the console. Preserve the current client and compare both values with LIVE digests before copying either. | Existing client identity, redirect URI and a provider-free OAuth configuration check; no reset by default. |
+| `GOOGLE_WORKSPACE_PRIVATE_KEY`, optional `GOOGLE_WORKSPACE_CLIENT_ID` | The private-key digest matches TEST, but neither project's management API yields the value. Google states a downloaded service-account key cannot be downloaded again. Locate an exact existing protected key copy; otherwise create a second key on the same service account under a controlled change and escrow it at creation. | Confirm the service-account identity, domain-wide delegation, bounded mailbox access and old/new key overlap before retiring the old key. |
+| `LEARN_SLACK_EVENTS_SIGNING_SECRET` | Read the signing secret from **Basic Information** of the already installed Drummonds app, as Slack documents, and compare with LIVE digest. Do not regenerate it for inventory. | Signed request denial/acceptance against the replacement route and exact approved public-channel roster; DMs remain excluded. |
+| `OPENAI_API_KEY` | Find a named protected copy if one exists. OpenAI says an existing full key cannot be viewed after creation; absent a copy, create a replacement project key in a separately reviewed cutover and escrow it immediately. | Scoped project/permission check, bounded model call, then old-key retirement only after the replacement works. |
+| `OPENFOLK_CONTROLPLANE_KEY` | Treat as a dedicated internal machine key, not the project service key. Map every caller supplying `x-openfolk-machine-key` before a controlled replacement. | Caller/server equality, denied wrong-key requests, audited actor boundary. |
+| `PHONE_OPERATIONS_WEBHOOK_SECRET` | Identify the configured Vapi/Twilio sender of `x-phone-operations-secret` before a controlled replacement; the current value is not in the two reviewed 1Password items. | Provider callback identity, denied wrong secret and one bounded valid callback; confirm whether this alert route is active in Build 01. |
+
+The Google [OAuth credential guide](https://developers.google.com/identity/openid-connect/openid-connect)
+and [service-account key guide](https://docs.cloud.google.com/iam/docs/keys-create-delete),
+Slack's [signed-request guide](https://api.slack.com/docs/verifying-requests-from-slack),
+and OpenAI's [key-visibility guidance](https://help.openai.com/en/articles/4936850-where-%20do-i-find-my-secret-api-key)
+support the provider-specific retrieval limits above. Current owner access to
+those consoles and any proposed credential changes have not been verified.
 
 ## Decision and risk
 

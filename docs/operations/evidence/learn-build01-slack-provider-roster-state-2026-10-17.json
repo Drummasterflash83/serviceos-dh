@@ -1,0 +1,37 @@
+{
+  "version": "learn-build01-slack-provider-roster-state/1",
+  "observedAtUtc": "2026-10-17T10:48:59.650Z",
+  "workspace": "T0CC5V4D7",
+  "source": "Existing approved Drummonds public-channel user token; exact campaign IDs from LIVE, conversations.info for each listed channel",
+  "historicalCampaign": {
+    "campaignId": "b54d246b-2818-44d1-ba05-ccbe2c6bd6c9",
+    "observedAtUtc": "2026-10-17T10:46:33.779Z",
+    "approvedChannels": 160,
+    "providerMetadataChecked": 160,
+    "archivedChannels": 160,
+    "activeChannels": 0,
+    "unavailableChannels": 0,
+    "rateLimited": false,
+    "postCutoffMessagesRetainedInLearn": 0,
+    "postCutoffRepliesRetainedInLearn": 0,
+    "historicalFallbackStillCatchingUp": true
+  },
+  "separateCurrentCampaign": {
+    "campaignId": "a3980d74-29fa-4655-a914-61219cdf7dad",
+    "approvedChannels": 20,
+    "providerMetadataChecked": 20,
+    "archivedChannels": 0,
+    "activeChannels": 20,
+    "memberChannelsForSavedUser": 16,
+    "nonmemberPublicChannelsHistoryAccessible": 4,
+    "nonmemberPublicChannelsHistoryDenied": 0,
+    "unavailableChannels": 0,
+    "rateLimited": false
+  },
+  "messageBodiesReturned": false,
+  "individualOrGroupDmRead": false,
+  "privateChannelRead": false,
+  "providerWrites": false,
+  "productionDataWrites": false,
+  "limits": "Current archived status does not prove when each of the 160 channels was archived or that every interval after the 13 October cutoff was empty. Existing catch-up should retain its checkpoints until all windows settle. The four nonmember history checks establish read access to the current public channels, not complete message/reply capture or new signed-event arrival."
+}

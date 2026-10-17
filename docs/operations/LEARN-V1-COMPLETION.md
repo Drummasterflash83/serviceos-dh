@@ -17,6 +17,33 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 10:49 UTC — the 160-channel Slack near-live ambiguity is resolved.**
+
+### Working and verified
+
+- A bounded provider metadata check used the existing approved channel-only
+  credential on exactly the two saved public rosters. All **160 older campaign
+  channels are archived** at Slack. All **20 separate current-campaign channels
+  are active**; the saved user is a member of 16. The other four public
+  channels all passed bounded read-only history access. None of the 180 channel
+  metadata reads was rate-limited or unavailable. No message body was returned,
+  no DM or private channel was read, and no Slack write occurred.
+  [Provider roster receipt](evidence/learn-build01-slack-provider-roster-state-2026-10-17.json).
+
+### Needs finishing
+
+- Keep the 160's already-approved historical catch-up until every post-cutoff
+  interval has a settled receipt; current archived status alone cannot prove
+  when each channel stopped receiving messages. Do not use its zero recent
+  messages as a failed near-live test or claim full checked absence early.
+  Continue real Event settlement checks for the active 20 without asking staff
+  to post tests. The four nonmember public channels passed a one-message read
+  access check, but this does not establish complete reply capture.
+
+### Blocked externally
+
+- No Slack app change or owner action is needed for this metadata finding.
+
 **17 October, 10:37 UTC — session re-entry verified; credential copy still partial.**
 
 ### Working and verified
