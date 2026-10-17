@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 11:17 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 11:32 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -8,11 +8,24 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- The approved one-time LIVE Edge credential inventory now contains 11 active
+  Build 01 settings, each checked against its LIVE digest. A synthetic hosted
+  TEST rehearsal passed first. The LIVE temporary route was removed after
+  sealing, and other function versions were unchanged. The **5,094-byte** age
+  ciphertext was uploaded to the existing private London bucket and the exact
+  stored version downloaded with a separate Restore identity; bytes and hash
+  matched. No plaintext file, provider call or production data write occurred.
+  A downloaded-package decrypt and authenticated provider restart are still
+  separate checks. One recovery-only 1Password read ended unconfirmed; it did
+  not read the key and will not be repeated in a prompt loop.
+  [Off-site receipt](evidence/learn-build01-edge-credential-offsite-2026-10-17.json).
+
 - A single authority-read failure had stranded the approved Commusoft
   work-address contact run at 516/872 properties. The unchanged-scope retry
   passed rollback rehearsals and installed on TEST and LIVE; its one-time,
   exact-job recovery resumed normal worker capture at **517/872**, with the
-  next page running. The operator UI's unconfirmed request was cancelled.
+  next page running. A later 11:32 read found **663/872** completed and the
+  approval still in scope. The operator UI's unconfirmed request was cancelled.
   This removes the deadlock, while final contact and cycle completion remain
   to observe. [Recovery receipt](evidence/learn-build01-commusoft-authority-retry-2026-10-17.json).
 
@@ -26,8 +39,8 @@ inactive until Chris reviews and signs off the business result.
 
 - The existing Drummonds Slack app's signing secret matched the active LIVE
   Edge digest in memory. This identifies its exact recovery source without an
-  app change, key rotation or credential output. It has **not** been added to
-  the partial encrypted credential copy or tested in a replacement route.
+  app change, key rotation or credential output. The later sealed package now
+  includes this exact digest-matched setting; replacement-route testing remains.
   [Source receipt](evidence/learn-build01-slack-signing-secret-source-2026-10-17.json).
 
 - A fresh shape check of all 12,732 retained Commusoft job versions found only
@@ -48,12 +61,11 @@ inactive until Chris reviews and signs off the business result.
   ongoing check. At 10:23, 4,181/4,182 active cards were projected and 1,685
   remained before the current sweep cutoff. [Completed sweep](evidence/learn-build01-card-ordinary-sweep-2026-10-17.json).
 
-- The one-time Edge credential packager passed a synthetic age roundtrip.
-  Chris then approved an exact-item protected read. Three active LIVE values
-  matched and were age-encrypted **locally**: QuickBooks's worker key and the
-  two Simwood fields. Six other required values were absent from those two
-  items, so no off-site credential copy or full-recovery claim followed.
-  [Scoped inventory](evidence/learn-build01-scoped-credential-inventory-2026-10-17.json).
+- The earlier exact-item read located only three of ten required settings.
+  The sealed LIVE runtime export completed the eleven-setting inventory without
+  recurring credential-console or Touch ID work. The earlier partial local
+  ciphertext was not used for the off-site copy.
+  [Earlier inventory](evidence/learn-build01-scoped-credential-inventory-2026-10-17.json).
 - The independently downloaded scheduled database and v107 Edge source passed
   an additional isolated Auth re-entry drill. Old refresh and differently
   signed access tokens were rejected after invalidating disposable restored
@@ -368,8 +380,9 @@ inactive until Chris reviews and signs off the business result.
   matches a later verified phone-file inventory. All three file buckets
   completed, but the points are not atomic.
   The [runtime-secret recovery review](LEARN-BUILD01-EDGE-SECRET-RECOVERY-REVIEW.md)
-  records the approved one-time scope, partial local ciphertext and six exact
-  protected-source or controlled-reissue gaps before an off-site secret copy.
+  records the approved one-time scope and earlier partial local ciphertext;
+  the later sealed export closed those six source-location gaps and completed
+  an independently downloaded off-site secret copy.
 - **File-backup host:** the recording and voicemail schedule has succeeded
   locally, but depends on the Mac and Codex app being awake. The latest
   three-bucket inventory is a verified file copy, not a matching database
@@ -379,8 +392,8 @@ inactive until Chris reviews and signs off the business result.
 
 - No new user action is needed for the ordinary card or Slack recovery checks.
   The separate job-attention hold decision remains pending. Credential-copy
-  scope is approved, but six required values were not found in the exact
-  protected items; their source or reissue authority remains unresolved.
+  scope and off-site transfer are complete; isolated decrypt and provider
+  restart remain technical gates.
   Chris's business acceptance will be
   requested **after** the technical pack is ready. No full-working-day elapsed-time
   wait is being imposed.

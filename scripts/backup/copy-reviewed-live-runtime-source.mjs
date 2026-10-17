@@ -51,6 +51,18 @@ export const reviewedLiveRuntimeSource2322 = Object.freeze({
   key: "projects/tgbnakbxwcqjeimygroz/objects/a4d892a1387b1c19c53caea3cdfb85d7c15dd80929cd2c5defeef7b5621d1656/dcfcbb300d0239f379f744e55e989fb1a4bcd2b85ab67f1c8b3fa5a940f55473",
 });
 
+// Chris's approved one-time, scoped Build 01 credential copy. The first key
+// digest separates this object type from Edge source and database snapshots;
+// the second is the exact ciphertext hash. No credential value is in this file.
+export const reviewedBuild01EdgeCredentialPackage = Object.freeze({
+  kind: "edge_credentials",
+  bytes: 5094,
+  sha256: "6842129fb664e513bd7fa078b7e5080e3b7f44ee3fce7f7aa764d87cce2105aa",
+  key: `projects/tgbnakbxwcqjeimygroz/objects/${createHash("sha256")
+    .update("serviceos-build01-edge-credential-package/1\n4008cc502a41f5948cfea8e2d06fa3be26ff4f4f7828839f707724b7c49f1488")
+    .digest("hex")}/6842129fb664e513bd7fa078b7e5080e3b7f44ee3fce7f7aa764d87cce2105aa`,
+});
+
 const fail = (code) => { throw Error(code); };
 const need = (condition, code) => { if (!condition) fail(code); };
 const canon = (value) => JSON.stringify(value, (_key, entry) =>
@@ -116,7 +128,7 @@ export async function copyReviewedLiveRuntimeSource({ sourcePath, downloadPath, 
   need(reviewed === reviewedLiveRuntimeSource || reviewed === reviewedLiveRuntimeSource1705 ||
     reviewed === reviewedLiveRuntimeSource1828 || reviewed === reviewedLiveRuntimeSource1911 ||
     reviewed === reviewedLiveRuntimeSource2046 || reviewed === reviewedLiveRuntimeSource2203 ||
-    reviewed === reviewedLiveRuntimeSource2322,
+    reviewed === reviewedLiveRuntimeSource2322 || reviewed === reviewedBuild01EdgeCredentialPackage,
     "runtime_reviewed_package_invalid");
   need(typeof sourcePath === "string" && typeof downloadPath === "string" &&
     sourcePath !== downloadPath && writer?.destination && restore?.destination,
@@ -156,7 +168,9 @@ export async function copyReviewedLiveRuntimeSource({ sourcePath, downloadPath, 
     await checkedStream(await restore.destination.read(key, version.versionId), downloaded, reviewed);
     await downloaded.sync();
     return {
-      state: "encrypted_live_runtime_source_offsite_copy_verified",
+      state: reviewed.kind === "edge_credentials"
+        ? "encrypted_build01_edge_credentials_offsite_copy_verified"
+        : "encrypted_live_runtime_source_offsite_copy_verified",
       object: version, destination: { ...destination },
       bytes, sha256, independentRestoreDownloadVerified: true,
       applicationRecoveryVerified: false, productionWrites: false,

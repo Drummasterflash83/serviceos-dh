@@ -17,6 +17,39 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 11:31 UTC — one-time Edge credential package copied and independently downloaded.**
+
+### Working and verified
+
+- A short-lived exact-name Edge route passed a synthetic hosted TEST rehearsal,
+  including wrong-nonce denial, then was removed. LIVE sealed 11 active Build 01
+  settings to a pinned ephemeral public key. Each recovered value matched its
+  active Edge digest before the package was age-encrypted locally; no plaintext
+  file or credential value appeared in a report. The LIVE route was removed and
+  all other function versions remained unchanged. No provider request was made.
+- The resulting **5,094-byte** age ciphertext, SHA-256
+  `6842129fb664e513bd7fa078b7e5080e3b7f44ee3fce7f7aa764d87cce2105aa`,
+  was uploaded with the scoped Writer to the existing private London bucket.
+  Its immutable stored version was downloaded using the separate Restore
+  identity; bytes and hash matched. The bucket reported AES-256 encryption and
+  governance retention through 16 November. No Touch ID was needed for the
+  export or transfer. [Sanitised receipt](evidence/learn-build01-edge-credential-offsite-2026-10-17.json).
+
+### Needs finishing
+
+- Independently decrypt the downloaded credential package with the recovery
+  identity, verify current active digests once more, then rehearse replacement
+  runtime bindings and a bounded authenticated provider restart. The copy and
+  readback alone do not prove application recovery. One bounded 1Password
+  recovery-only read ended `onepassword_operation_unconfirmed` without reading
+  or logging the key. Do not repeat prompts in a loop.
+
+### Blocked externally
+
+- No new owner action is needed for the copy. A one-time recovery-identity
+  read may still be needed for the separate isolated restore; do not repeat
+  Touch ID requests for routine source changes.
+
 **17 October, 11:17 UTC — guarded Commusoft contact retry restored actual capture.**
 
 ### Working and verified
@@ -33,7 +66,9 @@ business decision yet.
   ordinary authenticated callers. Installation changed no source rows or jobs.
   The one failed LIVE job passed the exact guard and was requeued from the
   retained 516-page checkpoint. The normal worker then retained the next page:
-  **517 of 872** properties completed, with another page running.
+  **517 of 872** properties completed, with another page running. A read-only
+  follow-up at 11:32 UTC found **663/872** completed, approval still matching
+  scope, no current failure, and the separate current-jobs lane completing.
   [Sanitised receipt](evidence/learn-build01-commusoft-authority-retry-2026-10-17.json).
 
 ### Needs finishing

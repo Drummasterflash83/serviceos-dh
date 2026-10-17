@@ -1,5 +1,16 @@
 # Build 01 — Edge runtime-secret recovery decision
 
+**17 October, 11:31 UTC update:** The approved one-time inventory was completed
+through a short-lived, pinned, server-side sealed LIVE export. Its 11 selected
+settings matched active Edge digests, and the temporary route was removed. The
+5,094-byte age ciphertext was uploaded to the existing private London bucket;
+the separate Restore identity downloaded its immutable version with matching
+bytes and SHA-256. [Sanitised receipt](evidence/learn-build01-edge-credential-offsite-2026-10-17.json).
+The earlier partial-package and six-missing-source discussion below describes
+the pre-export state. A recovery-identity decrypt and authenticated provider
+restart remain unverified; one bounded 1Password recovery read ended unconfirmed
+without key output, and should not be repeated in a prompt loop.
+
 **Prepared 17 October 2026. A partial local encrypted credential package exists;
 no off-site credential copy or production change has been made under this
 review.** The independently restored database/Auth/Edge
