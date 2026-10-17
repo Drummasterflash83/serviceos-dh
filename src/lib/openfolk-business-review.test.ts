@@ -137,3 +137,40 @@ test("account-holder confirmation stays inside the logged selected-client facade
     error: null,
   });
 });
+
+test("operator job review creation stays inside the logged selected-client facade", async () => {
+  const reviewAction = "learn_commusoft_create_job_review_action";
+  const reviewArgs = {
+    p_tenant: tenant,
+    p_connection: "44444444-4444-4444-8444-444444444444",
+    p_external_id: "123",
+    p_version: "55555555-5555-4555-8555-555555555555",
+    p_reason: "Review retained source hold",
+  };
+  const client = operatorBusinessReviewClient(
+    {
+      rpc: async (name, input) => {
+        assert.equal(name, "openfolk_business_review");
+        assert.deepEqual(input, {
+          p_tenant: tenant,
+          p_action: reviewAction,
+          p_reason: scope.reason,
+          p_args: reviewArgs,
+        });
+        return {
+          data: {
+            ...envelope({ id: actor, created: true, source_version_id: reviewArgs.p_version }),
+            action: reviewAction,
+          },
+          error: null,
+        };
+      },
+    },
+    scope,
+    () => true,
+  );
+  assert.deepEqual(await client.rpc(reviewAction, reviewArgs), {
+    data: { id: actor, created: true, source_version_id: reviewArgs.p_version },
+    error: null,
+  });
+});
