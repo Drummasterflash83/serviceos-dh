@@ -236,6 +236,10 @@ export function ClientPortal({
   const tenant =
     row?.tenant_id ??
     receptionistWorkspace?.tenant_id ??
+    // Operators can open an explicitly selected LEARN tenant before the
+    // client-programmes read or legacy profile finishes. The LEARN view still
+    // performs its own audited, tenant-scoped server-side read checks.
+    (section === "learn" && tenantId && operator.data === true ? tenantId : undefined) ??
     (section === "learn" && (!tenantId || tenantId === profile?.tenant_id)
       ? profile?.tenant_id
       : undefined);
