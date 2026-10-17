@@ -22,7 +22,9 @@ export function LearnWorkspace({
 }) {
   const { user, profile } = useAuth();
   if (!user) return <p role="status">Sign in to open LEARN.</p>;
-  if (profile?.tenant_id === tenantId)
+  // A platform operator remains an OpenFolk actor even if an older profile
+  // still names this tenant. Never route that actor through customer controls.
+  if (!operatorAuthorised && profile?.tenant_id === tenantId)
     return <LearnLaunchPortal key={`${user.id}:${tenantId}`} tenantId={tenantId} />;
   if (!operatorAuthorised)
     return <p role="status">This company’s LEARN workspace is unavailable for your account.</p>;

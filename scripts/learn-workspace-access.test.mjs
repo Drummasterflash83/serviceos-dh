@@ -27,12 +27,16 @@ test('ordinary clients cannot select a foreign company or mount an operator read
   assert.match(JSON.stringify(render()),/unavailable for your account/);
   assert.ok(!nodes(render()).some(n=>['client-learn','operator-reader'].includes(n.type)));
 });
-test('existing company users retain their client LEARN journey, including operators',()=>{
+test('existing company users without platform authority retain their client LEARN journey',()=>{
   const render=fixture({user:actor,profile});
-  for(const operator of [false,true]){
-    const tree=render('tenant-a',operator);
-    assert.equal(tree.type,'client-learn');assert.equal(tree.props.tenantId,'tenant-a');
-  }
+  const tree=render('tenant-a',false);
+  assert.equal(tree.type,'client-learn');assert.equal(tree.props.tenantId,'tenant-a');
+});
+test('a platform operator with an older matching tenant profile uses audited support',()=>{
+  const render=fixture({user:actor,profile:{tenant_id:'tenant-a',role:'owner'}});
+  const tree=render('tenant-a',true);
+  assert.ok(nodes(tree).some(n=>n.type==='operator-reader'));
+  assert.ok(!nodes(tree).some(n=>n.type==='client-learn'));
 });
 test('authorised operator uses selected tenant, real actor and audited customer collection',()=>{
   const auth={user:actor,profile},before=JSON.stringify(auth),tree=fixture(auth)('tenant-b',true);
