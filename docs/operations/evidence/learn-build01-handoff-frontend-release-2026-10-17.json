@@ -1,0 +1,38 @@
+{
+  "observed_at_utc": "2026-10-17T12:27:45Z",
+  "scope": "Five-file OpenFolk roster identity and retained Commusoft job-review UI release",
+  "test": {
+    "project": "serviceos-learn-test",
+    "git_sha": "6bdf59e721cef0388b49ee6d48281daaa1b27aed",
+    "base_sha": "ff501a812d0c6bcedd1c0deacaa7996357f568cc",
+    "deployment_id": "dpl_HczUupP4REYLbBxVyQiZdFSoLwKR",
+    "state": "READY",
+    "backend_project": "saatxzwxvdvqevbnskxy",
+    "rendered_login_http_status": 200,
+    "existing_aliases_verified": ["test.openfolk.ai", "serviceos-learn-test-allkin.vercel.app"],
+    "deployment_protection": "all"
+  },
+  "live": {
+    "project": "serviceos-dh",
+    "git_sha": "702408a43158b9124849341da4cfa327ddb89ddd",
+    "base_sha": "77a73802a581798441acafd19e2d1fe93ae0a10d",
+    "deployment_id": "dpl_FB3C2843qEaR99cgMM4EW3mSgnr7",
+    "state": "READY",
+    "backend_project": "tgbnakbxwcqjeimygroz",
+    "rendered_login_http_status": 200,
+    "public_client_entry_http_status": 200,
+    "existing_aliases_verified": ["app.openfolk.ai", "openfolk.ai", "serviceos-dh.vercel.app", "www.openfolk.ai"],
+    "deployment_protection": "all_except_custom_domains"
+  },
+  "checks": {
+    "test_typecheck": "passed",
+    "test_build_and_prebuild_tests": "passed: 47 tests",
+    "live_typecheck": "passed",
+    "live_build_and_prebuild_tests": "passed: 47 tests",
+    "changeset": "Only OpenfolkRoster.tsx, LearnCommusoftSourceJobs.tsx, learn-commusoft-source-jobs.ts, openfolk.ts and openfolk.$tenantId.tsx",
+    "signed_in_positive_handoff": "not_performed",
+    "member_confirmation": "not_performed",
+    "review_action_creation": "not_performed",
+    "browser_access": "Auto-review rejected origin-wide access to signed-in app.openfolk.ai; no indirect privileged action attempted"
+  }
+}

@@ -17,6 +17,32 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 12:28 UTC — handoff frontend released to TEST and LIVE; human action still unverified.**
+
+### Working and verified
+
+- The five-file Owner / MD roster-confirmation and source-linked job-review UI
+  passed typecheck and full build with 47 prebuild checks on independent TEST
+  and LIVE bases. Protected TEST serves Git `6bdf59e7` on its two existing
+  aliases with the TEST backend. Production `main` fast-forwarded to
+  `702408a4`; Vercel's READY deployment serves the four existing LIVE aliases
+  with the LIVE backend. Public LIVE login/client entry returned HTTP 200.
+  [Release readback](evidence/learn-build01-handoff-frontend-release-2026-10-17.json).
+
+### Needs finishing
+
+- The controls are released, but the Owner / MD member link is still
+  unconfirmed. No source-linked task has been created or accepted. A genuine
+  signed-in action and audit readback are needed before claiming the first
+  named-person handoff.
+
+### Blocked externally
+
+- Browser auto-review denied agent access to the entire signed-in LIVE
+  `app.openfolk.ai` origin because it could expose wider private client data.
+  No alternative browser or privileged database write was used to bypass it.
+  The next step is a narrow signed-in user action or approved scoped access.
+
 **17 October, 11:54 UTC — Commusoft four-stage cycle completed unaided after the guarded recovery.**
 
 ### Working and verified

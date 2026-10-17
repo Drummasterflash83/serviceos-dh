@@ -99,8 +99,11 @@ The SQL controls were installed on TEST and LIVE with privilege/ledger
 readback; the Control Plane route was installed at TEST v28 and LIVE v38. A
 read-only source comparison confirmed LIVE's newer View-As guard was unchanged.
 Unauthenticated hosted write probes returned `missing_auth` on both projects.
-The frontend still needs release and a signed-in positive handoff check. Do
-not count installed controls as an actual person assignment.
+The frontend is now READY on TEST `6bdf59e7` and LIVE `702408a4`, with exact
+backend and existing alias/protection readbacks. A signed-in positive handoff
+still needs to be performed. Browser auto-review denied origin-wide LIVE
+access; no member confirmation, task creation or work assignment was inferred
+from the UI release. [Release receipt](evidence/learn-build01-handoff-frontend-release-2026-10-17.json).
 
 ## Proposed first scorecard boundary
 

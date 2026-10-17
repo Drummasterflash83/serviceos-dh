@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 12:15 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 12:28 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -31,6 +31,14 @@ inactive until Chris reviews and signs off the business result.
   LIVE View-As authorization guard was preserved byte-for-byte. Both routes
   denied unauthenticated writes. No member was confirmed, review task made or
   work assigned by these installation checks.
+- The five-file handoff frontend is now READY on protected TEST from Git
+  `6bdf59e7`, retaining its TEST-only changes and TEST backend. Its two existing
+  aliases and protection were read back. The matching LIVE change was
+  fast-forwarded to `main` as `702408a4`; Vercel's READY production deployment
+  now serves all four existing LIVE aliases with the LIVE backend. Both builds,
+  typechecks and 47 prebuild checks passed. Public LIVE login and client-entry
+  routes returned HTTP 200. This releases the controls but does not claim a
+  signed-in handoff. [Release receipt](evidence/learn-build01-handoff-frontend-release-2026-10-17.json).
 
 - The approved one-time LIVE Edge credential inventory now contains 11 active
   Build 01 settings, each checked against its LIVE digest. A synthetic hosted
@@ -386,6 +394,11 @@ inactive until Chris reviews and signs off the business result.
   source-review queue is the truthful current route. A fresh 11:53 read also
   found no confirmed Drummonds team member or confirmed signed-in assigner,
   so neither provider-derived nor manual person routing can be claimed yet.
+  The reviewed Owner / MD identity and task controls are now released in TEST
+  and LIVE, but no member confirmation, task creation or acceptance has been
+  recorded. Browser auto-review rejected origin-wide signed-in LIVE access;
+  do not bypass that rejection with a privileged database write. The final
+  positive handoff still needs a legitimate signed-in action and readback.
   [Policy draft](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md).
 - **Attribution limits:** the current 1,004 published canonical Commusoft jobs
   have customer links, but only 793 have site links, five have any linked
@@ -424,7 +437,10 @@ inactive until Chris reviews and signs off the business result.
 ## Blocked externally
 
 - No new user action is needed for the ordinary card or Slack recovery checks.
-  The separate job-attention hold decision remains pending. Credential-copy
+  The first handoff recipient is selected as Owner / MD. Browser security review
+  blocked agent access to the signed-in LIVE OpenFolk origin because that would
+  expose broader private client data; a focused signed-in user action or a
+  narrower approved access path is needed for the positive handoff. Credential-copy
   scope and off-site transfer are complete; isolated decrypt and provider
   restart remain technical gates.
   Chris's business acceptance will be
