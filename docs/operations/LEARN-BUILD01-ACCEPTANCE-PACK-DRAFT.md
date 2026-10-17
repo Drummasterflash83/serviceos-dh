@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 17:30 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 17:51 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -9,6 +9,22 @@ The [short business review draft](LEARN-BUILD01-BUSINESS-REVIEW-DRAFT.md)
 sets out the exact LIVE result and limits for that later decision.
 
 ## Working and verified
+
+- At 17:49 UTC the ordinary LIVE card readback found **zero cards more than an
+  hour behind**, with seven recent ten-card jobs succeeding without failed
+  cards. The fair ordinary recommendation chain continued with a successful
+  100-card page, zero failures and a queued continuation; the legacy
+  empty-evidence action cohort fell to **153** from 271 at release. This is
+  ongoing progress, not a finished full-card sweep or a published score. The
+  historical Email identity job still awaited its scheduled 18:08 UTC fifth
+  retry. Its first four attempts retained 49, 48, 49 and 49 immutable
+  publications, without a confirmed reason yet.
+- The LIVE LEARN public page returned HTTP 200 at 17:51 UTC. GitHub metadata
+  independently showed successful **scheduled** database-backup runs on
+  17 October, including the 11:45 UTC run, and a successful **scheduled**
+  missed-success monitor at 13:03 UTC. These metadata checks do not replace
+  signed-in customer review or an isolated application/provider restart.
+  [Counts-only readback](evidence/learn-build01-live-operating-2026-10-17-1751.json).
 
 - The exact current LIVE worker v112 executable now has a separate isolated
   startup check: it booted in the pinned Edge runtime without network, ports

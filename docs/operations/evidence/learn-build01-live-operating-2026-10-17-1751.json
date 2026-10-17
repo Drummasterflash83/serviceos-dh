@@ -1,0 +1,60 @@
+{
+  "observed_at_utc": "2026-10-17T17:51:05Z",
+  "scope": "Read-only LIVE operations and public-page check; no production-data write",
+  "checks": {
+    "card": {
+      "command": "node scripts/verify/learn-build01-card-stale-readback.mjs --live-read-only",
+      "observed_at_utc": "2026-10-17T17:49:42.936Z",
+      "stale_unprojected_older_than_hour": 0,
+      "recent_ordinary_succeeded_jobs": 7,
+      "recent_reported_failed_cards": 0
+    },
+    "recommendation": {
+      "command": "node scripts/verify/learn-build01-scorecard-hold-readback.mjs --live-read-only",
+      "observed_at_utc": "2026-10-17T17:49:46.660Z",
+      "latest_job_status": "queued",
+      "latest_success_at_utc": "2026-10-17T17:49:24.222Z",
+      "latest_page_selected": 100,
+      "latest_page_failed": 0,
+      "legacy_empty_evidence_actions_remaining": 153,
+      "published_policies": 0,
+      "saved_job_assessments": 0
+    },
+    "identity": {
+      "command": "node scripts/verify/learn-build01-identity-queue-readback.mjs --live-read-only",
+      "observed_at_utc": "2026-10-17T17:49:47.617Z",
+      "historical_email_job_status": "retrying",
+      "attempts_so_far": 4,
+      "receipts_by_attempt": [49, 48, 49, 49],
+      "next_scheduled_attempt_at_utc": "2026-10-17T18:08:28.008562Z",
+      "safe_delivery_diagnostics": {},
+      "manually_retried": false
+    },
+    "frontend": {
+      "command": "curl -IsS --max-time 15 'https://app.openfolk.ai/client?section=learn'",
+      "observed_at_utc": "2026-10-17T17:51:05Z",
+      "http_status": 200,
+      "signed_in_journey_checked_by_this_command": false
+    },
+    "scheduled_database_backup": {
+      "source": "GitHub Actions read-only run metadata",
+      "latest_schedule_run_id": 39029918023,
+      "created_at_utc": "2026-10-17T11:45:35Z",
+      "event": "schedule",
+      "conclusion": "success"
+    },
+    "scheduled_missed_success_monitor": {
+      "source": "GitHub Actions read-only run metadata",
+      "latest_schedule_run_id": 39034977731,
+      "created_at_utc": "2026-10-17T13:03:08Z",
+      "event": "schedule",
+      "conclusion": "success"
+    }
+  },
+  "limitations": [
+    "Historical Email retry is not settled.",
+    "The recommendation sweep has not reached its final stable-card boundary.",
+    "Public HTTP 200 does not prove signed-in customer behavior.",
+    "Scheduled-run metadata does not prove isolated full-application recovery."
+  ]
+}
