@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 06:42 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 06:46 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -29,11 +29,13 @@ inactive until Chris reviews and signs off the business result.
   [adoption readback](evidence/learn-build01-email-legacy-adoption-2026-10-17.json),
   [hold-resolution readback](evidence/learn-build01-email-legacy-hold-resolution-2026-10-17.json).
 - The 160 approved public Slack channels have enabled channel/reply
-  subscriptions and completed historical campaign handoff. A separate approved
-  20-channel public roster supplied real signed Events, saved source and an
-  ordinary post-fix reply settled in **32 seconds**. DMs remain excluded.
-  [Events proof](evidence/learn-build01-slack-events-live-2026-10-16.json).
-- In the exact 160-channel roster, **1,318** provider-completed recurring
+  subscriptions and completed historical campaign handoff. All **180**
+  approved public channels have valid account/connection bindings to one exact
+  signed Events receiver. The separate 20-channel public roster supplied four
+  settled real hints, saved source and an ordinary post-fix reply settled in
+  **32 seconds**. DMs remain excluded. This proves the shared route but not
+  an exact-160 real Event. [Shared-route receipt](evidence/learn-build01-slack-shared-events-boundary-2026-10-17.json).
+- In the exact 160-channel roster, **1,335** provider-completed recurring
   windows have saved empty page receipts, spanning all 160 channels. An exact
   failed zero-page window was recovered on attempt two, and a bounded automatic
   retry guard for this failure class was installed after TEST/LIVE rollback
@@ -61,15 +63,16 @@ inactive until Chris reviews and signs off the business result.
 ## Needs finishing
 
 - **Slack freshness:** 67 of the exact 160 channels were more than a day
-  behind at 06:12. The previously dead-lettered window is now completed and
-  no current window was dead-lettered at 06:14. Yet no post-cutoff message,
-  reply or signed hint has been saved in this exact roster. All 1,318 checked
-  provider windows were empty; 50 channels lacked a completed window ending
+  behind at 06:45. The previously dead-lettered window is now completed and
+  no current window was dead-lettered at 06:46. Yet no post-cutoff message,
+  reply or signed hint has been saved in this exact roster. All 1,335 checked
+  provider windows were empty; 61 channels lacked a completed window ending
   in the prior 12 hours. The latest retained source activity is from 30 August,
   with none in the 30 days before handoff. This supports checked absence in
-  completed windows, but near-live capture and real Event delivery for this
-  roster remain unproven. The proven post-fix real Event was a reply in the
-  separate public roster; a new ordinary parent-message event has not yet been observed.
+  completed windows. The shared signed receiver and all 180 current bindings
+  are verified, while actual Event delivery for the quiet 160 remains
+  unobserved. The proven post-fix real Event was a reply in the separate
+  public roster; a new ordinary parent-message event has not yet been observed.
   [Exact-roster proof](evidence/learn-build01-slack-160-postcutoff-2026-10-16.json).
 - **Jobs and attention:** Commusoft retained 12,656 job identities and 295
   recorded open/pending/on-hold jobs. Only ten of those had reviewed job-card

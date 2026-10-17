@@ -1,0 +1,26 @@
+{
+  "version": "learn-build01-job-source-attention/1",
+  "observedAtUtc": "2026-10-17T06:50:48Z",
+  "environment": "LIVE",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "migration": "supabase/migrations/20261104223200_learn_commusoft_source_attention_filters.sql",
+  "migrationSha256": "8ba5626fbb483758ee04e9d30b4942c6f340ef74c927a9bcf6a69c3bc7f8babd",
+  "installedFunctionMd5OnTestAndLive": "3f3047e65767fa23bd00c224582e708f",
+  "isolatedSyntheticFixturePassed": true,
+  "testRollbackRehearsalPassed": true,
+  "liveRollbackRehearsalPassed": true,
+  "frontendTypecheckPassed": true,
+  "frontendLocalBuildPassed": true,
+  "frontendLiveReleaseVerified": false,
+  "retainedSourceCounts": {
+    "jobIdentities": 12656,
+    "recordedOpenJobs": 295,
+    "recordedOnHold": 69,
+    "needsSourceReview": 285,
+    "openLastObservedOverDayAgo": 272
+  },
+  "meaning": "Source-backed operator review views filter recorded holds and jobs without a current reviewed job/customer/site relationship. They retain exact observation times and do not assign staff, confirm provider freshness or publish a score.",
+  "customerOrJobContentReturned": false,
+  "sourceProviderRequests": 0,
+  "sourceOrJobDataWrites": false
+}

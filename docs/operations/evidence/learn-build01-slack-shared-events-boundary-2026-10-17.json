@@ -1,0 +1,39 @@
+{
+  "version": "learn-build01-slack-shared-events-boundary/1",
+  "observedAtUtc": "2026-10-17T06:46:45Z",
+  "environment": "LIVE",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "approvedPublicChannelsInSharedReceiver": 180,
+  "receiverRosterSha256": "5b8b7219d8fde33e0219f2348f64e0a6790ca840bb37b244065ae893e1f57dc6",
+  "receiverCountAndRosterConfigDigestsMatched": true,
+  "approvedAccountAndConnectionBindingsValid": 180,
+  "duplicateChannelBindings": 0,
+  "futureCutoffs": 0,
+  "captureAllowed": true,
+  "actualSignedEventEvidence": {
+    "settledHints": 4,
+    "succeededEventJobs": 4,
+    "roster": "Separate approved 20-channel public campaign on the same 180-channel signed receiver",
+    "postFixOrganicReplySettledInSeconds": 32.206
+  },
+  "exact160Campaign": {
+    "approvedChannels": 160,
+    "enabledChannelAndReplySubscriptions": 160,
+    "providerCompletedWindows": 1335,
+    "providerCompletedEmptyWindows": 1335,
+    "channelsWithCompletedWindow": 160,
+    "channelsWithCompletedWindowEndingInPrior12Hours": 99,
+    "channelsOverOneDayBehind": 67,
+    "currentDeadLetterWindows": 0,
+    "retainedPostcutoffMessages": 0,
+    "retainedPostcutoffReplies": 0,
+    "signedHintsInExactRoster": 0,
+    "latestRetainedSourceAtUtc": "2026-08-30T06:42:21.451779Z"
+  },
+  "interpretation": "The same signed receiver is bound to all 180 approved public channels, every account/connection authority check currently passes, and real message/reply processing works in the separate 20-channel roster. This is structural readiness for the exact 160, not proof that a real post-cutoff message from those 160 was delivered. Historical recurring catch-up remains behind on 67 channels and must not be represented as current polling.",
+  "individualOrGroupDmsIncluded": false,
+  "privateChannelsIncluded": false,
+  "messageBodiesOrSecretValuesReturned": false,
+  "providerRequests": 0,
+  "productionDataWrites": false
+}

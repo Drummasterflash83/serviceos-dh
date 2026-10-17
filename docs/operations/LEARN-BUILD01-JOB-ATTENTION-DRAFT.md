@@ -18,6 +18,14 @@ changed-job lane is enabled and completed ordinary jobs windows at 22:06 and
 cards should continue to show each record's actual observation time and avoid
 describing an old status as current provider progress.
 
+At 06:50 UTC on 17 October, counts-only LIVE readback found **69 recorded
+on-hold jobs** and **285 recorded open jobs needing source or identity review**.
+The existing audited source-job reader now supports exact filters for those
+two groups; a narrow frontend view is built but awaits Git/Vercel release.
+The 272 jobs without an observation in the previous day must retain their
+source timestamp and must not be presented as current provider status.
+[Readback](evidence/learn-build01-job-source-attention-2026-10-17.json).
+
 ## Source-backed attention states
 
 | Saved evidence | Card treatment now | Requirement before assigning an individual or calculating a score |

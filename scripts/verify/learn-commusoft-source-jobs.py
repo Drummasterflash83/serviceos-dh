@@ -40,6 +40,10 @@ try:
     assert sql("select not ('enable_nestloop=off'=any(proconfig)) from pg_proc where oid='learn_commusoft_source_job_rows(uuid,uuid)'::regprocedure") == 't'
     sql(plan_patch)
     assert sql("select 'enable_nestloop=off'=any(proconfig) from pg_proc where oid='learn_commusoft_source_job_rows(uuid,uuid)'::regprocedure") == 't'
+    attention = source('supabase/migrations/20261104223200_learn_commusoft_source_attention_filters.sql')
+    sql(attention.replace('\ncommit;', '\nrollback;'))
+    assert sql("select md5(pg_get_functiondef('learn_commusoft_source_job_cards(uuid,uuid,text,boolean,text)'::regprocedure))") == '944d779e4a737dceb3b8c94e79d8dd22'
+    sql(attention)
     print(sql(source('scripts/verify/learn-commusoft-source-jobs.assert.sql')), flush=True)
     data = sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000010';set role authenticated;select learn_commusoft_source_job_cards(fixture_id(1),fixture_id(5),'001',true,null)")
     subprocess.run(['node', '--input-type=module', '-e', "import{readFileSync}from'node:fs';import{readSourceJobPage}from'./src/lib/learn-commusoft-source-jobs.ts';const d=JSON.parse(readFileSync(0,'utf8'));readSourceJobPage(d,{tenant:d.tenant_id,actor:d.actor_id,connection:d.connection_id,query:'001',openOnly:true,after:null});console.log('Actual SQL response passes the UI parser.');"], input=data, text=True, cwd=root, check=True)

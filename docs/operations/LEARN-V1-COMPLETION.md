@@ -17,6 +17,65 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 06:50 UTC — source-backed job attention views prepared.**
+
+### Working and verified
+
+- A baseline-guarded Commusoft read filter passed an isolated synthetic
+  fixture and TEST/LIVE rollback rehearsals, then installed with matching
+  function hashes on both. It reuses the existing tenant-scoped audited source
+  cards, without changing job/source rows or making provider requests.
+- Counts-only LIVE readback shows 69 recorded on-hold jobs and 285 open jobs
+  needing source or identity review out of 295 recorded open jobs. Of the 295,
+  272 were last observed over a day ago. The frontend now has buttons for
+  these two source-backed views; TypeScript and the local production build
+  pass. The frontend has **not yet been released to LIVE**.
+  [Attention evidence](evidence/learn-build01-job-source-attention-2026-10-17.json).
+
+### Needs finishing
+
+- Release and verify the narrow frontend change from production `main`, then
+  show a recorded hold and an unlinked job in the signed-in Drummonds view.
+  This is an operator review queue, not a named-person handoff or a published
+  job-progress score. Provider freshness, reviewed links and timing policy
+  remain open.
+
+### Blocked externally
+
+- No new user input is needed to release the source-backed review views.
+
+**17 October, 06:46 UTC — separate near-live route proof from historical catch-up.**
+
+### Working and verified
+
+- A fresh counts-only LIVE audit matched the signed Events receiver's exact
+  **180-channel** digest to the enabled approved roster. All 180 channel/account/
+  connection authority bindings currently pass, with no duplicate channel or
+  future cutoff. Four real signed hints from the separate approved 20-channel
+  campaign have settled through this same receiver and dedicated worker;
+  one ordinary post-fix reply settled in 32 seconds. This establishes the
+  shared near-live route, not an exact-160 real-message delivery.
+- The exact 160 campaign has 1,335 provider-completed empty windows across all
+  160 channels, no current dead letter and no new retained source since
+  30 August. Its signed hint, post-cutoff message and reply counts remain zero.
+  [Shared-route and roster receipt](evidence/learn-build01-slack-shared-events-boundary-2026-10-17.json).
+
+### Needs finishing
+
+- Keep historical catch-up separate from Events readiness: 67 of the exact
+  160 channels remain over a day behind and only 99 have a completed window
+  ending in the prior 12 hours. Continue the ordinary catch-up without
+  requesting more team test posts. The 160 roster has had no observed traffic
+  to establish actual Events delivery for that exact account set; disclose
+  this limitation at business acceptance instead of calling empty windows a
+  successful real Event.
+
+### Blocked externally
+
+- No Slack test post or user action is needed now. Chris can decide at final
+  business review whether the shared-route proof plus checked inactivity is
+  sufficient for the quiet 160-channel roster.
+
 **17 October, 06:42 UTC — 13 exact machine-held Email links safely superseded.**
 
 ### Working and verified

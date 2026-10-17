@@ -25,6 +25,11 @@ do $$declare r jsonb;s jsonb;ids text[]:='{}';cursor text;row jsonb;begin
  r:=learn_commusoft_source_job_cards(fixture_id(1),fixture_id(5),'103',true,null);assert r#>>'{rows,0,relationship_state}'='customer_source_missing';
  r:=learn_commusoft_source_job_cards(fixture_id(1),fixture_id(5),'104',true,null);assert r#>>'{rows,0,relationship_state}'='customer_type_unresolved';
  r:=learn_commusoft_source_job_cards(fixture_id(1),fixture_id(5),'105',true,null);assert r#>>'{rows,0,relationship_state}'='property_reference_missing';
+ r:=learn_commusoft_source_job_cards(fixture_id(1),fixture_id(5),'status:on-hold',true,null);
+ assert r#>>'{counts,matching_jobs}'='1' and r#>>'{rows,0,external_id}'='104';
+ r:=learn_commusoft_source_job_cards(fixture_id(1),fixture_id(5),'status:needs-review',true,null);
+ assert r#>>'{counts,matching_jobs}'='36' and r#>>'{counts,open_jobs}'='36';
+ assert r#>>'{rows,0,reviewed_job_id}' is null and r#>>'{rows,0,source_status}'='Open';
  r:=learn_commusoft_source_job_cards(fixture_id(1),fixture_id(5),'107',false,null);assert r#>>'{rows,0,relationship_state}'='job_source_conflict' and r#>>'{rows,0,version_id}' is null and r#>>'{rows,0,source_status}' is null;
  begin perform learn_commusoft_source_job_cards(fixture_id(1),fixture_id(6));raise exception 'Foreign connection leaked';exception when insufficient_privilege then null;end;
  begin perform learn_commusoft_source_job_cards(fixture_id(2),fixture_id(6));raise exception 'Foreign tenant leaked';exception when insufficient_privilege then null;end;
