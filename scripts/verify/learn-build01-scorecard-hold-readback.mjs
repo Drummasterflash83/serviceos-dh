@@ -96,10 +96,14 @@ const jobsQuery = `select status,coalesce(records_processed,0)::int records_proc
   coalesce((result->>'created')::int,0) created,
   coalesce((result->>'updated')::int,0) updated,
   coalesce((result->>'closed')::int,0) closed,
+  coalesce((result->>'selected')::int,0) selected,
+  coalesce((result->>'swept')::int,0) swept,
+  coalesce((result->>'urgent')::int,0) urgent,
   coalesce((result->>'failed')::int,0) failed,
+  (payload ? 'sweep_after') continuation_page,
   case when completed_at is not null then
     extract(epoch from completed_at-created_at)::int end duration_seconds,
-  completed_at
+  created_at,completed_at
 from public.platform_jobs where tenant_id='${tenant}'::uuid
   and job_type='recommendation.sync' order by created_at desc limit 8`;
 const jobsResponse = await fetch(`https://api.supabase.com/v1/projects/${project}/database/query/read-only`, {
@@ -111,7 +115,9 @@ if (!jobsResponse.ok) throw Error(`Recommendation job readback HTTP ${jobsRespon
 const recommendationJobs = await jobsResponse.json();
 if (!Array.isArray(recommendationJobs) || recommendationJobs.length > 8 ||
     recommendationJobs.some(item => typeof item.status !== "string" ||
-      !Number.isSafeInteger(item.records_processed) || !Number.isSafeInteger(item.failed)))
+      !Number.isSafeInteger(item.records_processed) || !Number.isSafeInteger(item.failed) ||
+      !["selected", "swept", "urgent"].every(key => Number.isSafeInteger(item[key])) ||
+      typeof item.continuation_page !== "boolean"))
   throw Error("Recommendation job readback shape changed");
 console.log(JSON.stringify({ observedAtUtc: new Date().toISOString(), project, tenant,
   ...row, recommendationTypes: types, emptyEvidenceGroups: evidenceGaps,

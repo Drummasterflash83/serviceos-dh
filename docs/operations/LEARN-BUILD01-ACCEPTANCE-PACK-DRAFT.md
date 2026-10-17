@@ -594,9 +594,11 @@ inactive until Chris reviews and signs off the business result.
   all eight fixture cards in three settled jobs, resolved a stale marker, and
   cleaned up all six synthetic cards. The exact candidate was released to LIVE
   (`platform-worker` v111, `recommendation-sync` v47) with unchanged unrelated
-  functions. The 16:57 UTC counts-only readback was of a job begun before the
-  release, so sustained ordinary LIVE sweep and this 271-action cohort remain
-  unproven. Keep these actions visible while that readback completes.
+  functions. Its first ordinary post-release LIVE job succeeded at 17:01 UTC:
+  75 swept cards plus 25 recent cards, 70 created actions, three closed actions,
+  zero failures and a queued continuation. The legacy empty-evidence cohort
+  fell from 271 to 266. Full ordinary sweep coverage is still unproven. Keep
+  the remaining actions visible while the continuation chain completes.
   [Release and TEST receipt](evidence/learn-build01-recommendation-sweep-release-2026-10-17.json).
 
 - **Continue ordinary card observation:** the released worker now admits

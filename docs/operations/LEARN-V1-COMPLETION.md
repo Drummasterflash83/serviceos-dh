@@ -32,10 +32,11 @@ business decision yet.
 
 ### Needs finishing
 
-- The first LIVE counts-only readback still reflected an ordinary job begun
-  before the release. Observe its new continuation chain and the 271 legacy
-  empty-evidence actions before claiming full-card recommendation freshness.
-  No scorecard policy or job assessment has been published.
+- The first ordinary LIVE job after release succeeded at 17:01 UTC, with 75
+  swept cards, 25 recent cards, 70 created and three closed actions, zero
+  failures, and a queued continuation. The legacy empty-evidence cohort fell
+  from 271 to 266. Observe the remaining chain before claiming full-card
+  recommendation freshness. No scorecard policy or job assessment is published.
 
 ### Blocked externally
 

@@ -25,7 +25,20 @@
     "unrelatedFunctionsChanged": false,
     "firstReadbackAtUtc": "2026-10-17T16:57:34.440Z",
     "firstReadbackPreReleaseJobOnly": true,
-    "legacyEmptyEvidenceOpen": 271,
+    "firstOrdinaryPostRelease": {
+      "completedAtUtc": "2026-10-17T17:01:31.107Z",
+      "status": "succeeded",
+      "selectedCards": 99,
+      "sweptCards": 75,
+      "urgentCards": 25,
+      "createdRecommendations": 70,
+      "updatedRecommendations": 227,
+      "closedRecommendations": 3,
+      "failedCards": 0,
+      "continuationQueued": true,
+      "legacyEmptyEvidenceOpenAfter": 266
+    },
+    "legacyEmptyEvidenceOpenBefore": 271,
     "publishedScorecardPolicies": 0,
     "savedJobAssessments": 0,
     "ordinaryFullSweepVerified": false
