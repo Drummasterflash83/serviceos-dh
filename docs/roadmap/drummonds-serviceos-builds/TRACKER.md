@@ -1,5 +1,17 @@
 # Build execution tracker
 
+Latest Build 01 operating checkpoint (17 October, 09:27 UTC): the exact
+160-channel Slack roster has 1,410 provider-completed empty windows across
+all channels, no current dead letters, and no post-cutoff source event or
+signed hint. Its installed 72-hour catch-up branch already handles old
+fallback windows; 69 channels remain over a day behind in fallback polling.
+The signed Events route is the near-live path, with real delivery proven only
+in the separate 20-channel roster. The ordinary card sweep is advancing with
+4,181/4,182 active cards projected and no manual rescue. Email committed
+34,450 unchanged receipts; the 2,517 eligible missing interactions are from
+newly retained historical mail, not current-day events. This is progress,
+not Build 01 acceptance. [Read-only cutline](../../operations/evidence/learn-build01-alternative-operating-cutline-2026-10-17.json).
+
 Latest Build 01 checkpoint (17 October, 08:55 UTC): the signed-in LIVE
 Drummonds LEARN page shows **37,863** saved Slack messages and loads the public
 evidence browser, resolving the earlier “Not checked” tile. The ordinary card
