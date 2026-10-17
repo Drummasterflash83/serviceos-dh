@@ -24,7 +24,7 @@ business decision yet.
 - LIVE still serves 103 Edge functions. Compared with the independently
   downloaded and verified v107 off-site source package, 102 function versions
   are unchanged; only `openfolk-control-plane` advanced from v37 to v38.
-  A reviewed 4,473-byte code patch contains its exact three changed files.
+  A reviewed 4,473-byte code patch contains its exact three changed deltas.
   Applying that patch to the pinned v107 archive reconstructed all 24 current
   Control Plane source files with the current LIVE SHA-256 for each changed file
   and the archived hashes for the other 21. The private archive manifest and

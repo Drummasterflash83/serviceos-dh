@@ -10,7 +10,7 @@
   "contract": "learn-build01-control-plane-v38-overlay/1",
   "credentialRecoveryProven": false,
   "currentEdgeFunctions": 103,
-  "currentSourceRecoveredLocallyFromOffsiteBaselineAndPatch": true,
+  "currentSourceReconstructedLocallyFromPinnedBaselineAndPatch": true,
   "fromVersion": 37,
   "observedAt": "2026-10-17T12:43:57.523Z",
   "codePatchRemoteCheckpoint": "1b3c94cf14ab85ad19218252cdedae69ddc6b8a4",

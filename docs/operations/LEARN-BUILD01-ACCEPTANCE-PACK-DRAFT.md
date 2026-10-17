@@ -10,7 +10,8 @@ inactive until Chris reviews and signs off the business result.
 
 - Current LIVE Edge source has one post-v107 change: `openfolk-control-plane`
   v37→v38. A small reviewed Git patch reconstructs all 24 current Control
-  Plane files from the pinned, independently downloaded off-site v107 source;
+  Plane files from the pinned v107 archive that underlies the independently
+  downloaded off-site package;
   the three changed-file hashes match the serving runtime and the other 21
   retain their archived hashes. This avoids repeating a whole-source backup
   for a small release. It does not recover credentials or prove a provider

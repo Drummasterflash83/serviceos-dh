@@ -1,8 +1,9 @@
 # Build execution tracker
 
 Build 01 current-source recovery overlay (17 October, 12:44 UTC): LIVE still
-serves 103 Edge functions; only Control Plane advanced from the independently
-downloaded v107 off-site package. A 4,473-byte reviewed code patch rebuilt all
+serves 103 Edge functions; only Control Plane advanced from the pinned v107
+archive underlying the independently downloaded off-site package. A
+4,473-byte reviewed code patch rebuilt all
 24 files in current Control Plane v38 with exact LIVE/archived hashes, without
 exporting another full source package or private manifest. The code-only
 checkpoint is verified at remote TEST head `1b3c94cf14ab85ad19218252cdedae69ddc6b8a4`.
