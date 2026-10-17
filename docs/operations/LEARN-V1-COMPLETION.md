@@ -17,6 +17,16 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 10:23 UTC — completed card sweep retained as acceptance evidence.**
+
+The ordinary LIVE card chain already finished its full 23:13 UTC stable-cutoff
+sweep at 06:11 UTC on the first attempt. The 06:12 readback had zero stale
+unprojected cards. The next rolling sweep is active, so its pending terminal
+job is not a new prerequisite for proving that an unattended full cycle works.
+At 10:23, 4,181/4,182 active cards were projected, 1,685 remained before
+the current cutoff, and one card was stale; current freshness remains under
+observation. [Completed sweep](evidence/learn-build01-card-ordinary-sweep-2026-10-17.json).
+
 **17 October, 10:20 UTC — encrypted credential stage rehearsed with synthetic values.**
 
 ### Working and verified

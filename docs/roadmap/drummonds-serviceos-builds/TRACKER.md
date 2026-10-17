@@ -1,5 +1,11 @@
 # Build execution tracker
 
+Build 01 card-cycle clarification (17 October, 10:23 UTC): the ordinary LIVE
+worker already completed one full stable sweep at 06:11 with zero stale cards
+at the 06:12 readback. The next rolling sweep is monitored for freshness, not
+treated as a new full-cycle gate. One card was stale at 10:23. [Completed
+sweep](../../operations/evidence/learn-build01-card-ordinary-sweep-2026-10-17.json).
+
 Latest Build 01 protected-credential preparation (17 October, 10:20 UTC): the
 one-time Edge credential package stage passed a pinned-age encrypt/decrypt
 roundtrip with synthetic values, verified digest gating and removed test

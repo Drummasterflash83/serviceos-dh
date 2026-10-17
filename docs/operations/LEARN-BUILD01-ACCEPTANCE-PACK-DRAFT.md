@@ -1,12 +1,19 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 10:09 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 10:23 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- The ordinary LIVE card chain completed a full stable sweep at 06:11 UTC on
+  its first attempt, and the 06:12 readback found zero stale unprojected cards.
+  The next rolling sweep is continuing without rescue; the completed sweep is
+  already the unattended-cycle proof, while current-card freshness is a separate
+  ongoing check. At 10:23, 4,181/4,182 active cards were projected and 1,685
+  remained before the current sweep cutoff. [Completed sweep](evidence/learn-build01-card-ordinary-sweep-2026-10-17.json).
 
 - The one-time Edge credential packager passed an isolated age
   encrypt/decrypt roundtrip with two **synthetic** values. It checks selected
@@ -233,12 +240,15 @@ inactive until Chris reviews and signs off the business result.
 ## Needs finishing
 
 - **Use the existing operation before changing it:** the ordinary card sweep
-  is advancing without intervention. A proposed priority-scheduler change
+  is advancing without intervention, and an earlier full sweep has already
+  completed. A proposed priority-scheduler change
   passed local handler checks and the LIVE read-only selector, but TEST has no
   active copy of that endpoint and the installed LIVE source differs from the
   tracked baseline. It was **not released**. Do not describe a manual targeted
-  card job as unattended success. Observe the existing sweep to its terminal
-  result; investigate only if it stops or repeatedly misses its card.
+  card job as unattended success. Keep watching the current one stale card and
+  the rolling worker's failure rate; investigate only if it stops or repeatedly
+  misses that card. Do not reimpose a fresh terminal sweep as a perpetual gate
+  when the completed 06:11 sweep already proves an ordinary full cycle.
 - **Interpret quiet sources honestly:** 09:05 LIVE readback again found zero
   post-cutoff messages, replies or signed hints in the exact 160-channel roster.
   None of those channels had a retained message in the 30 days before the
@@ -316,7 +326,9 @@ inactive until Chris reviews and signs off the business result.
 
 ## Blocked externally
 
-- No user action is needed for the ordinary card or Slack recovery checks.
+- No new user action is needed for the ordinary card or Slack recovery checks.
+  Earlier scoped decisions on the job-attention hold and Edge credential
+  recovery remain pending; neither is inferred from this checkpoint.
   Chris's business acceptance will be
   requested **after** the technical pack is ready. No full-working-day elapsed-time
   wait is being imposed.
