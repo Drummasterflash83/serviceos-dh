@@ -17,6 +17,40 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 15:41 UTC — focused unattended LIVE operating check.**
+
+### Working and verified
+
+- Six recent ordinary ten-card jobs succeeded with no failed cards; zero
+  active cards are stale/unprojected. Phone is **4,676/4,676** projected and
+  all **257** saved voicemails have matching audio objects. The eligible Email
+  gap fell to **4,459**, with none older than a day; Graph has **56** eligible
+  gaps, also none older than a day. Ordinary Email receipts continued through
+  15:36. The scheduled database backup and missed-success monitor both
+  succeeded today, separately from manual runs.
+  [Focused readback](evidence/learn-build01-focused-operating-2026-10-17-1541.json).
+- The exact 160 approved Slack channel/reply subscriptions remain enabled;
+  **1,591** provider windows completed empty and no window is dead-lettered.
+  Direct provider checks separately found no post-cutoff parent in any of the
+  160 archived channels and no post-cutoff reply in all 870 known prior roots.
+  These observations explain the absence of positive Events in that roster;
+  the separate active 20-channel parent/reply Events remain the actual positive
+  delivery proof. Do not label the 160 as having delivered a message it never
+  received.
+
+### Needs finishing
+
+- Continue the slow historical Slack fallback: **69** archived channels are
+  more than a day behind, despite zero current dead letters. The Owner / MD
+  positive handoff is still zero confirmed/zero accepted. Full application
+  credential/provider recovery and Chris's final acceptance remain open.
+
+### Blocked externally
+
+- No new fingerprint or Slack test post is needed for these operating checks.
+  The existing signed-in handoff request and five-setting recovery decision
+  remain pending. A broad diagnostic read timed out; focused readbacks passed.
+
 **17 October, 15:35 UTC — representative job-review boundary agreed.**
 
 ### Working and verified

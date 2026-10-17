@@ -1,12 +1,24 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 15:35 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 15:41 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- A fresh focused LIVE operating check found zero stale cards, six recent
+  successful ordinary ten-card jobs with no failed cards, **4,676/4,676**
+  Phone interactions, and **257/257** voicemail audio objects. The eligible
+  Email interaction gap fell to **4,459** with none older than a day; Graph's
+  eligible gap fell to **56** with none older than a day. Both today's database
+  backup and missed-success monitor succeeded as scheduled runs. The exact
+  160-channel Slack roster has **1,591** completed empty provider windows and
+  zero dead letters, but 69 archived channels remain over a day behind and
+  no post-cutoff source message or reply exists in that roster. The Owner / MD
+  handoff remains unconfirmed and unaccepted.
+  [Focused receipt](evidence/learn-build01-focused-operating-2026-10-17-1541.json).
 
 - The first **ordinary LIVE 50-request identity job** settled with 38
   enriched cards, 12 recorded review holds, zero delivery failures and one

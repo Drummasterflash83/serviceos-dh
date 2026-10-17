@@ -1,0 +1,84 @@
+{
+  "version": "learn-build01-focused-operating/1",
+  "environment": "LIVE",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "observedWindowUtc": "2026-10-17T15:36:35Z/2026-10-17T15:41:13Z",
+  "method": "Saved noninteractive Supabase login, focused read-only verification scripts and GitHub Actions read-only metadata",
+  "cards": {
+    "script": "scripts/verify/learn-build01-card-stale-readback.mjs",
+    "staleUnprojected": 0,
+    "lastCompletedOrdinaryTenCardJobsChecked": 6,
+    "failedCardsInThoseJobs": 0
+  },
+  "email": {
+    "scripts": [
+      "scripts/verify/learn-build01-email-receipt-progress-readback.mjs",
+      "scripts/verify/learn-build01-email-projection-gap-readback.mjs"
+    ],
+    "eligibleMissingInteractions": 4459,
+    "olderThanDay": 0,
+    "unchangedReceipts": 49650,
+    "latestReceiptAtUtc": "2026-10-17T15:36:08.050709Z"
+  },
+  "graph": {
+    "script": "scripts/verify/learn-build01-graph-gap-readback.mjs",
+    "eligibleMissing": 56,
+    "olderThanDay": 0
+  },
+  "phone": {
+    "script": "scripts/verify/learn-build01-phone-projection-gap-readback.mjs",
+    "retainedCalls": 4676,
+    "withInteraction": 4676,
+    "eligibleMissing": 0
+  },
+  "voicemail": {
+    "script": "scripts/verify/learn-build01-voicemail-coverage-readback.mjs",
+    "savedMessages": 257,
+    "matchingAudioObjects": 257,
+    "missingAudioObjects": 0
+  },
+  "slackArchived160": {
+    "scripts": [
+      "scripts/verify/learn-build01-slack-roster-freshness-readback.mjs",
+      "scripts/verify/learn-build01-slack-160-window-receipts-readback.mjs",
+      "scripts/verify/learn-build01-slack-handoff-readback.mjs"
+    ],
+    "approvedAndEnabledChannelReplySubscriptions": 160,
+    "providerCompletedWindows": 1591,
+    "completedEmptyWindows": 1591,
+    "deadLetterWindows": 0,
+    "savedPostcutoffMessages": 0,
+    "savedPostcutoffReplies": 0,
+    "channelsOverDayBehind": 69,
+    "providerAbsenceCrossCheck": [
+      "docs/operations/evidence/learn-build01-slack-160-provider-postcutoff-2026-10-17.json",
+      "docs/operations/evidence/learn-build01-slack-160-provider-reply-audit-2026-10-17.json"
+    ]
+  },
+  "ownerHandoff": {
+    "script": "scripts/verify/learn-build01-owner-review-handoff-readback.mjs",
+    "linkedOwnerLogin": 1,
+    "confirmedOwnerLinks": 0,
+    "openSourceReviews": 0,
+    "acceptedOwnerSourceReviews": 0
+  },
+  "scheduledBackup": {
+    "source": "GitHub Actions read-only run metadata",
+    "databaseBackupRun": 39029918023,
+    "databaseBackupEvent": "schedule",
+    "databaseBackupConclusion": "success",
+    "databaseBackupCreatedAtUtc": "2026-10-17T11:45:35Z",
+    "missedSuccessMonitorRun": 39034977731,
+    "missedSuccessMonitorEvent": "schedule",
+    "missedSuccessMonitorConclusion": "success",
+    "missedSuccessMonitorCreatedAtUtc": "2026-10-17T13:03:08Z"
+  },
+  "limitations": [
+    "One focused observation window is not proof of a full working day, which Chris waived as an elapsed-time gate.",
+    "The exact archived Slack roster has no real post-cutoff event to prove positive delivery; checked empty windows and prior direct provider absence checks must be distinguished from signed Event success in the separate active 20-channel roster.",
+    "A separate comprehensive working-day script timed out; the focused readbacks above completed and were checked individually.",
+    "Owner / MD signed-in positive handoff and full application credential/provider recovery remain open."
+  ],
+  "privateContentReturned": false,
+  "productionDataWrites": false
+}

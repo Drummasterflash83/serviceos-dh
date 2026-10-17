@@ -1,5 +1,15 @@
 # Build execution tracker
 
+Build 01 focused operating observation (17 October, 15:41 UTC): ordinary
+cards remain current with six recent successful ten-card jobs; Phone and
+voicemail coverage is complete at this point. The eligible Email and Graph
+gaps are 4,459 and 56, neither older than a day. Scheduled backup and monitor
+runs passed. The exact archived 160-channel Slack roster has no dead letters
+and 1,591 empty provider-completed windows, but 69 channels remain over a day
+behind and no real post-cutoff message/reply exists to prove positive capture.
+Owner / MD acceptance and full application recovery remain open.
+[Focused receipt](../../operations/evidence/learn-build01-focused-operating-2026-10-17-1541.json).
+
 Build 01 representative job-review boundary (17 October, 15:35 UTC): Chris
 chose a source-backed representative check rather than reviewing all 255
 retained-source identity cases before sign-off. The other 255 identity cases,
