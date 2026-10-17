@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 16:51 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 17:07 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -45,10 +45,15 @@ inactive until Chris reviews and signs off the business result.
   the other 18 were newer and still awaiting ordinary catch-up. The exact
   v109→v110 code patch and local rollback executable are preserved. A fresh
   file-by-file reconstruction from the approved off-site v107 source base
-  matches all 119 serving LIVE worker files and the unchanged scheduler files;
-  full credential/provider recovery is still separate.
+  matched the v110 worker and unchanged scheduler files. After the v111
+  recommendation release, the same base plus the pinned Git handler now
+  reconstructs all 119 worker and six direct-wrapper source files; both pinned
+  builds match the serving LIVE executables. The unchanged scheduler source
+  still matches separately. This avoids another per-code-change off-site source
+  copy; full credential/provider recovery remains separate.
   [Release and readback](evidence/learn-build01-card-freshness-release-2026-10-17.json) ·
-  [current-source reconstruction](evidence/learn-build01-current-processing-source-overlay-2026-10-17.json).
+  [v110 reconstruction](evidence/learn-build01-current-processing-source-overlay-2026-10-17.json) ·
+  [v111 reconstruction](evidence/learn-build01-current-processing-overlay-2026-10-17-1707.json).
   At 16:24 UTC ordinary LIVE work had projected **4,214/4,217** active cards;
   the three new cards awaiting projection were all younger than five minutes.
   The Email receipt ledger continued advancing, today's hosted backup and

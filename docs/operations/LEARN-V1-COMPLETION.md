@@ -26,9 +26,13 @@ business decision yet.
   marker, removed its six synthetic cards and rejected an unsigned request.
   LIVE `platform-worker` v111 and `recommendation-sync` v47 now carry the
   same tested handler; their compiled bytes and all unrelated function
-  inventory were verified after release. The remote TEST checkpoint is
-  `71fc1a0f`. No provider request or manual production-data write was made.
+  inventory were verified after release. The approved off-site v107 source
+  plus pinned Git patches reconstructs both current LIVE source closures and
+  matches the serving executables; no new exact source-copy approval was
+  required for this code change. The remote TEST checkpoint includes the
+  release receipt. No provider request or manual production-data write was made.
   [Sanitised release receipt](evidence/learn-build01-recommendation-sweep-release-2026-10-17.json).
+  [Current-source reconstruction](evidence/learn-build01-current-processing-overlay-2026-10-17-1707.json).
 
 ### Needs finishing
 

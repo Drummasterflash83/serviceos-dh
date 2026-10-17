@@ -1,0 +1,34 @@
+{
+  "version": "learn-build01-current-processing-overlay/1",
+  "observedAtUtc": "2026-10-17T17:06:57.512Z",
+  "liveProject": "tgbnakbxwcqjeimygroz",
+  "base": "approved age-encrypted off-site Edge source v107",
+  "gitRecommendationHandlerCommit": "71fc1a0f78bf8403f2dcad4f8ea273b1cbb7251f",
+  "gitRecommendationHandlerSha256": "715e062b3770954144d9a95ae1d20b9cadc8ae6cc019b0daa95d3c32eb769efc",
+  "platformWorker": {
+    "version": 111,
+    "sourceFilesReconstructed": 119,
+    "changedFromOffsiteBase": 4,
+    "closureSha256": "5a74e8aaa3583d08e9b793630bca4095e64053de8fad2209b12949f3c7986653",
+    "pinnedBuildMatchesServingExecutable": true
+  },
+  "recommendationSync": {
+    "version": 47,
+    "sourceFilesReconstructed": 6,
+    "changedFromOffsiteBase": 1,
+    "closureSha256": "09c03df937f61eedd169615584d474fe3f3c6ffe047d66affd5ff80925b809e4",
+    "pinnedBuildMatchesServingExecutable": true
+  },
+  "identityScheduler": {
+    "version": 51,
+    "sourceFilesReconstructed": 5,
+    "changedFromOffsiteBase": 1,
+    "downloadedSourceMatched": true,
+    "executableRebuiltInThisCheck": false
+  },
+  "newOffsiteSourceObjectNeededForThisCodeChange": false,
+  "credentialRecoveryProven": false,
+  "providerRestartProven": false,
+  "productionDataWrites": false,
+  "secretsOrCustomerContentReturned": false
+}
