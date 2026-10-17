@@ -9,6 +9,9 @@ exporting another full source package or private manifest. The code-only
 checkpoint is verified at remote TEST head `1b3c94cf14ab85ad19218252cdedae69ddc6b8a4`.
 Credential decrypt and provider restart remain separate unverified gates.
 [Source overlay receipt](../../operations/evidence/learn-build01-controlplane-v38-overlay-2026-10-17.json).
+The reconstructed v38 module additionally bundled and returned a synthetic
+OPTIONS 200 in an isolated no-network Edge runtime; its container was removed.
+[Startup receipt](../../operations/evidence/learn-build01-controlplane-v38-offline-startup-2026-10-17.json).
 
 Build 01 active Slack source-to-interaction proof (17 October, 12:38 UTC):
 within the separate approved 20 current public channels, two real signed

@@ -1,0 +1,17 @@
+{
+  "bundleSha256": "967bd53629075ec9f6a2d21c3c3229fb33d9032a7351592daf07049231e3d880",
+  "contract": "learn-build01-current-controlplane-offline-startup/1",
+  "currentControlPlaneVersion": 38,
+  "isolatedContainerRemoved": true,
+  "limitation": "Module startup only; authenticated recovery, runtime credentials and provider restart remain unproven.",
+  "networkDuringStartup": "none",
+  "recordedAt": "2026-10-17T12:50:55Z",
+  "offlineStartupVerified": true,
+  "productionDataWrites": false,
+  "project": "tgbnakbxwcqjeimygroz",
+  "providerRequests": 0,
+  "realCredentialsMounted": false,
+  "reconstructedSourceFilesVerified": 24,
+  "source": "pinned v107 archive plus reviewed v38 overlay",
+  "syntheticOptionsStatus": 200
+}

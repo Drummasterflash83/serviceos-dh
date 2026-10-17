@@ -29,6 +29,10 @@ business decision yet.
   Control Plane source files with the current LIVE SHA-256 for each changed file
   and the archived hashes for the other 21. The private archive manifest and
   credentials are excluded from Git. [Sanitised receipt](evidence/learn-build01-controlplane-v38-overlay-2026-10-17.json).
+- The reconstructed current Control Plane also bundled and answered a synthetic
+  HTTP OPTIONS request (200) in an isolated Edge container with no network or
+  real credentials. Its bundle SHA-256 is pinned and the container was removed.
+  [Startup receipt](evidence/learn-build01-controlplane-v38-offline-startup-2026-10-17.json).
 
 ### Needs finishing
 

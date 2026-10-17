@@ -16,6 +16,11 @@ inactive until Chris reviews and signs off the business result.
   retain their archived hashes. This avoids repeating a whole-source backup
   for a small release. It does not recover credentials or prove a provider
   restart. [Source overlay receipt](evidence/learn-build01-controlplane-v38-overlay-2026-10-17.json).
+- That reconstructed v38 source also bundled and started in an isolated Edge
+  runtime, answering synthetic OPTIONS with HTTP 200; no network or real
+  credential was available at startup. This tests the current module's boot
+  path, while authenticated recovery and real-provider resumption remain open.
+  [Offline startup receipt](evidence/learn-build01-controlplane-v38-offline-startup-2026-10-17.json).
 
 - The ordinary Commusoft worker completed **872/872** approved work-address
   contact targets, with the final job succeeded and checkpoint marked complete.
