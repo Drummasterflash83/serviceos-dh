@@ -85,6 +85,10 @@ inactive until Chris reviews and signs off the business result.
   separate checks. One recovery-only 1Password read ended unconfirmed; it did
   not read the key and will not be repeated in a prompt loop.
   [Off-site receipt](evidence/learn-build01-edge-credential-offsite-2026-10-17.json).
+  A later no-key preflight rechecked that downloaded ciphertext, pinned age
+  binary, recipient and 1Password binding without a fingerprint; the deliberate
+  decrypt can be grouped with the separate five-setting recovery package.
+  [Preflight](evidence/learn-build01-edge-credential-recovery-preflight-2026-10-17.json).
 - All **62** configured LIVE Edge names now have an explicit disjoint recovery
   classification. Fifty-six map to Vault, the new package, replacement-project
   rebinding or reviewed non-secret controls. Five other configured provider

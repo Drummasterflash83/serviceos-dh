@@ -1,5 +1,12 @@
 # Build execution tracker
 
+Build 01 recovery-read preflight (17 October, 13:41 UTC): the independent
+eleven-setting off-site ciphertext, pinned age binary, public recipient and
+private 1Password binding still validate. No key read or fingerprint was
+needed. Its later decrypt can be grouped with the separately reviewed
+five-setting package, but full application/provider restart remains open.
+[Preflight](../../operations/evidence/learn-build01-edge-credential-recovery-preflight-2026-10-17.json).
+
 Build 01 Email current-versus-history check (17 October, 13:40 UTC): both
 aliases are ready, two ordinary safe claims occurred, and delegation holds
 are zero. The 5,610 eligible retained messages without interactions include

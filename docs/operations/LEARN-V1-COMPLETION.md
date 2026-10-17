@@ -17,6 +17,27 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 13:41 UTC — existing Edge credential restore inputs preflighted without Touch ID.**
+
+### Working and verified
+
+- The independently downloaded eleven-setting age ciphertext still matches
+  its pinned 5,094 bytes and SHA-256. The age binary, public recipient and
+  private escrow binding passed a no-key preflight; no 1Password request,
+  credential value or provider call was made.
+  [Preflight receipt](evidence/learn-build01-edge-credential-recovery-preflight-2026-10-17.json).
+
+### Needs finishing
+
+- Decrypt and independently verify the package only at the later deliberate
+  recovery check. The separate five-setting copy and controlled provider
+  restart remain open; this preflight is not an application restore.
+
+### Blocked externally
+
+- No fingerprint is needed for this preparation. The recovery-only key read
+  can be grouped with the additional package once its exact copy exists.
+
 **17 October, 13:40 UTC — Email growth is historical backfill, with current intake operating.**
 
 ### Working and verified

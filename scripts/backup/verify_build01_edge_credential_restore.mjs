@@ -29,7 +29,8 @@ function privateBytes(path, maxBytes) {
   return readFileSync(path);
 }
 async function main() {
-  if (process.argv.slice(2).join(" ") !== "--approved-exact-copy")
+  const mode = process.argv.slice(2).join(" ");
+  if (!["--approved-exact-copy", "--preflight-only"].includes(mode))
     throw Error("recovery_exact_copy_required");
   const encrypted = privateBytes(downloadedPath, 2 * 1024 * 1024);
   if (encrypted.length !== expected.bytes || sha(encrypted) !== expected.sha256 ||
@@ -37,10 +38,20 @@ async function main() {
       sha(readFileSync(agePath)) !== ageSha256)
     throw Error("recovery_ciphertext_changed");
   const binding = JSON.parse(privateBytes(bindingPath, 4096).toString("utf8"));
-  const material = await createRecoveryEscrow(binding).read();
   const publicRecipient = JSON.parse(readFileSync(
     "infrastructure/database-backup/public-recipient.json", "utf8"));
-  if (publicRecipient.project !== project || material.ageRecipient !== publicRecipient.recipient)
+  if (publicRecipient.project !== project ||
+      !/^age1[0-9a-z]{58}$/.test(publicRecipient.recipient ?? ""))
+    throw Error("recovery_recipient_changed");
+  const escrow = createRecoveryEscrow(binding);
+  if (mode === "--preflight-only")
+    return { state: "edge_credential_recovery_inputs_ready", project,
+      encryptedBytes: expected.bytes, encryptedSha256: expected.sha256,
+      escrowBindingValidated: true, recoveryKeyRead: false,
+      credentialValuesReturned: false, providerRequests: 0,
+      productionDataWrites: false, observedAt: new Date().toISOString() };
+  const material = await escrow.read();
+  if (material.ageRecipient !== publicRecipient.recipient)
     throw Error("recovery_recipient_changed");
   const input = Buffer.from(material.ageIdentity + "\n");
   material.ageIdentity = "";
