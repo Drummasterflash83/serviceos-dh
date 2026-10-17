@@ -86,3 +86,20 @@ export async function loadSourceJobPage(db: ReviewClient, scope: SourceJobScope)
   if (error) throw failure();
   return readSourceJobPage(data, scope);
 }
+
+/** Creates an audited OpenFolk review task for this exact retained source version.
+ * Assignment is a separate, authorised Command Centre work transition. */
+export async function createSourceJobReviewAction(db: ReviewClient, input: {
+  tenant: string; connection: string; external: string; version: string; reason: string;
+}): Promise<{ id: string; created: boolean }> {
+  if (!uuid(input.tenant) || !uuid(input.connection) || !uuid(input.version) ||
+      !reference(input.external) || !input.reason.trim() || input.reason.length > 1000) throw failure();
+  const { data, error } = await db.rpc("learn_commusoft_create_job_review_action", {
+    p_tenant: input.tenant, p_connection: input.connection, p_external_id: input.external,
+    p_version: input.version, p_reason: input.reason.trim(),
+  });
+  const result = data as Record<string, unknown> | null;
+  if (error || result === null || !uuid(result.id) || typeof result.created !== "boolean" ||
+      !uuid(result.source_version_id)) throw Error("The review task could not be verified. Refresh the source job and retry.");
+  return { id: result.id, created: result.created };
+}
