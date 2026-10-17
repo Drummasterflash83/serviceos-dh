@@ -1,5 +1,11 @@
 # Build execution tracker
 
+Latest Build 01 protected-credential preparation (17 October, 10:20 UTC): the
+one-time Edge credential package stage passed a pinned-age encrypt/decrypt
+roundtrip with synthetic values, verified digest gating and removed test
+ciphertext. Real values and off-site copy remain untouched pending the existing
+decision. [Receipt](../../operations/evidence/learn-build01-edge-credential-package-synthetic-2026-10-17.json).
+
 Latest Build 01 credential-use checkpoint (17 October, 10:16 UTC): all 103
 current v107 function closures and 728 files were hash-checked. Fourteen of
 16 credential candidates have literal lookups; two Receptionist secret names

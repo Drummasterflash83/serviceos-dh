@@ -8,6 +8,12 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- The one-time Edge credential packager passed an isolated age
+  encrypt/decrypt roundtrip with two **synthetic** values. It checks selected
+  values against current LIVE hashes before creating a real ciphertext, but
+  that mode has not been used and no provider key has been read or copied.
+  [Synthetic receipt](evidence/learn-build01-edge-credential-package-synthetic-2026-10-17.json).
+
 - An exact v107 source-use audit found the old global Workspace subject has no
   current literal environment read; the live Email path uses the backed-up
   tenant connection row. The Google OAuth client ID remains active, the

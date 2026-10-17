@@ -106,6 +106,17 @@ This first copy would be manual and point-in-time. Unattended updates require
 an independently scoped credential source and a rotation/alert design; do not
 silently turn an unlocked desktop or repeated Touch ID into the daily runner.
 
+The local package stage is now implemented in
+`scripts/backup/stage_build01_edge_secret_package.mjs`. Its real mode accepts a
+reviewed name/value/source-reference set only on standard input, permits only
+the 16 named candidates, compares each value to the active LIVE Edge digest,
+and age-encrypts directly from memory to a create-only mode-0600 file. It does
+not upload or decrypt a real package. A synthetic two-credential roundtrip
+passed with the pinned age binary and an ephemeral test identity; the temporary
+ciphertext was removed. [Synthetic rehearsal](evidence/learn-build01-edge-credential-package-synthetic-2026-10-17.json).
+The pending decision is still required before the real mode reads any provider
+credential or an off-site copy is made.
+
 ## Decision and risk
 
 The earlier approvals covered the exact database backup and exact Edge **source**

@@ -17,6 +17,29 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 10:20 UTC — encrypted credential stage rehearsed with synthetic values.**
+
+### Working and verified
+
+- The reviewed one-time package stage now checks selected names against the
+  active Edge digest inventory and encrypts directly from memory to a
+  create-only private file. A two-value synthetic age encrypt/decrypt roundtrip
+  passed and removed its test ciphertext. No real provider credential, recovery
+  key or production data was read or copied.
+  [Synthetic receipt](evidence/learn-build01-edge-credential-package-synthetic-2026-10-17.json).
+
+### Needs finishing
+
+- The real package mode and separate Restore-identity readback have not been
+  exercised. They remain distinct from the already verified database and v107
+  source copies. Actual recovered provider binding and capture restart remain
+  open.
+
+### Blocked externally
+
+- The one-time protected credential-source and off-site-copy decision remains
+  pending. No new approval request is made by this synthetic rehearsal.
+
 **17 October, 10:16 UTC — current-source credential use separates active and legacy settings.**
 
 ### Working and verified
