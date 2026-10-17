@@ -17,6 +17,35 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 10:07 UTC — non-secret runtime controls reconstructed by active hash.**
+
+### Working and verified
+
+- Eighteen LIVE controls match reviewed release values by SHA-256, and three
+  Workspace controls match a tenant row last updated before today's scheduled
+  database snapshot. Alongside the 15 Vault matches, this reduces the amount
+  of runtime configuration that needs a new protected source. No plaintext
+  credential was returned or saved. [Read-only receipt](evidence/learn-build01-nonsecret-runtime-reconstruction-2026-10-17.json).
+- The ordinary card sweep still completed ten cards per minute with no recent
+  operational failures at 10:05. The exact 160-channel Slack roster had 1,428
+  provider-completed recurring windows, all empty, across all 160 channels and
+  **zero current dead-letter windows** at 10:03. No post-cutoff source has
+  appeared, so positive capture in that roster remains unproven.
+
+### Needs finishing
+
+- Resolve the three unmatched non-secret Google identifiers/subjects and the
+  required subset of 16 credential/webhook candidates. The seven Supabase
+  project bindings must be reissued and downstream clients rebound in a
+  replacement project. Observe the current card sweep finish and a genuine
+  source event in the exact Slack roster if one occurs.
+
+### Blocked externally
+
+- The earlier database and source-copy permissions did not authorise a new
+  protected credential copy; its specific decision is pending. This does not
+  pause the independent card, Slack or source checks.
+
 **17 October, 09:57 UTC — active Edge/Vault values matched by digest; independent runtime settings remain.**
 
 ### Working and verified

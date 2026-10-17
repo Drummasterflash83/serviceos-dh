@@ -1,5 +1,14 @@
 # Build execution tracker
 
+Latest Build 01 non-secret recovery checkpoint (17 October, 10:07 UTC): 18
+configured LIVE controls match reviewed release values and three Workspace
+controls match pre-backup tenant metadata, all by digest without returning
+plaintext. Three non-secret Google settings remain unproven; 16
+credential/webhook candidates still need a protected source or accepted manual
+re-entry. The exact 160-channel roster had zero current dead letters and 1,428
+completed empty windows at 10:03, so a real event in that roster is still
+unobserved. [Recovery receipt](../../operations/evidence/learn-build01-nonsecret-runtime-reconstruction-2026-10-17.json).
+
 Latest Build 01 runtime-recovery checkpoint (17 October, 09:57 UTC): all 15
 LIVE Edge settings also stored in database Vault digest-match the active
 configuration, and no Vault row changed after the scheduled backup snapshot.

@@ -8,6 +8,13 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- A 10:07 digest-only reconstruction matched 18 non-secret LIVE Edge controls
+  to reviewed release values and three Workspace controls to a pre-snapshot
+  tenant row. This narrows the credential recovery package without reading or
+  copying provider keys. Seven Supabase project bindings must be reissued on
+  replacement; three Google controls and the needed credential subset remain
+  to verify. [Receipt](evidence/learn-build01-nonsecret-runtime-reconstruction-2026-10-17.json).
+
 - A digest-only 09:57 readback found **62** configured LIVE Edge entries and
   **20** recoverable Vault entries. All **15** names shared by Edge and Vault
   matched active-value hashes; no Vault row changed after the scheduled backup

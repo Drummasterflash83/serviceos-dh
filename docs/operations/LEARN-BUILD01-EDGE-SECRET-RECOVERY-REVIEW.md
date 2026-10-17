@@ -34,12 +34,20 @@ bindings**, **24 provider identifiers, public URLs, models, feature flags and
 capture controls**, and **16 credential/webhook candidates**. These are
 classification counts, not restored-value counts. The seven project bindings
 must be obtained from a replacement project and reconciled with frontend and
-service configuration. The 24 controls need an explicit versioned manifest and
-value check before restart; their current values are not recoverable from the
-management API's hashes. The 16 candidates include optional marketing and
+service configuration. A subsequent digest-only reconstruction matched **18
+of the 24 controls** to values already present in reviewed release material and
+**three more** to a Drummonds Workspace row whose `updated_at` precedes the
+scheduled database snapshot. This includes the Workspace service-account
+email, domain and project ID inferred from that email. The configured global
+Workspace client ID and impersonation subject did **not** match the saved
+tenant row; the separate Google OAuth client ID is also unproven. These three
+must remain explicit in the restore inventory until their source and current
+use are verified. The 16 credential candidates include optional marketing and
 receptionist integrations as well as Build 01 routes. Only the credentials
 actually needed to restart approved Build 01 sources should enter the proposed
 package. A separate isolated startup check must establish that subset.
+
+[Non-secret reconstruction evidence](evidence/learn-build01-nonsecret-runtime-reconstruction-2026-10-17.json).
 
 This is also a way around per-release approvals: code/source packages and
 credential material have different change cycles. Keep the v107 source copy as
@@ -52,11 +60,12 @@ would be needed.
 ## Proposed smallest recovery path
 
 1. Confirm which of the 16 credential/webhook candidates the actual Build 01
-   functions require. Reissue the seven project bindings at restore, record and
-   verify the 24 control values in a versioned manifest, and include only
-   credentials needed to restart the approved Phone, Email, Commusoft, Slack
-   and LEARN routes. Record names, source item references and active-value
-   digest matches without disclosing values in a report.
+   functions require. Reissue the seven project bindings at restore, use the
+   21 digest-matched controls from reviewed material and the database snapshot,
+   resolve the remaining three controls, and include only credentials needed
+   to restart the approved Phone, Email, Commusoft, Slack and LEARN routes.
+   Record names, source item references and active-value digest matches
+   without disclosing values in a report.
 2. Make one controlled read of the remaining credentials from their existing
    authorised source. Stage them only in memory, age-encrypt to the existing
    public recipient in `infrastructure/database-backup/public-recipient.json`,
