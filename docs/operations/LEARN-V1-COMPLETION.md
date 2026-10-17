@@ -17,6 +17,29 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 06:57 UTC — source-backed job review views released to LIVE.**
+
+### Working and verified
+
+- Production `main` fast-forwarded to the narrow one-file frontend commit
+  `77a73802`; both Vercel Git projects report success. All four existing LIVE
+  aliases return the same login asset set (the apex redirects to `www`). The
+  served lazy job-view asset contains all three expected review-view labels
+  and has the same SHA-256 on the three direct aliases. The backend filters
+  were already installed and verified on TEST/LIVE.
+  [Release receipt](evidence/learn-build01-job-source-attention-2026-10-17.json).
+
+### Needs finishing
+
+- The protected, signed-in LIVE Drummonds job view still needs a direct check
+  of a recorded hold and unlinked source job. Serving the exact frontend asset
+  is not proof of that signed-in journey. Named-person handoff, source
+  freshness and a publishable job progress/completion score remain unproven.
+
+### Blocked externally
+
+- No new release permission or team test message is needed for this check.
+
 **17 October, 06:50 UTC — source-backed job attention views prepared.**
 
 ### Working and verified

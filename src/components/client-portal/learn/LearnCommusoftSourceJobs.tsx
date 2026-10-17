@@ -56,9 +56,9 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob 
       <p>Browse the work already captured, including jobs whose customer identity is still unresolved.</p></div>
       <button className="cp-secondary" onClick={() => { setHidden(false); setCursors([null]); setRevision(n => n + 1); }}>Refresh captured jobs</button></div>
     <div className="flex flex-wrap gap-2" aria-label="Captured job review views">
-      <button className="cp-secondary" aria-pressed={view === "all"} onClick={() => { setView("all"); setCursors([null]); }}>All captured jobs</button>
-      <button className="cp-secondary" aria-pressed={view === "holds"} onClick={() => { setView("holds"); setOpenOnly(true); setCursors([null]); }}>Recorded on hold</button>
-      <button className="cp-secondary" aria-pressed={view === "review"} onClick={() => { setView("review"); setOpenOnly(true); setCursors([null]); }}>Needs source review</button>
+      <button className="cp-secondary" aria-pressed={view === "all"} onClick={() => { setView("all"); setDraft(""); setQuery(""); setCursors([null]); }}>All captured jobs</button>
+      <button className="cp-secondary" aria-pressed={view === "holds"} onClick={() => { setView("holds"); setDraft(""); setQuery(""); setOpenOnly(true); setCursors([null]); }}>Recorded on hold</button>
+      <button className="cp-secondary" aria-pressed={view === "review"} onClick={() => { setView("review"); setDraft(""); setQuery(""); setOpenOnly(true); setCursors([null]); }}>Needs source review</button>
     </div>
     <p className="text-sm">These views prioritise saved source evidence for operator review. They do not assign a team member or confirm the provider’s current job status.</p>
     <form className="flex flex-wrap items-end gap-3" onSubmit={e => { e.preventDefault(); setCursors([null]); setQuery(draft.trim()); setView("all"); }}>

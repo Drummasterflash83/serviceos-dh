@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 06:46 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 06:57 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -59,6 +59,11 @@ inactive until Chris reviews and signs off the business result.
 - The ordinary stable-cutoff customer-card sweep finished with a successful
   zero-card terminal job at 06:11, and a 06:12 LIVE readback found **zero stale
   unprojected cards**. [Sweep receipt](evidence/learn-build01-card-ordinary-sweep-2026-10-17.json).
+- Source-backed review filters for recorded holds and unresolved open jobs
+  passed TEST/LIVE rehearsals and are installed. The narrow frontend release
+  `77a73802` passed both Vercel production builds; all four LIVE aliases serve
+  its job-view asset. The signed-in job journey remains unchecked.
+  [Release receipt](evidence/learn-build01-job-source-attention-2026-10-17.json).
 
 ## Needs finishing
 
@@ -77,8 +82,9 @@ inactive until Chris reviews and signs off the business result.
 - **Jobs and attention:** Commusoft retained 12,656 job identities and 295
   recorded open/pending/on-hold jobs. Only ten of those had reviewed job-card
   links; 285 did not. At 22:31, 272 of the 295 had no observation within a day.
-  The captured-source view shows them honestly, but named-person handoff and
-  a representative progress/completion score are not established.
+  The released captured-source view now has explicit hold and source-review
+  filters; a signed-in LIVE check of example rows, named-person handoff and a
+  representative progress/completion score are not established.
   [Policy draft](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md).
 - **Email review and history:** the 55 historical drafts and 12 source-missing
   links require separate provenance treatment. A draft must not be represented

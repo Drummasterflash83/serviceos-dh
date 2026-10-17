@@ -1,6 +1,6 @@
 {
   "version": "learn-build01-job-source-attention/1",
-  "observedAtUtc": "2026-10-17T06:50:48Z",
+  "observedAtUtc": "2026-10-17T06:57:13Z",
   "environment": "LIVE",
   "tenantId": "00000000-0000-0000-0000-000000000001",
   "migration": "supabase/migrations/20261104223200_learn_commusoft_source_attention_filters.sql",
@@ -11,7 +11,22 @@
   "liveRollbackRehearsalPassed": true,
   "frontendTypecheckPassed": true,
   "frontendLocalBuildPassed": true,
-  "frontendLiveReleaseVerified": false,
+  "frontendLiveReleaseVerified": true,
+  "frontendRelease": {
+    "mainCommit": "77a73802a581798441acafd19e2d1fe93ae0a10d",
+    "productionAndTestVercelGitStatuses": "success",
+    "publicLiveAliases": [
+      "app.openfolk.ai",
+      "openfolk.ai (redirects to www.openfolk.ai)",
+      "www.openfolk.ai",
+      "serviceos-dh.vercel.app"
+    ],
+    "allAliasLoginHttp": 200,
+    "servedJobViewAsset": "LearnCommusoftSourceJobs-C-zY0_ZX.js",
+    "servedJobViewAssetSha256": "84fd0cfc29534581b6f8ce8964e6ad3ecc3971cc4b767b2cd6798bc9cbfd77",
+    "servedAssetContainsAllThreeReviewViewLabels": true,
+    "signedInLiveViewVerified": false
+  },
   "retainedSourceCounts": {
     "jobIdentities": 12656,
     "recordedOpenJobs": 295,
