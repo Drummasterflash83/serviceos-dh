@@ -17,6 +17,34 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 06:42 UTC — 13 exact machine-held Email links safely superseded.**
+
+### Working and verified
+
+- The remaining 13 source-equivalent links had only current-revision,
+  machine-generated `legacy_projection_review` holds and no operator review.
+  A second baseline-guarded migration allowed only that exact reason to be
+  superseded by an immutable adoption receipt. TEST synthetic tests excluded a
+  different review reason; LIVE schema and first-page data rehearsals rolled
+  back before the two-page bounded run adopted all 13.
+- Independent LIVE readback found **19,061** adoption receipts and preserved
+  historical connector labels, with **zero current Email projection review
+  holds**. Exactly **67** legacy links remain unmodified: 55 historical draft
+  classification differences and 12 without retained source rows.
+  [Hold-resolution evidence](evidence/learn-build01-email-legacy-hold-resolution-2026-10-17.json).
+
+### Needs finishing
+
+- Keep the 55 drafts out of verified sent-mail conclusions, and review their
+  existing derived classification and the 12 source-missing interactions.
+  Continue the ordinary changed-source Email backlog. This does not remove
+  the Slack, job-attention and full recovery gates.
+
+### Blocked externally
+
+- No user action was needed for the 13 exact machine-generated holds. Chris's
+  final business acceptance remains pending wider technical evidence.
+
 **17 October, 06:38 UTC — source-equivalent legacy Email links reconciled without rewriting their history.**
 
 ### Working and verified

@@ -1,0 +1,35 @@
+{
+  "version": "learn-build01-email-legacy-hold-resolution/1",
+  "observedAtUtc": "2026-10-17T06:42:35Z",
+  "environment": "LIVE",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "migration": "supabase/migrations/20261104223100_learn_email_equivalent_legacy_hold_adoption.sql",
+  "migrationSha256": "f2a68c3b6d9d70feb2dd6abb76ced106a56f7ad2315aa21844277eef3f385be4",
+  "testAndRehearsal": {
+    "testSyntheticRollbackPassed": true,
+    "differentReviewReasonSkipped": true,
+    "testInstalledSyntheticRollbackPassed": true,
+    "liveSchemaRollbackPassed": true,
+    "liveFirstPageDataRollbackChecked": 50,
+    "liveFirstPageWouldAdopt": 8,
+    "liveFirstPageRolledBack": true,
+    "canonicalFieldsPreserved": true
+  },
+  "liveBoundedRun": {
+    "pages": 2,
+    "checked": 80,
+    "newlyAdoptedAutomatedLegacyHolds": 13,
+    "priorImmutableHoldsPreserved": true
+  },
+  "independentReadback": {
+    "totalLegacyAdoptionReceipts": 19061,
+    "preservedHistoricalGoogleWorkspaceLabels": 18933,
+    "preservedExistingEmailLabels": 128,
+    "remainingLegacyLinks": 67,
+    "historicalDraftClassificationDifferences": 55,
+    "missingRetainedSource": 12,
+    "currentEmailProjectionReviewCount": 0
+  },
+  "sourceIdsOrMessageContentReturned": false,
+  "remainingWork": "Retain and review the 55 historical draft classifications and 12 source-missing links; do not represent drafts as verified sent mail. Continue ordinary Email changed-source backlog and wider Build 01 acceptance."
+}

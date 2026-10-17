@@ -5,17 +5,21 @@ import { readFileSync } from 'node:fs';
 import { savedCliToken, TEST_PROJECT } from './learn-test-readiness.mjs';
 
 const mode = process.argv.slice(2).join(' ');
-if (!['--test-rollback-only', '--test-installed-rollback-only'].includes(mode) ||
+if (!['--test-rollback-only', '--test-installed-rollback-only',
+      '--test-held-rollback-only', '--test-held-installed-rollback-only'].includes(mode) ||
     process.env.LEARN_TEST_ALLOW_PROJECT_REF !== TEST_PROJECT)
   throw Error('Exact TEST rollback-only mode required');
 const tenant = '00000000-0000-0000-0000-000000000001';
 const sourceIds = Array.from({ length: 3 }, () => randomUUID());
 const interactionIds = Array.from({ length: 3 }, () =>
   `00000000-0000-4000-8000-${randomUUID().replaceAll('-', '').slice(0, 12)}`).sort();
-const migration = readFileSync(new URL('../../supabase/migrations/20261104223000_learn_email_legacy_equivalent_adoption.sql', import.meta.url), 'utf8');
-assert(migration.startsWith('-- One-time Drummonds adoption'));
+const heldMode = mode.includes('held');
+const migration = readFileSync(new URL(heldMode ?
+  '../../supabase/migrations/20261104223100_learn_email_equivalent_legacy_hold_adoption.sql' :
+  '../../supabase/migrations/20261104223000_learn_email_legacy_equivalent_adoption.sql', import.meta.url), 'utf8');
+assert(migration.startsWith(heldMode ? '-- Supersede only automated' : '-- One-time Drummonds adoption'));
 assert(/\nbegin;\n/.test(migration) && /\ncommit;\n$/.test(migration));
-const body = mode === '--test-rollback-only' ?
+const body = mode.endsWith('-rollback-only') && !mode.includes('installed') ?
   migration.replace(/\nbegin;\n/, '\n').replace(/\ncommit;\n$/, '\n') : '';
 const values = sourceIds.map((id, n) =>
   `('${id}'::uuid,'${tenant}'::uuid,'gmail','synthetic-${id}',now()-interval '1 day',now()-interval '1 day',
@@ -39,8 +43,17 @@ select a.interaction_id,'${tenant}'::uuid,a.connector,'email','email_messages',m
  m.from_email,m.from_name,array(select jsonb_array_elements_text(m.to_emails)),
  array(select jsonb_array_elements_text(m.cc_emails)),m.provider_thread_id,'ready','{}'::jsonb
 from a join public.email_messages m on m.id=a.source_id;
-update public.interactions set subject='Different manual subject'
- where id='${interactionIds[1]}'::uuid;
+${heldMode ? `insert into public.learn_interaction_projection_receipts
+ (request_id,tenant_id,source_kind,source_id,source_revision,receipt)
+ select gen_random_uuid(),'${tenant}'::uuid,'email',m.id,
+  public.learn_projection_revision(public.learn_email_source_fields(m),''),
+  jsonb_build_object('state','review_required','reason',
+   case when m.id='${sourceIds[0]}'::uuid then 'legacy_projection_review'
+    else 'canonical_fields_changed' end)
+ from public.email_messages m where m.id=any(array[
+  '${sourceIds[0]}'::uuid,'${sourceIds[1]}'::uuid]);` :
+  `update public.interactions set subject='Different manual subject'
+ where id='${interactionIds[1]}'::uuid;`}
 do $test$ declare result jsonb; same jsonb; changed jsonb; revision text;
 begin
  result:=public.learn_email_adopt_equivalent_legacy('${tenant}'::uuid,null,50);
@@ -52,10 +65,10 @@ begin
  then raise exception 'different_interaction_adopted';end if;
  if (select source_connector_id from public.interactions where id='${interactionIds[0]}'::uuid)<>'google-workspace'
  then raise exception 'legacy_connector_label_changed';end if;
- if (select subject from public.interactions where id='${interactionIds[1]}'::uuid)<>'Different manual subject'
+ if (select subject from public.interactions where id='${interactionIds[1]}'::uuid)<>'${heldMode ? 'Synthetic Email 1' : 'Different manual subject'}'
  then raise exception 'manual_subject_changed';end if;
  if (select count(*) from public.learn_interaction_projection_receipts
-  where source_id=any(array['${sourceIds[0]}'::uuid,'${sourceIds[1]}'::uuid,'${sourceIds[2]}'::uuid]))<>2
+  where source_id=any(array['${sourceIds[0]}'::uuid,'${sourceIds[1]}'::uuid,'${sourceIds[2]}'::uuid]))<>${heldMode ? 4 : 2}
  then raise exception 'adoption_receipt_count_changed';end if;
  select public.learn_projection_revision(public.learn_email_source_fields(m),'') into revision
   from public.email_messages m where id='${sourceIds[0]}'::uuid;
@@ -74,7 +87,8 @@ begin
  if (select source_connector_id from public.interactions where id='${interactionIds[0]}'::uuid)<>'google-workspace'
  then raise exception 'changed_alias_overwritten';end if;
 end $test$;
-select jsonb_build_object('synthetic_adopted',2,'mismatch_skipped',true,
+select jsonb_build_object('synthetic_adopted',2,
+ '${heldMode ? 'other_hold_skipped' : 'mismatch_skipped'}',true,
  'same_revision_unchanged',true,'future_alias_change_held',true,
  'rollback_only',true) result;
 rollback;`;

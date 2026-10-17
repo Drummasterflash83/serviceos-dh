@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 06:38 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 06:42 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -19,11 +19,15 @@ inactive until Chris reviews and signs off the business result.
 - A separate read-only audit classified all **19,128** legacy linked Email
   interactions. The guarded owner-only TEST/LIVE adoption then preserved all
   historical connector labels and canonical fields while assigning immutable
-  source receipts to **19,048** exact equivalents. Eighty remain untouched:
-  55 historical draft-type differences, 12 missing sources and 13 existing
-  review holds. Most legacy links lie inside the approved three-year horizon.
+  source receipts to **19,048** exact equivalents. A separate guarded pass
+  superseded 13 current, machine-generated legacy holds after TEST/LIVE
+  rollback rehearsals. **19,061** are adopted; 67 remain untouched: 55
+  historical draft-type differences and 12 missing sources. Current Email
+  projection review holds are zero. Most legacy links lie inside the approved
+  three-year horizon.
   [Classification](evidence/learn-build01-email-legacy-alias-classification-2026-10-17.json),
-  [adoption readback](evidence/learn-build01-email-legacy-adoption-2026-10-17.json).
+  [adoption readback](evidence/learn-build01-email-legacy-adoption-2026-10-17.json),
+  [hold-resolution readback](evidence/learn-build01-email-legacy-hold-resolution-2026-10-17.json).
 - The 160 approved public Slack channels have enabled channel/reply
   subscriptions and completed historical campaign handoff. A separate approved
   20-channel public roster supplied real signed Events, saved source and an
@@ -73,9 +77,10 @@ inactive until Chris reviews and signs off the business result.
   The captured-source view shows them honestly, but named-person handoff and
   a representative progress/completion score are not established.
   [Policy draft](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md).
-- **Email review and history:** the 55 historical drafts, 12 source-missing
-  links and 13 previously held equivalent links require separate provenance
-  review. The changed-source update lane is still running and has not drained.
+- **Email review and history:** the 55 historical drafts and 12 source-missing
+  links require separate provenance treatment. A draft must not be represented
+  as verified sent mail. The changed-source update lane is still running and
+  has not drained.
 - **Recovery:** The serving v107 Edge source has a fresh encrypted off-site
   copy and separate readback, and all 103 functions rebuild from locally staged
   source. Only one current route has served a recovered authenticated tenant

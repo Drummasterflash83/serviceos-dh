@@ -24,6 +24,10 @@ async function query(sql) {
   return response.json();
 }
 if (mode === '--rollback-first-page') {
+  const baseline = await query(`begin read only;select count(*)::int adopted_receipts
+    from public.learn_interaction_projection_receipts
+    where tenant_id='${tenant}'::uuid and receipt->>'action'='legacy_equivalent_adopted';rollback;`);
+  assert(Number.isInteger(baseline?.[0]?.adopted_receipts));
   const rehearsal = `begin;
 set local lock_timeout='5s';set local statement_timeout='40s';
 create temp table legacy_before on commit drop as
@@ -58,9 +62,10 @@ rollback;`;
   const after = await query(`begin read only;select count(*)::int adopted_receipts
     from public.learn_interaction_projection_receipts
     where tenant_id='${tenant}'::uuid and receipt->>'action'='legacy_equivalent_adopted';rollback;`);
-  assert(after?.[0]?.adopted_receipts === 0, 'Rollback retained adoption receipts');
+  assert(after?.[0]?.adopted_receipts === baseline[0].adopted_receipts,
+    'Rollback changed retained adoption receipt count');
   console.log(JSON.stringify({ state: 'live_legacy_first_page_rollback_verified',
-    ...rows[0].result, retainedAdoptionReceipts: 0,
+    ...rows[0].result, retainedAdoptionReceipts: after[0].adopted_receipts,
     productionDataWrites: false }));
 } else {
   let cursor = null;
