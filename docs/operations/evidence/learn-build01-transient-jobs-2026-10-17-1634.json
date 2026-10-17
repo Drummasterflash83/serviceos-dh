@@ -1,0 +1,40 @@
+{
+  "version": "learn-build01-transient-jobs/1",
+  "observedAtUtc": "2026-10-17T16:34:01.944Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "source": "scripts/verify/learn-build01-transient-job-readback.mjs --live-read-only",
+  "emailWorkspace": {
+    "successfulJobsInPriorHour": 337,
+    "fetchFailedDeadLetters": 2,
+    "fetchFailedWithLaterSameKeySuccess": 2,
+    "queuedAtObservation": 11
+  },
+  "identity": {
+    "reviewRequiredDeadLettersInPriorHour": 32,
+    "queuedAtObservation": 1,
+    "operationalFailuresInPriorHour": 0
+  },
+  "interactionProjection": {
+    "successfulJobsInPriorHour": 72,
+    "projectionReviewRequiredDeadLetters": 12,
+    "queuedAtObservation": 1,
+    "operationalFailuresInPriorHour": 0
+  },
+  "independentReadbacks": {
+    "cardObservedAtUtc": "2026-10-17T16:32:44.581Z",
+    "activeCards": 4217,
+    "projectedCards": 4217,
+    "staleUnprojectedCards": 0,
+    "emailReceiptsObservedAtUtc": "2026-10-17T16:32:01.434Z",
+    "committedEmailReceipts": 55650,
+    "eligibleEmailInteractionGap": 2959,
+    "phoneSourceCount": 4676,
+    "phoneInteractionCount": 4676,
+    "eligibleGraphGap": 50
+  },
+  "interpretation": "Both recent Email fetch_failed dead letters had a later success on the exact job key. Recent identity and interaction dead letters are explicit review-required holds, not operational processing failures. The ordinary card sweep was still running and had zero stale cards at the observation; this instant does not prove continuous future freshness or close the remaining Build 01 gates.",
+  "jobKeysReturned": false,
+  "sourceContentReturned": false,
+  "productionDataWrites": false
+}

@@ -1,12 +1,23 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 16:24 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 16:34 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- At 16:34 UTC the ordinary LIVE sweep had **4,217/4,217** active cards
+  projected and zero stale unprojected cards. Email immutable receipts rose to
+  **55,650**; 4,676/4,676 Phone sources had interactions. Of two recent Email
+  `fetch_failed` dead letters, both had a later success on the exact job key.
+  The 32 identity and 12 interaction dead letters in the prior hour were
+  explicit review-required holds, not operational failures. This resolves the
+  apparent processing alarm in the aggregate readback without erasing its
+  review queue. The eligible Email and Graph gaps were 2,959 and 50 at the
+  snapshot; source coverage remains an operating check.
+  [Focused transient readback](evidence/learn-build01-transient-jobs-2026-10-17-1634.json).
 
 - The current TEST/LIVE worker now reserves half of each ordinary card sweep
   batch for new unprojected cards beyond the stable sweep cutoff, without

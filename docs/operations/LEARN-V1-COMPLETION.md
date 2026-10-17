@@ -17,6 +17,29 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 16:34 UTC — ordinary processing stable; recent failures classified.**
+
+### Working and verified
+
+- A fresh read-only LIVE snapshot found **4,217/4,217** active cards projected
+  with zero stale cards, 55,650 immutable Email receipts, 4,676/4,676 Phone
+  interactions, and eligible Email/Graph gaps of 2,959/50. Both recent Email
+  `fetch_failed` dead letters had later success on the exact job key. Recent
+  identity and interaction dead letters were explicit review-required holds.
+  [Sanitised receipt](evidence/learn-build01-transient-jobs-2026-10-17-1634.json).
+
+### Needs finishing
+
+- The signed-in Owner / MD handoff, the exact 160-channel Slack positive
+  capture/acceptance boundary, full runtime credential/provider recovery and
+  Chris's business acceptance remain open. A healthy snapshot is not the
+  final business sign-off.
+
+### Blocked externally
+
+- The roster confirmation requires a signed-in human action; the separate
+  five-setting recovery-copy and archived Slack-roster decisions are pending.
+
 **17 October, 16:24 UTC — representative operating follow-up.**
 
 ### Working and verified
