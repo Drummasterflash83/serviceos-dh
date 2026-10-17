@@ -1,0 +1,40 @@
+{
+  "version": "learn-build01-identity-retry-autorecovery/1",
+  "environment": "LIVE",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "observedAtUtc": "2026-10-17T15:52:36.672Z",
+  "method": "Read-only platform job and immutable publication queries using the saved noninteractive management login",
+  "ordinaryJobs": [
+    {
+      "createdAtUtc": "2026-10-17T15:39:19.119265Z",
+      "intermediateState": "identity_delivery_unconfirmed after 49 of 50 publications on attempts one and two",
+      "settledAtUtc": "2026-10-17T15:48:28.137614Z",
+      "settledAttempt": 3,
+      "immutablePublicationsOnSettledAttempt": 50,
+      "committed": 47,
+      "reviewRequired": 3,
+      "failedDeliveriesOnSettledAttempt": 0,
+      "ordinaryFiftyItemChild": 1
+    },
+    {
+      "createdAtUtc": "2026-10-17T15:48:28.137614Z",
+      "intermediateState": "identity_delivery_unconfirmed after 49 of 50 publications on attempt one",
+      "settledAtUtc": "2026-10-17T15:51:36.390731Z",
+      "settledAttempt": 2,
+      "immutablePublicationsOnSettledAttempt": 50,
+      "committed": 45,
+      "reviewRequired": 5,
+      "failedDeliveriesOnSettledAttempt": 0,
+      "ordinaryFiftyItemChild": 1
+    }
+  ],
+  "queueAtObservation": {
+    "activeRetryingIdentityJobs": 0,
+    "ordinaryQueuedIdentityJobs": 1,
+    "olderOperationalDeadLettersFrom15October": 5
+  },
+  "interpretation": "Both partial-delivery jobs recovered through their scheduled retries, published complete immutable 50-item receipt sets, kept review holds explicit and continued without manual rescue. The original missing-delivery cause is not established; a later child and the five older operational dead letters remain operating checks.",
+  "sourceOrCustomerContentReturned": false,
+  "productionDataWrites": false,
+  "manualJobStartOrReset": false
+}

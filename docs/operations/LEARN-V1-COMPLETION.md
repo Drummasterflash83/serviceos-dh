@@ -17,6 +17,32 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 15:52 UTC — ordinary identity retries recovered without rescue.**
+
+### Working and verified
+
+- Two consecutive ordinary 50-item LIVE identity jobs briefly reported one
+  unconfirmed delivery after 49 immutable receipts. The first recovered on
+  its third scheduled attempt with **47 committed / three explicit review
+  holds**; its 50-item child recovered on attempt two with **45 committed /
+  five review holds**. Each settled attempt has **50 immutable receipts, zero
+  failed deliveries and one ordinary 50-item child**. No manual start, reset,
+  fingerprint or production data repair was used.
+  [Content-free retry receipt](evidence/learn-build01-identity-retry-autorecovery-2026-10-17.json).
+
+### Needs finishing
+
+- The cause of each transient 50th delivery was not established. Five older
+  operational identity dead letters from 15 October remain in history; the
+  current chain is queued normally and needs continued failure monitoring.
+  This recovery does not close the Owner / MD handoff, source-review workload,
+  full application recovery or business sign-off.
+
+### Blocked externally
+
+- No new user action is needed for the recovered retries. The existing
+  signed-in Owner / MD action and five-setting recovery decision remain pending.
+
 **17 October, 15:41 UTC — focused unattended LIVE operating check.**
 
 ### Working and verified

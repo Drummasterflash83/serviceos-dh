@@ -8,6 +8,16 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- Two ordinary LIVE 50-item identity jobs each hit a transient unconfirmed
+  delivery after 49 receipts, then recovered by their scheduled retry without
+  manual intervention. The first settled on attempt three with **47 resolved /
+  three review holds**; its child settled on attempt two with **45 resolved /
+  five review holds**. Both settled attempts retained all 50 immutable
+  publications, zero failed deliveries and a further ordinary 50-item child.
+  The specific transient cause is unknown, and five older operational dead
+  letters remain historical evidence, so ongoing reliability monitoring
+  remains appropriate. [Read-only receipt](evidence/learn-build01-identity-retry-autorecovery-2026-10-17.json).
+
 - A fresh focused LIVE operating check found zero stale cards, six recent
   successful ordinary ten-card jobs with no failed cards, **4,676/4,676**
   Phone interactions, and **257/257** voicemail audio objects. The eligible

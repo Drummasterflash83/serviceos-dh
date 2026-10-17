@@ -1,5 +1,14 @@
 # Build execution tracker
 
+Build 01 ordinary identity retry observation (17 October, 15:52 UTC): two
+consecutive 50-item LIVE jobs each had a transient unconfirmed delivery after
+49 receipts, then settled without manual rescue on their scheduled third and
+second attempts. Their settled attempts retained 50 immutable receipts each,
+with 92 committed cards and eight explicit review holds in total; both
+created normal 50-item children. The original transient cause is unknown;
+five older operational dead letters remain visible.
+[Read-only receipt](../../operations/evidence/learn-build01-identity-retry-autorecovery-2026-10-17.json).
+
 Build 01 focused operating observation (17 October, 15:41 UTC): ordinary
 cards remain current with six recent successful ten-card jobs; Phone and
 voicemail coverage is complete at this point. The eligible Email and Graph
