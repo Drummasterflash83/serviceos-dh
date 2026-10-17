@@ -17,6 +17,32 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October — first Owner / MD handoff UI gap identified and fixed locally.**
+
+### Working and verified
+
+- Chris selected the existing Owner / MD login as the first recipient. The
+  source-linked review action already has a guarded, audited self-claim in
+  `work-transition`, but the Command Centre did not expose **Accept** or list
+  review tasks outside its top seven. A narrow frontend change now displays
+  the remaining captured-job reviews and offers **Accept this review** only
+  while a task is unassigned. TypeScript, the production build and its 47
+  prebuild checks pass locally. No task or member record was changed.
+
+### Needs finishing
+
+- Release this UI change to TEST and LIVE, confirm the Owner / MD member-to-login
+  link through a signed-in review, create one source-linked task, accept it as
+  Owner / MD and read back the append-only ownership history. Until then this
+  is a verified implementation candidate, not a successful human handoff.
+
+### Blocked externally
+
+- Browser auto-review denied the agent's origin-wide signed-in LIVE access
+  because it could expose unrelated client data. A scoped approved browser
+  path or Chris's signed-in clicks are needed for the identity confirmation
+  and positive task acceptance. No privileged database write is a substitute.
+
 **17 October, 13:48 UTC — three-year full-import boundary holding.**
 
 ### Working and verified
