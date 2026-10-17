@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 15:17 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 15:35 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -133,6 +133,12 @@ inactive until Chris reviews and signs off the business result.
   with the same key and route. The jobs remain visible as source-review holds;
   no parent or mapping was invented.
   [Provider result](evidence/learn-build01-commusoft-missing-parent-provider-2026-10-17.json).
+  Chris chose representative source-backed Build 01 review, keeping the other
+  cases visibly unlinked and unscored. All 255 identity cases therefore need
+  not be manually reviewed for Build 01, but their review obligation and the
+  29 missing-parent holds stay explicit. The [acceptance matrix](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md)
+  identifies the distinct LIVE examples still needed before the business
+  result can be put to Chris.
 
 - A counts-only handoff audit found eight active Drummonds team entries but
   **zero confirmed members**, zero signed-in confirmed recipients and zero
@@ -544,6 +550,8 @@ inactive until Chris reviews and signs off the business result.
   but need customer identity review, 29 lack a parent source, and one needs
   job-link review after its customer was reviewed. At 22:31, 272 of the 295
   had no observation within a day.
+  Chris has accepted a representative review boundary for Build 01; do not
+  silently convert the remaining source-review cases into linked/scored jobs.
   The released captured-source view now has explicit hold and source-review
   filters, and signed-in LIVE example rows passed. Named-person handoff and a
   representative progress/completion score are not established. The saved

@@ -10,6 +10,26 @@ open/pending/on-hold Commusoft jobs, ten with reviewed published job links and
 source record. These counts are timestamped observations, so a company-wide
 job score would be misleading.
 
+On 17 October Chris chose a **representative, source-backed Build 01 review**
+instead of requiring all 255 retained-source identity cases to be reviewed
+before sign-off. The remaining cases must stay visible, unlinked and unscored;
+this is a review boundary, not permission to infer a customer, assignee or
+healthy job state. The representative check covers these distinct real paths:
+
+| Path | LIVE evidence needed | Current result |
+| --- | --- | --- |
+| Reviewed job link | A saved current-source job card shows its recorded status and observation time. | Ten recorded open jobs have reviewed links; aggregate latest-source check passed. A signed-in example of this path remains to be recorded. |
+| Retained direct-customer and site-to-customer source, identity unreviewed | The source-job review view keeps both kinds visible without attaching an unreviewed customer or publishing a score. | Counts-only read found 169 direct and 86 site-to-customer cases; a signed-in unresolved-source example and the 285-case review filter passed. The distinct site path needs a signed-in example. |
+| Missing parent source | The job stays in source review, with its recorded observation time and an explicit missing-source reason. | Twenty-nine cases remain unlinked; direct provider GET returned 404 for all 19 distinct missing parents. The signed-in review view needs a specific missing-parent example. |
+| Recorded completion | A completed source can be inspected without an inferred completion instant or elapsed-time score. | Bounded direct-provider sample confirmed one recorded complete status but no explicit time zone; signed-in card evidence remains to be checked. |
+| Named human handoff | A confirmed Owner / MD identity receives and accepts one source-linked OpenFolk review task, with an audit trail. | TEST/LIVE controls and UI are released; signed-in confirmation, task creation and acceptance remain open. |
+
+The above is an acceptance sample, not a random estimate of the unreviewed
+population. Chris's choice does not change the **255 identity-review, 29
+missing-parent, and one job-link-review** obligations; the operator view and
+ongoing review process must continue to expose them after Build 01 sign-off.
+[Counts-only breakdown](evidence/learn-build01-open-job-review-reasons-2026-10-17.json).
+
 A second aggregate read at 22:31 UTC still found **295** retained open,
 pending or on-hold jobs, **10** with reviewed job links and **285** without.
 Of the 295, **272** had no observation within the previous day. The recurring

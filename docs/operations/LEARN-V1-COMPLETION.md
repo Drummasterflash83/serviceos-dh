@@ -17,6 +17,32 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 15:35 UTC — representative job-review boundary agreed.**
+
+### Working and verified
+
+- Chris chose representative source-backed Build 01 job review, keeping the
+  other cases visibly unlinked and unscored. The 255 retained-source identity
+  cases, 29 missing-parent cases and one reviewed-customer/job-link case remain
+  an explicit ongoing review workload, not a prerequisite that all 285 be
+  manually linked before Build 01 sign-off.
+- The [job-attention acceptance matrix](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md)
+  now separates the reviewed-link, direct-customer, site-to-customer,
+  missing-parent, recorded-completion and Owner / MD handoff paths. Existing
+  LIVE counts and source/provider checks cover the populations and limits.
+
+### Needs finishing
+
+- Finish the remaining signed-in representative examples and the first audited
+  Owner / MD acceptance. Keep scores withheld until their source, timing and
+  business policy are actually reviewed. Full application recovery and Chris's
+  final business sign-off remain separate gates.
+
+### Blocked externally
+
+- The already requested signed-in Owner / MD action and five-setting recovery
+  scope decision remain pending. No full-day observation wait is imposed.
+
 **17 October, 15:33 UTC — open Commusoft job attention gap classified.**
 
 ### Working and verified
@@ -34,9 +60,9 @@ business decision yet.
 
 ### Needs finishing
 
-- Complete the first signed-in Owner / MD review-task acceptance and establish
-  with Chris how much of the 255-record identity-review workload must be
-  reviewed for Build 01 business acceptance. The 29 missing-parent jobs remain
+- Complete the first signed-in Owner / MD review-task acceptance. Chris has
+  since chosen representative review rather than all 255 identity cases for
+  Build 01. The 29 missing-parent jobs remain
   source holds; the direct provider check returned 404 for all 19 distinct
   parents behind them. Full application recovery and final sign-off remain
   separate gates.
