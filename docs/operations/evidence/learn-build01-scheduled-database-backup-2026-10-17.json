@@ -1,0 +1,19 @@
+{
+  "version": "learn-build01-scheduled-database-backup/1",
+  "observedAtUtc": "2026-10-17T08:09:24Z",
+  "workflow": "ServiceOS independent database backup",
+  "githubRunId": 39015198972,
+  "trigger": "schedule",
+  "startedAtUtc": "2026-10-17T07:51:38Z",
+  "completedAtUtc": "2026-10-17T08:09:23Z",
+  "conclusion": "success",
+  "exportRestoreEncryptAndIndependentOffsiteCopyStep": "success",
+  "privateRunnerCleanupStep": "success",
+  "safePipelineMarker": "one_unattended_copy_verified_restore_pending",
+  "encryptedBytes": 1638226616,
+  "independentStorageReadbackVerified": true,
+  "recoveryKeyRead": false,
+  "offsiteCiphertextDecryptionAndApplicationRestoreVerified": false,
+  "productionDataWrites": false,
+  "interpretation": "A genuine scheduled run completed native source export, local archive restore, public-key encryption, scoped private London copy and separate Restore-identity readback. This is one observed daily success; the 09:23 UTC missed-success monitor and future daily continuity still require ordinary scheduled observation. The off-site ciphertext was not decrypted in this run."
+}

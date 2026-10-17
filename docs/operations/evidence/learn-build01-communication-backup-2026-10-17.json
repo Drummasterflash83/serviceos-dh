@@ -1,0 +1,37 @@
+{
+  "contract": "learn-build01-communication-backup/1",
+  "observedAtUtc": "2026-10-17T08:19:39.711Z",
+  "mode": "existing-three-bucket-supervisor",
+  "state": "communication_inventory_verified",
+  "latestAttempt": "succeeded",
+  "phoneRecordings": {
+    "objects": 3166,
+    "recordingRows": 3160,
+    "missingStoragePointers": 0,
+    "missingObjectReferences": 0,
+    "retainedUnreferencedObjects": 6,
+    "verifiedAtUtc": "2026-10-17T08:15:10.777Z"
+  },
+  "voicemailSources": {
+    "objects": 257,
+    "recordingRows": 257,
+    "missingStoragePointers": 0,
+    "missingObjectReferences": 0,
+    "verifiedAtUtc": "2026-10-17T08:17:46.169Z"
+  },
+  "voicemailAudio": {
+    "objects": 257,
+    "recordingRows": 257,
+    "missingStoragePointers": 0,
+    "missingObjectReferences": 0,
+    "verifiedAtUtc": "2026-10-17T08:19:39.018Z"
+  },
+  "matchedVoicemailPairs": 257,
+  "sourceSnapshot": "non_atomic",
+  "databaseRestore": "separate_acceptance",
+  "completeApplicationRecoveryProven": false,
+  "humanListeningVerified": false,
+  "requiresAwakeComputer": true,
+  "customerContentReturned": false,
+  "note": "This inventory completed after the 08:16 UTC restored-database/Phone reference comparison. It confirms the three file buckets and matched voicemail pairs, not an atomic database/file point or full-service recovery."
+}

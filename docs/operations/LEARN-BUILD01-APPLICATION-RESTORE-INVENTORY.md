@@ -23,7 +23,24 @@ production data write was used.
 This narrows the database-point and existing-user recovery gap. It is a local
 export, not decryption of today's independently stored ciphertext. Old sessions,
 Vault plaintext and runtime secret values, frontend boot, all-function startup,
-matching file-backup point and controlled capture restart remain unverified.
+an atomic file-backup point and controlled capture restart remain unverified.
+
+At 08:16 UTC, a second isolated native restore compared **5,950,101** archived
+COPY rows across 421 tables, seven sequences, the two captured network tables
+and their sequence; catalog and extension versions matched. A later automatic
+phone-file backup was joined to private reference metadata from that restored
+database. All **3,160** archived recording references matched the later
+inventory's object/version/path/size; one bounded backed-up file downloaded
+and decoded, then its temporary copy was removed. Six extra backed-up objects
+had no recording reference in the database point. No provider or production
+write, backup Writer identity, recovery-key read or fingerprint was needed.
+[Current database/file receipt](evidence/learn-build01-current-database-file-recovery-2026-10-17.json).
+This is a non-atomic later file inventory, with one decoded sample rather than
+every-byte redownload or human listening. The corresponding voicemail bucket
+stages subsequently finished by 08:19 UTC with **257 matched source/audio
+pairs** and no missing referenced object. That later local file inventory is
+still non-atomic with the database point; full service recovery remains open.
+[Three-bucket receipt](evidence/learn-build01-communication-backup-2026-10-17.json).
 
 At about 07:08 UTC on 17 October, a fuller isolated rehearsal restored the
 independent 15 October database archive, selected one preserved Drummonds Auth
@@ -206,7 +223,7 @@ and [off-site copy receipt](evidence/learn-build01-live-runtime-refresh-offsite-
 | Edge functions | The earlier 102-function, 721-file package was copied, downloaded and decrypted with its manifest verified. Current v107 source (103 functions, 728 files) is locally verified, encrypted, staged, copied off site and independently downloaded. All 103 current source trees bundled in isolation; one current v107 route served an authenticated tenant read against today's local archive. | Decrypt the independently downloaded current package, then start required routes with verified flags and recovered secret references in an isolated service |
 | Frontend | Vercel builds from Git `main`; the four LIVE aliases serve the released job-review UI. A signed-in LIVE Drummonds check opened LEARN, displayed a real Slack saved total and loaded evidence. | Restore a pinned Git revision to an isolated Vercel target with its production-equivalent public configuration and test login, client cards and operator paths before any alias switch |
 | Runtime configuration | Static source scan found 56 literal Edge environment names plus 18 dynamic lookups across the 102 function archives; the frontend references `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_ENABLE_SIGNUP` | Independently inventory actual configured names, non-exportable and dynamic-name references, escrow/restore secret values through an approved channel, and verify each recovered function's access without printing values |
-| Capture and files | Separate recording/voicemail manifests and database-reference restore checks exist | Match the chosen database point to its corresponding file inventory; keep dispatchers paused until scopes, cursors and credentials are verified; resume one bounded source at a time and prove new data reaches the correct tenant/card |
+| Capture and files | Today's restored database point is covered by a later verified Phone file inventory for all 3,160 references, with one decoded backed-up sample; the same local run completed all three buckets and 257 voicemail source/audio pairs | Resolve the non-atomic database/file gap, keep dispatchers paused until scopes, cursors and credentials are verified, then resume one bounded source at a time and prove new data reaches the correct tenant/card |
 
 The static Edge name count came from the earlier 720-file inventory and is a
 source-code observation only. It does not say

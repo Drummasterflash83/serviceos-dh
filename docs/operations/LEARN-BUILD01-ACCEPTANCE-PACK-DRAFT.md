@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 08:06 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 08:19 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -50,10 +50,17 @@ inactive until Chris reviews and signs off the business result.
   rehearsals. [Window receipt](evidence/learn-build01-slack-160-empty-window-checks-2026-10-17.json),
   [recovery receipt](evidence/learn-build01-slack-unclassified-recovery-2026-10-17.json).
 - The scheduled database backup produced an independent verified copy on its
-  **08:14 UTC scheduled** run; the scheduled missed-success monitor passed at
-  **14:03 UTC**. The refreshed three-bucket communication inventory verified
+  16 October **08:14 UTC scheduled** run; its scheduled missed-success monitor
+  passed at **14:03 UTC**. A second genuinely **scheduled** run on 17 October
+  completed at **08:09 UTC**: native restore, encrypted private London copy,
+  separate Restore-identity byte readback and runner cleanup passed. Its
+  1,638,226,616-byte ciphertext was not decrypted; today's missed-success
+  monitor is not due until 09:23 UTC.
+  [Scheduled run receipt](evidence/learn-build01-scheduled-database-backup-2026-10-17.json).
+  The 17 October three-bucket communication inventory verified
   **3,166 phone objects** and **257 matched voicemail source/audio pairs**, with
-  no missing referenced object. [File backup proof](evidence/learn-build01-communication-backup-refresh-2026-10-16.json).
+  no missing referenced object. The local file runner still requires the Mac
+  and Codex app awake. [File backup proof](evidence/learn-build01-communication-backup-2026-10-17.json).
 - An isolated archive rehearsal restored database, Auth and PostgREST, created
   a disposable synthetic login, and exercised one archived Edge route with
   tenant and operator boundaries. The current v107 LIVE source was captured,
@@ -77,6 +84,15 @@ inactive until Chris reviews and signs off the business result.
   passed again. All recovery containers were removed; there was no Touch ID,
   production write, host port or external service access.
   [Current-point receipt](evidence/learn-build01-current-point-service-recovery-2026-10-17.json).
+- A second isolated native comparison matched **5,950,101 archived COPY rows**
+  across 421 tables, seven sequences, the two separately captured network
+  tables and their sequence, catalog and extension versions. The automatic
+  phone-file backup observed after the database point covered all **3,160**
+  restored recording references by object/version/path/size; one backed-up
+  recording downloaded and decoded. Its six extra objects have no recording
+  reference in this database point. The two voicemail buckets of that same
+  communication run finished by 08:19 UTC with 257 matched pairs.
+  [Database/file receipt](evidence/learn-build01-current-database-file-recovery-2026-10-17.json).
 - The current v107 worker also booted from its reviewed bundle in an isolated
   network-disabled container, returned OPTIONS 200 and rejected an
   unauthorised POST with 403. This is startup and fail-closed evidence, not an
@@ -133,7 +149,8 @@ inactive until Chris reviews and signs off the business result.
   journey, but the full frontend, all-function startup, required runtime
   secrets, original-session recovery and controlled capture restart have not
   been proven from independently downloaded current recovery inputs. The
-  database point is not reconciled with current file backups.
+  database point matches a later verified phone-file inventory and all three
+  file buckets completed. An atomic database/file point remains unproven.
 - **File-backup host:** the recording and voicemail schedule has succeeded
   locally, but depends on the Mac and Codex app being awake. The latest
   three-bucket inventory is a verified file copy, not a matching database

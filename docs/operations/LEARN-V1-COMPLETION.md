@@ -17,7 +17,7 @@ business decision yet.
 
 ## Current evidence and priority
 
-**17 October, 08:06 UTC — fresh LIVE database point passed isolated existing-user service recovery.**
+**17 October, 08:19 UTC — current database recovery, scheduled backup and three-bucket files verified separately.**
 
 ### Working and verified
 
@@ -38,15 +38,34 @@ business decision yet.
   returned to LEARN. This resolves the earlier “Not checked” tile display,
   while current Slack notification delivery remains separately unconfirmed.
   [Dashboard receipt](evidence/learn-build01-signedin-slack-dashboard-2026-10-17.json).
+- Today's genuinely scheduled GitHub backup finished at 08:09 UTC. Its native
+  restore, public-key encryption, private London copy, separate Restore-identity
+  readback and cleanup steps passed. The safe marker reports a 1,638,226,616-byte
+  ciphertext and no recovery-key read or production write.
+  [Scheduled receipt](evidence/learn-build01-scheduled-database-backup-2026-10-17.json).
+- A separate local native comparison of the 07:09 archive matched **5,950,101**
+  archived rows across 421 COPY tables, seven sequences, the two network-table
+  supplements, catalog and extensions. The automatic Phone file backup that
+  began after the database snapshot covered all **3,160** restored recording
+  references by object, version, path and size. One bounded backed-up audio
+  file downloaded and decoded; its temporary copy was removed. This is a
+  non-atomic later file inventory, not all-object playback.
+  [Database/file receipt](evidence/learn-build01-current-database-file-recovery-2026-10-17.json).
+- The same local communication run completed all three file inventories by
+  08:19 UTC: 3,166 Phone objects and 257 matched voicemail source/audio pairs,
+  with zero missing referenced objects. This does not establish an atomic
+  database/file point or an always-on hosted file backup.
+  [Three-bucket receipt](evidence/learn-build01-communication-backup-2026-10-17.json).
 
 ### Needs finishing
 
 - This is a fresh **local** export and isolated service test, not a decrypt of
   today's off-site ciphertext or a complete application failover. Runtime
   secret/Vault plaintext recovery, original-session policy, frontend boot,
-  all-function startup, matched files and controlled capture restart remain
-  open. Today's scheduled hosted backup began at 07:51 UTC and must finish its
-  own restore/encrypted off-site readback before it counts as a daily success.
+  all-function startup, an atomic three-bucket file point and controlled capture
+  restart remain open. Today's off-site copy passed independent encrypted-byte readback, but
+  has not been decrypted/restored. The scheduled missed-success monitor and
+  future daily continuity still need ordinary observation.
 - The exact 160 Slack roster still has no observed post-cutoff message or reply;
   the source-review queue does not establish named job handoff or a score.
 

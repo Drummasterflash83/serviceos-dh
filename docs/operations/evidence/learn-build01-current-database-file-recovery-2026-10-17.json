@@ -1,0 +1,41 @@
+{
+  "version": "learn-build01-current-database-file-recovery/1",
+  "observedAtUtc": "2026-10-17T08:16:18Z",
+  "databaseSnapshotAtUtc": "2026-10-17T07:09:33Z",
+  "databaseArchiveBytes": 1632425140,
+  "databaseArchiveSha256": "0a2917e1096829ff0fc607bf7637c968cfb62c3171df335dc94b6fd0aca076e9",
+  "isolatedNativeComparison": {
+    "allInventoriedPhysicalTablesCaptured": true,
+    "archivedCopyTablesMatched": 421,
+    "archivedCopyRowsMatched": 5950101,
+    "archivedSequencesMatched": 7,
+    "networkSupplementTablesMatched": 2,
+    "networkSupplementRowsMatched": 4091,
+    "networkSupplementSequencesMatched": 1,
+    "tableCatalogMatched": true,
+    "extensionVersionsMatched": true,
+    "unauthenticatedEmailRowsVisible": 0,
+    "unauthenticatedRecordingRowsVisible": 0,
+    "containerRemoved": true
+  },
+  "laterPhoneFileBackup": {
+    "runId": "79055f0b-e2c4-410d-a9d6-fe3d26b93c34",
+    "inventoryObservedAtUtc": "2026-10-17T07:57:14Z",
+    "verifiedAtUtc": "2026-10-17T08:15:13Z",
+    "restoredDatabaseRecordingReferencesCovered": 3160,
+    "matchingReferencedObjects": 3160,
+    "manifestObjects": 3166,
+    "retainedUnreferencedObjects": 6,
+    "additionalFileBackupReferences": 0,
+    "boundedSampleDownloadedAndDecoded": true,
+    "boundedSampleBytes": 4740,
+    "boundedSampleLinkedCalls": 1,
+    "boundedSampleLinkedTranscripts": 1,
+    "temporaryAudioRemoved": true
+  },
+  "sourceProviderRequests": 0,
+  "backupWriterUsedForReadback": false,
+  "productionDataWrites": false,
+  "customerIdentifiersOrAudioRetainedInReceipt": false,
+  "limitations": "This exact phone-reference comparison uses a later non-atomic file inventory, not simultaneous database/file snapshots. One restored audio sample decoded; human listening and every-object byte redownload were not performed. The two voicemail bucket stages of the same communication run were still in progress at this timestamp. Vault plaintext, off-site database decryption and full application restart remain separate."
+}
