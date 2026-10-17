@@ -1,5 +1,13 @@
 # Build execution tracker
 
+Latest Build 01 credential-use checkpoint (17 October, 10:16 UTC): all 103
+current v107 function closures and 728 files were hash-checked. Fourteen of
+16 credential candidates have literal lookups; two Receptionist secret names
+are dynamic. The old global Workspace impersonation subject has no literal
+environment read in v107; current capture uses the tenant row. No non-Vault
+Edge digest matched a Vault value under another name. No credential was read.
+[Receipt](../../operations/evidence/learn-build01-runtime-credential-usage-2026-10-17.json).
+
 Latest Build 01 current-source startup checkpoint (17 October, 10:13 UTC): all
 103 reviewed v107 Edge bundles created workers and answered synthetic OPTIONS
 requests in a network-isolated disposable runtime; three QuickBooks routes

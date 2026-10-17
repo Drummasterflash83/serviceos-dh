@@ -8,6 +8,14 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- An exact v107 source-use audit found the old global Workspace subject has no
+  current literal environment read; the live Email path uses the backed-up
+  tenant connection row. The Google OAuth client ID remains active, the
+  Workspace client ID is optional for connection setup, and no non-Vault Edge
+  value matched a Vault secret under a different name. This narrows the
+  recovery inventory without silently removing active credentials.
+  [Source-use receipt](evidence/learn-build01-runtime-credential-usage-2026-10-17.json).
+
 - All **103 reviewed LIVE v107 Edge bundles** created workers and returned
   synthetic HTTP responses in a network-isolated disposable runtime. Three
   QuickBooks routes correctly returned 503 without provider configuration;

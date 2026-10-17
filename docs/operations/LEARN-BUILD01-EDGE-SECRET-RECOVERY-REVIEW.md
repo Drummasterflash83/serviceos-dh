@@ -49,6 +49,21 @@ package. A separate isolated startup check must establish that subset.
 
 [Non-secret reconstruction evidence](evidence/learn-build01-nonsecret-runtime-reconstruction-2026-10-17.json).
 
+A hash-checked scan of all **103 current v107 function closures / 728 source
+files** found no literal read of the configured global Workspace domain or
+impersonation subject. Current Workspace operations read those from the
+tenant's saved connection row; the global subject is therefore not a required
+input to that current capture path. The global Workspace client ID is optional
+in the credential parser and used for connection setup/display. The separate
+Google OAuth client ID is actively read by the Gmail OAuth path. Fourteen of
+the 16 credential/webhook candidates have literal lookups; the two Drummonds
+Receptionist names have no literal lookup because the route resolves their
+configured names dynamically. This is a source-use distinction, not permission
+to drop those capabilities from a full recovery. A cross-name digest comparison
+found **zero** non-Vault Edge entries matching a Vault value under another
+name, so no additional credential can be claimed from the scheduled database
+backup. [Names-only source and digest receipt](evidence/learn-build01-runtime-credential-usage-2026-10-17.json).
+
 This is also a way around per-release approvals: code/source packages and
 credential material have different change cycles. Keep the v107 source copy as
 its own artifact, compare active credential digests to the protected recovery
@@ -62,7 +77,10 @@ would be needed.
 1. Confirm which of the 16 credential/webhook candidates the actual Build 01
    functions require. Reissue the seven project bindings at restore, use the
    21 digest-matched controls from reviewed material and the database snapshot,
-   resolve the remaining three controls, and include only credentials needed
+   resolve the active Google OAuth client ID, verify whether the optional
+   Workspace client ID must be reissued for setup, and preserve the tenant-row
+   Workspace subject rather than copying its unused global setting. Include
+   only credentials needed
    to restart the approved Phone, Email, Commusoft, Slack and LEARN routes.
    Record names, source item references and active-value digest matches
    without disclosing values in a report.

@@ -17,6 +17,32 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 10:16 UTC — current-source credential use separates active and legacy settings.**
+
+### Working and verified
+
+- All 103 current v107 function closures and 728 staged files were hash-checked
+  for the 16 sensitive credential/webhook candidates and three remaining
+  Google controls. Fourteen candidates have literal lookups; the two saved
+  Receptionist secret names are accessed dynamically. The configured global
+  Workspace impersonation subject has no current literal environment read;
+  Workspace capture takes it from the tenant's backed-up row. The separate
+  Google OAuth client ID is active. A read-only cross-name Edge/Vault digest
+  comparison found zero hidden aliases. No value was read or copied.
+  [Sanitised receipt](evidence/learn-build01-runtime-credential-usage-2026-10-17.json).
+
+### Needs finishing
+
+- Confirm the active OAuth client ID source, decide whether the optional
+  Workspace client ID needs reissuing for setup, and carry out an approved
+  protected credential recovery or retain an explicit human-led restore path.
+  Static source use does not prove authenticated provider restart.
+
+### Blocked externally
+
+- The previously requested credential-source decision remains pending; this
+  names-only audit did not widen its authority.
+
 **17 October, 10:13 UTC — all 103 reviewed v107 Edge modules started in isolation.**
 
 ### Working and verified

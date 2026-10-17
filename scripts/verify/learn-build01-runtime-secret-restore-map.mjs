@@ -36,6 +36,9 @@ const byName = new Map(secrets.map(x => [x.name, x.value]));
 const overlapping = vault.filter(x => byName.has(x.name));
 const matching = overlapping.filter(x => byName.get(x.name) === x.digest);
 const mismatching = overlapping.filter(x => byName.get(x.name) !== x.digest);
+const crossNameMatches = secrets.flatMap(edge => vault
+  .filter(saved => edge.name !== saved.name && edge.value === saved.digest)
+  .map(saved => ({ edgeName: edge.name, vaultName: saved.name })));
 console.log(JSON.stringify({
   version: "learn-build01-runtime-secret-restore-map/1",
   observedAtUtc: new Date().toISOString(), environment: "LIVE", project,
@@ -46,6 +49,8 @@ console.log(JSON.stringify({
   digestMatchedVaultAndEdge: matching.length,
   digestMismatchedVaultAndEdge: mismatching.length,
   mismatchNames: mismatching.map(x => x.name),
+  crossNameMatchCount: crossNameMatches.length,
+  crossNameMatches,
   configuredNamesAbsentFromVault: secrets.length - overlapping.length,
   plaintextValuesReturned: false,
   productionDataWrites: false,
