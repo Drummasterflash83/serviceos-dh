@@ -67,6 +67,9 @@ export interface CpMember {
   observed_status?: "proposed" | "inferred" | "confirmed";
   authority_level?: "individual" | "lead" | "manager" | "director" | "owner";
   profile_id?: string | null;
+  login_email?: string | null;
+  confirmed_at?: string | null;
+  version?: number;
   org_unit_id: string | null;
   effective_from?: string;
   effective_to: string | null;
@@ -673,6 +676,13 @@ export const rosterUpsertMember = (p: {
   effective_from?: string;
   reason: string;
 }) => invoke<{ id: string }>({ action: "roster.member_upsert", ...p });
+export const rosterConfirmMemberIdentity = (p: {
+  tenant_id: string;
+  member_id: string;
+  expected_version: number;
+  reason: string;
+}) => invoke<{ id: string; version: number; confirmed_at: string }>(
+  { action: "roster.member_identity_confirm", ...p });
 export const rosterMemberLifecycle = (p: {
   tenant_id: string;
   member_id: string;

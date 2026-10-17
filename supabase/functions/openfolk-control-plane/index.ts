@@ -469,6 +469,28 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (error) return fail("write_failed", error.message, 400);
         return json({ ok: true, data: { id: data } });
       }
+      case "roster.member_identity_confirm": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        if (typeof body.member_id !== "string" ||
+            !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(body.member_id) ||
+            !Number.isSafeInteger(body.expected_version) || body.expected_version < 1)
+          return fail("bad_request", "Choose a current linked member and refresh its version", 400);
+        if (ctx.userId === "machine") return fail("forbidden", "A signed-in operator must confirm identity", 403);
+        const { data, error } = await rpc("cp_confirm_member_identity", {
+          p_tenant: tenantId,
+          p_member: body.member_id,
+          p_expected_version: body.expected_version,
+          p_actor_user: ctx.userId,
+        });
+        if (error) {
+          if (error.code === "P0409")
+            return fail("version_conflict", "Member changed; refresh before confirming", 409);
+          if (error.code === "22023" || error.code === "P0002")
+            return fail("identity_unverified", "This member or linked login cannot be confirmed", 409);
+          return fail("write_failed", "Member identity confirmation could not be recorded", 503);
+        }
+        return json({ ok: true, data });
+      }
       case "roster.member_lifecycle": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
         if (!body.member_id) return fail("bad_request", "member_id required", 400);

@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 11:54 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 12:15 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -22,6 +22,15 @@ inactive until Chris reviews and signs off the business result.
   OpenFolk roster can confirm a *formal title* separately; that does not
   establish member identity for a named work assignment. No job was routed to
   an inferred person. [Read-only check](../../scripts/verify/learn-build01-job-handoff-readiness.mjs).
+
+- Chris chose the existing Owner / MD login for the first OpenFolk job-review
+  handoff. The exact roster-to-login link is current but still unconfirmed.
+  Audited identity confirmation and source-linked review-task controls passed
+  isolated SQL tests, rollback rehearsals, and TEST/LIVE install readback.
+  TEST Control Plane v28 and LIVE v38 carry the targeted route; the stricter
+  LIVE View-As authorization guard was preserved byte-for-byte. Both routes
+  denied unauthenticated writes. No member was confirmed, review task made or
+  work assigned by these installation checks.
 
 - The approved one-time LIVE Edge credential inventory now contains 11 active
   Build 01 settings, each checked against its LIVE digest. A synthetic hosted

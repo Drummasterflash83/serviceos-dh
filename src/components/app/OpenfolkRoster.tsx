@@ -33,6 +33,11 @@ export interface RosterActions {
     authority_level?: CpMember["authority_level"];
     reason: string;
   }) => Promise<boolean>;
+  memberIdentityConfirm?: (input: {
+    member_id: string;
+    expected_version: number;
+    reason: string;
+  }) => Promise<boolean>;
   memberLifecycle?: (input: {
     member_id: string;
     op: "end" | "reactivate";
@@ -414,6 +419,9 @@ function MemberCard({
   const [grantReason, setGrantReason] = useState("");
   const [lifecycleReason, setLifecycleReason] = useState("");
   const [confirmingEnd, setConfirmingEnd] = useState(false);
+  const [confirmingIdentity, setConfirmingIdentity] = useState(false);
+  const [identityReason, setIdentityReason] = useState("");
+  const [identityChecked, setIdentityChecked] = useState(false);
   const ended = member.effective_to !== null;
   const verified = identities.filter((i) => i.verification_state === "verified").length;
   const nameOf = (id: string | null) => allMembers.find((m) => m.id === id)?.display_name ?? "—";
@@ -437,6 +445,9 @@ function MemberCard({
               <Badge cls="border-success/40 bg-success/10 text-success">title confirmed</Badge>
             )}
             {ended && <Badge cls="border-hairline text-muted-foreground">ended</Badge>}
+            {member.confirmed_at
+              ? <Badge cls="border-success/40 bg-success/10 text-success">member identity confirmed</Badge>
+              : <Badge cls="border-amber-500/40 bg-amber-500/10 text-amber-700">member identity unconfirmed</Badge>}
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {member.formal_role ?? <em>no title recorded</em>}
@@ -451,6 +462,7 @@ function MemberCard({
             </Badge>
             {member.profile_id ? <Badge>login linked</Badge> : <Badge>no login (ok)</Badge>}
           </div>
+          {member.login_email && <p className="mt-1 text-xs text-muted-foreground">Linked login: {member.login_email}</p>}
         </div>
         <div className="flex shrink-0 flex-wrap gap-1.5">
           <button
@@ -478,6 +490,42 @@ function MemberCard({
           )}
         </div>
       </div>
+
+      {writeCapable && !ended && !member.confirmed_at && member.profile_id && member.login_email &&
+        Number.isSafeInteger(member.version) && actions.memberIdentityConfirm && (
+        <div className="mt-3 rounded-lg border border-hairline p-3 text-xs">
+          {!confirmingIdentity ? (
+            <button type="button" className="cp-secondary" disabled={busy}
+              onClick={() => setConfirmingIdentity(true)}>Review member identity</button>
+          ) : (
+            <div className="space-y-2">
+              <p>Confirm that {member.display_name} is the person who owns {member.login_email}.
+                This confirms the member-to-login link for work routing; it does not confirm
+                their title, role or Commusoft assignment.</p>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={identityChecked}
+                  onChange={e => setIdentityChecked(e.target.checked)} />
+                I verified the person and linked login.
+              </label>
+              <ReasonField value={identityReason} onChange={setIdentityReason} />
+              <div className="flex gap-2">
+                <button type="button" className="cp-secondary"
+                  disabled={busy || !identityChecked || !identityReason.trim()}
+                  onClick={() => void actions.memberIdentityConfirm!({
+                    member_id: member.id, expected_version: member.version!,
+                    reason: identityReason.trim(),
+                  }).then(ok => { if (ok) { setConfirmingIdentity(false); setIdentityReason(""); setIdentityChecked(false); } })}>
+                  Confirm member identity
+                </button>
+                <button type="button" className="cp-secondary" disabled={busy}
+                  onClick={() => { setConfirmingIdentity(false); setIdentityReason(""); setIdentityChecked(false); }}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {editing && (
         <MemberForm

@@ -42,6 +42,7 @@ import {
   rosterEndAuthority,
   rosterEndResponsibility,
   rosterGrantAuthority,
+  rosterConfirmMemberIdentity,
   rosterMemberLifecycle,
   rosterUpsertMember,
   rosterUpsertResponsibility,
@@ -290,6 +291,7 @@ function TenantWorkspace({ tenantId, tenantName }: { tenantId: string; tenantNam
     // Office roster — every write is reason-required and change-logged server-side.
     roster: {
       memberUpsert: (input) => guard(() => rosterUpsertMember({ tenant_id: tenantId, ...input })),
+      memberIdentityConfirm: (input) => guard(() => rosterConfirmMemberIdentity({ tenant_id: tenantId, ...input })),
       memberLifecycle: (input) =>
         guard(() => rosterMemberLifecycle({ tenant_id: tenantId, ...input })),
       responsibilityUpsert: (input) =>

@@ -73,6 +73,7 @@ try:
         '20261029180000_learn_work_transition_history.sql',
         '20261029190000_learn_work_source_capture.sql',
         '20261029210000_learn_work_scoped_authority.sql',
+        '20261105120000_learn_roster_member_identity_confirmation.sql',
     ]
     apply('\n'.join((ROOT/'supabase/migrations'/p).read_text() for p in migrations).encode(),
           'Recovered roster migrations and write guards')
@@ -80,5 +81,13 @@ try:
           'Roster lifecycle, scope, date, audit and privilege assertions')
     apply((ROOT/'scripts/verify/learn-work-authority.assert.sql').read_bytes(),
           'Work scope, cover weekdays, viewer staff and commit-time authority assertions')
+    apply((ROOT/'scripts/verify/learn-roster-member-identity.assert.sql').read_bytes(),
+          'Member login confirmation scope, version, privilege and audit assertions')
+    apply((ROOT/'scripts/verify/learn-job-review-action-fixture.sql').read_bytes(),
+          'Synthetic source-job reader and tenant-authority fixture')
+    apply((ROOT/'supabase/migrations/20261105130000_learn_commusoft_job_review_action.sql').read_bytes(),
+          'Source-linked OpenFolk job-review action migration')
+    apply((ROOT/'scripts/verify/learn-job-review-action.assert.sql').read_bytes(),
+          'Source version, tenant authority, repeat, audit and provider-boundary assertions')
 finally:
     subprocess.run([DOCKER, 'rm', '-f', TARGET], capture_output=True)

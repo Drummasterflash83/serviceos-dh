@@ -11,11 +11,11 @@ const query = `select
     where m.tenant_id='${tenant}'::uuid and m.effective_to is null) active_members,
   (select count(*)::int from public.team_members m
     where m.tenant_id='${tenant}'::uuid and m.effective_to is null
-      and m.observed_status='confirmed' and m.confirmed_at is not null)
+      and m.confirmed_at is not null)
     confirmed_members,
   (select count(*)::int from public.team_members m
     where m.tenant_id='${tenant}'::uuid and m.effective_to is null
-      and m.observed_status='confirmed' and m.confirmed_at is not null
+      and m.confirmed_at is not null
       and m.profile_id is not null) confirmed_signed_in_members,
   (select count(distinct g.member_id)::int from public.authority_grants g
     join public.team_members m on m.id=g.member_id and m.tenant_id=g.tenant_id

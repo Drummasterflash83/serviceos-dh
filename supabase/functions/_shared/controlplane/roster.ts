@@ -20,7 +20,7 @@ export async function loadRoster(
   const [members, responsibilities, authorityGrants] = await Promise.all([
     read(
       "team_members",
-      "id,display_name,formal_role,formal_role_status,target_role,observed_role,observed_status,authority_level,org_unit_id,profile_id,effective_from,effective_to",
+      "id,display_name,formal_role,formal_role_status,target_role,observed_role,observed_status,authority_level,org_unit_id,profile_id,confirmed_at,version,effective_from,effective_to",
       "display_name",
     ),
     read(
@@ -36,5 +36,17 @@ export async function loadRoster(
       true,
     ),
   ]);
-  return { members, responsibilities, authorityGrants };
+  const linkedIds = [...new Set(members.map((m: { profile_id?: string | null }) => m.profile_id)
+    .filter((id: unknown): id is string => typeof id === "string"))];
+  let loginById = new Map<string, string>();
+  if (linkedIds.length) {
+    const { data: profiles, error } = await db.from("profiles")
+      .select("id,email").eq("tenant_id", tenantId).in("id", linkedIds);
+    if (error || !Array.isArray(profiles) || profiles.length !== linkedIds.length)
+      throw new Error("Roster login references could not be verified");
+    loginById = new Map(profiles.map((p: { id: string; email: string }) => [p.id, p.email]));
+  }
+  return { members: members.map((m: { profile_id?: string | null }) => ({
+    ...m, login_email: m.profile_id ? loginById.get(m.profile_id) ?? null : null,
+  })), responsibilities, authorityGrants };
 }

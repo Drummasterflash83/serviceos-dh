@@ -74,10 +74,12 @@ endpoint menu does not show a list-appointments route. This is a documentation
 finding, not proof that Drummonds cannot provide appointment data. The
 [scheduled-activities list](https://developer.commusoft.com/list-scheduled-activities-31575938e0)
 is explicitly for office/manager tasks; using its assignee as a job engineer
-would misstate the source. An audited OpenFolk review-task handoff could route
+would misstate the source. An audited OpenFolk review-task handoff can route
 human attention independently of Commusoft's current appointment assignment,
 provided it is labelled as such and never presented as provider-derived job
-ownership. That product choice is under review; no LIVE review task was created.
+ownership. Chris approved this product distinction and chose the existing
+Owner / MD login for the first confirmed-person handoff. No LIVE review task
+or member confirmation has been created yet.
 
 The 17 October 11:53 UTC counts-only handoff audit found eight active
 Drummonds roster entries but no confirmed member, signed-in confirmed
@@ -88,6 +90,17 @@ authority. A named OpenFolk review-task handoff therefore requires a real
 member confirmation and authorized assigner first; selecting one of the
 proposed entries would bypass the existing work-transition guard.
 [Read-only audit script](../../scripts/verify/learn-build01-job-handoff-readiness.mjs).
+
+The 17 October 12:06 UTC exact readback linked Owner / MD to the Drummonds
+owner login `chris@openfolk.ai`, roster version 1, with `confirmed_at` still
+null. A separate member-to-login confirmation control and an exact-source
+OpenFolk review-task creator passed an isolated synthetic database rehearsal.
+The SQL controls were installed on TEST and LIVE with privilege/ledger
+readback; the Control Plane route was installed at TEST v28 and LIVE v38. A
+read-only source comparison confirmed LIVE's newer View-As guard was unchanged.
+Unauthenticated hosted write probes returned `missing_auth` on both projects.
+The frontend still needs release and a signed-in positive handoff check. Do
+not count installed controls as an actual person assignment.
 
 ## Proposed first scorecard boundary
 

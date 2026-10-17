@@ -59,6 +59,34 @@ business decision yet.
 - A human must eventually confirm the real recipient and authority. No job
   assignment was made from proposed roster data.
 
+**17 October, 12:06 UTC — exact Owner / MD route staged without inventing a technician.**
+
+### Working and verified
+
+- Chris selected the existing Owner / MD login for the first human handoff.
+  Its exact tenant link, unconfirmed state and roster version were verified
+  read-only. The member identity confirmation and source-linked OpenFolk
+  review-task functions passed isolated synthetic scope, audit and replay
+  tests, hosted rollback rehearsals, and installation readback on TEST and
+  LIVE. TEST Control Plane v28 and LIVE v38 carry the targeted route; 22 other
+  source modules, including LIVE's stricter View-As guard, were preserved.
+  Both hosted routes deny an unauthenticated write probe.
+
+### Needs finishing
+
+- Release the frontend, verify a signed-in operator confirmation of the
+  Owner / MD member-to-login link, then create one reviewed-source task and
+  have the signed-in Owner / MD accept it through the existing work-transition
+  authority. Read back the source version, recipient and append-only handoff
+  history. No standing company-wide `work.assign` grant is required for the
+  first self-claim.
+
+### Blocked externally
+
+- No new recipient choice is needed. The current in-app browser control has
+  timed out during inspection, so the signed-in positive handoff has not yet
+  been performed.
+
 **17 October, 11:31 UTC — one-time Edge credential package copied and independently downloaded.**
 
 ### Working and verified
