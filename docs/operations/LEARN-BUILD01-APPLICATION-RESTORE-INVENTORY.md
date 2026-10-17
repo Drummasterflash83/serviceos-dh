@@ -1,11 +1,27 @@
 # Build 01 application and Auth restore inventory
 
 **17 October 2026 — bounded off-site service recovery, not full failover.** The
-independently downloaded database and Edge packages now pass decryption,
-database/Vault restore and a preserved-user Auth/REST/current Edge tenant read.
-The last verified LIVE Git frontend commit also rebuilds and boots as a Vercel
-handler with synthetic settings. A connected signed-in frontend journey,
-recovered runtime secret values and controlled ingestion restart remain separate.
+independently downloaded database and Edge packages pass decryption,
+database/Vault restore and preserved-user Auth/REST/current Edge tenant reads.
+The last verified LIVE Git frontend commit rebuilds as a Vercel target and
+completes isolated signed-in LEARN journeys for both a synthetic tenant user
+and a preserved Drummonds user after a disposable-only reset. The current
+worker completes a synthetic card job after inherited jobs are held in the
+disposable database. Original-session policy, all-function recovered runtime
+secrets, atomic database/file failover and real provider capture resumption
+remain separate.
+
+At 09:49 UTC, a second connected browser rehearsal used the preserved
+Drummonds account and the login page's existing safe client redirect. It
+signed in against restored Auth, opened LEARN, read five tenant cards and
+received nonempty Phone/Email status from the reviewed current Edge route.
+The first rehearsal at 09:44 passed the same path with a synthetic tenant
+user. Both were against separate disposable restores of today's independently
+downloaded scheduled package, with an ephemeral localhost proxy and Vercel
+frontend rebuild. Password resets never touched LIVE; browser profiles,
+proxies and recovery containers were removed. No recovery key read or
+production data write occurred in either rehearsal.
+[Connected frontend receipt](evidence/learn-build01-connected-frontend-offsite-recovery-2026-10-17.json).
 
 At 09:10 UTC, Git commit `77a73802a581798441acafd19e2d1fe93ae0a10d`
 (the last verified LIVE frontend source) was archived into an isolated local

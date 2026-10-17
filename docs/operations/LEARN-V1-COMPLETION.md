@@ -17,6 +17,32 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 09:52 UTC — source-to-card attribution denominator checked without inventing links.**
+
+### Working and verified
+
+- All 4,676 retained Phone calls have interactions, and no eligible
+  interaction lacks a Graph node. Email has 150,255 enriched and 42,741
+  identity-review interactions; Slack has seven enriched and 35,051 held for
+  unverified direction. Commusoft has 12,656 retained job identities and
+  1,004 reviewed canonical links. The changed-job page was committed at
+  09:39 UTC; this is page cadence, not proof of current provider status.
+  [Read-only attribution cutline](evidence/learn-build01-source-attribution-cutline-2026-10-17.json).
+
+### Needs finishing
+
+- Of the 1,004 published Commusoft jobs, 793 have site links and five have
+  linked communications, but none has an individual engineer link, verified
+  completion instant or `jobs.verified` flag. Do not turn a group ID or source
+  status into a named handoff or numeric score. Identity-review communications
+  remain visible as held evidence until source-backed attribution is possible.
+
+### Blocked externally
+
+- Chris's decision on whether the 285 recorded open-work source-review jobs
+  may remain held at Build 01 sign-off is pending; no duplicate request is
+  needed. The technical queue and hold labels are already visible.
+
 **17 October, 09:49 UTC — synthetic and preserved-user frontend recovery verified within an isolated off-site restore.**
 
 ### Working and verified

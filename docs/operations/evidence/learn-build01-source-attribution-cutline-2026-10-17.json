@@ -1,0 +1,50 @@
+{
+  "version": "learn-build01-source-attribution-cutline/1",
+  "observedAtUtc": "2026-10-17T09:52:10Z",
+  "environment": "LIVE read-only aggregates",
+  "sourceToInteraction": {
+    "phoneCalls": { "retained": 4676, "withInteraction": 4676, "eligibleMissing": 0 },
+    "emailInteractions": {
+      "enriched": 150255,
+      "identityReview": 42741,
+      "reviewReasons": {
+        "companyAmbiguous": 39080,
+        "contactMissing": 1716,
+        "emailUnverified": 1807,
+        "personAmbiguous": 138
+      }
+    },
+    "slackInteractions": {
+      "enriched": 7,
+      "identityReview": 35051,
+      "reviewReasonForIdentityReview": "direction_unverified"
+    }
+  },
+  "interactionToGraph": { "eligibleMissing": 0 },
+  "commusoftJobs": {
+    "retainedSourceIdentities": 12656,
+    "reviewedCanonicalLinks": 1004,
+    "publishedStatusClasses": { "completed": 994, "open": 8, "pending": 2 },
+    "publishedWithCustomerLink": 1004,
+    "publishedWithSiteLink": 793,
+    "publishedWithEngineerPersonLink": 0,
+    "publishedWithCompletionInstant": 0,
+    "publishedVerifiedFlag": 0,
+    "publishedWithLinkedCommunication": 5,
+    "jobSourcePagesCommittedInPriorHour": 3,
+    "latestJobSourcePageUtc": "2026-10-17T09:39:04Z"
+  },
+  "method": {
+    "readbacks": [
+      "scripts/verify/learn-build01-job-card-coverage.mjs --live-read-only",
+      "scripts/verify/learn-build01-commusoft-freshness-readback.mjs --live-read-only",
+      "scripts/verify/learn-build01-phone-projection-gap-readback.mjs --live-read-only",
+      "scripts/verify/learn-build01-graph-gap-readback.mjs --live-read-only",
+      "scripts/verify/learn-build01-interaction-coverage-readback.mjs --live-read-only"
+    ],
+    "customerContentReturned": false,
+    "messageBodiesReturned": false,
+    "productionDataWrites": false
+  },
+  "limits": "These counts distinguish retained source, interaction, reviewed canonical link and attributed job evidence. The 1,004 job links are not proof that every retained source identity has a canonical customer/job relation. Source job status does not establish an individual assignee, verified completion instant or score. Identity-review communications remain visible as held evidence; no name-only link is inferred."
+}

@@ -8,6 +8,15 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- A 09:52 LIVE attribution cutline preserves the distinct denominators:
+  **4,676/4,676** Phone calls have interactions and eligible interaction-to-
+  Graph gaps are zero. Email has **150,255 enriched interactions** and
+  **42,741** visible identity-review interactions; Slack has **seven enriched**
+  and **35,051** held with direction unverified. Commusoft has **12,656**
+  retained job identities and **1,004** reviewed canonical links. A source
+  message or reviewed link is not the same as a verified assignment or score.
+  [Attribution cutline](evidence/learn-build01-source-attribution-cutline-2026-10-17.json).
+
 - The independently downloaded scheduled off-site database and current v107
   Edge package now support a **connected signed-in frontend rehearsal**. The
   last verified LIVE Git frontend rebuilt for Vercel with only an ephemeral
@@ -226,6 +235,13 @@ inactive until Chris reviews and signs off the business result.
   job collection alone cannot identify an individual recipient; the existing
   source-review queue is the truthful current route.
   [Policy draft](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md).
+- **Attribution limits:** the current 1,004 published canonical Commusoft jobs
+  have customer links, but only 793 have site links, five have any linked
+  communication, and none has an individual engineer link, completion instant
+  or `jobs.verified` flag. The 42,741 Email and 35,051 Slack interactions in
+  identity review must remain visible but cannot silently acquire a customer
+  or job attribution. These counts do not prove a representative progress or
+  completion score.
 - **Email review and history:** the 55 historical drafts and 12 source-missing
   links require separate provenance treatment. A draft must not be represented
   as verified sent mail. The 1,595 current eligible unlinked sources are all

@@ -1,5 +1,14 @@
 # Build execution tracker
 
+Latest Build 01 attribution checkpoint (17 October, 09:52 UTC): Phone is
+4,676/4,676 linked to interactions and eligible Graph gaps are zero. Email
+has 42,741 held identity-review interactions and Slack has 35,051 held for
+unverified direction. Commusoft has 12,656 retained job identities and 1,004
+reviewed canonical links; the published jobs have no individual engineer
+link, completion instant or verified job flag. These held populations remain
+visible; no named handoff or numeric score is claimed.
+[Read-only cutline](../../operations/evidence/learn-build01-source-attribution-cutline-2026-10-17.json).
+
 Latest Build 01 recovery checkpoint (17 October, 09:49 UTC): disposable
 signed-in browsers opened the rebuilt LIVE Git frontend against the
 independently restored scheduled database, recovered Auth/REST and current
