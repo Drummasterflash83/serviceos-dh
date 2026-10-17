@@ -1,5 +1,13 @@
 # Build execution tracker
 
+Build 01 open-job evidence breakdown (17 October, 15:33 UTC): a read-only LIVE
+count covered all 295 recorded open/pending/on-hold Commusoft jobs. Ten have
+reviewed job-card links; 255 have retained parent source but await customer
+identity review, 29 lack a parent source, and one has a reviewed customer but
+awaits its job-link review. These are visible source-review cases, not proof
+of an unattended projection failure or a named engineer assignment.
+[Counts-only receipt](../../operations/evidence/learn-build01-open-job-review-reasons-2026-10-17.json).
+
 Build 01 ordinary processing checkpoint (17 October, 15:17 UTC): the released
 LIVE worker/scheduler v109/v51 now run 50-item identity and Graph batches.
 Three ordinary identity jobs settled with 123 resolved interactions, 27

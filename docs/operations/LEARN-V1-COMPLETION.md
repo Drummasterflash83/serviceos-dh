@@ -17,6 +17,36 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 15:33 UTC — open Commusoft job attention gap classified.**
+
+### Working and verified
+
+- A read-only LIVE breakdown covered all **295** recorded open/pending/on-hold
+  Commusoft jobs. **Ten** have reviewed job-card links. Of the **285** still
+  in source review, **255** have retained customer/site source evidence but an
+  unreviewed customer identity, **29** lack a parent source, and **one** has a
+  reviewed customer but still needs the job-link review. No customer or job
+  content, provider write or production data write was returned.
+  [Counts-only receipt](evidence/learn-build01-open-job-review-reasons-2026-10-17.json).
+- This separates governed human review from an unattended processing failure.
+  The retained source-job cards keep those jobs visible with their original
+  status and observation time; no person assignment or score is inferred.
+
+### Needs finishing
+
+- Complete the first signed-in Owner / MD review-task acceptance and establish
+  with Chris how much of the 255-record identity-review workload must be
+  reviewed for Build 01 business acceptance. The 29 missing-parent jobs remain
+  source holds; the direct provider check returned 404 for all 19 distinct
+  parents behind them. Full application recovery and final sign-off remain
+  separate gates.
+
+### Blocked externally
+
+- No new provider access or fingerprint is required for this classification.
+  Human identity confirmation and the already requested five-setting recovery
+  decision remain pending.
+
 **17 October, 15:17 UTC — first ordinary 50-item identity chain and Email drain verified.**
 
 ### Working and verified

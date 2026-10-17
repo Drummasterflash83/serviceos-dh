@@ -120,6 +120,14 @@ inactive until Chris reviews and signs off the business result.
   or customer source relationship**. They remain visible for source review,
   without inferred ownership or completion.
   [Coverage receipt](evidence/learn-build01-commusoft-current-source-coverage-2026-10-17.json).
+  A 15:32 UTC counts-only breakdown of those 295 open/pending/on-hold jobs
+  found **255** with retained customer/site source but an unreviewed customer
+  identity (169 direct customer, 86 site-to-customer), **29** missing a parent
+  source, **one** with a reviewed customer but no reviewed job link, and **ten**
+  with reviewed job links. The 285 source-review jobs are therefore a real
+  governed identity/link workload, not an ordinary projection failure or
+  evidence that those jobs belong to a particular person.
+  [Exact breakdown](evidence/learn-build01-open-job-review-reasons-2026-10-17.json).
   A bounded direct GET then checked the 19 distinct parent IDs behind those
   29 gaps: all returned 404, while a known retained property returned 200
   with the same key and route. The jobs remain visible as source-review holds;
@@ -532,7 +540,10 @@ inactive until Chris reviews and signs off the business result.
   Events.
 - **Jobs and attention:** Commusoft retained 12,656 job identities and 295
   recorded open/pending/on-hold jobs. Only ten of those had reviewed job-card
-  links; 285 did not. At 22:31, 272 of the 295 had no observation within a day.
+  links; 285 did not. Of those 285, 255 already have a retained parent source
+  but need customer identity review, 29 lack a parent source, and one needs
+  job-link review after its customer was reviewed. At 22:31, 272 of the 295
+  had no observation within a day.
   The released captured-source view now has explicit hold and source-review
   filters, and signed-in LIVE example rows passed. Named-person handoff and a
   representative progress/completion score are not established. The saved
