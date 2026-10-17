@@ -17,6 +17,34 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 05:46 UTC — current Edge source copied off site; ordinary card sweep continues.**
+
+### Working and verified
+
+- Chris approved the exact v107 age-encrypted LIVE Edge source copy. The
+  create-only scoped Writer upload to the existing private London bucket
+  succeeded, and the separate Restore identity downloaded the stored version.
+  Both copies were 6,022,776 bytes with SHA-256
+  `dcfcbb300d0239f379f744e55e989fb1a4bcd2b85ab67f1c8b3fa5a940f55473`.
+  No production data or provider writes occurred. The older v106 package was
+  superseded and was not copied. [Off-site receipt](evidence/learn-build01-runtime-2322-offsite-copy-2026-10-17.json).
+- The 05:46 LIVE card readback found projections for **all 4,181 active cards**.
+  The ordinary sweep had advanced 3,940 cards past its stable cutoff, with
+  241 remaining. This is card coverage, not yet a completed unattended sweep.
+
+### Needs finishing
+
+- Observe the ordinary card job's final batch and terminal success. The exact
+  160-channel Slack roster's post-cutoff evidence and catch-up, Email backlog,
+  reviewed job links and attention policy, and full application/Auth recovery
+  remain open. The v107 source-only readback has not been decrypted or rebuilt
+  as a recovered service.
+
+### Blocked externally
+
+- No user action is needed for this copy or card continuation. Chris will
+  review the business result after the technical acceptance pack is ready.
+
 **16 October, 23:27 UTC — card sweep running; current Edge source locally preserved.**
 
 ### Working and verified

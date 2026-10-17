@@ -1,6 +1,6 @@
 # Build 01 LIVE Edge v107 source: exact off-site copy review
 
-**Prepared 16 October 2026; off-site copy not yet authorised for this package.**
+**Prepared 16 October 2026; exact copy approved and independently read back 17 October at 05:46 UTC.**
 A stable read-only LIVE inventory completed at 23:24:59 UTC: 103 active
 functions, 728 source files and 4,829,384 source bytes. It includes
 `platform-worker` v107. The function inventory was unchanged before and after
@@ -29,3 +29,8 @@ package contains no exported runtime secret values, Auth signing material,
 frontend configuration or customer-data export. The copy/readback would not
 write production data or source providers. It would still not establish full
 application/Auth recovery without the isolated recovered-service check.
+
+The approved create-only Writer upload succeeded in the existing private London
+bucket. The separate Restore identity downloaded the stored version, and its
+6,022,776 bytes and SHA-256 matched the local ciphertext. See the
+[sanitised off-site receipt](evidence/learn-build01-runtime-2322-offsite-copy-2026-10-17.json).

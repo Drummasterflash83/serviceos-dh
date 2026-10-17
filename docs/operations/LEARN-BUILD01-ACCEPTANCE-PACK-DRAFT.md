@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 16 October 2026, 23:27 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 05:46 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -29,18 +29,18 @@ inactive until Chris reviews and signs off the business result.
   tenant and operator boundaries. The v104 Edge source was independently copied
   off-site and read back. A later v106 source inventory was locally staged; the
   changed v107 worker passed TEST, isolated startup and its first LIVE batch.
-  The current v107 LIVE source has now been captured, encrypted and locally
-  staged as 103 verified function trees; it is not yet copied off site.
+  The current v107 LIVE source has been captured, encrypted and locally
+  staged as 103 verified function trees, then copied off site and downloaded
+  through the separate Restore identity with matching bytes and hash.
   [Recovery inventory](LEARN-BUILD01-APPLICATION-RESTORE-INVENTORY.md).
 
 ## Needs finishing
 
-- **Cards:** 4,172 of 4,181 active cards had a projection at 23:21. Nine older
-  cards remained unprojected. The ordinary scheduler restarted the sweep at
-  23:10 and had advanced 90 cards past its stable cutoff. The earlier failed
-  job is retained in the
-  audit history. Observe all ten missing projections and the final sweep batch
-  before closing this gate. [Release and continuation proof](evidence/learn-build01-card-phase-release-2026-10-16.json).
+- **Cards:** All 4,181 active cards had a projection by the 05:46 readback.
+  The ordinary scheduler had advanced 3,940 cards past its stable cutoff with
+  241 still before it. The earlier failed job remains in the audit history.
+  Observe the final sweep batch before closing this gate.
+  [Release and continuation proof](evidence/learn-build01-card-phase-release-2026-10-16.json).
 - **Slack freshness:** 72 of the exact 160 channels were more than a day
   behind at 23:19. No post-cutoff message, reply or signed hint had been saved
   in that exact roster at 22:49. Its latest retained source activity is from
@@ -60,8 +60,8 @@ inactive until Chris reviews and signs off the business result.
   revision and need a separate reviewed reconciliation; the current update
   lane must not silently rewrite them. The full changed-source backlog has not
   yet drained.
-- **Recovery:** The latest serving v107 Edge source still needs a fresh
-  encrypted off-site copy/readback. More importantly, full frontend, all 103
+- **Recovery:** The serving v107 Edge source has a fresh encrypted off-site
+  copy and separate readback. Full frontend, all 103
   Edge functions, required runtime secrets, real-user/Auth recovery and a
   controlled capture restart have not been proven from independent recovery
   inputs. Byte copies and the one-route isolated rehearsal do not close this.
@@ -72,9 +72,9 @@ inactive until Chris reviews and signs off the business result.
 
 ## Blocked externally
 
-- No user action is needed for the unattended card continuation. The v104
-  source-only off-site copy approved earlier was completed; the prepared v106
-  package has been superseded by v107. Chris's business acceptance will be
+- No user action is needed for the unattended card continuation. The prepared
+  v106 package was superseded without copying it; the current v107 exact copy
+  and readback are complete. Chris's business acceptance will be
   requested **after** the technical pack is ready. No full-working-day elapsed-time
   wait is being imposed.
 

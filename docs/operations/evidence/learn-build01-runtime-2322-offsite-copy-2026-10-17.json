@@ -1,0 +1,19 @@
+{
+  "version": "learn-build01-runtime-2322-offsite-copy/1",
+  "observedAtUtc": "2026-10-17T05:46:36Z",
+  "approvedExactPackage": "LEARN-BUILD01-RUNTIME-2322-OFFSITE-REVIEW.md",
+  "ciphertextBytes": 6022776,
+  "ciphertextSha256": "dcfcbb300d0239f379f744e55e989fb1a4bcd2b85ab67f1c8b3fa5a940f55473",
+  "privateLondonBucket": "openfolk-serviceos-database-235099643372-eu-west-2",
+  "objectKey": "projects/tgbnakbxwcqjeimygroz/objects/a4d892a1387b1c19c53caea3cdfb85d7c15dd80929cd2c5defeef7b5621d1656/dcfcbb300d0239f379f744e55e989fb1a4bcd2b85ab67f1c8b3fa5a940f55473",
+  "storedVersionId": "Ypewk.7G3u7uq60H5M2Z547jH8ELBiit",
+  "createOnlyWriterCopyVerified": true,
+  "separateRestoreIdentityVersionReadbackVerified": true,
+  "downloadedBytesAndHashVerified": true,
+  "runtimePointInTime": "LIVE Edge inventory at 23:24:59 UTC: 103 functions, 728 source files, platform-worker v107",
+  "currentRuntimeCoveredAtCopy": true,
+  "escrowDecryptionVerified": false,
+  "applicationAuthRecoveryVerifiedByThisCopy": false,
+  "productionDataWrites": false,
+  "scope": "Approved age-encrypted point-in-time application source checkpoint. Full frontend, Auth, secret, source restart and all-function recovery remain unverified."
+}

@@ -14,10 +14,12 @@ the v106 inventory; the other 102 trees are byte-for-byte unchanged. The v107
 inventory was locally age-encrypted into **6,022,776 bytes**, SHA-256
 `dcfcbb300d0239f379f744e55e989fb1a4bcd2b85ab67f1c8b3fa5a940f55473`,
 and staged again as 103 isolated function trees with all 728 file hashes
-verified. This package is **local only** pending its own exact off-site review;
-the v104 off-site copy remains the latest independently downloaded version.
-[Local receipt](evidence/learn-build01-runtime-2322-local-2026-10-16.json) and
-[exact proposed copy](LEARN-BUILD01-RUNTIME-2322-OFFSITE-REVIEW.md).
+verified. Its exact approved create-only off-site copy completed at 05:46 UTC
+on 17 October; the separate Restore identity downloaded the stored version and
+verified its bytes and hash. This is the latest independently downloaded LIVE
+Edge source checkpoint. [Local receipt](evidence/learn-build01-runtime-2322-local-2026-10-16.json),
+[exact review](LEARN-BUILD01-RUNTIME-2322-OFFSITE-REVIEW.md) and
+[off-site receipt](evidence/learn-build01-runtime-2322-offsite-copy-2026-10-17.json).
 
 At 22:05 UTC, a newer stable read-only LIVE inventory captured **103** active
 functions and **728** files (4,828,503 source bytes), including
@@ -143,7 +145,7 @@ and [off-site copy receipt](evidence/learn-build01-live-runtime-refresh-offsite-
 | --- | --- | --- |
 | Database and Vault | Encrypted independent snapshot; isolated native restore and Vault comparison | Restore from a current off-site version and reconcile its point in time with file/object backups |
 | Auth and tenant access | Offline Auth and PostgREST boot with a new synthetic signing key; fresh synthetic login, tenant RLS and audited operator grant/revocation passed | Recover the supported real-user login path, reset sessions if the non-exportable original signing key is unavailable, and check operator routes through the recovered application |
-| Edge functions | The earlier 102-function, 721-file package was copied, downloaded and decrypted with its manifest verified. The v104 103-function package was copied off site and independently downloaded. Current v107 source (103 functions, 728 files) is locally verified, encrypted and staged; its off-site copy is pending. One unchanged archived route passes an isolated authenticated tenant read. | Copy/read back the v107 package after exact approval, then decrypt/rebuild all activated functions with their verified flags and secret references and exercise their required routes in an isolated service |
+| Edge functions | The earlier 102-function, 721-file package was copied, downloaded and decrypted with its manifest verified. Current v107 source (103 functions, 728 files) is locally verified, encrypted, staged, copied off site and independently downloaded. One unchanged archived route passes an isolated authenticated tenant read. | Decrypt/rebuild all activated functions with their verified flags and secret references and exercise their required routes in an isolated service |
 | Frontend | Vercel builds from Git `main`; the four LIVE aliases and protected LEARN/Drummonds view were checked at `0266c7f7`. The later Slack handoff UI revision `ecfa0aa4` passed both TEST and LIVE Git/Vercel build statuses. | Verify the later signed-in LIVE UI, then restore a pinned Git revision to an isolated Vercel target with its production-equivalent public configuration and test login, client cards and operator paths before any alias switch |
 | Runtime configuration | Static source scan found 56 literal Edge environment names plus 18 dynamic lookups across the 102 function archives; the frontend references `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_ENABLE_SIGNUP` | Independently inventory actual configured names, non-exportable and dynamic-name references, escrow/restore secret values through an approved channel, and verify each recovered function's access without printing values |
 | Capture and files | Separate recording/voicemail manifests and database-reference restore checks exist | Match the chosen database point to its corresponding file inventory; keep dispatchers paused until scopes, cursors and credentials are verified; resume one bounded source at a time and prove new data reaches the correct tenant/card |
