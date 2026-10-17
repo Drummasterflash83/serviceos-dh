@@ -136,12 +136,24 @@ def service_token(secret, role='service_role'):
     return head + '.' + body + '.' + b64url(hmac.new(secret.encode(), signing, hashlib.sha256).digest())
 
 
+def resign_token(token, secret):
+    parts = token.split('.')
+    if len(parts) != 3 or any(not part for part in parts):
+        raise RecoveryError('Synthetic Auth token shape changed')
+    signing = (parts[0] + '.' + parts[1]).encode()
+    return parts[0] + '.' + parts[1] + '.' + b64url(
+        hmac.new(secret.encode(), signing, hashlib.sha256).digest())
+
+
 def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
+        force_reentry=False,
         with_worker_fixture=False, with_browser_fixture=False,
         with_preserved_browser_fixture=False,
         source_dir=SOURCE, expected_archive=EXPECTED_ARCHIVE):
     if with_worker_fixture and (not with_edge or not reviewed_v107):
         raise RecoveryError('Worker fixture requires reviewed current Edge recovery')
+    if force_reentry and not recover_existing_user:
+        raise RecoveryError('Session re-entry requires a preserved-user recovery check')
     if (with_browser_fixture or with_preserved_browser_fixture) and (
             not with_edge or not reviewed_v107 or not recover_existing_user):
         raise RecoveryError('Connected browser fixture requires preserved-user current Edge recovery')
@@ -296,6 +308,50 @@ def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
                 headers=('Authorization: Bearer '+login['access_token'],))
             if me_status != 200 or me.get('id') != created['id']:
                 raise RecoveryError('Synthetic authenticated user read unconfirmed: HTTP '+str(me_status))
+            stale_token = None
+            if force_reentry:
+                stage = 'forced_session_reentry'
+                old_refresh = login.get('refresh_token')
+                if not isinstance(old_refresh,str) or not old_refresh:
+                    raise RecoveryError('Synthetic refresh token missing')
+                stale_token = resign_token(login['access_token'], secrets.token_urlsafe(48))
+                stale_status,stale_user = curl_inside(target.name,'/user',
+                    headers=('Authorization: Bearer '+stale_token,))
+                if stale_status not in (401,403) or stale_user.get('id') == created['id']:
+                    raise RecoveryError('Old-signing-key Auth token was not denied')
+                before_sessions = int(target.query('select count(*) from auth.sessions;'))
+                before_refresh = int(target.query('select count(*) from auth.refresh_tokens;'))
+                if before_sessions < 1 or before_refresh < 1:
+                    raise RecoveryError('Synthetic session state missing before invalidation')
+                target.query('delete from auth.refresh_tokens; delete from auth.sessions;')
+                if (target.query('select count(*) from auth.sessions;') != '0' or
+                        target.query('select count(*) from auth.refresh_tokens;') != '0'):
+                    raise RecoveryError('Disposable session invalidation unconfirmed')
+                refresh_status,refresh_result = curl_inside(target.name,
+                    '/token?grant_type=refresh_token',method='POST',
+                    headers=('Content-Type: application/json',),
+                    payload=json.dumps({'refresh_token':old_refresh}).encode())
+                if refresh_status not in (400,401,403) or refresh_result.get('access_token'):
+                    raise RecoveryError('Invalidated refresh token was accepted')
+                relogin_status,relogin = curl_inside(target.name,
+                    '/token?grant_type=password',method='POST',
+                    headers=('Content-Type: application/json',),
+                    payload=json.dumps({'email':synthetic_email,
+                                        'password':synthetic_password}).encode())
+                if (relogin_status != 200 or relogin.get('user',{}).get('id') != created['id']
+                        or not relogin.get('access_token')):
+                    raise RecoveryError('Fresh login after session invalidation failed')
+                login = relogin
+                fresh_status,fresh_user = curl_inside(target.name,'/user',
+                    headers=('Authorization: Bearer '+login['access_token'],))
+                if fresh_status != 200 or fresh_user.get('id') != created['id']:
+                    raise RecoveryError('Fresh session after invalidation failed')
+                report.update(disposableSessionsBeforeInvalidation=before_sessions,
+                              disposableRefreshTokensBeforeInvalidation=before_refresh,
+                              oldSigningKeyAuthTokenDenied=True,
+                              oldRefreshTokenDenied=True,
+                              freshLoginAfterInvalidationVerified=True,
+                              forcedReentryPolicyRehearsed=True)
             users_after = json.loads(target.query("select json_build_object('count',count(*),"
                 "'digest',md5(coalesce(string_agg(id::text,',' order by id)"
                 " filter(where email not like 'build01-%@invalid.test'),''))) from auth.users;"))
@@ -351,6 +407,14 @@ def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
                 report['restHttpStatus'] = api_status
                 report['restErrorCode'] = api_rows.get('code') if isinstance(api_rows,dict) else None
                 raise RecoveryError('Unassigned synthetic user card access differed: HTTP '+str(api_status))
+            if force_reentry:
+                stale_rest_status,stale_rest_rows = curl_inside(target.name,
+                    '/customer_cards?select=id&limit=1',
+                    headers=('Authorization: Bearer '+stale_token,),port=3000)
+                if stale_rest_status not in (401,403) or (
+                        isinstance(stale_rest_rows,list) and stale_rest_rows):
+                    raise RecoveryError('Old-signing-key REST token was not denied')
+                report['oldSigningKeyRestTokenDenied'] = True
             existing_bearer = None
             if recover_existing_user:
                 stage = 'existing_user_disposable_reset'
@@ -790,6 +854,7 @@ if __name__=='__main__':
         expected_archive = EXPECTED_ARCHIVE
         if (len(mode) == 3 and
                 mode[0] in ('--with-reviewed-v107-edge-and-existing-user-reset',
+                            '--with-reviewed-v107-edge-and-existing-user-session-reentry',
                             '--with-reviewed-v107-edge-worker-fixture',
                             '--with-reviewed-v107-edge-browser-fixture',
                             '--with-reviewed-v107-edge-preserved-browser-fixture') and
@@ -814,6 +879,7 @@ if __name__=='__main__':
             mode = mode[:1]
         elif (len(mode) == 3 and
                 mode[0] in ('--with-reviewed-v107-edge-and-existing-user-reset',
+                            '--with-reviewed-v107-edge-and-existing-user-session-reentry',
                             '--with-reviewed-v107-edge-worker-fixture',
                             '--with-reviewed-v107-edge-browser-fixture',
                             '--with-reviewed-v107-edge-preserved-browser-fixture') and
@@ -844,6 +910,7 @@ if __name__=='__main__':
         if len(mode)>1 or (len(mode)==1 and mode[0] not in
             ('--with-archived-edge','--with-reviewed-v107-edge',
              '--with-reviewed-v107-edge-and-existing-user-reset',
+             '--with-reviewed-v107-edge-and-existing-user-session-reentry',
              '--with-reviewed-v107-edge-worker-fixture',
              '--with-reviewed-v107-edge-browser-fixture',
              '--with-reviewed-v107-edge-preserved-browser-fixture')):
@@ -851,13 +918,17 @@ if __name__=='__main__':
         print(json.dumps(run(with_edge=len(mode)==1,
             reviewed_v107=len(mode)==1 and mode[0] in
             ('--with-reviewed-v107-edge','--with-reviewed-v107-edge-and-existing-user-reset',
+             '--with-reviewed-v107-edge-and-existing-user-session-reentry',
              '--with-reviewed-v107-edge-worker-fixture',
              '--with-reviewed-v107-edge-browser-fixture',
              '--with-reviewed-v107-edge-preserved-browser-fixture'),
             recover_existing_user=len(mode)==1 and
             mode[0] in ('--with-reviewed-v107-edge-and-existing-user-reset',
+                        '--with-reviewed-v107-edge-and-existing-user-session-reentry',
                         '--with-reviewed-v107-edge-browser-fixture',
                         '--with-reviewed-v107-edge-preserved-browser-fixture'),
+            force_reentry=len(mode)==1 and
+            mode[0]=='--with-reviewed-v107-edge-and-existing-user-session-reentry',
             with_worker_fixture=len(mode)==1 and
             mode[0]=='--with-reviewed-v107-edge-worker-fixture',
             with_browser_fixture=len(mode)==1 and

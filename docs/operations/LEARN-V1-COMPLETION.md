@@ -17,6 +17,42 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 10:37 UTC — session re-entry verified; credential copy still partial.**
+
+### Working and verified
+
+- The independently downloaded scheduled database, current v107 Edge source,
+  Auth and PostgREST passed a new isolated re-entry drill. Old refresh and
+  differently signed access tokens were denied after invalidating only the
+  disposable restored sessions. Fresh login, preserved-user tenant cards,
+  tenant isolation and audited operator reads passed. No LIVE session, password
+  or production data changed. [Auth receipt](evidence/learn-build01-auth-session-reentry-2026-10-17.json).
+- LIVE's existing service-role key matches exactly the active Commusoft and
+  Slack worker-key digests. Those two bindings should be regenerated from a
+  replacement project's key, avoiding an unnecessary old-key escrow.
+- Chris approved the one-time, scoped credential inventory and encrypted
+  off-site copy. The exact Openfolk ServiceOS and Birchills 1Password items
+  supplied three matching values; the QuickBooks worker key and both Simwood
+  fields were age-encrypted locally without a plaintext file or value output.
+  [Scoped inventory](evidence/learn-build01-scoped-credential-inventory-2026-10-17.json).
+
+### Needs finishing
+
+- Six required credentials were absent from those exact items: Google OAuth
+  client secret, Workspace private key, Slack Events signing secret, OpenAI key,
+  OpenFolk control-plane key and Phone webhook secret. The Google OAuth client
+  ID and optional Workspace client ID also remain unresolved. The local
+  ciphertext is partial; no off-site credential object was uploaded. Identify
+  each exact protected source or controlled reissue path, then verify the
+  completed package and provider-free replacement runtime before a full
+  application-recovery claim.
+
+### Blocked externally
+
+- No additional Touch ID or broad local secret search is being requested.
+  Exact source access or replacement-key issuance for the six missing values
+  remains a recovery dependency; Chris's business sign-off remains separate.
+
 **17 October, 10:29 UTC — retained job links have no appointment shortcut.**
 
 An aggregate-only LIVE check covered all 12,732 retained Commusoft job

@@ -1,0 +1,21 @@
+{
+  "version": "learn-build01-auth-session-reentry/1",
+  "observedAtUtc": "2026-10-17T10:34:09Z",
+  "source": "independently downloaded 17 October scheduled production database package and independently retained LIVE Edge v107 source",
+  "isolatedRestore": true,
+  "externalNetwork": false,
+  "hostPorts": 0,
+  "productionWrites": false,
+  "preservedAuthUsers": 2,
+  "disposableSessionsBeforeInvalidation": 19,
+  "disposableRefreshTokensBeforeInvalidation": 303,
+  "oldSigningKeyAuthTokenDenied": true,
+  "oldSigningKeyRestTokenDenied": true,
+  "invalidatedRefreshTokenDenied": true,
+  "freshLoginAfterInvalidationVerified": true,
+  "preservedUserDisposablePasswordResetAndLoginVerified": true,
+  "preservedUserTenantCardReadVerified": true,
+  "tenantIsolationAndAuditedOperatorReadVerified": true,
+  "containersRemoved": true,
+  "limitation": "This is a disposable failover rehearsal. It does not invalidate LIVE sessions, reset production passwords, send email, or prove provider credential recovery. Existing users must re-enter after a real signing-key change."
+}

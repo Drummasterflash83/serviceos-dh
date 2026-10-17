@@ -47,6 +47,16 @@ receptionist integrations as well as Build 01 routes. Only the credentials
 actually needed to restart approved Build 01 sources should enter the proposed
 package. A separate isolated startup check must establish that subset.
 
+**17 October, 10:35 UTC — two internal keys do not need copying.** A read-only
+verification process compared the current LIVE `service_role` key in memory
+with all active Edge digests. It matched exactly
+`LEARN_COMMUSOFT_WORKER_KEY` and `LEARN_SLACK_WORKER_KEY`; no key value was
+printed or saved. The original production release bound both names to that
+project key. A replacement project must issue its own service key and bind
+these two worker names to the replacement value. Copying their LIVE value
+would be incorrect in a replacement project. This narrows the credential-copy
+subset without weakening the worker authentication gate.
+
 [Non-secret reconstruction evidence](evidence/learn-build01-nonsecret-runtime-reconstruction-2026-10-17.json).
 
 A hash-checked scan of all **103 current v107 function closures / 728 source
@@ -120,8 +130,18 @@ and age-encrypts directly from memory to a create-only mode-0600 file. It does
 not upload or decrypt a real package. A synthetic two-credential roundtrip
 passed with the pinned age binary and an ephemeral test identity; the temporary
 ciphertext was removed. [Synthetic rehearsal](evidence/learn-build01-edge-credential-package-synthetic-2026-10-17.json).
-The pending decision is still required before the real mode reads any provider
-credential or an off-site copy is made.
+Chris approved the one-time, scoped encrypted credential inventory and
+off-site copy on 17 October. This does not authorise standing secret capture.
+The first exact-item read matched and locally age-encrypted three required
+values: the QuickBooks worker key and both Simwood fields. It found no active
+digest match for the Google OAuth secret, Workspace private key, Slack Events
+signing secret, OpenAI key, OpenFolk control-plane key or Phone webhook secret;
+the two Google identifiers also remain unresolved. The local ciphertext is
+**partial and has not been uploaded**. The missing names and affected routes
+are in the [sanitised inventory](evidence/learn-build01-scoped-credential-inventory-2026-10-17.json).
+Under the reviewed stop rule, no full-recovery claim or off-site credential
+copy follows until an exact protected source or controlled reissue path is
+established for each required value.
 
 ## Decision and risk
 
