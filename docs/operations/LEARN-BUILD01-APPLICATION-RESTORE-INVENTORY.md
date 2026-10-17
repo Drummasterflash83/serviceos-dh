@@ -1,9 +1,24 @@
 # Build 01 application and Auth restore inventory
 
-**16 October 2026 — preparation, not a full-service restore receipt.** The
+**17 October 2026 — partial service recovery, not a full-service restore receipt.** The
 isolated database/Auth/PostgREST rehearsal and the full Edge source-package
 off-site copy prove distinct parts of recovery. Neither proves that an independently
 recovered OpenFolk service can serve clients or resume ingestion.
+
+At 06:10 UTC on 17 October, the exact locally staged v107 source was checked
+again against all **728** hashes in the reviewed LIVE manifest, then all
+**103** Edge functions bundled inside isolated pinned-runtime containers with
+zero failures. The current `learn-launch-status` bundle was mounted into a
+disposable service alongside an independently restored older database archive,
+Auth, PostgREST and a local gateway. A new synthetic user authenticated; the
+current v107 route returned tenant-scoped status with nonempty Phone and Email
+counts. Tenant card isolation, audited operator selection and denial after
+revocation passed. All containers were removed. There was no runtime-secret
+mount, external network during the service rehearsal, host port, real-user
+login or production write. [Sanitised receipt](evidence/learn-build01-v107-isolated-recovery-2026-10-17.json).
+The all-function bundle result proves compilation only; only one current route
+served an authenticated request. It does not close frontend, current database
+point, runtime-secret, all-function startup or controlled-capture recovery.
 
 At 23:24:59 UTC, the current LIVE inventory was captured read-only and remained
 stable: **103** active functions, **728** source files and **4,829,384** source
@@ -145,7 +160,7 @@ and [off-site copy receipt](evidence/learn-build01-live-runtime-refresh-offsite-
 | --- | --- | --- |
 | Database and Vault | Encrypted independent snapshot; isolated native restore and Vault comparison | Restore from a current off-site version and reconcile its point in time with file/object backups |
 | Auth and tenant access | Offline Auth and PostgREST boot with a new synthetic signing key; fresh synthetic login, tenant RLS and audited operator grant/revocation passed | Recover the supported real-user login path, reset sessions if the non-exportable original signing key is unavailable, and check operator routes through the recovered application |
-| Edge functions | The earlier 102-function, 721-file package was copied, downloaded and decrypted with its manifest verified. Current v107 source (103 functions, 728 files) is locally verified, encrypted, staged, copied off site and independently downloaded. One unchanged archived route passes an isolated authenticated tenant read. | Decrypt/rebuild all activated functions with their verified flags and secret references and exercise their required routes in an isolated service |
+| Edge functions | The earlier 102-function, 721-file package was copied, downloaded and decrypted with its manifest verified. Current v107 source (103 functions, 728 files) is locally verified, encrypted, staged, copied off site and independently downloaded. All 103 current source trees bundled in isolation; one current v107 route served an authenticated tenant read against an older archive. | Decrypt the independently downloaded current package, then start required routes with verified flags and recovered secret references in an isolated service |
 | Frontend | Vercel builds from Git `main`; the four LIVE aliases and protected LEARN/Drummonds view were checked at `0266c7f7`. The later Slack handoff UI revision `ecfa0aa4` passed both TEST and LIVE Git/Vercel build statuses. | Verify the later signed-in LIVE UI, then restore a pinned Git revision to an isolated Vercel target with its production-equivalent public configuration and test login, client cards and operator paths before any alias switch |
 | Runtime configuration | Static source scan found 56 literal Edge environment names plus 18 dynamic lookups across the 102 function archives; the frontend references `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_ENABLE_SIGNUP` | Independently inventory actual configured names, non-exportable and dynamic-name references, escrow/restore secret values through an approved channel, and verify each recovered function's access without printing values |
 | Capture and files | Separate recording/voicemail manifests and database-reference restore checks exist | Match the chosen database point to its corresponding file inventory; keep dispatchers paused until scopes, cursors and credentials are verified; resume one bounded source at a time and prove new data reaches the correct tenant/card |

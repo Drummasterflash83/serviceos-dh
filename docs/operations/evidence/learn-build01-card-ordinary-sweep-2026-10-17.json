@@ -1,0 +1,17 @@
+{
+  "version": "learn-build01-card-ordinary-sweep/1",
+  "observedAtUtc": "2026-10-17T06:12:52.650Z",
+  "environment": "LIVE",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "stableSweepCutoffUtc": "2026-10-16T23:13:04.663Z",
+  "remainingCardsBeforeCutoff": 0,
+  "staleUnprojectedCards": 0,
+  "ordinaryTerminalJobStatus": "succeeded",
+  "ordinaryTerminalJobCompletedAtUtc": "2026-10-17T06:11:01.095398Z",
+  "ordinaryTerminalJobAttemptCount": 1,
+  "ordinaryTerminalJobFailures": 0,
+  "ordinaryTerminalJobInputRetries": 0,
+  "sourceOrCardIdsReturned": false,
+  "productionDataWritesByReadback": false,
+  "limitation": "The completed stable sweep proves ordinary continuation through its cutoff and no stale unprojected cards at readback. New cards and future scheduler cycles need ongoing observation; historical failed jobs remain in audit history."
+}

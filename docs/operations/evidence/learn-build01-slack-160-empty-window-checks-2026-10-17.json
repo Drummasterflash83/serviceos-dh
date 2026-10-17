@@ -1,0 +1,23 @@
+{
+  "version": "learn-build01-slack-160-empty-window-checks/1",
+  "observedAtUtc": "2026-10-17T06:15:59.500Z",
+  "environment": "LIVE",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "approvedCampaignId": "b54d246b-2818-44d1-ba05-ccbe2c6bd6c9",
+  "readbackScript": "scripts/verify/learn-build01-slack-160-window-receipts-readback.mjs",
+  "approvedPublicChannels": 160,
+  "recurringWindowsStarted": 1408,
+  "providerCompletedWindowsWithPageReceipt": 1318,
+  "providerCompletedEmptyWindows": 1318,
+  "providerCompletedNonemptyWindows": 0,
+  "channelsWithCompletedWindow": 160,
+  "channelsWithCompletedWindowEndingInPrior12Hours": 110,
+  "latestCompletedWindowEndUtc": "2026-10-17T01:24:02.424656Z",
+  "currentDeadLetterWindows": 0,
+  "savedPostcutoffMessages": 0,
+  "savedPostcutoffReplies": 0,
+  "signedEventHintsInRoster": 0,
+  "messageBodiesReturned": false,
+  "productionDataWritesByReadback": false,
+  "limitation": "Provider-completed empty history windows demonstrate checked absence in those windows, not delivery of a real post-cutoff Event. Fifty channels had no completed window ending in the prior 12 hours; the exact roster is not yet near-live across all 160."
+}

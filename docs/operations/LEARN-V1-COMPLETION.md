@@ -17,6 +17,62 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 06:15 UTC — ordinary card sweep completed; exact Slack window recovered; current source rebuilt in isolation.**
+
+### Working and verified
+
+- The ordinary LIVE customer-card chain reached the stable 23:13 UTC sweep
+  cutoff and its final zero-card job succeeded at 06:11 on its first attempt.
+  The 06:12 readback found **zero stale unprojected cards**. New cards continue
+  through ordinary scheduling; the earlier failed job remains in audit history.
+  [Sweep receipt](evidence/learn-build01-card-ordinary-sweep-2026-10-17.json).
+- The exact approved public Slack window that dead-lettered at one attempt
+  was retried once after a rollback rehearsal, with unchanged approval,
+  connection and roster, and no saved page to replay. It succeeded on attempt
+  two with a completed empty provider page; the ordinary scheduler advanced
+  its saved boundary and queued the next window. A service-role-only bounded
+  retry for the same class of zero-page generic failure was rehearsed and
+  installed on TEST and LIVE. Its future unattended failure recovery has not
+  yet been observed. [Recovery receipt](evidence/learn-build01-slack-unclassified-recovery-2026-10-17.json).
+- Across the **exact 160 approved public channels**, 1,318 recurring windows
+  had succeeded with provider page receipts, all empty, covering all 160
+  channels at least once. The latest completed window ended 17 October 01:24
+  UTC; 110 channels had a completed window ending in the prior 12 hours. No
+  current recurring window was dead-lettered. These checks establish provider-
+  confirmed absence in checked windows, not delivery of a real post-cutoff
+  Event. [Counts-only receipt](evidence/learn-build01-slack-160-empty-window-checks-2026-10-17.json).
+- Every file in the current LIVE v107 source inventory was rechecked against
+  its reviewed manifest, and **all 103 Edge functions bundled** in isolated
+  containers with zero failures. A current v107 bundle then served an
+  authenticated tenant route against an independently restored, older database
+  archive and disposable Auth. Nonempty Phone/Email counts, tenant card
+  isolation, audited operator selection and post-revocation denial passed.
+  This is a current-route recovery rehearsal, not full application/Auth
+  recovery. [Sanitised receipt](evidence/learn-build01-v107-isolated-recovery-2026-10-17.json).
+- Email's ordinary update chain reached **24,850 unchanged receipts for
+  24,848 distinct sources**. Two sources received a second unchanged receipt
+  after their source rows were updated between jobs; their canonical revisions
+  stayed the same. Distinct sources are the useful progress count, and the
+  wider backlog remains open. [Timestamp-only explanation](evidence/learn-build01-email-repeat-explanation-2026-10-17.json).
+
+### Needs finishing
+
+- The exact 160-channel Slack roster still has **zero retained post-cutoff
+  messages, replies or signed hints**, and 50 channels lack a completed window
+  ending in the prior 12 hours. Continue catch-up and observe natural public
+  traffic; do not ask the team to create more test posts. The separate
+  20-channel signed Events proof must not be substituted for this roster.
+- Email's full changed-source and legacy review backlog, Commusoft source-to-
+  reviewed-job-card links and job attention policy, and full independent
+  application/Auth recovery remain open. A successful all-function build and
+  one authenticated route do not prove all function starts, runtime-secret
+  recovery, frontend login or controlled capture restart.
+
+### Blocked externally
+
+- No new user action or fingerprint is needed for these checks. Chris's final
+  business sign-off remains his decision after the technical pack is ready.
+
 **17 October, 05:49 UTC — current Edge source copied off site; ordinary card sweep continues.**
 
 ### Working and verified

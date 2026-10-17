@@ -36,6 +36,8 @@ EDGE_IMAGE_ID = 'sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65b
 EDGE_ROOT = ROOT / '.verification-results/build01-edge-isolated-20261016'
 EDGE_BUNDLE = EDGE_ROOT / 'output/learn-launch-status.eszip'
 EDGE_BUNDLE_SHA256 = 'abd78823453b1da6ff7c9b8171fe3e95ffcc6b4105eb2cb07aa75de819ab1d99'
+V107_EDGE_BUNDLE = ROOT / '.verification-results/build01-edge-bundles-v107/learn-launch-status.eszip'
+V107_EDGE_BUNDLE_SHA256 = 'd0e3601d0acbae63a0d0d85dea1327b95ad22d965e592603aca5040ad45f0a25'
 GATEWAY_SOURCE = ROOT / 'scripts/backup/recovery_gateway.mjs'
 GATEWAY_SOURCE_SHA256 = '15ab66f9f20096200efe049e787bac71d4e25d41352b9d10333567a082236ddf'
 LABEL = 'ai.openfolk.serviceos.auth-recovery'
@@ -129,7 +131,9 @@ def service_token(secret, role='service_role'):
     return head + '.' + body + '.' + b64url(hmac.new(secret.encode(), signing, hashlib.sha256).digest())
 
 
-def run(*, with_edge=False):
+def run(*, with_edge=False, reviewed_v107=False):
+    edge_bundle = V107_EDGE_BUNDLE if reviewed_v107 else EDGE_BUNDLE
+    edge_bundle_sha256 = V107_EDGE_BUNDLE_SHA256 if reviewed_v107 else EDGE_BUNDLE_SHA256
     report = {'version':'learn-build01-auth-recovery/1', 'state':'preflight',
               'productionWrites':False, 'externalNetwork':False, 'hostPorts':0,
               'realUserLoginAttempted':False, 'emailSent':False,
@@ -137,7 +141,9 @@ def run(*, with_edge=False):
               'databaseContainerRemoved':False}
     if with_edge:
         report.update(edgeContainerRemoved=False,gatewayContainerRemoved=False,
-                      edgeSourceBundleVerified=False,edgeAuthenticatedReadVerified=False)
+                      edgeSourceBundleVerified=False,edgeAuthenticatedReadVerified=False,
+                      reviewedV107Bundle=reviewed_v107,
+                      edgeBundleSha256=edge_bundle_sha256)
     target = None
     stage = 'preflight'
     try:
@@ -157,7 +163,7 @@ def run(*, with_edge=False):
         if with_edge:
             if (json.loads(checked(['image','inspect',GATEWAY_IMAGE]))[0]['Id'] != GATEWAY_IMAGE_ID
                     or json.loads(checked(['image','inspect',EDGE_IMAGE]))[0]['Id'] != EDGE_IMAGE_ID
-                    or hashlib.sha256(EDGE_BUNDLE.read_bytes()).hexdigest() != EDGE_BUNDLE_SHA256
+                    or hashlib.sha256(edge_bundle.read_bytes()).hexdigest() != edge_bundle_sha256
                     or hashlib.sha256(GATEWAY_SOURCE.read_bytes()).hexdigest() != GATEWAY_SOURCE_SHA256):
                 raise RecoveryError('Archived Edge recovery input pin differs')
             report['edgeSourceBundleVerified'] = True
@@ -341,7 +347,7 @@ def run(*, with_edge=False):
                     '--ipc','private','--name',EDGE_NAME,'--label',EDGE_LABEL+'='+RUN,
                     '--log-driver','none','--security-opt','no-new-privileges',
                     '--cap-drop','ALL','--memory','512m','--cpus','1','--pids-limit','128',
-                    '--mount','type=bind,src='+str(EDGE_BUNDLE)+',dst=/recovery/launch.eszip,readonly']
+                    '--mount','type=bind,src='+str(edge_bundle)+',dst=/recovery/launch.eszip,readonly']
                 for key,value in edge_env.items():
                     edge_cmd.extend(['-e',key+'='+value])
                 checked([*edge_cmd,EDGE_IMAGE_ID,'start','--main-service','/recovery/launch.eszip',
@@ -523,9 +529,11 @@ def run(*, with_edge=False):
 
 if __name__=='__main__':
     try:
-        if len(sys.argv)>2 or (len(sys.argv)==2 and sys.argv[1]!='--with-archived-edge'):
+        if len(sys.argv)>2 or (len(sys.argv)==2 and sys.argv[1] not in
+            ('--with-archived-edge','--with-reviewed-v107-edge')):
             raise RecoveryError('Exact archived Edge rehearsal mode required')
-        print(json.dumps(run(with_edge=len(sys.argv)==2)))
+        print(json.dumps(run(with_edge=len(sys.argv)==2,
+            reviewed_v107=len(sys.argv)==2 and sys.argv[1]=='--with-reviewed-v107-edge')))
     except BaseException:
         print(json.dumps({'state':'isolated_auth_recovery_unverified','report':str(REPORT)}))
         raise SystemExit(1)

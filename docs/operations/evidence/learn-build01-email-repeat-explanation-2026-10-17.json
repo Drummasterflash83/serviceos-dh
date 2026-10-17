@@ -1,0 +1,16 @@
+{
+  "version": "learn-build01-email-repeat-explanation/1",
+  "observedAtUtc": "2026-10-17T06:12:57.699Z",
+  "environment": "LIVE",
+  "committedUnchangedReceiptsSince2026-10-16T21-55Z": 24850,
+  "distinctSources": 24848,
+  "sourcesWithSecondReceipt": 2,
+  "bothSourceRevisionsUnchangedBetweenReceipts": true,
+  "firstReceiptWindowUtc": "2026-10-17T05:58:04Z",
+  "sourceMetadataUpdatedAtUtc": "2026-10-17T06:00:07.295184Z",
+  "secondReceiptWindowUtc": "2026-10-17T06:04:04Z",
+  "selectorContractAllowsFreshUnchangedReceiptAfterSourceMetadataUpdate": true,
+  "sourceIdsOrMessageContentReturned": false,
+  "productionDataWritesByReadback": false,
+  "limitation": "These two repeated unchanged receipts followed fresh source-row updates. The aggregate distinct-source count is the correct progress measure; this does not establish that the full Email backlog is drained."
+}
