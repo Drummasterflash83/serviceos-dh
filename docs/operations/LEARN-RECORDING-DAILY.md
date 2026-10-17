@@ -1,5 +1,17 @@
 # Drummonds daily recording backup operations
 
+**17 October, 08:19 UTC — local scheduled three-bucket run verified.** The
+existing 09:00 Europe/London heartbeat started the approved daily supervisor
+at 07:57 UTC. It finished successfully at 08:19 with its lock released. A
+later health read confirmed **3,166 phone objects** matching all **3,160**
+retained recording references, plus **257 original voicemail sources** and
+**257 audio objects**, with no missing references or storage pointers. Six
+older unreferenced phone objects remain retained. Both monthly restore checks
+are still current. This is the third consecutive observed local scheduled
+success; it depends on the Mac and Codex app staying available and is not an
+always-on hosted file backup or matching database snapshot.
+[Sanitised scheduled receipt](evidence/learn-build01-scheduled-communication-backup-2026-10-17.json).
+
 **16 October, 22:03 UTC — refreshed combined inventory verified.** The
 existing three-bucket supervisor finished a manual refresh after a successful
 scheduled local run at about 08:18 UTC. The newer refresh verified **3,166

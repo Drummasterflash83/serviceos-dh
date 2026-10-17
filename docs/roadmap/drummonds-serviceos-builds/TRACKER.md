@@ -1,5 +1,13 @@
 # Build execution tracker
 
+Build 01 scheduled communication backup (17 October, 08:19 UTC): the existing
+local 09:00 Europe/London automation completed its third consecutive observed
+scheduled three-bucket run without Touch ID. It verified 3,166 phone objects
+against 3,160 retained references and 257 matched voicemail source/audio
+pairs, with no missing references and its lock released. The Mac/Codex host
+dependency and non-atomic database/file points remain acceptance limits.
+[Scheduled receipt](../../operations/evidence/learn-build01-scheduled-communication-backup-2026-10-17.json).
+
 Build 01 ordinary identity retry observation (17 October, 15:52 UTC): two
 consecutive 50-item LIVE jobs each had a transient unconfirmed delivery after
 49 receipts, then settled without manual rescue on their scheduled third and

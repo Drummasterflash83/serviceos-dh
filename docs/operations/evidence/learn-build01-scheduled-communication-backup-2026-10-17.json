@@ -1,0 +1,40 @@
+{
+  "version": "learn-build01-scheduled-communication-backup/1",
+  "environment": "LIVE source, existing private AWS London destination, local Codex heartbeat host",
+  "automationId": "drummonds-recording-backup-and-recovery-checks",
+  "triggeredAtUtc": "2026-10-17T07:56:52.697Z",
+  "dailyRunStartedAtUtc": "2026-10-17T07:57:10.986Z",
+  "dailyRunFinishedAtUtc": "2026-10-17T08:19:39.711Z",
+  "dailyRunState": "succeeded",
+  "dailyLockAbsentAfterRun": true,
+  "healthCheckedAtUtc": "2026-10-17T15:54:59.181Z",
+  "healthStatus": "observed_inventory_verified",
+  "healthReason": "within_daily_window",
+  "buckets": {
+    "phone-recordings": {
+      "observedObjects": 3166,
+      "observedBytes": 662472461,
+      "recordingRows": 3160,
+      "missingObjectReferences": 0,
+      "rowsWithoutStoragePointer": 0,
+      "unreferencedObjectsRetained": 6
+    },
+    "learn-voicemail-sources": {
+      "observedObjects": 257,
+      "observedBytes": 23809838,
+      "missingObjectReferences": 0,
+      "rowsWithoutStoragePointer": 0
+    },
+    "receptionist-voicemails": {
+      "observedObjects": 257,
+      "observedBytes": 13910085,
+      "missingObjectReferences": 0,
+      "rowsWithoutStoragePointer": 0
+    }
+  },
+  "monthlyRestoreChecksCurrent": true,
+  "sourceOfScheduledAttribution": "Codex automation thread 01a12145-9d0c-7811-af08-62b5421e894a completed its 17 October heartbeat and daily command; local last-attempt and health readbacks independently confirm the run outcome.",
+  "scope": "Non-atomic observed file inventories. This is not a matching database snapshot, full application restore, or always-on hosted backup; the Mac and Codex app must be available for future runs.",
+  "privateFilePathsOrBytesReturned": false,
+  "productionSourceWrites": false
+}

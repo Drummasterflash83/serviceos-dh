@@ -8,6 +8,16 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- The existing local scheduled three-bucket communication backup succeeded
+  again today without Touch ID: 3,166 phone objects cover all 3,160 retained
+  recording references, and 257 original voicemail sources match 257 audio
+  objects. No reference or storage pointer is missing, the lock is released,
+  and both monthly restore checks are current. This is the third consecutive
+  observed **local scheduled** success, distinct from the hosted database
+  schedule. The Mac/Codex host dependency and non-atomic database/file points
+  remain explicit recovery limits.
+  [Scheduled file receipt](evidence/learn-build01-scheduled-communication-backup-2026-10-17.json).
+
 - Two ordinary LIVE 50-item identity jobs each hit a transient unconfirmed
   delivery after 49 receipts, then recovered by their scheduled retry without
   manual intervention. The first settled on attempt three with **47 resolved /

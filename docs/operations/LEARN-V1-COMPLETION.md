@@ -17,6 +17,33 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 15:55 UTC — scheduled local communication backup checked.**
+
+### Working and verified
+
+- The existing local 09:00 Europe/London automation started the approved
+  three-bucket supervisor at 07:57 UTC; it finished at 08:19 and released its
+  lock. A later health read verified **3,166 phone objects** against **3,160**
+  retained recording references, plus **257** original voicemail sources and
+  **257** matched audio objects, with zero missing references or storage
+  pointers. Both monthly restore checks remain current. This is the third
+  consecutive observed scheduled local success, distinct from today's hosted
+  scheduled database-backup success.
+  [Scheduled file receipt](evidence/learn-build01-scheduled-communication-backup-2026-10-17.json).
+
+### Needs finishing
+
+- File inventories are non-atomic relative to the database backup. The file
+  schedule still depends on the Mac and Codex app being available; do not
+  describe it as an always-on hosted backup or full-service recovery. The
+  existing Owner / MD and runtime-credential/provider-restart gates remain.
+
+### Blocked externally
+
+- No fingerprint or new backup credential was needed for today's successful
+  scheduled run. A decision to replace the local file host with standing
+  hosted Storage access would require its own reviewed scope.
+
 **17 October, 15:52 UTC — ordinary identity retries recovered without rescue.**
 
 ### Working and verified
