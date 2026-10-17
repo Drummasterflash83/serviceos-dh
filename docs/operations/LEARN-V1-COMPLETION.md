@@ -17,6 +17,33 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 11:03 UTC — exact archived Slack roster has no post-cutoff parent.**
+
+### Working and verified
+
+- A new bounded, read-only provider check obtained the exact saved 160-channel
+  roster, confirmed every channel is still public and archived, then asked
+  Slack for at most one parent message at or after the 13 October 09:30 UTC
+  handoff cutoff in each channel. All **160/160** checks succeeded; **zero**
+  channels had a matching parent. There was no rate limit, unavailable channel,
+  message-body output, DM/private-channel read or provider write. Slack's
+  [`conversations.history` reference](https://docs.slack.dev/reference/methods/conversations.history/)
+  defines the `oldest`, `inclusive` and `limit` boundary used here.
+  [Sanitised receipt](evidence/learn-build01-slack-160-provider-postcutoff-2026-10-17.json).
+
+### Needs finishing
+
+- This settles the missing **parent-message** question for the exact 160 as
+  provider-confirmed absence at this instant; it does not establish absence of
+  replies to older parents. Continue the already-approved historical thread
+  catch-up until its post-cutoff reply intervals settle. Keep observing the
+  separate 20 active channels through the signed Events ledger.
+
+### Blocked externally
+
+- No staff test post is needed or appropriate in these archived channels.
+
+
 **17 October, 10:55 UTC — signed Slack secret source confirmed.**
 
 ### Working and verified

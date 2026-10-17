@@ -1,12 +1,20 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 10:55 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 11:03 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- Slack itself returned **no parent message at or after the handoff cutoff**
+  from any of the exact 160 saved public channels. Every channel passed a
+  current public/archived check and a bounded `conversations.history` check;
+  no channel or provider call failed. This replaces the earlier ambiguous
+  “no verified event” observation with provider-confirmed parent absence at
+  11:03 UTC. It does not prove reply absence or finish the saved thread
+  catch-up. [Provider receipt](evidence/learn-build01-slack-160-provider-postcutoff-2026-10-17.json).
 
 - The existing Drummonds Slack app's signing secret matched the active LIVE
   Edge digest in memory. This identifies its exact recovery source without an

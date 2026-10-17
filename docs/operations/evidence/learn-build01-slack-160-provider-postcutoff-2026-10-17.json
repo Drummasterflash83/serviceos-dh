@@ -1,0 +1,23 @@
+{
+  "version": "learn-build01-slack-postcutoff-provider-proof/1",
+  "observedAtUtc": "2026-10-17T11:03:15.972Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "campaign": "b54d246b-2818-44d1-ba05-ccbe2c6bd6c9",
+  "cutoffUtc": "2026-10-13T09:30:00.000Z",
+  "approvedChannels": 160,
+  "checked": 160,
+  "publicArchived": 160,
+  "publicActive": 0,
+  "postcutoffParentChannels": [],
+  "unavailable": [],
+  "rateLimited": false,
+  "completeProviderParentCheck": true,
+  "messageBodiesReturned": false,
+  "threadRepliesChecked": false,
+  "dmChannelsRead": false,
+  "privateChannelsRead": false,
+  "providerWrites": false,
+  "productionDataWrites": false,
+  "limitation": "A complete empty provider history result establishes no channel parent at or after this saved cutoff at the observation instant. It does not establish reply absence or settle every saved recurring window."
+}
