@@ -1,0 +1,26 @@
+{
+  "version": "learn-build01-commusoft-coverage/1",
+  "observedAtUtc": "2026-10-17T07:26:25Z",
+  "environment": "LIVE Drummonds",
+  "method": "Existing aggregate-only readback of retained source versions, reviewed links, canonical jobs and ordinary capture pages; no customer content or provider request returned",
+  "retainedJobIdentities": 12656,
+  "reviewedPublishedJobs": 1004,
+  "reviewedPublishedJobsOnLatestEffectiveVersion": 1004,
+  "recordedOpenPendingOrHoldJobs": 295,
+  "recordedOpenPendingOrHoldPublishedJobs": 10,
+  "recordedOpenPendingOrHoldNeedsReview": 285,
+  "jobsMissingParentSource": 1553,
+  "recordedOpenJobsMissingParentSource": 25,
+  "publishedJobsMissingCanonicalCustomer": 0,
+  "publishedJobsWithExplicitCompletionInstant": 0,
+  "newestJobsPageAtUtc": "2026-10-17T07:12:13Z",
+  "jobObservationsInPriorHour": 0,
+  "assignmentLikeSourceKeys": [
+    { "field": "userGroup", "records": 12656 },
+    { "field": "userGroupID", "records": 12656 }
+  ],
+  "interpretation": "The ordinary changed-jobs lane is recurring and all published links resolve to their latest retained effective version. An empty changed-record page does not re-observe unchanged jobs or establish current progress. The saved job payload has user-group fields, not an observed individual assignee or appointment field. The 285 recorded open-work source jobs still need identity/relationship review before canonical cards, named handoff or a numeric score can be claimed.",
+  "productionDataWrites": false,
+  "providerWrites": false,
+  "customerContentReturned": false
+}

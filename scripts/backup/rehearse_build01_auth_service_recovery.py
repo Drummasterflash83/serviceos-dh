@@ -8,6 +8,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 import subprocess
 import sys
@@ -21,7 +22,6 @@ from inspect_production_release_baseline import prepare_archive_roles
 
 ROOT = Path('/Users/chrisdrummond/Documents/ChatGPT/ServiceOS')
 SOURCE = ROOT / '.verification-results/production-database-daily-20261015-911be91a-8569-4fa6-ab26-cac68014a999'
-ARCHIVE = SOURCE / 'database.dump'
 EXPECTED_ARCHIVE = {'bytes': 1179050190, 'sha256': '31f1e594e9c3b43f3cff0ec0c45095216a4bb6580e8a0e5f2a4a81db99c03fe8'}
 DB_IMAGE = 'public.ecr.aws/supabase/postgres:17.6.1.165'
 DB_IMAGE_ID = 'sha256:28f0e16a019e648089fc1a6d333549a55548f6019c15ae4bd7cd58b989027518'
@@ -131,12 +131,20 @@ def service_token(secret, role='service_role'):
     return head + '.' + body + '.' + b64url(hmac.new(secret.encode(), signing, hashlib.sha256).digest())
 
 
-def run(*, with_edge=False, reviewed_v107=False):
+def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
+        source_dir=SOURCE, expected_archive=EXPECTED_ARCHIVE):
+    archive = source_dir / 'database.dump'
     edge_bundle = V107_EDGE_BUNDLE if reviewed_v107 else EDGE_BUNDLE
     edge_bundle_sha256 = V107_EDGE_BUNDLE_SHA256 if reviewed_v107 else EDGE_BUNDLE_SHA256
     report = {'version':'learn-build01-auth-recovery/1', 'state':'preflight',
               'productionWrites':False, 'externalNetwork':False, 'hostPorts':0,
               'realUserLoginAttempted':False, 'emailSent':False,
+              'existingUserDisposableResetVerified':False,
+              'existingUserCurrentEdgeReadVerified':False,
+              'databaseArchiveSha256':expected_archive['sha256'],
+              'databaseArchiveBytes':expected_archive['bytes'],
+              'databaseSourceKind':('independent_15_oct_archive' if source_dir==SOURCE
+                                    else 'private_current_daily_reader_export'),
               'authContainerRemoved':False, 'restContainerRemoved':False,
               'databaseContainerRemoved':False}
     if with_edge:
@@ -147,15 +155,15 @@ def run(*, with_edge=False, reviewed_v107=False):
     target = None
     stage = 'preflight'
     try:
-        if ARCHIVE.stat().st_size != EXPECTED_ARCHIVE['bytes']:
+        if archive.stat().st_size != expected_archive['bytes']:
             raise RecoveryError('Archived byte count changed')
         digest = hashlib.sha256()
-        with ARCHIVE.open('rb') as source:
+        with archive.open('rb') as source:
             for block in iter(lambda: source.read(1024 * 1024), b''):
                 digest.update(block)
-        if digest.hexdigest() != EXPECTED_ARCHIVE['sha256']:
+        if digest.hexdigest() != expected_archive['sha256']:
             raise RecoveryError('Archived digest changed')
-        inventory = json.loads((SOURCE/'source-inventory.json').read_text())
+        inventory = json.loads((source_dir/'source-inventory.json').read_text())
         if json.loads(checked(['image','inspect',AUTH_IMAGE]))[0]['Id'] != AUTH_IMAGE_ID:
             raise RecoveryError('Auth image pin differs')
         if json.loads(checked(['image','inspect',REST_IMAGE]))[0]['Id'] != REST_IMAGE_ID:
@@ -169,7 +177,7 @@ def run(*, with_edge=False, reviewed_v107=False):
             report['edgeSourceBundleVerified'] = True
         stage = 'database_restore'
         target = RestoreSandbox(image=DB_IMAGE, network_extension=True,
-                                private_diagnostics=SOURCE/'auth-restore-private-error')
+                                private_diagnostics=source_dir/'auth-restore-private-error')
         with target:
             if target.image_id != DB_IMAGE_ID:
                 raise RecoveryError('PostgreSQL image pin differs')
@@ -180,8 +188,8 @@ def run(*, with_edge=False, reviewed_v107=False):
             # libraries as separate list members for the isolated API login.
             target.query("alter role authenticator set session_preload_libraries "
                          "to 'supautils', 'safeupdate';")
-            archive_receipt = target.restore_native_archive(ARCHIVE)
-            if archive_receipt != EXPECTED_ARCHIVE:
+            archive_receipt = target.restore_native_archive(archive)
+            if archive_receipt != expected_archive:
                 raise RecoveryError('Restored archive receipt differs')
             users_before = json.loads(target.query("select json_build_object('count',count(*),"
                 "'digest',md5(coalesce(string_agg(id::text,',' order by id),''))) from auth.users;"))
@@ -317,6 +325,47 @@ def run(*, with_edge=False, reviewed_v107=False):
                 report['restHttpStatus'] = api_status
                 report['restErrorCode'] = api_rows.get('code') if isinstance(api_rows,dict) else None
                 raise RecoveryError('Unassigned synthetic user card access differed: HTTP '+str(api_status))
+            existing_bearer = None
+            if recover_existing_user:
+                stage = 'existing_user_disposable_reset'
+                tenant = '00000000-0000-0000-0000-000000000001'
+                candidate = json.loads(target.query(
+                    "select coalesce((select row_to_json(chosen) from (select u.id,u.email "
+                    "from auth.users u join public.profiles p on p.id=u.id "
+                    "where p.tenant_id='"+tenant+"'::uuid and u.email is not null "
+                    "and u.email<>'' order by u.created_at,u.id limit 1) chosen),"
+                    "'{}'::json)::text;"))
+                if not candidate or not candidate.get('id') or not candidate.get('email'):
+                    raise RecoveryError('No preserved tenant user available for disposable reset')
+                existing_id = str(uuid.UUID(candidate['id']))
+                existing_password = secrets.token_urlsafe(32)
+                reset_status,reset = curl_inside(target.name,'/admin/users/'+existing_id,
+                    method='PUT',headers=('Authorization: Bearer '+token,
+                                          'Content-Type: application/json'),
+                    payload=json.dumps({'password':existing_password}).encode())
+                if reset_status != 200 or reset.get('id') != existing_id:
+                    raise RecoveryError('Disposable existing-user password reset unconfirmed')
+                existing_login_status,existing_login = curl_inside(target.name,
+                    '/token?grant_type=password',method='POST',
+                    headers=('Content-Type: application/json',),
+                    payload=json.dumps({'email':candidate['email'],
+                                        'password':existing_password}).encode())
+                if (existing_login_status != 200 or
+                        existing_login.get('user',{}).get('id') != existing_id or
+                        not existing_login.get('access_token')):
+                    raise RecoveryError('Existing user failed fresh login after disposable reset')
+                existing_bearer = 'Authorization: Bearer ' + existing_login['access_token']
+                existing_status,existing_rows = curl_inside(target.name,
+                    '/customer_cards?select=id,tenant_id&limit=5',
+                    headers=(existing_bearer,),port=3000)
+                if (existing_status != 200 or not isinstance(existing_rows,list)
+                        or len(existing_rows) != 5 or
+                        any(row.get('tenant_id') != tenant for row in existing_rows)):
+                    raise RecoveryError('Existing recovered user tenant card read unconfirmed')
+                report.update(existingUserDisposableResetVerified=True,
+                              existingUserTenantCardPage=5,
+                              realUserLoginAttempted=True,
+                              realUserLoginWasOfflineDisposable=True)
             actor = str(uuid.UUID(created['id']))
             tenant = '00000000-0000-0000-0000-000000000001'
             changed = target.query("update public.profiles set tenant_id='"+tenant+
@@ -409,6 +458,17 @@ def run(*, with_edge=False, reviewed_v107=False):
                     raise RecoveryError('Archived Edge authenticated tenant read unconfirmed')
                 report['edgeAuthenticatedReadVerified'] = True
                 report['edgePhoneAndEmailNonempty'] = True
+                if recover_existing_user:
+                    existing_edge_status,existing_edge_page = curl_inside(target.name,
+                        '/',method='POST',
+                        headers=(existing_bearer,'Content-Type: application/json'),
+                        payload=payload,port=9000)
+                    if (existing_edge_status != 200 or
+                            existing_edge_page.get('tenant_id') != tenant or
+                            existing_edge_page.get('counts',{}).get('phone',{}).get('record_count',0)<1 or
+                            existing_edge_page.get('counts',{}).get('email',{}).get('record_count',0)<1):
+                        raise RecoveryError('Existing recovered user current Edge read unconfirmed')
+                    report['existingUserCurrentEdgeReadVerified'] = True
                 cleanup_optional(EDGE_NAME,EDGE_LABEL)
                 report['edgeContainerRemoved'] = True
                 cleanup_optional(GATEWAY_NAME,GATEWAY_LABEL)
@@ -501,7 +561,7 @@ def run(*, with_edge=False, reviewed_v107=False):
                 observed = subprocess.run([DOCKER,'logs','--tail','120',REST_NAME],
                     stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=10)
                 raw = observed.stdout + observed.stderr
-                path = SOURCE / ('auth-rest-private-' + RUN + '.log')
+                path = source_dir / ('auth-rest-private-' + RUN + '.log')
                 fd = os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
                 with os.fdopen(fd,'wb') as diagnostic:
                     diagnostic.write(raw[:131072])
@@ -529,11 +589,41 @@ def run(*, with_edge=False, reviewed_v107=False):
 
 if __name__=='__main__':
     try:
-        if len(sys.argv)>2 or (len(sys.argv)==2 and sys.argv[1] not in
-            ('--with-archived-edge','--with-reviewed-v107-edge')):
+        mode = sys.argv[1:]
+        current_source = None
+        expected_archive = EXPECTED_ARCHIVE
+        if (len(mode) == 3 and
+                mode[0] == '--with-reviewed-v107-edge-and-existing-user-reset' and
+                mode[1] == '--current-export-dir' and
+                re.fullmatch(r'\.verification-results/production-database-daily-\d{8}-'
+                             r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
+                             mode[2])):
+            current_source = ROOT / mode[2]
+            export = json.loads((current_source/'report.json').read_text())
+            expected_archive = export.get('archive')
+            if (export.get('state') != 'export_complete_restore_unverified' or
+                    export.get('project') != 'tgbnakbxwcqjeimygroz' or
+                    export.get('sourceCredential') != 'dedicated_reader_keychain' or
+                    export.get('productionDataWrites') is not False or
+                    export.get('clientTlsVerified') is not True or
+                    export.get('snapshot',{}).get('readOnly') != 'on' or
+                    not isinstance(expected_archive,dict) or
+                    not isinstance(expected_archive.get('bytes'),int) or
+                    expected_archive['bytes'] < 1_000_000_000 or
+                    not re.fullmatch(r'[0-9a-f]{64}',expected_archive.get('sha256',''))):
+                raise RecoveryError('Current private export boundary unverified')
+            mode = mode[:1]
+        if len(mode)>1 or (len(mode)==1 and mode[0] not in
+            ('--with-archived-edge','--with-reviewed-v107-edge',
+             '--with-reviewed-v107-edge-and-existing-user-reset')):
             raise RecoveryError('Exact archived Edge rehearsal mode required')
-        print(json.dumps(run(with_edge=len(sys.argv)==2,
-            reviewed_v107=len(sys.argv)==2 and sys.argv[1]=='--with-reviewed-v107-edge')))
+        print(json.dumps(run(with_edge=len(mode)==1,
+            reviewed_v107=len(mode)==1 and mode[0] in
+            ('--with-reviewed-v107-edge','--with-reviewed-v107-edge-and-existing-user-reset'),
+            recover_existing_user=len(mode)==1 and
+            mode[0]=='--with-reviewed-v107-edge-and-existing-user-reset',
+            source_dir=current_source or SOURCE,
+            expected_archive=expected_archive)))
     except BaseException:
         print(json.dumps({'state':'isolated_auth_recovery_unverified','report':str(REPORT)}))
         raise SystemExit(1)

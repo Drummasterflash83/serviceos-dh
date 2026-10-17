@@ -76,7 +76,11 @@ const query = `with observed as materialized (
  'resource',a.settings->'commusoft_import'->>'resource','contact_targets',a.settings->'commusoft_import'->'contactTargetCount',
  'contacts_completed',a.sync_cursor->'propertiesCompleted')) from public.learn_commusoft_recurring s join public.connector_accounts a on a.id=s.account_id and a.tenant_id=s.tenant_id where s.tenant_id='${tenant}'),
  'job_source_field_types',(select jsonb_agg(s order by field,type) from(select kv.key field,jsonb_typeof(kv.value) type,count(*)::int records
- from linked x cross join lateral jsonb_each(x.payload) kv where x.collection='jobs' and kv.key in('jobNumber','jobCode','jobType','jobDescription','description','id') group by kv.key,jsonb_typeof(kv.value))s)
+ from linked x cross join lateral jsonb_each(x.payload) kv where x.collection='jobs' and kv.key in('jobNumber','jobCode','jobType','jobDescription','description','id') group by kv.key,jsonb_typeof(kv.value))s),
+ 'job_assignment_field_presence',(select jsonb_agg(s order by field) from(select kv.key field,count(*)::int records
+ from linked x cross join lateral jsonb_each(x.payload) kv where x.collection='jobs'
+ and kv.key ~* '(assign|engineer|appointment|schedule|user|staff)'
+ group by kv.key)s)
  ) report`;
 const response = await fetch(
   `https://api.supabase.com/v1/projects/${project}/database/query/read-only`,

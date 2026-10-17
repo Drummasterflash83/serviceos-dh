@@ -1,0 +1,19 @@
+{
+  "version": "learn-build01-signedin-slack-dashboard/1",
+  "observedAtUtc": "2026-10-17T07:59:22Z",
+  "environment": "signed-in LIVE Drummonds LEARN in-app browser",
+  "dashboard": {
+    "savedSlackMessageCountShown": 37863,
+    "savedHistoryVersusCurrentCaptureDistinguished": true,
+    "slackNotificationsLabel": "Not confirmed"
+  },
+  "evidenceBrowser": {
+    "openedFromDashboard": true,
+    "savedPublicObservationsOnFirstPage": 25,
+    "pageExplicitlySaysNotFullCoverage": true,
+    "closedAndReturnedToDashboard": true
+  },
+  "messageContentOrIdentifiersRetainedInReceipt": false,
+  "productionDataWrites": false,
+  "limitations": "The saved-history count resolves the earlier Not checked dashboard concern. It does not prove a post-cutoff Event or reply for the exact 160-channel roster. Slack notifications remain separately unconfirmed."
+}

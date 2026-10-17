@@ -1,0 +1,44 @@
+{
+  "version": "learn-build01-current-point-service-recovery/1",
+  "observedAtUtc": "2026-10-17T08:06:25Z",
+  "environment": "offline disposable containers; LIVE database read-only snapshot from 2026-10-17T07:09:33Z",
+  "database": {
+    "sourceCredential": "dedicated_reader_keychain",
+    "sourceTransactionReadOnly": true,
+    "sourceClientTlsVerified": true,
+    "sourceTablesInventoried": 424,
+    "archiveBytes": 1632425140,
+    "archiveSha256": "0a2917e1096829ff0fc607bf7637c968cfb62c3171df335dc94b6fd0aca076e9",
+    "localArchiveHashMatchedExportReport": true,
+    "nativeArchiveRestoredIntoDisposableDatabase": true,
+    "newTablesComparedWithPriorArchive": [
+      "public.learn_commusoft_current_job_receipts",
+      "public.learn_commusoft_current_jobs",
+      "public.learn_slack_event_hints"
+    ]
+  },
+  "recoveredServices": {
+    "authHealthVerified": true,
+    "postgrestTenantReadVerified": true,
+    "reviewedCurrentV107EdgeBundleVerified": true,
+    "currentEdgeAuthenticatedTenantReadVerified": true,
+    "preservedAuthUsers": 2,
+    "existingDrummondsUserPasswordResetOnlyInDisposableRestore": true,
+    "existingDrummondsUserFreshLoginVerified": true,
+    "existingUserTenantCardsRead": 5,
+    "existingUserCurrentEdgeReadVerified": true,
+    "syntheticUnassignedUserSawCards": 0,
+    "crossTenantCardLeak": 0,
+    "operatorReadAudited": true,
+    "revokedOperatorReadDenied": true
+  },
+  "containment": {
+    "hostPorts": 0,
+    "externalNetwork": false,
+    "emailSent": false,
+    "productionDataWrites": false,
+    "allRecoveryContainersRemoved": true
+  },
+  "accountIdentifierOrEmailRetainedInReceipt": false,
+  "limitations": "This verifies a fresh local read-only database export and a disposable service restart, not decryption of today's off-site ciphertext. It used a new synthetic signing secret and an offline disposable password reset; old sessions, recovered runtime secret values, frontend boot, all-function startup, matching file backup point, Vault plaintext recovery and controlled capture restart remain unverified."
+}

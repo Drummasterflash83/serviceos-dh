@@ -17,6 +17,99 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 08:06 UTC — fresh LIVE database point passed isolated existing-user service recovery.**
+
+### Working and verified
+
+- The dedicated noninteractive backup reader exported a TLS-verified, read-only
+  07:09 UTC LIVE snapshot. The private native archive has 424 inventoried
+  tables, 1,632,425,140 bytes and SHA-256
+  `0a2917e1096829ff0fc607bf7637c968cfb62c3171df335dc94b6fd0aca076e9`.
+  Its hash and mode `0600` passed before a disposable offline restore. The
+  newer Commusoft current-job and signed Slack hint tables are included.
+- Recovered Auth, PostgREST, gateway and current v107 LEARN Edge served a fresh
+  login for one preserved Drummonds account after a random password reset only
+  in the disposable database. Five tenant cards, nonempty Phone/Email status,
+  unassigned-user isolation, audited operator selection and denial after
+  revocation passed. All five labelled containers were independently absent
+  after cleanup. [Sanitised receipt](evidence/learn-build01-current-point-service-recovery-2026-10-17.json).
+- The signed-in LIVE Drummonds dashboard now shows 37,863 saved Slack messages;
+  its evidence browser loaded 25 public observations on the first page and
+  returned to LEARN. This resolves the earlier “Not checked” tile display,
+  while current Slack notification delivery remains separately unconfirmed.
+  [Dashboard receipt](evidence/learn-build01-signedin-slack-dashboard-2026-10-17.json).
+
+### Needs finishing
+
+- This is a fresh **local** export and isolated service test, not a decrypt of
+  today's off-site ciphertext or a complete application failover. Runtime
+  secret/Vault plaintext recovery, original-session policy, frontend boot,
+  all-function startup, matched files and controlled capture restart remain
+  open. Today's scheduled hosted backup began at 07:51 UTC and must finish its
+  own restore/encrypted off-site readback before it counts as a daily success.
+- The exact 160 Slack roster still has no observed post-cutoff message or reply;
+  the source-review queue does not establish named job handoff or a score.
+
+### Blocked externally
+
+- No fingerprint or user action was needed for this recovery drill. Chris's
+  business sign-off remains his decision after the technical limits are set
+  out in the acceptance pack.
+
+**17 October, 07:26 UTC — published Commusoft jobs are current to retained versions; individual handoff source absent.**
+
+### Working and verified
+
+- The ordinary LIVE changed-jobs lane remains enabled. All **1,004** reviewed
+  published jobs point to their latest effective retained source version, with
+  zero published jobs missing a canonical customer. The latest jobs page was
+  committed at 07:12, with no changed job observations in the preceding hour.
+- The 12,656 saved job payloads contain `userGroup` and `userGroupID`, but no
+  other assignment-like job key. This is aggregate field-presence evidence,
+  without returning provider job/customer content.
+  [Readback](evidence/learn-build01-commusoft-coverage-2026-10-17.json).
+
+### Needs finishing
+
+- Only ten of 295 recorded open/pending/on-hold jobs have reviewed published
+  job links; 285 remain in the signed-in source-review queue. Empty changed-job
+  windows do not re-observe unchanged job status. A group ID does not identify
+  the responsible person; a verified appointment/task source and member
+  mapping are still needed for named handoff. No completion instant is verified
+  in the published job set, so a progress or completion score stays unassessed.
+
+### Blocked externally
+
+- No fingerprint, provider write or team test post is needed for this
+  read-only finding. The remaining source and business-rule decisions are
+  explicit acceptance limits, not silently filled by an inferred owner.
+
+**17 October, about 07:08 UTC — preserved-user Auth recovery demonstrated offline.**
+
+### Working and verified
+
+- A disposable restore of the independent 15 October archive preserved both
+  original Auth accounts. One existing Drummonds account received a new random
+  password **only in the isolated copy**, logged in through recovered Auth,
+  read five tenant-scoped cards through PostgREST, and called the current v107
+  Edge status route with nonempty Phone and Email counts. An unassigned
+  synthetic account saw no cards, operator selection was audited and denied
+  after revocation, and all recovery containers were removed. No original
+  account identifier, email or password was retained in the public receipt.
+  [Recovery receipt](evidence/learn-build01-existing-user-recovery-2026-10-17.json).
+
+### Needs finishing
+
+- This is a real preserved-account fresh-login rehearsal against an older
+  archive, not current-point or original-session recovery. The frontend,
+  runtime secret values, all-function startup, controlled capture restart and
+  current database/file point remain open.
+
+### Blocked externally
+
+- No production password change, user login, 1Password access or Touch ID was
+  needed. The current-point export can use the already approved backup reader.
+
 **17 October, 07:04 UTC — focused LIVE source coverage readback.**
 
 ### Working and verified

@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 07:04 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 08:06 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -37,6 +37,12 @@ inactive until Chris reviews and signs off the business result.
   settled real hints, saved source and an ordinary post-fix reply settled in
   **32 seconds**. DMs remain excluded. This proves the shared route but not
   an exact-160 real Event. [Shared-route receipt](evidence/learn-build01-slack-shared-events-boundary-2026-10-17.json).
+- The signed-in LIVE Drummonds dashboard now displays **37,863 saved Slack
+  messages**, with a clear saved-history caveat. Its evidence browser loaded
+  25 public observations on the first page and returned to the dashboard.
+  This resolves the earlier “Not checked” tile display, while the separate
+  Slack notification status remains unconfirmed.
+  [Signed-in receipt](evidence/learn-build01-signedin-slack-dashboard-2026-10-17.json).
 - In the exact 160-channel roster, **1,335** provider-completed recurring
   windows have saved empty page receipts, spanning all 160 channels. An exact
   failed zero-page window was recovered on attempt two, and a bounded automatic
@@ -58,6 +64,19 @@ inactive until Chris reviews and signs off the business result.
   tenant/card isolation and operator revocation passed.
   [Current route rehearsal](evidence/learn-build01-v107-isolated-recovery-2026-10-17.json).
   [Recovery inventory](LEARN-BUILD01-APPLICATION-RESTORE-INVENTORY.md).
+- A later isolated rehearsal also reset one preserved Drummonds account **only
+  in the disposable database**. A fresh recovered Auth login read tenant cards
+  and called the current v107 Edge route; tenant isolation and operator
+  revocation still passed. It sent no email and changed no production
+  credential. [Preserved-user receipt](evidence/learn-build01-existing-user-recovery-2026-10-17.json).
+- A new **07:09 UTC read-only LIVE snapshot** produced a private 1.63 GB native
+  archive of 424 tables, including the newer Commusoft job and Slack hint
+  tables. Its bytes/hash passed before an isolated restore. From this fresh
+  local point, the preserved-user fresh login, five tenant cards, current v107
+  LEARN Edge read, unassigned-user isolation and audited operator revocation
+  passed again. All recovery containers were removed; there was no Touch ID,
+  production write, host port or external service access.
+  [Current-point receipt](evidence/learn-build01-current-point-service-recovery-2026-10-17.json).
 - The current v107 worker also booted from its reviewed bundle in an isolated
   network-disabled container, returned OPTIONS 200 and rejected an
   unauthorised POST with 403. This is startup and fail-closed evidence, not an
@@ -73,6 +92,10 @@ inactive until Chris reviews and signs off the business result.
   holds and **285** source-review matches, with example source timestamps and
   caveats shown in the rendered rows.
   [Release receipt](evidence/learn-build01-job-source-attention-2026-10-17.json).
+- All **1,004** reviewed published Commusoft jobs use their latest effective
+  retained source version. An aggregate field check of all 12,656 saved jobs
+  found group identifiers, but no individual-assignee or appointment field.
+  [Coverage receipt](evidence/learn-build01-commusoft-coverage-2026-10-17.json).
 
 ## Needs finishing
 
@@ -93,7 +116,9 @@ inactive until Chris reviews and signs off the business result.
   links; 285 did not. At 22:31, 272 of the 295 had no observation within a day.
   The released captured-source view now has explicit hold and source-review
   filters, and signed-in LIVE example rows passed. Named-person handoff and a
-  representative progress/completion score are not established.
+  representative progress/completion score are not established. The saved
+  job collection alone cannot identify an individual recipient; the existing
+  source-review queue is the truthful current route.
   [Policy draft](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md).
 - **Email review and history:** the 55 historical drafts and 12 source-missing
   links require separate provenance treatment. A draft must not be represented
@@ -102,11 +127,13 @@ inactive until Chris reviews and signs off the business result.
   and has not drained.
 - **Recovery:** The serving v107 Edge source has a fresh encrypted off-site
   copy and separate readback, and all 103 functions rebuild from locally staged
-  source. Only one current route has served a recovered authenticated tenant
-  request. Full frontend, all-function startup, required runtime secrets,
-  real-user/Auth recovery and controlled capture restart have not been proven
-  from independent recovery inputs. The isolated database archive also predates
-  current source; its point is not reconciled with current file backups.
+  source. One current route has served recovered synthetic and preserved-user
+  authenticated tenant requests, the latter after a disposable password reset.
+  A separate fresh local database point now passes the same restored-service
+  journey, but the full frontend, all-function startup, required runtime
+  secrets, original-session recovery and controlled capture restart have not
+  been proven from independently downloaded current recovery inputs. The
+  database point is not reconciled with current file backups.
 - **File-backup host:** the recording and voicemail schedule has succeeded
   locally, but depends on the Mac and Codex app being awake. The latest
   three-bucket inventory is a verified file copy, not a matching database

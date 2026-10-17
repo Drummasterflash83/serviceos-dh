@@ -29,6 +29,16 @@ The 272 jobs without an observation in the previous day must retain their
 source timestamp and must not be presented as current provider status.
 [Readback](evidence/learn-build01-job-source-attention-2026-10-17.json).
 
+At 07:26 UTC, a second aggregate-only LIVE readback confirmed all **1,004**
+published jobs point to their latest effective retained source version. Among
+all **12,656** retained job payloads, the only assignment-like keys were
+`userGroup` and `userGroupID`, present on every job. No individual assignee or
+appointment field was found in this saved job collection. That confirms the
+current source can support a shared review queue, but cannot independently
+support the proposed named-person handoff. The separate appointment/task
+source and reviewed member mapping remain necessary; a group ID must not be
+treated as an individual. [Aggregate receipt](evidence/learn-build01-commusoft-coverage-2026-10-17.json).
+
 ## Source-backed attention states
 
 | Saved evidence | Card treatment now | Requirement before assigning an individual or calculating a score |

@@ -5,6 +5,41 @@ isolated database/Auth/PostgREST rehearsal and the full Edge source-package
 off-site copy prove distinct parts of recovery. Neither proves that an independently
 recovered OpenFolk service can serve clients or resume ingestion.
 
+At 08:06 UTC on 17 October, the already approved dedicated reader completed a
+fresh, TLS-verified, read-only LIVE database snapshot. Its private native
+archive covers **424** inventoried tables and **1,632,425,140** bytes, SHA-256
+`0a2917e1096829ff0fc607bf7637c968cfb62c3171df335dc94b6fd0aca076e9`.
+It includes three tables absent from the older archive: current Commusoft job
+receipts/cursors and the signed Slack hint ledger. The archive hash matched
+the export report before a new disposable offline restore. Recovered Auth,
+PostgREST, gateway and the reviewed current v107 LEARN Edge route then served
+a fresh login for a preserved Drummonds user after a random password reset
+**only in the disposable copy**. Five tenant cards, nonempty Phone and Email
+status, unassigned-user isolation, audited operator selection and denial after
+revocation passed. All labelled containers were independently absent after
+cleanup. No external network, host port, email, 1Password access, Touch ID or
+production data write was used.
+[Current-point service receipt](evidence/learn-build01-current-point-service-recovery-2026-10-17.json).
+This narrows the database-point and existing-user recovery gap. It is a local
+export, not decryption of today's independently stored ciphertext. Old sessions,
+Vault plaintext and runtime secret values, frontend boot, all-function startup,
+matching file-backup point and controlled capture restart remain unverified.
+
+At about 07:08 UTC on 17 October, a fuller isolated rehearsal restored the
+independent 15 October database archive, selected one preserved Drummonds Auth
+account, and reset that account's password **only inside the disposable restore**.
+A fresh Auth login then read five correctly scoped tenant cards through
+PostgREST and called the current v107 `learn-launch-status` Edge route with
+nonempty Phone and Email counts. An unassigned synthetic account saw no cards;
+audited operator selection and denial after revocation passed. No account ID,
+email or password appears in the sanitised receipt. The database, Auth, REST,
+gateway and Edge containers were independently confirmed removed; no host port,
+external network, email or production write was used.
+[Sanitised receipt](evidence/learn-build01-existing-user-recovery-2026-10-17.json).
+This proves an existing restored account can establish a new session after a
+reset. It does not prove old sessions survive, current database restoration,
+frontend boot, recovered runtime secrets or controlled capture restart.
+
 At 07:02 UTC on 17 October, the reviewed **current v107 `platform-worker`**
 bundle started in a disposable pinned Edge runtime with no network, host port,
 runtime secret or production data. An OPTIONS request returned 200 and an
@@ -166,10 +201,10 @@ and [off-site copy receipt](evidence/learn-build01-live-runtime-refresh-offsite-
 
 | Component | Preserved or verified input | Still required for full recovery |
 | --- | --- | --- |
-| Database and Vault | Encrypted independent snapshot; isolated native restore and Vault comparison | Restore from a current off-site version and reconcile its point in time with file/object backups |
-| Auth and tenant access | Offline Auth and PostgREST boot with a new synthetic signing key; fresh synthetic login, tenant RLS and audited operator grant/revocation passed | Recover the supported real-user login path, reset sessions if the non-exportable original signing key is unavailable, and check operator routes through the recovered application |
-| Edge functions | The earlier 102-function, 721-file package was copied, downloaded and decrypted with its manifest verified. Current v107 source (103 functions, 728 files) is locally verified, encrypted, staged, copied off site and independently downloaded. All 103 current source trees bundled in isolation; one current v107 route served an authenticated tenant read against an older archive. | Decrypt the independently downloaded current package, then start required routes with verified flags and recovered secret references in an isolated service |
-| Frontend | Vercel builds from Git `main`; the four LIVE aliases and protected LEARN/Drummonds view were checked at `0266c7f7`. The later Slack handoff UI revision `ecfa0aa4` passed both TEST and LIVE Git/Vercel build statuses. | Verify the later signed-in LIVE UI, then restore a pinned Git revision to an isolated Vercel target with its production-equivalent public configuration and test login, client cards and operator paths before any alias switch |
+| Database and Vault | Encrypted independent backup and prior isolated Vault comparison; today's TLS/read-only 424-table archive passed hash and isolated database/service restore | Decrypt and restore a current off-site version, verify Vault plaintext with the recovery key and reconcile its point in time with file/object backups |
+| Auth and tenant access | Recovered Auth and PostgREST from today's local archive with a new synthetic signing key; a preserved account logged in after a disposable reset, read its tenant cards and called the current Edge route. Tenant RLS and audited operator grant/revocation passed. | Prove the recovery credential/session reset procedure and recovered frontend/operator journeys. Old sessions are not expected to survive a new signing key. |
+| Edge functions | The earlier 102-function, 721-file package was copied, downloaded and decrypted with its manifest verified. Current v107 source (103 functions, 728 files) is locally verified, encrypted, staged, copied off site and independently downloaded. All 103 current source trees bundled in isolation; one current v107 route served an authenticated tenant read against today's local archive. | Decrypt the independently downloaded current package, then start required routes with verified flags and recovered secret references in an isolated service |
+| Frontend | Vercel builds from Git `main`; the four LIVE aliases serve the released job-review UI. A signed-in LIVE Drummonds check opened LEARN, displayed a real Slack saved total and loaded evidence. | Restore a pinned Git revision to an isolated Vercel target with its production-equivalent public configuration and test login, client cards and operator paths before any alias switch |
 | Runtime configuration | Static source scan found 56 literal Edge environment names plus 18 dynamic lookups across the 102 function archives; the frontend references `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_ENABLE_SIGNUP` | Independently inventory actual configured names, non-exportable and dynamic-name references, escrow/restore secret values through an approved channel, and verify each recovered function's access without printing values |
 | Capture and files | Separate recording/voicemail manifests and database-reference restore checks exist | Match the chosen database point to its corresponding file inventory; keep dispatchers paused until scopes, cursors and credentials are verified; resume one bounded source at a time and prove new data reaches the correct tenant/card |
 
