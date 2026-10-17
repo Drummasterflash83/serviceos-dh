@@ -8,6 +8,11 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- A fresh shape check of all 12,732 retained Commusoft job versions found only
+  `self` and `property` link keys, plus group fields. Existing job payloads
+  cannot support a named technician handoff; the held source-review treatment
+  remains accurate. [Aggregate receipt](evidence/learn-build01-commusoft-job-links-shape-2026-10-17.json).
+
 - A noninteractive, digest-only TEST/LIVE comparison found three matching
   bindings among 16 reviewed credential/webhook names. Two differ and eleven
   are LIVE-only, so the existing TEST environment is not a substitute for an

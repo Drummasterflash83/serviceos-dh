@@ -1,5 +1,10 @@
 # Build execution tracker
 
+Build 01 job-link alternative checked (17 October, 10:29 UTC): all 12,732
+retained Commusoft job versions expose only self/property links and group
+fields, with no appointment or technician key. Named handoff cannot be
+derived from this saved feed. [Aggregate receipt](../../operations/evidence/learn-build01-commusoft-job-links-shape-2026-10-17.json).
+
 Build 01 recovery alternative checked (17 October, 10:26 UTC): existing TEST
 and LIVE Edge digests match for only three of 16 reviewed sensitive names; two
 differ and eleven are LIVE-only. TEST is not a full credential recovery source.

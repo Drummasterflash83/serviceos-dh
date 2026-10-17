@@ -17,6 +17,16 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 10:29 UTC — retained job links have no appointment shortcut.**
+
+An aggregate-only LIVE check covered all 12,732 retained Commusoft job
+versions. Their saved links contain `self` and `property`, with no appointment
+or technician key; the only assignment-like top-level fields are the known
+user-group fields. This confirms the current source-review queue is the
+honest route until a separate appointment source and member mapping are
+verified. No source payload, URL or customer content was returned.
+[Shape receipt](evidence/learn-build01-commusoft-job-links-shape-2026-10-17.json).
+
 **17 October, 10:26 UTC — existing TEST credential overlap checked without plaintext.**
 
 The 16 reviewed non-Vault credential/webhook names have only three equal

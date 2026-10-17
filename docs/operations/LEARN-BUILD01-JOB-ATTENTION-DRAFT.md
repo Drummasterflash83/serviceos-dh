@@ -18,6 +18,14 @@ changed-job lane is enabled and completed ordinary jobs windows at 22:06 and
 cards should continue to show each record's actual observation time and avoid
 describing an old status as current provider progress.
 
+A further 17 October 10:29 UTC read-only shape check covered all **12,732
+retained job versions**. Every saved `links` object contained only `self` and
+`property` keys; the only assignment-like top-level keys were `userGroup` and
+`userGroupID`. No appointment or technician link was present in the retained
+job payload. This rules out an assignment shortcut through existing job
+links; it does not prove the provider lacks a separate appointment API.
+[Aggregate receipt](evidence/learn-build01-commusoft-job-links-shape-2026-10-17.json).
+
 At 06:50 UTC on 17 October, counts-only LIVE readback found **69 recorded
 on-hold jobs** and **285 recorded open jobs needing source or identity review**.
 The existing audited source-job reader now supports exact filters for those

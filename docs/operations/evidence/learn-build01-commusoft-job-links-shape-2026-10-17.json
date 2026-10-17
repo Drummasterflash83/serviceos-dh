@@ -1,0 +1,15 @@
+{
+  "version": "learn-build01-commusoft-job-links-shape/1",
+  "observedAtUtc": "2026-10-17T10:29:42.177Z",
+  "environment": "LIVE Drummonds retained Commusoft job payloads",
+  "method": "scripts/verify/learn-build01-commusoft-job-links-shape.mjs --live-read-only",
+  "retainedJobVersions": 12732,
+  "linkKeysPresentOnAllVersions": ["self", "property"],
+  "assignmentLikeTopLevelKeysPresentOnAllVersions": ["userGroup", "userGroupID"],
+  "appointmentOrTechnicianKeysObserved": 0,
+  "sourcePayloadOrUrlsReturned": false,
+  "customerContentReturned": false,
+  "productionDataWrites": false,
+  "providerRequestsMade": false,
+  "limits": "This tests saved job payload shape, not the provider's complete API. A group is not a named assignee. Current technician responsibility still requires an appointment source and reviewed member mapping."
+}
