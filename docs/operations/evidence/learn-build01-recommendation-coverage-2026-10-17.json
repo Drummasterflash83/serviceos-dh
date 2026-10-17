@@ -1,0 +1,36 @@
+{
+  "version": "learn-build01-recommendation-coverage/1",
+  "observedAtUtc": "2026-10-17T16:42:42.321Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "source": "scripts/verify/learn-build01-scorecard-hold-readback.mjs --live-read-only",
+  "publishedScorecardPolicies": 0,
+  "publishedJobPolicies": 0,
+  "savedJobMeasurements": 0,
+  "savedJobAssessments": 0,
+  "openRecommendations": 9033,
+  "openRecommendationsLinkedToCards": 9033,
+  "openRecommendationsWithEvidence": 8762,
+  "openRecommendationsOlderThanDay": 8214,
+  "emptyEvidenceLegacyGroup": {
+    "type": "review_new_contact",
+    "count": 271,
+    "cardStatus": "amber",
+    "sourceRule": "absent",
+    "allOlderThanDay": true,
+    "latestUpdateUtc": "2026-10-12T07:00:11.15701Z"
+  },
+  "recentOrdinaryRecommendationJobs": {
+    "examined": 8,
+    "successful": 8,
+    "recordsProcessedInEach": 555,
+    "createdInEach": 0,
+    "updatedInEach": 555,
+    "failedInEach": 0,
+    "durationSecondsRange": [112, 418]
+  },
+  "interpretation": "No unapproved job score has been published. The ordinary newest-activity recommendation selector repeatedly updated the same cohort and had not refreshed 271 active-card legacy recommendations with empty evidence since 12 October. A fair full-card sweep is being prepared and must pass hosted TEST then sustained LIVE readback before this coverage gap can close.",
+  "subjectIdsOrValuesReturned": false,
+  "recommendationContentReturned": false,
+  "productionDataWrites": false
+}

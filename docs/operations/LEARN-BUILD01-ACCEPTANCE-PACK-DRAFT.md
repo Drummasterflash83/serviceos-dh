@@ -1,12 +1,18 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 16:38 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 16:51 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- A fresh LIVE scorecard readback confirmed **zero published scorecard
+  policies, job measurements or saved job assessments**; no unreviewed job
+  progress score has been released. The current recommendation inventory had
+  9,033 open, card-linked actions, of which 8,762 carried an evidence array.
+  [Counts-only coverage](evidence/learn-build01-recommendation-coverage-2026-10-17.json).
 
 - Three representative, reviewed LIVE Commusoft job links now passed fresh
   read-only provider GETs: two direct-customer and one site-to-customer job
@@ -579,6 +585,14 @@ inactive until Chris reviews and signs off the business result.
   [Coverage receipt](evidence/learn-build01-commusoft-coverage-2026-10-17.json).
 
 ## Needs finishing
+
+- **Recommendation coverage:** 271 open legacy `review_new_contact` actions
+  on amber cards have empty evidence and had not refreshed since 12 October.
+  The ordinary worker repeatedly selected the same latest-activity cards;
+  eight recent jobs each updated 555 recommendations without reaching this
+  older cohort. A bounded fair sweep is staged and locally tested, but it is
+  not yet a hosted TEST/LIVE release or proof of full-card recommendation
+  freshness. Keep these actions visible while the sweep is verified.
 
 - **Continue ordinary card observation:** the released worker now admits
   stable new unprojected cards during a full sweep while reserving capacity

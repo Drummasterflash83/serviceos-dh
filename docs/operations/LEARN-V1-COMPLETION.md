@@ -17,6 +17,34 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 16:51 UTC — recommendation coverage gap isolated; fair sweep staged.**
+
+### Working and verified
+
+- LIVE has no published job scorecard policy, job measurements or saved job
+  assessments. A counts-only read found 9,033 open card-linked recommendations;
+  8,762 carried evidence. Four local handler tests passed for a bounded
+  full-card cursor, a recent-card slot, a newly active card during the sweep,
+  targeted access and invalid-cursor denial. The current TEST worker and both
+  current LIVE Edge closures were staged read-only; their recommendation
+  handler baseline matched, and the proposed TEST/LIVE worker executable
+  compiled to the same SHA-256 in the pinned Edge runtime. No release yet.
+  [Coverage observation](evidence/learn-build01-recommendation-coverage-2026-10-17.json).
+
+### Needs finishing
+
+- Exactly 271 active-card legacy `review_new_contact` rows lack evidence and
+  were untouched since 12 October. The old newest-activity selector did not
+  cover them. Run a hosted TEST fixture, release the fair sweep, and observe
+  ordinary LIVE work reaching the older cohort before calling recommendation
+  coverage dependable.
+
+### Blocked externally
+
+- This sweep has no new user approval dependency. The separate signed-in
+  Owner / MD, five-setting recovery-copy and archived Slack-roster decisions
+  remain open.
+
 **17 October, 16:38 UTC — three reviewed LIVE jobs match fresh provider reads.**
 
 ### Working and verified

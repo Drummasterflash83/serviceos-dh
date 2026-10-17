@@ -13,8 +13,10 @@ import {
 } from "../recommendations.ts";
 import type { WorkerHandlerContext, WorkerHandlerResult } from "./index.ts";
 
-const DEFAULT_LIMIT = 200;
-const MAX_LIMIT = 500;
+// Each card can cause several reads and writes. Keep one queue lease bounded,
+// then continue the full scan behind the completed job.
+const DEFAULT_LIMIT = 100;
+const MAX_LIMIT = 100;
 const INTERACTION_WINDOW = 50;
 
 type Row = Record<string, unknown>;
@@ -52,20 +54,64 @@ export async function handleRecommendationSync(
   const nowIso = new Date(nowMs).toISOString();
 
   try {
-    let cardQuery = admin
-      .from("customer_cards")
-      .select("id, person_id, company_id, confidence, latest_activity_at, context")
-      .eq("tenant_id", tenantId);
+    const cardFields = "id, person_id, company_id, confidence, latest_activity_at, context";
+    let cards: Row[];
+    let swept = 0;
+    let urgent = 0;
+    let sweepMaxId: string | null = null;
+    let sweepAfter: string | null = null;
+    let moreToSweep = false;
     if (isUuid(payload.customer_card_id)) {
-      cardQuery = cardQuery.eq("id", payload.customer_card_id as string);
+      const { data, error } = await admin.from("customer_cards").select(cardFields)
+        .eq("tenant_id", tenantId).eq("id", payload.customer_card_id as string);
+      if (error) throw new Error(`cards read failed: ${error.message}`);
+      cards = (data ?? []) as Row[];
     } else {
-      cardQuery = cardQuery
-        .order("latest_activity_at", { ascending: false, nullsFirst: false })
-        .limit(limit);
+      // The prior newest-activity selector always revisited the same 200 cards.
+      // Pin a maximum UUID for this scan and advance by immutable ID, so older
+      // active cards are eventually evaluated even when activity keeps arriving.
+      const suppliedAfter = payload.sweep_after;
+      const suppliedMax = payload.sweep_max_id;
+      if ((suppliedAfter !== undefined || suppliedMax !== undefined) &&
+          (!isUuid(suppliedAfter) || !isUuid(suppliedMax))) {
+        throw new Error("recommendation_sweep_cursor_invalid");
+      }
+      sweepAfter = isUuid(suppliedAfter) ? suppliedAfter as string : null;
+      sweepMaxId = isUuid(suppliedMax) ? suppliedMax as string : null;
+      if (!sweepMaxId) {
+        const { data, error } = await admin.from("customer_cards").select("id")
+          .eq("tenant_id", tenantId).neq("status", "archived")
+          .order("id", { ascending: false }).limit(1);
+        if (error) throw new Error(`cards boundary read failed: ${error.message}`);
+        sweepMaxId = (data?.[0]?.id as string | undefined) ?? null;
+      }
+      const urgentLimit = Math.floor(limit / 4);
+      const sweepLimit = limit - urgentLimit;
+      const urgentQuery = urgentLimit > 0
+        ? admin.from("customer_cards").select(cardFields)
+          .eq("tenant_id", tenantId).neq("status", "archived")
+          .order("latest_activity_at", { ascending: false, nullsFirst: false })
+          .limit(urgentLimit)
+        : Promise.resolve({ data: [] as Row[], error: null });
+      let sweepQuery = admin.from("customer_cards").select(cardFields)
+        .eq("tenant_id", tenantId).neq("status", "archived")
+        .order("id", { ascending: true }).limit(sweepLimit);
+      if (sweepMaxId) sweepQuery = sweepQuery.lte("id", sweepMaxId);
+      else sweepQuery = sweepQuery.eq("id", "00000000-0000-0000-0000-000000000000");
+      if (sweepAfter) sweepQuery = sweepQuery.gt("id", sweepAfter);
+      const [{ data: urgentRows, error: urgentErr },
+        { data: sweepRows, error: sweepErr }] = await Promise.all([urgentQuery, sweepQuery]);
+      if (urgentErr || sweepErr) throw new Error("recommendation_cards_read_failed");
+      urgent = (urgentRows ?? []).length;
+      swept = (sweepRows ?? []).length;
+      const selected = new Map<string, Row>();
+      for (const card of [...(urgentRows ?? []), ...(sweepRows ?? [])] as Row[]) {
+        selected.set(card.id as string, card);
+      }
+      cards = [...selected.values()];
+      sweepAfter = (sweepRows?.at(-1)?.id as string | undefined) ?? sweepAfter;
+      moreToSweep = swept === sweepLimit && !!sweepAfter && !!sweepMaxId;
     }
-    const { data: cardRows, error: cardErr } = await cardQuery;
-    if (cardErr) throw new Error(`cards read failed: ${cardErr.message}`);
-    const cards = (cardRows ?? []) as Row[];
 
     // Batch-load verified flags for the cards' people.
     const personIds = [
@@ -161,7 +207,14 @@ export async function handleRecommendationSync(
     return {
       success: failed === 0,
       recordsProcessed: created + updated + closed,
-      result: { created, updated, closed, skipped, failed },
+      result: { created, updated, closed, skipped, failed, selected: cards.length,
+        swept, urgent },
+      ...(moreToSweep && failed === 0
+        ? { continuation: { jobType: "recommendation.sync",
+            jobKey: `recommendation.sync:${tenantId}`,
+            payload: { limit, sweep_after: sweepAfter, sweep_max_id: sweepMaxId },
+            availableAt: new Date(Date.now() + 60_000).toISOString() } }
+        : {}),
       ...(failed > 0
         ? {
             error: {
