@@ -137,8 +137,9 @@ inactive until Chris reviews and signs off the business result.
   cases visibly unlinked and unscored. All 255 identity cases therefore need
   not be manually reviewed for Build 01, but their review obligation and the
   29 missing-parent holds stay explicit. The [acceptance matrix](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md)
-  identifies the distinct LIVE examples still needed before the business
-  result can be put to Chris.
+  records the distinct LIVE and synthetic evidence paths. The first real
+  Owner / MD handoff is the remaining job-attention technical gate before
+  the business result can be put to Chris.
 
 - A counts-only handoff audit found eight active Drummonds team entries but
   **zero confirmed members**, zero signed-in confirmed recipients and zero

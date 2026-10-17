@@ -33,8 +33,8 @@ business decision yet.
 
 ### Needs finishing
 
-- Finish the remaining signed-in representative examples and the first audited
-  Owner / MD acceptance. Keep scores withheld until their source, timing and
+- Finish the first audited signed-in Owner / MD acceptance and let Chris review
+  the representative business result. Keep scores withheld until their source, timing and
   business policy are actually reviewed. Full application recovery and Chris's
   final business sign-off remain separate gates.
 

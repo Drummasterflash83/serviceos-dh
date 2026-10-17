@@ -4,9 +4,9 @@ Build 01 representative job-review boundary (17 October, 15:35 UTC): Chris
 chose a source-backed representative check rather than reviewing all 255
 retained-source identity cases before sign-off. The other 255 identity cases,
 29 missing-parent cases and one job-link case remain visible, unlinked and
-unscored for continued review. The first signed-in Owner / MD handoff and
-distinct LIVE examples in the [acceptance matrix](../../operations/LEARN-BUILD01-JOB-ATTENTION-DRAFT.md)
-are still open; this decision is not Build 01 sign-off.
+unscored for continued review. The first signed-in Owner / MD handoff in the
+[acceptance matrix](../../operations/LEARN-BUILD01-JOB-ATTENTION-DRAFT.md)
+is still open; this decision is not Build 01 sign-off.
 
 Build 01 open-job evidence breakdown (17 October, 15:33 UTC): a read-only LIVE
 count covered all 295 recorded open/pending/on-hold Commusoft jobs. Ten have
