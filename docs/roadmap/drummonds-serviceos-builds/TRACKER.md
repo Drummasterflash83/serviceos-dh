@@ -1,12 +1,17 @@
 # Build execution tracker
 
-Latest Build 01 checkpoint (17 October, 08:19 UTC): the signed-in LIVE
+Latest Build 01 checkpoint (17 October, 08:55 UTC): the signed-in LIVE
 Drummonds LEARN page shows **37,863** saved Slack messages and loads the public
 evidence browser, resolving the earlier “Not checked” tile. The ordinary card
 sweep previously reached terminal success; the current sweep continues in
 ten-card batches. A fresh TLS/read-only 424-table LIVE database export passed
 hash and isolated Auth/PostgREST/current v107 Edge recovery with a preserved
-Drummonds account, tenant isolation and audited operator revocation. Today's scheduled GitHub backup completed at 08:09 with a native restore, encrypted private London copy and independent Restore-identity readback; off-site decryption was not attempted.
+Drummonds account, tenant isolation and audited operator revocation. Today's scheduled GitHub backup completed at 08:09 with a native restore, encrypted private London copy and independent Restore-identity readback.
+That exact scheduled ciphertext was also downloaded to the local recovery
+workspace by the Restore-only identity at 08:42 and matched its full SHA-256; the
+single subsequent escrow read decrypted that package and the current v107
+Edge source, restoring all archived rows and 20 Vault secrets, then passed
+preserved-user Auth/REST/current Edge tenant reads and container cleanup.
 The existing local communication runner completed all three file inventories
 by 08:19: 3,166 Phone objects and 257 matched voicemail pairs, with no missing
 referenced object. The database/file observations are non-atomic and the file
@@ -68,7 +73,7 @@ stage. Only genuine Build 10 acceptance unlocks Part 2. A plan is not acceptance
 | Build | Stage | State | Highest verified environment | Business outcome | Receipt |
 |---|---|---|---|---|---|
 | 00 | Reconcile the main build and agree outcome contracts | PARTIAL — audit delivered; outcome agreement pending | DOCUMENT REVIEW / LOCAL document validation; dated TEST/LIVE evidence referenced | NOT YET MEASURABLE | [14 October audit](receipts/00-2026-10-14.md) |
-| 01 | Finish and protect the existing LEARN V1 foundation | IN PROGRESS — LIVE Slack saved counts and public evidence browsing pass signed-in review; the shared signed route has real proof in the separate 20-channel roster, while the exact 160-channel roster has no observed post-cutoff traffic. The ordinary card sweep reached terminal success; current ten-card continuation remains active. A fresh 424-table LIVE read-only database point passed isolated preserved-user Auth/REST/current Edge reads, tenant isolation and operator revocation. All 1,004 published Commusoft jobs use their latest retained version; 285 recorded open-work jobs remain source-review items, with no individual-assignee field or approved score. Today’s hosted scheduled backup passed native restore and encrypted off-site readback; the local three-bucket file run covered 3,166 Phone objects and 257 voicemail pairs. Full off-site application recovery, exact-160 real Event proof, named handoff, score criteria and Chris’s business sign-off remain open. | SIGNED-IN LIVE, TEST and isolated current-point service recovery; full Build 01 acceptance incomplete | OBSERVING — technical and business acceptance remain separate | [Build 01 receipt](receipts/01-2026-10-14.md) |
+| 01 | Finish and protect the existing LEARN V1 foundation | IN PROGRESS — LIVE Slack saved counts and public evidence browsing pass signed-in review; the shared signed route has real proof in the separate 20-channel roster, while the exact 160-channel roster has no observed post-cutoff traffic. The ordinary card sweep reached terminal success; current ten-card continuation remains active. Today's independent scheduled off-site database and v107 Edge packages were downloaded and decrypted, with full archived row/Vault comparison and isolated preserved-user Auth/REST/current Edge tenant reads, tenant isolation and operator revocation. All 1,004 published Commusoft jobs use their latest retained version; 285 recorded open-work jobs remain source-review items, with no individual-assignee field or approved score. The local three-bucket file run covered 3,166 Phone objects and 257 voicemail pairs. Frontend/runtime-secret and controlled-capture recovery, exact-160 real Event proof, named handoff, score criteria and Chris’s business sign-off remain open. | SIGNED-IN LIVE, TEST and isolated off-site package service recovery; full Build 01 acceptance incomplete | OBSERVING — technical and business acceptance remain separate | [Build 01 receipt](receipts/01-2026-10-14.md) |
 | 02 | Account for company information and its limits | NOT STARTED | Not assessed | Not assessed | None |
 | 03 | Connect the company without guessing identities | NOT STARTED | Not assessed | Not assessed | None |
 | 04 | Understand strategy, ownership and commercial policy | NOT STARTED | Not assessed | Not assessed | None |

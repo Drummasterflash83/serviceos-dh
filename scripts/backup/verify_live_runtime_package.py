@@ -27,12 +27,12 @@ ACTUAL = {
     'sourceBytes': 4792245,
 }
 CURRENT = {
-    'encryptedBytes': 6012536,
-    'encryptedSha256': 'e0c3cbdb8ff2fded1ab5cf879806f8b580a1278f07bfc513290ca3ccab7b2f17',
-    'manifestSha256': 'aae49320a450de450ce56e8b6f8e781cfade9b51bace8d0934edc149beb8cbfc',
+    'encryptedBytes': 6022776,
+    'encryptedSha256': 'dcfcbb300d0239f379f744e55e989fb1a4bcd2b85ab67f1c8b3fa5a940f55473',
+    'manifestSha256': '4008cc502a41f5948cfea8e2d06fa3be26ff4f4f7828839f707724b7c49f1488',
     'functions': 103,
-    'files': 727,
-    'sourceBytes': 4823461,
+    'files': 728,
+    'sourceBytes': 4829384,
 }
 MAX_IDENTITY_BYTES = 4096
 MAX_CLEAR_BYTES = 64 * 1024 * 1024

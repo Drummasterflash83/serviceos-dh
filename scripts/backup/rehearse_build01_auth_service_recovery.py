@@ -144,6 +144,8 @@ def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
               'databaseArchiveSha256':expected_archive['sha256'],
               'databaseArchiveBytes':expected_archive['bytes'],
               'databaseSourceKind':('independent_15_oct_archive' if source_dir==SOURCE
+                                    else 'independent_scheduled_offsite_ciphertext'
+                                    if source_dir.parent.name == 'offsite-restored'
                                     else 'private_current_daily_reader_export'),
               'authContainerRemoved':False, 'restContainerRemoved':False,
               'databaseContainerRemoved':False}
@@ -612,6 +614,32 @@ if __name__=='__main__':
                     expected_archive['bytes'] < 1_000_000_000 or
                     not re.fullmatch(r'[0-9a-f]{64}',expected_archive.get('sha256',''))):
                 raise RecoveryError('Current private export boundary unverified')
+            mode = mode[:1]
+        elif (len(mode) == 3 and
+                mode[0] == '--with-reviewed-v107-edge-and-existing-user-reset' and
+                mode[1] == '--offsite-recovered-dir' and
+                mode[2] == '.verification-results/build01-scheduled-database-20261017/offsite-restored'):
+            recovered_root = ROOT / mode[2]
+            recovery = json.loads((recovered_root/'report.json').read_text())
+            current_source = recovered_root / 'snapshot'
+            export = json.loads((current_source/'report.json').read_text())
+            expected_archive = export.get('archive')
+            if (recovery.get('state') != 'encrypted_package_database_and_vault_restored' or
+                    recovery.get('originalPackageFilesUnchanged') is not True or
+                    recovery.get('containerRemoved') is not True or
+                    recovery.get('allPhysicalTablesCovered') is not True or
+                    recovery.get('productionWrites') is not False or
+                    recovery.get('snapshotAt') != export.get('snapshot',{}).get('observedAt') or
+                    export.get('state') != 'export_complete_restore_unverified' or
+                    export.get('project') != 'tgbnakbxwcqjeimygroz' or
+                    export.get('productionDataWrites') is not False or
+                    export.get('clientTlsVerified') is not True or
+                    export.get('snapshot',{}).get('readOnly') != 'on' or
+                    not isinstance(expected_archive,dict) or
+                    not isinstance(expected_archive.get('bytes'),int) or
+                    expected_archive['bytes'] < 1_000_000_000 or
+                    not re.fullmatch(r'[0-9a-f]{64}',expected_archive.get('sha256',''))):
+                raise RecoveryError('Scheduled off-site recovery boundary unverified')
             mode = mode[:1]
         if len(mode)>1 or (len(mode)==1 and mode[0] not in
             ('--with-archived-edge','--with-reviewed-v107-edge',

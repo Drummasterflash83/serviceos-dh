@@ -1,0 +1,20 @@
+{
+  "version": "learn-build01-scheduled-offsite-download/1",
+  "observedAtUtc": "2026-10-17T08:42:07.180Z",
+  "githubRunId": 39015198972,
+  "trigger": "schedule",
+  "sourceSnapshotAtUtc": "2026-10-17T07:52:11.013627+00:00",
+  "packageFormat": "serviceos-database-package/2",
+  "encryptedBytes": 1638226616,
+  "encryptedSha256": "40009f3659aa3be728d1a01a8ed614408a3c43afacdfb9668be0941043b0abf1",
+  "privateLondonBucketVersionSelectedByRunWindowAndSize": true,
+  "storedReceiptAndExactVersionMatched": true,
+  "downloadMode": "Restore-only identity; exact immutable version in bounded ranges",
+  "fullDownloadedCiphertextSha256MatchedStoredReceipt": true,
+  "recoveryKeyRead": false,
+  "backupWriterUsed": false,
+  "productionDataWrites": false,
+  "plaintextAndVaultRestored": false,
+  "fullApplicationRecoveryVerified": false,
+  "customerContentReturned": false
+}

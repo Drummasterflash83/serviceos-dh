@@ -1,0 +1,59 @@
+{
+  "version": "learn-build01-offsite-v107-service-recovery/1",
+  "reportedAtUtc": "2026-10-17T08:55:52Z",
+  "databaseSource": {
+    "githubRunId": 39015198972,
+    "trigger": "schedule",
+    "snapshotAtUtc": "2026-10-17T07:52:11.013627+00:00",
+    "independentlyDownloadedImmutableVersion": true,
+    "encryptedBytes": 1638226616,
+    "encryptedSha256": "40009f3659aa3be728d1a01a8ed614408a3c43afacdfb9668be0941043b0abf1",
+    "decryptedAndRestored": true,
+    "archivedCopyTablesMatched": 421,
+    "archivedCopyRowsMatched": 5960241,
+    "archivedSequencesMatched": 7,
+    "networkSupplementTablesMatched": 2,
+    "networkSupplementRowsMatched": 4089,
+    "networkSupplementSequencesMatched": 1,
+    "allPhysicalTablesCovered": true,
+    "vaultSecretsDecryptedAndVerified": 20,
+    "recordingReferencesWithStorageMetadata": 3160
+  },
+  "edgeSource": {
+    "independentlyDownloadedImmutableVersion": true,
+    "encryptedSha256": "dcfcbb300d0239f379f744e55e989fb1a4bcd2b85ab67f1c8b3fa5a940f55473",
+    "decryptedInMemoryAndManifestVerified": true,
+    "currentV107FunctionTrees": 103,
+    "currentV107SourceFiles": 728,
+    "sourceExtractedToDiskByVerifier": false
+  },
+  "isolatedService": {
+    "preservedAuthUsers": 2,
+    "existingDrummondsUserFreshLoginAfterDisposableOnlyReset": true,
+    "tenantCardsReturned": 5,
+    "currentV107EdgeTenantReadVerified": true,
+    "phoneAndEmailCountsNonempty": true,
+    "unassignedUserSawCards": 0,
+    "crossTenantCardLeak": 0,
+    "operatorReadAudited": true,
+    "revokedOperatorReadDenied": true,
+    "allLabelledDatabaseAuthRestGatewayAndEdgeContainersIndependentlyAbsent": true
+  },
+  "containment": {
+    "oneRecoveryEscrowReadForBothPackages": true,
+    "recoveryKeyPersisted": false,
+    "externalNetworkDuringServiceRehearsal": false,
+    "hostPorts": 0,
+    "emailSent": false,
+    "productionDataWrites": false,
+    "customerIdentifiersOrSecretValuesInReceipt": false
+  },
+  "fullApplicationRecoveryVerified": false,
+  "remaining": [
+    "independent frontend boot and authenticated client/operator journey",
+    "runtime secret value recovery and required-function startup",
+    "controlled capture restart after scopes and cursors are checked",
+    "atomic database and file recovery point",
+    "original session continuation policy"
+  ]
+}

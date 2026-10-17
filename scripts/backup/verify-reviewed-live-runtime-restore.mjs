@@ -11,7 +11,7 @@ const bindingPath = join(privateRoot, "database-backup-onepassword-binding.json"
 const previousPath = join(privateRoot,
   "build01-live-edge-source-restore-b7c9a0e4-8420-4c22-a7f8-58b743d10903.age");
 const currentPath = join(privateRoot,
-  "build01-live-edge-source-restore-26d33cdf-4bc3-44f3-b6c6-6346cb280a2c.age");
+  "build01-live-edge-source-restore-2f75feeb-21d2-4288-bde4-dc8f85e6c9e8.age");
 const agePath = "/private/tmp/serviceos-age-1.3.2/age";
 
 async function privateFile(path) {

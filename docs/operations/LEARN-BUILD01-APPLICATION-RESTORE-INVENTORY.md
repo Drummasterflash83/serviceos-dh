@@ -1,9 +1,24 @@
 # Build 01 application and Auth restore inventory
 
-**17 October 2026 — partial service recovery, not a full-service restore receipt.** The
-isolated database/Auth/PostgREST rehearsal and the full Edge source-package
-off-site copy prove distinct parts of recovery. Neither proves that an independently
-recovered OpenFolk service can serve clients or resume ingestion.
+**17 October 2026 — bounded off-site service recovery, not full failover.** The
+independently downloaded database and Edge packages now pass decryption,
+database/Vault restore and a preserved-user Auth/REST/current Edge tenant read.
+Frontend boot, recovered runtime secret values and controlled ingestion restart
+remain separate.
+
+At about 08:55 UTC, one recovery escrow read verified the two current packages
+together. The genuinely scheduled 07:52 database package restored **5,960,241**
+archived COPY rows in 421 tables, seven sequences, two captured network tables
+and their sequence; all **20 Vault secrets** decrypted and verified. The
+current v107 Edge source package's **103** function trees and **728** file hashes
+verified in memory. Using the recovered database and reviewed v107 route, a
+preserved Drummonds account established a fresh Auth session after a
+disposable-only reset and read five tenant cards. Current Edge Phone/Email
+read, unassigned-user isolation, audited operator selection and denial after
+revocation passed. The labelled database, Auth, REST, gateway and Edge
+containers were independently absent after cleanup. No provider or production
+write, host port or email was used.
+[Off-site service receipt](evidence/learn-build01-offsite-v107-service-recovery-2026-10-17.json).
 
 At 08:06 UTC on 17 October, the already approved dedicated reader completed a
 fresh, TLS-verified, read-only LIVE database snapshot. Its private native
@@ -20,10 +35,21 @@ revocation passed. All labelled containers were independently absent after
 cleanup. No external network, host port, email, 1Password access, Touch ID or
 production data write was used.
 [Current-point service receipt](evidence/learn-build01-current-point-service-recovery-2026-10-17.json).
-This narrows the database-point and existing-user recovery gap. It is a local
-export, not decryption of today's independently stored ciphertext. Old sessions,
-Vault plaintext and runtime secret values, frontend boot, all-function startup,
-an atomic file-backup point and controlled capture restart remain unverified.
+This local-only drill narrowed the database-point and existing-user recovery
+gap without a key read. The later off-site drill above also verified Vault
+plaintext. Old sessions, runtime secret values, frontend boot, all-function
+startup, an atomic file-backup point and controlled capture restart remain
+unverified.
+
+At 08:42 UTC, the separate Restore-only identity downloaded the **exact
+immutable version** produced by today's genuinely scheduled hosted backup.
+The 1,638,226,616-byte age ciphertext matched its stored receipt and full
+SHA-256 `40009f3659aa3be728d1a01a8ed614408a3c43afacdfb9668be0941043b0abf1`.
+Bounded ranges avoided restarting a slow 1.6 GB read; the final hash covered
+the entire file. No recovery key, database plaintext or backup Writer identity
+was used. Its later decrypted database, Vault and bounded service restore are
+recorded above.
+[Off-site download receipt](evidence/learn-build01-scheduled-offsite-download-2026-10-17.json).
 
 At 08:16 UTC, a second isolated native restore compared **5,950,101** archived
 COPY rows across 421 tables, seven sequences, the two captured network tables
@@ -209,8 +235,8 @@ to the existing public recovery recipient at mode `0600`. Its SHA-256 is
 `e0c3cbdb8ff2fded1ab5cf879806f8b580a1278f07bfc513290ca3ccab7b2f17`.
 At 17:20 UTC, this exact newer package was copied to the existing private
 London bucket and downloaded by the separate Restore identity. Its 6,012,536
-bytes and SHA-256 matched. Escrow decryption of this **newer** package remains
-unverified; the prior 102-function package was decrypted at 08:07 UTC.
+bytes and SHA-256 matched. Escrow decryption of this **then-current** package
+was not performed; the later v107 package superseded it and is verified above.
 [Sanitised refresh receipt](evidence/learn-build01-live-runtime-refresh-1707-2026-10-16.json)
 and [off-site copy receipt](evidence/learn-build01-live-runtime-refresh-offsite-copy-2026-10-16.json).
 
@@ -218,9 +244,9 @@ and [off-site copy receipt](evidence/learn-build01-live-runtime-refresh-offsite-
 
 | Component | Preserved or verified input | Still required for full recovery |
 | --- | --- | --- |
-| Database and Vault | Encrypted independent backup and prior isolated Vault comparison; today's TLS/read-only 424-table archive passed hash and isolated database/service restore | Decrypt and restore a current off-site version, verify Vault plaintext with the recovery key and reconcile its point in time with file/object backups |
-| Auth and tenant access | Recovered Auth and PostgREST from today's local archive with a new synthetic signing key; a preserved account logged in after a disposable reset, read its tenant cards and called the current Edge route. Tenant RLS and audited operator grant/revocation passed. | Prove the recovery credential/session reset procedure and recovered frontend/operator journeys. Old sessions are not expected to survive a new signing key. |
-| Edge functions | The earlier 102-function, 721-file package was copied, downloaded and decrypted with its manifest verified. Current v107 source (103 functions, 728 files) is locally verified, encrypted, staged, copied off site and independently downloaded. All 103 current source trees bundled in isolation; one current v107 route served an authenticated tenant read against today's local archive. | Decrypt the independently downloaded current package, then start required routes with verified flags and recovered secret references in an isolated service |
+| Database and Vault | Today's scheduled ciphertext was independently downloaded, decrypted and restored; all archived COPY rows/sequences and 20 Vault secrets verified in isolation. A separate local 424-table point also passed. | Reconcile the off-site database point in time with file/object backups and prove a complete failover procedure |
+| Auth and tenant access | Recovered Auth and PostgREST from today's independently downloaded off-site database with a new synthetic signing key; a preserved account logged in after a disposable reset, read tenant cards and called the current Edge route. Tenant RLS and audited operator grant/revocation passed. | Prove recovered frontend/operator journeys and the recovery credential/session reset procedure. Old sessions are not expected to survive a new signing key. |
+| Edge functions | Current v107 source (103 functions, 728 files) was independently downloaded and decrypted in memory with every manifest hash verified; all 103 current source trees bundled in isolation; one current v107 route served an authenticated tenant read against today's off-site-restored database. | Start required routes with verified flags and recovered secret references in an isolated service |
 | Frontend | Vercel builds from Git `main`; the four LIVE aliases serve the released job-review UI. A signed-in LIVE Drummonds check opened LEARN, displayed a real Slack saved total and loaded evidence. | Restore a pinned Git revision to an isolated Vercel target with its production-equivalent public configuration and test login, client cards and operator paths before any alias switch |
 | Runtime configuration | Static source scan found 56 literal Edge environment names plus 18 dynamic lookups across the 102 function archives; the frontend references `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_ENABLE_SIGNUP` | Independently inventory actual configured names, non-exportable and dynamic-name references, escrow/restore secret values through an approved channel, and verify each recovered function's access without printing values |
 | Capture and files | Today's restored database point is covered by a later verified Phone file inventory for all 3,160 references, with one decoded backed-up sample; the same local run completed all three buckets and 257 voicemail source/audio pairs | Resolve the non-atomic database/file gap, keep dispatchers paused until scopes, cursors and credentials are verified, then resume one bounded source at a time and prove new data reaches the correct tenant/card |

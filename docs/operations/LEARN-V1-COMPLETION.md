@@ -17,7 +17,7 @@ business decision yet.
 
 ## Current evidence and priority
 
-**17 October, 08:19 UTC — current database recovery, scheduled backup and three-bucket files verified separately.**
+**17 October, 08:55 UTC — scheduled off-site database, Vault and bounded service recovery verified.**
 
 ### Working and verified
 
@@ -43,6 +43,19 @@ business decision yet.
   readback and cleanup steps passed. The safe marker reports a 1,638,226,616-byte
   ciphertext and no recovery-key read or production write.
   [Scheduled receipt](evidence/learn-build01-scheduled-database-backup-2026-10-17.json).
+- The separate Restore-only identity independently downloaded that exact
+  scheduled ciphertext by immutable version. All 1,638,226,616 bytes matched
+  the stored receipt's SHA-256; no recovery key or backup Writer was used.
+  This prepared an independent off-site recovery input for the later drill.
+  [Independent download](evidence/learn-build01-scheduled-offsite-download-2026-10-17.json).
+- One escrow read decrypted today's independent database and current v107 Edge
+  source packages. The off-site database restored **5,960,241** archived COPY
+  rows and all **20 Vault secrets**; 103 current Edge trees/728 source files
+  matched their manifest. A preserved Drummonds account established a fresh
+  disposable Auth session, read five tenant cards and the current LEARN Edge
+  route; tenant isolation and operator revocation passed. All recovery
+  containers were independently absent afterward.
+  [Off-site service receipt](evidence/learn-build01-offsite-v107-service-recovery-2026-10-17.json).
 - A separate local native comparison of the 07:09 archive matched **5,950,101**
   archived rows across 421 COPY tables, seven sequences, the two network-table
   supplements, catalog and extensions. The automatic Phone file backup that
@@ -59,13 +72,12 @@ business decision yet.
 
 ### Needs finishing
 
-- This is a fresh **local** export and isolated service test, not a decrypt of
-  today's off-site ciphertext or a complete application failover. Runtime
-  secret/Vault plaintext recovery, original-session policy, frontend boot,
+- The off-site database, Vault, Auth and one current Edge route now restore in
+  isolation; this is not a complete application failover. Runtime secret value
+  recovery for required routes, frontend boot, original-session policy,
   all-function startup, an atomic three-bucket file point and controlled capture
-  restart remain open. Today's off-site copy passed independent encrypted-byte readback, but
-  has not been decrypted/restored. The scheduled missed-success monitor and
-  future daily continuity still need ordinary observation.
+  restart remain open. The scheduled missed-success monitor and future daily
+  continuity still need ordinary observation.
 - The exact 160 Slack roster still has no observed post-cutoff message or reply;
   the source-review queue does not establish named job handoff or a score.
 

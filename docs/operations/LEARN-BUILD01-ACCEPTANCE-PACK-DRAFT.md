@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 08:19 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 08:55 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -54,9 +54,13 @@ inactive until Chris reviews and signs off the business result.
   passed at **14:03 UTC**. A second genuinely **scheduled** run on 17 October
   completed at **08:09 UTC**: native restore, encrypted private London copy,
   separate Restore-identity byte readback and runner cleanup passed. Its
-  1,638,226,616-byte ciphertext was not decrypted; today's missed-success
-  monitor is not due until 09:23 UTC.
-  [Scheduled run receipt](evidence/learn-build01-scheduled-database-backup-2026-10-17.json).
+  hosted run did not decrypt its 1,638,226,616-byte ciphertext; today's
+  missed-success monitor is not due until 09:23 UTC.
+  A local use of the separate Restore-only identity then downloaded that
+  exact immutable version in bounded ranges and matched the complete SHA-256.
+  No recovery key was read.
+  [Scheduled run receipt](evidence/learn-build01-scheduled-database-backup-2026-10-17.json),
+  [independent download](evidence/learn-build01-scheduled-offsite-download-2026-10-17.json).
   The 17 October three-bucket communication inventory verified
   **3,166 phone objects** and **257 matched voicemail source/audio pairs**, with
   no missing referenced object. The local file runner still requires the Mac
@@ -93,6 +97,15 @@ inactive until Chris reviews and signs off the business result.
   reference in this database point. The two voicemail buckets of that same
   communication run finished by 08:19 UTC with 257 matched pairs.
   [Database/file receipt](evidence/learn-build01-current-database-file-recovery-2026-10-17.json).
+- A single recovery escrow read then decrypted **today's independently
+  downloaded scheduled database package** and the current v107 off-site Edge
+  package. All **5,960,241** archived COPY rows, seven sequences, two network
+  tables and their sequence matched. All **20 Vault secrets** decrypted and
+  verified in isolation. A preserved Drummonds user logged into recovered
+  Auth after a disposable-only reset, read five tenant cards and the current
+  v107 LEARN route; tenant isolation and audited operator revocation passed.
+  Every labelled recovery container was independently absent afterward.
+  [Off-site service recovery](evidence/learn-build01-offsite-v107-service-recovery-2026-10-17.json).
 - The current v107 worker also booted from its reviewed bundle in an isolated
   network-disabled container, returned OPTIONS 200 and rejected an
   unauthorised POST with 403. This is startup and fail-closed evidence, not an
@@ -142,15 +155,14 @@ inactive until Chris reviews and signs off the business result.
   historical by event date; the changed-source update lane is still running
   and has not drained.
 - **Recovery:** The serving v107 Edge source has a fresh encrypted off-site
-  copy and separate readback, and all 103 functions rebuild from locally staged
-  source. One current route has served recovered synthetic and preserved-user
-  authenticated tenant requests, the latter after a disposable password reset.
-  A separate fresh local database point now passes the same restored-service
-  journey, but the full frontend, all-function startup, required runtime
-  secrets, original-session recovery and controlled capture restart have not
-  been proven from independently downloaded current recovery inputs. The
-  database point matches a later verified phone-file inventory and all three
-  file buckets completed. An atomic database/file point remains unproven.
+  copy and in-memory manifest verification; all 103 function trees rebuilt
+  from locally staged source. Today's independent scheduled database copy
+  now passes decrypted native/Vault restoration and preserved-user Auth/REST/
+  current Edge tenant reads. The full frontend, all-function startup with
+  recovered runtime secrets, original-session policy and controlled capture
+  restart remain unverified. The local database point matches a later verified
+  phone-file inventory and all three file buckets completed, but the points
+  are not atomic.
 - **File-backup host:** the recording and voicemail schedule has succeeded
   locally, but depends on the Mac and Codex app being awake. The latest
   three-bucket inventory is a verified file copy, not a matching database
