@@ -17,7 +17,7 @@ business decision yet.
 
 ## Current evidence and priority
 
-**17 October, 05:46 UTC — current Edge source copied off site; ordinary card sweep continues.**
+**17 October, 05:49 UTC — current Edge source copied off site; ordinary card sweep continues.**
 
 ### Working and verified
 
@@ -28,14 +28,22 @@ business decision yet.
   `dcfcbb300d0239f379f744e55e989fb1a4bcd2b85ab67f1c8b3fa5a940f55473`.
   No production data or provider writes occurred. The older v106 package was
   superseded and was not copied. [Off-site receipt](evidence/learn-build01-runtime-2322-offsite-copy-2026-10-17.json).
-- The 05:46 LIVE card readback found projections for **all 4,181 active cards**.
-  The ordinary sweep had advanced 3,940 cards past its stable cutoff, with
-  241 remaining. This is card coverage, not yet a completed unattended sweep.
+- The 05:48 LIVE card readback found projections for **all 4,181 active cards**.
+  The ordinary sweep had advanced 3,960 cards past its stable cutoff, with
+  221 remaining. This is card coverage, not yet a completed unattended sweep.
+- The Email update chain reached **23,650 unchanged receipts for 23,650 distinct
+  sources** at 05:48, with zero repeated sources. All 160 approved public Slack
+  channel/reply subscriptions were enabled at 05:48; 63 were more than a day
+  behind. An exact-roster read found no saved post-cutoff messages, replies or
+  signed hints; the latest retained source was from 30 August. That quiet
+  history does not prove near-live delivery.
 
 ### Needs finishing
 
 - Observe the ordinary card job's final batch and terminal success. The exact
-  160-channel Slack roster's post-cutoff evidence and catch-up, Email backlog,
+  160-channel Slack roster's post-cutoff evidence and catch-up remain open; one
+  recurring window is dead-lettered with generic `slack_history_failed` after
+  one attempt and needs an evidenced recovery. The Email backlog,
   reviewed job links and attention policy, and full application/Auth recovery
   remain open. The v107 source-only readback has not been decrypted or rebuilt
   as a recovered service.

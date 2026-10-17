@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 05:46 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 05:49 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -11,8 +11,8 @@ inactive until Chris reviews and signs off the business result.
 - LIVE retained **4,676 Phone calls with 4,676 interactions**, and no eligible
   Email messages lacked interactions in the 22:34 read. No eligible interaction
   lacked a Graph node. [Current technical tracker](LEARN-V1-COMPLETION.md).
-- The ordinary Email update chain committed **4,200 unchanged receipts for
-  4,200 distinct sources** by 23:19, with no repeated source in that window.
+- The ordinary Email update chain committed **23,650 unchanged receipts for
+  23,650 distinct sources** by 05:48, with no repeated source in that window.
   It is still running. [Current technical tracker](LEARN-V1-COMPLETION.md).
 - The 160 approved public Slack channels have enabled channel/reply
   subscriptions and completed historical campaign handoff. A separate approved
@@ -36,14 +36,15 @@ inactive until Chris reviews and signs off the business result.
 
 ## Needs finishing
 
-- **Cards:** All 4,181 active cards had a projection by the 05:46 readback.
-  The ordinary scheduler had advanced 3,940 cards past its stable cutoff with
-  241 still before it. The earlier failed job remains in the audit history.
+- **Cards:** All 4,181 active cards had a projection by the 05:48 readback.
+  The ordinary scheduler had advanced 3,960 cards past its stable cutoff with
+  221 still before it. The earlier failed job remains in the audit history.
   Observe the final sweep batch before closing this gate.
   [Release and continuation proof](evidence/learn-build01-card-phase-release-2026-10-16.json).
-- **Slack freshness:** 72 of the exact 160 channels were more than a day
-  behind at 23:19. No post-cutoff message, reply or signed hint had been saved
-  in that exact roster at 22:49. Its latest retained source activity is from
+- **Slack freshness:** 63 of the exact 160 channels were more than a day
+  behind at 05:48, and one recurring window was dead-lettered with a generic
+  `slack_history_failed` code. No post-cutoff message, reply or signed hint had
+  been saved in that exact roster at 05:49. Its latest retained source activity is from
   30 August, with none in the 30 days before handoff. That makes a quiet roster
   plausible but does not prove provider delivery. The proven post-fix real
   Event was a reply in the separate public roster; a new ordinary
