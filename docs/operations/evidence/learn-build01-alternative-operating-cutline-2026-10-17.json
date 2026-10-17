@@ -1,0 +1,58 @@
+{
+  "version": "learn-build01-alternative-operating-cutline/1",
+  "observedAtUtc": "2026-10-17T09:27:49Z",
+  "environment": "LIVE read-only aggregate observations",
+  "cardSweep": {
+    "activeCards": 4182,
+    "projectedCards": 4181,
+    "remainingBeforeStableCutoff": 2246,
+    "cardsBeforeOldestUnprojected": 2078,
+    "recentOrdinaryJobsSucceeded": 60,
+    "recentOrdinaryJobsFailed": 0,
+    "manualCardRescueUsed": false
+  },
+  "slackExactApprovedRoster": {
+    "publicChannels": 160,
+    "enabledChannelAndReplySubscriptions": 160,
+    "channelsPastSavedCutoff": 160,
+    "savedMessages": 33189,
+    "channelsWithSourceInPriorThirtyDays": 0,
+    "postCutoffMessages": 0,
+    "postCutoffReplies": 0,
+    "signedHintsInRoster": 0,
+    "providerCompletedWindows": 1410,
+    "completedEmptyWindows": 1410,
+    "channelsWithCompletedWindow": 160,
+    "channelsWithWindowEndingInPriorTwelveHours": 39,
+    "deadLetterWindows": 0,
+    "channelsOverDayBehindInFallback": 69,
+    "installedFallbackIncludesSeventyTwoHourCatchup": true,
+    "actualPostCutoffEventInThisRosterProven": false
+  },
+  "email": {
+    "unchangedReceipts": 34450,
+    "distinctReceiptSources": 34448,
+    "eligibleMissingInteractions": 2517,
+    "currentUnlinkedWithinDayByEventTime": 0,
+    "currentUnlinkedWithinWeekByEventTime": 2,
+    "reviewHoldsInMissingSet": 0
+  },
+  "method": {
+    "readbacks": [
+      "scripts/verify/learn-build01-card-stale-readback.mjs --live-read-only",
+      "scripts/verify/learn-build01-card-sweep-progress-readback.mjs --live-read-only",
+      "scripts/verify/learn-build01-slack-roster-freshness-readback.mjs --live-read-only",
+      "scripts/verify/learn-build01-slack-160-window-receipts-readback.mjs --live-read-only",
+      "scripts/verify/learn-build01-slack-handoff-readback.mjs --live-read-only",
+      "scripts/verify/learn-build01-email-receipt-progress-readback.mjs --live-read-only",
+      "scripts/verify/learn-build01-email-projection-gap-readback.mjs --live-read-only",
+      "read-only installed definition of public.learn_slack_schedule_recurring"
+    ],
+    "customerContentReturned": false,
+    "slackMessageBodiesReturned": false,
+    "productionDataWrites": false,
+    "slackMessagesPosted": false,
+    "recoveryKeyRead": false
+  },
+  "interpretation": "The signed route and all 160 bindings are configured, and 1,410 provider-completed windows contain checked absence. The exact roster has no source event to prove delivery, so near-live delivery for those channels remains an explicit observation limit. The installed 72-hour catch-up branch already addresses old polling windows; replacing it with another 15-minute scheduler would regress recovery. The normal card sweep is advancing without manual rescue. The Email gap is retained historical intake, not a current-day event gap."
+}

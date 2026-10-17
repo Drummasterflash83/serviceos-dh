@@ -1,12 +1,23 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 09:10 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 09:27 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- The current alternative operating check uses the existing signed Slack
+  Events receiver for new activity, provider-completed windows for checked
+  historical absence, and the ordinary card worker for unattended projection.
+  At 09:27, all 160 approved public channels had a completed provider window:
+  **1,410/1,410 completed windows were empty**, with zero current dead letters.
+  The installed LIVE fallback already uses bounded **72-hour catch-up windows**
+  when a channel is over a day behind. Replacing it with the older checked-in
+  15-minute definition would make catch-up worse. This is a truthful quiet-source
+  result, not proof that a real message from this exact roster has reached LEARN.
+  [Aggregate cutline](evidence/learn-build01-alternative-operating-cutline-2026-10-17.json).
 
 - A fresh 09:06 UTC LIVE read shows **4,181 of 4,182 active cards projected**.
   The ordinary card worker recorded **60 successful jobs and no failures in the
@@ -62,8 +73,10 @@ inactive until Chris reviews and signs off the business result.
   passed at **14:03 UTC**. A second genuinely **scheduled** run on 17 October
   completed at **08:09 UTC**: native restore, encrypted private London copy,
   separate Restore-identity byte readback and runner cleanup passed. Its
-  hosted run did not decrypt its 1,638,226,616-byte ciphertext; today's
-  missed-success monitor is not due until 09:23 UTC.
+  hosted run did not decrypt its 1,638,226,616-byte ciphertext. At 09:28 UTC,
+  no 17 October **scheduled** missed-success monitor run appeared in public
+  GitHub Actions metadata; the 16 October scheduled run started several hours
+  late and succeeded. The current absence is neither a pass nor a failure.
   A local use of the separate Restore-only identity then downloaded that
   exact immutable version in bounded ranges and matched the complete SHA-256.
   No recovery key was read.
@@ -186,6 +199,11 @@ inactive until Chris reviews and signs off the business result.
   unobserved. The proven post-fix real Event was a reply in the separate
   public roster; a new ordinary parent-message event has not yet been observed.
   [Exact-roster proof](evidence/learn-build01-slack-160-postcutoff-2026-10-16.json).
+  A later 09:27 observation found **69** channels over a day behind in the
+  polling fallback and only **39** with a completed window ending in the prior
+  12 hours. The existing long-window catch-up and signed Events path are the
+  operating route; the fallback itself is not near-live. Do not ask staff to
+  post further team test messages or treat quiet windows as delivered Events.
 - **Jobs and attention:** Commusoft retained 12,656 job identities and 295
   recorded open/pending/on-hold jobs. Only ten of those had reviewed job-card
   links; 285 did not. At 22:31, 272 of the 295 had no observation within a day.

@@ -17,6 +17,46 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 09:27 UTC — use existing long-window Slack fallback and signed Events; no repeat team test.**
+
+### Working and verified
+
+- All 160 approved public channels remain enabled for channel/reply capture
+  and past the saved cutoff. All have at least one provider-completed recurring
+  window; the latest read counted 1,410 completed empty windows and zero current
+  dead letters. There were no saved messages in the 30 days before handoff and
+  no saved post-cutoff message, reply or signed hint in this exact roster.
+- The installed LIVE scheduler already contains a bounded 72-hour catch-up
+  path for older windows. Reverting to the original checked-in 15-minute
+  scheduler would be counterproductive. The shared signed Events route has
+  separate 20-channel real-delivery proof and is the route for near-live posts.
+- The ordinary card sweep advanced to 1,936 cards past its stable cutoff at
+  09:27, with 2,246 still before cutoff. Email committed 34,450 unchanged
+  receipts for 34,448 distinct sources; the 2,517 eligible missing interactions
+  were newly retained historical sources, with zero events from the current day.
+  [Aggregate receipt](evidence/learn-build01-alternative-operating-cutline-2026-10-17.json).
+
+### Needs finishing
+
+- The 160 roster remains a quiet-source observation limit: its own post-cutoff
+  Event delivery cannot be claimed until natural activity occurs. Polling
+  fallback remains behind on 69 channels; only 39 had a completed window ending
+  in the prior 12 hours. Do not restart the approved campaign or post more
+  team test messages. A real Event from the shared 20-channel roster does not
+  prove delivery for this exact 160.
+- The card sweep still has one older unprojected card and has not finished its
+  current ordinary pass. Continue its unattended operation rather than
+  recording a manually targeted job as a successful sweep.
+- The 17 October scheduled missed-success backup monitor has not started as of
+  09:28 UTC according to public Actions metadata. A delayed GitHub schedule is
+  not a failed monitor; observe its actual scheduled run and result.
+
+### Blocked externally
+
+- No immediate fingerprint, Slack post or user action is needed for these
+  checks. Chris's business decision remains separate from these technical
+  observations.
+
 **17 October, 09:06 UTC — use ordinary progress and checked absence; avoid an unverified scheduler replacement.**
 
 ### Working and verified
