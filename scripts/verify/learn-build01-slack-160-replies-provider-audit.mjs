@@ -81,6 +81,11 @@ if (state.contract !== "build01-slack-160-replies-provider-audit/1" ||
     state.completedRoots > roots.length || !Number.isInteger(state.checkedPages) ||
     !Number.isInteger(state.postcutoffReplies))
   throw Error("Private audit checkpoint or approved root set changed");
+state.positiveRootIndexes ??= [];
+if (!Array.isArray(state.positiveRootIndexes) ||
+    state.positiveRootIndexes.some(value => !Number.isInteger(value) ||
+      value < 0 || value >= state.completedRoots))
+  throw Error("Private positive-root checkpoint changed");
 const save = () => {
   const temporary = `${statePath}.new`;
   writeFileSync(temporary, JSON.stringify(state, null, 2) + "\n",
@@ -138,6 +143,7 @@ for (let index = state.completedRoots; index < until; index++) {
   state.completedRoots = index + 1;
   state.checkedPages += pages;
   state.postcutoffReplies += postcutoff;
+  if (postcutoff > 0) state.positiveRootIndexes.push(index);
   state.updatedAt = new Date().toISOString();
   save();
   await pause(2000);

@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 12:44 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 13:32 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -290,14 +290,16 @@ inactive until Chris reviews and signs off the business result.
   passed at **14:03 UTC**. A second genuinely **scheduled** run on 17 October
   completed at **08:09 UTC**: native restore, encrypted private London copy,
   separate Restore-identity byte readback and runner cleanup passed. Its
-  hosted run did not decrypt its 1,638,226,616-byte ciphertext. At 09:28 UTC,
-  no 17 October **scheduled** missed-success monitor run appeared in public
-  GitHub Actions metadata; the 16 October scheduled run started several hours
-  late and succeeded. The current absence is neither a pass nor a failure.
+  hosted run did not decrypt its 1,638,226,616-byte ciphertext. The 17 October
+  **scheduled** missed-success monitor then passed at 13:03 UTC, including its
+  check for a successful independent copy; a separate scheduled backup also
+  passed at 11:45 UTC. This establishes today's unattended backup/monitor pair,
+  not full application/Auth recovery or alert delivery to a human.
   A local use of the separate Restore-only identity then downloaded that
   exact immutable version in bounded ranges and matched the complete SHA-256.
   No recovery key was read.
   [Scheduled run receipt](evidence/learn-build01-scheduled-database-backup-2026-10-17.json),
+  [scheduled monitor readback](evidence/learn-build01-scheduled-backup-monitor-2026-10-17.json),
   [independent download](evidence/learn-build01-scheduled-offsite-download-2026-10-17.json).
   The 17 October three-bucket communication inventory verified
   **3,166 phone objects** and **257 matched voicemail source/audio pairs**, with
@@ -418,6 +420,11 @@ inactive until Chris reviews and signs off the business result.
   attribution. This positive evidence does not substitute for provider
   completeness of older threads in the archived 160.
   [Exact-roster proof](evidence/learn-build01-slack-160-postcutoff-2026-10-16.json).
+  A completed direct provider query now covers **all 870 known saved
+  pre-cutoff thread roots** and found **zero post-cutoff replies**. Its separate
+  active-public positive control found a real retained reply using the same
+  method. The direct parent query had already found zero post-cutoff parents
+  in all 160 archived channels. [Bounded reply audit](evidence/learn-build01-slack-160-provider-reply-audit-2026-10-17.json).
   A later 09:27 observation found **69** channels over a day behind in the
   polling fallback and only **39** with a completed window ending in the prior
   12 hours. Retain the long-window catch-up through the remaining post-cutoff

@@ -1,0 +1,20 @@
+{
+  "version": "learn-build01-scheduled-backup-monitor-evidence/1",
+  "observedAt": "2026-10-17T13:24:00Z",
+  "source": "Read-only GitHub Actions run and job-step metadata",
+  "repository": "Drummasterflash83/serviceos-dh",
+  "backup": {
+    "latestScheduledRunId": 39029918023,
+    "event": "schedule",
+    "createdAt": "2026-10-17T11:45:35Z",
+    "conclusion": "success"
+  },
+  "monitor": {
+    "scheduledRunId": 39034977731,
+    "event": "schedule",
+    "createdAt": "2026-10-17T13:03:08Z",
+    "conclusion": "success",
+    "checkLastSuccessfulIndependentDatabaseCopyStep": "success"
+  },
+  "boundary": "The daily missed-success monitor ran on schedule and found a qualifying backup. This does not prove a missed-run alert reached a human or a full application/Auth restore. No workflow was started or changed."
+}

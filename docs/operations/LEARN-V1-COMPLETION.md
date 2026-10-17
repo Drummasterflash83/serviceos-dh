@@ -17,6 +17,34 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 13:32 UTC — exact archived Slack reply-root audit complete.**
+
+### Working and verified
+
+- The approved 160-channel saved roster is entirely public and archived.
+  Slack's provider API returned **zero post-cutoff replies across all 870
+  known saved pre-cutoff thread roots**, with 870 provider pages checked.
+  A separate approved active public roster supplied a retained post-cutoff
+  reply that the same query found. The earlier direct provider check found
+  zero post-cutoff parent messages in all 160 archived channels.
+  [Content-free combined receipt](evidence/learn-build01-slack-160-provider-reply-audit-2026-10-17.json).
+- All 160 channel/reply subscriptions remain enabled; 1,541 recurring
+  provider-completed windows are empty, every channel has a completed window,
+  and no current window is dead-lettered.
+
+### Needs finishing
+
+- The provider query covers known saved thread roots at this instant. It cannot
+  prove future delivery or exclude a missing unsaved root. The existing
+  polling fallback still has 69 archived channels more than a day behind;
+  keep its historical catch-up running. Use the separate 20 active public
+  channels' real signed parent/reply Events for near-live delivery acceptance.
+
+### Blocked externally
+
+- No staff post or new channel permission is needed for the quiet archived
+  roster. Private channels and DMs were not read.
+
 **17 October, 13:12 UTC — five additional active runtime bindings remain outside the approved recovery copy.**
 
 ### Working and verified
