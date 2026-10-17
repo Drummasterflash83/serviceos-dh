@@ -10,6 +10,13 @@ The earlier partial-package and six-missing-source discussion below describes
 the pre-export state. A recovery-identity decrypt and authenticated provider
 restart remain unverified; one bounded 1Password recovery read ended unconfirmed
 without key output, and should not be repeated in a prompt loop.
+When the owner is deliberately present for a recovery drill, the exact
+downloaded ciphertext can be checked with
+`node scripts/backup/verify_build01_edge_credential_restore.mjs --approved-exact-copy`.
+That command reads the bound recovery item once, decrypts only in process
+memory, compares all 11 names with current LIVE digests, and prints a
+non-secret receipt. A failed or expired desktop prompt is a stop, not a reason
+to start another background retry.
 
 **Prepared 17 October 2026. A partial local encrypted credential package exists;
 no off-site credential copy or production change has been made under this

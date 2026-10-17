@@ -68,6 +68,16 @@ office-task assignee IDs and optional job links. Those could support a separate
 task-attention queue after source capture, current-state checks and an ID-based
 member mapping. They do not establish who owns the job or its technician
 appointment; the provider contract and Drummonds data still need verification.
+The [current published Commusoft API guide](https://developer.commusoft.com/key-concepts-and-relationships-1985291m0)
+defines appointments as job-linked technician time slots, but its public
+endpoint menu does not show a list-appointments route. This is a documentation
+finding, not proof that Drummonds cannot provide appointment data. The
+[scheduled-activities list](https://developer.commusoft.com/list-scheduled-activities-31575938e0)
+is explicitly for office/manager tasks; using its assignee as a job engineer
+would misstate the source. An audited OpenFolk review-task handoff could route
+human attention independently of Commusoft's current appointment assignment,
+provided it is labelled as such and never presented as provider-derived job
+ownership. That product choice is under review; no LIVE review task was created.
 
 ## Proposed first scorecard boundary
 
