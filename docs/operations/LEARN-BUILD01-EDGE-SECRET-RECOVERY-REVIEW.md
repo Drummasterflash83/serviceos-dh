@@ -144,6 +144,17 @@ Under the reviewed stop rule, no full-recovery claim or off-site credential
 copy follows until an exact protected source or controlled reissue path is
 established for each required value.
 
+**17 October, 10:51 UTC — signed Slack source identified, not copied.** The
+existing Drummonds Slack app's Basic Information showed a signing secret that
+matched the active LIVE `LEARN_SLACK_EVENTS_SIGNING_SECRET` digest in memory.
+The value was not printed, saved or added to the partial ciphertext; the app
+was not changed. This resolves *where to recover* that value, but leaves the
+encrypted copy and replacement-route test open.
+[Sanitised source receipt](evidence/learn-build01-slack-signing-secret-source-2026-10-17.json).
+The in-app browser's Google Cloud Console path stopped at Google sign-in, so
+the owning project and OAuth credentials were not inspected. No alternate
+account was selected or credential entered.
+
 ### Narrow recovery routes for the unmatched settings
 
 These are next-source routes, **not completed credential recovery**:
@@ -152,7 +163,7 @@ These are next-source routes, **not completed credential recovery**:
 | --- | --- | --- |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Inspect the existing OAuth client in the owning Google Cloud project; Google documents that its ID and current secret can be viewed in the console. Preserve the current client and compare both values with LIVE digests before copying either. | Existing client identity, redirect URI and a provider-free OAuth configuration check; no reset by default. |
 | `GOOGLE_WORKSPACE_PRIVATE_KEY`, optional `GOOGLE_WORKSPACE_CLIENT_ID` | The private-key digest matches TEST, but neither project's management API yields the value. Google states a downloaded service-account key cannot be downloaded again. Locate an exact existing protected key copy; otherwise create a second key on the same service account under a controlled change and escrow it at creation. | Confirm the service-account identity, domain-wide delegation, bounded mailbox access and old/new key overlap before retiring the old key. |
-| `LEARN_SLACK_EVENTS_SIGNING_SECRET` | Read the signing secret from **Basic Information** of the already installed Drummonds app, as Slack documents, and compare with LIVE digest. Do not regenerate it for inventory. | Signed request denial/acceptance against the replacement route and exact approved public-channel roster; DMs remain excluded. |
+| `LEARN_SLACK_EVENTS_SIGNING_SECRET` | **Source verified:** Basic Information of the existing Drummonds app matched LIVE by digest on 17 October. The value has not been escrowed; do not regenerate it for inventory. | Add it through a protected in-memory-to-age path, then test signed request denial/acceptance against the replacement route and approved public-channel roster; DMs remain excluded. |
 | `OPENAI_API_KEY` | Find a named protected copy if one exists. OpenAI says an existing full key cannot be viewed after creation; absent a copy, create a replacement project key in a separately reviewed cutover and escrow it immediately. | Scoped project/permission check, bounded model call, then old-key retirement only after the replacement works. |
 | `OPENFOLK_CONTROLPLANE_KEY` | Treat as a dedicated internal machine key, not the project service key. Map every caller supplying `x-openfolk-machine-key` before a controlled replacement. | Caller/server equality, denied wrong-key requests, audited actor boundary. |
 | `PHONE_OPERATIONS_WEBHOOK_SECRET` | Identify the configured Vapi/Twilio sender of `x-phone-operations-secret` before a controlled replacement; the current value is not in the two reviewed 1Password items. | Provider callback identity, denied wrong secret and one bounded valid callback; confirm whether this alert route is active in Build 01. |

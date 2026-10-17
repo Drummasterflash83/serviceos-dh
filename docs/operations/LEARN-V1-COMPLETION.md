@@ -17,6 +17,29 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 10:55 UTC — signed Slack secret source confirmed.**
+
+### Working and verified
+
+- The exact existing Drummonds Slack app showed a signing secret whose digest
+  matched LIVE `LEARN_SLACK_EVENTS_SIGNING_SECRET` in memory. No value was
+  printed, saved or rotated, and the app was not changed.
+  [Sanitised receipt](evidence/learn-build01-slack-signing-secret-source-2026-10-17.json).
+
+### Needs finishing
+
+- Add that verified value to a complete encrypted credential package through a
+  protected path, then test it in a replacement signed route. Google Cloud
+  Console in the in-app browser currently stops at sign-in; its project and
+  OAuth values were not inspected or inferred.
+
+### Blocked externally
+
+- The remaining exact credential sources or controlled replacements are still
+  required for full application recovery. No further Slack staff test post is
+  required for this source finding.
+
+
 **17 October, 10:49 UTC — the 160-channel Slack near-live ambiguity is resolved.**
 
 ### Working and verified

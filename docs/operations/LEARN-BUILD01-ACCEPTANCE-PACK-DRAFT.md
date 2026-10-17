@@ -1,12 +1,18 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 10:49 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 10:55 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- The existing Drummonds Slack app's signing secret matched the active LIVE
+  Edge digest in memory. This identifies its exact recovery source without an
+  app change, key rotation or credential output. It has **not** been added to
+  the partial encrypted credential copy or tested in a replacement route.
+  [Source receipt](evidence/learn-build01-slack-signing-secret-source-2026-10-17.json).
 
 - A fresh shape check of all 12,732 retained Commusoft job versions found only
   `self` and `property` link keys, plus group fields. Existing job payloads
