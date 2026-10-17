@@ -40,7 +40,19 @@ and switches to the Vercel preset** (`λ __server`). So: build **remotely on Ver
 upload or Git push). Do **not** ship a locally-prebuilt `.output` to Vercel — it would be
 Cloudflare-flavoured.
 
-## Current live checkpoint — 16 October 2026
+## Current live checkpoint — 17 October 2026
+
+**Build 01 captured-job review acceptance, 14:00 UTC:** production Git
+`ca651c3c396031413fd29dd20fabfe7af9c5920e` / Vercel
+`dpl_9ZiqzAE19uuZm8ob6EgFivF7Jyqh` serves all four existing LIVE aliases.
+The independent TEST candidate `944d818182bfd156dd130f20ce39c5466bdc1108`
+serves both existing protected TEST aliases. The two-file change exposes
+an audited self-claim button for unassigned captured-job review tasks and
+makes reviews below the top seven visible. Both builds and rendered backend
+targets passed; the actual Owner / MD handoff remains unverified.
+[Release receipt](operations/evidence/learn-build01-review-claim-frontend-release-2026-10-17.json).
+
+## Prior live checkpoint — 16 October 2026
 
 **Build 01 customer-card source labels, about 01:59 UTC:** all four LIVE aliases
 serve Git production commit `0266c7f746fcece0789f0327f577644dbb4f47d1` /

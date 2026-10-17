@@ -17,24 +17,29 @@ business decision yet.
 
 ## Current evidence and priority
 
-**17 October — first Owner / MD handoff UI gap identified and fixed locally.**
+**17 October, 14:00 UTC — first Owner / MD handoff UI gap released to TEST and LIVE.**
 
 ### Working and verified
 
 - Chris selected the existing Owner / MD login as the first recipient. The
   source-linked review action already has a guarded, audited self-claim in
   `work-transition`, but the Command Centre did not expose **Accept** or list
-  review tasks outside its top seven. A narrow frontend change now displays
+  review tasks outside its top seven. The two-file frontend change now displays
   the remaining captured-job reviews and offers **Accept this review** only
   while a task is unassigned. TypeScript, the production build and its 47
-  prebuild checks pass locally. No task or member record was changed.
+  prebuild checks pass on independent TEST and LIVE release bases. Protected
+  TEST serves Git `944d8181` on its two existing aliases with only the TEST
+  backend. LIVE serves production Git `ca651c3c` on all four existing aliases
+  with only the LIVE backend. Project protection and alias bindings were read
+  back. [Release receipt](evidence/learn-build01-review-claim-frontend-release-2026-10-17.json).
+  No task or member record was changed by the release.
 
 ### Needs finishing
 
-- Release this UI change to TEST and LIVE, confirm the Owner / MD member-to-login
-  link through a signed-in review, create one source-linked task, accept it as
+- Confirm the Owner / MD member-to-login link through a signed-in review, create
+  one source-linked task, accept it as
   Owner / MD and read back the append-only ownership history. Until then this
-  is a verified implementation candidate, not a successful human handoff.
+  is a released control, not a successful human handoff.
 
 ### Blocked externally
 

@@ -1,0 +1,39 @@
+{
+  "observed_at_utc": "2026-10-17T14:00:47Z",
+  "scope": "Two-file Command Centre source-review self-claim and queue visibility repair",
+  "test": {
+    "base_git_sha": "6bdf59e721cef0388b49ee6d48281daaa1b27aed",
+    "candidate_git_sha": "944d818182bfd156dd130f20ce39c5466bdc1108",
+    "deployment_id": "dpl_6ycTHDaqHcQS1x4dbDebD37XaoKh",
+    "state": "READY",
+    "backend_project": "saatxzwxvdvqevbnskxy",
+    "rendered_login_backend": "TEST only",
+    "existing_aliases_verified": ["test.openfolk.ai", "serviceos-learn-test-allkin.vercel.app"],
+    "deployment_protection": "all",
+    "previous_alias_deployment": "dpl_HczUupP4REYLbBxVyQiZdFSoLwKR"
+  },
+  "live": {
+    "base_git_sha": "702408a43158b9124849341da4cfa327ddb89ddd",
+    "candidate_git_sha": "ca651c3c396031413fd29dd20fabfe7af9c5920e",
+    "deployment_id": "dpl_9ZiqzAE19uuZm8ob6EgFivF7Jyqh",
+    "state": "READY",
+    "backend_project": "tgbnakbxwcqjeimygroz",
+    "rendered_login_backend": "LIVE only",
+    "existing_aliases_verified": ["app.openfolk.ai", "openfolk.ai", "serviceos-dh.vercel.app", "www.openfolk.ai"],
+    "deployment_protection": "all_except_custom_domains",
+    "previous_alias_deployment": "dpl_FB3C2843qEaR99cgMM4EW3mSgnr7",
+    "production_target_matches_deployment": true
+  },
+  "checks": {
+    "test_typecheck": "passed",
+    "test_build_and_prebuild_tests": "passed: 47 tests",
+    "live_typecheck": "passed",
+    "live_build_and_prebuild_tests": "passed: 47 tests",
+    "test_git_commit_and_deployment_match": true,
+    "live_git_commit_and_deployment_match": true,
+    "changeset": "Only CommandCentreConsole.tsx and LearnCommusoftSourceJobs.tsx",
+    "signed_in_positive_handoff": "not_performed",
+    "member_confirmation": "not_performed",
+    "review_action_creation": "not_performed"
+  }
+}

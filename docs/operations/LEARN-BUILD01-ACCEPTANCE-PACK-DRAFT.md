@@ -65,8 +65,10 @@ inactive until Chris reviews and signs off the business result.
 - Chris chose the existing Owner / MD login for the first OpenFolk job-review
   handoff. The exact roster-to-login link is current but still unconfirmed.
   The Command Centre's missing self-claim control and hidden reviews beyond
-  the top seven are fixed locally and pass TypeScript and the production build;
-  this frontend change still needs TEST/LIVE release and signed-in acceptance.
+  the top seven are now fixed in TEST and LIVE. Both isolated builds passed
+  TypeScript, 47 prebuild checks and Vercel Git deployment readback; the
+  signed-in positive handoff remains unverified.
+  [Release receipt](evidence/learn-build01-review-claim-frontend-release-2026-10-17.json).
   Audited identity confirmation and source-linked review-task controls passed
   isolated SQL tests, rollback rehearsals, and TEST/LIVE install readback.
   TEST Control Plane v28 and LIVE v38 carry the targeted route; the stricter
