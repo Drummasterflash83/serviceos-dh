@@ -17,6 +17,32 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 16:57 UTC — fair recommendation sweep released after hosted TEST proof.**
+
+### Working and verified
+
+- The exact candidate passed a hosted TEST continuation across all eight
+  active fixture cards in three settled jobs, resolved a stale recommendation
+  marker, removed its six synthetic cards and rejected an unsigned request.
+  LIVE `platform-worker` v111 and `recommendation-sync` v47 now carry the
+  same tested handler; their compiled bytes and all unrelated function
+  inventory were verified after release. The remote TEST checkpoint is
+  `71fc1a0f`. No provider request or manual production-data write was made.
+  [Sanitised release receipt](evidence/learn-build01-recommendation-sweep-release-2026-10-17.json).
+
+### Needs finishing
+
+- The first LIVE counts-only readback still reflected an ordinary job begun
+  before the release. Observe its new continuation chain and the 271 legacy
+  empty-evidence actions before claiming full-card recommendation freshness.
+  No scorecard policy or job assessment has been published.
+
+### Blocked externally
+
+- No new approval is needed for ordinary recommendation observation. The
+  separate signed-in Owner / MD, five-setting recovery-copy and archived
+  160-channel Slack decisions remain open.
+
 **17 October, 16:51 UTC — recommendation coverage gap isolated; fair sweep staged.**
 
 ### Working and verified

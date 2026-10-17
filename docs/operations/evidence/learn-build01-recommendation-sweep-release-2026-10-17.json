@@ -1,0 +1,38 @@
+{
+  "version": "learn-build01-recommendation-sweep-release/1",
+  "dateUtc": "2026-10-17",
+  "sourceCommit": "71fc1a0f78bf8403f2dcad4f8ea273b1cbb7251f",
+  "sourceRemoteBranchVerified": "codex/learn-v1-test",
+  "handlerSha256": "715e062b3770954144d9a95ae1d20b9cadc8ae6cc019b0daa95d3c32eb769efc",
+  "test": {
+    "project": "saatxzwxvdvqevbnskxy",
+    "workerVersion": 70,
+    "workerArtifactSha256": "0297e4678a4f5da7368cc414dabba758ec12eb9a2996bfb9f1576dd3eedda623",
+    "syntheticCards": 6,
+    "existingActiveCards": 2,
+    "settledContinuationJobs": 3,
+    "totalCardsSwept": 8,
+    "staleMarkerResolved": true,
+    "syntheticFixtureCleanupVerified": true,
+    "unsignedWorkerHttpStatus": 403
+  },
+  "live": {
+    "project": "tgbnakbxwcqjeimygroz",
+    "workerVersion": 111,
+    "workerArtifactSha256": "0297e4678a4f5da7368cc414dabba758ec12eb9a2996bfb9f1576dd3eedda623",
+    "recommendationSyncVersion": 47,
+    "recommendationSyncArtifactSha256": "c0b4ebee5bf37aca37ea7a90366286e3de62b139374e6a3bf7abf9336b9dbee1",
+    "unrelatedFunctionsChanged": false,
+    "firstReadbackAtUtc": "2026-10-17T16:57:34.440Z",
+    "firstReadbackPreReleaseJobOnly": true,
+    "legacyEmptyEvidenceOpen": 271,
+    "publishedScorecardPolicies": 0,
+    "savedJobAssessments": 0,
+    "ordinaryFullSweepVerified": false
+  },
+  "privateRollbackAndJobReceipts": ".verification-results/build01-rec-sweep-{test,live}-*/",
+  "providerRequests": 0,
+  "manualProductionDataWrites": false,
+  "credentialValuesIncluded": false,
+  "subjectIdsOrContentIncluded": false
+}

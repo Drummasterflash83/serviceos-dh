@@ -588,11 +588,16 @@ inactive until Chris reviews and signs off the business result.
 
 - **Recommendation coverage:** 271 open legacy `review_new_contact` actions
   on amber cards have empty evidence and had not refreshed since 12 October.
-  The ordinary worker repeatedly selected the same latest-activity cards;
-  eight recent jobs each updated 555 recommendations without reaching this
-  older cohort. A bounded fair sweep is staged and locally tested, but it is
-  not yet a hosted TEST/LIVE release or proof of full-card recommendation
-  freshness. Keep these actions visible while the sweep is verified.
+  The prior ordinary worker repeatedly selected the same latest-activity
+  cards; eight recent jobs each updated 555 recommendations without reaching
+  this older cohort. The fair sweep passed a hosted TEST continuation across
+  all eight fixture cards in three settled jobs, resolved a stale marker, and
+  cleaned up all six synthetic cards. The exact candidate was released to LIVE
+  (`platform-worker` v111, `recommendation-sync` v47) with unchanged unrelated
+  functions. The 16:57 UTC counts-only readback was of a job begun before the
+  release, so sustained ordinary LIVE sweep and this 271-action cohort remain
+  unproven. Keep these actions visible while that readback completes.
+  [Release and TEST receipt](evidence/learn-build01-recommendation-sweep-release-2026-10-17.json).
 
 - **Continue ordinary card observation:** the released worker now admits
   stable new unprojected cards during a full sweep while reserving capacity
