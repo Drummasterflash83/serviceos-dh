@@ -1,5 +1,16 @@
 # Build execution tracker
 
+Build 01 current worker recovery boundary (17 October, 17:49 UTC): the exact
+serving LIVE worker v112 executable was reconstructed from the approved
+encrypted v107 source and pinned Git overlays, then booted in a networkless
+container. Synthetic OPTIONS returned 200 and an unauthorised POST returned
+403; the container was removed. This proves current-source startup and
+fail-closed access, not restored credentials, Auth or provider capture.
+[Isolated receipt](../../operations/evidence/learn-build01-v112-worker-isolated-startup-2026-10-17.json).
+The [business review draft](../../operations/LEARN-BUILD01-BUSINESS-REVIEW-DRAFT.md)
+retains the representative job boundary, exact Slack-roster distinction,
+unpublished scoring and remaining technical gates; it records no sign-off.
+
 Build 01 historical identity retry (17 October, 17:17 UTC): one ordinary
 50-row identity job retained 49, 48, 49 and 49 immutable receipts across four
 attempts but remains retrying. The current pending selection is October 2023
