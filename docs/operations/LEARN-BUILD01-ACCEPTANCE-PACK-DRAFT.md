@@ -1,12 +1,20 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 08:55 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 09:06 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- A fresh 09:06 UTC LIVE read shows **4,181 of 4,182 active cards projected**.
+  The ordinary card worker recorded **60 successful jobs and no failures in the
+  preceding hour**; one older unprojected card still has 2,342 cards ahead of it
+  in the stable sweep. Email has **33,500 unchanged source receipts** and both
+  current mailbox aliases are ready. Phone remains 4,676/4,676 and eligible
+  interaction-to-Graph gaps remain zero.
+  [Fresh aggregate receipt](evidence/learn-build01-fresh-operating-cutline-2026-10-17.json).
 
 - LIVE retained **4,676 Phone calls with 4,676 interactions**, and no eligible
   interaction lacked a Graph node in the 07:04 read. Email has 1,595 eligible
@@ -127,6 +135,30 @@ inactive until Chris reviews and signs off the business result.
   [Coverage receipt](evidence/learn-build01-commusoft-coverage-2026-10-17.json).
 
 ## Needs finishing
+
+- **Use the existing operation before changing it:** the ordinary card sweep
+  is advancing without intervention. A proposed priority-scheduler change
+  passed local handler checks and the LIVE read-only selector, but TEST has no
+  active copy of that endpoint and the installed LIVE source differs from the
+  tracked baseline. It was **not released**. Do not describe a manual targeted
+  card job as unattended success. Observe the existing sweep to its terminal
+  result; investigate only if it stops or repeatedly misses its card.
+- **Interpret quiet sources honestly:** 09:05 LIVE readback again found zero
+  post-cutoff messages, replies or signed hints in the exact 160-channel roster.
+  None of those channels had a retained message in the 30 days before the
+  handoff. The shared signed receiver and 160 bindings are structurally verified,
+  with real delivery in the separate 20-channel roster. No further team test
+  post is needed; an exact-160 real event remains unobserved until ordinary
+  activity occurs. Completed empty provider windows are positive evidence of
+  checking those windows, not of message delivery. Historical polling lag is
+  reported separately from near-live signed-event readiness.
+- **Keep historical catch-up separate from current intake:** at 09:06, 2,517
+  retained eligible Email messages still lacked interactions, while both recent
+  alias checkpoints were under eleven minutes old and ordinary receipts were
+  advancing. Resolve current-intake failure if it occurs; continue the retained
+  three-year historical queue without treating its growing total as a new-mail
+  outage. The stage's required source coverage and freshness decision still
+  needs explicit acceptance criteria rather than a silently smaller denominator.
 
 - **Slack freshness:** 67 of the exact 160 channels were more than a day
   behind at 06:45. The previously dead-lettered window is now completed and

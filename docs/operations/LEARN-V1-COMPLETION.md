@@ -17,6 +17,41 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 09:06 UTC — use ordinary progress and checked absence; avoid an unverified scheduler replacement.**
+
+### Working and verified
+
+- LIVE has 4,181/4,182 active cards projected. The stable ordinary sweep
+  recorded 60 successful jobs and no failure in the prior hour. Phone remains
+  4,676/4,676 and no eligible interaction lacks a Graph node. Email's two
+  recent aliases are ready and 33,500 unchanged source receipts have been
+  committed. [Aggregate receipt](evidence/learn-build01-fresh-operating-cutline-2026-10-17.json).
+- The exact 160 public Slack channels have 33,189 saved historical messages,
+  but none in the 30 days before handoff or since the cutoff. All 160
+  subscriptions are enabled and past cutoff; the already proven shared signed
+  route has real Events from the separate 20-channel roster. No team test post
+  is needed to characterize the exact 160 as currently quiet.
+
+### Needs finishing
+
+- One card remains unprojected for over an hour, with 2,342 cards ahead of it
+  in the active sweep at 09:01. No manual rescue was used. A proposed priority
+  scheduler passed a local handler check and read-only LIVE selector, but TEST
+  lacks an active endpoint and the installed LIVE source differs from the
+  tracked baseline. The change was not released; observe the ordinary sweep
+  and intervene only on a real stall or repeated miss.
+- Retained historical Email is still catching up: 2,517 eligible messages
+  lacked interactions at 09:06. Current aliases were under eleven minutes
+  behind. Historical backlog and current-intake health remain separate claims.
+  A real Event in the exact 160 Slack roster and full application recovery
+  remain unverified. No source, card, score or business acceptance threshold
+  has been lowered silently.
+
+### Blocked externally
+
+- No immediate action from Chris is needed for these ordinary observations.
+  Business sign-off remains pending after the technical limits are reviewable.
+
 **17 October, 08:55 UTC — scheduled off-site database, Vault and bounded service recovery verified.**
 
 ### Working and verified

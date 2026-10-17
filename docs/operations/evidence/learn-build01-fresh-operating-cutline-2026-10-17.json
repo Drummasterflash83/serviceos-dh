@@ -1,0 +1,44 @@
+{
+  "version": "learn-build01-fresh-operating-cutline/1",
+  "observedAtUtc": "2026-10-17T09:06:40Z",
+  "environment": "LIVE; saved noninteractive Supabase login; read-only aggregate queries",
+  "customerCards": {
+    "active": 4182,
+    "projected": 4181,
+    "unprojectedOverOneHour": 1,
+    "ordinarySweepSuccessesLastHour": 60,
+    "ordinarySweepFailuresLastHour": 0,
+    "cardsAheadOfUnprojectedAt0901Utc": 2342,
+    "manualRescueUsed": false
+  },
+  "email": {
+    "retainedMessages": 197244,
+    "eligibleWithoutInteraction": 2517,
+    "totalRetainedDrafts": 1799,
+    "unchangedReceiptsAt0905Utc": 33500,
+    "distinctReceiptSourcesAt0905Utc": 33498,
+    "activeAliases": 2,
+    "readyAliases": 2,
+    "oldestAliasCheckpointAtUtc": "2026-10-17T08:56:05Z"
+  },
+  "phone": { "calls": 4676, "interactions": 4676 },
+  "graph": { "eligibleInteractionsMissingNode": 0 },
+  "slackExactPublicRoster": {
+    "approvedChannels": 160,
+    "channelAndReplySubscriptionsEnabled": 160,
+    "channelsAdvancedPastCutoff": 160,
+    "savedHistoricalMessages": 33189,
+    "channelsWithSourceInThirtyDaysBeforeCutoff": 0,
+    "savedPostcutoffMessages": 0,
+    "savedPostcutoffReplies": 0,
+    "signedHintsInRoster": 0,
+    "currentRealEventDeliveryProven": false
+  },
+  "deploymentDecision": {
+    "proposedCardPrioritySchedulerReleased": false,
+    "reason": "TEST has no active copy of this endpoint and LIVE deployed source differs from the tracked baseline. The ordinary sweep is making successful unattended progress; a speculative replacement would add release and recovery risk without proving unattended behavior."
+  },
+  "contentOrIdentifiersReturned": false,
+  "productionDataWrites": false,
+  "limitations": "These are point-in-time aggregates, not a full-day observation or Chris's business acceptance. Quiet Slack windows and shared-route event proof cannot establish a real Event in the exact 160-channel roster. The historical Email backlog is retained and still being projected."
+}
