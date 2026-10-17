@@ -17,6 +17,76 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 07:04 UTC — focused LIVE source coverage readback.**
+
+### Working and verified
+
+- All **4,676** retained Phone calls have source-linked interactions, and no
+  eligible interaction lacks its Graph node. Email's ordinary projector reached
+  **27,450** unchanged receipts for **27,448** distinct sources at 07:04, with
+  its latest receipt only seconds before the readback.
+- Of **1,595** eligible Email messages currently lacking interactions, none is
+  older than a day as a retained source and none occurred in the past week.
+  This is a live historical intake backlog, not a current-mail gap. Counts-only
+  checks also found 1,004 published Commusoft job links from 12,656 source job
+  identities; none has a verified job identity, engineer link or completion
+  instant in that published set. [Coverage receipt](evidence/learn-build01-source-coverage-2026-10-17.json).
+
+### Needs finishing
+
+- The historical Email queue is still growing/processing and has not drained;
+  its continued unattended progress needs observation. The job identity,
+  assignee and completion-timing gaps prevent a representative score or
+  named-person handoff. Source readbacks do not resolve Slack or full recovery.
+
+### Blocked externally
+
+- No new user input is needed for these read-only coverage checks.
+
+**17 October, 07:02 UTC — current worker startup checked without a fingerprint.**
+
+### Working and verified
+
+- The reviewed v107 `platform-worker` bundle booted in the pinned Edge runtime
+  with no network, host port, runtime secret or production data. OPTIONS
+  returned 200, an unauthorised POST returned 403, and the disposable
+  container was removed. [Startup receipt](evidence/learn-build01-v107-worker-isolated-startup-2026-10-17.json).
+
+### Needs finishing
+
+- Authenticated queue execution, recovered runtime credentials, all-function
+  service startup, frontend/login recovery and controlled capture restart
+  remain unproven. The startup check must not be called full recovery.
+
+### Blocked externally
+
+- No key read or Touch ID was needed for this isolated worker check.
+
+**17 October, 07:00 UTC — signed-in LIVE job review check passed.**
+
+### Working and verified
+
+- Refreshed the existing Drummonds LIVE LEARN tab in the in-app browser and
+  opened the captured Commusoft job view under the signed-in account. The
+  recorded-hold filter returned **69** matching jobs; the source-review filter
+  returned **285**, from 12,656 retained jobs and 295 recorded open/pending/on
+  hold. Example rows displayed a recorded hold, unresolved customer/source
+  relationships and their actual 13 October source observation time, with a
+  clear warning that the saved status does not verify current provider progress.
+  No job or customer content was copied into the receipt.
+  [Signed-in receipt](evidence/learn-build01-job-source-attention-2026-10-17.json).
+
+### Needs finishing
+
+- Those rows are a genuine source-review queue, but not a verified named-person
+  handoff, current provider status or publishable progress/completion score.
+  The 160-channel Slack freshness and full application/Auth recovery gates
+  still remain.
+
+### Blocked externally
+
+- No user login, fingerprint or test post was needed for this signed-in check.
+
 **17 October, 06:57 UTC — source-backed job review views released to LIVE.**
 
 ### Working and verified
@@ -31,9 +101,8 @@ business decision yet.
 
 ### Needs finishing
 
-- The protected, signed-in LIVE Drummonds job view still needs a direct check
-  of a recorded hold and unlinked source job. Serving the exact frontend asset
-  is not proof of that signed-in journey. Named-person handoff, source
+- At release time, the protected signed-in view still needed the direct check
+  completed at 07:00 UTC above. Named-person handoff, source
   freshness and a publishable job progress/completion score remain unproven.
 
 ### Blocked externally

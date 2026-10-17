@@ -22,7 +22,9 @@ At 06:50 UTC on 17 October, counts-only LIVE readback found **69 recorded
 on-hold jobs** and **285 recorded open jobs needing source or identity review**.
 The existing audited source-job reader now supports exact filters for those
 two groups. The narrow frontend view is now served by all four LIVE aliases
-from production Git `77a73802`; signed-in row acceptance remains outstanding.
+from production Git `77a73802`. A signed-in Drummonds check returned 69
+recorded-hold matches and 285 source-review matches with actual row observation
+times and clear status caveats. Named-person handoff remains outstanding.
 The 272 jobs without an observation in the previous day must retain their
 source timestamp and must not be presented as current provider status.
 [Readback](evidence/learn-build01-job-source-attention-2026-10-17.json).

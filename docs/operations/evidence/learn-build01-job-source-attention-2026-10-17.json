@@ -1,6 +1,6 @@
 {
   "version": "learn-build01-job-source-attention/1",
-  "observedAtUtc": "2026-10-17T06:57:13Z",
+  "observedAtUtc": "2026-10-17T07:00:07Z",
   "environment": "LIVE",
   "tenantId": "00000000-0000-0000-0000-000000000001",
   "migration": "supabase/migrations/20261104223200_learn_commusoft_source_attention_filters.sql",
@@ -25,7 +25,20 @@
     "servedJobViewAsset": "LearnCommusoftSourceJobs-C-zY0_ZX.js",
     "servedJobViewAssetSha256": "84fd0cfc29534581b6f8ce8964e6ad3ecc3971cc4b767b2cd6798bc9cbfd77",
     "servedAssetContainsAllThreeReviewViewLabels": true,
-    "signedInLiveViewVerified": false
+    "signedInLiveViewVerified": true,
+    "signedInLiveCheck": {
+      "existingDrummondsSession": true,
+      "inAppBrowser": true,
+      "retainedJobsTotal": 12656,
+      "recordedOpenPendingOnHold": 295,
+      "recordedOnHoldFilterMatches": 69,
+      "needsSourceReviewFilterMatches": 285,
+      "exampleRecordedHoldDisplayed": true,
+      "exampleUnresolvedCustomerSourceDisplayed": true,
+      "sourceObservationAndStaleStatusCaveatDisplayed": true,
+      "privateScreenshot": ".verification-results/build01-job-attention-signedin-20261017.png",
+      "privateRecordContentRetainedInReceipt": false
+    }
   },
   "retainedSourceCounts": {
     "jobIdentities": 12656,

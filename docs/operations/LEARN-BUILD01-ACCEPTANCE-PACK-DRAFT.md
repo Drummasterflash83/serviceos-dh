@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 06:57 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 07:04 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -9,8 +9,10 @@ inactive until Chris reviews and signs off the business result.
 ## Working and verified
 
 - LIVE retained **4,676 Phone calls with 4,676 interactions**, and no eligible
-  Email messages lacked interactions in the 22:34 read. No eligible interaction
-  lacked a Graph node. [Current technical tracker](LEARN-V1-COMPLETION.md).
+  interaction lacked a Graph node in the 07:04 read. Email has 1,595 eligible
+  unlinked source messages, all retained less than a day ago and none with an
+  event date in the last week; the ordinary projector remains active.
+  [Current coverage receipt](evidence/learn-build01-source-coverage-2026-10-17.json).
 - The ordinary Email update chain committed **26,050 unchanged receipts for
   26,048 distinct sources** by 06:37. Two sources were updated between their
   first and second unchanged receipts without changing canonical revision;
@@ -56,13 +58,20 @@ inactive until Chris reviews and signs off the business result.
   tenant/card isolation and operator revocation passed.
   [Current route rehearsal](evidence/learn-build01-v107-isolated-recovery-2026-10-17.json).
   [Recovery inventory](LEARN-BUILD01-APPLICATION-RESTORE-INVENTORY.md).
+- The current v107 worker also booted from its reviewed bundle in an isolated
+  network-disabled container, returned OPTIONS 200 and rejected an
+  unauthorised POST with 403. This is startup and fail-closed evidence, not an
+  authenticated capture restart.
+  [Startup receipt](evidence/learn-build01-v107-worker-isolated-startup-2026-10-17.json).
 - The ordinary stable-cutoff customer-card sweep finished with a successful
   zero-card terminal job at 06:11, and a 06:12 LIVE readback found **zero stale
   unprojected cards**. [Sweep receipt](evidence/learn-build01-card-ordinary-sweep-2026-10-17.json).
 - Source-backed review filters for recorded holds and unresolved open jobs
   passed TEST/LIVE rehearsals and are installed. The narrow frontend release
   `77a73802` passed both Vercel production builds; all four LIVE aliases serve
-  its job-view asset. The signed-in job journey remains unchecked.
+  its job-view asset. The signed-in Drummonds LIVE page returned **69** recorded
+  holds and **285** source-review matches, with example source timestamps and
+  caveats shown in the rendered rows.
   [Release receipt](evidence/learn-build01-job-source-attention-2026-10-17.json).
 
 ## Needs finishing
@@ -83,13 +92,14 @@ inactive until Chris reviews and signs off the business result.
   recorded open/pending/on-hold jobs. Only ten of those had reviewed job-card
   links; 285 did not. At 22:31, 272 of the 295 had no observation within a day.
   The released captured-source view now has explicit hold and source-review
-  filters; a signed-in LIVE check of example rows, named-person handoff and a
+  filters, and signed-in LIVE example rows passed. Named-person handoff and a
   representative progress/completion score are not established.
   [Policy draft](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md).
 - **Email review and history:** the 55 historical drafts and 12 source-missing
   links require separate provenance treatment. A draft must not be represented
-  as verified sent mail. The changed-source update lane is still running and
-  has not drained.
+  as verified sent mail. The 1,595 current eligible unlinked sources are all
+  historical by event date; the changed-source update lane is still running
+  and has not drained.
 - **Recovery:** The serving v107 Edge source has a fresh encrypted off-site
   copy and separate readback, and all 103 functions rebuild from locally staged
   source. Only one current route has served a recovered authenticated tenant

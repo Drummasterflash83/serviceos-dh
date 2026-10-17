@@ -5,6 +5,14 @@ isolated database/Auth/PostgREST rehearsal and the full Edge source-package
 off-site copy prove distinct parts of recovery. Neither proves that an independently
 recovered OpenFolk service can serve clients or resume ingestion.
 
+At 07:02 UTC on 17 October, the reviewed **current v107 `platform-worker`**
+bundle started in a disposable pinned Edge runtime with no network, host port,
+runtime secret or production data. An OPTIONS request returned 200 and an
+unauthorised POST failed closed with 403; the labelled container was removed.
+This replaces the previous v106-only startup evidence for the current worker.
+It does not prove authenticated queue execution, recovered credentials or a
+controlled capture restart. [Sanitised receipt](evidence/learn-build01-v107-worker-isolated-startup-2026-10-17.json).
+
 At 06:10 UTC on 17 October, the exact locally staged v107 source was checked
 again against all **728** hashes in the reviewed LIVE manifest, then all
 **103** Edge functions bundled inside isolated pinned-runtime containers with

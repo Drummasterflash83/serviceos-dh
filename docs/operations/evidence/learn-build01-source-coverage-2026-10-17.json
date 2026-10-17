@@ -1,0 +1,37 @@
+{
+  "version": "learn-build01-source-coverage/1",
+  "observedAtUtc": "2026-10-17T07:04:17Z",
+  "environment": "LIVE",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "phone": {
+    "retainedCalls": 4676,
+    "withInteraction": 4676,
+    "eligibleMissing": 0
+  },
+  "graph": {
+    "eligibleInteractionsMissingGraphNode": 0
+  },
+  "email": {
+    "eligibleSourceMessagesMissingInteraction": 1595,
+    "missingWithReviewHold": 0,
+    "missingWithCommittedReceipt": 0,
+    "missingOlderThanDay": 0,
+    "missingOccurredWithinSevenDays": 0,
+    "projectionUnchangedReceipts": 27450,
+    "projectionDistinctSources": 27448,
+    "latestReceiptAtUtc": "2026-10-17T07:04:10Z"
+  },
+  "commusoftPublishedJobs": {
+    "observedSourceJobIdentities": 12656,
+    "reviewedPublishedJobLinks": 1004,
+    "publishedCompleted": 994,
+    "publishedOpen": 8,
+    "publishedPending": 2,
+    "publishedWithVerifiedIdentity": 0,
+    "publishedWithEngineerIdentity": 0,
+    "publishedWithCompletionInstant": 0
+  },
+  "scope": "Aggregate-only source-to-interaction/Graph and existing published-job counts. No claim about Slack Events, scoring or current provider freshness.",
+  "sourceOrJobContentReturned": false,
+  "productionDataWrites": false
+}
