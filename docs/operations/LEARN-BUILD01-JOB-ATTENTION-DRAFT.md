@@ -18,7 +18,7 @@ healthy job state. The representative check covers these distinct real paths:
 
 | Path | LIVE evidence needed | Current result |
 | --- | --- | --- |
-| Reviewed job link | A saved current-source job card shows its recorded status and observation time. | Ten recorded open jobs have reviewed links; aggregate latest-source check and existing card/source-view contract passed. No company-wide progress score is claimed. |
+| Reviewed job link | A saved current-source job card shows its recorded status and observation time. | Ten recorded open jobs have reviewed links. Three representative LIVE reviewed jobs (two direct-customer, one site-to-customer) matched fresh provider GETs on exact status and property reference; their retained observations were about 96 hours old. No company-wide progress score is claimed. |
 | Retained direct-customer and site-to-customer source, identity unreviewed | The source-job review view keeps both kinds visible without attaching an unreviewed customer or publishing a score. | Counts-only read found 169 direct and 86 site-to-customer cases; the signed-in unresolved-source example, 285-case review filter and synthetic checks for both relationships passed. |
 | Missing parent source | The job stays in source review, with its recorded observation time and an explicit missing-source reason. | Twenty-nine cases remain unlinked; direct provider GET returned 404 for all 19 distinct missing parents. A signed-in LIVE search for a missing-parent job and the synthetic reader check passed. |
 | Recorded completion | A completed source can be inspected without an inferred completion instant or elapsed-time score. | Bounded direct-provider sample confirmed one recorded complete status but no explicit time zone; the source view displays recorded status and observation time with a qualification. This does not establish a completion score. |
@@ -29,6 +29,7 @@ population. Chris's choice does not change the **255 identity-review, 29
 missing-parent, and one job-link-review** obligations; the operator view and
 ongoing review process must continue to expose them after Build 01 sign-off.
 [Counts-only breakdown](evidence/learn-build01-open-job-review-reasons-2026-10-17.json).
+[Current-provider reviewed-link sample](evidence/learn-build01-reviewed-job-direct-get-2026-10-17.json).
 
 A second aggregate read at 22:31 UTC still found **295** retained open,
 pending or on-hold jobs, **10** with reviewed job links and **285** without.

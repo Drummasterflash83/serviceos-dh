@@ -1,12 +1,22 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 16:34 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 16:38 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- Three representative, reviewed LIVE Commusoft job links now passed fresh
+  read-only provider GETs: two direct-customer and one site-to-customer job
+  matched the saved status and parent property reference. Their retained
+  observations were about **96 hours old**, so the UI must keep its recorded
+  timestamp visible. The three current responses had empty assignment arrays;
+  they do not establish a technician or company-wide job freshness. This
+  strengthens the representative job-review path without publishing a score
+  or replacing the still-unaccepted Owner / MD handoff.
+  [Current-provider sample](evidence/learn-build01-reviewed-job-direct-get-2026-10-17.json).
 
 - At 16:34 UTC the ordinary LIVE sweep had **4,217/4,217** active cards
   projected and zero stale unprojected cards. Email immutable receipts rose to

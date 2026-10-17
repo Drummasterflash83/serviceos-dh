@@ -17,6 +17,28 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 16:38 UTC — three reviewed LIVE jobs match fresh provider reads.**
+
+### Working and verified
+
+- A bounded read-only Commusoft GET checked two reviewed direct-customer jobs
+  and one reviewed site-to-customer job. All three current statuses and parent
+  property references matched their retained source cards. The saved
+  observations were about 96 hours old, and none of these three responses
+  named an assigned user. [Sanitised sample](evidence/learn-build01-reviewed-job-direct-get-2026-10-17.json).
+
+### Needs finishing
+
+- This sample cannot establish a current status for all 295 recorded open jobs,
+  a job-progress score or the first audited Owner / MD handoff. Keep old source
+  timestamps and the remaining source-review holds visible.
+
+### Blocked externally
+
+- Owner / MD signed-in confirmation remains required for the first human
+  handoff. The separate five-setting recovery and archived Slack-roster
+  decisions are pending.
+
 **17 October, 16:34 UTC — ordinary processing stable; recent failures classified.**
 
 ### Working and verified

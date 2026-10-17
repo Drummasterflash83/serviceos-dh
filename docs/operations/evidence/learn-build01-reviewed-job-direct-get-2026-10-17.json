@@ -1,0 +1,26 @@
+{
+  "version": "learn-build01-reviewed-job-direct-get/1",
+  "observedAtUtc": "2026-10-17T16:37:44.035Z",
+  "project": "tgbnakbxwcqjeimygroz",
+  "tenant": "00000000-0000-0000-0000-000000000001",
+  "source": "scripts/verify/learn-build01-reviewed-job-direct-get.mjs --live-read-only",
+  "reviewedSourceLinkedSample": 3,
+  "directProviderGetHttp200": 3,
+  "currentStatusMatchesRetainedSource": 3,
+  "currentPropertyMatchesRetainedSource": 3,
+  "relationshipPaths": {
+    "directCustomer": 2,
+    "siteToCustomer": 1
+  },
+  "statuses": {
+    "ongoing": 2,
+    "pending": 1
+  },
+  "retainedObservationAgeHours": 96,
+  "assignmentFieldPresent": 3,
+  "nonemptyAssignmentArrays": 0,
+  "limitation": "Three direct current GETs confirm this representative reviewed-link sample only. The 96-hour retained observations remain visibly dated; no company-wide current-status, technician ownership, completion-time or score claim follows.",
+  "jobIdsNamesOrProviderBodiesReturned": false,
+  "providerWrites": false,
+  "databaseWrites": false
+}
