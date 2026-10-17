@@ -1,5 +1,18 @@
 # Build execution tracker
 
+Build 01 ordinary processing checkpoint (17 October, 15:17 UTC): the released
+LIVE worker/scheduler v109/v51 now run 50-item identity and Graph batches.
+Three ordinary identity jobs settled with 123 resolved interactions, 27
+explicit review holds and no delivery failures; twelve ordinary Graph jobs
+succeeded. Forty-four ordinary Email jobs published 2,200 distinct interactions
+without a failed job, reducing the eligible historical gap to 5,189 with none
+older than a day. Ordinary card projections remained current. The exact
+source overlay and readbacks are checkpointed at verified TEST Git head
+`805a92b2`. The first signed-in Owner / MD source-review handoff, full
+credential/provider recovery and Chris's business acceptance remain open.
+[Ordinary readback](../../operations/evidence/learn-build01-ordinary-50-email-2026-10-17.json),
+[source reconstruction](../../operations/evidence/learn-build01-processing-source-overlay-2026-10-17.json).
+
 Build 01 Email horizon stability (17 October, 13:48 UTC): all 30 accounts
 retain the approved 16 October 2023 full-import cutoff. No pre-cutoff mail
 was newly retained in the preceding hour; 1,361 allowed-history messages
@@ -304,7 +317,7 @@ stage. Only genuine Build 10 acceptance unlocks Part 2. A plan is not acceptance
 | Build | Stage | State | Highest verified environment | Business outcome | Receipt |
 |---|---|---|---|---|---|
 | 00 | Reconcile the main build and agree outcome contracts | PARTIAL — audit delivered; outcome agreement pending | DOCUMENT REVIEW / LOCAL document validation; dated TEST/LIVE evidence referenced | NOT YET MEASURABLE | [14 October audit](receipts/00-2026-10-14.md) |
-| 01 | Finish and protect the existing LEARN V1 foundation | IN PROGRESS — LIVE Slack saved counts and public evidence browsing pass signed-in review; the shared signed route has real proof in the separate 20-channel roster, while the exact 160-channel roster has no observed post-cutoff traffic or retained activity in the 30 days before handoff. The ordinary card sweep reached terminal success once and continues successfully without manual rescue; at 09:06 UTC 4,181/4,182 cards were projected with 60 successful jobs in the prior hour. Today's independent scheduled off-site database and v107 Edge packages were downloaded and decrypted, with full archived row/Vault comparison and isolated preserved-user Auth/REST/current Edge tenant reads, tenant isolation and operator revocation. The last verified LIVE frontend Git commit rebuilds and boots separately with synthetic settings. The current v107 worker also completed a synthetic card job after all 1,280 inherited jobs were held in the offline restored copy; no provider job ran. All 1,004 published Commusoft jobs use their latest retained version; 285 recorded open-work jobs remain source-review items, with no individual-assignee field or approved score. The local three-bucket file run covered 3,166 Phone objects and 257 voicemail pairs. Connected signed-in frontend/runtime-secret and controlled-capture recovery, exact-160 real Event proof, named handoff, score criteria and Chris’s business sign-off remain open. | SIGNED-IN LIVE, TEST and isolated off-site package service recovery; full Build 01 acceptance incomplete | OBSERVING — technical and business acceptance remain separate | [Build 01 receipt](receipts/01-2026-10-14.md) |
+| 01 | Finish and protect the existing LEARN V1 foundation | IN PROGRESS — LIVE saved Slack evidence and signed Events in the separate 20 active public channels pass; the exact 160-channel historical roster is now entirely archived, and direct provider reads found no post-cutoff parents or replies in its known threads. Ordinary cards are current. Forty-four ordinary Email jobs published 2,200 distinct interactions without failure; 50-item identity and Graph batches now settle ordinarily with explicit review holds. The independent scheduled database backup, current LIVE frontend, Auth/REST/current Edge tenant reads and source reconstruction passed isolated recovery checks. Commusoft source jobs remain visible with honest timestamps; no engineer assignment or publishable completion score is inferred. The signed-in Owner / MD source-review handoff, additional runtime credentials, authenticated provider restart, database/file recovery point and Chris’s business sign-off remain open. | SIGNED-IN LIVE, TEST and isolated off-site package recovery; Build 01 acceptance incomplete | OBSERVING — technical and business acceptance remain separate | [Build 01 receipt](receipts/01-2026-10-14.md) |
 | 02 | Account for company information and its limits | NOT STARTED | Not assessed | Not assessed | None |
 | 03 | Connect the company without guessing identities | NOT STARTED | Not assessed | Not assessed | None |
 | 04 | Understand strategy, ownership and commercial policy | NOT STARTED | Not assessed | Not assessed | None |
