@@ -72,6 +72,12 @@ only when an actual credential rotates or a required binding is added. This
 does **not** authorise standing secret capture; it limits when a future review
 would be needed.
 
+An independent TEST/LIVE digest-only check examined these 16 candidate
+bindings. Three values match, two names exist in both with different values,
+and eleven exist only in LIVE. TEST therefore cannot serve as the full
+credential recovery source, and its matching values were not used for provider
+calls or moved between projects. [Sanitised comparison](evidence/learn-build01-test-live-edge-digest-overlap-2026-10-17.json).
+
 ## Proposed smallest recovery path
 
 1. Confirm which of the 16 credential/webhook candidates the actual Build 01

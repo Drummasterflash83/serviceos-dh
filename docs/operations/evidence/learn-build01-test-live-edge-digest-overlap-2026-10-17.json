@@ -1,0 +1,15 @@
+{
+  "version": "learn-build01-test-live-edge-digest-overlap/1",
+  "observedAtUtc": "2026-10-17T10:26:10.304Z",
+  "environment": "Existing TEST and LIVE Supabase Edge secret metadata",
+  "method": "scripts/verify/learn-build01-test-live-edge-digest-overlap.mjs --read-only",
+  "reviewedCredentialOrWebhookNames": 16,
+  "sameValueDigestInTestAndLive": 3,
+  "configuredInBothButDifferentDigest": 2,
+  "configuredOnlyInLive": 11,
+  "secretNamesOrDigestsPublished": false,
+  "plaintextValuesRead": false,
+  "productionDataWrites": false,
+  "providerWrites": false,
+  "limits": "Existing TEST bindings are not an independent off-site credential recovery copy. The mismatch and LIVE-only counts mean TEST cannot supply full application credential parity. No provider call or TEST-to-LIVE credential movement was made."
+}

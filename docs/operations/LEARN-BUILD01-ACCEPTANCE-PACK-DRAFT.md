@@ -8,6 +8,12 @@ inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
 
+- A noninteractive, digest-only TEST/LIVE comparison found three matching
+  bindings among 16 reviewed credential/webhook names. Two differ and eleven
+  are LIVE-only, so the existing TEST environment is not a substitute for an
+  independent protected credential copy. No values were read or provider
+  calls made. [Sanitised comparison](evidence/learn-build01-test-live-edge-digest-overlap-2026-10-17.json).
+
 - The ordinary LIVE card chain completed a full stable sweep at 06:11 UTC on
   its first attempt, and the 06:12 readback found zero stale unprojected cards.
   The next rolling sweep is continuing without rescue; the completed sweep is

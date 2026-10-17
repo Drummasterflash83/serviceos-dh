@@ -1,5 +1,10 @@
 # Build execution tracker
 
+Build 01 recovery alternative checked (17 October, 10:26 UTC): existing TEST
+and LIVE Edge digests match for only three of 16 reviewed sensitive names; two
+differ and eleven are LIVE-only. TEST is not a full credential recovery source.
+No plaintext or provider call was used. [Sanitised receipt](../../operations/evidence/learn-build01-test-live-edge-digest-overlap-2026-10-17.json).
+
 Build 01 card-cycle clarification (17 October, 10:23 UTC): the ordinary LIVE
 worker already completed one full stable sweep at 06:11 with zero stale cards
 at the 06:12 readback. The next rolling sweep is monitored for freshness, not

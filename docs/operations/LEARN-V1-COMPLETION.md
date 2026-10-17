@@ -17,6 +17,14 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 10:26 UTC — existing TEST credential overlap checked without plaintext.**
+
+The 16 reviewed non-Vault credential/webhook names have only three equal
+digests across existing TEST and LIVE; two differ and eleven are configured
+only in LIVE. TEST cannot replace the protected source needed for full
+credential recovery. No provider call, plaintext read or credential movement
+occurred. [Sanitised comparison](evidence/learn-build01-test-live-edge-digest-overlap-2026-10-17.json).
+
 **17 October, 10:23 UTC — completed card sweep retained as acceptance evidence.**
 
 The ordinary LIVE card chain already finished its full 23:13 UTC stable-cutoff
