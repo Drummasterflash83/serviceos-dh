@@ -17,6 +17,48 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 11:54 UTC — Commusoft four-stage cycle completed unaided after the guarded recovery.**
+
+### Working and verified
+
+- The ordinary worker reached **872/872** approved work-address contact
+  targets, marked its checkpoint complete, and the final job succeeded. The
+  recurring scheduler then verified the four-stage cycle, advanced the
+  watermark to 05:11 UTC and remained enabled for the next hourly cycle.
+  The separate current-jobs lane last completed at 11:48 UTC.
+  [Read-only full-cycle receipt](evidence/learn-build01-commusoft-full-cycle-2026-10-17.json).
+
+### Needs finishing
+
+- Continue ordinary freshness checks. The completed source cycle does not
+  resolve individual job ownership, a published score, the archived Slack
+  reply intervals, or full application-secret recovery.
+
+### Blocked externally
+
+- No owner action is needed for the completed Commusoft cycle.
+
+**17 October, 11:53 UTC — named-person job handoff cannot yet use the roster.**
+
+### Working and verified
+
+- A counts-only LIVE check found eight active Drummonds team entries, but no
+  confirmed member, no signed-in confirmed recipient, and no signed-in member
+  with confirmed `work.assign` authority. No member identifiers or customer
+  content were returned. The existing OpenFolk roster's formal-title
+  confirmation is distinct from confirming member identity.
+
+### Needs finishing
+
+- Establish a reviewed member identity and an authorized assigner before
+  demonstrating a source-linked human job-review handoff. Keep it labelled as
+  an OpenFolk review task; do not infer a Commusoft technician appointment.
+
+### Blocked externally
+
+- A human must eventually confirm the real recipient and authority. No job
+  assignment was made from proposed roster data.
+
 **17 October, 11:31 UTC — one-time Edge credential package copied and independently downloaded.**
 
 ### Working and verified

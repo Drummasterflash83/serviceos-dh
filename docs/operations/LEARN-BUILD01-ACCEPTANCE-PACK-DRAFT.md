@@ -1,12 +1,27 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 11:32 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 11:54 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- The ordinary Commusoft worker completed **872/872** approved work-address
+  contact targets, with the final job succeeded and checkpoint marked complete.
+  At 11:54 UTC the recurring scheduler verified the four-stage cycle, advanced
+  its watermark to 05:11 UTC and remained enabled for the next cycle. The
+  separate current-jobs lane had a completed receipt at 11:48 UTC. This closes
+  the stalled contact traversal without treating the retry alone as success.
+  [Full-cycle receipt](evidence/learn-build01-commusoft-full-cycle-2026-10-17.json).
+
+- A counts-only handoff audit found eight active Drummonds team entries but
+  **zero confirmed members**, zero signed-in confirmed recipients and zero
+  signed-in members with confirmed `work.assign` authority. The existing
+  OpenFolk roster can confirm a *formal title* separately; that does not
+  establish member identity for a named work assignment. No job was routed to
+  an inferred person. [Read-only check](../../scripts/verify/learn-build01-job-handoff-readiness.mjs).
 
 - The approved one-time LIVE Edge credential inventory now contains 11 active
   Build 01 settings, each checked against its LIVE digest. A synthetic hosted
@@ -33,8 +48,8 @@ inactive until Chris reviews and signs off the business result.
   exact-job recovery resumed normal worker capture at **517/872**, with the
   next page running. A later 11:32 read found **663/872** completed and the
   approval still in scope. The operator UI's unconfirmed request was cancelled.
-  This removes the deadlock, while final contact and cycle completion remain
-  to observe. [Recovery receipt](evidence/learn-build01-commusoft-authority-retry-2026-10-17.json).
+  The ordinary worker subsequently completed all targets and the scheduler
+  closed the cycle, as verified above. [Recovery receipt](evidence/learn-build01-commusoft-authority-retry-2026-10-17.json).
 
 - Slack itself returned **no parent message at or after the handoff cutoff**
   from any of the exact 160 saved public channels. Every channel passed a
@@ -107,9 +122,9 @@ inactive until Chris reviews and signs off the business result.
 - Current read-only reliability checks show **zero Email delegation holds**,
   two ordinary safe claims, **4,676/4,676** Phone calls linked to interactions,
   and zero eligible Graph gaps. Commusoft's changed-job pages are still
-  arriving, but its deeper contact traversal is incomplete. The card sweep
+  arriving, and its deeper contact traversal has now completed. The card sweep
   continues unaided; the exact 160 Slack roster has zero current dead letters
-  and only empty provider-completed windows. Today's database backup has three
+  and only empty provider-completed windows. Today's database backup has four
   successful **scheduled** runs; its separate missed-success monitor has not
   yet appeared today, which is not a pass or a failure.
   [Aggregate cutline](evidence/learn-build01-source-reliability-2026-10-17-1009.json).
@@ -359,7 +374,9 @@ inactive until Chris reviews and signs off the business result.
   filters, and signed-in LIVE example rows passed. Named-person handoff and a
   representative progress/completion score are not established. The saved
   job collection alone cannot identify an individual recipient; the existing
-  source-review queue is the truthful current route.
+  source-review queue is the truthful current route. A fresh 11:53 read also
+  found no confirmed Drummonds team member or confirmed signed-in assigner,
+  so neither provider-derived nor manual person routing can be claimed yet.
   [Policy draft](LEARN-BUILD01-JOB-ATTENTION-DRAFT.md).
 - **Attribution limits:** the current 1,004 published canonical Commusoft jobs
   have customer links, but only 793 have site links, five have any linked

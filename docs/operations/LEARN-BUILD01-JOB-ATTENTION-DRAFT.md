@@ -79,6 +79,16 @@ human attention independently of Commusoft's current appointment assignment,
 provided it is labelled as such and never presented as provider-derived job
 ownership. That product choice is under review; no LIVE review task was created.
 
+The 17 October 11:53 UTC counts-only handoff audit found eight active
+Drummonds roster entries but no confirmed member, signed-in confirmed
+recipient or signed-in member with confirmed `work.assign` authority. The
+existing Directory → Roster flow can confirm a formal title, which is a
+different fact from confirming the person and granting work-assignment
+authority. A named OpenFolk review-task handoff therefore requires a real
+member confirmation and authorized assigner first; selecting one of the
+proposed entries would bypass the existing work-transition guard.
+[Read-only audit script](../../scripts/verify/learn-build01-job-handoff-readiness.mjs).
+
 ## Proposed first scorecard boundary
 
 The first publishable job scorecard should measure only reviewed job progress
