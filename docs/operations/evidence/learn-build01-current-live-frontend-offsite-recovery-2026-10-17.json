@@ -1,0 +1,30 @@
+{
+  "version": "learn-build01-current-live-frontend-connected-offsite-recovery/1",
+  "observedAt": "2026-10-17T14:19:05+00:00",
+  "databaseSource": "independently_downloaded_scheduled_offsite_ciphertext",
+  "databaseArchiveBytes": 1634220355,
+  "databaseArchiveSha256": "af3003bcea592d187d28de8fb5ce1949edf576321a038e2555baf3bb2d6914ef",
+  "frontendGitCommit": "ca651c3c396031413fd29dd20fabfe7af9c5920e",
+  "frontendGitTree": "c1bc81caa82e6df6205be35dc405b4bc05bdf76e",
+  "frontendSourceVerifiedByFixture": true,
+  "frontendVercelBuildSucceeded": true,
+  "preservedUserFreshAuthLoginAfterDisposableOnlyReset": true,
+  "signedInLearnRouteRendered": true,
+  "fiveTenantCardsRead": true,
+  "currentEdgePhoneEmailStatusRead": true,
+  "crossTenantCardLeak": 0,
+  "operatorSelectionAndRevocation": true,
+  "isolatedNetwork": "none",
+  "hostPorts": 0,
+  "productionWrites": false,
+  "emailsSent": false,
+  "authRestDatabaseEdgeGatewayContainersRemoved": true,
+  "browserProfileRemoved": true,
+  "temporaryLocalServerStopped": true,
+  "claimsNotEstablished": [
+    "original_session_continuation",
+    "recovered_all_function_secrets",
+    "real_provider_capture_restart",
+    "atomic_database_and_file_failover"
+  ]
+}

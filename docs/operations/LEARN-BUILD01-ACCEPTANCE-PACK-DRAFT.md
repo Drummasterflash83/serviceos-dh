@@ -1,12 +1,21 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 14:00 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 14:19 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
 inactive until Chris reviews and signs off the business result.
 
 ## Working and verified
+
+- The exact current LIVE frontend Git commit `ca651c3c` now rebuilds as a
+  Vercel target against the independently downloaded scheduled database backup.
+  A preserved Drummonds user signed in to disposable Auth, opened LEARN and
+  read five tenant cards plus current Phone/Email status; operator boundaries
+  passed and all local services were removed. This narrows application recovery
+  to the current frontend release, while provider secrets, real capture restart
+  and atomic database/file failover remain unproved.
+  [Current-release recovery receipt](evidence/learn-build01-current-live-frontend-offsite-recovery-2026-10-17.json).
 
 - At 14:10 UTC, all **4,182** active cards were projected with no older-than-hour
   gap; Phone had **4,676/4,676** interactions and Graph had zero eligible gaps.
@@ -82,7 +91,9 @@ inactive until Chris reviews and signs off the business result.
   [Release receipt](evidence/learn-build01-review-claim-frontend-release-2026-10-17.json).
   The post-release counts-only baseline confirms one linked Owner / MD login
   and zero identity confirmations, open source-review tasks or accepted-owner
-  transitions. [Baseline](evidence/learn-build01-owner-review-handoff-baseline-2026-10-17.json).
+  transitions. A 14:19 UTC readback is unchanged.
+  [Baseline](evidence/learn-build01-owner-review-handoff-baseline-2026-10-17.json),
+  [current readback](evidence/learn-build01-owner-review-handoff-recheck-2026-10-17.json).
   Audited identity confirmation and source-linked review-task controls passed
   isolated SQL tests, rollback rehearsals, and TEST/LIVE install readback.
   TEST Control Plane v28 and LIVE v38 carry the targeted route; the stricter

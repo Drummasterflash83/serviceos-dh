@@ -53,6 +53,33 @@ business decision yet.
 - No fingerprint or new Slack post is needed for this read-only check. Chris's
   Owner / MD handoff and final business acceptance remain separate actions.
 
+**17 October, 14:19 UTC — current LIVE frontend recovery drill verified.**
+
+### Working and verified
+
+- Exact LIVE Git `ca651c3c` rebuilt as a Vercel target and served a connected
+  signed-in LEARN journey against the independently downloaded scheduled database
+  backup. A preserved Drummonds user established a fresh session after a reset
+  only in disposable Auth, read five tenant cards and current Phone/Email status,
+  and the operator tenant boundary passed. The isolated services and browser
+  profile were removed; there was no external network or production write.
+  [Sanitised receipt](evidence/learn-build01-current-live-frontend-offsite-recovery-2026-10-17.json).
+- A 14:19 UTC counts-only LIVE readback still found one Owner / MD login link,
+  with zero confirmed identity links, source-review tasks or accepted handoffs.
+  Chris's choice of Owner / MD is recorded; the signed-in handoff is not yet done.
+  [Readback](evidence/learn-build01-owner-review-handoff-recheck-2026-10-17.json).
+
+### Needs finishing
+
+- Recover all current provider credentials and prove real capture restart;
+  demonstrate atomic database/file recovery, then complete the signed-in Owner /
+  MD review handoff and Chris's business acceptance.
+
+### Blocked externally
+
+- Browser auto-review has not granted agent access to the signed-in LIVE tab.
+  The five-setting sealed credential export also awaits Chris's separate answer.
+
 **17 October, 14:00 UTC — first Owner / MD handoff UI gap released to TEST and LIVE.**
 
 ### Working and verified

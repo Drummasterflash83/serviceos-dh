@@ -1,5 +1,21 @@
 # Build 01 application and Auth restore inventory
 
+**17 October, 14:19 UTC — current LIVE frontend connected to the off-site restore.**
+Git `ca651c3c396031413fd29dd20fabfe7af9c5920e`, which serves the current
+LIVE frontend aliases, was archived into a separate source directory and rebuilt
+as a Vercel target with only disposable local Auth/REST/Edge settings. Against
+the independently downloaded scheduled database package, a preserved Drummonds
+user completed a fresh Auth login after a reset **only in the disposable copy**,
+opened LEARN, read five correctly scoped tenant cards and received current
+Phone/Email status. Operator selection, revocation and cross-tenant card denial
+also passed. The database, Auth, REST, gateway and Edge containers, browser
+profile and local proxy were removed. The recovery stack had no external network,
+host port, provider call, email or production write. This closes the previous
+frontend-version mismatch in the connected restore proof. Original-session
+continuation, every current provider secret, real capture restart and atomic
+database/file failover remain unproved.
+[Sanitised receipt](evidence/learn-build01-current-live-frontend-offsite-recovery-2026-10-17.json).
+
 **17 October, 10:13 UTC — all current v107 Edge bundles started offline.** The
 103 reviewed source bundles were rehashed, then every bundle created a user
 worker and returned an HTTP response to a synthetic OPTIONS request in one

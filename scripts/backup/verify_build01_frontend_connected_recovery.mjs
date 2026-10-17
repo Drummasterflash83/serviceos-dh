@@ -13,7 +13,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const oldSource = join(root, ".verification-results/build01-frontend-rebuild-20261017/source");
-const source = join(root, ".verification-results/build01-frontend-connected-20261017/source");
+const currentCommit = "ca651c3c396031413fd29dd20fabfe7af9c5920e";
+const currentSource = join(root, `.verification-results/build01-frontend-connected-${currentCommit.slice(0, 8)}-20261017/source`);
+const useCurrentSource = process.env.LEARN_RECOVERY_CURRENT_FRONTEND === currentCommit;
+const source = useCurrentSource ? currentSource :
+  join(root, ".verification-results/build01-frontend-connected-20261017/source");
 const dbName = process.env.LEARN_RECOVERY_DB_NAME;
 const email = process.env.LEARN_RECOVERY_EMAIL;
 const password = process.env.LEARN_RECOVERY_PASSWORD;
@@ -24,14 +28,15 @@ const dockerPath = "/usr/local/bin/docker";
 if (!/^serviceos-db-recovery-[a-f0-9]+$/.test(dbName ?? "") ||
     !email || !password || !anonKey ||
     !["synthetic_tenant_user", "preserved_user_disposable_reset"].includes(actorKind) ||
-    !existsSync(chromePath) || !existsSync(oldSource))
+    !existsSync(chromePath) || !(useCurrentSource ? existsSync(currentSource) : existsSync(oldSource)))
   throw Error("Exact isolated recovery browser inputs required");
 
 const counts = { authLoginOk: 0, authLoginResponseShapeOk: 0,
   authUserOk: 0, restCardOk: 0, restRpcRequests: 0, edgeOk: 0,
   blockedAdminRequests: 0 };
 const report = { version: "learn-build01-connected-frontend-recovery/1",
-  frontendSource: "last_verified_live_git_archive_77a73802",
+  frontendSource: useCurrentSource ? `current_live_git_archive_${currentCommit}` :
+    "last_verified_live_git_archive_77a73802",
   restoredServiceNetwork: "none", hostListen: "127.0.0.1 ephemeral",
   temporaryChromeProfileRemoved: false, temporaryServerStopped: false,
   productionProviderConnectionAvailableToRestoredServices: false,
@@ -169,7 +174,7 @@ try {
   });
   await new Promise(resolveListen => server.listen(0, "127.0.0.1", resolveListen));
   const port = server.address().port;
-  if (!existsSync(source)) cpSync(oldSource, source, { recursive: true, filter: path =>
+  if (!useCurrentSource && !existsSync(source)) cpSync(oldSource, source, { recursive: true, filter: path =>
     !path.includes(`${sep}.vercel${sep}`) && !path.endsWith(`${sep}.vercel`) });
   phase = "vercel_frontend_build";
   const build = spawnSync("npm", ["run", "build"], { cwd: source,

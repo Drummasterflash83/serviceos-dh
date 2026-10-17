@@ -581,10 +581,18 @@ def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
                         browser_result = json.loads(browser.stdout)
                     except ValueError:
                         browser_result = {}
+                    expected_frontend = os.environ.get('LEARN_RECOVERY_CURRENT_FRONTEND')
+                    if expected_frontend and expected_frontend != \
+                            'ca651c3c396031413fd29dd20fabfe7af9c5920e':
+                        raise RecoveryError('Unreviewed frontend recovery source requested')
+                    report['browserFrontendSource'] = browser_result.get('frontendSource')
                     report['connectedFrontendVerified'] = (
                         browser.returncode == 0 and
                         browser_result.get('state') ==
-                        'connected_signed_in_recovered_route_verified')
+                        'connected_signed_in_recovered_route_verified' and
+                        (not expected_frontend or
+                         browser_result.get('frontendSource') ==
+                         'current_live_git_archive_' + expected_frontend))
                     report['browserProfileRemoved'] = browser_result.get(
                         'temporaryChromeProfileRemoved') is True
                     report['browserLocalServerStopped'] = browser_result.get(
