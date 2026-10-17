@@ -17,6 +17,28 @@ business decision yet.
 
 ## Current evidence and priority
 
+**17 October, 13:12 UTC — five additional active runtime bindings remain outside the approved recovery copy.**
+
+### Working and verified
+
+- A names-only LIVE readback verified all five configured settings and their
+  current-source consumers. Drummonds' receptionist workspace points to the
+  exact Vapi and Slack binding names. No value or digest was returned.
+  [Sanitised readback](evidence/learn-build01-additional-edge-binding-use-2026-10-17.json).
+
+### Needs finishing
+
+- The approved eleven-setting ciphertext does not include these five. For a
+  full application restore, prepare and separately review a bounded encrypted
+  copy, then prove recovery and controlled provider restart. The exact feature
+  boundary and proposed route are in the
+  [additional-binding review](LEARN-BUILD01-ADDITIONAL-RUNTIME-CREDENTIAL-REVIEW.md).
+
+### Blocked externally
+
+- No new secret was read or copied. The earlier one-time approval was narrower;
+  any live five-setting export needs a separate reviewed authorization.
+
 **17 October, 12:56 UTC — ordinary card sweep cleared its last stale card.**
 
 ### Working and verified

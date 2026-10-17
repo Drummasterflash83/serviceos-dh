@@ -85,6 +85,12 @@ inactive until Chris reviews and signs off the business result.
   subject has no current-source read. This names-only inventory does not prove
   private-key restore or provider restart.
   [Coverage receipt](evidence/learn-build01-edge-recovery-coverage-2026-10-17.json).
+- A fresh names-only LIVE/source readback confirms all five additional
+  configured bindings are used by current marketing or receptionist paths;
+  Drummonds' receptionist workspace points to both dynamic secret names.
+  They are outside the approved eleven-setting package, so a full application
+  restore remains incomplete. [Exact-scope review](LEARN-BUILD01-ADDITIONAL-RUNTIME-CREDENTIAL-REVIEW.md) ·
+  [readback](evidence/learn-build01-additional-edge-binding-use-2026-10-17.json).
 
 - A single authority-read failure had stranded the approved Commusoft
   work-address contact run at 516/872 properties. The unchanged-scope retry

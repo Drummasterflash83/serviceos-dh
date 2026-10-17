@@ -1,0 +1,29 @@
+{
+  "activeEdgeBindings": 62,
+  "additionalConfiguredProviderBindings": [
+    "MARKETING_TRACKING_SECRET",
+    "OPENAI_EMMA_REVIEW_KEY",
+    "RECEPTIONIST_SLACK_DRUMMONDS",
+    "RECEPTIONIST_VAPI_DRUMMONDS",
+    "RESEND_API_KEY"
+  ],
+  "contract": "learn-build01-additional-edge-binding-readback/1",
+  "digestValuesReturned": false,
+  "environment": "LIVE Drummonds names-only readback and pinned v107 source",
+  "includedInApprovedElevenSettingPackage": false,
+  "limitation": "Names/source-use proof only. Additional encrypted copy, private-key restore and provider restart are unverified.",
+  "observedAt": "2026-10-17T13:11:53.309Z",
+  "plaintextValuesReturned": false,
+  "productionDataWrites": false,
+  "receptionistSlackBound": true,
+  "receptionistVapiBound": true,
+  "receptionistWorkspaceExists": true,
+  "reviewedSourceFunctions": [
+    "marketing-track",
+    "receptionist-task-review",
+    "client-notifications",
+    "receptionist-calls",
+    "platform-worker"
+  ],
+  "sourceManifestSha256": "4008cc502a41f5948cfea8e2d06fa3be26ff4f4f7828839f707724b7c49f1488"
+}

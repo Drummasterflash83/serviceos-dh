@@ -1,5 +1,14 @@
 # Build execution tracker
 
+Build 01 additional runtime-secret scope (17 October, 13:12 UTC): names-only
+LIVE/source review confirms five configured marketing/receptionist secrets
+outside the approved eleven-setting recovery package, including Drummonds'
+two dynamic receptionist bindings. No value was read. Full application
+recovery remains incomplete; a separate exact-scope encrypted-copy review is
+prepared without silently expanding the earlier permission.
+[Review](../../operations/LEARN-BUILD01-ADDITIONAL-RUNTIME-CREDENTIAL-REVIEW.md) ·
+[readback](../../operations/evidence/learn-build01-additional-edge-binding-use-2026-10-17.json).
+
 Build 01 Slack reply-audit control (17 October, 13:09 UTC): the bounded
 read-only provider query found a known retained reply in the separate active
 20-channel public roster. The exact 160-channel archived-root audit is still
