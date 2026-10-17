@@ -1,13 +1,14 @@
 # Build execution tracker
 
-Latest Build 01 recovery checkpoint (17 October, 09:44 UTC): a disposable
-signed-in browser opened the rebuilt LIVE Git frontend against the
+Latest Build 01 recovery checkpoint (17 October, 09:49 UTC): disposable
+signed-in browsers opened the rebuilt LIVE Git frontend against the
 independently restored scheduled database, recovered Auth/REST and current
-v107 Edge route. It reached LEARN, read five tenant cards and received
-Phone/Email status. A preserved Drummonds user passed fresh recovered
-Auth/REST/Edge reads separately. The browser profile, localhost proxy and
-recovery containers were removed. Full all-function/runtime-secret recovery,
-original sessions and real provider restart are still open; Build 02 stays
+v107 Edge route. Both a synthetic tenant user and a preserved Drummonds user
+reached LEARN, read five tenant cards and received Phone/Email status. The
+preserved user's reset occurred only in the disposable copy. Browser profiles,
+localhost proxies and recovery containers were removed. Full all-function
+runtime-secret recovery, original sessions and real provider restart are
+still open; Build 02 stays
 inactive. [Sanitised receipt](../../operations/evidence/learn-build01-connected-frontend-offsite-recovery-2026-10-17.json).
 
 Latest Build 01 operating checkpoint (17 October, 09:27 UTC): the exact

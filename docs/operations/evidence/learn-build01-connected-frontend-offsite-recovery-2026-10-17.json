@@ -1,15 +1,17 @@
 {
-  "version": "learn-build01-connected-frontend-offsite-recovery/1",
-  "observedAtUtc": "2026-10-17T09:44:52Z",
+  "version": "learn-build01-connected-frontend-offsite-recovery/2",
+  "observedAtUtc": "2026-10-17T09:49:52Z",
   "environment": "disposable offline restore of the independently downloaded 17 October scheduled database package",
   "frontend": {
     "source": "last verified LIVE Git commit 77a73802a581798441acafd19e2d1fe93ae0a10d",
     "isolatedVercelTargetRebuildPassed": true,
     "headlessLoginFormRendered": true,
     "syntheticTenantUserSignedIn": true,
+    "preservedDrummondsUserSignedInAfterDisposableOnlyReset": true,
     "clientRedirected": true,
     "learnRouteRendered": true,
     "browserReadFiveTenantCards": true,
+    "preservedUserBrowserReadFiveTenantCards": true,
     "browserReadCurrentEdgePhoneAndEmailStatus": true
   },
   "restoredServices": {
@@ -32,17 +34,26 @@
     "productionDatabaseWrites": false,
     "productionProviderConnectionAvailableToRestoredServices": false,
     "recoveryKeyReadDuringThisRehearsal": false,
-    "browserActor": "synthetic tenant user in disposable database",
-    "preservedAccountBrowserJourneyClaimed": false,
+    "browserActors": [
+      "synthetic tenant user in disposable database",
+      "preserved Drummonds user after password reset only in disposable database"
+    ],
+    "preservedAccountBrowserJourneyClaimed": true,
     "originalSessionContinuationClaimed": false,
     "allFunctionRuntimeSecretRecoveryClaimed": false,
     "realProviderCaptureRestartClaimed": false,
     "completeApplicationFailoverClaimed": false
   },
   "verification": {
-    "command": "python3 scripts/backup/rehearse_build01_auth_service_recovery.py --with-reviewed-v107-edge-browser-fixture --offsite-recovered-dir .verification-results/build01-scheduled-database-20261017/offsite-restored",
-    "privateReport": ".verification-results/learn-build01-auth-recovery-224ecb8934c747408d96c24b2548e553.json",
+    "commands": [
+      "python3 scripts/backup/rehearse_build01_auth_service_recovery.py --with-reviewed-v107-edge-browser-fixture --offsite-recovered-dir .verification-results/build01-scheduled-database-20261017/offsite-restored",
+      "python3 scripts/backup/rehearse_build01_auth_service_recovery.py --with-reviewed-v107-edge-preserved-browser-fixture --offsite-recovered-dir .verification-results/build01-scheduled-database-20261017/offsite-restored"
+    ],
+    "privateReports": [
+      ".verification-results/learn-build01-auth-recovery-224ecb8934c747408d96c24b2548e553.json",
+      ".verification-results/learn-build01-auth-recovery-f91fe3a8de1a490cb585f1296c73f35c.json"
+    ],
     "sanitisedReportOnly": true
   },
-  "limitations": "The connected frontend journey uses a synthetic tenant user and the recovered current LEARN status Edge route. A preserved user logged in and read the restored services separately, but did not complete the browser redirect in this fixture. This does not verify original session continuation, every Edge function with recovered secret values, atomic database/file failover or real provider capture resumption."
+  "limitations": "Both a synthetic tenant user and a preserved Drummonds user completed separate connected frontend journeys against the recovered current LEARN status Edge route. The preserved user's password reset and browser session existed only in the disposable restore. This does not verify original session continuation, every Edge function with recovered secret values, atomic database/file failover or real provider capture resumption."
 }

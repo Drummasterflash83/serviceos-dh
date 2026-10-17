@@ -18,10 +18,13 @@ const dbName = process.env.LEARN_RECOVERY_DB_NAME;
 const email = process.env.LEARN_RECOVERY_EMAIL;
 const password = process.env.LEARN_RECOVERY_PASSWORD;
 const anonKey = process.env.LEARN_RECOVERY_ANON_KEY;
+const actorKind = process.env.LEARN_RECOVERY_BROWSER_ACTOR;
 const chromePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const dockerPath = "/usr/local/bin/docker";
 if (!/^serviceos-db-recovery-[a-f0-9]+$/.test(dbName ?? "") ||
-    !email || !password || !anonKey || !existsSync(chromePath) || !existsSync(oldSource))
+    !email || !password || !anonKey ||
+    !["synthetic_tenant_user", "preserved_user_disposable_reset"].includes(actorKind) ||
+    !existsSync(chromePath) || !existsSync(oldSource))
   throw Error("Exact isolated recovery browser inputs required");
 
 const counts = { authLoginOk: 0, authLoginResponseShapeOk: 0,
@@ -36,7 +39,7 @@ const report = { version: "learn-build01-connected-frontend-recovery/1",
   frontendBuildSucceeded: false, loginFormRendered: false,
   signedInRedirected: false, learnRouteRendered: false,
   browserTenantCardRead: false, browserCurrentEdgeRead: false,
-  browserActor: "synthetic_tenant_user_in_disposable_restore" };
+  browserActor: actorKind };
 let server, chrome, profile, ws, handler;
 let phase = "preflight";
 
@@ -197,7 +200,10 @@ try {
   const cdp = new DevTools(ws);
   await cdp.send("Page.enable"); await cdp.send("Runtime.enable");
   phase = "browser_login";
-  await cdp.send("Page.navigate", { url: `http://127.0.0.1:${port}/login` });
+  const clientRoute = "/client?tenant=00000000-0000-0000-0000-000000000001&section=learn";
+  const redirect = actorKind === "preserved_user_disposable_reset"
+    ? `?${new URLSearchParams({ redirect: clientRoute })}` : "";
+  await cdp.send("Page.navigate", { url: `http://127.0.0.1:${port}/login${redirect}` });
   report.loginFormRendered = !!await until(() => cdp.evaluate("Boolean(document.querySelector('#email') && document.querySelector('#password'))"));
   if (!report.loginFormRendered) throw Error("Recovered frontend login form unavailable");
   report.loginInputsEnabled = !!await until(() => cdp.evaluate(

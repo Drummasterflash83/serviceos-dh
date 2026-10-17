@@ -1,6 +1,6 @@
 # LEARN Build 01 — Drummonds acceptance pack (draft)
 
-**Status at 17 October 2026, 09:44 UTC: not ready for business sign-off.**
+**Status at 17 October 2026, 09:49 UTC: not ready for business sign-off.**
 This is a short index to the current evidence, not a claim that Build 01 is
 complete. Chris waived waiting for a full working day; enough representative
 real data and reliable unattended operation are still required. Build 02 stays
@@ -14,10 +14,11 @@ inactive until Chris reviews and signs off the business result.
   localhost backend and public key. A synthetic tenant user signed in through
   recovered Auth in a disposable browser profile, reached the client LEARN
   route, read five tenant cards and received current Phone/Email Edge status.
-  A preserved Drummonds account separately passed fresh recovered Auth/REST/
-  Edge reads after a reset only in the disposable copy. The browser profile,
-  loopback proxy and all recovery containers were removed. This is a bounded
-  connected journey, not full application failover.
+  A preserved Drummonds account then completed the same browser journey after
+  a reset only in the disposable copy, using the login page's existing safe
+  client redirect. The browser profiles, loopback proxies and all recovery
+  containers were removed. This is a bounded connected journey, not full
+  application failover.
   [Browser recovery receipt](evidence/learn-build01-connected-frontend-offsite-recovery-2026-10-17.json).
 
 - The current alternative operating check uses the existing signed Slack
@@ -235,14 +236,13 @@ inactive until Chris reviews and signs off the business result.
   from locally staged source. Today's independent scheduled database copy
   now passes decrypted native/Vault restoration and preserved-user Auth/REST/
   current Edge tenant reads. The last verified LIVE frontend commit now also
-  rebuilds, boots and connects in an isolated synthetic-user browser journey.
-  A preserved-account browser journey, all-function startup with recovered
-  runtime secrets, original-session policy and **real provider capture
-  resumption** remain unverified. A controlled
-  no-provider worker restart passed. The local database point
+  rebuilds, boots and connects in isolated synthetic- and preserved-user
+  browser journeys.
+  All-function startup with recovered runtime secrets, original-session
+  policy and **real provider capture resumption** remain unverified. A
+  controlled no-provider worker restart passed. The local database point
   matches a later verified phone-file inventory. All three file buckets
-  completed, but the points
-  are not atomic.
+  completed, but the points are not atomic.
 - **File-backup host:** the recording and voicemail schedule has succeeded
   locally, but depends on the Mac and Codex app being awake. The latest
   three-bucket inventory is a verified file copy, not a matching database

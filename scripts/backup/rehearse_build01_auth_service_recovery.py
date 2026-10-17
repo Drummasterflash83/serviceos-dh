@@ -138,11 +138,12 @@ def service_token(secret, role='service_role'):
 
 def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
         with_worker_fixture=False, with_browser_fixture=False,
+        with_preserved_browser_fixture=False,
         source_dir=SOURCE, expected_archive=EXPECTED_ARCHIVE):
     if with_worker_fixture and (not with_edge or not reviewed_v107):
         raise RecoveryError('Worker fixture requires reviewed current Edge recovery')
-    if with_browser_fixture and (not with_edge or not reviewed_v107 or
-                                 not recover_existing_user):
+    if (with_browser_fixture or with_preserved_browser_fixture) and (
+            not with_edge or not reviewed_v107 or not recover_existing_user):
         raise RecoveryError('Connected browser fixture requires preserved-user current Edge recovery')
     archive = source_dir / 'database.dump'
     edge_bundle = V107_EDGE_BUNDLE if reviewed_v107 else EDGE_BUNDLE
@@ -170,7 +171,7 @@ def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
                       syntheticWorkerJobSucceeded=False,
                       recoveredCaptureJobsHeld=False,
                       workerBundleSha256=V107_WORKER_BUNDLE_SHA256)
-    if with_browser_fixture:
+    if with_browser_fixture or with_preserved_browser_fixture:
         report.update(connectedFrontendVerified=False,
                       browserProfileRemoved=False, browserLocalServerStopped=False)
     target = None
@@ -494,16 +495,21 @@ def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
                             existing_edge_page.get('counts',{}).get('email',{}).get('record_count',0)<1):
                         raise RecoveryError('Existing recovered user current Edge read unconfirmed')
                     report['existingUserCurrentEdgeReadVerified'] = True
-                if with_browser_fixture:
+                if with_browser_fixture or with_preserved_browser_fixture:
                     stage = 'connected_frontend_browser_fixture'
-                    # The browser uses a synthetic tenant user and fresh public
-                    # key; the preserved user is separately proven via Auth/REST/
-                    # Edge. Docker services remain network-none.
+                    # The browser uses either a synthetic tenant user or a
+                    # preserved user with a disposable-only reset, plus a fresh
+                    # public key. Docker services remain network-none.
                     browser_env = dict(os.environ,
                         LEARN_RECOVERY_DB_NAME=target.name,
-                        LEARN_RECOVERY_EMAIL=synthetic_email,
-                        LEARN_RECOVERY_PASSWORD=synthetic_password,
-                        LEARN_RECOVERY_ANON_KEY=service_token(secret,'anon'))
+                        LEARN_RECOVERY_EMAIL=(candidate['email'] if
+                            with_preserved_browser_fixture else synthetic_email),
+                        LEARN_RECOVERY_PASSWORD=(existing_password if
+                            with_preserved_browser_fixture else synthetic_password),
+                        LEARN_RECOVERY_ANON_KEY=service_token(secret,'anon'),
+                        LEARN_RECOVERY_BROWSER_ACTOR=(
+                            'preserved_user_disposable_reset' if
+                            with_preserved_browser_fixture else 'synthetic_tenant_user'))
                     browser = subprocess.run(['node',str(FRONTEND_BROWSER_FIXTURE)],
                         cwd=ROOT,env=browser_env,stdout=subprocess.PIPE,
                         stderr=subprocess.DEVNULL,timeout=240)
@@ -524,6 +530,7 @@ def run(*, with_edge=False, reviewed_v107=False, recover_existing_user=False,
                     report['browserCurrentEdgeRead'] = browser_result.get(
                         'browserCurrentEdgeRead') is True
                     report['browserFixtureState'] = browser_result.get('state')
+                    report['browserActor'] = browser_result.get('browserActor')
                     report['browserFixtureFailurePhase'] = browser_result.get('failurePhase')
                     report['browserFrontendBuildSucceeded'] = browser_result.get(
                         'frontendBuildSucceeded') is True
@@ -784,7 +791,8 @@ if __name__=='__main__':
         if (len(mode) == 3 and
                 mode[0] in ('--with-reviewed-v107-edge-and-existing-user-reset',
                             '--with-reviewed-v107-edge-worker-fixture',
-                            '--with-reviewed-v107-edge-browser-fixture') and
+                            '--with-reviewed-v107-edge-browser-fixture',
+                            '--with-reviewed-v107-edge-preserved-browser-fixture') and
                 mode[1] == '--current-export-dir' and
                 re.fullmatch(r'\.verification-results/production-database-daily-\d{8}-'
                              r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
@@ -807,7 +815,8 @@ if __name__=='__main__':
         elif (len(mode) == 3 and
                 mode[0] in ('--with-reviewed-v107-edge-and-existing-user-reset',
                             '--with-reviewed-v107-edge-worker-fixture',
-                            '--with-reviewed-v107-edge-browser-fixture') and
+                            '--with-reviewed-v107-edge-browser-fixture',
+                            '--with-reviewed-v107-edge-preserved-browser-fixture') and
                 mode[1] == '--offsite-recovered-dir' and
                 mode[2] == '.verification-results/build01-scheduled-database-20261017/offsite-restored'):
             recovered_root = ROOT / mode[2]
@@ -836,20 +845,25 @@ if __name__=='__main__':
             ('--with-archived-edge','--with-reviewed-v107-edge',
              '--with-reviewed-v107-edge-and-existing-user-reset',
              '--with-reviewed-v107-edge-worker-fixture',
-             '--with-reviewed-v107-edge-browser-fixture')):
+             '--with-reviewed-v107-edge-browser-fixture',
+             '--with-reviewed-v107-edge-preserved-browser-fixture')):
             raise RecoveryError('Exact archived Edge rehearsal mode required')
         print(json.dumps(run(with_edge=len(mode)==1,
             reviewed_v107=len(mode)==1 and mode[0] in
             ('--with-reviewed-v107-edge','--with-reviewed-v107-edge-and-existing-user-reset',
              '--with-reviewed-v107-edge-worker-fixture',
-             '--with-reviewed-v107-edge-browser-fixture'),
+             '--with-reviewed-v107-edge-browser-fixture',
+             '--with-reviewed-v107-edge-preserved-browser-fixture'),
             recover_existing_user=len(mode)==1 and
             mode[0] in ('--with-reviewed-v107-edge-and-existing-user-reset',
-                        '--with-reviewed-v107-edge-browser-fixture'),
+                        '--with-reviewed-v107-edge-browser-fixture',
+                        '--with-reviewed-v107-edge-preserved-browser-fixture'),
             with_worker_fixture=len(mode)==1 and
             mode[0]=='--with-reviewed-v107-edge-worker-fixture',
             with_browser_fixture=len(mode)==1 and
             mode[0]=='--with-reviewed-v107-edge-browser-fixture',
+            with_preserved_browser_fixture=len(mode)==1 and
+            mode[0]=='--with-reviewed-v107-edge-preserved-browser-fixture',
             source_dir=current_source or SOURCE,
             expected_archive=expected_archive)))
     except BaseException:
