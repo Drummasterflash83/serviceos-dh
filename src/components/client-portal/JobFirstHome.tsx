@@ -7,6 +7,7 @@ import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOper
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { OwnerMoneyPanel } from "./OwnerMoneyPanel";
 
 const isUuid = (value: unknown): value is string =>
   typeof value === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(value);
@@ -108,6 +109,7 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
   return <div className="nd-job-detail space-y-3">
     <p><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Saved job"}</strong> · {homeJobState({ status: job.fields.status })}</p>
     <p>{job.fields.customer ?? "Customer not confirmed"} · {job.fields.address ?? job.fields.postcode ?? "Site not confirmed"}</p>
+    <p>Next review: {homeJobAction({ status: job.fields.status })}. An assigned person is not verified in OpenFolk.</p>
     <p>Saved card updated {checked(job.fields.updated_at)}. The saved card can lag its Commusoft source.</p>
     {busy && <p role="status">Checking this job’s reviewed source link…</p>}
     {error && <p role="alert">{error}</p>}
@@ -163,22 +165,28 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
     finally { setOperatorBusy(false); }
   }
   return (
+    <>
     <section className="nd-job-home" aria-label="Jobs needing review">
       <div className="nd-job-heading">
         <div>
-          <p className="of-eyebrow">YOUR WORK TODAY</p>
+          <p className="of-eyebrow">SAVED JOBS TO REVIEW</p>
           <h2>Start with the jobs.</h2>
-          <p>See what is recorded for each job, who it is for, and what to check next.</p>
+          <p>See each saved job, its customer and site, and the next review. Assigned people are not verified yet.</p>
         </div>
         {!operator && authorisedClient && <button className="cp-secondary" onClick={() => void client.refetch()}><RefreshCw size={15} /> Refresh jobs</button>}
         {operator && onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Browse captured source jobs</button>}
       </div>
-      {operator && <div className="nd-operator-preview">
-        <strong>View as Drummonds MD · read-only preview</strong>
-        <p>You remain signed in as OpenFolk. State why you are opening this company’s jobs; the server checks and logs each read.</p>
-        <label>Access reason <input value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} placeholder="Review client job experience" /></label>
-        <button className="cp-secondary" disabled={operatorBusy || reason.trim().length < 3} onClick={() => void loadOperatorJobs()}>{operatorBusy ? "Checking access…" : "Open audited preview"}</button>
-        {operatorError && <p role="alert">{operatorError}</p>}
+      {operator && <div className={`nd-operator-preview${operatorPage ? " nd-operator-preview--active" : ""}`}>
+        <strong>{operatorPage ? "Drummonds MD layout · read-only" : "View as Drummonds MD · read-only preview"}</strong>
+        {operatorPage ? <>
+          <p>You are still signed in as OpenFolk. This job read was logged.</p>
+          <button className="cp-secondary" onClick={() => { setSelectedOperator(null); setOperatorPage(null); }}>Change access reason</button>
+        </> : <>
+          <p>You remain signed in as OpenFolk. State why you are opening this company’s jobs; the server checks and logs each read.</p>
+          <label>Access reason <input value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} placeholder="Review client job experience" /></label>
+          <button className="cp-secondary" disabled={operatorBusy || reason.trim().length < 3} onClick={() => void loadOperatorJobs()}>{operatorBusy ? "Checking access…" : "Open audited preview"}</button>
+          {operatorError && <p role="alert">{operatorError}</p>}
+        </>}
       </div>}
       {!operator && !authorisedClient && <p role="status">Your personal work list is being prepared. It will appear when job assignments are confirmed.</p>}
       {!operator && authorisedClient && client.isPending && <p role="status">Reading your saved jobs…</p>}
@@ -190,13 +198,13 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         {!operator && authorisedClient && client.data?.map((job) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
           <BriefcaseBusiness size={20} />
           <span><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job number not confirmed"}</strong><small>{job.title && job.job_number ? `${job.title} · ` : ""}{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</small></span>
-          <span><b>{homeJobState(job)}</b><small>{homeJobAction(job)} · {job.verified ? "details reviewed" : "details awaiting confirmation"} · saved {checked(job.updated_at)}</small></span>
+          <span><b>{homeJobState(job)}</b><small>Next review: {homeJobAction(job)} · assignee not verified · {job.verified ? "details reviewed" : "details awaiting confirmation"} · saved {checked(job.updated_at)}</small></span>
           <ArrowRight size={17} />
         </button>)}
         {operatorPage?.map((job) => <div key={job.id} className="nd-job-row">
           <BriefcaseBusiness size={20} />
           <span><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Job number not confirmed"}</strong><small>{job.fields.title && job.fields.job_number ? `${job.fields.title} · ` : ""}{job.fields.customer ?? "Customer not confirmed"} · {job.fields.address ?? job.fields.postcode ?? "Site not confirmed"}</small></span>
-          <span><b>{homeJobState({ status: job.fields.status })}</b><small>{job.fields.verified ? "details reviewed" : "details awaiting confirmation"} · saved {checked(job.fields.updated_at)}</small></span>
+          <span><b>{homeJobState({ status: job.fields.status })}</b><small>Next review: {homeJobAction({ status: job.fields.status })} · assignee not verified · {job.fields.verified ? "details reviewed" : "details awaiting confirmation"} · saved {checked(job.fields.updated_at)}</small></span>
           <button className="cp-secondary" onClick={() => setSelectedOperator(job)}>Open this job</button>
         </div>)}
       </div>
@@ -214,5 +222,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         </DialogContent>
       </Dialog>
     </section>
+    <OwnerMoneyPanel tenant={tenant} operator={operator} operatorReason={reason} />
+    </>
   );
 }
