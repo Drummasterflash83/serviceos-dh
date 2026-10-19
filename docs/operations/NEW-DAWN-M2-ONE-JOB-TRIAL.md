@@ -7,7 +7,7 @@ changes no feature flag and makes no provider request. The existing
 protect the Edge route. The new database permit protects start and continuation
 for **every** exact-job request, including direct Edge calls. Leave both
 `new_dawn.exact_job_detail` and `new_dawn.m2_commusoft_coexistence` absent/off
-for this trial.
+for this trial. The permit refuses to arm or continue if either flag is true.
 
 The sole candidate is LIVE Drummonds tenant
 `00000000-0000-0000-0000-000000000001`, canonical job

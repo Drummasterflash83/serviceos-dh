@@ -73,6 +73,24 @@ begin
  result:=public.new_dawn_commusoft_job_trial_arm(x.tenant_id,x.job_id,actor,trial_request_id,
   x.source_version_id,clock_timestamp()+interval '5 minutes','TEST one job');
  if result->>'state'<>'armed' then raise exception 'Trial arm failed';end if;
+ update public.feature_flags set value='true'::jsonb where tenant_id=x.tenant_id
+  and flag='new_dawn.m2_commusoft_coexistence';
+ if not found then insert into public.feature_flags(tenant_id,flag,value)
+  values(x.tenant_id,'new_dawn.m2_commusoft_coexistence','true'::jsonb);end if;
+ if public.new_dawn_commusoft_job_trial_current(x.tenant_id,x.job_id,actor,
+  trial_request_id,x.source_version_id,false) then
+  raise exception 'Broad coexistence left trial active';end if;
+ update public.feature_flags set value='false'::jsonb where tenant_id=x.tenant_id
+  and flag='new_dawn.m2_commusoft_coexistence';
+ update public.feature_flags set value='true'::jsonb where tenant_id=x.tenant_id
+  and flag='new_dawn.exact_job_detail';
+ if not found then insert into public.feature_flags(tenant_id,flag,value)
+  values(x.tenant_id,'new_dawn.exact_job_detail','true'::jsonb);end if;
+ if public.new_dawn_commusoft_job_trial_current(x.tenant_id,x.job_id,actor,
+  trial_request_id,x.source_version_id,false) then
+  raise exception 'Broad UI flag left trial active';end if;
+ update public.feature_flags set value='false'::jsonb where tenant_id=x.tenant_id
+  and flag='new_dawn.exact_job_detail';
  if public.new_dawn_commusoft_job_trial_current(x.tenant_id,gen_random_uuid(),actor,
   trial_request_id,x.source_version_id,false) or
   public.new_dawn_commusoft_job_trial_current(x.tenant_id,x.job_id,gen_random_uuid(),

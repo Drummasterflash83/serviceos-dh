@@ -30,6 +30,9 @@ create function public.new_dawn_commusoft_job_trial_current(
   where p.request_id=p_request and p.tenant_id=p_tenant and p.job_id=p_job
    and p.actor_id=p_actor and (p_version is null or p.source_version_id=p_version)
    and p.expires_at>clock_timestamp() and p.revoked_at is null
+   and not public.new_dawn_commusoft_coexistence_enabled(p_tenant)
+   and not exists(select 1 from public.feature_flags f where f.tenant_id=p_tenant
+    and f.flag='new_dawn.exact_job_detail' and f.value='true'::jsonb)
    and (not p_used or p.used_at is not null)
    and (p.used_at is null or exists(select 1 from public.new_dawn_commusoft_job_detail_reads r
     where r.id=p_request and r.tenant_id=p_tenant and r.job_id=p_job
@@ -55,6 +58,10 @@ begin
   p_expires_at<=clock_timestamp()+interval '30 seconds' or
   p_expires_at>clock_timestamp()+interval '10 minutes' then
   raise exception 'job_trial_invalid' using errcode='22023';end if;
+ if public.new_dawn_commusoft_coexistence_enabled(p_tenant) or
+  exists(select 1 from public.feature_flags f where f.tenant_id=p_tenant
+   and f.flag='new_dawn.exact_job_detail' and f.value='true'::jsonb) then
+  raise exception 'job_trial_broad_flag_on' using errcode='55000';end if;
  perform public.new_dawn_commusoft_job_actor_access(p_tenant,p_actor);
  select * into j from public.jobs where tenant_id=p_tenant and id=p_job for share;
  if not found then raise exception 'job_trial_scope_unverified' using errcode='42501';end if;
