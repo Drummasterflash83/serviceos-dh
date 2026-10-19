@@ -380,3 +380,7 @@ verify_jwt = false
 # The request cannot select a client, supply credentials or change import scope.
 [functions.learn-quickbooks-worker]
 verify_jwt = false
+
+[functions.learn-quickbooks-invoice-check]
+# The handler verifies Auth with auth.getUser, matching the OAuth start route.
+verify_jwt = false

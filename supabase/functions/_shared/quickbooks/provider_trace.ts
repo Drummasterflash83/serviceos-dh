@@ -5,7 +5,7 @@
  */
 export interface QuickBooksProviderTrace {
   event: "quickbooks_provider_response";
-  operation: "token" | "company_info" | "query" | "revoke";
+  operation: "token" | "company_info" | "query" | "invoice_read" | "revoke";
   environment: "sandbox" | "production" | "oauth";
   observedAt: string;
   status: number | null;
@@ -38,6 +38,8 @@ function endpoint(input: Parameters<typeof fetch>[0], init?: RequestInit) {
       : ("production" as const);
     if (/^\/v3\/company\/[1-9][0-9]{0,29}\/query$/.test(url.pathname))
       return { operation: "query" as const, environment };
+    if (/^\/v3\/company\/[1-9][0-9]{0,29}\/invoice\/[A-Za-z0-9-]{1,128}$/.test(url.pathname))
+      return { operation: "invoice_read" as const, environment };
     if (/^\/v3\/company\/([1-9][0-9]{0,29})\/companyinfo\/\1$/.test(url.pathname))
       return { operation: "company_info" as const, environment };
   }

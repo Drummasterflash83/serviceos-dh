@@ -7,6 +7,7 @@ import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOper
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { OwnerMoneyPanel } from "./OwnerMoneyPanel";
 
 const isUuid = (value: unknown): value is string =>
   typeof value === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(value);
@@ -164,6 +165,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
     finally { setOperatorBusy(false); }
   }
   return (
+    <>
     <section className="nd-job-home" aria-label="Jobs needing review">
       <div className="nd-job-heading">
         <div>
@@ -215,5 +217,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         </DialogContent>
       </Dialog>
     </section>
+    <OwnerMoneyPanel tenant={tenant} operator={operator} operatorReason={reason} />
+    </>
   );
 }
