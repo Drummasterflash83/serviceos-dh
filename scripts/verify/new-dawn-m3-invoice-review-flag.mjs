@@ -2,13 +2,15 @@
 import {randomUUID} from "node:crypto";
 import {pathToFileURL} from "node:url";
 import {savedCliToken} from "./learn-test-readiness.mjs";
-import {PROJECT,TENANT,VERSION,NAME,reviewedSource,readStage,assess as assessInstall}
-  from "./new-dawn-m3-invoice-review-release.mjs";
+import {PROJECT,TENANT,VERSION,NAME,FUNCTION_SHA256,INDEX_SHA256,
+  reviewedSource,readStage,assess as assessInstall}
+  from "./new-dawn-m3-invoice-review-fast-release.mjs";
 
 export const FLAG="new_dawn.invoice_review_candidates_preview";
 const RPC="public.new_dawn_invoice_review_candidates(uuid,text)";
 const DATE="public.new_dawn_invoice_strict_date(text)";
-const RPC_SHA256="f8ca4b3da3f719562b9630a734625b348a000513201fe1100a334f6bd2b50a5c";
+const INDEX="public.learn_quickbooks_latest_invoice_recent_review";
+const RPC_SHA256=FUNCTION_SHA256;
 const DATE_SHA256="a70d57bf99c61c5018a1067f16d260eab6cb356cd0e71bb05b3ca4f3200637a9";
 const CLIENT_FLAGS=["new_dawn.owner_money","new_dawn.owner_report_review","new_dawn.owner_accounts_report"];
 const clientFlags=CLIENT_FLAGS.map(value=>`'${value}'`).join(",");
@@ -107,6 +109,11 @@ export function flagSql(enable,auditId){
     is distinct from '${RPC_SHA256}'
   or encode(sha256(convert_to(pg_get_functiondef(to_regprocedure('${DATE}')),'UTF8')),'hex')
     is distinct from '${DATE_SHA256}'
+  or to_regclass('${INDEX}') is null
+  or encode(sha256(convert_to(pg_get_indexdef(to_regclass('${INDEX}')),'UTF8')),'hex')
+    is distinct from '${INDEX_SHA256}'
+  or not exists(select 1 from pg_index where indexrelid=to_regclass('${INDEX}')
+   and indisvalid and indisready)
   or not has_function_privilege('authenticated','${RPC}','execute')
   or has_function_privilege('anon','${RPC}','execute')
   or has_function_privilege('service_role','${RPC}','execute')
