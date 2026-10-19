@@ -204,6 +204,8 @@ test("emergency continuation states ordered cross-cover, one 603 fallback and tr
   assert.match(contract, /One invocation selects ONE destination; it does not ring all destinations/);
   assert.match(contract, /After a failed engineer transfer returns the caller to you, invoke the next reviewed destination once/);
   assert.match(contract, /If both engineer attempts fail.*shared emergency mailbox 603 destination once/);
+  assert.match(contract, /neither was able to take the call/);
+  assert.doesNotMatch(contract, /neither answered/);
   assert.match(contract, /voicemail greeting is not human acceptance/);
   for (const proof of ["rob@drummondheating.co.uk", "tony@drummondheating.co.uk", "#ai-emma Slack alert"])
     assert.ok(contract.includes(proof), proof);
