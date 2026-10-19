@@ -28,7 +28,7 @@ export function commusoftSourceRecords(
   if (
     !uuid.test(scope.tenantId) ||
     !uuid.test(scope.connectionId) ||
-    !["properties", "propertyContacts", "jobs"].includes(scope.resource) ||
+    !["properties", "propertyContacts", "jobs", "users"].includes(scope.resource) ||
     !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(scope.observedAt) ||
     !Number.isFinite(Date.parse(scope.observedAt)) ||
     new Date(scope.observedAt).toISOString() !== scope.observedAt
@@ -47,7 +47,11 @@ export function commusoftSourceRecords(
       externalId: String(externalId),
     });
     let projection: BusinessSourceRecord["projection"];
-    if (scope.resource === "properties" && row.type !== "customer" && row.type !== "workaddress") {
+    if (scope.resource === "users") {
+      // Provider users are retained source evidence, not OpenFolk people,
+      // engineers, account logins or job assignments.
+      projection = { state: "held", reason: "source_user_identity_review_required" };
+    } else if (scope.resource === "properties" && row.type !== "customer" && row.type !== "workaddress") {
       projection = { state: "held", reason: "unknown_property_type" };
     } else if (scope.resource === "properties" && row.type === "customer") {
       const contact =

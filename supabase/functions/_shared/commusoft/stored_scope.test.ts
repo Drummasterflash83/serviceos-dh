@@ -136,6 +136,22 @@ function fixture() {
   };
 }
 
+test("an explicit users approval binds the worker to that collection", async () => {
+  const f = fixture();
+  f.cfg.resource = "users";
+  f.cfg.maxPages = 1;
+  f.cfg.pageSize = 10;
+  const stored = await readStoredCommusoftScope(f.ctx, () => now);
+  assert.equal(stored?.request.resource, "users");
+  assert.equal(stored?.request.after, null);
+  assert.equal(stored?.request.limit, 10);
+  f.cfg.maxPages = 2;
+  assert.equal(await f.read(), null);
+  f.cfg.maxPages = 1;
+  f.cfg.pageSize = 11;
+  assert.equal(await f.read(), null);
+});
+
 test("scope comes from tenant-scoped durable rows, never queued payload", async () => {
   const f = fixture(),
     scope = await f.read();

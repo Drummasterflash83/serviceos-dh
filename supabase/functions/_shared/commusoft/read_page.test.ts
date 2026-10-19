@@ -54,7 +54,7 @@ test("refresh requests retain both fixed date bounds while the numeric page curs
     updatedFrom: "2026-10-09T00:00:00.000Z",
     updatedBefore: "2026-10-10T00:00:00.000Z",
   };
-  for (const resource of ["properties", "jobs", "propertyContacts"] as const) {
+  for (const resource of ["properties", "jobs", "propertyContacts", "users"] as const) {
     for (const after of [null, 20]) {
       const f = fixture(envelope([], false, null));
       await f.run({
@@ -138,6 +138,16 @@ test("GET binds UK endpoint, verified Bearer header and honest application ident
     "User-Agent": "OpenFolk-ServiceOS/1.0 (+https://openfolk.ai)",
     Accept: "application/json",
   });
+});
+
+test("source users use only the documented GET collection and preserve provider pagination", async () => {
+  const f = fixture(envelope([{ id: 8, firstName: "Fixture", appearOnSchedule: true }], true, 8));
+  const page = await f.run({ region: "uk", resource: "users", after: 7, limit: 2 });
+  assert.equal(f.calls.length, 1);
+  assert.equal(f.calls[0].url, "https://app.commusoft.co.uk/api/v2/users?limit=2&after=7");
+  assert.equal(f.calls[0].options.method, "GET");
+  assert.equal(page.nextCursor, 8);
+  assert.equal(page.records[0].appearOnSchedule, true);
 });
 
 test("US contacts require explicit parent property and type; provider cursor continues without inferred offsets", async () => {
