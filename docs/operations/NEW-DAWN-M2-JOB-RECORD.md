@@ -81,9 +81,17 @@ saved card, maps a source user to an OpenFolk staff member or treats an expected
 time as a visit. Source quote text remains neither accepted Further Works nor
 invoiced or paid money.
 
-This candidate is **not LIVE**. The SQL and Edge route need release sequencing
-after the active Commusoft queue settles: rollback-only TEST rehearsal, install
-LIVE SQL, deploy the one Edge function, then merge the UI. A first real GET must
+The start and continuation predicates both refuse a read while the same tenant
+has a `commusoft.source_sync` job queued, running or retrying. The continuation
+is checked before the credential is released and after the GET; a scope change
+withholds the result. A completed receipt cannot be updated, deleted or
+truncated. The rollback-only TEST fixture exercises all three queue states and
+these receipt protections.
+
+This candidate is **not LIVE**. The SQL and Edge route can be installed while
+the import queue is active because they start no provider GET by themselves and
+the queue guard blocks new requests. Keep the UI disabled until the queue is idle
+and the signed-in operator preview is verified. A first real GET must
 show the documented response shape, source/as-of labels and audited one-use
 receipt in the signed-in operator preview. Wrong ID, lost actor grant, active
 view-as, changed source link or missing connection fail closed. Seven focused

@@ -6,7 +6,7 @@ if (process.argv.slice(2).join(' ') !== '--test-rollback-only')
  throw Error('Exact TEST rollback-only mode required');
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
 const migration=readFileSync(resolve(root,'supabase/migrations/20261106120000_new_dawn_commusoft_job_detail_read.sql'),'utf8');
-const fixture=`do $$declare x record;v public.learn_business_input_versions%rowtype;actor uuid;req uuid:=gen_random_uuid();got jsonb;raw text;
+const fixture=`do $$declare x record;v public.learn_business_input_versions%rowtype;actor uuid;req uuid:=gen_random_uuid();got jsonb;raw text;queue_state text;
 begin
  select g.profile_id into actor from public.platform_authority_grants g
  join auth.users u on u.id=g.profile_id and u.deleted_at is null
@@ -31,6 +31,14 @@ begin
  if not found then insert into public.feature_flags(tenant_id,flag,value) values(x.tenant_id,'learn.inputs.commusoft.enabled','true'::jsonb);end if;
  perform set_config('request.jwt.claim.role','authenticated',true);
  perform set_config('request.jwt.claim.sub',actor::text,true);
+ for queue_state in select unnest(array['queued','running','retrying']) loop
+  begin
+   insert into public.platform_jobs(tenant_id,connector_id,job_type,status)
+    values(x.tenant_id,'commusoft','commusoft.source_sync',queue_state);
+   perform public.new_dawn_commusoft_job_detail_start(x.tenant_id,x.canonical_id,gen_random_uuid(),'Active import guard test');
+   raise exception 'Active % import admitted at start',queue_state using errcode='XX001';
+  exception when sqlstate '55000' then null;end;
+ end loop;
  got:=public.new_dawn_commusoft_job_detail_start(x.tenant_id,x.canonical_id,req,'Rollback-only exact job source test');
  if got->>'state'<>'prepared' then raise exception 'TEST start failed';end if;
  begin
@@ -40,6 +48,15 @@ begin
  update public.new_dawn_commusoft_job_detail_reads set state='claimed',claimed_at=clock_timestamp() where id=req;
  perform set_config('request.jwt.claim.role','service_role',true);
  if not public.new_dawn_commusoft_job_detail_current(req) then raise exception 'TEST current predicate failed';end if;
+ for queue_state in select unnest(array['queued','running','retrying']) loop
+  begin
+   insert into public.platform_jobs(tenant_id,connector_id,job_type,status)
+    values(x.tenant_id,'commusoft','commusoft.source_sync',queue_state);
+   if public.new_dawn_commusoft_job_detail_current(req) then
+    raise exception 'Active % import admitted after claim',queue_state using errcode='XX001';end if;
+   raise exception 'revert synthetic import job';
+  exception when sqlstate 'P0001' then null;end;
+ end loop;
  begin
   update public.platform_authority_grants set effective_to=clock_timestamp()-interval '1 second'
    where profile_id=actor and permission='platform.controlplane.admin';
@@ -67,6 +84,18 @@ begin
   or got->'source_assigned_users'->0->>'source_user_id'<>'7'
   or (select state from public.new_dawn_commusoft_job_detail_reads where id=req)<>'complete' then
   raise exception 'TEST finish mismatch';end if;
+ begin
+  update public.new_dawn_commusoft_job_detail_reads set result='{}'::jsonb where id=req;
+  raise exception 'Completed source receipt was mutable' using errcode='XX001';
+ exception when sqlstate '55000' then null;end;
+ begin
+  delete from public.new_dawn_commusoft_job_detail_reads where id=req;
+  raise exception 'Completed source receipt was deletable' using errcode='XX001';
+ exception when sqlstate '55000' then null;end;
+ begin
+  truncate public.new_dawn_commusoft_job_detail_reads;
+  raise exception 'Source receipt table was truncatable' using errcode='XX001';
+ exception when sqlstate '55000' then null;end;
  if public.new_dawn_commusoft_job_detail_current(req) then raise exception 'Complete TEST request remained current';end if;
 end$$;
 rollback;`;

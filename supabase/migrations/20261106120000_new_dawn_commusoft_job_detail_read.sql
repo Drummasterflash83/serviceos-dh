@@ -26,6 +26,25 @@ create table public.new_dawn_commusoft_job_detail_reads (
 alter table public.new_dawn_commusoft_job_detail_reads enable row level security;
 revoke all on public.new_dawn_commusoft_job_detail_reads from public,anon,authenticated,service_role;
 
+-- In-flight requests must change state, but a completed source receipt is
+-- append-only evidence. Also prevent deletion and table truncation.
+create function public.new_dawn_commusoft_job_detail_immutable()
+returns trigger language plpgsql security definer set search_path=pg_catalog as $$
+begin
+ if tg_op in('DELETE','TRUNCATE') then
+  raise exception 'job_detail_receipt_immutable' using errcode='55000';end if;
+ if old.state='complete' then
+  raise exception 'job_detail_receipt_immutable' using errcode='55000';end if;
+ return new;
+end $$;
+create trigger new_dawn_commusoft_job_detail_immutable_row
+ before update or delete on public.new_dawn_commusoft_job_detail_reads
+ for each row execute function public.new_dawn_commusoft_job_detail_immutable();
+create trigger new_dawn_commusoft_job_detail_immutable_truncate
+ before truncate on public.new_dawn_commusoft_job_detail_reads
+ for each statement execute function public.new_dawn_commusoft_job_detail_immutable();
+revoke all on function public.new_dawn_commusoft_job_detail_immutable() from public,anon,authenticated,service_role;
+
 -- The service-role continuation cannot inherit a browser JWT, so repeat the
 -- effective-dated actor check without granting service_role operator access.
 create function public.new_dawn_commusoft_job_actor_access(p_tenant uuid,p_actor uuid)
@@ -63,6 +82,11 @@ begin
  if not found then return false;end if;
  perform 1 from public.feature_flags where tenant_id=r.tenant_id and flag='learn.inputs.commusoft.enabled' and value='true'::jsonb for share;
  if not found then return false;end if;
+ -- The import worker and this detail read share the Commusoft source. Recheck
+ -- immediately before credential release and again after the provider GET.
+ perform 1 from public.platform_jobs where tenant_id=r.tenant_id
+  and job_type='commusoft.source_sync' and status in ('queued','running','retrying') for share;
+ if found then return false;end if;
  select * into c from public.provider_connections where id=r.connection_id and tenant_id=r.tenant_id
   and provider='commusoft' and status='configured' and auth_mode='private_api_key'
   and revoked_at is null and verified_at is not null and updated_at=r.connection_revision
@@ -102,6 +126,9 @@ begin
  if not found then raise exception 'job_detail_input_off' using errcode='42501';end if;
  perform 1 from public.feature_flags where tenant_id=p_tenant and flag='learn.inputs.commusoft.enabled' and value='true'::jsonb for share;
  if not found then raise exception 'job_detail_input_off' using errcode='42501';end if;
+ perform 1 from public.platform_jobs where tenant_id=p_tenant
+  and job_type='commusoft.source_sync' and status in ('queued','running','retrying') for share;
+ if found then raise exception 'job_detail_import_active' using errcode='55000';end if;
  select * into j from public.jobs where tenant_id=p_tenant and id=p_job for share;
  if not found then raise exception 'job_detail_unavailable' using errcode='42501';end if;
  select count(*)::integer,min(l.connection_id::text)::uuid,min(l.source_version_id::text)::uuid,min(l.external_id)
