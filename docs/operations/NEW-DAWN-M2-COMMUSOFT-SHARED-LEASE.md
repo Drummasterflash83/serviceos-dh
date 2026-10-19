@@ -40,3 +40,7 @@ migration rollback, concurrent acquisition, one manual waiter, owner-only
 release, expiry, preserved provider deferral, failed-job release, and a complete
 synthetic source page with its lease released. No provider credentials or
 customer records enter that fixture.
+`node scripts/verify/new-dawn-commusoft-shared-lease-rehearse.mjs
+--test-rollback-only` also applied the exact migration against TEST inside a
+rolled-back transaction and confirmed the gate columns were absent afterward;
+it made no provider request.
