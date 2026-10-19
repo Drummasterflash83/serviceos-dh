@@ -18,6 +18,28 @@ parser checks the exact v2 envelope, source version and tenant/connection before
 display. The SQL verifier exercises rollback, tenant isolation, denied roles,
 retained-data preservation and the actual SQL-to-client response.
 
+## Exact saved-job opening
+
+The operator's job-first preview now opens the **selected canonical job**, rather
+than taking a job-labelled button to the generic source browser. The new
+`new_dawn_operator_job_source` reader requires a real OpenFolk operator, tenant,
+exact canonical job ID and access reason. It looks up only a reviewed Commusoft
+job link for that tenant and checks the link's effective source version against
+the saved job's source-version metadata. A missing link is shown as unlinked; a
+conflict is held for review. Neither case exposes source facts. A valid link
+returns the existing bounded source detail with its observation time and current
+or stale marker. Each read adds an operator audit record. The separate source
+browser remains plainly labelled as a browser, not as that selected job.
+
+At the read-only Drummonds check on **19 October 2026, 14:31 UTC**, 12,672
+retained Commusoft jobs had a source observation that day, while only 1,004
+canonical jobs existed and their latest update was **16 October 2026**. The
+operator preview displays this dated coverage warning. Its twelve saved rows
+must not be described as the current full workload. The retained job payloads
+contained descriptions, statuses and property IDs, but no job-code or
+appointment field. The newly displayed quote and completion user remain source
+text, never proof of invoice value, payment or engineer attendance.
+
 ## Provider capability boundary
 
 Commusoft's [published v2 jobs list](https://developer.commusoft.com/list-jobs-24695917e0)
@@ -94,6 +116,8 @@ capture; a real export and import authority still need review before ingestion.
 `node --test src/lib/learn-commusoft-job-details.test.ts` and
 `tsc --noEmit` pass. The isolated PostgreSQL permission suite
 `python3 scripts/verify/learn-commusoft-permits.py --job-details` passes with
-the v2 migration applied. `node --test
+the v2 migration and exact audited source-link reader applied. It exercises
+foreign-tenant and unknown-job denial, changed-link withholding, audit, rollback
+and the SQL response through the application parser. `node --test
 scripts/commusoft/prepare-job-facet-csv.test.mjs` passes the CSV contract.
 This is local release evidence, not LIVE deployment or real-client acceptance.
