@@ -1,4 +1,5 @@
 type Rpc = (name: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>;
+import { CommusoftThrottle } from "./retry_after.ts";
 const uuid = (value: unknown): value is string =>
   typeof value === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(value);
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -33,13 +34,15 @@ function ready(value: unknown, request: ExactJobDetailRequest): value is Ready {
     (value.region === "uk" || value.region === "us") &&
     typeof value.api_key === "string" && /^[\x21-\x7e]{1,4096}$/.test(value.api_key);
 }
-function wait(value: unknown): value is { state: "wait"; retry_at: number } {
+function wait(value: unknown): value is { state: "wait"; retry_at: number; wait_kind?: "lease" | "quota" } {
   return object(value) && value.state === "wait" && Number.isSafeInteger(value.retry_at) &&
-    Number(value.retry_at) > Date.now() && Number(value.retry_at) <= Date.now() + 3000;
+    Number(value.retry_at) > Date.now() && Number(value.retry_at) <= Date.now() + 90000 &&
+    (value.wait_kind === undefined || value.wait_kind === "lease" || value.wait_kind === "quota");
 }
 async function boundedJson(response: Response, externalId: string, signal: AbortSignal): Promise<string> {
   if (!response.ok || !response.body || response.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") {
-    await response.body?.cancel();
+    await response.body?.cancel().catch(() => {});
+    if (response.status === 429) throw new CommusoftThrottle(response.headers.get("retry-after"));
     throw Error(response.status === 401 ? "authentication_required" : "provider_unavailable");
   }
   const reader = response.body.getReader();
@@ -86,7 +89,9 @@ export async function runExactJobDetail(request: ExactJobDetailRequest, ports: {
       const acquired = await ports.serviceRpc("new_dawn_commusoft_job_detail_acquire", { p_request: request.requestId });
       if (acquired.error) throw Error("scope_changed");
       if (ready(acquired.data, request)) { a = acquired.data; break; }
-      if (!wait(acquired.data) || attempt === 2) throw Error("provider_unavailable");
+      if (!wait(acquired.data)) throw Error("provider_unavailable");
+      if (acquired.data.retry_at - clock() > 1500 || attempt === 2)
+        return { request_id: request.requestId, state: "waiting", retry_at: acquired.data.retry_at };
       await pause(Math.max(1, Math.min(1500, acquired.data.retry_at - clock() + 20)));
     }
     if (!a) throw Error("provider_unavailable");
@@ -109,11 +114,12 @@ export async function runExactJobDetail(request: ExactJobDetailRequest, ports: {
       finished.data.version !== "commusoft-exact-job-detail/1") throw Error("result_unconfirmed");
     return finished.data;
   } catch (error) {
-    const code = error instanceof Error && ["scope_changed", "authentication_required", "provider_unavailable",
+    const code = error instanceof Error && ["scope_changed", "authentication_required", "provider_unavailable", "rate_limited",
       "response_too_large", "response_invalid", "result_unconfirmed"].includes(error.message)
       ? error.message : "transport_unavailable";
     await Promise.resolve(ports.serviceRpc("new_dawn_commusoft_job_detail_fail", {
       p_request: request.requestId, p_code: code,
+      p_retry_at: error instanceof CommusoftThrottle ? new Date(error.retryAt).toISOString() : null,
     })).catch(() => {});
     throw Error(code);
   }

@@ -15,7 +15,7 @@ export interface CommusoftPagePermitPorts {
     claim: { claimedBy: string; attemptCount: number },
   ) => Promise<
     | { state: "ready"; apiKey: string; permitId: string; sendBefore: number }
-    | { state: "wait"; retryAt: number }
+    | { state: "wait"; retryAt: number; waitKind?: "lease" | "quota" }
     | null
   >;
   // Must extend a shared credential gate, including when authority changed after
@@ -57,7 +57,7 @@ export async function readApprovedCommusoftPage(
     if (!Number.isSafeInteger(permit.retryAt) || permit.retryAt <= clock()) {
       throw new CommusoftReadError("authority_unavailable");
     }
-    throw new CommusoftReadError("rate_limited", permit.retryAt);
+    throw new CommusoftReadError(permit.waitKind === "lease" ? "lease_wait" : "rate_limited", permit.retryAt);
   }
   if (
     permit.state !== "ready" ||

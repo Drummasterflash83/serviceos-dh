@@ -29,6 +29,7 @@ export function createCommusoftPageHandler(ports: CommusoftPageWorkerPorts) {
             code: `commusoft_${error.code}`,
             retryable: [
               "rate_limited",
+              "lease_wait",
               "transport_unavailable",
               "provider_unavailable",
               "request_window_expired",
@@ -38,7 +39,7 @@ export function createCommusoftPageHandler(ports: CommusoftPageWorkerPorts) {
               error.retryAt === null
                 ? 0
                 : Math.min(
-                    31536000,
+                    error.code === "lease_wait" ? 90 : 31536000,
                     Math.max(0, Math.ceil((error.retryAt - ports.clock()) / 1000)),
                   ),
           },
@@ -127,6 +128,21 @@ export async function runCommusoftWorker(
         throw Error("commusoft_worker_settlement_failed");
       }
       const error = result.error;
+      if (error.code === "commusoft_lease_wait") {
+        if (error.retryable !== true || !Number.isSafeInteger(error.retryAfterSeconds) ||
+          error.retryAfterSeconds < 0 || error.retryAfterSeconds > 90)
+          throw Error("commusoft_worker_yield_invalid");
+        const yielded = await db.rpc("learn_commusoft_yield_job", {
+          ...args,
+          p_retry_at: new Date(Date.now() + Math.max(1000, error.retryAfterSeconds * 1000)).toISOString(),
+        });
+        const answer = yielded.data as Record<string, unknown> | null;
+        if (yielded.error || !answer || answer.job_id !== job.id || answer.status !== "queued" ||
+          !Number.isSafeInteger(answer.retry_at))
+          throw Error("commusoft_worker_yield_failed");
+        outcomes.push({ job_id: job.id, status: "queued", successor_id: null });
+        continue;
+      }
       settled = await db.rpc("learn_commusoft_finish_job", {
         ...args,
         p_outcome: {

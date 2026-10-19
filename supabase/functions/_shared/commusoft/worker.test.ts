@@ -26,6 +26,8 @@ function fixture() {
     claimError: null,
     published: true,
     finishError: null,
+    yieldError: null,
+    yieldAnswer: { job_id: id(2), status: "queued", retry_at: Date.now() + 3000 },
     answer: { job_id: id(2), status: "succeeded", successor_id: id(12) },
   };
   const db = {
@@ -36,6 +38,8 @@ function fixture() {
       calls.push({ name, args });
       if (name === "learn_commusoft_claim_jobs")
         return { data: state.jobs, error: state.claimError };
+      if (name === "learn_commusoft_yield_job")
+        return { data: state.yieldAnswer, error: state.yieldError };
       if (name !== "learn_commusoft_finish_job") throw Error("Unexpected RPC");
       if (state.finishError) return { data: null, error: state.finishError };
       if (args.p_outcome.success && !state.published)
@@ -103,6 +107,7 @@ test("failed recovery never becomes permission to fetch; private errors are hidd
 test("provider throttle retains its minimum delay; invalid authority is not retried", async () => {
   for (const [error, retryable, delay] of [
     [new CommusoftReadError("rate_limited", now + 90000), true, 90],
+    [new CommusoftReadError("lease_wait", now + 90000), true, 90],
     [new CommusoftReadError("authentication_required"), false, 0],
     [new CommusoftReadError("authority_unavailable"), false, 0],
     [new CommusoftReadError("request_window_expired"), true, 0],
@@ -163,6 +168,27 @@ test("only confirmed missing publication allows failure settlement", async () =>
     retryable: true,
     retry_after_seconds: 600,
   });
+});
+test("lease contention yields the same page without failure settlement", async () => {
+  const f = fixture();
+  f.state.published = false;
+  const result = await runCommusoftWorker(f.db, id(50), async () => ({
+    success: false,
+    error: { code: "commusoft_lease_wait", retryable: true, retryAfterSeconds: 40 },
+  }));
+  assert.deepEqual(result, { claimed: 1,
+    outcomes: [{ job_id: id(2), status: "queued", successor_id: null }] });
+  assert.deepEqual(f.calls.map((call) => call.name),
+    ["learn_commusoft_claim_jobs", "learn_commusoft_finish_job", "learn_commusoft_yield_job"]);
+  assert.equal(f.calls[2].args.p_attempt_count, 1);
+  assert.equal(f.calls[2].args.p_claimed_by, `learn-commusoft:${id(50)}`);
+  const g = fixture();
+  g.state.published = false;
+  g.state.yieldError = { code: "PT409" };
+  await assert.rejects(runCommusoftWorker(g.db, id(50), async () => ({
+    success: false,
+    error: { code: "commusoft_lease_wait", retryable: true, retryAfterSeconds: 40 },
+  })), /yield_failed/);
 });
 test("claim and settlement failures stay visible instead of reporting no work or inventing completion", async () => {
   const f = fixture();
