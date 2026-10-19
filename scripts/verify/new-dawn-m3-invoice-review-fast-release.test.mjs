@@ -3,6 +3,7 @@ import test from 'node:test';
 import {assess,installLive,PROJECT,readStage,reviewedSource,releaseSql,
   VERSION,NAME,FUNCTION_SHA256,INDEX_SHA256}
   from './new-dawn-m3-invoice-review-fast-release.mjs';
+import {rollbackSql} from './new-dawn-m3-invoice-review-fast-performance.mjs';
 
 const project={id:PROJECT,status:'ACTIVE_HEALTHY'};
 const base={version:'20261108110000',name:'new_dawn_invoice_review_candidates',
@@ -79,4 +80,18 @@ test('uncertain install is independently read once and never replayed',async()=>
     read:async()=>{reads++;return before;},
     write:async()=>{writes++;throw Error('uncertain');}}),/outcome_unverified_no_replay/);
   assert.equal(reads,2);assert.equal(writes,1);
+});
+
+test('performance check temporarily enables only Drummonds and always rolls back',()=>{
+  const sql=rollbackSql();
+  assert.match(sql,/^begin;/);
+  assert.match(sql,/set local statement_timeout='8s'/);
+  assert.match(sql,/set local role authenticated/);
+  assert.match(sql,/m3_fast_performance_preflight_changed/);
+  assert.match(sql,/update public\.feature_flags set value='true'/);
+  assert.match(sql,/public\.new_dawn_invoice_review_candidates/);
+  assert.match(sql,/m3-fast-authenticated-rollback\/1/);
+  assert.match(sql,/\nrollback;$/);
+  assert.doesNotMatch(sql,/\ncommit;/);
+  assert.doesNotMatch(sql,/https:\/\/|GET \/|POST \//i);
 });
