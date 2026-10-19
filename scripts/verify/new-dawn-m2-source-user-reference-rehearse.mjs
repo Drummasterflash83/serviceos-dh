@@ -56,7 +56,7 @@ begin
   source_version_id,external_id,reason,state,checked_at,result)
  values(req,x.tenant_id,actor,x.canonical_id,x.connection_id,x.connection_revision,x.secret_id,
   x.source_version_id,x.external_id,'Synthetic rollback source-user check','complete',clock_timestamp(),
-  jsonb_build_object('version','commusoft-exact-job-detail/4','tenant_id',x.tenant_id,
+  jsonb_build_object('version','commusoft-exact-job-detail/5','tenant_id',x.tenant_id,
    'job_id',x.canonical_id,'source_version_id',x.source_version_id,'external_id',x.external_id,
    'source_assigned_users',jsonb_build_array(jsonb_build_object(
     'source_user_id','9000000000000000','name','Synthetic Source User'))));

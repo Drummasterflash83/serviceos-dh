@@ -42,7 +42,8 @@ begin
  order by checked_at desc,id desc limit 1;
  if not found then raise exception 'source_user_reference_detail_missing' using errcode='42501';end if;
  if coalesce(r.result->>'version','') not in ('commusoft-exact-job-detail/1',
-  'commusoft-exact-job-detail/2','commusoft-exact-job-detail/3','commusoft-exact-job-detail/4')
+  'commusoft-exact-job-detail/2','commusoft-exact-job-detail/3',
+  'commusoft-exact-job-detail/4','commusoft-exact-job-detail/5')
   or r.result->>'tenant_id' is distinct from p_tenant::text
   or r.result->>'job_id' is distinct from p_job::text
   or r.result->>'source_version_id' is distinct from vid::text
