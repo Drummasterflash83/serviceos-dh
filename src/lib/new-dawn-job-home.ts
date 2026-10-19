@@ -64,7 +64,7 @@ export function homeJobState(job: Pick<HomeJob, "status">) {
   return statuses[job.status ?? ""] ?? "Status needs confirmation";
 }
 
-export function homeJobAction(job: HomeJob) {
+export function homeJobAction(job: Pick<HomeJob, "status">) {
   if (job.status === "on_hold" || job.status === "pending") return "Check what is holding this job";
   if (job.status === "completed" || job.status === "closed") return "Review the recorded outcome";
   if (job.status === "open") return "Confirm this job’s next step";
