@@ -7,7 +7,7 @@ import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOper
 import { readSourceHomePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientLabel, sourceJobLabel, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
-import { readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
+import { parseExactTrialOffer, readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { OwnerMoneyPanel } from "./OwnerMoneyPanel";
 import { FounderAccountsPreview } from "./FounderAccountsPreview";
@@ -132,16 +132,20 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
   const [fresh, setFresh] = useState<ExactJobDetail | null>(null);
   const [freshBusy, setFreshBusy] = useState(false);
   const [freshError, setFreshError] = useState("");
-  const currentDetailFlag = useQuery({
-    queryKey: ["new-dawn-exact-job-detail-flag", actor, tenant],
+  const detail = source?.source;
+  const trialOffer = useQuery({
+    queryKey: ["new-dawn-exact-job-trial-offer", actor, tenant, job.id, detail?.version_id],
+    enabled: detail?.current === true,
     queryFn: async () => {
-      const { data, error } = await getSupabaseClient().from("feature_flags")
-        .select("value").eq("tenant_id", tenant)
-        .eq("flag", "new_dawn.exact_job_detail").maybeSingle();
-      if (error) throw Error("Exact job detail flag unavailable.");
-      return data?.value === true;
+      const { data, error } = await getSupabaseClient().rpc("new_dawn_commusoft_job_trial_offer", {
+        p_tenant: tenant, p_job: job.id,
+      }).abortSignal(AbortSignal.timeout(15_000));
+      if (error) throw Error("Exact job trial offer unavailable.");
+      return parseExactTrialOffer(data, { tenant, job: job.id, actor,
+        sourceVersion: detail!.version_id, externalId: detail!.external_id });
     },
-    staleTime: 30_000,
+    retry: false,
+    staleTime: 0,
   });
   useEffect(() => {
     let active = true;
@@ -152,14 +156,14 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
       .finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
   }, [tenant, actor, job.id, reason]);
-  const detail = source?.source;
   async function checkCurrentDetail() {
-    if (!detail?.current || currentDetailFlag.data !== true || freshBusy) return;
+    if (!detail?.current || !trialOffer.data || freshBusy ||
+      Date.parse(trialOffer.data.expiresAt) <= Date.now()) return;
     setFreshBusy(true); setFreshError(""); setFresh(null);
     try {
       setFresh(await readExactJobDetail(getSupabaseClient(), tenant, job.id,
-        detail.version_id, detail.external_id, reason));
-    } catch { setFreshError("A fresh Commusoft detail read could not be confirmed. Saved evidence remains above."); }
+        detail.version_id, detail.external_id, reason, trialOffer.data.requestId));
+    } catch { setFreshError("The permitted check has not completed. If Commusoft is busy, retry this same check before the permit expires; saved evidence remains above."); }
     finally { setFreshBusy(false); }
   }
   return <div className="nd-job-detail space-y-3">
@@ -183,7 +187,7 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
       <p>Reported: {detail.dates.reported.source ?? "not provided"} · Completed: {detail.dates.completed.source ?? "not provided"}</p>
       {(detail.dates.reported.state === "timezone_required" || detail.dates.completed.state === "timezone_required") && <p>One or more source times have no timezone; no elapsed duration has been inferred.</p>}
       <p className="text-sm">A source completion name is not a verified engineer visit. The quote is not an invoice or paid value. Diary, parts and costs are not captured in this job record.</p>
-      {detail.current && currentDetailFlag.data === true && <button className="cp-secondary" disabled={freshBusy} onClick={() => void checkCurrentDetail()}>
+      {detail.current && trialOffer.data && <button className="cp-secondary" disabled={freshBusy || Date.parse(trialOffer.data.expiresAt) <= Date.now()} onClick={() => void checkCurrentDetail()}>
         {freshBusy ? "Checking Commusoft…" : "Check current Commusoft job details"}
       </button>}
       {freshError && <p role="alert">{freshError}</p>}
