@@ -178,17 +178,17 @@ tests pass, but it has no live evidence or provider integration yet; the
 collecting operator must independently authenticate each receipt's source.
 
 The current immutable local source-candidate preflight is
-`docs/operations/EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-19-v4.json` (SHA-256
-`9c30163f78937476657e0ae994755c64f13de8831f5fb43a52feb912e9ab3c51`).
-It pins 12 relevant source-file hashes to commit `bde7bf97`, the v10 suite
+`docs/operations/EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-19-v5.json` (SHA-256
+`75f212596971bc121bb311c2f4a444ec43cf58c30f285d7624f0a3eb8b887d32`).
+It pins 12 relevant source-file hashes to commit `438b881f`, the v10 suite
 payload hash and each of the 12 scenario payload hashes. Running the
 reproducible local checker twice produced identical bytes; all 12 passed
 static clock/mock/rubric checks on that unchanged source. **No Vapi model
 conversation was run:** every scenario's conversational and real-phone
 outcome is explicitly `not_run`. This is not a 12/12 provider pass or a
 hash of the unobserved saved Vapi candidate. The last real provider result
-remains 8/12 on an older candidate. All 187 focused receptionist tests pass.
-The earlier immutable v3 manifest remains for comparison, and v2's candidate
+remains 8/12 on an older candidate. All 189 focused receptionist tests pass.
+The earlier immutable v4 manifest remains for comparison, and v2's candidate
 prompt still allowed a bare postcode while the intake gate rejected one.
 The initial manifest predates the location/CO safety fix.
 
@@ -197,8 +197,8 @@ instructions, fixed clock, action mocks and both judges with the twelve
 reviewed definitions. An unchanged suite fingerprint alone could previously
 certify a suite that was already altered before its run. This check rejects
 that case before any live-assistant PATCH and repeats the comparison immediately
-before publication. It is a source guard, not a new provider result. The v4
-manifest pins this additional guard.
+before publication. It is a source guard, not a new provider result. The v5
+manifest pins this guard and the candidate-only emergency-tool design.
 
 The current code rejects a bare postcode as the complete emergency site:
 the caller must supply a numbered street or named/numbered premises with a
