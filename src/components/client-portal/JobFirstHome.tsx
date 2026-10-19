@@ -200,6 +200,25 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
         {fresh.expectedOnsite && <p>Expected onsite (source text): {fresh.expectedOnsite}</p>}
         {fresh.expectedCompletion && <p>Expected completion (source text): {fresh.expectedCompletion}</p>}
         {fresh.sourceUsers.length > 0 && <p>Source users currently listed: {fresh.sourceUsers.map((user) => user.name).join(", ")}. Their OpenFolk identities and appointments are not confirmed.</p>}
+        {fresh.sourceOperationalFacts && <div className="space-y-1" aria-label="Source operational facts">
+          <p><strong>Job holds and service level · Commusoft source</strong></p>
+          <p>On hold: {fresh.sourceOperationalFacts.isJobOnHold.state === "present"
+            ? fresh.sourceOperationalFacts.isJobOnHold.value ? "Yes" : "No"
+            : fresh.sourceOperationalFacts.isJobOnHold.state === "source_null" ? "blank in source" : "not supplied"}.</p>
+          <p>Hold reason: {fresh.sourceOperationalFacts.onHoldReasonDescription.state === "present"
+            ? fresh.sourceOperationalFacts.onHoldReasonDescription.value
+            : fresh.sourceOperationalFacts.onHoldReasonDescription.state === "source_null" ? "blank in source" : "not supplied"}.</p>
+          <p>SLA recorded: {fresh.sourceOperationalFacts.hasSLA.state === "present"
+            ? fresh.sourceOperationalFacts.hasSLA.value ? "Yes" : "No"
+            : fresh.sourceOperationalFacts.hasSLA.state === "source_null" ? "blank in source" : "not supplied"}.
+            {" "}Source SLA status: {fresh.sourceOperationalFacts.SLAStatus.state === "present"
+              ? fresh.sourceOperationalFacts.SLAStatus.value
+              : fresh.sourceOperationalFacts.SLAStatus.state === "source_null" ? "blank in source" : "not supplied"}.</p>
+          <p>Source contract ID: {fresh.sourceOperationalFacts.contractID.state === "present"
+            ? fresh.sourceOperationalFacts.contractID.value
+            : fresh.sourceOperationalFacts.contractID.state === "source_null" ? "blank in source" : "not supplied"}.
+            {" "}This does not verify a maintenance contract in OpenFolk.</p>
+        </div>}
         <small>Provider last updated: {fresh.providerUpdatedAt ?? "not supplied"}. Expected dates are not verified visits. Audit {fresh.auditId}.</small>
       </section>}
     </section>}
