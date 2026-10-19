@@ -8,8 +8,7 @@ language plpgsql immutable strict set search_path=pg_catalog as $$
 declare parsed date;
 begin
  if p_value !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' then return null;end if;
- parsed:=to_date(p_value,'YYYY-MM-DD');
- if to_char(parsed,'YYYY-MM-DD')<>p_value then return null;end if;
+ parsed:=make_date(substr(p_value,1,4)::int,substr(p_value,6,2)::int,substr(p_value,9,2)::int);
  return parsed;
 exception when others then return null;
 end $$;
