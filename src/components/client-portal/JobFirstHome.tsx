@@ -213,6 +213,14 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
         {fresh.expectedOnsite && <p>Expected onsite (source text): {fresh.expectedOnsite}</p>}
         {fresh.expectedCompletion && <p>Expected completion (source text): {fresh.expectedCompletion}</p>}
         {fresh.sourceQuotedAmount && <p>Current job quote (Commusoft source text): {sourceTextFact(fresh.sourceQuotedAmount)}. No currency, acceptance or estimate document is verified by this field.</p>}
+        {fresh.sourceClosureFacts && <div className="space-y-1" aria-label="Source closure facts">
+          <p><strong>Job closure · Commusoft source</strong></p>
+          <p>Closure outcome: {sourceTextFact(fresh.sourceClosureFacts.closedOutcome)}.</p>
+          <p>Closure time (source text): {sourceTextFact(fresh.sourceClosureFacts.closedOnDateTime)}.</p>
+          {fresh.sourceClosureFacts.focReason.state === "present" &&
+            <p>Free-of-charge reason (source text): {fresh.sourceClosureFacts.focReason.value}.</p>}
+          <p>This does not verify an invoice, payment, job cost or a completed visit.</p>
+        </div>}
         {fresh.sourceUsers.length > 0 && <p>Source users currently listed: {fresh.sourceUsers.map((user) => user.name).join(", ")}. Their OpenFolk identities and appointments are not confirmed.</p>}
         {fresh.sourceOperationalFacts && <div className="space-y-1" aria-label="Source operational facts">
           <p><strong>Job holds and service level · Commusoft source</strong></p>

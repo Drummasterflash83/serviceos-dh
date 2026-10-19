@@ -12,6 +12,11 @@ export type SourceOperationalFacts = {
   SLAStatus: SourceFact<string>;
   contractID: SourceFact<string>;
 };
+export type SourceClosureFacts = {
+  closedOutcome: SourceFact<string>;
+  closedOnDateTime: SourceFact<string>;
+  focReason: SourceFact<string>;
+};
 function sourceFact<T>(value: unknown, valid: (v: unknown) => v is T,
   allowUnrecognized = false): SourceFact<T> {
   if (!object(value) || Object.keys(value).sort().join(",") !== "state,value" ||
@@ -32,6 +37,19 @@ function sourceOperationalFacts(value: unknown, allowUnrecognized = false): Sour
     contractID: sourceFact(value.contractID, (v): v is string => typeof v === "string" && /^(0|[1-9][0-9]{0,15})$/.test(v) && Number(v) <= Number.MAX_SAFE_INTEGER, allowUnrecognized),
   };
 }
+function sourceClosureFacts(value: unknown): SourceClosureFacts {
+  const names = ["closedOnDateTime", "closedOutcome", "focReason"];
+  if (!object(value) || Object.keys(value).sort().join(",") !== names.join(","))
+    throw Error("Current job detail could not be verified.");
+  return {
+    closedOutcome: sourceFact(value.closedOutcome, (v): v is string =>
+      typeof v === "string" && new TextEncoder().encode(v).length <= 200, true),
+    closedOnDateTime: sourceFact(value.closedOnDateTime, (v): v is string =>
+      typeof v === "string" && new TextEncoder().encode(v).length <= 80, true),
+    focReason: sourceFact(value.focReason, (v): v is string =>
+      typeof v === "string" && new TextEncoder().encode(v).length <= 200, true),
+  };
+}
 
 export interface ExactJobDetail {
   auditId: string;
@@ -47,6 +65,7 @@ export interface ExactJobDetail {
   sourceUsers: { id: string; name: string }[];
   sourceOperationalFacts: SourceOperationalFacts | null;
   sourceQuotedAmount: SourceFact<string> | null;
+  sourceClosureFacts: SourceClosureFacts | null;
 }
 export interface ExactTrialOffer { requestId: string; expiresAt: string }
 export function parseExactTrialOffer(value: unknown, scope: {
@@ -65,7 +84,7 @@ export function parseExactTrialOffer(value: unknown, scope: {
 export function parseExactJobDetail(value: unknown, scope: {
   tenant: string; job: string; request: string; sourceVersion: string; externalId: string;
 }): ExactJobDetail {
-  if (!object(value) || !["commusoft-exact-job-detail/1", "commusoft-exact-job-detail/2", "commusoft-exact-job-detail/3", "commusoft-exact-job-detail/4"].includes(String(value.version)) ||
+  if (!object(value) || !["commusoft-exact-job-detail/1", "commusoft-exact-job-detail/2", "commusoft-exact-job-detail/3", "commusoft-exact-job-detail/4", "commusoft-exact-job-detail/5"].includes(String(value.version)) ||
     value.tenant_id !== scope.tenant || value.job_id !== scope.job ||
     value.request_id !== scope.request || value.source_version_id !== scope.sourceVersion ||
     value.external_id !== scope.externalId || !uuid(value.audit_id) ||
@@ -84,14 +103,18 @@ export function parseExactJobDetail(value: unknown, scope: {
   });
   if (value.version === "commusoft-exact-job-detail/1" && value.source_operational_facts !== undefined)
     throw Error("Current job detail could not be verified.");
-  const facts = value.version === "commusoft-exact-job-detail/2" || value.version === "commusoft-exact-job-detail/3" || value.version === "commusoft-exact-job-detail/4"
-    ? sourceOperationalFacts(value.source_operational_facts, value.version === "commusoft-exact-job-detail/4") : null;
-  if (value.version !== "commusoft-exact-job-detail/3" && value.version !== "commusoft-exact-job-detail/4" && value.source_quoted_amount !== undefined)
+  const facts = value.version === "commusoft-exact-job-detail/2" || value.version === "commusoft-exact-job-detail/3" || value.version === "commusoft-exact-job-detail/4" || value.version === "commusoft-exact-job-detail/5"
+    ? sourceOperationalFacts(value.source_operational_facts, value.version === "commusoft-exact-job-detail/4" || value.version === "commusoft-exact-job-detail/5") : null;
+  if (value.version !== "commusoft-exact-job-detail/3" && value.version !== "commusoft-exact-job-detail/4" && value.version !== "commusoft-exact-job-detail/5" && value.source_quoted_amount !== undefined)
     throw Error("Current job detail could not be verified.");
-  const quote = value.version === "commusoft-exact-job-detail/3" || value.version === "commusoft-exact-job-detail/4"
+  const quote = value.version === "commusoft-exact-job-detail/3" || value.version === "commusoft-exact-job-detail/4" || value.version === "commusoft-exact-job-detail/5"
     ? sourceFact(value.source_quoted_amount, (v): v is string => typeof v === "string" && v.length <= 200,
-      value.version === "commusoft-exact-job-detail/4")
+      value.version === "commusoft-exact-job-detail/4" || value.version === "commusoft-exact-job-detail/5")
     : null;
+  if (value.version !== "commusoft-exact-job-detail/5" && value.source_closure_facts !== undefined)
+    throw Error("Current job detail could not be verified.");
+  const closure = value.version === "commusoft-exact-job-detail/5"
+    ? sourceClosureFacts(value.source_closure_facts) : null;
   return {
     auditId: value.audit_id, checkedAt: value.checked_at,
     sourceVersionId: value.source_version_id, externalId: value.external_id,
@@ -101,6 +124,7 @@ export function parseExactJobDetail(value: unknown, scope: {
     expectedCompletion: value.expected_completion as string | null,
     providerUpdatedAt: value.provider_updated_at as string | null,
     sourceUsers: users, sourceOperationalFacts: facts, sourceQuotedAmount: quote,
+    sourceClosureFacts: closure,
   };
 }
 export async function readExactJobDetail(

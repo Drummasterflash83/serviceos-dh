@@ -95,6 +95,34 @@ test("v4 keeps an unexpected optional source format visibly unverified", () => {
     source_operational_facts: { ...facts, isJobOnHold: { state: "source_unrecognized", value: "false" } } }, scope));
   assert.throws(() => parseExactJobDetail({ ...current, version: "commusoft-exact-job-detail/3" }, scope));
 });
+test("v5 preserves current source closure without claiming an invoice", () => {
+  const scope = { tenant, job, request, sourceVersion, externalId: "123" };
+  const missing = { state: "not_supplied", value: null };
+  const current = { ...result, version: "commusoft-exact-job-detail/5",
+    source_operational_facts: {
+      isJobOnHold: missing, onHoldReasonDescription: missing, hasSLA: missing,
+      SLAStatus: missing, contractID: missing,
+    },
+    source_quoted_amount: missing,
+    source_closure_facts: {
+      closedOutcome: { state: "present", value: "final invoiced" },
+      closedOnDateTime: { state: "present", value: "2026-10-20T15:00:00" },
+      focReason: { state: "source_null", value: null },
+    },
+  };
+  const parsed = parseExactJobDetail(current, scope);
+  assert.equal(parsed.sourceClosureFacts?.closedOutcome.value, "final invoiced");
+  assert.equal(parsed.sourceClosureFacts?.closedOnDateTime.value, "2026-10-20T15:00:00");
+  assert.equal(parsed.sourceClosureFacts?.focReason.state, "source_null");
+  assert.equal("invoice" in parsed, false);
+  assert.equal(parseExactJobDetail({ ...current, source_closure_facts: {
+    closedOutcome: missing, closedOnDateTime: missing, focReason: missing,
+  } }, scope).sourceClosureFacts?.closedOutcome.state, "not_supplied");
+  assert.throws(() => parseExactJobDetail({ ...current, source_closure_facts: {
+    ...current.source_closure_facts, closedOutcome: { state: "present", value: 12 },
+  } }, scope));
+  assert.throws(() => parseExactJobDetail({ ...current, version: "commusoft-exact-job-detail/4" }, scope));
+});
 test("client submits one generated request and validates returned scope", async () => {
   const seen: unknown[] = [];
   const output = await readExactJobDetail({ functions: { invoke: async (_name, opts) => {
