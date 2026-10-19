@@ -79,7 +79,7 @@ try:
         definition = sql("select pg_get_functiondef('public." + signature + "'::regprocedure);")
         assert "'users'" in definition, 'Users resource not enabled in ' + signature
     if shared_lease:
-        shared = file('supabase/migrations/20261106140000_new_dawn_commusoft_shared_lease.sql')
+        shared = file('supabase/migrations/20261106150000_new_dawn_commusoft_shared_lease.sql')
         worker = "select md5(pg_get_functiondef('public.learn_commusoft_acquire_page(uuid,uuid,text,integer,jsonb)'::regprocedure));"
         before_worker = sql(worker)
         sql(shared.replace('\ncommit;', '\nrollback;'))

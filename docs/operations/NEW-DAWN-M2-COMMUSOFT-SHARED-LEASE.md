@@ -18,21 +18,29 @@ clear a successor. A 429 extension to `next_allowed_at` survives lease release.
 
 The helper also records one manual waiter, bounded to 60 seconds. A source worker
 must yield one turn to that waiter when it is later connected to an authorised
-manual read. The waiter is not yet reachable from the exact-job, opportunity or
-connection-verification paths, so this branch does **not** claim safe manual
-coexistence. Their current queue guards remain the release boundary. No LIVE
+manual read. The next migration, `20261106160000_new_dawn_commusoft_shared_lease_routes.sql`,
+connects the exact-job, opportunity and connection-verification acquisitions
+and their result/failure releases. The opt-in `/users` collection already uses
+the source-page path. Their current import queue guards remain the release
+boundary, so this branch does **not** claim safe manual coexistence. No LIVE
 lease migration or provider GET was run during preparation.
 
-Before turning on coexistence, the remaining review must connect every
-Commusoft key-release path (`learn_commusoft_verify_acquire`,
-`new_dawn_commusoft_job_detail_acquire`, and
-`new_dawn_commusoft_opportunity_probe_acquire`) to the same lease and provide
-matching finish/fail release. The worker's local lease wait must requeue its
+The uninstalled lease migration was renamed from `20261106140000` to
+`20261106150000`: LIVE already records a different QuickBooks migration at
+`20261106140000`, and Supabase migration history identifies a migration by its
+timestamp. Do not install the old filename or mark the lease version applied.
+
+Before turning on coexistence, the worker's local lease wait must requeue its
 same page without counting a failed attempt or imposing the current 60-second
-retry backoff. Only then may a separate default-off coexistence flag narrow the
-manual queue guards for one audited, bounded read. Tests must cover all four
-flows sharing one key, same key across tenants, lease expiry, wrong-owner and
-late release, 429, revoked authority, one-turn fairness, and crash recovery.
+retry backoff. Exact-job handling must return a genuine long lease wait as
+pending rather than failing a one-use request after its current three short
+retries. Manual 429 handling must extend the shared `next_allowed_at` gate even
+after cancellation or revocation. Only then may a separate default-off
+coexistence flag narrow the manual queue guards for one audited, bounded read.
+Tests must cover all four flows sharing one key, same key across tenants, lease
+expiry, wrong-owner and late release, 429, revoked authority, one-turn fairness,
+and crash recovery. Current manual queue guards must remain active until those
+checks pass.
 
 The network-isolated PostgreSQL fixture is
 `python3 scripts/verify/learn-commusoft-users.py --shared-lease`. It checks
@@ -44,3 +52,10 @@ customer records enter that fixture.
 --test-rollback-only` also applied the exact migration against TEST inside a
 rolled-back transaction and confirmed the gate columns were absent afterward;
 it made no provider request.
+`node scripts/verify/new-dawn-commusoft-shared-routes-rehearse.mjs
+--test-rollback-only` applies the exact job, opportunity, renamed lease and route
+migrations together in a TEST rollback transaction. It proves all three manual
+acquisitions reference the shared lease, wrong-owner release fails, each
+manual result/failure clears only its owner, grants stay private, and both
+manual tables and lease columns disappear on rollback. It makes no provider
+request or persistent TEST change.
