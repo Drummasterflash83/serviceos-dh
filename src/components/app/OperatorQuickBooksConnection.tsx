@@ -469,7 +469,7 @@ export function OperatorQuickBooksConnection({
           />
           <OperatorQuickBooksInvoiceCheck tenantId={tenantId} actorId={actorId}
             canWrite={canWrite} connections={data.connections} />
-          <OperatorQuickBooksReportCapture tenantId={tenantId} actorId={actorId}
+          <OperatorQuickBooksReportCapture tenantId={tenantId} actorId={actorId} onConnectionRefresh={() => refresh()}
             canWrite={canWrite} connections={data.connections} />
           <OperatorQuickBooksReportSummary key={`${tenantId}:${actorId}`} tenantId={tenantId} actorId={actorId}
             canWrite={canWrite} />
