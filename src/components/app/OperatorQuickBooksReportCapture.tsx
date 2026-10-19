@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { QuickBooksConnection } from "@/lib/learn-quickbooks";
-import { readReportCaptureReceipt, type ReportCaptureReceipt } from "@/lib/learn-quickbooks-report-capture";
+import { buildReportCaptureBody, readReportCaptureReceipt, type ReportCaptureReceipt } from "@/lib/learn-quickbooks-report-capture";
 
 /** Operator-only evidence capture. Never renders report rows or profit amounts. */
 export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, connections }: {
@@ -34,14 +34,9 @@ export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, c
     working.current = true; setBusy(true); setNotice(""); setReceipt(null);
     try {
       const { data, error } = await getSupabaseClient().functions.invoke("learn-quickbooks-report-capture", {
-        body: { tenantId, connectionId: selected.id, requestId, realmId: selected.realmId,
-          environment: selected.environment, kind,
-          periodStart: kind === "ProfitAndLoss" ? periodStart : null,
-          periodEnd: kind === "ProfitAndLoss" ? periodEnd : null,
-          accountingMethod: kind === "ProfitAndLoss" ? accountingMethod : null,
-          reportDate: kind === "AgedReceivables" ? reportDate : null,
-          agingMethod: kind === "AgedReceivables" ? "Report_Date" : null,
-          reason: reason.trim() },
+        body: buildReportCaptureBody({ tenantId, connectionId: selected.id, requestId,
+          realmId: selected.realmId!, environment: selected.environment, kind,
+          periodStart, periodEnd, accountingMethod, reportDate, reason }),
       });
       if (error) throw Error();
       const checked = readReportCaptureReceipt(data, { requestId, tenantId,

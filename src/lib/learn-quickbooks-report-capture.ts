@@ -1,5 +1,20 @@
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
 const uuid = (value: unknown): value is string => typeof value === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(value);
+export function buildReportCaptureBody(input: {
+  tenantId: string; connectionId: string; requestId: string; realmId: string;
+  environment: "production" | "sandbox"; kind: "ProfitAndLoss" | "AgedReceivables";
+  periodStart: string; periodEnd: string; accountingMethod: "Cash" | "Accrual";
+  reportDate: string; reason: string;
+}) {
+  return { tenantId: input.tenantId, connectionId: input.connectionId, requestId: input.requestId,
+    realmId: input.realmId, environment: input.environment, kind: input.kind,
+    periodStart: input.kind === "ProfitAndLoss" ? input.periodStart : null,
+    periodEnd: input.kind === "ProfitAndLoss" ? input.periodEnd : null,
+    accountingMethod: input.kind === "ProfitAndLoss" ? input.accountingMethod : null,
+    reportDate: input.kind === "AgedReceivables" ? input.reportDate : null,
+    agingMethod: input.kind === "AgedReceivables" ? "Report_Date" : null,
+    reason: input.reason.trim() };
+}
 export interface ReportCaptureReceipt {
   requestId: string; kind: "ProfitAndLoss" | "AgedReceivables"; environment: "production" | "sandbox";
   realmId: string; sha256: string; bytes: number; reportTime: string | null; currency: string | null; auditId: string;
