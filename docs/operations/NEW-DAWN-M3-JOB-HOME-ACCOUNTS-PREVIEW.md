@@ -27,12 +27,34 @@ The browser decoder refuses wrong actor/tenant, future or mismatched period,
 hash, realm, basis, currency and non-decimal summary data. Focused tests,
 TypeScript and build pass locally.
 
-For LIVE: record current main, migration hash, flag states and report/finance
-counts; install this exact SQL with a rollback guard; verify the counts/flags
-and grants unchanged. Merge the UI with the new flag still OFF. If the operator
-preview is then enabled, perform a signed-in desktop and 390 px mobile check
-using a real saved pair and reason, verify both audit events, and confirm
-ordinary access denial. Disable only `new_dawn.job_home_accounts_preview` to
-withdraw the panel. The additive RPC and immutable audit can remain. Client
-publication requires separate accounting review and a real owner identity;
-Chris's OpenFolk identity must never substitute for Drummonds staff.
+The exact LIVE preflight is:
+
+`NEW_DAWN_M3_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m3-report-pairs-release.mjs --live-read-only`
+
+It has returned `exact_m3_pairs_ready` with five saved report requests, four
+receipts, 131 finance events, the existing operator summary flag ON, all
+client money flags OFF and the exact prior function hashes. The prior capture
+and summary SQL is installed without migration-ledger rows; its three LIVE
+function definitions matched a rollback-only TEST installation of the reviewed
+sources. Do not invent ledger rows for those earlier migrations. The new
+migration will receive its own exact ledger row.
+
+After PR merge and hosted checks, the release owner may run the same command
+with `--live-install-exact` **once**, then `--live-read-only`. The installer
+rechecks the source SHA, previous function hashes, tenant/realm, flags and
+absence of this RPC inside the transaction; it records the exact migration and
+compares report, receipt and finance-event counts afterward. An uncertain
+write is never replayed automatically. No flag is enabled by this step.
+
+Signed-in acceptance after a separately reviewed Drummonds-only operator flag
+switch: open the audited Drummonds job preview with a reason, press **Find saved
+report periods**, choose a dated verified pair, review company/period/basis,
+then press **Read selected accounts snapshot**. Check desktop and 390 px mobile:
+dates and partial/historical coverage must be clear, GP/NP must be exact saved
+source strings, field GP/ARR held, and no figure visible before the deliberate
+read. Confirm `report.pair_candidates_read` and `report.summary_preview_read`
+audits; ordinary access must be denied. Client owner/admin/team money remains
+off. Disable only `new_dawn.job_home_accounts_preview` to withdraw the panel;
+the additive RPC and immutable audit can remain. Client publication requires
+separate accounting review and a real owner identity; Chris's OpenFolk identity
+must never substitute for Drummonds staff.
