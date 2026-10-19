@@ -4,7 +4,7 @@ const object = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 const bounded = (value: unknown, limit: number): value is string | null =>
   value === null || typeof value === "string" && value.length <= limit;
-type SourceFact<T> = { state: "not_supplied" | "source_null" | "present"; value: T | null };
+type SourceFact<T> = { state: "not_supplied" | "source_null" | "source_unrecognized" | "present"; value: T | null };
 export type SourceOperationalFacts = {
   isJobOnHold: SourceFact<boolean>;
   onHoldReasonDescription: SourceFact<string>;
@@ -12,23 +12,24 @@ export type SourceOperationalFacts = {
   SLAStatus: SourceFact<string>;
   contractID: SourceFact<string>;
 };
-function sourceFact<T>(value: unknown, valid: (v: unknown) => v is T): SourceFact<T> {
+function sourceFact<T>(value: unknown, valid: (v: unknown) => v is T,
+  allowUnrecognized = false): SourceFact<T> {
   if (!object(value) || Object.keys(value).sort().join(",") !== "state,value" ||
-    !["not_supplied", "source_null", "present"].includes(String(value.state)) ||
+    !["not_supplied", "source_null", "present", ...(allowUnrecognized ? ["source_unrecognized"] : [])].includes(String(value.state)) ||
     (value.state === "present" ? !valid(value.value) : value.value !== null))
     throw Error("Current job detail could not be verified.");
   return value as SourceFact<T>;
 }
-function sourceOperationalFacts(value: unknown): SourceOperationalFacts {
+function sourceOperationalFacts(value: unknown, allowUnrecognized = false): SourceOperationalFacts {
   const names = ["SLAStatus", "contractID", "hasSLA", "isJobOnHold", "onHoldReasonDescription"];
   if (!object(value) || Object.keys(value).sort().join(",") !== names.join(","))
     throw Error("Current job detail could not be verified.");
   return {
-    isJobOnHold: sourceFact(value.isJobOnHold, (v): v is boolean => typeof v === "boolean"),
-    onHoldReasonDescription: sourceFact(value.onHoldReasonDescription, (v): v is string => typeof v === "string" && v.length <= 200),
-    hasSLA: sourceFact(value.hasSLA, (v): v is boolean => typeof v === "boolean"),
-    SLAStatus: sourceFact(value.SLAStatus, (v): v is string => typeof v === "string" && v.length <= 200),
-    contractID: sourceFact(value.contractID, (v): v is string => typeof v === "string" && /^(0|[1-9][0-9]{0,15})$/.test(v) && Number(v) <= Number.MAX_SAFE_INTEGER),
+    isJobOnHold: sourceFact(value.isJobOnHold, (v): v is boolean => typeof v === "boolean", allowUnrecognized),
+    onHoldReasonDescription: sourceFact(value.onHoldReasonDescription, (v): v is string => typeof v === "string" && v.length <= 200, allowUnrecognized),
+    hasSLA: sourceFact(value.hasSLA, (v): v is boolean => typeof v === "boolean", allowUnrecognized),
+    SLAStatus: sourceFact(value.SLAStatus, (v): v is string => typeof v === "string" && v.length <= 200, allowUnrecognized),
+    contractID: sourceFact(value.contractID, (v): v is string => typeof v === "string" && /^(0|[1-9][0-9]{0,15})$/.test(v) && Number(v) <= Number.MAX_SAFE_INTEGER, allowUnrecognized),
   };
 }
 
@@ -45,6 +46,7 @@ export interface ExactJobDetail {
   providerUpdatedAt: string | null;
   sourceUsers: { id: string; name: string }[];
   sourceOperationalFacts: SourceOperationalFacts | null;
+  sourceQuotedAmount: SourceFact<string> | null;
 }
 export interface ExactTrialOffer { requestId: string; expiresAt: string }
 export function parseExactTrialOffer(value: unknown, scope: {
@@ -63,7 +65,7 @@ export function parseExactTrialOffer(value: unknown, scope: {
 export function parseExactJobDetail(value: unknown, scope: {
   tenant: string; job: string; request: string; sourceVersion: string; externalId: string;
 }): ExactJobDetail {
-  if (!object(value) || !["commusoft-exact-job-detail/1", "commusoft-exact-job-detail/2"].includes(String(value.version)) ||
+  if (!object(value) || !["commusoft-exact-job-detail/1", "commusoft-exact-job-detail/2", "commusoft-exact-job-detail/3", "commusoft-exact-job-detail/4"].includes(String(value.version)) ||
     value.tenant_id !== scope.tenant || value.job_id !== scope.job ||
     value.request_id !== scope.request || value.source_version_id !== scope.sourceVersion ||
     value.external_id !== scope.externalId || !uuid(value.audit_id) ||
@@ -82,8 +84,14 @@ export function parseExactJobDetail(value: unknown, scope: {
   });
   if (value.version === "commusoft-exact-job-detail/1" && value.source_operational_facts !== undefined)
     throw Error("Current job detail could not be verified.");
-  const facts = value.version === "commusoft-exact-job-detail/2"
-    ? sourceOperationalFacts(value.source_operational_facts) : null;
+  const facts = value.version === "commusoft-exact-job-detail/2" || value.version === "commusoft-exact-job-detail/3" || value.version === "commusoft-exact-job-detail/4"
+    ? sourceOperationalFacts(value.source_operational_facts, value.version === "commusoft-exact-job-detail/4") : null;
+  if (value.version !== "commusoft-exact-job-detail/3" && value.version !== "commusoft-exact-job-detail/4" && value.source_quoted_amount !== undefined)
+    throw Error("Current job detail could not be verified.");
+  const quote = value.version === "commusoft-exact-job-detail/3" || value.version === "commusoft-exact-job-detail/4"
+    ? sourceFact(value.source_quoted_amount, (v): v is string => typeof v === "string" && v.length <= 200,
+      value.version === "commusoft-exact-job-detail/4")
+    : null;
   return {
     auditId: value.audit_id, checkedAt: value.checked_at,
     sourceVersionId: value.source_version_id, externalId: value.external_id,
@@ -92,7 +100,7 @@ export function parseExactJobDetail(value: unknown, scope: {
     expectedOnsite: value.expected_onsite as string | null,
     expectedCompletion: value.expected_completion as string | null,
     providerUpdatedAt: value.provider_updated_at as string | null,
-    sourceUsers: users, sourceOperationalFacts: facts,
+    sourceUsers: users, sourceOperationalFacts: facts, sourceQuotedAmount: quote,
   };
 }
 export async function readExactJobDetail(

@@ -8,6 +8,12 @@ export function reportCaptureConnectionReady(connection: QuickBooksConnection | 
   const expires = connection.accessExpiresAt ? Date.parse(connection.accessExpiresAt) : NaN;
   return Number.isFinite(expires) && expires > now + 120_000;
 }
+export function readReportRefreshResult(value: unknown, requestId: string): "current" | "refreshed" | "busy" | "authentication_required" | "unconfirmed" {
+  if (!object(value) || value.version !== "quickbooks-report-refresh/1" || value.requestId !== requestId ||
+    !["current", "refreshed", "busy", "authentication_required", "unconfirmed"].includes(String(value.state)))
+    throw Error("refresh_result_invalid");
+  return value.state as "current" | "refreshed" | "busy" | "authentication_required" | "unconfirmed";
+}
 export function buildReportCaptureBody(input: {
   tenantId: string; connectionId: string; requestId: string; realmId: string;
   environment: "production" | "sandbox"; kind: "ProfitAndLoss" | "AgedReceivables";

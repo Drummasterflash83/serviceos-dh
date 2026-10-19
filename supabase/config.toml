@@ -392,3 +392,7 @@ verify_jwt = false
 [functions.learn-quickbooks-report-capture]
 # Signed-in operator Auth is verified inside the bounded one-use route.
 verify_jwt = false
+
+[functions.learn-quickbooks-report-refresh]
+# Signed-in operator Auth and selected-company permission are checked inside.
+verify_jwt = false
