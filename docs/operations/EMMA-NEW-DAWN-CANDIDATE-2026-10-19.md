@@ -9,6 +9,12 @@ change on the day.
 
 - Branch: `codex/new-dawn-emma`, cut from verified GitHub `main`
   `a9ec20324ced248b60ee77ded3f8ad7fee21b890`.
+- The branch was reconciled with later verified `main`
+  `d2d8e1f9438a4dffa3888a22ba902e77e5154c88` by a normal merge
+  (`44d66ade44439dc8ace9cace285ab77b783f14dc`), preserving its
+  published history. All 179 focused receptionist tests passed after that
+  merge, and `git diff --check origin/main...HEAD` was clean. These are
+  local candidate checks, not provider or phone acceptance.
 - The historical 2 October private package is
   `2. Ai/Openfolk OS   Pass-Over/Emma Unmerged Work 2026-10-02/` in Chris's
   Dropbox. Its patch applied cleanly to this branch. Its 80 focused tests
@@ -29,6 +35,13 @@ change on the day.
   lacked an address, gas safety omitted the spoken number, and the Heidi
   handover lacked customer-facing wording. This branch does not relabel
   that run as a pass or start billable calls.
+- Draft [PR #88](https://github.com/Drummasterflash83/serviceos-dh/pull/88)
+  carries this candidate. Vercel preview builds were reported ready for its
+  earlier pushed head. The PR stays draft until its current head, provider
+  state, same-hash scenario suite and real-phone gates are reviewed. No
+  browser session or existing noninteractive key for a fresh Vapi/Birchills
+  read was available in this worktree on 19 October; the historical values
+  above must not be presented as current state.
 
 ## Candidate code now prepared
 
