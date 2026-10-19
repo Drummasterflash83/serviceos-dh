@@ -4,7 +4,7 @@ import { ArrowRight, BriefcaseBusiness, RefreshCw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOperatorHomePage, type HomeJob, type OperatorHomeJob } from "@/lib/new-dawn-job-home";
-import { readSourceHomePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientLabel, sourceJobLabel, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
+import { readSourceHomePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientLabel, sourceJobLabel, sourceJobReviewCue, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
 import { parseExactTrialOffer, readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
@@ -116,7 +116,12 @@ function JobDetail({ tenant, job, source }: { tenant: string; job: HomeJob; sour
       {!job.verified && <p>Some job details are awaiting confirmation.</p>}
       <p>Saved record updated {checked(row.card.updatedAt)}. This may lag Commusoft.</p>
       {source && <p>Source last captured {checked(source.source_observed_at)}. {source.source_state === "reviewed_latest" ? "The reviewed version is the latest unambiguous version retained by OpenFolk, not a live provider check." : "Saved details may have changed; OpenFolk needs to review the record before this status is relied on."}</p>}
-      <h3>Next step</h3><p>{source && source.source_state !== "reviewed_latest" ? "Wait for OpenFolk to check the changed source record." : `${homeJobAction(job)}.`}</p>
+      <h3>Next step</h3><p>{source ? sourceJobReviewCue(source).kind === "link_review"
+        ? "Wait for OpenFolk to review the changed source link."
+        : sourceJobReviewCue(source).kind === "aged_observation"
+          ? "Ask OpenFolk to recheck this older source observation before acting on saved progress."
+          : `${homeJobAction(job)}. Confirm current progress before acting.`
+        : `${homeJobAction(job)}.`}</p>
       {row.gaps.length > 0 && <p>OpenFolk is checking some of this job’s details. This job is not scored yet.</p>}
       <small>Evidence checked {checked(row.observedAt)}. This is saved information, not a live provider check or a score.</small>
     </div>
@@ -169,7 +174,9 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
   return <div className="nd-job-detail space-y-3">
     <p><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Saved job"}</strong> · {homeJobState({ status: job.fields.status })}</p>
     <p>{job.fields.customer ?? "Customer not confirmed"} · {job.fields.address ?? job.fields.postcode ?? "Site not confirmed"}</p>
-    <p>Next review: {homeJobAction({ status: job.fields.status })}. An assigned person is not verified in OpenFolk.</p>
+    <p>Next review: {"source_observed_at" in job
+      ? sourceJobReviewCue(job as SourceHomeJob).label
+      : homeJobAction({ status: job.fields.status })}. An assigned person is not verified in OpenFolk.</p>
     <p>Saved card updated {checked(job.fields.updated_at)}. The saved card can lag its Commusoft source.</p>
     {busy && <p role="status">Checking this job’s reviewed source link…</p>}
     {error && <p role="alert">{error}</p>}
@@ -237,6 +244,10 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
   });
   const sourceJobs = clientSource.data?.jobs.map((row) => ({ job: sourceJobAsHomeJob(row, tenant), source: row })) ?? [];
   const displayedOperatorJobs = operatorSourcePage?.jobs ?? operatorPage;
+  const sourceReviewCounts = operatorSourcePage?.jobs.reduce((counts, job) => {
+    counts[sourceJobReviewCue(job).kind] += 1;
+    return counts;
+  }, { link_review: 0, aged_observation: 0, recent_observation: 0 }) ?? null;
   async function loadOperatorJobs() {
     if (!user || !sourceFlag.isSuccess || reason.trim().length < 3 || operatorBusy) return;
     setOperatorBusy(true); setOperatorError(""); setOperatorPage(null); setOperatorSourcePage(null);
@@ -289,7 +300,8 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         <details><summary>About this view</summary><p>These jobs have reviewed Commusoft links. This is a bounded saved selection, not a complete workload or live provider status. Other captured jobs still await identity review. Source changes and unconfirmed ownership stay visible; no score or assignment is inferred.</p></details>
       </div>}
       {displayedOperatorJobs && <div className="nd-job-scope">
-        <strong>{displayedOperatorJobs.length} saved jobs shown{operatorSourcePage ? ` from ${operatorSourcePage.reviewedJobCount} linked records` : ""}</strong> · {operatorSourcePage ? "Latest source captured" : "Latest saved"} {latestSaved(operatorSourcePage ? operatorSourcePage.jobs.map((job) => job.source_observed_at) : displayedOperatorJobs.map((job) => job.fields.updated_at))}
+        <strong>{displayedOperatorJobs.length} saved jobs shown{operatorSourcePage ? ` from ${operatorSourcePage.reviewedJobCount} linked records` : ""}</strong> · {operatorSourcePage ? "Latest observation among shown jobs" : "Latest saved"} {latestSaved(operatorSourcePage ? operatorSourcePage.jobs.map((job) => job.source_observed_at) : displayedOperatorJobs.map((job) => job.fields.updated_at))}
+        {sourceReviewCounts && <p role="status">In this saved selection: {sourceReviewCounts.link_review} source versions or links need review · {sourceReviewCounts.aged_observation} job observations over 24 hours old · {sourceReviewCounts.recent_observation} recently captured. None confirms current Commusoft progress.</p>}
         <details><summary>About this view</summary><p>This audited preview is a limited saved selection, not the full current workload or a staff login. Job cards can lag Commusoft; ownership and next actions still need source review.</p></details>
       </div>}
       {!operator && client.isSuccess && client.data.length === 0 && <p>No saved job records are visible yet. OpenFolk can check the connection and source review.</p>}
@@ -304,13 +316,13 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         {!operator && sourceJobs.map(({ job, source }) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
           <BriefcaseBusiness size={20} />
           <span className="nd-job-main"><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job number not confirmed"}</strong><small>{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</small></span>
-          <span className="nd-job-review"><b>{homeJobState(job)}</b><small>{sourceJobClientLabel(source)} · Captured {checked(source.source_observed_at)} · Assignee unconfirmed</small></span>
+          <span className="nd-job-review"><b>{homeJobState(job)}</b><small>{sourceJobClientLabel(source)} · {sourceJobReviewCue(source).label} · Captured {checked(source.source_observed_at)} · Assignee unconfirmed</small></span>
           <ArrowRight size={17} />
         </button>)}
         {displayedOperatorJobs?.map((job) => <div key={job.id} className="nd-job-row">
           <BriefcaseBusiness size={20} />
           <span className="nd-job-main"><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Job number not confirmed"}</strong><small>{job.fields.title && job.fields.job_number ? `${job.fields.title} · ` : ""}{job.fields.customer ?? "Customer not confirmed"} · {job.fields.address ?? job.fields.postcode ?? "Site not confirmed"}</small></span>
-          <span className="nd-job-review"><b>{homeJobState({ status: job.fields.status })}</b><small>{operatorSourcePage ? `${sourceJobLabel(job as typeof operatorSourcePage.jobs[number])} · Captured ${checked((job as typeof operatorSourcePage.jobs[number]).source_observed_at)}` : homeJobAction({ status: job.fields.status })} · Assignee unconfirmed</small></span>
+          <span className="nd-job-review"><b>{homeJobState({ status: job.fields.status })}</b><small>{operatorSourcePage ? `${sourceJobReviewCue(job as SourceHomeJob).label} · ${sourceJobLabel(job as SourceHomeJob)} · Captured ${checked((job as SourceHomeJob).source_observed_at)}` : homeJobAction({ status: job.fields.status })} · Assignee unconfirmed</small></span>
           <button className="cp-secondary" onClick={() => setSelectedOperator(job)}>Open this job</button>
         </div>)}
       </div>

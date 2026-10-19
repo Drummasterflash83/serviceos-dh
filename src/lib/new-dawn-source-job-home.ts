@@ -49,6 +49,17 @@ export function sourceJobLabel(job: SourceHomeJob) {
   return "Reviewed source version is the latest retained";
 }
 
+/** A retained observation is evidence of capture, never a current provider check. */
+export function sourceJobReviewCue(job: SourceHomeJob, now = Date.now()) {
+  if (job.source_state !== "reviewed_latest")
+    return { kind: "link_review" as const, label: job.source_state === "source_changed"
+      ? "Review changed source link" : "Review ambiguous source version" };
+  const age = now - Date.parse(job.source_observed_at);
+  if (!Number.isFinite(age) || age < -60_000 || age > 24 * 60 * 60_000)
+    return { kind: "aged_observation" as const, label: "Recheck source observation" };
+  return { kind: "recent_observation" as const, label: "Recently captured; progress unverified" };
+}
+
 export function sourceJobClientLabel(job: SourceHomeJob) {
   return job.source_state === "reviewed_latest"
     ? "Recorded details available"

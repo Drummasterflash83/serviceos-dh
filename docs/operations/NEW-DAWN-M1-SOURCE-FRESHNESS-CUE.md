@@ -1,0 +1,5 @@
+# M1 source freshness cue
+
+The job-first home now distinguishes three kinds of saved Commusoft evidence in the operator preview: a changed or ambiguous reviewed link, a latest retained job observation more than 24 hours old, and a recently captured observation. The label is a review cue, not a claim about current provider status. The summary counts only the bounded jobs shown, and the last-observation date is explicitly scoped to those rows. Job detail directs the reader to recheck aged evidence before acting on saved progress.
+
+This frontend-only slice uses the existing audited source-home read and its operator preview flag. It adds no source link, customer identity, assignee, score, provider request or database write. The client release flag stays off; Heidi remains disabled. Local parser tests, TypeScript and the production build pass. A signed-in TEST visual check and LIVE representative owner review still gate client publication. Rollback is reverting this frontend commit; no SQL rollback is needed.
