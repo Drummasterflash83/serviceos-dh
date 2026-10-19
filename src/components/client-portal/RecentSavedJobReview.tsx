@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
 import { loadCommusoftReviewConnections } from "@/lib/learn-commusoft-review";
+import { operatorBusinessReviewClient } from "@/lib/openfolk-business-review";
 import { loadRecentUnlinkedJobs } from "@/lib/new-dawn-recent-unlinked-jobs";
 import { dailySourceReview } from "@/lib/new-dawn-daily-source-review";
 
@@ -25,9 +26,14 @@ export function RecentSavedJobReview({
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const db = getSupabaseClient();
-      const connections = await loadCommusoftReviewConnections(db, tenant);
+      const reviewed = operatorBusinessReviewClient(
+        db,
+        { tenant, actor, reason },
+        () => !signal.aborted,
+      );
+      const connections = await loadCommusoftReviewConnections(reviewed, tenant);
       if (connections.length !== 1) throw Error("Choose a connection in source review.");
       return loadRecentUnlinkedJobs(db, {
         tenant,

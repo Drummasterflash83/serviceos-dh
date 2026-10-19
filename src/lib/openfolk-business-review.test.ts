@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { operatorBusinessReviewClient } from "./openfolk-business-review.ts";
+import { loadCommusoftReviewConnections } from "./learn-commusoft-review.ts";
 const tenant = "11111111-1111-4111-8111-111111111111",
   actor = "22222222-2222-4222-8222-222222222222";
 const action = "learn_commusoft_review_connections",
@@ -34,6 +35,29 @@ test("operator facade keeps the actor and selected tenant and requires an audite
     name: "openfolk_business_review",
     input: { p_tenant: tenant, p_action: action, p_reason: scope.reason, p_args: args },
   });
+});
+test("recent source review lists its connection through the audited operator facade", async () => {
+  let directCalls = 0;
+  const connection = "44444444-4444-4444-8444-444444444444";
+  const client = operatorBusinessReviewClient(
+    {
+      rpc: async (name, input) => {
+        assert.equal(name, "openfolk_business_review");
+        assert.equal(input.p_action, "learn_commusoft_review_connections");
+        directCalls++;
+        return {
+          data: envelope({ tenant_id: tenant, connections: [{ id: connection, name: "Drummonds" }] }),
+          error: null,
+        };
+      },
+    },
+    scope,
+    () => true,
+  );
+  assert.deepEqual(await loadCommusoftReviewConnections(client, tenant), [
+    { id: connection, name: "Drummonds" },
+  ]);
+  assert.equal(directCalls, 1);
 });
 test("foreign tenant, actor, unsupported action and closed review never dispatch", async () => {
   let calls = 0;
