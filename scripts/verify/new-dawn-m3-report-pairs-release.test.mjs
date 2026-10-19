@@ -8,7 +8,8 @@ const catalog={installed:false,security_definer:false,authenticated_grant:false,
   summary_sha256:"b98df331e0613be5cc490ed0f8f0f283233378b058433ceb81cfb9e75ea531a4",
   extract_sha256:"a8aa46ebcdbb07e24dfb0d103c37ced3a84b33efb76f77b89e5d0e11e30e8642",
   capture_finish_sha256:"351da00347b7e9a4df4f73bc2619c096afb2af593a3ca136ece2dd90f864996c",
-  active_tenant:true,confirmed_connections:1,client_flags_on:0,report_preview_on:1};
+  active_tenant:true,confirmed_connections:1,client_flags_on:0,
+  home_operator_on:0,report_preview_on:1};
 const before={project:{id:PROJECT,status:"ACTIVE_HEALTHY"},ledger:[],catalog:[catalog],counts:[counts]};
 const after={...before,ledger:[{version:VERSION,name:NAME,statement_count:1,
   source_sha256:reviewedSource().hash}],catalog:[{...catalog,installed:true,
@@ -28,6 +29,8 @@ test("exact report-pair SQL is wrapped, pinned and never toggles a money flag",(
 test("readback proves exact ledger, source functions, grants and default-off boundary",()=>{
   assert.equal(assess(before,false).state,"exact_m3_pairs_ready");
   assert.equal(assess(after,true).state,"installed_default_off_readback");
+  assert.equal(assess({...after,catalog:[{...after.catalog[0],home_operator_on:1}]},
+    true,reviewedSource(),true).operatorPreviewEnabled,true);
   for(const changed of [
     {...before,project:{...before.project,id:"wrong"}},
     {...before,catalog:[{...catalog,client_flags_on:1}]},

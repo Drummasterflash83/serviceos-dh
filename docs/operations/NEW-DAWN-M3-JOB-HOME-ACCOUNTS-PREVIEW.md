@@ -58,3 +58,21 @@ off. Disable only `new_dawn.job_home_accounts_preview` to withdraw the panel;
 the additive RPC and immutable audit can remain. Client publication requires
 separate accounting review and a real owner identity; Chris's OpenFolk identity
 must never substitute for Drummonds staff.
+
+The separately prepared flag switch is
+`scripts/verify/new-dawn-m3-job-home-accounts-flag.mjs`. Its read-only preflight
+currently returns `operator_accounts_preview_off`. After the exact SQL and
+Vercel merge are verified, the release owner can run:
+
+1. `NEW_DAWN_M3_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m3-job-home-accounts-flag.mjs --live-read-only`
+2. `NEW_DAWN_M3_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m3-job-home-accounts-flag.mjs --live-enable-drummonds-operator-only`
+3. Repeat `--live-read-only` and complete the signed-in acceptance above.
+
+The switch pins the exact selector ledger and function definition, verifies one
+available same-actor saved report pair, the Drummonds job-preview and
+report-summary controls, and zero enabled owner/client money flags. It changes
+only `new_dawn.job_home_accounts_preview` for Drummonds and reads back once;
+uncertain outcomes are never replayed. To withdraw, run
+`--live-disable-drummonds-operator-only` with the same project environment
+variable. Withdrawal depends only on the exact flag scope, so it still works
+if report evidence or selector health later fails. No provider request is made.
