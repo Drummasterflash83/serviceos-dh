@@ -26,6 +26,8 @@ import { DH_APPROVED_REVIEW_POLICY } from "../_shared/receptionist-launch-review
 import { clearLaunchModel } from "../_shared/receptionist-launch-clear-contract.ts";
 import { launchPromotion } from "../_shared/receptionist-launch-promotion.ts";
 import { inspectLaunchGraph } from "../_shared/receptionist-launch-inspection.ts";
+import { installCandidateIntake } from "../_shared/receptionist-intake-installation.ts";
+import { safeSpeechProjection } from "../_shared/receptionist-launch-intake-contract.ts";
 import { PHYSICAL_EVIDENCE_IDS, physicalEvidence } from "../_shared/receptionist-physical-evidence.ts";
 import { captureTestHarness, compareTestHarness, inspectTestPersonality } from "../_shared/receptionist-test-harness.ts";
 import { getSimwoodCredentials, basicAuthHeader } from "../_shared/simwood.ts";
@@ -263,6 +265,22 @@ Deno.serve(async (req) => {
       }
     }
     const assistant = await api("assistant/" + settings.data.assistant_id);
+    if (body.action === "inspect_launch_speech" && service && !scheduled) {
+      if (body.tenantId !== "00000000-0000-0000-0000-000000000001" || assistant.id !== "dcfc2e66-a438-43ab-b863-467f5a5089df")
+        return reply({ error: "Fixed test binding required" }, 403);
+      const live = await api("assistant/4eb2bee8-ac25-47c9-b962-409ed250ceb6");
+      const calls = await Promise.all(["01a0fc7b-5a44-7cc3-8fcf-feb0004b1d00", "01a0fc71-1139-7dd4-98b6-3f42bffa980a"].map(async id => {
+        const c = await api(`call/${id}`);
+        if (c.orgId !== live.orgId || c.assistantId !== assistant.id) return { id, bindingVerified: false };
+        return {id,endedReason:c.endedReason,startedAt:c.startedAt,endedAt:c.endedAt,
+          messages:list(c.artifact?.messages ?? c.messages).slice(0,100).map(m => ({
+            role:m.role,time:m.time,endTime:m.endTime,secondsFromStart:m.secondsFromStart,
+            message:typeof m.message === 'string' ? m.message.slice(0,800) : null,
+            tools:list(m.toolCalls ?? m.tool_calls).map(t => ({id:t.id,name:t.function?.name})),
+          }))};
+      }));
+      return reply({readOnly:true,candidate:safeSpeechProjection(assistant),live:safeSpeechProjection(live),calls});
+    }
     if (body.action === "inspect_suite" && service && !scheduled) {
       const suite = await api("eval/simulation/suite/" + settings.data.suite_id);
       const simulation = await api("eval/simulation/" + suite.simulationIds[0]);
@@ -310,6 +328,16 @@ Deno.serve(async (req) => {
     const hash = await evidenceHash({ assistant, tools });
     const main = body.tenantId === "00000000-0000-0000-0000-000000000001" ? "+441794341600" : null;
     const checks = configurationChecks(assistant, tools, main);
+    if (body.action === "install_candidate_intake" && service && !scheduled) {
+      if (body.tenantId !== "00000000-0000-0000-0000-000000000001" || body.expectedHash !== hash)
+        return reply({error:"Candidate changed; inspect before installation"},409);
+      try {
+        return reply(await installCandidateIntake(db,api,actor,Deno.env.get("EMMA_TEST_INTAKE_TOKEN") ?? ""));
+      } catch {
+        // Never forward provider errors containing the scoped webhook credential.
+        return reply({error:"Candidate intake installation needs review. No automatic retry was sent.",providerState:"review_required"},409);
+      }
+    }
     if (
       [
         "repair_candidate_wording",
@@ -422,7 +450,10 @@ Deno.serve(async (req) => {
           id: t.id,
           type: t.type,
           function: t.function,
-          destinations: t.destinations,
+          destinations: list(t.destinations).map(({server, ...destination}) => ({
+            ...destination,
+            ...(server ? {server:{configured:true,authenticationConfigured:!!server.credentialId || Object.keys(object(server.headers)).length > 0}} : {}),
+          })),
         })),
         hash,
       });

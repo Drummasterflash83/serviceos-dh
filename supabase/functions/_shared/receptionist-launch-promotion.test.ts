@@ -11,7 +11,7 @@ const clone = <T>(x: T): T => structuredClone(x);
 const uid = (n: number) => `00000000-0000-0000-0000-${n.toString().padStart(12, "0")}`;
 async function fixture() {
   const orgId = uid(30), actor = uid(31);
-  const voice = { provider: "11labs", voiceId: "approved" }, transcriber = { provider: "soniox" };
+  const voice = { provider: "11labs", voiceId: "approved", speed: 1.05 }, transcriber = { provider: "soniox" };
   const ordinary = { id: ids.ordinary, orgId, type: "transferCall", function: { name: "Route-Call-to-Drummond-Team-20260929" },
     destinations: ["+441794378095", "+441794378105", "+441794378096", "+441794840042", "+441794840043", ...Array.from({ length: 5 }, (_, i) => `+44179400000${i}`)].map(number => ({ type: "number", number, description: "Reviewed original destination", message: "Original announcement", transferPlan: { mode: "blind-transfer" } })) };
   const emergency = { id: ids.emergency, orgId, type: "transferCall", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [{ number: "+441794378105", transferPlan: { mode: "warm-transfer" } }] };
@@ -20,7 +20,7 @@ async function fixture() {
     server: { url: "https://private.example", headers: { Authorization: "PRIVATE_SECRET" } }, artifactPlan: { recordingEnabled: true },
     maxDurationSeconds: 300, firstMessage: "Live welcome", model: { provider: "openai", model: "gpt-4.1", tools: [], toolIds: [ids.ordinary, ids.emergency], messages: [{ role: "system", content: "Existing live policy" }] } };
   const candidate = { id: ids.candidate, orgId, updatedAt: "candidate-revision", voice, transcriber,
-    firstMessage: 'openfolk_holidays {{"now" | date: "%Y"}}', model: { provider: "openai", model: "gpt-4.1", toolIds: [ids.handoff],
+    firstMessage: "{% if openfolk_holidays contains openfolk_holiday_key %}Welcome to Drummonds. I'm Emma, the automated receptionist, and this call is recorded. Our office is closed.{% else %}Welcome to Drummonds. I'm Emma, the automated receptionist, and this call is recorded.{% endif %}", model: { provider: "openai", model: "gpt-4.1", toolIds: [ids.handoff],
       tools: [{ type: ordinary.type, function: ordinary.function, destinations: ordinary.destinations.map(approvedOrdinaryDestination) }],
       messages: [{ role: "system", content: "CONSOLIDATED HANDOVER CONTRACT\nReviewed safety policy" }] } };
   const helper = { id: ids.helper, orgId, voice, transcriber, model: { toolIds: [ids.emergency], tools: [], messages: [{ role: "system", content: "EMERGENCY CONTINUATION: reviewed policy" }] } };

@@ -317,6 +317,11 @@ verify_jwt = false
 [functions.receptionist-testing]
 verify_jwt = false
 
+# Candidate-only Vapi handoff; a dedicated inbound secret is checked before
+# parsing, followed by live provider binding and the private atomic decision.
+[functions.receptionist-intake-check]
+verify_jwt = false
+
 # Operator-only capture evidence; JWT/service authentication is enforced inside.
 [functions.phone-capture-coverage]
 verify_jwt = false

@@ -64,6 +64,19 @@ function validateGraph(g: any, source: any) {
   for (const assistant of [c, g.helper])
     if (!same(assistant.voice, g.live.voice) || !same(assistant.transcriber, g.live.transcriber))
       throw Error("Launch voice or transcription differs from the existing live service.");
+  // The published v14 speed trial must survive the candidate promotion. A
+  // stale pre-v14 candidate is a release stop, not an implicit voice rollback.
+  if (g.live.voice?.speed !== 1.05 || c.voice?.speed !== 1.05 || g.helper.voice?.speed !== 1.05)
+    throw Error("Emma v14 speech setting is not aligned across the launch graph.");
+  const firstMessage = c.firstMessage as string;
+  const holiday = firstMessage.indexOf("{% if openfolk_holidays contains openfolk_holiday_key %}");
+  const open = firstMessage.indexOf("{% else %}", holiday);
+  if (holiday < 0 || open < holiday ||
+      !/automated receptionist/i.test(firstMessage.slice(holiday, open)) ||
+      !/call is recorded/i.test(firstMessage.slice(holiday, open)) ||
+      !/automated receptionist/i.test(firstMessage.slice(open)) ||
+      !/call is recorded/i.test(firstMessage.slice(open)))
+    throw Error("Both closed and ordinary Emma greetings must disclose AI and recording.");
 }
 
 async function readGraph(api: Api) {
