@@ -77,6 +77,36 @@ test("authority lost after the GET withholds even a valid response", async () =>
   assert.equal(currentReads, 2); assert.equal(finished, 0); assert.equal(failed, 1);
 });
 
+test("long lease wait remains a prepared request and makes no provider GET", async () => {
+  const retryAt = Date.now() + 40000;
+  const calls: string[] = [];
+  const result = await runExactJobDetail(request, {
+    userRpc: async () => rpcReply({ request_id: requestId, state: "prepared" }),
+    serviceRpc: async (name) => { calls.push(name); return rpcReply({ state: "wait", retry_at: retryAt, wait_kind: "lease" }); },
+    fetcher: async () => { throw Error("must not GET"); },
+  });
+  assert.deepEqual(result, { request_id: requestId, state: "waiting", retry_at: retryAt });
+  assert.deepEqual(calls, ["new_dawn_commusoft_job_detail_acquire"]);
+});
+
+test("provider 429 carries a bounded retry time to durable failure RPC", async () => {
+  const started = Date.now();
+  let failure: Record<string, unknown> | null = null;
+  await assert.rejects(runExactJobDetail(request, {
+    userRpc: async () => rpcReply({ request_id: requestId, state: "prepared" }),
+    serviceRpc: async (name, args) => {
+      if (name.endsWith("_acquire")) return rpcReply(ready);
+      if (name.endsWith("_current")) return rpcReply(true);
+      if (name.endsWith("_fail")) { failure = args; return rpcReply(null); }
+      throw Error(name);
+    },
+    fetcher: async () => Response.json({}, { status: 429, headers: { "Retry-After": "120" } }),
+  }), /rate_limited/);
+  assert.equal(failure?.p_code, "rate_limited");
+  const retryAt = Date.parse(String(failure?.p_retry_at));
+  assert.ok(retryAt >= started + 119000 && retryAt <= started + 121000);
+});
+
 test("malformed requests and unapproved source targets fail closed", () => {
   assert.equal(validateExactJobDetailRequest(request), true);
   assert.equal(validateExactJobDetailRequest({ ...request, extra: "x" }), false);

@@ -497,6 +497,11 @@ test("shared permit wait issues no request; throttling persists shared deferral"
     (e: any) => e.code === "rate_limited" && e.retryAt === now + 120000,
   );
   assert.equal(f.counts().fetches, 0);
+  const leased = fixture();
+  leased.ports.acquire = async () => ({ state: "wait", waitKind: "lease", retryAt: now + 40000 });
+  await assert.rejects(leased.run(),
+    (e: any) => e.code === "lease_wait" && e.retryAt === now + 40000);
+  assert.equal(leased.counts().fetches, 0);
   const g = fixture();
   g.ports.fetcher = async () => Response.json({ error: "private" }, { status: 429 });
   await assert.rejects(g.run(), /rate_limited/);

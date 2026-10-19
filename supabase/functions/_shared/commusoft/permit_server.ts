@@ -63,11 +63,13 @@ export function createCommusoftPermitPorts(
         if (error || !object(data)) return null;
         if (
           data.state === "wait" &&
-          Object.keys(data).every((k) => ["state", "retryAt"].includes(k)) &&
+          Object.keys(data).every((k) => ["state", "retryAt", "waitKind"].includes(k)) &&
           Number.isSafeInteger(data.retryAt) &&
-          Number(data.retryAt) > clock()
+          Number(data.retryAt) > clock() &&
+          (data.waitKind === undefined || data.waitKind === "lease" || data.waitKind === "quota")
         ) {
-          return { state: "wait", retryAt: Number(data.retryAt) };
+          return { state: "wait", retryAt: Number(data.retryAt),
+            ...(data.waitKind === undefined ? {} : { waitKind: data.waitKind }) };
         }
         if (
           data.state === "ready" &&
