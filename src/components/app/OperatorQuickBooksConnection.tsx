@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { OperatorQuickBooksImports } from "./OperatorQuickBooksImports";
 import { OperatorQuickBooksInvoiceCheck } from "./OperatorQuickBooksInvoiceCheck";
+import { OperatorQuickBooksReportCapture } from "./OperatorQuickBooksReportCapture";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import {
   readQuickBooksOverview,
@@ -465,6 +466,8 @@ export function OperatorQuickBooksConnection({
             onChange={() => refresh()}
           />
           <OperatorQuickBooksInvoiceCheck tenantId={tenantId} actorId={actorId}
+            canWrite={canWrite} connections={data.connections} />
+          <OperatorQuickBooksReportCapture tenantId={tenantId} actorId={actorId}
             canWrite={canWrite} connections={data.connections} />
         </>
       )}

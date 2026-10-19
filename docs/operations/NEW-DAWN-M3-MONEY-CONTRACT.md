@@ -118,15 +118,17 @@ audit intact for investigation. The money flag stays off throughout. Only
 after the independent owner/denied-user money-RPC and signed-in UI checks, and
 the bounded provider comparison pass, may the release owner enable that flag.
 
-The next report-capture PR should add two **GET-only** QuickBooks Online
+The report-capture PR adds two **GET-only** QuickBooks Online
 Reports API requests for the bound realm: `reports/ProfitAndLoss` for an explicit
 start/end period and accounting basis, and `reports/AgedReceivables` for an
 explicit report date and report-date ageing method. Both are named in
 [Intuit's developer API collection](https://www.postman.com/intuit-developer/intuit-developer-quickbooks-online-accounting-api/documentation/4884662-e6c576f1-f6d3-440f-b090-da9ff1ac519d).
-The currently installed entity-query worker cannot issue or retain those
-reports. A report request needs its own durable permit, bounded response size,
+The entity-query worker cannot issue or retain those reports. The separate
+operator-only route uses a durable permit, bounded response size,
 tenant/realm/credential checks, immutable raw response receipt, and explicit
-period, basis, currency, provider time and summary-row validation. Do not
+period, basis, currency and provider time checks; summary-row validation is
+still required before any figure is displayed. See
+[the report-capture contract](NEW-DAWN-M3-REPORT-CAPTURE.md). Do not
 publish accounts GP or MD-only NP until Drummonds' actual report response is
 captured and reconciled. The AgedReceivables response is a separate comparison
 to, not a relabeling of, this invoice-age calculation. An
