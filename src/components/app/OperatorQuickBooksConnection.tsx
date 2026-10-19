@@ -3,6 +3,7 @@ import { OperatorQuickBooksImports } from "./OperatorQuickBooksImports";
 import { OperatorQuickBooksInvoiceCheck } from "./OperatorQuickBooksInvoiceCheck";
 import { OperatorQuickBooksReportCapture } from "./OperatorQuickBooksReportCapture";
 import { OperatorQuickBooksReportSummary } from "./OperatorQuickBooksReportSummary";
+import { OperatorQuickBooksMoneyReadiness } from "./OperatorQuickBooksMoneyReadiness";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import {
   readQuickBooksOverview,
@@ -472,6 +473,8 @@ export function OperatorQuickBooksConnection({
             canWrite={canWrite} connections={data.connections} />
           <OperatorQuickBooksReportSummary key={`${tenantId}:${actorId}`} tenantId={tenantId} actorId={actorId}
             canWrite={canWrite} />
+          <OperatorQuickBooksMoneyReadiness key={`readiness:${tenantId}:${actorId}`} tenantId={tenantId}
+            actorId={actorId} canWrite={canWrite} connections={data.connections} />
         </>
       )}
     </section>
