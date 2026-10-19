@@ -83,5 +83,6 @@ export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, c
       `Held ${receipt.kind} response for review (${receipt.validationCode}). No figures can be published from this receipt.` :
       `Saved ${receipt.kind} source receipt. Figures remain unpublished pending reconciliation.`}
       {` Company ${receipt.realmId} · ${receipt.bytes} bytes · SHA-256 ${receipt.sha256} · audit ${receipt.auditId}. Report currency: ${receipt.currency ?? "not supplied"}; provider time: ${receipt.reportTime ?? "not supplied"}.`}</p>}
+    {receipt && <p className="break-all text-xs text-muted-foreground">Saved receipt ID: {receipt.requestId}</p>}
   </section>;
 }
