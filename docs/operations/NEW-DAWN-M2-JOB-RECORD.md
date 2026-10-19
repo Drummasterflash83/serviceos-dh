@@ -119,11 +119,13 @@ withholds the result. A completed receipt cannot be updated, deleted or
 truncated. The rollback-only TEST fixture exercises all three queue states and
 these receipt protections.
 
-The additive SQL and Edge route are installed on LIVE, but the UI action is
-gated by the absent/off `new_dawn.exact_job_detail` tenant flag. Installation
-starts no provider GET, and the queue guard blocks new requests while imports
-are active. Keep the flag off until the queue is idle and the signed-in operator
-preview is verified. A first real GET must
+The additive SQL and Edge route are installed on LIVE. The absent/off
+`new_dawn.exact_job_detail` flag hides the UI action but is **not** an Edge/SQL
+authorization control. The existing queue guard blocks requests while imports
+are active. The staged, default-off
+[one-job trial permit](NEW-DAWN-M2-ONE-JOB-TRIAL.md) adds server-side exact
+request scope and a short-lived queue exception without enabling tenant-wide
+coexistence; it is not installed on LIVE merely by being in Git. A first real GET must
 show the documented response shape, source/as-of labels and audited one-use
 receipt in the signed-in operator preview. Wrong ID, lost actor grant, active
 view-as, changed source link or missing connection fail closed. Seven focused
