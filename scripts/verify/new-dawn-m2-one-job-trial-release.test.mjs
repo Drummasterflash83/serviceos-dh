@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { assessStage, NAME, releaseSql, reviewedSource, SOURCE_SHA256, VERSION } from
+import { assessStage, installLive, NAME, releaseSql, reviewedSource, SOURCE_SHA256, VERSION } from
   "./new-dawn-m2-one-job-trial-release.mjs";
 
 const catalog = installed => ({ permit_table: installed, arm: installed,
@@ -32,4 +32,21 @@ test("installer stages require exact ledger, grants, absent broad flags and no p
   assert.throws(() => assessStage(broad, false), /catalog_unverified/);
   const access = snapshot(true); access.catalog[0].service_arm = true;
   assert.throws(() => assessStage(access, true), /grant_changed/);
+});
+test("unknown install response is read back once and never replayed", async () => {
+  let reads = 0; let writes = 0;
+  const installed = await installLive({ token: "synthetic", read: async () => {
+    reads += 1; return snapshot(reads === 2);
+  }, write: async () => { writes += 1; throw Error("response_lost"); } });
+  assert.equal(installed.ledgerReadbackVerified, true);
+  assert.equal(installed.writeAcknowledged, false);
+  assert.equal(reads, 2);
+  assert.equal(writes, 1);
+  reads = 0; writes = 0;
+  await assert.rejects(installLive({ token: "synthetic", read: async () => {
+    reads += 1; return snapshot(false);
+  }, write: async () => { writes += 1; throw Error("response_lost"); } }),
+  /trial_install_outcome_unverified_no_replay/);
+  assert.equal(reads, 2);
+  assert.equal(writes, 1);
 });
