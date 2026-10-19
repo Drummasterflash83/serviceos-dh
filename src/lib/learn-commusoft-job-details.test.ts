@@ -9,7 +9,7 @@ import {
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 function detail(): any {
   return {
-    version: "commusoft-job-detail/1",
+    version: "commusoft-job-detail/2",
     tenant_id: id(1),
     connection_id: id(2),
     version_id: id(3),
@@ -104,6 +104,18 @@ test("Unicode excerpts retain explicit shortening and stale versions remain mark
   d.fields.description.value += "🔧";
   assert.throws(() => parse(d));
   d.fields.description = { value: "short", shortened: true };
+  assert.throws(() => parse(d));
+});
+test("source financial and people labels stay text, scoped to the exact observed version", () => {
+  const d = detail();
+  d.external_id = "955";
+  d.fields.quotedAmount.value = "£1,234.50";
+  d.fields.customerContactName.value = "Customer Example";
+  d.fields.siteContactName.value = "Site Example";
+  d.fields.completedBySourceUser.value = "Engineer Example";
+  assert.equal(parse(d).fields.quotedAmount.value, "£1,234.50");
+  assert.equal(parse(d).fields.completedBySourceUser.value, "Engineer Example");
+  d.external_id = "956";
   assert.throws(() => parse(d));
 });
 test("denied and failed reads expose no provider error or raw response; invalid scope makes no request", async () => {

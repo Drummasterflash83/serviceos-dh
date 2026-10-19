@@ -53,7 +53,7 @@ export function LearnCommusoftJobDetails({
   }, [open, revision, tenant, connection, version, external, client]);
   return (
     <details onToggle={(e) => setOpen(e.currentTarget.open)}>
-      <summary>Inspect retained job {external}</summary>
+      <summary>Open source job record {external}</summary>
       {busy && <p role="status">Reading retained job details…</p>}
       {error && <p role="status">{error}</p>}
       {open && !busy && (
@@ -64,8 +64,8 @@ export function LearnCommusoftJobDetails({
       {data && (
         <section aria-label={`Retained job ${external} details`} className="space-y-3">
           <p>
-            Source details retained from Commusoft. This view does not link the job, confirm its
-            accuracy or calculate a score.
+            Commusoft job {external}. These are facts retained from the selected source version.
+            They do not confirm a customer link, current provider status, payment or a score.
           </p>
           {!data.current && (
             <p role="status">
@@ -77,6 +77,7 @@ export function LearnCommusoftJobDetails({
             Last observed for this version: {new Date(data.observed_at).toISOString()} · Property{" "}
             {data.property_reference ?? "not verified"}
           </p>
+          <h4>Work and people</h4>
           <dl>
             {Object.entries(JOB_DETAIL_FIELDS).map(([key, label]) => {
               const field = data.fields[key as keyof typeof JOB_DETAIL_FIELDS];
@@ -93,6 +94,11 @@ export function LearnCommusoftJobDetails({
               );
             })}
           </dl>
+          <p className="text-sm">
+            The quoted amount is source text, not an invoice or actual cost. A named source user
+            is not a verified engineer assignment or visit. Diary visits, estimates, invoices,
+            parts and costs have not been captured in this record.
+          </p>
           <h4>Source dates</h4>
           <dl>
             {Object.entries(JOB_DETAIL_DATES).map(([key, label]) => {
