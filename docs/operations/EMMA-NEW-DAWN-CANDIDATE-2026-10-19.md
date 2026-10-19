@@ -143,6 +143,18 @@ foreign-call or wrong-order evidence returns `not_verified`. Its synthetic
 tests pass, but it has no live evidence or provider integration yet; the
 collecting operator must independently authenticate each receipt's source.
 
+The immutable local source-candidate preflight is
+`docs/operations/EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-19.json` (SHA-256
+`96a28305f8e14b8e84ceed6760b2107dbbc8bbaa51b83adbb87a2962b0d4ac02`).
+It pins 12 relevant source-file hashes to commit `c872a5d1`, the v10 suite
+payload hash and each of the 12 scenario payload hashes. Running the
+reproducible local checker twice produced identical bytes; all 12 passed
+static clock/mock/rubric checks on that unchanged source. **No Vapi model
+conversation was run:** every scenario's conversational and real-phone
+outcome is explicitly `not_run`. This is not a 12/12 provider pass or a
+hash of the unobserved saved Vapi candidate. The last real provider result
+remains 8/12 on an older candidate.
+
 ## Required provider sequence, no automatic launch
 
 1. Read the current Vapi assistant, candidate, helper, handoff tool, test
