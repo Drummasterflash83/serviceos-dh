@@ -108,7 +108,7 @@ export function assessM2Postrelease({ project, functions, migrations, flags, que
 }
 
 export function assessM2WorkerFirst({ project, functions, migrations, flags, queue, health },
-  now = Date.now()) {
+  now = Date.now(), expectedMigrations = []) {
   if (project?.id !== PROJECT || project?.status !== "ACTIVE_HEALTHY")
     throw Error("production_project_unconfirmed");
   const endpoints = namedEndpoints(functions), worker = endpoints[0], pin = ENDPOINTS[0];
@@ -121,7 +121,8 @@ export function assessM2WorkerFirst({ project, functions, migrations, flags, que
     if (Object.keys(old).some(key => actual[key] !== old[key]) || actual.status !== "ACTIVE")
       throw Error("manual_route_changed_before_sql:" + old.name);
   }
-  if (!Array.isArray(migrations) || migrations.length !== 0 ||
+  if (!Array.isArray(migrations) || migrations.length !== expectedMigrations.length ||
+    migrations.some((row, i) => String(row?.version) !== expectedMigrations[i]) ||
     !Array.isArray(flags) || flags.length !== 0)
     throw Error("m2_sql_or_flag_changed_before_worker_gate");
   if (!Array.isArray(queue) || queue.length !== 1 || typeof queue[0]?.active_import !== "boolean")
@@ -140,7 +141,7 @@ export function assessM2WorkerFirst({ project, functions, migrations, flags, que
     sourceHealth: { preActivationRunning: Number(row.pre_activation_running),
       recentRetrying: Number(row.recent_retrying), recentDeadLetter: Number(row.recent_dead_letter),
       completedSince: Number(row.completed_since) },
-    activeImport: queue[0].active_import, migrationsPresent: [], flagsPresent: [],
+    activeImport: queue[0].active_import, migrationsPresent: expectedMigrations, flagsPresent: [],
     providerRequests: 0 };
 }
 
