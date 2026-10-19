@@ -30,3 +30,27 @@ perform the explicit audited read, confirm the date/source/amount and private
 operator audience, and confirm no cue in an ordinary client view. No broad
 enablement is part of this PR. To withdraw the cue, disable only
 `new_dawn.aged_debt_exception_preview`; saved reports and audit remain intact.
+
+The exact switch is `scripts/verify/new-dawn-m3-aged-receivables-flag.mjs`.
+Its 20 October read-only LIVE preflight returned `operator_aged_review_off` for
+the exact Drummonds tenant, with the selector ledger/source matching, the
+parent operator controls ON, and every owner/client money flag OFF. It made no
+provider request or write. The release owner can use this sequence only after
+the switch PR is merged, frontend deployment checked and signed-in acceptance
+planned:
+
+1. `NEW_DAWN_M3_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m3-aged-receivables-flag.mjs --live-read-only`
+2. `NEW_DAWN_M3_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m3-aged-receivables-flag.mjs --live-enable-drummonds-operator-only`
+3. Repeat `--live-read-only`, then check the private desktop/mobile view and
+   its existing `report.summary_preview_read` audit. Confirm ordinary client
+   views remain withheld. The cue appears only for a positive saved 91+ bucket.
+
+The transaction locks `feature_flags`, pins the exact selector migration and
+function definition, production connection and Drummonds-only parent flags,
+requires all client money controls OFF, and changes one tenant flag. It makes
+one independent read-only management readback after the write; an uncertain
+outcome is never automatically retried. To withdraw, use
+`--live-disable-drummonds-operator-only` with the same project environment
+variable. Withdrawal checks only the exact flag/project state, so stale or
+missing report evidence cannot trap an enabled cue. If a write outcome is
+unverified, inspect the fresh read-only state before any human retry.
