@@ -5,6 +5,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { savedCliToken, TEST_PROJECT } from './learn-test-readiness.mjs';
+import { selectionSql } from './new-dawn-m1-live-source-home-performance.mjs';
 
 const LIVE_PROJECT = 'tgbnakbxwcqjeimygroz';
 const TENANT = '00000000-0000-0000-0000-000000000001';
@@ -199,12 +200,48 @@ export async function readLiveCatalog() {
     operatorFlagEnabled:after.operator_enabled,providerRequests:0};
 }
 
+export function candidateFreshnessSql() {
+  const selection=selectionSql();
+  const end=selection.indexOf('\nselect (select count(*)::integer from valid) reviewed_count,');
+  if (end<0) throw Error('M1 candidate source selection changed');
+  const cte=selection.slice(0,end);
+  return `begin transaction read only;\nset local statement_timeout='15s';\n${cte}
+select count(*)::integer page_count,
+ min(source_observed_at) oldest_source_observed_at,
+ max(source_observed_at) newest_source_observed_at,
+ count(*) filter(where lower(btrim(fields->>'status'))='open')::integer recorded_open,
+ count(*) filter(where lower(btrim(fields->>'status'))='pending')::integer recorded_pending,
+ count(*) filter(where lower(btrim(fields->>'status'))='ongoing')::integer recorded_ongoing,
+ count(*) filter(where fields->>'status' is null)::integer recorded_unknown
+from rows;\nrollback;`;
+}
+
+export async function readCandidateFreshness() {
+  const token=savedCliToken();
+  const before=(await query(token,LIVE_PROJECT,catalogSql,true))[0];
+  if (!before || before.client_enabled!==0 || before.operator_enabled!==0)
+    throw Error('LIVE M1 candidate readback expects both flags OFF');
+  const rows=await query(token,LIVE_PROJECT,candidateFreshnessSql(),false);
+  const after=(await query(token,LIVE_PROJECT,catalogSql,true))[0];
+  if (JSON.stringify(before)!==JSON.stringify(after))
+    throw Error('LIVE M1 catalog changed during candidate readback');
+  const row=rows?.[0];
+  if (!row || !Number.isInteger(row.page_count) || row.page_count<0 || row.page_count>24 ||
+      !['recorded_open','recorded_pending','recorded_ongoing','recorded_unknown']
+        .every((key)=>Number.isInteger(row[key]) && row[key]>=0 && row[key]<=row.page_count))
+    throw Error('LIVE M1 candidate freshness receipt invalid');
+  return {state:'saved_candidate_freshness_read_only',project:LIVE_PROJECT,providerRequests:0,
+    ...row,limitation:'These are retained source observation times and saved job statuses, not current Commusoft status.'};
+}
+
 if (process.argv[1] && import.meta.url===new URL(`file://${process.argv[1]}`).href) {
   const mode=process.argv.slice(2).join(' ');
   if (mode!=='--test-rollback-only' && mode!=='--live-catalog-read-only' &&
+      mode!=='--live-candidate-freshness-read-only' &&
       mode!==`--live-install-after-verified-backup-${BACKUP_RUN}`)
     throw Error('Use exact reviewed M1 TEST, LIVE catalog, or verified-backup LIVE mode');
   try { console.log(JSON.stringify(await (mode==='--test-rollback-only' ? rehearse() :
-    mode==='--live-catalog-read-only' ? readLiveCatalog() : installAfterVerifiedBackup()))); }
+    mode==='--live-catalog-read-only' ? readLiveCatalog() :
+    mode==='--live-candidate-freshness-read-only' ? readCandidateFreshness() : installAfterVerifiedBackup()))); }
   catch (error) { console.error(error.message);process.exitCode=1; }
 }
