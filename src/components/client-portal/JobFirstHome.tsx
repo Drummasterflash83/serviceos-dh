@@ -184,7 +184,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
       {!operator && authorisedClient && client.isPending && <p role="status">Reading your saved jobs…</p>}
       {!operator && authorisedClient && client.isError && <p role="alert">Saved jobs are unavailable. Refresh to try again.</p>}
       {!operator && authorisedClient && client.isSuccess && <p className="nd-job-scope">Up to 12 saved jobs: recorded open, pending or held work first, then recent other records. This is not a complete workload count or live Commusoft status.</p>}
-      {operatorPage && <p className="nd-job-scope">Audited page of {operatorPage.length} saved jobs: recorded open, pending or held work first. These reviewed cards are not the full current Commusoft workload. At the 19 October 14:31 UTC read-only check, 1,004 canonical jobs were last updated on 16 October, while 12,672 retained Commusoft jobs had an observation today. This is a dated audit snapshot, not a live count or staff login.</p>}
+      {operatorPage && <p className="nd-job-scope">Audited page of {operatorPage.length} saved jobs: recorded open, pending or held work first. Saved job cards are incomplete and may lag Commusoft. This is a review preview, not the full current workload or a staff login.</p>}
       {!operator && client.isSuccess && client.data.length === 0 && <p>No saved job records are visible yet. OpenFolk can check the connection and source review.</p>}
       <div className="nd-job-list">
         {!operator && authorisedClient && client.data?.map((job) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
