@@ -184,6 +184,25 @@ freshness holds for visits, engineers, estimates, invoices and parts/costs,
 and leaves every row unpublished. Its `ready_for_source_review` label is only
 syntactic triage, not an accepted job link, visit, staff identity or money fact.
 
+## Held job-context review candidate
+
+`new_dawn_job_context_candidates` is a separate, default-OFF operator read for
+one canonical job with exactly one reviewed Commusoft job link. It reads at most
+21 already retained interactions to return a page of 20 or fewer from the last
+90 days. A phone call, nondraft email or publicly attested Slack message can appear
+only when it shares an explicitly reviewed customer person/company identity with
+the selected job. Draft email, removed or already job-linked interactions,
+withheld Slack and Slack without current public-channel capture proof are
+excluded. It returns source IDs, occurrence times and customer-match evidence,
+never message bodies or a newly accepted job link. The response labels every
+row `job_identity: unverified`, reports source freshness as unverified, and holds
+finance because no reviewed Commusoft↔QuickBooks job mapping exists. Multiple
+jobs for one customer remain ambiguous. Reads require an audited OpenFolk
+operator reason; no flag is inserted, provider called, link written or client
+access granted by the migration. The disposable PostgreSQL fixture checks the
+default-off gate, rollback, tenant and view-as isolation, source exclusions,
+20-row bound and audit. This candidate is **not installed on LIVE**.
+
 ## Verification
 
 `node --test src/lib/learn-commusoft-job-details.test.ts` and
