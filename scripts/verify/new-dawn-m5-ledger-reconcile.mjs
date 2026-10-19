@@ -239,10 +239,14 @@ export async function readCatalog(
 
 export async function readLive(token = savedCliToken(), fetcher = fetch) {
   const catalog = await readCatalog(LIVE_PROJECT, token, fetcher);
+  const ledger = await query(LIVE_PROJECT, token, LEDGER_SQL, true, fetcher);
+  const recorded = ledger.length > 0;
+  const assessment = assessCatalog(catalog, { requireMissing: !recorded });
+  if (recorded && !exactLedger(ledger)) throw Error("m5_existing_ledger_receipt_changed");
   return {
     catalog,
-    assessment: assessCatalog(catalog),
-    ledger: await query(LIVE_PROJECT, token, LEDGER_SQL, true, fetcher),
+    assessment,
+    ledger,
   };
 }
 
@@ -351,7 +355,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       const result = await readLive();
       console.log(
         JSON.stringify({
-          state: "ledger_missing",
+          state: result.ledger.length === 0 ? "ledger_missing" : "exact_ledger",
           project: LIVE_PROJECT,
           version: VERSION,
           sourceSha256: SOURCE_SHA256,
