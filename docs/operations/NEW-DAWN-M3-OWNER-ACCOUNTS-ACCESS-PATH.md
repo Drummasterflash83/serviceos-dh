@@ -2,6 +2,8 @@
 
 This is the next release contract, **not a client publication**. Two verified September 2026 QuickBooks report receipts exist and the OpenFolk operator can read their strict summary with an immutable audit. The current reader, `learn_quickbooks_report_summary_preview`, is deliberately **operator-only** and requires the report-request actor to equal the signed-in actor. It cannot be reused as a client owner RPC or reached by a frontend role toggle. The job-home founder preview projects only the two P&L figures after that reader; its separate flag is absent/OFF. `new_dawn.owner_money` is also OFF. The source-readiness SQL and its operator flag remain uninstalled/OFF.
 
+The additive candidate in `20261106190000_new_dawn_owner_report_publication.sql` implements a reference-only, append-only reviewed publication and a separate exact-owner report RPC. **It has not been installed on LIVE; neither flag nor any publication is seeded.** The operator decision flag is `new_dawn.owner_report_review`; the client read flag is `new_dawn.owner_accounts_report`. Both must be separately enabled by a reviewed release. The review action is bound to the original saved-report actor and records an external accounting-review reference; it does not imply that accounting sign-off has occurred. The owner RPC also rejects a current OpenFolk platform-authority holder even if that user's tenant profile says `owner`, so founder support access cannot become a client-owner money identity.
+
 ## Definitions and audience
 
 | Measure | Defensible source and date | OpenFolk operator | Client owner | Client admin/team |
@@ -25,7 +27,7 @@ The existing invoice-based `learn_quickbooks_owner_money` RPC remains a separate
 
 ## Gates before client release
 
-- Build the reference-only publication and owner RPC behind an absent/OFF flag, with rollback-only TEST fixtures for owner allow, client admin/team deny, operator/client separation, wrong tenant/realm, swapped or changed hashes, held receipt, changed period/basis, revoked publication and no net-profit field in every denied response. Check immutable audit and no provider request.
+- The rollback-only TEST fixture currently proves owner allow, client admin/team denial, operator-with-owner-profile denial, wrong-tenant denial, operator-review flag denial, client-read flag denial, stale publication revision, wrong expected hash, changed source period/basis/realm, held request, revoked publication, table/function grant separation, amount-free audit and no provider request. It changes a banned TEST fixture account only within one rolled-back transaction. A receipt mutation is blocked by the existing immutable receipt trigger; the RPC rechecks verified receipt state and both published hashes on every read.
 - Test the exact signed-in owner path and an ordinary Drummonds denial on the released UI. Heidi stays disabled and is **not** needed for engineering or synthetic TEST fixtures. Actual owner acceptance waits for an authorised, enabled client identity; it must not be simulated by Chris's OpenFolk founder login.
 - Obtain the client's accounting-definition and historical-period sign-off, then explicitly approve the reviewed receipt pair for that tenant. Only after SQL, signed-in access and mobile checks pass may the release owner consider enabling a client flag. Until then, both client money flags and the job-home founder preview flag remain OFF.
 
