@@ -119,6 +119,38 @@ schema; it is not a LIVE migration result.
    records each exact version and source file after application; do not use
    the obsolete M2 `20261106140000` filename, which conflicts with a LIVE
    QuickBooks migration. Leave all four tenant flags absent.
+
+   The scoped installer makes **one** Management API write per invocation and
+   checks the real LIVE migration ledger, exact saved SQL text, expected schema
+   stage, absent flags, healthy newer worker, unchanged manual routes, and
+   ordinary source-job health both before and after. Run it only after step 1
+   reports `worker_first_sql_ready` and the backup outcome is accepted. Run each
+   command separately, inspecting its exact readback before the next one:
+
+   ```sh
+   NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-exact-sql-release.mjs --live-apply-next --version 20261106150000
+   NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-exact-sql-release.mjs --live-apply-next --version 20261106160000
+   NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-exact-sql-release.mjs --live-apply-next --version 20261106180000
+   ```
+
+   It never uses `db push` or applies other pending migrations. Its receipt is
+   inserted atomically with the reviewed migration SQL. An unknown HTTP/write
+   result triggers one readback, never a replay; `write_outcome_unverified_no_replay`
+   means stop and inspect the ledger and catalog manually. Do not rerun that
+   version on an uncertain outcome. The installer does not deploy routes or
+   enable flags.
+
+   TEST rehearsal command, before LIVE release:
+
+   ```sh
+   NEW_DAWN_M2_ALLOW_PROJECT=saatxzwxvdvqevbnskxy node scripts/verify/new-dawn-m2-exact-sql-release.mjs --test-rollback-only
+   ```
+
+   TEST has no standard `supabase_migrations.schema_migrations` ledger. The
+   rehearsal creates an equivalent ledger inside its rollback transaction,
+   applies the exact three source files in order, and verifies the ledger and
+   lease schema remain absent afterward. This checks SQL compatibility and
+   receipt sequencing; the LIVE preflight must verify its real ledger separately.
 3. Deploy the reviewed exact-job and opportunity Edge routes, preserving their
    existing JWT-off settings and route-level authority checks. Read back new
    ACTIVE versions and distinct bundle hashes. Confirm the source worker still
