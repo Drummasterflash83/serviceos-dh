@@ -51,7 +51,7 @@ export function OperatorLearnInputs({
     "learn.inputs.commusoft.enabled": false,
   });
   const [connection, setConnection] = useState(""),
-    [resource, setResource] = useState<"properties" | "jobs" | "customer" | "workaddress">(
+    [resource, setResource] = useState<"properties" | "jobs" | "users" | "customer" | "workaddress">(
       "properties",
     );
   const [pages, setPages] = useState(10),
@@ -481,12 +481,18 @@ export function OperatorLearnInputs({
                       className="cp-select w-full"
                       value={resource}
                       onChange={(e) => {
-                        setResource(e.target.value as typeof resource);
+                        const next = e.target.value as typeof resource;
+                        setResource(next);
+                        if (next === "users") {
+                          setPages(1);
+                          setPageSize(10);
+                        }
                         setApproved(false);
                       }}
                     >
                       <option value="properties">Customers and work addresses</option>
                       <option value="jobs">Jobs</option>
+                      <option value="users">Source users (no staff assignment)</option>
                       <option value="customer">Customer contacts</option>
                       <option value="workaddress">Work-address contacts</option>
                     </select>
@@ -497,7 +503,8 @@ export function OperatorLearnInputs({
                       className="cp-input w-full"
                       type="number"
                       min={1}
-                      max={10000}
+                      max={resource === "users" ? 1 : 10000}
+                      disabled={resource === "users"}
                       value={pages}
                       onChange={(e) => {
                         setPages(Number(e.target.value));
@@ -511,7 +518,7 @@ export function OperatorLearnInputs({
                       className="cp-input w-full"
                       type="number"
                       min={1}
-                      max={100}
+                      max={resource === "users" ? 10 : 100}
                       value={pageSize}
                       onChange={(e) => {
                         setPageSize(Number(e.target.value));
@@ -627,7 +634,7 @@ export function OperatorLearnInputs({
                         revision: selected.revision,
                         resource: ["customer", "workaddress"].includes(resource)
                           ? "propertyContacts"
-                          : (resource as "properties" | "jobs"),
+                          : (resource as "properties" | "jobs" | "users"),
                         ...(["customer", "workaddress"].includes(resource)
                           ? { contact_type: resource as "customer" | "workaddress" }
                           : {}),

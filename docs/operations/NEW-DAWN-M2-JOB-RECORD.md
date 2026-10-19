@@ -34,11 +34,23 @@ browser remains plainly labelled as a browser, not as that selected job.
 At the read-only Drummonds check on **19 October 2026, 14:31 UTC**, 12,672
 retained Commusoft jobs had a source observation that day, while only 1,004
 canonical jobs existed and their latest update was **16 October 2026**. The
-operator preview displays this dated coverage warning. Its twelve saved rows
+client-workspace preview says saved cards are incomplete and may lag Commusoft;
+the technical counts stay in this operator handover. Its twelve saved rows
 must not be described as the current full workload. The retained job payloads
 contained descriptions, statuses and property IDs, but no job-code or
 appointment field. The newly displayed quote and completion user remain source
 text, never proof of invoice value, payment or engineer attendance.
+
+A second aggregate-only read at **19 October 2026, 14:54 UTC** found **1,004**
+reviewed job links and **11,668** unreviewed source jobs. Of the latter,
+**11,666** point to a retained customer/site property whose identity has not
+been reviewed; **2** have a reviewed parent but no reviewed job link. No job in
+this retained population lacked a property ID or parent source. The projection
+attempt ledger showed 1,007 successful `linked` outcomes, including replays,
+and no recorded held outcome in that aggregate. The gap is primarily the
+deliberate customer/site identity review boundary, not a failed automatic job
+projection queue. This evidence does not authorize inferring a customer match
+or publishing the unreviewed jobs as canonical cards.
 
 ## Provider capability boundary
 
@@ -54,11 +66,19 @@ navigation does not expose read endpoints for appointments/visits, estimates,
 invoices, or parts/costs. These facets remain visibly unavailable rather than
 being inferred from job text or QuickBooks records.
 
-The existing capture worker, stored approval and SQL permit gates are intentionally
-limited to properties, property contacts and jobs. Extending capture to users or
-office tasks requires a separate tenant-scoped import contract, explicit source
-identity/relationship handling, rate-limit and continuation tests, and a reviewed
-release. Do not add an endpoint to the transport allowlist alone. Before extending
+The released capture worker and SQL permit gates cover properties, property
+contacts and jobs. The next candidate adds the provider's documented `GET /users`
+as an **explicit, opt-in source collection** through those same tenant-scoped
+approval, quota, checkpoint and credential gates. The first approval is capped
+server-side at one page of ten records and cannot be extended by the existing
+continuation route. It retains source user IDs and
+payloads under their original connection but holds projection: source users are
+not OpenFolk staff, account logins, assigned engineers or visits. No user import
+is started by installation. The documented response has not yet been checked
+against a real Drummonds GET; the existing property-contact run was still active
+at the 19 October 14:51 UTC read-only check, so a parallel credential request
+was intentionally avoided. A bounded, approved one-page GET and source-shape
+readback are the LIVE acceptance gate after that run settles. Before extending
 to technician visits or job finance, establish a supported provider endpoint or a
 bounded, authorised export and verify its relationship keys. Preserve Commusoft
 job codes as strings and only link other providers on exact, evidenced identities.
@@ -120,4 +140,10 @@ the v2 migration and exact audited source-link reader applied. It exercises
 foreign-tenant and unknown-job denial, changed-link withholding, audit, rollback
 and the SQL response through the application parser. `node --test
 scripts/commusoft/prepare-job-facet-csv.test.mjs` passes the CSV contract.
-This is local release evidence, not LIVE deployment or real-client acceptance.
+The exact-source SQL and UI from PR #86 were subsequently merged, and the two
+M2 job-detail migrations were installed on LIVE. The release lead verified the
+signed-in desktop/mobile exact-source read and two corresponding audit entries.
+The **new `/users` candidate is local review work only**: its synthetic
+network-isolated fixture proves a one-page source read contract, exact credential
+permit, immutable retained page, refusal of an unapproved resource and no
+second credential release. It has not made a real provider GET or been deployed.
