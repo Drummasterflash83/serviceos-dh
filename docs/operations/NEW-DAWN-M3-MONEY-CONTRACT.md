@@ -39,6 +39,40 @@ on a real owner and a denied non-owner, and compare a bounded sample against
 QuickBooks. The panel is in the job-first home but remains hidden until the
 dedicated flag is enabled after that readback.
 
+## Bounded LIVE invoice comparison (operator only)
+
+`20261106090000_new_dawn_invoice_comparison.sql` and
+`learn-quickbooks-invoice-check` provide a separate one-use verification path.
+Installation and deployment do not run a check or change the money flag. An
+authorised OpenFolk platform operator signs in, selects the exact Drummonds
+tenant and production QuickBooks connection, and chooses **two or three current,
+nonconflicted retained Invoice version IDs from that same realm**. The operator
+records a specific reason. No job link is inferred.
+
+The operator calls the new Edge function once with a fresh UUID `requestId`,
+the selected `tenantId`, `connectionId`, `versionIds` (two or three UUIDs), and
+`reason`, using the signed-in Auth bearer token. The route checks the real user,
+then creates an audited one-use permit. The server alone retrieves the existing
+Vault access token, provided it has over two minutes left; this route **does not
+refresh** it. It makes only `GET /v3/company/{realm}/invoice/{exactId}` calls,
+with no provider write, import commit, scheduler or bulk traversal. It accepts
+at most 128 KiB per response and compares the original JSON decimal `Balance`
+and `DueDate` in Postgres, avoiding JavaScript number rounding. The response
+contains only invoice/source IDs, the two values and match indicators with
+retained/provider timestamps. A mismatch may simply mean the retained capture
+is older; inspect the timestamps before changing any product claim.
+
+Verify in order on TEST, then LIVE: (1) denied ordinary user and wrong-tenant
+request cause no provider request; (2) one/four IDs, duplicate IDs, stale or
+conflicted versions and a changed connection are denied; (3) two or three
+selected Drummonds invoices return exact balance/date comparisons and an
+immutable finance audit event; (4) retrying the same request UUID cannot fetch
+again. Use a fresh request only for a deliberate repeat. If the access token is
+near expiry, wait for the existing authorised refresh cycle; never extract or
+print it. Keep the dedicated money flag **off** until the comparison, owner
+access denial, signed-in UI and audit results have been reviewed. This check
+does not establish complete QuickBooks A/R coverage or a reconciled P&L.
+
 The next report-capture PR should add two **GET-only** QuickBooks Online
 Reports API requests for the bound realm: `reports/ProfitAndLoss` for an explicit
 start/end period and accounting basis, and `reports/AgedReceivables` for an
