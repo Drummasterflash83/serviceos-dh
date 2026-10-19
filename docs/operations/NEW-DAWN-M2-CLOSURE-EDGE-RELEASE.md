@@ -83,3 +83,24 @@ This corrected read-only mode passed on 19 October: Edge v6
 `b665e27c…`, reviewed executable source closure `be16e43e…`, optional
 SQL `20261107150000`, zero active permits and both broad flags off. No
 production state changed during that readback.
+
+After the separately released closure SQL
+`20261107160000_new_dawn_commusoft_job_closure_source_facts.sql` is
+installed, the pre-closure `--live-v6-readback` mode intentionally stops
+because its function and ledger pins are for v4. Use the separate
+`--live-v6-closure-readback` mode. It checks the exact v6 Edge hash, optional
+and closure migration receipts, v5 finish-function definition hash, zero
+active permits and broad flags off, downloads the v6 Edge source and compares
+all three executable ASTs, then rereads the state to detect change. It is
+read-only and makes no provider request:
+
+```sh
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-closure-edge-release.mjs --live-v6-closure-readback --artifact=.verification-results/m2-closure-edge-v5-20261019-2350/artifacts/learn-commusoft-job-detail.ezbr --out=.verification-results/m2-closure-edge-v6-closure-readback-fresh
+```
+
+Choose a fresh output directory. The closure SQL install and independent
+SQL readback are separate from this source check.
+The post-closure read-only mode passed on 19 October with v6 Edge hash
+`b665e27c…`, closure migration source hash `ab50173c…`, reviewed
+deployed executable source closure `be16e43e…`, zero active permits and
+both broad flags off. It made no production change or provider request.

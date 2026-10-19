@@ -12,7 +12,9 @@ import { assessStage as assessOptionalStage, readStage,
   reviewedSource as reviewedOptionalSource } from
   "./new-dawn-m2-optional-facts-release.mjs";
 import { reviewedEdgeBundle } from "./new-dawn-m2-closure-edge-prepare.mjs";
-import { REVIEWED_EDGE_EZBR_SHA256 } from "./new-dawn-m2-closure-release.mjs";
+import { REVIEWED_EDGE_EZBR_SHA256, edgePin as reviewedClosureEdgePin,
+  assessStage as assessClosureStage, readStage as readClosureStage } from
+  "./new-dawn-m2-closure-release.mjs";
 
 const ENDPOINT = "learn-commusoft-job-detail";
 const EDGE_ID = "009b9fb6-8e3c-49b8-8a3e-95531ba370bd";
@@ -233,6 +235,29 @@ export async function livePostReadOnly({ artifactPath, out, token = savedCliToke
     output: root, productionChanged: false };
 }
 
+/** Independent source verification after the v5 closure SQL has replaced finish(). */
+export async function livePostClosureReadOnly({ artifactPath, out, token = savedCliToken(),
+  read = readClosureStage, downloader = download, artifactReader = reviewedArtifact,
+  sourceVerifier = verifyDownloadedClosure } = {}) {
+  artifactReader(artifactPath);
+  const root = privateRoot(out);
+  const pin = reviewedClosureEdgePin(6, REVIEWED_EDGE_EZBR_SHA256);
+  const before = await read(PROJECT, token);
+  const stage = assessClosureStage(before, true, pin);
+  await downloader(PROJECT, token, join(root, "current"));
+  sourceVerifier(join(root, "current"), reviewedEdgeBundle().sha256);
+  const stable = await read(PROJECT, token);
+  assessClosureStage(stable, true, pin);
+  if (JSON.stringify(stable) !== JSON.stringify(before))
+    throw Error("live_v6_closure_state_changed_during_source_readback");
+  return { state: "exact_edge_v6_post_closure_source_readback",
+    edgeVersion: stage.edgeVersion, edgeSha256: stage.edgeSha256,
+    closureSqlVersion: stage.version, closureSqlSha256: stage.sourceSha256,
+    activePermits: stage.activePermits, broadFlagsEnabled: stage.broadFlagsEnabled,
+    sourceClosureSha256: reviewedEdgeBundle().sha256,
+    output: root, productionChanged: false, providerRequests: 0 };
+}
+
 export async function deployLive({ artifactPath, out, token = savedCliToken(),
   read = readStage, downloader = download, patcher = fetch,
   artifactReader = reviewedArtifact, sourceVerifier = verifyDownloadedClosure } = {}) {
@@ -296,6 +321,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         console.log(JSON.stringify(await liveReadOnly({ artifactPath, out })));
       else if (mode === "--live-v6-readback")
         console.log(JSON.stringify(await livePostReadOnly({ artifactPath, out })));
+      else if (mode === "--live-v6-closure-readback")
+        console.log(JSON.stringify(await livePostClosureReadOnly({ artifactPath, out })));
       else if (mode === "--live-deploy-exact" &&
         process.env.NEW_DAWN_M2_EDGE_DEPLOY_ALLOW_SHA === REVIEWED_EDGE_EZBR_SHA256)
         console.log(JSON.stringify(await deployLive({ artifactPath, out })));
