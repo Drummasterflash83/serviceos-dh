@@ -22,6 +22,12 @@ const payload = () => ({
   coverage: "retained_unreconciled_invoices", source: "QuickBooks Online",
   as_of: "2026-10-19", read_at: new Date().toISOString(), audit_id: audit,
   records: 3, conflicted_records: 1, groups: [group()],
+  overdue_invoice_count: 1,
+  attention: [{ realm_id: "12345", currency: "GBP",
+    source_version_id: "44444444-4444-4444-8444-444444444444",
+    invoice_id: "921", document_number: "INV-921", customer_ref: "48",
+    due_date: "2026-10-01", balance: "100.01",
+    last_observed_at: "2026-10-19T10:00:00Z" }],
   accounts_gross_profit: { status: "unavailable", reason: "profit_and_loss_report_not_captured" },
   field_gross_profit: { status: "unavailable", reason: "job_cost_mapping_not_verified" },
   net_profit: { status: "withheld", reason: "owner_report_not_captured" },
@@ -34,6 +40,8 @@ test("retained invoice money remains an exact decimal string and labels absent m
   assert.equal(result.groups[0].outstanding, "12345678901234567890.12");
   assert.equal(result.accounts_gross_profit.status, "unavailable");
   assert.equal(result.net_profit.status, "withheld");
+  assert.equal(result.attention[0].source_version_id,
+    "44444444-4444-4444-8444-444444444444");
 });
 test("rejects another tenant, fabricated profit and mismatched record coverage", () => {
   assert.throws(() => readOwnerMoney({ ...payload(), tenant_id: actor }, scope));
@@ -55,4 +63,12 @@ test("missing currency or invoice balance cannot produce a misleading total", ()
       overdue_61_90: null, overdue_91_plus: null }],
   }, scope);
   assert.equal(withheld.groups[0].overdue, null);
+});
+test("rejects unsourced or future-dated overdue attention", () => {
+  assert.throws(() => readOwnerMoney({
+    ...payload(), attention: [{ ...payload().attention[0], source_version_id: "not-a-version" }],
+  }, scope));
+  assert.throws(() => readOwnerMoney({
+    ...payload(), attention: [{ ...payload().attention[0], due_date: "2026-10-19" }],
+  }, scope));
 });

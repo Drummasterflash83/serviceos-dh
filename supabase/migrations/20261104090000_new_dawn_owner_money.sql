@@ -22,6 +22,8 @@ create function public.learn_quickbooks_owner_money(
 language plpgsql security definer set search_path=pg_catalog as $$
 declare
  groups jsonb;
+ attention jsonb;
+ overdue_invoice_count bigint;
  record_count bigint;
  conflicted_count bigint;
  audit uuid;
@@ -83,6 +85,34 @@ begin
   (select count(*) from invoices),(select count(*) from invoices where conflicted)
  into groups,record_count,conflicted_count;
 
+ -- A bounded source trail for the oldest overdue invoices. The reference is
+ -- QuickBooks' own invoice identity, never an inferred Commusoft job link.
+ with overdue as materialized(
+  select l.realm_id,l.version_id,l.external_id,l.last_observed_at,
+   v.payload,public.learn_quickbooks_money(v.payload->'Balance') balance,
+   public.learn_quickbooks_strict_date(v.payload->>'DueDate') due_date,
+   case when v.payload#>>'{CurrencyRef,value}' ~ '^[A-Z]{3}$'
+    then v.payload#>>'{CurrencyRef,value}' end currency
+  from public.learn_quickbooks_latest l
+  join public.learn_quickbooks_source_versions v
+   on v.id=l.version_id and v.tenant_id=l.tenant_id
+  where l.tenant_id=p_tenant and l.environment=p_environment
+   and l.entity='Invoice' and not l.conflicted
+ ), eligible as materialized(
+  select * from overdue where balance>0 and due_date<as_of
+ ), oldest as(
+  select * from eligible order by due_date,version_id limit 20
+ )
+ select coalesce((select jsonb_agg(jsonb_build_object(
+   'realm_id',realm_id,'currency',currency,'source_version_id',version_id,
+   'invoice_id',external_id,'document_number',left(payload->>'DocNumber',200),
+   'customer_ref',left(payload#>>'{CustomerRef,value}',128),
+   'due_date',due_date,'balance',balance::text,
+   'last_observed_at',last_observed_at
+  ) order by due_date,version_id) from oldest),'[]'::jsonb),
+  (select count(*) from eligible)
+ into attention,overdue_invoice_count;
+
  perform public.learn_quickbooks_retained_finance_access(p_tenant,p_operator_reason);
  insert into public.learn_quickbooks_finance_events(tenant_id,actor_id,event,detail,reason)
  values(p_tenant,auth.uid(),'owner.money.read',
@@ -96,6 +126,7 @@ begin
   'coverage','retained_unreconciled_invoices','source','QuickBooks Online',
   'as_of',as_of,'read_at',read_at,'audit_id',audit,
   'records',record_count,'conflicted_records',conflicted_count,'groups',groups,
+  'overdue_invoice_count',overdue_invoice_count,'attention',attention,
   'accounts_gross_profit',jsonb_build_object('status','unavailable','reason','profit_and_loss_report_not_captured'),
   'field_gross_profit',jsonb_build_object('status','unavailable','reason','job_cost_mapping_not_verified'),
   'net_profit',jsonb_build_object('status','withheld','reason','owner_report_not_captured'),

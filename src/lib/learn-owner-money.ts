@@ -28,6 +28,18 @@ export type OwnerMoneyGroup = {
   overdue_91_plus: string | null;
 };
 
+export type OwnerMoneyAttention = {
+  realm_id: string;
+  currency: string | null;
+  source_version_id: string;
+  invoice_id: string;
+  document_number: string | null;
+  customer_ref: string | null;
+  due_date: string;
+  balance: string;
+  last_observed_at: string;
+};
+
 type Unavailable = { status: "unavailable"; reason: string };
 type Withheld = { status: "withheld"; reason: string };
 export type OwnerMoney = {
@@ -44,6 +56,8 @@ export type OwnerMoney = {
   records: number;
   conflicted_records: number;
   groups: OwnerMoneyGroup[];
+  overdue_invoice_count: number;
+  attention: OwnerMoneyAttention[];
   accounts_gross_profit: Unavailable;
   field_gross_profit: Unavailable;
   net_profit: Withheld;
@@ -83,7 +97,8 @@ export function readOwnerMoney(value: unknown, scope: OwnerMoneyScope): OwnerMon
     value.operator_mode !== (scope.operatorReason !== undefined) ||
     value.coverage !== "retained_unreconciled_invoices" ||
     value.source !== "QuickBooks Online" ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(String(value.as_of)) ||
+    typeof value.as_of !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(value.as_of) ||
     !time(value.read_at) ||
     Math.abs(Date.now() - Date.parse(value.read_at)) > 60_000 ||
     !uuid(value.audit_id) ||
@@ -91,6 +106,10 @@ export function readOwnerMoney(value: unknown, scope: OwnerMoneyScope): OwnerMon
     !count(value.conflicted_records) ||
     value.conflicted_records > value.records ||
     !Array.isArray(value.groups) ||
+    !count(value.overdue_invoice_count) ||
+    !Array.isArray(value.attention) ||
+    value.attention.length > 20 ||
+    value.attention.length > value.overdue_invoice_count ||
     !unavailable(value.accounts_gross_profit, "profit_and_loss_report_not_captured") ||
     !unavailable(value.field_gross_profit, "job_cost_mapping_not_verified") ||
     !object(value.net_profit) ||
@@ -135,6 +154,43 @@ export function readOwnerMoney(value: unknown, scope: OwnerMoneyScope): OwnerMon
     keys.add(key);
     groupedRecords += group.records;
   }
-  if (groupedRecords + value.conflicted_records !== value.records) throw bad();
+  if (groupedRecords + value.conflicted_records !== value.records ||
+    value.overdue_invoice_count > groupedRecords ||
+    value.attention.length !== Math.min(value.overdue_invoice_count, 20)) throw bad();
+  let priorDue = "";
+  let priorVersion = "";
+  const versions = new Set<string>();
+  for (const row of value.attention) {
+    if (
+      !object(row) ||
+      typeof row.realm_id !== "string" ||
+      !/^[1-9]\d{0,29}$/.test(row.realm_id) ||
+      !(row.currency === null ||
+        (typeof row.currency === "string" && /^[A-Z]{3}$/.test(row.currency))) ||
+      !keys.has(`${row.realm_id}/${row.currency ?? "unknown"}`) ||
+      !uuid(row.source_version_id) ||
+      versions.has(row.source_version_id) ||
+      typeof row.invoice_id !== "string" ||
+      !/^[A-Za-z0-9-]{1,128}$/.test(row.invoice_id) ||
+      !(row.document_number === null ||
+        (typeof row.document_number === "string" && row.document_number.length <= 200)) ||
+      !(row.customer_ref === null ||
+        (typeof row.customer_ref === "string" && row.customer_ref.length <= 128)) ||
+      typeof row.due_date !== "string" ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(row.due_date) ||
+      row.due_date >= value.as_of ||
+      !decimal(row.balance) ||
+      row.balance === null ||
+      row.balance.startsWith("-") ||
+      /^0+(\.0+)?$/.test(row.balance) ||
+      !time(row.last_observed_at) ||
+      (priorDue !== "" &&
+        (row.due_date < priorDue ||
+          (row.due_date === priorDue && row.source_version_id <= priorVersion)))
+    ) throw bad();
+    priorDue = row.due_date;
+    priorVersion = row.source_version_id;
+    versions.add(row.source_version_id);
+  }
   return value as OwnerMoney;
 }

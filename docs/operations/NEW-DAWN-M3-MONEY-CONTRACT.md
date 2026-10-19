@@ -14,7 +14,9 @@ response is marked `Cache-Control: no-store`.
 
 For each QuickBooks realm and currency, the response gives the exact decimal
 string for retained invoice balance and age bands based on the invoice due date
-at the UTC read date. It never converts a monetary value to JavaScript
+at the UTC read date. A list of at most 20 oldest overdue invoices carries
+their exact source-version and QuickBooks invoice references for review; the
+response also gives the full overdue-invoice count. It never converts a monetary value to JavaScript
 `Number`, combines currencies or realms, or infers invoice-to-job links.
 Conflicted latest records are counted but excluded from sums. If any invoice
 balance is missing, or the currency is unknown, the group's total is null. If
