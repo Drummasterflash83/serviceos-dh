@@ -15,6 +15,9 @@ change on the day.
   published history. All 179 focused receptionist tests passed after that
   merge, and `git diff --check origin/main...HEAD` was clean. These are
   local candidate checks, not provider or phone acceptance.
+- A second normal merge brought in `main` `b12842fe` as `e713a127` on
+  19 October. The same 179 focused tests passed after it. No Emma-specific
+  conflict occurred; neither merge rewrote the published branch.
 - The historical 2 October private package is
   `2. Ai/Openfolk OS   Pass-Over/Emma Unmerged Work 2026-10-02/` in Chris's
   Dropbox. Its patch applied cleanly to this branch. Its 80 focused tests
@@ -42,6 +45,12 @@ change on the day.
   browser session or existing noninteractive key for a fresh Vapi/Birchills
   read was available in this worktree on 19 October; the historical values
   above must not be presented as current state.
+- The 12 reviewed synthetic scenarios comprise five ordinary named/sales
+  routes, four closed/holiday consent cases, two out-of-hours emergency
+  classifications and one office-hours gas-safety case. The last provider
+  run was 8/12 on an older candidate. Local tests of the release gate are
+  **not** a new 12/12 run. Root simulations intercept the handoff and
+  cannot establish that Rob, Tony or mailbox 603 received a real call.
 
 ## Candidate code now prepared
 
@@ -110,29 +119,39 @@ needs an operational decision before Emma can take the main line.
 
 ## Real-phone acceptance checklist
 
-Arrange a quiet pre-08:00 window with Rob, Tony and Mary, plus a controlled
-caller. Use the Emma **test number only**. Agree a spend cap and test times.
-Match each handset observation to the Vapi call ID, Birchills call record,
-voicemail record and notification receipt. Do not infer a human answer from
-an invoked transfer.
+Agree a spend cap, controlled callers, distinct test windows, and Rob/Tony/
+Mary's participation first. Use the Emma **test number only**. An ordinary
+weekday **before 08:00** is for the eight closed-hours emergency calls below;
+the two office-hours calls need a separate **after 08:30** window. The
+caller supplies fictional but concrete test name, address and callback,
+then confirms Emma's full number read-back. No real client details are needed.
+For every call, match the Vapi call ID and audio to the Birchills call
+record, handset observation and, when applicable, mailbox/notification
+receipts. A transfer request alone is never human-answer proof.
 
-- One normal named-person call: hear AI and recording disclosure, one
-  handover sentence, a person answering and two-way audio.
-- Domestic emergency: collect concrete address and confirmed callback,
-  give immediate safety advice; Tony 105 accepts first. Repeat with Tony
-  busy and with no answer to prove Rob 109 cover, each once.
-- Commercial emergency: same intake; Rob 109 accepts first. Repeat with Rob
-  busy and with no answer to prove Tony 105 cover, each once.
-- Both engineers unavailable: confirm one deposit in shared emergency
-  mailbox 603, an email receipt to **both**
-  `rob@drummondheating.co.uk` and `tony@drummondheating.co.uk`, and the
-  approved `#ai-emma` Slack alert. Confirm message content is access
-  controlled; a queued alert is not delivery proof.
-- Gas-safety case: hear the complete **0800 111 999** digits before any
-  handover. Check intelligibility at v14 speed. If someone is unwell or in
-  immediate danger, hear the separate 999 instruction.
-- Voicemail consent/refusal, busy/no-answer and a clear rollback rehearsal.
-  Check that no route loops back to 01794 341600.
+| Call | Controlled condition | Required observation |
+| --- | --- | --- |
+| D1 | Domestic, Tony available | Tony 105 answers first; two-way audio. |
+| D2 | Domestic, Tony busy | One Tony failure, then Rob 109 answers; no loop or second Tony attempt. |
+| D3 | Domestic, Tony no answer | One Tony timeout, then Rob answers; Tony voicemail is not acceptance. |
+| C1 | Commercial, Rob available | Rob 109 answers first; two-way audio. |
+| C2 | Commercial, Rob busy | One Rob failure, then Tony 105 answers; no loop or second Rob attempt. |
+| C3 | Commercial, Rob no answer | One Rob timeout, then Tony answers; Rob voicemail is not acceptance. |
+| D4 | Domestic, both unavailable | Exactly one deposit in shared 603; both email receipts and scoped Slack alert correlate to that message ID. |
+| C4 | Commercial, both unavailable | Same 603 path and three receipts, independently correlated. |
+| O1 | Office-hours named Heidi request | Open greeting discloses automated/recorded service; one spoken handover and an answered, audible transfer. |
+| O2 | Office-hours gas-safety request | Hear complete **0800 111 999** before the Mary 103 transfer; hear separate 999 instruction if immediate danger is stated; check digits at v14 speed. |
+
+All eight D/C closed calls must disclose automated/recorded service in the
+closed greeting. The two O calls establish the open greeting. An approved
+`#ai-emma` alert requires a delivery receipt, not merely a queued webhook;
+mailbox 603 must remain separate from personal 109/105 and office 601.
+Check voicemail consent/refusal from the unchanged 12-scenario suite,
+and rehearse rollback to the captured previous IVR 502 route without
+changing the main number during this test. If callers cannot provide a
+concrete site or the intake server fails, the fail-closed branch must be
+reviewed as an operational fallback before main-line launch; never assume
+an engineer or mailbox took that call.
 
 ## Draft to Birchills — for Chris to review and send
 
