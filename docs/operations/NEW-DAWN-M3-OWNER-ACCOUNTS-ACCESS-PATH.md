@@ -1,0 +1,32 @@
+# M3 owner accounts: access and accounting path
+
+This is the next release contract, **not a client publication**. Two verified September 2026 QuickBooks report receipts exist and the OpenFolk operator can read their strict summary with an immutable audit. The current reader, `learn_quickbooks_report_summary_preview`, is deliberately **operator-only** and requires the report-request actor to equal the signed-in actor. It cannot be reused as a client owner RPC or reached by a frontend role toggle. The job-home founder preview projects only the two P&L figures after that reader; its separate flag is absent/OFF. `new_dawn.owner_money` is also OFF. The source-readiness SQL and its operator flag remain uninstalled/OFF.
+
+## Definitions and audience
+
+| Measure | Defensible source and date | OpenFolk operator | Client owner | Client admin/team |
+| --- | --- | --- | --- | --- |
+| Accounts gross profit | Unique `GrossProfit` summary in the saved September 2026 **accrual P&L**, company-wide, in its source currency | Audited preview of reviewed exact receipts | Future explicitly published snapshot only | Held until a separate business policy approves any access |
+| Net profit | Unique `NetIncome` summary from that same P&L, same period/basis | Audited operator preview under existing support authority | Future **owner-only** snapshot | Never return the value to admin/team; hiding a returned value in React is insufficient |
+| Aged debt | Saved `AgedReceivables` `GrandTotal` and five checked buckets **as of 30 September 2026**, report-date ageing | Audited report preview | Future explicitly published snapshot | Held pending policy; do not relabel retained invoice ageing as this report |
+| Field gross profit | No verified Commusoft actual job costs plus evidenced cross-provider job identity | Held | Held | Held |
+| ARR | No verified recurring contract, price, period and cancellation definition | Held | Held | Held |
+
+The saved reports establish source numbers, not the client's accounting interpretation. Before any client publication, confirm the intended accounting basis, treatment of tax and adjustments, whether the saved period has since been revised, and whether company accounts GP/NP is the desired owner-card measure. The September snapshot must be labelled historical; it cannot silently become today's result. Different currencies, realms, report periods or accounting bases cannot be combined. No invoice-to-Commusoft-job inference is permitted.
+
+## Smallest safe client implementation
+
+1. Keep exact receipt request IDs and hashes in private, tenant-scoped server storage, not Git or public JavaScript. Add a **reviewed publication record containing references only**, not copied amounts: tenant, production connection/realm, P&L and A/R request IDs plus immutable receipt hashes, period, basis, A/R date, reviewer, reason, revision and revoke state. Creation must be an explicit audited OpenFolk operator action after the strict existing extractor accepts the pair. It must not select an implicit latest receipt or call QuickBooks.
+2. Add a separate default-OFF client-owner report RPC. It must verify `auth.role()='authenticated'`, current unbanned user, active tenant, a current profile in that tenant with **role exactly `owner`**, no active view-as context, the reviewed publication revision and both still-verified receipt hashes. Recheck access before inserting an immutable finance-read audit. Call the existing strict `learn_quickbooks_report_summary_extract` on the exact saved pair, then return only the owner-approved fields and source/as-of labels with `Cache-Control: no-store`. The existing `learn_import_batch_authority` allows both `owner` and `admin`, so it is **not sufficient** for net-profit access.
+3. Keep OpenFolk support reads on the current separately audited operator RPC and reason. Do not impersonate a client owner or repurpose the operator's account as a Drummonds profile. The owner UI must use the new owner RPC; the operator job-home preview remains separate.
+4. If client admins later need aged debt or accounts GP, design a **separate server response without net profit**. Do not send net profit and conceal it in the UI. Keep field GP and ARR as held reason codes until their own sources and business definitions pass review.
+
+The existing invoice-based `learn_quickbooks_owner_money` RPC remains a separate retained, unreconciled invoice view. Its current held reasons say the P&L is "not captured"; that is now stale source metadata and must be revised before enabling its client flag. Its invoice due-date ageing must not be presented as the saved QuickBooks A/R report. No change to that installed RPC or flag is made here.
+
+## Gates before client release
+
+- Build the reference-only publication and owner RPC behind an absent/OFF flag, with rollback-only TEST fixtures for owner allow, client admin/team deny, operator/client separation, wrong tenant/realm, swapped or changed hashes, held receipt, changed period/basis, revoked publication and no net-profit field in every denied response. Check immutable audit and no provider request.
+- Test the exact signed-in owner path and an ordinary Drummonds denial on the released UI. Heidi stays disabled and is **not** needed for engineering or synthetic TEST fixtures. Actual owner acceptance waits for an authorised, enabled client identity; it must not be simulated by Chris's OpenFolk founder login.
+- Obtain the client's accounting-definition and historical-period sign-off, then explicitly approve the reviewed receipt pair for that tenant. Only after SQL, signed-in access and mobile checks pass may the release owner consider enabling a client flag. Until then, both client money flags and the job-home founder preview flag remain OFF.
+
+There is no provider read, credential change, publication record, flag change or amount in this handoff.

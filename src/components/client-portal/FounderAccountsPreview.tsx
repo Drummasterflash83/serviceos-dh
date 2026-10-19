@@ -72,8 +72,8 @@ export function FounderAccountsPreview({ tenant, operator, jobPreviewOpened, rea
     {saved && <div role="status" className="space-y-3">
       <p className="nd-money-scope">QuickBooks Online · production company {saved.realmId} · P&amp;L {saved.periodStart} to {saved.periodEnd} · {saved.accountingMethod} basis · A/R as of {saved.arAsOf}. This is a saved report snapshot.</p>
       <dl className="nd-money-values">
-        <div><dt>Accounts gross profit</dt><dd><strong>{financeAmount(saved.summary.accountsGrossProfit,saved.currency)}</strong></dd></div>
-        <div><dt>Net profit · OpenFolk authorised view</dt><dd><strong>{financeAmount(saved.summary.netProfit,saved.currency)}</strong></dd></div>
+        <div><dt>Accounts gross profit</dt><dd><strong>{financeAmount(saved.accountsGrossProfit,saved.currency)}</strong></dd></div>
+        <div><dt>Net profit · OpenFolk authorised view</dt><dd><strong>{financeAmount(saved.netProfit,saved.currency)}</strong></dd></div>
       </dl>
       <p className="nd-money-scope">Field gross profit: awaiting verified job costs and job links. ARR: awaiting verified recurring contracts and periods.</p>
       <details className="text-xs"><summary>Saved source and audit</summary><p className="break-all">P&amp;L SHA-256 {saved.profitSha256}; A/R SHA-256 {saved.receivablesSha256}. Read audit {saved.auditId}.</p></details>

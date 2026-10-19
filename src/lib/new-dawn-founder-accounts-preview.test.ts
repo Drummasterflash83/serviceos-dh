@@ -30,8 +30,10 @@ test("founder accounts preview requires operator, open job preview, flag and rev
 
 test("September accounts preview accepts only exact saved-report scope and decimal strings", () => {
   const result=readSeptemberFounderAccountsPreview(response,scope);
-  assert.equal(result.summary.accountsGrossProfit,"12345678901234567890.01");
-  assert.equal(result.summary.netProfit,"-10.02");
+  assert.equal(result.accountsGrossProfit,"12345678901234567890.01");
+  assert.equal(result.netProfit,"-10.02");
+  assert.equal("summary" in result,false);
+  assert.equal("arTotal" in result,false);
   for (const change of [{audience:"client_owner"},{tenant_id:profitRequest},
     {period_end:"2026-10-31"},{accounting_method:"Cash"},{environment:"sandbox"},
     {summary:{...response.summary,net_profit:10.02}}])
