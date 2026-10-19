@@ -48,6 +48,7 @@ export function sanitizeDailyFailure(value) {
     ...(RESTORE_STAGES.has(value.restoreStage) ? { restoreStage: value.restoreStage } : {}),
     ...(encrypt?.packageInputBytes === undefined ? {} :
       { packageInputBytes: encrypt.packageInputBytes }),
+    ...(encrypt?.archiveBytes === undefined ? {} : { archiveBytes: encrypt.archiveBytes }),
     productionWrites: false };
 }
 

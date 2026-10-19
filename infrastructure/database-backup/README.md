@@ -30,6 +30,12 @@ database. The original first-copy measurement and authorization below are
 historical and unchanged. Reassess runner disk space and transfer time before
 raising the 2 GiB limit again.
 
+If the completed native archive itself exceeds that package limit, the restricted
+daily failure artifact reports `encrypt_source_archive_size_exceeded` with the
+validated aggregate `archiveBytes`. Other source-export contract failures keep
+`encrypt_source_export_unverified` and disclose no size. This diagnostic does not
+change either size limit or attempt a second backup.
+
 ## Exact proposed destination and contents
 
 | Item | Proposed value |
