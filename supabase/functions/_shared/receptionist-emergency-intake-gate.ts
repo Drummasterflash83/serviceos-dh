@@ -95,8 +95,16 @@ function phoneDigits(value: string): string | null {
 
 function concreteLocation(value: string): boolean {
   if (/\b(unknown|unavailable|not provided|n\/a|on file|same address)\b/i.test(value)) return false;
-  return /\b(?:gir\s?0aa|[a-z]{1,2}\d[a-z\d]?\s?\d[a-z]{2})\b/i.test(value) ||
-    /\b\d+[a-z]?\s+(?:[a-z'-]+\s+){0,5}(?:road|street|lane|avenue|close|drive|way|court|crescent|terrace|place|gardens|square)\b/i.test(value);
+  if (/\b\d+[a-z]?\s+(?:[a-z'-]+\s+){0,5}(?:road|street|lane|avenue|close|drive|way|court|crescent|terrace|place|gardens|square)\b/i.test(value))
+    return true;
+  // A postcode identifies an area, not the caller's precise premises. Pair it
+  // with a stated house/building name or number before authorising a handoff.
+  const postcode = /\b(?:gir\s?0aa|[a-z]{1,2}\d[a-z\d]?\s?\d[a-z]{2})\b/i;
+  if (!postcode.test(value)) return false;
+  const detail = value.replace(postcode, "").replace(/[,.]/g, " ").trim();
+  if (/^(?:(?:the|my|our|a|an)\s+)?(?:home|house|property|site|building|care home)$/i.test(detail)) return false;
+  return detail.split(/\s+/).length >= 2 &&
+    /\b(?:\d+[a-z]?|cottage|house|flat|unit|building|site|farm|hotel|school|care home|lodge|apartment)\b/i.test(detail);
 }
 
 function classification(value: string): EmergencyKind | null {
@@ -205,7 +213,7 @@ export function buildEmergencyIntakeHandoffTool(server: { url: string; headers: 
           kind: { type: "string", enum: ["domestic", "commercial"] },
           callerName: { type: "string", description: "Caller's stated name, exactly as spoken." },
           callbackNumber: { type: "string", description: "Caller-provided callback digits, read back by Emma and explicitly confirmed by the caller. Never substitute caller ID." },
-          siteAddressOrPostcode: { type: "string", description: "Caller-provided numbered street address or UK postcode, optionally with the site name. 'My home' alone is insufficient." },
+          siteAddressOrPostcode: { type: "string", description: "Caller-provided numbered street address, or named/numbered premises with a UK postcode. A postcode alone or 'my home' is insufficient." },
           incidentSummary: { type: "string", description: "Short exact caller quote describing this incident." },
           evidence: { type: "object", required: [...evidenceKeys], properties: Object.fromEntries(evidenceKeys.map(key => [key, { ...quote, description: key === "callbackReadBack" ? "Exact Emma quote reading the entire callback number back and asking whether it is correct." : key === "callbackConfirmation" ? "Exact caller affirmative response immediately after Emma's callback readback." : quote.description }])) },
         },

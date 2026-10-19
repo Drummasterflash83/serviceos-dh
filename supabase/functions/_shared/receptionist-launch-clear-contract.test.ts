@@ -4,6 +4,15 @@ import { clearLaunchModel } from "./receptionist-launch-clear-contract.ts";
 import { approvedOrdinaryDestination } from "./receptionist-launch-destinations.ts";
 const candidate = { id:"dcfc2e66-a438-43ab-b863-467f5a5089df", firstMessage:"openfolk_holidays", model:{provider:"openai",model:"gpt-4.1",toolIds:["handoff"],tools:[{type:"transferCall",destinations:Array.from({length:10},(_,n)=>({type:"number",number:`+44179437810${n}`,description:`Approved destination ${n}`,message:"",transferPlan:{mode:"blind-transfer"}}))}]}};
 test("one deterministic status/contract preserves model and exact approved route values",()=>{const m=clearLaunchModel(candidate);assert.equal(m.messages.length,1);assert.equal(m.temperature,0);assert.deepEqual(m.tools,[{...candidate.model.tools[0],destinations:candidate.model.tools[0].destinations.map(approvedOrdinaryDestination)}]);assert.equal(m.toolIds,candidate.model.toolIds);assert.equal(m.model,candidate.model.model);const s=m.messages[0].content;for(const key of ["CURRENT OFFICE STATUS","08:30","17:00","2026-12-25","2027-12-28","0800111999","Carbon-monoxide","Julie Monday09:00","Larne","GFSL","01794378105","01794378096","Route-Emergency-to-Rob-or-Tony","NEVER read it again","personal109/105"])assert.ok(s.includes(key),key);assert.ok(s.length<17000);});
+
+test("carbon-monoxide advice separates severe 999 signs from NHS 111 symptom advice",()=>{
+  const s=clearLaunchModel(candidate).messages[0].content;
+  assert.match(s,/Carbon-monoxide alarm\/suspected exposure: leave the building immediately/);
+  assert.match(s,/National Gas Emergency Service0800111999/);
+  assert.match(s,/For severe symptoms such as difficulty breathing, sudden confusion, unconsciousness, weakness or chest\/muscle pain, call999 immediately/);
+  assert.match(s,/For possible symptoms such as headache, dizziness or nausea without those severe signs, call NHS111 promptly after leaving/);
+  assert.doesNotMatch(s,/headache, dizziness, nausea, breathing difficulty, confusion, unconsciousness or otherwise unwell, also999 immediately/);
+});
 test("refuses live or unexpectedly changed transfer configuration",()=>{assert.throws(()=>clearLaunchModel({...candidate,id:"live"}));assert.throws(()=>clearLaunchModel({...candidate,firstMessage:""}));assert.throws(()=>clearLaunchModel({...candidate,model:{...candidate.model,tools:[]}}));});
 test("emergency intake uses direct missing-field questions and does not invent privacy or booking assurances",()=>{
   const before=structuredClone(candidate);
