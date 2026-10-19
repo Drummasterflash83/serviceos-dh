@@ -176,12 +176,17 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         {!operator && authorisedClient && <button className="cp-secondary" onClick={() => void client.refetch()}><RefreshCw size={15} /> Refresh jobs</button>}
         {operator && onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Browse captured source jobs</button>}
       </div>
-      {operator && <div className="nd-operator-preview">
-        <strong>View as Drummonds MD · read-only preview</strong>
-        <p>You remain signed in as OpenFolk. State why you are opening this company’s jobs; the server checks and logs each read.</p>
-        <label>Access reason <input value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} placeholder="Review client job experience" /></label>
-        <button className="cp-secondary" disabled={operatorBusy || reason.trim().length < 3} onClick={() => void loadOperatorJobs()}>{operatorBusy ? "Checking access…" : "Open audited preview"}</button>
-        {operatorError && <p role="alert">{operatorError}</p>}
+      {operator && <div className={`nd-operator-preview${operatorPage ? " nd-operator-preview--active" : ""}`}>
+        <strong>{operatorPage ? "Drummonds MD layout · read-only" : "View as Drummonds MD · read-only preview"}</strong>
+        {operatorPage ? <>
+          <p>You are still signed in as OpenFolk. This job read was logged.</p>
+          <button className="cp-secondary" onClick={() => { setSelectedOperator(null); setOperatorPage(null); }}>Change access reason</button>
+        </> : <>
+          <p>You remain signed in as OpenFolk. State why you are opening this company’s jobs; the server checks and logs each read.</p>
+          <label>Access reason <input value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} placeholder="Review client job experience" /></label>
+          <button className="cp-secondary" disabled={operatorBusy || reason.trim().length < 3} onClick={() => void loadOperatorJobs()}>{operatorBusy ? "Checking access…" : "Open audited preview"}</button>
+          {operatorError && <p role="alert">{operatorError}</p>}
+        </>}
       </div>}
       {!operator && !authorisedClient && <p role="status">Your personal work list is being prepared. It will appear when job assignments are confirmed.</p>}
       {!operator && authorisedClient && client.isPending && <p role="status">Reading your saved jobs…</p>}
