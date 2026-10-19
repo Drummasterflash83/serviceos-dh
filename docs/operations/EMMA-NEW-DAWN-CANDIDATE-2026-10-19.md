@@ -120,6 +120,29 @@ fresh authenticated Vapi configuration read, Birchills route readback,
 same-hash 12/12 run, handset transfer or mailbox delivery proof. No
 credentials or caller data were read for this check.
 
+An additional noninteractive access check on 19 October found no Vapi or
+Birchills credential exposed to this worktree's process and no signed-in
+Vapi/Birchills browser tab in the available browser inventory. The saved
+Supabase management login provides database/Edge metadata, not a fresh
+provider or PBX configuration readback. The deployed `receptionist-testing`
+service has fixed, read-only `inspect_launch_graph` and
+`provider_inventory` actions, but those require an authorised service JWT
+and named actor that are not present in this worktree. Therefore the exact
+current LIVE greeting, candidate/helper graph, Rob/Tony/603 number bindings, main-number
+route and notification settings remain **unverified** against PR #88. Do not
+substitute the historical snapshots above or three destination labels for
+this readback; do not request Touch ID for a routine check.
+
+`supabase/functions/_shared/receptionist-emergency-fallback-proof.ts` adds
+a pure read-only contract for the later supervised D4/C4 calls. It requires
+one correlated Vapi/Birchills call identity, two ordered failed engineer
+attempts, a provider-confirmed 603 deposit, delivered receipts to **both**
+engineer addresses, and a posted alert in the reviewed Slack channel, all
+tied to the same mailbox message. Missing, queued, attempted, duplicated,
+foreign-call or wrong-order evidence returns `not_verified`. Its synthetic
+tests pass, but it has no live evidence or provider integration yet; the
+collecting operator must independently authenticate each receipt's source.
+
 ## Required provider sequence, no automatic launch
 
 1. Read the current Vapi assistant, candidate, helper, handoff tool, test
