@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readSourceHomePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientLabel, sourceJobLabel } from "./new-dawn-source-job-home.ts";
+import { readSourceHomePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientLabel, sourceJobLabel, sourceJobReviewCue } from "./new-dawn-source-job-home.ts";
 
 const tenant = "00000000-0000-0000-0000-000000000001";
 const actor = "00000000-0000-0000-0000-000000000002";
@@ -13,7 +13,7 @@ const row = {
     status: "pending", title: "Repair", updated_at: "2026-10-16T07:57:49Z", verified: true,
   },
   source_observed_at: "2026-10-19T08:00:00Z",
-  source_state: "source_changed",
+  source_state: "source_changed" as const,
 };
 const envelope = () => ({
   version: "new-dawn-source-job-home/1", tenant_id: tenant, actor_id: actor,
@@ -45,4 +45,14 @@ test("rejects wrong tenant, actor, duplicates, excess rows and invented source s
 test("operator preview and ordinary client use separate release flags", () => {
   assert.equal(sourceHomeFlagName(true), "new_dawn.source_job_home.operator_preview");
   assert.equal(sourceHomeFlagName(false), "new_dawn.source_job_home");
+});
+
+test("source review cues distinguish changed links, older captures and recent saved evidence", () => {
+  const now = Date.parse("2026-10-19T09:00:00Z");
+  const current = { ...row, source_state: "reviewed_latest" as const };
+  assert.equal(sourceJobReviewCue(row, now).kind, "link_review");
+  assert.equal(sourceJobReviewCue({ ...current, source_observed_at: "2026-10-18T08:59:59Z" }, now).kind, "aged_observation");
+  assert.equal(sourceJobReviewCue({ ...current, source_observed_at: "2026-10-19T08:00:00Z" }, now).kind, "recent_observation");
+  assert.equal(sourceJobReviewCue({ ...current, source_observed_at: "2026-10-19T09:02:00Z" }, now).kind, "aged_observation");
+  assert.match(sourceJobReviewCue(current, now).label, /progress unverified/);
 });
