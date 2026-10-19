@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { migrationBodies, releaseSql } from './new-dawn-m1-source-home-release.mjs';
+import { candidateFreshnessSql, migrationBodies, releaseSql } from './new-dawn-m1-source-home-release.mjs';
 
 test('exact pinned M1 migrations package an operator gate without publishing either flag', () => {
   const bodies = migrationBodies();
@@ -24,4 +24,15 @@ test('TEST rehearsal proves the operator route then rolls back its flag and audi
   assert.match(rehearsal, /foreign_actor_admitted/);
   assert.match(rehearsal, /rollback;\s*$/);
   assert.throws(() => releaseSql('unknown'));
+});
+
+test('LIVE candidate freshness is aggregate-only inside a read-only rollback transaction', () => {
+  const sql=candidateFreshnessSql();
+  assert.match(sql,/^begin transaction read only;/);
+  assert.match(sql,/from rows;\nrollback;$/);
+  assert.match(sql,/min\(source_observed_at\) oldest_source_observed_at/);
+  assert.match(sql,/max\(source_observed_at\) newest_source_observed_at/);
+  assert.match(sql,/recorded_open/);
+  assert.match(sql,/recorded_pending/);
+  assert.doesNotMatch(sql,/\b(?:insert|update|delete|create|alter|drop|truncate|grant|revoke)\b/i);
 });
