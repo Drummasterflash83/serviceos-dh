@@ -59,6 +59,7 @@ try:
     signatures = [
         'learn_operator_input_request(uuid,uuid,uuid,jsonb,text)',
         'learn_commusoft_acquire_page(uuid,uuid,text,integer,jsonb)',
+        'learn_commusoft_commit_page(uuid,uuid,text,integer,uuid,jsonb)',
     ]
     expressions = ','.join("'public." + signature + "'::regprocedure" for signature in signatures)
     contract = ("select md5(string_agg(pg_get_functiondef(oid)||coalesce(proacl::text,'')"

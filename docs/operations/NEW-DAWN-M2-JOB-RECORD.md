@@ -78,7 +78,12 @@ server-side at one page of ten records and cannot be extended by the existing
 continuation route. It retains source user IDs and
 payloads under their original connection but holds projection: source users are
 not OpenFolk staff, account logins, assigned engineers or visits. No user import
-is started by installation. The documented response has not yet been checked
+is started by installation. The separate
+`learn.inputs.commusoft.users.enabled` feature flag is absent by default and
+must be explicitly true at approval, credential release and page commit. The
+operator choice remains disabled until a separate release review. The existing
+Commusoft import flag and active property/job/contact jobs are unchanged. The
+documented response has not yet been checked
 against a real Drummonds GET; the existing property-contact run was still active
 at the 19 October 14:51 UTC read-only check, so a parallel credential request
 was intentionally avoided. A bounded, approved one-page GET and source-shape
@@ -181,5 +186,6 @@ M2 job-detail migrations were installed on LIVE. The release lead verified the
 signed-in desktop/mobile exact-source read and two corresponding audit entries.
 The **new `/users` candidate is local review work only**: its synthetic
 network-isolated fixture proves a one-page source read contract, exact credential
-permit, immutable retained page, refusal of an unapproved resource and no
-second credential release. It has not made a real provider GET or been deployed.
+permit, immutable retained page, refusal of an unapproved resource, an absent/off
+source-user flag at all three gates and no second credential release. It has not
+made a real provider GET or been deployed.

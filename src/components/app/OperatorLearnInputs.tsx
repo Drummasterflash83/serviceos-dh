@@ -492,7 +492,7 @@ export function OperatorLearnInputs({
                     >
                       <option value="properties">Customers and work addresses</option>
                       <option value="jobs">Jobs</option>
-                      <option value="users">Source users (no staff assignment)</option>
+                      <option value="users" disabled>Source users (held for review)</option>
                       <option value="customer">Customer contacts</option>
                       <option value="workaddress">Work-address contacts</option>
                     </select>

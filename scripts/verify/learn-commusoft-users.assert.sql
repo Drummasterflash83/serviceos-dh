@@ -26,6 +26,20 @@ do $$declare r jsonb;begin
  exception when invalid_parameter_value then
   assert sqlerrm='learn_operator_import_invalid','Wrong users size refusal';
  end;
+ begin
+  perform public.learn_operator_input_request(public.fixture_id(100),public.fixture_id(286),
+   public.fixture_id(180),public.fixture_definition('start')||
+    '{"resource":"users","max_pages":1,"page_size":2}'::jsonb);
+  raise exception 'Source users approved with absent release flag';
+ exception when object_not_in_prerequisite_state then
+  assert sqlerrm='learn_operator_module_disabled','Wrong users flag refusal';
+ end;
+end$$;
+reset role;
+insert into public.feature_flags(tenant_id,flag,value)
+ values(public.fixture_id(100),'learn.inputs.commusoft.users.enabled','true'::jsonb);
+set role authenticated;
+do $$declare r jsonb;begin
  r:=public.learn_operator_input_request(public.fixture_id(100),public.fixture_id(290),
   public.fixture_id(180),public.fixture_definition('start')||
    '{"resource":"users","max_pages":1,"page_size":2}'::jsonb);
@@ -79,8 +93,25 @@ begin
  assert public.learn_commusoft_acquire_page(a.tenant_id,j.id,j.claimed_by,j.attempt_count,
   jsonb_set(expected,'{request,resource}','"jobs"'::jsonb)) is null,
   'Unapproved jobs resource got a credential';
+ update public.feature_flags set value='false'::jsonb where tenant_id=a.tenant_id
+  and flag='learn.inputs.commusoft.users.enabled';
+ assert public.learn_commusoft_acquire_page(a.tenant_id,j.id,j.claimed_by,j.attempt_count,expected)
+  is null,'Disabled users flag released a credential';
+ update public.feature_flags set value='true'::jsonb where tenant_id=a.tenant_id
+  and flag='learn.inputs.commusoft.users.enabled';
  permit:=public.learn_commusoft_acquire_page(a.tenant_id,j.id,j.claimed_by,j.attempt_count,expected);
  assert permit->>'state'='ready','Users permit unavailable';
+ update public.feature_flags set value='false'::jsonb where tenant_id=a.tenant_id
+  and flag='learn.inputs.commusoft.users.enabled';
+ begin
+  perform public.learn_commusoft_commit_page(a.tenant_id,j.id,j.claimed_by,j.attempt_count,
+   (permit->>'permitId')::uuid,envelope);
+  raise exception 'Disabled users flag retained a page';
+ exception when insufficient_privilege then
+  assert sqlerrm='commusoft_module_unavailable','Wrong users commit refusal';
+ end;
+ update public.feature_flags set value='true'::jsonb where tenant_id=a.tenant_id
+  and flag='learn.inputs.commusoft.users.enabled';
  receipt:=public.learn_commusoft_commit_page(a.tenant_id,j.id,j.claimed_by,j.attempt_count,
   (permit->>'permitId')::uuid,envelope);
  assert receipt->>'records'='1' and receipt#>>'{checkpoint,complete}'='true',
