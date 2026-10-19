@@ -178,6 +178,12 @@ are separately hashed so corrections can be reviewed rather than silently
 overwriting earlier evidence. This stage is deliberately separate from LIVE
 capture; a real export and import authority still need review before ingestion.
 
+The follow-on [private held-facet review](NEW-DAWN-M2-FACET-REVIEW.md) reads the
+same bounded CSV and manifest locally, reports row-level source-field and
+freshness holds for visits, engineers, estimates, invoices and parts/costs,
+and leaves every row unpublished. Its `ready_for_source_review` label is only
+syntactic triage, not an accepted job link, visit, staff identity or money fact.
+
 ## Verification
 
 `node --test src/lib/learn-commusoft-job-details.test.ts` and
