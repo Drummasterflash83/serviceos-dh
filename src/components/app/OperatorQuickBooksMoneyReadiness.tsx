@@ -43,18 +43,19 @@ export function OperatorQuickBooksMoneyReadiness({tenantId,actorId,canWrite,conn
     finally{if(ticket===generation.current){working.current=false;setBusy(false);setReviewed(false);}}
   }
   const number=(n:number)=>new Intl.NumberFormat("en-GB").format(n);
-  return <section className="space-y-3 rounded-xl border p-4" aria-label="QuickBooks money source readiness">
-    <h4 className="font-semibold">Money source readiness · OpenFolk only</h4>
+  return <details className="min-w-0 rounded-xl border p-4" aria-label="QuickBooks money source readiness">
+    <summary className="cursor-pointer font-semibold">Money source readiness · OpenFolk only</summary>
+    <div className="mt-3 min-w-0 space-y-3">
     <p className="text-sm text-muted-foreground">Counts retained source fields for a selected company. It makes no provider request and shows no amounts. Field gross profit and ARR remain held until their source links and definitions are reviewed.</p>
     <label className="grid gap-1 text-sm">Connected company
-      <select className="rounded-lg border bg-background p-2" value={connectionId} disabled={busy}
+      <select className="min-w-0 w-full rounded-lg border bg-background p-2" value={connectionId} disabled={busy}
         onChange={e=>{setConnectionId(e.target.value);setResult(null);setReviewed(false);}}>
         <option value="">Choose company</option>
         {available.map(c=><option key={c.id} value={c.id}>{c.companyName??c.realmId} · {c.environment==="production"?"LIVE":"Sandbox"}</option>)}
       </select>
     </label>
     <label className="grid gap-1 text-sm">Reason for this source read
-      <input className="rounded-lg border bg-background p-2" maxLength={500} value={reason} disabled={busy}
+      <input className="min-w-0 w-full rounded-lg border bg-background p-2" maxLength={500} value={reason} disabled={busy}
         onChange={e=>{setReason(e.target.value);setResult(null);setReviewed(false);}}/>
     </label>
     <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={reviewed} disabled={busy||!selected}
@@ -64,7 +65,7 @@ export function OperatorQuickBooksMoneyReadiness({tenantId,actorId,canWrite,conn
     {result&&<div role="status" className="space-y-2 text-sm">
       <p><strong>Field gross profit: held.</strong> QuickBooks job customers and cost-side line references are potential inputs. No reviewed Commusoft job mapping or actual job-cost ledger has been established.</p>
       <p><strong>ARR: held.</strong> Invoice repetition and item prices do not establish a recurring contract, period or end date. The current importer does not capture recurring transactions.</p>
-      <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-2">
+      <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1">
         <dt>Retained QuickBooks invoices</dt><dd>{number(result.retained.invoice_latest)}</dd>
         <dt>QuickBooks job customers</dt><dd>{number(result.retained.qbo_job_customers)}</dd>
         <dt>Bills with customer line references</dt><dd>{number(result.retained.bill_customer_line_refs)}</dd>
@@ -75,7 +76,8 @@ export function OperatorQuickBooksMoneyReadiness({tenantId,actorId,canWrite,conn
         <dt>Jobs with checked direct-cost fields</dt><dd>{number(result.retained.commusoft_jobs_with_checked_direct_cost_fields)}</dd>
         <dt>Invoices with checked recurrence markers</dt><dd>{number(result.retained.invoices_with_checked_recurring_markers)}</dd>
       </dl>
-      <p className="text-xs text-muted-foreground">QuickBooks latest observation: {result.latestObservedAt??"none"}. Read {result.readAt}. Audit {result.auditId}. Company {result.realmId} · {result.environment==="production"?"LIVE":"Sandbox"}. Field presence is evidence coverage, not a money figure.</p>
+      <p className="break-all text-xs text-muted-foreground">QuickBooks latest observation: {result.latestObservedAt??"none"}. Read {result.readAt}. Audit {result.auditId}. Company {result.realmId} · {result.environment==="production"?"LIVE":"Sandbox"}. Field presence is evidence coverage, not a money figure.</p>
     </div>}
-  </section>;
+    </div>
+  </details>;
 }
