@@ -143,10 +143,10 @@ foreign-call or wrong-order evidence returns `not_verified`. Its synthetic
 tests pass, but it has no live evidence or provider integration yet; the
 collecting operator must independently authenticate each receipt's source.
 
-The immutable local source-candidate preflight is
-`docs/operations/EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-19.json` (SHA-256
-`96a28305f8e14b8e84ceed6760b2107dbbc8bbaa51b83adbb87a2962b0d4ac02`).
-It pins 12 relevant source-file hashes to commit `c872a5d1`, the v10 suite
+The current immutable local source-candidate preflight is
+`docs/operations/EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-19-v2.json` (SHA-256
+`8b568797b6ee8ea8db90aaa3cc8f042be7dabe77b5c19ed5f1ef568b6863e732`).
+It pins 12 relevant source-file hashes to commit `0939f5ac`, the v10 suite
 payload hash and each of the 12 scenario payload hashes. Running the
 reproducible local checker twice produced identical bytes; all 12 passed
 static clock/mock/rubric checks on that unchanged source. **No Vapi model
@@ -154,6 +154,18 @@ conversation was run:** every scenario's conversational and real-phone
 outcome is explicitly `not_run`. This is not a 12/12 provider pass or a
 hash of the unobserved saved Vapi candidate. The last real provider result
 remains 8/12 on an older candidate.
+The earlier immutable `EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-19.json`
+remains for comparison; its source predates the location/CO safety fix.
+
+The current code rejects a bare postcode as the complete emergency site:
+the caller must supply a numbered street or named/numbered premises with a
+postcode, grounded in their own words. It still does not geocode the address
+or delay immediate safety advice. The CO wording now reflects the current
+NHS distinction: suspected symptoms prompt NHS 111 after leaving, while
+severe breathing difficulty, sudden confusion, unconsciousness, weakness
+or chest/muscle pain require 999. The National Gas emergency line remains
+0800 111 999. This is a candidate source correction, not a LIVE prompt or
+real-phone result.
 
 ## Required provider sequence, no automatic launch
 
