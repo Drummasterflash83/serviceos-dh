@@ -102,6 +102,34 @@ the isolated inline copy for this account, and Birchills' actual 603 target.
 The provider may normalize inline tool fields; read-back must compare the
 saved helper to the reviewed source before any paid run or promotion.
 
+### Sequential cross-cover and greeting checks, source-only
+
+Vapi's [Transfer Call tool guide](https://docs.vapi.ai/tools/transfer-call)
+states that one invocation chooses **one** destination from its list; the
+array does not call Rob, Tony and 603 in sequence. Its
+[assistant-based warm-transfer guide](https://docs.vapi.ai/calls/assistant-based-warm-transfer)
+describes how a failed destination can return the caller to the original
+assistant when `transferPlan.mode` is `warm-transfer-experimental`, the
+transfer assistant cancels voicemail/busy/no-answer/IVR and
+`fallbackPlan.endCallEnabled` is `false`. The candidate-only release gate now
+requires those fields and the exact human-acceptance/cancellation contract for
+both engineer destinations. It allows their candidate-only transfer plans to
+differ from the unchanged published tool, while retaining the same Rob/Tony
+number and description. A blind or ending transfer cannot pass merely because
+three destinations are listed. This is a structural check; only supervised
+provider calls can prove that Vapi and Birchills actually return a failed
+leg, ring the next engineer and deposit in 603.
+
+The twelve root scenarios are now revision `fixed-clock-routing-v11`. Each
+quality judge requires the **actual first greeting** in the transcript to
+disclose that Emma is automated and the call is recorded, before intake or
+transfer, including closed and holiday clocks. The existing source-text check
+still requires both branches of the candidate greeting to contain those
+disclosures. v10's saved provider results cannot be relabelled as v11; one
+fresh captured suite on one unchanged candidate hash is required. The root
+simulations still intercept the emergency handoff and cannot prove Rob/Tony
+cross-cover, 603 deposit, dual email or Slack delivery.
+
 ## Candidate code now prepared
 
 - The recovered candidate-only intake validator requires caller-sourced
@@ -263,6 +291,12 @@ then confirms Emma's full number read-back. No real client details are needed.
 For every call, match the Vapi call ID and audio to the Birchills call
 record, handset observation and, when applicable, mailbox/notification
 receipts. A transfer request alone is never human-answer proof.
+For D2/D3/C2/C3, verify the failed first leg returned to Emma before a
+**separate** second tool invocation; three destination entries are not a
+sequential dial plan. Inspect the transfer assistant's `transferCancel` for
+voicemail, busy or no answer, and `transferSuccessful` only after a human
+accepts. A Vapi `forwarding` status or `assistant-forwarded-call` ended reason
+shows an attempt, not an answered Birchills handset.
 
 | Call | Controlled condition | Required observation |
 | --- | --- | --- |

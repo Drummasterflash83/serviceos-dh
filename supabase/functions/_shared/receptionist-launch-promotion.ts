@@ -7,7 +7,7 @@ import { evidenceHash } from "./receptionist-care.ts";
 import { releaseConfiguration, releaseHash, stableJson } from "./receptionist-release.ts";
 import { launchScenarioPayloads } from "./receptionist-launch-scenarios.ts";
 import { approvedOrdinaryDestination } from "./receptionist-launch-destinations.ts";
-import { EMERGENCY_CONTINUATION_CONTRACT } from "./receptionist-launch-candidate.ts";
+import { EMERGENCY_CONTINUATION_CONTRACT, EMMA_TRANSFER_ASSISTANT_CONTRACT } from "./receptionist-launch-candidate.ts";
 import { captureTestHarness } from "./receptionist-test-harness.ts";
 import { list, UUID } from "./receptionist-testing.ts";
 
@@ -62,9 +62,13 @@ function validateGraph(g: any, source: any) {
   const emergencyLabels = ["Rob emergency 109", "Tony emergency 105", "Shared emergency mailbox 603"];
   const { destinations: _sharedDestinations, ...sharedTool } = releaseConfiguration(g.emergency);
   const { destinations: _candidateDestinations, ...candidateTool } = releaseConfiguration(helperEmergency ?? {});
+  const withoutPlan = (destination: any) => {
+    const { transferPlan: _plan, ...identity } = destination;
+    return identity;
+  };
   if (list(g.emergency.destinations).length !== 2 ||
     !same(candidateTool, sharedTool) ||
-    !same(emergencyDestinations.slice(0, 2), g.emergency.destinations) ||
+    !same(emergencyDestinations.slice(0, 2).map(withoutPlan), g.emergency.destinations.map(withoutPlan)) ||
     emergencyDestinations.length !== 3 ||
     new Set(emergencyDestinations.map((d: any) => d.number)).size !== 3 ||
     !emergencyDestinations.every((d: any) => d.type === "number" &&
@@ -73,6 +77,18 @@ function validateGraph(g: any, source: any) {
       emergencyLabels.includes(d.description)) ||
     !emergencyLabels.every(label => emergencyDestinations.some((d: any) => d.description === label)))
     throw Error("Launch emergency Rob/Tony/603 destination graph is incomplete; no behaviour published.");
+  // A transferCall invocation selects one destination. Rob→Tony→603 is possible
+  // only if a failed engineer leg returns the caller to this helper. A generic
+  // or blind warm transfer cannot establish that; the provider phone drill is
+  // still required to prove the configured behavior works in this account.
+  for (const engineer of emergencyDestinations.slice(0, 2)) {
+    const plan = engineer.transferPlan;
+    if (plan?.mode !== "warm-transfer-experimental" ||
+      plan.fallbackPlan?.endCallEnabled !== false ||
+      !list(plan.transferAssistant?.model?.messages).some((m: any) =>
+        m.role === "system" && m.content === EMMA_TRANSFER_ASSISTANT_CONTRACT))
+      throw Error("Launch engineer cross-cover requires reviewed human acceptance and a returnable failed transfer.");
+  }
   const destination = g.handoff.destinations?.[0];
   if (g.handoff.type !== "handoff" || g.handoff.function?.name !== "Route-Emergency-to-Rob-or-Tony" ||
     g.handoff.destinations?.length !== 1 || destination?.type !== "dynamic" ||

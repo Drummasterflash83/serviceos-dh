@@ -5,7 +5,7 @@ import { launchPromotion, launchPromotionIds as ids, requireLaunchEvidence, requ
 import { evidenceHash } from "./receptionist-care.ts";
 import { launchScenarioPayloads } from "./receptionist-launch-scenarios.ts";
 import { approvedOrdinaryDestination } from "./receptionist-launch-destinations.ts";
-import { EMERGENCY_CONTINUATION_CONTRACT } from "./receptionist-launch-candidate.ts";
+import { EMERGENCY_CONTINUATION_CONTRACT, EMMA_TRANSFER_ASSISTANT_CONTRACT } from "./receptionist-launch-candidate.ts";
 import { captureTestHarness } from "./receptionist-test-harness.ts";
 
 const clone = <T>(x: T): T => structuredClone(x);
@@ -15,9 +15,11 @@ async function fixture() {
   const voice = { provider: "11labs", voiceId: "approved", speed: 1.05 }, transcriber = { provider: "soniox" };
   const ordinary = { id: ids.ordinary, orgId, type: "transferCall", function: { name: "Route-Call-to-Drummond-Team-20260929" },
     destinations: ["+441794378095", "+441794378105", "+441794378096", "+441794840042", "+441794840043", ...Array.from({ length: 5 }, (_, i) => `+44179400000${i}`)].map(number => ({ type: "number", number, description: "Reviewed original destination", message: "Original announcement", transferPlan: { mode: "blind-transfer" } })) };
+  const engineerPlan = () => ({ mode: "warm-transfer-experimental", fallbackPlan: { endCallEnabled: false },
+    transferAssistant: { model: { messages: [{ role: "system", content: EMMA_TRANSFER_ASSISTANT_CONTRACT }] } } });
   const emergency = { id: ids.emergency, orgId, type: "transferCall", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [
-    { type: "number", number: "+441234567001", description: "Rob emergency 109", transferPlan: { mode: "warm-transfer" } },
-    { type: "number", number: "+441234567002", description: "Tony emergency 105", transferPlan: { mode: "warm-transfer" } },
+    { type: "number", number: "+441234567001", description: "Rob emergency 109", transferPlan: engineerPlan() },
+    { type: "number", number: "+441234567002", description: "Tony emergency 105", transferPlan: engineerPlan() },
   ] };
   const candidateEmergency = { type: emergency.type, function: clone(emergency.function), destinations: [
     ...clone(emergency.destinations),
@@ -173,10 +175,34 @@ test("promotion cannot satisfy 603 by editing the published emergency tool or re
   assert.equal(reusedTool.state.writes.length, 0);
 });
 
+test("candidate-only engineer return plans may differ from unchanged published plans", async () => {
+  const f = await fixture();
+  for (const destination of f.graph.emergency.destinations) destination.transferPlan = { mode: "blind-transfer" };
+  f.source.source_tools[1].destinations = clone(f.graph.emergency.destinations);
+  assert.equal((await f.execute()).state, "applied");
+  assert.equal(f.state.writes.length, 1);
+  assert.deepEqual(f.graph.emergency.destinations, f.source.source_tools[1].destinations);
+});
+
+test("candidate cannot claim Rob/Tony cross-cover without returnable human-screened transfers", async () => {
+  for (const kind of ["blind", "ends-call", "no-human-gate", "wrong-human-gate"]) {
+    const f = await fixture();
+    const plan = f.graph.helper.model.tools[0].destinations[0].transferPlan;
+    if (kind === "blind") plan.mode = "blind-transfer";
+    if (kind === "ends-call") plan.fallbackPlan.endCallEnabled = true;
+    if (kind === "no-human-gate") plan.transferAssistant.model.messages = [];
+    if (kind === "wrong-human-gate") plan.transferAssistant.model.messages[0].content = "Connect after a ring.";
+    await assert.rejects(f.execute(), /returnable failed transfer/, kind);
+    assert.equal(f.state.writes.length, 0, kind);
+  }
+});
+
 test("emergency continuation states ordered cross-cover, one 603 fallback and truthful delivery limits", () => {
   const contract = EMERGENCY_CONTINUATION_CONTRACT;
   assert.match(contract, /Commercial: attempt Rob 109 first, then Tony 105 once only after an explicit failure/);
   assert.match(contract, /Domestic: attempt Tony 105 first, then Rob 109 once only after an explicit failure/);
+  assert.match(contract, /One invocation selects ONE destination; it does not ring all destinations/);
+  assert.match(contract, /After a failed engineer transfer returns the caller to you, invoke the next reviewed destination once/);
   assert.match(contract, /If both engineer attempts fail.*shared emergency mailbox 603 destination once/);
   assert.match(contract, /voicemail greeting is not human acceptance/);
   for (const proof of ["rob@drummondheating.co.uk", "tony@drummondheating.co.uk", "#ai-emma Slack alert"])
