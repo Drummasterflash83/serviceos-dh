@@ -332,13 +332,13 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation, comp
         {operator && onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Browse captured source jobs</button>}
       </div>
       {operator && <div className={`nd-operator-preview${displayedOperatorJobs ? " nd-operator-preview--active" : ""}`}>
-        <strong>{mdPreviewOpen ? `${companyLabel} owner job view · read-only preview` : displayedOperatorJobs ? `${companyLabel} job home · OpenFolk read-only preview` : `Review ${companyLabel} job home · OpenFolk read-only`}</strong>
+        <strong>{mdPreviewOpen ? `${companyLabel} MD job view · read-only presentation preview` : displayedOperatorJobs ? `${companyLabel} job home · OpenFolk read-only preview` : `Review ${companyLabel} job home · OpenFolk read-only`}</strong>
         {displayedOperatorJobs ? <>
           <p>{mdPreviewOpen
             ? `You remain signed in as OpenFolk. This presentation uses the audited saved job selection, not a client staff login or live provider feed. Read logged ${checked(activeOperatorSourcePage!.observedAt)}.`
             : "You are still signed in as OpenFolk. This job read was logged."}</p>
           {activeOperatorSourcePage && <button className="cp-secondary" onClick={() => { setMdPreview(!mdPreviewOpen); setSelectedOperator(null); setSelectedMd(null); }}>
-            {mdPreviewOpen ? "Show OpenFolk diagnostics" : `View as ${companyLabel} owner`}
+            {mdPreviewOpen ? "Show OpenFolk diagnostics" : `Preview ${companyLabel} MD job view`}
           </button>}
           <button className="cp-secondary" onClick={() => { setSelectedOperator(null); setSelectedMd(null); setMdPreview(false); setOperatorPage(null); setOperatorSourcePage(null); }}>Change access reason</button>
         </> : <>
