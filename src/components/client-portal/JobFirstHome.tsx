@@ -13,6 +13,7 @@ import { OwnerMoneyPanel } from "./OwnerMoneyPanel";
 import { FounderAccountsPreview } from "./FounderAccountsPreview";
 import { FounderScoreReadiness } from "./FounderScoreReadiness";
 import { FounderInvoiceReviewCandidates } from "./FounderInvoiceReviewCandidates";
+import { FounderOpportunitySourceReview } from "./FounderOpportunitySourceReview";
 import { PublishedOwnerAccountsPanel } from "./PublishedOwnerAccountsPanel";
 import { RecentSavedJobReview } from "./RecentSavedJobReview";
 
@@ -442,6 +443,8 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation, comp
       jobPreviewOpened={!!displayedOperatorJobs} reason={reason} />}
     {operator && <FounderInvoiceReviewCandidates tenant={tenant} operator={operator}
       jobPreviewOpened={!!displayedOperatorJobs} reason={reason} />}
+    {operator && !mdPreviewOpen && activeOperatorSourcePage && user &&
+      <FounderOpportunitySourceReview tenant={tenant} actor={user.id} jobReason={reason.trim()} />}
     </>
   );
 }
