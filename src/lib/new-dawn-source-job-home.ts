@@ -1,4 +1,4 @@
-import type { HomeJob, OperatorHomeJob } from "./new-dawn-job-home";
+import { homeJobAction, type HomeJob, type OperatorHomeJob } from "./new-dawn-job-home.ts";
 
 export type SourceHomeState = "reviewed_latest" | "source_changed" | "source_ambiguous";
 export type SourceHomeJob = OperatorHomeJob & {
@@ -60,10 +60,21 @@ export function sourceJobReviewCue(job: SourceHomeJob, now = Date.now()) {
   return { kind: "recent_observation" as const, label: "Recently captured; progress unverified" };
 }
 
-export function sourceJobClientLabel(job: SourceHomeJob) {
-  return job.source_state === "reviewed_latest"
-    ? "Recorded details available"
-    : "Saved details need a record check";
+/** Plain-language client attention, separate from the operator's source diagnostics. */
+export function sourceJobClientAttention(job: SourceHomeJob, now = Date.now()) {
+  const cue = sourceJobReviewCue(job, now);
+  if (cue.kind === "link_review") return {
+    label: "Job details need checking",
+    nextStep: "Ask OpenFolk to confirm this job record before acting on it",
+  };
+  if (cue.kind === "aged_observation") return {
+    label: "Current progress needs checking",
+    nextStep: "Confirm current progress before taking the next job step",
+  };
+  return {
+    label: "Recorded progress needs confirming",
+    nextStep: homeJobAction({ status: job.fields.status }),
+  };
 }
 
 export function sourceJobAsHomeJob(job: SourceHomeJob, tenant: string): HomeJob {
