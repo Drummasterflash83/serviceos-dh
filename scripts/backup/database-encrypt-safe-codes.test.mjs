@@ -4,7 +4,8 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { classifyPythonStageFailure, publicPreparationFailure,
-  safePythonPreparationFailure } from "./database-encrypt-safe-codes.mjs";
+  safePythonPreparationFailure, sourceExportPreparationDiagnostic } from
+  "./database-encrypt-safe-codes.mjs";
 import { safeDailyChildFailure, runDailyDatabaseBackup } from "./run-daily-database-backup.mjs";
 import { sanitizeDailyFailure, writeSafeDailyDiagnostic } from "./write-safe-daily-diagnostic.mjs";
 
@@ -71,6 +72,77 @@ test("Python size evidence survives the Node wrappers and restricted artifact", 
     code: "encrypt_package_size_invalid", packageInputBytes: 8_700_000_000,
     productionWrites: false });
   assert.equal(JSON.stringify({ publicLine, artifact }).includes("PRIVATE"), false);
+});
+
+test("validated archive size survives export, public, daily and artifact wrappers", async () => {
+  const bytes = 2 * 1024 ** 3 + 1;
+  const exportReport = { project: "tgbnakbxwcqjeimygroz",
+    state: "export_complete_restore_unverified", productionDataWrites: false,
+    archive: { bytes, sha256: "a".repeat(64) } };
+  const archiveStat = { size: bytes, isFile: () => true, isSymbolicLink: () => false };
+  const diagnostic = sourceExportPreparationDiagnostic(exportReport, archiveStat, 2 * 1024 ** 3);
+  assert.deepEqual(diagnostic, { code: "encrypt_source_archive_size_exceeded", archiveBytes: bytes });
+  const error = Error("PRIVATE EXPORT FAILURE");
+  error.safeDiagnostic = { ...diagnostic, privateText: "PRIVATE ARCHIVE PATH" };
+  const publicLine = publicPreparationFailure(error, "--prepare-daily");
+  const daily = safeDailyChildFailure(JSON.stringify(publicLine));
+  const base = await mkdtemp(join(tmpdir(), "daily-archive-size-safe-"));
+  let calls = 0;
+  try {
+    await assert.rejects(runDailyDatabaseBackup({ base, runId: id, day: "20261019",
+      execute: async () => {
+        calls++;
+        if (calls === 1) return JSON.stringify({ stage: "export_complete_restore_unverified",
+          archiveBytes: bytes });
+        if (calls === 2) return JSON.stringify({ state: "daily_native_restore_verified_vault_pending",
+          containerRemoved: true, productionWrites: false });
+        const failure = Error("PRIVATE ARCHIVE PATH");
+        failure.safeDiagnostic = daily;
+        throw failure;
+      },
+    }), /daily_backup_not_verified/);
+    assert.equal(calls, 3);
+    const artifact = { state: "daily_backup_not_verified", stage: "encrypt",
+      code: "encrypt_source_archive_size_exceeded", archiveBytes: bytes,
+      productionWrites: false };
+    const privateFailure = JSON.parse(await readFile(join(base,
+      `database-daily-run-${id}`, "failed.json")));
+    assert.equal(privateFailure.archiveBytes, bytes);
+    assert.equal(privateFailure.privateText, undefined);
+    assert.deepEqual(await writeSafeDailyDiagnostic(base), artifact);
+    assert.deepEqual(JSON.parse(await readFile(join(base, "safe-diagnostic.json"))), artifact);
+    assert.equal(JSON.stringify({ publicLine, artifact }).includes("PRIVATE"), false);
+  } finally { await rm(base, { recursive: true, force: true }); }
+});
+
+test("source contract failures never disclose unverified archive bytes", () => {
+  const bytes = 2 * 1024 ** 3 + 1;
+  const exported = { project: "tgbnakbxwcqjeimygroz",
+    state: "export_complete_restore_unverified", productionDataWrites: false,
+    archive: { bytes, sha256: "b".repeat(64) } };
+  const stat = { size: bytes, isFile: () => true, isSymbolicLink: () => false };
+  const generic = { code: "encrypt_source_export_unverified" };
+  for (const changed of [
+    { ...exported, project: "OTHER" },
+    { ...exported, state: "exporting_native_archive" },
+    { ...exported, productionDataWrites: true },
+    { ...exported, archive: { bytes, sha256: "PRIVATE" } },
+    { ...exported, archive: { bytes: "PRIVATE", sha256: "b".repeat(64) } },
+  ]) assert.deepEqual(sourceExportPreparationDiagnostic(changed, stat, 2 * 1024 ** 3), generic);
+  for (const changed of [
+    null,
+    { ...stat, size: bytes - 1 },
+    { ...stat, isFile: () => false },
+    { ...stat, isSymbolicLink: () => true },
+  ]) assert.deepEqual(sourceExportPreparationDiagnostic(exported, changed, 2 * 1024 ** 3), generic);
+  assert.equal(sourceExportPreparationDiagnostic({ ...exported,
+    archive: { ...exported.archive, bytes: 2 * 1024 ** 3 } },
+  { ...stat, size: 2 * 1024 ** 3 }, 2 * 1024 ** 3), null);
+  const forged = sanitizeDailyFailure({ state: "daily_backup_not_verified", stage: "encrypt",
+    code: "encrypt_source_archive_size_exceeded", archiveBytes: "PRIVATE",
+    productionWrites: false });
+  assert.deepEqual(forged, { state: "daily_backup_not_verified", stage: "encrypt",
+    code: "encrypt_source_archive_size_exceeded", productionWrites: false });
 });
 
 test("failed encrypt reaches only the allowlisted daily artifact, without retry", async () => {

@@ -19,7 +19,9 @@ export const ENCRYPT_CODES = new Set([
   "encrypt_source_revision_unverified", "encrypt_preparation_binding_invalid",
   "encrypt_python_stage_unconfirmed", "encrypt_package_descriptor_unverified",
   "encrypt_recipient_changed", "encrypt_source_scope_invalid",
+  "encrypt_source_archive_size_exceeded",
 ]);
+const MAX_DIAGNOSTIC_ARCHIVE_BYTES = 1024 ** 4;
 const PUBLIC_PREPARATION_CODES = new Map([
   ["database_private_directory_invalid", "encrypt_private_directory_required"],
   ["database_runner_directory_invalid", "encrypt_private_directory_required"],
@@ -37,10 +39,31 @@ const PUBLIC_PREPARATION_CODES = new Map([
 export function safeEncryptDiagnostic(value) {
   if (!ENCRYPT_CODES.has(value?.code)) return null;
   const size = value.packageInputBytes;
+  const archiveBytes = value.archiveBytes;
   return { code: value.code,
     ...(["encrypt_package_size_invalid", "encrypt_file_size_invalid"].includes(value.code) &&
       Number.isSafeInteger(size) && size >= 0 && size <= 1024 ** 4
-      ? { packageInputBytes: size } : {}) };
+      ? { packageInputBytes: size } : {}),
+    ...(value.code === "encrypt_source_archive_size_exceeded" &&
+      Number.isSafeInteger(archiveBytes) && archiveBytes > 0 &&
+      archiveBytes <= MAX_DIAGNOSTIC_ARCHIVE_BYTES
+      ? { archiveBytes } : {}) };
+}
+
+export function sourceExportPreparationDiagnostic(exported, archiveStat, maxPackageBytes) {
+  const bytes = exported?.archive?.bytes;
+  if (exported?.project !== "tgbnakbxwcqjeimygroz" ||
+    exported.state !== "export_complete_restore_unverified" ||
+    exported.productionDataWrites !== false ||
+    !Number.isSafeInteger(bytes) || bytes <= 0 ||
+    bytes > MAX_DIAGNOSTIC_ARCHIVE_BYTES ||
+    !/^[a-f0-9]{64}$/.test(exported.archive?.sha256 ?? "") ||
+    !archiveStat?.isFile() || archiveStat.isSymbolicLink() ||
+    archiveStat.size !== bytes ||
+    !Number.isSafeInteger(maxPackageBytes) || maxPackageBytes <= 0)
+    return { code: "encrypt_source_export_unverified" };
+  return bytes > maxPackageBytes
+    ? { code: "encrypt_source_archive_size_exceeded", archiveBytes: bytes } : null;
 }
 
 export function safePythonPreparationFailure(output) {
