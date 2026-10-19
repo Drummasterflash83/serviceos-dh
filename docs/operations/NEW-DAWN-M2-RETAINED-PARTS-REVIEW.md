@@ -3,8 +3,9 @@
 The Drummonds DH Works archive already contains an **original** Commusoft parts
 HTML export, `FILE-339`, labelled 4 August 2026. Its SHA-256 is
 `8ceab3eff80a556837a118c655fc107ce67518695961d776846a61aa1479a412`,
-matching the archived source register. The file remains outside Git at
-`/Users/chrisdrummond/Documents/DH Works/source_data/v2/commusoft/parts_all_time_enhanced_generated_2026-08-04.xls`.
+matching the archived source register. The file remains outside Git in the
+private DH Works source archive as
+`parts_all_time_enhanced_generated_2026-08-04.xls`.
 The later normalized `parts.csv` adds derived calculations and is not source
 authority for this review.
 
@@ -45,7 +46,7 @@ Drummonds tenant and Commusoft connection IDs:
 ```sh
 python3 scripts/commusoft/review-legacy-parts-export.py \
   --manifest /private/path/parts-scope.json \
-  --source '/Users/chrisdrummond/Documents/DH Works/source_data/v2/commusoft/parts_all_time_enhanced_generated_2026-08-04.xls' \
+  --source /private/path/parts_all_time_enhanced_generated_2026-08-04.xls \
   --out /private/path/parts-held-review.json
 ```
 
