@@ -8,20 +8,11 @@ change on the day.
 ## Source of truth and present evidence
 
 - Branch: `codex/new-dawn-emma`, cut from verified GitHub `main`
-  `a9ec20324ced248b60ee77ded3f8ad7fee21b890`.
-- The branch was reconciled with later verified `main`
-  `d2d8e1f9438a4dffa3888a22ba902e77e5154c88` by a normal merge
-  (`44d66ade44439dc8ace9cace285ab77b783f14dc`), preserving its
-  published history. All 179 focused receptionist tests passed after that
-  merge, and `git diff --check origin/main...HEAD` was clean. These are
-  local candidate checks, not provider or phone acceptance.
-- A second normal merge brought in `main` `b12842fe` as `e713a127` on
-  19 October. The same 179 focused tests passed after it. No Emma-specific
-  conflict occurred; neither merge rewrote the published branch.
-- A third normal merge brought in `main` `307a0656` as `e361a598` on
-  19 October. All 179 focused receptionist tests passed on that unchanged
-  branch candidate, and the branch diff check was clean. This is source-code
-  verification, not a Vapi simulation or real-phone test.
+  `a9ec20324ced248b60ee77ded3f8ad7fee21b890` and normally merged
+  with current `main` `41d0aca8` at `f5050b92` on 19 October. Published
+  history was preserved and there was no Emma-specific merge conflict.
+  All 179 focused receptionist tests and the diff check passed after the
+  merge. These are source-code checks, not provider or phone acceptance.
 - The historical 2 October private package is
   `2. Ai/Openfolk OS   Pass-Over/Emma Unmerged Work 2026-10-02/` in Chris's
   Dropbox. Its patch applied cleanly to this branch. Its 80 focused tests
@@ -55,6 +46,16 @@ change on the day.
   run was 8/12 on an older candidate. Local tests of the release gate are
   **not** a new 12/12 run. Root simulations intercept the handoff and
   cannot establish that Rob, Tony or mailbox 603 received a real call.
+- The current helper contract describes Rob/Tony cross-cover, but it does
+  **not** establish a usable final 603 transfer or a Slack delivery route.
+  `validateGraph` checks the emergency tool against the saved source and
+  checks the helper/tool identities; it does not independently prove the
+  two engineer destinations, the 603 destination, voicemail delivery,
+  dual email or Slack receipt. A 12/12 root-assistant simulation could
+  therefore pass while Stage A fallback remains unproved. Inspect the
+  current provider graph and implement only a provider-supported,
+  reviewed 603 route before real-phone acceptance; do not invent a
+  mailbox number or claim an alert was sent.
 
 ## Candidate code now prepared
 
@@ -124,6 +125,10 @@ credentials or caller data were read for this check.
    intake installer. Read back the saved dynamic server configuration and
    verify the receiver on a controlled candidate call. Review ambiguous
    writes; never blindly retry.
+   Separately verify the helper's Rob/Tony destination definitions and
+   supported final 603 route against Birchills and Vapi; the root suite
+   cannot do this. The dual-email and Slack path needs message-correlated
+   delivery receipts, not merely configured destinations.
 5. Create a **new** 12-scenario suite tied to that exact candidate hash and
    run it once within an authorised paid allowance. All 12 must pass on
    **one unchanged configuration**, with captured routing and wording
