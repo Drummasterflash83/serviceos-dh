@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readSourceHomePage, sourceJobAsHomeJob, sourceJobClientLabel, sourceJobLabel } from "./new-dawn-source-job-home.ts";
+import { readSourceHomePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientLabel, sourceJobLabel } from "./new-dawn-source-job-home.ts";
 
 const tenant = "00000000-0000-0000-0000-000000000001";
 const actor = "00000000-0000-0000-0000-000000000002";
@@ -40,4 +40,9 @@ test("rejects wrong tenant, actor, duplicates, excess rows and invented source s
   assert.throws(() => readSourceHomePage({ ...envelope(), rows: Array(25).fill(row) }, tenant, actor));
   assert.throws(() => readSourceHomePage({ ...envelope(), rows: [{ ...row, source_state: "live" }] }, tenant, actor));
   assert.throws(() => readSourceHomePage({ ...envelope(), reviewed_job_count: 0 }, tenant, actor));
+});
+
+test("operator preview and ordinary client use separate release flags", () => {
+  assert.equal(sourceHomeFlagName(true), "new_dawn.source_job_home.operator_preview");
+  assert.equal(sourceHomeFlagName(false), "new_dawn.source_job_home");
 });
