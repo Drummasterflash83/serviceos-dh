@@ -23,6 +23,12 @@ SAFE_FAILURES = {
     'Restored table ownership or RLS catalog differs': 'restore_catalog_mismatch',
     'Restored extension versions differ': 'restore_extension_mismatch',
     'Recovery container cleanup unconfirmed': 'restore_cleanup_unconfirmed',
+    'Native COPY stream exceeds bound or is truncated': 'restore_native_stream_bound_or_truncated',
+    'Native COPY stream did not complete': 'restore_native_stream_bound_or_truncated',
+    'Native COPY table exceeds row bound': 'restore_native_row_bound',
+    'Native COPY export process did not complete': 'restore_native_copy_process_failed',
+    'Native COPY hash run is incomplete': 'restore_native_stream_bound_or_truncated',
+    'Unsupported statement outside native COPY data': 'restore_native_statement_unrecognized',
 }
 
 

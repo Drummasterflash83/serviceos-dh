@@ -27,7 +27,9 @@ const SAFE_RESTORE_CODES = new Set(["restore_command_unavailable_or_timeout",
   "restore_archive_integrity_failed", "restore_archive_changed",
   "restore_row_mismatch", "restore_sequence_mismatch",
   "restore_catalog_mismatch", "restore_extension_mismatch",
-  "restore_cleanup_unconfirmed", "restore_failure_unclassified"]);
+  "restore_cleanup_unconfirmed", "restore_failure_unclassified",
+  "restore_native_stream_bound_or_truncated", "restore_native_row_bound",
+  "restore_native_copy_process_failed", "restore_native_statement_unrecognized"]);
 function safeExportDiagnostic(value) {
   return value && SAFE_EXPORT_STAGES.has(value.exportStage) &&
     SAFE_EXPORT_CODES.has(value.code)
@@ -40,7 +42,7 @@ function safeRestoreDiagnostic(value) {
 }
 const STAGES = [
   ["export", "node", (source) => ["scripts/backup/export-production-database.mjs", "--export-unattended-daily", source], 100],
-  ["native_restore", "python3", (source) => ["-B", "scripts/backup/verify_daily_native_export.py", source], 40],
+  ["native_restore", "python3", (source) => ["-B", "scripts/backup/verify_daily_native_export.py", source], 110],
   ["encrypt", "node", (source, id) => ["scripts/backup/run-public-database-backup.mjs", "--prepare-daily", id, source], 20],
   ["copy", "node", (source, id) => ["scripts/backup/run-public-database-backup.mjs", "--copy-daily", id, source], 40],
 ];
