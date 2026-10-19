@@ -45,6 +45,7 @@ export interface ExactJobDetail {
   providerUpdatedAt: string | null;
   sourceUsers: { id: string; name: string }[];
   sourceOperationalFacts: SourceOperationalFacts | null;
+  sourceQuotedAmount: SourceFact<string> | null;
 }
 export interface ExactTrialOffer { requestId: string; expiresAt: string }
 export function parseExactTrialOffer(value: unknown, scope: {
@@ -63,7 +64,7 @@ export function parseExactTrialOffer(value: unknown, scope: {
 export function parseExactJobDetail(value: unknown, scope: {
   tenant: string; job: string; request: string; sourceVersion: string; externalId: string;
 }): ExactJobDetail {
-  if (!object(value) || !["commusoft-exact-job-detail/1", "commusoft-exact-job-detail/2"].includes(String(value.version)) ||
+  if (!object(value) || !["commusoft-exact-job-detail/1", "commusoft-exact-job-detail/2", "commusoft-exact-job-detail/3"].includes(String(value.version)) ||
     value.tenant_id !== scope.tenant || value.job_id !== scope.job ||
     value.request_id !== scope.request || value.source_version_id !== scope.sourceVersion ||
     value.external_id !== scope.externalId || !uuid(value.audit_id) ||
@@ -82,8 +83,13 @@ export function parseExactJobDetail(value: unknown, scope: {
   });
   if (value.version === "commusoft-exact-job-detail/1" && value.source_operational_facts !== undefined)
     throw Error("Current job detail could not be verified.");
-  const facts = value.version === "commusoft-exact-job-detail/2"
+  const facts = value.version === "commusoft-exact-job-detail/2" || value.version === "commusoft-exact-job-detail/3"
     ? sourceOperationalFacts(value.source_operational_facts) : null;
+  if (value.version !== "commusoft-exact-job-detail/3" && value.source_quoted_amount !== undefined)
+    throw Error("Current job detail could not be verified.");
+  const quote = value.version === "commusoft-exact-job-detail/3"
+    ? sourceFact(value.source_quoted_amount, (v): v is string => typeof v === "string" && v.length <= 200)
+    : null;
   return {
     auditId: value.audit_id, checkedAt: value.checked_at,
     sourceVersionId: value.source_version_id, externalId: value.external_id,
@@ -92,7 +98,7 @@ export function parseExactJobDetail(value: unknown, scope: {
     expectedOnsite: value.expected_onsite as string | null,
     expectedCompletion: value.expected_completion as string | null,
     providerUpdatedAt: value.provider_updated_at as string | null,
-    sourceUsers: users, sourceOperationalFacts: facts,
+    sourceUsers: users, sourceOperationalFacts: facts, sourceQuotedAmount: quote,
   };
 }
 export async function readExactJobDetail(

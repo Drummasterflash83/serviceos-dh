@@ -21,7 +21,7 @@ test("one exact GET is bound to the prepared reviewed job and confirmed result",
       if (name.endsWith("_current")) return rpcReply(true);
       if (name.endsWith("_finish")) {
         assert.equal(JSON.parse(String(args.p_raw)).id, 123);
-        return rpcReply({ version: "commusoft-exact-job-detail/2", request_id: requestId,
+        return rpcReply({ version: "commusoft-exact-job-detail/3", request_id: requestId,
           job_id: jobId, source_version_id: sourceVersionId });
       }
       throw Error(name);
@@ -35,6 +35,18 @@ test("one exact GET is bound to the prepared reviewed job and confirmed result",
   assert.equal((result as Record<string,unknown>).job_id, jobId);
   assert.equal(calls.filter((name) => name === "GET").length, 1);
   assert.equal(calls.filter((name) => name.endsWith("_current")).length, 2);
+});
+
+test("edge accepts installed v2 receipts until the source quote SQL is installed", async () => {
+  const result = await runExactJobDetail(request, {
+    userRpc: async () => rpcReply({ request_id: requestId, state: "prepared" }),
+    serviceRpc: async (name) => name.endsWith("_acquire") ? rpcReply(ready)
+      : name.endsWith("_current") ? rpcReply(true)
+      : name.endsWith("_finish") ? rpcReply({ version: "commusoft-exact-job-detail/2", request_id: requestId,
+        job_id: jobId, source_version_id: sourceVersionId }) : rpcReply(null),
+    fetcher: async () => Response.json({ id: 123 }),
+  });
+  assert.equal((result as Record<string, unknown>).version, "commusoft-exact-job-detail/2");
 });
 
 test("missing current authority prevents the provider request", async () => {

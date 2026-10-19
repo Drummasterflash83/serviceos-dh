@@ -207,6 +207,9 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
         {fresh.stage && <p>Source stage: {fresh.stage}</p>}
         {fresh.expectedOnsite && <p>Expected onsite (source text): {fresh.expectedOnsite}</p>}
         {fresh.expectedCompletion && <p>Expected completion (source text): {fresh.expectedCompletion}</p>}
+        {fresh.sourceQuotedAmount && <p>Current job quote (Commusoft source text): {fresh.sourceQuotedAmount.state === "present"
+          ? fresh.sourceQuotedAmount.value
+          : fresh.sourceQuotedAmount.state === "source_null" ? "blank in source" : "not supplied"}. No currency, acceptance or estimate document is verified by this field.</p>}
         {fresh.sourceUsers.length > 0 && <p>Source users currently listed: {fresh.sourceUsers.map((user) => user.name).join(", ")}. Their OpenFolk identities and appointments are not confirmed.</p>}
         {fresh.sourceOperationalFacts && <div className="space-y-1" aria-label="Source operational facts">
           <p><strong>Job holds and service level · Commusoft source</strong></p>
