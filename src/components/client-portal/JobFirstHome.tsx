@@ -11,6 +11,7 @@ import { parseExactTrialOffer, readExactJobDetail, type ExactJobDetail } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { OwnerMoneyPanel } from "./OwnerMoneyPanel";
 import { FounderAccountsPreview } from "./FounderAccountsPreview";
+import { FounderInvoiceReviewCandidates } from "./FounderInvoiceReviewCandidates";
 import { PublishedOwnerAccountsPanel } from "./PublishedOwnerAccountsPanel";
 import { RecentSavedJobReview } from "./RecentSavedJobReview";
 
@@ -371,6 +372,8 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
     <PublishedOwnerAccountsPanel tenant={tenant} operator={operator} />
     <OwnerMoneyPanel tenant={tenant} operator={operator} operatorReason={reason} />
     {operator && <FounderAccountsPreview tenant={tenant} operator={operator}
+      jobPreviewOpened={!!displayedOperatorJobs} reason={reason} />}
+    {operator && <FounderInvoiceReviewCandidates tenant={tenant} operator={operator}
       jobPreviewOpened={!!displayedOperatorJobs} reason={reason} />}
     </>
   );
