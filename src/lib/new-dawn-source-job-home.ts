@@ -73,6 +73,17 @@ export function sourceJobReviewCue(job: SourceHomeJob, now = Date.now()) {
   return { kind: "recent_observation" as const, label: "Recently captured; progress unverified" };
 }
 
+/** Keep old or changed source records available without presenting them as today's work. */
+export function groupSourceHomeJobs(jobs: SourceHomeJob[], now = Date.now()) {
+  const recentlySaved: SourceHomeJob[] = [];
+  const needsOpenFolkCheck: SourceHomeJob[] = [];
+  for (const job of jobs) {
+    (sourceJobReviewCue(job, now).kind === "recent_observation"
+      ? recentlySaved : needsOpenFolkCheck).push(job);
+  }
+  return { recentlySaved, needsOpenFolkCheck };
+}
+
 /** Plain-language client attention, separate from the operator's source diagnostics. */
 export function sourceJobClientAttention(job: SourceHomeJob, now = Date.now()) {
   const cue = sourceJobReviewCue(job, now);

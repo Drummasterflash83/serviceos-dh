@@ -4,7 +4,7 @@ import { ArrowRight, BriefcaseBusiness, RefreshCw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOperatorHomePage, type HomeJob, type OperatorHomeJob } from "@/lib/new-dawn-job-home";
-import { readSourceHomePage, scopedOperatorSourcePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
+import { groupSourceHomeJobs, readSourceHomePage, scopedOperatorSourcePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
 import { parseExactTrialOffer, readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
@@ -141,6 +141,23 @@ function ClientSourceRow({ tenant, source, onOpen }: {
     <span className="nd-job-review"><b>{attention.label}</b><small>{homeJobState(job)} · {attention.nextStep} · Saved {checked(source.source_observed_at)} · Next owner not confirmed</small></span>
     <ArrowRight size={17} />
   </button>;
+}
+
+function SourceJobPresentation({ tenant, jobs, onOpen }: {
+  tenant: string; jobs: SourceHomeJob[]; onOpen: (job: SourceHomeJob) => void;
+}) {
+  const { recentlySaved, needsOpenFolkCheck } = groupSourceHomeJobs(jobs);
+  return <>
+    <p className="nd-job-scope"><strong>Recently saved jobs · {recentlySaved.length}</strong> · Their current progress and next owner still need confirmation.</p>
+    {recentlySaved.length === 0 && <p className="nd-job-scope">No linked job in this selection was saved in the past 24 hours. This does not mean there is no current work.</p>}
+    {recentlySaved.map((source) => <ClientSourceRow key={source.id} tenant={tenant} source={source} onOpen={() => onOpen(source)} />)}
+    {needsOpenFolkCheck.length > 0 && <details className="nd-job-older">
+      <summary>{needsOpenFolkCheck.length} older or changed saved job records · OpenFolk check needed</summary>
+      <p>These records remain available for review. Their saved status must not be treated as today’s job progress.</p>
+      <div className="nd-job-list">{needsOpenFolkCheck.map((source) =>
+        <ClientSourceRow key={source.id} tenant={tenant} source={source} onOpen={() => onOpen(source)} />)}</div>
+    </details>}
+  </>;
 }
 
 function MdPreviewJobDetail({ tenant, source }: { tenant: string; source: SourceHomeJob }) {
@@ -294,7 +311,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation, comp
     queryFn: () => sourceHome(tenant, user!.id),
     staleTime: 30_000,
   });
-  const sourceJobs = clientSource.data?.jobs.map((row) => ({ job: sourceJobAsHomeJob(row, tenant), source: row })) ?? [];
+  const sourceJobs = clientSource.data?.jobs ?? [];
   const activeOperatorSourcePage = scopedOperatorSourcePage(operatorSourcePage, tenant, user?.id);
   const activeOperatorPage = operatorPage?.tenantId === tenant && operatorPage.actorId === user?.id
     ? operatorPage.jobs : null;
@@ -353,11 +370,11 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation, comp
       {!operator && !authorisedClient && <p role="status">Your personal work list is being prepared. It will appear when job assignments are confirmed.</p>}
       {!operator && authorisedClient && (sourceFlag.isPending || (sourceFlag.data ? clientSource.isPending : client.isPending)) && <p role="status">Reading your saved jobs…</p>}
       {!operator && authorisedClient && (sourceFlag.isError || client.isError || clientSource.isError) && <p role="alert">Saved jobs are unavailable. Refresh to try again.</p>}
-      {!operator && authorisedClient && client.isSuccess && <div className="nd-job-scope">
+      {!operator && authorisedClient && sourceFlag.data === false && client.isSuccess && <div className="nd-job-scope">
         <strong>{client.data.length} saved jobs shown</strong> · Latest saved {latestSaved(client.data.map((job) => job.updated_at))}
         <details><summary>About this view</summary><p>This is a limited saved selection, not a complete workload or live Commusoft status. Recorded on-hold, pending and open work leads; other recent jobs follow. Job ownership is not verified yet.</p></details>
       </div>}
-      {!operator && clientSource.isSuccess && <div className="nd-job-scope">
+      {!operator && authorisedClient && sourceFlag.data === true && clientSource.isSuccess && <div className="nd-job-scope">
         <strong>{sourceJobs.length} saved jobs shown</strong> · Most recently saved {latestSaved(clientSource.data.jobs.map((job) => job.source_observed_at))}
         <details><summary>About this view</summary><p>This is a limited selection from {clientSource.data.reviewedJobCount} jobs that OpenFolk has matched to saved Commusoft records. It is not the full workload or a live Commusoft check. Other jobs may be absent while their records are checked. Job ownership and scores are not confirmed.</p></details>
       </div>}
@@ -371,17 +388,19 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation, comp
           <details><summary>About this view</summary><p>This audited preview is a limited saved selection, not the full current workload or a staff login. Job cards can lag Commusoft; ownership and next actions still need source review.</p></details>
         </>}
       </div>}
-      {!operator && client.isSuccess && client.data.length === 0 && <p>No saved job records are visible yet. OpenFolk can check the connection and source review.</p>}
-      {!operator && clientSource.isSuccess && sourceJobs.length === 0 && <p>No confirmed job records are visible yet. OpenFolk can check the saved jobs.</p>}
+      {!operator && sourceFlag.data === false && client.isSuccess && client.data.length === 0 && <p>No saved job records are visible yet. OpenFolk can check the connection and source review.</p>}
+      {!operator && sourceFlag.data === true && clientSource.isSuccess && sourceJobs.length === 0 && <p>No confirmed job records are visible yet. OpenFolk can check the saved jobs.</p>}
       <div className="nd-job-list">
-        {!operator && authorisedClient && client.data?.map((job) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
+        {!operator && authorisedClient && sourceFlag.data === false && client.data?.map((job) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
           <BriefcaseBusiness size={20} />
           <span className="nd-job-main"><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job number not confirmed"}</strong><small>{job.title && job.job_number ? `${job.title} · ` : ""}{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</small></span>
           <span className="nd-job-review"><b>{homeJobState(job)}</b><small>{homeJobAction(job)} · Assignee unconfirmed</small></span>
           <ArrowRight size={17} />
         </button>)}
-        {!operator && sourceJobs.map(({ job, source }) => <ClientSourceRow key={job.id} tenant={tenant} source={source} onOpen={() => setSelected(job)} />)}
-        {mdPreviewOpen && activeOperatorSourcePage?.jobs.map((source) => <ClientSourceRow key={source.id} tenant={tenant} source={source} onOpen={() => setSelectedMd(source)} />)}
+        {!operator && authorisedClient && sourceFlag.data === true && clientSource.isSuccess && <SourceJobPresentation tenant={tenant} jobs={sourceJobs}
+          onOpen={(source) => setSelected(sourceJobAsHomeJob(source, tenant))} />}
+        {mdPreviewOpen && activeOperatorSourcePage && <SourceJobPresentation tenant={tenant}
+          jobs={activeOperatorSourcePage.jobs} onOpen={setSelectedMd} />}
         {!mdPreviewOpen && displayedOperatorJobs?.map((job) => <div key={job.id} className="nd-job-row">
           <BriefcaseBusiness size={20} />
           <span className="nd-job-main"><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Job number not confirmed"}</strong><small>{job.fields.title && job.fields.job_number ? `${job.fields.title} · ` : ""}{job.fields.customer ?? "Customer not confirmed"} · {job.fields.address ?? job.fields.postcode ?? "Site not confirmed"}</small></span>
