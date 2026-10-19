@@ -6,6 +6,7 @@ decryption remains an explicit recovery-time check. Both use an exact flat
 allowlist after authenticated decryption and digest verification.
 """
 import hashlib
+import errno
 import json
 import os
 import platform
@@ -26,6 +27,7 @@ AGE_SHA256 = {
 }.get((platform.system(), platform.machine()))
 MAX_BYTES = 2 * 1024 ** 3
 MAX_JSON = 8 * 1024 ** 2
+MAX_DIAGNOSTIC_INPUT_BYTES = 1024 ** 4
 FILES = ('database.dump', 'net-tables.sql', 'source-inventory.json', 'report.json',
          'restore-native-comparison-report.json', 'vault-recovery-report.json')
 FORMAT = 'serviceos-database-package/1'
@@ -42,6 +44,22 @@ def package_files(format_version):
 
 class PackageError(RuntimeError):
     """Fixed safe code only; never include raw subprocess or source errors."""
+
+
+def package_input_bytes(source, files):
+    """Aggregate source byte count for size diagnostics; names/content stay private."""
+    try:
+        total = 0
+        for name in files:
+            info = (Path(source) / name).lstat()
+            if not stat.S_ISREG(info.st_mode) or info.st_size < 0:
+                return None
+            total += info.st_size
+            if total > MAX_DIAGNOSTIC_INPUT_BYTES:
+                return None
+        return total
+    except OSError:
+        return None
 
 
 def need(ok, code):
@@ -174,8 +192,11 @@ def validate_snapshot(directory, entries, *, format_version=FORMAT):
 
 
 def validate_tool(age):
-    need(AGE_SHA256 is not None and describe(age)['sha256'] == AGE_SHA256,
-         'age_binary_pin_mismatch')
+    try:
+        need(AGE_SHA256 is not None and describe(age)['sha256'] == AGE_SHA256,
+             'age_binary_pin_mismatch')
+    except OSError:
+        raise PackageError('age_binary_unavailable') from None
 
 
 def call_age(age, args, output, *, input_file=None, identity=None):
@@ -183,9 +204,12 @@ def call_age(age, args, output, *, input_file=None, identity=None):
     need((input_file is None) != (identity is None), 'age_input_invalid')
     with os.fdopen(os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb') as out:
         # age diagnostics can disclose paths/recipients. Do not return or log them.
-        result = subprocess.run([str(age)] + args, stdin=input_file, input=identity,
-                                stdout=out, stderr=subprocess.DEVNULL, timeout=180,
-                                env={'PATH': '/usr/bin:/bin', 'LANG': 'C'})
+        try:
+            result = subprocess.run([str(age)] + args, stdin=input_file, input=identity,
+                                    stdout=out, stderr=subprocess.DEVNULL, timeout=180,
+                                    env={'PATH': '/usr/bin:/bin', 'LANG': 'C'})
+        except subprocess.TimeoutExpired:
+            raise PackageError('age_operation_timeout') from None
     need(result.returncode == 0, 'age_operation_failed')
     need(0 < Path(output).stat().st_size <= MAX_BYTES, 'package_size_invalid')
 
@@ -243,8 +267,14 @@ def package_snapshot(source, output, *, recipient, revision, age, format_version
                           'sourceRevision': revision, **describe(encrypted)}
             os.link(encrypted, output)  # Exclusive publication; an existing file is never replaced.
             return descriptor
-    except PackageError:
+    except PackageError as error:
+        if str(error) in ('package_size_invalid', 'file_size_invalid'):
+            error.package_input_bytes = package_input_bytes(source, package_files(format_version))
         raise
+    except OSError as error:
+        code = {errno.ENOSPC: 'disk_full', errno.EACCES: 'permission_denied',
+                errno.EPERM: 'permission_denied', errno.ENOENT: 'source_missing'}
+        raise PackageError(code.get(error.errno, 'package_preparation_failed')) from None
     except Exception:
         raise PackageError('package_preparation_failed') from None
 

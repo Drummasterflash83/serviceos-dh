@@ -8,6 +8,7 @@ import { preparePublicDatabaseBackup, copyPreparedDatabaseBackup,
   restoreDownloadedDatabaseBackup } from "./run-serviceos-database-backup.mjs";
 import { createRecoveryEscrow } from "./onepassword-database-recovery.mjs";
 import { MAX_DATABASE_PACKAGE_BYTES } from "./database-backup-template.mjs";
+import { publicPreparationFailure } from "./database-encrypt-safe-codes.mjs";
 
 const REPO = fileURLToPath(new URL("../../", import.meta.url));
 const PRIVATE = join(REPO, ".verification-results");
@@ -84,7 +85,9 @@ async function main() {
 }
 try {
   console.log(JSON.stringify(await main()));
-} catch {
-  console.error(JSON.stringify({ state: "database_public_backup_not_verified", secretsPrinted: false }));
+} catch (error) {
+  const diagnostic = publicPreparationFailure(error, mode);
+  if (diagnostic) console.log(JSON.stringify(diagnostic));
+  else console.error(JSON.stringify({ state: "database_public_backup_not_verified", secretsPrinted: false }));
   process.exitCode = 1;
 }

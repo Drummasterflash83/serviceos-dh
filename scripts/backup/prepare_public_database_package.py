@@ -10,7 +10,36 @@ from pathlib import Path
 from database_backup_package import (PackageError, canonical, describe, read_json,
                                      package_snapshot, private_directory, FORMAT,
                                      DAILY_FORMAT,
-                                     write_private)
+                                     MAX_DIAGNOSTIC_INPUT_BYTES, write_private)
+
+SAFE_PACKAGE_ERRORS = frozenset({
+    'private_directory_required', 'regular_file_required', 'file_size_invalid',
+    'json_size_invalid', 'package_format_invalid', 'export_not_complete',
+    'snapshot_missing', 'archive_evidence_mismatch', 'supplement_evidence_mismatch',
+    'native_restore_unverified', 'row_comparison_unverified',
+    'restore_containment_unverified', 'native_fingerprints_unverified',
+    'vault_ciphertext_inventory_unverified', 'inventory_incomplete',
+    'source_archive_changed', 'output_already_exists', 'recipient_invalid',
+    'revision_invalid', 'package_size_invalid', 'age_binary_pin_mismatch',
+    'age_binary_unavailable', 'age_operation_failed', 'age_operation_timeout', 'disk_full',
+    'permission_denied', 'source_missing', 'package_preparation_failed',
+})
+
+
+def safe_preparation_code(error):
+    code = str(error) if isinstance(error, PackageError) else None
+    return 'encrypt_' + (code if code in SAFE_PACKAGE_ERRORS else 'unexpected_failure')
+
+
+def safe_preparation_diagnostic(error):
+    code = safe_preparation_code(error)
+    result = {'state': 'package_preparation_failed_safe', 'code': code,
+              'secretsPrinted': False}
+    size = getattr(error, 'package_input_bytes', None)
+    if code in ('encrypt_package_size_invalid', 'encrypt_file_size_invalid') and \
+            type(size) is int and 0 <= size <= MAX_DIAGNOSTIC_INPUT_BYTES:
+        result['packageInputBytes'] = size
+    return result
 
 
 def prepare(data):
@@ -52,6 +81,6 @@ if __name__ == '__main__':
             raise PackageError('input_too_large')
         result = prepare(json.loads(raw))
         print(json.dumps({'state': result['state'], 'recoveryKeysRead': False}))
-    except BaseException:
-        print(json.dumps({'state': 'package_preparation_not_verified', 'secretsPrinted': False}))
+    except BaseException as error:
+        print(json.dumps(safe_preparation_diagnostic(error)))
         raise SystemExit(1) from None

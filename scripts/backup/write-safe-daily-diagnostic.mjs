@@ -2,6 +2,7 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ENCRYPT_CODES, safeEncryptDiagnostic } from "./database-encrypt-safe-codes.mjs";
 
 const PRIVATE = fileURLToPath(new URL("../../.verification-results/", import.meta.url));
 const STAGES = new Set(["preflight", "export", "native_restore", "encrypt", "copy"]);
@@ -35,13 +36,18 @@ const CODES = new Set(["stage_unconfirmed", "native_export_diagnostic_unavailabl
 
 export function sanitizeDailyFailure(value) {
   if (value?.state !== "daily_backup_not_verified" ||
-      !STAGES.has(value.stage) || !CODES.has(value.code) ||
+      !STAGES.has(value.stage) ||
+      !(value.stage === "encrypt" ? value.code === "stage_unconfirmed" ||
+        ENCRYPT_CODES.has(value.code) : CODES.has(value.code)) ||
       value.productionWrites !== false) {
     return { state: "daily_backup_not_verified", code: "diagnostic_unavailable" };
   }
+  const encrypt = value.stage === "encrypt" ? safeEncryptDiagnostic(value) : null;
   return { state: value.state, stage: value.stage, code: value.code,
     ...(EXPORT_STAGES.has(value.exportStage) ? { exportStage: value.exportStage } : {}),
     ...(RESTORE_STAGES.has(value.restoreStage) ? { restoreStage: value.restoreStage } : {}),
+    ...(encrypt?.packageInputBytes === undefined ? {} :
+      { packageInputBytes: encrypt.packageInputBytes }),
     productionWrites: false };
 }
 
