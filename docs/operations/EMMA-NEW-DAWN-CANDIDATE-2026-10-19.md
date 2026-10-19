@@ -144,18 +144,19 @@ tests pass, but it has no live evidence or provider integration yet; the
 collecting operator must independently authenticate each receipt's source.
 
 The current immutable local source-candidate preflight is
-`docs/operations/EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-19-v2.json` (SHA-256
-`8b568797b6ee8ea8db90aaa3cc8f042be7dabe77b5c19ed5f1ef568b6863e732`).
-It pins 12 relevant source-file hashes to commit `0939f5ac`, the v10 suite
+`docs/operations/EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-19-v3.json` (SHA-256
+`dbd58affff7ea74d69986dfdf1d72c31d94789383bdc8c8c8af6e6e1ce38472c`).
+It pins 12 relevant source-file hashes to commit `69be452d`, the v10 suite
 payload hash and each of the 12 scenario payload hashes. Running the
 reproducible local checker twice produced identical bytes; all 12 passed
 static clock/mock/rubric checks on that unchanged source. **No Vapi model
 conversation was run:** every scenario's conversational and real-phone
 outcome is explicitly `not_run`. This is not a 12/12 provider pass or a
 hash of the unobserved saved Vapi candidate. The last real provider result
-remains 8/12 on an older candidate.
-The earlier immutable `EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-19.json`
-remains for comparison; its source predates the location/CO safety fix.
+remains 8/12 on an older candidate. All 186 focused receptionist tests pass.
+The earlier immutable v2 manifest remains for comparison; its candidate
+prompt still allowed a bare postcode while the intake gate rejected one.
+The initial manifest predates the location/CO safety fix.
 
 The current code rejects a bare postcode as the complete emergency site:
 the caller must supply a numbered street or named/numbered premises with a
@@ -164,7 +165,9 @@ or delay immediate safety advice. The CO wording now reflects the current
 NHS distinction: suspected symptoms prompt NHS 111 after leaving, while
 severe breathing difficulty, sudden confusion, unconsciousness, weakness
 or chest/muscle pain require 999. The National Gas emergency line remains
-0800 111 999. This is a candidate source correction, not a LIVE prompt or
+0800 111 999. The candidate prompt now asks for premises detail when only a
+postcode was supplied, matching the server gate without repeated full intake.
+This is a candidate source correction, not a LIVE prompt or
 real-phone result.
 
 ## Required provider sequence, no automatic launch
