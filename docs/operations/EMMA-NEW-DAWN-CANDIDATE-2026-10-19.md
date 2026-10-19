@@ -18,6 +18,10 @@ change on the day.
 - A second normal merge brought in `main` `b12842fe` as `e713a127` on
   19 October. The same 179 focused tests passed after it. No Emma-specific
   conflict occurred; neither merge rewrote the published branch.
+- A third normal merge brought in `main` `307a0656` as `e361a598` on
+  19 October. All 179 focused receptionist tests passed on that unchanged
+  branch candidate, and the branch diff check was clean. This is source-code
+  verification, not a Vapi simulation or real-phone test.
 - The historical 2 October private package is
   `2. Ai/Openfolk OS   Pass-Over/Emma Unmerged Work 2026-10-02/` in Chris's
   Dropbox. Its patch applied cleanly to this branch. Its 80 focused tests
@@ -82,8 +86,24 @@ change on the day.
   reconciliation is needed before the existing promotion gate can pass.
 - National Gas confirms the National Gas Emergency Service number is
   **0800 111 999**, 24 hours, for gas leaks and suspected carbon-monoxide
-  emergencies: <https://www.nationalgas.com/nec>. The caller must receive
-  immediate safety advice before intake or routing.
+  emergencies: <https://www.nationalgas.com/en/node/256>. NHS guidance says
+  leave the affected building for suspected carbon-monoxide exposure and
+  call 999 for severe symptoms: <https://www.nhs.uk/conditions/carbon-monoxide-poisoning/>.
+  The caller must receive immediate safety advice before intake or routing.
+
+## Current LIVE runtime metadata, 19 October
+
+A read-only, aggregate Supabase check found the Drummonds receptionist
+workspace at `launch_stage=Ready`, still bound to published assistant
+`4eb2bee8-ac25-47c9-b962-409ed250ceb6`. There is no intake installation,
+no recorded intake decision and no launch-promotion row. The existing
+`receptionist-testing` Edge function is ACTIVE v55, while the candidate-only
+`receptionist-intake-check` function is absent. No test run occurred in the
+preceding 24 hours; the latest saved run was the isolated candidate's failed
+run of 2 October. These are current **database and Edge metadata**, not a
+fresh authenticated Vapi configuration read, Birchills route readback,
+same-hash 12/12 run, handset transfer or mailbox delivery proof. No
+credentials or caller data were read for this check.
 
 ## Required provider sequence, no automatic launch
 
