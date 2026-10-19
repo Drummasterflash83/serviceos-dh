@@ -22,6 +22,41 @@ create table public.learn_quickbooks_invoice_checks (
 alter table public.learn_quickbooks_invoice_checks enable row level security;
 revoke all on public.learn_quickbooks_invoice_checks from public,anon,authenticated,service_role;
 
+create function public.learn_quickbooks_invoice_check_candidates(
+ p_tenant uuid,p_connection uuid,p_reason text
+) returns jsonb language plpgsql security definer set search_path=pg_catalog as $$
+declare c public.learn_quickbooks_connections%rowtype;items jsonb;audit uuid;begin
+ if auth.role() is distinct from 'authenticated' or p_connection is null or p_reason is null
+  or length(btrim(p_reason)) not between 3 and 500 then
+  raise exception 'invoice_check_invalid' using errcode='22023';end if;
+ perform public.learn_operator_input_access(p_tenant,auth.uid(),true);
+ perform public.learn_quickbooks_actor_access(p_tenant,auth.uid());
+ select * into c from public.learn_quickbooks_connections where id=p_connection and tenant_id=p_tenant
+  and status in ('active','paused') and confirmed_at is not null and realm_id is not null for share;
+ if not found then raise exception 'invoice_check_connection_unavailable' using errcode='42501';end if;
+ with samples as materialized(
+  select l.version_id,l.external_id,l.last_observed_at,v.payload
+  from public.learn_quickbooks_latest l join public.learn_quickbooks_source_versions v on v.id=l.version_id
+  where l.tenant_id=p_tenant and l.environment=c.environment and l.realm_id=c.realm_id
+   and l.entity='Invoice' and not l.conflicted
+   and public.learn_quickbooks_money(v.payload->'Balance') is not null
+   and public.learn_quickbooks_strict_date(v.payload->>'DueDate') is not null
+  order by l.last_observed_at desc,l.external_id desc limit 20
+ ) select coalesce(jsonb_agg(jsonb_build_object('version_id',version_id,'invoice_id',external_id,
+   'document_number',left(payload->>'DocNumber',80),'due_date',payload->>'DueDate',
+   'observed_at',last_observed_at) order by last_observed_at desc,external_id desc),'[]'::jsonb)
+ into items from samples;
+ perform public.learn_quickbooks_actor_access(p_tenant,auth.uid());
+ insert into public.learn_quickbooks_finance_events(tenant_id,actor_id,event,detail,reason)
+ values(p_tenant,auth.uid(),'invoice.provider_check_candidates',jsonb_build_object('connection_id',c.id,
+  'realm_id',c.realm_id,'versions',(select coalesce(jsonb_agg(x->'version_id'),'[]'::jsonb)
+   from jsonb_array_elements(items)x)),btrim(p_reason)) returning id into audit;
+ perform set_config('response.headers','[{"Cache-Control":"no-store"}]',true);
+ return jsonb_build_object('version','quickbooks-invoice-candidates/1','tenant_id',p_tenant,
+  'actor_id',auth.uid(),'connection_id',c.id,'environment',c.environment,'realm_id',c.realm_id,
+  'rows',items,'audit_id',audit,'checked_at',clock_timestamp());
+end $$;
+
 create function public.learn_quickbooks_invoice_check_start(
  p_tenant uuid,p_connection uuid,p_request uuid,p_versions uuid[],p_reason text
 ) returns jsonb language plpgsql security definer set search_path=pg_catalog as $$
@@ -111,6 +146,7 @@ create function public.learn_quickbooks_invoice_check_finish(p_request uuid,p_ra
 returns jsonb language plpgsql security definer set search_path=pg_catalog as $$
 declare r public.learn_quickbooks_invoice_checks%rowtype;entry jsonb;v public.learn_quickbooks_source_versions%rowtype;
  result jsonb:='[]'::jsonb;raw text;invoice jsonb;idx integer;balanced boolean;dated boolean;
+ audit uuid;
 begin
  if auth.role() is distinct from 'service_role' or p_raw is null or cardinality(p_raw) not between 2 and 3
   or array_position(p_raw,null) is not null then raise exception 'invoice_check_invalid' using errcode='22023';end if;
@@ -146,9 +182,9 @@ begin
  values(r.tenant_id,r.actor_id,'invoice.provider_check_completed',jsonb_build_object('request_id',r.id,
   'versions',to_jsonb(r.versions),'all_balances_match',not exists(select 1 from jsonb_array_elements(result)x where x->>'balance_matches'<>'true'),
   'all_due_dates_match',not exists(select 1 from jsonb_array_elements(result)x where x->>'due_date_matches'<>'true')),
-  r.reason);
+  r.reason) returning id into audit;
  return jsonb_build_object('version','quickbooks-invoice-check/1','request_id',r.id,'tenant_id',r.tenant_id,
-  'environment',r.environment,'realm_id',r.realm_id,'compared_at',clock_timestamp(),'rows',result);
+  'environment',r.environment,'realm_id',r.realm_id,'compared_at',clock_timestamp(),'audit_id',audit,'rows',result);
 exception when invalid_text_representation or numeric_value_out_of_range then
  raise exception 'invoice_check_response_invalid' using errcode='22023';
 end $$;
@@ -164,6 +200,7 @@ declare r public.learn_quickbooks_invoice_checks%rowtype;begin
  perform public.learn_quickbooks_actor_access(r.tenant_id,auth.uid());
  insert into public.learn_quickbooks_finance_events(tenant_id,actor_id,event,detail,reason)
  values(r.tenant_id,auth.uid(),'invoice.provider_check_result_read',jsonb_build_object('request_id',r.id),r.reason);
+ perform set_config('response.headers','[{"Cache-Control":"no-store"}]',true);
  return jsonb_build_object('request_id',r.id,'state',r.state,'rows',r.result);
 end $$;
 
@@ -182,12 +219,14 @@ declare r public.learn_quickbooks_invoice_checks%rowtype;begin
   jsonb_build_object('request_id',r.id,'code',p_code),r.reason);
 end $$;
 
-revoke all on function public.learn_quickbooks_invoice_check_start(uuid,uuid,uuid,uuid[],text),
+revoke all on function public.learn_quickbooks_invoice_check_candidates(uuid,uuid,text),
+ public.learn_quickbooks_invoice_check_start(uuid,uuid,uuid,uuid[],text),
  public.learn_quickbooks_invoice_check_acquire(uuid),public.learn_quickbooks_invoice_check_current(uuid),
  public.learn_quickbooks_invoice_check_finish(uuid,text[]),public.learn_quickbooks_invoice_check_result(uuid),
  public.learn_quickbooks_invoice_check_fail(uuid,text)
  from public,anon,authenticated,service_role;
-grant execute on function public.learn_quickbooks_invoice_check_start(uuid,uuid,uuid,uuid[],text),
+grant execute on function public.learn_quickbooks_invoice_check_candidates(uuid,uuid,text),
+ public.learn_quickbooks_invoice_check_start(uuid,uuid,uuid,uuid[],text),
  public.learn_quickbooks_invoice_check_result(uuid) to authenticated;
 grant execute on function public.learn_quickbooks_invoice_check_acquire(uuid),
  public.learn_quickbooks_invoice_check_current(uuid),public.learn_quickbooks_invoice_check_finish(uuid,text[]),

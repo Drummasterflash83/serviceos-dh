@@ -45,13 +45,17 @@ dedicated flag is enabled after that readback.
 `learn-quickbooks-invoice-check` provide a separate one-use verification path.
 Installation and deployment do not run a check or change the money flag. An
 authorised OpenFolk platform operator signs in, selects the exact Drummonds
-tenant and production QuickBooks connection, and chooses **two or three current,
-nonconflicted retained Invoice version IDs from that same realm**. The operator
-records a specific reason. No job link is inferred.
+tenant, and opens **OpenFolk → Modules → LEARN inputs → QuickBooks accounting
+connection → Invoice source check**. This panel is absent from the client home.
+The operator chooses the confirmed production connection, enters a reason,
+loads the audited candidate list and selects **two or three current,
+nonconflicted retained Invoice version IDs from that same realm**. A checkbox
+requires review of that scope before the single provider request. No job link
+is inferred, and no browser token extraction or 1Password prompt is needed.
 
-The operator calls the new Edge function once with a fresh UUID `requestId`,
+The signed-in panel calls the new Edge function once with a fresh UUID `requestId`,
 the selected `tenantId`, `connectionId`, `versionIds` (two or three UUIDs), and
-`reason`, using the signed-in Auth bearer token. The route checks the real user,
+`reason`. The route checks the real user,
 then creates an audited one-use permit. The server alone retrieves the existing
 Vault access token, provided it has over two minutes left; this route **does not
 refresh** it. It makes only `GET /v3/company/{realm}/invoice/{exactId}` calls,
@@ -59,7 +63,8 @@ with no provider write, import commit, scheduler or bulk traversal. It accepts
 at most 128 KiB per response and compares the original JSON decimal `Balance`
 and `DueDate` in Postgres, avoiding JavaScript number rounding. The response
 contains only invoice/source IDs, the two values and match indicators with
-retained/provider timestamps. A mismatch may simply mean the retained capture
+retained/provider timestamps; the operator panel shows only match states and
+audit references. A mismatch may simply mean the retained capture
 is older; inspect the timestamps before changing any product claim.
 
 Verify in order on TEST, then LIVE: (1) denied ordinary user and wrong-tenant
@@ -72,6 +77,41 @@ near expiry, wait for the existing authorised refresh cycle; never extract or
 print it. Keep the dedicated money flag **off** until the comparison, owner
 access denial, signed-in UI and audit results have been reviewed. This check
 does not establish complete QuickBooks A/R coverage or a reconciled P&L.
+
+### Release and reversal
+
+Before release, record the selected LIVE tenant/connection/realm, current main
+and PR head, the exact migration/Edge source hashes, the `new_dawn.owner_money`
+flag (must be off), counts of retained Invoice latest records,
+`learn_quickbooks_finance_events`, invoice-check requests, and active QuickBooks
+connections. Confirm the operator candidate and comparison functions are absent
+before installing. Rehearse the exact migration in TEST in a transaction ending
+`ROLLBACK`, with anon, unsigned authenticated and service-role denial probes;
+verify schema and counts are unchanged afterward. The hosted TEST rehearsal
+passed on 19 October 2026: 31 retained Invoice latest records and 20 finance
+events before and after; both new functions remained absent afterward.
+The LIVE aggregate read-only baseline on 19 October was **21,658** production
+Invoice latest rows, **112** finance events, **one** active/paused production
+connection, **zero** enabled `new_dawn.owner_money` flags, and no comparison
+table or start function. Re-read these immediately before release; they are
+time-specific observations, not fixed acceptance values.
+
+Install the migration as a reviewed, guarded transaction, then deploy only the
+new Edge function. Recheck grants/RLS and all baseline counts: installation and
+deployment must leave invoices, finance events, connections and the flag
+unchanged. Promote the signed-in frontend after its checks pass. Run one
+operator-owned two-invoice comparison, then at most one three-invoice check if
+needed. Verify a saved candidate-read event and one started/completed (or
+failed) audit pair for each request, with no import page or source-version count
+change. Verify ordinary-user and wrong-tenant denial and a one-use repeat
+denial. Review timestamped mismatches; do not silently label them equal.
+
+If any SQL guard or denial fails before commit, roll back the transaction. If
+the committed route or UI misbehaves, stop using it, restore the prior frontend
+and disable the new Edge route; leave the additive private SQL and immutable
+audit intact for investigation. The money flag stays off throughout. Only
+after the independent owner/denied-user money-RPC and signed-in UI checks, and
+the bounded provider comparison pass, may the release owner enable that flag.
 
 The next report-capture PR should add two **GET-only** QuickBooks Online
 Reports API requests for the bound realm: `reports/ProfitAndLoss` for an explicit
