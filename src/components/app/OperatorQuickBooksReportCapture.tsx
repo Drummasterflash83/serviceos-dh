@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { QuickBooksConnection } from "@/lib/learn-quickbooks";
-import { buildReportCaptureBody, readReportCaptureReceipt, type ReportCaptureReceipt } from "@/lib/learn-quickbooks-report-capture";
+import { buildReportCaptureBody, readReportCaptureReceipt, reportCaptureConnectionReady, type ReportCaptureReceipt } from "@/lib/learn-quickbooks-report-capture";
 
 /** Operator-only evidence capture. Never renders report rows or profit amounts. */
 export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, connections }: {
@@ -26,10 +26,11 @@ export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, c
   if (!canWrite) return null;
   const available = connections.filter(c => c.confirmedAt && c.realmId && ["active", "paused"].includes(c.status));
   const selected = available.find(c => c.id === connectionId);
+  const accessReady = reportCaptureConnectionReady(selected);
   const scopeReady = kind === "ProfitAndLoss" ? !!periodStart && !!periodEnd && periodStart <= periodEnd : !!reportDate;
   const reset = () => { setReviewed(false); setReceipt(null); setNotice(""); };
   async function capture() {
-    if (!selected || !reviewed || !scopeReady || working.current || reason.trim().length < 3 || reason.trim().length > 500) return;
+    if (!selected || !reportCaptureConnectionReady(selected) || !reviewed || !scopeReady || working.current || reason.trim().length < 3 || reason.trim().length > 500) return;
     const ticket = generation.current, requestId = crypto.randomUUID();
     working.current = true; setBusy(true); setNotice(""); setReceipt(null);
     try {
@@ -58,6 +59,7 @@ export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, c
         {available.map(c => <option key={c.id} value={c.id}>{c.companyName ?? c.realmId} · {c.environment === "production" ? "LIVE" : "Sandbox"}</option>)}
       </select>
     </label>
+    {selected && !accessReady && <p role="status" className="text-sm text-muted-foreground">Current QuickBooks access has expired or is about to expire. Refresh or reconnect this company, then refresh its status before capturing a report.</p>}
     <label className="grid gap-1 text-sm">Report
       <select className="rounded-lg border bg-background p-2" disabled={busy} value={kind}
         onChange={e => { setKind(e.target.value as typeof kind); reset(); }}>
@@ -74,9 +76,9 @@ export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, c
     <label className="grid gap-1 text-sm">Reason for this report read
       <input className="rounded-lg border bg-background p-2" maxLength={500} disabled={busy} value={reason} onChange={e => { setReason(e.target.value); reset(); }}/>
     </label>
-    <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={reviewed} disabled={busy || !selected || !scopeReady}
+    <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={reviewed} disabled={busy || !selected || !accessReady || !scopeReady}
       onChange={e => setReviewed(e.target.checked)}/>I reviewed this client, company, report, date, basis and reason for one read-only capture.</label>
-    <button className="cp-secondary" disabled={busy || !selected || !reviewed || !scopeReady || reason.trim().length < 3}
+    <button className="cp-secondary" disabled={busy || !selected || !accessReady || !reviewed || !scopeReady || reason.trim().length < 3}
       onClick={() => void capture()}>Capture this report once</button>
     {notice && <p role="status" className="text-sm">{notice}</p>}
     {receipt && <p role="status" className="text-sm">{receipt.validationState === "held" ?
