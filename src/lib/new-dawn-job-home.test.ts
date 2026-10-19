@@ -12,9 +12,9 @@ test("saved status and review order do not claim provider urgency or completion"
     job("completed", "completed"), job("open", "open"),
     job("unknown", null, false), job("hold", "on_hold"),
   ]);
-  assert.deepEqual(rows.map((row) => row.id), ["unknown", "hold", "open", "completed"]);
-  assert.equal(homeJobState(rows[0]), "Status needs confirmation");
-  assert.equal(homeJobAction(rows[0]), "Review this job’s source");
+  assert.deepEqual(rows.map((row) => row.id), ["hold", "open", "unknown", "completed"]);
+  assert.equal(homeJobState(rows[2]), "Status needs confirmation");
+  assert.equal(homeJobAction(rows[2]), "Confirm this job’s status with its source");
   assert.equal(homeJobState(rows[3]), "Recorded complete");
   assert.equal(homeJobAction(rows[3]), "Review the recorded outcome");
 });

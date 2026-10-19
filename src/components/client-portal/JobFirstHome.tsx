@@ -32,10 +32,18 @@ export function useJobFirstHomeFlag(tenant: string) {
 
 async function clientJobs(tenant: string): Promise<HomeJob[]> {
   const db = getSupabaseClient();
-  const { data, error } = await db.from("jobs")
-    .select("id,tenant_id,job_number,title,status,verified,updated_at,customer_person_id,customer_company_id,site_id")
-    .eq("tenant_id", tenant).order("updated_at", { ascending: false }).limit(12);
-  if (error || !Array.isArray(data) || data.some((row) => row.tenant_id !== tenant || !isUuid(row.id)))
+  const columns = "id,tenant_id,job_number,title,status,verified,updated_at,customer_person_id,customer_company_id,site_id";
+  const [active, recent] = await Promise.all([
+    db.from("jobs").select(columns).eq("tenant_id", tenant)
+      .in("status", ["open", "pending", "on_hold"])
+      .order("updated_at", { ascending: false }).limit(12),
+    db.from("jobs").select(columns).eq("tenant_id", tenant)
+      .order("updated_at", { ascending: false }).limit(12),
+  ]);
+  if (active.error || recent.error || !Array.isArray(active.data) || !Array.isArray(recent.data))
+    throw Error("Saved jobs could not be read safely.");
+  const data = [...new Map([...active.data, ...recent.data].map((row) => [row.id, row])).values()].slice(0, 12);
+  if (data.some((row) => row.tenant_id !== tenant || !isUuid(row.id)))
     throw Error("Saved jobs could not be read safely.");
   const ids = (key: "customer_person_id" | "customer_company_id" | "site_id") =>
     [...new Set(data.map((row) => row[key]).filter(isUuid))];
@@ -72,6 +80,7 @@ function JobDetail({ tenant, job }: { tenant: string; job: HomeJob }) {
     <div className="nd-job-detail">
       <p><strong>{row.card.jobStatus ?? "Status needs confirmation"}</strong> · {row.card.recordState}</p>
       <p>{job.customer ?? "Customer link needs review"} · {job.site ?? "Site link needs review"}</p>
+      {!job.verified && <p>Job source link awaiting review.</p>}
       <p>Saved record updated {checked(row.card.updatedAt)}. This may lag Commusoft.</p>
       <h3>Next step</h3><p>{homeJobAction(job)}.</p>
       {row.gaps.length > 0 && <p>Some source details still need OpenFolk review. This job is not scored yet.</p>}
@@ -128,14 +137,14 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
       {!operator && !authorisedClient && <p role="status">Job cards are available only in your company’s signed-in workspace.</p>}
       {!operator && authorisedClient && client.isPending && <p role="status">Reading your saved jobs…</p>}
       {!operator && authorisedClient && client.isError && <p role="alert">Saved jobs are unavailable. Refresh to try again.</p>}
-      {!operator && authorisedClient && client.isSuccess && <p className="nd-job-scope">Latest {client.data.length} saved job{client.data.length === 1 ? "" : "s"}; ordered for review within this page. This is not a complete workload count or live Commusoft status.</p>}
+      {!operator && authorisedClient && client.isSuccess && <p className="nd-job-scope">Up to 12 saved jobs: recorded open, pending or held work first, then recent other records. This is not a complete workload count or live Commusoft status.</p>}
       {operatorPage && <p className="nd-job-scope">Audited first page of {operatorPage.rows.length} published jobs, ordered by record ID. This preview is not a complete workload count or a staff login.</p>}
       {!operator && client.isSuccess && client.data.length === 0 && <p>No saved job records are visible yet. OpenFolk can check the connection and source review.</p>}
       <div className="nd-job-list">
         {!operator && authorisedClient && client.data?.map((job) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
           <BriefcaseBusiness size={20} />
           <span><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job identity needs review"}</strong><small>{job.title && job.job_number ? `${job.title} · ` : ""}{job.customer ?? "Customer link needs review"} · {job.site ?? "Site link needs review"}</small></span>
-          <span><b>{homeJobState(job)}</b><small>{homeJobAction(job)} · saved {checked(job.updated_at)}</small></span>
+          <span><b>{homeJobState(job)}</b><small>{homeJobAction(job)} · {job.verified ? "source link reviewed" : "source link awaiting review"} · saved {checked(job.updated_at)}</small></span>
           <ArrowRight size={17} />
         </button>)}
         {operatorPage?.rows.map((job) => <div key={job.id} className="nd-job-row">
