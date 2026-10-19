@@ -389,6 +389,10 @@ button.nd-job-row:hover { border-color: #a996c0; background: #fff; }
 .nd-operator-preview p { color: #625b69; font-size: 12px; }
 .nd-operator-preview label { display: grid; gap: 4px; flex: 1 1 230px; font-size: 12px; }
 .nd-operator-preview input { min-height: 40px; padding: 8px 10px; border: 1px solid #cfc4d9; border-radius: 8px; background: #fff; }
+.nd-operator-preview--active { align-items: center; padding: 11px 15px; }
+.nd-operator-preview--active strong { flex: 1 1 180px; }
+.nd-operator-preview--active p { flex: 2 1 260px; }
+.nd-operator-preview--active button { margin-left: auto; }
 .nd-job-detail h3 { margin-top: 16px; font-weight: 600; }
 .nd-money-panel { margin: 0 0 24px; padding: 28px; border: 1px solid #e5dfea; border-radius: 18px; background: #fff; }
 .nd-money-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
