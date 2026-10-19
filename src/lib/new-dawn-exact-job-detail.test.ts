@@ -28,6 +28,34 @@ test("bounded exact result keeps source identity and labels", () => {
   assert.throws(() => parseExactJobDetail({ ...result, job_id: tenant }, { tenant, job, request, sourceVersion, externalId: "123" }));
   assert.throws(() => parseExactJobDetail({ ...result, source_assigned_users: [{ name: "X" }] }, { tenant, job, request, sourceVersion, externalId: "123" }));
 });
+test("new source operational facts keep absent, null and false separate", () => {
+  const facts = {
+    isJobOnHold: { state: "present", value: false },
+    onHoldReasonDescription: { state: "not_supplied", value: null },
+    hasSLA: { state: "present", value: true },
+    SLAStatus: { state: "source_null", value: null },
+    contractID: { state: "present", value: "00123" },
+  };
+  const scope = { tenant, job, request, sourceVersion, externalId: "123" };
+  // Provider numeric IDs are canonical decimal strings; job codes retain their
+  // own formatting in saved source records and are never used as identity here.
+  const current = { ...result, version: "commusoft-exact-job-detail/2",
+    source_operational_facts: { ...facts, contractID: { state: "present", value: "123" } } };
+  const parsed = parseExactJobDetail(current, scope);
+  assert.equal(parsed.sourceOperationalFacts?.isJobOnHold.value, false);
+  assert.equal(parsed.sourceOperationalFacts?.onHoldReasonDescription.state, "not_supplied");
+  assert.equal(parsed.sourceOperationalFacts?.SLAStatus.state, "source_null");
+  assert.equal(parsed.sourceOperationalFacts?.contractID.value, "123");
+  assert.equal(parseExactJobDetail(result, scope).sourceOperationalFacts, null);
+  assert.throws(() => parseExactJobDetail({ ...current, source_operational_facts: facts }, scope));
+  assert.throws(() => parseExactJobDetail({ ...current, source_operational_facts: {
+    ...current.source_operational_facts, isJobOnHold: { state: "present", value: "false" },
+  } }, scope));
+  assert.throws(() => parseExactJobDetail({ ...current, source_operational_facts: {
+    ...current.source_operational_facts, SLAStatus: { state: "not_supplied", value: "Open" },
+  } }, scope));
+  assert.throws(() => parseExactJobDetail({ ...result, source_operational_facts: current.source_operational_facts }, scope));
+});
 test("client submits one generated request and validates returned scope", async () => {
   const seen: unknown[] = [];
   const output = await readExactJobDetail({ functions: { invoke: async (_name, opts) => {

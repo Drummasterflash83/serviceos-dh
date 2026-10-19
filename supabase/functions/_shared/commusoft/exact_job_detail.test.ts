@@ -21,7 +21,7 @@ test("one exact GET is bound to the prepared reviewed job and confirmed result",
       if (name.endsWith("_current")) return rpcReply(true);
       if (name.endsWith("_finish")) {
         assert.equal(JSON.parse(String(args.p_raw)).id, 123);
-        return rpcReply({ version: "commusoft-exact-job-detail/1", request_id: requestId,
+        return rpcReply({ version: "commusoft-exact-job-detail/2", request_id: requestId,
           job_id: jobId, source_version_id: sourceVersionId });
       }
       throw Error(name);
