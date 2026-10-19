@@ -20,8 +20,10 @@ export function reviewJobFacetCsv(manifest, csv) {
     if (facet === "visits") {
       reasons.push("event_id_semantics_unverified", "visit_status_unreviewed");
       if (!readyText(fields.status)) reasons.push("visit_status_missing");
+      const startsAt = Date.parse(fields.starts_at);
+      const endsAt = Date.parse(fields.ends_at);
       if (!zoned(row, "starts_at") || !zoned(row, "ends_at") ||
-        Date.parse(fields.ends_at) <= Date.parse(fields.starts_at))
+        !Number.isFinite(startsAt) || !Number.isFinite(endsAt) || endsAt <= startsAt)
         reasons.push("visit_start_end_unverified");
       reasons.push(readyText(fields.engineer_id)
         ? "source_engineer_unmapped" : "source_engineer_id_missing");

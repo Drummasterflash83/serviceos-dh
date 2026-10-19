@@ -40,6 +40,18 @@ test("historical diary-like times and missing parent ID remain held for source f
   assert.equal(report.records[0].job_external_id, null);
 });
 
+test("syntactically zoned but invalid visit time cannot be ready for source review", () => {
+  const report = reviewJobFacetCsv({ ...base, facet: "visits" }, csv("visits", [
+    "event-4,955,001,2026-10-18T99:00:00Z,2026-10-18T10:00:00Z,,Booked",
+    "event-5,955,001,2026-10-18T09:00:00Z,2026-10-18T99:00:00Z,,Booked",
+  ]));
+  assert.equal(report.counts.needs_source_fields, 2);
+  for (const row of report.records) {
+    assert.equal(row.shape, "needs_source_fields");
+    assert.ok(row.hold_reasons.includes("visit_start_end_unverified"));
+  }
+});
+
 test("engineer, estimate, invoice and parts rows do not become staff or money claims", () => {
   const engineer = reviewJobFacetCsv({ ...base, facet: "engineers" }, csv("engineers", [
     "user-1,Alex,Active",
