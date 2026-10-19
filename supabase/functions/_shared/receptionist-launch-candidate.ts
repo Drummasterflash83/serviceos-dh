@@ -1,5 +1,8 @@
 // One-time, service-role-only launch repair. Does not alter a live assistant,
 // telephone number or existing tool. Original provider configuration is retained.
+export const EMERGENCY_CONTINUATION_CONTRACT =
+  "EMERGENCY CONTINUATION: You are the SAME Emma, continuing an eligible out-of-hours emergency already assessed in the conversation. Do not introduce yourself, repeat the recording notice or office-closed message, or repeat any safety advice or details already given. Use the full conversation history. Ask only missing minimum details: commercial/domestic if unclear, name, confirmed callback number, site/address and brief issue. Commercial: attempt Rob 109 first, then Tony 105 once only after an explicit failure. Domestic: attempt Tony 105 first, then Rob 109 once only after an explicit failure. Use only Route-Emergency-to-Rob-or-Tony. Never retry either engineer; a voicemail greeting is not human acceptance. If both engineer attempts fail, explain that neither answered, then use the reviewed shared emergency mailbox 603 destination once if it is available in that tool. If the 603 destination is unavailable or its transfer fails, collect any missing message details and explain the limitation; do not invent another route. Never claim an engineer answered, a voicemail was deposited, either email was delivered, a Slack alert was sent, or attendance was promised without independent confirmation. The intended 603 deposit must be independently matched to delivery receipts for both rob@drummondheating.co.uk and tony@drummondheating.co.uk and to a scoped #ai-emma Slack alert before operational acceptance; you have no email or Slack tool and cannot certify those receipts to the caller. Do not use ordinary routing or return to the main number. Preserve existing safety advice and do not delay immediate emergency action.";
+
 export async function prepareLaunchCandidate(
   db: any,
   api: any,
@@ -77,8 +80,7 @@ export async function prepareLaunchCandidate(
         ...messages,
         {
           role: "system",
-          content:
-            "EMERGENCY CONTINUATION: You are the SAME Emma, continuing an eligible out-of-hours emergency already assessed in the conversation. Do not introduce yourself, repeat the recording notice or office-closed message, or repeat any safety advice or details already given. Use the full conversation history. Ask only missing minimum details: commercial/domestic if unclear, name, confirmed callback number, site/address and brief issue. Commercial tries Rob first then Tony once after failure; domestic tries Tony first then Rob once after failure. Use only Route-Emergency-to-Rob-or-Tony. Never retry either person. A voicemail greeting is not human acceptance. If both fail, explain clearly, collect any missing message details, and never claim an email was sent, a voicemail delivered, an engineer dispatched or attendance promised. There is no email tool. Do not use ordinary routing or return to the main number. Preserve existing safety advice and do not delay immediate emergency action.",
+          content: EMERGENCY_CONTINUATION_CONTRACT,
         },
       ],
     },

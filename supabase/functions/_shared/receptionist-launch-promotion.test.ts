@@ -5,6 +5,7 @@ import { launchPromotion, launchPromotionIds as ids, requireLaunchEvidence } fro
 import { evidenceHash } from "./receptionist-care.ts";
 import { launchScenarioPayloads } from "./receptionist-launch-scenarios.ts";
 import { approvedOrdinaryDestination } from "./receptionist-launch-destinations.ts";
+import { EMERGENCY_CONTINUATION_CONTRACT } from "./receptionist-launch-candidate.ts";
 import { captureTestHarness } from "./receptionist-test-harness.ts";
 
 const clone = <T>(x: T): T => structuredClone(x);
@@ -14,7 +15,11 @@ async function fixture() {
   const voice = { provider: "11labs", voiceId: "approved", speed: 1.05 }, transcriber = { provider: "soniox" };
   const ordinary = { id: ids.ordinary, orgId, type: "transferCall", function: { name: "Route-Call-to-Drummond-Team-20260929" },
     destinations: ["+441794378095", "+441794378105", "+441794378096", "+441794840042", "+441794840043", ...Array.from({ length: 5 }, (_, i) => `+44179400000${i}`)].map(number => ({ type: "number", number, description: "Reviewed original destination", message: "Original announcement", transferPlan: { mode: "blind-transfer" } })) };
-  const emergency = { id: ids.emergency, orgId, type: "transferCall", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [{ number: "+441794378105", transferPlan: { mode: "warm-transfer" } }] };
+  const emergency = { id: ids.emergency, orgId, type: "transferCall", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [
+    { type: "number", number: "+441234567001", description: "Rob emergency 109", transferPlan: { mode: "warm-transfer" } },
+    { type: "number", number: "+441234567002", description: "Tony emergency 105", transferPlan: { mode: "warm-transfer" } },
+    { type: "number", number: "+441234567003", description: "Shared emergency mailbox 603", transferPlan: { mode: "warm-transfer" } },
+  ] };
   const handoff = { id: ids.handoff, orgId, type: "handoff", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [{ type: "dynamic", server: { url: "https://tgbnakbxwcqjeimygroz.supabase.co/functions/v1/receptionist-intake-check", headers: { "X-OpenFolk-Intake-Token": "TEST_ONLY_" + "x".repeat(45) } } }] };
   const live = { id: ids.live, orgId, name: "Emma", updatedAt: "original", voice, transcriber,
     server: { url: "https://private.example", headers: { Authorization: "PRIVATE_SECRET" } }, artifactPlan: { recordingEnabled: true },
@@ -23,7 +28,7 @@ async function fixture() {
     firstMessage: "{% if openfolk_holidays contains openfolk_holiday_key %}Welcome to Drummonds. I'm Emma, the automated receptionist, and this call is recorded. Our office is closed.{% else %}Welcome to Drummonds. I'm Emma, the automated receptionist, and this call is recorded.{% endif %}", model: { provider: "openai", model: "gpt-4.1", toolIds: [ids.handoff],
       tools: [{ type: ordinary.type, function: ordinary.function, destinations: ordinary.destinations.map(approvedOrdinaryDestination) }],
       messages: [{ role: "system", content: "CONSOLIDATED HANDOVER CONTRACT\nReviewed safety policy" }] } };
-  const helper = { id: ids.helper, orgId, voice, transcriber, model: { toolIds: [ids.emergency], tools: [], messages: [{ role: "system", content: "EMERGENCY CONTINUATION: reviewed policy" }] } };
+  const helper = { id: ids.helper, orgId, voice, transcriber, model: { toolIds: [ids.emergency], tools: [], messages: [{ role: "system", content: EMERGENCY_CONTINUATION_CONTRACT }] } };
   const graph: any = { live, candidate, ordinary, emergency, handoff, helper };
   const phones = [{ id: uid(90), assistantId: ids.live, number: "+447426924154", provider: "twilio" }];
   const tools = [handoff, ...candidate.model.tools];
@@ -104,6 +109,9 @@ test("promotion writes exactly model and firstMessage, privately snapshots full 
   const result = await f.execute();
   assert.equal(result.state, "applied");
   assert.equal(result.emergencyTelephonyAcceptance, "not_verified");
+  assert.equal(result.mailboxDelivery, "not_verified");
+  assert.equal(result.dualEmailDelivery, "not_verified");
+  assert.equal(result.slackAlertDelivery, "not_verified");
   assert.equal(result.mainNumberChanged, false);
   assert.equal(f.state.writes.length, 1);
   assert.deepEqual(Object.keys(f.state.writes[0]).sort(), ["firstMessage", "model"]);
@@ -113,6 +121,22 @@ test("promotion writes exactly model and firstMessage, privately snapshots full 
   assert.doesNotMatch(JSON.stringify(result), /PRIVATE_SECRET|private.example|Reviewed safety policy/);
   const repeated = await f.execute();
   assert.equal(repeated.state, "applied"); assert.equal(f.state.writes.length, 1);
+});
+
+test("promotion refuses missing or ambiguous emergency fallback routes and helper wording without provider writes", async () => {
+  for (const kind of ["missing-603", "duplicate", "wrong-label", "non-number", "main-number", "office-mailbox", "wrong-prompt"]) {
+    const f = await fixture();
+    if (kind === "missing-603") f.graph.emergency.destinations.pop();
+    if (kind === "duplicate") f.graph.emergency.destinations[2].number = f.graph.emergency.destinations[1].number;
+    if (kind === "wrong-label") f.graph.emergency.destinations[2].description = "Office mailbox 601";
+    if (kind === "non-number") f.graph.emergency.destinations[2].type = "assistant";
+    if (kind === "main-number") f.graph.emergency.destinations[2].number = "+441794341600";
+    if (kind === "office-mailbox") f.graph.emergency.destinations[2].number = "+441794840043";
+    if (kind === "wrong-prompt") f.graph.helper.model.messages[0].content = "EMERGENCY CONTINUATION: skip shared 603";
+    if (kind !== "wrong-prompt") f.source.source_tools[1].destinations = clone(f.graph.emergency.destinations);
+    await assert.rejects(f.execute(), kind === "wrong-prompt" ? /continuation graph changed/ : /Rob\/Tony\/603 destination graph is incomplete/, kind);
+    assert.equal(f.state.writes.length, 0, kind);
+  }
 });
 
 test("5xx after an applied PATCH is reconciled by read-back without retry", async () => {

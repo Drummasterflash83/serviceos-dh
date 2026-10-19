@@ -56,6 +56,17 @@ change on the day.
   current provider graph and implement only a provider-supported,
   reviewed 603 route before real-phone acceptance; do not invent a
   mailbox number or claim an alert was sent.
+- This branch now makes the **next candidate** say to try shared 603 once
+  after both engineer attempts fail, and to disclose a failed/unavailable
+  fallback honestly. The promotion check refuses an emergency tool unless
+  its read-back has three distinct, labelled Rob 109, Tony 105 and shared
+  603 destinations. It does not guess Tony's direct number or 603's number;
+  their actual Birchills bindings and provider behaviour still need review.
+  The promotion receipt explicitly leaves engineer acceptance, 603 deposit,
+  both email receipts and Slack delivery `not_verified`. This is a source
+  and structural guard, **not** proof that the path works or permission to
+  change the existing shared tool. The saved current candidate cannot pass
+  this new check until safely reconciled against a fresh provider readback.
 
 ## Candidate code now prepared
 
@@ -85,6 +96,9 @@ change on the day.
   voice settings. The 2 October saved source snapshot predates v14 and the
   later natural-delivery changes, so a reviewed candidate/source
   reconciliation is needed before the existing promotion gate can pass.
+  The same gate now requires the exact reviewed helper continuation contract
+  and all three labelled emergency destinations. These labels cannot verify
+  actual telephone routing or notification delivery.
 - National Gas confirms the National Gas Emergency Service number is
   **0800 111 999**, 24 hours, for gas leaks and suspected carbon-monoxide
   emergencies: <https://www.nationalgas.com/en/node/256>. NHS guidance says

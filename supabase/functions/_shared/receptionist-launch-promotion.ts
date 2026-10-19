@@ -7,6 +7,7 @@ import { evidenceHash } from "./receptionist-care.ts";
 import { releaseConfiguration, releaseHash, stableJson } from "./receptionist-release.ts";
 import { launchScenarioPayloads } from "./receptionist-launch-scenarios.ts";
 import { approvedOrdinaryDestination } from "./receptionist-launch-destinations.ts";
+import { EMERGENCY_CONTINUATION_CONTRACT } from "./receptionist-launch-candidate.ts";
 import { captureTestHarness } from "./receptionist-test-harness.ts";
 import { list, UUID } from "./receptionist-testing.ts";
 
@@ -53,6 +54,18 @@ function validateGraph(g: any, source: any) {
   const required = ["+441794378095", "+441794378105", "+441794378096", "+441794840042", "+441794840043"];
   if (!required.every(n => c.model.tools[0].destinations.some((d: any) => d.number === n)))
     throw Error("Launch reviewed ordinary destination is missing.");
+  // Structural guard only: these labels do not prove that Birchills routes
+  // the third number to 603 or that any email/Slack notification arrives.
+  const emergencyDestinations = list(g.emergency.destinations);
+  const emergencyLabels = ["Rob emergency 109", "Tony emergency 105", "Shared emergency mailbox 603"];
+  if (emergencyDestinations.length !== 3 ||
+    new Set(emergencyDestinations.map((d: any) => d.number)).size !== 3 ||
+    !emergencyDestinations.every((d: any) => d.type === "number" &&
+      /^\+[1-9]\d{6,14}$/.test(d.number ?? "") && d.transferPlan &&
+      d.number !== "+441794341600" && d.number !== "+441794840043" &&
+      emergencyLabels.includes(d.description)) ||
+    !emergencyLabels.every(label => emergencyDestinations.some((d: any) => d.description === label)))
+    throw Error("Launch emergency Rob/Tony/603 destination graph is incomplete; no behaviour published.");
   const destination = g.handoff.destinations?.[0];
   if (g.handoff.type !== "handoff" || g.handoff.function?.name !== "Route-Emergency-to-Rob-or-Tony" ||
     g.handoff.destinations?.length !== 1 || destination?.type !== "dynamic" ||
@@ -60,7 +73,7 @@ function validateGraph(g: any, source: any) {
     !/^[A-Za-z0-9_-]{43,128}$/.test(destination.server?.headers?.["X-OpenFolk-Intake-Token"] ?? "") ||
     !same(g.helper.model?.toolIds, [ids.emergency]) || list(g.helper.model?.tools).length ||
     g.emergency.type !== "transferCall" || g.emergency.function?.name !== "Route-Emergency-to-Rob-or-Tony" ||
-    !g.helper.model?.messages?.some((m: any) => m.content?.startsWith("EMERGENCY CONTINUATION:")))
+    !g.helper.model?.messages?.some((m: any) => m.content === EMERGENCY_CONTINUATION_CONTRACT))
     throw Error("Launch emergency continuation graph changed.");
   for (const assistant of [c, g.helper])
     if (!same(assistant.voice, g.live.voice) || !same(assistant.transcriber, g.live.transcriber))
@@ -137,7 +150,8 @@ const receipt = (row: any, retried = false) => ({
   runId: row.run_id, candidateHash: row.candidate_hash, providerVersion: row.provider_version ?? null,
   mainNumberChanged: false, sharedToolsChanged: false, retried,
   emergencyTelephonyAcceptance: "not_verified", mailboxDelivery: "not_verified",
-  limitation: "Root-assistant simulations intercept the handoff. This is behaviour publication, not main-line launch or proof of emergency cross-cover, voicemail or email delivery.",
+  dualEmailDelivery: "not_verified", slackAlertDelivery: "not_verified",
+  limitation: "Root-assistant simulations intercept the handoff. This is behaviour publication, not main-line launch or proof of Rob/Tony cross-cover, mailbox 603 deposit, either email receipt or Slack alert delivery.",
 });
 
 export async function launchPromotion(db: any, api: Api, settings: any, workspace: any, actor: string, expectedHash: string) {
