@@ -5,6 +5,7 @@ import { getSupabaseClient } from "@/lib/supabase";
 import { financeAmount } from "@/lib/learn-quickbooks-finance";
 import {
   canReadPublishedOwnerAccounts,
+  ownerReportCoverage,
   requestPublishedOwnerAccounts,
   type OwnerAccountsGate,
   type PublishedOwnerAccounts,
@@ -58,9 +59,11 @@ export function PublishedOwnerAccountsPanel({
   };
   const allowed = canReadPublishedOwnerAccounts(gate);
   const scope = `${tenant}|${user?.id ?? ""}|${profile?.tenant_id ?? ""}|${profile?.role ?? ""}|${operator}|${platform.data}|${flag.data}`;
-  const [saved, setSaved] = useState<{ scope: string; report: PublishedOwnerAccounts } | null>(
-    null,
-  );
+  const [saved, setSaved] = useState<{
+    scope: string;
+    report: PublishedOwnerAccounts;
+    coverage: ReturnType<typeof ownerReportCoverage>;
+  } | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const generation = useRef(0);
@@ -71,7 +74,9 @@ export function PublishedOwnerAccountsPanel({
     setNotice("");
   }, [tenant, user?.id, profile?.tenant_id, profile?.role, operator, platform.data, flag.data]);
   if (!allowed) return null;
-  const report = saved?.scope === scope ? saved.report : null;
+  const active = saved?.scope === scope ? saved : null;
+  const report = active?.report;
+  const coverage = active?.coverage;
   async function openReport() {
     if (!allowed || busy) return;
     const ticket = ++generation.current;
@@ -86,7 +91,8 @@ export function PublishedOwnerAccountsPanel({
         if (error) throw Error("Owner accounts read unavailable");
         return data;
       });
-      if (ticket === generation.current) setSaved({ scope, report });
+      const coverage = ownerReportCoverage(report, new Date().toISOString().slice(0, 10));
+      if (ticket === generation.current) setSaved({ scope, report, coverage });
     } catch {
       if (ticket === generation.current)
         setNotice(
@@ -118,8 +124,16 @@ export function PublishedOwnerAccountsPanel({
           <p className="nd-money-scope">
             QuickBooks Online · company accounts · profit and loss period {report.periodStart} to{" "}
             {report.periodEnd} · {report.accountingMethod} basis · receivables report as of{" "}
-            {report.arAsOf}. Saved report, review {report.revision}; not today’s result.
+            {report.arAsOf}. Saved report, review {report.revision}.
           </p>
+          {coverage && (
+            <p className="nd-money-scope">
+              <strong>
+                {coverage.state === "historical_period" ? "Past period" : "This month"}.
+              </strong>{" "}
+              {coverage.message} This is report coverage, not a live QuickBooks check.
+            </p>
+          )}
           <dl className="nd-money-values">
             <div>
               <dt>Accounts gross profit</dt>

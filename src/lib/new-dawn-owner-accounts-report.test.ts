@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   canReadPublishedOwnerAccounts,
+  ownerReportCoverage,
   readPublishedOwnerAccounts,
   requestPublishedOwnerAccounts,
 } from "./new-dawn-owner-accounts-report.ts";
@@ -115,4 +116,28 @@ test("receivables bucket verification uses exact signed decimal arithmetic", () 
   aged.total = "9999999999999999999999999999.9999999999";
   const report = readPublishedOwnerAccounts({ ...response, aged_receivables: aged }, tenant);
   assert.equal(report.receivables.total, aged.total);
+});
+
+test("owner card distinguishes historical and current-month report coverage without claiming live freshness", () => {
+  const report = readPublishedOwnerAccounts(response, tenant, "2026-10-19");
+  assert.equal(ownerReportCoverage(report, "2026-10-19").state, "historical_period");
+  assert.match(
+    ownerReportCoverage(report, "2026-10-19").message,
+    /current-month figures are not shown/,
+  );
+  assert.equal(ownerReportCoverage(report, "2026-09-30").state, "current_month_snapshot");
+  assert.throws(() => ownerReportCoverage(report, "2026-09-29"), /owner_accounts_future_period/);
+  assert.throws(
+    () => readPublishedOwnerAccounts(response, tenant, "2026-09-29"),
+    /owner_accounts_invalid/,
+  );
+  assert.throws(
+    () =>
+      readPublishedOwnerAccounts(
+        { ...response, period_end: "2026-02-30", ar_as_of: "2026-02-30" },
+        tenant,
+        "2026-10-19",
+      ),
+    /owner_accounts_invalid/,
+  );
 });
