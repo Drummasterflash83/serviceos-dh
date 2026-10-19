@@ -1,14 +1,38 @@
-# M3 September accounts on the job-first home — release handoff
+# M3 saved company accounts · OpenFolk preview
 
-This is a small OpenFolk founder/operator preview of two figures from an explicitly reviewed pair of **already saved** QuickBooks reports. It makes no provider call, changes no financial record, and displays no implicit latest report. The new `new_dawn.job_home_accounts_preview` tenant flag is **not seeded** and remains OFF. The existing operator report-summary flag must also be ON before the panel appears; its audited RPC independently enforces signed-in OpenFolk authority, matching tenant/realm/connection/date, the report-request actor, verified receipts and an access reason.
+The job-first home offers an **operator-only** saved-report preview after the
+audited Drummonds job view opens. Its own `new_dawn.job_home_accounts_preview`
+flag remains absent/OFF until a reviewed release. The existing
+`new_dawn.report_summary_preview` flag and server authority check are separate;
+both must permit a read. Client owner/admin/team views and all client money
+flags remain OFF.
 
-The job-first home offers the panel only after an OpenFolk operator opens the audited job preview. The operator enters two exact saved-report request IDs and acknowledges the company, receipts and reason. The browser sends these IDs to `learn_quickbooks_report_summary_preview` and applies the existing strict reader plus a September 2026 production/accrual/date check. No receipt IDs, hashes, account values or provider credentials are embedded in frontend source. The compact panel shows **accounts gross profit** and **net profit** from the September P&L, with the report period, basis, QuickBooks source, A/R as-of date and an audit trail. Field gross profit and ARR remain visibly held. It does not present a current result, job costing or reconciled invoice balance.
+The bounded `learn_quickbooks_report_pair_candidates` RPC returns only metadata
+for up to 12 **production** P&L and Aged Receivables receipt pairs captured by
+the signed-in operator for the selected tenant. It matches connection, realm,
+currency, period end and A/R report date, requires verified retained receipts,
+and logs the candidate read. It returns no amounts or raw response. The operator
+chooses a dated pair, reviews its company/period/basis, and explicitly asks for
+the existing audited summary RPC. That RPC rechecks both exact receipt IDs,
+source hashes and shape. The browser projects only accounts GP and owner-level
+net profit; field GP and ARR remain held. It labels the period and distinguishes
+a historical snapshot from a partial current month. A source report is not a
+job-costing result or proof that later QuickBooks adjustments are absent.
 
-| Audience | Result |
-| --- | --- |
-| OpenFolk operator with the specific report finance authority | Can request the saved summary after both flags, reviewed IDs and reason; the server logs the successful read. |
-| Ordinary Drummonds team role | No panel; no report-summary RPC authority. |
-| Drummonds owner/admin | No panel from this slice. The owner login and separate client acceptance remain unresolved. |
-| OpenFolk founder viewing a client workspace | Only the OpenFolk operator path can request the audited preview; client `new_dawn.owner_money` remains OFF. |
+`20261108100000_new_dawn_report_pair_candidates.sql` is additive. It seeds no
+flag, schedule, request or publication and makes no provider call. The
+rollback-only hosted TEST rehearsal covers flag-off and ordinary-user denial,
+operator candidate read/audit, a bounded no-amount response and function grants.
+The browser decoder refuses wrong actor/tenant, future or mismatched period,
+hash, realm, basis, currency and non-decimal summary data. Focused tests,
+TypeScript and build pass locally.
 
-`node --test src/lib/new-dawn-founder-accounts-preview.test.ts src/lib/learn-quickbooks-report-summary.test.ts`, `npx tsc --noEmit` and `npm run build` passed locally. Before release, review the flag and server grants, deploy the frontend with the new flag OFF, then perform a signed-in OpenFolk operator check using the reviewed report pair and a real access reason. Confirm that ordinary roles cannot see the panel or call the RPC, and inspect the audit without copying private values into logs or Git. Keep the client owner-money flag OFF. Publishing a client owner view needs a separate tenant-scoped access and accounting-definition review; it cannot reuse the current operator-only RPC as-is.
+For LIVE: record current main, migration hash, flag states and report/finance
+counts; install this exact SQL with a rollback guard; verify the counts/flags
+and grants unchanged. Merge the UI with the new flag still OFF. If the operator
+preview is then enabled, perform a signed-in desktop and 390 px mobile check
+using a real saved pair and reason, verify both audit events, and confirm
+ordinary access denial. Disable only `new_dawn.job_home_accounts_preview` to
+withdraw the panel. The additive RPC and immutable audit can remain. Client
+publication requires separate accounting review and a real owner identity;
+Chris's OpenFolk identity must never substitute for Drummonds staff.
