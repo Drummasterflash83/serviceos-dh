@@ -1,5 +1,6 @@
 import io
 import unittest
+from unittest.mock import patch
 from native_copy_fingerprints import copy_fingerprints, compare_native_data
 from database_restore_sandbox import RecoveryError
 
@@ -9,6 +10,19 @@ def sample(rows, header=b'COPY public.records (id, body) FROM stdin;'):
 
 
 class NativeCopyTests(unittest.TestCase):
+    def test_spilled_hash_runs_preserve_exact_multiset_and_row_bound(self):
+        left = [b'5\tone', b'2\ttwo', b'3\tthree', b'2\ttwo', b'1\tfour']
+        with patch('native_copy_fingerprints.HASH_RUN_ROWS', 2), \
+             patch('native_copy_fingerprints.MAX_ROWS_PER_TABLE', 5):
+            expected = copy_fingerprints(io.BytesIO(sample(left)))
+            reordered = copy_fingerprints(io.BytesIO(sample(list(reversed(left)))))
+            self.assertEqual(compare_native_data(expected, reordered)['rows'], 5)
+            changed = copy_fingerprints(io.BytesIO(sample(left[:-1] + [b'1\tchanged'])))
+            with self.assertRaises(RecoveryError):
+                compare_native_data(expected, changed)
+            with self.assertRaisesRegex(RecoveryError, 'row bound'):
+                copy_fingerprints(io.BytesIO(sample(left + [b'6\tover-limit'])))
+
     def test_row_order_ignored_but_duplicates_and_content_are_not(self):
         expected = copy_fingerprints(io.BytesIO(sample([b'1\talpha', b'2\tbeta', b'2\tbeta'])))
         actual = copy_fingerprints(io.BytesIO(sample([b'2\tbeta', b'1\talpha', b'2\tbeta'])))

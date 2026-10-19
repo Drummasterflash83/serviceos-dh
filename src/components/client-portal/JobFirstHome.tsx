@@ -15,6 +15,10 @@ const isUuid = (value: unknown): value is string =>
 const meaningful = (value: unknown) => typeof value === "string" && value.trim() ? value.trim() : null;
 const checked = (value: string | null) =>
   value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString("en-GB") : "not confirmed";
+const latestSaved = (values: Array<string | null>) => {
+  const dates = values.filter((value): value is string => !!value && Number.isFinite(Date.parse(value)));
+  return dates.length ? checked(dates.reduce((latest, value) => Date.parse(value) > Date.parse(latest) ? value : latest)) : "not confirmed";
+};
 
 export function useJobFirstHomeFlag(tenant: string) {
   const { user } = useAuth();
@@ -208,9 +212,9 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
     <section className="nd-job-home" aria-label="Jobs needing review">
       <div className="nd-job-heading">
         <div>
-          <p className="of-eyebrow">SAVED JOBS TO REVIEW</p>
-          <h2>Start with the jobs.</h2>
-          <p>See each saved job, its customer and site, and the next review. Assigned people are not verified yet.</p>
+          <p className="of-eyebrow">JOB OVERVIEW</p>
+          <h2>Jobs to review</h2>
+          <p>Start with the work that may need a decision.</p>
         </div>
         {!operator && authorisedClient && <button className="cp-secondary" onClick={() => void client.refetch()}><RefreshCw size={15} /> Refresh jobs</button>}
         {operator && onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Browse captured source jobs</button>}
@@ -230,24 +234,30 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
       {!operator && !authorisedClient && <p role="status">Your personal work list is being prepared. It will appear when job assignments are confirmed.</p>}
       {!operator && authorisedClient && client.isPending && <p role="status">Reading your saved jobs…</p>}
       {!operator && authorisedClient && client.isError && <p role="alert">Saved jobs are unavailable. Refresh to try again.</p>}
-      {!operator && authorisedClient && client.isSuccess && <p className="nd-job-scope">Up to 12 saved jobs: recorded open, pending or held work first, then recent other records. This is not a complete workload count or live Commusoft status.</p>}
-      {operatorPage && <p className="nd-job-scope">Audited page of {operatorPage.length} saved jobs: recorded open, pending or held work first. Saved job cards are incomplete and may lag Commusoft. This is a review preview, not the full current workload or a staff login.</p>}
+      {!operator && authorisedClient && client.isSuccess && <div className="nd-job-scope">
+        <strong>{client.data.length} saved jobs shown</strong> · Latest saved {latestSaved(client.data.map((job) => job.updated_at))}
+        <details><summary>About this view</summary><p>This is a limited saved selection, not a complete workload or live Commusoft status. Recorded on-hold, pending and open work leads; other recent jobs follow. Job ownership is not verified yet.</p></details>
+      </div>}
+      {operatorPage && <div className="nd-job-scope">
+        <strong>{operatorPage.length} saved jobs shown</strong> · Latest saved {latestSaved(operatorPage.map((job) => job.fields.updated_at))}
+        <details><summary>About this view</summary><p>This audited preview is a limited saved selection, not the full current workload or a staff login. Job cards can lag Commusoft; ownership and next actions still need source review.</p></details>
+      </div>}
       {!operator && client.isSuccess && client.data.length === 0 && <p>No saved job records are visible yet. OpenFolk can check the connection and source review.</p>}
       <div className="nd-job-list">
         {!operator && authorisedClient && client.data?.map((job) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
           <BriefcaseBusiness size={20} />
-          <span><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job number not confirmed"}</strong><small>{job.title && job.job_number ? `${job.title} · ` : ""}{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</small></span>
-          <span><b>{homeJobState(job)}</b><small>Next review: {homeJobAction(job)} · assignee not verified · {job.verified ? "details reviewed" : "details awaiting confirmation"} · saved {checked(job.updated_at)}</small></span>
+          <span className="nd-job-main"><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job number not confirmed"}</strong><small>{job.title && job.job_number ? `${job.title} · ` : ""}{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</small></span>
+          <span className="nd-job-review"><b>{homeJobState(job)}</b><small>{homeJobAction(job)} · Assignee unconfirmed</small></span>
           <ArrowRight size={17} />
         </button>)}
         {operatorPage?.map((job) => <div key={job.id} className="nd-job-row">
           <BriefcaseBusiness size={20} />
-          <span><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Job number not confirmed"}</strong><small>{job.fields.title && job.fields.job_number ? `${job.fields.title} · ` : ""}{job.fields.customer ?? "Customer not confirmed"} · {job.fields.address ?? job.fields.postcode ?? "Site not confirmed"}</small></span>
-          <span><b>{homeJobState({ status: job.fields.status })}</b><small>Next review: {homeJobAction({ status: job.fields.status })} · assignee not verified · {job.fields.verified ? "details reviewed" : "details awaiting confirmation"} · saved {checked(job.fields.updated_at)}</small></span>
+          <span className="nd-job-main"><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Job number not confirmed"}</strong><small>{job.fields.title && job.fields.job_number ? `${job.fields.title} · ` : ""}{job.fields.customer ?? "Customer not confirmed"} · {job.fields.address ?? job.fields.postcode ?? "Site not confirmed"}</small></span>
+          <span className="nd-job-review"><b>{homeJobState({ status: job.fields.status })}</b><small>{homeJobAction({ status: job.fields.status })} · Assignee unconfirmed</small></span>
           <button className="cp-secondary" onClick={() => setSelectedOperator(job)}>Open this job</button>
         </div>)}
       </div>
-      <p className="nd-job-scope">Meaningful health and performance scores will appear when source coverage, sample size and freshness support them. Not enough data yet.</p>
+      <p className="nd-job-scope">Performance scores: not enough data yet.</p>
       <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
         <DialogContent className="cp-dialog max-h-[90vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader><DialogTitle>Saved job record</DialogTitle></DialogHeader>

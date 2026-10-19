@@ -22,7 +22,7 @@ export type OperatorInputDefinition =
       reason: string;
       connection_id: string;
       revision: string;
-      resource: "properties" | "jobs" | "propertyContacts";
+      resource: "properties" | "jobs" | "propertyContacts" | "users";
       contact_type?: "customer" | "workaddress";
       max_pages: number;
       page_size: number;
@@ -187,13 +187,14 @@ export function validateInputRequest(r: unknown): asserts r is OperatorInputRequ
       !uuid(d.connection_id) ||
       !date(d.revision) ||
       !date(d.expires_at) ||
-      !["properties", "jobs", "propertyContacts"].includes(d.resource) ||
+      !["properties", "jobs", "propertyContacts", "users"].includes(d.resource) ||
       !integer(d.max_pages) ||
       d.max_pages < 1 ||
       d.max_pages > 10000 ||
       !integer(d.page_size) ||
       d.page_size < 1 ||
       d.page_size > 100 ||
+      (d.resource === "users" && (d.max_pages !== 1 || d.page_size > 10)) ||
       (d.resource === "propertyContacts"
         ? !["customer", "workaddress"].includes(d.contact_type)
         : "contact_type" in d) ||

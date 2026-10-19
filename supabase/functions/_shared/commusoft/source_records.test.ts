@@ -98,6 +98,17 @@ test("source timestamps stay source data; observation does not invent historical
   assert.equal("score" in result, false);
   assert.equal("sourceUpdatedAt" in result, false);
 });
+test("source user IDs stay tenant-and-connection scoped and never become staff or job assignments", () => {
+  const original = { id: 1, firstName: "Fixture", appearOnSchedule: true, status: "active" };
+  const user = commusoftSourceRecords(page([original]), { ...scope, resource: "users" })[0];
+  assert.equal(user.identity.collection, "users");
+  assert.equal(user.identity.externalId, "1");
+  assert.deepEqual(user.projection, { state: "held", reason: "source_user_identity_review_required" });
+  assert.equal("engineer_id" in user, false);
+  assert.equal("member_id" in user, false);
+  assert.equal("job_id" in user, false);
+  assert.deepEqual(user.raw, original);
+});
 test("invalid scope, impossible observation date, duplicate and unsafe IDs refused", () => {
   for (const change of [
     { tenantId: "bad" },
