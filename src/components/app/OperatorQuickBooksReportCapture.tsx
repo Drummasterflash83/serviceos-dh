@@ -1,18 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { QuickBooksConnection } from "@/lib/learn-quickbooks";
-import { buildReportCaptureBody, readReportCaptureReceipt, reportCaptureConnectionReady, type ReportCaptureReceipt } from "@/lib/learn-quickbooks-report-capture";
+import { buildReportCaptureBody, readReportCaptureReceipt, readReportRefreshResult, reportCaptureConnectionReady, type ReportCaptureReceipt } from "@/lib/learn-quickbooks-report-capture";
 
 /** Operator-only evidence capture. Never renders report rows or profit amounts. */
-export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, connections }: {
+export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, connections, onConnectionRefresh }: {
   tenantId: string; actorId: string; canWrite: boolean; connections: QuickBooksConnection[];
+  onConnectionRefresh: () => Promise<void>;
 }) {
   const [connectionId, setConnectionId] = useState("");
   const [kind, setKind] = useState<"ProfitAndLoss" | "AgedReceivables">("ProfitAndLoss");
   const [periodStart, setPeriodStart] = useState(""), [periodEnd, setPeriodEnd] = useState("");
   const [accountingMethod, setAccountingMethod] = useState<"Cash" | "Accrual">("Accrual");
   const [reportDate, setReportDate] = useState("");
-  const [reason, setReason] = useState(""), [reviewed, setReviewed] = useState(false);
+  const [reason, setReason] = useState(""), [reviewed, setReviewed] = useState(false),
+    [refreshReviewed, setRefreshReviewed] = useState(false);
   const [receipt, setReceipt] = useState<ReportCaptureReceipt | null>(null);
   const [notice, setNotice] = useState(""), [busy, setBusy] = useState(false);
   const generation = useRef(0), working = useRef(false);
@@ -20,7 +22,7 @@ export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, c
     generation.current++; working.current = false;
     setConnectionId(""); setKind("ProfitAndLoss"); setPeriodStart(""); setPeriodEnd("");
     setAccountingMethod("Accrual"); setReportDate(""); setReason(""); setReviewed(false);
-    setReceipt(null); setNotice(""); setBusy(false);
+    setReceipt(null); setNotice(""); setBusy(false); setRefreshReviewed(false);
     return () => { generation.current++; };
   }, [tenantId, actorId]);
   if (!canWrite) return null;
@@ -28,7 +30,31 @@ export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, c
   const selected = available.find(c => c.id === connectionId);
   const accessReady = reportCaptureConnectionReady(selected);
   const scopeReady = kind === "ProfitAndLoss" ? !!periodStart && !!periodEnd && periodStart <= periodEnd : !!reportDate;
-  const reset = () => { setReviewed(false); setReceipt(null); setNotice(""); };
+  const reset = () => { setReviewed(false); setRefreshReviewed(false); setReceipt(null); setNotice(""); };
+  async function refreshAccess() {
+    if (!selected || accessReady || !refreshReviewed || working.current || reason.trim().length < 3 || reason.trim().length > 500) return;
+    const ticket = generation.current, requestId = crypto.randomUUID();
+    working.current = true; setBusy(true); setNotice("");
+    try {
+      const { data, error } = await getSupabaseClient().functions.invoke("learn-quickbooks-report-refresh", {
+        body: { tenantId, connectionId: selected.id, requestId, realmId: selected.realmId,
+          environment: selected.environment, reason: reason.trim() },
+      });
+      if (error) throw Error();
+      const state = readReportRefreshResult(data, requestId);
+      if (ticket !== generation.current) return;
+      await onConnectionRefresh();
+      setNotice(state === "refreshed" || state === "current" ?
+        "QuickBooks access is current. Review the refreshed company status before capturing a report." :
+        state === "busy" ? "Another credential refresh is in progress. Check company status before another action." :
+        state === "authentication_required" ? "The saved QuickBooks authorization needs reconnection." :
+        "The refresh result is unconfirmed. Check company status and audit before another action.");
+    } catch {
+      if (ticket === generation.current) setNotice(`The QuickBooks refresh result is unconfirmed (request ${requestId}). Check company status and audit before another action.`);
+    } finally {
+      if (ticket === generation.current) { working.current = false; setBusy(false); setRefreshReviewed(false); }
+    }
+  }
   async function capture() {
     if (!selected || !reportCaptureConnectionReady(selected) || !reviewed || !scopeReady || working.current || reason.trim().length < 3 || reason.trim().length > 500) return;
     const ticket = generation.current, requestId = crypto.randomUUID();
@@ -73,9 +99,16 @@ export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, c
     </div> : <label className="grid gap-1 text-sm">Report date · ageing at report date
       <input className="rounded-lg border bg-background p-2" type="date" disabled={busy} value={reportDate} onChange={e => { setReportDate(e.target.value); reset(); }}/>
     </label>}
-    <label className="grid gap-1 text-sm">Reason for this report read
+    <label className="grid gap-1 text-sm">Reason for this QuickBooks action
       <input className="rounded-lg border bg-background p-2" maxLength={500} disabled={busy} value={reason} onChange={e => { setReason(e.target.value); reset(); }}/>
     </label>
+    {selected && !accessReady && <div className="space-y-2 rounded-lg border p-3">
+      <p className="text-sm">A credential refresh uses the existing saved authorization for this company. It does not read a report or start an import.</p>
+      <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={refreshReviewed} disabled={busy || reason.trim().length < 3}
+        onChange={e => setRefreshReviewed(e.target.checked)}/>I reviewed this company and reason for one credential refresh.</label>
+      <button className="cp-secondary" disabled={busy || !refreshReviewed || reason.trim().length < 3 || reason.trim().length > 500}
+        onClick={() => void refreshAccess()}>Refresh this company’s access</button>
+    </div>}
     <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={reviewed} disabled={busy || !selected || !accessReady || !scopeReady}
       onChange={e => setReviewed(e.target.checked)}/>I reviewed this client, company, report, date, basis and reason for one read-only capture.</label>
     <button className="cp-secondary" disabled={busy || !selected || !accessReady || !reviewed || !scopeReady || reason.trim().length < 3}

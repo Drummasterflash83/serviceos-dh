@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildReportCaptureBody, readReportCaptureReceipt, reportCaptureConnectionReady } from "./learn-quickbooks-report-capture.ts";
+import { buildReportCaptureBody, readReportCaptureReceipt, readReportRefreshResult, reportCaptureConnectionReady } from "./learn-quickbooks-report-capture.ts";
 import type { QuickBooksConnection } from "./learn-quickbooks.ts";
 import { validateReportCaptureRequest } from "../../supabase/functions/_shared/quickbooks/report_capture.ts";
 const scope = { requestId: "00000000-0000-0000-0000-000000000001", tenantId: "00000000-0000-0000-0000-000000000002",
@@ -45,4 +45,12 @@ test("report capture waits for a valid access token rather than opening an uncla
   assert.equal(reportCaptureConnectionReady({ ...connection, accessExpiresAt: "2026-10-19T16:39:04Z" }, now), false);
   assert.equal(reportCaptureConnectionReady({ ...connection, accessExpiresAt: null }, now), false);
   assert.equal(reportCaptureConnectionReady({ ...connection, status: "authentication_required" }, now), false);
+});
+test("operator refresh reply contains only a bound state", () => {
+  assert.equal(readReportRefreshResult({ version: "quickbooks-report-refresh/1", requestId: scope.requestId,
+    state: "refreshed" }, scope.requestId), "refreshed");
+  assert.throws(() => readReportRefreshResult({ version: "quickbooks-report-refresh/1", requestId: "wrong",
+    state: "refreshed" }, scope.requestId));
+  assert.throws(() => readReportRefreshResult({ version: "quickbooks-report-refresh/1", requestId: scope.requestId,
+    state: "success" }, scope.requestId));
 });
