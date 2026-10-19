@@ -145,6 +145,19 @@ test("import definitions require bounded collection scope but expired saved requ
       definition: { ...r.definition, resource: "propertyContacts", contact_type: "customer" },
     }),
   );
+  assert.doesNotThrow(() =>
+    validateInputRequest({
+      ...r,
+      definition: { ...r.definition, resource: "users", max_pages: 1, page_size: 10 },
+    }),
+  );
+  for (const change of [{ max_pages: 2 }, { page_size: 11 }])
+    assert.throws(() =>
+      validateInputRequest({
+        ...r,
+        definition: { ...r.definition, resource: "users", max_pages: 1, page_size: 10, ...change },
+      }),
+    );
 });
 test("overview rejects foreign company, malformed flags and unbounded metadata", async () => {
   const base = {
