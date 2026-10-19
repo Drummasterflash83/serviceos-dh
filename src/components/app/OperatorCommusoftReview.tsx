@@ -125,7 +125,7 @@ export function OperatorCommusoftReview({
               />
             ) : (
               <LearnCommusoftWork
-                key={`${tenantId}:${actorId}:${session.generation}:${requestedJob?.external ?? ""}`}
+                key={`${tenantId}:${actorId}:${session.generation}:${requestedJob?.connection ?? ""}:${requestedJob?.external ?? ""}`}
                 tenantId={tenantId}
                 actorId={actorId}
                 canEdit

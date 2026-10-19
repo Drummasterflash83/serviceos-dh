@@ -396,6 +396,9 @@ export function LearnCommusoftWork({
         </label>
         {connection && (
           <>
+            {initialJob && kind === "job" && connection === initialJob.connection && appliedSearch === initialJob.external && (
+              <p className="text-sm" role="status">Opened from captured job {initialJob.external}. Confirm the exact job number and customer relationship before selecting it.</p>
+            )}
             <RetainedSourceSearch
               value={sourceSearch}
               applied={
