@@ -14,7 +14,7 @@ export function OperatorCommusoftReview({
 }) {
   const [reason, setReason] = useState("");
   const [session, setSession] = useState<{ reason: string; generation: number } | null>(null);
-  const [kind, setKind] = useState<"customers" | "work" | "source-jobs">("customers");
+  const [kind, setKind] = useState<"customers" | "work" | "source-jobs">("source-jobs");
   const generation = useRef(0);
   function close() {
     generation.current++;
@@ -113,7 +113,7 @@ export function OperatorCommusoftReview({
             </button>
           </nav>
           {client &&
-            (kind === "source-jobs" ? <LearnCommusoftSourceJobs key={`${tenantId}:${actorId}:${session.generation}`} tenantId={tenantId} actorId={actorId} client={client} /> : kind === "customers" ? (
+            (kind === "source-jobs" ? <LearnCommusoftSourceJobs key={`${tenantId}:${actorId}:${session.generation}`} tenantId={tenantId} actorId={actorId} client={client} operatorReason={session.reason} /> : kind === "customers" ? (
               <LearnCommusoftCustomers
                 key={`${tenantId}:${actorId}:${session.generation}`}
                 tenantId={tenantId}
