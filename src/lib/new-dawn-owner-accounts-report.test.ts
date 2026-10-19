@@ -73,11 +73,12 @@ test("only a signed-in same-tenant owner with the separate flag can start the ow
   assert.equal(calls, 1, "denied roles and contexts must never invoke the RPC");
 });
 
-test("strict owner envelope keeps exact decimals and drops A/R amounts from the UI projection", () => {
+test("strict owner envelope keeps exact decimals and source-backed ageing groups", () => {
   const report = readPublishedOwnerAccounts(response, tenant);
   assert.equal(report.accountsGrossProfit, "12345678901234567890.01");
   assert.equal(report.netProfit, "-10.02");
-  assert.equal("agedReceivables" in report, false);
+  assert.equal(report.receivables.total, "15.00");
+  assert.equal(report.receivables.days91Plus, "5.00");
   assert.equal("profitRequest" in report, false);
   for (const change of [
     { audience: "openfolk_operator_only" },
@@ -89,10 +90,29 @@ test("strict owner envelope keeps exact decimals and drops A/R amounts from the 
     { period_end: "2026-10-31" },
     { field_gross_profit: { status: "available", reason: "job_cost_mapping_not_verified" } },
     { aged_receivables: { ...response.aged_receivables, total: "12.2x" } },
+    { aged_receivables: { ...response.aged_receivables, total: "15.01" } },
     { summary: { net_profit: "1.00" } },
   ])
     assert.throws(
       () => readPublishedOwnerAccounts({ ...response, ...change }, tenant),
       /owner_accounts_invalid/,
     );
+});
+
+test("receivables bucket verification uses exact signed decimal arithmetic", () => {
+  const aged = {
+    current: "1.005",
+    age_1_30: "-0.005",
+    age_31_60: "0",
+    age_61_90: "0.00",
+    age_91_plus: "9999999999999999999999999998.9999999999",
+    total: "9999999999999999999999999999.9999999998",
+  };
+  assert.throws(
+    () => readPublishedOwnerAccounts({ ...response, aged_receivables: aged }, tenant),
+    /owner_accounts_invalid/,
+  );
+  aged.total = "9999999999999999999999999999.9999999999";
+  const report = readPublishedOwnerAccounts({ ...response, aged_receivables: aged }, tenant);
+  assert.equal(report.receivables.total, aged.total);
 });

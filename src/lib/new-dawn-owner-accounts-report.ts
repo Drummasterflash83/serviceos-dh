@@ -8,6 +8,21 @@ const date = (value: unknown): value is string =>
   typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
 const decimal = (value: unknown): value is string =>
   typeof value === "string" && /^-?\d{1,40}(\.\d{1,10})?$/.test(value);
+const ageKeys = ["current", "age_1_30", "age_31_60", "age_61_90", "age_91_plus"] as const;
+
+/** The source SQL checks this too; keep the browser projection exact. */
+function ageingBalances(aged: Record<string, unknown>): boolean {
+  if (![...ageKeys, "total"].every((key) => decimal(aged[key]))) return false;
+  const values = [...ageKeys, "total"].map((key) => aged[key] as string);
+  const scale = Math.max(...values.map((value) => value.split(".")[1]?.length ?? 0));
+  const units = values.map((value) => {
+    const negative = value.startsWith("-");
+    const [whole, fraction = ""] = (negative ? value.slice(1) : value).split(".");
+    const exact = BigInt(whole) * 10n ** BigInt(scale) + BigInt(fraction.padEnd(scale, "0") || "0");
+    return negative ? -exact : exact;
+  });
+  return units.slice(0, 5).reduce((sum, value) => sum + value, 0n) === units[5];
+}
 
 export type OwnerAccountsGate = {
   tenant: string;
@@ -42,6 +57,14 @@ export type PublishedOwnerAccounts = {
   revision: number;
   accountsGrossProfit: string;
   netProfit: string;
+  receivables: {
+    current: string;
+    days1To30: string;
+    days31To60: string;
+    days61To90: string;
+    days91Plus: string;
+    total: string;
+  };
   auditId: string;
 };
 
@@ -97,9 +120,7 @@ export function readPublishedOwnerAccounts(value: unknown, tenant: string): Publ
     (value.publication_revision as number) < 1 ||
     !decimal(value.accounts_gross_profit) ||
     !decimal(value.net_profit) ||
-    !["current", "age_1_30", "age_31_60", "age_61_90", "age_91_plus", "total"].every((key) =>
-      decimal(aged[key]),
-    ) ||
+    !ageingBalances(aged) ||
     field.status !== "held" ||
     field.reason !== "job_cost_mapping_not_verified" ||
     arr.status !== "held" ||
@@ -117,6 +138,14 @@ export function readPublishedOwnerAccounts(value: unknown, tenant: string): Publ
     revision: value.publication_revision as number,
     accountsGrossProfit: value.accounts_gross_profit,
     netProfit: value.net_profit,
+    receivables: {
+      current: aged.current as string,
+      days1To30: aged.age_1_30 as string,
+      days31To60: aged.age_31_60 as string,
+      days61To90: aged.age_61_90 as string,
+      days91Plus: aged.age_91_plus as string,
+      total: aged.total as string,
+    },
     auditId: value.audit_id,
   };
 }
