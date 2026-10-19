@@ -409,6 +409,14 @@ button.nd-job-row:hover { border-color: #a996c0; background: #fff; }
 .nd-operator-preview--active button { margin-left: auto; }
 .nd-job-detail h3 { margin-top: 16px; font-weight: 600; }
 .nd-money-panel { margin: 0 0 24px; padding: 28px; border: 1px solid #e5dfea; border-radius: 18px; background: #fff; }
+.nd-score-readiness { margin: 0 0 24px; padding: 28px; border: 1px solid #e5dfea; border-radius: 18px; background: #fff; }
+.nd-score-readiness h2 { margin: 6px 0 8px; font-size: 23px; font-weight: 600; color: #25253a; }
+.nd-score-readiness > p:not(.of-eyebrow), .nd-score-readiness article p { color: #706b7e; font-size: 13px; line-height: 1.6; }
+.nd-score-readiness-source { margin: 14px 0; font-weight: 550; }
+.nd-score-readiness-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.nd-score-readiness-grid article { padding: 16px; border: 1px solid #e9e7ee; border-radius: 14px; background: #faf9f6; }
+.nd-score-readiness-grid h3 { margin: 0 0 8px; font-size: 15px; font-weight: 600; color: #514669; }
+@media (max-width: 720px) { .nd-score-readiness { padding: 19px; } .nd-score-readiness-grid { grid-template-columns: 1fr; } }
 .nd-money-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
 .nd-money-heading h2 { margin: 3px 0 6px; font-size: clamp(23px, 2.6vw, 30px); letter-spacing: -.035em; }
 .nd-money-heading p:last-child, .nd-money-operator p { max-width: 68ch; color: #6e6777; font-size: 13px; line-height: 1.5; }
