@@ -18,7 +18,7 @@ const PRIOR_FUNCTIONS={
 };
 const SIGNATURE="public.learn_quickbooks_report_pair_candidates(uuid,text)";
 const CLIENT_FLAGS=["new_dawn.owner_money","new_dawn.owner_report_review",
-  "new_dawn.owner_accounts_report","new_dawn.job_home_accounts_preview"];
+  "new_dawn.owner_accounts_report"];
 const quote=value=>"'"+value.replaceAll("'","''")+"'";
 
 export function reviewedSource(){
@@ -57,13 +57,15 @@ const catalogSql=`select
  (select count(*)::int from public.feature_flags where flag in
   (${CLIENT_FLAGS.map(quote).join(",")}) and value='true'::jsonb) as client_flags_on,
  (select count(*)::int from public.feature_flags where tenant_id='${TENANT}'::uuid
+  and flag='new_dawn.job_home_accounts_preview' and value='true'::jsonb) as home_operator_on,
+ (select count(*)::int from public.feature_flags where tenant_id='${TENANT}'::uuid
   and flag='new_dawn.report_summary_preview' and value='true'::jsonb) as report_preview_on`;
 const countsSql=`select
  (select count(*)::bigint from public.learn_quickbooks_report_requests where tenant_id='${TENANT}'::uuid) as report_requests,
  (select count(*)::bigint from public.learn_quickbooks_report_receipts where tenant_id='${TENANT}'::uuid) as report_receipts,
  (select count(*)::bigint from public.learn_quickbooks_finance_events where tenant_id='${TENANT}'::uuid) as finance_events`;
 
-export function assess(snapshot,installed,source=reviewedSource()){
+export function assess(snapshot,installed,source=reviewedSource(),operatorPreviewEnabled=false){
   if(snapshot?.project?.id!==PROJECT||snapshot.project.status!=="ACTIVE_HEALTHY")
     throw Error("m3_pairs_live_project_changed");
   if(!Array.isArray(snapshot.ledger)||snapshot.ledger.length!==Number(installed))
@@ -78,6 +80,7 @@ export function assess(snapshot,installed,source=reviewedSource()){
     c.security_definer!==installed||c.authenticated_grant!==installed||
     c.anon_grant!==false||c.service_grant!==false||c.summary_rpc!==true||
     c.active_tenant!==true||c.confirmed_connections!==1||c.client_flags_on!==0||
+    c.home_operator_on!==Number(operatorPreviewEnabled)||
     c.report_preview_on!==1)throw Error("m3_pairs_boundary_changed");
   if(Object.entries(PRIOR_FUNCTIONS).some(([key,hash])=>c[key]!==hash))
     throw Error("m3_pairs_prerequisite_function_changed");
@@ -87,7 +90,8 @@ export function assess(snapshot,installed,source=reviewedSource()){
     throw Error("m3_pairs_counts_unconfirmed");
   return {state:installed?"installed_default_off_readback":"exact_m3_pairs_ready",
     version:VERSION,sourceSha256:source.hash,providerRequests:0,
-    clientMoneyFlagsEnabled:false,reportRequests:Number(counts.report_requests),
+    clientMoneyFlagsEnabled:false,operatorPreviewEnabled,
+    reportRequests:Number(counts.report_requests),
     reportReceipts:Number(counts.report_receipts),financeEvents:Number(counts.finance_events)};
 }
 
@@ -114,6 +118,8 @@ do $m3_pairs_gate$ begin
    and environment='production' and realm_id is not null and confirmed_at is not null
    and status in ('active','paused'))<>1
   or exists(select 1 from public.feature_flags where flag in (${CLIENT_FLAGS.map(quote).join(",")})
+   and value='true'::jsonb)
+  or exists(select 1 from public.feature_flags where flag='new_dawn.job_home_accounts_preview'
    and value='true'::jsonb)
   or (select count(*) from public.feature_flags where tenant_id='${TENANT}'::uuid
    and flag='new_dawn.report_summary_preview' and value='true'::jsonb)<>1
@@ -173,7 +179,8 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
     const mode=process.argv.slice(2).join(" ");
     if(mode==="--live-read-only"){
       const snapshot=await readStage(PROJECT,savedCliToken());
-      console.log(JSON.stringify(assess(snapshot,snapshot.ledger?.length===1)));
+      console.log(JSON.stringify(assess(snapshot,snapshot.ledger?.length===1,
+        reviewedSource(),snapshot.catalog?.[0]?.home_operator_on===1)));
     }else if(mode==="--live-install-exact")console.log(JSON.stringify(await installLive()));
     else throw Error("explicit_exact_m3_pairs_action_required");
   }catch(error){
