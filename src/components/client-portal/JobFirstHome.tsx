@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOperatorHomePage, type HomeJob, type OperatorHomeJob } from "@/lib/new-dawn-job-home";
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
+import { readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { OwnerMoneyPanel } from "./OwnerMoneyPanel";
 
@@ -96,9 +97,23 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
   const [source, setSource] = useState<OperatorJobSource | null>(null);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
+  const [fresh, setFresh] = useState<ExactJobDetail | null>(null);
+  const [freshBusy, setFreshBusy] = useState(false);
+  const [freshError, setFreshError] = useState("");
+  const currentDetailFlag = useQuery({
+    queryKey: ["new-dawn-exact-job-detail-flag", actor, tenant],
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().from("feature_flags")
+        .select("value").eq("tenant_id", tenant)
+        .eq("flag", "new_dawn.exact_job_detail").maybeSingle();
+      if (error) throw Error("Exact job detail flag unavailable.");
+      return data?.value === true;
+    },
+    staleTime: 30_000,
+  });
   useEffect(() => {
     let active = true;
-    setSource(null); setBusy(true); setError("");
+    setSource(null); setBusy(true); setError(""); setFresh(null); setFreshError("");
     void readOperatorJobSource(getSupabaseClient(), tenant, actor, job.id, reason)
       .then((value) => { if (active) setSource(value); })
       .catch(() => { if (active) setError("The audited source read is unavailable. Reopen this job to retry."); })
@@ -106,6 +121,15 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
     return () => { active = false; };
   }, [tenant, actor, job.id, reason]);
   const detail = source?.source;
+  async function checkCurrentDetail() {
+    if (!detail?.current || currentDetailFlag.data !== true || freshBusy) return;
+    setFreshBusy(true); setFreshError(""); setFresh(null);
+    try {
+      setFresh(await readExactJobDetail(getSupabaseClient(), tenant, job.id,
+        detail.version_id, detail.external_id, reason));
+    } catch { setFreshError("A fresh Commusoft detail read could not be confirmed. Saved evidence remains above."); }
+    finally { setFreshBusy(false); }
+  }
   return <div className="nd-job-detail space-y-3">
     <p><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Saved job"}</strong> · {homeJobState({ status: job.fields.status })}</p>
     <p>{job.fields.customer ?? "Customer not confirmed"} · {job.fields.address ?? job.fields.postcode ?? "Site not confirmed"}</p>
@@ -127,6 +151,21 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
       <p>Reported: {detail.dates.reported.source ?? "not provided"} · Completed: {detail.dates.completed.source ?? "not provided"}</p>
       {(detail.dates.reported.state === "timezone_required" || detail.dates.completed.state === "timezone_required") && <p>One or more source times have no timezone; no elapsed duration has been inferred.</p>}
       <p className="text-sm">A source completion name is not a verified engineer visit. The quote is not an invoice or paid value. Diary, parts and costs are not captured in this job record.</p>
+      {detail.current && currentDetailFlag.data === true && <button className="cp-secondary" disabled={freshBusy} onClick={() => void checkCurrentDetail()}>
+        {freshBusy ? "Checking Commusoft…" : "Check current Commusoft job details"}
+      </button>}
+      {freshError && <p role="alert">{freshError}</p>}
+      {fresh && <section aria-label="Fresh Commusoft job detail" className="space-y-2">
+        <h3>Current source detail · checked {checked(fresh.checkedAt)}</h3>
+        <p>Exact Commusoft job {fresh.externalId}; read only. Its source version is linked to this saved job. The saved card has not been rewritten.</p>
+        {fresh.status && <p>Source status: {fresh.status}</p>}
+        {fresh.pipeline && <p>Source pipeline: {fresh.pipeline}</p>}
+        {fresh.stage && <p>Source stage: {fresh.stage}</p>}
+        {fresh.expectedOnsite && <p>Expected onsite (source text): {fresh.expectedOnsite}</p>}
+        {fresh.expectedCompletion && <p>Expected completion (source text): {fresh.expectedCompletion}</p>}
+        {fresh.sourceUsers.length > 0 && <p>Source users currently listed: {fresh.sourceUsers.map((user) => user.name).join(", ")}. Their OpenFolk identities and appointments are not confirmed.</p>}
+        <small>Provider last updated: {fresh.providerUpdatedAt ?? "not supplied"}. Expected dates are not verified visits. Audit {fresh.auditId}.</small>
+      </section>}
     </section>}
     {!busy && !source && !error && <p role="status">Saved source evidence is unavailable.</p>}
   </div>;
@@ -176,12 +215,17 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         {!operator && authorisedClient && <button className="cp-secondary" onClick={() => void client.refetch()}><RefreshCw size={15} /> Refresh jobs</button>}
         {operator && onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Browse captured source jobs</button>}
       </div>
-      {operator && <div className="nd-operator-preview">
-        <strong>View as Drummonds MD · read-only preview</strong>
-        <p>You remain signed in as OpenFolk. State why you are opening this company’s jobs; the server checks and logs each read.</p>
-        <label>Access reason <input value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} placeholder="Review client job experience" /></label>
-        <button className="cp-secondary" disabled={operatorBusy || reason.trim().length < 3} onClick={() => void loadOperatorJobs()}>{operatorBusy ? "Checking access…" : "Open audited preview"}</button>
-        {operatorError && <p role="alert">{operatorError}</p>}
+      {operator && <div className={`nd-operator-preview${operatorPage ? " nd-operator-preview--active" : ""}`}>
+        <strong>{operatorPage ? "Drummonds MD layout · read-only" : "View as Drummonds MD · read-only preview"}</strong>
+        {operatorPage ? <>
+          <p>You are still signed in as OpenFolk. This job read was logged.</p>
+          <button className="cp-secondary" onClick={() => { setSelectedOperator(null); setOperatorPage(null); }}>Change access reason</button>
+        </> : <>
+          <p>You remain signed in as OpenFolk. State why you are opening this company’s jobs; the server checks and logs each read.</p>
+          <label>Access reason <input value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} placeholder="Review client job experience" /></label>
+          <button className="cp-secondary" disabled={operatorBusy || reason.trim().length < 3} onClick={() => void loadOperatorJobs()}>{operatorBusy ? "Checking access…" : "Open audited preview"}</button>
+          {operatorError && <p role="alert">{operatorError}</p>}
+        </>}
       </div>}
       {!operator && !authorisedClient && <p role="status">Your personal work list is being prepared. It will appear when job assignments are confirmed.</p>}
       {!operator && authorisedClient && client.isPending && <p role="status">Reading your saved jobs…</p>}

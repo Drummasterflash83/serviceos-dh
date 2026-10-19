@@ -118,18 +118,41 @@ audit intact for investigation. The money flag stays off throughout. Only
 after the independent owner/denied-user money-RPC and signed-in UI checks, and
 the bounded provider comparison pass, may the release owner enable that flag.
 
-The next report-capture PR should add two **GET-only** QuickBooks Online
+The report-capture PR adds two **GET-only** QuickBooks Online
 Reports API requests for the bound realm: `reports/ProfitAndLoss` for an explicit
 start/end period and accounting basis, and `reports/AgedReceivables` for an
 explicit report date and report-date ageing method. Both are named in
 [Intuit's developer API collection](https://www.postman.com/intuit-developer/intuit-developer-quickbooks-online-accounting-api/documentation/4884662-e6c576f1-f6d3-440f-b090-da9ff1ac519d).
-The currently installed entity-query worker cannot issue or retain those
-reports. A report request needs its own durable permit, bounded response size,
+The entity-query worker cannot issue or retain those reports. The separate
+operator-only route uses a durable permit, bounded response size,
 tenant/realm/credential checks, immutable raw response receipt, and explicit
-period, basis, currency, provider time and summary-row validation. Do not
+period, basis, currency and provider time checks; summary-row validation is
+still required before any figure is displayed. See
+[the report-capture contract](NEW-DAWN-M3-REPORT-CAPTURE.md). Do not
 publish accounts GP or MD-only NP until Drummonds' actual report response is
 captured and reconciled. The AgedReceivables response is a separate comparison
 to, not a relabeling of, this invoice-age calculation. An
 [Intuit P&L response example](https://help.developer.intuit.com/s/question/0D5TR00000JyTuE0AV/i-want-to-generate-profit-and-loss-report-via-api-so-that-it-has-the-same-data-as-one-i-generate-using-quickbooks-online)
 shows the period, basis, currency and GrossProfit/NetIncome summary groups that
 must be checked, rather than inferred from invoices.
+
+### Completion repair after first LIVE check
+
+The first LIVE two-invoice request was claimed and made two successful provider
+GETs, but no comparison was saved. The finish RPC raised SQLSTATE `42702`:
+its PL/pgSQL variable `result` conflicted with the `result` table column in
+`UPDATE ... SET result=result`. The route recorded `result_unconfirmed`; that
+request is terminal and must not be replayed. This finding does not establish
+whether either invoice balance or due date matched.
+
+`20261106100000_new_dawn_invoice_check_finish_ambiguity.sql` replaces only the
+finish function, naming its local comparison array `comparison_rows`. It does
+not alter grants, the Edge route, retained invoices, the connection or the
+money flag. A rollback-only TEST rehearsal applied the prior money and check
+schema plus this repair, used two retained TEST payloads as synthetic GET
+responses inside SQL, and verified the completed row and audit event. It made
+no provider request and left TEST unchanged. The focused tests and TypeScript
+check passed. Release owner: install this additive migration on LIVE only after
+review, confirm the failed request and source/finance counts are unchanged,
+then perform a **new**, explicitly scoped operator check if needed. Keep the
+money flag off until its separate owner and ordinary-user verification passes.

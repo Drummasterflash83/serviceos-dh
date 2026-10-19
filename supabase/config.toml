@@ -362,6 +362,10 @@ verify_jwt = true
 [functions.learn-commusoft-verify]
 verify_jwt = true
 
+# One signed-in operator-approved, exact reviewed job GET. No schedule.
+[functions.learn-commusoft-job-detail]
+verify_jwt = false
+
 # Retained call audio requires a real signed-in company owner/admin.
 [functions.learn-phone-playback]
 verify_jwt = true
@@ -388,4 +392,8 @@ verify_jwt = false
 
 [functions.learn-quickbooks-invoice-check]
 # The handler verifies Auth with auth.getUser, matching the OAuth start route.
+verify_jwt = false
+
+[functions.learn-quickbooks-report-capture]
+# Signed-in operator Auth is verified inside the bounded one-use route.
 verify_jwt = false

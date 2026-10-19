@@ -137,6 +137,23 @@ test("only the existing fixed read, token and revoke endpoints reach the provide
   await f(new Request("https://quickbooks.api.intuit.com/v3/company/123/companyinfo/123"));
   assert.equal(count, 2);
 });
+test("only bounded GET report URLs reach the provider and logs omit report scope", async () => {
+  const events: QuickBooksProviderTrace[] = []; let requests = 0;
+  const f = quickBooksDiagnosticFetch(async () => { requests++; return Response.json({ Rows: {} }); }, e => { events.push(e); });
+  const allowed = [
+    "https://quickbooks.api.intuit.com/v3/company/9876543210/reports/ProfitAndLoss?start_date=2026-09-01&end_date=2026-09-30&accounting_method=Accrual",
+    "https://sandbox-quickbooks.api.intuit.com/v3/company/9876543210/reports/AgedReceivables?report_date=2026-10-19&aging_method=Report_Date",
+  ];
+  for (const url of allowed) await f(url, { method: "GET" });
+  assert.equal(requests, 2); assert.deepEqual(events.map(e => e.operation), ["report_read", "report_read"]);
+  for (const secret of ["9876543210", "start_date", "report_date", "ProfitAndLoss", "AgedReceivables"])
+    assert.equal(JSON.stringify(events).includes(secret), false);
+  for (const url of [
+    allowed[0] + "&customer=private", allowed[1].replace("Report_Date", "Current"),
+    allowed[0].replace("ProfitAndLoss", "BalanceSheet"),
+  ]) await assert.rejects(f(url, { method: "GET" }), /quickbooks_transport_invalid/);
+  assert.equal(requests, 2);
+});
 test("actual token, company and query transports retain traces without changing their results", async () => {
   const events: QuickBooksProviderTrace[] = [];
   const now = Date.now();
