@@ -13,9 +13,11 @@ authority for this review.
 It makes no provider or database request, writes no production data and has no
 publish switch. It requires the original 19-column header, bounded UTF-8 HTML,
 an exact archived file hash and a private manifest naming the tenant and
-connection. It retains only part, job-number, quantity, status, manufacturer,
-price and time **source text** in a mode-`0600` JSON file created once outside
-Git. The terminal prints only counts and the file hash. Each row is located by
+connection. The CLI rejects oversized or non-regular source files before
+parsing and refuses any output path inside a Git checkout, including through a
+symlinked parent. It retains only part, job-number, quantity, status,
+manufacturer, price and time **source text** in a mode-`0600` JSON file created
+once outside Git. The terminal prints only counts and the file hash. Each row is located by
 file hash plus data-row ordinal, **not** a claimed provider line ID.
 
 Aggregate read of the original: **1,687 rows**, all held; all 1,687 contain a
@@ -60,8 +62,9 @@ review and immutable retained receipt be designed. The existing five-facet
 CSV staging path remains available for such a source; this historical source
 must not be forced into that stricter contract by inventing IDs.
 
-Verification: three focused synthetic tests cover leading-zero job-number
-preservation, held provenance, wrong schema/hash, private file mode and no
-overwrite. A local aggregate-only read of the real original matched the
+Verification: five focused synthetic tests cover leading-zero job-number
+preservation, held provenance, wrong schema/hash, bounded source input, refusal
+of Git-checkout output, private file mode and no overwrite. A local
+aggregate-only read of the real original matched the
 archived SHA-256 and counts above; no private row data was logged or copied to
 the repository.

@@ -97,6 +97,44 @@ class ReviewLegacyPartsExportTest(unittest.TestCase):
             self.assertNotEqual(second.returncode, 0)
             self.assertEqual(output.read_text().count("Private part name"), 1)
 
+    def test_cli_rejects_output_in_git_checkout_including_symlinked_parent(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            checkout = root / "public-checkout"
+            checkout.mkdir()
+            (checkout / ".git").mkdir()
+            linked = root / "linked-checkout"
+            linked.symlink_to(checkout, target_is_directory=True)
+            manifest = root / "scope.json"
+            source = root / "parts.xls"
+            raw = raw_parts([part()])
+            manifest.write_text(json.dumps(scope(raw)))
+            source.write_bytes(raw)
+            for output in (checkout / "private.json", linked / "private.json",
+                           MODULE_PATH.parents[2] / "private.json"):
+                command = [sys.executable, str(MODULE_PATH), "--manifest", str(manifest),
+                           "--source", str(source), "--out", str(output)]
+                run = subprocess.run(command, capture_output=True, text=True)
+                self.assertNotEqual(run.returncode, 0)
+                self.assertIn("parts_private_output_outside_git_required", run.stderr)
+                self.assertFalse(output.exists())
+
+    def test_cli_rejects_oversized_source_before_parsing_or_output(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            manifest = root / "scope.json"
+            source = root / "oversized.xls"
+            output = root / "private.json"
+            manifest.write_text(json.dumps({**MANIFEST, "expected_sha256": "0" * 64}))
+            with source.open("wb") as file:
+                file.truncate(module.MAX_BYTES + 1)
+            command = [sys.executable, str(MODULE_PATH), "--manifest", str(manifest),
+                       "--source", str(source), "--out", str(output)]
+            run = subprocess.run(command, capture_output=True, text=True)
+            self.assertNotEqual(run.returncode, 0)
+            self.assertIn("parts_size_invalid", run.stderr)
+            self.assertFalse(output.exists())
+
 
 if __name__ == "__main__":
     unittest.main()

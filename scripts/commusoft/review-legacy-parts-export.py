@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import re
+import stat
 import uuid
 
 
@@ -29,6 +30,7 @@ RETAINED_COLUMNS = (
     "Cost Price", "Sale Price", "Requested Time", "Fulfilled Time",
 )
 MAX_BYTES = 5 * 1024 * 1024
+MAX_MANIFEST_BYTES = 4 * 1024
 MAX_ROWS = 20_000
 MAX_CELL = 4_000
 DECIMAL = re.compile(r"^-?\d{1,12}(?:\.\d{1,4})?$")
@@ -148,15 +150,39 @@ def review_parts_export_bytes(manifest, raw):
     }
 
 
+def _read_bounded_regular_file(path, limit, error_code):
+    with path.open("rb") as source:
+        if not stat.S_ISREG(os.fstat(source.fileno()).st_mode):
+            raise ValueError(error_code)
+        if os.fstat(source.fileno()).st_size > limit:
+            raise ValueError(error_code)
+        raw = source.read(limit + 1)
+        if len(raw) > limit:
+            raise ValueError(error_code)
+        return raw
+
+
+def _require_output_outside_git(path):
+    resolved = path.resolve(strict=False)
+    checkout = Path(__file__).resolve().parents[2]
+    if resolved == checkout or checkout in resolved.parents or any(
+        (parent / ".git").exists() for parent in resolved.parents
+    ):
+        raise ValueError("parts_private_output_outside_git_required")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
-    report = review_parts_export_bytes(json.loads(args.manifest.read_text(encoding="utf-8")),
-                                       args.source.read_bytes())
-    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    _require_output_outside_git(args.out)
+    manifest = json.loads(_read_bounded_regular_file(
+        args.manifest, MAX_MANIFEST_BYTES, "parts_manifest_size_invalid").decode("utf-8-sig"))
+    raw = _read_bounded_regular_file(args.source, MAX_BYTES, "parts_size_invalid")
+    report = review_parts_export_bytes(manifest, raw)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
     fd = os.open(args.out, flags, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as output:
         json.dump(report, output, ensure_ascii=False, indent=2)
