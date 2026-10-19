@@ -70,6 +70,12 @@ are potential source collections, but neither is a proven accepted Further Works
 quote, engineer visit or job invoice. These facets remain visibly unavailable
 until their exact source relationship is verified.
 
+The follow-on [visit source audit](NEW-DAWN-M2-VISIT-SOURCE-BOUNDARY.md)
+inspected archived Drummonds diary exports without copying them into Git. They
+have useful job-number and date evidence but no event-level source ID,
+timezone-aware start/end fields, or verified equality to the current v2 job ID.
+The visit facet therefore remains held under the CSV contract below.
+
 The released capture worker and SQL permit gates cover properties, property
 contacts and jobs. The next candidate adds the provider's documented `GET /users`
 as an **explicit, opt-in source collection** through those same tenant-scoped
