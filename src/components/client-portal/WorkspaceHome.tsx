@@ -22,10 +22,7 @@ export function WorkspaceHome(props: WorkspaceHomeProps) {
   const jobFirst = useJobFirstHomeFlag(tenant);
   if (jobFirst.data === true) return (
     <div className="cp-work-home cp-home-job-first">
-      <JobFirstHome tenant={tenant} operator={operatorAuthorised}
-        onOpenInformation={operatorAuthorised
-          ? () => window.location.assign(`/openfolk/${encodeURIComponent(tenant)}?module=information`)
-          : undefined} />
+      <JobFirstHome tenant={tenant} operator={operatorAuthorised} />
       <div className="cp-home-cards" aria-label="Other workspace areas">
         <button className="cp-home-card" onClick={() => open("receptionist")}>
           <Headphones size={24} /><h3>AI Receptionist</h3>
