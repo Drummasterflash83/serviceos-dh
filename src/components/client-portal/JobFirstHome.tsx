@@ -4,7 +4,7 @@ import { ArrowRight, BriefcaseBusiness, RefreshCw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOperatorHomePage, type HomeJob, type OperatorHomeJob } from "@/lib/new-dawn-job-home";
-import { readSourceHomePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientLabel, sourceJobLabel, sourceJobReviewCue, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
+import { readSourceHomePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
 import { parseExactTrialOffer, readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
@@ -121,13 +121,8 @@ function JobDetail({ tenant, job, source }: { tenant: string; job: HomeJob; sour
       <p>{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</p>
       {!job.verified && <p>Some job details are awaiting confirmation.</p>}
       <p>Saved record updated {checked(row.card.updatedAt)}. This may lag Commusoft.</p>
-      {source && <p>Source last captured {checked(source.source_observed_at)}. {source.source_state === "reviewed_latest" ? "The reviewed version is the latest unambiguous version retained by OpenFolk, not a live provider check." : "Saved details may have changed; OpenFolk needs to review the record before this status is relied on."}</p>}
-      <h3>Next step</h3><p>{source ? sourceJobReviewCue(source).kind === "link_review"
-        ? "Wait for OpenFolk to review the changed source link."
-        : sourceJobReviewCue(source).kind === "aged_observation"
-          ? "Ask OpenFolk to recheck this older source observation before acting on saved progress."
-          : `${homeJobAction(job)}. Confirm current progress before acting.`
-        : `${homeJobAction(job)}.`}</p>
+      {source && <p>OpenFolk saved this job information on {checked(source.source_observed_at)}. {source.source_state === "reviewed_latest" ? "This is the newest saved record OpenFolk can confirm, but it may not reflect current Commusoft progress." : "The saved details need checking before anyone relies on this status."}</p>}
+      <h3>Next step</h3><p>{source ? `${sourceJobClientAttention(source).nextStep}.` : `${homeJobAction(job)}.`}</p>
       {row.gaps.length > 0 && <p>OpenFolk is checking some of this job’s details. This job is not scored yet.</p>}
       <small>Evidence checked {checked(row.observedAt)}. This is saved information, not a live provider check or a score.</small>
     </div>
@@ -324,8 +319,8 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         <details><summary>About this view</summary><p>This is a limited saved selection, not a complete workload or live Commusoft status. Recorded on-hold, pending and open work leads; other recent jobs follow. Job ownership is not verified yet.</p></details>
       </div>}
       {!operator && clientSource.isSuccess && <div className="nd-job-scope">
-        <strong>{sourceJobs.length} reviewed jobs shown from {clientSource.data.reviewedJobCount} linked records</strong> · Latest source captured {latestSaved(clientSource.data.jobs.map((job) => job.source_observed_at))}
-        <details><summary>About this view</summary><p>These jobs have reviewed Commusoft links. This is a bounded saved selection, not a complete workload or live provider status. Other captured jobs still await identity review. Source changes and unconfirmed ownership stay visible; no score or assignment is inferred.</p></details>
+        <strong>{sourceJobs.length} saved jobs shown</strong> · Most recently saved {latestSaved(clientSource.data.jobs.map((job) => job.source_observed_at))}
+        <details><summary>About this view</summary><p>This is a limited selection from {clientSource.data.reviewedJobCount} jobs that OpenFolk has matched to saved Commusoft records. It is not the full workload or a live Commusoft check. Other jobs may be absent while their records are checked. Job ownership and scores are not confirmed.</p></details>
       </div>}
       {displayedOperatorJobs && <div className="nd-job-scope">
         <strong>{displayedOperatorJobs.length} saved jobs shown{operatorSourcePage ? ` from ${operatorSourcePage.reviewedJobCount} linked records` : ""}</strong> · {operatorSourcePage ? "Latest observation among shown jobs" : "Latest saved"} {latestSaved(operatorSourcePage ? operatorSourcePage.jobs.map((job) => job.source_observed_at) : displayedOperatorJobs.map((job) => job.fields.updated_at))}
@@ -333,7 +328,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         <details><summary>About this view</summary><p>This audited preview is a limited saved selection, not the full current workload or a staff login. Job cards can lag Commusoft; ownership and next actions still need source review.</p></details>
       </div>}
       {!operator && client.isSuccess && client.data.length === 0 && <p>No saved job records are visible yet. OpenFolk can check the connection and source review.</p>}
-      {!operator && clientSource.isSuccess && sourceJobs.length === 0 && <p>No reviewed, source-linked job records are visible yet. OpenFolk can check the saved source review.</p>}
+      {!operator && clientSource.isSuccess && sourceJobs.length === 0 && <p>No confirmed job records are visible yet. OpenFolk can check the saved jobs.</p>}
       <div className="nd-job-list">
         {!operator && authorisedClient && client.data?.map((job) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
           <BriefcaseBusiness size={20} />
@@ -344,7 +339,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         {!operator && sourceJobs.map(({ job, source }) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
           <BriefcaseBusiness size={20} />
           <span className="nd-job-main"><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job number not confirmed"}</strong><small>{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</small></span>
-          <span className="nd-job-review"><b>{homeJobState(job)}</b><small>{sourceJobClientLabel(source)} · {sourceJobReviewCue(source).label} · Captured {checked(source.source_observed_at)} · Assignee unconfirmed</small></span>
+          <span className="nd-job-review"><b>{sourceJobClientAttention(source).label}</b><small>{homeJobState(job)} · {sourceJobClientAttention(source).nextStep} · Saved {checked(source.source_observed_at)} · Next owner not confirmed</small></span>
           <ArrowRight size={17} />
         </button>)}
         {displayedOperatorJobs?.map((job) => <div key={job.id} className="nd-job-row">

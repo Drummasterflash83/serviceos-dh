@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readSourceHomePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientLabel, sourceJobLabel, sourceJobReviewCue } from "./new-dawn-source-job-home.ts";
+import { readSourceHomePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue } from "./new-dawn-source-job-home.ts";
 
 const tenant = "00000000-0000-0000-0000-000000000001";
 const actor = "00000000-0000-0000-0000-000000000002";
@@ -26,7 +26,6 @@ test("reads a bounded, audited tenant page without treating capture as current p
   assert.equal(page.reviewedJobCount, 42);
   assert.equal(page.jobs[0].fields.job_number, "001");
   assert.equal(sourceJobLabel(page.jobs[0]), "Source changed since this card was reviewed");
-  assert.equal(sourceJobClientLabel(page.jobs[0]), "Saved details need a record check");
   assert.deepEqual(sourceJobAsHomeJob(page.jobs[0], tenant), {
     id: job, tenant_id: tenant, job_number: "001", title: "Repair", status: "pending",
     verified: true, updated_at: "2026-10-16T07:57:49Z", customer: "Customer", site: "Site",
@@ -55,4 +54,19 @@ test("source review cues distinguish changed links, older captures and recent sa
   assert.equal(sourceJobReviewCue({ ...current, source_observed_at: "2026-10-19T08:00:00Z" }, now).kind, "recent_observation");
   assert.equal(sourceJobReviewCue({ ...current, source_observed_at: "2026-10-19T09:02:00Z" }, now).kind, "aged_observation");
   assert.match(sourceJobReviewCue(current, now).label, /progress unverified/);
+});
+
+test("client attention names the next check without exposing operator source-link language", () => {
+  const now = Date.parse("2026-10-19T09:00:00Z");
+  const current = { ...row, source_state: "reviewed_latest" as const };
+  const changed = sourceJobClientAttention(row, now);
+  assert.equal(changed.label, "Job details need checking");
+  assert.match(changed.nextStep, /Ask OpenFolk to confirm this job record/);
+  assert.deepEqual(sourceJobClientAttention({ ...row, source_state: "source_ambiguous" }, now), changed);
+  const older = sourceJobClientAttention({ ...current, source_observed_at: "2026-10-18T08:59:59Z" }, now);
+  assert.equal(older.label, "Current progress needs checking");
+  assert.match(older.nextStep, /Confirm current progress/);
+  const recent = sourceJobClientAttention(current, now);
+  assert.equal(recent.label, "Recorded progress needs confirming");
+  assert.equal(recent.nextStep, "Check what is holding this job");
 });
