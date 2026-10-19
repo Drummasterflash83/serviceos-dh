@@ -42,6 +42,7 @@ export function OperatorLearnInputs({
     [storageReady, setStorageReady] = useState(false),
     [notice, setNotice] = useState("");
   const [canWrite, setCanWrite] = useState<boolean | null>(null);
+  const [usersCaptureEnabled, setUsersCaptureEnabled] = useState<boolean | null>(null);
   const [slackOpen, setSlackOpen] = useState(false);
   const [quickbooksOpen, setQuickbooksOpen] = useState(false);
   const [recurringBlocked, setRecurringBlocked] = useState(false);
@@ -79,12 +80,18 @@ export function OperatorLearnInputs({
   }
   async function refresh(ticket: number) {
     setCanWrite(null);
-    const [d, permission] = await Promise.all([
+    setUsersCaptureEnabled(null);
+    const [d, permission, usersFlag] = await Promise.all([
       readOperatorInputs(db(), tenantId),
       readOperatorInputWriteAccess(db()),
+      getSupabaseClient().from("feature_flags").select("value")
+        .eq("tenant_id", tenantId)
+        .eq("flag", "learn.inputs.commusoft.users.enabled")
+        .maybeSingle(),
     ]);
     if (!current(ticket)) return;
     setCanWrite(permission);
+    setUsersCaptureEnabled(usersFlag.error ? null : usersFlag.data?.value === true);
     setData(d);
     setValues({
       "learn.enabled": d.flags["learn.enabled"] === true,
@@ -93,6 +100,11 @@ export function OperatorLearnInputs({
     setConnection((old) =>
       d.connections.some((c) => c.id === old) ? old : (d.connections[0]?.id ?? ""),
     );
+    if ((usersFlag.error || usersFlag.data?.value !== true) && resource === "users") {
+      setResource("properties");
+      setPages(10);
+      setPageSize(50);
+    }
   }
   async function operation(work: (ticket: number) => Promise<void>) {
     if (working.current) return;
@@ -126,6 +138,7 @@ export function OperatorLearnInputs({
     setBusy(false);
     setData(null);
     setCanWrite(null);
+    setUsersCaptureEnabled(null);
     setPending(null);
     setReason("");
     setApproved(false);
@@ -492,7 +505,7 @@ export function OperatorLearnInputs({
                     >
                       <option value="properties">Customers and work addresses</option>
                       <option value="jobs">Jobs</option>
-                      <option value="users" disabled>Source users (held for review)</option>
+                      <option value="users" disabled={usersCaptureEnabled !== true}>Source users (held for review)</option>
                       <option value="customer">Customer contacts</option>
                       <option value="workaddress">Work-address contacts</option>
                     </select>
@@ -601,6 +614,15 @@ export function OperatorLearnInputs({
                   must be reviewed before a new one can start. Captured contacts are available for
                   review and linking to existing people, customers and sites.
                 </p>
+                {usersCaptureEnabled !== true && (
+                  <p className="text-sm">Source-user capture is unavailable for this company. OpenFolk must
+                    review and enable its separate source-user setting before an import can be approved.</p>
+                )}
+                {resource === "users" && (
+                  <p className="text-sm">This reads one page of at most 10 Commusoft user records.
+                    They remain held source evidence: no person, engineer, appointment, or staff login
+                    is confirmed by this import.</p>
+                )}
                 {["customer", "workaddress"].includes(resource) && (
                   <p className="text-sm">
                     Contacts are read separately for each property in the last completed property
@@ -612,6 +634,7 @@ export function OperatorLearnInputs({
                   disabled={
                     disabled ||
                     !canStart ||
+                    (resource === "users" && usersCaptureEnabled !== true) ||
                     (updatedOnly && !updateWindowValid) ||
                     !approved ||
                     !reason.trim() ||
@@ -626,7 +649,8 @@ export function OperatorLearnInputs({
                     pageSize > 100
                   }
                   onClick={() => {
-                    if (selected && (!updatedOnly || updateWindowValid))
+                    if (selected && (resource !== "users" || usersCaptureEnabled === true) &&
+                        (!updatedOnly || updateWindowValid))
                       submit({
                         kind: "start_commusoft",
                         reason: reason.trim(),
