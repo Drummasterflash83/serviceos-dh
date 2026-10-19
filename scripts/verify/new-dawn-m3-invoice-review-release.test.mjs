@@ -45,6 +45,8 @@ test("read-only preflight inspects metadata without invoice values",async()=>{
 test("preflight and independent readback require exact catalog, grants and default-off flags",()=>{
   assert.equal(assess(before,false).state,"exact_m3_invoice_review_ready");
   assert.equal(assess(after,true).state,"installed_default_off_readback");
+  assert.equal(assess({...after,catalog:[{...after.catalog[0],invoice_preview_flags_on:1}]},
+    true,reviewedSource(),true).invoiceReviewFlagEnabled,true);
   for(const change of [
     {project:{...before.project,id:"wrong"}},
     {catalog:[{...catalog,client_flags_on:1}]},
