@@ -4,8 +4,11 @@ const exactKeys = (value: Record<string, unknown>, keys: string[]) =>
   Object.keys(value).sort().join("|") === [...keys].sort().join("|");
 const uuid = (value: unknown): value is string =>
   typeof value === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(value);
-const date = (value: unknown): value is string =>
-  typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
+const date = (value: unknown): value is string => {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = Date.parse(`${value}T00:00:00Z`);
+  return Number.isFinite(parsed) && new Date(parsed).toISOString().slice(0, 10) === value;
+};
 const decimal = (value: unknown): value is string =>
   typeof value === "string" && /^-?\d{1,40}(\.\d{1,10})?$/.test(value);
 const ageKeys = ["current", "age_1_30", "age_31_60", "age_61_90", "age_91_plus"] as const;
@@ -68,8 +71,26 @@ export type PublishedOwnerAccounts = {
   auditId: string;
 };
 
+/** Calendar coverage only; this does not certify when QuickBooks last changed. */
+export function ownerReportCoverage(report: PublishedOwnerAccounts, todayUtc: string) {
+  if (!date(todayUtc) || report.periodEnd > todayUtc) throw Error("owner_accounts_future_period");
+  return report.periodEnd.slice(0, 7) === todayUtc.slice(0, 7)
+    ? {
+        state: "current_month_snapshot" as const,
+        message: `The reviewed report reaches ${report.periodEnd}; later changes may not be included.`,
+      }
+    : {
+        state: "historical_period" as const,
+        message: `The reviewed report ends ${report.periodEnd}; current-month figures are not shown here.`,
+      };
+}
+
 /** Accept only the reviewed owner RPC envelope. Amounts remain decimal strings. */
-export function readPublishedOwnerAccounts(value: unknown, tenant: string): PublishedOwnerAccounts {
+export function readPublishedOwnerAccounts(
+  value: unknown,
+  tenant: string,
+  todayUtc = new Date().toISOString().slice(0, 10),
+): PublishedOwnerAccounts {
   if (!object(value)) throw Error("owner_accounts_invalid");
   const aged = value.aged_receivables;
   const field = value.field_gross_profit;
@@ -111,8 +132,10 @@ export function readPublishedOwnerAccounts(value: unknown, tenant: string): Publ
     !date(value.period_start) ||
     !date(value.period_end) ||
     !date(value.ar_as_of) ||
+    !date(todayUtc) ||
     value.period_start > value.period_end ||
     value.period_end !== value.ar_as_of ||
+    value.period_end > todayUtc ||
     !["Cash", "Accrual"].includes(String(value.accounting_method)) ||
     typeof value.currency !== "string" ||
     !/^[A-Z]{3}$/.test(value.currency) ||
