@@ -1,5 +1,6 @@
 import { quickBooksEdgePorts } from "../_shared/quickbooks/edge_ports.ts";
 import { runInvoiceCheck, validateInvoiceCheckRequest } from "../_shared/quickbooks/invoice_check.ts";
+import { invoiceCheckCorsOrigin } from "../_shared/quickbooks/invoice_origin.ts";
 const headers = { "Content-Type": "application/json", "Cache-Control": "no-store", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff" };
 const reply = (body: unknown, status: number, extra: Record<string, string> = {}) => new Response(JSON.stringify(body), { status, headers: { ...headers, ...extra } });
 Deno.serve(async (req: Request) => {
@@ -8,8 +9,9 @@ Deno.serve(async (req: Request) => {
   let site: string;
   try { const url = new URL(ports.siteOrigin); if (url.protocol !== "https:" || url.origin !== ports.siteOrigin) throw Error(); site = url.origin; }
   catch { return reply({ error: "configuration_unavailable" }, 503); }
-  const cors = { "Access-Control-Allow-Origin": site, "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info", "Access-Control-Allow-Methods": "POST, OPTIONS", Vary: "Origin" };
-  if (req.headers.has("origin") && req.headers.get("origin") !== site) return reply({ error: "origin_denied" }, 403);
+  const allowedOrigin = invoiceCheckCorsOrigin(site, req.headers.get("origin"));
+  if (allowedOrigin === null) return reply({ error: "origin_denied" }, 403);
+  const cors = { "Access-Control-Allow-Origin": allowedOrigin, "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info", "Access-Control-Allow-Methods": "POST, OPTIONS", Vary: "Origin" };
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: { ...headers, ...cors } });
   if (req.method !== "POST") return reply({ error: "method_not_allowed" }, 405, cors);
   const auth = req.headers.get("authorization");

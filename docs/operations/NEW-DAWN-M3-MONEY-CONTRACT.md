@@ -47,6 +47,11 @@ Installation and deployment do not run a check or change the money flag. An
 authorised OpenFolk platform operator signs in, selects the exact Drummonds
 tenant, and opens **OpenFolk → Modules → LEARN inputs → QuickBooks accounting
 connection → Invoice source check**. This panel is absent from the client home.
+The LIVE browser origin is `https://app.openfolk.ai`; the existing QuickBooks
+configuration names `https://www.openfolk.ai`. This route permits only those
+two exact HTTPS origins in LIVE. Other deployments retain their one configured
+origin. Origin acceptance does not replace the signed-in user and SQL operator
+checks.
 The operator chooses the confirmed production connection, enters a reason,
 loads the audited candidate list and selects **two or three current,
 nonconflicted retained Invoice version IDs from that same realm**. A checkbox
