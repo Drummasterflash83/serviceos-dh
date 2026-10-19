@@ -8,10 +8,12 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
 const base=readFileSync(resolve(root,'supabase/migrations/20261106120000_new_dawn_commusoft_job_detail_read.sql'),'utf8');
 const change=readFileSync(resolve(root,'supabase/migrations/20261107110000_new_dawn_commusoft_job_operational_facts.sql'),'utf8');
 const quote=readFileSync(resolve(root,'supabase/migrations/20261107140000_new_dawn_commusoft_job_source_quote.sql'),'utf8');
+const optional=readFileSync(resolve(root,'supabase/migrations/20261107150000_new_dawn_commusoft_job_optional_source_facts.sql'),'utf8');
 // Apply both additive sources inside one disposable transaction; TEST receives
 // no persistent migration, receipt, flag, user or Commusoft request.
 const migration=base.replace(/commit;\s*$/,'')+'\n'+change.replace(/\bbegin;/i,'').replace(/commit;\s*$/,'')
- +'\n'+quote.replace(/\bbegin;/i,'');
+ +'\n'+quote.replace(/\bbegin;/i,'').replace(/commit;\s*$/,'')
+ +'\n'+optional.replace(/\bbegin;/i,'');
 const fixture=`do $$declare x record;v public.learn_business_input_versions%rowtype;actor uuid;req uuid:=gen_random_uuid();got jsonb;raw text;queue_state text;
 begin
  select g.profile_id into actor from public.platform_authority_grants g
@@ -85,19 +87,26 @@ begin
  if (select state from public.new_dawn_commusoft_job_detail_reads where id=req)<>'claimed' then
   raise exception 'Wrong provider job changed request state';end if;
  begin
-  perform public.new_dawn_commusoft_job_detail_finish(req,
+  got:=public.new_dawn_commusoft_job_detail_finish(req,
    format('{"id":%s,"isJobOnHold":"false"}',x.external_id));
-  raise exception 'Wrong hold type admitted' using errcode='XX001';
- exception when sqlstate '22023' then null;end;
+  if got->>'version'<>'commusoft-exact-job-detail/4' or
+   got#>>'{source_operational_facts,isJobOnHold,state}'<>'source_unrecognized' or
+   got#>>'{source_operational_facts,isJobOnHold,value}' is not null then
+   raise exception 'Wrong hold type was coerced' using errcode='XX001';end if;
+  raise exception 'revert unsupported hold fixture';
+ exception when sqlstate 'P0001' then null;end;
  begin
-  perform public.new_dawn_commusoft_job_detail_finish(req,
+  got:=public.new_dawn_commusoft_job_detail_finish(req,
    format('{"id":%s,"quotedAmount":12.5}',x.external_id));
-  raise exception 'Numeric quote admitted' using errcode='XX001';
- exception when sqlstate '22023' then null;end;
+  if got#>>'{source_quoted_amount,state}'<>'source_unrecognized' or
+   got#>>'{source_quoted_amount,value}' is not null then
+   raise exception 'Numeric quote was coerced' using errcode='XX001';end if;
+  raise exception 'revert unsupported quote fixture';
+ exception when sqlstate 'P0001' then null;end;
  raw:=format('{"id":%s,"status":"Open","stageName":"Assigned","expectedOnsiteDateTime":"2026-10-20T08:00:00Z","usersCurrentlyAssignedToJob":[{"id":7,"fullName":"Synthetic Source User"}],"isJobOnHold":false,"hasSLA":true,"SLAStatus":null,"contractID":123,"quotedAmount":"001.25"}',x.external_id);
  got:=public.new_dawn_commusoft_job_detail_finish(req,raw);
  if got->>'request_id'<>req::text or got->>'job_id'<>x.canonical_id::text
-  or got->>'version'<>'commusoft-exact-job-detail/3'
+  or got->>'version'<>'commusoft-exact-job-detail/4'
   or got->'source_assigned_users'->0->>'source_user_id'<>'7'
   or got#>>'{source_operational_facts,isJobOnHold,state}'<>'present'
   or got#>>'{source_operational_facts,isJobOnHold,value}'<>'false'
@@ -122,6 +131,8 @@ begin
  exception when sqlstate '55000' then null;end;
  if public.new_dawn_commusoft_job_detail_current(req) then raise exception 'Complete TEST request remained current';end if;
 end$$;
+select encode(sha256(convert_to(pg_get_functiondef(to_regprocedure(
+ 'public.new_dawn_commusoft_job_detail_finish(uuid,text)')),'UTF8')),'hex') as candidate_function_sha256;
 rollback;`;
 const sql=migration.replace(/commit;\s*$/,()=>fixture);
 if(!sql.endsWith('rollback;'))throw Error('Fixture rollback fence missing');
@@ -131,10 +142,13 @@ const r=await fetch(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/databa
  body:JSON.stringify({query:sql,read_only:false})
 });
 if(!r.ok)throw Error(`TEST fixture HTTP ${r.status}: ${(await r.text()).slice(0,800)}`);
+const rows=await r.json();
+const candidate=Array.isArray(rows) ? rows.find(row=>/^[a-f0-9]{64}$/.test(row?.candidate_function_sha256??'')) : null;
+if(!candidate)throw Error('candidate_function_hash_unconfirmed');
 const after=await fetch(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/database/query/read-only`,{
  method:'POST',redirect:'error',signal:AbortSignal.timeout(30000),
  headers:{Authorization:`Bearer ${savedCliToken()}`,'Content-Type':'application/json'},
  body:JSON.stringify({query:"select to_regclass('public.new_dawn_commusoft_job_detail_reads') is null as absent"})
 });
 if(!after.ok || (await after.json())[0]?.absent!==true)throw Error('TEST fixture did not roll back');
-console.log(JSON.stringify({state:'rollback_only_fixture_passed'}));
+console.log(JSON.stringify({state:'rollback_only_fixture_passed',candidateFunctionSha256:candidate.candidate_function_sha256}));

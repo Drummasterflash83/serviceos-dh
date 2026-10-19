@@ -153,7 +153,7 @@ export async function runExactJobDetail(request: ExactJobDetailRequest, ports: {
     const finished = await ports.serviceRpc("new_dawn_commusoft_job_detail_finish", { p_request: request.requestId, p_raw: raw });
     if (finished.error || !object(finished.data) || finished.data.request_id !== request.requestId ||
       finished.data.job_id !== request.jobId || finished.data.source_version_id !== a.source_version_id ||
-      !["commusoft-exact-job-detail/2", "commusoft-exact-job-detail/3"].includes(String(finished.data.version))) {
+      !["commusoft-exact-job-detail/2", "commusoft-exact-job-detail/3", "commusoft-exact-job-detail/4"].includes(String(finished.data.version))) {
       ports.onRejectedShape?.(rejectedJobDetailShape(raw, a.external_id));
       throw Error("result_unconfirmed");
     }
