@@ -17,6 +17,12 @@ still leaves the 40-second in-flight lease expiry and the worker's existing
 180-second claim recovery. One manual waiter can take one turn before the source
 worker resumes.
 
+Each committed source page belongs to a unique job. When more pages remain,
+`learn_commusoft_finish_job` creates a distinct successor with `parent_job_id`
+pointing to the completed page's job. The page and permit guard therefore
+checks the currently claimed page only; a prior page on the parent does not
+block yielding the successor. The TEST fixture covers that lineage.
+
 The exact-job route keeps a long lease wait as a prepared request and returns a
 bounded `waiting` response with a retry time. Reusing the same request ID
 rechecks the actor, current source link, connection, flags and import guard.
@@ -34,7 +40,7 @@ returned to the client.
 Release order, only after separate review: first deploy the updated source
 worker, which accepts both the old wait response and the new classified one;
 then install unique M2 lease migration `20261106150000`, manual route migration
-`20261106160000`, and this migration `20261106170000`; then deploy the updated
+`20261106160000`, and this migration `20261106180000`; then deploy the updated
 exact-job and opportunity Edge routes; finally run a supervised one-read flag
 trial. The old `20261106140000` M2 filename must not be installed because
 QuickBooks already owns that version in the LIVE migration ledger. An old

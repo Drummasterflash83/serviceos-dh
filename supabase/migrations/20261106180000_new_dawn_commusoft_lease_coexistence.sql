@@ -88,6 +88,7 @@ end $patch$;
 -- Claimed source jobs yield the same page after a lease wait. This is not a
 -- failure: no attempt or error count is consumed, and the 60-second failure
 -- backoff does not apply. The caller must first prove there is no saved page.
+-- Each committed page has a unique job; a later page has a new successor job.
 create function public.learn_commusoft_yield_job(
  p_tenant uuid,p_job uuid,p_claimed_by text,p_attempt integer,p_retry_at timestamptz
 ) returns jsonb language plpgsql security definer set search_path=pg_catalog as $$

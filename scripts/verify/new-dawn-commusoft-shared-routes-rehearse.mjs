@@ -11,7 +11,7 @@ const files=[
  '20261106130000_new_dawn_commusoft_opportunities_probe.sql',
  '20261106150000_new_dawn_commusoft_shared_lease.sql',
  '20261106160000_new_dawn_commusoft_shared_lease_routes.sql',
- '20261106170000_new_dawn_commusoft_lease_coexistence.sql',
+ '20261106180000_new_dawn_commusoft_lease_coexistence.sql',
 ];
 const sql=files.map(name=>{
  const source=readFileSync(resolve(root,'supabase/migrations',name),'utf8');
@@ -22,7 +22,7 @@ const sql=files.map(name=>{
 const fixture=`do $$declare d text; result jsonb; fingerprint text:=repeat('b',64);
  x record; v public.learn_business_input_versions%rowtype; actor uuid;
  replay_id uuid:=gen_random_uuid();detail_id uuid:=gen_random_uuid();opportunity_id uuid:=gen_random_uuid();
- verification_id uuid:=gen_random_uuid();yield_id uuid:=gen_random_uuid();
+ verification_id uuid:=gen_random_uuid();yield_id uuid:=gen_random_uuid();parent_id uuid;
  prior_retry timestamptz; yielded jsonb;begin
  for d in select pg_get_functiondef(route::regprocedure) from unnest(array[
   'public.new_dawn_commusoft_job_detail_acquire(uuid)',
@@ -91,10 +91,19 @@ const fixture=`do $$declare d text; result jsonb; fingerprint text:=repeat('b',6
   where tenant_id=x.tenant_id and flag='learn.inputs.commusoft.enabled';
  if not found then insert into public.feature_flags(tenant_id,flag,value)
   values(x.tenant_id,'learn.inputs.commusoft.enabled','true'::jsonb);end if;
+ -- Every committed source page belongs to a unique job. The next page is a
+ -- distinct successor job, so a retained parent page must not block its yield.
+ select p.job_id into parent_id from public.learn_business_input_pages p
+  join public.learn_business_input_observations o on o.page_id=p.id
+  where p.tenant_id=x.tenant_id and o.version_id=x.source_version_id limit 1;
+ if parent_id is null then raise exception 'Later-page parent receipt missing';end if;
  insert into public.platform_jobs(id,tenant_id,connector_id,job_type,status,attempt_count,
-  claimed_by,lease_expires_at)
+  claimed_by,lease_expires_at,parent_job_id)
  values(yield_id,x.tenant_id,'commusoft','commusoft.source_sync','running',1,
-  'learn-commusoft:synthetic',clock_timestamp()+interval '2 minutes');
+  'learn-commusoft:synthetic',clock_timestamp()+interval '2 minutes',parent_id);
+ if not exists(select 1 from public.learn_business_input_pages where job_id=parent_id)
+  or exists(select 1 from public.learn_business_input_pages where job_id=yield_id)
+  then raise exception 'Later-page receipt lineage invalid';end if;
  yielded:=public.learn_commusoft_yield_job(x.tenant_id,yield_id,'learn-commusoft:synthetic',1,
   clock_timestamp()+interval '40 seconds');
  if yielded->>'status'<>'queued' or
