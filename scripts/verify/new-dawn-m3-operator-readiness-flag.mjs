@@ -289,9 +289,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   try {
     const mode = process.argv.slice(2).join(" "),
       allowed = process.env.NEW_DAWN_M3_ALLOW_PROJECT;
-    if (mode === "--live-read-only" && allowed === PROJECT)
-      console.log(JSON.stringify(assess(await readLive(), false)));
-    else if (mode === "--test-rollback-only" && allowed === TEST_PROJECT)
+    if (mode === "--live-read-only" && allowed === PROJECT) {
+      const snapshot = await readLive();
+      const observed = snapshot.global?.[0]?.drummonds_enabled;
+      if (observed !== 0 && observed !== 1) throw Error("m3_operator_flag_count_changed");
+      console.log(JSON.stringify(assess(snapshot, observed === 1)));
+    } else if (mode === "--test-rollback-only" && allowed === TEST_PROJECT)
       console.log(JSON.stringify(await rehearseTest()));
     else if (mode === "--live-enable-drummonds-operator-only" && allowed === PROJECT)
       console.log(JSON.stringify(await switchLive(true)));
