@@ -18,6 +18,20 @@ export interface ExactJobDetail {
   providerUpdatedAt: string | null;
   sourceUsers: { id: string; name: string }[];
 }
+export interface ExactTrialOffer { requestId: string; expiresAt: string }
+export function parseExactTrialOffer(value: unknown, scope: {
+  tenant: string; job: string; actor: string; sourceVersion: string; externalId: string;
+}, now = Date.now()): ExactTrialOffer | null {
+  if (value === null) return null;
+  if (!object(value) || !uuid(value.request_id) ||
+    value.tenant_id !== scope.tenant || value.job_id !== scope.job ||
+    value.actor_id !== scope.actor || value.source_version_id !== scope.sourceVersion ||
+    value.external_id !== scope.externalId || typeof value.expires_at !== "string" ||
+    !Number.isFinite(Date.parse(value.expires_at)) || Date.parse(value.expires_at) <= now ||
+    Date.parse(value.expires_at) > now + 10 * 60_000)
+    throw Error("Exact job trial offer could not be verified.");
+  return { requestId: value.request_id, expiresAt: value.expires_at };
+}
 export function parseExactJobDetail(value: unknown, scope: {
   tenant: string; job: string; request: string; sourceVersion: string; externalId: string;
 }): ExactJobDetail {
@@ -52,11 +66,13 @@ export function parseExactJobDetail(value: unknown, scope: {
 export async function readExactJobDetail(
   client: { functions: { invoke: (name: string, options: { body: Record<string, string> }) => PromiseLike<{ data: unknown; error: unknown }> } },
   tenant: string, job: string, sourceVersion: string, externalId: string, reason: string,
+  preselectedRequestId?: string,
 ): Promise<ExactJobDetail> {
   if (!uuid(tenant) || !uuid(job) || !uuid(sourceVersion) || !/^[1-9][0-9]{0,15}$/.test(externalId) ||
-    reason.trim().length < 3 || reason.trim().length > 500)
+    reason.trim().length < 3 || reason.trim().length > 500 ||
+    (preselectedRequestId !== undefined && !uuid(preselectedRequestId)))
     throw Error("Current job detail could not be requested.");
-  const request = crypto.randomUUID();
+  const request = preselectedRequestId ?? crypto.randomUUID();
   const { data, error } = await client.functions.invoke("learn-commusoft-job-detail", {
     body: { tenantId: tenant, jobId: job, requestId: request, reason: reason.trim() },
   });

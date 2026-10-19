@@ -43,8 +43,9 @@ $$;
 revoke all on function public.new_dawn_commusoft_job_trial_current(uuid,uuid,uuid,uuid,uuid,boolean)
  from public,anon,authenticated,service_role;
 
--- Called only by the release service identity after the exact reviewed scope
--- and a signed-in operator have been selected. This is not a browser RPC.
+-- Called only by the existing postgres management release session after the
+-- exact reviewed scope and signed-in operator have been selected. This is not
+-- a browser or service-role RPC; no synthetic JWT is needed to arm it.
 create function public.new_dawn_commusoft_job_trial_arm(
  p_tenant uuid,p_job uuid,p_actor uuid,p_request uuid,p_version uuid,
  p_expires_at timestamptz,p_reason text
@@ -52,7 +53,7 @@ create function public.new_dawn_commusoft_job_trial_arm(
 declare cid uuid;vid uuid;external text;link_count integer;j public.jobs%rowtype;
  latest public.learn_business_input_versions%rowtype;
 begin
- if auth.role() is distinct from 'service_role' or p_request is null or
+ if session_user is distinct from 'postgres' or p_request is null or
   p_reason is null or length(btrim(p_reason)) not between 3 and 500 or
   p_expires_at is null or not isfinite(p_expires_at) or
   p_expires_at<=clock_timestamp()+interval '30 seconds' or
@@ -93,7 +94,7 @@ begin
  values(p_request,p_tenant,p_job,p_actor,cid,vid,external,btrim(p_reason),p_expires_at);
  insert into public.controlplane_change_log
  (id,tenant_id,actor,action,resource_type,resource_id,after,reason,correlation_id,view_as_active,source)
- values(gen_random_uuid(),p_tenant,'service_role','client_jobs.provider_detail_trial_armed',
+ values(gen_random_uuid(),p_tenant,'postgres_release','client_jobs.provider_detail_trial_armed',
   'jobs',p_job::text,jsonb_build_object('request_id',p_request,'operator_id',p_actor,
    'connection_id',cid,'source_version_id',vid,'expires_at',p_expires_at),
   btrim(p_reason),p_request::text,false,'new-dawn-commusoft-job-trial');
@@ -104,7 +105,7 @@ create function public.new_dawn_commusoft_job_trial_disarm(p_request uuid,p_reas
 returns void language plpgsql security definer set search_path=pg_catalog as $$
 declare p public.new_dawn_commusoft_job_trial_permits%rowtype;
 begin
- if auth.role() is distinct from 'service_role' or p_reason is null or
+ if session_user is distinct from 'postgres' or p_reason is null or
   length(btrim(p_reason)) not between 3 and 500 then
   raise exception 'job_trial_invalid' using errcode='22023';end if;
  select * into p from public.new_dawn_commusoft_job_trial_permits
@@ -114,9 +115,31 @@ begin
   where request_id=p_request;
  insert into public.controlplane_change_log
  (id,tenant_id,actor,action,resource_type,resource_id,after,reason,correlation_id,view_as_active,source)
- values(gen_random_uuid(),p.tenant_id,'service_role','client_jobs.provider_detail_trial_disarmed',
+ values(gen_random_uuid(),p.tenant_id,'postgres_release','client_jobs.provider_detail_trial_disarmed',
   'jobs',p.job_id::text,jsonb_build_object('request_id',p_request),btrim(p_reason),
   p_request::text,false,'new-dawn-commusoft-job-trial');
+end $$;
+
+-- Only the signed-in intended operator can discover the single live request
+-- UUID in the job UI. No direct table SELECT grant, provider data or key.
+create function public.new_dawn_commusoft_job_trial_offer(p_tenant uuid,p_job uuid)
+returns jsonb language plpgsql security definer set search_path=pg_catalog as $$
+declare actor uuid:=auth.uid();p public.new_dawn_commusoft_job_trial_permits%rowtype;
+begin
+ if auth.role() is distinct from 'authenticated' or actor is null or
+  p_tenant is null or p_job is null then
+  raise exception 'job_trial_forbidden' using errcode='42501';end if;
+ perform public.learn_operator_input_access(p_tenant,actor,true);
+ perform public.new_dawn_commusoft_job_actor_access(p_tenant,actor);
+ select * into p from public.new_dawn_commusoft_job_trial_permits t
+  where t.tenant_id=p_tenant and t.job_id=p_job and t.actor_id=actor
+   and public.new_dawn_commusoft_job_trial_current(t.tenant_id,t.job_id,t.actor_id,
+    t.request_id,t.source_version_id,false)
+  order by t.armed_at desc limit 1;
+ if not found then return null;end if;
+ return jsonb_build_object('request_id',p.request_id,'tenant_id',p.tenant_id,
+  'job_id',p.job_id,'actor_id',p.actor_id,'source_version_id',p.source_version_id,
+  'external_id',p.external_id,'expires_at',p.expires_at);
 end $$;
 
 -- Change only the exact-job queue guard; the opportunity and connection
@@ -171,8 +194,8 @@ do $patch$ declare d text;old text;replacement text;begin
 end $patch$;
 
 revoke all on function public.new_dawn_commusoft_job_trial_arm(uuid,uuid,uuid,uuid,uuid,timestamptz,text),
- public.new_dawn_commusoft_job_trial_disarm(uuid,text)
+ public.new_dawn_commusoft_job_trial_disarm(uuid,text),
+ public.new_dawn_commusoft_job_trial_offer(uuid,uuid)
  from public,anon,authenticated,service_role;
-grant execute on function public.new_dawn_commusoft_job_trial_arm(uuid,uuid,uuid,uuid,uuid,timestamptz,text),
- public.new_dawn_commusoft_job_trial_disarm(uuid,text) to service_role;
+grant execute on function public.new_dawn_commusoft_job_trial_offer(uuid,uuid) to authenticated;
 commit;
