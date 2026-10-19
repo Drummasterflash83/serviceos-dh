@@ -25,9 +25,10 @@ AGE_SHA256 = {
     ('Darwin', 'arm64'): '4012dfc2725883beafb710894af4f599b7a94f8c8e0f51f02cc96ab8df33915e',
     ('Linux', 'aarch64'): '41b072352f4561018949623c674d16ef704019b9108a9bbdbd21292efebfc94f',
 }.get((platform.system(), platform.machine()))
-MAX_BYTES = 2 * 1024 ** 3
+MAX_BYTES = 3 * 1024 ** 3
 MAX_JSON = 8 * 1024 ** 2
 MAX_DIAGNOSTIC_INPUT_BYTES = 1024 ** 4
+PACKAGE_DISK_RESERVE = 512 * 1024 ** 2
 FILES = ('database.dump', 'net-tables.sql', 'source-inventory.json', 'report.json',
          'restore-native-comparison-report.json', 'vault-recovery-report.json')
 FORMAT = 'serviceos-database-package/1'
@@ -60,6 +61,18 @@ def package_input_bytes(source, files):
         return total
     except OSError:
         return None
+
+
+def require_package_disk_capacity(source, destination, files):
+    """Bound the peak staging, tar and ciphertext copies before creating any."""
+    total = package_input_bytes(source, files)
+    need(total is not None and total > 0, 'regular_file_required')
+    need(total < MAX_BYTES - MAX_JSON, 'package_size_invalid')
+    stats = os.statvfs(destination)
+    available = stats.f_bavail * stats.f_frsize
+    need(available >= 3 * total + PACKAGE_DISK_RESERVE,
+         'disk_capacity_insufficient')
+    return total
 
 
 def need(ok, code):
@@ -233,6 +246,7 @@ def package_snapshot(source, output, *, recipient, revision, age, format_version
         need(re.fullmatch(r'age1[0-9a-z]{58}', recipient) is not None, 'recipient_invalid')
         need(re.fullmatch(r'[0-9a-f]{40}', revision) is not None, 'revision_invalid')
         files = package_files(format_version)
+        require_package_disk_capacity(source, output.parent, files)
         with tempfile.TemporaryDirectory(prefix='.database-package-', dir=output.parent) as temp:
             work = Path(temp)
             stage = work / 'source'

@@ -10,7 +10,7 @@ export const databaseBackupBinding = Object.freeze({
   prefix: "projects/tgbnakbxwcqjeimygroz/",
 });
 // Bounded room for current whole-project growth; S3 uses a single PUT (<5 GiB).
-export const MAX_DATABASE_PACKAGE_BYTES = 2 * 1024 ** 3;
+export const MAX_DATABASE_PACKAGE_BYTES = 3 * 1024 ** 3;
 const b = databaseBackupBinding;
 const ref = (name) => ({ Ref: name });
 const arn = `arn:aws:s3:::${b.bucket}`;

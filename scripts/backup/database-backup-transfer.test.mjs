@@ -8,7 +8,7 @@ import { fixture } from "./test-support/s3-fixture.mjs";
 import { databaseBackupBinding as binding } from "./database-backup-template.mjs";
 import { MAX_DATABASE_PACKAGE_BYTES } from "./database-backup-template.mjs";
 import { createDatabaseS3 } from "./recording-backup-s3.mjs";
-import { uploadDatabasePackage, downloadDatabasePackage } from "./database-backup-transfer.mjs";
+import { uploadDatabasePackage, downloadDatabasePackage, hasDownloadCapacity } from "./database-backup-transfer.mjs";
 const sha = (b) => createHash("sha256").update(b).digest("hex");
 
 async function setup(t) {
@@ -97,11 +97,20 @@ test("failed download leaves no partial artifact and modified descriptor is reje
   await assert.rejects(stat(downloaded), { code: "ENOENT" });
 });
 
-test("database package remains bounded at two GiB before any storage request", async (t) => {
+test("database package remains bounded at three GiB before any storage request", async (t) => {
   const { path, descriptor, f } = await setup(t);
+  assert.equal(MAX_DATABASE_PACKAGE_BYTES, 3 * 1024 ** 3);
   await assert.rejects(uploadDatabasePackage(path,
     { ...descriptor, bytes: MAX_DATABASE_PACKAGE_BYTES + 1 }, f));
   assert.equal(f.calls.length, 0);
+});
+
+test("independent download reserves one ciphertext plus filesystem headroom", () => {
+  const bytes = 2_274_014_810;
+  const required = bytes + 512 * 1024 ** 2;
+  assert.equal(hasDownloadCapacity(required, bytes), true);
+  assert.equal(hasDownloadCapacity(required - 1, bytes), false);
+  assert.equal(hasDownloadCapacity(Number.MAX_SAFE_INTEGER + 1, bytes), false);
 });
 
 test("database factory requires exact account and identity path; foreign keys never reach SDK", async () => {

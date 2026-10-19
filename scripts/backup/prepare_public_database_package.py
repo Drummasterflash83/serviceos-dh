@@ -22,7 +22,8 @@ SAFE_PACKAGE_ERRORS = frozenset({
     'source_archive_changed', 'output_already_exists', 'recipient_invalid',
     'revision_invalid', 'package_size_invalid', 'age_binary_pin_mismatch',
     'age_binary_unavailable', 'age_operation_failed', 'age_operation_timeout', 'disk_full',
-    'permission_denied', 'source_missing', 'package_preparation_failed',
+    'permission_denied', 'source_missing', 'disk_capacity_insufficient',
+    'package_preparation_failed',
 })
 
 
