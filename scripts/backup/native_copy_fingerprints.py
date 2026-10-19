@@ -25,7 +25,9 @@ MAX_LINE = 64 * 1024 * 1024
 MAX_ROWS_PER_TABLE = 20_000_000
 HASH_RUN_ROWS = 100_000
 MAX_TABLES = 1000
-MAX_BYTES = 8 * 1024 * 1024 * 1024
+# LIVE's table data plus TOAST is already about 8 GB before PostgreSQL text
+# COPY encoding. This is a streaming byte ceiling, not an in-memory buffer.
+MAX_BYTES = 32 * 1024 * 1024 * 1024
 
 
 def flush_hash_run(current):
@@ -82,8 +84,12 @@ def copy_fingerprints(stream):
             if not raw:
                 break
             total += len(raw)
-            if len(raw) > MAX_LINE or total > MAX_BYTES or not raw.endswith(b'\n'):
-                raise RecoveryError('Native COPY stream exceeds bound or is truncated')
+            if len(raw) > MAX_LINE:
+                raise RecoveryError('Native COPY line exceeds bound')
+            if total > MAX_BYTES:
+                raise RecoveryError('Native COPY stream exceeds total bound')
+            if not raw.endswith(b'\n'):
+                raise RecoveryError('Native COPY line is truncated')
             if current is not None:
                 if raw == b'\\.\n':
                     current['sha256'] = multiset_digest(current)
