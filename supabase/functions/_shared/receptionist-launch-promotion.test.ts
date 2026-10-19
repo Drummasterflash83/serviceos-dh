@@ -139,6 +139,18 @@ test("promotion refuses missing or ambiguous emergency fallback routes and helpe
   }
 });
 
+test("emergency continuation states ordered cross-cover, one 603 fallback and truthful delivery limits", () => {
+  const contract = EMERGENCY_CONTINUATION_CONTRACT;
+  assert.match(contract, /Commercial: attempt Rob 109 first, then Tony 105 once only after an explicit failure/);
+  assert.match(contract, /Domestic: attempt Tony 105 first, then Rob 109 once only after an explicit failure/);
+  assert.match(contract, /If both engineer attempts fail.*shared emergency mailbox 603 destination once/);
+  assert.match(contract, /voicemail greeting is not human acceptance/);
+  for (const proof of ["rob@drummondheating.co.uk", "tony@drummondheating.co.uk", "#ai-emma Slack alert"])
+    assert.ok(contract.includes(proof), proof);
+  assert.match(contract, /Never claim an engineer answered, a voicemail was deposited, either email was delivered, a Slack alert was sent/);
+  assert.match(contract, /do not delay immediate emergency action/);
+});
+
 test("5xx after an applied PATCH is reconciled by read-back without retry", async () => {
   const f = await fixture(); f.state.patchMode = "applied500";
   assert.equal((await f.execute()).state, "applied");
