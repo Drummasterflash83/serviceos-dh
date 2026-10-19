@@ -4,7 +4,7 @@ import { ArrowRight, BriefcaseBusiness, RefreshCw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOperatorHomePage, type HomeJob, type OperatorHomeJob } from "@/lib/new-dawn-job-home";
-import { readSourceHomePage, sourceJobAsHomeJob, sourceJobClientLabel, sourceJobLabel, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
+import { readSourceHomePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientLabel, sourceJobLabel, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
 import { readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
@@ -39,15 +39,15 @@ export function useJobFirstHomeFlag(tenant: string) {
   });
 }
 
-function useSourceJobHomeFlag(tenant: string) {
+function useSourceJobHomeFlag(tenant: string, operator: boolean) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["new-dawn-source-job-home-flag", user?.id, tenant],
+    queryKey: ["new-dawn-source-job-home-flag", user?.id, tenant, operator],
     enabled: !!user && isUuid(tenant),
     queryFn: async () => {
       const { data, error } = await getSupabaseClient().from("feature_flags")
         .select("value").eq("tenant_id", tenant)
-        .eq("flag", "new_dawn.source_job_home").maybeSingle();
+        .eq("flag", sourceHomeFlagName(operator)).maybeSingle();
       if (error) throw Error("Source-backed job home flag unavailable.");
       return data?.value === true;
     },
@@ -217,7 +217,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
   const [operatorError, setOperatorError] = useState("");
   const [operatorBusy, setOperatorBusy] = useState(false);
   useEffect(() => { setSelected(null); setSelectedOperator(null); setOperatorPage(null); setOperatorSourcePage(null); }, [tenant, user?.id]);
-  const sourceFlag = useSourceJobHomeFlag(tenant);
+  const sourceFlag = useSourceJobHomeFlag(tenant, operator);
   const authorisedClient = !operator && !!user && profile?.tenant_id === tenant && canSeeCompanyJobs(profile.role);
   const client = useQuery({
     queryKey: ["new-dawn-job-home", user?.id, tenant],
@@ -261,7 +261,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         {operator && onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Browse captured source jobs</button>}
       </div>
       {operator && <div className={`nd-operator-preview${displayedOperatorJobs ? " nd-operator-preview--active" : ""}`}>
-        <strong>{displayedOperatorJobs ? "Drummonds MD layout · read-only" : "View as Drummonds MD · read-only preview"}</strong>
+        <strong>{displayedOperatorJobs ? "Drummonds job home · OpenFolk read-only preview" : "Review Drummonds job home · OpenFolk read-only"}</strong>
         {displayedOperatorJobs ? <>
           <p>You are still signed in as OpenFolk. This job read was logged.</p>
           <button className="cp-secondary" onClick={() => { setSelectedOperator(null); setOperatorPage(null); setOperatorSourcePage(null); }}>Change access reason</button>

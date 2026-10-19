@@ -10,6 +10,10 @@ export type SourceHomePage = {
   jobs: SourceHomeJob[];
 };
 
+export function sourceHomeFlagName(operator: boolean) {
+  return operator ? "new_dawn.source_job_home.operator_preview" : "new_dawn.source_job_home";
+}
+
 const uuid = (value: unknown): value is string =>
   typeof value === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(value);
 const object = (value: unknown): value is Record<string, unknown> =>
