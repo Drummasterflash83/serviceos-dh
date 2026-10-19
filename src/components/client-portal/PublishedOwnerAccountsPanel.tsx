@@ -134,6 +134,46 @@ export function PublishedOwnerAccountsPanel({
               </dd>
             </div>
           </dl>
+          <section className="nd-money-attention" aria-label="Saved receivables ageing">
+            <h3>Receivables on the saved report</h3>
+            <p>
+              QuickBooks Online · as of {report.arAsOf}. This is a dated company report, not a live
+              balance or a list of invoices to chase.
+            </p>
+            <dl className="nd-money-values">
+              <div>
+                <dt>Total on this report</dt>
+                <dd>
+                  <strong>{financeAmount(report.receivables.total, report.currency)}</strong>
+                </dd>
+              </div>
+            </dl>
+            <details className="mt-3 text-sm">
+              <summary className="cursor-pointer">See the five ageing groups</summary>
+              <dl className="mt-2 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2">
+                <dt>Current</dt>
+                <dd className="min-w-0 break-all text-right">
+                  {financeAmount(report.receivables.current, report.currency)}
+                </dd>
+                <dt>1–30 days</dt>
+                <dd className="min-w-0 break-all text-right">
+                  {financeAmount(report.receivables.days1To30, report.currency)}
+                </dd>
+                <dt>31–60 days</dt>
+                <dd className="min-w-0 break-all text-right">
+                  {financeAmount(report.receivables.days31To60, report.currency)}
+                </dd>
+                <dt>61–90 days</dt>
+                <dd className="min-w-0 break-all text-right">
+                  {financeAmount(report.receivables.days61To90, report.currency)}
+                </dd>
+                <dt>91 days and over</dt>
+                <dd className="min-w-0 break-all text-right">
+                  {financeAmount(report.receivables.days91Plus, report.currency)}
+                </dd>
+              </dl>
+            </details>
+          </section>
           <p className="nd-money-scope">
             Field gross profit is held until job costs and links are verified. Annual recurring
             revenue is held until recurring contracts and periods are verified.
