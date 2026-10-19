@@ -4,6 +4,7 @@ import { source, VERSION, NAME, LIVE_PROJECT } from "./new-dawn-m5-ledger-reconc
 import {
   assessAudit,
   assessScope,
+  assessWithdrawalScope,
   FLAG,
   flagSql,
   rehearseLiveRollback,
@@ -196,4 +197,9 @@ test("disable allows one retained receipt but validates exact audit", async () =
   assert.throws(() =>
     assessAudit({ audit: [{ ...audit(false), actor: "other" }] }, auditId, false),
   );
+  const drifted = fixture(true, 1);
+  drifted.functions[0].version = 999;
+  drifted.flags[0].active_import = true;
+  drifted.flags[0].active_probe = true;
+  assert.equal(assessWithdrawalScope(drifted, true).flagEnabled, true);
 });

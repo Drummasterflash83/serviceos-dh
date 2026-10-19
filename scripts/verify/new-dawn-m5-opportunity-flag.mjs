@@ -128,6 +128,32 @@ export function assessScope(snapshot, on, { beforeFirst = false } = {}) {
   };
 }
 
+/** Withdrawal remains possible if the source runtime or queue changed mid-trial. */
+export function assessWithdrawalScope(snapshot, on) {
+  const f = snapshot?.flags?.[0];
+  if (
+    typeof on !== "boolean" ||
+    snapshot?.project?.id !== LIVE_PROJECT ||
+    snapshot.project.status !== "ACTIVE_HEALTHY" ||
+    snapshot.flags?.length !== 1 ||
+    !f ||
+    f.flag_rows !== 1 ||
+    f.enabled_global !== Number(on) ||
+    f.enabled_tenant !== Number(on) ||
+    f.other_rows !== 0 ||
+    f.audit_guards !== 2
+  )
+    throw Error("m5_flag_withdraw_scope_changed");
+  return {
+    state: on ? "drummonds_operator_source_trial_on" : "opportunity_source_trial_off",
+    project: LIVE_PROJECT,
+    tenant: TENANT,
+    flagEnabled: on,
+    receiptCount: f.receipt_count,
+    providerRequests: 0,
+  };
+}
+
 export function assessAudit(snapshot, auditId, on) {
   const a = snapshot?.audit?.[0];
   if (
@@ -231,7 +257,8 @@ export async function switchLive(
   } = {},
 ) {
   if (typeof on !== "boolean" || !uuid(auditId)) throw Error("m5_flag_invalid_action");
-  assessScope(await read(token, null), !on, { beforeFirst: on });
+  if (on) assessScope(await read(token, null), false, { beforeFirst: true });
+  else assessWithdrawalScope(await read(token, null), true);
   if (on) await verifyCatalog(token);
   const writer = write ?? ((sql) => management("/database/query", sql, token, false));
   let acknowledged = false;
@@ -246,7 +273,9 @@ export async function switchLive(
   let result;
   try {
     const after = await read(token, auditId);
-    result = assessScope(after, on, { beforeFirst: on });
+    result = on
+      ? assessScope(after, true, { beforeFirst: true })
+      : assessWithdrawalScope(after, false);
     assessAudit(after, auditId, on);
   } catch {
     throw Error("m5_flag_outcome_unverified_no_replay");
