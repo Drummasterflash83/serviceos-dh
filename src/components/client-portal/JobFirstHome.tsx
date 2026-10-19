@@ -4,6 +4,7 @@ import { ArrowRight, BriefcaseBusiness, RefreshCw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOperatorHomePage, type HomeJob, type OperatorHomeJob } from "@/lib/new-dawn-job-home";
+import { readSourceHomePage, sourceJobAsHomeJob, sourceJobClientLabel, sourceJobLabel, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
 import { readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
@@ -36,6 +37,30 @@ export function useJobFirstHomeFlag(tenant: string) {
     },
     staleTime: 30_000,
   });
+}
+
+function useSourceJobHomeFlag(tenant: string) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["new-dawn-source-job-home-flag", user?.id, tenant],
+    enabled: !!user && isUuid(tenant),
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().from("feature_flags")
+        .select("value").eq("tenant_id", tenant)
+        .eq("flag", "new_dawn.source_job_home").maybeSingle();
+      if (error) throw Error("Source-backed job home flag unavailable.");
+      return data?.value === true;
+    },
+    staleTime: 30_000,
+  });
+}
+
+async function sourceHome(tenant: string, actor: string, reason?: string): Promise<SourceHomePage> {
+  const { data, error } = await getSupabaseClient().rpc("new_dawn_source_job_home", {
+    p_tenant: tenant, p_reason: reason ?? null,
+  }).abortSignal(AbortSignal.timeout(15_000));
+  if (error) throw Error("Source-backed job home unavailable.");
+  return readSourceHomePage(data, tenant, actor);
 }
 
 async function clientJobs(tenant: string): Promise<HomeJob[]> {
@@ -75,7 +100,7 @@ async function clientJobs(tenant: string): Promise<HomeJob[]> {
   })));
 }
 
-function JobDetail({ tenant, job }: { tenant: string; job: HomeJob }) {
+function JobDetail({ tenant, job, source }: { tenant: string; job: HomeJob; source?: SourceHomeJob }) {
   const detail = useQuery<LearnCardDetail>({
     queryKey: ["new-dawn-job-detail", tenant, job.id],
     queryFn: () => readLearnCardDetail(getSupabaseClient(), tenant, "job", job.id),
@@ -90,7 +115,8 @@ function JobDetail({ tenant, job }: { tenant: string; job: HomeJob }) {
       <p>{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</p>
       {!job.verified && <p>Some job details are awaiting confirmation.</p>}
       <p>Saved record updated {checked(row.card.updatedAt)}. This may lag Commusoft.</p>
-      <h3>Next step</h3><p>{homeJobAction(job)}.</p>
+      {source && <p>Source last captured {checked(source.source_observed_at)}. {source.source_state === "reviewed_latest" ? "The reviewed version is the latest unambiguous version retained by OpenFolk, not a live provider check." : "Saved details may have changed; OpenFolk needs to review the record before this status is relied on."}</p>}
+      <h3>Next step</h3><p>{source && source.source_state !== "reviewed_latest" ? "Wait for OpenFolk to check the changed source record." : `${homeJobAction(job)}.`}</p>
       {row.gaps.length > 0 && <p>OpenFolk is checking some of this job’s details. This job is not scored yet.</p>}
       <small>Evidence checked {checked(row.observedAt)}. This is saved information, not a live provider check or a score.</small>
     </div>
@@ -187,25 +213,38 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
   const [selectedOperator, setSelectedOperator] = useState<OperatorHomeJob | null>(null);
   const [reason, setReason] = useState("");
   const [operatorPage, setOperatorPage] = useState<OperatorHomeJob[] | null>(null);
+  const [operatorSourcePage, setOperatorSourcePage] = useState<SourceHomePage | null>(null);
   const [operatorError, setOperatorError] = useState("");
   const [operatorBusy, setOperatorBusy] = useState(false);
-  useEffect(() => { setSelected(null); setSelectedOperator(null); setOperatorPage(null); }, [tenant, user?.id]);
+  useEffect(() => { setSelected(null); setSelectedOperator(null); setOperatorPage(null); setOperatorSourcePage(null); }, [tenant, user?.id]);
+  const sourceFlag = useSourceJobHomeFlag(tenant);
+  const authorisedClient = !operator && !!user && profile?.tenant_id === tenant && canSeeCompanyJobs(profile.role);
   const client = useQuery({
     queryKey: ["new-dawn-job-home", user?.id, tenant],
-    enabled: !operator && !!user && profile?.tenant_id === tenant && canSeeCompanyJobs(profile.role),
+    enabled: authorisedClient && sourceFlag.isSuccess && sourceFlag.data === false,
     queryFn: () => clientJobs(tenant),
     staleTime: 30_000,
   });
-  const authorisedClient = !operator && !!user && profile?.tenant_id === tenant && canSeeCompanyJobs(profile.role);
+  const clientSource = useQuery({
+    queryKey: ["new-dawn-source-job-home", user?.id, tenant],
+    enabled: authorisedClient && sourceFlag.data === true,
+    queryFn: () => sourceHome(tenant, user!.id),
+    staleTime: 30_000,
+  });
+  const sourceJobs = clientSource.data?.jobs.map((row) => ({ job: sourceJobAsHomeJob(row, tenant), source: row })) ?? [];
+  const displayedOperatorJobs = operatorSourcePage?.jobs ?? operatorPage;
   async function loadOperatorJobs() {
-    if (!user || reason.trim().length < 3 || operatorBusy) return;
-    setOperatorBusy(true); setOperatorError(""); setOperatorPage(null);
+    if (!user || !sourceFlag.isSuccess || reason.trim().length < 3 || operatorBusy) return;
+    setOperatorBusy(true); setOperatorError(""); setOperatorPage(null); setOperatorSourcePage(null);
     try {
-      const { data, error } = await getSupabaseClient().rpc("new_dawn_operator_job_home", {
-        p_tenant: tenant, p_reason: reason.trim(),
-      }).abortSignal(AbortSignal.timeout(15000));
-      if (error) throw Error("Audited job preview unavailable");
-      setOperatorPage(readOperatorHomePage(data, tenant, user.id));
+      if (sourceFlag.data === true) setOperatorSourcePage(await sourceHome(tenant, user.id, reason.trim()));
+      else {
+        const { data, error } = await getSupabaseClient().rpc("new_dawn_operator_job_home", {
+          p_tenant: tenant, p_reason: reason.trim(),
+        }).abortSignal(AbortSignal.timeout(15000));
+        if (error) throw Error("Audited job preview unavailable");
+        setOperatorPage(readOperatorHomePage(data, tenant, user.id));
+      }
     } catch { setOperatorError("Audited job preview is unavailable. Check your operator access."); }
     finally { setOperatorBusy(false); }
   }
@@ -218,33 +257,39 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
           <h2>Jobs to review</h2>
           <p>Start with the work that may need a decision.</p>
         </div>
-        {!operator && authorisedClient && <button className="cp-secondary" onClick={() => void client.refetch()}><RefreshCw size={15} /> Refresh jobs</button>}
+        {!operator && authorisedClient && <button className="cp-secondary" onClick={() => void (sourceFlag.data ? clientSource.refetch() : client.refetch())}><RefreshCw size={15} /> Refresh jobs</button>}
         {operator && onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Browse captured source jobs</button>}
       </div>
-      {operator && <div className={`nd-operator-preview${operatorPage ? " nd-operator-preview--active" : ""}`}>
-        <strong>{operatorPage ? "Drummonds MD layout · read-only" : "View as Drummonds MD · read-only preview"}</strong>
-        {operatorPage ? <>
+      {operator && <div className={`nd-operator-preview${displayedOperatorJobs ? " nd-operator-preview--active" : ""}`}>
+        <strong>{displayedOperatorJobs ? "Drummonds MD layout · read-only" : "View as Drummonds MD · read-only preview"}</strong>
+        {displayedOperatorJobs ? <>
           <p>You are still signed in as OpenFolk. This job read was logged.</p>
-          <button className="cp-secondary" onClick={() => { setSelectedOperator(null); setOperatorPage(null); }}>Change access reason</button>
+          <button className="cp-secondary" onClick={() => { setSelectedOperator(null); setOperatorPage(null); setOperatorSourcePage(null); }}>Change access reason</button>
         </> : <>
           <p>You remain signed in as OpenFolk. State why you are opening this company’s jobs; the server checks and logs each read.</p>
           <label>Access reason <input value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} placeholder="Review client job experience" /></label>
-          <button className="cp-secondary" disabled={operatorBusy || reason.trim().length < 3} onClick={() => void loadOperatorJobs()}>{operatorBusy ? "Checking access…" : "Open audited preview"}</button>
+          <button className="cp-secondary" disabled={!sourceFlag.isSuccess || operatorBusy || reason.trim().length < 3} onClick={() => void loadOperatorJobs()}>{operatorBusy ? "Checking access…" : "Open audited preview"}</button>
+          {sourceFlag.isError && <p role="alert">Job release settings are unavailable. Try again later.</p>}
           {operatorError && <p role="alert">{operatorError}</p>}
         </>}
       </div>}
       {!operator && !authorisedClient && <p role="status">Your personal work list is being prepared. It will appear when job assignments are confirmed.</p>}
-      {!operator && authorisedClient && client.isPending && <p role="status">Reading your saved jobs…</p>}
-      {!operator && authorisedClient && client.isError && <p role="alert">Saved jobs are unavailable. Refresh to try again.</p>}
+      {!operator && authorisedClient && (sourceFlag.isPending || (sourceFlag.data ? clientSource.isPending : client.isPending)) && <p role="status">Reading your saved jobs…</p>}
+      {!operator && authorisedClient && (sourceFlag.isError || client.isError || clientSource.isError) && <p role="alert">Saved jobs are unavailable. Refresh to try again.</p>}
       {!operator && authorisedClient && client.isSuccess && <div className="nd-job-scope">
         <strong>{client.data.length} saved jobs shown</strong> · Latest saved {latestSaved(client.data.map((job) => job.updated_at))}
         <details><summary>About this view</summary><p>This is a limited saved selection, not a complete workload or live Commusoft status. Recorded on-hold, pending and open work leads; other recent jobs follow. Job ownership is not verified yet.</p></details>
       </div>}
-      {operatorPage && <div className="nd-job-scope">
-        <strong>{operatorPage.length} saved jobs shown</strong> · Latest saved {latestSaved(operatorPage.map((job) => job.fields.updated_at))}
+      {!operator && clientSource.isSuccess && <div className="nd-job-scope">
+        <strong>{sourceJobs.length} reviewed jobs shown from {clientSource.data.reviewedJobCount} linked records</strong> · Latest source captured {latestSaved(clientSource.data.jobs.map((job) => job.source_observed_at))}
+        <details><summary>About this view</summary><p>These jobs have reviewed Commusoft links. This is a bounded saved selection, not a complete workload or live provider status. Other captured jobs still await identity review. Source changes and unconfirmed ownership stay visible; no score or assignment is inferred.</p></details>
+      </div>}
+      {displayedOperatorJobs && <div className="nd-job-scope">
+        <strong>{displayedOperatorJobs.length} saved jobs shown{operatorSourcePage ? ` from ${operatorSourcePage.reviewedJobCount} linked records` : ""}</strong> · {operatorSourcePage ? "Latest source captured" : "Latest saved"} {latestSaved(operatorSourcePage ? operatorSourcePage.jobs.map((job) => job.source_observed_at) : displayedOperatorJobs.map((job) => job.fields.updated_at))}
         <details><summary>About this view</summary><p>This audited preview is a limited saved selection, not the full current workload or a staff login. Job cards can lag Commusoft; ownership and next actions still need source review.</p></details>
       </div>}
       {!operator && client.isSuccess && client.data.length === 0 && <p>No saved job records are visible yet. OpenFolk can check the connection and source review.</p>}
+      {!operator && clientSource.isSuccess && sourceJobs.length === 0 && <p>No reviewed, source-linked job records are visible yet. OpenFolk can check the saved source review.</p>}
       <div className="nd-job-list">
         {!operator && authorisedClient && client.data?.map((job) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
           <BriefcaseBusiness size={20} />
@@ -252,10 +297,16 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
           <span className="nd-job-review"><b>{homeJobState(job)}</b><small>{homeJobAction(job)} · Assignee unconfirmed</small></span>
           <ArrowRight size={17} />
         </button>)}
-        {operatorPage?.map((job) => <div key={job.id} className="nd-job-row">
+        {!operator && sourceJobs.map(({ job, source }) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
+          <BriefcaseBusiness size={20} />
+          <span className="nd-job-main"><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job number not confirmed"}</strong><small>{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</small></span>
+          <span className="nd-job-review"><b>{homeJobState(job)}</b><small>{sourceJobClientLabel(source)} · Captured {checked(source.source_observed_at)} · Assignee unconfirmed</small></span>
+          <ArrowRight size={17} />
+        </button>)}
+        {displayedOperatorJobs?.map((job) => <div key={job.id} className="nd-job-row">
           <BriefcaseBusiness size={20} />
           <span className="nd-job-main"><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Job number not confirmed"}</strong><small>{job.fields.title && job.fields.job_number ? `${job.fields.title} · ` : ""}{job.fields.customer ?? "Customer not confirmed"} · {job.fields.address ?? job.fields.postcode ?? "Site not confirmed"}</small></span>
-          <span className="nd-job-review"><b>{homeJobState({ status: job.fields.status })}</b><small>{homeJobAction({ status: job.fields.status })} · Assignee unconfirmed</small></span>
+          <span className="nd-job-review"><b>{homeJobState({ status: job.fields.status })}</b><small>{operatorSourcePage ? `${sourceJobLabel(job as typeof operatorSourcePage.jobs[number])} · Captured ${checked((job as typeof operatorSourcePage.jobs[number]).source_observed_at)}` : homeJobAction({ status: job.fields.status })} · Assignee unconfirmed</small></span>
           <button className="cp-secondary" onClick={() => setSelectedOperator(job)}>Open this job</button>
         </div>)}
       </div>
@@ -263,7 +314,8 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
       <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
         <DialogContent className="cp-dialog max-h-[90vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader><DialogTitle>Saved job record</DialogTitle></DialogHeader>
-          {selected && <JobDetail key={`${tenant}:${selected.id}`} tenant={tenant} job={selected} />}
+          {selected && <JobDetail key={`${tenant}:${selected.id}`} tenant={tenant} job={selected}
+            source={clientSource.data?.jobs.find((row) => row.id === selected.id)} />}
         </DialogContent>
       </Dialog>
       <Dialog open={!!selectedOperator} onOpenChange={(open) => { if (!open) setSelectedOperator(null); }}>
@@ -276,7 +328,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
     <PublishedOwnerAccountsPanel tenant={tenant} operator={operator} />
     <OwnerMoneyPanel tenant={tenant} operator={operator} operatorReason={reason} />
     {operator && <FounderAccountsPreview tenant={tenant} operator={operator}
-      jobPreviewOpened={!!operatorPage} reason={reason} />}
+      jobPreviewOpened={!!displayedOperatorJobs} reason={reason} />}
     </>
   );
 }
