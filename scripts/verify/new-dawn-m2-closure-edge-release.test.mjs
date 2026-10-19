@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFileSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { join, dirname } from "node:path";
+import ts from "typescript";
 import { PROJECT } from "./new-dawn-m2-live-preflight.mjs";
 import { reviewedEdgeBundle } from "./new-dawn-m2-closure-edge-prepare.mjs";
 import { REVIEWED_EDGE_EZBR_SHA256 } from "./new-dawn-m2-closure-release.mjs";
 import { assessBefore, assessAfter, transportRequest,
-  deployLive } from "./new-dawn-m2-closure-edge-release.mjs";
+  deployLive, assessPost, verifyDownloadedClosure, livePostReadOnly } from
+  "./new-dawn-m2-closure-edge-release.mjs";
 
 const optional = readFileSync(new URL(
   "../../supabase/migrations/20261107150000_new_dawn_commusoft_job_optional_source_facts.sql",
@@ -100,6 +103,49 @@ test("candidate source bundle includes the v5 handler and route entrypoint", () 
     "be16e43e707f180a11fa68cf73c71a5284aafb01698c405560683821cb755884");
   assert.equal(bundle.files.length, 3);
   assert.equal(bundle.external.length, 1);
+});
+
+test("downloaded v6 CLI layout matches executable AST despite stripped types and formatting", () => {
+  const root = `.verification-results/v6-source-fixture-${randomUUID()}`;
+  const bundle = reviewedEdgeBundle();
+  try {
+    for (const file of bundle.files) {
+      const path = join(root, "supabase/functions/learn-commusoft-job-detail",
+        file.path.startsWith("learn-commusoft-job-detail/")
+          ? "index.ts" : "work/supabase/functions/" + file.path);
+      mkdirSync(dirname(path), { recursive: true });
+      const js = ts.transpileModule(file.source, { compilerOptions: {
+        target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.ESNext,
+        removeComments: true,
+      } }).outputText;
+      writeFileSync(path, js);
+    }
+    assert.equal(verifyDownloadedClosure(root, bundle.sha256), bundle.sha256);
+    const handler = join(root, "supabase/functions/learn-commusoft-job-detail/work/supabase/functions/_shared/commusoft/exact_job_detail.ts");
+    writeFileSync(handler, readFileSync(handler, "utf8") + "\nthrow Error('mutated_runtime');\n");
+    assert.throws(() => verifyDownloadedClosure(root, bundle.sha256),
+      /executable_structure_changed/);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test("independent v6 readback keeps v4 SQL, default-off state and exact Edge", async () => {
+  const current = after(snapshot());
+  assert.equal(assessPost(current).state, "exact_edge_v6_metadata_readback");
+  const changed = structuredClone(current);
+  changed.catalog[0].active_permits = 1;
+  assert.throws(() => assessPost(changed), /default_off_changed/);
+  let reads = 0, downloads = 0;
+  const result = await livePostReadOnly({
+    token: "fixture", artifactPath: ".verification-results/fixture/artifacts/learn-commusoft-job-detail.ezbr",
+    out: `.verification-results/edge-post-test-${randomUUID()}`,
+    artifactReader: () => ({}),
+    read: async () => { reads++; return after(snapshot()); },
+    downloader: async () => { downloads++; },
+    sourceVerifier: (_, hash) => assert.equal(hash, reviewedEdgeBundle().sha256),
+  });
+  assert.equal(result.state, "exact_edge_v6_source_readback");
+  assert.equal(result.productionChanged, false);
+  assert.deepEqual([reads, downloads], [2, 1]);
 });
 
 test("one exact Edge PATCH needs metadata and downloaded source readback", async () => {

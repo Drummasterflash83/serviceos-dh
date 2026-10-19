@@ -57,3 +57,29 @@ deployed source was downloaded read-only with source closure SHA-256
 and the compiled prior runtime should be preserved separately for an exact
 rollback. Only after v6 source readback passes may the separate closure SQL
 preflight and release proceed; neither is part of this Edge helper.
+
+**Post-deploy readback correction:** the 19 October LIVE PATCH installed
+version 6 with the exact EZBR hash above. Supabase CLI exports this compiled
+version's shared files under
+`work/supabase/functions/_shared/commusoft/` and strips TypeScript types.
+The old byte-for-byte source check reported an unverified readback even though
+the runtime metadata matched. The helper now compares the complete executable
+TypeScript AST of each of the three reviewed files, ignoring only comments,
+formatting, type erasure and parentheses. The original version 5 byte-for-byte
+readback remains unchanged. Use this **read-only** mode to verify installed
+v6 independently; it checks the exact Edge metadata, retained v4 optional SQL,
+zero permits and flags off, downloads v6 source, compares all three executable
+ASTs, and checks metadata again:
+
+```sh
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-closure-edge-release.mjs --live-v6-readback --artifact=.verification-results/m2-closure-edge-v5-20261019-2350/artifacts/learn-commusoft-job-detail.ezbr --out=.verification-results/m2-closure-edge-v6-readback-fresh
+```
+
+Choose a fresh output directory. This command does not PATCH, install SQL,
+change flags or call Commusoft. A future replay of the Edge deploy command
+must not be used to resolve the readback issue.
+
+This corrected read-only mode passed on 19 October: Edge v6
+`b665e27c…`, reviewed executable source closure `be16e43e…`, optional
+SQL `20261107150000`, zero active permits and both broad flags off. No
+production state changed during that readback.

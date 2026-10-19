@@ -5,9 +5,11 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { brotliDecompressSync } from "node:zlib";
+import ts from "typescript";
 import { savedCliToken } from "./learn-test-readiness.mjs";
 import { PROJECT } from "./new-dawn-m2-live-preflight.mjs";
-import { assessStage as assessOptionalStage, readStage } from
+import { assessStage as assessOptionalStage, readStage,
+  reviewedSource as reviewedOptionalSource } from
   "./new-dawn-m2-optional-facts-release.mjs";
 import { reviewedEdgeBundle } from "./new-dawn-m2-closure-edge-prepare.mjs";
 import { REVIEWED_EDGE_EZBR_SHA256 } from "./new-dawn-m2-closure-release.mjs";
@@ -103,10 +105,76 @@ export function downloadedClosure(root) {
   return sha(JSON.stringify(entries));
 }
 
+// Supabase CLI exports the compiled ESZIP's TS as formatted JavaScript under
+// work/supabase/functions/. Compare executable syntax, not formatting/types.
+export function executableStructure(source) {
+  const js = ts.transpileModule(source, { compilerOptions: {
+    target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.ESNext,
+    removeComments: true, verbatimModuleSyntax: false,
+  } }).outputText;
+  const file = ts.createSourceFile("module.js", js, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  function shape(node) {
+    if (ts.isParenthesizedExpression(node)) return shape(node.expression);
+    const children = [];
+    ts.forEachChild(node, child => { children.push(shape(child)); });
+    return [node.kind,
+      ts.isIdentifier(node) || ts.isLiteralExpression(node) || ts.isTemplateLiteralToken(node)
+        ? node.text : null,
+      node.operator ?? null,
+      ts.isVariableDeclarationList(node) ? node.flags & ts.NodeFlags.BlockScoped : null,
+      children];
+  }
+  return JSON.stringify(shape(file));
+}
+
+export function verifyDownloadedCandidate(root) {
+  const folder = join(root, "supabase/functions", ENDPOINT);
+  const bundle = reviewedEdgeBundle();
+  for (const file of bundle.files) {
+    const downloaded = readFileSync(join(folder, file.path.startsWith(ENDPOINT + "/")
+      ? "index.ts" : "work/supabase/functions/" + file.path), "utf8");
+    if (executableStructure(downloaded) !== executableStructure(file.source))
+      throw Error("downloaded_v6_executable_structure_changed:" + file.path);
+  }
+  return bundle.sha256;
+}
+
 export function verifyDownloadedClosure(root, expectedHash) {
-  if (downloadedClosure(root) !== expectedHash)
-    throw Error("downloaded_edge_source_closure_changed");
+  if (expectedHash === PRIOR_SOURCE_SHA256) {
+    if (downloadedClosure(root) !== expectedHash)
+      throw Error("downloaded_v5_source_closure_changed");
+  } else if (expectedHash === reviewedEdgeBundle().sha256) {
+    verifyDownloadedCandidate(root);
+  } else throw Error("unreviewed_source_closure_requested");
   return expectedHash;
+}
+
+export function assessPost(snapshot) {
+  if (snapshot?.project?.id !== PROJECT || snapshot.project.status !== "ACTIVE_HEALTHY")
+    throw Error("production_project_unconfirmed");
+  exactEdge(snapshot, candidate);
+  const rows = snapshot.ledger;
+  const quote = readFileSync(new URL(
+    "../../supabase/migrations/20261107140000_new_dawn_commusoft_job_source_quote.sql",
+    import.meta.url), "utf8");
+  if (!Array.isArray(rows) || rows.length !== 2 ||
+    String(rows[0]?.version) !== "20261107140000" ||
+    rows[0]?.name !== "new_dawn_commusoft_job_source_quote" ||
+    rows[0]?.statements?.length !== 1 || rows[0].statements[0] !== quote ||
+    String(rows[1]?.version) !== "20261107150000" ||
+    rows[1]?.name !== "new_dawn_commusoft_job_optional_source_facts" ||
+    rows[1]?.statements?.length !== 1 ||
+    rows[1].statements[0] !== reviewedOptionalSource().source)
+    throw Error("v4_optional_ledger_changed");
+  const catalog = snapshot.catalog?.[0];
+  if (snapshot.catalog?.length !== 1 ||
+    catalog?.function_sha256 !== "8eb34ddd828420ea84f695b5a893ff9f9e4d1786537f36921aa9408370026090" ||
+    catalog?.permit_table !== true || catalog?.active_permits !== 0 ||
+    catalog?.enabled_flags !== 0)
+    throw Error("v4_optional_function_or_default_off_changed");
+  return { state: "exact_edge_v6_metadata_readback", edgeVersion: 6,
+    edgeSha256: REVIEWED_EDGE_EZBR_SHA256, optionalSqlVersion: "20261107150000",
+    activePermits: 0, broadFlagsEnabled: 0, providerRequests: 0 };
 }
 
 async function download(project, token, root, runner = spawnSync) {
@@ -145,6 +213,24 @@ export async function liveReadOnly({ artifactPath, out, token = savedCliToken(),
   return { ...stage, currentSourceClosureSha256: PRIOR_SOURCE_SHA256,
     candidateSourceClosureSha256: reviewedEdgeBundle().sha256,
     request: transportRequest(), output: root, productionChanged: false };
+}
+
+export async function livePostReadOnly({ artifactPath, out, token = savedCliToken(),
+  read = readStage, downloader = download, artifactReader = reviewedArtifact,
+  sourceVerifier = verifyDownloadedClosure } = {}) {
+  artifactReader(artifactPath);
+  const root = privateRoot(out);
+  const before = await read(PROJECT, token);
+  const stage = assessPost(before);
+  await downloader(PROJECT, token, join(root, "current"));
+  sourceVerifier(join(root, "current"), reviewedEdgeBundle().sha256);
+  const stable = await read(PROJECT, token);
+  assessPost(stable);
+  if (JSON.stringify(stable) !== JSON.stringify(before))
+    throw Error("live_v6_state_changed_during_source_readback");
+  return { ...stage, state: "exact_edge_v6_source_readback",
+    sourceClosureSha256: reviewedEdgeBundle().sha256,
+    output: root, productionChanged: false };
 }
 
 export async function deployLive({ artifactPath, out, token = savedCliToken(),
@@ -208,6 +294,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         throw Error("explicit_exact_live_project_required");
       if (mode === "--live-read-only")
         console.log(JSON.stringify(await liveReadOnly({ artifactPath, out })));
+      else if (mode === "--live-v6-readback")
+        console.log(JSON.stringify(await livePostReadOnly({ artifactPath, out })));
       else if (mode === "--live-deploy-exact" &&
         process.env.NEW_DAWN_M2_EDGE_DEPLOY_ALLOW_SHA === REVIEWED_EDGE_EZBR_SHA256)
         console.log(JSON.stringify(await deployLive({ artifactPath, out })));
