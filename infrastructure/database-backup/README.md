@@ -489,6 +489,14 @@ The `run-daily-database-backup.mjs --run-once` runner binds the
 export, isolated native restore, public-key encryption and independently
 downloaded copy into one attempt. It stops on an unconfirmed stage and records
 an inspection-required failure; it does not retry source or copy actions.
+The encrypt/preparation failure path now carries only fixed safe codes from
+Python through the Node wrappers to the restricted daily diagnostic. For a
+`package_size_invalid` or `file_size_invalid` code it may also include
+`packageInputBytes`, the non-content aggregate size of the fixed allowlisted
+input files measured at failure. It never includes paths, filenames, recipient,
+hashes or process output. The 2 GiB package cap and all timeouts remain intact.
+The hosted workflow checks out a pinned source commit; this diagnostic change
+requires a separate reviewed checkout-pin update before a later run can use it.
 There is no installed schedule or age alert yet. Chris approved the standing
 backup access and existing private London destination on 15 October. A
 successful one-off copy would still leave supervised
