@@ -3,9 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BriefcaseBusiness, RefreshCw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
-import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, type HomeJob } from "@/lib/new-dawn-job-home";
+import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOperatorHomePage, type HomeJob, type OperatorHomeJob } from "@/lib/new-dawn-job-home";
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
-import { searchOperatorJobs } from "@/lib/learn-operator-job-search";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const isUuid = (value: unknown): value is string =>
@@ -97,7 +96,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
   const { user, profile } = useAuth();
   const [selected, setSelected] = useState<HomeJob | null>(null);
   const [reason, setReason] = useState("");
-  const [operatorPage, setOperatorPage] = useState<Awaited<ReturnType<typeof searchOperatorJobs>> | null>(null);
+  const [operatorPage, setOperatorPage] = useState<OperatorHomeJob[] | null>(null);
   const [operatorError, setOperatorError] = useState("");
   const [operatorBusy, setOperatorBusy] = useState(false);
   const client = useQuery({
@@ -111,9 +110,11 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
     if (!user || reason.trim().length < 3 || operatorBusy) return;
     setOperatorBusy(true); setOperatorError(""); setOperatorPage(null);
     try {
-      setOperatorPage(await searchOperatorJobs(getSupabaseClient(), {
-        tenant, actor: user.id, query: "", reason: reason.trim(),
-      }, AbortSignal.timeout(15000)));
+      const { data, error } = await getSupabaseClient().rpc("new_dawn_operator_job_home", {
+        p_tenant: tenant, p_reason: reason.trim(),
+      }).abortSignal(AbortSignal.timeout(15000));
+      if (error) throw Error("Audited job preview unavailable");
+      setOperatorPage(readOperatorHomePage(data, tenant, user.id));
     } catch { setOperatorError("Audited job preview is unavailable. Check your operator access."); }
     finally { setOperatorBusy(false); }
   }
@@ -138,7 +139,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
       {!operator && authorisedClient && client.isPending && <p role="status">Reading your saved jobs…</p>}
       {!operator && authorisedClient && client.isError && <p role="alert">Saved jobs are unavailable. Refresh to try again.</p>}
       {!operator && authorisedClient && client.isSuccess && <p className="nd-job-scope">Up to 12 saved jobs: recorded open, pending or held work first, then recent other records. This is not a complete workload count or live Commusoft status.</p>}
-      {operatorPage && <p className="nd-job-scope">Audited first page of {operatorPage.rows.length} published jobs, ordered by record ID. This preview is not a complete workload count or a staff login.</p>}
+      {operatorPage && <p className="nd-job-scope">Audited page of {operatorPage.length} saved jobs: recorded open, pending or held work first. This is not a complete workload count or a staff login.</p>}
       {!operator && client.isSuccess && client.data.length === 0 && <p>No saved job records are visible yet. OpenFolk can check the connection and source review.</p>}
       <div className="nd-job-list">
         {!operator && authorisedClient && client.data?.map((job) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
@@ -147,10 +148,10 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
           <span><b>{homeJobState(job)}</b><small>{homeJobAction(job)} · {job.verified ? "details reviewed" : "details awaiting confirmation"} · saved {checked(job.updated_at)}</small></span>
           <ArrowRight size={17} />
         </button>)}
-        {operatorPage?.rows.map((job) => <div key={job.id} className="nd-job-row">
+        {operatorPage?.map((job) => <div key={job.id} className="nd-job-row">
           <BriefcaseBusiness size={20} />
           <span><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Job number not confirmed"}</strong><small>{job.fields.title && job.fields.job_number ? `${job.fields.title} · ` : ""}{job.fields.customer ?? "Customer not confirmed"} · {job.fields.address ?? job.fields.postcode ?? "Site not confirmed"}</small></span>
-          <span><b>{job.fields.status ? `Saved status: ${job.fields.status}` : "Status needs confirmation"}</b><small>Open source record for the next step</small></span>
+          <span><b>{homeJobState({ status: job.fields.status })}</b><small>{job.fields.verified ? "details reviewed" : "details awaiting confirmation"} · saved {checked(job.fields.updated_at)}</small></span>
           {onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Source record</button>}
         </div>)}
       </div>
