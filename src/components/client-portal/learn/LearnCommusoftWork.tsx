@@ -32,23 +32,25 @@ export function LearnCommusoftWork({
   canEdit,
   onSaved,
   client,
+  initialJob,
 }: {
   tenantId: string;
   actorId: string;
   canEdit: boolean;
   onSaved?: () => void;
   client?: ReviewClient;
+  initialJob?: { connection: string; external: string } | null;
 }) {
   const db = client ?? getSupabaseClient();
   const scope = { backend: supabaseConfig.url.replace(/\/$/, ""), actorId, tenantId };
   const [connections, setConnections] = useState<ReviewConnection[]>([]),
     [connection, setConnection] = useState(""),
-    [kind, setKind] = useState<WorkKind>("site");
+    [kind, setKind] = useState<WorkKind>(initialJob ? "job" : "site");
   const [rows, setRows] = useState<WorkSource[]>([]),
     [pages, setPages] = useState<(string | null)[]>([null]),
     [next, setNext] = useState<string | null>(null);
-  const [sourceSearch, setSourceSearch] = useState(""),
-    [appliedSearch, setAppliedSearch] = useState("");
+  const [sourceSearch, setSourceSearch] = useState(initialJob?.external ?? ""),
+    [appliedSearch, setAppliedSearch] = useState(initialJob?.external ?? "");
   const [targets, setTargets] = useState<Record<string, string>>({}),
     [searches, setSearches] = useState<Record<string, string>>({}),
     [matches, setMatches] = useState<
@@ -66,6 +68,7 @@ export function LearnCommusoftWork({
     [notice, setNotice] = useState("");
   const generation = useRef(0),
     working = useRef(false),
+    requestedJob = useRef(initialJob),
     editable = useRef(canEdit);
   editable.current = canEdit;
   const current = (ticket: number) => generation.current === ticket && editable.current;
@@ -135,7 +138,17 @@ export function LearnCommusoftWork({
       const available = await loadCommusoftReviewConnections(db, tenantId);
       if (!current(ticket)) return;
       setConnections(available);
-      if (connection && available.some((c) => c.id === connection))
+      const requested = requestedJob.current;
+      if (requested && available.some((c) => c.id === requested.connection)) {
+        await page(requested.connection, "job", [null], ticket, requested.external);
+        requestedJob.current = null;
+      } else if (requested) {
+        requestedJob.current = null;
+        setConnection("");
+        setRows([]);
+        setReady(true);
+        setNotice("This job’s source connection is unavailable. Reopen its captured card before reviewing a link.");
+      } else if (connection && available.some((c) => c.id === connection))
         await page(connection, kind, pages, ticket);
       else {
         setConnection("");
@@ -146,8 +159,8 @@ export function LearnCommusoftWork({
   }
   useEffect(() => {
     working.current = false;
-    setSourceSearch("");
-    setAppliedSearch("");
+    setSourceSearch(initialJob?.external ?? "");
+    setAppliedSearch(initialJob?.external ?? "");
     setRows([]);
     if (canEdit) {
       restore();
