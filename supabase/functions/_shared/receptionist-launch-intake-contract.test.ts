@@ -91,6 +91,19 @@ test("dynamic gate requires source quotes and never treats errors or test mocks 
   ]) assert.ok(text.includes(rule), rule);
 });
 
+test("candidate asks for a precise site and never treats a bare postcode as complete", () => {
+  const text = intakeLaunchPatch(candidate()).model.messages[0].content;
+  for (const rule of [
+    "A bare postcode is not a complete emergency site",
+    "If only a postcode is supplied, ask once for the premises name or number",
+    "What's the street address, or the premises name and postcode?",
+    "A bare postcode or \"my home\" is insufficient",
+    "Never delay immediate safety advice for location details",
+  ]) assert.ok(text.includes(rule), rule);
+  assert.ok(!text.includes("numbered street address or UK postcode"));
+  assert.ok(!text.includes("If postcode/address or issue already supplied"));
+});
+
 test("speech projection is read-only, whitelisted and preserves absent-versus-false/zero", () => {
   const source: any = {
     ...candidate(), firstMessageMode: "assistant-speaks-first", modelOutputInMessagesEnabled: false,
