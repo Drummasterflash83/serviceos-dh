@@ -31,8 +31,9 @@ function ReviewTaskButton({ db, tenant, connection, external, version }: {
 }
 
 /** Read-only source cards: unresolved identity never hides a retained job. */
-export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob, operatorReason }: {
+export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob, onReviewJob, operatorReason }: {
   tenantId: string; actorId: string; client?: ReviewClient; onOpenJob?: (id: string) => void;
+  onReviewJob?: (connection: string, external: string) => void;
   operatorReason?: string;
 }) {
   const db = client ?? getSupabaseClient();
@@ -116,6 +117,7 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob,
             {row.version_id ? <><ReviewTaskButton db={db} tenant={tenantId} connection={connection} external={row.external_id} version={row.version_id} />
               <LearnCommusoftJobDetails tenant={tenantId} connection={connection} version={row.version_id} external={row.external_id} client={db} /></> : <p role="status">This source has conflicting latest versions. Resolve that conflict before preparing a review task.</p>}
             <button className="cp-secondary" onClick={() => { setView("all"); setDraft(row.external_id); setQuery(row.external_id); setOpenOnly(false); setCursors([null]); }}>Find this ID in captured job cards</button>
+            {onReviewJob && row.version_id && <button className="cp-secondary" onClick={() => onReviewJob(connection, row.external_id)}>Review this job’s customer link</button>}
           </div>}
         </div>)}</div>
       </>}
