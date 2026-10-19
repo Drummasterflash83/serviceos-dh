@@ -162,6 +162,10 @@ an engineer or mailbox took that call.
 > extension 205, Rob 109, Tony 105 and shared emergency mailbox 603. Please
 > identify the supported busy/no-answer/voicemail behaviour and a reversible
 > fallback to IVR 502 or the on-call mobile if extension 205 is unavailable.
+> Can an isolated Emma test number reach extension 205 and exercise the
+> Rob 109/Tony 105 cross-cover and final 603 path **without changing** the
+> 01794 341600 rules? Please say whether the fallback is controlled by
+> Birchills or by Vapi, including timeout and voicemail-answer detection.
 >
 > For mailbox 603, please confirm whether deposited messages can notify
 > **both** rob@drummondheating.co.uk and tony@drummondheating.co.uk without
@@ -169,7 +173,9 @@ an engineer or mailbox took that call.
 > describe the supported managed distribution option and its delivery
 > evidence. Please also confirm a supported per-message ID/audio/notification
 > feed or export so OpenFolk can verify receipt and trigger a scoped Slack
-> alert. We will not treat a configured recipient as a delivered message.
+> alert. We need a stable message/call reference to match the two email
+> receipts and the Slack alert to one deposit. We will not treat a configured
+> recipient as a delivered message.
 >
 > Please make **no routing or mailbox change yet**. We will arrange a test
 > window and send Chris's specific change approval separately.
