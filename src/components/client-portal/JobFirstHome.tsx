@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { OwnerMoneyPanel } from "./OwnerMoneyPanel";
 import { FounderAccountsPreview } from "./FounderAccountsPreview";
 import { PublishedOwnerAccountsPanel } from "./PublishedOwnerAccountsPanel";
+import { RecentSavedJobReview } from "./RecentSavedJobReview";
 
 const isUuid = (value: unknown): value is string =>
   typeof value === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(value);
@@ -391,6 +392,10 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
           <button className="cp-secondary" onClick={() => setSelectedOperator(job)}>Open this job</button>
         </div>)}
       </div>
+      {operator && operatorSourcePage && user && <RecentSavedJobReview
+        key={`${tenant}:${user.id}:${reason}`}
+        tenant={tenant} actor={user.id} reason={reason.trim()}
+        onOpenInformation={onOpenInformation} />}
       <p className="nd-job-scope">Performance scores: not enough data yet.</p>
       <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
         <DialogContent className="cp-dialog max-h-[90vh] overflow-y-auto sm:max-w-3xl">
