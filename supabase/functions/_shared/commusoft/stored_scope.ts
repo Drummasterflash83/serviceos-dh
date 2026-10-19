@@ -155,7 +155,8 @@ export async function readStoredCommusoftScope(
       cfg.maxPages > 2147483647 ||
       !id(cfg.pageSize) ||
       cfg.pageSize > 100 ||
-      !["properties", "propertyContacts", "jobs"].includes(cfg.resource) ||
+      !["properties", "propertyContacts", "jobs", "users"].includes(cfg.resource) ||
+      (cfg.resource === "users" && (cfg.maxPages !== 1 || cfg.pageSize > 10)) ||
       (cfg.resource === "propertyContacts" &&
         (!["customer", "workaddress"].includes(cfg.contactType) ||
           cfg.contactPlanVersion !== 1 ||

@@ -3,7 +3,7 @@
  * current tenant/connection authority. This module does not provide that authority.
  */
 import { commusoftUpdateWindow } from "./update_window.ts";
-export type CommusoftResource = "properties" | "propertyContacts" | "jobs";
+export type CommusoftResource = "properties" | "propertyContacts" | "jobs" | "users";
 export type CommusoftRegion = "uk" | "us";
 export type CommusoftFailure =
   | "invalid_request"
@@ -58,7 +58,7 @@ export interface CommusoftPage {
   quota: { remaining: number | null; resetAt: number | null; retryAt: number | null };
 }
 const origins = { uk: "https://app.commusoft.co.uk", us: "https://app.commusoft.us" };
-const resources = new Set(["properties", "propertyContacts", "jobs"]);
+const resources = new Set(["properties", "propertyContacts", "jobs", "users"]);
 const maximumBodyBytes = 2 * 1024 * 1024;
 const maximumRecordBytes = 256 * 1024;
 const encoder = new TextEncoder();
