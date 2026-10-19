@@ -79,11 +79,11 @@ function JobDetail({ tenant, job }: { tenant: string; job: HomeJob }) {
   return (
     <div className="nd-job-detail">
       <p><strong>{row.card.jobStatus ?? "Status needs confirmation"}</strong> · {row.card.recordState}</p>
-      <p>{job.customer ?? "Customer link needs review"} · {job.site ?? "Site link needs review"}</p>
-      {!job.verified && <p>Job source link awaiting review.</p>}
+      <p>{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</p>
+      {!job.verified && <p>Some job details are awaiting confirmation.</p>}
       <p>Saved record updated {checked(row.card.updatedAt)}. This may lag Commusoft.</p>
       <h3>Next step</h3><p>{homeJobAction(job)}.</p>
-      {row.gaps.length > 0 && <p>Some source details still need OpenFolk review. This job is not scored yet.</p>}
+      {row.gaps.length > 0 && <p>OpenFolk is checking some of this job’s details. This job is not scored yet.</p>}
       <small>Evidence checked {checked(row.observedAt)}. This is saved information, not a live provider check or a score.</small>
     </div>
   );
@@ -123,7 +123,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         <div>
           <p className="of-eyebrow">YOUR WORK TODAY</p>
           <h2>Start with the jobs.</h2>
-          <p>See the saved status, customer and site, then check the next step. Unconfirmed links stay visible.</p>
+          <p>See what is recorded for each job, who it is for, and what to check next.</p>
         </div>
         {!operator && authorisedClient && <button className="cp-secondary" onClick={() => void client.refetch()}><RefreshCw size={15} /> Refresh jobs</button>}
       </div>
@@ -143,13 +143,13 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
       <div className="nd-job-list">
         {!operator && authorisedClient && client.data?.map((job) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
           <BriefcaseBusiness size={20} />
-          <span><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job identity needs review"}</strong><small>{job.title && job.job_number ? `${job.title} · ` : ""}{job.customer ?? "Customer link needs review"} · {job.site ?? "Site link needs review"}</small></span>
-          <span><b>{homeJobState(job)}</b><small>{homeJobAction(job)} · {job.verified ? "source link reviewed" : "source link awaiting review"} · saved {checked(job.updated_at)}</small></span>
+          <span><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job number not confirmed"}</strong><small>{job.title && job.job_number ? `${job.title} · ` : ""}{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</small></span>
+          <span><b>{homeJobState(job)}</b><small>{homeJobAction(job)} · {job.verified ? "details reviewed" : "details awaiting confirmation"} · saved {checked(job.updated_at)}</small></span>
           <ArrowRight size={17} />
         </button>)}
         {operatorPage?.rows.map((job) => <div key={job.id} className="nd-job-row">
           <BriefcaseBusiness size={20} />
-          <span><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Job identity needs review"}</strong><small>{job.fields.title && job.fields.job_number ? `${job.fields.title} · ` : ""}{job.fields.customer ?? "Customer link needs review"} · {job.fields.address ?? job.fields.postcode ?? "Site link needs review"}</small></span>
+          <span><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Job number not confirmed"}</strong><small>{job.fields.title && job.fields.job_number ? `${job.fields.title} · ` : ""}{job.fields.customer ?? "Customer not confirmed"} · {job.fields.address ?? job.fields.postcode ?? "Site not confirmed"}</small></span>
           <span><b>{job.fields.status ? `Saved status: ${job.fields.status}` : "Status needs confirmation"}</b><small>Open source record for the next step</small></span>
           {onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Source record</button>}
         </div>)}
