@@ -53,10 +53,11 @@ function validateGraph(g: any, source: any) {
   const required = ["+441794378095", "+441794378105", "+441794378096", "+441794840042", "+441794840043"];
   if (!required.every(n => c.model.tools[0].destinations.some((d: any) => d.number === n)))
     throw Error("Launch reviewed ordinary destination is missing.");
+  const destination = g.handoff.destinations?.[0];
   if (g.handoff.type !== "handoff" || g.handoff.function?.name !== "Route-Emergency-to-Rob-or-Tony" ||
-    g.handoff.destinations?.length !== 1 || g.handoff.destinations[0].type !== "assistant" ||
-    g.handoff.destinations[0].assistantId !== ids.helper ||
-    g.handoff.destinations[0].contextEngineeringPlan?.type !== "all" ||
+    g.handoff.destinations?.length !== 1 || destination?.type !== "dynamic" ||
+    destination.server?.url !== "https://tgbnakbxwcqjeimygroz.supabase.co/functions/v1/receptionist-intake-check" ||
+    !/^[A-Za-z0-9_-]{43,128}$/.test(destination.server?.headers?.["X-OpenFolk-Intake-Token"] ?? "") ||
     !same(g.helper.model?.toolIds, [ids.emergency]) || list(g.helper.model?.tools).length ||
     g.emergency.type !== "transferCall" || g.emergency.function?.name !== "Route-Emergency-to-Rob-or-Tony" ||
     !g.helper.model?.messages?.some((m: any) => m.content?.startsWith("EMERGENCY CONTINUATION:")))
@@ -152,6 +153,10 @@ export async function launchPromotion(db: any, api: Api, settings: any, workspac
   if (previous.data) return receipt(previous.data, false);
   const source = await db.from("receptionist_test_candidates").select("*").eq("tenant_id", ids.tenant).single();
   if (source.error) throw Error("Launch candidate snapshot unavailable.");
+  const intake = await db.from("receptionist_intake_installation")
+    .select("state,candidate_id").eq("tenant_id", ids.tenant).maybeSingle();
+  if (intake.error || intake.data?.state !== "verified" || intake.data.candidate_id !== ids.candidate)
+    throw Error("Candidate intake receiver and dynamic handoff need verified installation.");
   const latest = await db.from("receptionist_test_runs").select("*").eq("tenant_id", ids.tenant).order("created_at", { ascending: false }).limit(1).maybeSingle();
   if (latest.error) throw Error("Latest launch evidence unavailable.");
   const g = await readGraph(api);
@@ -194,7 +199,11 @@ export async function launchPromotion(db: any, api: Api, settings: any, workspac
     const newest = await db.from("receptionist_test_runs").select("*").eq("tenant_id", ids.tenant).order("created_at", { ascending: false }).limit(1).maybeSingle();
     const selected = await db.from("receptionist_test_settings").select("*").eq("tenant_id", ids.tenant).single();
     const bound = await db.from("receptionist_workspaces").select("assistant_id").eq("tenant_id", ids.tenant).single();
-    if (newest.error || selected.error || bound.error || bound.data?.assistant_id !== ids.live || newest.data?.id !== latest.data.id ||
+    const intakeNow = await db.from("receptionist_intake_installation")
+      .select("state,candidate_id").eq("tenant_id", ids.tenant).maybeSingle();
+    if (newest.error || selected.error || bound.error || intakeNow.error ||
+      intakeNow.data?.state !== "verified" || intakeNow.data?.candidate_id !== ids.candidate ||
+      bound.data?.assistant_id !== ids.live || newest.data?.id !== latest.data.id ||
       selected.data?.suite_id !== settings.suite_id || selected.data?.assistant_id !== ids.candidate ||
       await graphHash(current) !== stableGraphHash) return await finish("conflict");
     requireLaunchEvidence(newest.data, selected.data, candidateHash, scenarios);

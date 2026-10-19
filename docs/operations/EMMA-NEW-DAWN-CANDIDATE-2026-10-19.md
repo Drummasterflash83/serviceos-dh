@@ -53,8 +53,11 @@ change on the day.
   named-person handover without a synthetic automatic goodbye. The release
   gate requires v14 speed 1.05 on live/candidate/helper, identical voice and
   transcriber, and AI/recording disclosure in both open and closed greetings.
+  It also requires the dynamic handoff and a verified intake installation.
   It will **block** a stale candidate; it does not silently update provider
-  voice settings.
+  voice settings. The 2 October saved source snapshot predates v14 and the
+  later natural-delivery changes, so a reviewed candidate/source
+  reconciliation is needed before the existing promotion gate can pass.
 - National Gas confirms the National Gas Emergency Service number is
   **0800 111 999**, 24 hours, for gas leaks and suspected carbon-monoxide
   emergencies: <https://www.nationalgas.com/nec>. The caller must receive

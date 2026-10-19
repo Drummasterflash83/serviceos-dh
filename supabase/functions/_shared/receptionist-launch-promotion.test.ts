@@ -15,7 +15,7 @@ async function fixture() {
   const ordinary = { id: ids.ordinary, orgId, type: "transferCall", function: { name: "Route-Call-to-Drummond-Team-20260929" },
     destinations: ["+441794378095", "+441794378105", "+441794378096", "+441794840042", "+441794840043", ...Array.from({ length: 5 }, (_, i) => `+44179400000${i}`)].map(number => ({ type: "number", number, description: "Reviewed original destination", message: "Original announcement", transferPlan: { mode: "blind-transfer" } })) };
   const emergency = { id: ids.emergency, orgId, type: "transferCall", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [{ number: "+441794378105", transferPlan: { mode: "warm-transfer" } }] };
-  const handoff = { id: ids.handoff, orgId, type: "handoff", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [{ type: "assistant", assistantId: ids.helper, contextEngineeringPlan: { type: "all" } }] };
+  const handoff = { id: ids.handoff, orgId, type: "handoff", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [{ type: "dynamic", server: { url: "https://tgbnakbxwcqjeimygroz.supabase.co/functions/v1/receptionist-intake-check", headers: { "X-OpenFolk-Intake-Token": "TEST_ONLY_" + "x".repeat(45) } } }] };
   const live = { id: ids.live, orgId, name: "Emma", updatedAt: "original", voice, transcriber,
     server: { url: "https://private.example", headers: { Authorization: "PRIVATE_SECRET" } }, artifactPlan: { recordingEnabled: true },
     maxDurationSeconds: 300, firstMessage: "Live welcome", model: { provider: "openai", model: "gpt-4.1", tools: [], toolIds: [ids.ordinary, ids.emergency], messages: [{ role: "system", content: "Existing live policy" }] } };
@@ -45,7 +45,7 @@ async function fixture() {
         evaluations: s.evaluations.map(e => ({ name: e.structuredOutput.name, schema: e.structuredOutput.schema, passed: true, required: true, comparator: "=", expectedValue: true, extractedValue: true })) })) } };
   const source = { state: "prepared", candidate_id: ids.candidate, helper_id: ids.helper, handoff_id: ids.handoff, source_assistant: clone(live), source_tools: clone([ordinary, emergency]) };
   const state: any = { saved: null, reads: {}, writes: [], rpcDenied: false, auditDenied: false, finishDenied: false,
-    patchMode: "apply", beforeSecondRead: null, afterPatch: null };
+    patchMode: "apply", beforeSecondRead: null, afterPatch: null, intakeVerified: true };
   const db = {
     rpc: async (name: string, args: any) => { assert.equal(name, "care_release_actor"); assert.equal(args.p_actor, actor); return { error: state.rpcDenied ? "denied" : null }; },
     from(table: string) {
@@ -61,6 +61,7 @@ async function fixture() {
             return { error: null, data: state.saved && clone(state.saved) };
           }
           if (table === "receptionist_test_candidates") return { error: null, data: clone(source) };
+          if (table === "receptionist_intake_installation") return { error: null, data: state.intakeVerified ? { state: "verified", candidate_id: ids.candidate } : null };
           if (table === "receptionist_test_runs") return { error: null, data: clone(run) };
           if (table === "receptionist_test_settings") return { error: null, data: clone(settings) };
           if (table === "receptionist_workspaces") return { error: null, data: clone(workspace) };
@@ -183,7 +184,7 @@ test("promotion refuses legacy, unverified or changed test harnesses without pro
 });
 
 test("no provider write without a private reservation, Chris administrator gate and exact approved hashes", async () => {
-  for (const kind of ["audit", "actor", "hash", "live-drift", "ordinary-route", "helper-topology", "candidate-voice"]) {
+  for (const kind of ["audit", "actor", "hash", "live-drift", "ordinary-route", "helper-topology", "candidate-voice", "pre-v14", "missing-open-disclosure", "static-handoff", "intake-unverified"]) {
     const f = await fixture();
     if (kind === "audit") f.state.auditDenied = true;
     if (kind === "actor") f.state.rpcDenied = true;
@@ -192,6 +193,10 @@ test("no provider write without a private reservation, Chris administrator gate 
     if (kind === "ordinary-route") f.graph.candidate.model.tools[0].destinations[0].number = "+441794341600";
     if (kind === "helper-topology") f.graph.helper.model.toolIds = [ids.ordinary];
     if (kind === "candidate-voice") f.graph.candidate.voice = { provider: "other" };
+    if (kind === "pre-v14") for (const assistant of [f.graph.live, f.graph.candidate, f.graph.helper]) assistant.voice = { ...assistant.voice, speed: 1 };
+    if (kind === "missing-open-disclosure") f.graph.candidate.firstMessage = f.graph.candidate.firstMessage.replace("{% else %}Welcome to Drummonds. I'm Emma, the automated receptionist, and this call is recorded.", "{% else %}Welcome to Drummonds.");
+    if (kind === "static-handoff") f.graph.handoff.destinations = [{ type: "assistant", assistantId: ids.helper, contextEngineeringPlan: { type: "all" } }];
+    if (kind === "intake-unverified") f.state.intakeVerified = false;
     await assert.rejects(f.execute, undefined, kind);
     assert.equal(f.state.writes.length, 0);
   }
