@@ -11,6 +11,9 @@ class SafeNativeFailureTests(unittest.TestCase):
             'Native COPY export process did not complete': 'restore_native_copy_process_failed',
             'Native COPY stream did not complete': 'restore_native_stream_bound_or_truncated',
             'Native COPY table exceeds row bound': 'restore_native_row_bound',
+            'Native COPY line exceeds bound': 'restore_native_line_bound',
+            'Native COPY stream exceeds total bound': 'restore_native_total_bound',
+            'Native COPY line is truncated': 'restore_native_line_truncated',
         }
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'restore-native-comparison-report.json'
