@@ -15,10 +15,13 @@ export function OperatorCommusoftReview({
   const [reason, setReason] = useState("");
   const [session, setSession] = useState<{ reason: string; generation: number } | null>(null);
   const [kind, setKind] = useState<"customers" | "work" | "source-jobs">("source-jobs");
+  const [requestedJob, setRequestedJob] = useState<{ connection: string; external: string } | null>(null);
   const generation = useRef(0);
   function close() {
     generation.current++;
     setSession(null);
+    setRequestedJob(null);
+    setKind("source-jobs");
   }
   useEffect(() => {
     const hide = () => {
@@ -93,18 +96,18 @@ export function OperatorCommusoftReview({
             the browser is hidden.
           </p>
           <nav aria-label="Business source review" className="flex gap-3">
-            <button className="cp-secondary" aria-pressed={kind === "source-jobs"} onClick={() => setKind("source-jobs")}>Captured job cards</button>
+            <button className="cp-secondary" aria-pressed={kind === "source-jobs"} onClick={() => { setRequestedJob(null); setKind("source-jobs"); }}>Captured job cards</button>
             <button
               className="cp-secondary"
               aria-pressed={kind === "customers"}
-              onClick={() => setKind("customers")}
+              onClick={() => { setRequestedJob(null); setKind("customers"); }}
             >
               Customers
             </button>
             <button
               className="cp-secondary"
               aria-pressed={kind === "work"}
-              onClick={() => setKind("work")}
+              onClick={() => { setRequestedJob(null); setKind("work"); }}
             >
               Sites, jobs and contacts
             </button>
@@ -113,7 +116,7 @@ export function OperatorCommusoftReview({
             </button>
           </nav>
           {client &&
-            (kind === "source-jobs" ? <LearnCommusoftSourceJobs key={`${tenantId}:${actorId}:${session.generation}`} tenantId={tenantId} actorId={actorId} client={client} operatorReason={session.reason} /> : kind === "customers" ? (
+            (kind === "source-jobs" ? <LearnCommusoftSourceJobs key={`${tenantId}:${actorId}:${session.generation}`} tenantId={tenantId} actorId={actorId} client={client} operatorReason={session.reason} onReviewJob={(connection, external) => { setRequestedJob({ connection, external }); setKind("work"); }} /> : kind === "customers" ? (
               <LearnCommusoftCustomers
                 key={`${tenantId}:${actorId}:${session.generation}`}
                 tenantId={tenantId}
@@ -122,11 +125,12 @@ export function OperatorCommusoftReview({
               />
             ) : (
               <LearnCommusoftWork
-                key={`${tenantId}:${actorId}:${session.generation}`}
+                key={`${tenantId}:${actorId}:${session.generation}:${requestedJob?.connection ?? ""}:${requestedJob?.external ?? ""}`}
                 tenantId={tenantId}
                 actorId={actorId}
                 canEdit
                 client={client}
+                initialJob={requestedJob}
               />
             ))}
         </>
