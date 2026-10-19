@@ -461,6 +461,7 @@ export function ClientPortal({
           tenant={tenant}
           userId={user.id}
           company={clientDisplayName(p.company)}
+          operatorAuthorised={operator.data === true}
           open={setSection}
           openFeedback={(issue) => {
             setHealthFeedbackId(issue?.feedback_id ?? undefined);
