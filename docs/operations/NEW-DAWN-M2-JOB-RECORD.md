@@ -88,10 +88,11 @@ withholds the result. A completed receipt cannot be updated, deleted or
 truncated. The rollback-only TEST fixture exercises all three queue states and
 these receipt protections.
 
-This candidate is **not LIVE**. The SQL and Edge route can be installed while
-the import queue is active because they start no provider GET by themselves and
-the queue guard blocks new requests. Keep the UI disabled until the queue is idle
-and the signed-in operator preview is verified. A first real GET must
+The additive SQL and Edge route are installed on LIVE, but the UI action is
+gated by the absent/off `new_dawn.exact_job_detail` tenant flag. Installation
+starts no provider GET, and the queue guard blocks new requests while imports
+are active. Keep the flag off until the queue is idle and the signed-in operator
+preview is verified. A first real GET must
 show the documented response shape, source/as-of labels and audited one-use
 receipt in the signed-in operator preview. Wrong ID, lost actor grant, active
 view-as, changed source link or missing connection fail closed. Seven focused

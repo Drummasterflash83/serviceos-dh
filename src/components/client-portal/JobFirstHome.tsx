@@ -100,6 +100,17 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
   const [fresh, setFresh] = useState<ExactJobDetail | null>(null);
   const [freshBusy, setFreshBusy] = useState(false);
   const [freshError, setFreshError] = useState("");
+  const currentDetailFlag = useQuery({
+    queryKey: ["new-dawn-exact-job-detail-flag", actor, tenant],
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().from("feature_flags")
+        .select("value").eq("tenant_id", tenant)
+        .eq("flag", "new_dawn.exact_job_detail").maybeSingle();
+      if (error) throw Error("Exact job detail flag unavailable.");
+      return data?.value === true;
+    },
+    staleTime: 30_000,
+  });
   useEffect(() => {
     let active = true;
     setSource(null); setBusy(true); setError(""); setFresh(null); setFreshError("");
@@ -111,7 +122,7 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
   }, [tenant, actor, job.id, reason]);
   const detail = source?.source;
   async function checkCurrentDetail() {
-    if (!detail?.current || freshBusy) return;
+    if (!detail?.current || currentDetailFlag.data !== true || freshBusy) return;
     setFreshBusy(true); setFreshError(""); setFresh(null);
     try {
       setFresh(await readExactJobDetail(getSupabaseClient(), tenant, job.id,
@@ -140,7 +151,7 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
       <p>Reported: {detail.dates.reported.source ?? "not provided"} · Completed: {detail.dates.completed.source ?? "not provided"}</p>
       {(detail.dates.reported.state === "timezone_required" || detail.dates.completed.state === "timezone_required") && <p>One or more source times have no timezone; no elapsed duration has been inferred.</p>}
       <p className="text-sm">A source completion name is not a verified engineer visit. The quote is not an invoice or paid value. Diary, parts and costs are not captured in this job record.</p>
-      {detail.current && <button className="cp-secondary" disabled={freshBusy} onClick={() => void checkCurrentDetail()}>
+      {detail.current && currentDetailFlag.data === true && <button className="cp-secondary" disabled={freshBusy} onClick={() => void checkCurrentDetail()}>
         {freshBusy ? "Checking Commusoft…" : "Check current Commusoft job details"}
       </button>}
       {freshError && <p role="alert">{freshError}</p>}
