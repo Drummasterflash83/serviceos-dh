@@ -30,7 +30,7 @@ test("reads only the two bound GET invoice URLs and passes raw decimal JSON to S
     userRpc: async (name) => { calls.push(name); return { data: { requestId, state: "prepared" }, error: null }; },
     serviceRpc: async (name, args) => {
       calls.push(name);
-      if (name.endsWith("_acquire")) return { data: { requestId, realmId: "123", environment: "production", accessToken: "secret", items: ids.map((versionId, i) => ({ versionId, invoiceId: String(i + 7) })) }, error: null };
+      if (name.endsWith("_acquire")) return { data: { requestId, tenantId, connectionId, realmId: "123", environment: "production", accessToken: "secret", items: ids.map((versionId, i) => ({ versionId, invoiceId: String(i + 7) })) }, error: null };
       if (name.endsWith("_current")) return { data: true, error: null };
       if (name.endsWith("_finish")) { raws.push(...args.p_raw as string[]); return { data: { request_id: requestId, rows: [{}, {}] }, error: null }; }
       throw Error("unexpected RPC");
@@ -52,11 +52,23 @@ test("changed binding stops before first provider read", async () => {
   await assert.rejects(runInvoiceCheck(request, {
     userRpc: async () => ({ data: { requestId, state: "prepared" }, error: null }),
     serviceRpc: async (name) => name.endsWith("_acquire")
-      ? { data: { requestId, realmId: "123", environment: "production", accessToken: "secret", items: ids.map((versionId, i) => ({ versionId, invoiceId: String(i + 7) })) }, error: null }
+      ? { data: { requestId, tenantId, connectionId, realmId: "123", environment: "production", accessToken: "secret", items: ids.map((versionId, i) => ({ versionId, invoiceId: String(i + 7) })) }, error: null }
       : { data: false, error: null },
     fetcher: async () => { fetches++; return new Response(); },
   }), /scope_changed/);
   assert.equal(fetches, 0);
+});
+test("claim bound to another tenant or connection cannot reach provider", async () => {
+  for (const changed of [{ tenantId: connectionId }, { connectionId: tenantId }]) {
+    let fetches = 0;
+    await assert.rejects(runInvoiceCheck(request, {
+      userRpc: async () => ({ data: { requestId, state: "prepared" }, error: null }),
+      serviceRpc: async () => ({ data: { requestId, tenantId, connectionId, ...changed, realmId: "123",
+        environment: "production", accessToken: "secret", items: ids.map((versionId, i) => ({ versionId, invoiceId: String(i + 7) })) }, error: null }),
+      fetcher: async () => { fetches++; return new Response(); },
+    }), /claim_unavailable/);
+    assert.equal(fetches, 0);
+  }
 });
 test("failed provider read records one bounded failure and never calls finish", async () => {
   const rpcNames: string[] = [];
@@ -64,7 +76,7 @@ test("failed provider read records one bounded failure and never calls finish", 
     userRpc: async () => ({ data: { requestId, state: "prepared" }, error: null }),
     serviceRpc: async (name) => {
       rpcNames.push(name);
-      if (name.endsWith("_acquire")) return { data: { requestId, realmId: "123", environment: "production", accessToken: "secret", items: ids.map((versionId, i) => ({ versionId, invoiceId: String(i + 7) })) }, error: null };
+      if (name.endsWith("_acquire")) return { data: { requestId, tenantId, connectionId, realmId: "123", environment: "production", accessToken: "secret", items: ids.map((versionId, i) => ({ versionId, invoiceId: String(i + 7) })) }, error: null };
       if (name.endsWith("_current")) return { data: true, error: null };
       return { data: null, error: null };
     },

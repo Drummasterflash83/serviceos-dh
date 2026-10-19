@@ -25,6 +25,7 @@ interface Acquired {
 }
 function acquired(value: unknown, request: InvoiceCheckRequest): value is Acquired {
   if (!object(value) || value.requestId !== request.requestId ||
+    value.tenantId !== request.tenantId || value.connectionId !== request.connectionId ||
     !/^[1-9][0-9]{0,29}$/.test(String(value.realmId)) ||
     !["sandbox", "production"].includes(String(value.environment)) ||
     typeof value.accessToken !== "string" || !/^[\x21-\x7e]{1,8192}$/.test(value.accessToken) ||

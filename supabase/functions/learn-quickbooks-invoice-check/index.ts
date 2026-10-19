@@ -19,9 +19,20 @@ Deno.serve(async (req: Request) => {
   if (req.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") return reply({ error: "request_invalid" }, 400, cors);
   let body: unknown;
   try {
-    const raw = await req.text();
-    if (raw.length > 4096) throw Error();
-    body = JSON.parse(raw);
+    if (!req.body || Number(req.headers.get("content-length") ?? "0") > 4096) throw Error();
+    const reader = req.body.getReader(), chunks: Uint8Array[] = []; let length = 0;
+    try {
+      while (true) {
+        const part = await reader.read();
+        if (part.done) break;
+        length += part.value.byteLength;
+        if (length > 4096) throw Error();
+        chunks.push(part.value);
+      }
+    } finally { await reader.cancel().catch(() => {}); reader.releaseLock(); }
+    const bytes = new Uint8Array(length); let offset = 0;
+    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+    body = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
   } catch { return reply({ error: "request_invalid" }, 400, cors); }
   if (!validateInvoiceCheckRequest(body)) return reply({ error: "request_invalid" }, 400, cors);
   try { return reply(await runInvoiceCheck(body, { userRpc: rpc, serviceRpc: ports.serviceRpc, fetcher: ports.fetcher, signal: req.signal }), 200, cors); }
