@@ -10,6 +10,11 @@ export type HomeJob = {
   site: string | null;
 };
 
+/** Team work waits for confirmed person-to-job evidence; tenant membership alone is not assignment. */
+export function canSeeCompanyJobs(role: unknown) {
+  return role === "owner" || role === "admin";
+}
+
 const statuses: Record<string, string> = {
   open: "Recorded open",
   pending: "Recorded pending",

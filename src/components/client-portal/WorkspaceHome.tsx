@@ -8,20 +8,47 @@ import { EmmaIssueSummary } from "@/components/receptionist/EmmaIssueSummary";
 import type { HealthIssue } from "@/lib/use-emma-health";
 import { JobFirstHome, useJobFirstHomeFlag } from "./JobFirstHome";
 
-export function WorkspaceHome({
-  tenant,
-  userId,
-  company,
-  open,
-  openFeedback,
-}: {
+type WorkspaceHomeProps = {
   tenant: string;
   userId: string;
   company: string;
   open: (section: ClientSection) => void;
   openFeedback: (issue?: HealthIssue) => void;
-}) {
+  operatorAuthorised?: boolean;
+};
+
+export function WorkspaceHome(props: WorkspaceHomeProps) {
+  const { tenant, open, operatorAuthorised = false } = props;
   const jobFirst = useJobFirstHomeFlag(tenant);
+  if (jobFirst.data === true) return (
+    <div className="cp-work-home cp-home-job-first">
+      <JobFirstHome tenant={tenant} operator={operatorAuthorised}
+        onOpenInformation={operatorAuthorised
+          ? () => window.location.assign(`/openfolk/${encodeURIComponent(tenant)}?module=information`)
+          : undefined} />
+      <div className="cp-home-cards" aria-label="Other workspace areas">
+        <button className="cp-home-card" onClick={() => open("receptionist")}>
+          <Headphones size={24} /><h3>AI Receptionist</h3>
+          <p>Review calls and reception, including anything needing your attention.</p>
+          <span>Open reception <ArrowRight size={16} /></span>
+        </button>
+        <button className="cp-home-card" onClick={() => open("modules")}>
+          <Layers size={24} /><h3>Your modules</h3>
+          <p>See the OpenFolk services behind your workspace.</p>
+          <span>View modules <ArrowRight size={16} /></span>
+        </button>
+        <button className="cp-home-card" onClick={() => open("notes")}>
+          <MessageSquare size={24} /><h3>Feedback</h3>
+          <p>Tell OpenFolk what needs improving.</p>
+          <span>Leave feedback <ArrowRight size={16} /></span>
+        </button>
+      </div>
+    </div>
+  );
+  return <LegacyWorkspaceHome {...props} />;
+}
+
+function LegacyWorkspaceHome({ tenant, userId, company, open, openFeedback }: WorkspaceHomeProps) {
   const receptionist = useQuery({
     queryKey: ["workspace-receptionist-summary", userId, tenant],
     queryFn: async () => {
@@ -43,28 +70,6 @@ export function WorkspaceHome({
     error: callEvidence.isError,
     launchStage: receptionist.data?.launch_stage,
   })[0]!;
-  if (jobFirst.data === true) return (
-    <div className="cp-work-home cp-home-job-first">
-      <JobFirstHome tenant={tenant} />
-      <div className="cp-home-cards" aria-label="Other workspace areas">
-        <button className="cp-home-card" onClick={() => open("receptionist")}>
-          <Headphones size={24} /><h3>AI Receptionist</h3>
-          <p>Review calls and reception, including anything needing your attention.</p>
-          <span>Open reception <ArrowRight size={16} /></span>
-        </button>
-        <button className="cp-home-card" onClick={() => open("modules")}>
-          <Layers size={24} /><h3>Your modules</h3>
-          <p>See the OpenFolk services behind your workspace.</p>
-          <span>View modules <ArrowRight size={16} /></span>
-        </button>
-        <button className="cp-home-card" onClick={() => open("notes")}>
-          <MessageSquare size={24} /><h3>Feedback</h3>
-          <p>Tell OpenFolk what needs improving.</p>
-          <span>Leave feedback <ArrowRight size={16} /></span>
-        </button>
-      </div>
-    </div>
-  );
   return (
     <div className="cp-work-home">
       <EmmaIssueSummary tenant={tenant} onOpen={openFeedback} />

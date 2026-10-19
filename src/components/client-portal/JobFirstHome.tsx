@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BriefcaseBusiness, RefreshCw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
-import { homeJobAction, homeJobState, orderHomeJobs, type HomeJob } from "@/lib/new-dawn-job-home";
+import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, type HomeJob } from "@/lib/new-dawn-job-home";
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { searchOperatorJobs } from "@/lib/learn-operator-job-search";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -102,11 +102,11 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
   const [operatorBusy, setOperatorBusy] = useState(false);
   const client = useQuery({
     queryKey: ["new-dawn-job-home", user?.id, tenant],
-    enabled: !operator && !!user && profile?.tenant_id === tenant,
+    enabled: !operator && !!user && profile?.tenant_id === tenant && canSeeCompanyJobs(profile.role),
     queryFn: () => clientJobs(tenant),
     staleTime: 30_000,
   });
-  const authorisedClient = !operator && !!user && profile?.tenant_id === tenant;
+  const authorisedClient = !operator && !!user && profile?.tenant_id === tenant && canSeeCompanyJobs(profile.role);
   async function loadOperatorJobs() {
     if (!user || reason.trim().length < 3 || operatorBusy) return;
     setOperatorBusy(true); setOperatorError(""); setOperatorPage(null);
@@ -134,7 +134,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
         <button className="cp-secondary" disabled={operatorBusy || reason.trim().length < 3} onClick={() => void loadOperatorJobs()}>{operatorBusy ? "Checking access…" : "Open audited preview"}</button>
         {operatorError && <p role="alert">{operatorError}</p>}
       </div>}
-      {!operator && !authorisedClient && <p role="status">Job cards are available only in your company’s signed-in workspace.</p>}
+      {!operator && !authorisedClient && <p role="status">Your personal work list is being prepared. It will appear when job assignments are confirmed.</p>}
       {!operator && authorisedClient && client.isPending && <p role="status">Reading your saved jobs…</p>}
       {!operator && authorisedClient && client.isError && <p role="alert">Saved jobs are unavailable. Refresh to try again.</p>}
       {!operator && authorisedClient && client.isSuccess && <p className="nd-job-scope">Up to 12 saved jobs: recorded open, pending or held work first, then recent other records. This is not a complete workload count or live Commusoft status.</p>}
