@@ -10,7 +10,7 @@ from pathlib import Path
 from database_backup_package import (PackageError, canonical, describe, read_json,
                                      package_snapshot, private_directory, FORMAT,
                                      DAILY_FORMAT,
-                                     write_private)
+                                     MAX_DIAGNOSTIC_INPUT_BYTES, write_private)
 
 SAFE_PACKAGE_ERRORS = frozenset({
     'private_directory_required', 'regular_file_required', 'file_size_invalid',
@@ -37,7 +37,7 @@ def safe_preparation_diagnostic(error):
               'secretsPrinted': False}
     size = getattr(error, 'package_input_bytes', None)
     if code in ('encrypt_package_size_invalid', 'encrypt_file_size_invalid') and \
-            type(size) is int and 0 <= size <= 2 ** 53 - 1:
+            type(size) is int and 0 <= size <= MAX_DIAGNOSTIC_INPUT_BYTES:
         result['packageInputBytes'] = size
     return result
 

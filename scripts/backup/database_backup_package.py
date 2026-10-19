@@ -27,6 +27,7 @@ AGE_SHA256 = {
 }.get((platform.system(), platform.machine()))
 MAX_BYTES = 2 * 1024 ** 3
 MAX_JSON = 8 * 1024 ** 2
+MAX_DIAGNOSTIC_INPUT_BYTES = 1024 ** 4
 FILES = ('database.dump', 'net-tables.sql', 'source-inventory.json', 'report.json',
          'restore-native-comparison-report.json', 'vault-recovery-report.json')
 FORMAT = 'serviceos-database-package/1'
@@ -54,7 +55,7 @@ def package_input_bytes(source, files):
             if not stat.S_ISREG(info.st_mode) or info.st_size < 0:
                 return None
             total += info.st_size
-            if total > 2 ** 53 - 1:
+            if total > MAX_DIAGNOSTIC_INPUT_BYTES:
                 return None
         return total
     except OSError:

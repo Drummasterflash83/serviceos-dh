@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { publicPreparationFailure, safePythonPreparationFailure } from "./database-encrypt-safe-codes.mjs";
+import { classifyPythonStageFailure, publicPreparationFailure,
+  safePythonPreparationFailure } from "./database-encrypt-safe-codes.mjs";
 import { safeDailyChildFailure, runDailyDatabaseBackup } from "./run-daily-database-backup.mjs";
 import { sanitizeDailyFailure, writeSafeDailyDiagnostic } from "./write-safe-daily-diagnostic.mjs";
 
@@ -49,6 +50,27 @@ test("Python and public wrapper accept only fixed preparation codes", () => {
   assert.deepEqual(safeDailyChildFailure(JSON.stringify({ state: "database_public_backup_failed_safe",
     stage: "encrypt", code: "encrypt_package_size_invalid", packageInputBytes: "PRIVATE",
     secretsPrinted: false })), { code: "encrypt_package_size_invalid" });
+  assert.deepEqual(safeDailyChildFailure(JSON.stringify({ state: "database_public_backup_failed_safe",
+    stage: "encrypt", code: "encrypt_package_size_invalid", packageInputBytes: 1024 ** 4 + 1,
+    secretsPrinted: false })), { code: "encrypt_package_size_invalid" });
+});
+
+test("Python size evidence survives the Node wrappers and restricted artifact", () => {
+  const python = JSON.stringify({ state: "package_preparation_failed_safe",
+    code: "encrypt_package_size_invalid", packageInputBytes: 8_700_000_000,
+    secretsPrinted: false, privateText: "PRIVATE PATH AND RECIPIENT" });
+  const classified = classifyPythonStageFailure("prepare_public_database_package.py", python, false);
+  const error = Error("private subprocess text must not escape");
+  error.code = classified.code;
+  error.safeDiagnostic = classified.safeDiagnostic;
+  const publicLine = publicPreparationFailure(error, "--prepare-daily");
+  const daily = safeDailyChildFailure(JSON.stringify(publicLine));
+  const artifact = sanitizeDailyFailure({ state: "daily_backup_not_verified",
+    stage: "encrypt", ...daily, productionWrites: false });
+  assert.deepEqual(artifact, { state: "daily_backup_not_verified", stage: "encrypt",
+    code: "encrypt_package_size_invalid", packageInputBytes: 8_700_000_000,
+    productionWrites: false });
+  assert.equal(JSON.stringify({ publicLine, artifact }).includes("PRIVATE"), false);
 });
 
 test("failed encrypt reaches only the allowlisted daily artifact, without retry", async () => {

@@ -39,7 +39,7 @@ export function safeEncryptDiagnostic(value) {
   const size = value.packageInputBytes;
   return { code: value.code,
     ...(["encrypt_package_size_invalid", "encrypt_file_size_invalid"].includes(value.code) &&
-      Number.isSafeInteger(size) && size >= 0
+      Number.isSafeInteger(size) && size >= 0 && size <= 1024 ** 4
       ? { packageInputBytes: size } : {}) };
 }
 
@@ -51,9 +51,17 @@ export function safePythonPreparationFailure(output) {
   } catch { return null; }
 }
 
+export function classifyPythonStageFailure(name, output, failed) {
+  const safeDiagnostic = !failed && name === "prepare_public_database_package.py"
+    ? safePythonPreparationFailure(output) : null;
+  return { code: safeDiagnostic?.code ?? "database_python_stage_unconfirmed",
+    ...(safeDiagnostic ? { safeDiagnostic } : {}) };
+}
+
 export function publicPreparationFailure(error, mode) {
   if (mode !== "--prepare-daily") return null;
-  const diagnostic = safeEncryptDiagnostic(error) ?? {
+  const diagnostic = safeEncryptDiagnostic(error?.safeDiagnostic) ??
+    safeEncryptDiagnostic(error) ?? {
     code: PUBLIC_PREPARATION_CODES.get(error?.code ?? error?.message) ?? "encrypt_unexpected_failure" };
   return { state: "database_public_backup_failed_safe",
     stage: "encrypt", ...diagnostic, secretsPrinted: false };
