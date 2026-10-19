@@ -122,7 +122,7 @@ export function OwnerMoneyPanel({ tenant, operator, operatorReason }: {
           </article>)}
           {money.overdue_invoice_count === 0 && <p>No overdue positive balances appear in the retained invoice set.</p>}
         </div>
-        <p className="nd-money-scope">Accounts gross profit, field gross profit, net profit, ARR and Further Works await their own verified sources. Invoice totals do not stand in for those measures.</p>
+        <p className="nd-money-scope">This invoice-only view does not calculate accounts or field profit, ARR or Further Works. Reviewed company accounts are a separate dated report.</p>
       </>}
     </section>
   );
