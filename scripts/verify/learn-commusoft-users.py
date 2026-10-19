@@ -1,11 +1,16 @@
 """One synthetic /users source page through real SQL, inside network-isolated Postgres."""
 import shutil
 import subprocess
+import sys
 import time
 import uuid
+import concurrent.futures
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[2]
+shared_lease = sys.argv[1:] == ['--shared-lease']
+if sys.argv[1:] not in ([], ['--shared-lease']):
+    raise SystemExit('Usage: learn-commusoft-users.py [--shared-lease]')
 docker = shutil.which('docker') or '/usr/local/bin/docker'
 name = 'serviceos-commusoft-users-' + uuid.uuid4().hex[:8]
 created = False
@@ -73,7 +78,29 @@ try:
     for signature in signatures:
         definition = sql("select pg_get_functiondef('public." + signature + "'::regprocedure);")
         assert "'users'" in definition, 'Users resource not enabled in ' + signature
+    if shared_lease:
+        shared = file('supabase/migrations/20261106140000_new_dawn_commusoft_shared_lease.sql')
+        worker = "select md5(pg_get_functiondef('public.learn_commusoft_acquire_page(uuid,uuid,text,integer,jsonb)'::regprocedure));"
+        before_worker = sql(worker)
+        sql(shared.replace('\ncommit;', '\nrollback;'))
+        assert sql(worker) == before_worker, 'Shared lease rollback changed worker acquisition'
+        assert sql("select count(*) from information_schema.columns where table_schema='public' and table_name='learn_business_input_request_gates' and column_name='lease_owner_id';") == '0', 'Shared lease rollback retained columns'
+        sql(shared)
+        assert sql(worker) != before_worker, 'Shared lease did not patch worker acquisition'
+        print(sql(file('scripts/verify/new-dawn-commusoft-shared-lease.assert.sql')))
+
+        def race(owner):
+            return sql("set request.jwt.claim.role='service_role'; select public.learn_commusoft_shared_lease_acquire(repeat('a',64),'source_page','" + owner + "')->>'state';")
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            outcomes = sorted(pool.map(race, ['dddddddd-dddd-4ddd-8ddd-dddddddddddd:1', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee:1']))
+        assert outcomes == ['ready', 'wait'], 'Concurrent source leases were not serialized: ' + repr(outcomes)
+        print('PASS: concurrent credential-fingerprint claims produce one owner and one wait')
     print(sql(file('scripts/verify/learn-commusoft-users.assert.sql')))
+    if shared_lease:
+        fingerprint = "encode(sha256(convert_to('commusoft:SYNTHETIC_USERS_NO_NETWORK','UTF8')),'hex')"
+        assert sql("select lease_owner_kind is null from public.learn_business_input_request_gates where credential_fingerprint=" + fingerprint + ";") == 't', 'Committed source page kept its in-flight lease'
+        print('PASS: committed synthetic source page released its in-flight lease')
     print('PASS: migration rollback preserves existing function definitions, grants and ownership')
 finally:
     if created:
