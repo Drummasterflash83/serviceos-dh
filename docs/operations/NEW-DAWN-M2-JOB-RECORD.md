@@ -41,10 +41,59 @@ to technician visits or job finance, establish a supported provider endpoint or 
 bounded, authorised export and verify its relationship keys. Preserve Commusoft
 job codes as strings and only link other providers on exact, evidenced identities.
 
+## Concrete CSV fallback for unsupported facets
+
+`scripts/commusoft/prepare-job-facet-csv.mjs` prepares a **local, private staging
+artifact** from an authorised Commusoft export. It does not contact Commusoft,
+publish a card, write to a database or match people. Every run requires a manifest
+with exact tenant/connection IDs, source `commusoft_csv`, one facet and an export
+timestamp with timezone. The facet must be `visits`, `engineers`, `estimates`,
+`invoices` or `parts_costs`. The CSV header must match the selected contract
+exactly:
+
+| Facet | Required columns, in order |
+| --- | --- |
+| Visits | `source_record_id,job_id,job_code,starts_at,ends_at,engineer_id,status` |
+| Engineers | `source_record_id,display_name,status` |
+| Estimates / invoices | `source_record_id,job_id,job_code,issued_at,status,amount,currency` |
+| Parts and costs | `source_record_id,job_id,job_code,description,quantity,amount,currency` |
+
+For example, a private `scope.json` contains:
+
+```json
+{
+  "tenant_id": "<Drummonds tenant UUID>",
+  "connection_id": "<verified Commusoft connection UUID>",
+  "source": "commusoft_csv",
+  "facet": "visits",
+  "exported_at": "2026-10-19T09:00:00Z"
+}
+```
+
+Run `node scripts/commusoft/prepare-job-facet-csv.mjs --manifest scope.json
+--csv visits.csv --out /private/path/visits-staging.json` with an output path
+outside the repository. The output file is created once with mode `0600` and
+contains the source fields, tenant-scoped record identities, export timestamp,
+input hash, date states and row counts. The terminal receives counts and hash,
+not row contents. The parser bounds input size and rows, rejects malformed CSV,
+duplicate source IDs and wrong headers, and retains all job codes as strings.
+
+`job_id` is the **Commusoft source job ID**, not a type/code. A present ID is
+labelled `source_id_present`; it is not linked until a later governed import
+checks that exact ID against the same tenant and connection's retained jobs.
+Missing IDs are held even if `job_code` looks familiar. Engineer IDs similarly
+remain source text without an OpenFolk team assignment. A timestamp without a
+timezone is labelled `timezone_required`; no instant or duration is inferred.
+Amounts stay source strings and cannot establish paid value or margin. Re-exports
+are separately hashed so corrections can be reviewed rather than silently
+overwriting earlier evidence. This stage is deliberately separate from LIVE
+capture; a real export and import authority still need review before ingestion.
+
 ## Verification
 
 `node --test src/lib/learn-commusoft-job-details.test.ts` and
 `tsc --noEmit` pass. The isolated PostgreSQL permission suite
 `python3 scripts/verify/learn-commusoft-permits.py --job-details` passes with
-the v2 migration applied. This is local release evidence, not LIVE deployment or
-real-client acceptance.
+the v2 migration applied. `node --test
+scripts/commusoft/prepare-job-facet-csv.test.mjs` passes the CSV contract.
+This is local release evidence, not LIVE deployment or real-client acceptance.
