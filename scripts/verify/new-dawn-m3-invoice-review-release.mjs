@@ -64,7 +64,8 @@ const catalogSql=`select
  (select count(*)::int from public.feature_flags where flag='new_dawn.invoice_review_candidates_preview'
   and value='true'::jsonb) as invoice_preview_flags_on`;
 
-export function assess(snapshot,installed,source=reviewedSource()){
+export function assess(snapshot,installed,source=reviewedSource(),invoicePreviewEnabled=false){
+  if(typeof invoicePreviewEnabled!=="boolean")throw Error("m3_invoice_review_flag_invalid");
   if(snapshot?.project?.id!==PROJECT||snapshot.project.status!=="ACTIVE_HEALTHY")
     throw Error("m3_invoice_review_live_project_changed");
   if(!Array.isArray(snapshot.ledger)||snapshot.ledger.length!==Number(installed))
@@ -86,11 +87,11 @@ export function assess(snapshot,installed,source=reviewedSource()){
     c.operator_access!==true||c.quickbooks_access!==true||
     c.source_latest!==true||c.source_versions!==true||c.finance_audit!==true||
     c.active_tenant!==true||c.confirmed_connections!==1||
-    c.client_flags_on!==0||c.invoice_preview_flags_on!==0)
+    c.client_flags_on!==0||c.invoice_preview_flags_on!==Number(invoicePreviewEnabled))
     throw Error("m3_invoice_review_boundary_changed");
   return {state:installed?"installed_default_off_readback":"exact_m3_invoice_review_ready",
     version:VERSION,sourceSha256:source.hash,providerRequests:0,invoiceValuesRead:0,
-    clientMoneyFlagsEnabled:false,invoiceReviewFlagEnabled:false};
+    clientMoneyFlagsEnabled:false,invoiceReviewFlagEnabled:invoicePreviewEnabled};
 }
 
 export function releaseSql(file=reviewedSource()){
@@ -165,7 +166,8 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
     const mode=process.argv.slice(2).join(" ");
     if(mode==="--live-read-only"){
       const snapshot=await readStage(PROJECT,savedCliToken());
-      console.log(JSON.stringify(assess(snapshot,snapshot.ledger?.length===1)));
+      console.log(JSON.stringify(assess(snapshot,snapshot.ledger?.length===1,
+        reviewedSource(),snapshot.catalog?.[0]?.invoice_preview_flags_on===1)));
     }else if(mode==="--live-install-exact"){
       if(process.env.NEW_DAWN_M3_ALLOW_VERSION!==VERSION||
         process.env.NEW_DAWN_M3_ALLOW_SOURCE_SHA256!==SOURCE_SHA256)
