@@ -148,7 +148,7 @@ def copy_fingerprints(stream):
             'rows': sum(t['rows'] for t in ordered), 'streamBytes': total}
 
 
-def fingerprints_from_command(command, *, stdin=None, timeout=900):
+def fingerprints_from_command(command, *, stdin=None, timeout=2700):
     # A tempfile drains stderr without deadlock or accidental console disclosure.
     # Contents stay private and are removed when this call ends.
     with tempfile.TemporaryFile() as error_log:
@@ -165,7 +165,10 @@ def fingerprints_from_command(command, *, stdin=None, timeout=900):
         timer.start()
         try:
             result = copy_fingerprints(proc.stdout)
-            status = proc.wait(timeout=30)
+            try:
+                status = proc.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                raise RecoveryError('Native COPY export process did not complete') from None
             if status or expired.is_set():
                 raise RecoveryError('Native COPY export process did not complete')
             return result
@@ -173,7 +176,10 @@ def fingerprints_from_command(command, *, stdin=None, timeout=900):
             timer.cancel()
             if proc.poll() is None:
                 proc.kill()
-            proc.wait(timeout=30)
+            try:
+                proc.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                proc.kill()
             proc.stdout.close()
 
 
