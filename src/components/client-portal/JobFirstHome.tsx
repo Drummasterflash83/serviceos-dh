@@ -281,9 +281,10 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
   </div>;
 }
 
-export function JobFirstHome({ tenant, operator = false, onOpenInformation, company }: {
+export function JobFirstHome({ tenant, operator = false, presentationFirst = false, onOpenInformation, company }: {
   tenant: string;
   operator?: boolean;
+  presentationFirst?: boolean;
   onOpenInformation?: () => void;
   company?: string;
 }) {
@@ -300,6 +301,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation, comp
   const [operatorBusy, setOperatorBusy] = useState(false);
   useEffect(() => { setSelected(null); setSelectedOperator(null); setSelectedMd(null); setMdPreview(false); setOperatorPage(null); setOperatorSourcePage(null); }, [tenant, user?.id]);
   const sourceFlag = useSourceJobHomeFlag(tenant, operator);
+  const mdFirstAvailable = presentationFirst && sourceFlag.data === true;
   const authorisedClient = !operator && !!user && profile?.tenant_id === tenant && canSeeCompanyJobs(profile.role);
   const client = useQuery({
     queryKey: ["new-dawn-job-home", user?.id, tenant],
@@ -328,7 +330,11 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation, comp
     setOperatorBusy(true); setOperatorError(""); setOperatorPage(null); setOperatorSourcePage(null);
     setMdPreview(false); setSelectedMd(null);
     try {
-      if (sourceFlag.data === true) setOperatorSourcePage(await sourceHome(tenant, user.id, reason.trim()));
+      if (sourceFlag.data === true) {
+        const page = await sourceHome(tenant, user.id, reason.trim());
+        setOperatorSourcePage(page);
+        if (mdFirstAvailable) setMdPreview(true);
+      }
       else {
         const { data, error } = await getSupabaseClient().rpc("new_dawn_operator_job_home", {
           p_tenant: tenant, p_reason: reason.trim(),
@@ -352,7 +358,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation, comp
         {operator && onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Browse captured source jobs</button>}
       </div>
       {operator && <div className={`nd-operator-preview${displayedOperatorJobs ? " nd-operator-preview--active" : ""}`}>
-        <strong>{mdPreviewOpen ? `${companyLabel} MD job view · read-only presentation preview` : displayedOperatorJobs ? `${companyLabel} job home · OpenFolk read-only preview` : `Review ${companyLabel} job home · OpenFolk read-only`}</strong>
+        <strong>{mdPreviewOpen ? `${companyLabel} MD job view · read-only presentation preview` : displayedOperatorJobs ? `${companyLabel} job home · OpenFolk read-only preview` : mdFirstAvailable ? `${companyLabel} MD job view · OpenFolk read-only preview` : `Review ${companyLabel} job home · OpenFolk read-only`}</strong>
         {displayedOperatorJobs ? <>
           <p>{mdPreviewOpen
             ? `You remain signed in as OpenFolk. This presentation uses the audited saved job selection, not a client staff login or live provider feed. Read logged ${checked(activeOperatorSourcePage!.observedAt)}.`
@@ -362,9 +368,9 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation, comp
           </button>}
           <button className="cp-secondary" onClick={() => { setSelectedOperator(null); setSelectedMd(null); setMdPreview(false); setOperatorPage(null); setOperatorSourcePage(null); }}>Change access reason</button>
         </> : <>
-          <p>You remain signed in as OpenFolk. State why you are opening this company’s jobs; the server checks and logs each read.</p>
+          <p>{mdFirstAvailable ? `State why you are opening ${companyLabel}'s MD job view. You remain signed in as OpenFolk, and the server logs this read.` : "You remain signed in as OpenFolk. State why you are opening this company’s jobs; the server checks and logs each read."}</p>
           <label>Access reason <input value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} placeholder="Review client job experience" /></label>
-          <button className="cp-secondary" disabled={!sourceFlag.isSuccess || operatorBusy || reason.trim().length < 3} onClick={() => void loadOperatorJobs()}>{operatorBusy ? "Checking access…" : "Open audited preview"}</button>
+          <button className="cp-secondary" disabled={!sourceFlag.isSuccess || operatorBusy || reason.trim().length < 3} onClick={() => void loadOperatorJobs()}>{operatorBusy ? "Checking access…" : mdFirstAvailable ? "Open audited MD preview" : "Open audited preview"}</button>
           {sourceFlag.isError && <p role="alert">Job release settings are unavailable. Try again later.</p>}
           {operatorError && <p role="alert">{operatorError}</p>}
         </>}
