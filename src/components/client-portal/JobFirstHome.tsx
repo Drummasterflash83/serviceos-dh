@@ -21,6 +21,9 @@ const checked = (value: string | null) =>
   value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString("en-GB") : "not confirmed";
 const missingSourceFact = (state: string) => state === "source_null" ? "blank in source"
   : state === "source_unrecognized" ? "source format needs review" : "not supplied";
+const sourceTextFact = (fact: { state: string; value: string | null }) =>
+  fact.state === "present" ? fact.value?.trim() ? fact.value : "blank in source"
+    : missingSourceFact(fact.state);
 const latestSaved = (values: Array<string | null>) => {
   const dates = values.filter((value): value is string => !!value && Number.isFinite(Date.parse(value)));
   return dates.length ? checked(dates.reduce((latest, value) => Date.parse(value) > Date.parse(latest) ? value : latest)) : "not confirmed";
@@ -209,27 +212,19 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
         {fresh.stage && <p>Source stage: {fresh.stage}</p>}
         {fresh.expectedOnsite && <p>Expected onsite (source text): {fresh.expectedOnsite}</p>}
         {fresh.expectedCompletion && <p>Expected completion (source text): {fresh.expectedCompletion}</p>}
-        {fresh.sourceQuotedAmount && <p>Current job quote (Commusoft source text): {fresh.sourceQuotedAmount.state === "present"
-          ? fresh.sourceQuotedAmount.value
-          : missingSourceFact(fresh.sourceQuotedAmount.state)}. No currency, acceptance or estimate document is verified by this field.</p>}
+        {fresh.sourceQuotedAmount && <p>Current job quote (Commusoft source text): {sourceTextFact(fresh.sourceQuotedAmount)}. No currency, acceptance or estimate document is verified by this field.</p>}
         {fresh.sourceUsers.length > 0 && <p>Source users currently listed: {fresh.sourceUsers.map((user) => user.name).join(", ")}. Their OpenFolk identities and appointments are not confirmed.</p>}
         {fresh.sourceOperationalFacts && <div className="space-y-1" aria-label="Source operational facts">
           <p><strong>Job holds and service level · Commusoft source</strong></p>
           <p>On hold: {fresh.sourceOperationalFacts.isJobOnHold.state === "present"
             ? fresh.sourceOperationalFacts.isJobOnHold.value ? "Yes" : "No"
             : missingSourceFact(fresh.sourceOperationalFacts.isJobOnHold.state)}.</p>
-          <p>Hold reason: {fresh.sourceOperationalFacts.onHoldReasonDescription.state === "present"
-            ? fresh.sourceOperationalFacts.onHoldReasonDescription.value
-            : missingSourceFact(fresh.sourceOperationalFacts.onHoldReasonDescription.state)}.</p>
+          <p>Hold reason: {sourceTextFact(fresh.sourceOperationalFacts.onHoldReasonDescription)}.</p>
           <p>SLA recorded: {fresh.sourceOperationalFacts.hasSLA.state === "present"
             ? fresh.sourceOperationalFacts.hasSLA.value ? "Yes" : "No"
             : missingSourceFact(fresh.sourceOperationalFacts.hasSLA.state)}.
-            {" "}Source SLA status: {fresh.sourceOperationalFacts.SLAStatus.state === "present"
-              ? fresh.sourceOperationalFacts.SLAStatus.value
-              : missingSourceFact(fresh.sourceOperationalFacts.SLAStatus.state)}.</p>
-          <p>Source contract ID: {fresh.sourceOperationalFacts.contractID.state === "present"
-            ? fresh.sourceOperationalFacts.contractID.value
-            : missingSourceFact(fresh.sourceOperationalFacts.contractID.state)}.
+            {" "}Source SLA status: {sourceTextFact(fresh.sourceOperationalFacts.SLAStatus)}.</p>
+          <p>Source contract ID: {sourceTextFact(fresh.sourceOperationalFacts.contractID)}.
             {" "}This does not verify a maintenance contract in OpenFolk.</p>
         </div>}
         <small>Provider last updated: {fresh.providerUpdatedAt ?? "not supplied"}. Expected dates are not verified visits. Audit {fresh.auditId}.</small>
