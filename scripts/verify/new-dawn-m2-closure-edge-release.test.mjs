@@ -8,11 +8,15 @@ import { PROJECT } from "./new-dawn-m2-live-preflight.mjs";
 import { reviewedEdgeBundle } from "./new-dawn-m2-closure-edge-prepare.mjs";
 import { REVIEWED_EDGE_EZBR_SHA256 } from "./new-dawn-m2-closure-release.mjs";
 import { assessBefore, assessAfter, transportRequest,
-  deployLive, assessPost, verifyDownloadedClosure, livePostReadOnly } from
+  deployLive, assessPost, verifyDownloadedClosure, livePostReadOnly,
+  livePostClosureReadOnly } from
   "./new-dawn-m2-closure-edge-release.mjs";
 
 const optional = readFileSync(new URL(
   "../../supabase/migrations/20261107150000_new_dawn_commusoft_job_optional_source_facts.sql",
+  import.meta.url), "utf8");
+const closure = readFileSync(new URL(
+  "../../supabase/migrations/20261107160000_new_dawn_commusoft_job_closure_source_facts.sql",
   import.meta.url), "utf8");
 const old = {
   id: "009b9fb6-8e3c-49b8-8a3e-95531ba370bd",
@@ -52,6 +56,18 @@ function after(value) {
   changed.functions[0].version = 6;
   changed.functions[0].ezbr_sha256 = REVIEWED_EDGE_EZBR_SHA256;
   return changed;
+}
+function closureSnapshot() {
+  const current = after(snapshot());
+  current.ledger = [
+    { version: "20261107150000", name: "new_dawn_commusoft_job_optional_source_facts",
+      statements: [optional] },
+    { version: "20261107160000", name: "new_dawn_commusoft_job_closure_source_facts",
+      statements: [closure] },
+  ];
+  current.catalog[0].function_sha256 =
+    "7c4bb1e4baf72f56935ed40dd441ea1cbd25412d205576583152677d7f4ce36c";
+  return current;
 }
 
 test("transport names one exact PATCH artifact and no provider route", () => {
@@ -146,6 +162,37 @@ test("independent v6 readback keeps v4 SQL, default-off state and exact Edge", a
   assert.equal(result.state, "exact_edge_v6_source_readback");
   assert.equal(result.productionChanged, false);
   assert.deepEqual([reads, downloads], [2, 1]);
+});
+
+test("independent post-closure v6 readback requires exact closure SQL and source", async () => {
+  let reads = 0, downloads = 0, verifies = 0;
+  const result = await livePostClosureReadOnly({
+    token: "fixture", artifactPath: ".verification-results/fixture/artifacts/learn-commusoft-job-detail.ezbr",
+    out: `.verification-results/edge-closure-post-test-${randomUUID()}`,
+    artifactReader: () => ({}),
+    read: async () => { reads++; return closureSnapshot(); },
+    downloader: async () => { downloads++; },
+    sourceVerifier: (_, hash) => { verifies++; assert.equal(hash, reviewedEdgeBundle().sha256); },
+  });
+  assert.equal(result.state, "exact_edge_v6_post_closure_source_readback");
+  assert.equal(result.closureSqlVersion, "20261107160000");
+  assert.equal(result.productionChanged, false);
+  assert.deepEqual([reads, downloads, verifies], [2, 1, 1]);
+  for (const change of [
+    s => { s.catalog[0].function_sha256 = "0".repeat(64); },
+    s => { s.catalog[0].active_permits = 1; },
+    s => { s.ledger[1].statements[0] = "changed"; },
+    s => { s.functions[0].ezbr_sha256 = "0".repeat(64); },
+  ]) {
+    const current = closureSnapshot();
+    change(current);
+    await assert.rejects(() => livePostClosureReadOnly({
+      token: "fixture", artifactPath: ".verification-results/fixture/artifacts/learn-commusoft-job-detail.ezbr",
+      out: `.verification-results/edge-closure-post-test-${randomUUID()}`,
+      artifactReader: () => ({}), read: async () => current,
+      downloader: async () => { throw Error("must_not_download"); },
+    }));
+  }
 });
 
 test("one exact Edge PATCH needs metadata and downloaded source readback", async () => {
