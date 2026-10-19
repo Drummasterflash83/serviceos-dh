@@ -9,6 +9,7 @@ import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-op
 import { readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { OwnerMoneyPanel } from "./OwnerMoneyPanel";
+import { FounderAccountsPreview } from "./FounderAccountsPreview";
 
 const isUuid = (value: unknown): value is string =>
   typeof value === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(value);
@@ -272,6 +273,8 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
       </Dialog>
     </section>
     <OwnerMoneyPanel tenant={tenant} operator={operator} operatorReason={reason} />
+    {operator && <FounderAccountsPreview tenant={tenant} operator={operator}
+      jobPreviewOpened={!!operatorPage} reason={reason} />}
     </>
   );
 }
