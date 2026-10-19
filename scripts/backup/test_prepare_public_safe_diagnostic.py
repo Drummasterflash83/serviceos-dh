@@ -7,9 +7,12 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
-from database_backup_package import DAILY_FILES, DAILY_FORMAT, PackageError, call_age, package_snapshot
+from database_backup_package import (FILES, DAILY_FILES, DAILY_FORMAT, MAX_BYTES,
+                                     PACKAGE_DISK_RESERVE, PackageError, call_age,
+                                     package_snapshot, require_package_disk_capacity)
 from prepare_public_database_package import safe_preparation_code, safe_preparation_diagnostic
 
 
@@ -43,6 +46,8 @@ class SafePreparationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             source = Path(root) / 'source'
             source.mkdir(mode=0o700)
+            for name in FILES:
+                (source / name).write_bytes(b'x')
             with patch('database_backup_package.copy_bounded',
                        side_effect=OSError(errno.ENOSPC, 'PRIVATE /source/path')):
                 with self.assertRaisesRegex(PackageError, '^disk_full$'):
@@ -67,6 +72,43 @@ class SafePreparationTests(unittest.TestCase):
                 'code': 'encrypt_package_size_invalid', 'packageInputBytes': 70,
                 'secretsPrinted': False})
             self.assertFalse((Path(root) / 'cipher.age').exists())
+
+    def test_measured_archive_fits_new_cap_only_with_staging_capacity(self):
+        with tempfile.TemporaryDirectory() as root:
+            source = Path(root) / 'source'
+            source.mkdir(mode=0o700)
+            (source / 'database.dump').touch()
+            with (source / 'database.dump').open('r+b') as archive:
+                archive.truncate(2_274_014_810)
+            for name in DAILY_FILES:
+                if name != 'database.dump':
+                    (source / name).write_bytes(b'x')
+            total = 2_274_014_810 + len(DAILY_FILES) - 1
+            required = 3 * total + PACKAGE_DISK_RESERVE
+            with patch('database_backup_package.os.statvfs', return_value=SimpleNamespace(
+                    f_bavail=required, f_frsize=1)):
+                self.assertEqual(require_package_disk_capacity(source, root, DAILY_FILES), total)
+            with patch('database_backup_package.os.statvfs', return_value=SimpleNamespace(
+                    f_bavail=required - 1, f_frsize=1)):
+                with self.assertRaisesRegex(PackageError, '^disk_capacity_insufficient$'):
+                    require_package_disk_capacity(source, root, DAILY_FILES)
+            self.assertEqual(safe_preparation_code(PackageError('disk_capacity_insufficient')),
+                             'encrypt_disk_capacity_insufficient')
+
+    def test_aggregate_at_cap_is_rejected_before_staging(self):
+        with tempfile.TemporaryDirectory() as root:
+            source = Path(root) / 'source'
+            source.mkdir(mode=0o700)
+            (source / 'database.dump').touch()
+            with (source / 'database.dump').open('r+b') as archive:
+                archive.truncate(MAX_BYTES)
+            for name in DAILY_FILES:
+                if name != 'database.dump':
+                    (source / name).write_bytes(b'x')
+            with patch('database_backup_package.os.statvfs') as statvfs:
+                with self.assertRaisesRegex(PackageError, '^package_size_invalid$'):
+                    require_package_disk_capacity(source, root, DAILY_FILES)
+                statvfs.assert_not_called()
 
 
 if __name__ == '__main__':

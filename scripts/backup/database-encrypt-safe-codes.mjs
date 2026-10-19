@@ -13,6 +13,7 @@ export const ENCRYPT_CODES = new Set([
   "encrypt_age_binary_pin_mismatch", "encrypt_age_binary_unavailable",
   "encrypt_age_operation_failed",
   "encrypt_age_operation_timeout", "encrypt_disk_full",
+  "encrypt_disk_capacity_insufficient",
   "encrypt_permission_denied", "encrypt_source_missing",
   "encrypt_package_preparation_failed", "encrypt_unexpected_failure",
   "encrypt_source_export_unverified", "encrypt_private_metadata_invalid",

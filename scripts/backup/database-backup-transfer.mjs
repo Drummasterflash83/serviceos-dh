@@ -3,7 +3,7 @@
  * result proves stored ciphertext only, not database or full-service recovery. */
 import { createHash } from "node:crypto";
 import { constants } from "node:fs";
-import { open, lstat, unlink } from "node:fs/promises";
+import { open, lstat, statfs, unlink } from "node:fs/promises";
 import { dirname } from "node:path";
 import { databaseBackupBinding as binding, MAX_DATABASE_PACKAGE_BYTES } from "./database-backup-template.mjs";
 import { RecordingBackupError } from "./recording-backup-core.mjs";
@@ -21,6 +21,10 @@ const canonical = (value) =>
 const need = (ok, code) => {
   if (!ok) throw new RecordingBackupError(code);
 };
+export function hasDownloadCapacity(available, bytes) {
+  return Number.isSafeInteger(available) && Number.isSafeInteger(bytes) &&
+    available >= bytes + 512 * 1024 ** 2;
+}
 const guard = async (work) => {
   try {
     return await work();
@@ -184,6 +188,10 @@ export async function downloadDatabasePackage(receipt, path, ports, { now = Date
       "database_receipt_conflict",
     );
     await privateParent(path);
+    const space = await statfs(dirname(path));
+    const available = space.bavail * space.bsize;
+    need(hasDownloadCapacity(available, d.bytes),
+      "database_download_capacity_insufficient");
     await destination(ports.destination);
     let file;
     try {
