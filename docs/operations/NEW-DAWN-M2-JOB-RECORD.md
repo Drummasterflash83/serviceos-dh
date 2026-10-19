@@ -50,9 +50,13 @@ is for office tasks, including callbacks associated with jobs; it is **not** a
 diary/visit endpoint. The published [`/users` read](https://developer.commusoft.com/list-users-27669355e0)
 can identify source users, but a name on a job cannot establish a technician's
 appointment or an OpenFolk login. At this checkpoint, Commusoft's published API
-navigation does not expose read endpoints for appointments/visits, estimates,
-invoices, or parts/costs. These facets remain visibly unavailable rather than
-being inferred from job text or QuickBooks records.
+navigation does not expose read endpoints for technician appointments/visits,
+estimates, invoices, or parts/costs. Its separate
+[opportunities list](https://developer.commusoft.com/list-opportunities-27673943e0)
+and [assets list](https://developer.commusoft.com/list-assets-27811309e0)
+are potential source collections, but neither is a proven accepted Further Works
+quote, engineer visit or job invoice. These facets remain visibly unavailable
+until their exact source relationship is verified.
 
 The existing capture worker, stored approval and SQL permit gates are intentionally
 limited to properties, property contacts and jobs. Extending capture to users or
@@ -62,6 +66,29 @@ release. Do not add an endpoint to the transport allowlist alone. Before extendi
 to technician visits or job finance, establish a supported provider endpoint or a
 bounded, authorised export and verify its relationship keys. Preserve Commusoft
 job codes as strings and only link other providers on exact, evidenced identities.
+
+## Exact current job detail candidate
+
+Commusoft's documented [GET `/jobs/{jobID}`](https://developer.commusoft.com/jobs-24695919e0)
+has fields absent from saved list pages: source pipeline/stage, expected
+onsite/completion times and `usersCurrentlyAssignedToJob` entries with numeric
+source IDs and names. An aggregate-only LIVE read on 19 October found none of
+those keys across 12,759 retained versions covering 12,672 source job IDs. The route
+in this branch prepares one operator-reasoned, exact reviewed-link GET for one
+canonical job, uses the existing shared Commusoft credential rate gate, and
+stores only bounded selected facts plus a response hash. It never updates the
+saved card, maps a source user to an OpenFolk staff member or treats an expected
+time as a visit. Source quote text remains neither accepted Further Works nor
+invoiced or paid money.
+
+This candidate is **not LIVE**. The SQL and Edge route need release sequencing
+after the active Commusoft queue settles: rollback-only TEST rehearsal, install
+LIVE SQL, deploy the one Edge function, then merge the UI. A first real GET must
+show the documented response shape, source/as-of labels and audited one-use
+receipt in the signed-in operator preview. Wrong ID, lost actor grant, active
+view-as, changed source link or missing connection fail closed. Seven focused
+TypeScript tests, TypeScript check, build and rollback-only TEST SQL exercise
+passed locally; no provider GET was made for this candidate.
 
 ## Concrete CSV fallback for unsupported facets
 
