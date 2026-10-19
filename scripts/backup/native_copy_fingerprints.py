@@ -5,6 +5,7 @@ duplicates while ignoring physical row order. Only hashes/counts leave this modu
 Unknown data formats, truncated COPY, duplicate tables and bounds fail closed.
 """
 import hashlib
+import heapq
 import io
 import json
 import re
@@ -19,9 +20,52 @@ HEADER = re.compile(r'^COPY (' + IDENT + r')\.(' + IDENT + r') \((.*)\) FROM std
 COLUMN = re.compile(r'\s*(' + IDENT + r')\s*(,|$)')
 SEQUENCE = re.compile(r"^SELECT pg_catalog\.setval\('((?:[^']|'')*)', (-?\d+), (true|false)\);$")
 MAX_LINE = 64 * 1024 * 1024
-MAX_ROWS_PER_TABLE = 2_000_000
+# Rows are sorted in bounded hash-only runs. The prior 2m in-memory limit was
+# reached by a growing LIVE table and stopped otherwise healthy daily copies.
+MAX_ROWS_PER_TABLE = 20_000_000
+HASH_RUN_ROWS = 100_000
 MAX_TABLES = 1000
 MAX_BYTES = 8 * 1024 * 1024 * 1024
+
+
+def flush_hash_run(current):
+    if not current['hashes']:
+        return
+    run = tempfile.TemporaryFile()
+    try:
+        for row_hash in sorted(current['hashes']):
+            run.write(row_hash)
+        run.seek(0)
+        current['runs'].append(run)
+        current['hashes'].clear()
+    except BaseException:
+        run.close()
+        raise
+
+
+def read_hash_run(run):
+    while block := run.read(32):
+        if len(block) != 32:
+            raise RecoveryError('Native COPY hash run is incomplete')
+        yield block
+
+
+def multiset_digest(current):
+    digest = hashlib.sha256(b'native-copy-multiset/1\0')
+    try:
+        if current['runs']:
+            flush_hash_run(current)
+            ordered = heapq.merge(*(read_hash_run(run) for run in current['runs']))
+        else:
+            ordered = sorted(current['hashes'])
+        for row_hash in ordered:
+            digest.update(row_hash)
+        return digest.hexdigest()
+    finally:
+        for run in current['runs']:
+            run.close()
+        current['runs'].clear()
+        current['hashes'].clear()
 
 
 def decode_ident(value):
@@ -32,63 +76,70 @@ def copy_fingerprints(stream):
     tables, sequences = {}, {}
     current = None
     total = 0
-    while True:
-        raw = stream.readline(MAX_LINE + 1)
-        if not raw:
-            break
-        total += len(raw)
-        if len(raw) > MAX_LINE or total > MAX_BYTES or not raw.endswith(b'\n'):
-            raise RecoveryError('Native COPY stream exceeds bound or is truncated')
+    try:
+        while True:
+            raw = stream.readline(MAX_LINE + 1)
+            if not raw:
+                break
+            total += len(raw)
+            if len(raw) > MAX_LINE or total > MAX_BYTES or not raw.endswith(b'\n'):
+                raise RecoveryError('Native COPY stream exceeds bound or is truncated')
+            if current is not None:
+                if raw == b'\\.\n':
+                    current['sha256'] = multiset_digest(current)
+                    current.pop('hashes')
+                    current.pop('runs')
+                    tables[(current['schema'], current['table'])] = current
+                    current = None
+                else:
+                    if current['rows'] >= MAX_ROWS_PER_TABLE:
+                        raise RecoveryError('Native COPY table exceeds row bound')
+                    current['hashes'].append(hashlib.sha256(raw[:-1]).digest())
+                    current['rows'] += 1
+                    if len(current['hashes']) >= HASH_RUN_ROWS:
+                        flush_hash_run(current)
+                continue
+            try:
+                line = raw[:-1].decode('utf8')
+            except UnicodeDecodeError:
+                raise RecoveryError('Native COPY metadata is not UTF-8') from None
+            if not line or line.startswith('--') or re.fullmatch(r'\\(?:un)?restrict [A-Za-z0-9]+', line):
+                continue
+            header = HEADER.fullmatch(line)
+            if header:
+                schema, table = map(decode_ident, header.group(1, 2))
+                if (schema, table) in tables or len(tables) >= MAX_TABLES:
+                    raise RecoveryError('Duplicate or excessive native COPY tables')
+                column_text, columns, offset = header.group(3), [], 0
+                while offset < len(column_text):
+                    match = COLUMN.match(column_text, offset)
+                    if not match:
+                        raise RecoveryError('Unrecognised native COPY column list')
+                    columns.append(decode_ident(match.group(1)))
+                    offset = match.end()
+                    if not match.group(2) and offset != len(column_text):
+                        raise RecoveryError('Native COPY columns are incomplete')
+                if not columns or len(columns) != len(set(columns)) or column_text.endswith(','):
+                    raise RecoveryError('Native COPY columns are ambiguous')
+                current = {'schema': schema, 'table': table, 'columns': columns,
+                           'rows': 0, 'hashes': [], 'runs': []}
+                continue
+            sequence = SEQUENCE.fullmatch(line)
+            if sequence:
+                name = sequence.group(1).replace("''", "'")
+                if name in sequences:
+                    raise RecoveryError('Duplicate sequence state in native export')
+                sequences[name] = {'name': name, 'lastValue': int(sequence.group(2)),
+                                   'isCalled': sequence.group(3) == 'true'}
+                continue
+            # pg_restore/pg_dump setup only. These bytes are inspected, never executed.
+            if re.fullmatch(r'SET [a-z_]+ = [^;]+;', line) or line == "SELECT pg_catalog.set_config('search_path', '', false);":
+                continue
+            raise RecoveryError('Unsupported statement outside native COPY data')
+    finally:
         if current is not None:
-            if raw == b'\\.\n':
-                digest = hashlib.sha256(b'native-copy-multiset/1\0')
-                for row_hash in sorted(current.pop('hashes')):
-                    digest.update(row_hash)
-                current['sha256'] = digest.hexdigest()
-                tables[(current['schema'], current['table'])] = current
-                current = None
-            else:
-                if len(current['hashes']) >= MAX_ROWS_PER_TABLE:
-                    raise RecoveryError('Native COPY table exceeds row bound')
-                current['hashes'].append(hashlib.sha256(raw[:-1]).digest())
-                current['rows'] += 1
-            continue
-        try:
-            line = raw[:-1].decode('utf8')
-        except UnicodeDecodeError:
-            raise RecoveryError('Native COPY metadata is not UTF-8') from None
-        if not line or line.startswith('--') or re.fullmatch(r'\\(?:un)?restrict [A-Za-z0-9]+', line):
-            continue
-        header = HEADER.fullmatch(line)
-        if header:
-            schema, table = map(decode_ident, header.group(1, 2))
-            if (schema, table) in tables or len(tables) >= MAX_TABLES:
-                raise RecoveryError('Duplicate or excessive native COPY tables')
-            column_text, columns, offset = header.group(3), [], 0
-            while offset < len(column_text):
-                match = COLUMN.match(column_text, offset)
-                if not match:
-                    raise RecoveryError('Unrecognised native COPY column list')
-                columns.append(decode_ident(match.group(1)))
-                offset = match.end()
-                if not match.group(2) and offset != len(column_text):
-                    raise RecoveryError('Native COPY columns are incomplete')
-            if not columns or len(columns) != len(set(columns)) or column_text.endswith(','):
-                raise RecoveryError('Native COPY columns are ambiguous')
-            current = {'schema': schema, 'table': table, 'columns': columns, 'rows': 0, 'hashes': []}
-            continue
-        sequence = SEQUENCE.fullmatch(line)
-        if sequence:
-            name = sequence.group(1).replace("''", "'")
-            if name in sequences:
-                raise RecoveryError('Duplicate sequence state in native export')
-            sequences[name] = {'name': name, 'lastValue': int(sequence.group(2)),
-                               'isCalled': sequence.group(3) == 'true'}
-            continue
-        # pg_restore/pg_dump setup only. These bytes are inspected, never executed.
-        if re.fullmatch(r'SET [a-z_]+ = [^;]+;', line) or line == "SELECT pg_catalog.set_config('search_path', '', false);":
-            continue
-        raise RecoveryError('Unsupported statement outside native COPY data')
+            for run in current['runs']:
+                run.close()
     if current is not None or not tables:
         raise RecoveryError('Native COPY stream did not complete')
     ordered = [tables[k] for k in sorted(tables)]
