@@ -57,22 +57,28 @@ rollback;`;
 
 export async function rehearse({fetcher=fetch,token=savedCliToken()}={}){
   assess(await readStage(PROJECT,token,fetcher),true);
-  const response=await fetcher(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`,{
-    method:'POST',redirect:'error',signal:AbortSignal.timeout(30000),
-    headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
-    body:JSON.stringify({query:rollbackSql(),read_only:false})});
-  if(!response.ok){
-    const problem=await response.json().catch(()=>null);
-    const code=typeof problem?.code==='string'&&/^[A-Z0-9]{5}$/.test(problem.code)?problem.code:'unknown';
-    throw Error(`m3_fast_performance_rollback_failed_http_${response.status}_sqlstate_${code}`);
-  }
-  const rows=await response.json();
-  const row=rows?.[0];
-  if(!Array.isArray(rows)||rows.length!==1||row?.marker!=='m3-fast-authenticated-rollback/1'||
-    !Number.isSafeInteger(row.elapsed_ms)||row.elapsed_ms<0)
-    throw Error('m3_fast_performance_rollback_marker_missing');
-  assess(await readStage(PROJECT,token,fetcher),true);
-  return {state:'authenticated_read_passed_rolled_back',elapsedMs:row.elapsed_ms,
+  let elapsedMs=null,failure=null;
+  try{
+    const response=await fetcher(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`,{
+      method:'POST',redirect:'error',signal:AbortSignal.timeout(30000),
+      headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+      body:JSON.stringify({query:rollbackSql(),read_only:false})});
+    if(!response.ok){
+      const problem=await response.json().catch(()=>null);
+      const code=typeof problem?.code==='string'&&/^[A-Z0-9]{5}$/.test(problem.code)?problem.code:'unknown';
+      throw Error(`m3_fast_performance_rollback_failed_http_${response.status}_sqlstate_${code}`);
+    }
+    const rows=await response.json();
+    const row=rows?.[0];
+    if(!Array.isArray(rows)||rows.length!==1||row?.marker!=='m3-fast-authenticated-rollback/1'||
+      !Number.isSafeInteger(row.elapsed_ms)||row.elapsed_ms<0)
+      throw Error('m3_fast_performance_rollback_marker_missing');
+    elapsedMs=row.elapsed_ms;
+  }catch(error){failure=error;}
+  try{assess(await readStage(PROJECT,token,fetcher),true);}
+  catch{throw Error('m3_fast_performance_rollback_outcome_unverified');}
+  if(failure)throw failure;
+  return {state:'authenticated_read_passed_rolled_back',elapsedMs,
     operatorFlagEnabled:false,clientMoneyFlagsEnabled:false,providerRequests:0,
     retainedInvoiceValuesLogged:0};
 }
