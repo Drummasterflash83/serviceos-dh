@@ -202,8 +202,27 @@ try:
                     print(sql((root/'scripts/verify/learn-commusoft-job-details.assert.sql').read_text()))
                     sql('begin;'+(root/'scripts/verify/learn-job-details-hosted.assert.sql').read_text()+'rollback;')
                     print('PASS: exact hosted job-detail date and denial probe')
+                    expanded=(root/'supabase/migrations/20261105160000_learn_commusoft_job_record_source_facts.sql').read_text()
+                    before=sql("select md5(string_agg(pg_get_functiondef(oid)||coalesce(proacl::text,'')||proowner::text,'' order by oid)) from pg_proc where pronamespace='public'::regnamespace and prokind='f';")
+                    sql(expanded.replace('\ncommit;', '\nrollback;'))
+                    assert sql("select md5(string_agg(pg_get_functiondef(oid)||coalesce(proacl::text,'')||proowner::text,'' order by oid)) from pg_proc where pronamespace='public'::regnamespace and prokind='f';")==before
+                    sql(expanded)
+                    print(sql((root/'scripts/verify/learn-commusoft-job-record.assert.sql').read_text()))
                     result=sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000080';set role authenticated;select learn_commusoft_job_details(fixture_id(1),fixture_id(5),fixture_work_version('jobs','955'));")
                     js="import {parseCommusoftJobDetails} from './src/lib/learn-commusoft-job-details.ts';import{readFileSync}from'node:fs';const d=JSON.parse(readFileSync(0,'utf8'));parseCommusoftJobDetails(d,d.tenant_id,d.connection_id,d.version_id,d.external_id);console.log('PASS: actual SQL retained-job detail passes application parser');"
+                    subprocess.run(['node','--input-type=module','-e',js],input=result,text=True,cwd=root,check=True)
+
+                    operator_check=(root/'scripts/verify/new-dawn-operator-job-source.assert.sql').read_text()
+                    operator_setup,operator_assertions=operator_check.split('-- Reader assertions',1)
+                    sql(operator_setup)
+                    operator_migration=(root/'supabase/migrations/20261105170000_new_dawn_operator_job_source.sql').read_text()
+                    sql(operator_migration.replace('\ncommit;','\nrollback;'))
+                    assert sql("select to_regprocedure('public.new_dawn_operator_job_source(uuid,uuid,text)') is null;")=='t','Operator reader rollback left function'
+                    sql(operator_migration)
+                    print(sql(operator_assertions))
+                    job=sql("select id from jobs where tenant_id=fixture_id(1) and external_id='111';")
+                    result=sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000080';set role authenticated;select new_dawn_operator_job_source(fixture_id(1),'"+job+"'::uuid,'Inspect exact source');")
+                    js="import{parseOperatorJobSource}from'./src/lib/new-dawn-operator-job-source.ts';import{readFileSync}from'node:fs';const d=JSON.parse(readFileSync(0,'utf8'));parseOperatorJobSource(d,d.tenant_id,d.actor_id,d.job_id);console.log('PASS: audited exact job source passes application parser');"
                     subprocess.run(['node','--input-type=module','-e',js],input=result,text=True,cwd=root,check=True)
 
             if sys.argv[1:] == ['--partial-job-times']:
