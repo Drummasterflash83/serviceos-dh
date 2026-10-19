@@ -58,7 +58,8 @@ change on the day.
   mailbox number or claim an alert was sent.
 - This branch now makes the **next candidate** say to try shared 603 once
   after both engineer attempts fail, and to disclose a failed/unavailable
-  fallback honestly. The promotion check refuses an emergency tool unless
+  fallback honestly. The promotion check refuses the helper's candidate-only
+  inline emergency tool unless
   its read-back has three distinct, labelled Rob 109, Tony 105 and shared
   603 destinations. It does not guess Tony's direct number or 603's number;
   their actual Birchills bindings and provider behaviour still need review.
@@ -74,6 +75,32 @@ change on the day.
   make such an edit safe. Read the current graph first and design a
   candidate-only emergency tool, or obtain explicit approval for a reviewed
   shared-resource change. This draft is not permission to alter the shared tool.
+
+### Candidate-only 603 design, prepared without a provider write
+
+Vapi documents that a transferCall tool can be defined in an assistant's
+`model.tools`, while reusable tools are linked through `model.toolIds`:
+<https://docs.vapi.ai/tools/transfer-call> and
+<https://docs.vapi.ai/calls/transfer-calls-with-api-lookup>. The revised
+source creates future isolated helpers with an **inline copy** of the
+published two-engineer emergency transfer tool. It strips the source's
+provider identity and clones the configuration, leaving the published tool
+untouched. The release gate now requires the helper to have no shared tool
+ID, one inline emergency tool, the exact unchanged Rob/Tony destinations,
+and one separately reviewed 603 destination. Editing the published tool or
+reusing its ID fails before any live assistant update. The current saved
+helper was created before this source change and must be reconciled on the
+provider only after fresh readback and a separate approved candidate edit.
+
+The 603 phone/SIP address, transfer-plan behavior, notification recipients and
+Slack route remain **unknown** in this worktree. The current browser inventory
+has no signed-in Vapi or Birchills tab, and no existing Vapi/Birchills key is
+available to this process. Therefore no current provider inventory was
+obtained and no 603 address was guessed. The next authorised provider read
+must establish the published tool's current configuration, whether Vapi accepts
+the isolated inline copy for this account, and Birchills' actual 603 target.
+The provider may normalize inline tool fields; read-back must compare the
+saved helper to the reviewed source before any paid run or promotion.
 
 ## Candidate code now prepared
 
@@ -197,7 +224,11 @@ real-phone result.
    Verify its installed-source hash and live authentication without a call.
    Do not reuse the service-role, scheduler or Vapi outbound key.
 3. Reconcile the isolated candidate/helper to published v14 voice, preserving
-   voice ID/accent, all other model/recording settings and destinations.
+   voice ID/accent and all other model/recording settings. Replace the helper's
+   shared emergency tool reference with a candidate-only inline copy of the
+   unchanged Rob/Tony destinations. Add 603 only to that copy after the
+   Birchills binding and Vapi transfer behavior are reviewed. Never patch the
+   published shared tool to satisfy this candidate gate.
    Review both open and closed first messages. Use an audited candidate-only
    patch and read back; do not patch the live assistant.
 4. Inspect the candidate and handoff exact hash, then run the one-time

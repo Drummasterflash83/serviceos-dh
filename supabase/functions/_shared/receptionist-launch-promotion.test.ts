@@ -18,6 +18,9 @@ async function fixture() {
   const emergency = { id: ids.emergency, orgId, type: "transferCall", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [
     { type: "number", number: "+441234567001", description: "Rob emergency 109", transferPlan: { mode: "warm-transfer" } },
     { type: "number", number: "+441234567002", description: "Tony emergency 105", transferPlan: { mode: "warm-transfer" } },
+  ] };
+  const candidateEmergency = { type: emergency.type, function: clone(emergency.function), destinations: [
+    ...clone(emergency.destinations),
     { type: "number", number: "+441234567003", description: "Shared emergency mailbox 603", transferPlan: { mode: "warm-transfer" } },
   ] };
   const handoff = { id: ids.handoff, orgId, type: "handoff", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [{ type: "dynamic", server: { url: "https://tgbnakbxwcqjeimygroz.supabase.co/functions/v1/receptionist-intake-check", headers: { "X-OpenFolk-Intake-Token": "TEST_ONLY_" + "x".repeat(45) } } }] };
@@ -28,7 +31,7 @@ async function fixture() {
     firstMessage: "{% if openfolk_holidays contains openfolk_holiday_key %}Welcome to Drummonds. I'm Emma, the automated receptionist, and this call is recorded. Our office is closed.{% else %}Welcome to Drummonds. I'm Emma, the automated receptionist, and this call is recorded.{% endif %}", model: { provider: "openai", model: "gpt-4.1", toolIds: [ids.handoff],
       tools: [{ type: ordinary.type, function: ordinary.function, destinations: ordinary.destinations.map(approvedOrdinaryDestination) }],
       messages: [{ role: "system", content: "CONSOLIDATED HANDOVER CONTRACT\nReviewed safety policy" }] } };
-  const helper = { id: ids.helper, orgId, voice, transcriber, model: { toolIds: [ids.emergency], tools: [], messages: [{ role: "system", content: EMERGENCY_CONTINUATION_CONTRACT }] } };
+  const helper = { id: ids.helper, orgId, voice, transcriber, model: { toolIds: [], tools: [candidateEmergency], messages: [{ role: "system", content: EMERGENCY_CONTINUATION_CONTRACT }] } };
   const graph: any = { live, candidate, ordinary, emergency, handoff, helper };
   const phones = [{ id: uid(90), assistantId: ids.live, number: "+447426924154", provider: "twilio" }];
   const tools = [handoff, ...candidate.model.tools];
@@ -144,17 +147,30 @@ test("a frozen provider suite cannot pass with changed caller instructions, cloc
 test("promotion refuses missing or ambiguous emergency fallback routes and helper wording without provider writes", async () => {
   for (const kind of ["missing-603", "duplicate", "wrong-label", "non-number", "main-number", "office-mailbox", "wrong-prompt"]) {
     const f = await fixture();
-    if (kind === "missing-603") f.graph.emergency.destinations.pop();
-    if (kind === "duplicate") f.graph.emergency.destinations[2].number = f.graph.emergency.destinations[1].number;
-    if (kind === "wrong-label") f.graph.emergency.destinations[2].description = "Office mailbox 601";
-    if (kind === "non-number") f.graph.emergency.destinations[2].type = "assistant";
-    if (kind === "main-number") f.graph.emergency.destinations[2].number = "+441794341600";
-    if (kind === "office-mailbox") f.graph.emergency.destinations[2].number = "+441794840043";
+    const destinations = f.graph.helper.model.tools[0].destinations;
+    if (kind === "missing-603") destinations.pop();
+    if (kind === "duplicate") destinations[2].number = destinations[1].number;
+    if (kind === "wrong-label") destinations[2].description = "Office mailbox 601";
+    if (kind === "non-number") destinations[2].type = "assistant";
+    if (kind === "main-number") destinations[2].number = "+441794341600";
+    if (kind === "office-mailbox") destinations[2].number = "+441794840043";
     if (kind === "wrong-prompt") f.graph.helper.model.messages[0].content = "EMERGENCY CONTINUATION: skip shared 603";
-    if (kind !== "wrong-prompt") f.source.source_tools[1].destinations = clone(f.graph.emergency.destinations);
     await assert.rejects(f.execute(), kind === "wrong-prompt" ? /continuation graph changed/ : /Rob\/Tony\/603 destination graph is incomplete/, kind);
     assert.equal(f.state.writes.length, 0, kind);
   }
+});
+
+test("promotion cannot satisfy 603 by editing the published emergency tool or reusing its ID", async () => {
+  const sharedEdit = await fixture();
+  sharedEdit.graph.emergency.destinations.push(clone(sharedEdit.graph.helper.model.tools[0].destinations[2]));
+  await assert.rejects(sharedEdit.execute(), /destination definitions changed/);
+  assert.equal(sharedEdit.state.writes.length, 0);
+
+  const reusedTool = await fixture();
+  reusedTool.graph.helper.model.tools = [];
+  reusedTool.graph.helper.model.toolIds = [ids.emergency];
+  await assert.rejects(reusedTool.execute(), /Rob\/Tony\/603 destination graph is incomplete/);
+  assert.equal(reusedTool.state.writes.length, 0);
 });
 
 test("emergency continuation states ordered cross-cover, one 603 fallback and truthful delivery limits", () => {

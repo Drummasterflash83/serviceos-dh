@@ -54,11 +54,18 @@ function validateGraph(g: any, source: any) {
   const required = ["+441794378095", "+441794378105", "+441794378096", "+441794840042", "+441794840043"];
   if (!required.every(n => c.model.tools[0].destinations.some((d: any) => d.number === n)))
     throw Error("Launch reviewed ordinary destination is missing.");
-  // Structural guard only: these labels do not prove that Birchills routes
-  // the third number to 603 or that any email/Slack notification arrives.
-  const emergencyDestinations = list(g.emergency.destinations);
+  // The published assistant still references g.emergency. The additional 603
+  // destination belongs only to the isolated helper's inline transfer tool.
+  // Structural labels do not prove Birchills routing or notification delivery.
+  const helperEmergency = list(g.helper.model?.tools)[0];
+  const emergencyDestinations = list(helperEmergency?.destinations);
   const emergencyLabels = ["Rob emergency 109", "Tony emergency 105", "Shared emergency mailbox 603"];
-  if (emergencyDestinations.length !== 3 ||
+  const { destinations: _sharedDestinations, ...sharedTool } = releaseConfiguration(g.emergency);
+  const { destinations: _candidateDestinations, ...candidateTool } = releaseConfiguration(helperEmergency ?? {});
+  if (list(g.emergency.destinations).length !== 2 ||
+    !same(candidateTool, sharedTool) ||
+    !same(emergencyDestinations.slice(0, 2), g.emergency.destinations) ||
+    emergencyDestinations.length !== 3 ||
     new Set(emergencyDestinations.map((d: any) => d.number)).size !== 3 ||
     !emergencyDestinations.every((d: any) => d.type === "number" &&
       /^\+[1-9]\d{6,14}$/.test(d.number ?? "") && d.transferPlan &&
@@ -71,7 +78,7 @@ function validateGraph(g: any, source: any) {
     g.handoff.destinations?.length !== 1 || destination?.type !== "dynamic" ||
     destination.server?.url !== "https://tgbnakbxwcqjeimygroz.supabase.co/functions/v1/receptionist-intake-check" ||
     !/^[A-Za-z0-9_-]{43,128}$/.test(destination.server?.headers?.["X-OpenFolk-Intake-Token"] ?? "") ||
-    !same(g.helper.model?.toolIds, [ids.emergency]) || list(g.helper.model?.tools).length ||
+    !same(g.helper.model?.toolIds, []) || list(g.helper.model?.tools).length !== 1 ||
     g.emergency.type !== "transferCall" || g.emergency.function?.name !== "Route-Emergency-to-Rob-or-Tony" ||
     !g.helper.model?.messages?.some((m: any) => m.content === EMERGENCY_CONTINUATION_CONTRACT))
     throw Error("Launch emergency continuation graph changed.");
