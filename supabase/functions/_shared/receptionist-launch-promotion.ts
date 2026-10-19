@@ -145,6 +145,18 @@ export function requireLaunchEvidence(run: any, settings: any, candidateHash: st
   }
 }
 
+// A frozen provider harness only proves that the same suite ran and was read
+// back. It does not prove that its caller instructions, clock, mocks and judges
+// were the twelve reviewed definitions. Compare those fields before accepting
+// a passing run; provider IDs and timestamps are deliberately excluded.
+export function requireReviewedLaunchScenario(scenario: any, expected: any[]) {
+  const reviewed = expected.find(s => s.name === scenario?.name);
+  if (!reviewed || expected.filter(s => s.name === scenario.name).length !== 1 ||
+    !["instructions", "targetOverrides", "toolMocks", "evaluations"].every(k => same(scenario[k], reviewed[k])) ||
+    list(scenario.hooks).length)
+    throw Error("Launch scenario differs from the twelve reviewed caller, clock, mock and judge definitions.");
+}
+
 const receipt = (row: any, retried = false) => ({
   state: row.state, liveAssistantId: ids.live, candidateId: ids.candidate,
   runId: row.run_id, candidateHash: row.candidate_hash, providerVersion: row.provider_version ?? null,
@@ -182,7 +194,9 @@ export async function launchPromotion(db: any, api: Api, settings: any, workspac
     throw Error("Live Emma changed since the candidate was created; review before publication.");
   const scenarios = launchScenarioPayloads(tools, g.candidate);
   requireLaunchEvidence(latest.data, settings, candidateHash, scenarios);
-  const harness = await captureTestHarness(api, settings.suite_id);
+  const harness = await captureTestHarness(api, settings.suite_id, {
+    onScenario: scenario => requireReviewedLaunchScenario(scenario, scenarios),
+  });
   if (harness.fingerprint !== latest.data.report.harness.fingerprint)
     throw Error("Launch test setup changed since the passing run.");
   const providerRun = await api("eval/simulation/run/" + latest.data.provider_id);
@@ -221,7 +235,9 @@ export async function launchPromotion(db: any, api: Api, settings: any, workspac
       selected.data?.suite_id !== settings.suite_id || selected.data?.assistant_id !== ids.candidate ||
       await graphHash(current) !== stableGraphHash) return await finish("conflict");
     requireLaunchEvidence(newest.data, selected.data, candidateHash, scenarios);
-    const freshHarness = await captureTestHarness(api, selected.data.suite_id);
+    const freshHarness = await captureTestHarness(api, selected.data.suite_id, {
+      onScenario: scenario => requireReviewedLaunchScenario(scenario, scenarios),
+    });
     if (freshHarness.fingerprint !== newest.data.report.harness.fingerprint)
       return await finish("conflict");
   } catch { return await finish("conflict"); }

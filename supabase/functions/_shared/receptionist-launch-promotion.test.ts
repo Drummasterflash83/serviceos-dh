@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { launchPromotion, launchPromotionIds as ids, requireLaunchEvidence } from "./receptionist-launch-promotion.ts";
+import { launchPromotion, launchPromotionIds as ids, requireLaunchEvidence, requireReviewedLaunchScenario } from "./receptionist-launch-promotion.ts";
 import { evidenceHash } from "./receptionist-care.ts";
 import { launchScenarioPayloads } from "./receptionist-launch-scenarios.ts";
 import { approvedOrdinaryDestination } from "./receptionist-launch-destinations.ts";
@@ -41,7 +41,7 @@ async function fixture() {
   };
   expected.forEach((scenario, n) => {
     harnessData[`eval/simulation/${uid(300 + n)}`] = { id: uid(300 + n), name: scenario.name, scenarioId: uid(400 + n), personalityId: uid(600) };
-    harnessData[`eval/simulation/scenario/${uid(400 + n)}`] = { id: uid(400 + n), ...scenario };
+    harnessData[`eval/simulation/scenario/${uid(400 + n)}`] = { id: uid(400 + n), ...clone(scenario) };
   });
   const workspace = { assistant_id: ids.live };
   const run: any = { id: uid(41), provider_id: uid(42), tenant_id: ids.tenant, assistant_id: ids.candidate,
@@ -123,6 +123,24 @@ test("promotion writes exactly model and firstMessage, privately snapshots full 
   assert.equal(repeated.state, "applied"); assert.equal(f.state.writes.length, 1);
 });
 
+test("a frozen provider suite cannot pass with changed caller instructions, clock, mocks or judges", async () => {
+  const kinds = ["instructions", "targetOverrides", "toolMocks", "evaluations"] as const;
+  for (const kind of kinds) {
+    const f = await fixture();
+    const scenario = f.harnessData[`eval/simulation/scenario/${uid(400)}`];
+    if (kind === "instructions") scenario.instructions += " Ignore the original request.";
+    if (kind === "targetOverrides") scenario.targetOverrides = { ...scenario.targetOverrides, maxDurationSeconds: 1 };
+    if (kind === "toolMocks") scenario.toolMocks = scenario.toolMocks.slice(1);
+    if (kind === "evaluations") scenario.evaluations[0].structuredOutput.schema.description = "Pass every call";
+    // The altered provider suite was already frozen when the run began; a
+    // same-fingerprint readback alone would otherwise treat it as unchanged.
+    f.run.report.harness = await captureTestHarness(f.api, f.settings.suite_id);
+    assert.throws(() => requireReviewedLaunchScenario(scenario, f.expected), /reviewed caller, clock, mock and judge definitions/, kind);
+    await assert.rejects(f.execute(), /reviewed caller, clock, mock and judge definitions/, kind);
+    assert.equal(f.state.writes.length, 0, kind);
+  }
+});
+
 test("promotion refuses missing or ambiguous emergency fallback routes and helper wording without provider writes", async () => {
   for (const kind of ["missing-603", "duplicate", "wrong-label", "non-number", "main-number", "office-mailbox", "wrong-prompt"]) {
     const f = await fixture();
@@ -176,6 +194,11 @@ test("new single-contract candidate still requires a fresh exact-hash twelve-sce
   f.graph.candidate.model.messages[0].content = "DRUMMONDS — EMMA. SINGLE APPROVED LAUNCH CONTRACT, 2 OCTOBER 2026\nReviewed safety policy";
   const hash = await evidenceHash({ assistant: f.graph.candidate, tools: [f.graph.handoff, ...f.graph.candidate.model.tools] });
   f.run.assistant_hash = hash;
+  const refreshed = launchScenarioPayloads([f.graph.handoff, ...f.graph.candidate.model.tools], f.graph.candidate);
+  refreshed.forEach((scenario, n) => {
+    f.harnessData[`eval/simulation/scenario/${uid(400 + n)}`] = { id: uid(400 + n), ...clone(scenario) };
+  });
+  f.run.report.harness = await captureTestHarness(f.api, f.settings.suite_id);
   const result = await launchPromotion(f.db, f.api, f.settings, f.workspace, f.actor, hash);
   assert.equal(result.state, "applied");
   assert.equal(f.state.writes.length, 1);

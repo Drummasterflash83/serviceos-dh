@@ -67,6 +67,13 @@ change on the day.
   and structural guard, **not** proof that the path works or permission to
   change the existing shared tool. The saved current candidate cannot pass
   this new check until safely reconciled against a fresh provider readback.
+- The helper currently references the same emergency transfer tool ID as the
+  published assistant. Adding a 603 destination to that shared Vapi tool would
+  also change a published resource. The source-snapshot guard blocks an
+  unnoticed shared-tool edit, but the three-destination check alone does not
+  make such an edit safe. Read the current graph first and design a
+  candidate-only emergency tool, or obtain explicit approval for a reviewed
+  shared-resource change. This draft is not permission to alter the shared tool.
 
 ## Candidate code now prepared
 
@@ -157,6 +164,14 @@ remains 8/12 on an older candidate. All 186 focused receptionist tests pass.
 The earlier immutable v2 manifest remains for comparison; its candidate
 prompt still allowed a bare postcode while the intake gate rejected one.
 The initial manifest predates the location/CO safety fix.
+
+The promotion preflight now compares each provider scenario's caller
+instructions, fixed clock, action mocks and both judges with the twelve
+reviewed definitions. An unchanged suite fingerprint alone could previously
+certify a suite that was already altered before its run. This check rejects
+that case before any live-assistant PATCH and repeats the comparison immediately
+before publication. It is a source guard, not a new provider result. A new
+source manifest must pin this additional guard.
 
 The current code rejects a bare postcode as the complete emergency site:
 the caller must supply a numbered street or named/numbered premises with a
