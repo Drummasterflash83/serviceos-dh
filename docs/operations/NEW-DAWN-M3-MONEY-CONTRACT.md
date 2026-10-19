@@ -10,7 +10,9 @@ the client validates its response with `readOwnerMoney` in
 Access follows the existing retained-finance gate: a current company owner/admin
 may read their tenant, and an authorised OpenFolk operator may read a selected
 tenant with a reason. Each read writes an immutable finance audit event. The
-response is marked `Cache-Control: no-store`.
+response is marked `Cache-Control: no-store`. The dedicated tenant flag
+`new_dawn.owner_money` must be exactly `true` for both the RPC and UI; this
+change does not create or enable that flag.
 
 For each QuickBooks realm and currency, the response gives the exact decimal
 string for retained invoice balance and age bands based on the invoice due date
@@ -34,8 +36,21 @@ P&L report has not yet been captured, so no net-profit value is exposed.
 
 Before using this in LIVE, apply the migration, verify the RPC and access/audit
 on a real owner and a denied non-owner, and compare a bounded sample against
-QuickBooks. Separately add a durable, tenant-bound read-only Reports API
-capture for ProfitAndLoss and AgedReceivables. Intuit's report response includes
-report periods, basis, currency and summary rows; those must be retained and
-validated before any GP or NP claim. Reference:
-[Intuit QuickBooks P&L report example](https://help.developer.intuit.com/s/question/0D5TR00000JyTuE0AV/i-want-to-generate-profit-and-loss-report-via-api-so-that-it-has-the-same-data-as-one-i-generate-using-quickbooks-online).
+QuickBooks. The panel is in the job-first home but remains hidden until the
+dedicated flag is enabled after that readback.
+
+The next report-capture PR should add two **GET-only** QuickBooks Online
+Reports API requests for the bound realm: `reports/ProfitAndLoss` for an explicit
+start/end period and accounting basis, and `reports/AgedReceivables` for an
+explicit report date and report-date ageing method. Both are named in
+[Intuit's developer API collection](https://www.postman.com/intuit-developer/intuit-developer-quickbooks-online-accounting-api/documentation/4884662-e6c576f1-f6d3-440f-b090-da9ff1ac519d).
+The currently installed entity-query worker cannot issue or retain those
+reports. A report request needs its own durable permit, bounded response size,
+tenant/realm/credential checks, immutable raw response receipt, and explicit
+period, basis, currency, provider time and summary-row validation. Do not
+publish accounts GP or MD-only NP until Drummonds' actual report response is
+captured and reconciled. The AgedReceivables response is a separate comparison
+to, not a relabeling of, this invoice-age calculation. An
+[Intuit P&L response example](https://help.developer.intuit.com/s/question/0D5TR00000JyTuE0AV/i-want-to-generate-profit-and-loss-report-via-api-so-that-it-has-the-same-data-as-one-i-generate-using-quickbooks-online)
+shows the period, basis, currency and GrossProfit/NetIncome summary groups that
+must be checked, rather than inferred from invoices.

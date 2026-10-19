@@ -36,6 +36,9 @@ begin
  -- Existing retained-finance authority requires a current company owner/admin
  -- or an explicitly reasoned OpenFolk operator read. It checks live user state.
  perform public.learn_quickbooks_retained_finance_access(p_tenant,p_operator_reason);
+ perform 1 from public.feature_flags where tenant_id=p_tenant
+  and flag='new_dawn.owner_money' and value='true'::jsonb for share;
+ if not found then raise exception 'owner_money_not_enabled' using errcode='42501';end if;
 
  with invoices as materialized(
   select l.realm_id,l.version_id,l.last_observed_at,l.conflicted,
