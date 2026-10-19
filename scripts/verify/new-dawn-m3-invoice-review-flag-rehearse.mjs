@@ -2,7 +2,7 @@
 import {savedCliToken,TEST_PROJECT} from './learn-test-readiness.mjs';
 import {rehearsalSql as invoiceRehearsal} from './new-dawn-invoice-review-rehearse.mjs';
 import {FLAG,flagSql} from './new-dawn-m3-invoice-review-flag.mjs';
-import {TENANT,VERSION,NAME,reviewedSource} from './new-dawn-m3-invoice-review-release.mjs';
+import {TENANT,VERSION,NAME,reviewedSource} from './new-dawn-m3-invoice-review-fast-release.mjs';
 
 const enableAudit='decccccc-0000-4000-8000-000000000101';
 const disableAudit='decccccc-0000-4000-8000-000000000102';
@@ -21,7 +21,8 @@ export function rehearsalSql(tenant){
   const marker="select 'new-dawn-invoice-review/1' as marker;\nrollback;";
   if(!base.endsWith(marker))throw Error('Invoice rollback fixture marker changed');
   const source=reviewedSource();
-  const append=`update public.feature_flags set value='false'::jsonb
+  const append=`${source.body}
+update public.feature_flags set value='false'::jsonb
  where tenant_id='${tenant}'::uuid and flag='${FLAG}';
 create schema if not exists supabase_migrations;
 create table if not exists supabase_migrations.schema_migrations(

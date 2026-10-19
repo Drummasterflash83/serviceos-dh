@@ -1,19 +1,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {PROJECT,TENANT,VERSION,NAME,reviewedSource} from "./new-dawn-m3-invoice-review-release.mjs";
+import {PROJECT,TENANT,VERSION,NAME,FUNCTION_SHA256,INDEX_SHA256,reviewedSource}
+  from "./new-dawn-m3-invoice-review-fast-release.mjs";
 import {FLAG,assessAudit,assessEnableScope,assessFlagScope,flagSql,readFlagScope,switchLive}
   from "./new-dawn-m3-invoice-review-flag.mjs";
 
 const auditId="00000000-0000-4000-8000-000000000777";
 const installed={project:{id:PROJECT,status:"ACTIVE_HEALTHY"},
-  ledger:[{version:VERSION,name:NAME,statement_count:1,source_sha256:reviewedSource().hash}],
-  catalog:[{rpc_installed:true,date_installed:true,security_definer:true,
+  ledger:[
+    {version:"20261108110000",name:"new_dawn_invoice_review_candidates",statement_count:1,
+      source_sha256:"1bc934adf50168eb82c6dc139236911cf9ba6d364d921d7ace98b3b46057e0bc"},
+    {version:VERSION,name:NAME,statement_count:1,source_sha256:reviewedSource().hash}],
+  catalog:[{rpc_installed:true,index_installed:true,index_ready:true,
+    index_sha256:INDEX_SHA256,security_definer:true,
     authenticated_grant:true,anon_grant:false,service_grant:false,
     date_authenticated_grant:false,date_anon_grant:false,date_service_grant:false,
-    rpc_sha256:"f8ca4b3da3f719562b9630a734625b348a000513201fe1100a334f6bd2b50a5c",
+    rpc_sha256:FUNCTION_SHA256,
     date_sha256:"a70d57bf99c61c5018a1067f16d260eab6cb356cd0e71bb05b3ca4f3200637a9",
-    operator_access:true,quickbooks_access:true,source_latest:true,source_versions:true,
-    finance_audit:true,active_tenant:true,confirmed_connections:1,
+    active_tenant:true,confirmed_connections:1,
     client_flags_on:0,invoice_preview_flags_on:0}]};
 function snapshot(on=false,existing=on){
   return {project:installed.project,
@@ -34,6 +38,8 @@ test("enable requires exact installed source, operator grant and client money OF
   for(const change of [
     s=>{s.project.id="wrong";},
     s=>{s.install.ledger[0].source_sha256="0".repeat(64);},
+    s=>{s.install.ledger[1].source_sha256="0".repeat(64);},
+    s=>{s.install.catalog[0].index_sha256="0".repeat(64);},
     s=>{s.install.catalog[0].anon_grant=true;},
     s=>{s.flags[0].client_money_on=1;},
     s=>{s.flags[0].other_rows=1;},
@@ -48,7 +54,8 @@ test("one transaction changes only the target flag and appends one exact audit r
   assert.match(sql,/^begin;/);
   assert.match(sql,/lock table public\.feature_flags/);
   assert.match(sql,/lock table public\.controlplane_change_log/);
-  assert.match(sql,/20261108110000/);
+  assert.match(sql,/20261108120000/);
+  assert.match(sql,/learn_quickbooks_latest_invoice_recent_review/);
   assert.match(sql,/m3_invoice_flag_preflight_changed/);
   assert.match(sql,/m3-invoice-review-enabled\/1/);
   assert.equal(sql.match(/insert into public\.controlplane_change_log/g)?.length,1);
