@@ -59,7 +59,8 @@ function namedEndpoints(rows) {
     if (matches.length !== 1) throw Error("runtime_endpoint_missing_or_duplicate:" + pin.name);
     const row = matches[0];
     return { name: row.slug, id: row.id, version: row.version,
-      hash: row.ezbr_sha256, jwt: row.verify_jwt, status: row.status };
+      hash: row.ezbr_sha256, jwt: row.verify_jwt, status: row.status,
+      updatedAt: row.updated_at };
   });
 }
 
@@ -104,6 +105,43 @@ export function assessM2Postrelease({ project, functions, migrations, flags, que
   return { state: "installed_default_off_readback", endpoints,
     migrations: MIGRATIONS, activeImport: queue[0].active_import,
     flagsPresent: [], providerRequests: 0 };
+}
+
+export function assessM2WorkerFirst({ project, functions, migrations, flags, queue, health },
+  now = Date.now()) {
+  if (project?.id !== PROJECT || project?.status !== "ACTIVE_HEALTHY")
+    throw Error("production_project_unconfirmed");
+  const endpoints = namedEndpoints(functions), worker = endpoints[0], pin = ENDPOINTS[0];
+  if (worker.id !== pin.id || worker.version <= pin.version || worker.hash === pin.hash ||
+    !/^[a-f\d]{64}$/.test(worker.hash ?? "") || worker.jwt !== true || worker.status !== "ACTIVE" ||
+    !Number.isSafeInteger(worker.updatedAt) || worker.updatedAt <= 0 || worker.updatedAt > now)
+    throw Error("worker_first_runtime_unconfirmed");
+  for (let i = 1; i < ENDPOINTS.length; i++) {
+    const actual = endpoints[i], old = ENDPOINTS[i];
+    if (Object.keys(old).some(key => actual[key] !== old[key]) || actual.status !== "ACTIVE")
+      throw Error("manual_route_changed_before_sql:" + old.name);
+  }
+  if (!Array.isArray(migrations) || migrations.length !== 0 ||
+    !Array.isArray(flags) || flags.length !== 0)
+    throw Error("m2_sql_or_flag_changed_before_worker_gate");
+  if (!Array.isArray(queue) || queue.length !== 1 || typeof queue[0]?.active_import !== "boolean")
+    throw Error("source_queue_unconfirmed");
+  const row = health?.[0];
+  if (!Array.isArray(health) || health.length !== 1 ||
+    ["pre_activation_running", "recent_retrying", "recent_dead_letter", "completed_since"]
+      .some(key => !Number.isSafeInteger(Number(row?.[key])) || Number(row[key]) < 0))
+    throw Error("source_health_unconfirmed");
+  const elapsedMs = now - worker.updatedAt;
+  return { state: elapsedMs >= 180000 && Number(row.pre_activation_running) === 0 &&
+      Number(row.recent_retrying) === 0 && Number(row.recent_dead_letter) === 0 &&
+      Number(row.completed_since) > 0
+      ? "worker_first_sql_ready" : "worker_first_wait_or_inspect",
+    updatedAt: new Date(worker.updatedAt).toISOString(), elapsedMs,
+    sourceHealth: { preActivationRunning: Number(row.pre_activation_running),
+      recentRetrying: Number(row.recent_retrying), recentDeadLetter: Number(row.recent_dead_letter),
+      completedSince: Number(row.completed_since) },
+    activeImport: queue[0].active_import, migrationsPresent: [], flagsPresent: [],
+    providerRequests: 0 };
 }
 
 async function json(url, token, query) {
@@ -293,6 +331,26 @@ export async function readM2Postrelease({ token = savedCliToken() } = {}) {
   });
 }
 
+export async function readM2WorkerFirst({ token = savedCliToken() } = {}) {
+  const base = `https://api.supabase.com/v1/projects/${PROJECT}`;
+  const project = await json(base, token), functions = await json(base + "/functions", token);
+  const worker = namedEndpoints(functions)[0];
+  if (!Number.isSafeInteger(worker.updatedAt) || worker.updatedAt <= 0)
+    throw Error("worker_activation_time_unconfirmed");
+  const activation = new Date(worker.updatedAt).toISOString();
+  const healthQuery = `select
+ count(*) filter(where status='running' and claimed_at<'${activation}'::timestamptz) as pre_activation_running,
+ count(*) filter(where status='retrying' and last_attempt_at>='${activation}'::timestamptz) as recent_retrying,
+ count(*) filter(where status='dead_letter' and last_attempt_at>='${activation}'::timestamptz) as recent_dead_letter,
+ count(*) filter(where status='succeeded' and completed_at>='${activation}'::timestamptz) as completed_since
+ from public.platform_jobs where tenant_id='${TENANT}'::uuid and job_type='commusoft.source_sync'`;
+  return assessM2WorkerFirst({ project, functions,
+    migrations: await json(base + "/database/query/read-only", token, MIGRATION_QUERY),
+    flags: await json(base + "/database/query/read-only", token, FLAG_QUERY),
+    queue: await json(base + "/database/query/read-only", token, QUEUE_QUERY),
+    health: await json(base + "/database/query/read-only", token, healthQuery) });
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     if (process.env.NEW_DAWN_M2_ALLOW_PROJECT !== PROJECT)
@@ -302,6 +360,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       console.log(JSON.stringify(await captureM2Preflight(process.argv[4])));
     else if (process.argv.length === 3 && process.argv[2] === "--post-release-read-only")
       console.log(JSON.stringify(await readM2Postrelease()));
+    else if (process.argv.length === 3 && process.argv[2] === "--worker-first-read-only") {
+      const result = await readM2WorkerFirst();
+      console.log(JSON.stringify(result));
+      if (result.state !== "worker_first_sql_ready") process.exitCode = 2;
+    }
     else throw Error("explicit_live_read_only_scope_required");
   } catch (error) {
     console.error(JSON.stringify({ state: "preflight_unverified",

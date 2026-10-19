@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { assessM2Preflight, assessM2Postrelease, ENDPOINTS, PROJECT,
+import { assessM2Preflight, assessM2Postrelease, assessM2WorkerFirst, ENDPOINTS, PROJECT,
   normalizeRollbackSource } from "./new-dawn-m2-live-preflight.mjs";
 
 const input = () => ({ project: { id: PROJECT, status: "ACTIVE_HEALTHY" },
@@ -51,6 +51,26 @@ test("post-release readback requires every new route, ordered SQL and absent fla
   installed.flags = [];
   installed.lease[0].yield_present = false;
   assert.throws(() => assessM2Postrelease(installed), /lease_schema_unconfirmed/);
+});
+
+test("worker-first readback waits for old claims but does not require an empty queue", () => {
+  const now = Date.parse("2026-10-19T18:00:00Z"), staged = input();
+  staged.functions[0].version = 11;
+  staged.functions[0].ezbr_sha256 = "a".repeat(64);
+  staged.functions[0].updated_at = now - 181000;
+  staged.health = [{ pre_activation_running: 0, recent_retrying: 0,
+    recent_dead_letter: 0, completed_since: 2 }];
+  assert.equal(assessM2WorkerFirst(staged, now).state, "worker_first_sql_ready");
+  staged.health[0].pre_activation_running = 1;
+  assert.equal(assessM2WorkerFirst(staged, now).state, "worker_first_wait_or_inspect");
+  staged.health[0].pre_activation_running = 0;
+  staged.health[0].completed_since = 0;
+  assert.equal(assessM2WorkerFirst(staged, now).state, "worker_first_wait_or_inspect");
+  staged.health[0].completed_since = 2;
+  staged.functions[0].updated_at = now - 179000;
+  assert.equal(assessM2WorkerFirst(staged, now).state, "worker_first_wait_or_inspect");
+  staged.functions[1].version = 2;
+  assert.throws(() => assessM2WorkerFirst(staged, now), /manual_route_changed_before_sql/);
 });
 
 test("CLI-nested shared source becomes a private complete rollback stage", () => {
