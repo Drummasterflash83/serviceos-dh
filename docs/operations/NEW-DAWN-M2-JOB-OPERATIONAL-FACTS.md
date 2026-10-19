@@ -30,14 +30,38 @@ tenant, connection, source-version, lease and quota checks remain in force.
 Do not enable a broad flag to obtain the read. The previous one-use permit was
 disarmed and cannot be reused.
 
-Before release, run the focused Node tests, `npx tsc --noEmit`, `npm run build`
-and `node scripts/verify/new-dawn-m2-operational-facts-rehearse.mjs
---test-rollback-only`. The last command applies both exact-detail SQL sources
-and synthetic cases inside one TEST transaction, then checks the entire
-transaction rolled back. It makes no Commusoft request. Install the additive SQL
-first, then deploy the matching Edge source and frontend while the one-job
-permit remains disarmed. Verify migration hash and Edge source version. If either
-step cannot be confirmed, stop before arming a trial.
+Before release, run the focused Node tests, `npx tsc --noEmit` and `npm run
+build`. Rehearse the SQL with `node scripts/verify/new-dawn-m2-operational-facts-rehearse.mjs
+--test-rollback-only`. It applies both exact-detail SQL sources and synthetic
+cases inside one TEST transaction, then checks that transaction rolled back.
+It makes no Commusoft request.
+
+The exact migration installer pins SHA-256
+`e82c5faf833818ef9d58f5117137cbc48a37357b57b9066f4b4a958f95db6707`.
+It checks the LIVE project, the one-job permit migration receipt, the existing
+exact-detail function version, absent candidate ledger row, zero active one-job
+permits and both broad flags OFF. It installs only `20261107110000`, saves its
+exact source in the Supabase migration ledger, and independently reads the v2
+function and ledger back. An uncertain write is **never replayed**. The original
+exact-detail function is installed on LIVE but its historical
+`20261106120000` migration has no Supabase ledger row. The release therefore
+checks the actual function definition for v1 and the later permit's exact
+ledger identity; it does not invent or backfill the missing historical receipt.
+
+The reviewed commands are:
+
+```sh
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-operational-facts-release.mjs --live-read-only
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-operational-facts-release.mjs --live-install-exact
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-operational-facts-release.mjs --live-read-only
+```
+
+The middle command is a LIVE SQL write and is **not part of this PR's candidate
+testing**. Run it only after the release lead reviews this exact source and
+preflight. Then deploy the matching Edge source and frontend while the permit
+remains disarmed; verify their deployed versions before considering a later
+one-job provider check. If any step cannot be confirmed, stop before arming a
+trial.
 
 For a later exact LIVE readback, check an operator-signed-in response for
 `commusoft-exact-job-detail/2`, the exact tenant/job/source-version/connection,
@@ -55,5 +79,11 @@ its business absence. No further provider GET is part of this PR.
 - Synthetic rollback-only TEST SQL fixture passed, including wrong provider ID,
   wrong hold type, absent/null/false distinction, queue and authority checks,
   immutable receipt and rollback.
+- Exact LIVE installer unit tests pass for the pinned source hash, preflight,
+  readback and uncertain-write no-replay behavior. Its LIVE install mode was not run.
+- The LIVE read-only preflight returned `exact_operational_sql_ready` for
+  `20261107110000`, with zero active permits, zero broad flags enabled and no
+  provider request. It checked the permit's existing ledger source byte for
+  byte against its reviewed file.
 - No provider request, LIVE migration, release flag change or client publication
   was made by this candidate.
