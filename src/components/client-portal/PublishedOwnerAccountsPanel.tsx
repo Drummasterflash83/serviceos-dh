@@ -116,9 +116,9 @@ export function PublishedOwnerAccountsPanel({
       {report && (
         <div className="space-y-3" role="status">
           <p className="nd-money-scope">
-            QuickBooks Online · company accounts · P&amp;L {report.periodStart} to{" "}
-            {report.periodEnd} · {report.accountingMethod} basis · A/R as of {report.arAsOf}. Saved
-            report, review {report.revision}; not today’s result.
+            QuickBooks Online · company accounts · profit and loss period {report.periodStart} to{" "}
+            {report.periodEnd} · {report.accountingMethod} basis · receivables report as of{" "}
+            {report.arAsOf}. Saved report, review {report.revision}; not today’s result.
           </p>
           <dl className="nd-money-values">
             <div>
@@ -135,8 +135,8 @@ export function PublishedOwnerAccountsPanel({
             </div>
           </dl>
           <p className="nd-money-scope">
-            Field gross profit is held until job costs and links are verified. ARR is held until
-            recurring contracts and periods are verified.
+            Field gross profit is held until job costs and links are verified. Annual recurring
+            revenue is held until recurring contracts and periods are verified.
           </p>
         </div>
       )}
