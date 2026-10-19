@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readSourceHomePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue } from "./new-dawn-source-job-home.ts";
+import { readSourceHomePage, scopedOperatorSourcePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue } from "./new-dawn-source-job-home.ts";
 
 const tenant = "00000000-0000-0000-0000-000000000001";
 const actor = "00000000-0000-0000-0000-000000000002";
@@ -23,6 +23,10 @@ const envelope = () => ({
 
 test("reads a bounded, audited tenant page without treating capture as current provider state", () => {
   const page = readSourceHomePage(envelope(), tenant, actor);
+  assert.equal(page.tenantId, tenant);
+  assert.equal(page.actorId, actor);
+  assert.equal(page.auditId, audit);
+  assert.ok(Number.isFinite(Date.parse(page.observedAt)));
   assert.equal(page.reviewedJobCount, 42);
   assert.equal(page.jobs[0].fields.job_number, "001");
   assert.equal(sourceJobLabel(page.jobs[0]), "Source changed since this card was reviewed");
@@ -39,6 +43,14 @@ test("rejects wrong tenant, actor, duplicates, excess rows and invented source s
   assert.throws(() => readSourceHomePage({ ...envelope(), rows: Array(25).fill(row) }, tenant, actor));
   assert.throws(() => readSourceHomePage({ ...envelope(), rows: [{ ...row, source_state: "live" }] }, tenant, actor));
   assert.throws(() => readSourceHomePage({ ...envelope(), reviewed_job_count: 0 }, tenant, actor));
+});
+
+test("MD preview keeps a previously audited page bound to its client and OpenFolk actor", () => {
+  const page = readSourceHomePage(envelope(), tenant, actor);
+  assert.equal(scopedOperatorSourcePage(page, tenant, actor), page);
+  assert.equal(scopedOperatorSourcePage(page, actor, actor), null);
+  assert.equal(scopedOperatorSourcePage(page, tenant, tenant), null);
+  assert.equal(scopedOperatorSourcePage(page, tenant, undefined), null);
 });
 
 test("operator preview and ordinary client use separate release flags", () => {

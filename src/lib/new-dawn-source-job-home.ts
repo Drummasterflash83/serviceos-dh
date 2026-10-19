@@ -6,6 +6,10 @@ export type SourceHomeJob = OperatorHomeJob & {
   source_observed_at: string;
 };
 export type SourceHomePage = {
+  tenantId: string;
+  actorId: string;
+  auditId: string;
+  observedAt: string;
   reviewedJobCount: number;
   jobs: SourceHomeJob[];
 };
@@ -40,7 +44,16 @@ export function readSourceHomePage(value: unknown, tenant: string, actor: string
       throw Error("Source-backed job home unavailable");
     seen.add(row.id);
   }
-  return { reviewedJobCount: value.reviewed_job_count as number, jobs: value.rows as SourceHomeJob[] };
+  return {
+    tenantId: tenant, actorId: actor, auditId: value.audit_id as string,
+    observedAt: value.observed_at as string,
+    reviewedJobCount: value.reviewed_job_count as number, jobs: value.rows as SourceHomeJob[],
+  };
+}
+
+/** A previously read operator page must not flash into another client or actor's preview. */
+export function scopedOperatorSourcePage(page: SourceHomePage | null, tenant: string, actor: string | undefined) {
+  return page?.tenantId === tenant && page.actorId === actor ? page : null;
 }
 
 export function sourceJobLabel(job: SourceHomeJob) {
