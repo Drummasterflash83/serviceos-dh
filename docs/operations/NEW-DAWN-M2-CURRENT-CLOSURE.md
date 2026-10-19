@@ -30,6 +30,34 @@ read-only Drummonds scope. Recheck the latest reviewed job link and provider
 response shape before claiming a real closure value. A failed or absent source
 field remains unverified; do not retry an uncertain provider GET blindly.
 
+The exact guarded release helper is
+`scripts/verify/new-dawn-m2-closure-release.mjs`. It deliberately has **no
+default Edge pin**: the currently installed LIVE Edge version 5 accepts only
+receipt versions through v4, so SQL v5 must not be installed yet. The release
+lead must first deploy a reviewed v5-compatible Edge route, download that
+deployed function and compare its source closure with the reviewed commit,
+then record its actual Supabase version and `ezbr_sha256`. A version greater
+than 5 alone is not evidence of compatible source. Run these commands from
+the reviewed source checkout, substituting only the independently reviewed
+version/hash:
+
+```sh
+node --test scripts/verify/new-dawn-m2-closure-release.test.mjs
+node scripts/verify/new-dawn-m2-closure-rehearse.mjs --test-rollback-only
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-closure-release.mjs --live-read-only --edge-version=6 --edge-sha256=<reviewed-64-hex>
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-closure-release.mjs --live-install-exact --edge-version=6 --edge-sha256=<same-reviewed-64-hex>
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-closure-release.mjs --live-read-only --edge-version=6 --edge-sha256=<same-reviewed-64-hex>
+```
+
+Use the actual deployed version if it is not 6. Proceed to the install command
+only when read-only preflight returns `exact_closure_sql_ready`. The helper
+pins the migration bytes, predecessor ledger bytes, prior function hash,
+Edge ID/version/status/JWT/hash, zero active permits and both broad flags off.
+Its write is one locked transaction; it reads back the exact new ledger bytes
+and function hash. If the write outcome is uncertain, it reads back once and
+never replays the write. If that readback also fails, stop and investigate
+read-only. Do not run a provider request as part of this release.
+
 The TEST rehearsal is:
 
 ```sh
