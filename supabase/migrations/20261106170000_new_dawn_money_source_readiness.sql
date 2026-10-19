@@ -4,7 +4,8 @@ begin;
 
 create function public.learn_quickbooks_money_source_readiness(
  p_tenant uuid,p_connection uuid,p_reason text
-) returns jsonb language plpgsql security definer set search_path=pg_catalog as $$
+) returns jsonb language plpgsql security definer
+set search_path=pg_catalog set statement_timeout='15s' as $$
 declare c public.learn_quickbooks_connections%rowtype;
  qbo_jobs bigint;bill_ref bigint;purchase_ref bigint;invoice_items bigint;item_cost bigint;
  invoice_recurring bigint;invoices bigint;bills bigint;purchases bigint;

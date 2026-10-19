@@ -7,6 +7,8 @@ const keys = ["invoice_latest","bill_latest","purchase_latest","qbo_job_customer
   "bill_customer_line_refs","purchase_customer_line_refs","invoice_item_refs",
   "items_with_purchase_cost_field","invoices_with_checked_recurring_markers",
   "commusoft_job_versions","commusoft_jobs_with_checked_direct_cost_fields"] as const;
+const envelopeKeys = ["version","audience","tenant_id","connection_id","environment","realm_id",
+  "read_at","latest_qbo_observed_at","audit_id","commusoft_scope","retained","field_gp","arr","limits"];
 type CountKey = typeof keys[number];
 export type MoneySourceReadiness = {
   realmId: string; environment: "production" | "sandbox"; readAt: string;
@@ -21,6 +23,9 @@ export function readMoneySourceReadiness(value: unknown, scope: {
     !Array.isArray(value.limits)) throw Error("money_readiness_invalid");
   const retained = value.retained, limits = value.limits;
   if (
+    Object.keys(value).sort().join(",") !== [...envelopeKeys].sort().join(",") ||
+    Object.keys(value.field_gp).sort().join(",") !== "reason,status" ||
+    Object.keys(value.arr).sort().join(",") !== "reason,status" ||
     value.version !== "quickbooks-money-source-readiness/1" ||
     value.audience !== "openfolk_operator_only" || value.tenant_id !== scope.tenantId ||
     value.connection_id !== scope.connectionId || value.environment !== scope.environment ||

@@ -22,7 +22,9 @@ test("operator readiness accepts only held, count-only tenant-bound evidence",()
   assert.equal(read.retained.qbo_job_customers,4);
   assert.equal("balance" in read.retained,false);
   for(const change of [{tenant_id:scope.connectionId},{realm_id:"999"},
+    {net_profit:"100.00"},
     {field_gp:{status:"ready",reason:"cross_provider_job_mapping_and_actual_cost_not_verified"}},
+    {arr:{...receipt.arr,amount:"100.00"}},
     {retained:{...retained,invoice_latest:1.5}},
     {retained:{...retained,net_profit:"100.00"}},
     {limits:[...receipt.limits.slice(1)]}])
