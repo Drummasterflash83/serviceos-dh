@@ -5,7 +5,7 @@
  */
 export interface QuickBooksProviderTrace {
   event: "quickbooks_provider_response";
-  operation: "token" | "company_info" | "query" | "invoice_read" | "revoke";
+  operation: "token" | "company_info" | "query" | "invoice_read" | "report_read" | "revoke";
   environment: "sandbox" | "production" | "oauth";
   observedAt: string;
   status: number | null;
@@ -40,6 +40,13 @@ function endpoint(input: Parameters<typeof fetch>[0], init?: RequestInit) {
       return { operation: "query" as const, environment };
     if (/^\/v3\/company\/[1-9][0-9]{0,29}\/invoice\/[A-Za-z0-9-]{1,128}$/.test(url.pathname))
       return { operation: "invoice_read" as const, environment };
+    if (/^\/v3\/company\/[1-9][0-9]{0,29}\/reports\/(ProfitAndLoss|AgedReceivables)$/.test(url.pathname) &&
+      (url.pathname.endsWith('/ProfitAndLoss')
+        ? [...url.searchParams.keys()].sort().join(',') === 'accounting_method,end_date,start_date' &&
+          ['Cash','Accrual'].includes(url.searchParams.get('accounting_method') ?? '')
+        : [...url.searchParams.keys()].sort().join(',') === 'aging_method,report_date' &&
+          url.searchParams.get('aging_method') === 'Report_Date'))
+      return { operation: "report_read" as const, environment };
     if (/^\/v3\/company\/([1-9][0-9]{0,29})\/companyinfo\/\1$/.test(url.pathname))
       return { operation: "company_info" as const, environment };
   }
