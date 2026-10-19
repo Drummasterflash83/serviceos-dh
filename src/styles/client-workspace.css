@@ -390,7 +390,31 @@ button.nd-job-row:hover { border-color: #a996c0; background: #fff; }
 .nd-operator-preview label { display: grid; gap: 4px; flex: 1 1 230px; font-size: 12px; }
 .nd-operator-preview input { min-height: 40px; padding: 8px 10px; border: 1px solid #cfc4d9; border-radius: 8px; background: #fff; }
 .nd-job-detail h3 { margin-top: 16px; font-weight: 600; }
+.nd-money-panel { margin: 0 0 24px; padding: 28px; border: 1px solid #e5dfea; border-radius: 18px; background: #fff; }
+.nd-money-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.nd-money-heading h2 { margin: 3px 0 6px; font-size: clamp(23px, 2.6vw, 30px); letter-spacing: -.035em; }
+.nd-money-heading p:last-child, .nd-money-operator p { max-width: 68ch; color: #6e6777; font-size: 13px; line-height: 1.5; }
+.nd-money-scope { margin: 15px 0; color: #726c79; font-size: 12px; line-height: 1.5; }
+.nd-money-operator { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin: 16px 0; }
+.nd-money-operator p { margin: 0; }
+.nd-money-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr)); gap: 12px; margin-top: 18px; }
+.nd-money-group { display: grid; gap: 13px; padding: 18px; border: 1px solid #e7e1ea; border-radius: 13px; background: #fbfafc; }
+.nd-money-source { margin: 0; color: #62586f; font-size: 12px; font-weight: 600; }
+.nd-money-values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
+.nd-money-values div { display: grid; align-content: start; gap: 5px; }
+.nd-money-values span, .nd-money-group small { color: #766e7b; font-size: 11px; line-height: 1.45; }
+.nd-money-values strong { overflow-wrap: anywhere; color: #302c36; font-size: 21px; line-height: 1.2; letter-spacing: -.03em; }
+.nd-money-attention { margin-top: 22px; }
+.nd-money-attention h3 { margin: 0 0 4px; font-size: 17px; font-weight: 600; }
+.nd-money-attention > p { color: #726c79; font-size: 12px; line-height: 1.5; }
+.nd-money-attention article { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 12px 0; border-top: 1px solid #ece7ee; font-size: 13px; }
+.nd-money-attention article span { display: grid; gap: 4px; }
+.nd-money-attention article small { color: #756d7b; }
+.nd-money-attention article b { white-space: nowrap; }
+.nd-money-attention details { flex-basis: 100%; color: #77688a; font-size: 11px; }
+.nd-money-attention code { display: block; margin-top: 6px; overflow-wrap: anywhere; color: #5f5964; }
 @media (max-width: 720px) { .nd-job-home { padding: 19px; } .nd-job-heading { flex-direction: column; } .nd-job-row { grid-template-columns: auto minmax(0, 1fr) auto; } .nd-job-row > span:nth-of-type(2) { grid-column: 2 / -1; } }
+@media (max-width: 720px) { .nd-money-panel { padding: 19px; } .nd-money-heading { flex-direction: column; } .nd-money-values { grid-template-columns: 1fr; } }
 .cp-home-card {
   display: flex;
   flex-direction: column;
