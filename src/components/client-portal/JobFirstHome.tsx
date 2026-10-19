@@ -59,10 +59,10 @@ async function clientJobs(tenant: string): Promise<HomeJob[]> {
   })));
 }
 
-function JobDetail({ tenant, id }: { tenant: string; id: string }) {
+function JobDetail({ tenant, job }: { tenant: string; job: HomeJob }) {
   const detail = useQuery<LearnCardDetail>({
-    queryKey: ["new-dawn-job-detail", tenant, id],
-    queryFn: () => readLearnCardDetail(getSupabaseClient(), tenant, "job", id),
+    queryKey: ["new-dawn-job-detail", tenant, job.id],
+    queryFn: () => readLearnCardDetail(getSupabaseClient(), tenant, "job", job.id),
     staleTime: 30_000,
   });
   if (detail.isPending) return <p role="status">Reading saved job evidence…</p>;
@@ -70,14 +70,12 @@ function JobDetail({ tenant, id }: { tenant: string; id: string }) {
   const row = detail.data;
   return (
     <div className="nd-job-detail">
-      <p>{row.card.jobStatus ?? "Status needs confirmation"} · {row.card.recordState}</p>
+      <p><strong>{row.card.jobStatus ?? "Status needs confirmation"}</strong> · {row.card.recordState}</p>
+      <p>{job.customer ?? "Customer link needs review"} · {job.site ?? "Site link needs review"}</p>
       <p>Saved record updated {checked(row.card.updatedAt)}. This may lag Commusoft.</p>
-      <h3>What needs review</h3>
-      {row.gaps.length ? <ul>{row.gaps.map((gap) => <li key={gap}>{gap}</li>)}</ul> : <p>No recorded source gaps in this bounded read.</p>}
-      <h3>Evidence and findings</h3>
-      <p>{row.evidence.length} evidence item{row.evidence.length === 1 ? "" : "s"} and {row.findings.length} finding{row.findings.length === 1 ? "" : "s"} in this bounded read.</p>
-      {row.findings.slice(0, 5).map((finding) => <p key={finding.id}><strong>{finding.title}</strong> · {finding.status}</p>)}
-      <small>Checked {checked(row.observedAt)}. This is saved evidence, not a live provider check or a score.</small>
+      <h3>Next step</h3><p>{homeJobAction(job)}.</p>
+      {row.gaps.length > 0 && <p>Some source details still need OpenFolk review. This job is not scored yet.</p>}
+      <small>Evidence checked {checked(row.observedAt)}. This is saved information, not a live provider check or a score.</small>
     </div>
   );
 }
@@ -88,7 +86,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
   onOpenInformation?: () => void;
 }) {
   const { user, profile } = useAuth();
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<HomeJob | null>(null);
   const [reason, setReason] = useState("");
   const [operatorPage, setOperatorPage] = useState<Awaited<ReturnType<typeof searchOperatorJobs>> | null>(null);
   const [operatorError, setOperatorError] = useState("");
@@ -134,7 +132,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
       {operatorPage && <p className="nd-job-scope">Audited first page of {operatorPage.rows.length} published jobs, ordered by record ID. This preview is not a complete workload count or a staff login.</p>}
       {!operator && client.isSuccess && client.data.length === 0 && <p>No saved job records are visible yet. OpenFolk can check the connection and source review.</p>}
       <div className="nd-job-list">
-        {!operator && authorisedClient && client.data?.map((job) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job.id)}>
+        {!operator && authorisedClient && client.data?.map((job) => <button key={job.id} className="nd-job-row" onClick={() => setSelected(job)}>
           <BriefcaseBusiness size={20} />
           <span><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job identity needs review"}</strong><small>{job.title && job.job_number ? `${job.title} · ` : ""}{job.customer ?? "Customer link needs review"} · {job.site ?? "Site link needs review"}</small></span>
           <span><b>{homeJobState(job)}</b><small>{homeJobAction(job)} · saved {checked(job.updated_at)}</small></span>
@@ -151,7 +149,7 @@ export function JobFirstHome({ tenant, operator = false, onOpenInformation }: {
       <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
         <DialogContent className="cp-dialog max-h-[90vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader><DialogTitle>Saved job record</DialogTitle></DialogHeader>
-          {selected && <JobDetail key={`${tenant}:${selected}`} tenant={tenant} id={selected} />}
+          {selected && <JobDetail key={`${tenant}:${selected.id}`} tenant={tenant} job={selected} />}
         </DialogContent>
       </Dialog>
     </section>
