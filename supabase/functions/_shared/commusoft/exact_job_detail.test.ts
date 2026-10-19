@@ -49,6 +49,18 @@ test("edge accepts installed v2 receipts until the source quote SQL is installed
   assert.equal((result as Record<string, unknown>).version, "commusoft-exact-job-detail/2");
 });
 
+test("edge accepts v4 optional-fact receipts after compatible rollout", async () => {
+  const result = await runExactJobDetail(request, {
+    userRpc: async () => rpcReply({ request_id: requestId, state: "prepared" }),
+    serviceRpc: async (name) => name.endsWith("_acquire") ? rpcReply(ready)
+      : name.endsWith("_current") ? rpcReply(true)
+      : name.endsWith("_finish") ? rpcReply({ version: "commusoft-exact-job-detail/4", request_id: requestId,
+        job_id: jobId, source_version_id: sourceVersionId }) : rpcReply(null),
+    fetcher: async () => Response.json({ id: 123 }),
+  });
+  assert.equal((result as Record<string, unknown>).version, "commusoft-exact-job-detail/4");
+});
+
 test("missing current authority prevents the provider request", async () => {
   let gets = 0, failed = 0;
   await assert.rejects(runExactJobDetail(request, {

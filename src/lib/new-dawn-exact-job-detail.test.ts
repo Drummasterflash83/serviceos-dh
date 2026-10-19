@@ -75,6 +75,26 @@ test("current quote is source text with distinct absent and null states", () => 
   assert.throws(() => parseExactJobDetail({ ...current, source_quoted_amount: { state: "present", value: "x".repeat(201) } }, scope));
   assert.throws(() => parseExactJobDetail({ ...result, source_quoted_amount: current.source_quoted_amount }, scope));
 });
+test("v4 keeps an unexpected optional source format visibly unverified", () => {
+  const scope = { tenant, job, request, sourceVersion, externalId: "123" };
+  const facts = {
+    isJobOnHold: { state: "source_unrecognized", value: null },
+    onHoldReasonDescription: { state: "not_supplied", value: null },
+    hasSLA: { state: "present", value: false },
+    SLAStatus: { state: "source_null", value: null },
+    contractID: { state: "not_supplied", value: null },
+  };
+  const current = { ...result, version: "commusoft-exact-job-detail/4",
+    source_operational_facts: facts,
+    source_quoted_amount: { state: "present", value: "001.25" } };
+  const parsed = parseExactJobDetail(current, scope);
+  assert.equal(parsed.sourceOperationalFacts?.isJobOnHold.state, "source_unrecognized");
+  assert.equal(parsed.sourceOperationalFacts?.isJobOnHold.value, null);
+  assert.equal(parsed.sourceQuotedAmount?.value, "001.25");
+  assert.throws(() => parseExactJobDetail({ ...current,
+    source_operational_facts: { ...facts, isJobOnHold: { state: "source_unrecognized", value: "false" } } }, scope));
+  assert.throws(() => parseExactJobDetail({ ...current, version: "commusoft-exact-job-detail/3" }, scope));
+});
 test("client submits one generated request and validates returned scope", async () => {
   const seen: unknown[] = [];
   const output = await readExactJobDetail({ functions: { invoke: async (_name, opts) => {
