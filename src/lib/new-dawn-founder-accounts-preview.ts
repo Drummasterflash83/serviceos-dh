@@ -60,10 +60,10 @@ export type FounderAccountsPreview = {
   currency: string; realmId: string; periodStart: string; periodEnd: string;
   accountingMethod: "Accrual" | "Cash"; arAsOf: string; profitSha256: string;
   receivablesSha256: string; auditId: string;
-  accountsGrossProfit: string; netProfit: string;
+  accountsGrossProfit: string; netProfit: string; ar91Plus: string;
 };
 
-/** Project only exact P&L figures from an explicitly selected, audited pair. */
+/** Project exact report figures from an explicitly selected, audited pair. */
 export function readFounderAccountsPreview(value: unknown, tenantId: string,
   pair: AccountsPair, todayUtc = new Date().toISOString().slice(0, 10)): FounderAccountsPreview {
   const report = readReportSummaryPreview(value, {tenantId,
@@ -80,7 +80,16 @@ export function readFounderAccountsPreview(value: unknown, tenantId: string,
     periodEnd:report.periodEnd,accountingMethod:report.accountingMethod,arAsOf:report.arAsOf,
     profitSha256:report.profitSha256,receivablesSha256:report.receivablesSha256,
     auditId:report.auditId,accountsGrossProfit:report.summary.accountsGrossProfit,
-    netProfit:report.summary.netProfit};
+    netProfit:report.summary.netProfit,ar91Plus:report.summary.ar91Plus};
+}
+
+/** A positive net 91+ report bucket is an operator review cue, never an invoice or job claim. */
+export function canShowAgedReceivablesReview(input: {
+  operator: boolean; flagEnabled: boolean; saved: FounderAccountsPreview | null;
+}) {
+  const amount = input.saved?.ar91Plus;
+  return input.operator && input.flagEnabled && typeof amount === "string" &&
+    /^[0-9]{1,40}(\.[0-9]{1,10})?$/.test(amount) && /[1-9]/.test(amount);
 }
 
 export function accountsPeriodCoverage(periodEnd: string, todayUtc = new Date().toISOString().slice(0, 10)) {

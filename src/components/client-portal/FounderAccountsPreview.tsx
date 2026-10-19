@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
 import { financeAmount } from "@/lib/learn-quickbooks-finance";
-import { accountsPeriodCoverage, canReadFounderAccountsPreview, readFounderAccountsPairs,
+import { accountsPeriodCoverage, canReadFounderAccountsPreview, canShowAgedReceivablesReview, readFounderAccountsPairs,
   readFounderAccountsPreview, type AccountsPair } from "@/lib/new-dawn-founder-accounts-preview";
 
 type SavedAccounts = ReturnType<typeof readFounderAccountsPreview>;
@@ -18,10 +18,11 @@ export function FounderAccountsPreview({ tenant, operator, jobPreviewOpened, rea
     enabled:operator && !!user,
     queryFn:async () => {
       const {data,error}=await getSupabaseClient().from("feature_flags").select("flag,value")
-        .eq("tenant_id",tenant).in("flag",["new_dawn.job_home_accounts_preview","new_dawn.report_summary_preview"]);
+        .eq("tenant_id",tenant).in("flag",["new_dawn.job_home_accounts_preview","new_dawn.report_summary_preview","new_dawn.aged_debt_exception_preview"]);
       if (error) throw Error("Accounts preview flag unavailable");
-      return ["new_dawn.job_home_accounts_preview","new_dawn.report_summary_preview"]
-        .every(name=>data?.some(row=>row.flag===name && row.value===true));
+      const enabled=(name:string)=>data?.some(row=>row.flag===name && row.value===true)===true;
+      return {accounts:enabled("new_dawn.job_home_accounts_preview") && enabled("new_dawn.report_summary_preview"),
+        agedReceivables:enabled("new_dawn.aged_debt_exception_preview")};
     },staleTime:30_000,
   });
   const [pairs,setPairs]=useState<AccountsPair[]|null>(null);
@@ -37,11 +38,13 @@ export function FounderAccountsPreview({ tenant, operator, jobPreviewOpened, rea
     setPairs(null);setSelectedId("");setReviewed(false);
     setBusy(false);setNotice("");setSaved(null);
     return ()=>{generation.current++;};
-  },[tenant,user?.id,jobPreviewOpened,flag.data,reason]);
-  if (!operator || !jobPreviewOpened || flag.data!==true || !user) return null;
+  },[tenant,user?.id,jobPreviewOpened,flag.data?.accounts,reason]);
+  if (!operator || !jobPreviewOpened || flag.data?.accounts!==true || !user) return null;
   const pair=pairs?.find((item)=>item.profitRequest===selectedId) ?? null;
-  const ready=canReadFounderAccountsPreview({operator,jobPreviewOpened,flagEnabled:flag.data===true,
+  const ready=canReadFounderAccountsPreview({operator,jobPreviewOpened,flagEnabled:flag.data.accounts,
     pair,reason,reviewed});
+  const showAgedReceivables=canShowAgedReceivablesReview({operator,
+    flagEnabled:flag.data.agedReceivables,saved});
 
   async function findPairs() {
     if (working.current || reason.trim().length<3 || reason.trim().length>500 || !user) return;
@@ -113,6 +116,11 @@ export function FounderAccountsPreview({ tenant, operator, jobPreviewOpened, rea
         <div><dt>Accounts gross profit</dt><dd><strong>{financeAmount(saved.accountsGrossProfit,saved.currency)}</strong></dd></div>
         <div><dt>Net profit · OpenFolk authorised view</dt><dd><strong>{financeAmount(saved.netProfit,saved.currency)}</strong></dd></div>
       </dl>
+      {showAgedReceivables && <aside className="rounded-lg border border-amber-200 bg-amber-50/50 p-4" aria-label="OpenFolk aged receivables review">
+        <p className="font-semibold">Review aged receivables</p>
+        <p className="mt-1 text-sm">QuickBooks Aged Receivables · 91 and over · as of {saved.arAsOf}: <strong>{financeAmount(saved.ar91Plus,saved.currency)}</strong></p>
+        <p className="nd-money-scope">Positive company-level report bucket in this saved snapshot. It is not linked to a particular customer, invoice or job, and does not authorise a payment chase.</p>
+      </aside>}
       <p className="nd-money-scope">Field gross profit: awaiting verified job costs and job links. ARR: awaiting verified recurring contracts and periods.</p>
       <details className="text-xs"><summary>Saved source and audit</summary><p className="break-all">P&amp;L SHA-256 {saved.profitSha256}; A/R SHA-256 {saved.receivablesSha256}. Read audit {saved.auditId}.</p></details>
       <button className="cp-secondary" onClick={()=>{setSaved(null);setReviewed(false);}}>Close accounts snapshot</button>

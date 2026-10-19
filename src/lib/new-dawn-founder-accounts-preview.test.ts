@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { accountsPeriodCoverage, canReadFounderAccountsPreview,
+import { accountsPeriodCoverage, canReadFounderAccountsPreview, canShowAgedReceivablesReview,
   readFounderAccountsPairs, readFounderAccountsPreview } from "./new-dawn-founder-accounts-preview.ts";
 
 const tenantId = "00000000-0000-0000-0000-000000000001";
@@ -51,6 +51,7 @@ test("current and historical source snapshots keep exact scope and decimal strin
   const result=readFounderAccountsPreview(response,tenantId,pair,"2026-10-19");
   assert.equal(result.accountsGrossProfit,"12345678901234567890.01");
   assert.equal(result.netProfit,"-10.02");
+  assert.equal(result.ar91Plus,"5.00");
   assert.equal("summary" in result,false);
   assert.match(accountsPeriodCoverage("2026-10-18","2026-10-19"),/later changes/);
   assert.match(accountsPeriodCoverage("2026-09-30","2026-10-19"),/Historical period/);
@@ -59,4 +60,18 @@ test("current and historical source snapshots keep exact scope and decimal strin
     {profit_sha256:"c".repeat(64)},{summary:{...response.summary,net_profit:10.02}}])
     assert.throws(()=>readFounderAccountsPreview({...response,...change},tenantId,pair,"2026-10-19"));
   assert.throws(()=>readFounderAccountsPreview(response,tenantId,pair,"2026-10-17"));
+});
+
+test("aged receivables review is default-off, operator-only and only a positive exact report bucket",()=>{
+  const saved=readFounderAccountsPreview(response,tenantId,pair,"2026-10-19");
+  assert.equal(canShowAgedReceivablesReview({operator:true,flagEnabled:true,saved}),true);
+  for(const changed of [
+    {operator:false,flagEnabled:true,saved},
+    {operator:true,flagEnabled:false,saved},
+    {operator:true,flagEnabled:true,saved:null},
+    {operator:true,flagEnabled:true,saved:{...saved,ar91Plus:"0.00"}},
+    {operator:true,flagEnabled:true,saved:{...saved,ar91Plus:"-5.00"}},
+  ]) assert.equal(canShowAgedReceivablesReview(changed),false);
+  assert.equal(canShowAgedReceivablesReview({operator:true,flagEnabled:true,
+    saved:{...saved,ar91Plus:"0.01"}}),true);
 });
