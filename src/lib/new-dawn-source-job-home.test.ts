@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readSourceHomePage, scopedOperatorSourcePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue } from "./new-dawn-source-job-home.ts";
+import { groupSourceHomeJobs, readSourceHomePage, scopedOperatorSourcePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue } from "./new-dawn-source-job-home.ts";
 
 const tenant = "00000000-0000-0000-0000-000000000001";
 const actor = "00000000-0000-0000-0000-000000000002";
@@ -81,4 +81,14 @@ test("client attention names the next check without exposing operator source-lin
   const recent = sourceJobClientAttention(current, now);
   assert.equal(recent.label, "Recorded progress needs confirming");
   assert.equal(recent.nextStep, "Check what is holding this job");
+});
+
+test("owner presentation keeps old and changed records out of the recent-work section", () => {
+  const now = Date.parse("2026-10-19T09:00:00Z");
+  const current = { ...row, source_state: "reviewed_latest" as const };
+  const recent = { ...current, source_observed_at: "2026-10-19T08:00:00Z" };
+  const old = { ...current, source_observed_at: "2026-10-18T08:59:59Z" };
+  const groups = groupSourceHomeJobs([row, old, recent], now);
+  assert.deepEqual(groups.recentlySaved, [recent]);
+  assert.deepEqual(groups.needsOpenFolkCheck, [row, old]);
 });
