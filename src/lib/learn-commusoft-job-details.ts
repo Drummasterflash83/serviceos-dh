@@ -7,6 +7,11 @@ export const JOB_DETAIL_FIELDS = {
   businessUnit: "Business unit",
   userGroup: "Source user group",
   closedOutcome: "Source closure outcome",
+  quotedAmount: "Quoted amount (source text)",
+  customerContactName: "Customer contact named on source job",
+  siteContactName: "Site contact named on source job",
+  completedBySourceUser: "Completed by (source user)",
+  closedBySourceUser: "Closed by (source user)",
 } as const;
 export const JOB_DETAIL_DATES = {
   created: "Created",
@@ -22,7 +27,7 @@ export type JobDate = {
   instant: string | null;
 };
 export type JobDetails = {
-  version: "commusoft-job-detail/1";
+  version: "commusoft-job-detail/2";
   tenant_id: string;
   connection_id: string;
   version_id: string;
@@ -79,7 +84,7 @@ export function parseCommusoftJobDetails(
       "fields",
       "dates",
     ]) ||
-    d.version !== "commusoft-job-detail/1" ||
+    d.version !== "commusoft-job-detail/2" ||
     d.tenant_id !== tenant ||
     d.connection_id !== connection ||
     d.version_id !== version ||
