@@ -1,5 +1,10 @@
 # M3 money evidence contract
 
+For the later saved-report accounts GP/net-profit owner path, see
+[owner accounts access and accounting definitions](NEW-DAWN-M3-OWNER-ACCOUNTS-ACCESS-PATH.md).
+That path is unimplemented for clients; the report-summary reader remains
+operator-only and the client money flag remains OFF.
+
 The first owner-facing money read uses **retained QuickBooks Online invoices** already
 captured for a selected tenant. It does not call QuickBooks, change accounting
 records, or enable a connector. The RPC is
