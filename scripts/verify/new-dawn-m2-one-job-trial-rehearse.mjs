@@ -118,6 +118,13 @@ begin
    raise exception 'Other route guard is unverified';end if;
  end loop;
  perform set_config('request.jwt.claim.role','authenticated',true);
+ perform set_config('role','authenticated',true);
+ if current_user is distinct from 'authenticated' or session_user is distinct from 'postgres' then
+  raise exception 'Authenticated TEST database role unavailable';end if;
+ begin
+  perform public.new_dawn_commusoft_job_trial_disarm(trial_request_id,'TEST forbidden');
+  raise exception 'Authenticated role could disarm' using errcode='XX001';
+ exception when sqlstate '42501' then null;end;
  result:=public.new_dawn_commusoft_job_trial_offer(x.tenant_id,x.job_id);
  if result->>'request_id' is distinct from trial_request_id::text or
   result->>'actor_id' is distinct from actor::text or
@@ -131,6 +138,9 @@ begin
  perform set_config('request.jwt.claim.sub',actor::text,true);
  result:=public.new_dawn_commusoft_job_detail_start(x.tenant_id,x.job_id,trial_request_id,'TEST one job');
  if result->>'state'<>'prepared' then raise exception 'Exact armed start failed';end if;
+ perform set_config('role','none',true);
+ if current_user is distinct from 'postgres' then
+  raise exception 'Postgres TEST role did not resume';end if;
  if (select p.used_at from public.new_dawn_commusoft_job_trial_permits p
   where p.request_id=trial_request_id) is null then raise exception 'Permit was not consumed';end if;
  begin

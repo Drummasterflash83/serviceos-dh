@@ -76,6 +76,10 @@ credentials, raw response or private provider logs.
 The rollback-only TEST rehearsal
 `node scripts/verify/new-dawn-m2-one-job-trial-release.mjs --test-rollback-only`
 proves default denial, one exact armed start over an active synthetic source
-job, one-use consumption, wrong scope denial, other-route isolation, explicit
+job, postgres management arm, actual `authenticated` database-role offer/start
+with TEST JWT claims, denial of authenticated disarm, one-use consumption,
+wrong scope denial, other-route isolation, explicit
 revocation and expiry, with the TEST migration ledger unchanged. It leaves no TEST schema/data change and makes zero
-provider requests. A successful TEST rehearsal is not a LIVE provider result.
+provider requests. This exercises database grants and function logic inside a
+rollback transaction; it is not a separate PostgREST browser-session test or a
+LIVE provider result.
