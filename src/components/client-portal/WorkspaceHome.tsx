@@ -6,6 +6,7 @@ import { emmaHealthCards, mainNumberStatus } from "@/lib/emma-health";
 import { useReceptionistCalls } from "@/lib/use-receptionist-calls";
 import { EmmaIssueSummary } from "@/components/receptionist/EmmaIssueSummary";
 import type { HealthIssue } from "@/lib/use-emma-health";
+import { JobFirstHome, useJobFirstHomeFlag } from "./JobFirstHome";
 
 export function WorkspaceHome({
   tenant,
@@ -20,6 +21,7 @@ export function WorkspaceHome({
   open: (section: ClientSection) => void;
   openFeedback: (issue?: HealthIssue) => void;
 }) {
+  const jobFirst = useJobFirstHomeFlag(tenant);
   const receptionist = useQuery({
     queryKey: ["workspace-receptionist-summary", userId, tenant],
     queryFn: async () => {
@@ -41,6 +43,28 @@ export function WorkspaceHome({
     error: callEvidence.isError,
     launchStage: receptionist.data?.launch_stage,
   })[0]!;
+  if (jobFirst.data === true) return (
+    <div className="cp-work-home cp-home-job-first">
+      <JobFirstHome tenant={tenant} />
+      <div className="cp-home-cards" aria-label="Other workspace areas">
+        <button className="cp-home-card" onClick={() => open("receptionist")}>
+          <Headphones size={24} /><h3>AI Receptionist</h3>
+          <p>Review calls and reception, including anything needing your attention.</p>
+          <span>Open reception <ArrowRight size={16} /></span>
+        </button>
+        <button className="cp-home-card" onClick={() => open("modules")}>
+          <Layers size={24} /><h3>Your modules</h3>
+          <p>See the OpenFolk services behind your workspace.</p>
+          <span>View modules <ArrowRight size={16} /></span>
+        </button>
+        <button className="cp-home-card" onClick={() => open("notes")}>
+          <MessageSquare size={24} /><h3>Feedback</h3>
+          <p>Tell OpenFolk what needs improving.</p>
+          <span>Leave feedback <ArrowRight size={16} /></span>
+        </button>
+      </div>
+    </div>
+  );
   return (
     <div className="cp-work-home">
       <EmmaIssueSummary tenant={tenant} onOpen={openFeedback} />
