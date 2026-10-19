@@ -16,6 +16,7 @@ const CLOSURE_FUNCTION_SHA256 = "7c4bb1e4baf72f56935ed40dd441ea1cbd25412d2055765
 const EDGE_ID = "009b9fb6-8e3c-49b8-8a3e-95531ba370bd";
 const EDGE_SLUG = "learn-commusoft-job-detail";
 const OLD_EDGE_SHA256 = "eafe6d4310c3e6588c7e89f630890d5b14be2e18b6651062ba6d3d6549957bfa";
+export const REVIEWED_EDGE_EZBR_SHA256 = "b665e27c909b952840327210b592af46e2339e929ff4baecffd406df3dca35eb";
 const sha = value => createHash("sha256").update(value).digest("hex");
 const sqlQuote = value => "'" + value.replaceAll("'", "''") + "'";
 const ledgerSql = `select version::text,name,statements from supabase_migrations.schema_migrations
@@ -50,7 +51,8 @@ function reviewedPriorSource() {
 export function edgePin(version, hash) {
   const numeric = Number(version);
   if (!Number.isSafeInteger(numeric) || numeric <= 5 ||
-    !/^[a-f0-9]{64}$/.test(hash ?? "") || hash === OLD_EDGE_SHA256)
+    !/^[a-f0-9]{64}$/.test(hash ?? "") || hash === OLD_EDGE_SHA256 ||
+    hash !== REVIEWED_EDGE_EZBR_SHA256)
     throw Error("reviewed_v5_compatible_edge_pin_required");
   return Object.freeze({ id: EDGE_ID, slug: EDGE_SLUG, version: numeric,
     status: "ACTIVE", verify_jwt: false, ezbr_sha256: hash });

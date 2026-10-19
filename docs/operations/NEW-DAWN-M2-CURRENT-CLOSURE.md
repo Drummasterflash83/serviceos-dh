@@ -31,26 +31,38 @@ response shape before claiming a real closure value. A failed or absent source
 field remains unverified; do not retry an uncertain provider GET blindly.
 
 The exact guarded release helper is
-`scripts/verify/new-dawn-m2-closure-release.mjs`. It deliberately has **no
-default Edge pin**: the currently installed LIVE Edge version 5 accepts only
-receipt versions through v4, so SQL v5 must not be installed yet. The release
-lead must first deploy a reviewed v5-compatible Edge route, download that
-deployed function and compare its source closure with the reviewed commit,
-then record its actual Supabase version and `ezbr_sha256`. A version greater
-than 5 alone is not evidence of compatible source. Run these commands from
-the reviewed source checkout, substituting only the independently reviewed
-version/hash:
+`scripts/verify/new-dawn-m2-closure-release.mjs`. The currently installed
+LIVE Edge version 5 accepts only receipt versions through v4, so SQL v5 must
+not be installed yet. The reviewed v5-compatible source closure contains
+exactly three files (route entrypoint, exact-job handler and Retry-After
+helper), SHA-256 `be16e43e707f180a11fa68cf73c71a5284aafb01698c405560683821cb755884`.
+The local-only compiler
+`scripts/verify/new-dawn-m2-closure-edge-prepare.mjs` uses pinned Edge
+runtime image `sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c`;
+its reviewed ESZIP SHA-256 is
+`248a4d308a6663e3107c66c49578a9355d7373ee5e4ac541fdd066da5de1d640`
+and exact EZBR transport SHA-256 is
+`b665e27c909b952840327210b592af46e2339e929ff4baecffd406df3dca35eb`.
+The private candidate is in
+`/private/tmp/serviceos-new-dawn-m2-closure/.verification-results/m2-closure-edge-v5-20261019-2350/`.
+The release helper accepts **only that EZBR hash**, never the old v5
+`eafe6d43…` hash or another arbitrary release. The release lead must deploy
+the reviewed artifact, download the deployed function and compare its source
+closure with the reviewed commit, then record its actual Supabase version and
+`ezbr_sha256`. A higher version number alone is not evidence of compatible
+source. Run these commands from the reviewed source checkout. The examples use
+version 6; replace that number if deployed-runtime readback reports another:
 
 ```sh
 node --test scripts/verify/new-dawn-m2-closure-release.test.mjs
 node scripts/verify/new-dawn-m2-closure-rehearse.mjs --test-rollback-only
-NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-closure-release.mjs --live-read-only --edge-version=6 --edge-sha256=<reviewed-64-hex>
-NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-closure-release.mjs --live-install-exact --edge-version=6 --edge-sha256=<same-reviewed-64-hex>
-NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-closure-release.mjs --live-read-only --edge-version=6 --edge-sha256=<same-reviewed-64-hex>
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-closure-release.mjs --live-read-only --edge-version=6 --edge-sha256=b665e27c909b952840327210b592af46e2339e929ff4baecffd406df3dca35eb
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-closure-release.mjs --live-install-exact --edge-version=6 --edge-sha256=b665e27c909b952840327210b592af46e2339e929ff4baecffd406df3dca35eb
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-closure-release.mjs --live-read-only --edge-version=6 --edge-sha256=b665e27c909b952840327210b592af46e2339e929ff4baecffd406df3dca35eb
 ```
 
-Use the actual deployed version if it is not 6. Proceed to the install command
-only when read-only preflight returns `exact_closure_sql_ready`. The helper
+Proceed to the install command only when read-only preflight returns
+`exact_closure_sql_ready`. The helper
 pins the migration bytes, predecessor ledger bytes, prior function hash,
 Edge ID/version/status/JWT/hash, zero active permits and both broad flags off.
 Its write is one locked transaction; it reads back the exact new ledger bytes

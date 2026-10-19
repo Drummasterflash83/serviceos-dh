@@ -3,13 +3,14 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { PROJECT } from "./new-dawn-m2-live-preflight.mjs";
 import { VERSION, NAME, SOURCE_SHA256, reviewedSource, edgePin,
-  assessStage, releaseSql, installLive } from "./new-dawn-m2-closure-release.mjs";
+  assessStage, releaseSql, installLive, REVIEWED_EDGE_EZBR_SHA256 } from
+  "./new-dawn-m2-closure-release.mjs";
 
 const file = reviewedSource();
 const prior = readFileSync(new URL(
   "../../supabase/migrations/20261107150000_new_dawn_commusoft_job_optional_source_facts.sql",
   import.meta.url), "utf8");
-const pin = edgePin(6, "a".repeat(64));
+const pin = edgePin(6, REVIEWED_EDGE_EZBR_SHA256);
 const snapshot = installed => ({
   project: { id: PROJECT, status: "ACTIVE_HEALTHY" },
   functions: [{ ...pin }],
@@ -40,6 +41,7 @@ test("source, ledger transaction and rollback fence are exact", () => {
 
 test("v4-compatible Edge and malformed release pins cannot install v5 SQL", () => {
   assert.throws(() => edgePin(5, "a".repeat(64)), /compatible_edge_pin_required/);
+  assert.throws(() => edgePin(6, "a".repeat(64)), /compatible_edge_pin_required/);
   assert.throws(() => edgePin(6, "eafe6d4310c3e6588c7e89f630890d5b14be2e18b6651062ba6d3d6549957bfa"));
   assert.throws(() => edgePin(6, "bad"));
   const old = snapshot(false);
