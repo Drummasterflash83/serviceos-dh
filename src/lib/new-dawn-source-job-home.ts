@@ -84,6 +84,16 @@ export function groupSourceHomeJobs(jobs: SourceHomeJob[], now = Date.now()) {
   return { recentlySaved, needsOpenFolkCheck };
 }
 
+/** Search only the audited, bounded selection already in view; this is not a company-wide job search. */
+export function filterSourceHomeJobs(jobs: SourceHomeJob[], query: string) {
+  const needle = query.trim().toLocaleLowerCase("en-GB");
+  if (!needle) return jobs;
+  return jobs.filter((job) => [
+    job.fields.job_number, job.fields.title, job.fields.customer,
+    job.fields.address, job.fields.postcode,
+  ].some((value) => value?.toLocaleLowerCase("en-GB").includes(needle)));
+}
+
 /** Plain-language client attention, separate from the operator's source diagnostics. */
 export function sourceJobClientAttention(job: SourceHomeJob, now = Date.now()) {
   const cue = sourceJobReviewCue(job, now);
