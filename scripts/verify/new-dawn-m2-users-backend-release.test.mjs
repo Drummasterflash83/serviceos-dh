@@ -3,10 +3,12 @@ import test from "node:test";
 import {
   assess,
   assessDownloadedWorker,
+  assessDownloadedReleaseWorker,
   FUNCTIONS,
   installLive,
   NAME,
   PROJECT,
+  RELEASE_WORKER,
   releaseSql,
   RESUME_NAME,
   RESUME_SOURCE_SHA256,
@@ -83,9 +85,10 @@ test("transaction only changes four authority functions and two exact ledger row
 
 test("unknown LIVE write is read back once and never automatically replayed", async () => {
   const worker = {
-    slug: WORKER.slug,
-    version: WORKER.version,
-    ezbr_sha256: WORKER.hash,
+    id: RELEASE_WORKER.id,
+    slug: RELEASE_WORKER.slug,
+    version: RELEASE_WORKER.version,
+    ezbr_sha256: RELEASE_WORKER.hash,
     status: "ACTIVE",
     verify_jwt: true,
   };
@@ -142,4 +145,16 @@ test("downloaded worker must match exact pinned LIVE source and /users bounds", 
     /users_worker_version_changed/,
   );
   assert.equal(PROJECT, "tgbnakbxwcqjeimygroz");
+  assert.throws(
+    () =>
+      assessDownloadedReleaseWorker("/nonexistent", {
+        id: RELEASE_WORKER.id,
+        slug: RELEASE_WORKER.slug,
+        version: 11,
+        ezbr_sha256: RELEASE_WORKER.hash,
+        status: "ACTIVE",
+        verify_jwt: true,
+      }),
+    /users_release_worker_changed/,
+  );
 });
