@@ -5,6 +5,7 @@ import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
 import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
+import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
 import {
   openJobNextStep, openJobPageFlagName, readOpenJobPage, readOpenJobStatusSummary,
   type OpenJobPage, type OpenJobRow, type OpenJobStatus,
@@ -41,9 +42,21 @@ export function useOpenJobPageFlag(tenant: string, operator: boolean) {
   });
 }
 
-function SourceJobDetail({ row, tenant, actor, reason }: {
-  row: OpenJobRow; tenant: string; actor: string; reason: string | null;
+function SourceJobDetail({ row, tenant, actor, reason, operator }: {
+  row: OpenJobRow; tenant: string; actor: string; reason: string | null; operator: boolean;
 }) {
+  const scoreReviewFlag = useQuery({
+    queryKey: ["new-dawn-score-readiness-flag", actor, tenant],
+    enabled: operator,
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().from("feature_flags")
+        .select("value").eq("tenant_id", tenant)
+        .eq("flag", "new_dawn.score_readiness.operator_preview").maybeSingle();
+      if (error) throw Error("Score readiness setting unavailable");
+      return data?.value === true;
+    },
+    staleTime: 30_000,
+  });
   const detail = useQuery({
     queryKey: ["new-dawn-client-job-record", tenant, actor, row.connection_id,
       row.external_id, row.source_version_id, reason],
@@ -94,6 +107,20 @@ function SourceJobDetail({ row, tenant, actor, reason }: {
         <p>Last customer contact: not enough data yet — no call, email or message has been confirmed as belonging to this job.</p>
         <p>Visits: not enough data yet — no confirmed technician appointment is attached to this job.</p>
       </section>
+      {operator && scoreReviewFlag.data === true && <section className="nd-job-score-evidence"
+        aria-label="OpenFolk private job score evidence review">
+        <p className="of-eyebrow">OPENFOLK · PRIVATE SCORE REVIEW</p>
+        <h3>What this job needs before a score</h3>
+        <p>The seven proposed measures below come from the New Dawn review pack. A source fragment is not a verified measurement. This panel does not publish a score or policy.</p>
+        <p>Saved source {savedAt(record.sourceObservedAt)} · audited read {savedAt(record.readAt)}.</p>
+        <ol>{inspectJobScoreEvidence(row, record).map((measure) => <li key={measure.key}>
+          <strong>{measure.label}</strong> <small>Proposed weight {measure.proposedWeight}/100</small>
+          <p>{measure.state === "source_fragment" ? "Source fragment only" :
+            measure.state === "not_yet_applicable" ? "Not assessable while open" : "Evidence missing"}
+            {measure.sourceCue ? ` · ${measure.sourceCue}` : ""}</p>
+          <p>Needed: {measure.missing}. Next: {measure.next}.</p>
+        </li>)}</ol>
+      </section>}
       {row.identity_state !== "reviewed_link" && <p>The customer and site labels come from Commusoft; OpenFolk still needs to confirm the match.</p>}
       <details><summary>Where this information came from</summary>
         <p>Commusoft job {row.external_id}, saved {savedAt(record.sourceObservedAt)}.
@@ -309,7 +336,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
       <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader className="pr-10 sm:pr-0"><DialogTitle>Job details</DialogTitle></DialogHeader>
         {selected && user && <SourceJobDetail row={selected} tenant={tenant} actor={user.id}
-          reason={operator ? approvedReason : null} />}
+          reason={operator ? approvedReason : null} operator={operator} />}
       </DialogContent>
     </Dialog>
   </section>;
