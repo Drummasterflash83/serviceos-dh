@@ -11,7 +11,7 @@ const audit = "55555555-5555-4555-8555-555555555555";
 const now = new Date().toISOString();
 const row: OpenJobRow = {
   connection_id: connection, external_id: "13001", source_version_id: version,
-  source_observed_at: now, status_first_saved_at: now,
+  source_observed_at: now, job_created_at: null, status_first_saved_at: now,
   status_evidence: "timing_unknown", status: "on_hold", title: "Boiler repair",
   source_customer: "Example customer", source_site: "1 Example Road",
   source_postcode: "AB1 2CD", property_external_id: "789",
@@ -19,7 +19,7 @@ const row: OpenJobRow = {
   identity_state: "awaiting_review",
 };
 const page = () => ({
-  version: "new-dawn-open-job-page/2", tenant_id: tenant, actor_id: actor,
+  version: "new-dawn-open-job-page/3", tenant_id: tenant, actor_id: actor,
   audit_id: audit, observed_at: now, snapshot_at: now,
   status_filter: null, rows: [row], next_cursor: "Y3Vyc29y", has_more: true,
 });
@@ -63,13 +63,32 @@ test("status age is shown only for repeated saved checks spanning a day", () => 
 });
 
 test("frontend rollout reads the existing v1 page with timing withheld", () => {
-  const { status_first_saved_at: _since, status_evidence: _evidence, ...legacyRow } = row;
+  const { status_first_saved_at: _since, status_evidence: _evidence,
+    job_created_at: _created, ...legacyRow } = row;
   const parsed = readOpenJobPage({ ...page(), version: "new-dawn-open-job-page/1",
     rows: [legacyRow] }, tenant, actor, null);
   assert.equal(parsed.rows[0].status_evidence, "timing_unknown");
   assert.equal(parsed.rows[0].status_first_saved_at, row.source_observed_at);
+  assert.equal(parsed.rows[0].job_created_at, null);
+  assert.equal(parsed.creationOrderAvailable, false);
   assert.throws(() => readOpenJobPage({ ...page(), version: "new-dawn-open-job-page/1",
     rows: [row] }, tenant, actor, null));
+});
+
+test("the v2 page remains readable before SQL migration and creation dates fail closed", () => {
+  const { job_created_at: _created, ...v2Row } = row;
+  const parsed = readOpenJobPage({ ...page(), version: "new-dawn-open-job-page/2",
+    rows: [v2Row] }, tenant, actor, null);
+  assert.equal(parsed.rows[0].job_created_at, null);
+  assert.equal(parsed.creationOrderAvailable, false);
+  const created = new Date(Date.now() - 86_400_000).toISOString();
+  assert.equal(readOpenJobPage({ ...page(), rows: [{ ...row, job_created_at: created }] },
+    tenant, actor, null).rows[0].job_created_at, created);
+  assert.equal(readOpenJobPage(page(), tenant, actor, null).creationOrderAvailable, true);
+  assert.throws(() => readOpenJobPage({ ...page(), rows: [{ ...row,
+    job_created_at: new Date(Date.now() + 600_000).toISOString() }] }, tenant, actor, null));
+  assert.throws(() => readOpenJobPage({ ...page(), rows: [{ ...row,
+    job_created_at: "not a timestamp" }] }, tenant, actor, null));
 });
 
 test("whole-workload counts require fresh, audited and internally consistent scope", () => {
