@@ -112,8 +112,13 @@ const count = (value, name) => {
 };
 
 export function assessExactTrialPreflight(snapshot, now = Date.now()) {
+  const runtimeFlags = snapshot?.runtime?.flagsPresent;
+  const exactOffM5 = Array.isArray(runtimeFlags) && runtimeFlags.length === 1 &&
+    runtimeFlags[0]?.flag === "new_dawn.m5_opportunities_probe" &&
+    runtimeFlags[0]?.value === false;
   if (snapshot?.runtime?.state !== "installed_default_off_readback" ||
-    snapshot.runtime.flagsPresent?.length !== 0) throw Error("runtime_not_default_off");
+    (!Array.isArray(runtimeFlags) || (runtimeFlags.length !== 0 && !exactOffM5)))
+    throw Error("runtime_not_default_off");
   const job = one(snapshot.job, "job"), lease = one(snapshot.lease, "lease"),
     receipts = one(snapshot.receipts, "receipts"), permissions = one(snapshot.permissions, "permissions"),
     baseFlags = one(snapshot.baseFlags, "base_flags");
@@ -164,10 +169,10 @@ async function readSql(query, token) {
 export async function readExactTrialPreflight(jobId, sourceId,
   { token = savedCliToken(), runtime = readM2Postrelease } = {}) {
   const queries = trialQueries(jobId, sourceId);
-  const before = await runtime({ token });
+  const before = await runtime({ token, allowOffM5Probe: true });
   const snapshot = { runtime: before };
   for (const [name, query] of Object.entries(queries)) snapshot[name] = await readSql(query, token);
-  const after = await runtime({ token });
+  const after = await runtime({ token, allowOffM5Probe: true });
   if (JSON.stringify(before) !== JSON.stringify(after)) throw Error("runtime_changed_during_read");
   return assessExactTrialPreflight(snapshot);
 }
