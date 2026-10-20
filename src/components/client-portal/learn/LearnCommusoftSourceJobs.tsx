@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { loadCommusoftReviewConnections, type ReviewClient, type ReviewConnection } from "@/lib/learn-commusoft-review";
 import { createSourceJobReviewAction, customerSourceForReview, loadSourceJobPage, SOURCE_JOB_IDENTITIES, SOURCE_JOB_RELATIONSHIPS, type SourceJobPage } from "@/lib/learn-commusoft-source-jobs";
-import { loadRecentUnlinkedJobs, type RecentUnlinkedPage } from "@/lib/new-dawn-recent-unlinked-jobs";
+import { loadRecentUnlinkedJobs, type RecentUnlinkedJob, type RecentUnlinkedPage } from "@/lib/new-dawn-recent-unlinked-jobs";
+import { planGuidedJobReview, type GuidedJobReview } from "@/lib/new-dawn-guided-job-review";
 import { LearnCommusoftJobDetails } from "./LearnCommusoftJobDetails";
 
 function ReviewTaskButton({ db, tenant, connection, external, version }: {
@@ -34,7 +35,7 @@ function ReviewTaskButton({ db, tenant, connection, external, version }: {
 export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob, onReviewJob, onReviewCustomer, operatorReason }: {
   tenantId: string; actorId: string; client?: ReviewClient; onOpenJob?: (id: string) => void;
   onReviewJob?: (connection: string, external: string) => void;
-  onReviewCustomer?: (connection: string, job: string, customer: string) => void;
+  onReviewCustomer?: (review: GuidedJobReview) => void;
   operatorReason?: string;
 }) {
   const db = client ?? getSupabaseClient();
@@ -56,20 +57,31 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob,
   const viewQuery = view === "holds" ? "status:on-hold" : view === "review" ? "status:needs-review" : query;
   const key = JSON.stringify([tenantId, actorId, connection, viewQuery, openOnly, after, revision]);
   const visible = !hidden && result?.key === key ? result.data : null;
-  async function reviewExactCustomer(job: string) {
+  async function reviewExactCustomer(recentJob: RecentUnlinkedJob) {
     if (!onReviewCustomer || !connection || hidden) return;
     setRecentBusy(true); setRecentNotice("");
     try {
       const page = await loadSourceJobPage(db, {
-        tenant: tenantId, actor: actorId, connection, query: job, openOnly: false, after: null,
+        tenant: tenantId, actor: actorId, connection, query: recentJob.external_id, openOnly: false, after: null,
       });
-      const exact = page.rows.find(row => row.external_id === job);
-      const customer = exact && customerSourceForReview(exact);
-      if (!customer) throw Error("Exact customer source unavailable");
-      onReviewCustomer(connection, job, customer);
+      const exact = page.rows.find(row => row.external_id === recentJob.external_id);
+      onReviewCustomer(planGuidedJobReview(connection, recentJob, exact));
     } catch {
       setRecentNotice("The exact job/customer source could not be verified. Refresh the captured job before reviewing identity.");
     } finally { setRecentBusy(false); }
+  }
+  function reviewCardCustomer(row: SourceJobPage["rows"][number]) {
+    if (!onReviewCustomer || !connection || hidden) return;
+    try {
+      onReviewCustomer(planGuidedJobReview(connection, {
+        external_id: row.external_id, version_id: row.version_id,
+        source_observed_at: row.observed_at, source_status: row.source_status,
+        relationship_state: row.relationship_state,
+        customer_identity_state: row.customer_identity_state,
+      }, row));
+    } catch {
+      setNotice("This source changed or lacks an exact customer/site reference. Refresh before reviewing identity.");
+    }
   }
   useEffect(() => {
     let active = true;
@@ -133,7 +145,7 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob,
             {row.version_id ? <><ReviewTaskButton db={db} tenant={tenantId} connection={connection} external={row.external_id} version={row.version_id} />
               <LearnCommusoftJobDetails tenant={tenantId} connection={connection} version={row.version_id} external={row.external_id} client={db} /></> : <p role="status">This source has conflicting latest versions. Resolve that conflict before preparing a review task.</p>}
             <button className="cp-secondary" onClick={() => { setView("all"); setDraft(row.external_id); setQuery(row.external_id); setOpenOnly(false); setCursors([null]); }}>Find this ID in captured job cards</button>
-            {onReviewCustomer && row.version_id && (row.relationship_state === "customer_source_retained" || row.relationship_state === "site_customer_source_retained") && <button className="cp-secondary" disabled={recentBusy} onClick={() => void reviewExactCustomer(row.external_id)}>Review exact customer source for this job</button>}
+            {onReviewCustomer && row.version_id && (row.relationship_state === "customer_source_retained" || row.relationship_state === "site_customer_source_retained") && <button className="cp-secondary" disabled={recentBusy} onClick={() => void reviewExactCustomer(row)}>Review customer{row.relationship_state === "site_customer_source_retained" ? ", site" : ""} and job in order</button>}
             {onReviewJob && row.version_id && <button className="cp-secondary" onClick={() => onReviewJob(connection, row.external_id)}>Review job link</button>}
           </div>}
         </div>)}</div>
@@ -161,7 +173,7 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob,
         <p>Customer/site reference: {row.property_reference ?? "Not supplied"}{row.customer_reference && ` · Customer reference: ${row.customer_reference}`}</p>
         {row.company_name && <p>Source company name: {row.company_name}</p>}{row.contact_name && <p>Source primary contact: {row.contact_name}</p>}
         <p>{SOURCE_JOB_RELATIONSHIPS[row.relationship_state]}</p><p>{SOURCE_JOB_IDENTITIES[row.customer_identity_state]}</p>
-        {onReviewCustomer && customerSourceForReview(row) && <button className="cp-secondary" onClick={() => onReviewCustomer(connection, row.external_id, customerSourceForReview(row)!)}>Review customer source {customerSourceForReview(row)} for this job</button>}
+        {onReviewCustomer && customerSourceForReview(row) && row.version_id && !row.reviewed_job_id && <button className="cp-secondary" onClick={() => reviewCardCustomer(row)}>Review customer{row.relationship_state === "site_customer_source_retained" ? ", site" : ""} and job in order</button>}
         <p className="text-sm">Source observation: {new Date(row.observed_at).toLocaleString("en-GB")}. This does not verify job progress or completion.</p>
         {row.reviewed_job_id && onOpenJob ? <button className="cp-secondary" onClick={() => onOpenJob(row.reviewed_job_id!)}>Open linked job card</button> : <p className="text-sm">Communications and performance assessment are not established for this source view.</p>}
         {row.version_id && <ReviewTaskButton db={db} tenant={tenantId} connection={connection} external={row.external_id} version={row.version_id} />}
