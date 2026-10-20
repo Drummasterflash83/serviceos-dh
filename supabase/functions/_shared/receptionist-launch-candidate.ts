@@ -17,7 +17,49 @@ export const EMMA_TRANSFER_ASSISTANT_CONTRACT =
 
 export const EMERGENCY_CONTINUATION_CONTRACT =
   "EMERGENCY CONTINUATION: You are the SAME Emma, continuing an eligible out-of-hours emergency already assessed in the conversation. Do not introduce yourself, repeat the recording notice or office-closed message, or repeat any safety advice or details already given. Use the full conversation history. Ask only missing minimum details: name, confirmed callback number, concrete site/address and brief issue. Commercial urgent: attempt Rob 109 once. Domestic urgent: attempt Tony 105 once. If the caller genuinely cannot establish whether the property is domestic or commercial, attempt Tony 105 once; do not invent a classification. Use only Route-Emergency-to-Rob-or-Tony. One invocation selects ONE destination; it does not ring all destinations. Never try the other engineer as cross-cover or retry the selected engineer. A voicemail greeting, ringing, busy, no answer or declined call is not human acceptance. After the selected engineer transfer explicitly fails and returns the caller to you, explain that the engineer could not take the call, then use the reviewed shared emergency mailbox 603 destination once if it is available in that tool. If the 603 destination is unavailable or its transfer fails, collect any missing message details and explain the limitation; do not invent another route. Never claim an engineer answered, a voicemail was deposited, either email was delivered, a Slack alert was sent, or attendance was promised without independent confirmation. The intended 603 deposit must be independently matched to delivery receipts for both rob@drummondheating.co.uk and tony@drummondheating.co.uk and to a scoped #ai-emma Slack alert before operational acceptance; you have no email or Slack tool and cannot certify those receipts to the caller. Do not use ordinary routing or return to the main number. Preserve existing safety advice and do not delay immediate emergency action.";
+export function launchCandidateSourceId(
+  action: string,
+  service: boolean,
+  scheduled: boolean,
+  selectedAssistantId: string,
+  publishedAssistantId: string,
+) {
+  return action === "prepare_candidate" && service && !scheduled
+    ? publishedAssistantId
+    : selectedAssistantId;
+}
 
+const preparationHolds = {
+  source: "Launch candidate source changed; reviewed reconciliation required. No provider retry sent.",
+  prepared: "Launch candidate already prepared; inspect the provider graph before another action. No provider retry sent.",
+  partial: "Launch candidate has a partial or uncertain preparation; review provider state. No retry sent.",
+} as const;
+
+export function candidatePreparationStateHold(row: any, sourceHash: string) {
+  if (!row) return null;
+  const error = row.source_hash !== sourceHash ? preparationHolds.source
+    : row.state === "prepared" ? preparationHolds.prepared
+    : row.state !== "rejected" || row.helper_id || row.handoff_id || row.candidate_id
+    ? preparationHolds.partial : null;
+  return error ? {
+    state: "review_required",
+    error,
+    providerChanged: false,
+    automaticRetrySent: false,
+  } : null;
+}
+
+export function candidatePreparationHold(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  if (!Object.values(preparationHolds).includes(message as typeof preparationHolds[keyof typeof preparationHolds]))
+    return null;
+  return {
+    state: "review_required",
+    error: message,
+    providerChanged: false,
+    automaticRetrySent: false,
+  };
+}
 export async function prepareLaunchCandidate(
   db: any,
   api: any,
@@ -38,20 +80,12 @@ export async function prepareLaunchCandidate(
     throw Error("Launch candidate source changed.");
   const existing = await db
     .from("receptionist_test_candidates")
-    .select("state,helper_id,handoff_id,candidate_id")
+    .select("state,source_hash,helper_id,handoff_id,candidate_id")
     .eq("tenant_id", tenant)
     .maybeSingle();
   if (existing.error) throw Error("Launch candidate audit unavailable.");
-  if (
-    existing.data &&
-    !(
-      existing.data.state === "rejected" &&
-      !existing.data.helper_id &&
-      !existing.data.handoff_id &&
-      !existing.data.candidate_id
-    )
-  )
-    return existing.data;
+  const hold = candidatePreparationStateHold(existing.data, hash);
+  if (hold) throw Error(hold.error);
   if (!existing.data) {
     const saved = await db
       .from("receptionist_test_candidates")

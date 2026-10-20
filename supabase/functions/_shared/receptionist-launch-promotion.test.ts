@@ -337,7 +337,10 @@ test("private launch snapshots have no tenant grants and normal feedback publish
 
 test("promotion endpoint rejects ordinary JWT/scheduler calls and has a truthful separate failure response", () => {
   const endpoint = readFileSync(new URL("../receptionist-testing/index.ts", import.meta.url), "utf8");
-  const branch = endpoint.slice(endpoint.indexOf('if (body.action === "promote_launch_candidate")'), endpoint.indexOf('const assistant = await api("assistant/" + settings.data.assistant_id)'));
+  const start = endpoint.indexOf('if (body.action === "promote_launch_candidate")');
+  const end = endpoint.indexOf('if (body.action === "inspect_suite"', start);
+  assert.ok(start >= 0 && end > start, "the publication branch must stay before assistant-dependent actions");
+  const branch = endpoint.slice(start, end);
   assert.match(branch, /if \(!service \|\| scheduled\)/);
   assert.match(branch, /launchPromotion\(db, api, settings.data, workspace.data, actor, body.expectedHash\)/);
   assert.match(branch, /providerState: "review_required"/);

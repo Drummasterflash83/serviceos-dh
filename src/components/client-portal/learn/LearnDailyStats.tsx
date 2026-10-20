@@ -7,7 +7,8 @@ import {
   dailyStatKeys, dailyStatParts, readDailyStatsPart,
   type DailyStatKey, type DailyStatPart, type DailyStatsPartResult,
 } from "@/lib/new-dawn-learn-daily-stats";
-import { readCommusoftFreshness, type CommusoftFreshness } from "@/lib/new-dawn-commusoft-freshness";
+import { commusoftFreshnessSummary, readCommusoftFreshness } from "@/lib/new-dawn-commusoft-freshness";
+import "@/styles/learn-daily-stats.css";
 
 const labels: Record<DailyStatKey, string> = {
   calls: "Calls", recordings: "Recording records", emails: "Emails",
@@ -25,21 +26,6 @@ const format = (value: number) => value.toLocaleString("en-GB");
 const when = (value: string) => new Date(value).toLocaleString("en-GB", {
   dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London",
 });
-
-function freshnessText(value: CommusoftFreshness | undefined) {
-  if (!value) return "Provider check unavailable";
-  if (value.state === "not_checked") return "Provider not checked yet";
-  if (value.state === "collecting") return "Checking provider jobs…";
-  if (value.state === "saved_advanced") return "Saved jobs changed since the last provider check; comparison pending";
-  if (value.state === "stale") return "No current-day provider comparison";
-  if (value.state === "partial") return `Comparison incomplete${value.atLeastBehind
-    ? ` · at least ${format(value.atLeastBehind)} new jobs found` : ""}`;
-  if (value.jobsBehind === 0 && value.savedJobId === value.providerNewestJobId &&
-    value.providerNewestJobId) return `Matched provider newest job ${value.providerNewestJobId} at last check`;
-  if (value.jobsBehind !== null) return `${format(value.jobsBehind)} provider jobs not yet saved at last check${value.providerNewestJobId
-    ? ` · newest job ${value.providerNewestJobId}` : ""}`;
-  return "Provider comparison unavailable";
-}
 
 /** Aggregate source facts, never a provider completeness or processing claim. */
 export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
@@ -165,11 +151,12 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
                       ? `Job ${parts.business.latestSavedJob.number} · first seen ${when(parts.business.latestSavedJob.savedAt)}`
                       : "No saved job"}</strong></div>
                 <div><span>Newest job at Commusoft</span>
-                  <strong>{freshnessText(freshness.data)}</strong>
+                  <strong>{commusoftFreshnessSummary(freshness.data)}</strong>
                   {freshness.data?.providerCheckedAt &&
                     <small>Checked {when(freshness.data.providerCheckedAt)} UK time</small>}
                 </div>
               </div>
+              <p className="lr-daily-footnote">The Commusoft comparison checks newest job creation in a bounded provider read. It does not prove that every older job or revision is saved.</p>
             </>
       )}
     </section>

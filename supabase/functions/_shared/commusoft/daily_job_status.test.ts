@@ -29,11 +29,26 @@ test("one exact GET retains only a provider status, timestamp and hash", async (
 });
 
 test("spoofed job identity is rejected before settlement", async () => {
+  const categories: string[] = [];
   await assert.rejects(readDailyCommusoftJobStatus("uk", "fake-local-only", "13441", {
     sendBefore: Date.now() + 5000, stillAuthorized: async () => true,
+    onRejectedShape: shape => categories.push(shape),
     fetcher: async () => new Response(JSON.stringify({ id: 13442, status: "on_hold" }),
       { headers: { "content-type": "application/json" } }),
   }), (error: unknown) => error instanceof CommusoftReadError && error.code === "invalid_response");
+  assert.deepEqual(categories, ["identity_invalid"]);
+});
+
+test("a malformed optional update time does not discard a verified status", async () => {
+  const result = await readDailyCommusoftJobStatus("uk", "fake-local-only", "13441", {
+    sendBefore: Date.now() + 5000, stillAuthorized: async () => true,
+    fetcher: async () => new Response(JSON.stringify({ id: 13441, status: "ongoing",
+      lastUpdatedOnDateTime: { unexpected: "shape" } }),
+    { headers: { "content-type": "application/json" } }),
+  });
+  assert.equal(result.status, "ongoing");
+  assert.equal(result.providerUpdated, null);
+  assert.match(result.sha256, /^[0-9a-f]{64}$/);
 });
 
 test("durable finish sees only stripped status evidence; uncertain finish stays unconfirmed", async () => {

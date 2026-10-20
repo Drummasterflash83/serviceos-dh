@@ -64,8 +64,8 @@ export function MdAgedInvoices({ tenant, reason }: { tenant: string; reason: str
       if (ticket === generation.current) { working.current = false; setBusy(false); }
     }
   }
-  return <section className="md-money-aged" aria-label="91-day invoice source review">
-    <h3>Invoices needing an ageing review</h3>
+  return <details className="md-money-aged" aria-label="91-day invoice source review">
+    <summary>Inspect saved invoice records</summary>
     <p>Saved QuickBooks invoice leads due 91 days or more ago. The balances are original invoice snapshots, not a reconciled debt total, customer chase list or Commusoft job link.</p>
     <button className="cp-secondary" type="button" disabled={busy}
       onClick={() => void readPage(false)}>
@@ -85,5 +85,5 @@ export function MdAgedInvoices({ tenant, reason }: { tenant: string; reason: str
         onClick={() => void readPage(true)}>{busy ? "Checking next page…" : "Show 20 more"}</button>}
       <details className="md-money-proof"><summary>Read audits</summary>{auditIds.join(" · ")}</details>
     </>}
-  </section>;
+  </details>;
 }
