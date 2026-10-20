@@ -29,6 +29,11 @@ the schema does not start a batch, contact Commusoft or expose a client login.
   category mapping plus current source fields. Names and postcodes are
   collision guards, never substitutes for source IDs. Missing, duplicate,
   conflicting, stale or ambiguous source/target identities remain in review.
+- New person/customer groups are explicitly held as
+  `account_holder_review_required`. The canonical person writer requires
+  separately reviewed account-holder identity that this batch cannot infer
+  from a category ID or contact name. The staged automatic apply therefore
+  projects only clean company groups.
 - Every customer, site and job projection records its exact current source
   version, rule version, batch ID and operator approval. The job's customer
   and site IDs are checked independently. No job/service code is used as an
@@ -44,6 +49,11 @@ the schema does not start a batch, contact Commusoft or expose a client login.
   hide reversed mappings from current readers. Reversal runs in dependency
   order: jobs, sites, then customer. A reversed group cannot be silently
   restored; new projection requires a separately reviewed recovery release.
+- The client-facing source-backed job home and paged job identity read current
+  links. The generic card search now hides reversed staged jobs and customer
+  cards for the authorised tenant, while retaining unrelated search results.
+  Older operator-only raw-canonical previews may still show retained rows;
+  those are historical records, not active links.
 - Every apply, hold and reverse has an audit record with approver,
   executor, manifest digest, rule and source versions. A retry with the same
   batch/item is idempotent; it never creates another customer, site or job.

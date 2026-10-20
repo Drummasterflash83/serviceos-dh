@@ -68,7 +68,7 @@ try:
       do $$begin if not exists(select 1 from pg_roles where rolname='learn_card_communication_reader')
        then create role learn_card_communication_reader;end if;end$$;
       create table public.tenants(id uuid primary key,status text);
-      create table public.profiles(id uuid primary key);
+      create table public.profiles(id uuid primary key,tenant_id uuid);
       create table public.provider_connections(id uuid primary key,tenant_id uuid,
        provider text,status text,revoked_at timestamptz,verified_at timestamptz);
       create table public.feature_flags(tenant_id uuid,flag text,value jsonb);
@@ -104,7 +104,8 @@ try:
        name text,phone text,address_text text,postcode text,verified boolean,
        created_source text,metadata jsonb);
       create table public.customer_cards(id uuid primary key default gen_random_uuid(),
-       tenant_id uuid,person_id uuid,company_id uuid,title text,metadata jsonb);
+       tenant_id uuid,person_id uuid,company_id uuid,title text,summary text,
+       owner_id uuid,updated_at timestamptz default clock_timestamp(),metadata jsonb);
       create table public.sites(id uuid primary key default gen_random_uuid(),
        tenant_id uuid,source_system text,external_id text,person_id uuid,company_id uuid,
        label text,address_text text,postcode text,created_source text,verified boolean,
@@ -114,6 +115,7 @@ try:
        customer_person_id uuid,customer_company_id uuid,site_id uuid,title text,
        description text,status text,created_date timestamptz,
        completed_date timestamptz,created_source text,verified boolean,metadata jsonb,
+       updated_at timestamptz default clock_timestamp(),
        unique(tenant_id,source_system,external_id));
       create table public.import_entity_links(tenant_id uuid,source_system text,
        entity_kind text,external_id text);
@@ -219,7 +221,7 @@ try:
         where x.tenant_id=l.tenant_id and x.link_id=l.id
         order by x.revision desc limit 1) r on true;
       insert into public.tenants values('{TENANT}','active'),('{OTHER}','active');
-      insert into public.profiles values('{ACTOR}');
+      insert into public.profiles values('{ACTOR}','{TENANT}');
       insert into public.provider_connections values
        ('{CONNECTION}','{TENANT}','commusoft','configured',null,
         clock_timestamp()-interval '1 day');
@@ -231,12 +233,14 @@ try:
       insert into public.learn_business_input_versions
        (id,tenant_id,connection_id,provider,collection,external_id,payload) values
        ('{PROPERTY}','{TENANT}','{CONNECTION}','commusoft','properties','21',
-        '{{"id":21,"type":"customer","customerType":4,"contact":{{"firstName":"Ada","lastName":"Example"}},"addressLine1":"1 Synthetic Road","postcode":"AB1 2CD"}}'),
+        '{{"id":21,"type":"customer","customerType":4,"companyName":"Synthetic Works A","addressLine1":"1 Synthetic Road","postcode":"AB1 2CD"}}'),
        ('{JOB}','{TENANT}','{CONNECTION}','commusoft','jobs','31',
         '{{"id":31,"propertyID":21}}');
     """)
+    run((ROOT / 'supabase/migrations' /
+         '20261101150000_learn_card_search.sql').read_text())
     for stamp in ('20261111100000', '20261111110000',
-                  '20261111120000', '20261111130000'):
+                  '20261111120000', '20261111130000', '20261111140000'):
         migration = next((ROOT / 'supabase/migrations').glob(stamp + '*.sql'))
         run(migration.read_text())
 
@@ -248,7 +252,7 @@ try:
                "'public.new_dawn_m2_direct_sites','select')") == 'f'
     items = f'''[{{"kind":"customer","shape":"customer","external_id":"21",
        "source_version_id":"{PROPERTY}","customer_external_id":null,
-       "property_external_id":null,"customer_kind":"person"}},
+       "property_external_id":null,"customer_kind":"company"}},
       {{"kind":"site","shape":"direct","external_id":"21",
        "source_version_id":"{PROPERTY}","customer_external_id":"21",
        "property_external_id":null,"customer_kind":null}},
@@ -257,7 +261,7 @@ try:
        "property_external_id":"21","customer_kind":null}}]'''
     register = f"""select set_config('request.jwt.claim.sub','{ACTOR}',true);
      select public.new_dawn_m2_identity_batch_register('{BATCH}','{TENANT}',
-      '{CONNECTION}', $json${items}$json$::jsonb,'{{"4":"person"}}'::jsonb,
+      '{CONNECTION}', $json${items}$json$::jsonb,'{{"4":"company","5":"person"}}'::jsonb,
       repeat('a',64),'Synthetic reviewed kind and exact IDs')->>'state';"""
     assert run('begin; ' + register + ' commit;').splitlines()[-1] == 'prepared'
     assert run("select count(*) from public.learn_business_input_links") == '0'
@@ -275,6 +279,18 @@ try:
     assert run("select count(*) from public.jobs") == '1'
     assert run("select count(*) from public.new_dawn_m2_identity_items "
                "where state='linked'") == '3'
+    search = f"""select set_config('request.jwt.claim.sub','{ACTOR}',true);
+      select set_config('request.jwt.claim.role','authenticated',true);
+      select jsonb_array_length(public.learn_card_search('{TENANT}',
+       'job','Job 31',0,null)->'rows');"""
+    assert run('begin; ' + search + ' commit;').splitlines()[-1] == '1'
+    customer_search = search.replace("'job','Job 31'", "'customer','Synthetic customer'")
+    assert run('begin; ' + customer_search + ' commit;').splitlines()[-1] == '1'
+    expect_error(f"""begin;
+      select set_config('request.jwt.claim.sub','{ACTOR}',true);
+      select set_config('request.jwt.claim.role','authenticated',true);
+      select public.new_dawn_m2_staged_search_visible('{OTHER}','job',
+       '10000000-0000-4000-8000-000000000099');commit;""", 'operator_denied')
     assert run('begin; ' + apply + ' commit;').splitlines()[-1] == 'already_linked'
     # An unrelated current job on the new site must block reversal. Reversing
     # that dependent link then permits the staged group to reverse atomically.
@@ -311,6 +327,17 @@ try:
     assert run("select count(*) from public.jobs") == '2'
     assert run("select count(*) from public.new_dawn_m2_identity_items "
                "where state='reversed'") == '3'
+    assert run('begin; ' + search + ' commit;').splitlines()[-1] == '0'
+    assert run('begin; ' + customer_search + ' commit;').splitlines()[-1] == '0'
+    run(f"""insert into public.jobs(tenant_id,source_system,external_id,
+      job_number,title,status) values('{TENANT}','native','fixture-native',
+      'N-1','Native job remains searchable','open');
+      insert into public.customer_cards(tenant_id,title)
+      values('{TENANT}','Native customer remains searchable');""")
+    assert run('begin; ' + search.replace('Job 31','Native job') +
+               ' commit;').splitlines()[-1] == '1'
+    assert run('begin; ' + customer_search.replace('Synthetic customer',
+               'Native customer') + ' commit;').splitlines()[-1] == '1'
     assert run('begin; ' + reverse + ' commit;').splitlines()[-1] == 'already_reversed'
     expect_error("update public.new_dawn_m2_direct_site_events set reason='tampered'",
                  'immutable')
@@ -322,7 +349,7 @@ try:
     run(f"""insert into public.learn_business_input_versions
        (id,tenant_id,connection_id,provider,collection,external_id,payload) values
        ('{property2}','{TENANT}','{CONNECTION}','commusoft','properties','22',
-        '{{"id":22,"type":"customer","customerType":4,"contact":{{"firstName":"Bea","lastName":"Example"}},"addressLine1":"2 Synthetic Road","postcode":"XY1 2ZZ"}}'),
+        '{{"id":22,"type":"customer","customerType":4,"companyName":"Synthetic Works B","addressLine1":"2 Synthetic Road","postcode":"XY1 2ZZ"}}'),
        ('{job2}','{TENANT}','{CONNECTION}','commusoft','jobs','33',
         '{{"id":33,"propertyID":22}}');""")
     items2 = items.replace('"21"', '"22"').replace('"31"', '"33"') \
@@ -333,7 +360,7 @@ try:
        (id,tenant_id,connection_id,provider,collection,external_id,payload,
         created_at) values('{latest2}','{TENANT}','{CONNECTION}',
         'commusoft','properties','22',
-        '{{"id":22,"type":"customer","customerType":4,"contact":{{"firstName":"Bea","lastName":"Example"}},"addressLine1":"Changed","postcode":"XY1 2ZZ"}}',
+        '{{"id":22,"type":"customer","customerType":4,"companyName":"Synthetic Works B","addressLine1":"Changed","postcode":"XY1 2ZZ"}}',
         clock_timestamp()+interval '1 second');""")
     held = apply.replace(BATCH, second).replace("'21'", "'22'")
     assert run('begin; ' + held + ' commit;').splitlines()[-1] == 'held'
@@ -345,7 +372,7 @@ try:
     assert run('begin; ' + summary + ' commit;').splitlines()[-1] == '1'
     assert run("select has_function_privilege('anon',"
                "'public.new_dawn_m2_identity_batch_summary(uuid)','execute')") == 'f'
-    assert run("select count(*) from public.people") == '1'
+    assert run("select count(*) from public.companies") == '1'
     assert run("select count(*) from public.sites") == '1'
     # Work-address shape uses an independent property ID under the exact
     # customer ID; its site uses the canonical property link path.
@@ -356,14 +383,14 @@ try:
     run(f"""insert into public.learn_business_input_versions
        (id,tenant_id,connection_id,provider,collection,external_id,payload) values
        ('{customer3}','{TENANT}','{CONNECTION}','commusoft','properties','23',
-        '{{"id":23,"type":"customer","customerType":4,"contact":{{"firstName":"Cara","lastName":"Example"}},"addressLine1":"3 Synthetic Road","postcode":"QR1 2ST"}}'),
+        '{{"id":23,"type":"customer","customerType":4,"companyName":"Synthetic Works C","addressLine1":"3 Synthetic Road","postcode":"QR1 2ST"}}'),
        ('{work3}','{TENANT}','{CONNECTION}','commusoft','properties','24',
         '{{"id":24,"type":"workaddress","parentPropertyID":23,"addressLine1":"4 Synthetic Road","postcode":"QR3 4ST"}}'),
        ('{job3}','{TENANT}','{CONNECTION}','commusoft','jobs','34',
         '{{"id":34,"propertyID":24}}');""")
     items3 = f'''[{{"kind":"customer","shape":"customer","external_id":"23",
       "source_version_id":"{customer3}","customer_external_id":null,
-      "property_external_id":null,"customer_kind":"person"}},
+      "property_external_id":null,"customer_kind":"company"}},
      {{"kind":"site","shape":"workaddress","external_id":"24",
       "source_version_id":"{work3}","customer_external_id":"23",
       "property_external_id":null,"customer_kind":null}},
@@ -386,7 +413,7 @@ try:
     run(f"""insert into public.learn_business_input_versions
        (id,tenant_id,connection_id,provider,collection,external_id,payload) values
        ('{property4}','{TENANT}','{CONNECTION}','commusoft','properties','25',
-        '{{"id":25,"type":"customer","customerType":4,"contact":{{"firstName":"Dora","lastName":"Example"}},"addressLine1":"5 Synthetic Road","postcode":"CX1 3ZZ"}}'),
+        '{{"id":25,"type":"customer","customerType":4,"companyName":"Synthetic Works D","addressLine1":"5 Synthetic Road","postcode":"CX1 3ZZ"}}'),
        ('{job4}','{TENANT}','{CONNECTION}','commusoft','jobs','35',
         '{{"id":35,"propertyID":25}}');
       insert into public.sites(tenant_id,source_system,external_id,postcode)
@@ -399,11 +426,31 @@ try:
     assert run('begin; ' + collision + ' commit;').splitlines()[-1] == 'held'
     assert run(f"select distinct hold_reason from public.new_dawn_m2_identity_items "
                f"where batch_id='{fourth}'") == 'site_postcode_collision'
-    assert run("select count(*) from public.people") == '2'
+    assert run("select count(*) from public.companies") == '2'
     assert run("select count(*) from public.learn_business_input_links "
                "where external_id='25'") == '0'
+    fifth = '10000000-0000-4000-8000-000000000018'
+    property5 = '10000000-0000-4000-8000-000000000019'
+    job5 = '10000000-0000-4000-8000-000000000020'
+    run(f"""insert into public.learn_business_input_versions
+       (id,tenant_id,connection_id,provider,collection,external_id,payload) values
+       ('{property5}','{TENANT}','{CONNECTION}','commusoft','properties','26',
+        '{{"id":26,"type":"customer","customerType":5,"contact":{{"firstName":"Ellie","lastName":"Example"}},"addressLine1":"6 Synthetic Road","postcode":"PX1 3YZ"}}'),
+       ('{job5}','{TENANT}','{CONNECTION}','commusoft','jobs','36',
+        '{{"id":36,"propertyID":26}}');""")
+    items5 = items.replace('"21"', '"26"').replace('"31"', '"36"') \
+        .replace(PROPERTY, property5).replace(JOB, job5) \
+        .replace('"customer_kind":"company"', '"customer_kind":"person"')
+    register5 = register.replace(BATCH, fifth).replace(items, items5)
+    assert run('begin; ' + register5 + ' commit;').splitlines()[-1] == 'prepared'
+    person = apply.replace(BATCH, fifth).replace("'21'", "'26'")
+    assert run('begin; ' + person + ' commit;').splitlines()[-1] == 'held'
+    assert run(f"select distinct hold_reason from public.new_dawn_m2_identity_items "
+               f"where batch_id='{fifth}'") == 'account_holder_review_required'
+    assert run("select count(*) from public.people") == '0'
     print('PASS: isolated migrations, OFF gate, direct identity, immutable audit, '
-          'work-address identity, dependency/stale/collision holds, reversal')
+          'work-address identity, dependency/stale/collision/person holds, '
+          'client search reversal and tenant denial')
 finally:
     if CREATED:
         subprocess.run(['docker', 'rm', '-f', NAME], capture_output=True, timeout=30)

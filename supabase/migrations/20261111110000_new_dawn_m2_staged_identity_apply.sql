@@ -52,6 +52,11 @@ begin
   if v.payload->>'type' is distinct from 'customer'
    or category is null or b.kind_map->>category is distinct from i.customer_kind then
    perform public.new_dawn_m2_staged_hold('customer_kind_unreviewed');end if;
+  -- The canonical reviewed writer requires separately established account-
+  -- holder identity for every new person. This batch has category evidence,
+  -- not that individual consent/identity evidence, so hold the whole group.
+  if i.customer_kind='person' then
+   perform public.new_dawn_m2_staged_hold('account_holder_review_required');end if;
   norm_postcode:=upper(regexp_replace(coalesce(v.payload->>'postcode',''),
    '[[:space:]]+','','g'));
   if norm_postcode='' then perform public.new_dawn_m2_staged_hold('postcode_missing');end if;
