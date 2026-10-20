@@ -1,5 +1,19 @@
 import type { AccountsPair } from "./new-dawn-founder-accounts-preview";
 
+export const DRUMMONDS_FY27_START = "2026-04-01";
+
+/** The latest completed UK calendar day within Drummonds' evidenced FY27. */
+export function fy27LastCompletedUkDate(now: Date): string | null {
+  if (!Number.isFinite(now.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(now);
+  const part = (type: string) => parts.find(value => value.type === type)?.value;
+  const year = Number(part("year")), month = Number(part("month")), day = Number(part("day"));
+  const yesterday = new Date(Date.UTC(year, month - 1, day - 1)).toISOString().slice(0, 10);
+  return yesterday >= DRUMMONDS_FY27_START && yesterday <= "2027-03-31" ? yesterday : null;
+}
+
 /** Prefer the latest accounting period, not the most recently re-read old report. */
 export function newestAccountsPair(pairs: AccountsPair[]): AccountsPair | null {
   return [...pairs].sort((a, b) =>
@@ -8,12 +22,14 @@ export function newestAccountsPair(pairs: AccountsPair[]): AccountsPair | null {
     b.profitReceivedAt.localeCompare(a.profitReceivedAt))[0] ?? null;
 }
 
-/** An MTD report cannot be measured against an unspecified YTD financial year. */
-export function netProfitYtdComparison(periodStart: string, _periodEnd: string) {
+/** FY27 start is evidenced; a current, approved target and full-period source are separate gates. */
+export function netProfitYtdComparison(periodStart: string, periodEnd: string) {
   return {
     status: "held" as const,
-    target: "£144,000 year to date",
-    reason: `The saved P&L starts ${periodStart}; the financial year start and a complete year-to-date report are not verified.`,
+    target: "FY27 target",
+    reason: periodStart !== DRUMMONDS_FY27_START
+      ? `The saved P&L covers ${periodStart} to ${periodEnd}, not the full period from 1 April 2026. The current target also needs Finance confirmation.`
+      : "The report starts at the verified 1 April 2026 FY27 boundary, but the current target and its phasing still need Finance confirmation.",
   };
 }
 

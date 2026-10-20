@@ -156,7 +156,7 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
     <div className="md-money-next">
       <h3>What still needs source evidence</h3>
       <ul>
-        <li><strong>£144k FY27 net-profit comparison:</strong> an agreed fiscal period and a verified full-to-date P&amp;L. Saved monthly reports cannot establish it.</li>
+        <li><strong>FY27 net-profit comparison:</strong> the year starts 1 April 2026. The saved monthly reports do not cover the full period, and Finance has not confirmed the current target or its phasing. The historical £144k snapshot is not a confirmed current target.</li>
         <li><strong>Further Works versus £58k/month:</strong> current, classified quote and delivered or invoiced work with dates.</li>
         <li><strong>ARR:</strong> current recurring contracts with value, term and changes, reconciled to Finance.</li>
       </ul>
