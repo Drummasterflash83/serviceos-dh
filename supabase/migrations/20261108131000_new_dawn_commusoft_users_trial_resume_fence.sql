@@ -51,7 +51,13 @@ do $input_fence$
 declare body text;needle text:=$old$  if found then
    if a.status is distinct from 'active'$old$;
  replacement text:=$new$  if found and public.learn_commusoft_users_trial_active(p_tenant,a.id) then
-   if resource is distinct from 'users' or not exists(
+   if resource is distinct from 'users'
+    or not exists(select 1 from public.feature_flags f where f.tenant_id=p_tenant
+     and f.flag='learn.inputs.commusoft.users.enabled' and f.value='true'::jsonb)
+    or not exists(select 1 from public.learn_commusoft_recurring s where s.tenant_id=p_tenant
+     and s.account_id=a.id and not s.enabled and s.phase=0 and s.current_request is null
+     and s.last_state='source_user_trial_paused')
+    or not exists(
     select 1 from public.controlplane_change_log arm
     where arm.tenant_id=p_tenant and arm.actor=p_actor::text
      and arm.action='learn.commusoft.users_trial.arm' and arm.source='new-dawn-m2-users-trial'

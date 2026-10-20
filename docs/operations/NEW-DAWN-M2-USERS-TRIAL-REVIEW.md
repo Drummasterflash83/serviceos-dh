@@ -38,7 +38,8 @@ Commusoft connector, and the worker requires it to match the connection.
    Read back the arm once. Never replay an unknown arm outcome. While the arm
    is unmatched, the database rejects recurring-control resume, a second
    manual Commusoft import and the signed-in continuation route. The input
-   fence admits only the first users approval by the arm actor; the existing
+   fence admits only the first users approval by the arm actor while the users
+   flag remains On and recurrence remains paused; the existing
    source-user admission limits it to one page of at most 10 records.
 3. In the signed-in OpenFolk operator form, select Drummonds' verified
    Commusoft connection and **Source users (held for review)**. Review one page,
@@ -67,7 +68,8 @@ Commusoft connector, and the worker requires it to match the connection.
 If the source job is `dead_letter` with no committed page, the same RPC's
 `abandon` action can restore after verifying that exact terminal state. If the
 job is queued, running or retrying, or an outcome is uncertain, apply
-`failClosedSql` once: it turns the users flag Off but deliberately leaves
+   `failClosedSql` once: it turns the users flag Off, blocks a late first
+   approval, but deliberately leaves
 recurrence paused and source/account history intact. Read back before any
 further action. A live lease or changed cursor/approval is never overwritten;
 inspect and settle that state before an `abandon` or `finish`. If restoration
