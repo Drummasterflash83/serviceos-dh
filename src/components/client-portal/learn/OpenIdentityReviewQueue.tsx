@@ -126,7 +126,7 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
             onInspect={onReviewJob ? () => onReviewJob(connection, row.externalId) : undefined} />}
           {action === "customer_site" && (onReviewCustomer || onReviewSite) && <button type="button" className="cp-secondary" disabled={!!actionId}
             onClick={() => void reviewExactSource(row)}>{actionId === row.externalId ? "Checking exact source…" : "Review customer and work site"}</button>}
-          {action === "hold" && <p className="text-sm">Held for source or identity conflict. No match has been guessed.</p>}
+          {action === "hold" && <p className="text-sm">Keep this job unlinked until its source route or conflict is reviewed. No match has been guessed.</p>}
         </li>;
       })}</ol>
       <div className="flex justify-between gap-2"><button type="button" className="cp-secondary" disabled={busy || cursors.length === 1}
