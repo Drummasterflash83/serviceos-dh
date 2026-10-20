@@ -114,7 +114,7 @@ export function OperatorCommusoftUsersPage({ tenantId, actorId, connectionId, ba
     <details className="rounded-xl border p-4">
       <summary className="cursor-pointer font-semibold">Source users · operator check</summary>
       <div className="space-y-3 pt-3 text-sm">
-        <p>Read at most 10 Commusoft source users from one page for this selected client and connection. Saved source IDs are directory evidence only: they do not establish an OpenFolk staff identity, job attendance or an appointment.</p>
+        <p>Read at most 10 Commusoft source users from one page for this selected client and connection. The server checks OpenFolk administrator authority before any read. Saved source IDs are directory evidence only: they do not establish an OpenFolk staff identity, job attendance or an appointment.</p>
         <label className="block">Reason for source check
           <input className="cp-input w-full" value={reason} maxLength={500}
             disabled={busy || !!entry || !canRun}

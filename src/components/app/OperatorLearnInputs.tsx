@@ -308,7 +308,9 @@ export function OperatorLearnInputs({
         <p className="rounded-lg border p-3" role="status">
           {canWrite === false
             ? "Read-only access. You can review input status; an OpenFolk administrator is required to change settings or approve imports."
-            : "Administrator access could not be verified. Input status is available; changes are paused until access can be checked."}
+            : usersPageEnabled === true
+              ? "Administrator access could not be verified for setup changes. The separate source-user check performs its own server-side authority check before any read."
+              : "Administrator access could not be verified. Input status is available; changes are paused until access can be checked."}
         </p>
       )}
       {!storageReady && (
@@ -381,7 +383,7 @@ export function OperatorLearnInputs({
         onChanged={() => refresh(generation.current)}
       />
       <OperatorScheduledActivityProbe tenantId={tenantId} connectionId={selected?.id ?? null} canRun={canWrite === true && !busy && !pending} />
-      {usersPageEnabled === true && selected && canWrite === true && (
+      {usersPageEnabled === true && selected && canWrite !== false && (
         <OperatorCommusoftUsersPage
           key={`${backend}:${tenantId}:${actorId}:${selected.id}`}
           tenantId={tenantId}

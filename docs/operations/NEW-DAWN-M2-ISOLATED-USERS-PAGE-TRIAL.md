@@ -1,0 +1,16 @@
+# M2 isolated Commusoft source-user page
+
+The held legacy source-sync `users` import in [the earlier review](NEW-DAWN-M2-USERS-TRIAL-REVIEW.md) shares the ordinary account cursor. It is **not** the route for this trial. The isolated route installed by PRs #245 and #258 uses `learn-commusoft-users-page`, separate `new_dawn.m2_isolated_users_page` admission, and one saved request for at most 10 source-user IDs. It does not pause or move the recurring properties/jobs/contact cursor. The old `learn.inputs.commusoft.users.enabled` import flag stays Off.
+
+Chris authorised one bounded, read-only Drummonds M2 source-user check in the signed-in LIVE OpenFolk operator area. These IDs are retained source evidence only. They do not establish a staff identity, engineer attendance, appointment or login. The Edge route requires the signed-in user, and the SQL start, service continuation and saved-read functions enforce current administrator authority independently of frontend hints.
+
+At 04:37 UTC on 20 October, the dedicated gate was armed once, but the LIVE Modules page could not verify its advisory administrator hint. No page was requested. The fail-closed action set the gate Off and wrote an immutable abort entry. Independent readback found zero requests and zero retained versions. The ordinary Commusoft cycle continued. A browser retry showed the same hint failure; this is why the page had not appeared. The UI change in the next release lets the independently guarded source-page control be shown when that hint is unavailable; an explicit `false` still hides it. All setup changes remain paused without verified admin access.
+
+`scripts/verify/new-dawn-m2-isolated-users-one-page-trial.mjs` pins the LIVE project, tenant, installed start-function hash, exact flag, one configured connection, zero source-page requests and immutable audit history. It permits at most one further arm after that exact zero-request abort. `--live-rollback-rehearsal` compiled and rolled back against the aborted state. The next signed-in attempt must:
+
+1. Confirm the new UI deployment in LIVE, then run `--live-arm-once`. Read back only the dedicated gate On, legacy import Off, zero page requests and an audit arm.
+2. In OpenFolk → Drummonds → Modules → Customer and job inputs → Source users · operator check, enter a specific reason and select **Read one source page** once. If the shared provider lease is busy, retry only the saved request after its stated time. Do not start another request.
+3. Check the saved audit ID, at most 10 source IDs and page state. Run `--live-close-once` only after one complete page. Read back the dedicated gate Off, exactly one retained page, retained count matching the page receipt, immutable arm/disarm entries, and no legacy users import.
+4. If the page cannot be confirmed, use `--live-fail-close` when there is no recent claimed request, then read back the Off state. Do not replay an uncertain write or discard retained evidence.
+
+The trial controller uses the existing saved noninteractive Supabase CLI login. It contains no provider credential and does not call Commusoft itself. Its audit actor identifies the system release controller, while the signed-in page request records the real OpenFolk operator UUID.
