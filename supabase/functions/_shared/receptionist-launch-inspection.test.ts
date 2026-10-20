@@ -72,6 +72,30 @@ test("fresh provider differences expose precise source mismatches without accept
   assert.equal(result.emergency.destinations[0].number, "+441794378105");
 });
 
+test("read-only inspection exposes the isolated helper's three redacted routes", async () => {
+  const f = fixture();
+  f.graph.helper.model.toolIds = [];
+  f.graph.helper.model.tools = [{
+    type: "transferCall",
+    function: { name: "Route-Emergency-to-Rob-or-Tony" },
+    destinations: [
+      { type: "number", number: "+441794378109", description: "Rob emergency 109" },
+      { type: "number", number: "+441794378105", description: "Tony emergency 105" },
+      { type: "number", number: "+441794840063", description: "Shared emergency mailbox 603" },
+    ],
+    server: { headers: { Authorization: "INLINE_PRIVATE_SECRET" } },
+  }];
+  const result = await f.inspect();
+  assert.equal(result.checks.helperOnlyUsesEmergencyTool, false);
+  assert.equal(result.checks.helperUsesCandidateOnlyEmergencyTool, true);
+  assert.equal(result.helper.model.inlineToolCount, 1);
+  assert.deepEqual(result.helperInlineEmergency?.destinations.map(d => d.description), [
+    "Rob emergency 109", "Tony emergency 105", "Shared emergency mailbox 603",
+  ]);
+  assert.equal(JSON.stringify(result).includes("INLINE_PRIVATE_SECRET"), false);
+  assert.equal(f.state.reads.length, 6);
+});
+
 test("whitelist and text redaction exclude provider URLs, credentials and arbitrary nested fields", async () => {
   const f = fixture();
   f.graph.helper.model.messages[0].content += " PRIVATE_SECRET VOICE_SECRET https://signed.example/audio?token=INLINE_TOKEN www.hidden.example Bearer INLINE_BEARER sk-proj-PRIVATEKEY xoxb-PRIVATESLACK password=INLINE_PASSWORD PIN=6789 {\"password\":\"INLINE_JSON_PASSWORD\"}";

@@ -142,6 +142,13 @@ export async function inspectLaunchGraph(db: any, api: Api, settings: any, works
     ordinaryCandidateMatches = same(graph.candidate.model?.tools?.[0]?.destinations,
       graph.ordinary.destinations?.map(approvedOrdinaryDestination));
   } catch { /* An unsupported shared destination is evidence to review, not a bypass. */ }
+  const helperInlineTools = list(graph.helper.model?.tools);
+  const helperInlineEmergency = helperInlineTools.length === 1 ? helperInlineTools[0] : null;
+  const helperUsesCandidateOnlyEmergencyTool = same(graph.helper.model?.toolIds, []) &&
+    helperInlineEmergency?.type === "transferCall" &&
+    helperInlineEmergency.function?.name === "Route-Emergency-to-Rob-or-Tony" &&
+    list(helperInlineEmergency.destinations).length === 3 &&
+    list(helperInlineEmergency.destinations).every((d: any) => d.type === "number");
   return {
     readOnly: true, tenantId: ids.tenant, startedAt, completedAt: new Date().toISOString(),
     evidence: "Fresh provider GETs; sequentially observed configuration, not an atomic snapshot or call test.",
@@ -150,12 +157,14 @@ export async function inspectLaunchGraph(db: any, api: Api, settings: any, works
     checks: {
       candidateOrdinaryDestinationsMatchApprovedTransform: ordinaryCandidateMatches,
       helperOnlyUsesEmergencyTool: same(graph.helper.model?.toolIds, [ids.emergency]) && list(graph.helper.model?.tools).length === 0,
+      helperUsesCandidateOnlyEmergencyTool,
       handoffPreservesAllContext: graph.handoff.destinations?.length === 1 &&
         graph.handoff.destinations[0].assistantId === ids.helper && graph.handoff.destinations[0].contextEngineeringPlan?.type === "all",
       candidateVoiceMatchesLive: same(graph.candidate.voice, graph.live.voice),
       helperVoiceMatchesLive: same(graph.helper.voice, graph.live.voice),
     },
     helper: { id: ids.helper, ...assistant(graph.helper, clean) },
+    helperInlineEmergency: helperInlineEmergency ? tool(helperInlineEmergency, clean) : null,
     handoff: tool(graph.handoff, clean), ordinary: tool(graph.ordinary, clean), emergency: tool(graph.emergency, clean),
     baselineEmergencyDestinations: list(baseline.emergency.destinations).map(d => ({ number: destination(d, clean).number, description: clean(d.description) })),
     providerChanged: false, savedBaselineChanged: false, promotionAttempted: false, callsPlaced: false,

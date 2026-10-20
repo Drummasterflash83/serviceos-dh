@@ -195,6 +195,15 @@ route and notification settings remain **unverified** against PR #88. Do not
 substitute the historical snapshots above or three destination labels for
 this readback; do not request Touch ID for a routine check.
 
+On 20 October, the available browser inventory still contained no Vapi or
+Birchills tab. The draft inspection source now projects the helper's isolated
+inline emergency tool and its three redacted destinations, with a separate
+`helperUsesCandidateOnlyEmergencyTool` structural check. The earlier
+`helperOnlyUsesEmergencyTool` check remains for the old shared-tool shape;
+it must not be read as a candidate pass. This fixes a diagnostic blind spot
+but has not been deployed or used to read the providers. A visible 603
+destination is still not proof of a deposited message or notifications.
+
 `supabase/functions/_shared/receptionist-emergency-fallback-proof.ts` adds
 a pure read-only contract for the later supervised D4/C4 calls. It requires
 one correlated Vapi/Birchills call identity, two ordered failed engineer
