@@ -30,7 +30,7 @@ const FUNCTIONS=Object.freeze({
  'new_dawn_commusoft_users_page_finish(uuid, jsonb)':'6708060ebb83b163f051ad3bce6cae8a8a70fd01a3d2a3993a0c6eda9312817d',
  'new_dawn_commusoft_users_page_start(uuid, uuid, uuid, bigint, text)':'59a91835ea5b7170f0053dd5d0a4ea11808a8a6b4907f068eb81a3b895625ef9',
 });
-const TEST_CHAIN=Object.freeze([
+export const TEST_CHAIN=Object.freeze([
  ['20261105180000_commusoft_source_users',PRIOR[0][2]],
  ['20261105190000_commusoft_source_users_resume',PRIOR[1][2]],
  ['20261106120000_new_dawn_commusoft_job_detail_read','efa37817cb8e27246f8044be7aac9543663ae1419924cdf1a0461ee5abd27dae'],
