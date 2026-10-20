@@ -16,7 +16,7 @@ declare
   recent_job jsonb;
   audit_id uuid;
 begin
-  if p_tenant is null or actor is null or auth.role() is distinct from 'authenticated' then
+  if p_tenant is null or actor is null then
     raise exception 'learn_daily_stats_forbidden' using errcode = '42501';
   end if;
   perform 1 from auth.users u where u.id = actor and u.deleted_at is null
