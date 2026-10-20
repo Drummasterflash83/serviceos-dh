@@ -59,6 +59,15 @@ declare actor uuid;tenant uuid;connection uuid;customer_id uuid:=gen_random_uuid
  customer_payload jsonb;site_payload jsonb;unmapped_payload jsonb;
  candidate jsonb;result jsonb;review jsonb;link_id uuid;site_id uuid;conflict_id uuid:=gen_random_uuid();
 begin
+ if has_function_privilege('public',
+   'public.new_dawn_commusoft_exact_site_candidate(uuid,uuid,text,uuid)','EXECUTE')
+  or has_function_privilege('anon',
+   'public.new_dawn_commusoft_exact_site_candidate(uuid,uuid,text,uuid)','EXECUTE')
+  or has_function_privilege('authenticated',
+   'public.new_dawn_commusoft_exact_site_candidate(uuid,uuid,text,uuid)','EXECUTE')
+  or has_function_privilege('service_role',
+   'public.new_dawn_commusoft_exact_site_candidate(uuid,uuid,text,uuid)','EXECUTE')
+  then raise exception 'exact_site_test_candidate_grant_widened';end if;
  select c.tenant_id,c.id into tenant,connection from public.provider_connections c
  where c.provider='commusoft' and c.status='configured' and c.revoked_at is null
   and c.verified_at<=clock_timestamp()
@@ -155,11 +164,12 @@ begin
  if candidate->>'reason'<>'site_external_identity_conflict'
   then raise exception 'exact_site_test_conflict_accepted';end if;
  delete from public.sites where id=conflict_id and tenant_id=tenant;
- insert into public.sites(id,tenant_id,person_id,label,postcode,source_system,external_id)
- values(conflict_id,tenant,customer_id,' Synthetic exact site ','SW1A1AA',
+ insert into public.sites(id,tenant_id,person_id,label,address_text,postcode,source_system,external_id)
+ values(conflict_id,tenant,customer_id,'Different business site name',
+  'Synthetic exact site, London','SW1A1AA',
   'synthetic','900000000000205');
  candidate:=public.new_dawn_commusoft_exact_site_candidate(tenant,connection,site_external);
- if candidate->>'reason'<>'site_address_collision'
+ if candidate->>'reason'<>'site_postcode_collision'
   then raise exception 'exact_site_test_address_collision_accepted';end if;
  delete from public.sites where id=conflict_id and tenant_id=tenant;
  candidate:=public.new_dawn_commusoft_exact_site_candidate(tenant,connection,site_external);

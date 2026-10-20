@@ -86,17 +86,17 @@ begin
  end loop;
  if nullif(btrim(v.payload->>'addressLine1'),'') is null then
   return jsonb_build_object('state','review','reason','site_address_missing');end if;
- -- A canonical address collision is a review question, never permission to
- -- guess that two source IDs refer to the same work site. Require a postcode
- -- before adding a new canonical site so the duplicate screen is meaningful.
+ -- Existing sites can use a business name as their label and a differently
+ -- formatted address_text. Hold every different canonical site at the same
+ -- normalized postcode for review; this deliberately favors false-positive
+ -- holds over silently creating a duplicate work site.
  if nullif(btrim(v.payload->>'postcode'),'') is null then
   return jsonb_build_object('state','review','reason','site_postcode_missing');end if;
  if exists(select 1 from public.sites s where s.tenant_id=p_tenant
   and (p_existing is null or s.id is distinct from existing_link.entity_id)
-  and lower(btrim(s.label))=lower(btrim(v.payload->>'addressLine1'))
   and upper(regexp_replace(coalesce(s.postcode,''),'[[:space:]]+','','g'))=
       upper(regexp_replace(v.payload->>'postcode','[[:space:]]+','','g'))) then
-  return jsonb_build_object('state','review','reason','site_address_collision');end if;
+  return jsonb_build_object('state','review','reason','site_postcode_collision');end if;
  if p_existing is not null then
   select * into site from public.sites where tenant_id=p_tenant and id=existing_link.entity_id;
   if not found or site.source_system is distinct from namespace
@@ -114,6 +114,8 @@ begin
   'customer_entity_table',parent_link.entity_table,'card_id',parent_link.card_id,
   'site_id',case when p_existing is null then null else existing_link.entity_id end);
 end $$;
+revoke all on function public.new_dawn_commusoft_exact_site_candidate(uuid,uuid,text,uuid)
+ from public,anon,authenticated,service_role;
 
 create or replace function public.new_dawn_commusoft_exact_site_toggle(
  p_tenant uuid,p_link uuid,p_action text,p_reason text
@@ -214,6 +216,10 @@ begin
   and provider='commusoft' and status='configured' and revoked_at is null
   and verified_at<=clock_timestamp() for update;
  if not found then raise exception 'exact_site_connection_unavailable' using errcode='42501';end if;
+ -- Serialize exact-site creation for one tenant even when two configured
+ -- Commusoft connections race. Other canonical writers remain outside this
+ -- lock, so the LIVE apply flag stays OFF pending broader identity review.
+ perform pg_advisory_xact_lock(hashtextextended('new_dawn_exact_site:'||p_tenant::text,0));
  candidate:=public.new_dawn_commusoft_exact_site_candidate(p_tenant,p_connection,p_external);
  if candidate->>'state'<>'ready' then
   return jsonb_build_object('state','review','reason',candidate->>'reason');end if;
