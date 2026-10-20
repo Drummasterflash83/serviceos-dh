@@ -6,7 +6,10 @@ import {savedCliToken} from './learn-test-readiness.mjs';
 export const PROJECT='tgbnakbxwcqjeimygroz';
 export const TENANT='00000000-0000-0000-0000-000000000001';
 export const FLAG='new_dawn.daily_job_status.enabled';
-const VERSION='20261110190000';
+// The Supabase migration connector records its application timestamp rather
+// than the source filename version. Both IDs refer to this exact reviewed
+// migration in LIVE; reject any other ledger row during the release switch.
+const VERSIONS="('20261110190000','20261020161514')";
 const NAME='new_dawn_daily_job_status_observation';
 const CLAIM='public.new_dawn_job_status_daily_claim()';
 const CURRENT='public.new_dawn_job_status_daily_current(uuid,uuid)';
@@ -14,7 +17,7 @@ const enabled=`(select count(*) from public.feature_flags where flag='${FLAG}' a
 const tenantEnabled=`(select count(*) from public.feature_flags where tenant_id='${TENANT}'::uuid and flag='${FLAG}' and value='true'::jsonb)`;
 const scopeSql=`select
  to_regprocedure('${CLAIM}') is not null and to_regprocedure('${CURRENT}') is not null as installed,
- (select count(*) from supabase_migrations.schema_migrations where version::text='${VERSION}' and name='${NAME}')::int as migration_rows,
+ (select count(*) from supabase_migrations.schema_migrations where version::text in ${VERSIONS} and name='${NAME}')::int as migration_rows,
  (select count(*)::int from public.feature_flags where flag='${FLAG}') as target_rows,
  ${enabled}::int as global_on,${tenantEnabled}::int as tenant_on,
  (select count(*)::int from public.feature_flags where flag='${FLAG}' and tenant_id is distinct from '${TENANT}'::uuid) as other_rows,
@@ -62,7 +65,7 @@ set local lock_timeout='3s';set local statement_timeout='30s';
 lock table public.feature_flags in share row exclusive mode;
 lock table public.controlplane_change_log in share row exclusive mode;
 do $daily_flag$ begin
- if not exists(select 1 from supabase_migrations.schema_migrations where version::text='${VERSION}' and name='${NAME}')
+ if not exists(select 1 from supabase_migrations.schema_migrations where version::text in ${VERSIONS} and name='${NAME}')
   or to_regprocedure('${CLAIM}') is null or to_regprocedure('${CURRENT}') is null
   or exists(select 1 from public.controlplane_change_log where id='${id}'::uuid)
   or not exists(select 1 from public.tenants where id='${TENANT}'::uuid and status='active')
