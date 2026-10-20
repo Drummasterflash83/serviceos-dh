@@ -379,7 +379,7 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
         {!operator && authorisedClient && <button className="cp-secondary" onClick={() => void (sourceFlag.data ? clientSource.refetch() : client.refetch())}><RefreshCw size={15} /> Refresh jobs</button>}
         {operatorDiagnostics && !mdPreviewOpen && onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Browse captured source jobs</button>}
       </div>
-      {operator && <div className={`nd-operator-preview${displayedOperatorJobs ? " nd-operator-preview--active" : ""}`}>
+      {operator && (!presentationFirst || !mdPreviewOpen) && <div className={`nd-operator-preview${displayedOperatorJobs ? " nd-operator-preview--active" : ""}`}>
         <strong>{mdPreviewOpen ? `${companyLabel} MD job view · read-only presentation preview` : displayedOperatorJobs ? `${companyLabel} job home · OpenFolk read-only preview` : mdFirstAvailable ? `${companyLabel} MD job view · OpenFolk read-only preview` : `Review ${companyLabel} job home · OpenFolk read-only`}</strong>
         {displayedOperatorJobs ? <>
           <p>{mdPreviewOpen
@@ -392,7 +392,7 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
           {activeOperatorSourcePage && <button className="cp-secondary" disabled={operatorBusy} onClick={() => void loadOperatorJobs()}>Read saved jobs again</button>}
           <button className="cp-secondary" onClick={() => { setSelectedOperator(null); setSelectedMd(null); setMdPreview(false); setOperatorPage(null); setOperatorSourcePage(null); }}>Change access reason</button>
         </> : <>
-          <p>{mdFirstAvailable ? `State why you are opening ${companyLabel}'s MD job view. You remain signed in as OpenFolk, and the server logs this read.` : "You remain signed in as OpenFolk. State why you are opening this company’s jobs; the server checks and logs each read."}</p>
+          <p>{mdFirstAvailable ? `State why you are opening the MD job view for ${companyLabel}. You remain signed in as OpenFolk, and the server logs this read.` : "You remain signed in as OpenFolk. State why you are opening this company’s jobs; the server checks and logs each read."}</p>
           <label>Access reason <input value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} placeholder="Review client job experience" /></label>
           <button className="cp-secondary" disabled={!sourceFlag.isSuccess || operatorBusy || reason.trim().length < 3} onClick={() => void loadOperatorJobs()}>{operatorBusy ? "Checking access…" : mdFirstAvailable ? "Open audited MD preview" : "Open audited preview"}</button>
           {presentationFirst && <Link className="cp-secondary" to="/openfolk/$tenantId" params={{ tenantId: tenant }} search={{ module: "home", tools: false }}>Open OpenFolk controls</Link>}
@@ -400,6 +400,9 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
           {operatorError && <p role="alert">{operatorError}</p>}
         </>}
       </div>}
+      {presentationFirst && mdPreviewOpen && activeOperatorSourcePage && <p className="nd-md-preview-note">
+        OpenFolk read-only preview · Saved jobs, not live Commusoft status · Read {checked(activeOperatorSourcePage.observedAt)}
+      </p>}
       {!operator && !authorisedClient && <p role="status">Your personal work list is being prepared. It will appear when job assignments are confirmed.</p>}
       {!operator && authorisedClient && (sourceFlag.isPending || (sourceFlag.data ? clientSource.isPending : client.isPending)) && <p role="status">Reading your saved jobs…</p>}
       {!operator && authorisedClient && (sourceFlag.isError || client.isError || clientSource.isError) && <p role="alert">Saved jobs are unavailable. Refresh to try again.</p>}
@@ -447,6 +450,15 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
           <button className="cp-secondary" onClick={() => setSelectedOperator(job)}>Open this job</button>
         </div>)}
       </div>
+      {presentationFirst && mdPreviewOpen && activeOperatorSourcePage && <details className="nd-md-preview-controls">
+        <summary>OpenFolk preview controls</summary>
+        <p>You remain signed in as OpenFolk. The server logged this job read; no Drummonds staff login was used.</p>
+        <div>
+          <Link className="cp-secondary" to="/openfolk/$tenantId" params={{ tenantId: tenant }} search={{ module: "home", tools: false }}>Open OpenFolk controls</Link>
+          <button className="cp-secondary" disabled={operatorBusy} onClick={() => void loadOperatorJobs()}>Read saved jobs again</button>
+          <button className="cp-secondary" onClick={() => { setSelectedMd(null); setMdPreview(false); setOperatorPage(null); setOperatorSourcePage(null); }}>Change access reason</button>
+        </div>
+      </details>}
       {operatorDiagnostics && activeOperatorSourcePage && !mdPreviewOpen && user && <RecentSavedJobReview
         key={`${tenant}:${user.id}:${reason}`}
         tenant={tenant} actor={user.id} reason={reason.trim()}
