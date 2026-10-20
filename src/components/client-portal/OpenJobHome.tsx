@@ -17,6 +17,9 @@ import { JobFirstHome } from "./JobFirstHome";
 const uuid = (value: unknown): value is string =>
   typeof value === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(value);
 const savedAt = (value: string) => new Date(value).toLocaleString("en-GB");
+const jobDate = (value: string) => new Date(value).toLocaleDateString("en-GB", {
+  timeZone: "Europe/London", day: "numeric", month: "short", year: "numeric",
+});
 const sourceLabel = (value: string) => value.replace(/[_-]+/g, " ")
   .replace(/\b\w/g, (letter) => letter.toUpperCase());
 const filters: Array<{ value: OpenJobStatus | null; label: string }> = [
@@ -83,6 +86,8 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
       <p><strong>Job {row.external_id}</strong> · {statusLabel[row.status]}</p>
       <p>Customer: {row.source_customer ?? "To confirm"} · Site: {row.source_site ?? row.source_postcode ?? "To confirm"}</p>
       <small>Commusoft record saved {savedAt(row.source_observed_at)}. The job may have changed since then.</small>
+      <p>{row.job_created_at ? `Job created in Commusoft ${jobDate(row.job_created_at)}.`
+        : "Job creation date could not be verified."} This is not time spent in the current status.</p>
       <p>{openJobStatusEvidence(row, savedAt)}</p>
     </div>
     {detail.isPending && <p role="status">Opening the saved job record…</p>}
@@ -244,7 +249,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         {activeSummary && (["on_hold", "pending"] as const)
           .filter((kind) => activeSummary.counts[kind] > 0).map((kind) => (
             <button key={kind} type="button" onClick={() => showJobs(kind)}>
-              <span><b>{statusLabel[kind]}</b><small>{openJobNextStep(kind)}</small></span>
+              <span><b>{statusLabel[kind]}</b><small>{openJobNextStep(kind)}{active?.creationOrderAvailable ? " · oldest verified job creation first" : ""}</small></span>
               <strong>{activeSummary.counts[kind].toLocaleString("en-GB")} jobs</strong>
               <ChevronRight size={17} />
             </button>
@@ -256,7 +261,9 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
       </section>
       <div ref={jobsRef} className="nd-open-jobs-heading">
         <h3>Recorded open jobs</h3>
-        <p>Source statuses saved from Commusoft. Open a job to see its recorded details and next check.</p>
+        <p>Source statuses saved from Commusoft.{active?.creationOrderAvailable
+          ? " On-hold and Pending jobs show oldest verified creation dates first; unverified dates follow. Creation age is not time in status."
+          : " Open a job to see its recorded details and next check."}</p>
       </div>
       <fieldset className="nd-open-page-filters">
         <legend>Show saved jobs by status</legend>
@@ -285,9 +292,10 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
             </span>
             <span className="nd-job-review"><b>{statusLabel[row.status]}</b>
               <small>{row.identity_state === "reviewed_link" ? "Job link reviewed" : "Customer and site link awaiting review"}</small>
+              <small className="nd-job-next">{row.job_created_at ? `Job created ${jobDate(row.job_created_at)}`
+                : "Job creation date not verified"} · {openJobNextStep(row.status)}</small>
               <small>{openJobStatusEvidence(row, savedAt)}</small>
               <small>Owner not confirmed</small>
-              <small className="nd-job-next">Next: {openJobNextStep(row.status)}</small>
             </span>
             <ChevronRight size={17} />
           </button>)}
