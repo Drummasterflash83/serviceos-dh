@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { accountsNetMargin, newestAccountsPair, netProfitYtdComparison } from "./new-dawn-md-money.ts";
+import { accountsNetMargin, fy27LastCompletedUkDate, newestAccountsPair, netProfitYtdComparison } from "./new-dawn-md-money.ts";
 import type { AccountsPair } from "./new-dawn-founder-accounts-preview.ts";
 
 const pair = (periodStart: string, periodEnd: string, received: string): AccountsPair => ({
@@ -20,7 +20,19 @@ test("MD picks the newest accounting period even if an older report was re-read 
 });
 
 test("partial-period net profit remains uncomparable with a YTD target", () => {
-  assert.equal(netProfitYtdComparison("2026-10-01", "2026-10-18").status, "held");
+  const partial = netProfitYtdComparison("2026-10-01", "2026-10-18");
+  assert.equal(partial.status, "held");
+  assert.match(partial.reason, /not the full period/);
+  const full = netProfitYtdComparison("2026-04-01", "2026-10-19");
+  assert.equal(full.status, "held");
+  assert.match(full.reason, /current target and its phasing/);
+});
+
+test("FY27 scope uses the last completed UK day across a clock change", () => {
+  assert.equal(fy27LastCompletedUkDate(new Date("2026-10-20T08:00:00Z")), "2026-10-19");
+  assert.equal(fy27LastCompletedUkDate(new Date("2026-10-24T23:30:00Z")), "2026-10-24");
+  assert.equal(fy27LastCompletedUkDate(new Date("2026-10-26T00:30:00Z")), "2026-10-25");
+  assert.equal(fy27LastCompletedUkDate(new Date("2026-04-01T08:00:00Z")), null);
 });
 
 test("MD net margin uses same-report income and handles negative profit", () => {

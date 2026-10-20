@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { QuickBooksConnection } from "@/lib/learn-quickbooks";
 import { buildReportCaptureBody, readReportCaptureReceipt, readReportRefreshResult, reportCaptureConnectionReady, type ReportCaptureReceipt } from "@/lib/learn-quickbooks-report-capture";
+import { DRUMMONDS_FY27_START, fy27LastCompletedUkDate } from "@/lib/new-dawn-md-money";
+
+const DRUMMONDS_TENANT = "00000000-0000-0000-0000-000000000001";
 
 /** Operator-only evidence capture. Never renders report rows or profit amounts. */
 export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, connections, onConnectionRefresh }: {
@@ -29,6 +32,7 @@ export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, c
   const available = connections.filter(c => c.confirmedAt && c.realmId && ["active", "paused"].includes(c.status));
   const selected = available.find(c => c.id === connectionId);
   const accessReady = reportCaptureConnectionReady(selected);
+  const fy27Cutoff = tenantId === DRUMMONDS_TENANT ? fy27LastCompletedUkDate(new Date()) : null;
   const scopeReady = kind === "ProfitAndLoss" ? !!periodStart && !!periodEnd && periodStart <= periodEnd : !!reportDate;
   const reset = () => { setReviewed(false); setRefreshReviewed(false); setReceipt(null); setNotice(""); };
   async function refreshAccess() {
@@ -85,6 +89,18 @@ export function OperatorQuickBooksReportCapture({ tenantId, actorId, canWrite, c
         {available.map(c => <option key={c.id} value={c.id}>{c.companyName ?? c.realmId} · {c.environment === "production" ? "LIVE" : "Sandbox"}</option>)}
       </select>
     </label>
+    {fy27Cutoff && <div className="space-y-2 rounded-lg border p-3 text-sm">
+      <p><strong>Drummonds FY27 source pair:</strong> 1 April 2026 to {fy27Cutoff}. These buttons fill the dates only. Review and capture the accrual P&amp;L and matching aged receivables separately; neither button contacts QuickBooks.</p>
+      <div className="flex flex-wrap gap-2">
+        <button className="cp-secondary" type="button" disabled={busy} onClick={() => {
+          setKind("ProfitAndLoss"); setPeriodStart(DRUMMONDS_FY27_START); setPeriodEnd(fy27Cutoff);
+          setAccountingMethod("Accrual"); reset();
+        }}>Set FY27 P&amp;L scope</button>
+        <button className="cp-secondary" type="button" disabled={busy} onClick={() => {
+          setKind("AgedReceivables"); setReportDate(fy27Cutoff); reset();
+        }}>Set matching receivables date</button>
+      </div>
+    </div>}
     {selected && !accessReady && <p role="status" className="text-sm text-muted-foreground">Current QuickBooks access has expired or is about to expire. Refresh or reconnect this company, then refresh its status before capturing a report.</p>}
     <label className="grid gap-1 text-sm">Report
       <select className="rounded-lg border bg-background p-2" disabled={busy} value={kind}
