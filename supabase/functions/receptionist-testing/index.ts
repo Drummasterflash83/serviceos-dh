@@ -26,6 +26,7 @@ import { DH_APPROVED_REVIEW_POLICY } from "../_shared/receptionist-launch-review
 import { clearLaunchModel } from "../_shared/receptionist-launch-clear-contract.ts";
 import { launchPromotion } from "../_shared/receptionist-launch-promotion.ts";
 import { inspectLaunchGraph } from "../_shared/receptionist-launch-inspection.ts";
+import { reconcileIsolatedEmmaVoice } from "../_shared/receptionist-launch-voice-reconcile.ts";
 import { installCandidateIntake } from "../_shared/receptionist-intake-installation.ts";
 import { safeSpeechProjection } from "../_shared/receptionist-launch-intake-contract.ts";
 import { inspectVapiLaunchBindings, inspectBirchillsLaunchBindings } from "../_shared/receptionist-provider-preflight.ts";
@@ -307,6 +308,21 @@ Deno.serve(async (req) => {
           providerState: "review_required",
           automaticRetrySent: false,
         }, 409);
+      }
+    }
+    if (body.action === "reconcile_isolated_voice") {
+      if (!service || scheduled || body.tenantId !== "00000000-0000-0000-0000-000000000001" ||
+        settings.data.assistant_id !== "dcfc2e66-a438-43ab-b863-467f5a5089df" ||
+        workspace.data.assistant_id !== "4eb2bee8-ac25-47c9-b962-409ed250ceb6")
+        return reply({ error: "Explicit fixed-account OpenFolk maintenance required." }, 403);
+      try {
+        const result = await reconcileIsolatedEmmaVoice(db, api, actor, body.expectedHashes);
+        return reply(result, ["verified", "already_aligned"].includes(result.state) ? 200 : 409);
+      } catch {
+        // A provider PATCH may have applied despite a failed response. Never
+        // expose raw provider details or imply that no write occurred.
+        return reply({ error: "Isolated Emma speech repair needs review. Inspect the saved audit and fresh provider graph before any retry.",
+          providerState: "review_required", automaticRetrySent: false }, 409);
       }
     }
     const assistant = await api("assistant/" + settings.data.assistant_id);
