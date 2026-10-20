@@ -30,6 +30,8 @@ test('switch SQL fences the exact project tenant and audit without provider writ
   assert.doesNotMatch(sql,/\bdelete from|\btruncate\s|https?:\/\/|\/api\/v2\/jobs/);
  }
  assert.match(on,/insert into public\.feature_flags/);
+ assert.match(on,/update public\.feature_flags set value='true'/);
+ assert.match(on,/\(select count\(\*\) from public\.feature_flags where flag='new_dawn\.daily_job_status\.enabled'\)>1/);
  assert.match(off,/update public\.feature_flags set value='false'/);
  assert.throws(()=>flagSql(true,'invalid'),/invalid_action/);
 });
