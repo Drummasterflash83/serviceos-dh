@@ -9,6 +9,19 @@ export const DRUMMONDS_FY27_PAIR = {
   reason: "Verify Drummonds FY27 accrual accounts through 19 October 2026 for MD read-only source evidence",
 } as const;
 
+/** The single credential refresh Chris approved for this exact production company. */
+export function approvedFy27RefreshBody(connection: QuickBooksConnection | undefined,
+  requestId: string, now = Date.now()) {
+  if (!connection || connection.environment !== "production" ||
+    connection.realmId !== DRUMMONDS_FY27_PAIR.realmId || !connection.confirmedAt ||
+    !["active", "paused"].includes(connection.status) || connection.refreshInProgress ||
+    !connection.refreshExpiresAt || Date.parse(connection.refreshExpiresAt) <= now + 120_000)
+    throw Error("fy27_refresh_unavailable");
+  return { tenantId: DRUMMONDS_FY27_PAIR.tenantId, connectionId: connection.id,
+    requestId, realmId: DRUMMONDS_FY27_PAIR.realmId,
+    environment: "production" as const, reason: DRUMMONDS_FY27_PAIR.reason };
+}
+
 /** Fixed scope for Chris's approved, one-time FY27 source pair. */
 export function approvedFy27PairBodies(connection: QuickBooksConnection | undefined,
   requestIds: { profit: string; receivables: string }, now = Date.now()) {

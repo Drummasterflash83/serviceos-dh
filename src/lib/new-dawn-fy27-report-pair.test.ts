@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { approvedFy27PairBodies, DRUMMONDS_FY27_PAIR } from "./new-dawn-fy27-report-pair.ts";
+import { approvedFy27PairBodies, approvedFy27RefreshBody, DRUMMONDS_FY27_PAIR } from "./new-dawn-fy27-report-pair.ts";
 import type { QuickBooksConnection } from "./learn-quickbooks";
 
 const connection: QuickBooksConnection = {
@@ -13,6 +13,27 @@ const connection: QuickBooksConnection = {
 };
 const ids = { profit: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
   receivables: "dddddddd-dddd-4ddd-8ddd-dddddddddddd" };
+
+test("approved refresh is bound to the one production company even when access expired", () => {
+  const body = approvedFy27RefreshBody({ ...connection, accessExpiresAt: "2026-10-20T14:00:00Z" },
+    "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", Date.parse("2026-10-20T17:00:00Z"));
+  assert.deepEqual(body, {
+    tenantId: DRUMMONDS_FY27_PAIR.tenantId, connectionId: connection.id,
+    requestId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", realmId: DRUMMONDS_FY27_PAIR.realmId,
+    environment: "production", reason: DRUMMONDS_FY27_PAIR.reason,
+  });
+});
+
+test("refresh refuses an unconfirmed, wrong, busy or expired authorization", () => {
+  const now = Date.parse("2026-10-20T17:00:00Z");
+  for (const invalid of [
+    { ...connection, confirmedAt: null },
+    { ...connection, environment: "sandbox" as const },
+    { ...connection, realmId: "12345" },
+    { ...connection, refreshInProgress: true },
+    { ...connection, refreshExpiresAt: "2026-10-20T16:00:00Z" },
+  ]) assert.throws(() => approvedFy27RefreshBody(invalid, "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", now));
+});
 
 test("approved pair fixes the exact production realm, accrual period, A/R date and reason", () => {
   const [profit, receivables] = approvedFy27PairBodies(connection, ids, Date.parse("2026-10-20T15:30:00Z"));
