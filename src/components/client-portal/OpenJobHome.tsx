@@ -241,15 +241,15 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
     setPageIndex(0); setCursors([null]); setSelected(null);
     setRefreshTick((tick) => tick + 1);
   }
-  return <section className="nd-job-home" aria-label="Recorded open jobs and scorecard readiness">
+  return <section className="nd-job-home" aria-label={`${company ?? "Company"} open jobs`}>
     <div className="nd-job-heading">
       <div>
-        <p className="of-eyebrow">YOUR COMPANY</p>
-        <h2>Open jobs</h2>
-        <p>Review saved Commusoft statuses, then open a job for its source and next check.</p>
+        <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · WORK</p>
+        <h2>Start with jobs needing a check</h2>
+        <p>Review On hold and Pending work first. Open a job for its recorded details.</p>
       </div>
       {enabled && <button className="cp-secondary" onClick={refresh} disabled={page.isFetching || firstPage.isFetching}>
-        <RefreshCw size={15} /> Re-read saved jobs
+        <RefreshCw size={15} /> Refresh list
       </button>}
     </div>
     {operator && mdReason === undefined && <div className="nd-operator-preview">
@@ -271,38 +271,41 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
       <section className="nd-score-hero nd-score-hero--pending" aria-label="Recorded open workload">
         <div className="nd-work-count"><strong>{activeSummary?.counts.total.toLocaleString("en-GB") ?? "…"}</strong><small>recorded open jobs</small></div>
         <div className="nd-score-hero-copy">
-          <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · RECORDED WORK</p>
-          <h3>Your recorded open work</h3>
+          <p className="of-eyebrow">CURRENT WORKLOAD</p>
+          <h3>Open jobs</h3>
           <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending · ${activeSummary.counts.open.toLocaleString("en-GB")} Open.`
-            : summary.isError ? "Saved status totals are unavailable." : "Checking recorded workload…"} These are saved Commusoft statuses, not a ranking of urgency or confirmed assignments.</p>
-          <button type="button" onClick={() => showJobs(null)}>Browse all open jobs →</button>
-          {activeSummary && <small>Counts read {savedAt(activeSummary.snapshotAt)}. Each job shows when its source was saved.</small>}
+            : summary.isError ? "Job totals are unavailable." : "Checking workload…"}</p>
+          <button type="button" onClick={() => showJobs(null)}>See all open jobs →</button>
+          {activeSummary && <small>Last checked {savedAt(activeSummary.snapshotAt)}</small>}
         </div>
       </section>
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
-        <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} recorded open` : "Checking workload"}</strong>
-          <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending.` : "Reading saved status counts."}</p>
-          <p>A job score needs 14 complete days of provider-checked status observations. The start date depends on full coverage. Until then, these are workload counts.</p>
-          <button type="button" onClick={() => oldestRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}>Review 10 oldest-created On-hold records →</button>
+        <article><span>JOBS</span><strong>{activeSummary ? `${(activeSummary.counts.on_hold + activeSummary.counts.pending).toLocaleString("en-GB")} to check by status` : "Checking workload"}</strong>
+          <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending` : "Reading job statuses."}</p>
+          <button type="button" onClick={() => oldestHeldRows.length > 0
+            ? oldestRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+            : showJobs("on_hold")}>{oldestHeldRows.length > 0 ? "See 10 oldest On-hold jobs" : "See On-hold jobs"} →</button>
         </article>
-        <article><span>CUSTOMERS</span><strong>Customer view being prepared</strong>
-          <p>Job-to-customer and site links are not yet verified for the full open list.</p>
-          <p>Customer totals and scores will appear when those links have source evidence.</p>
+        <article><span>CUSTOMERS</span><strong>Still being linked</strong>
+          <p>Customer totals will appear as job and site matches are confirmed.</p>
         </article>
-        <article><span>TEAM</span><strong>Team view needs visits</strong>
-          <p>These jobs do not yet have confirmed engineers, visits or action owners.</p>
-          <p>Team workload and scores need linked diary and assignment evidence.</p>
+        <article><span>TEAM</span><strong>Awaiting visit records</strong>
+          <p>Engineer and action-owner views need confirmed visits and assignments.</p>
         </article>
       </div>
+      <details className="nd-job-context"><summary>How to read this view</summary>
+        <p>These counts use the latest saved Commusoft job statuses. On hold and Pending identify work to check; status alone does not prove urgency, the cause of a hold or who owns the next action.</p>
+        <p>Job, customer and team scores remain unpublished. The job measure needs 14 complete days of checked status observations; its start date depends on full coverage. Customer and team measures need confirmed links and visits.</p>
+      </details>
       <section className="nd-work-priority" aria-label="Review saved job statuses">
-        <div><h3>Review by saved status</h3>
+        <div><h3>Choose what to review</h3>
           <p>{activeSummary
-            ? `Counts read ${savedAt(activeSummary.snapshotAt)}. Open each job to see when its Commusoft source was saved. Status alone does not identify a cause, owner or urgency.`
-            : "Choose a saved status below to review the work."}</p></div>
+            ? `Status counts checked ${savedAt(activeSummary.snapshotAt)}.`
+            : "Choose a job status below."}</p></div>
         {activeSummary && (["on_hold", "pending"] as const)
           .filter((kind) => activeSummary.counts[kind] > 0).map((kind) => (
             <button key={kind} type="button" onClick={() => showJobs(kind)}>
-              <span><b>{statusLabel[kind]}</b><small>{openJobNextStep(kind)}{active?.creationOrderAvailable ? " · oldest verified job creation first" : ""}</small></span>
+              <span><b>{statusLabel[kind]}</b><small>{openJobNextStep(kind)}</small></span>
               <strong>{activeSummary.counts[kind].toLocaleString("en-GB")} jobs</strong>
               <ChevronRight size={17} />
             </button>
@@ -312,9 +315,9 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         {summary.isPending && <p role="status">Checking saved job status totals…</p>}
         {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
       </section>
-      <section className="nd-oldest-jobs" ref={oldestRef} aria-label="Ten oldest-created On-hold records">
-        <div><h3>Ten oldest-created On-hold records</h3>
-          <p>Ordered by verified job creation date. This does not show how long a job has been On hold, whether it is urgent, or who owns the next action. Open a record to review its source.</p></div>
+      <section className="nd-oldest-jobs" ref={oldestRef} aria-label="Ten oldest On-hold jobs by creation date">
+        <div><h3>Ten oldest On-hold jobs</h3>
+          <p>Oldest by verified job creation date, not time spent On hold. Open a job to see what is recorded.</p></div>
         {firstPage.isPending && <p role="status">Reading the oldest recorded On-hold jobs…</p>}
         {firstPage.isError && <p role="alert">The oldest On-hold jobs could not be checked. Refresh to retry.</p>}
         {firstPage.isSuccess && oldestHeldRows.length === 0 && <p>No verified creation-order On-hold jobs are available in this saved snapshot.</p>}
@@ -328,13 +331,11 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         </li>)}</ol>}
       </section>
       <div ref={jobsRef} className="nd-open-jobs-heading">
-        <h3>Recorded open jobs</h3>
-        <p>Source statuses saved from Commusoft.{active?.creationOrderAvailable
-          ? " On-hold and Pending jobs show oldest verified creation dates first; unverified dates follow. Creation age is not time in status."
-          : " Open a job to see its recorded details and next check."}</p>
+        <h3>All open jobs</h3>
+        <p>Browse the recorded list by status and open any job for more detail.</p>
       </div>
       <fieldset className="nd-open-page-filters">
-        <legend>Show saved jobs by status</legend>
+        <legend>Show jobs by status</legend>
         {filters.map((filter) => <label key={filter.value ?? "all"}>
           <input type="radio" name={`nd-open-job-status-${tenant}-${operator ? "operator" : "client"}`}
             checked={status === filter.value} onChange={() => changeFilter(filter.value)} />
@@ -354,12 +355,12 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
           {rows.map((row) => <button key={`${row.connection_id}:${row.external_id}`}
             type="button" className="nd-job-row" onClick={() => setSelected(row)}>
             <BriefcaseBusiness size={20} />
-            <span className="nd-job-main"><strong>Commusoft job {row.external_id}</strong>
+            <span className="nd-job-main"><strong>Job {row.external_id}</strong>
               <small>{row.title ?? "Work description not recorded"}</small>
-              <small>Source customer: {row.source_customer ?? "not identified"} · Site: {row.source_site ?? row.source_postcode ?? "not identified"}</small>
+              <small>Customer: {row.source_customer ?? "to confirm"} · Site: {row.source_site ?? row.source_postcode ?? "to confirm"}</small>
             </span>
             <span className="nd-job-review"><b>{statusLabel[row.status]}</b>
-              <small>{row.identity_state === "reviewed_link" ? "Job link reviewed" : "Customer and site link awaiting review"}</small>
+              <small>{row.identity_state === "reviewed_link" ? "Customer and site confirmed" : "Customer and site to confirm"}</small>
               <small className="nd-job-next">{row.job_created_at ? `Job created ${jobDate(row.job_created_at)}`
                 : "Job creation date not verified"} · {openJobNextStep(row.status)}</small>
               <small>{openJobStatusEvidence(row, savedAt)}</small>

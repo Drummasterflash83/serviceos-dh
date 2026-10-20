@@ -429,6 +429,10 @@
 .nd-score-tiles strong { color: #25253a; font-size: 18px; font-weight: 600; letter-spacing: -.02em; }
 .nd-score-tiles p { margin: 0; color: #706b7e; font-size: 12px; line-height: 1.55; }
 .nd-job-home > .nd-score-tiles + .nd-work-priority { margin-top: 18px; }
+.nd-job-context { margin: 14px 0 18px; color: #706b7e; font-size: 12px; line-height: 1.55; }
+.nd-job-context summary { width: fit-content; color: #514669; font-weight: 650; cursor: pointer; }
+.nd-job-context summary:focus-visible { outline: 2px solid #514669; outline-offset: 3px; }
+.nd-job-context p { max-width: 78ch; margin: 8px 0 0; }
 .nd-score-tiles button { justify-self: start; margin-top: 2px; padding: 0; border: 0; background: transparent; color: #514669; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
 .nd-score-bottlenecks { padding: 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #fff; }
 .nd-score-bottlenecks h3 { margin: 0 0 4px; color: #25253a; font-size: 19px; font-weight: 600; }

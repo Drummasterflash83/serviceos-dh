@@ -90,8 +90,6 @@ export function MdClientPreview() {
             <button type="button" onClick={() => { setReview(null); setSection("home"); }}>Leave view</button>
           </div>
           {section === "home" ? <>
-            <div className="md-review-heading"><p className="of-eyebrow">DRUMMONDS</p>
-              <h1>Your business, in view.</h1><p>Start with recorded open jobs and check when their source was last saved.</p></div>
             <OpenJobHome key={`${active.auditId}:home`} tenant={drummondsTenantId}
               company="Drummonds" operator mdReason={active.reason} />
           </> : section === "learn" ? <>
