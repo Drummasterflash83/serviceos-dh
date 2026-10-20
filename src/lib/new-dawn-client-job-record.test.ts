@@ -10,6 +10,8 @@ const row: OpenJobRow = {
   external_id: "123",
   source_version_id: "00000000-0000-0000-0000-000000000004",
   source_observed_at: "2026-10-20T08:00:00Z",
+  status_first_saved_at: "2026-10-20T08:00:00Z",
+  status_evidence: "timing_unknown",
   status: "on_hold", title: "Check boiler", source_customer: "Client",
   source_site: "Site", source_postcode: "SO1 1AA",
   property_external_id: "34", customer_external_id: "12",
