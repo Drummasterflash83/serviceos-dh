@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { OperatorCommusoftRecurring } from "./OperatorCommusoftRecurring";
+import { OperatorScheduledActivityProbe } from "./OperatorScheduledActivityProbe";
 import { OperatorCommusoftResume } from "./OperatorCommusoftResume";
 import { OperatorCommusoftConnection } from "./OperatorCommusoftConnection";
 import { OperatorSlackConnection } from "./OperatorSlackConnection";
@@ -373,6 +374,7 @@ export function OperatorLearnInputs({
         onAccessChange={setCanWrite}
         onChanged={() => refresh(generation.current)}
       />
+      <OperatorScheduledActivityProbe tenantId={tenantId} connectionId={selected?.id ?? null} canRun={canWrite === true && !busy && !pending} />
       <details
         className="rounded-xl border p-4"
         open={slackOpen}
