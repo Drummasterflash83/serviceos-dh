@@ -45,8 +45,20 @@ test("all OpenFolk child routes wait for an account-scoped server admin check", 
   );
   assert.match(route, /if \(error\) throw new Error/);
   assert.match(route, /return data === true/);
-  assert.match(route, /AbortSignal.timeout\(15_000\)/);
+  assert.match(route, /settleWithDeadline\(/);
+  assert.match(route, /\.abortSignal\(requestSignal\)/);
+  assert.match(route, /15_000/);
+  assert.match(route, /eligible && authority\.isError && \(/);
+  assert.match(route, /onClick=\{\(\) => void authority\.refetch\(\)\}/);
+  assert.match(route, /Retry access check/);
   assert.ok(route.indexOf("authority.isError ||") < route.indexOf("return <Outlet />"));
+});
+test("a timed-out operator directory offers a visible retry", () => {
+  const route = read("../routes/openfolk.$tenantId.tsx");
+  assert.match(route, /Opening the client workspace timed out\. Please retry\./);
+  assert.match(route, /directory\.isError && \(/);
+  assert.match(route, /onClick=\{\(\) => void directory\.refetch\(\)\}/);
+  assert.match(route, /Retry client directory/);
 });
 test("both sidebar footers contain the same gated admin return", () => {
   for (const [path, marker] of [
