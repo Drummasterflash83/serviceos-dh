@@ -14,9 +14,19 @@ const dependency = readFileSync(
   "utf8",
 );
 const dependencyBody = dependency.replace(/\nbegin;\n/, "\n").replace(/\ncommit;\s*$/, "\n");
+const hardening = readFileSync(
+  new URL("../../supabase/migrations/20261110150000_new_dawn_m2_exact_site_safety.sql", import.meta.url),
+  "utf8",
+);
+if (!/\nbegin;\n/.test(hardening) || !/\ncommit;\s*$/.test(hardening))
+  throw Error("Exact-site safety migration envelope changed");
+const hardeningBody = hardening.replace(/\nbegin;\n/, "\n").replace(/\ncommit;\s*$/, "\n");
 const signature = "public.new_dawn_commusoft_exact_site_apply(uuid,uuid,text,uuid,text)";
 const snapshotSql = `select
  md5(coalesce(pg_get_functiondef(to_regprocedure('${signature}')),'')) function_definition,
+ md5(coalesce(pg_get_functiondef(to_regprocedure('public.new_dawn_commusoft_exact_link_apply(uuid,uuid,text,uuid,text)')),'')) job_apply_definition,
+ md5(coalesce(pg_get_functiondef(to_regprocedure('public.new_dawn_commusoft_exact_site_candidate(uuid,uuid,text,uuid)')),'')) site_candidate_definition,
+ md5(coalesce(pg_get_functiondef(to_regprocedure('public.new_dawn_commusoft_exact_site_toggle(uuid,uuid,text,text)')),'')) site_toggle_definition,
  to_regclass('public.new_dawn_commusoft_exact_site_events') is not null event_table_exists,
  md5(coalesce(pg_get_viewdef('public.learn_business_input_current_links'::regclass,true),'')) current_links_view`;
 
@@ -39,8 +49,6 @@ async function query(sql, readOnly = true) {
   return response.json();
 }
 
-const before = await query(snapshotSql);
-const needsDependency = !(await query("select to_regclass('public.new_dawn_commusoft_exact_link_events') is not null installed"))[0]?.installed;
 const fixture = `do $fixture$
 declare actor uuid;tenant uuid;connection uuid;customer_id uuid:=gen_random_uuid();
  card_id uuid:=gen_random_uuid();customer_external text:='900000000000201';
@@ -51,6 +59,15 @@ declare actor uuid;tenant uuid;connection uuid;customer_id uuid:=gen_random_uuid
  customer_payload jsonb;site_payload jsonb;unmapped_payload jsonb;
  candidate jsonb;result jsonb;review jsonb;link_id uuid;site_id uuid;conflict_id uuid:=gen_random_uuid();
 begin
+ if has_function_privilege('public',
+   'public.new_dawn_commusoft_exact_site_candidate(uuid,uuid,text,uuid)','EXECUTE')
+  or has_function_privilege('anon',
+   'public.new_dawn_commusoft_exact_site_candidate(uuid,uuid,text,uuid)','EXECUTE')
+  or has_function_privilege('authenticated',
+   'public.new_dawn_commusoft_exact_site_candidate(uuid,uuid,text,uuid)','EXECUTE')
+  or has_function_privilege('service_role',
+   'public.new_dawn_commusoft_exact_site_candidate(uuid,uuid,text,uuid)','EXECUTE')
+  then raise exception 'exact_site_test_candidate_grant_widened';end if;
  select c.tenant_id,c.id into tenant,connection from public.provider_connections c
  where c.provider='commusoft' and c.status='configured' and c.revoked_at is null
   and c.verified_at<=clock_timestamp()
@@ -82,7 +99,8 @@ begin
   then raise exception 'exact_site_test_source_collision';end if;
  customer_payload:=jsonb_build_object('id',customer_external::numeric,'type','customer');
  site_payload:=jsonb_build_object('id',site_external::numeric,'type','workaddress',
-  'parentPropertyID',customer_external::numeric,'addressLine1','Synthetic exact site');
+  'parentPropertyID',customer_external::numeric,'addressLine1','Synthetic exact site',
+  'postcode','SW1A 1AA');
  unmapped_payload:=jsonb_build_object('id',unmapped_external::numeric,'type','workaddress',
   'parentPropertyID',900000000000204::numeric,'addressLine1','Unmapped synthetic site');
  insert into public.learn_business_input_request_gates(credential_fingerprint,next_allowed_at)
@@ -117,11 +135,42 @@ begin
    entity_kind,entity_table,entity_id,card_id,request,actor_id)
  values(tenant,connection,'commusoft','properties',customer_external,customer_version,
    'customer','people',customer_id,card_id,'{}',actor);
+ -- Direct RPC access must fail while the client UI flag is absent/OFF.
+ update public.feature_flags set value='false'::jsonb
+ where tenant_id=tenant and flag='new_dawn.m2_exact_apply';
+ if not found then
+  insert into public.feature_flags(tenant_id,flag,value)
+  values(tenant,'new_dawn.m2_exact_apply','false'::jsonb);
+ end if;
+ begin
+  perform public.new_dawn_commusoft_exact_site_apply(tenant,connection,site_external,
+   site_version,'Direct RPC must respect OFF flag');
+  raise exception 'exact_site_test_off_flag_accepted';
+ exception when sqlstate '42501' then null;end;
+ begin
+  perform public.new_dawn_commusoft_exact_link_apply(tenant,connection,
+   site_external,site_version,'Direct job RPC must respect OFF flag');
+  raise exception 'exact_job_test_off_flag_accepted';
+ exception when sqlstate '42501' then null;end;
+ update public.feature_flags set value='true'::jsonb
+ where tenant_id=tenant and flag='new_dawn.m2_exact_apply';
+ if not found then
+  insert into public.feature_flags(tenant_id,flag,value)
+  values(tenant,'new_dawn.m2_exact_apply','true'::jsonb);
+ end if;
  insert into public.sites(id,tenant_id,person_id,label,source_system,external_id)
  values(conflict_id,tenant,customer_id,'Conflicting synthetic site','commusoft',site_external);
  candidate:=public.new_dawn_commusoft_exact_site_candidate(tenant,connection,site_external);
  if candidate->>'reason'<>'site_external_identity_conflict'
   then raise exception 'exact_site_test_conflict_accepted';end if;
+ delete from public.sites where id=conflict_id and tenant_id=tenant;
+ insert into public.sites(id,tenant_id,person_id,label,address_text,postcode,source_system,external_id)
+ values(conflict_id,tenant,customer_id,'Different business site name',
+  'Synthetic exact site, London','SW1A1AA',
+  'synthetic','900000000000205');
+ candidate:=public.new_dawn_commusoft_exact_site_candidate(tenant,connection,site_external);
+ if candidate->>'reason'<>'site_postcode_collision'
+  then raise exception 'exact_site_test_address_collision_accepted';end if;
  delete from public.sites where id=conflict_id and tenant_id=tenant;
  candidate:=public.new_dawn_commusoft_exact_site_candidate(tenant,connection,site_external);
  if candidate->>'state'<>'ready' then raise exception 'exact_site_test_candidate_not_ready';end if;
@@ -164,6 +213,29 @@ begin
   'Linked jobs must block site reversal');
  if result->>'reason'<>'site_in_use_by_job'
   then raise exception 'exact_site_test_job_dependency_ignored';end if;
+ -- A retained canonical job is allowed after its sole exact source link is
+ -- explicitly reversed; the active job above was correctly held first.
+ insert into public.learn_business_input_links
+  (tenant_id,connection_id,provider,collection,external_id,source_version_id,
+   entity_kind,entity_table,entity_id,card_id,request,actor_id)
+ select tenant,connection,'commusoft','jobs',unmapped_external,site_version,
+  'job','jobs',j.id,card_id,
+  jsonb_build_object('rule','commusoft_exact_dual_id_v1','site_link_id',link_id),actor
+ from public.jobs j where j.tenant_id=tenant and j.site_id=(
+  select entity_id from public.learn_business_input_links where id=link_id)
+  and j.external_id=unmapped_external;
+ insert into public.new_dawn_commusoft_exact_link_events
+  (tenant_id,link_id,action,actor_id,source_version_id,rule,reason)
+ select tenant,l.id,'reversed',actor,site_version,'commusoft_exact_dual_id_v1',
+  'Rollback-only dependent exact job reversal'
+ from public.learn_business_input_links l where l.tenant_id=tenant
+  and l.connection_id=connection and l.provider='commusoft' and l.collection='jobs'
+  and l.external_id=unmapped_external;
+ result:=public.new_dawn_commusoft_exact_site_toggle(tenant,link_id,'reverse',
+  'Reversed exact job permits site reversal');
+ if result->>'state'<>'reversed'
+  or exists(select 1 from public.learn_business_input_current_links where id=link_id)
+  then raise exception 'exact_site_test_dependency_order_reversal_failed';end if;
  perform set_config('request.jwt.claim.sub',gen_random_uuid()::text,true);
  begin
   perform public.new_dawn_commusoft_exact_site_toggle(tenant,link_id,'reverse',
@@ -175,9 +247,12 @@ begin
 end $fixture$;
 select marker from exact_site_test_receipt;`;
 
+const before = await query(snapshotSql);
+const needsDependency = !(await query("select to_regclass('public.new_dawn_commusoft_exact_link_events') is not null installed"))[0]?.installed;
+
 let result;
 let failure;
-try { result = await query(`begin;\n${needsDependency ? dependencyBody : ""}\n${body}\n${fixture}\nrollback;`, false); }
+try { result = await query(`begin;\n${needsDependency ? dependencyBody : ""}\n${body}\n${hardeningBody}\n${fixture}\nrollback;`, false); }
 catch (cause) { failure = cause; }
 const after = await query(snapshotSql);
 if (JSON.stringify(before) !== JSON.stringify(after))

@@ -11,6 +11,8 @@ const holdLabel: Record<string, string> = {
   site_source_identity_conflict: "The work-site source identity conflicts with its saved ID.",
   site_identity_already_reviewed: "This site was reviewed elsewhere. Refresh its current link before continuing.",
   site_external_identity_conflict: "Another site uses this exact external ID.",
+  site_postcode_missing: "This work site has no postcode. Review its address before linking.",
+  site_postcode_collision: "Another site has this postcode. Review both sites before linking.",
   legacy_site_identity_conflict: "An earlier site identity conflicts with this source ID.",
   customer_target_conflict: "The reviewed customer card no longer matches its target.",
   site_source_changed: "The saved work-site source changed. Refresh before confirming.",
