@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BriefcaseBusiness, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
 import {
-  openJobNextStep, openJobPageFlagName, readOpenJobPage,
+  openJobNextStep, openJobPageFlagName, readOpenJobPage, readOpenJobStatusSummary,
   type OpenJobPage, type OpenJobRow, type OpenJobStatus,
 } from "@/lib/new-dawn-open-job-page";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -65,6 +65,7 @@ export function OpenJobHome({ tenant, company, operator = false }: {
   const [cursors, setCursors] = useState<Array<string | null>>([null]);
   const [selected, setSelected] = useState<OpenJobRow | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
+  const jobsRef = useRef<HTMLDivElement>(null);
   const authorisedClient = !operator && !!user && profile?.tenant_id === tenant &&
     canSeeCompanyJobs(profile.role);
   const enabled = !!user && uuid(tenant) && (operator ? approvedReason !== null : authorisedClient);
@@ -72,6 +73,20 @@ export function OpenJobHome({ tenant, company, operator = false }: {
     setApprovedReason(null); setReason(""); setStatus(null); setPageIndex(0);
     setCursors([null]); setSelected(null);
   }, [tenant, user?.id, operator]);
+  const summary = useQuery({
+    queryKey: ["new-dawn-open-job-status-summary", tenant, user?.id, operator,
+      approvedReason, refreshTick],
+    enabled,
+    staleTime: 0,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().rpc("new_dawn_open_job_status_summary", {
+        p_tenant: tenant, p_reason: operator ? approvedReason : null,
+      }).abortSignal(AbortSignal.timeout(25_000));
+      if (error) throw Error("Open job status summary unavailable");
+      return readOpenJobStatusSummary(data, tenant, user!.id);
+    },
+  });
   const page = useQuery<OpenJobPage>({
     queryKey: ["new-dawn-open-job-page", tenant, user?.id, operator,
       approvedReason, status, cursors[pageIndex], refreshTick],
@@ -91,8 +106,14 @@ export function OpenJobHome({ tenant, company, operator = false }: {
   const active = page.data?.tenantId === tenant && page.data.actorId === user?.id
     && !page.isFetching ? page.data : null;
   const rows = active?.rows ?? [];
+  const activeSummary = summary.data?.tenantId === tenant && summary.data.actorId === user?.id
+    && !summary.isFetching ? summary.data : null;
   function changeFilter(next: OpenJobStatus | null) {
     setStatus(next); setPageIndex(0); setCursors([null]); setSelected(null);
+  }
+  function showJobs(next: OpenJobStatus | null) {
+    changeFilter(next);
+    requestAnimationFrame(() => jobsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
   function nextPage() {
     if (!active?.nextCursor) return;
@@ -103,12 +124,12 @@ export function OpenJobHome({ tenant, company, operator = false }: {
     setPageIndex(0); setCursors([null]); setSelected(null);
     setRefreshTick((tick) => tick + 1);
   }
-  return <section className="nd-job-home" aria-label="Recorded open jobs">
+  return <section className="nd-job-home" aria-label="Company scorecard and recorded open jobs">
     <div className="nd-job-heading">
       <div>
-        <p className="of-eyebrow">JOB OVERVIEW</p>
-        <h2>Open jobs</h2>
-        <p>Recorded Commusoft work, with the next check made clear.</p>
+        <p className="of-eyebrow">YOUR COMPANY</p>
+        <h2>At a glance</h2>
+        <p>Start with the work that may need attention.</p>
       </div>
       {enabled && <button className="cp-secondary" onClick={refresh} disabled={page.isFetching}>
         <RefreshCw size={15} /> Refresh saved jobs
@@ -130,6 +151,47 @@ export function OpenJobHome({ tenant, company, operator = false }: {
     </div>}
     {!operator && !authorisedClient && <p role="status">Your work list is being prepared. Confirmed assignments are not available yet.</p>}
     {enabled && <>
+      <section className="nd-score-home" aria-label="Company scorecard">
+        <div className="nd-score-hero">
+          <p className="of-eyebrow">HOW {company?.toUpperCase() ?? "THE COMPANY"} IS DOING</p>
+          <h3>Not enough data yet</h3>
+          <p>A company score needs confirmed job progress, commercial outcomes and ownership. Saved job status alone cannot provide a fair score.</p>
+          {activeSummary && <button className="cp-secondary" type="button" onClick={() => showJobs(null)}>
+            See recorded open jobs
+          </button>}
+        </div>
+        <div className="nd-score-tiles" aria-label="Jobs, customers and team scorecards">
+          <article><span>JOBS</span><strong>Not enough data yet</strong>
+            <p>{activeSummary
+              ? `${activeSummary.counts.total.toLocaleString("en-GB")} jobs have a saved open status; stage age and ownership still need confirmation.`
+              : "Checking recorded open jobs; stage age and ownership still need confirmation."}</p>
+            {activeSummary && <button type="button" onClick={() => showJobs(null)}>See open jobs →</button>}
+          </article>
+          <article><span>CUSTOMERS</span><strong>Not enough data yet</strong>
+            <p>Customer and site links need review before job outcomes can show customer health.</p>
+          </article>
+          <article><span>TEAM</span><strong>Not enough data yet</strong>
+            <p>Confirmed assignments and worked hours are needed before a team score is fair.</p>
+          </article>
+        </div>
+        {summary.isPending && <p role="status">Checking saved job status totals…</p>}
+        {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
+        {activeSummary && <div className="nd-score-bottlenecks">
+          <div><h3>Where work may be held up</h3>
+            <p>Commusoft statuses saved by OpenFolk as of {savedAt(activeSummary.snapshotAt)}. These counts do not identify the person or cause yet.</p></div>
+          {(["on_hold", "pending", "open"] as const).filter((kind) => activeSummary.counts[kind] > 0).map((kind) => (
+            <button key={kind} type="button" onClick={() => showJobs(kind)}>
+              <span><b>{statusLabel[kind]}</b><small>{openJobNextStep(kind)}</small></span>
+              <strong>{activeSummary.counts[kind].toLocaleString("en-GB")} jobs</strong>
+              <ChevronRight size={17} />
+            </button>
+          ))}
+        </div>}
+      </section>
+      <div ref={jobsRef} className="nd-open-jobs-heading">
+        <h3>Recorded open jobs</h3>
+        <p>Source statuses saved from Commusoft. Open a job to see its recorded details and next check.</p>
+      </div>
       <div className="nd-open-page-filters" aria-label="Filter saved job status">
         {filters.map((filter) => <button key={filter.value ?? "all"}
           type="button" aria-pressed={status === filter.value}
@@ -171,21 +233,6 @@ export function OpenJobHome({ tenant, company, operator = false }: {
         </nav>
       </>}
     </>}
-    <section className="nd-open-scorecard" aria-label="Scorecard home">
-      <div>
-        <p className="of-eyebrow">SCORECARD</p>
-        <h3>What needs attention</h3>
-        <p>Scores appear only when the underlying work and measures are confirmed.</p>
-      </div>
-      <div className="nd-open-scorecard-grid">
-        <article><h4>Jobs</h4><strong>Not enough data yet</strong>
-          <p>Next: review saved job progress and confirm who owns the next step.</p></article>
-        <article><h4>Customers</h4><strong>Not enough data yet</strong>
-          <p>Next: confirm customer and site links before judging customer health.</p></article>
-        <article><h4>Team</h4><strong>Not enough data yet</strong>
-          <p>Next: confirm assignments and worked hours before judging team performance.</p></article>
-      </div>
-    </section>
     <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
       <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader className="pr-10 sm:pr-0"><DialogTitle>Saved Commusoft job</DialogTitle></DialogHeader>
