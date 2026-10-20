@@ -9,8 +9,8 @@ const before = {
   card_search_sha256: '6ac809b881991048b1cb6f22664ad536cfef925008cd4dc97b7b58b9905a634e',
   direct_reversal_visible: false, search_guard_visible: false,
   apply_enabled: 0, batch_count: 0, item_count: 0,
-  people_count: 4597, company_count: 1206, site_count: 79,
-  job_count: 1005, link_count: 1262,
+  people_count: 11, company_count: 12, site_count: 13,
+  job_count: 14, link_count: 15,
 };
 
 test('pins all five exact migration sources and assembles an inert schema release', () => {
