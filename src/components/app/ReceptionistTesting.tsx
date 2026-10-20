@@ -40,6 +40,37 @@ type Status = {
   } | null };
   physicalChecks?: { id: string; label: string; detail: string; state: string; checkedAt: string; providerCallId: string }[];
 };
+type ProviderPreflight = {
+  readOnly: true;
+  completedAt: string;
+  vapi: {
+    state: string;
+    graph?: { state: string; checks?: { candidateVoiceMatchesLive?: boolean; helperVoiceMatchesLive?: boolean } };
+    testNumber?: { state: string; assistant: string; fallbackToSavedMaryDdi: boolean };
+  };
+  birchills: {
+    state: string;
+    mainNumberMatches?: boolean;
+    policyHolds?: string[];
+    mainNumber?: { defaultDestination: string; didTimeExceptionCount: number; didTimeExceptionTo502Count: number; rules: { destination: string; interval: string }[] };
+    extensions?: {
+      "205"?: { forwardsToEmmaTestNumber: boolean };
+      "109"?: { forwardsToSavedRobNumber: boolean };
+      "105"?: { forwardsToSavedTonyNumber: boolean };
+      "603"?: { emailRecipient: string };
+    };
+  };
+};
+const preflightHoldLabels: Record<string, string> = {
+  main_number_identity_changed: "main-number identity changed",
+  main_number_default_not_501: "main-number default is not IVR 501",
+  did_time_exceptions_absent: "no DID-level time exceptions; out-of-hours route still needs proof",
+  did_out_of_hours_502_not_seen: "no DID-level route to out-of-hours IVR 502 was seen",
+  emma_205_test_forward_not_seen: "Emma extension 205 test-number forwarding is unproved",
+  rob_109_forward_not_seen: "Rob extension 109 target is unproved",
+  tony_105_forward_not_seen: "Tony extension 105 target is unproved",
+  mailbox_603_two_recipient_delivery_unproved: "mailbox 603 delivery to both people is unproved",
+};
 const date = (s: string) =>
   new Date(s).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
 const label = (s: string) =>
@@ -83,7 +114,8 @@ const dhVoicemailChecks = [
 export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
   const [data, setData] = useState<Status | null>(null),
     [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [providerPreflight, setProviderPreflight] = useState<ProviderPreflight | null>(null);
   const mounted = useRef(true),
     request = useRef(false);
   const invoke = useCallback(
@@ -151,6 +183,21 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
       setBusy(false);
     }
   }
+  async function inspectProviderSetup() {
+    if (busy || tenantId !== "00000000-0000-0000-0000-000000000001") return;
+    setBusy(true);
+    setError("");
+    setProviderPreflight(null);
+    try {
+      const result = await invoke("inspect_provider_preflight");
+      if (!result?.readOnly || !result?.completedAt) throw Error("Provider preflight needs review.");
+      setProviderPreflight(result as ProviderPreflight);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Provider setup could not be read.");
+    } finally {
+      setBusy(false);
+    }
+  }
   const active = data?.runs.some((r) => ["preparing", "running", "uncertain"].includes(r.state));
   const blocked = data?.checks.some(
     (c) => ["transfer_count", "voice"].includes(c.key) && c.state === "failed",
@@ -192,6 +239,27 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
           </p>
         )}
       </header>
+      {showDhVoicemailChecks && (
+        <section className="of-test-card" aria-labelledby="emma-current-provider">
+          <h3 id="emma-current-provider">Current provider setup</h3>
+          <p>Read the fixed Drummonds Vapi and Birchills bindings before a launch test. This checks configuration only; it does not call anyone, change routing, or prove a voicemail was delivered.</p>
+          <button className="op-button-secondary" disabled={busy} onClick={() => void inspectProviderSetup()}>
+            <RefreshCw size={16} /> Read current setup
+          </button>
+          {providerPreflight && (
+            <div role="status" className="of-test-checks">
+              <p className="of-test-note">Provider read completed {date(providerPreflight.completedAt)}. Any unchecked section stays held.</p>
+              <p><strong>Vapi:</strong> {providerPreflight.vapi.state === "checked" ? "Configuration read" : "Needs review"}. Test number: {providerPreflight.vapi.testNumber?.assistant ?? "not checked"}; binding {providerPreflight.vapi.testNumber?.state ?? "not checked"}. Candidate voice {providerPreflight.vapi.graph?.checks?.candidateVoiceMatchesLive ? "matches" : "not proved to match"} LIVE.</p>
+              <p><strong>Birchills:</strong> {providerPreflight.birchills.state === "checked" ? "Configuration read" : "Needs review"}. Main number default: {providerPreflight.birchills.mainNumber?.defaultDestination ?? "not checked"}. DID-level time exceptions: {providerPreflight.birchills.mainNumber?.didTimeExceptionCount === undefined ? "not checked" : `${providerPreflight.birchills.mainNumber.didTimeExceptionCount} configured`}; routes to IVR 502: {providerPreflight.birchills.mainNumber?.didTimeExceptionTo502Count ?? "not checked"}. This does not prove the IVR's own opening-hours behaviour.</p>
+              {Boolean(providerPreflight.birchills.mainNumber?.rules.length) && (
+                <p>Observed DID rules: {providerPreflight.birchills.mainNumber?.rules.map((rule) => `${rule.interval || "unnamed"} → ${rule.destination}`).join("; ")}.</p>
+              )}
+              <p>Emma extension 205 forwards to the saved test number: {providerPreflight.birchills.extensions?.["205"]?.forwardsToEmmaTestNumber ? "yes" : "not proved"}. Rob 109 matches his saved target: {providerPreflight.birchills.extensions?.["109"]?.forwardsToSavedRobNumber ? "yes" : "not proved"}. Tony 105 matches his saved target: {providerPreflight.birchills.extensions?.["105"]?.forwardsToSavedTonyNumber ? "yes" : "not proved"}. Mailbox 603 notification address: {providerPreflight.birchills.extensions?.["603"]?.emailRecipient ?? "not checked"}.</p>
+              <p><strong>Still to prove:</strong> {(providerPreflight.birchills.policyHolds ?? ["provider_read_unavailable"]).map((hold) => preflightHoldLabels[hold] ?? "provider configuration needs review").join("; ")}. A real 603 deposit and separate delivered email/Slack receipts remain required.</p>
+            </div>
+          )}
+        </section>
+      )}
       {error && (
         <p className="op-error" role="alert">
           {error}
@@ -267,7 +335,7 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                   </div>
                 ))}
               </div>
-              <p className="of-test-note">Still to prove: two-way handset audio, emergency primary/backup order, emergency mailbox 603 and receipt by both engineers. No automatic live calls run from this page.</p>
+              <p className="of-test-note">Still to prove: two-way handset audio, one class-selected engineer attempt, return to Emma after a failed attempt, one shared mailbox 603 deposit and separate delivery receipts for Rob and Tony. No automatic live calls run from this page.</p>
             </div>
           )}
           <div className="of-test-card">

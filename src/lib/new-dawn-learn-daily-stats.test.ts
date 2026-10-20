@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dailyStatKeys, readDailyStats } from "./new-dawn-learn-daily-stats.ts";
+import { dailyStatKeys, readDailyStats, readDailyStatsPart } from "./new-dawn-learn-daily-stats.ts";
 
 const tenant = "00000000-0000-0000-0000-000000000001";
 const actor = "00000000-0000-0000-0000-000000000002";
@@ -29,4 +29,29 @@ test("rejects cross-tenant/actor, impossible totals and claimed provider freshne
   const claim = response();
   (claim as Record<string, unknown>).provider_newest_job = "999";
   assert.throws(() => readDailyStats(claim, tenant, actor));
+});
+
+const businessPart = () => ({
+  ...response(), version: "new-dawn-learn-daily-stats-part/1", part: "business",
+  counts: { jobs: { today: 2, total: 20 }, customers: { today: 1, total: 9 },
+    sites: { today: 0, total: 5 } },
+});
+
+test("verifies one source part without inventing counts for the other parts", () => {
+  const value = readDailyStatsPart(businessPart(), "business", tenant, actor);
+  assert.deepEqual(value.counts.jobs, { today: 2, total: 20 });
+  assert.equal(value.counts.emails, undefined);
+  assert.equal(value.latestSavedJob?.number, "001");
+});
+
+test("rejects a mismatched part, extra source counts, impossible count and actor", () => {
+  assert.throws(() => readDailyStatsPart(businessPart(), "slack", tenant, actor));
+  const extra = businessPart();
+  (extra.counts as Record<string, unknown>).emails = { today: 0, total: 0 };
+  assert.throws(() => readDailyStatsPart(extra, "business", tenant, actor));
+  const malformed = businessPart();
+  malformed.counts.jobs.today = 21;
+  assert.throws(() => readDailyStatsPart(malformed, "business", tenant, actor));
+  assert.throws(() => readDailyStatsPart(businessPart(), "business", tenant,
+    "00000000-0000-0000-0000-000000000004"));
 });

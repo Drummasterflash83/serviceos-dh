@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as ClientRouteImport } from './routes/client'
+import { Route as ClientMdRouteImport } from './routes/client-md'
 import { Route as HealthShadowRouteImport } from './routes/health-shadow'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MarketingRouteImport } from './routes/marketing'
@@ -43,6 +44,11 @@ const AppRoute = AppRouteImport.update({
 const ClientRoute = ClientRouteImport.update({
   id: '/client',
   path: '/client',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientMdRoute = ClientMdRouteImport.update({
+  id: '/client-md',
+  path: '/client-md',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HealthShadowRoute = HealthShadowRouteImport.update({
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/client': typeof ClientRoute
+  '/client-md': typeof ClientMdRoute
   '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/client': typeof ClientRoute
+  '/client-md': typeof ClientMdRoute
   '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/client': typeof ClientRoute
+  '/client-md': typeof ClientMdRoute
   '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/client'
+    | '/client-md'
     | '/health-shadow'
     | '/login'
     | '/marketing'
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/client'
+    | '/client-md'
     | '/health-shadow'
     | '/login'
     | '/marketing'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/client'
+    | '/client-md'
     | '/health-shadow'
     | '/login'
     | '/marketing'
@@ -269,6 +281,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
   ClientRoute: typeof ClientRoute
+  ClientMdRoute: typeof ClientMdRoute
   HealthShadowRoute: typeof HealthShadowRoute
   LoginRoute: typeof LoginRoute
   MarketingRoute: typeof MarketingRoute
@@ -305,6 +318,13 @@ declare module '@tanstack/react-router' {
       path: '/client'
       fullPath: '/client'
       preLoaderRoute: typeof ClientRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/client-md': {
+      id: '/client-md'
+      path: '/client-md'
+      fullPath: '/client-md'
+      preLoaderRoute: typeof ClientMdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/health-shadow': {
@@ -451,6 +471,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
   ClientRoute: ClientRoute,
+  ClientMdRoute: ClientMdRoute,
   HealthShadowRoute: HealthShadowRoute,
   LoginRoute: LoginRoute,
   MarketingRoute: MarketingRoute,

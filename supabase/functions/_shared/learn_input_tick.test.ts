@@ -193,6 +193,14 @@ test("empty queue stops immediately, or reports saved work before becoming idle"
   }
 });
 
+test("a verified provider freshness page progresses an otherwise empty Commusoft tick", async () => {
+  let calls = 0;
+  const result = await runLearnInputTick({ ...config, slackEnabled: "false" }, null,
+    async () => ok({ ...idle, freshness: ++calls === 1 ? "processed" : "idle" }));
+  assert.equal(calls, 2);
+  assert.equal(result.commusoft.state, "processed");
+});
+
 test("slow requests and delayed timers cannot start another call beyond the tick deadline", async () => {
   let now = 0, calls = 0;
   assert.deepEqual(await drainCommusoftPages(async remaining => {
@@ -220,6 +228,17 @@ test("a completed Commusoft page continues through the actual HTTP guard, then s
   assert.equal(claims, 2);
   assert.deepEqual(result, { commusoft: { state: "processed" }, slackSchedule: { state: "disabled" }, slack: { state: "disabled" }, quickbooks: { state: "disabled" } });
 
+});
+
+test("daily status evidence progresses an empty source queue, but invalid state fails closed", async () => {
+  let calls = 0;
+  const active = await runLearnInputTick({ ...config, slackEnabled: "false" }, null,
+    async () => ok({ ...idle, freshness: "idle", dailyStatus: ++calls === 1 ? "processed" : "idle" }));
+  assert.equal(calls, 2);
+  assert.equal(active.commusoft.state, "processed");
+  const invalid = await runLearnInputTick({ ...config, slackEnabled: "false" }, null,
+    async () => ok({ ...idle, freshness: "idle", dailyStatus: "invented" }));
+  assert.equal(invalid.commusoft.state, "unconfirmed");
 });
 
 

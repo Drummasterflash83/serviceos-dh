@@ -28,6 +28,7 @@ import { launchPromotion } from "../_shared/receptionist-launch-promotion.ts";
 import { inspectLaunchGraph } from "../_shared/receptionist-launch-inspection.ts";
 import { installCandidateIntake } from "../_shared/receptionist-intake-installation.ts";
 import { safeSpeechProjection } from "../_shared/receptionist-launch-intake-contract.ts";
+import { inspectVapiLaunchBindings, inspectBirchillsLaunchBindings } from "../_shared/receptionist-provider-preflight.ts";
 import { PHYSICAL_EVIDENCE_IDS, physicalEvidence } from "../_shared/receptionist-physical-evidence.ts";
 import { captureTestHarness, compareTestHarness, inspectTestPersonality } from "../_shared/receptionist-test-harness.ts";
 import { getSimwoodCredentials, basicAuthHeader } from "../_shared/simwood.ts";
@@ -233,6 +234,50 @@ Deno.serve(async (req) => {
       }
       return r.status === 204 ? {} : await r.json();
     };
+    if (body.action === "inspect_provider_preflight") {
+      // This is a founder-only, fixed-tenant, GET-only route. A normal signed-in
+      // founder can run it in OpenFolk without obtaining a service JWT or a
+      // provider credential. The service-role path has the same actor check.
+      if (scheduled || body.tenantId !== "00000000-0000-0000-0000-000000000001" ||
+        workspace.data.assistant_id !== "4eb2bee8-ac25-47c9-b962-409ed250ceb6")
+        return reply({ error: "Emma preflight is unavailable for this client." }, 403);
+      const founder = await db.rpc("care_release_actor", { p_actor: actor });
+      if (founder.error) return reply({ error: "OpenFolk launch administrator required." }, 403);
+      const credentials = getSimwoodCredentials();
+      const birchillsRead = async (path: string) => {
+        if (!credentials || !/^\/(?:phonenumbers\/50371|endpoints\?pageSize=100&page=[1-5]|endpoints\/[1-9][0-9]{0,11}|timeintervals\/[1-9][0-9]{0,11})$/.test(path))
+          throw Error("Fixed Birchills preflight path unavailable");
+        const response = await fetch("https://pbx.sipcentric.com/api/v1/customers/3950" + path, {
+          method: "GET", redirect: "error", signal: AbortSignal.timeout(15000),
+          headers: { Authorization: basicAuthHeader(credentials), Accept: "application/json" },
+        });
+        if (!response.ok) throw Error("Birchills preflight read unavailable");
+        return await response.json();
+      };
+      const startedAt = new Date().toISOString();
+      const [vapiResult, birchillsResult] = await Promise.allSettled([
+        inspectVapiLaunchBindings(db, api, settings.data, workspace.data, actor),
+        credentials ? inspectBirchillsLaunchBindings(birchillsRead) : Promise.reject(Error("Birchills connection unavailable")),
+      ]);
+      const vapi = vapiResult.status === "fulfilled" ? vapiResult.value : { state: "not_checked" };
+      const birchills = birchillsResult.status === "fulfilled" ? birchillsResult.value : { state: "not_checked" };
+      const audit = await db.from("phone_operations_audit").insert({
+        tenant_id: body.tenantId, actor_user_id: actor, actor_label: "OpenFolk launch administrator",
+        action: "emma_provider_preflight_read", resource_type: "receptionist_workspace",
+        resource_ref: body.tenantId,
+        reason: "Read fixed Drummonds Vapi and Birchills launch bindings without changing provider routing or placing calls.",
+        after_state: {
+          vapi_state: vapi.state, birchills_state: birchills.state,
+          test_number_state: "testNumber" in vapi ? vapi.testNumber?.state : "not_checked",
+          birchills_source_hash: "sourceHash" in birchills ? birchills.sourceHash : null,
+          birchills_policy_holds: "policyHolds" in birchills ? birchills.policyHolds : [],
+          started_at: startedAt,
+        },
+      });
+      if (audit.error) return reply({ error: "Provider preflight audit could not be saved." }, 503);
+      return reply({ readOnly: true, startedAt, completedAt: new Date().toISOString(),
+        vapi, birchills, providerChanged: false, callsPlaced: false });
+    }
     if (body.action === "inspect_launch_graph") {
       if (!service || scheduled)
         return reply({ error: "Explicit OpenFolk service inspection required." }, 403);
