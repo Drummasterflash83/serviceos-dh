@@ -120,6 +120,7 @@ function JobDetail({ tenant, job, source }: { tenant: string; job: HomeJob; sour
   if (detail.isPending) return <p role="status">Reading saved job evidence…</p>;
   if (detail.isError || !detail.data) return <p role="alert">Job evidence is unavailable. Try again later.</p>;
   const row = detail.data;
+  const attention = source ? sourceJobClientAttention(source) : null;
   return (
     <div className="nd-job-detail">
       <p><strong>{row.card.jobStatus ?? "Status needs confirmation"}</strong> · {row.card.recordState}</p>
@@ -127,7 +128,8 @@ function JobDetail({ tenant, job, source }: { tenant: string; job: HomeJob; sour
       {!job.verified && <p>Some job details are awaiting confirmation.</p>}
       <p>Saved record updated {checked(row.card.updatedAt)}. This may lag Commusoft.</p>
       {source && <p>OpenFolk saved this job information on {checked(source.source_observed_at)}. {source.source_state === "reviewed_latest" ? "This is the newest saved record OpenFolk can confirm, but it may not reflect current Commusoft progress." : "The saved details need checking before anyone relies on this status."}</p>}
-      <h3>Next step</h3><p>{source ? `${sourceJobClientAttention(source).nextStep}.` : `${homeJobAction(job)}.`}</p>
+      {attention && <><h3>Why this needs attention</h3><p>{attention.why}</p></>}
+      <h3>Next step</h3><p>{attention ? `${attention.nextStep}.` : `${homeJobAction(job)}.`}</p>
       {row.gaps.length > 0 && <p>OpenFolk is checking some of this job’s details. This job is not scored yet.</p>}
       <small>Evidence checked {checked(row.observedAt)}. This is saved information, not a live provider check or a score.</small>
     </div>
@@ -145,6 +147,7 @@ function ClientSourceRow({ tenant, source, onOpen }: {
     <span className="nd-job-review">
       <b>{attention.label}</b>
       <small>{homeJobState(job)} · Saved {checked(source.source_observed_at)}</small>
+      <small>Why: {attention.why}</small>
       <small className="nd-job-next">Next: {attention.nextStep}</small>
       <small>Owner: not confirmed</small>
     </span>
@@ -182,12 +185,14 @@ function SourceJobPresentation({ tenant, jobs, search, onOpen }: {
 
 function MdPreviewJobDetail({ tenant, source }: { tenant: string; source: SourceHomeJob }) {
   const job = sourceJobAsHomeJob(source, tenant);
+  const attention = sourceJobClientAttention(source);
   return <div className="nd-job-detail">
     <h3>{job.job_number ? `Job ${job.job_number}` : "Saved job"}{job.title ? ` · ${job.title}` : ""}</h3>
     <p><strong>{homeJobState(job)}</strong> · Saved job information</p>
     <p>{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</p>
     <p>OpenFolk saved this job information on {checked(source.source_observed_at)}. It may not reflect current Commusoft progress.</p>
-    <h3>Next step</h3><p>{sourceJobClientAttention(source).nextStep}.</p>
+    <h3>Why this needs attention</h3><p>{attention.why}</p>
+    <h3>Next step</h3><p>{attention.nextStep}.</p>
     <small>This preview uses the audited saved job selection. It is not a live provider check, confirmed assignment, full job record or score.</small>
   </div>;
 }

@@ -73,14 +73,32 @@ test("client attention names the next check without exposing operator source-lin
   const current = { ...row, source_state: "reviewed_latest" as const };
   const changed = sourceJobClientAttention(row, now);
   assert.equal(changed.label, "Job details need checking");
+  assert.match(changed.why, /which saved details are current/);
   assert.match(changed.nextStep, /Ask OpenFolk to confirm this job record/);
   assert.deepEqual(sourceJobClientAttention({ ...row, source_state: "source_ambiguous" }, now), changed);
   const older = sourceJobClientAttention({ ...current, source_observed_at: "2026-10-18T08:59:59Z" }, now);
   assert.equal(older.label, "Current progress needs checking");
+  assert.match(older.why, /last saved update cannot confirm/);
   assert.match(older.nextStep, /Confirm current progress/);
   const recent = sourceJobClientAttention(current, now);
   assert.equal(recent.label, "Recorded progress needs confirming");
+  assert.match(recent.why, /last saved status is pending/);
   assert.equal(recent.nextStep, "Check what is holding this job");
+});
+
+test("client reasons follow only known saved status and never invent an owner or commercial outcome", () => {
+  const now = Date.parse("2026-10-19T09:00:00Z");
+  const current = { ...row, source_state: "reviewed_latest" as const };
+  const attention = (status: string | null) => sourceJobClientAttention({
+    ...current, fields: { ...current.fields, status },
+  }, now);
+  assert.match(attention("on_hold").why, /hold reason is not confirmed/);
+  assert.match(attention("open").why, /next owner is not confirmed/);
+  assert.match(attention("completed").why, /final outcome is not confirmed/);
+  assert.match(attention(null).why, /status is not clear enough/);
+  for (const status of ["on_hold", "open", "completed", null]) {
+    assert.doesNotMatch(attention(status).why, /invoice raised|assigned to|paid/);
+  }
 });
 
 test("owner presentation keeps old and changed records out of the recent-work section", () => {
