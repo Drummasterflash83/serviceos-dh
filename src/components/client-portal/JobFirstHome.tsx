@@ -140,7 +140,12 @@ function ClientSourceRow({ tenant, source, onOpen }: {
   return <button className="nd-job-row" onClick={onOpen}>
     <BriefcaseBusiness size={20} />
     <span className="nd-job-main"><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job number not confirmed"}</strong><small>{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</small></span>
-    <span className="nd-job-review"><b>{attention.label}</b><small>{homeJobState(job)} · {attention.nextStep} · Saved {checked(source.source_observed_at)} · Next owner not confirmed</small></span>
+    <span className="nd-job-review">
+      <b>{attention.label}</b>
+      <small>{homeJobState(job)} · Saved {checked(source.source_observed_at)}</small>
+      <small className="nd-job-next">Next: {attention.nextStep}</small>
+      <small>Owner: not confirmed</small>
+    </span>
     <ArrowRight size={17} />
   </button>;
 }
@@ -347,15 +352,15 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
   }
   return (
     <>
-    <section className="nd-job-home" aria-label="Jobs needing review">
+    <section className="nd-job-home" aria-label={mdPreviewOpen ? "Jobs needing attention" : "Jobs needing review"}>
       <div className="nd-job-heading">
         <div>
           <p className="of-eyebrow">JOB OVERVIEW</p>
-          <h2>Jobs to review</h2>
-          <p>Start with the work that may need a decision.</p>
+          <h2>{mdPreviewOpen ? "Jobs needing attention" : "Jobs to review"}</h2>
+          <p>{mdPreviewOpen ? "Open a job to see its recorded progress and the next check." : "Start with the work that may need a decision."}</p>
         </div>
         {!operator && authorisedClient && <button className="cp-secondary" onClick={() => void (sourceFlag.data ? clientSource.refetch() : client.refetch())}><RefreshCw size={15} /> Refresh jobs</button>}
-        {operator && onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Browse captured source jobs</button>}
+        {operator && !mdPreviewOpen && onOpenInformation && <button className="cp-secondary" onClick={onOpenInformation}>Browse captured source jobs</button>}
       </div>
       {operator && <div className={`nd-operator-preview${displayedOperatorJobs ? " nd-operator-preview--active" : ""}`}>
         <strong>{mdPreviewOpen ? `${companyLabel} MD job view · read-only presentation preview` : displayedOperatorJobs ? `${companyLabel} job home · OpenFolk read-only preview` : mdFirstAvailable ? `${companyLabel} MD job view · OpenFolk read-only preview` : `Review ${companyLabel} job home · OpenFolk read-only`}</strong>
@@ -447,7 +452,7 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
     {!mdPreviewOpen && <OwnerMoneyPanel tenant={tenant} operator={operator} operatorReason={reason} />}
     {operator && !mdPreviewOpen && <FounderAccountsPreview tenant={tenant} operator={operator}
       jobPreviewOpened={!!displayedOperatorJobs} reason={reason} />}
-    {operator && <FounderInvoiceReviewCandidates tenant={tenant} operator={operator}
+    {operator && !mdPreviewOpen && <FounderInvoiceReviewCandidates tenant={tenant} operator={operator}
       jobPreviewOpened={!!displayedOperatorJobs} reason={reason} />}
     {operator && !mdPreviewOpen && activeOperatorSourcePage && user &&
       <FounderOpportunitySourceReview tenant={tenant} actor={user.id} jobReason={reason.trim()} />}
