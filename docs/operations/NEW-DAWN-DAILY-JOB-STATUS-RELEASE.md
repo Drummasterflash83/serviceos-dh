@@ -8,14 +8,14 @@ SHA-256 have been extracted. Source version, connection and day are retained.
 
 ## Activation order
 
-1. Apply `20261110210000_new_dawn_daily_job_status_observation.sql` after the
+1. Apply `20261110190000_new_dawn_daily_job_status_observation.sql` after the
    previous migrations. It creates a private, RLS-enabled ledger and
    service-role-only functions. It creates no flag, schedule or provider request.
 2. Deploy the exact `learn-commusoft-worker` revision from this PR. The existing
    unfiltered, one-minute infrastructure tick calls this worker; verify that the
    tick remains enabled and that ordinary source-page capture still succeeds.
 3. Enable `new_dawn.daily_job_status.enabled` only for the reviewed Drummonds
-   tenant through an audited operator/release action. The existing `learn.enabled`
+   tenant with the guarded, audited release command below. The existing `learn.enabled`
    and `learn.inputs.commusoft.enabled` flags must also remain On. Without all
    three, the claim function is idle.
 4. Observe the first full London-day sweep. Count eligible latest-saved open,
@@ -23,6 +23,23 @@ SHA-256 have been extracted. Source version, connection and day are retained.
    `new_dawn_job_status_daily`. Check no active claim is older than 40 seconds,
    no row has eight failed attempts, and provider rate limits have not crowded
    out ordinary source pages. A partial sweep is a failure, not a complete day.
+
+```sh
+NEW_DAWN_DAILY_STATUS_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-daily-job-status-flag.mjs --live-read-only
+NEW_DAWN_DAILY_STATUS_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-daily-job-status-flag.mjs --live-enable-drummonds
+```
+
+The switch verifies project, migration, active tenant, existing input gates,
+configured connection, exclusive flag scope and append-only audit before one
+transaction. It writes one control-plane audit row with a unique correlation ID,
+then verifies the flag and audit through a separate read. An uncertain write is
+never replayed. To pause, use the exact `--live-disable-drummonds` mode; it also
+audits and independently verifies the Off state. The CLI requires the saved
+Supabase login but does not request 1Password or expose the provider key.
+
+The daily roster is frozen when the first claim seeds that connection for the
+London day. A job saved after that seed enters the following day's roster.
+Report roster size and completed provider observations separately.
 
 The existing shared credential lease paces all Commusoft routes at no faster
 than 1.25 seconds and admits one provider request at a time. The scheduler

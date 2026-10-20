@@ -15,7 +15,7 @@ create table public.new_dawn_job_status_daily (
  saved_status text not null check (saved_status in ('open','pending','on_hold')),
  connection_revision timestamptz not null,
  secret_id uuid not null,
- state text not null default 'pending' check (state in ('pending','claimed','retry','observed')),
+ state text not null default 'pending' check (state in ('pending','claimed','retry','observed','skipped')),
  attempt_count integer not null default 0 check (attempt_count between 0 and 8),
  claim_token uuid,
  claimed_at timestamptz,
@@ -37,8 +37,24 @@ create table public.new_dawn_job_status_daily (
 );
 create index new_dawn_job_status_daily_coverage
  on public.new_dawn_job_status_daily(tenant_id,observation_day,status);
+create index new_dawn_job_status_daily_pending
+ on public.new_dawn_job_status_daily(observation_day,state,next_attempt_at,id)
+ where state in ('pending','retry','claimed');
 alter table public.new_dawn_job_status_daily enable row level security;
 revoke all on public.new_dawn_job_status_daily from public,anon,authenticated,service_role;
+
+-- One frozen roster per configured connection and London day. A missing flag
+-- creates no roster, so an operator can safely activate later the same day.
+create table public.new_dawn_job_status_daily_seeds (
+ tenant_id uuid not null references public.tenants(id),
+ connection_id uuid not null references public.provider_connections(id),
+ observation_day date not null,
+ seeded_at timestamptz not null default clock_timestamp(),
+ candidate_count integer not null check (candidate_count between 0 and 20000),
+ primary key (connection_id,observation_day)
+);
+alter table public.new_dawn_job_status_daily_seeds enable row level security;
+revoke all on public.new_dawn_job_status_daily_seeds from public,anon,authenticated,service_role;
 
 create function public.new_dawn_job_status_daily_retain()
 returns trigger language plpgsql security definer set search_path=pg_catalog as $$
@@ -94,20 +110,38 @@ end $$;
 create function public.new_dawn_job_status_daily_claim()
 returns jsonb language plpgsql security definer set search_path=pg_catalog
  set statement_timeout='20s' as $$
-declare item record;r public.new_dawn_job_status_daily%rowtype;
+declare c public.provider_connections%rowtype;
+ r public.new_dawn_job_status_daily%rowtype;
+ current_version public.learn_business_input_versions%rowtype;
  day date:=(clock_timestamp() at time zone 'Europe/London')::date;
- secret text;fingerprint text;lease jsonb;token uuid;
+ v_status text;secret text;fingerprint text;lease jsonb;token uuid;
+ inserted integer;candidate_count integer:=0;
 begin
  if auth.role() is distinct from 'service_role'
   or current_setting('transaction_isolation')<>'read committed' then
   raise exception 'job_status_daily_forbidden' using errcode='42501';end if;
- -- A single scheduler tick claims one job. The advisory lock prevents two
- -- concurrent ticks selecting the same first candidate before its row exists.
+ -- Serialise the small roster seed and the one-job claim. On an exception the
+ -- whole statement rolls back, including the shared credential lease.
  if not pg_try_advisory_xact_lock(hashtextextended('new-dawn-job-status-daily',0)) then
   return jsonb_build_object('state','waiting');end if;
- select x.tenant_id,x.connection_id,x.external_id,x.version_id,x.saved_status,
-  x.connection_revision,x.secret_id,x.region into item
- from (
+ for c in select pc.* from public.provider_connections pc
+  join public.tenants t on t.id=pc.tenant_id and t.status='active'
+  where pc.provider='commusoft' and pc.status='configured'
+   and pc.auth_mode='private_api_key' and pc.revoked_at is null
+   and pc.verified_at is not null and pc.non_secret_config->>'region' in ('uk','us')
+   and coalesce(pc.secret_refs->>'api_key','')~'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$'
+   and exists(select 1 from public.feature_flags f where f.tenant_id=pc.tenant_id
+    and f.flag='new_dawn.daily_job_status.enabled' and f.value='true'::jsonb)
+   and exists(select 1 from public.feature_flags f where f.tenant_id=pc.tenant_id
+    and f.flag='learn.enabled' and f.value='true'::jsonb)
+   and exists(select 1 from public.feature_flags f where f.tenant_id=pc.tenant_id
+    and f.flag='learn.inputs.commusoft.enabled' and f.value='true'::jsonb)
+   and not exists(select 1 from public.new_dawn_job_status_daily_seeds s
+    where s.connection_id=pc.id and s.observation_day=day)
+  order by pc.tenant_id,pc.id limit 10 for share of pc
+ loop
+  -- The same unique-latest rule as the client open-job list. Materialise it
+  -- once for this connection/day, rather than scanning 12k jobs per GET.
   with latest_time as materialized (
    select v.tenant_id,v.connection_id,v.external_id,max(pg.committed_at) observed_at
    from public.learn_business_input_versions v
@@ -115,7 +149,8 @@ begin
    join public.learn_business_input_pages pg on pg.id=o.page_id
     and pg.tenant_id=v.tenant_id and pg.connection_id=v.connection_id
     and pg.provider=v.provider and pg.collection=v.collection
-   where v.provider='commusoft' and v.collection='jobs'
+   where v.tenant_id=c.tenant_id and v.connection_id=c.id
+    and v.provider='commusoft' and v.collection='jobs'
    group by v.tenant_id,v.connection_id,v.external_id
   ), unique_latest as materialized (
    select t.tenant_id,t.connection_id,t.external_id,t.observed_at,
@@ -132,73 +167,89 @@ begin
    group by t.tenant_id,t.connection_id,t.external_id,t.observed_at
    having count(distinct v.id)=1
   )
-  select u.tenant_id,u.connection_id,u.external_id,u.version_id,
+  insert into public.new_dawn_job_status_daily
+   (tenant_id,connection_id,external_id,observation_day,source_version_id,
+    saved_status,connection_revision,secret_id)
+  select u.tenant_id,u.connection_id,u.external_id,day,u.version_id,
    case v.payload->>'status' when 'Open' then 'open' when 'ongoing' then 'open'
-    when 'pending' then 'pending' when 'on_hold' then 'on_hold' end saved_status,
-   c.updated_at connection_revision,(c.secret_refs->>'api_key')::uuid secret_id,
-   c.non_secret_config->>'region' region
+    when 'pending' then 'pending' when 'on_hold' then 'on_hold' end,
+   c.updated_at,(c.secret_refs->>'api_key')::uuid
   from unique_latest u
   join public.learn_business_input_versions v on v.id=u.version_id
    and v.tenant_id=u.tenant_id and v.connection_id=u.connection_id
-  join public.provider_connections c on c.id=u.connection_id
-   and c.tenant_id=u.tenant_id and c.provider='commusoft'
-   and c.status='configured' and c.auth_mode='private_api_key'
-   and c.revoked_at is null and c.verified_at is not null
-   and c.non_secret_config->>'region' in ('uk','us')
-   and coalesce(c.secret_refs->>'api_key','')~'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$'
-  join public.tenants t on t.id=u.tenant_id and t.status='active'
-  left join public.new_dawn_job_status_daily d on d.tenant_id=u.tenant_id
-   and d.connection_id=u.connection_id and d.external_id=u.external_id
-   and d.observation_day=day
   where v.payload->>'id'=u.external_id
    and u.external_id~'^[1-9][0-9]{0,15}$'
    and case when u.external_id~'^[1-9][0-9]{0,15}$'
     then u.external_id::numeric<=9007199254740991 else false end
    and v.payload->>'status' in ('Open','ongoing','pending','on_hold')
-   and exists(select 1 from public.feature_flags f where f.tenant_id=u.tenant_id
+  on conflict (tenant_id,connection_id,external_id,observation_day) do nothing;
+  get diagnostics inserted=row_count;
+  insert into public.new_dawn_job_status_daily_seeds
+   (tenant_id,connection_id,observation_day,candidate_count)
+  values(c.tenant_id,c.id,day,inserted);
+  candidate_count:=candidate_count+inserted;
+ end loop;
+
+ for r in select d.* from public.new_dawn_job_status_daily d
+  join public.provider_connections pc on pc.id=d.connection_id
+   and pc.tenant_id=d.tenant_id and pc.provider='commusoft'
+   and pc.status='configured' and pc.auth_mode='private_api_key'
+   and pc.revoked_at is null and pc.verified_at is not null
+   and pc.non_secret_config->>'region' in ('uk','us')
+  where d.observation_day=day and d.attempt_count<8
+   and (d.state in ('pending','retry') and coalesce(d.next_attempt_at,'-infinity')<=clock_timestamp()
+    or d.state='claimed' and d.claimed_at<=clock_timestamp()-interval '40 seconds')
+   and exists(select 1 from public.feature_flags f where f.tenant_id=d.tenant_id
     and f.flag='new_dawn.daily_job_status.enabled' and f.value='true'::jsonb)
-   and exists(select 1 from public.feature_flags f where f.tenant_id=u.tenant_id
+   and exists(select 1 from public.feature_flags f where f.tenant_id=d.tenant_id
     and f.flag='learn.enabled' and f.value='true'::jsonb)
-   and exists(select 1 from public.feature_flags f where f.tenant_id=u.tenant_id
+   and exists(select 1 from public.feature_flags f where f.tenant_id=d.tenant_id
     and f.flag='learn.inputs.commusoft.enabled' and f.value='true'::jsonb)
-   and (d.id is null or (d.attempt_count<8 and
-    (d.state in ('pending','retry') and coalesce(d.next_attempt_at,'-infinity')<=clock_timestamp()
-     or d.state='claimed' and d.claimed_at<=clock_timestamp()-interval '40 seconds')))
-  order by case v.payload->>'status' when 'on_hold' then 0
-   when 'pending' then 1 else 2 end,u.external_id collate "C"
-  limit 1
- ) x;
- if not found then return jsonb_build_object('state','idle');end if;
- insert into public.new_dawn_job_status_daily
-  (tenant_id,connection_id,external_id,observation_day,source_version_id,
-   saved_status,connection_revision,secret_id)
- values(item.tenant_id,item.connection_id,item.external_id,day,item.version_id,
-  item.saved_status,item.connection_revision,item.secret_id)
- on conflict (tenant_id,connection_id,external_id,observation_day) do nothing;
- select * into r from public.new_dawn_job_status_daily
-  where tenant_id=item.tenant_id and connection_id=item.connection_id
-   and external_id=item.external_id and observation_day=day for update;
- if r.state='observed' or r.attempt_count>=8 then
-  return jsonb_build_object('state','idle');end if;
- select decrypted_secret into secret from vault.decrypted_secrets
-  where id=item.secret_id and name='provider_secret:'||item.tenant_id::text||':commusoft:api_key';
- if secret is null or length(secret) not between 1 and 4096 or secret!~'^[!-~]+$' then
-  return jsonb_build_object('state','held');end if;
- fingerprint:=encode(sha256(convert_to('commusoft:'||secret,'UTF8')),'hex');
- lease:=public.learn_commusoft_shared_lease_acquire(fingerprint,'verification',r.id::text);
- if lease->>'state'='wait' then return jsonb_build_object('state','waiting');end if;
- if lease->>'state'<>'ready' then return jsonb_build_object('state','held');end if;
- token:=gen_random_uuid();
- update public.new_dawn_job_status_daily set source_version_id=item.version_id,
-  saved_status=item.saved_status,connection_revision=item.connection_revision,
-  secret_id=item.secret_id,state='claimed',attempt_count=attempt_count+1,
-  claim_token=token,claimed_at=clock_timestamp(),next_attempt_at=null,
-  failure_code=null,updated_at=clock_timestamp() where id=r.id;
- if not public.new_dawn_job_status_daily_current(r.id,token) then
-  raise exception 'job_status_daily_scope_changed' using errcode='42501';end if;
- return jsonb_build_object('state','ready','id',r.id,'claim_token',token,
-  'external_id',r.external_id,'region',item.region,'api_key',secret,
-  'send_before',ceil(extract(epoch from clock_timestamp()+interval '5 seconds')*1000)::bigint);
+  order by case d.saved_status when 'on_hold' then 0 when 'pending' then 1 else 2 end,
+   d.external_id collate "C" limit 10 for update of d skip locked
+ loop
+  current_version:=public.learn_business_input_latest(r.tenant_id,r.connection_id,'commusoft','jobs',r.external_id);
+  v_status:=case current_version.payload->>'status' when 'Open' then 'open'
+   when 'ongoing' then 'open' when 'pending' then 'pending'
+   when 'on_hold' then 'on_hold' end;
+  if current_version.id is null or current_version.payload->>'id' is distinct from r.external_id
+   or v_status is null then
+   update public.new_dawn_job_status_daily set state='skipped',claim_token=null,
+    claimed_at=null,failure_code='source_not_open',updated_at=clock_timestamp()
+    where id=r.id;
+   continue;
+  end if;
+  select * into c from public.provider_connections where id=r.connection_id
+   and tenant_id=r.tenant_id and provider='commusoft' and status='configured'
+   and auth_mode='private_api_key' and revoked_at is null and verified_at is not null
+   and non_secret_config->>'region' in ('uk','us')
+   and coalesce(secret_refs->>'api_key','')~'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$'
+   for share;
+  if not found then continue;end if;
+  select decrypted_secret into secret from vault.decrypted_secrets
+   where id=(c.secret_refs->>'api_key')::uuid
+    and name='provider_secret:'||r.tenant_id::text||':commusoft:api_key';
+  if secret is null or length(secret) not between 1 and 4096 or secret!~'^[!-~]+$' then
+   return jsonb_build_object('state','held');end if;
+  fingerprint:=encode(sha256(convert_to('commusoft:'||secret,'UTF8')),'hex');
+  lease:=public.learn_commusoft_shared_lease_acquire(fingerprint,'verification',r.id::text);
+  if lease->>'state'='wait' then return jsonb_build_object('state','waiting');end if;
+  if lease->>'state'<>'ready' then return jsonb_build_object('state','held');end if;
+  token:=gen_random_uuid();
+  update public.new_dawn_job_status_daily set source_version_id=current_version.id,
+   saved_status=v_status,connection_revision=c.updated_at,
+   secret_id=(c.secret_refs->>'api_key')::uuid,state='claimed',
+   attempt_count=attempt_count+1,claim_token=token,claimed_at=clock_timestamp(),
+   next_attempt_at=null,failure_code=null,updated_at=clock_timestamp()
+   where id=r.id;
+  if not public.new_dawn_job_status_daily_current(r.id,token) then
+   raise exception 'job_status_daily_scope_changed' using errcode='42501';end if;
+  return jsonb_build_object('state','ready','id',r.id,'claim_token',token,
+   'external_id',r.external_id,'region',c.non_secret_config->>'region',
+   'api_key',secret,
+   'send_before',ceil(extract(epoch from clock_timestamp()+interval '5 seconds')*1000)::bigint);
+ end loop;
+ return jsonb_build_object('state','idle','seeded',candidate_count);
 end $$;
 
 create function public.new_dawn_job_status_daily_finish(
