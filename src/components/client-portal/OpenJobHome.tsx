@@ -64,9 +64,9 @@ function SourceJobDetail({ row, tenant, actor, reason }: {
   const exact = record?.exactDetail;
   return <div className="nd-job-detail space-y-4">
     <div>
-      <p><strong>Commusoft job {row.external_id}</strong> · Saved status {statusLabel[row.status]}</p>
-      <p>Source customer: {row.source_customer ?? "not identified"} · Source site: {row.source_site ?? row.source_postcode ?? "not identified"}</p>
-      <small>Saved source observed {savedAt(row.source_observed_at)}. This may not be current Commusoft progress.</small>
+      <p><strong>Job {row.external_id}</strong> · {statusLabel[row.status]}</p>
+      <p>Customer: {row.source_customer ?? "To confirm"} · Site: {row.source_site ?? row.source_postcode ?? "To confirm"}</p>
+      <small>Commusoft record saved {savedAt(row.source_observed_at)}. The job may have changed since then.</small>
     </div>
     {detail.isPending && <p role="status">Opening the saved job record…</p>}
     {detail.isError && <p role="alert">The detailed record could not be checked. Refresh the job list; its saved summary remains available.</p>}
@@ -74,31 +74,35 @@ function SourceJobDetail({ row, tenant, actor, reason }: {
       <section aria-label="Work and stage">
         <h3>Work and stage</h3>
         <p className="whitespace-pre-wrap break-words">{record.description ?? row.title ?? "No work description was saved."}</p>
-        <p>Commusoft status: {record.status ?? statusLabel[row.status]}
-          {record.priority ? ` · Source priority: ${record.priority}` : ""}</p>
-        <p>Stage: {exact?.stage ?? "Not enough data yet — the exact Commusoft stage has not been checked for this saved job."}</p>
-        {exact?.pipeline && <p>Source pipeline: {exact.pipeline}</p>}
-        {exact && <small>Exact Commusoft job detail checked {savedAt(exact.checkedAt)}.
-          {exact.providerUpdatedAt ? ` Provider last updated: ${exact.providerUpdatedAt}.` : ""}
-        </small>}
+        <p>Status: {record.status ?? statusLabel[row.status]}
+          {record.priority ? ` · Priority: ${record.priority}` : ""}</p>
+        <p>Stage: {exact?.stage ?? "Not enough data yet — this job's current stage has not been checked."}</p>
+        {exact?.pipeline && <p>Workstream: {exact.pipeline}</p>}
       </section>
       <section aria-label="People and next step">
         <h3>People and next step</h3>
         {exact?.sourceUsers.length
-          ? <p>Source users listed on this job: {exact.sourceUsers.map((person) => person.name).join(", ")}. Their engineer role, visit and OpenFolk identity have not been verified.</p>
+          ? <p>People listed on this job: {exact.sourceUsers.map((person) => person.name).join(", ")}. We have not confirmed who is the engineer or who attended.</p>
           : <p>Engineer: not enough data yet — no verified engineer or appointment is attached to this record.</p>}
         <p>What it is waiting on: {exact?.holdReason
-          ? `${exact.holdReason} (Commusoft source reason; owner unconfirmed)`
-          : "not enough data yet — the saved status does not identify the cause or person."}</p>
+          ? `${exact.holdReason} (recorded reason; person responsible not yet confirmed)`
+          : "not enough data yet — the status does not tell us the cause or person responsible."}</p>
         <p>Next check: {openJobNextStep(row.status)}.</p>
       </section>
       <section aria-label="Contact and visits">
         <h3>Contact and visits</h3>
-        <p>Last customer contact: not enough data yet — calls, email and Slack are not linked to this exact job with confirmed customer evidence.</p>
-        <p>Visits: not enough data yet — no verified technician appointment source is attached. Office tasks and expected onsite times are not visits.</p>
+        <p>Last customer contact: not enough data yet — no call, email or message has been confirmed as belonging to this job.</p>
+        <p>Visits: not enough data yet — no confirmed technician appointment is attached to this job.</p>
       </section>
-      {row.identity_state !== "reviewed_link" && <p>Customer and site identity need OpenFolk review; the labels above are from Commusoft only.</p>}
-      <small>Read {savedAt(record.readAt)} · Audit {record.auditId}. This record does not confirm an assignment, promise or score.</small>
+      {row.identity_state !== "reviewed_link" && <p>The customer and site labels come from Commusoft; OpenFolk still needs to confirm the match.</p>}
+      <details><summary>Where this information came from</summary>
+        <p>Commusoft job {row.external_id}, saved {savedAt(record.sourceObservedAt)}.
+          {exact ? ` Exact job detail checked ${savedAt(exact.checkedAt)}.` : " No exact job detail has been checked for this saved version."}
+          {exact?.providerUpdatedAt ? ` Commusoft last updated it at ${exact.providerUpdatedAt}.` : ""}
+        </p>
+        <p>Source people are not confirmed OpenFolk assignments. Office tasks and expected onsite times are not technician visits.</p>
+        <small>Read {savedAt(record.readAt)} · Audit {record.auditId}.</small>
+      </details>
     </>}
   </div>;
 }
@@ -285,7 +289,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
     </>}
     <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
       <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-        <DialogHeader className="pr-10 sm:pr-0"><DialogTitle>Saved Commusoft job</DialogTitle></DialogHeader>
+        <DialogHeader className="pr-10 sm:pr-0"><DialogTitle>Job details</DialogTitle></DialogHeader>
         {selected && user && <SourceJobDetail row={selected} tenant={tenant} actor={user.id}
           reason={operator ? approvedReason : null} />}
       </DialogContent>
