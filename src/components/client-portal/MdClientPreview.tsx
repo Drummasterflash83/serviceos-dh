@@ -91,7 +91,7 @@ export function MdClientPreview() {
           </div>
           {section === "home" ? <>
             <div className="md-review-heading"><p className="of-eyebrow">DRUMMONDS</p>
-              <h1>Your business, in view.</h1><p>Start with the work that may need attention today.</p></div>
+              <h1>Your business, in view.</h1><p>Start with recorded open jobs and check when their source was last saved.</p></div>
             <OpenJobHome key={`${active.auditId}:home`} tenant={drummondsTenantId}
               company="Drummonds" operator mdReason={active.reason} />
           </> : section === "learn" ? <>
