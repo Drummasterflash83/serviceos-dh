@@ -45,7 +45,9 @@ test("all OpenFolk child routes wait for an account-scoped server admin check", 
   );
   assert.match(route, /if \(error\) throw new Error/);
   assert.match(route, /return data === true/);
-  assert.match(route, /AbortSignal.timeout\(15_000\)/);
+  assert.match(route, /settleWithDeadline\(/);
+  assert.match(route, /\.abortSignal\(requestSignal\)/);
+  assert.match(route, /15_000/);
   assert.ok(route.indexOf("authority.isError ||") < route.indexOf("return <Outlet />"));
 });
 test("both sidebar footers contain the same gated admin return", () => {

@@ -12,6 +12,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { settleWithDeadline } from "@/lib/settle-with-deadline";
 import { OperatorShell } from "@/components/app/OperatorShell";
 import { OperatorModules } from "@/components/app/OperatorModules";
 import { findOperatorTenant, operatorModule, type OperatorModule } from "@/lib/operator-workspace";
@@ -91,8 +92,14 @@ function WorkspacePage() {
   const search = Route.useSearch();
   const directory = useQuery({
     queryKey: ["operator-directory", user?.id],
-    queryFn: async () => {
-      const result = await listTenantDirectory();
+    retry: false,
+    queryFn: async ({ signal }) => {
+      const result = await settleWithDeadline(
+        (requestSignal) => listTenantDirectory(requestSignal),
+        15_000,
+        "Opening the client workspace timed out. Please retry.",
+        signal,
+      );
       if (!result.ok)
         throw Error("Client directory unavailable. Check your OpenFolk operator access.");
       return result.data.tenants;
@@ -291,7 +298,8 @@ function TenantWorkspace({ tenantId, tenantName }: { tenantId: string; tenantNam
     // Office roster — every write is reason-required and change-logged server-side.
     roster: {
       memberUpsert: (input) => guard(() => rosterUpsertMember({ tenant_id: tenantId, ...input })),
-      memberIdentityConfirm: (input) => guard(() => rosterConfirmMemberIdentity({ tenant_id: tenantId, ...input })),
+      memberIdentityConfirm: (input) =>
+        guard(() => rosterConfirmMemberIdentity({ tenant_id: tenantId, ...input })),
       memberLifecycle: (input) =>
         guard(() => rosterMemberLifecycle({ tenant_id: tenantId, ...input })),
       responsibilityUpsert: (input) =>

@@ -10,11 +10,13 @@ import { supabaseConfig, getAccessToken } from "./supabase";
 import { apiFetch } from "./api";
 import type { ApiResult } from "./types";
 
-async function invoke<T>(payload: unknown): Promise<ApiResult<T>> {
+async function invoke<T>(payload: unknown, signal?: AbortSignal): Promise<ApiResult<T>> {
   if (!supabaseConfig.url || !supabaseConfig.anonKey) {
     return { ok: false, error: { code: "config_error", message: "Supabase is not configured" } };
   }
   const token = await getAccessToken();
+  if (signal?.aborted)
+    return { ok: false, error: { code: "cancelled", message: "Request cancelled" } };
   if (!token)
     return { ok: false, error: { code: "missing_auth", message: "You must be signed in" } };
   const res = await apiFetch<{ ok: boolean; data?: T; error?: { code: string; message: string } }>(
@@ -27,6 +29,7 @@ async function invoke<T>(payload: unknown): Promise<ApiResult<T>> {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(payload ?? {}),
+      signal,
     },
   );
   if (!res.ok) return res;
@@ -465,10 +468,13 @@ export interface AuditEntry {
 }
 
 export const listTenants = () => invoke<{ tenants: TenantSummary[] }>({ action: "tenants.list" });
-export const listTenantDirectory = () =>
-  invoke<{ tenants: Pick<TenantSummary, "tenant_id" | "slug" | "display_name">[] }>({
-    action: "tenants.directory",
-  });
+export const listTenantDirectory = (signal?: AbortSignal) =>
+  invoke<{ tenants: Pick<TenantSummary, "tenant_id" | "slug" | "display_name">[] }>(
+    {
+      action: "tenants.directory",
+    },
+    signal,
+  );
 export const getWorkspace = (tenant_id: string) =>
   invoke<Workspace>({ action: "workspace", tenant_id });
 export const getReadiness = (tenant_id: string) =>
@@ -681,8 +687,11 @@ export const rosterConfirmMemberIdentity = (p: {
   member_id: string;
   expected_version: number;
   reason: string;
-}) => invoke<{ id: string; version: number; confirmed_at: string }>(
-  { action: "roster.member_identity_confirm", ...p });
+}) =>
+  invoke<{ id: string; version: number; confirmed_at: string }>({
+    action: "roster.member_identity_confirm",
+    ...p,
+  });
 export const rosterMemberLifecycle = (p: {
   tenant_id: string;
   member_id: string;
