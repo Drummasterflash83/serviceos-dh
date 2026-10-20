@@ -5,7 +5,7 @@ import { inspectBirchillsLaunchBindings, summarizeVapiTestNumber } from "./recep
 const prefix = "https://pbx.sipcentric.com/api/v1/customers/3950";
 const endpoint = (id: number) => `${prefix}/endpoints/${id}`;
 const interval = (id: number) => `${prefix}/timeintervals/${id}`;
-function fixtures(options: { duplicate603?: boolean; wrongDid?: boolean; mailboxEmail?: string } = {}) {
+function fixtures(options: { duplicate603?: boolean; wrongDid?: boolean; mailboxEmail?: string; noDidTimeRules?: boolean } = {}) {
   const roster = [
     [501, 501, "ivr"], [502, 502, "ivr"], [205, 205, "virtual"],
     [109, 109, "virtual"], [105, 105, "virtual"], [603, 180997, "mailbox"],
@@ -16,7 +16,7 @@ function fixtures(options: { duplicate603?: boolean; wrongDid?: boolean; mailbox
     ["/phonenumbers/50371", {
       number: options.wrongDid ? "01794 000000" : "01794 341600",
       destination: endpoint(501),
-      routingRules: [{ timeInterval: interval(800), destination: endpoint(502) }],
+      routingRules: options.noDidTimeRules ? [] : [{ timeInterval: interval(800), destination: endpoint(502) }],
     }],
     ["/endpoints?pageSize=100&page=1", { totalItems: rows.length, items: rows }],
     ["/timeintervals/800", { name: "Out of hours", repeat: "WEEKLY",
@@ -45,13 +45,25 @@ test("fixed Birchills preflight reports current DID, office/out-of-hours route, 
   assert.equal(result.state, "checked");
   assert.equal(result.mainNumber?.defaultDestination, "501");
   assert.equal(result.mainNumber?.rules[0].destination, "502");
+  assert.equal(result.mainNumber?.didTimeExceptionCount, 1);
+  assert.equal(result.mainNumber?.didTimeExceptionTo502Count, 1);
   assert.equal(result.extensions?.["205"].forwardsToEmmaTestNumber, true);
   assert.equal(result.extensions?.["109"].forwardsToSavedRobNumber, true);
   assert.equal(result.extensions?.["105"].forwardsToSavedTonyNumber, true);
   assert.equal(result.extensions?.["603"].emailRecipient, "Rob only");
+  assert.deepEqual(result.policyHolds, ["mailbox_603_two_recipient_delivery_unproved"]);
   assert.match(result.sourceHash ?? "", /^[a-f0-9]{64}$/);
   assert.equal(provider.calls.every(path => path.startsWith("/phonenumbers/50371") || path.startsWith("/endpoints") || path.startsWith("/timeintervals")), true);
   assert.equal(JSON.stringify(result).includes("rob@drummondheating.co.uk"), false);
+});
+
+test("a successful provider read does not turn absent DID hours or one 603 recipient into launch proof", async () => {
+  const result = await inspectBirchillsLaunchBindings(fixtures({ noDidTimeRules: true, mailboxEmail: "tony@drummondheating.co.uk" }).read);
+  assert.equal(result.state, "checked");
+  assert.equal(result.mainNumber?.didTimeExceptionCount, 0);
+  assert.equal(result.mainNumber?.didTimeExceptionTo502Count, 0);
+  assert.equal(result.extensions?.["603"].emailRecipient, "Tony only");
+  assert.deepEqual(result.policyHolds, ["did_time_exceptions_absent", "mailbox_603_two_recipient_delivery_unproved"]);
 });
 
 test("an ambiguous mailbox or wrong DID is held rather than accepted", async () => {
