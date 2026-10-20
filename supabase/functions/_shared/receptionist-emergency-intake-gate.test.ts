@@ -172,6 +172,12 @@ test("later corrected callback invalidates an otherwise complete intake", () => 
   const f = fixture(); f.message.artifact.messages.push({ role: "user", message: "Actually use phone number 01632 960002 instead." }); rejected(f, "stale_callback");
 });
 
+test("a caller retracting the confirmed callback without repeating its digits blocks handoff", () => {
+  const f = fixture();
+  f.message.artifact.messages.splice(8, 0, { role: "user", message: "Wait, that's wrong." });
+  rejected(f, "stale_callback");
+});
+
 test("later explicit name/address corrections invalidate stale evidence", () => {
   for (const correction of ["My name is Someone Else.", "Actually, the address is 14 Different Road.", "Correction: the postcode is SO51 8AB."]) {
     const f = fixture(); f.message.artifact.messages.push({ role: "user", message: correction }); rejected(f, "stale_name_or_location");
@@ -183,6 +189,8 @@ test("a caller retracting the address without a replacement blocks the emergency
     "Sorry, that is the wrong address.",
     "That postcode is incorrect.",
     "I'm not sure about the site location.",
+    "No, that's not right.",
+    "Actually, it's incorrect.",
   ]) {
     const f = fixture();
     f.message.artifact.messages.push({ role: "user", message: correction });

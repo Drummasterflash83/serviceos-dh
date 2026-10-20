@@ -70,6 +70,9 @@ const normal = (value: string) => value.normalize("NFKC").toLowerCase().replace(
 const reject = (reason: EmergencyIntakeReason): Rejected => ({ allowed: false, reason, needsReview: true });
 const boundedText = (value: unknown, max: number): value is string => typeof value === "string" && !!value.trim() && value.length <= max && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value);
 const exactKeys = (value: RecordValue, keys: readonly string[]) => Object.keys(value).length === keys.length && keys.every(key => Object.hasOwn(value, key));
+// Callers often correct the immediately preceding fact without repeating its
+// field name. Treat that uncertainty as a hold, never as a verified handoff.
+const bareRetraction = (value: string) => /^(?:no|sorry|wait|hold on|actually)[,.:;\s]+(?:no[,.:;\s]+)?(?:that(?:'s| is)|it(?:'s| is))\s+(?:wrong|incorrect|not right|not correct)\b/i.test(normal(value));
 
 function contains(text: string, quote: string): boolean {
   const haystack = normal(text), needle = normal(quote);
@@ -169,6 +172,7 @@ export function validateEmergencyIntake(message: unknown, binding: EmergencyInta
     // earlier exact quote is then no longer safe evidence for an emergency handoff.
     if (turn.index > site.index && /\b(?:address|postcode|post code|location|site)\b/i.test(turn.text) &&
       /\b(?:wrong|incorrect|not right|not correct|not sure|unsure)\b/i.test(turn.text)) return reject("stale_name_or_location");
+    if (turn.index > site.index && bareRetraction(turn.text)) return reject("stale_name_or_location");
     if (turn.index > site.index && /\b(?:actually|correction|correct address|wrong address|address is|postcode is|post code is|location is)\b/i.test(turn.text) &&
       (concreteLocation(turn.text) || /\b(?:address|postcode|post code|location)\b/i.test(turn.text)) && !contains(turn.text, params.siteAddressOrPostcode)) return reject("stale_name_or_location");
   }
@@ -184,6 +188,8 @@ export function validateEmergencyIntake(message: unknown, binding: EmergencyInta
   if (!confirmation || confirmation.role !== "user" || !contains(confirmation.text, params.evidence.callbackConfirmation) ||
     !/^(?:yes|yep|yeah|correct|that's right|that is right|that's correct|that is correct|exactly|absolutely)\b/.test(normal(confirmation.text)) ||
     /\b(?:no|not|wrong|incorrect|but|except|actually)\b/i.test(confirmation.text)) return reject("unconfirmed_callback");
+  if (userTurns.some(turn => turn.index > confirmation.index && turn.index < site.index && bareRetraction(turn.text)))
+    return reject("stale_callback");
   if (userTurns.some(turn => turn.index > confirmation.index && phoneDigits(turn.text) && phoneDigits(turn.text) !== number &&
     (/\b(?:number|phone|telephone|callback|call back|instead|correction)\b/i.test(turn.text) || /^[+\d()\s.-]+$/.test(turn.text)))) return reject("stale_callback");
   return {
