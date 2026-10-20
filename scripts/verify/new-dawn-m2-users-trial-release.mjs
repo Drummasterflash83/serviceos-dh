@@ -93,10 +93,10 @@ export const catalogSql = `select f.*,
      and done.source='new-dawn-m2-users-trial' and done.correlation_id=arm.id::text)) as open_arms,
  (select coalesce(jsonb_agg(jsonb_build_object('enabled',s.enabled,'phase',s.phase,
   'current_request',s.current_request,'last_state',s.last_state,'account_id',s.account_id,
-  'connection_ok',c.id is not null) order by s.account_id),'[]'::jsonb)
-  from public.learn_commusoft_recurring s left join public.provider_connections c
-   on c.id=s.connection_id and c.tenant_id=s.tenant_id and c.provider='commusoft'
-    and c.status='configured' and c.revoked_at is null and c.updated_at=s.connection_revision
+  'connection_ok',pc.id is not null) order by s.account_id),'[]'::jsonb)
+  from public.learn_commusoft_recurring s left join public.provider_connections pc
+   on pc.id=s.connection_id and pc.tenant_id=s.tenant_id and pc.provider='commusoft'
+    and pc.status='configured' and pc.revoked_at is null and pc.updated_at=s.connection_revision
   where s.tenant_id='${TENANT}'::uuid) as recurring
  from (${functionSql}) f`;
 
