@@ -106,7 +106,7 @@ export function OperatorCommusoftReview({
             Review access is rechecked for every action. This view closes after five minutes or when
             the browser is hidden.
           </p>
-          <nav aria-label="Business source review" className="flex gap-3">
+          <nav aria-label="Business source review" className="flex flex-wrap items-start gap-2">
             <button className="cp-secondary" aria-pressed={kind === "source-jobs"} onClick={() => { setRequestedJob(null); setRequestedCustomer(null); setReturnJob(null); setKind("source-jobs"); }}>Captured job cards</button>
             <button
               className="cp-secondary"
@@ -116,7 +116,8 @@ export function OperatorCommusoftReview({
               Customers
             </button>
             <button
-              className="cp-secondary"
+              className="cp-secondary max-w-full text-left"
+              style={{ whiteSpace: "normal" }}
               aria-pressed={kind === "work"}
               onClick={() => { setRequestedJob(null); setRequestedCustomer(null); setReturnJob(null); setKind("work"); }}
             >
