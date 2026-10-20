@@ -277,13 +277,19 @@ export async function edgeReadback({token=savedCliToken(),read=readStage,fetcher
   return {...result,state:'isolated_users_edge_executable_readback',executableSha256:EDGE.eszipSha256};
 }
 export async function deployEdge({artifactPath,token=savedCliToken(),read=readStage,fetcher=fetch,
-  post=edgeReadback}={}) {
-  const bytes=reviewedArtifact(artifactPath);
+  post=edgeReadback,artifactReader=reviewedArtifact}={}) {
+  const bytes=artifactReader(artifactPath);
   const before=await read({token});
   const edge=before.functions.filter(row=>row.slug===EDGE.slug);
   if (edge.length) throw Error('isolated_users_edge_already_exists');
   // SQL-only stage: exact ledger/objects/flags required, no source records.
   assess(before,'sql');
+  const immediate=await read({token});assess(immediate,'sql');
+  const stable=s=>JSON.stringify({project:s.project?.id,ledger:s.ledger,
+    functions:s.functions.map(f=>[f.id,f.slug,f.version,f.ezbr_sha256,f.verify_jwt,f.status]),
+    hashes:s.catalog.functions,objects:s.catalog.objects,security:s.catalog.security,
+    flags:s.catalog.flags});
+  if (stable(immediate)!==stable(before)) throw Error('isolated_users_edge_prewrite_state_changed');
   const request=edgeRequest();let acknowledged=false;
   try {const response=await fetcher(request.url,{method:request.method,redirect:'error',
     signal:AbortSignal.timeout(90000),headers:{Authorization:`Bearer ${token}`,

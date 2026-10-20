@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { assess, releaseSql, edgeRequest, installLive, SOURCE_SHA256, VERSION, EDGE } from './new-dawn-m2-isolated-users-page-release.mjs';
+import { assess, releaseSql, edgeRequest, installLive, deployEdge, SOURCE_SHA256, VERSION, EDGE } from './new-dawn-m2-isolated-users-page-release.mjs';
 import { PROJECT } from './new-dawn-m2-live-preflight.mjs';
 const required=[
  ['20261105180000','commusoft_source_users','bac767a835c1e8c97bc1e90d343cccfb2010893d3188ef04ad65c33610d5e501'],
@@ -72,4 +72,21 @@ test('new Edge endpoint request is pinned and JWT-verified',()=>{
  assert.equal(req.method,'POST');assert.equal(url.searchParams.get('slug'),EDGE.slug);
  assert.equal(url.searchParams.get('verify_jwt'),'true');
  assert.equal(url.searchParams.get('ezbr_sha256'),EDGE.ezbrSha256);
+});
+test('Edge prewrite read catches flag drift before any upload',async()=>{
+ let reads=0,writes=0;
+ await assert.rejects(deployEdge({artifactPath:'synthetic',token:'synthetic',
+  artifactReader:()=>Buffer.from('synthetic-artifact'),read:async()=>{
+   const s=snapshot('sql');if(++reads===2) s.catalog.flags.push({flag:'learn.inputs.commusoft.users.enabled',value:true});
+   return s;},fetcher:async()=>{writes++;throw Error('should_not_write');}}));
+ assert.equal(reads,2);assert.equal(writes,0);
+});
+test('uncertain Edge upload invokes independent readback once and never replays',async()=>{
+ let reads=0,writes=0,postReads=0;
+ const result=await deployEdge({artifactPath:'synthetic',token:'synthetic',
+  artifactReader:()=>Buffer.from('synthetic-artifact'),read:async()=>{reads++;return snapshot('sql');},
+  fetcher:async()=>{writes++;throw Error('transport_timeout');},
+  post:async()=>{postReads++;return {state:'isolated_users_edge_executable_readback'};}});
+ assert.equal(reads,2);assert.equal(writes,1);assert.equal(postReads,1);
+ assert.equal(result.acknowledged,false);
 });

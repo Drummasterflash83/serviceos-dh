@@ -24,6 +24,29 @@ and marks identity and appointment `unverified` on every row. It makes no
 provider request or source import. The UI button appears only for an operator
 on a current linked job with this flag enabled.
 
+The held RPC now has a separate exact release controller at
+`scripts/verify/new-dawn-m2-source-user-reference-release.mjs`. Its LIVE
+read-only gate verified the source-users and shared-lease ledger hashes, the
+published closure owner at `20261107160000`, job-detail and operator function
+hashes, the exact job-detail Edge v6 metadata, both base flags enabled and both
+users/reference flags absent. The recurring `propertyContacts` job remained
+active; the controller reads only a hash of its cursor and account settings.
+It does not require a capture pause or log the cursor. The independent TEST
+rollback compiled the exact `20261107130000` SQL and confirmed its function
+and grants, then found the candidate function absent after rollback. The
+existing synthetic TEST fixture also verified absent-flag, scoped operator,
+foreign-tenant and service-role refusals with no retained test write.
+
+For release review, `--live-read-only` checks the current gate. The
+`--live-install-exact --source-sha=826eec0619cff80897885b329ee4583dcd732f28e0221fa76ee66a6cfa5b3d7d`
+mode additionally requires the exact LIVE project and source hash environment
+gates. `--live-readback` is independent of the write path and is the only next
+step after an uncertain response; the installer never replays automatically.
+Neither mode enables the held flag or calls Commusoft. If its transaction
+fails, it rolls back. After a committed install, keep the reference flag
+absent; withdrawal is to leave the RPC inaccessible while retaining the
+ledger and audit history until a reviewed cleanup migration is warranted.
+
 `20261108150000_new_dawn_commusoft_isolated_users_page.sql` adds a separate
 operator-requested, one-page `GET /users` route. It requires the default-off
 `learn.inputs.commusoft.users.enabled` flag, an explicit tenant and configured
