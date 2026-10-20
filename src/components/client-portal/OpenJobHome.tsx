@@ -394,7 +394,9 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
       {page.isError && <p role="alert" data-open-job-failure={
         page.error instanceof Error && ["request", "response"].includes(page.error.message)
           ? page.error.message : "unknown"
-      }>Saved open jobs are unavailable. Refresh to retry.</p>}
+      }>Saved open jobs are unavailable. {page.error instanceof Error && page.error.message === "response"
+        ? "Refresh this page to load the latest OpenFolk version."
+        : "Refresh to retry."}</p>}
       {active && <>
         <p className="nd-job-scope">
           <strong>Page {pageIndex + 1} · {rows.length} jobs</strong> · Read {savedAt(active.snapshotAt)}.
