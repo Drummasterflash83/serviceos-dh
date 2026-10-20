@@ -91,7 +91,9 @@ export function MdClientPreview() {
           </div>
           {section === "home" ? <>
             <OpenJobHome key={`${active.auditId}:home`} tenant={drummondsTenantId}
-              company="Drummonds" operator mdReason={active.reason} />
+              company="Drummonds" operator mdReason={active.reason}
+              mdMoney={<MdMoneyPanel tenant={drummondsTenantId} reason={active.reason}
+                summaryOnly onOpenFull={() => setSection("money")} />} />
           </> : section === "learn" ? <>
             <div className="md-review-heading"><p className="of-eyebrow">DRUMMONDS · LEARN</p>
               <h1>What arrived today.</h1><p>Real saved inputs, with a time and source for each count.</p></div>

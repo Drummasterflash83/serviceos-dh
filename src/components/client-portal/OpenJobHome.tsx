@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BriefcaseBusiness, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -149,8 +149,9 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
 }
 
 /** Source-first job list: all uniquely retained open jobs are reachable by page. */
-export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
+export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMoney }: {
   tenant: string; company?: string; operator?: boolean; mdReason?: string;
+  mdMoney?: ReactNode;
 }) {
   const { user, profile } = useAuth();
   const [reason, setReason] = useState("");
@@ -316,6 +317,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
           {activeSummary && <small>{activeSummary.counts.total.toLocaleString("en-GB")} open jobs in saved Commusoft records · checked {savedAt(activeSummary.snapshotAt)}</small>}
         </div>
       </section>
+      {operator && mdReason && !summary.isPending && !firstPage.isPending && mdMoney}
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
           <p>Browse the saved list by status and open any job for its details.</p>

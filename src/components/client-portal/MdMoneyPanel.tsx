@@ -15,7 +15,9 @@ const dateTime = (value: string) => new Date(value).toLocaleString("en-GB", {
 });
 
 /** Money is only mounted inside the short-lived, audited Drummonds MD view. */
-export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: string }) {
+export function MdMoneyPanel({ tenant, reason, summaryOnly = false, onOpenFull }: {
+  tenant: string; reason: string; summaryOnly?: boolean; onOpenFull?: () => void;
+}) {
   const { user } = useAuth();
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [periods, setPeriods] = useState<AccountsPair[]>([]);
@@ -108,6 +110,34 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
   const netMargin = saved && snapshot?.margin
     ? accountsNetMargin(saved.netProfit, snapshot.margin.totalIncome) : null;
   const agedBucket = saved ? agedReceivablesBucketKind(saved.receivables.days91Plus) : "unknown";
+  if (summaryOnly) return <section className="md-money-strip" aria-label="Drummonds MD company money">
+    <div className="md-money-strip-heading"><div>
+      <p className="of-eyebrow">DRUMMONDS · MD MONEY</p>
+      <h3>Company money</h3>
+      <p>Saved QuickBooks accounts for a dated period. Job-level money still needs verified links.</p>
+    </div>{onOpenFull && <button type="button" onClick={onOpenFull}>See money detail →</button>}</div>
+    {flags.isError && <p role="alert">Money release status is unavailable.</p>}
+    {flags.data?.accounts !== true && !flags.isPending && !flags.isError &&
+      <p role="status">Accounts figures are not released for this view yet.</p>}
+    {flags.data?.accounts === true && !saved && !error &&
+      <p role="status">Checking saved accounts…</p>}
+    {error && <p role="alert">{error}</p>}
+    {saved && <>
+      <div className="md-money-strip-grid">
+        <div><span>Accounts gross profit</span>
+          <strong>{snapshot?.margin ? `${snapshot.margin.accountsGrossMarginPct}%` : "Awaiting denominator"}</strong>
+          <small>Accounts basis · field GP needs job costs</small></div>
+        <div><span>Net profit · MD only</span>
+          <strong>{financeAmount(saved.netProfit, saved.currency)}</strong>
+          <small>FY27 to {saved.periodEnd} · target pending</small></div>
+        <div><span>Further Works</span><strong>Not enough data yet</strong>
+          <small>Needs classified quotes and linked work</small></div>
+        <div><span>Recurring revenue</span><strong>Not enough data yet</strong>
+          <small>Needs verified contracts and terms</small></div>
+      </div>
+      <p className="md-money-strip-source">QuickBooks · {saved.periodStart} to {saved.periodEnd} · {saved.accountingMethod} basis · saved {dateTime(saved.profitReceivedAt)} UK. These are saved reports, not today's live balances.</p>
+    </>}
+  </section>;
   return <section className="md-money" aria-label="Drummonds MD money">
     <p className="of-eyebrow">DRUMMONDS · MONEY</p>
     <h2>Company money at a glance.</h2>
