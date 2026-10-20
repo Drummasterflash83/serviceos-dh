@@ -54,6 +54,40 @@ overlap without direct evidence; a shared invoice; audit and correction; and
 ordinary-client denial. Installation must seed no link or flag and call no
 provider. Keep all owner/client money flags OFF.
 
+## Supported source route and exact export request
+
+The [current Commusoft v2 API index](https://developer.commusoft.com/llms.txt)
+lists Jobs, Opportunities and completed Forms, but no Invoice or Estimate
+document GET. The [documented exact-job GET](https://developer.commusoft.com/jobs-24695919e0)
+returns `customerReference` and `quotedAmount`, without an invoice/estimate
+document identity or payment state. An Opportunity is a pre-job sales record,
+not proof of a job invoice. We therefore must not construct a guessed
+`/invoices` or `/estimates` URL, use an office task as a document, or launch a
+LIVE provider trial for this link. This is a limit of the published v2 index,
+not a claim that Drummonds cannot export the information by another route.
+
+The existing private [M2 CSV preparation and held review](NEW-DAWN-M2-FACET-REVIEW.md)
+can stage invoice/estimate rows but deliberately cannot approve a cross-provider
+link. Ask Drummonds for **one bounded current export**, with a field dictionary,
+source account/connection, export time with timezone and coverage window. For
+each document to be checked, the minimum fields are:
+
+| Evidence | Exact fields needed |
+| --- | --- |
+| Commusoft identity | Stable invoice/estimate document ID; exact v2 job ID; original job code as a string; customer/property ID; document number and document type. |
+| Accounting bridge | QuickBooks `Invoice.Id` plus production realm or an integration receipt explicitly pairing that ID with the Commusoft document ID. If the source supplies only invoice numbers, retain them as review candidates until uniqueness and the original document are checked. |
+| State and provenance | Source-created and source-updated times with timezone, issue date, document status, export time, original amount and currency as strings, and any void/credit/replacement reference. |
+| Shared documents | Stable line IDs, exact line-to-job IDs and line amounts/currency, or an explicit `allocation_unknown` hold. One invoice can cover more than one job. |
+
+Keep the full export private. The existing seven-column M2 CSV contract
+(`source_record_id,job_id,job_code,issued_at,status,amount,currency`) is
+enough for syntactic held review, **not** this QuickBooks pairing. Do not
+silently extend that exact-header parser or treat its `ready_for_source_review`
+state as approval. If the bridge or exact job ID is absent, record the missing
+field and leave the invoice/job relationship unverified. A later source trial
+can be one-use, read-only, operator-only and default-OFF after the actual export
+shape and original field meanings are reviewed.
+
 The alternative owner-accounts path uses saved P&L/Aged Receivables receipts,
 not an invoice/job join. It still needs Drummonds' actual owner identity and
 agreement on accounting basis, tax/adjustments and report period before any
