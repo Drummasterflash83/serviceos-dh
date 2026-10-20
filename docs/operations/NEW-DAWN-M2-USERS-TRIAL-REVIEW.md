@@ -1,6 +1,14 @@
 # One-page Commusoft source-user trial — release review
 
-This is a **prepared, unexecuted** Drummonds LIVE procedure. Installing
+The default-OFF SQL safeguards were installed in LIVE on 20 October 2026 at
+00:48 UTC, after TEST rollback and exact LIVE preflight. [PR #223](https://github.com/Drummasterflash83/serviceos-dh/pull/223)
+merged as `c4400bff`. The one-page source trial below remains **unexecuted**:
+independent release readback found both pinned migration ledger rows, six expected
+function/grant hashes, users flag OFF, zero users versions and zero provider
+requests. The guarded install returned an acknowledged receipt; no replay was
+needed. The next action requires an idle completed recurring cycle.
+
+Installing
 `20261108130000_new_dawn_commusoft_users_trial_restore.sql` and
 `20261108131000_new_dawn_commusoft_users_trial_resume_fence.sql` create a
 default-OFF, authenticated recovery RPC and transactional trial fences. They do not enable source-user capture,
