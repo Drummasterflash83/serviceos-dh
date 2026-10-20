@@ -72,6 +72,9 @@ const OperatorMicrosoftStatus = lazy(() =>
 const OperatorClientInformation = lazy(() =>
   import("./OperatorClientInformation").then((m) => ({ default: m.OperatorClientInformation })),
 );
+const OperatorAccountingEvidence = lazy(() =>
+  import("./OperatorAccountingEvidence").then((m) => ({ default: m.OperatorAccountingEvidence })),
+);
 const OperatorCommusoftReview = lazy(() =>
   import("./OperatorCommusoftReview").then((m) => ({ default: m.OperatorCommusoftReview })),
 );
@@ -112,6 +115,10 @@ function OperatorModuleContent({
   const health = useOperatorHealth(tenantId);
   const data = health.isError ? undefined : health.data;
   const signal = healthSignal(data);
+  if (module === "accounting")
+    return user ? <Suspense fallback={<p role="status">Opening accounting evidence…</p>}>
+      <OperatorAccountingEvidence key={`${tenantId}:${user.id}`} tenantId={tenantId} actorId={user.id} />
+    </Suspense> : null;
   if (module === "information")
     return user ? (
       <Suspense fallback={<p role="status">Opening client information…</p>}>

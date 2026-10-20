@@ -28,6 +28,7 @@ const modules = [
   { key: "information", label: "Client information", Icon: Database },
   { key: "modules", label: "Modules", Icon: Layers },
   { key: "invoices", label: "Invoices", Icon: Receipt },
+  { key: "accounting", label: "Accounting evidence", Icon: Wallet },
 ] as const;
 
 export function OperatorShell({
