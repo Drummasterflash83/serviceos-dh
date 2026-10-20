@@ -7,6 +7,15 @@
 > boundaries for provider writes, messages, routing, money, logins and
 > destructive changes. Ship small, verified LIVE slices behind flags.
 
+> [!IMPORTANT]
+> **New Dawn is the active delivery direction.** Chris’s M1–M6 pursuing goal
+> supersedes `BUILD-CONTRACT.md`, `LEARN-ACCEPTANCE.md`, the 00–23 stage prompts,
+> and any conflicting gate in `docs/DEPLOYMENT.md`. Keep the safety rules below:
+> tenant isolation, audited OpenFolk access, excluded Slack DMs, secrets out of
+> code and logs, no provider writes or messages without authority, no login or
+> phone-routing change without authority, and no rewrite of published Git history.
+> `docs/STATUS.md` is the current milestone record.
+
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
 > **Lovable is legacy — not the active deployment path.** The live frontend is
