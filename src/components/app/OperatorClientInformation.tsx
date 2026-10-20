@@ -4,6 +4,7 @@ import { LearnSlackEvidence } from "@/components/client-portal/learn/LearnSlackE
 import { useEffect, useRef, useState } from "react";
 import { OperatorLearningEvidence } from "./OperatorLearningEvidence";
 import { OperatorSlackWorkContext } from "./OperatorSlackWorkContext";
+import { OperatorJobContextCandidates } from "./OperatorJobContextCandidates";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import { PhoneAudioViewer } from "@/components/client-portal/learn/LearnPhoneAudio";
 import { LearnCustomerBusinessContext } from "@/components/client-portal/learn/LearnCustomerBusinessContext";
@@ -283,6 +284,15 @@ export function OperatorClientInformation({
                         actorId={actorId}
                         cardId={row.id}
                         operatorReason={loadedReason}
+                      />
+                    )}
+                    {collection === "jobs" && (
+                      <OperatorJobContextCandidates
+                        key={`${tenantId}:${actorId}:${row.id}`}
+                        tenantId={tenantId}
+                        actorId={actorId}
+                        jobId={row.id}
+                        reason={loadedReason}
                       />
                     )}
                     {collection === "communications" &&
