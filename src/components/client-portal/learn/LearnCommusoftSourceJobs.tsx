@@ -5,6 +5,7 @@ import { createSourceJobReviewAction, customerSourceForReview, loadSourceJobPage
 import { loadRecentUnlinkedJobs, type RecentUnlinkedJob, type RecentUnlinkedPage } from "@/lib/new-dawn-recent-unlinked-jobs";
 import { planGuidedJobReview, type GuidedJobReview } from "@/lib/new-dawn-guided-job-review";
 import { LearnCommusoftJobDetails } from "./LearnCommusoftJobDetails";
+import { ExactLinkReviewQueue } from "./ExactLinkReviewQueue";
 
 function ReviewTaskButton({ db, tenant, connection, external, version }: {
   db: ReviewClient; tenant: string; connection: string; external: string; version: string;
@@ -136,6 +137,9 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob,
     <div className="flex flex-wrap justify-between gap-3"><div><h3 className="font-semibold">{operatorReason ? "Review recent saved jobs" : "Jobs captured from Commusoft"}</h3>
       <p>{operatorReason ? "Start with the newest jobs awaiting identity review. The full captured archive is available below." : "Browse the work already captured, including jobs whose customer identity is still unresolved."}</p></div>
       <button className="cp-secondary" onClick={() => { setHidden(false); setCursors([null]); setRevision(n => n + 1); }}>{operatorReason ? "Refresh source review" : "Refresh captured jobs"}</button></div>
+    {operatorReason && connection && <ExactLinkReviewQueue tenant={tenantId} actor={actorId}
+      connection={connection} reason={operatorReason} db={db}
+      onReviewJob={onReviewJob} onReviewCustomer={onReviewCustomer} />}
     {operatorReason && <section className="rounded-xl border border-[#cbbada] bg-white p-4 space-y-3" aria-label="Recent unlinked jobs for OpenFolk review">
       <h4 className="font-semibold">Recently captured jobs awaiting a reviewed link</h4>
       <p className="text-sm">OpenFolk review only. These are saved Commusoft records, not current job progress or automatic customer matches.</p>
