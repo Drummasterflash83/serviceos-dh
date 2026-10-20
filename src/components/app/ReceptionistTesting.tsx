@@ -40,6 +40,24 @@ type Status = {
   } | null };
   physicalChecks?: { id: string; label: string; detail: string; state: string; checkedAt: string; providerCallId: string }[];
 };
+type ProviderPreflight = {
+  readOnly: true;
+  completedAt: string;
+  vapi: {
+    state: string;
+    graph?: { state: string; checks?: { candidateVoiceMatchesLive?: boolean; helperVoiceMatchesLive?: boolean } };
+    testNumber?: { state: string; assistant: string; fallbackToSavedMaryDdi: boolean };
+  };
+  birchills: {
+    state: string;
+    mainNumberMatches?: boolean;
+    mainNumber?: { defaultDestination: string; rules: { destination: string; interval: string }[] };
+    extensions?: {
+      "205"?: { forwardsToEmmaTestNumber: boolean };
+      "603"?: { emailRecipient: string };
+    };
+  };
+};
 const date = (s: string) =>
   new Date(s).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
 const label = (s: string) =>
@@ -83,7 +101,8 @@ const dhVoicemailChecks = [
 export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
   const [data, setData] = useState<Status | null>(null),
     [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [providerPreflight, setProviderPreflight] = useState<ProviderPreflight | null>(null);
   const mounted = useRef(true),
     request = useRef(false);
   const invoke = useCallback(
@@ -151,6 +170,21 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
       setBusy(false);
     }
   }
+  async function inspectProviderSetup() {
+    if (busy || tenantId !== "00000000-0000-0000-0000-000000000001") return;
+    setBusy(true);
+    setError("");
+    setProviderPreflight(null);
+    try {
+      const result = await invoke("inspect_provider_preflight");
+      if (!result?.readOnly || !result?.completedAt) throw Error("Provider preflight needs review.");
+      setProviderPreflight(result as ProviderPreflight);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Provider setup could not be read.");
+    } finally {
+      setBusy(false);
+    }
+  }
   const active = data?.runs.some((r) => ["preparing", "running", "uncertain"].includes(r.state));
   const blocked = data?.checks.some(
     (c) => ["transfer_count", "voice"].includes(c.key) && c.state === "failed",
@@ -192,6 +226,23 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
           </p>
         )}
       </header>
+      {showDhVoicemailChecks && (
+        <section className="of-test-card" aria-labelledby="emma-current-provider">
+          <h3 id="emma-current-provider">Current provider setup</h3>
+          <p>Read the fixed Drummonds Vapi and Birchills bindings before a launch test. This checks configuration only; it does not call anyone, change routing, or prove a voicemail was delivered.</p>
+          <button className="op-button-secondary" disabled={busy} onClick={() => void inspectProviderSetup()}>
+            <RefreshCw size={16} /> Read current setup
+          </button>
+          {providerPreflight && (
+            <div role="status" className="of-test-checks">
+              <p className="of-test-note">Provider read completed {date(providerPreflight.completedAt)}. Any unchecked section stays held.</p>
+              <p><strong>Vapi:</strong> {providerPreflight.vapi.state === "checked" ? "Configuration read" : "Needs review"}. Test number: {providerPreflight.vapi.testNumber?.assistant ?? "not checked"}; binding {providerPreflight.vapi.testNumber?.state ?? "not checked"}. Candidate voice {providerPreflight.vapi.graph?.checks?.candidateVoiceMatchesLive ? "matches" : "not proved to match"} LIVE.</p>
+              <p><strong>Birchills:</strong> {providerPreflight.birchills.state === "checked" ? "Configuration read" : "Needs review"}. Main number default: {providerPreflight.birchills.mainNumber?.defaultDestination ?? "not checked"}; time-based routes: {providerPreflight.birchills.mainNumber?.rules.map((rule) => `${rule.interval || "unnamed"} → ${rule.destination}`).join("; ") || "not checked"}.</p>
+              <p>Emma extension 205 forwards to the saved test number: {providerPreflight.birchills.extensions?.["205"]?.forwardsToEmmaTestNumber ? "yes" : "not proved"}. Mailbox 603 notification address: {providerPreflight.birchills.extensions?.["603"]?.emailRecipient ?? "not checked"}. Two delivered recipient emails still need a real 603 deposit and separate receipts.</p>
+            </div>
+          )}
+        </section>
+      )}
       {error && (
         <p className="op-error" role="alert">
           {error}
