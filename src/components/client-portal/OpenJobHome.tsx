@@ -299,7 +299,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
             onClick={nextPage}>Next page <ChevronRight size={16} /></button>
         </nav>
       </>}
-      <details className="nd-score-readiness">
+      <details className="nd-score-home-disclosure">
         <summary>How are the company, jobs, customers and team doing? <span>Scores are being prepared</span></summary>
         <p>A fair score needs confirmed evidence. Recorded open-job counts are not performance scores.</p>
         <div className="nd-score-tiles" aria-label="Scorecard readiness">
