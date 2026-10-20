@@ -29,6 +29,7 @@ import { LearnSlackEvidence } from "./LearnSlackEvidence";
 import { LearnFileImports } from "./LearnFileImports";
 import { LearnCommusoftCustomers } from "./LearnCommusoftCustomers";
 import { LearnCommusoftWork } from "./LearnCommusoftWork";
+import { LearnDailyStats } from "./LearnDailyStats";
 import {
   Dialog,
   DialogContent,
@@ -231,6 +232,7 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
           Saved input totals · checked {when(active.observed_at)}. Updates automatically while this page is open.
         </p>
       )}
+      <LearnDailyStats key={`${user?.id}:${tenantId}`} tenantId={tenantId} />
         <section className="lr-counts lr-input-overview" aria-label="Your inputs at a glance">
           {[
             { name: "Email", value: active?.counts.email.record_count, Icon: Mail, note: "Emails saved in LEARN", detail: active?.email.last_successful_message_sync_at ? `Latest capture ${when(active.email.last_successful_message_sync_at)}` : "Capture status awaiting confirmation", href: "#learn-communication-sources" },

@@ -118,6 +118,28 @@
 .lr-input-link { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #715289; min-height: 36px; margin-top: auto; text-align: left; }
 .lr-input-link:focus-visible { outline: 2px solid #79618b; outline-offset: 3px; border-radius: 4px; }
 .lr-input-caption { font-size: 11px; color: #75658b; line-height: 1.6; margin: -8px 0 28px; }
+.lr-daily-stats { margin: 0 0 22px; padding: 22px; }
+.lr-daily-head { display: flex; align-items: start; justify-content: space-between; gap: 16px; }
+.lr-daily-head h2 { margin: 5px 0 6px; font-size: 21px; line-height: 1.25; color: #382d47; }
+.lr-daily-head p:last-child, .lr-daily-asof, .lr-daily-footnote { color: #75658b; font-size: 12px; line-height: 1.6; }
+.lr-daily-head .cp-secondary { flex: 0 0 auto; min-height: 40px; }
+.lr-daily-asof { margin: 18px 0 10px; }
+.lr-daily-table { border: 1px solid #e9e3ef; border-radius: 12px; overflow: hidden; }
+.lr-daily-row { display: grid; grid-template-columns: minmax(0, 1fr) 90px 125px; align-items: center; gap: 12px; padding: 10px 14px; border-top: 1px solid #eee8f2; font-size: 13px; }
+.lr-daily-row:first-child { border-top: 0; }
+.lr-daily-row:nth-child(odd) { background: #faf8fc; }
+.lr-daily-row strong { font-weight: 600; color: #473952; }
+.lr-daily-row [role="cell"]:not(:first-child), .lr-daily-row [role="columnheader"]:not(:first-child) { text-align: right; }
+.lr-daily-column-head { color: #75658b; font-size: 11px; font-weight: 600; }
+.lr-daily-footnote { margin: 12px 0; }
+.lr-daily-job-check { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+.lr-daily-job-check>div { display: grid; gap: 4px; border: 1px solid #e9e3ef; border-radius: 10px; padding: 12px; min-width: 0; }
+.lr-daily-job-check span { color: #75658b; font-size: 11px; }
+.lr-daily-job-check strong { color: #473952; font-size: 12px; overflow-wrap: anywhere; }
+.lr-daily-reason { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-top: 12px; }
+.lr-daily-reason label { display: grid; gap: 6px; flex: 1 1 230px; color: #75658b; font-size: 12px; }
+.lr-daily-reason input { width: 100%; min-height: 40px; border: 1px solid #cbbada; border-radius: 8px; padding: 9px 11px; background: #fff; }
+@media (max-width: 600px) { .lr-daily-head { flex-direction: column; } .lr-daily-head .cp-secondary { width: 100%; } .lr-daily-job-check { grid-template-columns: 1fr; } .lr-daily-row { grid-template-columns: minmax(0, 1fr) 64px 90px; gap: 6px; padding: 10px 8px; font-size: 12px; } }
 .lr-emma-readiness { background: #f6f1fa; border-color: #dfd1eb; }
 .lc-brief { border: 1px solid #e2d8eb; border-radius: 16px; background: #f8f5fb; padding: 22px; margin: 12px 0 20px; }
 .lc-brief-heading h3 { font-size: 21px; line-height: 1.35; margin: 8px 0; color: #382d47; }

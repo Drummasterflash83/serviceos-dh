@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { useAuth } from "@/lib/auth";
 import { LearnLaunchPortal } from "./LearnLaunchPortal";
+import { LearnDailyStats } from "./LearnDailyStats";
 import "@/styles/learn-launch.css";
 
 const OperatorClientInformation = lazy(() =>
@@ -41,6 +42,7 @@ export function LearnWorkspace({
         You are viewing as an OpenFolk operator. Each record load checks your access and records
         your reason. Customer sign-in and customer-only actions are separate.
       </p>
+      <LearnDailyStats key={`${user.id}:${tenantId}`} tenantId={tenantId} operator />
       <div className="flex flex-wrap gap-3">
         <a className="cp-secondary" href={`/openfolk/${encodeURIComponent(tenantId)}?module=modules`}>
           Input health and capture controls
