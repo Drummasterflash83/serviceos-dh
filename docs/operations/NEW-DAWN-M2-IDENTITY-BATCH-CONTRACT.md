@@ -49,6 +49,9 @@ the schema does not start a batch, contact Commusoft or expose a client login.
   hide reversed mappings from current readers. Reversal runs in dependency
   order: jobs, sites, then customer. A reversed group cannot be silently
   restored; new projection requires a separately reviewed recovery release.
+  Reversal verifies the original staged link and its dependent current links;
+  it does not require the source to remain the latest provider observation,
+  because withdrawing a link must remain possible after source refresh.
 - The client-facing source-backed job home and paged job identity read current
   links. The generic card search now hides reversed staged jobs and customer
   cards for the authorised tenant, while retaining unrelated search results.
@@ -66,3 +69,38 @@ the schema does not start a batch, contact Commusoft or expose a client login.
 - The aggregate batch summary reports prepared, linked, held and reversed
   customer/site/job counts, plus held reasons and jobs affected. It exposes
   no customer, property or job IDs to the client.
+
+## Private full-roster dry run
+
+With the saved noninteractive Supabase CLI login, use the read-only Management
+API exporter `scripts/verify/new-dawn-m2-identity-export.mjs` with `--project`,
+`--tenant`, `--connection auto` (only when exactly one configured Commusoft
+connection exists; otherwise use its exact UUID), and `--out` under the ignored
+`.verification-results/` folder. The exporter pages every saved job and
+property at a pinned committed-page cutoff. It includes every latest-version
+tie, so ambiguity cannot be hidden by ordering. It then pages canonical
+collision fields and all current and retained links. Source, canonical and
+link fingerprints must agree before and after; a drifted or incomplete export
+is discarded. The JSONL snapshot is mode 0600 and never belongs in Git.
+
+Prepare a separately reviewed category-map JSON file in the same private
+folder: `{ "kind_map": { "<Commusoft category ID>": "company" },
+"kind_evidence_sha256": "<64-digit evidence SHA>",
+"status": "reviewed_for_registration" }`. Only category IDs with reviewed
+provider evidence may appear. A 13 October historical map must instead use
+`"status": "provisional_not_apply_authorized"`; it yields aggregate counts
+and private ten-link spot-check candidates, never registrable manifests. Then run
+`scripts/verify/new-dawn-m2-identity-manifest.mjs` with `--snapshot`,
+`--kind-map`, `--out` (a new private directory), `--tenant`, and `--connection`.
+It emits mode-0600 exact-version manifests and an aggregate report only; it
+does not register or apply anything. `source_job_count` reconciles disjointly
+as `already_linked_jobs + clean.jobs + held.jobs`. Current links are counted
+as already linked; reversed retained links are held for manual review. Clean
+groups are compared against every saved source customer/site, including
+unproposed groups, and canonical collisions. Person/account-holder, missing,
+conflicting and ambiguous classes stay held. This dry run is provisional until
+ten provider spot-checks and the LIVE apply-time guard pass. The bounded
+`scripts/verify/new-dawn-m2-identity-ten-spotcheck.mjs` reads those ten jobs
+and their properties/customer parents under the existing shared Commusoft
+verification lease. Its mode-0600 receipt contains hashes and booleans, not
+IDs or provider payloads.

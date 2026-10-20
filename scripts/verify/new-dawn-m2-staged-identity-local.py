@@ -77,6 +77,11 @@ try:
       create table public.learn_business_input_versions(id uuid primary key,
        tenant_id uuid,connection_id uuid,provider text,collection text,
        external_id text,payload jsonb,created_at timestamptz default clock_timestamp());
+      create table public.learn_business_input_pages(id uuid primary key,
+       tenant_id uuid,connection_id uuid,provider text,collection text,
+       committed_at timestamptz);
+      create table public.learn_business_input_observations(
+       page_id uuid,version_id uuid);
       create table public.learn_business_input_links(id uuid primary key default gen_random_uuid(),
        tenant_id uuid,connection_id uuid,provider text,collection text,external_id text,
        source_version_id uuid,entity_kind text,entity_table text,entity_id uuid,
@@ -448,6 +453,31 @@ try:
     assert run(f"select distinct hold_reason from public.new_dawn_m2_identity_items "
                f"where batch_id='{fifth}'") == 'account_holder_review_required'
     assert run("select count(*) from public.people") == '0'
+    run(f"""insert into public.learn_business_input_pages values
+      ('10000000-0000-4000-8000-000000000021','{TENANT}','{CONNECTION}',
+       'commusoft','properties',clock_timestamp()),
+      ('10000000-0000-4000-8000-000000000022','{TENANT}','{CONNECTION}',
+       'commusoft','jobs',clock_timestamp());
+      insert into public.learn_business_input_observations
+      select case when collection='properties' then
+       '10000000-0000-4000-8000-000000000021'::uuid else
+       '10000000-0000-4000-8000-000000000022'::uuid end,id
+      from public.learn_business_input_versions where tenant_id='{TENANT}';""")
+    snapshot_sql = (ROOT / 'scripts/verify' /
+                    'new-dawn-m2-identity-snapshot.sql').read_text()
+    result = subprocess.run(
+        ['docker', 'exec', '-i', NAME, 'psql', '-h', '127.0.0.1',
+         '-U', 'supabase_admin', '-d', DB, '-XAtq', '-v', 'ON_ERROR_STOP=1',
+         '-v', f'tenant_id={TENANT}', '-v', f'connection_id={CONNECTION}'],
+        input=snapshot_sql, text=True, capture_output=True, timeout=90,
+    )
+    assert result.returncode == 0, result.stderr[-5000:]
+    snapshot_rows = [line for line in result.stdout.splitlines()
+                     if line.startswith('{')]
+    assert snapshot_rows and '"kind": "scope"' in snapshot_rows[0]
+    assert '"kind": "end"' in snapshot_rows[-1]
+    assert sum('"kind": "source_version"' in line
+               for line in snapshot_rows) >= 10
     print('PASS: isolated migrations, OFF gate, direct identity, immutable audit, '
           'work-address identity, dependency/stale/collision/person holds, '
           'client search reversal and tenant denial')
