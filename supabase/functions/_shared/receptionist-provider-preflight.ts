@@ -124,11 +124,34 @@ export async function inspectBirchillsLaunchBindings(read: Read) {
   const detail = (short: string) => object(endpointDetails[short]);
   const mailbox = detail("603");
   const email = text(mailbox.email).trim().toLowerCase();
+  const mainNumberMatches = ukDigits(did.number) === expected.did;
+  const defaultDestination = route(did.destination);
+  const routesToOutOfHoursIvr = rules.some(row => route(object(row).destination) === "502");
+  const emmaTestForward = ukDigits(detail("205").destination) === expected.test;
+  const robForward = ukDigits(detail("109").destination) === expected.rob;
+  const tonyForward = ukDigits(detail("105").destination) === expected.tony;
+  const emailRecipient = email === "rob@drummondheating.co.uk" ? "Rob only" :
+    email === "tony@drummondheating.co.uk" ? "Tony only" : email ? "other one-address recipient" : "none";
+  // Successful API reads mean configuration was inspected, not that the
+  // published opening-hours route or two-recipient 603 delivery is proved.
+  const policyHolds = [
+    !mainNumberMatches && "main_number_identity_changed",
+    defaultDestination !== "501" && "main_number_default_not_501",
+    rules.length === 0 && "did_time_exceptions_absent",
+    rules.length > 0 && !routesToOutOfHoursIvr && "did_out_of_hours_502_not_seen",
+    !emmaTestForward && "emma_205_test_forward_not_seen",
+    !robForward && "rob_109_forward_not_seen",
+    !tonyForward && "tony_105_forward_not_seen",
+    "mailbox_603_two_recipient_delivery_unproved",
+  ].filter((value): value is string => typeof value === "string");
   return {
-    state: ukDigits(did.number) === expected.did ? "checked" : "review",
-    mainNumberMatches: ukDigits(did.number) === expected.did,
+    state: mainNumberMatches ? "checked" : "review",
+    mainNumberMatches,
+    policyHolds,
     mainNumber: {
-      defaultDestination: route(did.destination),
+      defaultDestination,
+      didTimeExceptionCount: rules.length,
+      didTimeExceptionTo502Count: rules.filter(row => route(object(row).destination) === "502").length,
       rules: rules.map(row => {
         const r = object(row);
         const id = sameAccountId("timeintervals", r.timeInterval) ?? "";
@@ -142,15 +165,14 @@ export async function inspectBirchillsLaunchBindings(read: Read) {
       }),
     },
     extensions: {
-      "205": { type: text(detail("205").type), forwardsToEmmaTestNumber: ukDigits(detail("205").destination) === expected.test,
+      "205": { type: text(detail("205").type), forwardsToEmmaTestNumber: emmaTestForward,
         timeoutSeconds: typeof detail("205").timeout === "number" ? detail("205").timeout : null },
-      "109": { type: text(detail("109").type), forwardsToSavedRobNumber: ukDigits(detail("109").destination) === expected.rob },
-      "105": { type: text(detail("105").type), forwardsToSavedTonyNumber: ukDigits(detail("105").destination) === expected.tony },
+      "109": { type: text(detail("109").type), forwardsToSavedRobNumber: robForward },
+      "105": { type: text(detail("105").type), forwardsToSavedTonyNumber: tonyForward },
       "501": { type: text(detail("501").type) },
       "502": { type: text(detail("502").type) },
       "603": { type: text(mailbox.type), savedEndpointMatches: idsByShort["603"] === "180997",
-        emailRecipient: email === "rob@drummondheating.co.uk" ? "Rob only" :
-          email === "tony@drummondheating.co.uk" ? "Tony only" : email ? "other one-address recipient" : "none" },
+        emailRecipient },
     },
     sourceHash: await evidenceHash({ did, endpoints: endpointDetails, intervals }),
     providerChanged: false,
