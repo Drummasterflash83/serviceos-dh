@@ -33,6 +33,13 @@ export function netProfitYtdComparison(periodStart: string, periodEnd: string) {
   };
 }
 
+/** A negative net A/R age bucket is a credit, never overdue debt. */
+export function agedReceivablesBucketKind(amount: string): "positive" | "credit" | "zero" | "unknown" {
+  if (!/^-?\d{1,40}(?:\.\d{1,10})?$/.test(amount)) return "unknown";
+  if (!/[1-9]/.test(amount)) return "zero";
+  return amount.startsWith("-") ? "credit" : "positive";
+}
+
 /** Ratio from one verified P&L numerator and denominator, rounded to 0.01%. */
 export function accountsNetMargin(netProfit: string, totalIncome: string): string | null {
   if (!/^-?\d{1,40}(?:\.\d{1,10})?$/.test(netProfit) ||
