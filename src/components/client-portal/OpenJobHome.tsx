@@ -4,7 +4,6 @@ import { BriefcaseBusiness, ChevronLeft, ChevronRight, RefreshCw } from "lucide-
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
-import { drummondsTenantId } from "@/lib/new-dawn-md-view";
 import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
 import {
@@ -283,9 +282,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} recorded open` : "Checking workload"}</strong>
           <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending.` : "Reading saved status counts."}</p>
-          <p>{tenant === drummondsTenantId
-            ? "Earliest job score: 3 Nov, if 14 daily status observations pass."
-            : "A job score needs 14 verified daily status observations."} Until then, these are workload counts.</p>
+          <p>A job score needs 14 complete days of provider-checked status observations. The start date depends on full coverage. Until then, these are workload counts.</p>
           <button type="button" onClick={() => oldestRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}>Review 10 oldest-created On-hold records →</button>
         </article>
         <article><span>CUSTOMERS</span><strong>Customer view being prepared</strong>
