@@ -7,6 +7,7 @@ import { LearnCommusoftWork } from "@/components/client-portal/learn/LearnCommus
 import { LearnCommusoftSourceJobs } from "@/components/client-portal/learn/LearnCommusoftSourceJobs";
 import type { GuidedJobReview } from "@/lib/new-dawn-guided-job-review";
 import { ExactJobAutoLink } from "@/components/client-portal/learn/ExactJobAutoLink";
+import { OperatorStagedIdentityBatch } from "./OperatorStagedIdentityBatch";
 
 export function OperatorCommusoftReview({
   tenantId,
@@ -17,7 +18,7 @@ export function OperatorCommusoftReview({
 }) {
   const [reason, setReason] = useState("");
   const [session, setSession] = useState<{ reason: string; generation: number } | null>(null);
-  const [kind, setKind] = useState<"customers" | "work" | "source-jobs">("source-jobs");
+  const [kind, setKind] = useState<"customers" | "work" | "source-jobs" | "batch">("source-jobs");
   const [requestedJob, setRequestedJob] = useState<{ connection: string; external: string } | null>(null);
   const [requestedCustomer, setRequestedCustomer] = useState<{ connection: string; external: string } | null>(null);
   const [returnJob, setReturnJob] = useState<{ connection: string; external: string } | null>(null);
@@ -151,7 +152,11 @@ export function OperatorCommusoftReview({
             <button className="cp-secondary" onClick={close}>
               Close review
             </button>
+            <button className="cp-secondary" aria-pressed={kind === "batch"}
+              onClick={() => setKind("batch")}>Reviewed batch</button>
           </nav>
+          {kind === "batch" && <OperatorStagedIdentityBatch tenantId={tenantId}
+            reason={session.reason} active={() => generation.current === session.generation} />}
           {kind === "customers" && returnJob && requestedCustomer && <div role="status" className="space-y-2 text-sm">
             <p>Step 1 of {guided?.site ? "3" : "2"}: review customer source {requestedCustomer.external} for saved job {returnJob.external}. Confirm the account holder from source evidence; no customer is selected automatically.</p>
             <button className="cp-secondary max-w-full whitespace-normal text-left" onClick={() => { setGuided(null); setRequestedSite(null); returnToJob(); }}>Inspect exact job without linking</button>
