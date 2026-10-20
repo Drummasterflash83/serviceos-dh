@@ -16,6 +16,7 @@ declare arm public.controlplane_change_log%rowtype;
  j public.platform_jobs%rowtype;f public.feature_flags%rowtype;
  p public.learn_business_input_pages%rowtype;
  old_approval jsonb;old_cursor jsonb;answer jsonb;observed integer;
+ current_scope jsonb;expected_scope jsonb;
 begin
  perform public.learn_operator_input_access(p_tenant,p_actor,true);
  if p_arm is null or p_request is null or p_action is null or p_action not in ('finish','abandon')
@@ -63,12 +64,19 @@ begin
   or s.connection_id::text is distinct from prior.definition->>'connection_id' then
   raise exception 'commusoft_users_trial_recurring_changed' using errcode='PT409';end if;
  select * into a from public.connector_accounts where id=s.account_id and tenant_id=p_tenant for update;
+ current_scope:=a.settings->'commusoft_import';
+ expected_scope:=jsonb_build_object('approved',true,'approvalId',p_request,
+  'connectionId',prior.definition->>'connection_id',
+  'consentReference','learn-operator-input:'||p_request::text,
+  'maxPages',1,'pageSize',(prior.definition->>'page_size')::integer,'resource','users')
+  ||case when prior.definition ? 'updatedFrom' then
+    jsonb_build_object('updatedFrom',prior.definition->'updatedFrom',
+     'updatedBefore',prior.definition->'updatedBefore') else '{}'::jsonb end;
  if not found or a.status is distinct from 'active'
-  or a.settings->'commusoft_import'->>'resource' is distinct from 'users'
-  or a.settings->'commusoft_import'->>'approvalId' is distinct from p_request::text
-  or a.settings->'commusoft_import'->>'connectionId' is distinct from s.connection_id::text
-  or a.settings->'commusoft_import'->>'maxPages' is distinct from '1'
-  or coalesce(a.settings->'commusoft_import'->>'pageSize','') !~ '^(10|[1-9])$'
+  or current_scope-'expiresAt' is distinct from expected_scope
+  or jsonb_typeof(current_scope->'expiresAt') is distinct from 'string'
+  or (current_scope->>'expiresAt')::timestamptz
+    is distinct from (prior.definition->>'expires_at')::timestamptz
   or (p_action='finish' and a.sync_cursor->>'approvalId' is distinct from p_request::text)
   or (p_action='abandon' and a.sync_cursor is distinct from '{}'::jsonb) then
   raise exception 'commusoft_users_trial_account_changed' using errcode='PT409';end if;

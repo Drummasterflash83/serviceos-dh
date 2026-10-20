@@ -100,6 +100,100 @@ try:
     if sql("select not enabled from public.learn_commusoft_recurring where account_id=public.fixture_id(303)") != 't':
         raise RuntimeError('Fail closed resumed recurrence')
     print('new-dawn-m2-users-trial-arm-and-fail-closed-synthetic/1')
+    sql("""
+      create function public.learn_commusoft_recurring_control(p_tenant uuid,p_request uuid,
+       p_actor uuid,p_definition jsonb,p_mode text default 'apply') returns jsonb
+       language plpgsql security definer set search_path=pg_catalog as $$
+       declare s public.learn_commusoft_recurring%rowtype;aid uuid:=(p_definition->>'account_id')::uuid;
+       begin
+        select * into s from public.learn_commusoft_recurring where account_id=aid;
+        if s.account_id is null then return '{"state":"missing"}'::jsonb;end if;
+        return '{"state":"recorded"}'::jsonb;
+       end$$;
+      create function public.learn_operator_input_request(p_tenant uuid,p_request uuid,
+       p_actor uuid,p_definition jsonb,p_mode text default 'apply') returns jsonb
+       language plpgsql security definer set search_path=pg_catalog as $$
+       declare a public.connector_accounts%rowtype;resource text:=p_definition->>'resource';
+       begin
+        select * into a from public.connector_accounts where id=(p_definition->>'account_id')::uuid;
+  if found then
+   if a.status is distinct from 'active' then raise exception 'account_changed';end if;
+        end if;
+        insert into public.learn_operator_input_requests(id,tenant_id,actor_id,definition,receipt)
+         values(p_request,p_tenant,p_actor,p_definition,
+          jsonb_build_object('account_id',a.id,'state','recorded'));
+        return '{"state":"recorded"}'::jsonb;
+       end$$;
+      create function public.learn_operator_resume_commusoft(p_tenant uuid,p_request uuid,
+       p_actor uuid,p_definition jsonb,p_mode text default 'apply') returns jsonb
+       language plpgsql security definer set search_path=pg_catalog as $$
+       declare a public.connector_accounts%rowtype;cfg jsonb;cp jsonb;
+       begin
+        select * into a from public.connector_accounts where id=(p_definition->>'account_id')::uuid;
+        cfg:=a.settings->'commusoft_import';cp:=a.sync_cursor;
+        return '{"state":"recorded"}'::jsonb;
+       end$$;
+    """)
+    fence = (ROOT / 'supabase/migrations/20261108131000_new_dawn_commusoft_users_trial_resume_fence.sql').read_text()
+    before = sql("select md5(pg_get_functiondef('public.learn_commusoft_recurring_control(uuid,uuid,uuid,jsonb,text)'::regprocedure))")
+    sql(fence.replace('\ncommit;', '\nrollback;'))
+    if sql("select md5(pg_get_functiondef('public.learn_commusoft_recurring_control(uuid,uuid,uuid,jsonb,text)'::regprocedure))") != before:
+        raise RuntimeError('Fence rollback changed recurring control')
+    sql(fence)
+    call = "select public.learn_commusoft_recurring_control('00000000-0000-0000-0000-000000000001'," \
+           "public.fixture_id(312),public.fixture_id(180)," \
+           "jsonb_build_object('account_id',public.fixture_id(303)))->>'state'"
+    for state in ('paused', 'audit_unmatched'):
+        try:
+            sql(call)
+            raise RuntimeError('Recurring control accepted an active users trial: ' + state)
+        except RuntimeError as error:
+            if 'commusoft_users_trial_active' not in str(error):
+                raise
+        if state == 'paused':
+            # Even an accidental direct recurrence state edit cannot bypass the
+            # unmatched immutable arm audit after the users flag was switched Off.
+            sql("update public.learn_commusoft_recurring set enabled=true,last_state='approved' where account_id=public.fixture_id(303)")
+    input_call = "select public.learn_operator_input_request('00000000-0000-0000-0000-000000000001'," \
+        "public.fixture_id({request}),public.fixture_id({actor})," \
+        "jsonb_build_object('account_id',public.fixture_id(303),'resource','{resource}'))->>'state'"
+    try:
+        sql(input_call.format(request=315, actor=180, resource='jobs'))
+        raise RuntimeError('Ordinary import accepted during users trial')
+    except RuntimeError as error:
+        if 'commusoft_users_trial_active' not in str(error):
+            raise
+    try:
+        sql(input_call.format(request=314, actor=181, resource='users'))
+        raise RuntimeError('Different actor started users trial')
+    except RuntimeError as error:
+        if 'commusoft_users_trial_active' not in str(error):
+            raise
+    if sql(input_call.format(request=316, actor=180, resource='users')) != 'recorded':
+        raise RuntimeError('First bounded users request was refused')
+    for request, actor in ((317, 180), (318, 181)):
+        try:
+            sql(input_call.format(request=request, actor=actor, resource='users'))
+            raise RuntimeError('Extra users request accepted during users trial')
+        except RuntimeError as error:
+            if 'commusoft_users_trial_active' not in str(error):
+                raise
+    try:
+        sql("select public.learn_operator_resume_commusoft('00000000-0000-0000-0000-000000000001'," \
+            "public.fixture_id(319),public.fixture_id(180)," \
+            "jsonb_build_object('account_id',public.fixture_id(303)))->>'state'")
+        raise RuntimeError('Second-page continuation accepted during users trial')
+    except RuntimeError as error:
+        if 'commusoft_users_trial_active' not in str(error):
+            raise
+    print('new-dawn-m2-users-trial-input-and-continuation-fence-synthetic/1')
+    sql("insert into public.controlplane_change_log(tenant_id,actor,action,resource_type,resource_id,correlation_id,source) "
+        "values('00000000-0000-0000-0000-000000000001',public.fixture_id(180)::text,"
+        "'learn.commusoft.users_trial.restore','source_users_trial',public.fixture_id(313)::text,"
+        "'" + arm + "','new-dawn-m2-users-trial')")
+    if sql(call) != 'recorded':
+        raise RuntimeError('Completed trial still blocked recurring control')
+    print('new-dawn-m2-users-trial-recurring-resume-fence-synthetic/1')
 finally:
     if created:
         subprocess.run([DOCKER, 'rm', '-f', NAME], check=True, capture_output=True, timeout=30)

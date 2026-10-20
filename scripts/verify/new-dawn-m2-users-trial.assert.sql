@@ -52,13 +52,14 @@ begin
   'new-dawn-m2-users-trial',clock_timestamp()-interval '1 minute');
  insert into public.learn_operator_input_requests(id,tenant_id,actor_id,definition,receipt,previous_state)
  values(request,t,actor,jsonb_build_object('kind','start_commusoft','resource','users','max_pages',1,
-  'page_size',10,'connection_id',connection),jsonb_build_object('state','recorded',
+  'page_size',10,'connection_id',connection,'expires_at','2026-12-31T00:00:00Z'),jsonb_build_object('state','recorded',
   'kind','start_commusoft','account_id',account,'job_id',job),
   jsonb_build_object('approval',old_cfg,'checkpoint',old_cp));
  insert into public.learn_commusoft_recurring values(account,t,connection,false,0,null,
   'source_user_trial_paused',2,clock_timestamp(),clock_timestamp());
  insert into public.connector_accounts values(account,t,'active',jsonb_build_object('commusoft_import',
-  jsonb_build_object('resource','users','approvalId',request,'connectionId',connection,
+  jsonb_build_object('approved',true,'resource','users','approvalId',request,'connectionId',connection,
+  'consentReference','learn-operator-input:'||request::text,'expiresAt','2026-12-31T00:00:00Z',
   'maxPages',1,'pageSize',10)),case when p_job_status='dead_letter' then '{}'::jsonb else cp end);
  insert into public.feature_flags(tenant_id,flag,value)
  values(t,'learn.inputs.commusoft.users.enabled','true'::jsonb);
@@ -77,6 +78,11 @@ begin
   update public.connector_accounts set settings=jsonb_set(settings,'{commusoft_import,approvalId}',to_jsonb(fixture_id(199)::text));
  elsif p_drift='cursor' then
   update public.connector_accounts set sync_cursor=jsonb_set(sync_cursor,'{pages}','2'::jsonb);
+ elsif p_drift='extra_scope' then
+  update public.connector_accounts set settings=jsonb_set(settings,'{commusoft_import,unexpected}','true'::jsonb);
+ elsif p_drift='expiry' then
+  update public.connector_accounts set settings=jsonb_set(settings,'{commusoft_import,expiresAt}',
+   '"2027-01-01T00:00:00Z"'::jsonb);
  end if;
 end$$;
 
@@ -126,6 +132,18 @@ do $$declare result jsonb;held integer;begin
   perform learn_commusoft_users_trial_restore(fixture_id(100),fixture_id(111),fixture_id(112),
    fixture_id(180),'Synthetic close','finish');
   raise exception 'cursor drift restored';
+ exception when sqlstate 'PT409' then null;end;
+ perform fixture_users_trial(true,'succeeded','extra_scope');
+ begin
+  perform learn_commusoft_users_trial_restore(fixture_id(100),fixture_id(111),fixture_id(112),
+   fixture_id(180),'Synthetic close','finish');
+  raise exception 'extra scope drift restored';
+ exception when sqlstate 'PT409' then null;end;
+ perform fixture_users_trial(true,'succeeded','expiry');
+ begin
+  perform learn_commusoft_users_trial_restore(fixture_id(100),fixture_id(111),fixture_id(112),
+   fixture_id(180),'Synthetic close','finish');
+  raise exception 'expiry drift restored';
  exception when sqlstate 'PT409' then null;end;
 
  -- Terminal source-free failure can restore without inventing a page receipt.

@@ -1,8 +1,9 @@
 # One-page Commusoft source-user trial — release review
 
 This is a **prepared, unexecuted** Drummonds LIVE procedure. Installing
-`20261108130000_new_dawn_commusoft_users_trial_restore.sql` creates one
-default-OFF, authenticated recovery RPC. It does not enable source-user capture,
+`20261108130000_new_dawn_commusoft_users_trial_restore.sql` and
+`20261108131000_new_dawn_commusoft_users_trial_resume_fence.sql` create a
+default-OFF, authenticated recovery RPC and transactional trial fences. They do not enable source-user capture,
 pause ordinary capture, call Commusoft, create staff or change a login.
 
 The existing OpenFolk operator input form can approve `GET /users` as one page of
@@ -34,7 +35,11 @@ Commusoft connector, and the worker requires it to match the connection.
    `scripts/verify/new-dawn-m2-users-trial-gates.mjs`. The arm transaction
    records the exact prior approval/cursor in immutable audit, pauses the
    ordinary recurring scheduler and turns on only Drummonds' users flag.
-   Read back the arm once. Never replay an unknown arm outcome.
+   Read back the arm once. Never replay an unknown arm outcome. While the arm
+   is unmatched, the database rejects recurring-control resume, a second
+   manual Commusoft import and the signed-in continuation route. The input
+   fence admits only the first users approval by the arm actor; the existing
+   source-user admission limits it to one page of at most 10 records.
 3. In the signed-in OpenFolk operator form, select Drummonds' verified
    Commusoft connection and **Source users (held for review)**. Review one page,
    records per page 10, a short expiry and a specific reason. Apply once; use
@@ -51,7 +56,10 @@ Commusoft connector, and the worker requires it to match the connection.
    account approval/cursor, turns the users flag Off, resumes ordinary capture
    after one minute and appends an immutable audit receipt. Repeating the exact
    request returns that receipt without a second write. Both `hasMore` outcomes
-   are accepted: `collection_exhausted` and `page_budget_exhausted`.
+   are accepted: `collection_exhausted` and `page_budget_exhausted`. The
+   current scope must match the immutable input request in full, including
+   consent reference, update window and expiry; an added or changed field
+   blocks restoration until reviewed.
 6. Independently read back the flag Off, scheduler resumed, prior account
    approval/cursor, one retained users page, ≤10 observations and audit receipt.
    The retained page is **not deleted** by restoration.
@@ -69,6 +77,7 @@ automatic replay, inferred success or silent return to normal capture.
 The disposable PostgreSQL check
 `python3 scripts/verify/new-dawn-m2-users-trial.py --isolated` covers the
 has-more and exhausted receipts, preserved evidence, paused scheduler, exact
-idempotency, active job refusal, approval and cursor drift refusal, and
-fail-closed behavior. The migration also compiled inside a rolled-back TEST
+idempotency, active job refusal, scope/expiry and cursor drift refusal,
+single-request and continuation fences, and fail-closed behavior. Both
+migrations also compiled inside a rolled-back TEST
 transaction. Neither check calls Commusoft.
