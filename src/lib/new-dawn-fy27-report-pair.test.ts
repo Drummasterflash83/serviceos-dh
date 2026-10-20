@@ -4,7 +4,7 @@ import { approvedFy27PairBodies, approvedFy27RefreshBody, DRUMMONDS_FY27_PAIR } 
 import type { QuickBooksConnection } from "./learn-quickbooks";
 
 const connection: QuickBooksConnection = {
-  id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", appId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+  id: DRUMMONDS_FY27_PAIR.connectionId, appId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
   environment: "production", realmId: DRUMMONDS_FY27_PAIR.realmId,
   companyName: "Drummond Heating", status: "active", revision: 1,
   verifiedAt: "2026-10-20T15:00:00Z", confirmedAt: "2026-10-14T06:59:27Z",
@@ -29,6 +29,7 @@ test("refresh refuses an unconfirmed, wrong, busy or expired authorization", () 
   for (const invalid of [
     { ...connection, confirmedAt: null },
     { ...connection, environment: "sandbox" as const },
+    { ...connection, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" },
     { ...connection, realmId: "12345" },
     { ...connection, refreshInProgress: true },
     { ...connection, refreshExpiresAt: "2026-10-20T16:00:00Z" },
@@ -53,6 +54,7 @@ test("unconfirmed, sandbox, wrong realm or near-expired access cannot form the p
   for (const invalid of [
     { ...connection, confirmedAt: null },
     { ...connection, environment: "sandbox" as const },
+    { ...connection, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" },
     { ...connection, realmId: "12345" },
     { ...connection, accessExpiresAt: "2026-10-20T15:31:00Z" },
   ]) assert.throws(() => approvedFy27PairBodies(invalid, ids, now));

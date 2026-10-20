@@ -37,7 +37,8 @@ export function OperatorApprovedFy27Pair({ tenantId, actorId, connections }: {
   const [prior, setPrior] = useState(false);
   const [notice, setNotice] = useState("");
   const [receipts, setReceipts] = useState<ReportCaptureReceipt[]>([]);
-  const connection = connections.find(c => c.environment === "production" &&
+  const connection = connections.find(c => c.id === DRUMMONDS_FY27_PAIR.connectionId &&
+    c.environment === "production" &&
     c.realmId === DRUMMONDS_FY27_PAIR.realmId);
   const key = `serviceos.approved-fy27-pair.v1:${tenantId}:${actorId}:${DRUMMONDS_FY27_PAIR.realmId}`;
   let refreshReady = false;
@@ -82,7 +83,8 @@ export function OperatorApprovedFy27Pair({ tenantId, actorId, connections }: {
         const status = await db.rpc("learn_quickbooks_status", { p_tenant: tenantId });
         if (status.error) throw Error("Fresh company status unavailable");
         const overview = readQuickBooksOverview(status.data, tenantId);
-        const currentConnection = overview.connections.find(c => c.id === connection.id &&
+        const currentConnection = overview.connections.find(c =>
+          c.id === DRUMMONDS_FY27_PAIR.connectionId &&
           c.realmId === DRUMMONDS_FY27_PAIR.realmId && c.environment === "production");
         const bodies = approvedFy27PairBodies(currentConnection, requestIds);
         localStorage.setItem(key, JSON.stringify({ requestIds, state: "access_ready",
