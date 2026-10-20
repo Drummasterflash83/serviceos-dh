@@ -60,8 +60,25 @@ export type FounderAccountsPreview = {
   currency: string; realmId: string; periodStart: string; periodEnd: string;
   accountingMethod: "Accrual" | "Cash"; arAsOf: string; profitSha256: string;
   receivablesSha256: string; auditId: string;
-  accountsGrossProfit: string; netProfit: string; ar91Plus: string;
+  profitReceivedAt: string; receivablesReceivedAt: string;
+  accountsGrossProfit: string; netProfit: string;
+  receivables: { current: string; days1To30: string; days31To60: string;
+    days61To90: string; days91Plus: string; total: string };
 };
+
+/** Preserve source decimals exactly, including credits and different decimal scales. */
+function reconcilesReceivables(buckets: string[], total: string): boolean {
+  const values = [...buckets, total];
+  if (values.length !== 6 || values.some(value => !/^-?\d{1,40}(\.\d{1,10})?$/.test(value))) return false;
+  const scale = Math.max(...values.map(value => value.split(".")[1]?.length ?? 0));
+  const units = values.map(value => {
+    const negative = value.startsWith("-");
+    const [whole, fraction = ""] = (negative ? value.slice(1) : value).split(".");
+    const amount = BigInt(whole) * 10n ** BigInt(scale) + BigInt(fraction.padEnd(scale, "0") || "0");
+    return negative ? -amount : amount;
+  });
+  return units.slice(0, 5).reduce((sum, value) => sum + value, 0n) === units[5];
+}
 
 /** Project exact report figures from an explicitly selected, audited pair. */
 export function readFounderAccountsPreview(value: unknown, tenantId: string,
@@ -74,21 +91,35 @@ export function readFounderAccountsPreview(value: unknown, tenantId: string,
       report.periodEnd !== pair.periodEnd || report.arAsOf !== pair.arAsOf ||
       report.accountingMethod !== pair.accountingMethod || report.currency !== pair.currency ||
       report.realmId !== pair.realmId || report.profitSha256 !== pair.profitSha256 ||
-      report.receivablesSha256 !== pair.receivablesSha256)
+      report.receivablesSha256 !== pair.receivablesSha256 ||
+      !reconcilesReceivables([report.summary.arCurrent, report.summary.ar1To30,
+        report.summary.ar31To60, report.summary.ar61To90, report.summary.ar91Plus],
+        report.summary.arTotal))
     throw Error("accounts_preview_scope_held");
   return {currency:report.currency,realmId:report.realmId,periodStart:report.periodStart,
     periodEnd:report.periodEnd,accountingMethod:report.accountingMethod,arAsOf:report.arAsOf,
     profitSha256:report.profitSha256,receivablesSha256:report.receivablesSha256,
+    profitReceivedAt:pair.profitReceivedAt,receivablesReceivedAt:pair.receivablesReceivedAt,
     auditId:report.auditId,accountsGrossProfit:report.summary.accountsGrossProfit,
-    netProfit:report.summary.netProfit,ar91Plus:report.summary.ar91Plus};
+    netProfit:report.summary.netProfit,
+    receivables:{current:report.summary.arCurrent,days1To30:report.summary.ar1To30,
+      days31To60:report.summary.ar31To60,days61To90:report.summary.ar61To90,
+      days91Plus:report.summary.ar91Plus,total:report.summary.arTotal}};
 }
 
-/** A positive net 91+ report bucket is an operator review cue, never an invoice or job claim. */
+/** The detailed age bands have their own operator-only switch. */
+export function canShowReceivablesAgeing(input: {
+  operator: boolean; flagEnabled: boolean; saved: FounderAccountsPreview | null;
+}) {
+  return input.operator && input.flagEnabled && input.saved !== null;
+}
+
+/** A positive net 91+ report bucket is a review cue, never an invoice or job claim. */
 export function canShowAgedReceivablesReview(input: {
   operator: boolean; flagEnabled: boolean; saved: FounderAccountsPreview | null;
 }) {
-  const amount = input.saved?.ar91Plus;
-  return input.operator && input.flagEnabled && typeof amount === "string" &&
+  const amount = input.saved?.receivables.days91Plus;
+  return canShowReceivablesAgeing(input) && typeof amount === "string" &&
     /^[0-9]{1,40}(\.[0-9]{1,10})?$/.test(amount) && /[1-9]/.test(amount);
 }
 

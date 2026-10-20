@@ -1,6 +1,14 @@
 # One-page Commusoft source-user trial — release review
 
-This is a **prepared, unexecuted** Drummonds LIVE procedure. Installing
+The default-OFF SQL safeguards were installed in LIVE on 20 October 2026 at
+00:48 UTC, after TEST rollback and exact LIVE preflight. [PR #223](https://github.com/Drummasterflash83/serviceos-dh/pull/223)
+merged as `c4400bff`. The one-page source trial below remains **unexecuted**:
+independent release readback found both pinned migration ledger rows, six expected
+function/grant hashes, users flag OFF, zero users versions and zero provider
+requests. The guarded install returned an acknowledged receipt; no replay was
+needed. The next action requires an idle completed recurring cycle.
+
+Installing
 `20261108130000_new_dawn_commusoft_users_trial_restore.sql` and
 `20261108131000_new_dawn_commusoft_users_trial_resume_fence.sql` create a
 default-OFF, authenticated recovery RPC and transactional trial fences. They do not enable source-user capture,
@@ -25,9 +33,18 @@ Commusoft connector, and the worker requires it to match the connection.
 
 1. Verify the LIVE worker is the downloaded and independently checked v12
    executable closure, and verify the two installed source-user migrations and
-   default-OFF flag. Run the new migration in a TEST transaction that rolls
-   back, then release it with an exact ledger/readback review. Recheck that the
-   function is executable only by authenticated operators.
+   default-OFF flag. `scripts/verify/new-dawn-m2-users-trial-release.mjs`
+   pins both trial SQL files by SHA-256, checks the existing function and grant
+   hashes, the exact prior migration ledger, one configured recurring account,
+   default-Off users flag and the active job classifier. Ordinary classified
+   source jobs may continue; users and unknown jobs stop the release. Run its
+   `--test-rollback-only` mode, then its `--live-read-only` mode with
+   `NEW_DAWN_M2_TRIAL_PROJECT=tgbnakbxwcqjeimygroz`. The exact install mode
+   is a separate, reviewed release action. It inserts both pinned SQL sources
+   into the migration ledger in one transaction and rechecks function hashes,
+   grants and default-Off state before commit. Independently read back the
+   ledger and all six function hashes/grants afterward. Never automatically
+   replay an unknown install outcome.
 2. Read only the Drummonds account, recurring row, existing flag and active
    source-sync metadata. Require an **idle completed cycle** (`phase=0`,
    `current_request=null`), active configured connection and no active job.

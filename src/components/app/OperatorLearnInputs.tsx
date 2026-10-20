@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { OperatorCommusoftRecurring } from "./OperatorCommusoftRecurring";
+import { OperatorScheduledActivityProbe } from "./OperatorScheduledActivityProbe";
+import { OperatorCommusoftUsersPage } from "./OperatorCommusoftUsersPage";
 import { OperatorCommusoftResume } from "./OperatorCommusoftResume";
 import { OperatorCommusoftConnection } from "./OperatorCommusoftConnection";
 import { OperatorSlackConnection } from "./OperatorSlackConnection";
@@ -43,6 +45,7 @@ export function OperatorLearnInputs({
     [notice, setNotice] = useState("");
   const [canWrite, setCanWrite] = useState<boolean | null>(null);
   const [usersCaptureEnabled, setUsersCaptureEnabled] = useState<boolean | null>(null);
+  const [usersPageEnabled, setUsersPageEnabled] = useState<boolean | null>(null);
   const [slackOpen, setSlackOpen] = useState(false);
   const [quickbooksOpen, setQuickbooksOpen] = useState(false);
   const [recurringBlocked, setRecurringBlocked] = useState(false);
@@ -81,17 +84,20 @@ export function OperatorLearnInputs({
   async function refresh(ticket: number) {
     setCanWrite(null);
     setUsersCaptureEnabled(null);
+    setUsersPageEnabled(null);
     const [d, permission, usersFlag] = await Promise.all([
       readOperatorInputs(db(), tenantId),
       readOperatorInputWriteAccess(db()),
-      getSupabaseClient().from("feature_flags").select("value")
+      getSupabaseClient().from("feature_flags").select("flag,value")
         .eq("tenant_id", tenantId)
-        .eq("flag", "learn.inputs.commusoft.users.enabled")
-        .maybeSingle(),
+        .in("flag", ["learn.inputs.commusoft.users.enabled", "new_dawn.m2_isolated_users_page"]),
     ]);
     if (!current(ticket)) return;
     setCanWrite(permission);
-    setUsersCaptureEnabled(usersFlag.error ? null : usersFlag.data?.value === true);
+    setUsersCaptureEnabled(usersFlag.error ? null : usersFlag.data?.some((row) =>
+      row.flag === "learn.inputs.commusoft.users.enabled" && row.value === true) === true);
+    setUsersPageEnabled(usersFlag.error ? null : usersFlag.data?.some((row) =>
+      row.flag === "new_dawn.m2_isolated_users_page" && row.value === true) === true);
     setData(d);
     setValues({
       "learn.enabled": d.flags["learn.enabled"] === true,
@@ -100,7 +106,8 @@ export function OperatorLearnInputs({
     setConnection((old) =>
       d.connections.some((c) => c.id === old) ? old : (d.connections[0]?.id ?? ""),
     );
-    if ((usersFlag.error || usersFlag.data?.value !== true) && resource === "users") {
+    if ((usersFlag.error || !usersFlag.data?.some((row) =>
+      row.flag === "learn.inputs.commusoft.users.enabled" && row.value === true)) && resource === "users") {
       setResource("properties");
       setPages(10);
       setPageSize(50);
@@ -301,7 +308,9 @@ export function OperatorLearnInputs({
         <p className="rounded-lg border p-3" role="status">
           {canWrite === false
             ? "Read-only access. You can review input status; an OpenFolk administrator is required to change settings or approve imports."
-            : "Administrator access could not be verified. Input status is available; changes are paused until access can be checked."}
+            : usersPageEnabled === true
+              ? "Administrator access could not be verified for setup changes. The separate source-user check performs its own server-side authority check before any read."
+              : "Administrator access could not be verified. Input status is available; changes are paused until access can be checked."}
         </p>
       )}
       {!storageReady && (
@@ -373,6 +382,18 @@ export function OperatorLearnInputs({
         onAccessChange={setCanWrite}
         onChanged={() => refresh(generation.current)}
       />
+      <OperatorScheduledActivityProbe tenantId={tenantId} connectionId={selected?.id ?? null} canRun={canWrite === true && !busy && !pending} />
+      {usersPageEnabled === true && selected && canWrite !== false && (
+        <OperatorCommusoftUsersPage
+          key={`${backend}:${tenantId}:${actorId}:${selected.id}`}
+          tenantId={tenantId}
+          actorId={actorId}
+          connectionId={selected.id}
+          backend={backend}
+          canRun={!busy && !pending && !connectionBlocked && selected.status === "configured" &&
+            !selected.revoked && selected.credential_bound && !!selected.verified_at}
+        />
+      )}
       <details
         className="rounded-xl border p-4"
         open={slackOpen}

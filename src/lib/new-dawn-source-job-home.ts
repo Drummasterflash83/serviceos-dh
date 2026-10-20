@@ -84,19 +84,40 @@ export function groupSourceHomeJobs(jobs: SourceHomeJob[], now = Date.now()) {
   return { recentlySaved, needsOpenFolkCheck };
 }
 
+/** Search only the audited, bounded selection already in view; this is not a company-wide job search. */
+export function filterSourceHomeJobs(jobs: SourceHomeJob[], query: string) {
+  const needle = query.trim().toLocaleLowerCase("en-GB");
+  if (!needle) return jobs;
+  return jobs.filter((job) => [
+    job.fields.job_number, job.fields.title, job.fields.customer,
+    job.fields.address, job.fields.postcode,
+  ].some((value) => value?.toLocaleLowerCase("en-GB").includes(needle)));
+}
+
 /** Plain-language client attention, separate from the operator's source diagnostics. */
 export function sourceJobClientAttention(job: SourceHomeJob, now = Date.now()) {
   const cue = sourceJobReviewCue(job, now);
   if (cue.kind === "link_review") return {
     label: "Job details need checking",
+    why: "OpenFolk has not confirmed which saved details are current.",
     nextStep: "Ask OpenFolk to confirm this job record before acting on it",
   };
   if (cue.kind === "aged_observation") return {
     label: "Current progress needs checking",
+    why: "The last saved update cannot confirm this job's current progress.",
     nextStep: "Confirm current progress before taking the next job step",
   };
+  const why = ({
+    on_hold: "The last saved status is on hold; the hold reason is not confirmed here.",
+    pending: "The last saved status is pending; what it is waiting for is not confirmed here.",
+    open: "The last saved status is open; the next owner is not confirmed here.",
+    completed: "The last saved status is complete; the final outcome is not confirmed here.",
+    closed: "The last saved status is closed; the final outcome is not confirmed here.",
+  } as Record<string, string>)[job.fields.status ?? ""] ??
+    "The last saved status is not clear enough to guide the next step.";
   return {
     label: "Recorded progress needs confirming",
+    why,
     nextStep: homeJobAction({ status: job.fields.status }),
   };
 }

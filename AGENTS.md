@@ -1,5 +1,3 @@
-> **New Dawn delivery direction (Chris, 19 October 2026).** The active M1–M6 pursuing goal supersedes `BUILD-CONTRACT.md`, `LEARN-ACCEPTANCE.md`, the 00–23 stage prompts, and any conflicting gate in `docs/DEPLOYMENT.md`. Preserve tenant isolation, logged operator access, excluded Slack DMs, secrets and backups, no invented business data, and explicit authority for provider writes, messaging, phone routing, logins, destructive changes and money movement. See `docs/STATUS.md` for the current short status.
-
 > **New Dawn delivery direction (Chris, 19–20 October 2026).** The active
 > M1–M6 pursuing goal supersedes `BUILD-CONTRACT.md`,
 > `LEARN-ACCEPTANCE.md`, the 00–23 stage prompts and any conflicting
@@ -8,6 +6,15 @@
 > backups, honest source/freshness labels and the explicit-authority
 > boundaries for provider writes, messages, routing, money, logins and
 > destructive changes. Ship small, verified LIVE slices behind flags.
+
+> [!IMPORTANT]
+> **New Dawn is the active delivery direction.** Chris’s M1–M6 pursuing goal
+> supersedes `BUILD-CONTRACT.md`, `LEARN-ACCEPTANCE.md`, the 00–23 stage prompts,
+> and any conflicting gate in `docs/DEPLOYMENT.md`. Keep the safety rules below:
+> tenant isolation, audited OpenFolk access, excluded Slack DMs, secrets out of
+> code and logs, no provider writes or messages without authority, no login or
+> phone-routing change without authority, and no rewrite of published Git history.
+> `docs/STATUS.md` is the current milestone record.
 
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
