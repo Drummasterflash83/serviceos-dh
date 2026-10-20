@@ -30,6 +30,9 @@
 .md-money h2 { margin: 4px 0 8px; color: #25253a; font-size: clamp(24px,2.6vw,31px); font-weight: 550; letter-spacing: -.03em; }
 .md-money > p:not(.of-eyebrow), .md-money-source { max-width: 78ch; color: #706b7e; font-size: 13px; line-height: 1.6; }
 .md-money > button { margin: 16px 0; }
+.md-money-period { display: grid; gap: 7px; max-width: 600px; margin: 0 0 16px; color: #514669; font-size: 13px; font-weight: 600; }
+.md-money-period select { width: 100%; padding: 10px 12px; border: 1px solid #d8d2e1; border-radius: 9px; background: #fff; color: #25253a; font: inherit; }
+.md-money-period span { color: #706b7e; font-size: 12px; font-weight: 400; }
 .md-money [role="alert"] { color: #9b3333; }
 .md-money-source { padding: 13px 16px; border-radius: 9px; background: #f4eff8; }
 .md-money-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin: 18px 0; }

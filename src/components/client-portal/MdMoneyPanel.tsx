@@ -4,9 +4,9 @@ import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
 import { financeAmount } from "@/lib/learn-quickbooks-finance";
 import { readFounderAccountsPairs, readFounderAccountsPreview,
-  type FounderAccountsPreview } from "@/lib/new-dawn-founder-accounts-preview";
+  type AccountsPair, type FounderAccountsPreview } from "@/lib/new-dawn-founder-accounts-preview";
 import { readAccountsMarginPreview, type AccountsMarginPreview } from "@/lib/new-dawn-accounts-margin";
-import { newestAccountsPair, netProfitYtdComparison } from "@/lib/new-dawn-md-money";
+import { accountsNetMargin, newestAccountsPair, netProfitYtdComparison } from "@/lib/new-dawn-md-money";
 
 type Snapshot = { accounts: FounderAccountsPreview; margin: AccountsMarginPreview | null };
 const dateTime = (value: string) => new Date(value).toLocaleString("en-GB", {
@@ -17,6 +17,8 @@ const dateTime = (value: string) => new Date(value).toLocaleString("en-GB", {
 export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: string }) {
   const { user } = useAuth();
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [periods, setPeriods] = useState<AccountsPair[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const generation = useRef(0);
@@ -38,7 +40,7 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
     staleTime: 30_000,
   });
 
-  async function openSavedAccounts() {
+  async function openSavedAccounts(requestId?: string) {
     if (!user || !flags.data?.accounts || busy || reason.trim().length < 3) return;
     const ticket = ++generation.current;
     setBusy(true); setError(""); setSnapshot(null);
@@ -48,7 +50,9 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
         "learn_quickbooks_report_pair_candidates", { p_tenant: tenant, p_reason: reason.trim() },
       ).abortSignal(AbortSignal.timeout(20_000));
       if (candidateError) throw Error("Saved report periods unavailable");
-      const pair = newestAccountsPair(readFounderAccountsPairs(candidates, tenant, user.id));
+      const available = readFounderAccountsPairs(candidates, tenant, user.id);
+      const pair = requestId ? available.find(candidate => candidate.profitRequest === requestId) ?? null
+        : newestAccountsPair(available);
       if (!pair) throw Error("No matching report pair");
       const { data: raw, error: summaryError } = await client.rpc(
         "learn_quickbooks_report_summary_preview", {
@@ -71,10 +75,17 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
           catch { /* A margin shape conflict holds the percentage, not the verified report. */ }
         }
       }
-      if (ticket === generation.current) setSnapshot({ accounts, margin });
+      if (ticket === generation.current) {
+        setPeriods(available.sort((a, b) => b.periodEnd.localeCompare(a.periodEnd) ||
+          b.periodStart.localeCompare(a.periodStart) || b.profitReceivedAt.localeCompare(a.profitReceivedAt)));
+        setSelectedRequest(pair.profitRequest);
+        setSnapshot({ accounts, margin });
+      }
     } catch {
-      if (ticket === generation.current)
+      if (ticket === generation.current) {
+        setPeriods([]); setSelectedRequest("");
         setError("The latest saved QuickBooks reports could not be checked together. Figures remain withheld.");
+      }
     } finally {
       if (ticket === generation.current) setBusy(false);
     }
@@ -82,6 +93,8 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
 
   const saved = snapshot?.accounts;
   const ytd = saved ? netProfitYtdComparison(saved.periodStart, saved.periodEnd) : null;
+  const netMargin = saved && snapshot?.margin
+    ? accountsNetMargin(saved.netProfit, snapshot.margin.totalIncome) : null;
   return <section className="md-money" aria-label="Drummonds MD money">
     <p className="of-eyebrow">DRUMMONDS · MONEY</p>
     <h2>What the accounts show.</h2>
@@ -90,9 +103,18 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
     {flags.data?.accounts !== true && !flags.isPending && !flags.isError &&
       <p role="status">Accounts figures are not released for this view yet.</p>}
     {flags.data?.accounts === true && <button className="cp-primary" type="button"
-      disabled={busy} onClick={() => void openSavedAccounts()}>
+      disabled={busy} onClick={() => void openSavedAccounts(selectedRequest || undefined)}>
       {busy ? "Checking saved accounts…" : saved ? "Refresh saved accounts" : "Open saved accounts"}
     </button>}
+    {periods.length > 1 && <label className="md-money-period">Saved accounting period
+      <select value={selectedRequest} disabled={busy}
+        onChange={event => void openSavedAccounts(event.target.value)}>
+        {periods.map(pair => <option key={pair.profitRequest} value={pair.profitRequest}>
+          {pair.periodStart} to {pair.periodEnd} · {pair.accountingMethod} · saved {dateTime(pair.profitReceivedAt)}
+        </option>)}
+      </select>
+      <span>Periods are separate reports. A partial month is not a trend against a full month.</span>
+    </label>}
     {error && <p role="alert">{error}</p>}
     {saved && <>
       <p className="md-money-source">QuickBooks Online · Drummonds company accounts · {saved.periodStart} to {saved.periodEnd} · {saved.accountingMethod} basis · reports saved {dateTime(saved.profitReceivedAt)} and {dateTime(saved.receivablesReceivedAt)} UK. These are saved reports, not today's live balances.</p>
@@ -105,7 +127,7 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
         </article>
         <article><span>Net profit · MD only</span>
           <strong>{financeAmount(saved.netProfit, saved.currency)}</strong>
-          <p>For {saved.periodStart} to {saved.periodEnd}. {ytd?.target} comparison held: {ytd?.reason}</p>
+          <p>For {saved.periodStart} to {saved.periodEnd}. Accounts net margin: {netMargin ? `${netMargin}%` : "held"}{netMargin ? ` (net profit ÷ total income; 8% same-period target)` : " until a verified total-income denominator is available"}. {ytd?.target} comparison held: {ytd?.reason}</p>
         </article>
         <article><span>Further Works this month</span><strong>Not enough data yet</strong>
           <p>£58,000 monthly target. Verified estimate value and a Further Works classification are needed.</p>
