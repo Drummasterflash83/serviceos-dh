@@ -162,6 +162,11 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
   const rows = active?.rows ?? [];
   const activeSummary = summary.data?.tenantId === tenant && summary.data.actorId === user?.id
     && !summary.isFetching ? summary.data : null;
+  const nextRecordedStatus: OpenJobStatus | null = activeSummary
+    ? activeSummary.counts.on_hold > 0 ? "on_hold"
+      : activeSummary.counts.pending > 0 ? "pending"
+        : activeSummary.counts.open > 0 ? "open" : null
+    : null;
   function changeFilter(next: OpenJobStatus | null) {
     setStatus(next); setPageIndex(0); setCursors([null]); setSelected(null);
   }
@@ -207,17 +212,28 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
     {enabled && <>
       <section className="nd-score-home" aria-label="Company scorecard">
         <div className="nd-score-hero">
-          <p className="of-eyebrow">HOW {company?.toUpperCase() ?? "THE COMPANY"} IS DOING</p>
-          <h3>Not enough data yet</h3>
-          <p>A company score needs confirmed job progress, commercial outcomes and ownership. Saved job status alone cannot provide a fair score.</p>
-          {activeSummary && <button className="cp-secondary" type="button" onClick={() => showJobs(null)}>
-            See recorded open jobs
-          </button>}
+          <div className="nd-score-ring" aria-label="Company score: not enough data yet">
+            <span aria-hidden="true">—</span><small aria-hidden="true">/ 100</small>
+          </div>
+          <div className="nd-score-hero-copy">
+            <p className="of-eyebrow">HOW {company?.toUpperCase() ?? "THE COMPANY"} IS DOING</p>
+            <h3>Company score: not enough data yet</h3>
+            <p>We can show recorded work now. A fair score still needs confirmed job progress, ownership and commercial outcomes.</p>
+            {activeSummary && <>
+              <p className="nd-score-source">Commusoft statuses saved as of {savedAt(activeSummary.snapshotAt)}. Counts are not performance scores.</p>
+              {nextRecordedStatus ? <button className="cp-secondary" type="button"
+                onClick={() => showJobs(nextRecordedStatus)}>
+                {nextRecordedStatus === "on_hold" ? `Review ${activeSummary.counts.on_hold.toLocaleString("en-GB")} recorded on-hold jobs`
+                  : nextRecordedStatus === "pending" ? `Review ${activeSummary.counts.pending.toLocaleString("en-GB")} recorded pending jobs`
+                    : `See ${activeSummary.counts.open.toLocaleString("en-GB")} recorded open jobs`}
+              </button> : <p>No open status appears in this saved snapshot; other source gaps may remain.</p>}
+            </>}
+          </div>
         </div>
         <div className="nd-score-tiles" aria-label="Jobs, customers and team scorecards">
           <article><span>JOBS</span><strong>Not enough data yet</strong>
             <p>{activeSummary
-              ? `${activeSummary.counts.total.toLocaleString("en-GB")} jobs have a saved open status; stage age and ownership still need confirmation.`
+              ? `${activeSummary.counts.total.toLocaleString("en-GB")} jobs have a saved open status. Stage age and ownership still need confirmation before scoring.`
               : "Checking recorded open jobs; stage age and ownership still need confirmation."}</p>
             {activeSummary && <button type="button" onClick={() => showJobs(null)}>See open jobs →</button>}
           </article>
@@ -233,13 +249,15 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         {activeSummary && <div className="nd-score-bottlenecks">
           <div><h3>Where work may be held up</h3>
             <p>Commusoft statuses saved by OpenFolk as of {savedAt(activeSummary.snapshotAt)}. These counts do not identify the person or cause yet.</p></div>
-          {(["on_hold", "pending", "open"] as const).filter((kind) => activeSummary.counts[kind] > 0).map((kind) => (
+          {(["on_hold", "pending"] as const).filter((kind) => activeSummary.counts[kind] > 0).map((kind) => (
             <button key={kind} type="button" onClick={() => showJobs(kind)}>
               <span><b>{statusLabel[kind]}</b><small>{openJobNextStep(kind)}</small></span>
               <strong>{activeSummary.counts[kind].toLocaleString("en-GB")} jobs</strong>
               <ChevronRight size={17} />
             </button>
           ))}
+          {activeSummary.counts.on_hold === 0 && activeSummary.counts.pending === 0 &&
+            <p>No on-hold or pending statuses appear in this saved snapshot. This does not confirm that every job is progressing.</p>}
         </div>}
       </section>
       <div ref={jobsRef} className="nd-open-jobs-heading">
