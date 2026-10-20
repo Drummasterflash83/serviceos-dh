@@ -98,56 +98,68 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
     ? accountsNetMargin(saved.netProfit, snapshot.margin.totalIncome) : null;
   return <section className="md-money" aria-label="Drummonds MD money">
     <p className="of-eyebrow">DRUMMONDS · MONEY</p>
-    <h2>What the accounts show.</h2>
-    <p>Read the newest verified, saved QuickBooks period. Each figure keeps its date and basis; this does not move money or send a chase.</p>
-    {flags.isError && <p role="alert">Money release status is unavailable.</p>}
-    {flags.data?.accounts !== true && !flags.isPending && !flags.isError &&
-      <p role="status">Accounts figures are not released for this view yet.</p>}
-    {flags.data?.accounts === true && <button className="cp-primary" type="button"
-      disabled={busy} onClick={() => void openSavedAccounts(selectedRequest || undefined)}>
-      {busy ? "Checking saved accounts…" : saved ? "Refresh saved accounts" : "Open saved accounts"}
-    </button>}
-    {periods.length > 1 && <label className="md-money-period">Saved accounting period
-      <select value={selectedRequest} disabled={busy}
-        onChange={event => void openSavedAccounts(event.target.value)}>
-        {periods.map(pair => <option key={pair.profitRequest} value={pair.profitRequest}>
-          {pair.periodStart} to {pair.periodEnd} · {pair.accountingMethod} · saved {dateTime(pair.profitReceivedAt)}
-        </option>)}
-      </select>
-      <span>Periods are separate reports. A partial month is not a trend against a full month.</span>
-    </label>}
-    {error && <p role="alert">{error}</p>}
-    {saved && <>
-      <p className="md-money-source">QuickBooks Online · Drummonds company accounts · {saved.periodStart} to {saved.periodEnd} · {saved.accountingMethod} basis · reports saved {dateTime(saved.profitReceivedAt)} and {dateTime(saved.receivablesReceivedAt)} UK. These are saved reports, not today's live balances.</p>
-      <div className="md-money-grid">
-        <article><span>Accounts gross profit</span>
-          <strong>{snapshot.margin ? `${snapshot.margin.accountsGrossMarginPct}%` : "Not enough data yet"}</strong>
-          <p>{snapshot.margin
-            ? `QuickBooks gross profit ${financeAmount(saved.accountsGrossProfit, saved.currency)} ÷ total income ${financeAmount(snapshot.margin.totalIncome, saved.currency)}. The 30% floor and 35% target basis are unconfirmed.`
-            : "A verified total-income denominator is needed for the percentage. Field GP awaits job costs and links."}</p>
-        </article>
-        <article><span>Net profit · MD only</span>
-          <strong>{financeAmount(saved.netProfit, saved.currency)}</strong>
-          <p>For {saved.periodStart} to {saved.periodEnd}. Accounts net margin: {netMargin ? `${netMargin}%` : "held"}{netMargin ? ` (net profit ÷ total income; 8% same-period target)` : " until a verified total-income denominator is available"}. {ytd?.target} comparison held: {ytd?.reason}</p>
-        </article>
-        <article><span>Further Works this month</span><strong>Not enough data yet</strong>
-          <p>£58,000 monthly target. Verified estimate value and a Further Works classification are needed.</p>
-        </article>
-        <article><span>Annual recurring revenue</span><strong>Not enough data yet</strong>
-          <p>Verified recurring contracts, value and term are needed.</p>
-        </article>
-      </div>
-      <div className="md-money-followup">
-        <h3>Where money may be held up</h3>
-        <p><strong>Aged receivables:</strong> {financeAmount(saved.receivables.days91Plus, saved.currency)} in the report's 91-day-and-over net bucket, as of {saved.arAsOf}. Credits may affect this amount. It is not an invoice-level chase list.</p>
-        <p><strong>Completed, not invoiced:</strong> awaiting verified Commusoft completion and QuickBooks job links.</p>
-        <p><strong>Closed without price, quote or FOC reason:</strong> awaiting verified closure and commercial evidence.</p>
-        <p><strong>Liz's chase drafts:</strong> held until invoice-level ageing and customer review are linked. No messages have been drafted or sent.</p>
-      </div>
-      <MdAgedInvoices tenant={tenant} reason={reason} />
-      <details className="md-money-proof"><summary>Source and read audit</summary>
-        <p>P&amp;L SHA-256 {saved.profitSha256}; receivables SHA-256 {saved.receivablesSha256}. Summary audit {saved.auditId}{snapshot.margin ? `; margin audit ${snapshot.margin.auditId}` : ""}.</p>
-      </details>
-    </>}
+    <h2>Money needing a review.</h2>
+    <p>Check saved overdue invoice sources and company accounts separately. Each read is audited. Nothing here moves money or sends a chase.</p>
+    <MdAgedInvoices tenant={tenant} reason={reason} />
+    <div className="md-money-accounts">
+      <h3>Company accounts</h3>
+      <p>Open a verified saved QuickBooks period to see its figures, dates and accounting basis.</p>
+      {flags.isError && <p role="alert">Money release status is unavailable.</p>}
+      {flags.data?.accounts !== true && !flags.isPending && !flags.isError &&
+        <p role="status">Accounts figures are not released for this view yet.</p>}
+      {flags.data?.accounts === true && <button className="cp-primary" type="button"
+        disabled={busy} onClick={() => void openSavedAccounts(selectedRequest || undefined)}>
+        {busy ? "Checking saved accounts…" : saved ? "Refresh saved accounts" : "Open saved accounts"}
+      </button>}
+      {periods.length > 1 && <label className="md-money-period">Saved accounting period
+        <select value={selectedRequest} disabled={busy}
+          onChange={event => void openSavedAccounts(event.target.value)}>
+          {periods.map(pair => <option key={pair.profitRequest} value={pair.profitRequest}>
+            {pair.periodStart} to {pair.periodEnd} · {pair.accountingMethod} · saved {dateTime(pair.profitReceivedAt)}
+          </option>)}
+        </select>
+        <span>Periods are separate reports. A partial month is not a trend against a full month.</span>
+      </label>}
+      {error && <p role="alert">{error}</p>}
+      {saved && <>
+        <p className="md-money-source">QuickBooks Online · Drummonds company accounts · {saved.periodStart} to {saved.periodEnd} · {saved.accountingMethod} basis · reports saved {dateTime(saved.profitReceivedAt)} and {dateTime(saved.receivablesReceivedAt)} UK. These are saved reports, not today's live balances.</p>
+        <div className="md-money-grid">
+          <article><span>Accounts gross profit</span>
+            <strong>{snapshot.margin ? `${snapshot.margin.accountsGrossMarginPct}%` : "Not enough data yet"}</strong>
+            <p>{snapshot.margin
+              ? `QuickBooks gross profit ${financeAmount(saved.accountsGrossProfit, saved.currency)} ÷ total income ${financeAmount(snapshot.margin.totalIncome, saved.currency)}. The 30% floor and 35% target basis are unconfirmed.`
+              : "A verified total-income denominator is needed for the percentage. Field GP awaits job costs and links."}</p>
+          </article>
+          <article><span>Net profit · MD only</span>
+            <strong>{financeAmount(saved.netProfit, saved.currency)}</strong>
+            <p>For {saved.periodStart} to {saved.periodEnd}. Accounts net margin: {netMargin ? `${netMargin}%` : "held"}{netMargin ? ` (net profit ÷ total income; 8% same-period target)` : " until a verified total-income denominator is available"}. {ytd?.target} comparison held: {ytd?.reason}</p>
+          </article>
+          <article><span>Further Works this month</span><strong>Not enough data yet</strong>
+            <p>£58,000 monthly target. Verified estimate value and a Further Works classification are needed.</p>
+          </article>
+          <article><span>Annual recurring revenue</span><strong>Not enough data yet</strong>
+            <p>Verified recurring contracts, value and term are needed.</p>
+          </article>
+        </div>
+        <div className="md-money-followup">
+          <h3>Where money may be held up</h3>
+          <p><strong>Aged receivables:</strong> {financeAmount(saved.receivables.days91Plus, saved.currency)} in the report's 91-day-and-over net bucket, as of {saved.arAsOf}. Credits may affect this amount. It is not an invoice-level chase list.</p>
+          <p><strong>Completed, not invoiced:</strong> awaiting verified Commusoft completion and QuickBooks job links.</p>
+          <p><strong>Closed without price, quote or FOC reason:</strong> awaiting verified closure and commercial evidence.</p>
+          <p><strong>Liz's chase drafts:</strong> held until invoice-level ageing and customer review are linked. No messages have been drafted or sent.</p>
+        </div>
+        <details className="md-money-proof"><summary>Source and read audit</summary>
+          <p>P&amp;L SHA-256 {saved.profitSha256}; receivables SHA-256 {saved.receivablesSha256}. Summary audit {saved.auditId}{snapshot.margin ? `; margin audit ${snapshot.margin.auditId}` : ""}.</p>
+        </details>
+      </>}
+    </div>
+    <div className="md-money-next">
+      <h3>What still needs source evidence</h3>
+      <ul>
+        <li><strong>£144k FY27 net-profit comparison:</strong> an agreed fiscal period and a verified full-to-date P&amp;L. Saved monthly reports cannot establish it.</li>
+        <li><strong>Further Works versus £58k/month:</strong> current, classified quote and delivered or invoiced work with dates.</li>
+        <li><strong>ARR:</strong> current recurring contracts with value, term and changes, reconciled to Finance.</li>
+      </ul>
+    </div>
   </section>;
 }

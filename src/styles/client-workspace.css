@@ -466,6 +466,14 @@ button.nd-job-row:hover { border-color: #a996c0; background: #fff; }
 .nd-score-readiness-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
 .nd-score-readiness-grid article { padding: 16px; border: 1px solid #e9e7ee; border-radius: 14px; background: #faf9f6; }
 .nd-score-readiness-grid h3 { margin: 0 0 8px; font-size: 15px; font-weight: 600; color: #514669; }
+.nd-job-score-evidence { padding: 18px; border: 1px solid #e5dfea; border-radius: 14px; background: #faf9f6; }
+.nd-job-score-evidence h3 { margin: 5px 0 8px; color: #242337; }
+.nd-job-score-evidence > p { color: #706b7e; font-size: 13px; line-height: 1.5; }
+.nd-job-score-evidence ol { margin: 14px 0 0; padding-left: 20px; display: grid; gap: 10px; }
+.nd-job-score-evidence li { padding-left: 4px; }
+.nd-job-score-evidence li strong { color: #514669; }
+.nd-job-score-evidence li small { margin-left: 8px; color: #706b7e; }
+.nd-job-score-evidence li p { margin: 3px 0; color: #514e5d; font-size: 13px; line-height: 1.45; }
 @media (max-width: 720px) { .nd-score-readiness { padding: 19px; } .nd-score-readiness-grid { grid-template-columns: 1fr; } }
 .nd-money-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
 .nd-money-heading h2 { margin: 3px 0 6px; font-size: clamp(23px, 2.6vw, 30px); letter-spacing: -.035em; }
