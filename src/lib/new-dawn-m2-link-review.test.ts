@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  exactLinkReviewAction, exactLinkReviewLabel, loadExactLinkReviewPage,
+  exactLinkReviewAction, exactLinkReviewLabel, exactSourceReviewDestination, loadExactLinkReviewPage,
   readExactLinkReviewPage,
 } from "./new-dawn-m2-link-review.ts";
 
@@ -33,6 +33,15 @@ test("only a fresh, exact-scoped audited page is shown", () => {
 test("source ambiguity and conflict remain held", () => {
   for (const reason of ["property_source_missing_or_ambiguous", "customer_source_missing_or_ambiguous", "customer_site_conflict"])
     assert.equal(exactLinkReviewAction({ externalId: "10", state: "review", reason, sourceVersionId: null }), "hold");
+});
+
+test("only a reviewed customer with an exact retained work-site ID skips customer review", () => {
+  const row = { externalId: "10", state: "review" as const,
+    reason: "site_mapping_missing_or_stale", sourceVersionId: null };
+  assert.equal(exactSourceReviewDestination(row, "reviewed", "42"), "site");
+  assert.equal(exactSourceReviewDestination(row, "unreviewed", "42"), "customer");
+  assert.equal(exactSourceReviewDestination(row, "reviewed", null), "customer");
+  assert.equal(exactSourceReviewDestination({ ...row, reason: "customer_site_conflict" }, "reviewed", "42"), "customer");
 });
 
 test("rejects cross-tenant, stale, unordered and unsupported ready evidence", () => {

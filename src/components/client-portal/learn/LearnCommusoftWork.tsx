@@ -26,6 +26,7 @@ import {
 } from "@/lib/learn-commusoft-work";
 import type { RecoveryLock } from "@/lib/learn-slack-recovery-outbox";
 import { exactSiteWasLinked } from "@/lib/new-dawn-guided-job-review";
+import { ExactSiteReviewAction } from "./ExactSiteReviewAction";
 
 export function LearnCommusoftWork({
   tenantId,
@@ -36,6 +37,9 @@ export function LearnCommusoftWork({
   initialJob,
   initialSite,
   expectedJobVersion,
+  expectedCustomer,
+  operatorReason,
+  canApplyExact,
   onExactSiteLinked,
 }: {
   tenantId: string;
@@ -46,11 +50,15 @@ export function LearnCommusoftWork({
   initialJob?: { connection: string; external: string } | null;
   initialSite?: { connection: string; external: string } | null;
   expectedJobVersion?: string;
+  expectedCustomer?: string;
+  operatorReason?: string;
+  canApplyExact?: boolean;
   onExactSiteLinked?: () => void;
 }) {
   const db = client ?? getSupabaseClient();
   const exactTarget = initialSite ? { ...initialSite, kind: "site" as const } :
     initialJob ? { ...initialJob, kind: "job" as const } : null;
+  const exactSiteFlow = !!initialSite && !!expectedCustomer && !!onExactSiteLinked;
   const scope = { backend: supabaseConfig.url.replace(/\/$/, ""), actorId, tenantId };
   const [connections, setConnections] = useState<ReviewConnection[]>([]),
     [connection, setConnection] = useState(""),
@@ -374,7 +382,13 @@ export function LearnCommusoftWork({
       {ready && !connections.length && (
         <p>No verified Commusoft connection is available for review.</p>
       )}
-      <fieldset className="space-y-3" disabled={busy || !ready || !storageReady || !!pending}>
+      {exactSiteFlow && <ExactSiteReviewAction tenant={tenantId} connection={initialSite.connection}
+        external={initialSite.external} expectedCustomer={expectedCustomer}
+        source={rows.find(row => row.external_id === initialSite.external) ?? null}
+        operatorReason={operatorReason ?? ""}
+        canApply={canApplyExact === true}
+        disabled={busy || !ready || !!pending} onLinked={onExactSiteLinked} />}
+      <fieldset className="space-y-3" hidden={exactSiteFlow} disabled={busy || !ready || !storageReady || !!pending}>
         <label className="block">
           Commusoft connection{" "}
           <select

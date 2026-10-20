@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getSupabaseClient } from "@/lib/supabase";
+import { useQuery } from "@tanstack/react-query";
+import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import { operatorBusinessReviewClient } from "@/lib/openfolk-business-review";
 import { LearnCommusoftCustomers } from "@/components/client-portal/learn/LearnCommusoftCustomers";
 import { LearnCommusoftWork } from "@/components/client-portal/learn/LearnCommusoftWork";
 import { LearnCommusoftSourceJobs } from "@/components/client-portal/learn/LearnCommusoftSourceJobs";
 import type { GuidedJobReview } from "@/lib/new-dawn-guided-job-review";
+import { ExactJobAutoLink } from "@/components/client-portal/learn/ExactJobAutoLink";
 
 export function OperatorCommusoftReview({
   tenantId,
@@ -66,6 +68,17 @@ export function OperatorCommusoftReview({
         : null,
     [tenantId, actorId, session],
   );
+  const exactApply = useQuery({
+    queryKey: ["new-dawn-m2-exact-apply-flag", supabaseConfig.url, tenantId, actorId],
+    enabled: !!session,
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().from("feature_flags")
+        .select("value").eq("tenant_id", tenantId)
+        .eq("flag", "new_dawn.m2_exact_apply").maybeSingle();
+      if (error) throw Error("Exact apply setting unavailable");
+      return data?.value === true;
+    }, staleTime: 0,
+  });
   function returnToJob() {
     if (!returnJob) return;
     setRequestedJob(returnJob);
@@ -146,11 +159,14 @@ export function OperatorCommusoftReview({
           {kind === "work" && requestedSite && guided && <p role="status" className="text-sm">
             Step 2 of 3: review exact site {requestedSite.external} for saved job {guided.job}. A linked site receipt opens the exact job review. A held result stays here; no link is assumed.
           </p>}
-          {kind === "work" && requestedJob && guided && <p role="status" className="text-sm">
-            Final step: review saved job {guided.job}. Its source version must still match. The customer and site decisions do not link the job automatically.
-          </p>}
+          {kind === "work" && requestedJob && guided?.site && <div className="space-y-2 text-sm">
+            <p>Final step: review saved job {guided.job}. Its source version must still match. The exact-ID action checks both current customer and work-site mappings again before linking.</p>
+            <ExactJobAutoLink tenant={tenantId} connection={guided.connection}
+              external={guided.job} version={guided.jobVersion}
+              canApply={exactApply.data === true} />
+          </div>}
           {client &&
-            (kind === "source-jobs" ? <LearnCommusoftSourceJobs key={`${tenantId}:${actorId}:${session.generation}`} tenantId={tenantId} actorId={actorId} client={client} operatorReason={session.reason} onReviewJob={(connection, external) => { setGuided(null); setRequestedSite(null); setRequestedJob({ connection, external }); setKind("work"); }} onReviewCustomer={(review) => { setGuided(review); setReturnJob({ connection: review.connection, external: review.job }); setRequestedCustomer({ connection: review.connection, external: review.customer }); setRequestedJob(null); setRequestedSite(null); setKind("customers"); }} /> : kind === "customers" ? (
+            (kind === "source-jobs" ? <LearnCommusoftSourceJobs key={`${tenantId}:${actorId}:${session.generation}`} tenantId={tenantId} actorId={actorId} client={client} operatorReason={session.reason} onReviewJob={(connection, external) => { setGuided(null); setRequestedSite(null); setRequestedJob({ connection, external }); setKind("work"); }} onReviewCustomer={(review) => { setGuided(review); setReturnJob({ connection: review.connection, external: review.job }); setRequestedCustomer({ connection: review.connection, external: review.customer }); setRequestedJob(null); setRequestedSite(null); setKind("customers"); }} onReviewSite={(review) => { setGuided(review); setReturnJob({ connection: review.connection, external: review.job }); setRequestedCustomer(null); setRequestedJob(null); setRequestedSite({ connection: review.connection, external: review.site! }); setKind("work"); }} /> : kind === "customers" ? (
               <LearnCommusoftCustomers
                 key={`${tenantId}:${actorId}:${session.generation}`}
                 tenantId={tenantId}
@@ -169,6 +185,9 @@ export function OperatorCommusoftReview({
                 initialJob={requestedJob}
                 initialSite={requestedSite}
                 expectedJobVersion={requestedJob && guided?.job === requestedJob.external ? guided.jobVersion : undefined}
+                expectedCustomer={requestedSite && guided?.site === requestedSite.external ? guided.customer : undefined}
+                operatorReason={session.reason}
+                canApplyExact={exactApply.data === true}
                 onExactSiteLinked={() => {
                   if (!guided || !requestedSite) return;
                   setRequestedSite(null);

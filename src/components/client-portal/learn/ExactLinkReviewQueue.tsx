@@ -5,15 +5,17 @@ import type { ReviewClient } from "@/lib/learn-commusoft-review";
 import { loadSourceJobPage } from "@/lib/learn-commusoft-source-jobs";
 import { planGuidedJobReview, type GuidedJobReview } from "@/lib/new-dawn-guided-job-review";
 import {
-  exactLinkReviewAction, exactLinkReviewLabel, loadExactLinkReviewPage,
+  exactLinkReviewAction, exactLinkReviewLabel, exactSourceReviewDestination, loadExactLinkReviewPage,
   type ExactLinkReviewPage, type ExactLinkReviewRow,
 } from "@/lib/new-dawn-m2-link-review";
+import { ExactJobAutoLink } from "./ExactJobAutoLink";
 
 /** Operator-only, audited queue for exact source IDs. It never applies a link. */
-export function ExactLinkReviewQueue({ tenant, actor, connection, reason, db, onReviewJob, onReviewCustomer }: {
+export function ExactLinkReviewQueue({ tenant, actor, connection, reason, db, onReviewJob, onReviewCustomer, onReviewSite }: {
   tenant: string; actor: string; connection: string; reason: string; db: ReviewClient;
   onReviewJob?: (connection: string, external: string) => void;
   onReviewCustomer?: (review: GuidedJobReview) => void;
+  onReviewSite?: (review: GuidedJobReview) => void;
 }) {
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
   const [page, setPage] = useState<ExactLinkReviewPage | null>(null);
@@ -32,6 +34,17 @@ export function ExactLinkReviewQueue({ tenant, actor, connection, reason, db, on
       return data?.value === true;
     },
     staleTime: 30_000,
+  });
+  const applyFlag = useQuery({
+    queryKey: ["new-dawn-m2-exact-apply-flag", supabaseConfig.url, tenant, actor],
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().from("feature_flags")
+        .select("value").eq("tenant_id", tenant)
+        .eq("flag", "new_dawn.m2_exact_apply").maybeSingle();
+      if (error) throw Error("Exact apply setting unavailable");
+      return data?.value === true;
+    },
+    staleTime: 0,
   });
   const cursor = cursors[cursors.length - 1];
   useEffect(() => {
@@ -60,7 +73,7 @@ export function ExactLinkReviewQueue({ tenant, actor, connection, reason, db, on
     return () => clearTimeout(timer);
   }, [page]);
   async function reviewExactSource(row: ExactLinkReviewRow) {
-    if (!onReviewCustomer || hidden || actionId) return;
+    if ((!onReviewCustomer && !onReviewSite) || hidden || actionId) return;
     setActionId(row.externalId); setNotice("");
     try {
       const source = await loadSourceJobPage(db, {
@@ -68,12 +81,16 @@ export function ExactLinkReviewQueue({ tenant, actor, connection, reason, db, on
       });
       const exact = source.rows.find(item => item.external_id === row.externalId);
       if (!exact) throw Error("Exact source unavailable");
-      onReviewCustomer(planGuidedJobReview(connection, {
+      const review = planGuidedJobReview(connection, {
         external_id: exact.external_id, version_id: exact.version_id,
         source_observed_at: exact.observed_at, source_status: exact.source_status,
         relationship_state: exact.relationship_state,
         customer_identity_state: exact.customer_identity_state,
-      }, exact));
+      }, exact);
+      if (exactSourceReviewDestination(row, exact.customer_identity_state, review.site) === "site" && onReviewSite)
+        onReviewSite(review);
+      else if (onReviewCustomer) onReviewCustomer(review);
+      else throw Error("Customer review unavailable");
     } catch {
       setNotice("The exact customer/site source is unavailable or changed. Refresh before reviewing it.");
     } finally { setActionId(""); }
@@ -92,8 +109,11 @@ export function ExactLinkReviewQueue({ tenant, actor, connection, reason, db, on
       <ol className="space-y-2">{page.rows.map(row => <li key={row.externalId} className="rounded-lg border border-[#e5dbe9] p-3 space-y-2">
         <p><strong>Commusoft job {row.externalId}</strong> · {row.state === "ready" ? "Exact IDs ready for job-link review" : "Needs review"}</p>
         <p className="text-sm">{exactLinkReviewLabel(row)}</p>
-        {exactLinkReviewAction(row) === "job" && onReviewJob && <button type="button" className="cp-secondary" onClick={() => onReviewJob(connection, row.externalId)}>Review version-checked job link</button>}
-        {exactLinkReviewAction(row) === "customer_site" && onReviewCustomer && <button type="button" className="cp-secondary" disabled={!!actionId} onClick={() => void reviewExactSource(row)}>{actionId === row.externalId ? "Checking exact source…" : "Review exact customer and site"}</button>}
+        {exactLinkReviewAction(row) === "job" && row.sourceVersionId &&
+          <ExactJobAutoLink tenant={tenant} connection={connection} external={row.externalId}
+            version={row.sourceVersionId} canApply={applyFlag.data === true}
+            onInspect={onReviewJob ? () => onReviewJob(connection, row.externalId) : undefined} />}
+        {exactLinkReviewAction(row) === "customer_site" && (onReviewCustomer || onReviewSite) && <button type="button" className="cp-secondary" disabled={!!actionId} onClick={() => void reviewExactSource(row)}>{actionId === row.externalId ? "Checking exact source…" : "Review exact customer and work site"}</button>}
         {exactLinkReviewAction(row) === "hold" && <p className="text-sm">Held. Resolve the source or identity conflict before linking.</p>}
       </li>)}</ol>
       <div className="flex justify-between gap-2"><button type="button" className="cp-secondary" disabled={busy || cursors.length === 1} onClick={() => setCursors(v => v.slice(0, -1))}>Previous source IDs</button>
