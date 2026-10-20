@@ -413,6 +413,11 @@ button.nd-job-row:hover { border-color: #a996c0; background: #fff; }
 .nd-operator-preview--active strong { flex: 1 1 180px; }
 .nd-operator-preview--active p { flex: 2 1 260px; }
 .nd-operator-preview--active button { margin-left: auto; }
+.nd-md-preview-note { margin: 13px 0 0; color: #756d7b; font-size: 11px; line-height: 1.5; }
+.nd-md-preview-controls { margin-top: 18px; padding-top: 12px; border-top: 1px solid #eee9f0; color: #756d7b; font-size: 12px; }
+.nd-md-preview-controls summary { width: fit-content; cursor: pointer; }
+.nd-md-preview-controls p { margin: 10px 0; line-height: 1.5; }
+.nd-md-preview-controls > div { display: flex; flex-wrap: wrap; gap: 8px; }
 .nd-job-detail h3 { margin-top: 16px; font-weight: 600; }
 .nd-money-panel { margin: 0 0 24px; padding: 28px; border: 1px solid #e5dfea; border-radius: 18px; background: #fff; }
 .nd-score-readiness { margin: 0 0 24px; padding: 28px; border: 1px solid #e5dfea; border-radius: 18px; background: #fff; }
