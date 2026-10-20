@@ -33,10 +33,11 @@ function ReviewTaskButton({ db, tenant, connection, external, version }: {
 }
 
 /** Read-only source cards: unresolved identity never hides a retained job. */
-export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob, onReviewJob, onReviewCustomer, operatorReason }: {
+export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob, onReviewJob, onReviewCustomer, onReviewSite, operatorReason }: {
   tenantId: string; actorId: string; client?: ReviewClient; onOpenJob?: (id: string) => void;
   onReviewJob?: (connection: string, external: string) => void;
   onReviewCustomer?: (review: GuidedJobReview) => void;
+  onReviewSite?: (review: GuidedJobReview) => void;
   operatorReason?: string;
 }) {
   const db = client ?? getSupabaseClient();
@@ -139,7 +140,7 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob,
       <button className="cp-secondary" onClick={() => { setHidden(false); setCursors([null]); setRevision(n => n + 1); }}>{operatorReason ? "Refresh source review" : "Refresh captured jobs"}</button></div>
     {operatorReason && connection && <ExactLinkReviewQueue tenant={tenantId} actor={actorId}
       connection={connection} reason={operatorReason} db={db}
-      onReviewJob={onReviewJob} onReviewCustomer={onReviewCustomer} />}
+      onReviewJob={onReviewJob} onReviewCustomer={onReviewCustomer} onReviewSite={onReviewSite} />}
     {operatorReason && <section className="rounded-xl border border-[#cbbada] bg-white p-4 space-y-3" aria-label="Recent unlinked jobs for OpenFolk review">
       <h4 className="font-semibold">Recently captured jobs awaiting a reviewed link</h4>
       <p className="text-sm">OpenFolk review only. These are saved Commusoft records, not current job progress or automatic customer matches.</p>
