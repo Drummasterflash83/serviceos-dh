@@ -268,6 +268,7 @@ Deno.serve(async (req) => {
           vapi_state: vapi.state, birchills_state: birchills.state,
           test_number_state: "testNumber" in vapi ? vapi.testNumber?.state : "not_checked",
           birchills_source_hash: "sourceHash" in birchills ? birchills.sourceHash : null,
+          birchills_policy_holds: "policyHolds" in birchills ? birchills.policyHolds : [],
           started_at: startedAt,
         },
       });
