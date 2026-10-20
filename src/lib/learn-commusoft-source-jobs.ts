@@ -42,6 +42,15 @@ export type SourceJobPage = {
   latest_job_page_at: string | null;
   observed_at: string;
 };
+/** Navigation clue only: never an identity match or permission to link a job. */
+export function customerSourceForReview(row: SourceJob): string | null {
+  return row.version_id &&
+    (row.relationship_state === "customer_source_retained" ||
+      row.relationship_state === "site_customer_source_retained") &&
+    row.customer_reference && /^[1-9]\d{0,15}$/.test(row.customer_reference)
+      ? row.customer_reference
+      : null;
+}
 const uuid = (v: unknown): v is string => typeof v === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(v);
 const reference = (v: unknown): v is string => typeof v === "string" && /^[1-9]\d{0,15}$/.test(v);
 const instant = (v: unknown): v is string => typeof v === "string" && /(?:Z|[+-]\d{2}:\d{2})$/.test(v) && Number.isFinite(Date.parse(v));

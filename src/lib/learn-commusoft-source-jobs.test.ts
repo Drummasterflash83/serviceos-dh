@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { loadSourceJobPage, readSourceJobPage } from "./learn-commusoft-source-jobs.ts";
+import { customerSourceForReview, loadSourceJobPage, readSourceJobPage } from "./learn-commusoft-source-jobs.ts";
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const scope = { tenant: id(1), actor: id(2), connection: id(3), query: "", openOnly: true, after: null };
 const now = Date.parse("2026-10-16T14:00:00Z");
@@ -17,6 +17,14 @@ test("unclassified source jobs remain visible with leading-zero work text and a 
   assert.equal(p.rows[0].business_unit, "001. Gas");
   assert.equal(p.rows[0].company_name, null);
   assert.equal(p.rows[0].customer_identity_state, "unreviewed");
+});
+test("customer-review navigation requires an exact retained parent, never a missing or conflicted identity", () => {
+  const row = readSourceJobPage(response(), scope, now).rows[0];
+  assert.equal(customerSourceForReview(row), "42");
+  assert.equal(customerSourceForReview({ ...row, relationship_state: "site_customer_source_retained", property_reference: "19" }), "42");
+  assert.equal(customerSourceForReview({ ...row, relationship_state: "customer_source_missing" }), null);
+  assert.equal(customerSourceForReview({ ...row, version_id: null }), null);
+  assert.equal(customerSourceForReview({ ...row, customer_reference: null }), null);
 });
 test("reject foreign tenant, actor, connection and stale/mismatched read scopes", () => {
   for (const field of ["tenant_id", "actor_id", "connection_id", "audit_id"]) {

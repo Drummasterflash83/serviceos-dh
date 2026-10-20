@@ -18,11 +18,13 @@ export function LearnCommusoftCustomers({
   canEdit,
   onSaved,
   client,
+  initialCustomer,
 }: {
   tenantId: string;
   canEdit: boolean;
   onSaved?: () => void;
   client?: ReviewClient;
+  initialCustomer?: { connection: string; external: string } | null;
 }) {
   const db = client ?? getSupabaseClient();
   const [connections, setConnections] = useState<ReviewConnection[]>([]),
@@ -49,6 +51,7 @@ export function LearnCommusoftCustomers({
     [notice, setNotice] = useState("");
   const generation = useRef(0),
     working = useRef(false),
+    requestedCustomer = useRef(initialCustomer),
     editable = useRef(canEdit);
   editable.current = canEdit;
   function resetDecision() {
@@ -91,6 +94,8 @@ export function LearnCommusoftCustomers({
     ticket: number,
     query = appliedSearch,
   ) {
+    if (initialCustomer && (id !== initialCustomer.connection || query !== initialCustomer.external))
+      throw Error("This guided review is bound to the exact customer source. Return to the job to choose another route.");
     const page = await loadCommusoftReviewPage(
       db,
       tenantId,
@@ -102,10 +107,16 @@ export function LearnCommusoftCustomers({
     setSourceSearch(query);
     setAppliedSearch(query);
     setConnection(id);
-    setRows(page.rows);
-    setNext(page.next);
+    setRows(initialCustomer ? page.rows.filter((row) => row.external_id === initialCustomer.external) : page.rows);
+    setNext(initialCustomer ? null : page.next);
     setPages(cursors);
-    setSelected(null);
+    const exact = requestedCustomer.current;
+    if (exact && id === exact.connection && query === exact.external) {
+      const match = page.rows.find((row) => row.external_id === exact.external) ?? null;
+      setSelected(match);
+      setNotice(match ? "Review this exact customer source before returning to the job." : "The exact customer source is unavailable. Do not select another customer for this job.");
+      requestedCustomer.current = null;
+    } else setSelected(null);
     resetDecision();
     setReady(true);
   }
@@ -117,7 +128,14 @@ export function LearnCommusoftCustomers({
       const available = await loadCommusoftReviewConnections(db, tenantId);
       if (ticket !== generation.current || !editable.current) return;
       setConnections(available);
-      if (connection && available.some((c) => c.id === connection))
+      const requested = requestedCustomer.current;
+      if (requested && available.some((c) => c.id === requested.connection))
+        await readPage(requested.connection, [null], ticket, requested.external);
+      else if (requested) {
+        requestedCustomer.current = null;
+        setReady(true);
+        setNotice("The exact customer source connection is unavailable. Do not select another customer for this job.");
+      } else if (connection && available.some((c) => c.id === connection))
         await readPage(connection, pages, ticket);
       else {
         setConnection("");
@@ -194,6 +212,10 @@ export function LearnCommusoftCustomers({
       setApproved(false);
       await confirmCommusoftCustomer(db, input);
       if (ticket !== generation.current) return;
+      if (initialCustomer) {
+        onSaved?.();
+        return;
+      }
       onSaved?.();
       await readPage(connection, pages, ticket);
       if (ticket === generation.current)
@@ -227,7 +249,7 @@ export function LearnCommusoftCustomers({
         <p>No verified Commusoft connection is available for review.</p>
       )}
       <fieldset className="space-y-3" disabled={busy || !ready}>
-        <label className="block">
+        {initialCustomer ? <p>Exact customer source {initialCustomer.external} · connection locked for this job review.</p> : <label className="block">
           Commusoft connection{" "}
           <select
             aria-label="Commusoft connection"
@@ -250,10 +272,10 @@ export function LearnCommusoftCustomers({
               </option>
             ))}
           </select>
-        </label>
+        </label>}
         {connection && (
           <>
-            <RetainedSourceSearch
+            {!initialCustomer && <RetainedSourceSearch
               value={sourceSearch}
               applied={appliedSearch}
               hint="Find by customer number, name, email, phone or address"
@@ -263,7 +285,7 @@ export function LearnCommusoftCustomers({
                 resetDecision();
               }}
               onSearch={(query) => void operation((t) => readPage(connection, [null], t, query))}
-            />
+            />}
             <ul className="space-y-2" aria-label="Retained Commusoft customers">
               {rows.map((r) => (
                 <li key={r.external_id}>
