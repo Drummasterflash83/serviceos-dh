@@ -23,7 +23,7 @@ begin
  perform public.learn_operator_input_access(p_tenant,actor,true);
  perform public.learn_quickbooks_actor_access(p_tenant,actor);
  perform 1 from public.feature_flags where tenant_id=p_tenant
-  and flag='new_dawn.invoice_review_candidates_preview' and value='true'::jsonb for share;
+  and flag='new_dawn.invoice_job_pair_source_preview' and value='true'::jsonb for share;
  if not found then raise exception 'invoice_job_source_disabled' using errcode='42501';end if;
 
  select count(*) into realm_count from public.learn_quickbooks_connections

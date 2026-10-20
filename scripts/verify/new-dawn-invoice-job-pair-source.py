@@ -126,7 +126,7 @@ set request.jwt.claim.sub='00000000-0000-4000-8000-000000000090';
 set role authenticated;
 select fixture_denied('select {DENIED_CALL}');
 reset role;
-insert into feature_flags values(public.fixture_id(1),'new_dawn.invoice_review_candidates_preview','true');
+insert into feature_flags values(public.fixture_id(1),'new_dawn.invoice_job_pair_source_preview','true');
 set role authenticated;
 do $$declare r jsonb;begin
  r:={CALL};

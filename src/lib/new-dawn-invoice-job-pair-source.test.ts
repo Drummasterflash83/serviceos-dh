@@ -48,6 +48,7 @@ test("database contract stays operator-only, exact-version and auditable",()=>{
   const sql=readFileSync(new URL("../../supabase/migrations/20261108130000_new_dawn_invoice_job_pair_source.sql",import.meta.url),"utf8");
   assert.match(sql,/perform public\.learn_operator_input_access\(p_tenant,actor,true\)/);
   assert.match(sql,/perform public\.learn_quickbooks_actor_access\(p_tenant,actor\)/);
+  assert.match(sql,/flag='new_dawn\.invoice_job_pair_source_preview'/);
   assert.match(sql,/l\.version_id is distinct from invoice\.id/);
   assert.match(sql,/job_link_count<>1/);
   assert.match(sql,/j\.metadata#>>'\{learn_business_input,source_version_id\}' is distinct from job_source\.id::text/);
