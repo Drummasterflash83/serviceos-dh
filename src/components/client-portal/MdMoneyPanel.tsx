@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -23,6 +23,7 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const generation = useRef(0);
+  const initialReadKey = useRef("");
   useEffect(() => () => { generation.current++; }, []);
   const flags = useQuery({
     queryKey: ["md-money-flags", tenant, user?.id],
@@ -41,7 +42,7 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
     staleTime: 30_000,
   });
 
-  async function openSavedAccounts(requestId?: string) {
+  const openSavedAccounts = useCallback(async (requestId?: string) => {
     if (!user || !flags.data?.accounts || busy || reason.trim().length < 3) return;
     const ticket = ++generation.current;
     setBusy(true); setError(""); setSnapshot(null);
@@ -90,7 +91,17 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
     } finally {
       if (ticket === generation.current) setBusy(false);
     }
-  }
+  }, [user, flags.data?.accounts, flags.data?.margin, busy, reason, tenant]);
+
+  // Opening the audited MD money view is the read request. Show the newest
+  // verified saved period immediately, while keeping the manual retry control.
+  useEffect(() => {
+    const key = `${tenant}:${user?.id ?? ""}:${reason}`;
+    if (!user || flags.data?.accounts !== true || reason.trim().length < 3 ||
+        initialReadKey.current === key) return;
+    initialReadKey.current = key;
+    void openSavedAccounts();
+  }, [tenant, user, reason, flags.data?.accounts, openSavedAccounts]);
 
   const saved = snapshot?.accounts;
   const ytd = saved ? netProfitYtdComparison(saved.periodStart, saved.periodEnd) : null;
@@ -103,7 +114,7 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
     <MdAgedInvoices tenant={tenant} reason={reason} />
     <div className="md-money-accounts">
       <h3>Company accounts</h3>
-      <p>Open a verified saved QuickBooks period to see its figures, dates and accounting basis.</p>
+      <p>The latest verified saved QuickBooks period opens with this audited view. Figures show their dates and accounting basis.</p>
       {flags.isError && <p role="alert">Money release status is unavailable.</p>}
       {flags.data?.accounts !== true && !flags.isPending && !flags.isError &&
         <p role="status">Accounts figures are not released for this view yet.</p>}
@@ -156,7 +167,7 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
     <div className="md-money-next">
       <h3>What still needs source evidence</h3>
       <ul>
-        <li><strong>FY27 net-profit comparison:</strong> the year starts 1 April 2026. The saved monthly reports do not cover the full period, and Finance has not confirmed the current target or its phasing. The historical £144k snapshot is not a confirmed current target.</li>
+        <li><strong>FY27 net-profit comparison:</strong> the saved 1 April–19 October report covers FY27 to its stated cutoff. Finance has not confirmed the current target or its phasing. The historical £144k snapshot is not a confirmed current target.</li>
         <li><strong>Further Works versus £58k/month:</strong> current, classified quote and delivered or invoiced work with dates.</li>
         <li><strong>ARR:</strong> current recurring contracts with value, term and changes, reconciled to Finance.</li>
       </ul>
