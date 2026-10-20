@@ -227,7 +227,9 @@ export function executableStructure(source) {
   function shape(node) {
     if (ts.isParenthesizedExpression(node)) return shape(node.expression);
     const children = [];
-    ts.forEachChild(node, (child) => children.push(shape(child)));
+    ts.forEachChild(node, (child) => {
+      children.push(shape(child));
+    });
     return [
       node.kind,
       ts.isIdentifier(node) || ts.isLiteralExpression(node) || ts.isTemplateLiteralToken(node)
@@ -244,12 +246,16 @@ function stagedPath(path) {
   return path.replace(/^supabase\/functions\//, "");
 }
 function downloadedPath(root, path) {
-  return join(
-    root,
-    "supabase/functions",
-    SLUG,
-    path.endsWith(`${SLUG}/index.ts`) ? "index.ts" : `work/supabase/functions/${stagedPath(path)}`,
-  );
+  const folder = join(root, "supabase/functions", SLUG);
+  if (path.endsWith(`${SLUG}/index.ts`)) return join(folder, "index.ts");
+  const relative = stagedPath(path);
+  const known = [
+    join(folder, "work/supabase/functions", relative),
+    join(folder, "functions", relative),
+  ];
+  const present = known.filter((candidate) => existsSync(candidate));
+  if (present.length !== 1) throw Error("downloaded_layout_missing_or_ambiguous:" + path);
+  return present[0];
 }
 export function verifyDownloaded(root, source = pinnedSources()) {
   for (const file of source.files.slice(1)) {

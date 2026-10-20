@@ -6,20 +6,20 @@ The release script pins merge `c117ee30c31977a7c361aa6b3d2661d02ea614d5` and the
 
 ## Current evidence (20 October 2026)
 
-- LIVE read-only preflight: `state=absent`, project `tgbnakbxwcqjeimygroz`, flag OFF, route absent, zero provider requests.
+- LIVE exact SQL was installed and its migration-ledger readback passed. The Edge route is v1 `ACTIVE` with the flag still OFF. The installer initially stopped at downloaded-source verification because Supabase CLI used `functions/_shared/...` instead of the previously expected `work/supabase/functions/_shared/...`. The independently saved download at `.verification-results/new-dawn-2026-10-20/scheduled-activity-edge-v1/` passes the corrected full executable-AST verifier for all three pinned source files. The corrected read-only LIVE `--live-readback` passed: Edge v1 hash `1adccdeef1ab07fd35b82a90c71c6e4cd42404d98cfee459bce3e66313ee2acc`, exact pinned source closure, private grants, and OFF flag were confirmed.
 - TEST exact SQL transaction: passed and rolled back against `saatxzwxvdvqevbnskxy`; migration ledger, probe tables, functions and flag returned to their prior state. Private RLS/grants were verified within the rolled-back transaction.
-- Local release-script tests: three passed. No LIVE installation or Commusoft API request was performed.
+- Local release-script tests: four passed, including both known download layouts, ambiguity rejection, and deliberate source mutation. No Commusoft API request was performed.
 
 ## Exact commands
 
-Run from the repository root with the saved Supabase CLI login. Inspect each output before the next command. **Only the first two commands below have been run in this preparation; the LIVE install commands remain pending.**
+Run from the repository root with the saved Supabase CLI login. The TEST rehearsal, LIVE preflight, both LIVE installation commands, and the corrected read-only LIVE readback below have already been run. **Do not rerun either installation command.**
 
 ```sh
 NEW_DAWN_SCHEDULED_ALLOW_PROJECT=saatxzwxvdvqevbnskxy node scripts/verify/new-dawn-m2-scheduled-activity-release.mjs --test-rollback-only
 NEW_DAWN_SCHEDULED_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-scheduled-activity-release.mjs --live-preflight
 ```
 
-After review, the separate install and readback steps are:
+Recorded install and readback commands are:
 
 ```sh
 NEW_DAWN_SCHEDULED_ALLOW_PROJECT=tgbnakbxwcqjeimygroz NEW_DAWN_SCHEDULED_SOURCE_SHA=c5d57b4cdbd0c46ffdb1ae3b48c457619ff5ce17593b02ac145c7279931e4ae2 node scripts/verify/new-dawn-m2-scheduled-activity-release.mjs --live-install-sql
@@ -27,4 +27,4 @@ NEW_DAWN_SCHEDULED_ALLOW_PROJECT=tgbnakbxwcqjeimygroz NEW_DAWN_SCHEDULED_CLOSURE
 NEW_DAWN_SCHEDULED_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-scheduled-activity-release.mjs --live-readback
 ```
 
-The SQL installer adds only `20261106193000_new_dawn_commusoft_scheduled_activity_probe.sql` and its exact Supabase migration-ledger entry. The Edge installer adds only `learn-commusoft-scheduled-activity-probe`. A missing receipt or mismatched state stops release; never rerun a write after an uncertain outcome without independent inspection. Enabling the OFF flag or making a LIVE source read is a distinct, later decision.
+The SQL installer adds only `20261106193000_new_dawn_commusoft_scheduled_activity_probe.sql` and its exact Supabase migration-ledger entry. The Edge installer adds only `learn-commusoft-scheduled-activity-probe`. A missing receipt or mismatched state stops release; never rerun a write after an uncertain outcome without independent inspection. The v1 route has been independently inspected, so the next operation is readback only. Enabling the OFF flag or making a LIVE source read is a distinct, later decision.

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import {
@@ -144,4 +145,41 @@ test("Edge installer stages only the three pinned files and verifies downloaded 
   assert.equal(result.state, "exact_edge_source_readback");
   assert.equal(attempts, 1);
   assert.equal(downloads, 1);
+});
+
+test("download readback accepts the current CLI layout, rejects ambiguity and changed source", () => {
+  const root = mkdtempSync(join(tmpdir(), "scheduled-layout-test-"));
+  try {
+    for (const file of source.files.slice(1)) {
+      const path = join(
+        root,
+        "supabase/functions",
+        SLUG,
+        file.path.endsWith(`${SLUG}/index.ts`)
+          ? "index.ts"
+          : `functions/${file.path.replace(/^supabase\/functions\//, "")}`,
+      );
+      mkdirSync(dirname(path), { recursive: true });
+      writeFileSync(path, file.source);
+    }
+    assert.equal(verifyDownloaded(root, source), source.closureSha256);
+    const shared = source.files.find((x) => x.path.endsWith("scheduled_activity_probe.ts"));
+    const alternate = join(root, "supabase/functions", SLUG, "work", shared.path);
+    mkdirSync(dirname(alternate), { recursive: true });
+    writeFileSync(alternate, shared.source);
+    assert.throws(() => verifyDownloaded(root, source), /downloaded_layout_missing_or_ambiguous/);
+    rmSync(alternate);
+    const current = join(
+      root,
+      "supabase/functions",
+      SLUG,
+      "functions/_shared/commusoft/scheduled_activity_probe.ts",
+    );
+    writeFileSync(current, shared.source.replace("response_invalid", "response_changed"));
+    assert.throws(() => verifyDownloaded(root, source), /downloaded_source_changed/);
+    rmSync(current);
+    assert.throws(() => verifyDownloaded(root, source), /downloaded_layout_missing_or_ambiguous/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
