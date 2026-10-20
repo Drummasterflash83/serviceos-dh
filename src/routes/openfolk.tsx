@@ -64,9 +64,13 @@ function OperatorAccess() {
         <Link to="/client" search={{ section: "home" }} className="underline">
           Go to your workspace
         </Link>
-        {eligible && (
-          <button className="block underline" onClick={() => void authority.refetch()}>
-            Try again
+        {eligible && authority.isError && (
+          <button
+            type="button"
+            className="block underline"
+            onClick={() => void authority.refetch()}
+          >
+            Retry access check
           </button>
         )}
       </main>

@@ -127,8 +127,8 @@ function WorkspacePage() {
               (directory.isPending ? "" : "Choose a client from your directory.")}
           </p>
           {directory.isError && (
-            <button className="op-button" onClick={() => void directory.refetch()}>
-              Retry
+            <button type="button" className="op-button" onClick={() => void directory.refetch()}>
+              Retry client directory
             </button>
           )}
         </div>
