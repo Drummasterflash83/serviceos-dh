@@ -1,4 +1,4 @@
-# M2 held source-user reference
+# M2 held source-user reference and isolated users page
 
 This candidate adds a **read-only OpenFolk operator check** for one reviewed
 Commusoft job. It compares source-user IDs in the latest immutable exact-job
@@ -24,15 +24,22 @@ and marks identity and appointment `unverified` on every row. It makes no
 provider request or source import. The UI button appears only for an operator
 on a current linked job with this flag enabled.
 
-Release sequence for review: merge the PR, verify the exact source head and
-Vercel deployment, apply this one additive SQL migration to TEST and then LIVE
-using the established migration ledger, and verify its hash and definition.
-Leave the flag absent or false on both environments. A later controlled
-operator trial may enable the flag for Drummonds and read one reviewed job with
-an existing exact-detail receipt. If no `/users` page has been retained, the
-correct result is `source_record_not_captured`; it does not authorize a `/users`
-provider GET. A separate one-page `GET /users` import still needs its own
-approved run and remains held from staff projection.
+`20261107160000_new_dawn_commusoft_isolated_users_page.sql` adds a separate
+operator-requested, one-page `GET /users` route. It requires the default-off
+`learn.inputs.commusoft.users.enabled` flag, an explicit tenant and configured
+connection, and a reason. The route reads at most 10 source users through the
+existing server credential and shared quota lease. It has no source-sync job,
+approval, cursor or phase mutation, and takes no manual waiter priority that
+would make recurring capture yield. It retains immutable, tenant-bound source
+versions and an audit receipt. The held job reference can use these versions,
+labelled as an isolated sample, without treating them as complete user coverage
+or staff identities.
+
+Release sequence for review: verify the exact source head; install the SQL
+chain and Edge route in TEST, then assess a bounded operator trial before any
+LIVE promotion. Leave both the reference and users flags absent or false until
+that trial is explicitly configured. If no matching `/users` version has been
+retained, the reference correctly reports `source_record_not_captured`.
 
 The rollback-only TEST rehearsal is:
 
@@ -43,8 +50,15 @@ node scripts/verify/new-dawn-m2-source-user-reference-rehearse.mjs --test-rollba
 It creates one synthetic source-user reference inside a transaction, verifies
 the absent flag, scoped operator read, unretained source state, audit, foreign
 tenant and service-role refusal, then rolls back. It makes zero provider GETs.
-To withdraw the candidate, leave the flag absent/false; no data removal is
-needed. Dropping the RPC after reviewing callers is a separate cleanup.
+The new migration and its six prerequisites also compiled in a single
+rollback-only TEST transaction through the existing Supabase management query
+tooling. Grants were checked; after rollback, the candidate objects were absent
+and the prior function hashes matched. No Commusoft request occurred. This is
+SQL compilation, not a real provider or signed-in acceptance test.
+
+To withdraw the candidate, keep both flags absent/false and disable the new
+Edge route. Preserve retained evidence; dropping functions after reviewing
+callers is a separate cleanup.
 
 **Outstanding M2 coverage:** a retained source user is not an engineer
 attendance record. Verified visits, estimates, invoices, parts/costs and
