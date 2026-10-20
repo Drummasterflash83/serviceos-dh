@@ -26,8 +26,10 @@ const files = [
   "supabase/functions/_shared/receptionist-launch-promotion.ts",
   "supabase/functions/_shared/receptionist-launch-scenarios.ts",
   "supabase/functions/_shared/receptionist-launch-wording.ts",
+  "supabase/functions/_shared/receptionist-launch-voice-reconcile.ts",
   "supabase/functions/_shared/receptionist-test-clock.ts",
   "supabase/functions/_shared/receptionist-testing.ts",
+  "supabase/functions/receptionist-testing/index.ts",
 ];
 const sha256 = value => createHash("sha256").update(value).digest("hex");
 const sourceFiles = files.map(path => {
