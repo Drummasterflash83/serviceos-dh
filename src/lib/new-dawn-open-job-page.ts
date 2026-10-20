@@ -24,6 +24,14 @@ export type OpenJobPage = {
   rows: OpenJobRow[];
   nextCursor: string | null;
 };
+export type OpenJobStatusSummary = {
+  tenantId: string;
+  actorId: string;
+  auditId: string;
+  observedAt: string;
+  snapshotAt: string;
+  counts: Record<OpenJobStatus | "total", number>;
+};
 
 const object = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && !Array.isArray(value);
@@ -38,6 +46,30 @@ const identityStates = ["reviewed_link", "awaiting_review"];
 
 export function openJobPageFlagName(operator: boolean) {
   return operator ? "new_dawn.open_job_page.operator_preview" : "new_dawn.open_job_page";
+}
+
+/** Keep status counts scoped to this actor and tenant, with an audited fresh
+ * read. A page of 40 jobs must never be presented as the whole workload. */
+export function readOpenJobStatusSummary(
+  value: unknown, tenant: string, actor: string,
+): OpenJobStatusSummary {
+  if (!object(value) || value.version !== "new-dawn-open-job-status-summary/1" ||
+    value.tenant_id !== tenant || value.actor_id !== actor || !uuid(value.audit_id) ||
+    !time(value.observed_at) || !time(value.snapshot_at) || !object(value.counts) ||
+    Date.parse(value.observed_at as string) < Date.now() - 300_000 ||
+    Date.parse(value.observed_at as string) > Date.now() + 60_000 ||
+    Date.parse(value.snapshot_at as string) > Date.parse(value.observed_at as string))
+    throw Error("Open job status summary unavailable");
+  const counts = value.counts;
+  if (Object.keys(counts).sort().join() !== ["on_hold", "pending", "open", "total"].sort().join() ||
+    Object.values(counts).some((n) => !Number.isSafeInteger(n) || Number(n) < 0) ||
+    Number(counts.on_hold) + Number(counts.pending) + Number(counts.open) !== counts.total)
+    throw Error("Open job status summary unavailable");
+  return {
+    tenantId: tenant, actorId: actor, auditId: value.audit_id as string,
+    observedAt: value.observed_at as string, snapshotAt: value.snapshot_at as string,
+    counts: counts as OpenJobStatusSummary["counts"],
+  };
 }
 
 export function readOpenJobPage(
