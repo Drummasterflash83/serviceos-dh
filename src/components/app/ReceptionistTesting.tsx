@@ -51,12 +51,25 @@ type ProviderPreflight = {
   birchills: {
     state: string;
     mainNumberMatches?: boolean;
-    mainNumber?: { defaultDestination: string; rules: { destination: string; interval: string }[] };
+    policyHolds?: string[];
+    mainNumber?: { defaultDestination: string; didTimeExceptionCount: number; didTimeExceptionTo502Count: number; rules: { destination: string; interval: string }[] };
     extensions?: {
       "205"?: { forwardsToEmmaTestNumber: boolean };
+      "109"?: { forwardsToSavedRobNumber: boolean };
+      "105"?: { forwardsToSavedTonyNumber: boolean };
       "603"?: { emailRecipient: string };
     };
   };
+};
+const preflightHoldLabels: Record<string, string> = {
+  main_number_identity_changed: "main-number identity changed",
+  main_number_default_not_501: "main-number default is not IVR 501",
+  did_time_exceptions_absent: "no DID-level time exceptions; out-of-hours route still needs proof",
+  did_out_of_hours_502_not_seen: "no DID-level route to out-of-hours IVR 502 was seen",
+  emma_205_test_forward_not_seen: "Emma extension 205 test-number forwarding is unproved",
+  rob_109_forward_not_seen: "Rob extension 109 target is unproved",
+  tony_105_forward_not_seen: "Tony extension 105 target is unproved",
+  mailbox_603_two_recipient_delivery_unproved: "mailbox 603 delivery to both people is unproved",
 };
 const date = (s: string) =>
   new Date(s).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
@@ -237,8 +250,12 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
             <div role="status" className="of-test-checks">
               <p className="of-test-note">Provider read completed {date(providerPreflight.completedAt)}. Any unchecked section stays held.</p>
               <p><strong>Vapi:</strong> {providerPreflight.vapi.state === "checked" ? "Configuration read" : "Needs review"}. Test number: {providerPreflight.vapi.testNumber?.assistant ?? "not checked"}; binding {providerPreflight.vapi.testNumber?.state ?? "not checked"}. Candidate voice {providerPreflight.vapi.graph?.checks?.candidateVoiceMatchesLive ? "matches" : "not proved to match"} LIVE.</p>
-              <p><strong>Birchills:</strong> {providerPreflight.birchills.state === "checked" ? "Configuration read" : "Needs review"}. Main number default: {providerPreflight.birchills.mainNumber?.defaultDestination ?? "not checked"}; time-based routes: {providerPreflight.birchills.mainNumber?.rules.map((rule) => `${rule.interval || "unnamed"} → ${rule.destination}`).join("; ") || "not checked"}.</p>
-              <p>Emma extension 205 forwards to the saved test number: {providerPreflight.birchills.extensions?.["205"]?.forwardsToEmmaTestNumber ? "yes" : "not proved"}. Mailbox 603 notification address: {providerPreflight.birchills.extensions?.["603"]?.emailRecipient ?? "not checked"}. Two delivered recipient emails still need a real 603 deposit and separate receipts.</p>
+              <p><strong>Birchills:</strong> {providerPreflight.birchills.state === "checked" ? "Configuration read" : "Needs review"}. Main number default: {providerPreflight.birchills.mainNumber?.defaultDestination ?? "not checked"}. DID-level time exceptions: {providerPreflight.birchills.mainNumber?.didTimeExceptionCount === undefined ? "not checked" : `${providerPreflight.birchills.mainNumber.didTimeExceptionCount} configured`}; routes to IVR 502: {providerPreflight.birchills.mainNumber?.didTimeExceptionTo502Count ?? "not checked"}. This does not prove the IVR's own opening-hours behaviour.</p>
+              {Boolean(providerPreflight.birchills.mainNumber?.rules.length) && (
+                <p>Observed DID rules: {providerPreflight.birchills.mainNumber?.rules.map((rule) => `${rule.interval || "unnamed"} → ${rule.destination}`).join("; ")}.</p>
+              )}
+              <p>Emma extension 205 forwards to the saved test number: {providerPreflight.birchills.extensions?.["205"]?.forwardsToEmmaTestNumber ? "yes" : "not proved"}. Rob 109 and Tony 105 match their saved targets: {providerPreflight.birchills.extensions?.["109"]?.forwardsToSavedRobNumber && providerPreflight.birchills.extensions?.["105"]?.forwardsToSavedTonyNumber ? "yes" : "not both proved"}. Mailbox 603 notification address: {providerPreflight.birchills.extensions?.["603"]?.emailRecipient ?? "not checked"}.</p>
+              <p><strong>Still to prove:</strong> {(providerPreflight.birchills.policyHolds ?? ["provider_read_unavailable"]).map((hold) => preflightHoldLabels[hold] ?? "provider configuration needs review").join("; ")}. A real 603 deposit and separate delivered email/Slack receipts remain required.</p>
             </div>
           )}
         </section>
