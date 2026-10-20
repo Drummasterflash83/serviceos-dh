@@ -161,10 +161,10 @@ function SourceJobPresentation({ tenant, jobs, onOpen }: {
     {recentlySaved.length === 0 && <p className="nd-job-scope">No linked job in this selection was saved in the past 24 hours. This does not mean there is no current work.</p>}
     {recentlySaved.map((source) => <ClientSourceRow key={source.id} tenant={tenant} source={source} onOpen={() => onOpen(source)} />)}
     {needsOpenFolkCheck.length > 0 && <div className="nd-job-check-queue">
-      <p className="nd-job-scope"><strong>Saved job records to check · {needsOpenFolkCheck.length}</strong> · These are not confirmed as today’s work.</p>
+      <p className="nd-job-scope"><strong>Jobs awaiting a progress check · {needsOpenFolkCheck.length}</strong> · Saved details need confirming before the next step is planned.</p>
       {visibleChecks.map((source) => <ClientSourceRow key={source.id} tenant={tenant} source={source} onOpen={() => onOpen(source)} />)}
       {moreChecks.length > 0 && <details className="nd-job-older">
-        <summary>Show {moreChecks.length} more saved records to check</summary>
+        <summary>Show {moreChecks.length} more jobs awaiting a check</summary>
         <p>These records remain available for review. Their saved status must not be treated as today’s job progress.</p>
         <div className="nd-job-list">{moreChecks.map((source) =>
           <ClientSourceRow key={source.id} tenant={tenant} source={source} onOpen={() => onOpen(source)} />)}</div>
