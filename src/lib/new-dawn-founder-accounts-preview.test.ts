@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { accountsPeriodCoverage, canReadFounderAccountsPreview, canShowAgedReceivablesReview,
+import { accountsPeriodCoverage, canReadFounderAccountsPreview, canShowAgedReceivablesReview, canShowReceivablesAgeing,
   readFounderAccountsPairs, readFounderAccountsPreview } from "./new-dawn-founder-accounts-preview.ts";
 
 const tenantId = "00000000-0000-0000-0000-000000000001";
@@ -51,7 +51,10 @@ test("current and historical source snapshots keep exact scope and decimal strin
   const result=readFounderAccountsPreview(response,tenantId,pair,"2026-10-19");
   assert.equal(result.accountsGrossProfit,"12345678901234567890.01");
   assert.equal(result.netProfit,"-10.02");
-  assert.equal(result.ar91Plus,"5.00");
+  assert.deepEqual(result.receivables,{current:"1.00",days1To30:"2.00",
+    days31To60:"3.00",days61To90:"4.00",days91Plus:"5.00",total:"15.00"});
+  assert.equal(result.profitReceivedAt,candidate.profit_received_at);
+  assert.equal(result.receivablesReceivedAt,candidate.receivables_received_at);
   assert.equal("summary" in result,false);
   assert.match(accountsPeriodCoverage("2026-10-18","2026-10-19"),/later changes/);
   assert.match(accountsPeriodCoverage("2026-09-30","2026-10-19"),/Historical period/);
@@ -62,16 +65,32 @@ test("current and historical source snapshots keep exact scope and decimal strin
   assert.throws(()=>readFounderAccountsPreview(response,tenantId,pair,"2026-10-17"));
 });
 
+test("receivables buckets must exactly reconcile before showing any saved money",()=>{
+  const changed=(summary: typeof response.summary) =>
+    readFounderAccountsPreview({...response,summary},tenantId,pair,"2026-10-19");
+  assert.throws(()=>changed({...response.summary,ar_total:"15.01"}),/accounts_preview_scope_held/);
+  assert.throws(()=>changed({...response.summary,ar_91_plus:"5.01"}),/accounts_preview_scope_held/);
+  assert.deepEqual(changed({...response.summary,ar_current:"-1.50",ar_1_30:"2.25",
+    ar_31_60:"3",ar_61_90:"4.0",ar_91_plus:"5.25",ar_total:"13.00"}).receivables,
+    {current:"-1.50",days1To30:"2.25",days31To60:"3",days61To90:"4.0",
+      days91Plus:"5.25",total:"13.00"});
+  assert.throws(()=>changed({...response.summary,ar_total:"0.00"}),/accounts_preview_scope_held/);
+});
+
 test("aged receivables review is default-off, operator-only and only a positive exact report bucket",()=>{
   const saved=readFounderAccountsPreview(response,tenantId,pair,"2026-10-19");
+  assert.equal(canShowReceivablesAgeing({operator:true,flagEnabled:true,saved}),true);
+  assert.equal(canShowReceivablesAgeing({operator:true,flagEnabled:false,saved}),false);
+  assert.equal(canShowReceivablesAgeing({operator:false,flagEnabled:true,saved}),false);
+  assert.equal(canShowReceivablesAgeing({operator:true,flagEnabled:true,saved:null}),false);
   assert.equal(canShowAgedReceivablesReview({operator:true,flagEnabled:true,saved}),true);
   for(const changed of [
     {operator:false,flagEnabled:true,saved},
     {operator:true,flagEnabled:false,saved},
     {operator:true,flagEnabled:true,saved:null},
-    {operator:true,flagEnabled:true,saved:{...saved,ar91Plus:"0.00"}},
-    {operator:true,flagEnabled:true,saved:{...saved,ar91Plus:"-5.00"}},
+    {operator:true,flagEnabled:true,saved:{...saved,receivables:{...saved.receivables,days91Plus:"0.00"}}},
+    {operator:true,flagEnabled:true,saved:{...saved,receivables:{...saved.receivables,days91Plus:"-5.00"}}},
   ]) assert.equal(canShowAgedReceivablesReview(changed),false);
   assert.equal(canShowAgedReceivablesReview({operator:true,flagEnabled:true,
-    saved:{...saved,ar91Plus:"0.01"}}),true);
+    saved:{...saved,receivables:{...saved.receivables,days91Plus:"0.01"}}}),true);
 });
