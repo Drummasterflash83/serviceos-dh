@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readCommusoftFreshness } from "./new-dawn-commusoft-freshness.ts";
+import { commusoftFreshnessSummary, readCommusoftFreshness } from "./new-dawn-commusoft-freshness.ts";
 
 const tenant = "00000000-0000-0000-0000-000000000001";
 const actor = "00000000-0000-0000-0000-000000000002";
@@ -16,6 +16,17 @@ test("accepts a provider-counted gap without subtracting IDs", () => {
   const value = readCommusoftFreshness(result(), tenant, actor);
   assert.equal(value.jobsBehind, 1);
   assert.equal(value.providerNewestJobId, "13437");
+  assert.equal(commusoftFreshnessSummary(value),
+    "1 job behind at last check · newest Commusoft job 13437");
+});
+
+test("only a complete, matching newest-job check says up to date", () => {
+  const matched = readCommusoftFreshness({ ...result(), saved_job_id: "13437", jobs_behind: 0 }, tenant, actor);
+  assert.equal(commusoftFreshnessSummary(matched), "Up to date to job 13437 at last check");
+  assert.equal(commusoftFreshnessSummary({ ...matched, state: "saved_advanced" }),
+    "Saved jobs changed since the last provider check; comparison pending");
+  assert.equal(commusoftFreshnessSummary({ ...matched, state: "stale" }),
+    "No current-day provider comparison");
 });
 
 test("rejects stale, partial and cross-tenant results that claim exact counts", () => {

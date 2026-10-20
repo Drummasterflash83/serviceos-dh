@@ -8,6 +8,22 @@ export type CommusoftFreshness = {
   observedAt: string;
 };
 
+/** Compare only the newest created job in a bounded provider read. */
+export function commusoftFreshnessSummary(value: CommusoftFreshness | undefined): string {
+  if (!value) return "Provider check unavailable";
+  if (value.state === "not_checked") return "Provider not checked yet";
+  if (value.state === "collecting") return "Checking provider jobs…";
+  if (value.state === "saved_advanced") return "Saved jobs changed since the last provider check; comparison pending";
+  if (value.state === "stale") return "No current-day provider comparison";
+  if (value.state === "partial") return `Comparison incomplete${value.atLeastBehind
+    ? ` · at least ${value.atLeastBehind.toLocaleString("en-GB")} new jobs found` : ""}`;
+  if (value.jobsBehind === 0 && value.savedJobId === value.providerNewestJobId &&
+    value.providerNewestJobId) return `Up to date to job ${value.providerNewestJobId} at last check`;
+  if (value.jobsBehind !== null) return `${value.jobsBehind.toLocaleString("en-GB")} ${value.jobsBehind === 1 ? "job" : "jobs"} behind at last check${value.providerNewestJobId
+    ? ` · newest Commusoft job ${value.providerNewestJobId}` : ""}`;
+  return "Provider comparison unavailable";
+}
+
 const object = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 const identifier = (value: unknown): value is string =>
