@@ -39,7 +39,7 @@ const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 const CLI = "/Users/chrisdrummond/.npm/_npx/f488b5593433aa64/node_modules/supabase/bin/supabase";
 const MIGRATION_QUERY = `select version::text from supabase_migrations.schema_migrations
  where version::text in ('20261106150000','20261106160000','20261106180000') order by version`;
-const FLAG_QUERY = `select flag from public.feature_flags where tenant_id='${TENANT}'::uuid
+const FLAG_QUERY = `select flag,value from public.feature_flags where tenant_id='${TENANT}'::uuid
  and flag in ('new_dawn.m2_commusoft_coexistence','new_dawn.exact_job_detail',
  'new_dawn.m5_opportunities_probe','learn.inputs.commusoft.users.enabled') order by flag`;
 const QUEUE_QUERY = `select exists(select 1 from public.platform_jobs where tenant_id='${TENANT}'::uuid
@@ -83,7 +83,8 @@ export function assessM2Preflight({ project, functions, migrations, flags, queue
     migrationsPresent: [], flagsPresent: [] };
 }
 
-export function assessM2Postrelease({ project, functions, migrations, flags, queue, lease }) {
+export function assessM2Postrelease({ project, functions, migrations, flags, queue, lease },
+  { allowOffM5Probe = false } = {}) {
   if (project?.id !== PROJECT || project?.status !== "ACTIVE_HEALTHY")
     throw Error("production_project_unconfirmed");
   const endpoints = namedEndpoints(functions);
@@ -96,7 +97,10 @@ export function assessM2Postrelease({ project, functions, migrations, flags, que
   if (!Array.isArray(migrations) || migrations.length !== MIGRATIONS.length ||
     migrations.some((row, i) => String(row?.version) !== MIGRATIONS[i]))
     throw Error("m2_sql_postrelease_unconfirmed");
-  if (!Array.isArray(flags) || flags.length !== 0) throw Error("m2_flags_not_absent");
+  const allowedOffM5 = allowOffM5Probe && flags?.length === 1 &&
+    flags[0]?.flag === "new_dawn.m5_opportunities_probe" && flags[0]?.value === false;
+  if (!Array.isArray(flags) || (flags.length !== 0 && !allowedOffM5))
+    throw Error("m2_flags_not_absent");
   if (!Array.isArray(queue) || queue.length !== 1 || typeof queue[0]?.active_import !== "boolean")
     throw Error("source_queue_unconfirmed");
   if (!Array.isArray(lease) || lease.length !== 1 ||
@@ -104,7 +108,7 @@ export function assessM2Postrelease({ project, functions, migrations, flags, que
       .some(key => lease[0]?.[key] !== true)) throw Error("lease_schema_unconfirmed");
   return { state: "installed_default_off_readback", endpoints,
     migrations: MIGRATIONS, activeImport: queue[0].active_import,
-    flagsPresent: [], providerRequests: 0 };
+    flagsPresent: flags, providerRequests: 0 };
 }
 
 export function assessM2WorkerFirst({ project, functions, migrations, flags, queue, health },
@@ -320,7 +324,7 @@ export async function captureM2Preflight(out, { token = savedCliToken(), cli = C
   }
 }
 
-export async function readM2Postrelease({ token = savedCliToken() } = {}) {
+export async function readM2Postrelease({ token = savedCliToken(), allowOffM5Probe = false } = {}) {
   const base = `https://api.supabase.com/v1/projects/${PROJECT}`;
   return assessM2Postrelease({
     project: await json(base, token),
@@ -329,7 +333,7 @@ export async function readM2Postrelease({ token = savedCliToken() } = {}) {
     flags: await json(base + "/database/query/read-only", token, FLAG_QUERY),
     queue: await json(base + "/database/query/read-only", token, QUEUE_QUERY),
     lease: await json(base + "/database/query/read-only", token, LEASE_QUERY),
-  });
+  }, { allowOffM5Probe });
 }
 
 export async function readM2WorkerFirst({ token = savedCliToken() } = {}) {

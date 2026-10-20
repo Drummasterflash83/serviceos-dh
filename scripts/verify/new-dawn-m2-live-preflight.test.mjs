@@ -53,6 +53,29 @@ test("post-release readback requires every new route, ordered SQL and absent fla
   assert.throws(() => assessM2Postrelease(installed), /lease_schema_unconfirmed/);
 });
 
+test("one-job trial may read through only an explicit OFF M5 probe row", () => {
+  const installed = input();
+  installed.functions.forEach(f => { f.version++; f.ezbr_sha256 = "a".repeat(64); });
+  installed.migrations = ["20261106150000", "20261106160000", "20261106180000"]
+    .map(version => ({ version }));
+  installed.lease = [{ columns_present: true, acquire_present: true,
+    yield_present: true, switch_present: true }];
+  installed.flags = [{ flag: "new_dawn.m5_opportunities_probe", value: false }];
+  assert.throws(() => assessM2Postrelease(installed), /m2_flags_not_absent/);
+  assert.deepEqual(assessM2Postrelease(installed, { allowOffM5Probe: true }).flagsPresent,
+    installed.flags);
+  for (const flags of [
+    [{ flag: "new_dawn.m5_opportunities_probe", value: true }],
+    [{ flag: "new_dawn.exact_job_detail", value: false }],
+    [{ flag: "new_dawn.m5_opportunities_probe", value: false },
+      { flag: "new_dawn.exact_job_detail", value: false }],
+  ]) {
+    installed.flags = flags;
+    assert.throws(() => assessM2Postrelease(installed, { allowOffM5Probe: true }),
+      /m2_flags_not_absent/);
+  }
+});
+
 test("worker-first readback waits for old claims but does not require an empty queue", () => {
   const now = Date.parse("2026-10-19T18:00:00Z"), staged = input();
   staged.functions[0].version = 11;
