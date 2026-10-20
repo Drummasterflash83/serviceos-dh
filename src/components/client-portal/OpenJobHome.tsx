@@ -54,12 +54,12 @@ function SourceJobDetail({ row }: { row: OpenJobRow }) {
 }
 
 /** Source-first job list: all uniquely retained open jobs are reachable by page. */
-export function OpenJobHome({ tenant, company, operator = false }: {
-  tenant: string; company?: string; operator?: boolean;
+export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
+  tenant: string; company?: string; operator?: boolean; mdReason?: string;
 }) {
   const { user, profile } = useAuth();
   const [reason, setReason] = useState("");
-  const [approvedReason, setApprovedReason] = useState<string | null>(null);
+  const [approvedReason, setApprovedReason] = useState<string | null>(mdReason ?? null);
   const [status, setStatus] = useState<OpenJobStatus | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [cursors, setCursors] = useState<Array<string | null>>([null]);
@@ -70,9 +70,9 @@ export function OpenJobHome({ tenant, company, operator = false }: {
     canSeeCompanyJobs(profile.role);
   const enabled = !!user && uuid(tenant) && (operator ? approvedReason !== null : authorisedClient);
   useEffect(() => {
-    setApprovedReason(null); setReason(""); setStatus(null); setPageIndex(0);
+    setApprovedReason(mdReason ?? null); setReason(""); setStatus(null); setPageIndex(0);
     setCursors([null]); setSelected(null);
-  }, [tenant, user?.id, operator]);
+  }, [tenant, user?.id, operator, mdReason]);
   const summary = useQuery({
     queryKey: ["new-dawn-open-job-status-summary", tenant, user?.id, operator,
       approvedReason, refreshTick],
@@ -135,7 +135,7 @@ export function OpenJobHome({ tenant, company, operator = false }: {
         <RefreshCw size={15} /> Refresh saved jobs
       </button>}
     </div>
-    {operator && <div className="nd-operator-preview">
+    {operator && mdReason === undefined && <div className="nd-operator-preview">
       <strong>{company ?? "Client"} · OpenFolk read-only MD presentation preview</strong>
       <p>You remain signed in as OpenFolk. Each source page read is checked and logged; no client staff login is used.</p>
       {approvedReason === null ? <>
