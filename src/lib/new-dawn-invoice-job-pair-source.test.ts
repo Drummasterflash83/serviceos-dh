@@ -45,7 +45,7 @@ test("other tenant, actor, versions, job, audience or asserted relationship fail
 });
 
 test("database contract stays operator-only, exact-version and auditable",()=>{
-  const sql=readFileSync(new URL("../../supabase/migrations/20261108130000_new_dawn_invoice_job_pair_source.sql",import.meta.url),"utf8");
+  const sql=readFileSync(new URL("../../supabase/migrations/20261108140000_new_dawn_invoice_job_pair_source.sql",import.meta.url),"utf8");
   assert.match(sql,/perform public\.learn_operator_input_access\(p_tenant,actor,true\)/);
   assert.match(sql,/perform public\.learn_quickbooks_actor_access\(p_tenant,actor\)/);
   assert.match(sql,/flag='new_dawn\.invoice_job_pair_source_preview'/);

@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 DOCKER = shutil.which("docker") or "/usr/local/bin/docker"
 NAME = "serviceos-invoice-job-pair-" + uuid.uuid4().hex[:8]
-MIGRATION = ROOT / "supabase/migrations/20261108130000_new_dawn_invoice_job_pair_source.sql"
+MIGRATION = ROOT / "supabase/migrations/20261108140000_new_dawn_invoice_job_pair_source.sql"
 
 
 def run(*args, input=None):
