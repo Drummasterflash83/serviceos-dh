@@ -4,7 +4,7 @@ import { ArrowRight, BriefcaseBusiness, RefreshCw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOperatorHomePage, type HomeJob, type OperatorHomeJob } from "@/lib/new-dawn-job-home";
-import { groupSourceHomeJobs, readSourceHomePage, scopedOperatorSourcePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
+import { filterSourceHomeJobs, groupSourceHomeJobs, readSourceHomePage, scopedOperatorSourcePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
 import { parseExactTrialOffer, readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
@@ -150,13 +150,18 @@ function ClientSourceRow({ tenant, source, onOpen }: {
   </button>;
 }
 
-function SourceJobPresentation({ tenant, jobs, onOpen }: {
-  tenant: string; jobs: SourceHomeJob[]; onOpen: (job: SourceHomeJob) => void;
+function SourceJobPresentation({ tenant, jobs, search, onOpen }: {
+  tenant: string; jobs: SourceHomeJob[]; search: string; onOpen: (job: SourceHomeJob) => void;
 }) {
-  const { recentlySaved, needsOpenFolkCheck } = groupSourceHomeJobs(jobs);
+  const matchingJobs = filterSourceHomeJobs(jobs, search);
+  const { recentlySaved, needsOpenFolkCheck } = groupSourceHomeJobs(matchingJobs);
   const visibleChecks = needsOpenFolkCheck.slice(0, 3);
   const moreChecks = needsOpenFolkCheck.slice(3);
+  if (matchingJobs.length === 0 && search.trim()) return <p className="nd-job-scope" role="status">
+    No match among these {jobs.length} selected saved jobs. This does not mean the company has no matching job.
+  </p>;
   return <>
+    {search.trim() && <p className="nd-job-scope" role="status">{matchingJobs.length} of {jobs.length} selected saved jobs match “{search.trim()}”. This search does not cover every company job.</p>}
     <p className="nd-job-scope"><strong>Recently saved jobs · {recentlySaved.length}</strong> · Their current progress and next owner still need confirmation.</p>
     {recentlySaved.length === 0 && <p className="nd-job-scope">No linked job in this selection was saved in the past 24 hours. This does not mean there is no current work.</p>}
     {recentlySaved.map((source) => <ClientSourceRow key={source.id} tenant={tenant} source={source} onOpen={() => onOpen(source)} />)}
@@ -307,11 +312,12 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
   const [selectedMd, setSelectedMd] = useState<SourceHomeJob | null>(null);
   const [mdPreview, setMdPreview] = useState(false);
   const [reason, setReason] = useState("");
+  const [jobSearch, setJobSearch] = useState("");
   const [operatorPage, setOperatorPage] = useState<{ tenantId: string; actorId: string; jobs: OperatorHomeJob[] } | null>(null);
   const [operatorSourcePage, setOperatorSourcePage] = useState<SourceHomePage | null>(null);
   const [operatorError, setOperatorError] = useState("");
   const [operatorBusy, setOperatorBusy] = useState(false);
-  useEffect(() => { setSelected(null); setSelectedOperator(null); setSelectedMd(null); setMdPreview(false); setOperatorPage(null); setOperatorSourcePage(null); }, [tenant, user?.id]);
+  useEffect(() => { setSelected(null); setSelectedOperator(null); setSelectedMd(null); setMdPreview(false); setOperatorPage(null); setOperatorSourcePage(null); setJobSearch(""); }, [tenant, user?.id]);
   const sourceFlag = useSourceJobHomeFlag(tenant, operator);
   const mdFirstAvailable = presentationFirst && sourceFlag.data === true;
   const authorisedClient = !operator && !!user && profile?.tenant_id === tenant && canSeeCompanyJobs(profile.role);
@@ -340,7 +346,7 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
   async function loadOperatorJobs() {
     if (!user || !sourceFlag.isSuccess || reason.trim().length < 3 || operatorBusy) return;
     setOperatorBusy(true); setOperatorError(""); setOperatorPage(null); setOperatorSourcePage(null);
-    setMdPreview(false); setSelectedMd(null);
+    setMdPreview(false); setSelectedMd(null); setJobSearch("");
     try {
       if (sourceFlag.data === true) {
         const page = await sourceHome(tenant, user.id, reason.trim());
@@ -378,6 +384,7 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
           {activeOperatorSourcePage && <button className="cp-secondary" onClick={() => { setMdPreview(!mdPreviewOpen); setSelectedOperator(null); setSelectedMd(null); }}>
             {mdPreviewOpen ? "Show OpenFolk diagnostics" : `Preview ${companyLabel} MD job view`}
           </button>}
+          {activeOperatorSourcePage && <button className="cp-secondary" disabled={operatorBusy} onClick={() => void loadOperatorJobs()}>Read saved jobs again</button>}
           <button className="cp-secondary" onClick={() => { setSelectedOperator(null); setSelectedMd(null); setMdPreview(false); setOperatorPage(null); setOperatorSourcePage(null); }}>Change access reason</button>
         </> : <>
           <p>{mdFirstAvailable ? `State why you are opening ${companyLabel}'s MD job view. You remain signed in as OpenFolk, and the server logs this read.` : "You remain signed in as OpenFolk. State why you are opening this company’s jobs; the server checks and logs each read."}</p>
@@ -408,6 +415,12 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
           <details><summary>About this view</summary><p>This audited preview is a limited saved selection, not the full current workload or a staff login. Job cards can lag Commusoft; ownership and next actions still need source review.</p></details>
         </>}
       </div>}
+      {((!operator && authorisedClient && sourceFlag.data === true && clientSource.isSuccess) ||
+        (mdPreviewOpen && activeOperatorSourcePage)) && <label className="nd-job-search">
+        Search these {mdPreviewOpen ? activeOperatorSourcePage!.jobs.length : sourceJobs.length} saved jobs
+        <input type="search" value={jobSearch} maxLength={100} onChange={(event) => setJobSearch(event.target.value)}
+          placeholder="Job number, customer or site" />
+      </label>}
       {!operator && sourceFlag.data === false && client.isSuccess && client.data.length === 0 && <p>No saved job records are visible yet. OpenFolk can check the connection and source review.</p>}
       {!operator && sourceFlag.data === true && clientSource.isSuccess && sourceJobs.length === 0 && <p>No confirmed job records are visible yet. OpenFolk can check the saved jobs.</p>}
       <div className="nd-job-list">
@@ -417,10 +430,10 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
           <span className="nd-job-review"><b>{homeJobState(job)}</b><small>{homeJobAction(job)} · Assignee unconfirmed</small></span>
           <ArrowRight size={17} />
         </button>)}
-        {!operator && authorisedClient && sourceFlag.data === true && clientSource.isSuccess && <SourceJobPresentation tenant={tenant} jobs={sourceJobs}
+        {!operator && authorisedClient && sourceFlag.data === true && clientSource.isSuccess && <SourceJobPresentation tenant={tenant} jobs={sourceJobs} search={jobSearch}
           onOpen={(source) => setSelected(sourceJobAsHomeJob(source, tenant))} />}
         {mdPreviewOpen && activeOperatorSourcePage && <SourceJobPresentation tenant={tenant}
-          jobs={activeOperatorSourcePage.jobs} onOpen={setSelectedMd} />}
+          jobs={activeOperatorSourcePage.jobs} search={jobSearch} onOpen={setSelectedMd} />}
         {!mdPreviewOpen && displayedOperatorJobs?.map((job) => <div key={job.id} className="nd-job-row">
           <BriefcaseBusiness size={20} />
           <span className="nd-job-main"><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Job number not confirmed"}</strong><small>{job.fields.title && job.fields.job_number ? `${job.fields.title} · ` : ""}{job.fields.customer ?? "Customer not confirmed"} · {job.fields.address ?? job.fields.postcode ?? "Site not confirmed"}</small></span>

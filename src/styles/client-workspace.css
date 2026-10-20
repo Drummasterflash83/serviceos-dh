@@ -387,6 +387,9 @@
 .nd-job-older { border: 1px solid #e8e4eb; border-radius: 12px; padding: 14px 17px; color: #5e5666; }
 .nd-job-older summary { cursor: pointer; font-size: 14px; font-weight: 600; }
 .nd-job-older > p { margin: 9px 0 0; font-size: 12px; line-height: 1.5; }
+.nd-job-search { display: grid; gap: 6px; max-width: 390px; margin: 18px 0 4px; color: #5e5666; font-size: 13px; font-weight: 600; }
+.nd-job-search input { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid #cfc4d9; border-radius: 9px; background: #fff; color: #302c36; font: inherit; font-weight: 400; }
+.nd-job-search input:focus-visible { outline: 2px solid #77648f; outline-offset: 2px; }
 .nd-job-row { display: grid; grid-template-columns: auto minmax(0, 1.2fr) minmax(0, 1fr) auto; gap: 15px; align-items: center; width: 100%; padding: 15px 17px; border: 1px solid #e8e4eb; border-radius: 12px; background: #fbfafc; color: #302c36; text-align: left; }
 button.nd-job-row:hover { border-color: #a996c0; background: #fff; }
 .nd-job-row > svg { color: #77648f; }

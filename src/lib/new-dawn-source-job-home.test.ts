@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { groupSourceHomeJobs, readSourceHomePage, scopedOperatorSourcePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue } from "./new-dawn-source-job-home.ts";
+import { filterSourceHomeJobs, groupSourceHomeJobs, readSourceHomePage, scopedOperatorSourcePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue } from "./new-dawn-source-job-home.ts";
 
 const tenant = "00000000-0000-0000-0000-000000000001";
 const actor = "00000000-0000-0000-0000-000000000002";
@@ -91,4 +91,17 @@ test("owner presentation keeps old and changed records out of the recent-work se
   const groups = groupSourceHomeJobs([row, old, recent], now);
   assert.deepEqual(groups.recentlySaved, [recent]);
   assert.deepEqual(groups.needsOpenFolkCheck, [row, old]);
+});
+
+test("owner job search stays inside the audited selection and preserves leading-zero job codes", () => {
+  const other = { ...row, id: "00000000-0000-0000-0000-000000000005", fields: {
+    ...row.fields, job_number: "008", customer: "Another customer", address: "Other site",
+  } };
+  assert.deepEqual(filterSourceHomeJobs([row, other], " 001 "), [row]);
+  assert.deepEqual(filterSourceHomeJobs([row, other], "another CUSTOMER"), [other]);
+  assert.deepEqual(filterSourceHomeJobs([row, other], "missing"), []);
+  assert.deepEqual(filterSourceHomeJobs([row, other], ""), [row, other]);
+  const sameCodeDifferentJob = { ...other, fields: { ...other.fields, job_number: "001" } };
+  assert.deepEqual(filterSourceHomeJobs([row, sameCodeDifferentJob], "001").map((match) => match.id),
+    [row.id, sameCodeDifferentJob.id]);
 });
