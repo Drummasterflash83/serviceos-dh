@@ -4,6 +4,7 @@ import { BriefcaseBusiness, ChevronLeft, ChevronRight, RefreshCw } from "lucide-
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
+import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import {
   openJobNextStep, openJobPageFlagName, readOpenJobPage, readOpenJobStatusSummary,
   type OpenJobPage, type OpenJobRow, type OpenJobStatus,
@@ -40,16 +41,69 @@ export function useOpenJobPageFlag(tenant: string, operator: boolean) {
   });
 }
 
-function SourceJobDetail({ row }: { row: OpenJobRow }) {
-  return <div className="nd-job-detail">
-    <p><strong>Commusoft job {row.external_id}</strong> · Saved status {statusLabel[row.status]}</p>
-    <p>{row.title ?? "Work description not recorded in this view"}</p>
-    <p>Source customer: {row.source_customer ?? "not identified"} · Source site: {row.source_site ?? row.source_postcode ?? "not identified"}</p>
-    <p>{row.identity_state === "reviewed_link"
-      ? "OpenFolk has a reviewed job link for this saved version."
-      : "The source job has not been linked to a confirmed OpenFolk customer and site. Its source labels need review."}</p>
-    <p>Last observed by OpenFolk {savedAt(row.source_observed_at)}. This is not a current Commusoft check or a confirmed assignment.</p>
-    <h3>Next useful check</h3><p>{openJobNextStep(row.status)}.</p>
+function SourceJobDetail({ row, tenant, actor, reason }: {
+  row: OpenJobRow; tenant: string; actor: string; reason: string | null;
+}) {
+  const detail = useQuery({
+    queryKey: ["new-dawn-client-job-record", tenant, actor, row.connection_id,
+      row.external_id, row.source_version_id, reason],
+    retry: false,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().rpc("new_dawn_client_job_record", {
+        p_tenant: tenant, p_connection: row.connection_id,
+        p_external: row.external_id, p_version: row.source_version_id,
+        p_reason: reason,
+      }).abortSignal(AbortSignal.timeout(15_000));
+      if (error) throw Error("Saved job detail unavailable");
+      return readClientJobRecord(data, tenant, actor, row);
+    },
+  });
+  const record = detail.data;
+  const exact = record?.exactDetail;
+  return <div className="nd-job-detail space-y-4">
+    <div>
+      <p><strong>Job {row.external_id}</strong> · {statusLabel[row.status]}</p>
+      <p>Customer: {row.source_customer ?? "To confirm"} · Site: {row.source_site ?? row.source_postcode ?? "To confirm"}</p>
+      <small>Commusoft record saved {savedAt(row.source_observed_at)}. The job may have changed since then.</small>
+    </div>
+    {detail.isPending && <p role="status">Opening the saved job record…</p>}
+    {detail.isError && <p role="alert">The detailed record could not be checked. Refresh the job list; its saved summary remains available.</p>}
+    {record && <>
+      <section aria-label="Work and stage">
+        <h3>Work and stage</h3>
+        <p className="whitespace-pre-wrap break-words">{record.description ?? row.title ?? "No work description was saved."}</p>
+        <p>Status: {record.status ?? statusLabel[row.status]}
+          {record.priority ? ` · Priority: ${record.priority}` : ""}</p>
+        <p>Stage: {exact?.stage ?? "Not enough data yet — this job's current stage has not been checked."}</p>
+        {exact?.pipeline && <p>Workstream: {exact.pipeline}</p>}
+      </section>
+      <section aria-label="People and next step">
+        <h3>People and next step</h3>
+        {exact?.sourceUsers.length
+          ? <p>People listed on this job: {exact.sourceUsers.map((person) => person.name).join(", ")}. We have not confirmed who is the engineer or who attended.</p>
+          : <p>Engineer: not enough data yet — no verified engineer or appointment is attached to this record.</p>}
+        <p>What it is waiting on: {exact?.holdReason
+          ? `${exact.holdReason} (recorded reason; person responsible not yet confirmed)`
+          : "not enough data yet — the status does not tell us the cause or person responsible."}</p>
+        <p>Next check: {openJobNextStep(row.status)}.</p>
+      </section>
+      <section aria-label="Contact and visits">
+        <h3>Contact and visits</h3>
+        <p>Last customer contact: not enough data yet — no call, email or message has been confirmed as belonging to this job.</p>
+        <p>Visits: not enough data yet — no confirmed technician appointment is attached to this job.</p>
+      </section>
+      {row.identity_state !== "reviewed_link" && <p>The customer and site labels come from Commusoft; OpenFolk still needs to confirm the match.</p>}
+      <details><summary>Where this information came from</summary>
+        <p>Commusoft job {row.external_id}, saved {savedAt(record.sourceObservedAt)}.
+          {exact ? ` Exact job detail checked ${savedAt(exact.checkedAt)}.` : " No exact job detail has been checked for this saved version."}
+          {exact?.providerUpdatedAt ? ` Commusoft last updated it at ${exact.providerUpdatedAt}.` : ""}
+        </p>
+        <p>Source people are not confirmed OpenFolk assignments. Office tasks and expected onsite times are not technician visits.</p>
+        <small>Read {savedAt(record.readAt)} · Audit {record.auditId}.</small>
+      </details>
+    </>}
   </div>;
 }
 
@@ -235,8 +289,9 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
     </>}
     <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
       <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-        <DialogHeader className="pr-10 sm:pr-0"><DialogTitle>Saved Commusoft job</DialogTitle></DialogHeader>
-        {selected && <SourceJobDetail row={selected} />}
+        <DialogHeader className="pr-10 sm:pr-0"><DialogTitle>Job details</DialogTitle></DialogHeader>
+        {selected && user && <SourceJobDetail row={selected} tenant={tenant} actor={user.id}
+          reason={operator ? approvedReason : null} />}
       </DialogContent>
     </Dialog>
   </section>;
