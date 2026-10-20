@@ -151,7 +151,8 @@ try {
        'firstName',payload->'contact'->'firstName',
        'lastName',payload->'contact'->'lastName',
        'addressLine1',payload->'addressLine1','postcode',payload->'postcode',
-       'parentPropertyID',payload->'parentPropertyID','propertyID',payload->'propertyID') source
+       'parentPropertyID',payload->'parentPropertyID','propertyID',payload->'propertyID',
+       'status',case when collection='jobs' then payload->'status' end) source
       from ranked where committed_at=newest order by collection,external_id,version_id`);
     if (!rows.length) break;
     if (rows.length > 400 || rows.some(x => !uuid(x.version_id) ||
