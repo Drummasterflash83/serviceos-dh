@@ -99,14 +99,25 @@ export function sourceJobClientAttention(job: SourceHomeJob, now = Date.now()) {
   const cue = sourceJobReviewCue(job, now);
   if (cue.kind === "link_review") return {
     label: "Job details need checking",
+    why: "OpenFolk has not confirmed which saved details are current.",
     nextStep: "Ask OpenFolk to confirm this job record before acting on it",
   };
   if (cue.kind === "aged_observation") return {
     label: "Current progress needs checking",
+    why: "The last saved update cannot confirm this job's current progress.",
     nextStep: "Confirm current progress before taking the next job step",
   };
+  const why = ({
+    on_hold: "The last saved status is on hold; the hold reason is not confirmed here.",
+    pending: "The last saved status is pending; what it is waiting for is not confirmed here.",
+    open: "The last saved status is open; the next owner is not confirmed here.",
+    completed: "The last saved status is complete; the final outcome is not confirmed here.",
+    closed: "The last saved status is closed; the final outcome is not confirmed here.",
+  } as Record<string, string>)[job.fields.status ?? ""] ??
+    "The last saved status is not clear enough to guide the next step.";
   return {
     label: "Recorded progress needs confirming",
+    why,
     nextStep: homeJobAction({ status: job.fields.status }),
   };
 }
