@@ -95,7 +95,10 @@ function phoneDigits(value: string): string | null {
 
 function concreteLocation(value: string): boolean {
   if (/\b(unknown|unavailable|not provided|n\/a|on file|same address)\b/i.test(value)) return false;
-  if (/\b\d+[a-z]?\s+(?:[a-z'-]+\s+){0,5}(?:road|street|lane|avenue|close|drive|way|court|crescent|terrace|place|gardens|square)\b/i.test(value))
+  // A house number plus only a street *type* ("14 Road") is not a usable
+  // address. Accept common abbreviated street types without dropping the
+  // required street name.
+  if (/\b\d+[a-z]?\s+(?:[a-z'-]+\s+){1,5}(?:road|rd|street|st|lane|ln|avenue|ave|close|drive|dr|way|court|crescent|terrace|place|gardens|square)\b/i.test(value))
     return true;
   // A postcode identifies an area, not the caller's precise premises. Pair it
   // with a stated house/building name or number before authorising a handoff.

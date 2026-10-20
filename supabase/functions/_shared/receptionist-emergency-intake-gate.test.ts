@@ -109,8 +109,8 @@ test("a correctly quoted statement cannot support a fabricated field value", () 
   const f = fixture(); f.message.parameters.callerName = "Someone Else"; rejected(f, "fabricated_source_evidence");
 });
 
-test("generic location, bare postcode, a partial word match and named-site-only evidence fail closed", () => {
-  for (const place of ["my home", "here", "OpenFolk Test Site", "same address", "SO51 8AS", "Romsey, SO51 8AS", "SO51 8AS on file"]) {
+test("generic or incomplete location, bare postcode, a partial word match and named-site-only evidence fail closed", () => {
+  for (const place of ["my home", "here", "OpenFolk Test Site", "same address", "SO51 8AS", "Romsey, SO51 8AS", "SO51 8AS on file", "14 Road", "14 St"]) {
     const f = fixture(); f.message.parameters.siteAddressOrPostcode = place;
     f.message.parameters.evidence.site = `The address is ${place}.`; f.message.artifact.messages[9].message = f.message.parameters.evidence.site;
     rejected(f, "unusable_location");
@@ -121,9 +121,11 @@ test("generic location, bare postcode, a partial word match and named-site-only 
 });
 
 test("a quoted numbered street is accepted without postcode, but not geocoded or claimed verified", () => {
-  const f = fixture(); f.message.parameters.siteAddressOrPostcode = "12 Example Road";
-  f.message.parameters.evidence.site = "My home is at 12 Example Road."; f.message.artifact.messages[9].message = f.message.parameters.evidence.site;
-  assert.equal(f.check().allowed, true);
+  for (const address of ["12 Example Road", "12 Example Rd", "12 Example St"]) {
+    const f = fixture(); f.message.parameters.siteAddressOrPostcode = address;
+    f.message.parameters.evidence.site = `My home is at ${address}.`; f.message.artifact.messages[9].message = f.message.parameters.evidence.site;
+    assert.equal(f.check().allowed, true);
+  }
 });
 
 test("a named premises with postcode supports emergency location without inventing a street number", () => {
