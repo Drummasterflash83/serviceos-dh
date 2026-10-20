@@ -84,11 +84,11 @@ export function OperatorStagedIdentityBatch({ tenantId, reason, active }: {
       job and customer IDs are never shown here. Registration records the reviewed
       batch and audit trail. It does not create links or turn on the apply flag.</p>
     <label className="block text-sm">Reviewed manifest JSON
-      <input type="file" accept=".json,application/json" disabled={busy}
+      <input type="file" disabled={busy}
         onChange={(event) => { reset(); setManifestFile(event.target.files?.[0] ?? null); }} />
     </label>
     <label className="block text-sm">Reviewed category-map JSON
-      <input type="file" accept=".json,application/json" disabled={busy}
+      <input type="file" disabled={busy}
         onChange={(event) => { reset(); setMapFile(event.target.files?.[0] ?? null); }} />
     </label>
     <button className="cp-secondary" type="button" disabled={busy || !manifestFile || !mapFile}
