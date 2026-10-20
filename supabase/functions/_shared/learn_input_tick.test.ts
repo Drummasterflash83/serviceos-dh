@@ -230,6 +230,17 @@ test("a completed Commusoft page continues through the actual HTTP guard, then s
 
 });
 
+test("daily status evidence progresses an empty source queue, but invalid state fails closed", async () => {
+  let calls = 0;
+  const active = await runLearnInputTick({ ...config, slackEnabled: "false" }, null,
+    async () => ok({ ...idle, freshness: "idle", dailyStatus: ++calls === 1 ? "processed" : "idle" }));
+  assert.equal(calls, 2);
+  assert.equal(active.commusoft.state, "processed");
+  const invalid = await runLearnInputTick({ ...config, slackEnabled: "false" }, null,
+    async () => ok({ ...idle, freshness: "idle", dailyStatus: "invented" }));
+  assert.equal(invalid.commusoft.state, "unconfirmed");
+});
+
 
 test("QuickBooks drains distinct saved pages and stops on throttle attention", async () => {
   let calls=0;
