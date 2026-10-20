@@ -181,10 +181,29 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
       return readOpenJobStatusSummary(data, tenant, user!.id);
     },
   });
-  const page = useQuery<OpenJobPage>({
+  // The unfiltered first page is already ordered with On-hold records first.
+  // Reuse it for the ten oldest rows instead of issuing a second expensive
+  // snapshot request during the initial Home load.
+  const firstPage = useQuery<OpenJobPage>({
+    queryKey: ["new-dawn-open-job-first-page", tenant, user?.id, operator,
+      approvedReason, refreshTick],
+    enabled,
+    staleTime: 0,
+    retry: false,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().rpc("new_dawn_open_job_page", {
+        p_tenant: tenant, p_reason: operator ? approvedReason : null,
+        p_cursor: null, p_status: null, p_page_size: 40,
+      }).abortSignal(AbortSignal.timeout(20_000));
+      if (error) throw Error("Open job page unavailable");
+      return readOpenJobPage(data, tenant, user!.id, null);
+    },
+  });
+  const additionalPage = useQuery<OpenJobPage>({
     queryKey: ["new-dawn-open-job-page", tenant, user?.id, operator,
       approvedReason, status, cursors[pageIndex], refreshTick],
-    enabled,
+    enabled: enabled && (status !== null || pageIndex > 0) && !firstPage.isFetching,
     staleTime: 0,
     retry: false,
     refetchOnWindowFocus: false,
@@ -197,29 +216,16 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
       return readOpenJobPage(data, tenant, user!.id, status);
     },
   });
-  const oldestHeld = useQuery<OpenJobPage>({
-    queryKey: ["new-dawn-oldest-held-jobs", tenant, user?.id, operator, approvedReason, refreshTick],
-    enabled,
-    staleTime: 0,
-    retry: false,
-    refetchOnWindowFocus: false,
-    queryFn: async () => {
-      const { data, error } = await getSupabaseClient().rpc("new_dawn_open_job_page", {
-        p_tenant: tenant, p_reason: operator ? approvedReason : null,
-        p_cursor: null, p_status: "on_hold", p_page_size: 10,
-      }).abortSignal(AbortSignal.timeout(20_000));
-      if (error) throw Error("Oldest On-hold jobs unavailable");
-      return readOpenJobPage(data, tenant, user!.id, "on_hold");
-    },
-  });
+  const page = status === null && pageIndex === 0 ? firstPage : additionalPage;
   const active = page.data?.tenantId === tenant && page.data.actorId === user?.id
     && !page.isFetching ? page.data : null;
   const rows = active?.rows ?? [];
   const activeSummary = summary.data?.tenantId === tenant && summary.data.actorId === user?.id
     && !summary.isFetching ? summary.data : null;
-  const oldestHeldRows = oldestHeld.data?.tenantId === tenant &&
-    oldestHeld.data.actorId === user?.id && !oldestHeld.isFetching &&
-    oldestHeld.data.creationOrderAvailable ? oldestHeld.data.rows : [];
+  const oldestHeldRows = firstPage.data?.tenantId === tenant &&
+    firstPage.data.actorId === user?.id && !firstPage.isFetching &&
+    firstPage.data.creationOrderAvailable
+    ? firstPage.data.rows.filter((row) => row.status === "on_hold").slice(0, 10) : [];
   function changeFilter(next: OpenJobStatus | null) {
     setStatus(next); setPageIndex(0); setCursors([null]); setSelected(null);
   }
@@ -243,7 +249,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         <h2>Open jobs</h2>
         <p>Review saved Commusoft statuses, then open a job for its source and next check.</p>
       </div>
-      {enabled && <button className="cp-secondary" onClick={refresh} disabled={page.isFetching}>
+      {enabled && <button className="cp-secondary" onClick={refresh} disabled={page.isFetching || firstPage.isFetching}>
         <RefreshCw size={15} /> Re-read saved jobs
       </button>}
     </div>
@@ -312,14 +318,14 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
       <section className="nd-oldest-jobs" ref={oldestRef} aria-label="Ten oldest-created On-hold records">
         <div><h3>Ten oldest-created On-hold records</h3>
           <p>Ordered by verified job creation date. This does not show how long a job has been On hold, whether it is urgent, or who owns the next action. Open a record to review its source.</p></div>
-        {oldestHeld.isPending && <p role="status">Reading the oldest recorded On-hold jobs…</p>}
-        {oldestHeld.isError && <p role="alert">The oldest On-hold jobs could not be checked. The paged list remains available below.</p>}
-        {oldestHeld.isSuccess && oldestHeldRows.length === 0 && <p>No verified creation-order On-hold jobs are available in this saved snapshot.</p>}
+        {firstPage.isPending && <p role="status">Reading the oldest recorded On-hold jobs…</p>}
+        {firstPage.isError && <p role="alert">The oldest On-hold jobs could not be checked. Refresh to retry.</p>}
+        {firstPage.isSuccess && oldestHeldRows.length === 0 && <p>No verified creation-order On-hold jobs are available in this saved snapshot.</p>}
         {oldestHeldRows.length > 0 && <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
           <button type="button" onClick={() => setSelected(row)}>
             <strong>Job {row.external_id}</strong>
             <span>{row.title ?? "Work description not recorded"}<em>{row.source_customer ?? "Customer unconfirmed"} · {row.source_site ?? row.source_postcode ?? "Site unconfirmed"}</em></span>
-            <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, oldestHeld.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}</small>
+            <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, firstPage.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}</small>
             <ChevronRight size={16} />
           </button>
         </li>)}</ol>}
