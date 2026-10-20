@@ -18,12 +18,12 @@ const when = (value: string) => new Date(value).toLocaleString("en-GB", {
 });
 
 /** Aggregate source facts, never a provider completeness or processing claim. */
-export function LearnDailyStats({ tenantId, operator = false }: {
-  tenantId: string; operator?: boolean;
+export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
+  tenantId: string; operator?: boolean; mdReason?: string;
 }) {
   const { user } = useAuth();
   const [reason, setReason] = useState("");
-  const [approvedReason, setApprovedReason] = useState<string | null>(null);
+  const [approvedReason, setApprovedReason] = useState<string | null>(mdReason ?? null);
   const flag = useQuery({
     queryKey: ["learn-daily-stats-flag", user?.id, tenantId, operator],
     enabled: !!user,
@@ -68,7 +68,7 @@ export function LearnDailyStats({ tenantId, operator = false }: {
             onClick={() => void stats.refetch()}><RefreshCw size={15} /> Refresh totals</button>
         )}
       </header>
-      {operator && !approvedReason && (
+      {operator && !approvedReason && mdReason === undefined && (
         <form className="lr-daily-reason" onSubmit={(event) => {
           event.preventDefault();
           const next = reason.trim();

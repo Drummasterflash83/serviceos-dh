@@ -33,6 +33,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { ClientHeaderBrand } from "@/components/ClientHeaderBrand";
 import { clientDisplayName } from "@/lib/client-brand";
+import { drummondsTenantId } from "@/lib/new-dawn-md-view";
 import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
 import { WorkspaceHome } from "./WorkspaceHome";
 import { ClientWorkspaceSetup } from "./ClientWorkspaceSetup";
@@ -823,6 +824,9 @@ export function ClientPortal({
           >
             {clientDisplayName(company)} <span>/</span> {nav.find((n) => n.id === section)?.label}
           </Link>
+          {operator.data === true && tenant === drummondsTenantId && (
+            <a className="cp-secondary" href="/client-md">View as Drummonds MD</a>
+          )}
           <span className="cp-user">{user?.email}</span>
         </header>
         <main
