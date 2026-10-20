@@ -197,16 +197,17 @@ test("candidate cannot claim Rob/Tony cross-cover without returnable human-scree
   }
 });
 
-test("emergency continuation states ordered cross-cover, one 603 fallback and truthful delivery limits", () => {
+test("emergency continuation selects one engineer, then one 603 fallback with truthful delivery limits", () => {
   const contract = EMERGENCY_CONTINUATION_CONTRACT;
-  assert.match(contract, /Commercial: attempt Rob 109 first, then Tony 105 once only after an explicit failure/);
-  assert.match(contract, /Domestic: attempt Tony 105 first, then Rob 109 once only after an explicit failure/);
+  assert.match(contract, /Commercial urgent: attempt Rob 109 once/);
+  assert.match(contract, /Domestic urgent: attempt Tony 105 once/);
+  assert.match(contract, /genuinely cannot establish whether the property is domestic or commercial, attempt Tony 105 once/);
   assert.match(contract, /One invocation selects ONE destination; it does not ring all destinations/);
-  assert.match(contract, /After a failed engineer transfer returns the caller to you, invoke the next reviewed destination once/);
-  assert.match(contract, /If both engineer attempts fail.*shared emergency mailbox 603 destination once/);
-  assert.match(contract, /neither was able to take the call/);
+  assert.match(contract, /Never try the other engineer as cross-cover or retry the selected engineer/);
+  assert.match(contract, /After the selected engineer transfer explicitly fails.*shared emergency mailbox 603 destination once/);
+  assert.match(contract, /engineer could not take the call/);
   assert.doesNotMatch(contract, /neither answered/);
-  assert.match(contract, /voicemail greeting is not human acceptance/);
+  assert.match(contract, /A voicemail greeting, ringing, busy, no answer or declined call is not human acceptance/);
   for (const proof of ["rob@drummondheating.co.uk", "tony@drummondheating.co.uk", "#ai-emma Slack alert"])
     assert.ok(contract.includes(proof), proof);
   assert.match(contract, /Never claim an engineer answered, a voicemail was deposited, either email was delivered, a Slack alert was sent/);

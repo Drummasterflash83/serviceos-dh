@@ -1,13 +1,25 @@
-# Emma Track D — routing reconciliation, review only
+# Emma Track D — single-engineer candidate, review only
 
-This is a **candidate plan**, not a release instruction. Chris's latest direction
-supersedes the old Rob/Tony cross-cover proposal: out of hours after 17:00 on
-weekdays and at weekends, an urgent domestic call goes to Tony, an urgent
-commercial call goes to Rob, an urgent call whose class remains uncertain goes
-to Tony, and a missed engineer call goes to the shared emergency voicemail
-with email and a scoped Slack alert. Seven policy/operational questions are
-already with Chris. Do not edit Vapi, Birchills, the main-number route,
-provider messages, or the candidate until those answers are reconciled.
+This is **source code for an isolated candidate**, not a release instruction.
+Saved decisions now establish Monday–Friday 08:30–17:00 London office hours;
+weekday after 17:00, weekends and confirmed holidays use the closed route.
+An eligible urgent domestic call goes to Tony 105/+441794378097 once; an
+eligible urgent commercial call goes to Rob 109/+441794378105 once; a caller
+who explicitly cannot classify the site goes to Tony once. Serious safety,
+welfare, essential-service or property risk establishes urgency; routine work
+does not. A failed selected engineer returns to Emma for one shared mailbox
+603 attempt, with intended notices to rob@drummondheating.co.uk,
+tony@drummondheating.co.uk and a scoped Slack channel. Current Birchills
+distribution to both emails is unverified because its mailbox setting exposes
+one address. Chris owns launch. No provider route, message, call or LIVE
+assistant is changed by this source candidate.
+
+The candidate code and synthetic proof now reject second-engineer cross-cover,
+require caller-grounded uncertain classification, and require one failed
+selected engineer before a correlated 603 deposit. The existing 12-scenario
+suite has a new revision; **no** fresh Vapi 12/12 result, real handset or
+notification delivery receipt exists for this revision. The direct-number
+bindings and main 01794 341600 route still need fresh provider readback.
 
 ## Evidence boundary at 20 October
 
@@ -30,9 +42,9 @@ provider messages, or the candidate until those answers are reconciled.
   manifest and 198 passing receptionist tests do not constitute a Vapi run,
   handset transfer, mailbox deposit, email delivery or Slack post.
 
-## Exact conflicts in the current candidate source
+## Prior conflicts reconciled in source (provider state still unverified)
 
-| Area | Current PR #88 rule | Track D direction | Required change after answers |
+| Area | Previous PR #88 rule | Track D direction | Candidate source change |
 | --- | --- | --- | --- |
 | Engineer sequence | `receptionist-launch-candidate.ts` and `receptionist-launch-review-policy.ts` say domestic Tony→Rob and commercial Rob→Tony after a failed first leg. | One class-based urgent engineer; missed calls proceed to shared voicemail. | Remove second-engineer cross-cover from the candidate continuation and all operational wording. Keep each engineer's personal line unchanged. |
 | Uncertain class | `receptionist-emergency-intake-gate.ts` admits only `domestic` or `commercial`; its classification proof rejects uncertainty. | Uncertain urgent calls go to Tony. | Add a bounded, explicit `uncertain` path; do not fabricate domestic evidence. Preserve caller-sourced name, callback, location, issue and immediate safety advice. |
@@ -79,6 +91,6 @@ provider messages, or the candidate until those answers are reconciled.
    to the previous IVR rule and a real inbound acceptance call. No automatic
    launch from a synthetic pass or source merge.
 
-The current PR remains **draft and not deployable** while the seven answers,
-fresh provider identity/route readback, revised candidate code, same-hash
-provider run and handset/delivery evidence are missing.
+The PR remains **draft and not deployable** while fresh provider identity/route
+readback, one-hash provider runs, real handset/603 evidence, dual email and
+Slack delivery evidence, and Chris's separate day-of go-ahead are missing.

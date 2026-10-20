@@ -77,7 +77,7 @@ function validateGraph(g: any, source: any) {
       emergencyLabels.includes(d.description)) ||
     !emergencyLabels.every(label => emergencyDestinations.some((d: any) => d.description === label)))
     throw Error("Launch emergency Rob/Tony/603 destination graph is incomplete; no behaviour published.");
-  // A transferCall invocation selects one destination. Rob→Tony→603 is possible
+  // A transferCall invocation selects one destination. Selected engineer→603 is possible
   // only if a failed engineer leg returns the caller to this helper. A generic
   // or blind warm transfer cannot establish that; the provider phone drill is
   // still required to prove the configured behavior works in this account.
@@ -87,7 +87,7 @@ function validateGraph(g: any, source: any) {
       plan.fallbackPlan?.endCallEnabled !== false ||
       !list(plan.transferAssistant?.model?.messages).some((m: any) =>
         m.role === "system" && m.content === EMMA_TRANSFER_ASSISTANT_CONTRACT))
-      throw Error("Launch engineer cross-cover requires reviewed human acceptance and a returnable failed transfer.");
+      throw Error("Launch selected-engineer fallback requires reviewed human acceptance and a returnable failed transfer.");
   }
   const destination = g.handoff.destinations?.[0];
   if (g.handoff.type !== "handoff" || g.handoff.function?.name !== "Route-Emergency-to-Rob-or-Tony" ||
@@ -186,7 +186,7 @@ const receipt = (row: any, retried = false) => ({
   mainNumberChanged: false, sharedToolsChanged: false, retried,
   emergencyTelephonyAcceptance: "not_verified", mailboxDelivery: "not_verified",
   dualEmailDelivery: "not_verified", slackAlertDelivery: "not_verified",
-  limitation: "Root-assistant simulations intercept the handoff. This is behaviour publication, not main-line launch or proof of Rob/Tony cross-cover, mailbox 603 deposit, either email receipt or Slack alert delivery.",
+  limitation: "Root-assistant simulations intercept the handoff. This is behaviour publication, not main-line launch or proof of selected-engineer transfer, mailbox 603 deposit, either email receipt or Slack alert delivery.",
 });
 
 export async function launchPromotion(db: any, api: Api, settings: any, workspace: any, actor: string, expectedHash: string) {

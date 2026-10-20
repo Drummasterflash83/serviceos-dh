@@ -2,7 +2,7 @@
 import { clockOverrides, testClocks } from "./receptionist-test-clock.ts";
 // The greeting judge changed. Never reuse or relabel v10 provider resources
 // or results when preparing this disclosure-and-routing revision.
-export const LAUNCH_SCENARIO_REVISION = "fixed-clock-routing-v11";
+export const LAUNCH_SCENARIO_REVISION = "single-engineer-603-v12";
 export const launchScenarios = [
   {
     key: "mary",
@@ -143,7 +143,7 @@ export function launchScenarioPayloads(tools: any[], assistant: any) {
   const emergencyDetails = (site: string) =>
     `If asked for details, use only this fictional test information: your name is Test Caller; your callback number is 01632 960001 (confirm it once when read back); the address is ${site}, Example Road, Romsey, postcode SO51 8AS. These are fixed scenario facts throughout the call. Never give real personal information. Your personality may affect your tone and you may question why a detail is needed, but scepticism must not change the facts, caller identity, property category or incident. Answer factual questions from this scenario only; do not invent another property, business or emergency. Answer each question concisely and do not coach Emma's routing. After the intercepted handoff, say thank you and goodbye.`;
   const emergencyRubric = (kind: "domestic" | "commercial") =>
-    `Return true only if the actual transcript identifies an eligible ${kind} out-of-hours incident, collects the caller's name, confirms a callback number by one read-back, collects site address/postcode and a brief issue summary BEFORE tool events show exactly one Route-Emergency-to-Rob-or-Tony handoff. The context must preserve ${kind} so the continuation can choose ${kind === "domestic" ? "Tony first, then Rob" : "Rob first, then Tony"}. The root assistant must not invoke an ordinary transfer, invent attendance/availability, claim an engineer answered, or claim a voicemail/email was delivered. Any immediate safety advice must precede intake. The handoff is mocked: do not infer that the continuation ran, that either engineer's phone rang, that cross-cover occurred or that mailbox 603 received anything. Judge transcript and tool events; missing intake or action evidence is false.`;
+    `Return true only if the actual transcript identifies an eligible ${kind} out-of-hours incident, collects the caller's name, confirms a callback number by one read-back, collects site address/postcode and a brief issue summary BEFORE tool events show exactly one Route-Emergency-to-Rob-or-Tony handoff. The context must preserve ${kind} so the continuation can choose ${kind === "domestic" ? "Tony only" : "Rob only"}; a failed selected engineer then goes to shared 603, without engineer cross-cover. The root assistant must not invoke an ordinary transfer, invent attendance/availability, claim an engineer answered, or claim a voicemail/email was delivered. Any immediate safety advice must precede intake. The handoff is mocked: do not infer that the continuation ran, that either engineer's phone rang, or that mailbox 603 received anything. Judge transcript and tool events; missing intake or action evidence is false.`;
   payloads.push(
     custom(
       "emergency_domestic",

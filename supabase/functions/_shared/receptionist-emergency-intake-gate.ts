@@ -16,7 +16,7 @@ export const emergencyIntakeIds = Object.freeze({
   helper: "41bd1fd0-3ebf-4f43-9ded-512cb9305455",
 });
 
-export type EmergencyKind = "domestic" | "commercial";
+export type EmergencyKind = "domestic" | "commercial" | "uncertain";
 export type EmergencyIntakeBinding = {
   authenticated: boolean;
   tenantId: string;
@@ -121,6 +121,14 @@ function classification(value: string): EmergencyKind | null {
   return domestic === commercial ? null : domestic ? "domestic" : "commercial";
 }
 
+// The fallback class must itself be caller evidence. A model's bare
+// `kind: uncertain` is insufficient, and later explicit corrections win.
+function uncertainClassification(value: string): boolean {
+  const text = normal(value);
+  return /\b(?:don't know|do not know|not sure|unsure)\b/.test(text) &&
+    /\b(?:domestic|commercial|property type|site type|business or home|home or business)\b/.test(text);
+}
+
 function readTurns(artifact: unknown, assistantId: string): Turn[] | null {
   if (!record(artifact) || !Array.isArray(artifact.messages) || artifact.messages.length < 2 || artifact.messages.length > 256) return null;
   const result: Turn[] = [];
@@ -150,7 +158,7 @@ export function validateEmergencyIntake(message: unknown, binding: EmergencyInta
   if (binding.officeClosed !== true) return reject("office_not_closed");
   const p = message.parameters;
   if (!record(p) || !exactKeys(p, parameterKeys) || p.destination !== "dynamic" || !record(p.evidence) || !exactKeys(p.evidence, evidenceKeys)) return reject("malformed_parameters");
-  if (!["domestic", "commercial"].includes(p.kind as string) || !boundedText(p.callerName, 100) ||
+  if (!["domestic", "commercial", "uncertain"].includes(p.kind as string) || !boundedText(p.callerName, 100) ||
     !boundedText(p.callbackNumber, 32) || !boundedText(p.siteAddressOrPostcode, 300) || !boundedText(p.incidentSummary, 1000) ||
     !evidenceKeys.every(key => boundedText((p.evidence as RecordValue)[key], 1200))) return reject("missing_intake");
   const params = p as unknown as EmergencyIntakeParameters;
@@ -162,9 +170,13 @@ export function validateEmergencyIntake(message: unknown, binding: EmergencyInta
   if (!name || !site || !issue || !kind || !contains(params.evidence.name, params.callerName) ||
     !contains(params.evidence.site, params.siteAddressOrPostcode) || !contains(params.evidence.issue, params.incidentSummary)) return reject("fabricated_source_evidence");
   if (!concreteLocation(params.siteAddressOrPostcode)) return reject("unusable_location");
-  const latestKind = userTurns.filter(turn => classification(turn.text) !== null).at(-1);
-  if (classification(kind.text) !== params.kind || !latestKind || classification(latestKind.text) !== params.kind ||
-    userTurns.some(turn => turn.index > kind.index && /\b(?:domestic|commercial|business|home|house)\b/i.test(turn.text) && /\b(?:don't know|do not know|not sure|unsure)\b/i.test(turn.text))) return reject("classification_mismatch");
+  const latestKind = userTurns.filter(turn => classification(turn.text) !== null || uncertainClassification(turn.text)).at(-1);
+  const quotedKind = params.kind === "uncertain" ? uncertainClassification(kind.text) : classification(kind.text) === params.kind;
+  const latestMatches = params.kind === "uncertain" ? !!latestKind && uncertainClassification(latestKind.text) :
+    !!latestKind && classification(latestKind.text) === params.kind && !uncertainClassification(latestKind.text);
+  if (!quotedKind || !latestMatches ||
+    userTurns.some(turn => turn.index > kind.index && uncertainClassification(turn.text) && params.kind !== "uncertain"))
+    return reject("classification_mismatch");
   // Fail closed on an explicit later correction rather than accepting a stale quote.
   for (const turn of userTurns) {
     if (turn.index > name.index && /\b(?:my name|call me|name is)\b/i.test(turn.text) && !contains(turn.text, params.callerName)) return reject("stale_name_or_location");
@@ -223,7 +235,7 @@ export function buildEmergencyIntakeHandoffTool(server: { url: string; headers: 
         type: "object", required: parameterKeys,
         properties: {
           destination: { type: "string", enum: ["dynamic"] },
-          kind: { type: "string", enum: ["domestic", "commercial"] },
+          kind: { type: "string", enum: ["domestic", "commercial", "uncertain"] },
           callerName: { type: "string", description: "Caller's stated name, exactly as spoken." },
           callbackNumber: { type: "string", description: "Caller-provided callback digits, read back by Emma and explicitly confirmed by the caller. Never substitute caller ID." },
           siteAddressOrPostcode: { type: "string", description: "Caller-provided numbered street address, or named/numbered premises with a UK postcode. A postcode alone or 'my home' is insufficient." },

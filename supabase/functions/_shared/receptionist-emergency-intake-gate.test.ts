@@ -9,15 +9,15 @@ import {
   type EmergencyIntakeReason,
 } from "./receptionist-emergency-intake-gate.ts";
 
-function fixture(kind: "domestic" | "commercial" = "domestic") {
+function fixture(kind: "domestic" | "commercial" | "uncertain" = "domestic") {
   const binding: EmergencyIntakeBinding = {
     authenticated: true, tenantId: ids.tenant, assistantId: ids.candidate, helperAssistantId: ids.helper,
     orgId: "10000000-0000-0000-0000-000000000001", callId: "20000000-0000-0000-0000-000000000001", officeClosed: true,
   };
   const callerName = "Test Caller", callbackNumber = "01632 960001";
   const siteAddressOrPostcode = "OpenFolk Test Site, Example Road, Romsey, SO51 8AS";
-  const classification = kind === "domestic" ? "I am at my own home." : "This is a commercial care home.";
-  const incidentSummary = kind === "domestic" ? "An uncontrolled major water leak is flooding my kitchen." : "Our care home has no hot water and vulnerable residents need emergency help.";
+  const classification = kind === "domestic" ? "I am at my own home." : kind === "commercial" ? "This is a commercial care home." : "I am not sure whether this is domestic or commercial.";
+  const incidentSummary = kind === "domestic" ? "An uncontrolled major water leak is flooding my kitchen." : kind === "commercial" ? "Our care home has no hot water and vulnerable residents need emergency help." : "There is no heating and vulnerable people need urgent help.";
   const callbackReadBack = "Your callback number is 01632 960001. Is that correct?", callbackConfirmation = "Yes, that's correct.";
   const text = [
     ["user", `${classification} ${incidentSummary}`],
@@ -47,7 +47,7 @@ function rejected(f: ReturnType<typeof fixture>, reason: EmergencyIntakeReason) 
   for (const value of ["Test Caller", "01632", "SO51", "kitchen", "care home"]) assert.equal(response.error!.includes(value), false, "Errors do not expose caller data");
 }
 
-for (const kind of ["domestic", "commercial"] as const) {
+for (const kind of ["domestic", "commercial", "uncertain"] as const) {
   test(`complete caller-grounded ${kind} intake permits only fixed internal helper`, () => {
     const f = fixture(kind), before = structuredClone(f.message), result = f.check();
     assert.equal(result.allowed, true);
@@ -206,6 +206,11 @@ test("classification cannot be overridden by model choice or stale quotes", () =
 
 test("unknown classification after an earlier assumption needs review", () => {
   const f = fixture(); f.message.artifact.messages.push({ role: "user", message: "I am not sure whether this is domestic or commercial." }); rejected(f, "classification_mismatch");
+});
+
+test("uncertain kind needs a caller quote and cannot override a later clear correction", () => {
+  const modelChoice = fixture(); modelChoice.message.parameters.kind = "uncertain"; rejected(modelChoice, "classification_mismatch");
+  const stale = fixture("uncertain"); stale.message.artifact.messages.push({ role: "user", message: "Actually this is a commercial care home." }); rejected(stale, "classification_mismatch");
 });
 
 test("filtered/original text, cross-assistant history and malformed artifact cannot establish evidence", () => {

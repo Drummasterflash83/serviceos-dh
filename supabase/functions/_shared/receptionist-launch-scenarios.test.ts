@@ -44,7 +44,7 @@ test("test clock replaces only Liquid date inputs and does not mutate assistant"
 });
 test("disclosure revision keeps the 180-second window and required success criteria", () => {
   const source = readFileSync(new URL("./receptionist-launch-scenarios.ts", import.meta.url), "utf8");
-  assert.equal(LAUNCH_SCENARIO_REVISION, "fixed-clock-routing-v11");
+  assert.equal(LAUNCH_SCENARIO_REVISION, "single-engineer-603-v12");
   assert.match(source, /const key = `\$\{LAUNCH_SCENARIO_REVISION\}-/);
   assert.doesNotMatch(source, /const key = `fixed-clock-routing-v9-/);
   for (const scenario of launchScenarioPayloads(tools, assistant)) {
@@ -197,14 +197,13 @@ test("emergency callers retain fixed categories and correct false premises witho
     assert.equal(p.toolMocks.length, tools.length);
   }
 });
-test("all twelve v11 judges pin automated and recorded greeting disclosure", () => {
-  // This new digest is deliberately distinct from v10: actual spoken greeting
-  // evidence must be judged in every scenario, not inferred from source text.
+test("all twelve v12 judges pin disclosure and single-engineer intent", () => {
+  // A new digest requires fresh provider results on one unchanged candidate.
   const reviewedJudges = launchScenarioPayloads(tools, assistant).map(p => ({ name: p.name, evaluations: p.evaluations }));
   assert.equal(createHash("sha256").update(JSON.stringify(reviewedJudges)).digest("hex"),
-    "31e3283a9d8f34ce93398cccdf2513d95b550663ed2abfcd40d89b9d9f1d3c82");
+    "74f993e293de79334a792709296187ceb4bddb0010b55b186e7b2ccb463b5788");
 });
-test("v11 preparation creates separate resources, preserves v9 evidence and reuses the same personality", async () => {
+test("v12 preparation creates separate resources, preserves v9 evidence and reuses the same personality", async () => {
   const historical = { setup_key: "fixed-clock-routing-v9-candidate-revision", state: "ready", resources: { suiteId: "old-suite", result: "11/12, domestic failed" } };
   const preserved = structuredClone(historical), actions: any[] = [], reads: any[] = [], posts: any[] = [];
   const personalityId = "a0000000-0000-4000-8000-000000000004";
@@ -243,7 +242,7 @@ test("v11 preparation creates separate resources, preserves v9 evidence and reus
   const result = await prepareLaunchSuite(db, api, { tenant_id: "tenant", suite_id: "old-suite" }, tools, "operator", { ...assistant, id: "candidate", updatedAt: "revision" });
   assert.equal(result.state, "ready");
   assert.deepEqual(historical, preserved);
-  assert.equal(reads[0].setup_key, "fixed-clock-routing-v11-candidate-revision");
+  assert.equal(reads[0].setup_key, "single-engineer-603-v12-candidate-revision");
   assert.equal(posts.filter(p => p.path === "eval/simulation/scenario").length, 12);
   const simulations = posts.filter(p => p.path === "eval/simulation");
   assert.equal(simulations.length, 12);
@@ -253,7 +252,7 @@ test("v11 preparation creates separate resources, preserves v9 evidence and reus
   assert.equal(result.resources.scenarioRevision, LAUNCH_SCENARIO_REVISION);
   assert.equal(result.resources.sourceSuiteId, "old-suite");
   for (const action of actions.filter(a => a.table === "receptionist_test_suite_setups"))
-    assert.equal(action.op === "insert" ? action.data.setup_key : action.filters.setup_key, "fixed-clock-routing-v11-candidate-revision");
+    assert.equal(action.op === "insert" ? action.data.setup_key : action.filters.setup_key, "single-engineer-603-v12-candidate-revision");
   assert.ok(actions.every(a => ["receptionist_test_suite_setups", "receptionist_test_settings"].includes(a.table)), "Saved test runs/history must not be rewritten");
 });
 test("daytime gas cannot pass without immediate safety advice and Mary route", () => {

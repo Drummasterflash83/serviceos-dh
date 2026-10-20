@@ -54,7 +54,7 @@ test("idempotent exact clause replacements leave no contradictory immediate-hand
     "SAFETY — GIVE ONCE, BEFORE INTAKE",
   ]) assert.ok(!text.includes(old), old);
   assert.equal(text.split("OPENFOLK CANDIDATE INTAKE CONTRACT — 2 OCTOBER 2026").length, 2);
-  for (const kept of ["2026-12-25", "Monday–Friday08:30–17:00", "No consent means no tool", "Alan104", "Rob Mobile109", "personal109/105", "office601", "commercial Rob109 then Tony105", "Carbon-monoxide"])
+  for (const kept of ["2026-12-25", "Monday–Friday08:30–17:00", "No consent means no tool", "Alan104", "Rob Mobile109", "personal109/105", "office601", "commercial urgent Rob109 once", "Carbon-monoxide"])
     assert.ok(text.includes(kept), kept);
 });
 

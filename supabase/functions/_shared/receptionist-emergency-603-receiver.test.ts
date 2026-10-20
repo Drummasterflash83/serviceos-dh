@@ -24,13 +24,12 @@ const route: ReviewedEmmaChannel = {
 const identity = { tenantId, vapiCallId: "vapi-call-1", birchillsCallId: "birchills-call-1" };
 const event = (source: "vapi" | "birchills" | "email" | "slack", providerEventId: string, occurredAt: string) =>
   ({ ...identity, source, providerEventId, occurredAt });
-function core(classification: "domestic" | "commercial" = "domestic"): Emergency603CoreEvidence {
+function core(classification: "domestic" | "commercial" | "uncertain" = "domestic"): Emergency603CoreEvidence {
   return {
     identity: { ...identity, classification },
     callBinding: { ...event("birchills", "binding", "2026-10-20T10:00:00Z"), state: "matched" },
     attempts: [
-      { ...event("vapi", "first", "2026-10-20T10:00:10Z"), target: classification === "domestic" ? "tony105" : "rob109", outcome: "failed" },
-      { ...event("vapi", "second", "2026-10-20T10:00:20Z"), target: classification === "domestic" ? "rob109" : "tony105", outcome: "failed" },
+      { ...event("vapi", "first", "2026-10-20T10:00:10Z"), target: classification === "commercial" ? "rob109" : "tony105", outcome: "failed" },
     ],
     deposit: { ...event("birchills", "deposit", "2026-10-20T10:00:30Z"), mailbox: "603", mailboxMessageId: reference, state: "deposited" },
   };
@@ -46,7 +45,7 @@ function ports(overrides: Partial<{ source: Published603Source | null; core: Eme
 }
 
 test("one verified 603 deposit freezes two exact emails and a scoped Slack intent without copying caller data", async () => {
-  for (const classification of ["domestic", "commercial"] as const) {
+  for (const classification of ["domestic", "commercial", "uncertain"] as const) {
     const p = ports({ core: core(classification) });
     const first = await receivePublishedEmergency603(sourceId, p.result);
     const repeated = await receivePublishedEmergency603(sourceId, p.result);
@@ -72,8 +71,9 @@ test("unpublished, unrelated or insufficient source/call/route evidence holds be
     ["no audio", { source: { ...source, audioBytes: 0 } }, "published_603_source_unverified", 0],
     ["malformed call snapshot", { core: {} as Emergency603CoreEvidence }, "call_603_path_unverified", 0],
     ["wrong deposit", { core: { ...core(), deposit: { ...core().deposit!, mailboxMessageId: "other" } } }, "call_603_path_unverified", 0],
-    ["accepted first engineer", { core: { ...core(), attempts: [{ ...core().attempts![0], outcome: "human_accepted" }, core().attempts![1]] } }, "call_603_path_unverified", 0],
-    ["wrong order", { core: { ...core(), attempts: [core().attempts![1], core().attempts![0]] } }, "call_603_path_unverified", 0],
+    ["accepted selected engineer", { core: { ...core(), attempts: [{ ...core().attempts![0], outcome: "human_accepted" }] } }, "call_603_path_unverified", 0],
+    ["wrong selected engineer", { core: { ...core(), attempts: [{ ...core().attempts![0], target: "rob109" }] } }, "call_603_path_unverified", 0],
+    ["cross-cover attempt", { core: { ...core(), attempts: [core().attempts![0], { ...core().attempts![0], providerEventId: "second", target: "rob109" }] } }, "call_603_path_unverified", 0],
     ["not deposited", { core: { ...core(), deposit: { ...core().deposit!, state: "attempted" } } }, "call_603_path_unverified", 0],
     ["other workspace", { route: { ...route, teamId: "other" } }, "slack_route_unverified", 1],
     ["other channel", { route: { ...route, name: "general" } }, "slack_route_unverified", 1],
