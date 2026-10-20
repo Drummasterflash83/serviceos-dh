@@ -34,6 +34,7 @@ export type ReviewedEmmaChannel = {
   teamId: string;
   channelId: string;
   name: string;
+  eventKey: string;
   member: boolean;
   archived: boolean;
   shared: boolean;
@@ -109,7 +110,11 @@ export async function receivePublishedEmergency603(sourceId: string, ports: Rece
   let route: ReviewedEmmaChannel | null;
   try { route = await ports.readReviewedChannel(); }
   catch { return { state: "held", code: "slack_route_unavailable" }; }
-  if (!route || route.teamId !== OPENFOLK_TEAM || route.name !== "ai-emma" ||
+  // The saved OpenFolk operator route is urgent_feedback -> #ai-emma-urgent.
+  // There is no #ai-emma channel. The reader must independently verify the
+  // route and current bot membership before returning this snapshot.
+  if (!route || route.teamId !== OPENFOLK_TEAM ||
+    route.eventKey !== "urgent_feedback" || route.name !== "ai-emma-urgent" ||
     !channel.test(route.channelId) || !route.member || route.archived || route.shared)
     return { state: "held", code: "slack_route_unverified" };
 

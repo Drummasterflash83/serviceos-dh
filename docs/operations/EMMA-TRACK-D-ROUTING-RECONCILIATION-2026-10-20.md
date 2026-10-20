@@ -14,6 +14,17 @@ distribution to both emails is unverified because its mailbox setting exposes
 one address. Chris owns launch. No provider route, message, call or LIVE
 assistant is changed by this source candidate.
 
+**09:18 UTC notification-path audit:** LIVE has mailbox 603 but zero saved
+603 messages and zero verified voicemail-email routes for it. The existing
+OpenFolk Slack destination is **#ai-emma-urgent**, event `urgent_feedback`,
+channel `C0C64BU9988` in team `T0BLG3N4KN1`; Slack lists it as public and
+unarchived. There is no channel named `#ai-emma`, which the earlier candidate
+receiver demanded. The source-only receiver now requires the existing urgent
+route and a fresh bot membership/nonshared check from its eventual reader.
+It still creates intents only: no email or Slack message is sent, and a
+saved route is not a posted receipt. Neither Rob nor Tony has a verified
+mailbox-603 delivery receipt.
+
 **08:45 UTC readback, 20 October:** LIVE OpenFolk still records launch stage
 `Ready`, published assistant `4eb2bee8-ac25-47c9-b962-409ed250ceb6`, test
 number `+44 7426 924154`, selected isolated candidate
@@ -83,7 +94,7 @@ these are **intended rules**, not proof of a current provider route:
 | --- | --- | --- |
 | Assistant and test number | OpenFolk's Emma workspace names LIVE assistant `4eb2bee8-ac25-47c9-b962-409ed250ceb6` and displays `+44 7426 924154`. | Fresh Vapi number-to-assistant binding and identity read, because a separately launched provider candidate might not be mirrored in OpenFolk. |
 | Hours | Monday–Friday 08:30–17:00 Europe/London; before 08:30, after 17:00, weekends and confirmed England/Wales public holidays are closed. | Same-hash provider conversations at the boundaries and on a weekend/holiday. |
-| Shared fallback | Emergency Call-Outs mailbox 603, after one failed selected-engineer attempt. Intended notices: `rob@drummondheating.co.uk`, `tony@drummondheating.co.uk`, and scoped `#ai-emma` Slack. | Provider-confirmed deposit, **delivered** notices to both recipients, posted Slack receipt, and one supported dual-delivery mechanism. |
+| Shared fallback | Emergency Call-Outs mailbox 603, after one failed selected-engineer attempt. Intended notices: `rob@drummondheating.co.uk`, `tony@drummondheating.co.uk`, and the existing scoped `#ai-emma-urgent` Slack route. | Provider-confirmed deposit, **delivered** notices to both recipients, posted Slack receipt, and one supported dual-delivery mechanism. |
 | Human transfer | Domestic or genuinely uncertain urgent → Tony 105 / `+44 1794 378097`; commercial urgent → Rob 109 / `+44 1794 378105`. No engineer cross-cover. | Fresh Birchills target binding and human-accepted handset calls on the isolated number. |
 | Urgency | Serious safety, welfare, loss of essential service, or active property-damage risk. Routine faults do not qualify. | Provider conversation and transfer evidence, including immediate safety advice. |
 | Test participants | Chris owns acceptance; Rob and Tony are the intended receiving engineers. | Their actual availability and a supervised call window are not saved as confirmed facts. Do not schedule or place calls by inference. |

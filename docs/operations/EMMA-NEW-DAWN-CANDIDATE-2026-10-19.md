@@ -363,12 +363,12 @@ shows an attempt, not an answered Birchills handset.
 
 All eight D/C closed calls must disclose automated/recorded service in the
 closed greeting. The two O calls establish the open greeting. An approved
-`#ai-emma` alert requires a delivery receipt, not merely a queued webhook;
+`#ai-emma-urgent` alert requires a delivery receipt, not merely a queued webhook;
 mailbox 603 must remain separate from personal 109/105 and office 601.
 The candidate-only `receptionist-emergency-603-receiver.ts` now defines the
 local intake boundary: an internal reader must supply a **published** Birchills
 603 source, the matching Vapi/Birchills call with two ordered failed engineer
-legs and a deposited message, and a reviewed OpenFolk `#ai-emma` channel. Only
+legs and a deposited message, and the reviewed OpenFolk `#ai-emma-urgent` route. Only
 then does it freeze exactly two recipient-specific email intents and one scoped
 Slack intent with stable delivery IDs. It copies no caller name, telephone,
 address, transcript or recording into the notices. A separate read-only pass

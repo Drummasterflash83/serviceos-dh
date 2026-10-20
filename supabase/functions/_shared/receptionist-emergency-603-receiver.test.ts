@@ -18,7 +18,8 @@ const source: Published603Source = {
   audioSha256: "a".repeat(64), contentSha256: "b".repeat(64), audioBytes: 4096,
 };
 const route: ReviewedEmmaChannel = {
-  teamId: OPENFOLK_TEAM, channelId: "G123AIEMMA", name: "ai-emma",
+  teamId: OPENFOLK_TEAM, channelId: "C123AIEMMA", name: "ai-emma-urgent",
+  eventKey: "urgent_feedback",
   member: true, archived: false, shared: false,
 };
 const identity = { tenantId, vapiCallId: "vapi-call-1", birchillsCallId: "birchills-call-1" };
@@ -77,6 +78,8 @@ test("unpublished, unrelated or insufficient source/call/route evidence holds be
     ["not deposited", { core: { ...core(), deposit: { ...core().deposit!, state: "attempted" } } }, "call_603_path_unverified", 0],
     ["other workspace", { route: { ...route, teamId: "other" } }, "slack_route_unverified", 1],
     ["other channel", { route: { ...route, name: "general" } }, "slack_route_unverified", 1],
+    ["nonexistent old channel", { route: { ...route, name: "ai-emma" } }, "slack_route_unverified", 1],
+    ["wrong route event", { route: { ...route, eventKey: "practice_feedback" } }, "slack_route_unverified", 1],
     ["not member", { route: { ...route, member: false } }, "slack_route_unverified", 1],
     ["shared", { route: { ...route, shared: true } }, "slack_route_unverified", 1],
   ];
