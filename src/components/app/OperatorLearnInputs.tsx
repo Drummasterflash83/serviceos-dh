@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { OperatorCommusoftRecurring } from "./OperatorCommusoftRecurring";
 import { OperatorScheduledActivityProbe } from "./OperatorScheduledActivityProbe";
+import { OperatorCommusoftUsersPage } from "./OperatorCommusoftUsersPage";
 import { OperatorCommusoftResume } from "./OperatorCommusoftResume";
 import { OperatorCommusoftConnection } from "./OperatorCommusoftConnection";
 import { OperatorSlackConnection } from "./OperatorSlackConnection";
@@ -375,6 +376,17 @@ export function OperatorLearnInputs({
         onChanged={() => refresh(generation.current)}
       />
       <OperatorScheduledActivityProbe tenantId={tenantId} connectionId={selected?.id ?? null} canRun={canWrite === true && !busy && !pending} />
+      {usersCaptureEnabled === true && selected && canWrite === true && (
+        <OperatorCommusoftUsersPage
+          key={`${backend}:${tenantId}:${actorId}:${selected.id}`}
+          tenantId={tenantId}
+          actorId={actorId}
+          connectionId={selected.id}
+          backend={backend}
+          canRun={!busy && !pending && !connectionBlocked && selected.status === "configured" &&
+            !selected.revoked && selected.credential_bound && !!selected.verified_at}
+        />
+      )}
       <details
         className="rounded-xl border p-4"
         open={slackOpen}

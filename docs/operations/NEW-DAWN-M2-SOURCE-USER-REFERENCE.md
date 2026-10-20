@@ -58,6 +58,13 @@ versions and an audit receipt. The held job reference can use these versions,
 labelled as an isolated sample, without treating them as complete user coverage
 or staff identities.
 
+The operator source-page control requires the same tenant flag to be on. Its
+saved-read RPC returns only source IDs, observation times and a scoped audit
+receipt; authenticated clients cannot select the retained raw payload table.
+Switching the users flag off hides the control and denies saved-receipt reads,
+including older completed requests. The immutable source versions and audit
+history remain retained for a reviewed later re-enable or withdrawal.
+
 The original users-page filename had the same `20261107160000` version as the
 already published job-closure migration. Its contents are unchanged, but its
 filename is now `20261108150000` so the ledger cannot conflate them. The
