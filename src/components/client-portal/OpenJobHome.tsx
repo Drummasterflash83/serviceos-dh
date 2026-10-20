@@ -274,19 +274,24 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         <RefreshCw size={15} /> Refresh list
       </button>}
     </div>
-    {operator && mdReason === undefined && <div className="nd-operator-preview">
-      <strong>{company ?? "Client"} · OpenFolk read-only MD presentation preview</strong>
-      <p>You remain signed in as OpenFolk. Each source page read is checked and logged; no client staff login is used.</p>
+    {operator && mdReason === undefined && <div className={`nd-operator-preview${approvedReason === null ? "" : " nd-operator-preview--active"}`}>
+      <strong>{approvedReason === null
+        ? `${company ?? "Client"} · OpenFolk read-only MD presentation preview`
+        : "OpenFolk preview · audited"}</strong>
       {approvedReason === null ? <>
+        <p>You remain signed in as OpenFolk. Each source page read is checked and logged; no client staff login is used.</p>
         <label>Access reason
           <input value={reason} maxLength={500} onChange={(event) => setReason(event.target.value)}
             placeholder="Review Drummonds open jobs" />
         </label>
         <button className="cp-secondary" disabled={reason.trim().length < 3}
           onClick={() => setApprovedReason(reason.trim())}>Open audited job preview</button>
-      </> : <button className="cp-secondary" onClick={() => {
-        setApprovedReason(null); setPageIndex(0); setCursors([null]); setSelected(null);
-      }}>Change access reason</button>}
+      </> : <>
+        <p>Access reason: {approvedReason}</p>
+        <button className="cp-secondary" onClick={() => {
+          setApprovedReason(null); setPageIndex(0); setCursors([null]); setSelected(null);
+        }}>Change reason</button>
+      </>}
     </div>}
     {!operator && !authorisedClient && <p role="status">Your work list is being prepared. Confirmed assignments are not available yet.</p>}
     {enabled && <>
@@ -394,15 +399,12 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
             <BriefcaseBusiness size={20} />
             <span className="nd-job-main"><strong>Job {row.external_id}</strong>
               <small>{row.title ?? "Work description not recorded"}</small>
-              <small>Customer: {row.source_customer ?? "to confirm"} · Site: {row.source_site ?? row.source_postcode ?? "to confirm"}</small>
+              <small>{row.source_customer ?? "Customer to confirm"} · {row.source_site ?? row.source_postcode ?? "Site to confirm"}</small>
             </span>
             <span className="nd-job-review"><b>{statusLabel[row.status]}</b>
-              <small>{row.identity_state === "reviewed_link" ? "Customer and site confirmed" : "Customer and site to confirm"}</small>
-              <small className="nd-job-next">{row.job_created_at ? `Job created ${jobDate(row.job_created_at)}`
-                : "Job creation date not verified"} · {openJobNextStep(row.status)}</small>
-              <small>{openJobStatusEvidence(row, savedAt)}</small>
-              <small>Source saved {savedAt(row.source_observed_at)}</small>
-              <small>Owner not confirmed</small>
+              <small className="nd-job-next">{openJobNextStep(row.status)}</small>
+              <small>{row.job_created_at ? `Created ${jobDate(row.job_created_at)}`
+                : "Creation date unverified"}{row.identity_state !== "reviewed_link" ? " · Customer/site match pending" : ""}</small>
             </span>
             <ChevronRight size={17} />
           </button>)}
