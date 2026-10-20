@@ -17,13 +17,13 @@ test("one exact GET retains only a provider status, timestamp and hash", async (
       assert.equal(url, "https://app.commusoft.co.uk/api/v2/jobs/13441");
       assert.equal(init?.method, "GET");
       return new Response(JSON.stringify({ id: 13441, status: "on_hold",
-        lastUpdatedOnDateTime: "2026-10-20T12:00:00Z", customerName: "PRIVATE" }),
+        lastUpdatedOnDateTime: "2026-10-20 12:00:00", customerName: "PRIVATE" }),
       { headers: { "content-type": "application/json" } });
     },
   });
   assert.equal(reads, 2);
   assert.equal(result.status, "on_hold");
-  assert.equal(result.providerUpdated, "2026-10-20T12:00:00Z");
+  assert.equal(result.providerUpdated, "2026-10-20 12:00:00");
   assert.match(result.sha256, /^[0-9a-f]{64}$/);
   assert.equal(JSON.stringify(result).includes("PRIVATE"), false);
 });
