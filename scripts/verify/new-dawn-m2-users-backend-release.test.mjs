@@ -4,6 +4,9 @@ import {
   assess,
   assessDownloadedWorker,
   assessDownloadedReleaseWorker,
+  assessClassificationFixture,
+  catalogSql,
+  classificationFixtureSql,
   FUNCTIONS,
   installLive,
   NAME,
@@ -16,6 +19,7 @@ import {
   resumeSource,
   source,
   SOURCE_SHA256,
+  unsafeActiveJobsFrom,
   VERSION,
   WORKER,
 } from "./new-dawn-m2-users-backend-release.mjs";
@@ -40,6 +44,7 @@ function catalog(stage = "before") {
         : [],
     flag_count: 0,
     active_jobs: 0,
+    unsafe_active_jobs: 0,
     source_versions: 0,
     base_flags: 2,
     connections: 1,
@@ -51,9 +56,13 @@ test("exact source, default-off stage and immutable ledger receipt", () => {
   assert.match(RESUME_SOURCE_SHA256, /^[a-f0-9]{64}$/);
   assert.equal(assess(catalog()).state, "users_backend_ready_default_off");
   assert.equal(assess(catalog("after"), "after").state, "users_backend_installed_default_off");
+  const ordinaryRunning = catalog();
+  ordinaryRunning.active_jobs = 3;
+  assert.equal(assess(ordinaryRunning).ordinaryActiveJobs, 3);
   for (const mutate of [
     (c) => (c.flag_count = 1),
-    (c) => (c.active_jobs = 1),
+    (c) => (c.unsafe_active_jobs = 1),
+    (c) => (c.unsafe_active_jobs = null),
     (c) => (c.source_versions = 1),
     (c) => (c.functions[0].hash = "0".repeat(64)),
     (c) => (c.functions[0].anon = true),
@@ -74,6 +83,12 @@ test("transaction only changes four authority functions and two exact ledger row
   assert.match(sql, /^begin;\n/);
   assert.match(sql, /lock table supabase_migrations\.schema_migrations/);
   assert.match(sql, /users_exact_live_preflight_changed/);
+  assert.equal(sql.split(unsafeActiveJobsFrom).length - 1, 1);
+  assert.equal(catalogSql.split(unsafeActiveJobsFrom).length - 1, 1);
+  assert.match(unsafeActiveJobsFrom, /left join public\.connector_accounts a/);
+  assert.match(unsafeActiveJobsFrom, /a\.id is null/);
+  assert.match(unsafeActiveJobsFrom, /not in \('properties','jobs','propertyContacts'\)/);
+  assert.match(unsafeActiveJobsFrom, /j\.job_key is distinct from/);
   assert.equal(sql.match(/insert into supabase_migrations\.schema_migrations/g)?.length, 1);
   assert.match(sql, /pages<>retained\+1/);
   assert.match(sql, /learn\.inputs\.commusoft\.users\.enabled/);
@@ -81,6 +96,22 @@ test("transaction only changes four authority functions and two exact ledger row
   assert.match(releaseSql(true), /\nrollback;$/);
   assert.doesNotMatch(sql, /insert into public\.feature_flags|update public\.feature_flags/i);
   for (const x of Object.values(FUNCTIONS)) assert.ok(sql.includes(x.before));
+});
+
+test("the shared active-job classifier holds users, unknown and malformed jobs", () => {
+  const sql = classificationFixtureSql();
+  assert.match(sql, /with platform_jobs\(tenant_id,job_type,status,payload,job_key\)/);
+  assert.match(sql, /users/);
+  assert.match(sql, /unknown/);
+  assert.match(sql, /wrong-job-key/);
+  assert.match(sql, /disabled/);
+  assert.match(sql, /succeeded/);
+  assert.equal(
+    assessClassificationFixture([{ active_jobs: 8, unsafe_active_jobs: 5 }]).blockedJobs,
+    5,
+  );
+  assert.throws(() => assessClassificationFixture([{ active_jobs: 8, unsafe_active_jobs: 4 }]));
+  assert.throws(() => assessClassificationFixture([{ active_jobs: 9, unsafe_active_jobs: 5 }]));
 });
 
 test("unknown LIVE write is read back once and never automatically replayed", async () => {
