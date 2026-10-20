@@ -2,11 +2,36 @@ import { useQuery } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
 import { loadCommusoftReviewConnections } from "@/lib/learn-commusoft-review";
 import { operatorBusinessReviewClient } from "@/lib/openfolk-business-review";
-import { loadRecentUnlinkedJobs } from "@/lib/new-dawn-recent-unlinked-jobs";
+import { loadRecentUnlinkedJobs, type RecentUnlinkedJob } from "@/lib/new-dawn-recent-unlinked-jobs";
 import { dailySourceReview } from "@/lib/new-dawn-daily-source-review";
 
 const savedAt = (value: string | null) =>
   value ? new Date(value).toLocaleString("en-GB") : "not established";
+
+function RecentJobRow({ row }: { row: RecentUnlinkedJob }) {
+  const review = dailySourceReview(row);
+  return (
+    <article className="nd-job-row nd-daily-source-row">
+      <span className="nd-job-main">
+        <strong>Commusoft job {row.external_id}</strong>
+        <small>
+          Recorded source status: {row.source_status ?? "not supplied"} · Captured{" "}
+          {savedAt(row.source_observed_at)}
+        </small>
+      </span>
+      <span className="nd-job-review">
+        <b>Link review needed</b>
+        <small>
+          {review.relationship} · {review.identity}
+        </small>
+      </span>
+      <span className="nd-job-main">
+        <strong>Next step</strong>
+        <small>{review.nextAction}</small>
+      </span>
+    </article>
+  );
+}
 
 /** A separate audited OpenFolk queue, never part of the client job list. */
 export function RecentSavedJobReview({
@@ -87,37 +112,19 @@ export function RecentSavedJobReview({
           ) : (
             <>
               <div className="nd-job-list">
-                {page.rows.slice(0, 8).map((row) => {
-                  const review = dailySourceReview(row);
-                  return (
-                    <article className="nd-job-row nd-daily-source-row" key={row.external_id}>
-                      <span className="nd-job-main">
-                        <strong>Commusoft job {row.external_id}</strong>
-                        <small>
-                          Recorded source status: {row.source_status ?? "not supplied"} · Captured{" "}
-                          {savedAt(row.source_observed_at)}
-                        </small>
-                      </span>
-                      <span className="nd-job-review">
-                        <b>Link review needed</b>
-                        <small>
-                          {review.relationship} · {review.identity}
-                        </small>
-                      </span>
-                      <span className="nd-job-main">
-                        <strong>Next step</strong>
-                        <small>{review.nextAction}</small>
-                      </span>
-                    </article>
-                  );
-                })}
+                {page.rows.slice(0, 8).map((row) => <RecentJobRow key={row.external_id} row={row} />)}
               </div>
               {page.rows.length > 8 && (
-                <p className="nd-job-scope">
-                  Showing 8 of {page.rows.length} returned records. The source review area has the
-                  full saved page.
-                </p>
+                <details className="nd-recent-source-more">
+                  <summary>Show {page.rows.length - 8} more returned jobs</summary>
+                  <div className="nd-job-list">
+                    {page.rows.slice(8).map((row) => <RecentJobRow key={row.external_id} row={row} />)}
+                  </div>
+                </details>
               )}
+              {page.unlinkedCount > page.rows.length && <p className="nd-job-scope">
+                This bounded view returns the latest {page.rows.length} of {page.unlinkedCount} observed unlinked jobs. Search the captured source review for older records.
+              </p>}
               {onOpenInformation && (
                 <button className="cp-secondary" onClick={onOpenInformation}>
                   Open captured source review

@@ -497,6 +497,11 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
         <strong>{sourceJobs.length} saved jobs shown</strong> · Most recently saved {latestSaved(clientSource.data.jobs.map((job) => job.source_observed_at))}
         <details><summary>About this view</summary><p>This is a limited selection from {clientSource.data.reviewedJobCount} jobs that OpenFolk has matched to saved Commusoft records. It is not the full workload or a live Commusoft check. Other jobs may be absent while their records are checked. Job ownership and scores are not confirmed.</p></details>
       </div>}
+      {operatorDiagnostics && activeOperatorSourcePage && !mdPreviewOpen && user && <RecentSavedJobReview
+        key={`${tenant}:${user.id}:${reason}`}
+        tenant={tenant} actor={user.id} reason={reason.trim()}
+        onOpenInformation={onOpenInformation} />}
+      {operatorDiagnostics && displayedOperatorJobs && <h3 className="nd-reviewed-job-heading">Reviewed job preview</h3>}
       {displayedOperatorJobs && <div className="nd-job-scope">
         {mdPreviewOpen && activeOperatorSourcePage ? <>
           <strong>{activeOperatorSourcePage.jobs.length} saved jobs shown</strong> · Most recently saved {latestSaved(activeOperatorSourcePage.jobs.map((job) => job.source_observed_at))}
@@ -542,10 +547,6 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
           <button className="cp-secondary" onClick={() => { setSelectedMd(null); setMdPreview(false); setOperatorPage(null); setOperatorSourcePage(null); }}>Change access reason</button>
         </div>
       </details>}
-      {operatorDiagnostics && activeOperatorSourcePage && !mdPreviewOpen && user && <RecentSavedJobReview
-        key={`${tenant}:${user.id}:${reason}`}
-        tenant={tenant} actor={user.id} reason={reason.trim()}
-        onOpenInformation={onOpenInformation} />}
       <p className="nd-job-scope">Performance scores: not enough data yet.</p>
       <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
         <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
