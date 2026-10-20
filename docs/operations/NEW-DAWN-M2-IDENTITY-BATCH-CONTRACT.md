@@ -105,16 +105,15 @@ and their properties/customer parents under the existing shared Commusoft
 verification lease. Its mode-0600 receipt contains hashes and booleans, not
 IDs or provider payloads.
 
-The 20 October Drummonds snapshot at the pinned 17:45:42 UTC source cutoff
-reconciled 12,693 saved jobs: 1,005 already linked, 804 clean company candidates
-and 10,884 held. The clean set is 112 customers and 128 sites. The retained
-13 October authenticated Commusoft customer-page numeric labels and creation
+The 20 October Drummonds private full-roster snapshot reconciled all saved
+jobs into disjoint already-linked, clean company candidate and held classes.
+The retained 13 October authenticated Commusoft customer-page numeric labels and creation
 routes map categories 2–9 to company types. Ten current exact provider checks
 covered categories 2/4/5/9, and four bounded addendum checks covered 3/6/7/8;
 all 14 matched their saved job, property and customer identities and company
 fields. This evidence supports a reviewed 2–9 company map for this exact
-snapshot. Person and all other categories stay held. Private evidence files,
-the 1,044-item exact manifest and their hashes are outside Git in ignored
+snapshot. Person and all other categories stay held. Private aggregate counts,
+the exact manifest and its hashes are outside Git in ignored
 mode-0600 storage; no batch has been registered or applied.
 
 After the schema is installed with the separate exact five-migration release
