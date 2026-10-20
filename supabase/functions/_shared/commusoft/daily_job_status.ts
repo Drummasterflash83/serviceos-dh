@@ -74,7 +74,7 @@ export async function readDailyCommusoftJobStatus(
   const updated = raw.lastUpdatedOnDateTime;
   if (updated !== undefined && updated !== null &&
     (typeof updated !== "string" || updated.length > 80 ||
-      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(updated) ||
+      !/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(updated) ||
       !Number.isFinite(Date.parse(updated))))
     throw new CommusoftReadError("invalid_response");
   if (!await ports.stillAuthorized()) throw new CommusoftReadError("authority_unavailable");
