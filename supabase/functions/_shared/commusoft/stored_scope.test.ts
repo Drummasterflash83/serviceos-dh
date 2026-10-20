@@ -152,6 +152,30 @@ test("an explicit users approval binds the worker to that collection", async () 
   assert.equal(await f.read(), null);
 });
 
+test("users continuation is one audited page beyond the retained checkpoint", async () => {
+  const f = fixture();
+  f.cfg.resource = "users";
+  f.cfg.pageSize = 10;
+  f.cfg.maxPages = 2;
+  f.rows.connector_accounts[0].sync_cursor = {
+    approvalId: id(6),
+    after: 10,
+    pages: 1,
+    complete: false,
+  };
+  const continuation = await f.read();
+  assert.equal(continuation?.request.resource, "users");
+  assert.equal(continuation?.request.after, 10);
+  assert.equal(continuation?.pages, 1);
+  f.cfg.maxPages = 3;
+  assert.equal(await f.read(), null);
+  f.cfg.maxPages = 1;
+  assert.equal(await f.read(), null);
+  f.cfg.maxPages = 2;
+  f.cfg.pageSize = 11;
+  assert.equal(await f.read(), null);
+});
+
 test("scope comes from tenant-scoped durable rows, never queued payload", async () => {
   const f = fixture(),
     scope = await f.read();

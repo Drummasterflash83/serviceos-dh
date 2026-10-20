@@ -13,6 +13,7 @@ export function OperatorCommusoftResume({
   flags,
   disabled,
   approved,
+  usersCaptureEnabled,
   reason,
   onChange,
   onSubmit,
@@ -22,12 +23,15 @@ export function OperatorCommusoftResume({
   flags: InputFlags;
   disabled: boolean;
   approved: boolean;
+  usersCaptureEnabled: boolean;
   reason: string;
   onChange: () => void;
   onSubmit: (definition: OperatorInputDefinition) => void;
 }) {
+  const users = a.resource === "users";
+  const retained = a.checkpoint.pages ?? 0;
   const [maximum, setMaximum] = useState(
-    Math.min(2147483647, Math.max(a.max_pages ?? 1, (a.checkpoint.pages ?? 0) + 10)),
+    users ? retained + 1 : Math.min(2147483647, Math.max(a.max_pages ?? 1, retained + 10)),
   );
   const [hours, setHours] = useState(2);
   const j = a.latest_job;
@@ -47,6 +51,7 @@ export function OperatorCommusoftResume({
     ["uk", "us"].includes(c.region ?? "") &&
     a.status === "active" &&
     a.connector_enabled &&
+    (!users || usersCaptureEnabled) &&
     flags["learn.enabled"] === true &&
     flags["learn.inputs.commusoft.enabled"] === true;
   const valid =
@@ -55,6 +60,7 @@ export function OperatorCommusoftResume({
     maximum >= (a.max_pages ?? 1) &&
     maximum <= 2147483647 &&
     maximum - (a.checkpoint.pages ?? 0) <= 10000 &&
+    (!users || (maximum === retained + 1 && maximum <= 10000)) &&
     Number.isInteger(hours) &&
     hours >= 1 &&
     hours <= 24;
@@ -77,7 +83,8 @@ export function OperatorCommusoftResume({
             className="cp-input w-full"
             type="number"
             min={Math.max(a.max_pages ?? 1, (a.checkpoint.pages ?? 0) + 1)}
-            max={Math.min(2147483647, (a.checkpoint.pages ?? 0) + 10000)}
+            max={users ? Math.min(10000, retained + 1) : Math.min(2147483647, retained + 10000)}
+            disabled={users}
             value={maximum}
             onChange={(e) => {
               setMaximum(Number(e.target.value));
@@ -101,9 +108,9 @@ export function OperatorCommusoftResume({
         </label>
       </div>
       <p className="text-sm">
-        The total includes pages already retained. The existing collection, contact type and records
-        per page are preserved. Each continuation allows up to 10,000 further pages. Approval expiry
-        will not be shortened.
+        {users
+          ? "Source users remain held evidence. Each reasoned continuation permits just one more page of at most 10; the separate source-user setting must remain On until its page is safely retained. No staff login, engineer or visit is confirmed."
+          : "The total includes pages already retained. The existing collection, contact type and records per page are preserved. Each continuation allows up to 10,000 further pages. Approval expiry will not be shortened."}
       </p>
       <button
         className="cp-secondary"
@@ -119,7 +126,7 @@ export function OperatorCommusoftResume({
             connection_id: c.id,
             revision: c.revision,
             checkpoint: a.checkpoint,
-            max_pages: maximum,
+            max_pages: users ? retained + 1 : maximum,
             expires_at: new Date(
               Math.max(Date.now() + hours * 3600000, a.expires_at ? Date.parse(a.expires_at) : 0),
             ).toISOString(),

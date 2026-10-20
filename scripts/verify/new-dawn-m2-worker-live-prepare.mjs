@@ -11,7 +11,7 @@ const IMAGE = "public.ecr.aws/supabase/edge-runtime:v1.74.3";
 const IMAGE_ID = "sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c";
 const DOCKER = "/usr/local/bin/docker";
 const WORKER = "learn-commusoft-worker";
-export const WORKER_SOURCE_SHA256 = "695a53138ced96cc341c2811d27a5fd0d000a144caaf39e142f758f725865429";
+export const WORKER_SOURCE_SHA256 = "71f07dc895970b0780751b4d206cbb3b8b71668bd1f357341e3e2d373d3fef44";
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 
 export function reviewedWorkerBundle() {

@@ -156,7 +156,7 @@ export async function readStoredCommusoftScope(
       !id(cfg.pageSize) ||
       cfg.pageSize > 100 ||
       !["properties", "propertyContacts", "jobs", "users"].includes(cfg.resource) ||
-      (cfg.resource === "users" && (cfg.maxPages !== 1 || cfg.pageSize > 10)) ||
+      (cfg.resource === "users" && (cfg.maxPages > 10000 || cfg.pageSize > 10)) ||
       (cfg.resource === "propertyContacts" &&
         (!["customer", "workaddress"].includes(cfg.contactType) ||
           cfg.contactPlanVersion !== 1 ||
@@ -213,6 +213,10 @@ export async function readStoredCommusoftScope(
       (checkpoint.complete && checkpoint.after !== null)
     )
       return null;
+    // Every source-user approval or audited continuation permits one page only.
+    // maxPages is cumulative, so a resume must advance it from the saved cursor
+    // by exactly one; the job cannot silently traverse another page.
+    if (cfg.resource === "users" && cfg.maxPages !== checkpoint.pages + 1) return null;
     let contactTarget: CommusoftContactTarget | undefined;
     if (cfg.resource === "propertyContacts") {
       const propertyId =
