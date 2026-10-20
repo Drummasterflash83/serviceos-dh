@@ -244,6 +244,12 @@ postcode was supplied, matching the server gate without repeated full intake.
 This is a candidate source correction, not a LIVE prompt or
 real-phone result.
 
+On 20 October, the [National Gas Emergency Service](https://www.nationalgas.com/nec)
+still published **0800 111 999** for gas and carbon-monoxide emergencies.
+The [NHS carbon-monoxide guidance](https://www.nhs.uk/conditions/carbon-monoxide-poisoning/)
+still distinguished urgent NHS 111 advice from severe symptoms needing 999 or
+A&E. This confirms the candidate's source wording, not how Emma says it on a call.
+
 ## Required provider sequence, no automatic launch
 
 1. Read the current Vapi assistant, candidate, helper, handoff tool, test
