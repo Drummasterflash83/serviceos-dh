@@ -65,6 +65,26 @@ Switching the users flag off hides the control and denies saved-receipt reads,
 including older completed requests. The immutable source versions and audit
 history remain retained for a reviewed later re-enable or withdrawal.
 
+The saved-read RPC has a separate exact release controller at
+`scripts/verify/new-dawn-m2-users-page-saved-read-release.mjs`. It pins the
+installed `20261108150000` users-page ledger and Edge route, prerequisite
+function hashes, active tenant/operator authority, table grants and default-off
+flags. A TEST transaction compiles the ten-file dependency chain and rolls it
+back. The LIVE installer requires the exact project and source hash gates;
+after any uncertain write it performs an independent readback and never
+replays the SQL automatically. It does not enable flags or call Commusoft.
+
+```sh
+node scripts/verify/new-dawn-m2-users-page-saved-read-release.mjs --test-rollback-only
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-users-page-saved-read-release.mjs --live-read-only
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz NEW_DAWN_M2_SAVED_READ_ALLOW_SHA=c7d6c42f08a5026d2a0f59e8740fcb5a4232f5d60ca07c2b70d5eae841e2ca46 node scripts/verify/new-dawn-m2-users-page-saved-read-release.mjs --live-install-exact --source-sha=c7d6c42f08a5026d2a0f59e8740fcb5a4232f5d60ca07c2b70d5eae841e2ca46
+NEW_DAWN_M2_ALLOW_PROJECT=tgbnakbxwcqjeimygroz node scripts/verify/new-dawn-m2-users-page-saved-read-release.mjs --live-readback
+```
+
+The install and readback commands are for a reviewed release operator. Keep
+`learn.inputs.commusoft.users.enabled` absent after installation; disabling
+that flag withdraws access without deleting the retained versions or audit.
+
 The original users-page filename had the same `20261107160000` version as the
 already published job-closure migration. Its contents are unchanged, but its
 filename is now `20261108150000` so the ledger cannot conflate them. The
