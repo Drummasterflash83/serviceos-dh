@@ -25,6 +25,7 @@ import {
   type WorkSource,
 } from "@/lib/learn-commusoft-work";
 import type { RecoveryLock } from "@/lib/learn-slack-recovery-outbox";
+import { exactSiteWasLinked } from "@/lib/new-dawn-guided-job-review";
 
 export function LearnCommusoftWork({
   tenantId,
@@ -33,6 +34,9 @@ export function LearnCommusoftWork({
   onSaved,
   client,
   initialJob,
+  initialSite,
+  expectedJobVersion,
+  onExactSiteLinked,
 }: {
   tenantId: string;
   actorId: string;
@@ -40,17 +44,22 @@ export function LearnCommusoftWork({
   onSaved?: () => void;
   client?: ReviewClient;
   initialJob?: { connection: string; external: string } | null;
+  initialSite?: { connection: string; external: string } | null;
+  expectedJobVersion?: string;
+  onExactSiteLinked?: () => void;
 }) {
   const db = client ?? getSupabaseClient();
+  const exactTarget = initialSite ? { ...initialSite, kind: "site" as const } :
+    initialJob ? { ...initialJob, kind: "job" as const } : null;
   const scope = { backend: supabaseConfig.url.replace(/\/$/, ""), actorId, tenantId };
   const [connections, setConnections] = useState<ReviewConnection[]>([]),
     [connection, setConnection] = useState(""),
-    [kind, setKind] = useState<WorkKind>(initialJob ? "job" : "site");
+    [kind, setKind] = useState<WorkKind>(exactTarget?.kind ?? "site");
   const [rows, setRows] = useState<WorkSource[]>([]),
     [pages, setPages] = useState<(string | null)[]>([null]),
     [next, setNext] = useState<string | null>(null);
-  const [sourceSearch, setSourceSearch] = useState(initialJob?.external ?? ""),
-    [appliedSearch, setAppliedSearch] = useState(initialJob?.external ?? "");
+  const [sourceSearch, setSourceSearch] = useState(exactTarget?.external ?? ""),
+    [appliedSearch, setAppliedSearch] = useState(exactTarget?.external ?? "");
   const [targets, setTargets] = useState<Record<string, string>>({}),
     [searches, setSearches] = useState<Record<string, string>>({}),
     [matches, setMatches] = useState<
@@ -68,7 +77,7 @@ export function LearnCommusoftWork({
     [notice, setNotice] = useState("");
   const generation = useRef(0),
     working = useRef(false),
-    requestedJob = useRef(initialJob),
+    requestedExact = useRef(exactTarget),
     editable = useRef(canEdit);
   editable.current = canEdit;
   const current = (ticket: number) => generation.current === ticket && editable.current;
@@ -118,14 +127,23 @@ export function LearnCommusoftWork({
     ticket: number,
     query = appliedSearch,
   ) {
+    if (exactTarget && (id !== exactTarget.connection || type !== exactTarget.kind ||
+        query !== exactTarget.external || cursors.length !== 1)) {
+      throw Error("This review is bound to one saved source. Return to captured jobs to choose another record.");
+    }
     setReady(false);
     reset();
     const result = await loadWorkPage(db, tenantId, id, type, cursors[cursors.length - 1], query);
     if (!current(ticket)) return;
     setSourceSearch(query === OPEN_WORK_QUERY ? "" : query);
     setAppliedSearch(query);
-    setRows(result.rows);
-    setNext(result.next);
+    const exact = exactTarget ? result.rows.find(row => row.external_id === exactTarget.external) : null;
+    const sourceChanged = !!(exactTarget?.kind === "job" && expectedJobVersion &&
+      exact?.version_id !== expectedJobVersion);
+    setRows(exactTarget ? exact && !sourceChanged ? [exact] : [] : result.rows);
+    setNext(exactTarget ? null : result.next);
+    if (sourceChanged) setNotice("This job’s saved source changed. Return to captured jobs and review its current version.");
+    else if (exactTarget && !exact) setNotice("This exact source is unavailable. Return to captured jobs and refresh before linking.");
     setPages(cursors);
     setConnection(id);
     setKind(type);
@@ -138,16 +156,16 @@ export function LearnCommusoftWork({
       const available = await loadCommusoftReviewConnections(db, tenantId);
       if (!current(ticket)) return;
       setConnections(available);
-      const requested = requestedJob.current;
+      const requested = requestedExact.current;
       if (requested && available.some((c) => c.id === requested.connection)) {
-        await page(requested.connection, "job", [null], ticket, requested.external);
-        requestedJob.current = null;
+        await page(requested.connection, requested.kind, [null], ticket, requested.external);
+        requestedExact.current = null;
       } else if (requested) {
-        requestedJob.current = null;
+        requestedExact.current = null;
         setConnection("");
         setRows([]);
         setReady(true);
-        setNotice("This job’s source connection is unavailable. Reopen its captured card before reviewing a link.");
+        setNotice("This source connection is unavailable. Reopen its captured card before reviewing a link.");
       } else if (connection && available.some((c) => c.id === connection))
         await page(connection, kind, pages, ticket);
       else {
@@ -159,8 +177,8 @@ export function LearnCommusoftWork({
   }
   useEffect(() => {
     working.current = false;
-    setSourceSearch(initialJob?.external ?? "");
-    setAppliedSearch(initialJob?.external ?? "");
+    setSourceSearch(exactTarget?.external ?? "");
+    setAppliedSearch(exactTarget?.external ?? "");
     setRows([]);
     if (canEdit) {
       restore();
@@ -252,7 +270,12 @@ export function LearnCommusoftWork({
         return;
       }
       setPending(null);
-      if (result.state === "recorded") onSaved?.();
+      if (result.state === "recorded") {
+        onSaved?.();
+        const exactSite = rows.find(row => row.external_id === initialSite?.external);
+        if (initialSite && exactSiteWasLinked(initialSite, exactSite, request, result))
+          onExactSiteLinked?.();
+      }
       setNotice(
         result.state === "cancelled"
           ? "This saved batch was cancelled. It will not apply if a delayed request arrives."
@@ -357,6 +380,7 @@ export function LearnCommusoftWork({
           <select
             aria-label="Commusoft connection"
             value={connection}
+            disabled={!!exactTarget}
             onChange={(e) => {
               const id = e.target.value;
               if (id) void operation((t) => page(id, kind, [null], t, ""));
@@ -380,6 +404,7 @@ export function LearnCommusoftWork({
           <select
             aria-label="Record type"
             value={kind}
+            disabled={!!exactTarget}
             onChange={(e) => {
               const type = e.target.value as WorkKind;
               if (connection) void operation((t) => page(connection, type, [null], t, ""));
@@ -396,10 +421,15 @@ export function LearnCommusoftWork({
         </label>
         {connection && (
           <>
-            {initialJob && kind === "job" && connection === initialJob.connection && appliedSearch === initialJob.external && (
-              <p className="text-sm" role="status">Opened from captured job {initialJob.external}. Confirm the exact job number and customer relationship before selecting it.</p>
+            {exactTarget && connection === exactTarget.connection && appliedSearch === exactTarget.external && (
+              <p className="text-sm" role="status">Reviewing exact saved {exactTarget.kind} {exactTarget.external}. Confirm its source and customer relationship before selecting it.</p>
             )}
-            <RetainedSourceSearch
+            {initialSite && rows.length === 1 && rows[0].external_id === initialSite.external &&
+              rows[0].version_id && rows[0].linked_version_id === rows[0].version_id &&
+              rows[0].linked_id && !rows[0].relationship_reason &&
+              <button type="button" className="cp-secondary max-w-full whitespace-normal text-left"
+                onClick={onExactSiteLinked}>Site already has a current reviewed link — continue to exact job</button>}
+            {!exactTarget && <RetainedSourceSearch
               value={sourceSearch}
               applied={
                 appliedSearch === OPEN_WORK_QUERY
@@ -418,8 +448,8 @@ export function LearnCommusoftWork({
                 reset();
               }}
               onSearch={(query) => void operation((t) => page(connection, kind, [null], t, query))}
-            />
-            {kind === "job" && (
+            />}
+            {kind === "job" && !exactTarget && (
               <div className="space-y-2">
                 <button
                   type="button"

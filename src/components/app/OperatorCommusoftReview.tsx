@@ -4,6 +4,7 @@ import { operatorBusinessReviewClient } from "@/lib/openfolk-business-review";
 import { LearnCommusoftCustomers } from "@/components/client-portal/learn/LearnCommusoftCustomers";
 import { LearnCommusoftWork } from "@/components/client-portal/learn/LearnCommusoftWork";
 import { LearnCommusoftSourceJobs } from "@/components/client-portal/learn/LearnCommusoftSourceJobs";
+import type { GuidedJobReview } from "@/lib/new-dawn-guided-job-review";
 
 export function OperatorCommusoftReview({
   tenantId,
@@ -18,6 +19,8 @@ export function OperatorCommusoftReview({
   const [requestedJob, setRequestedJob] = useState<{ connection: string; external: string } | null>(null);
   const [requestedCustomer, setRequestedCustomer] = useState<{ connection: string; external: string } | null>(null);
   const [returnJob, setReturnJob] = useState<{ connection: string; external: string } | null>(null);
+  const [guided, setGuided] = useState<GuidedJobReview | null>(null);
+  const [requestedSite, setRequestedSite] = useState<{ connection: string; external: string } | null>(null);
   const generation = useRef(0);
   function close() {
     generation.current++;
@@ -25,6 +28,8 @@ export function OperatorCommusoftReview({
     setRequestedJob(null);
     setRequestedCustomer(null);
     setReturnJob(null);
+    setGuided(null);
+    setRequestedSite(null);
     setKind("source-jobs");
   }
   useEffect(() => {
@@ -68,6 +73,13 @@ export function OperatorCommusoftReview({
     setReturnJob(null);
     setKind("work");
   }
+  function afterCustomerReview() {
+    if (guided?.site) {
+      setRequestedCustomer(null);
+      setRequestedSite({ connection: guided.connection, external: guided.site });
+      setKind("work");
+    } else returnToJob();
+  }
   return (
     <section className="op-embedded cp-root min-w-0 space-y-4" aria-label="Review business inputs for cards">
       <header>
@@ -107,11 +119,11 @@ export function OperatorCommusoftReview({
             the browser is hidden.
           </p>
           <nav aria-label="Business source review" className="flex flex-wrap items-start gap-2">
-            <button className="cp-secondary" aria-pressed={kind === "source-jobs"} onClick={() => { setRequestedJob(null); setRequestedCustomer(null); setReturnJob(null); setKind("source-jobs"); }}>Captured job cards</button>
+            <button className="cp-secondary" aria-pressed={kind === "source-jobs"} onClick={() => { setRequestedJob(null); setRequestedCustomer(null); setReturnJob(null); setRequestedSite(null); setGuided(null); setKind("source-jobs"); }}>Captured job cards</button>
             <button
               className="cp-secondary"
               aria-pressed={kind === "customers"}
-              onClick={() => { setRequestedJob(null); setRequestedCustomer(null); setReturnJob(null); setKind("customers"); }}
+              onClick={() => { setRequestedJob(null); setRequestedCustomer(null); setReturnJob(null); setRequestedSite(null); setGuided(null); setKind("customers"); }}
             >
               Customers
             </button>
@@ -119,7 +131,7 @@ export function OperatorCommusoftReview({
               className="cp-secondary max-w-full text-left"
               style={{ whiteSpace: "normal" }}
               aria-pressed={kind === "work"}
-              onClick={() => { setRequestedJob(null); setRequestedCustomer(null); setReturnJob(null); setKind("work"); }}
+              onClick={() => { setRequestedJob(null); setRequestedCustomer(null); setReturnJob(null); setRequestedSite(null); setGuided(null); setKind("work"); }}
             >
               Sites, jobs and contacts
             </button>
@@ -127,29 +139,42 @@ export function OperatorCommusoftReview({
               Close review
             </button>
           </nav>
-          {kind === "customers" && returnJob && requestedCustomer && <p role="status">
-            Reviewing customer source {requestedCustomer.external} for Commusoft job {returnJob.external}.
-            Confirm the account holder from source evidence; no customer is selected automatically.
-            <button className="cp-secondary ml-2" onClick={returnToJob}>Return to exact job without linking</button>
+          {kind === "customers" && returnJob && requestedCustomer && <div role="status" className="space-y-2 text-sm">
+            <p>Step 1 of {guided?.site ? "3" : "2"}: review customer source {requestedCustomer.external} for saved job {returnJob.external}. Confirm the account holder from source evidence; no customer is selected automatically.</p>
+            <button className="cp-secondary max-w-full whitespace-normal text-left" onClick={() => { setGuided(null); setRequestedSite(null); returnToJob(); }}>Inspect exact job without linking</button>
+          </div>}
+          {kind === "work" && requestedSite && guided && <p role="status" className="text-sm">
+            Step 2 of 3: review exact site {requestedSite.external} for saved job {guided.job}. A linked site receipt opens the exact job review. A held result stays here; no link is assumed.
+          </p>}
+          {kind === "work" && requestedJob && guided && <p role="status" className="text-sm">
+            Final step: review saved job {guided.job}. Its source version must still match. The customer and site decisions do not link the job automatically.
           </p>}
           {client &&
-            (kind === "source-jobs" ? <LearnCommusoftSourceJobs key={`${tenantId}:${actorId}:${session.generation}`} tenantId={tenantId} actorId={actorId} client={client} operatorReason={session.reason} onReviewJob={(connection, external) => { setRequestedJob({ connection, external }); setKind("work"); }} onReviewCustomer={(connection, job, customer) => { setReturnJob({ connection, external: job }); setRequestedCustomer({ connection, external: customer }); setRequestedJob(null); setKind("customers"); }} /> : kind === "customers" ? (
+            (kind === "source-jobs" ? <LearnCommusoftSourceJobs key={`${tenantId}:${actorId}:${session.generation}`} tenantId={tenantId} actorId={actorId} client={client} operatorReason={session.reason} onReviewJob={(connection, external) => { setGuided(null); setRequestedSite(null); setRequestedJob({ connection, external }); setKind("work"); }} onReviewCustomer={(review) => { setGuided(review); setReturnJob({ connection: review.connection, external: review.job }); setRequestedCustomer({ connection: review.connection, external: review.customer }); setRequestedJob(null); setRequestedSite(null); setKind("customers"); }} /> : kind === "customers" ? (
               <LearnCommusoftCustomers
                 key={`${tenantId}:${actorId}:${session.generation}`}
                 tenantId={tenantId}
                 canEdit
                 client={client}
                 initialCustomer={requestedCustomer}
-                onSaved={returnToJob}
+                onSaved={afterCustomerReview}
               />
             ) : (
               <LearnCommusoftWork
-                key={`${tenantId}:${actorId}:${session.generation}:${requestedJob?.connection ?? ""}:${requestedJob?.external ?? ""}`}
+                key={`${tenantId}:${actorId}:${session.generation}:${requestedJob?.external ?? ""}:${requestedSite?.external ?? ""}`}
                 tenantId={tenantId}
                 actorId={actorId}
                 canEdit
                 client={client}
                 initialJob={requestedJob}
+                initialSite={requestedSite}
+                expectedJobVersion={requestedJob && guided?.job === requestedJob.external ? guided.jobVersion : undefined}
+                onExactSiteLinked={() => {
+                  if (!guided || !requestedSite) return;
+                  setRequestedSite(null);
+                  setRequestedJob({ connection: guided.connection, external: guided.job });
+                  setKind("work");
+                }}
               />
             ))}
         </>
