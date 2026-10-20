@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { accountsNetMargin, fy27LastCompletedUkDate, newestAccountsPair, netProfitYtdComparison } from "./new-dawn-md-money.ts";
+import { accountsNetMargin, agedReceivablesBucketKind, fy27LastCompletedUkDate, newestAccountsPair, netProfitYtdComparison } from "./new-dawn-md-money.ts";
 import type { AccountsPair } from "./new-dawn-founder-accounts-preview.ts";
 
 const pair = (periodStart: string, periodEnd: string, received: string): AccountsPair => ({
@@ -41,4 +41,12 @@ test("MD net margin uses same-report income and handles negative profit", () => 
   assert.equal(accountsNetMargin("50", "0"), null);
   assert.equal(accountsNetMargin("50", "-100"), null);
   assert.equal(accountsNetMargin("not a number", "100"), null);
+});
+
+test("91+ net credits are never classified as overdue debt", () => {
+  assert.equal(agedReceivablesBucketKind("-5.25"), "credit");
+  assert.equal(agedReceivablesBucketKind("-0.00"), "zero");
+  assert.equal(agedReceivablesBucketKind("0.00"), "zero");
+  assert.equal(agedReceivablesBucketKind("10.01"), "positive");
+  assert.equal(agedReceivablesBucketKind("unverified"), "unknown");
 });
