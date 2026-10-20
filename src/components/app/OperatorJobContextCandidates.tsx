@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import {
   readJobContextCandidates,
@@ -16,6 +17,17 @@ export function OperatorJobContextCandidates({ tenantId, actorId, jobId, reason 
   const [error, setError] = useState("");
   const request = useRef<AbortController | null>(null);
   const scope = `${supabaseConfig.url}:${tenantId}:${actorId}:${jobId}:${reason}`;
+  const flag = useQuery({
+    queryKey: ["new-dawn-job-context-candidates-flag", supabaseConfig.url, tenantId, actorId],
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().from("feature_flags")
+        .select("value").eq("tenant_id", tenantId)
+        .eq("flag", "new_dawn.job_context_candidates").maybeSingle();
+      if (error) throw Error("Job-context release setting unavailable");
+      return data?.value === true;
+    },
+    staleTime: 30_000,
+  });
   useEffect(() => {
     setPage(null);
     setError("");
@@ -51,6 +63,7 @@ export function OperatorJobContextCandidates({ tenantId, actorId, jobId, reason 
       if (!controller.signal.aborted) setBusy(false);
     }
   }
+  if (flag.data !== true) return null;
   return <section className="mt-4 space-y-2 rounded border p-3" aria-label="Job communication context review">
     <h3 className="font-semibold">Possible communication context</h3>
     <p className="text-sm">OpenFolk review only. Shared customer evidence can suggest records to inspect; it does not prove they belong to this job. No link, score or payment state changes here.</p>
