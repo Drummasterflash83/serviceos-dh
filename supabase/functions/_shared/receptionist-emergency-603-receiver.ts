@@ -101,7 +101,7 @@ export async function receivePublishedEmergency603(sourceId: string, ports: Rece
   let core: Emergency603CoreEvidence | null;
   try { core = await ports.readCorrelatedCall(source); }
   catch { return { state: "held", code: "call_evidence_unavailable" }; }
-  if (!core || core.identity.tenantId !== tenantId ||
+  if (!core || core.identity?.tenantId !== tenantId ||
     core.deposit?.mailboxMessageId !== source.providerReference ||
     assessEmergency603DepositProof(core).state !== "verified")
     return { state: "held", code: "call_603_path_unverified" };

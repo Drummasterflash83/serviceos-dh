@@ -70,6 +70,7 @@ test("unpublished, unrelated or insufficient source/call/route evidence holds be
     ["not 603", { source: { ...source, extension: "601" } }, "published_603_source_unverified", 0],
     ["pending", { source: { ...source, state: "pending" } }, "published_603_source_unverified", 0],
     ["no audio", { source: { ...source, audioBytes: 0 } }, "published_603_source_unverified", 0],
+    ["malformed call snapshot", { core: {} as Emergency603CoreEvidence }, "call_603_path_unverified", 0],
     ["wrong deposit", { core: { ...core(), deposit: { ...core().deposit!, mailboxMessageId: "other" } } }, "call_603_path_unverified", 0],
     ["accepted first engineer", { core: { ...core(), attempts: [{ ...core().attempts![0], outcome: "human_accepted" }, core().attempts![1]] } }, "call_603_path_unverified", 0],
     ["wrong order", { core: { ...core(), attempts: [core().attempts![1], core().attempts![0]] } }, "call_603_path_unverified", 0],
