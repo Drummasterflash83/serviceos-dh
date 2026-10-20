@@ -9,6 +9,7 @@ import { filterSourceHomeJobs, groupSourceHomeJobs, readSourceHomePage, scopedOp
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
 import { parseExactTrialOffer, readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
+import { readJobSourceUserReference, type JobSourceUserReference } from "@/lib/new-dawn-job-source-user-reference";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { OwnerMoneyPanel } from "./OwnerMoneyPanel";
 import { FounderAccountsPreview } from "./FounderAccountsPreview";
@@ -200,7 +201,22 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
   const [fresh, setFresh] = useState<ExactJobDetail | null>(null);
   const [freshBusy, setFreshBusy] = useState(false);
   const [freshError, setFreshError] = useState("");
+  const [userReference, setUserReference] = useState<JobSourceUserReference | null>(null);
+  const [userReferenceBusy, setUserReferenceBusy] = useState(false);
+  const [userReferenceError, setUserReferenceError] = useState("");
   const detail = source?.source;
+  const userReferenceFlag = useQuery({
+    queryKey: ["new-dawn-job-source-user-reference-flag", actor, tenant],
+    enabled: detail?.current === true,
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().from("feature_flags")
+        .select("value").eq("tenant_id", tenant)
+        .eq("flag", "new_dawn.m2_source_user_reference").maybeSingle();
+      if (error) throw Error("Source user reference setting unavailable.");
+      return data?.value === true;
+    },
+    staleTime: 30_000,
+  });
   const trialOffer = useQuery({
     queryKey: ["new-dawn-exact-job-trial-offer", actor, tenant, job.id, detail?.version_id],
     enabled: detail?.current === true,
@@ -218,6 +234,7 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
   useEffect(() => {
     let active = true;
     setSource(null); setBusy(true); setError(""); setFresh(null); setFreshError("");
+    setUserReference(null); setUserReferenceError("");
     void readOperatorJobSource(getSupabaseClient(), tenant, actor, job.id, reason)
       .then((value) => { if (active) setSource(value); })
       .catch(() => { if (active) setError("The audited source read is unavailable. Reopen this job to retry."); })
@@ -233,6 +250,16 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
         detail.version_id, detail.external_id, reason, trialOffer.data.requestId));
     } catch { setFreshError("The permitted check has not completed. If Commusoft is busy, retry this same check before the permit expires; saved evidence remains above."); }
     finally { setFreshBusy(false); }
+  }
+  async function checkSourceUserReference() {
+    if (!detail?.current || userReferenceFlag.data !== true || userReferenceBusy) return;
+    setUserReferenceBusy(true); setUserReferenceError(""); setUserReference(null);
+    try {
+      setUserReference(await readJobSourceUserReference(getSupabaseClient(),
+        { tenant, job: job.id, actor, sourceVersion: detail.version_id }, reason));
+    } catch {
+      setUserReferenceError("Source user references could not be verified. The job evidence above is unchanged.");
+    } finally { setUserReferenceBusy(false); }
   }
   return <div className="nd-job-detail space-y-3">
     <p><strong>{job.fields.job_number ? `Job ${job.fields.job_number}` : job.fields.title ?? "Saved job"}</strong> · {homeJobState({ status: job.fields.status })}</p>
@@ -261,6 +288,25 @@ function OperatorJobDetail({ tenant, actor, reason, job }: {
         {freshBusy ? "Checking Commusoft…" : "Check current Commusoft job details"}
       </button>}
       {freshError && <p role="alert">{freshError}</p>}
+      {detail.current && userReferenceFlag.data === true && <button className="cp-secondary"
+        disabled={userReferenceBusy} onClick={() => void checkSourceUserReference()}>
+        {userReferenceBusy ? "Checking saved source users…" : "Check saved source user references"}
+      </button>}
+      {userReferenceError && <p role="alert">{userReferenceError}</p>}
+      {userReference && <section aria-label="Source user references" className="space-y-2">
+        <h3>Source user references</h3>
+        <p>From one exact Commusoft job detail checked {checked(userReference.detailCheckedAt)}.
+          These IDs do not verify an engineer, appointment, team member or login.</p>
+        {userReference.users.length === 0
+          ? <p>The exact job detail listed no source users; this does not prove nobody attended.</p>
+          : <ul>{userReference.users.map((row) => <li key={row.sourceId}>
+            {row.nameOnJobReceipt || `Source user ${row.sourceId}`} · source ID {row.sourceId} ·
+            {row.state === "source_record_retained"
+              ? ` matching source user record retained ${checked(row.capturedAt)}`
+              : " no matching source user record captured"}.
+          </li>)}</ul>}
+        <small>Identity and appointment remain unverified. Audit {userReference.auditId}.</small>
+      </section>}
       {fresh && <section aria-label="Fresh Commusoft job detail" className="space-y-2">
         <h3>Current source detail · checked {checked(fresh.checkedAt)}</h3>
         <p>Exact Commusoft job {fresh.externalId}; read only. Its source version is linked to this saved job. The saved card has not been rewritten.</p>

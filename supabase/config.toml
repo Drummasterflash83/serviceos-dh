@@ -361,6 +361,10 @@ verify_jwt = true
 [functions.learn-commusoft-job-detail]
 verify_jwt = false
 
+# One operator-approved /users GET, with a server-side Auth check and shared lease.
+[functions.learn-commusoft-users-page]
+verify_jwt = false
+
 # Retained call audio requires a real signed-in company owner/admin.
 [functions.learn-phone-playback]
 verify_jwt = true
