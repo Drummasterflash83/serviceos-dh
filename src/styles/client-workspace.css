@@ -393,6 +393,7 @@ button.nd-job-row:hover { border-color: #a996c0; background: #fff; }
 .nd-job-row small { color: #716b78; line-height: 1.4; }
 .nd-job-review { align-items: start; }
 .nd-job-review b { width: fit-content; padding: 4px 8px; border-radius: 6px; background: #eee8f3; color: #574466; font-size: 12px; }
+.nd-job-review .nd-job-next { color: #41384c; font-weight: 600; }
 .nd-recent-source { margin-top: 22px; padding-top: 20px; border-top: 1px solid #e8e4eb; }
 .nd-recent-source-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
 .nd-recent-source-heading h3 { font-size: 18px; font-weight: 600; }
