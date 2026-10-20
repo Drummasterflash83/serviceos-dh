@@ -415,7 +415,7 @@
 .nd-score-hero p.nd-score-source { font-size: 11px; }
 .nd-score-hero button { margin-top: 9px; }
 .nd-score-hero--pending { margin: 20px 0 13px; padding: 19px 23px; }
-.nd-score-hero--pending .nd-work-count { display: grid; flex: 0 0 112px; place-content: center; width: 112px; height: 112px; border: 5px solid #d4c5e1; border-radius: 50%; background: #fff9; color: #514669; text-align: center; }
+.nd-score-hero--pending .nd-work-count { display: grid; flex: 0 0 112px; place-content: center; width: 112px; min-height: 90px; padding: 10px; border: 1px solid #d4c5e1; border-radius: 14px; background: #fff9; color: #514669; text-align: center; }
 .nd-score-hero--pending .nd-work-count strong { font-family: "Inter Tight", Inter, sans-serif; font-size: 35px; line-height: 1; }
 .nd-score-hero--pending .nd-work-count small { max-width: 86px; margin-top: 4px; font-size: 10px; line-height: 1.2; }
 .nd-score-hero--pending .nd-score-hero-copy h3 { margin: 3px 0 5px; font-size: clamp(23px,2.5vw,30px); }
@@ -457,9 +457,9 @@
 .nd-oldest-jobs button:focus-visible { outline: 2px solid #514669; outline-offset: 2px; }
 @media (max-width: 720px) {
   .nd-score-hero--pending { gap: 13px; padding: 16px; }
-  .nd-score-hero--pending .nd-work-count { flex-basis: 76px; width: 76px; height: 76px; border-width: 4px; }
+  .nd-score-hero--pending .nd-work-count { display: flex; flex-basis: auto; align-items: baseline; gap: 8px; width: 100%; min-height: 60px; padding: 10px 12px; text-align: left; }
   .nd-score-hero--pending .nd-work-count strong { font-size: 27px; }
-  .nd-score-hero--pending .nd-work-count small { font-size: 8px; }
+  .nd-score-hero--pending .nd-work-count small { max-width: none; font-size: 11px; }
   .nd-score-hero--pending .nd-score-hero-copy h3 { font-size: 22px; }
   .nd-job-home > .nd-score-tiles { grid-template-columns: 1fr; gap: 7px; }
   .nd-job-home > .nd-score-tiles article { gap: 3px; padding: 12px 14px; }
