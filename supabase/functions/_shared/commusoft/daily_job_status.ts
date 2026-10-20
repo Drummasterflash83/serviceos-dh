@@ -7,6 +7,7 @@ type Region = "uk" | "us";
 type Claim = { state: string; id?: string; claim_token?: string; external_id?: string;
   region?: Region; api_key?: string; send_before?: number };
 type StatusRead = { status: string; providerUpdated: string | null; sha256: string };
+type RejectedShape = "json_invalid" | "root_invalid" | "identity_invalid" | "status_invalid";
 const object = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 const uuid = (value: unknown): value is string => typeof value === "string" &&
@@ -18,7 +19,8 @@ const externalId = (value: unknown): value is string => typeof value === "string
 export async function readDailyCommusoftJobStatus(
   region: Region, key: string, id: string,
   ports: { stillAuthorized: () => Promise<boolean>; sendBefore: number;
-    fetcher?: typeof fetch; signal?: AbortSignal; clock?: () => number },
+    fetcher?: typeof fetch; signal?: AbortSignal; clock?: () => number;
+    onRejectedShape?: (shape: RejectedShape) => void },
 ): Promise<StatusRead> {
   const clock = ports.clock ?? Date.now;
   if (!(["uk", "us"] as string[]).includes(region) ||
@@ -65,21 +67,32 @@ export async function readDailyCommusoftJobStatus(
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
   let raw: unknown;
   try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); }
-  catch { throw new CommusoftReadError("invalid_response"); }
-  if (!object(raw) || raw.error !== undefined ||
-    typeof raw.id !== "number" || !Number.isSafeInteger(raw.id) ||
-    String(raw.id) !== id || typeof raw.status !== "string" ||
-    !/^[\x20-\x7e]{1,120}$/.test(raw.status))
+  catch {
+    ports.onRejectedShape?.("json_invalid");
     throw new CommusoftReadError("invalid_response");
+  }
+  if (!object(raw) || raw.error !== undefined) {
+    ports.onRejectedShape?.("root_invalid");
+    throw new CommusoftReadError("invalid_response");
+  }
+  if (typeof raw.id !== "number" || !Number.isSafeInteger(raw.id) || String(raw.id) !== id) {
+    ports.onRejectedShape?.("identity_invalid");
+    throw new CommusoftReadError("invalid_response");
+  }
+  if (typeof raw.status !== "string" || !/^[\x20-\x7e]{1,120}$/.test(raw.status)) {
+    ports.onRejectedShape?.("status_invalid");
+    throw new CommusoftReadError("invalid_response");
+  }
+  // The provider update time is optional context, not the daily status fact.
+  // Keep an exact-ID, valid-status observation when that optional field is
+  // malformed, and omit the time rather than manufacturing a date from it.
   const updated = raw.lastUpdatedOnDateTime;
-  if (updated !== undefined && updated !== null &&
-    (typeof updated !== "string" || updated.length > 80 ||
-      !/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(updated) ||
-      !Number.isFinite(Date.parse(updated))))
-    throw new CommusoftReadError("invalid_response");
+  const providerUpdated = typeof updated === "string" && updated.length <= 80 &&
+    /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(updated) &&
+    Number.isFinite(Date.parse(updated)) ? updated : null;
   if (!await ports.stillAuthorized()) throw new CommusoftReadError("authority_unavailable");
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
-  return { status: raw.status, providerUpdated: typeof updated === "string" ? updated : null,
+  return { status: raw.status, providerUpdated,
     sha256: [...digest].map(value => value.toString(16).padStart(2, "0")).join("") };
 }
 
@@ -107,6 +120,8 @@ export async function runDailyCommusoftJobStatus(
           { p_id: id, p_token: token });
         return !current.error && current.data === true;
       },
+      // Fixed category only. Never log a provider field value, ID, URL or body.
+      onRejectedShape: shape => console.warn("new_dawn_daily_job_status_rejected_shape", shape),
     });
     const settled = await db.rpc("new_dawn_job_status_daily_finish", {
       p_id: id, p_token: token, p_external: value.external_id,

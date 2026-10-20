@@ -6,7 +6,7 @@ import { financeAmount } from "@/lib/learn-quickbooks-finance";
 import { readFounderAccountsPairs, readFounderAccountsPreview,
   type AccountsPair, type FounderAccountsPreview } from "@/lib/new-dawn-founder-accounts-preview";
 import { readAccountsMarginPreview, type AccountsMarginPreview } from "@/lib/new-dawn-accounts-margin";
-import { accountsNetMargin, newestAccountsPair, netProfitYtdComparison } from "@/lib/new-dawn-md-money";
+import { accountsNetMargin, agedReceivablesBucketKind, newestAccountsPair, netProfitYtdComparison } from "@/lib/new-dawn-md-money";
 import { MdAgedInvoices } from "./MdAgedInvoices";
 
 type Snapshot = { accounts: FounderAccountsPreview; margin: AccountsMarginPreview | null };
@@ -107,11 +107,11 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
   const ytd = saved ? netProfitYtdComparison(saved.periodStart, saved.periodEnd) : null;
   const netMargin = saved && snapshot?.margin
     ? accountsNetMargin(saved.netProfit, snapshot.margin.totalIncome) : null;
+  const agedBucket = saved ? agedReceivablesBucketKind(saved.receivables.days91Plus) : "unknown";
   return <section className="md-money" aria-label="Drummonds MD money">
     <p className="of-eyebrow">DRUMMONDS · MONEY</p>
-    <h2>Money needing a review.</h2>
-    <p>Check saved overdue invoice sources and company accounts separately. Each read is audited. Nothing here moves money or sends a chase.</p>
-    <MdAgedInvoices tenant={tenant} reason={reason} />
+    <h2>Company money at a glance.</h2>
+    <p>Start with verified QuickBooks company accounts for the dated period below. Job-to-cash gaps and original invoice records follow. Each read is audited; nothing here moves money or sends a chase.</p>
     <div className="md-money-accounts">
       <h3>Company accounts</h3>
       <p>The latest verified saved QuickBooks period opens with this audited view. Figures show their dates and accounting basis.</p>
@@ -153,8 +153,12 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
           </article>
         </div>
         <div className="md-money-followup">
-          <h3>Where money may be held up</h3>
-          <p><strong>Aged receivables:</strong> {financeAmount(saved.receivables.days91Plus, saved.currency)} in the report's 91-day-and-over net bucket, as of {saved.arAsOf}. Credits may affect this amount. It is not an invoice-level chase list.</p>
+          <h3>Job-to-cash gaps and ageing context</h3>
+          {agedBucket === "positive" ?
+            <p><strong>Aged receivables to review:</strong> {financeAmount(saved.receivables.days91Plus, saved.currency)} in the report's 91-day-and-over net bucket, as of {saved.arAsOf}. This is not an invoice-level chase list.</p> :
+            <p><strong>91-day-and-over report bucket:</strong> {agedBucket === "credit"
+              ? `${financeAmount(saved.receivables.days91Plus, saved.currency)} net credit balance`
+              : agedBucket === "zero" ? "Net zero" : "Unavailable"}, as of {saved.arAsOf}. This does not establish overdue debt or a cleared invoice list.</p>}
           <p><strong>Completed, not invoiced:</strong> awaiting verified Commusoft completion and QuickBooks job links.</p>
           <p><strong>Closed without price, quote or FOC reason:</strong> awaiting verified closure and commercial evidence.</p>
           <p><strong>Liz's chase drafts:</strong> held until invoice-level ageing and customer review are linked. No messages have been drafted or sent.</p>
@@ -172,5 +176,6 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
         <li><strong>ARR:</strong> current recurring contracts with value, term and changes, reconciled to Finance.</li>
       </ul>
     </div>
+    <MdAgedInvoices tenant={tenant} reason={reason} />
   </section>;
 }

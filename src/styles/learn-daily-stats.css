@@ -1,0 +1,32 @@
+/* Shared by the client LEARN page and the audited MD presentation. */
+.lr-daily-stats { margin: 0 0 22px; padding: 22px; }
+.lr-daily-head { display: flex; align-items: start; justify-content: space-between; gap: 16px; }
+.lr-daily-head h2 { margin: 5px 0 6px; font-size: 21px; line-height: 1.25; color: #382d47; }
+.lr-daily-head p:last-child, .lr-daily-asof, .lr-daily-footnote { color: #75658b; font-size: 12px; line-height: 1.6; }
+.lr-daily-head .cp-secondary { flex: 0 0 auto; min-height: 40px; }
+.lr-daily-asof { margin: 18px 0 10px; }
+.lr-daily-table { border: 1px solid #e9e3ef; border-radius: 12px; overflow: hidden; }
+.lr-daily-row { display: grid; grid-template-columns: minmax(0, 1fr) 90px 125px; align-items: center; gap: 12px; padding: 10px 14px; border-top: 1px solid #eee8f2; font-size: 13px; }
+.lr-daily-row:first-child { border-top: 0; }
+.lr-daily-row:nth-child(odd) { background: #faf8fc; }
+.lr-daily-row strong { font-weight: 600; color: #473952; }
+.lr-daily-row [role="cell"]:not(:first-child), .lr-daily-row [role="columnheader"]:not(:first-child) { text-align: right; }
+.lr-daily-column-head { color: #75658b; font-size: 11px; font-weight: 600; }
+.lr-daily-footnote { margin: 12px 0; }
+.lr-daily-job-check { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+.lr-daily-job-check > div { display: grid; gap: 4px; border: 1px solid #e9e3ef; border-radius: 10px; padding: 12px; min-width: 0; }
+.lr-daily-job-check span { color: #75658b; font-size: 11px; }
+.lr-daily-job-check strong { color: #473952; font-size: 12px; overflow-wrap: anywhere; }
+.lr-daily-job-check small { color: #75658b; font-size: 11px; }
+.lr-daily-reason { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-top: 12px; }
+.lr-daily-reason label { display: grid; gap: 6px; flex: 1 1 230px; color: #75658b; font-size: 12px; }
+.lr-daily-reason input { width: 100%; min-height: 40px; border: 1px solid #cbbada; border-radius: 8px; padding: 9px 11px; background: #fff; }
+
+@media (max-width: 600px) {
+  .lr-daily-stats { padding: 16px; }
+  .lr-daily-head { flex-direction: column; }
+  .lr-daily-head .cp-secondary { width: 100%; }
+  .lr-daily-job-check { grid-template-columns: 1fr; }
+  .lr-daily-row { grid-template-columns: minmax(0, 1fr) 58px 82px; gap: 6px; padding: 10px 8px; font-size: 12px; }
+  .lr-daily-column-head { font-size: 10px; }
+}

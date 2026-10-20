@@ -52,6 +52,8 @@
 .md-money-followup p { margin: 10px 0; color: #706b7e; font-size: 13px; line-height: 1.5; }
 .md-money-followup strong { color: #514669; }
 .md-money-aged { margin-top: 18px; padding: 18px 20px; border: 1px solid #e9e7ee; border-radius: 16px; }
+.md-money-aged > summary { color: #514669; cursor: pointer; font-size: 14px; font-weight: 600; }
+.md-money-aged > summary:focus-visible { outline: 2px solid #514669; outline-offset: 4px; }
 .md-money-aged h3 { margin: 0 0 7px; color: #25253a; font-size: 17px; }
 .md-money-aged > p { color: #706b7e; font-size: 13px; line-height: 1.5; }
 .md-money-aged > button { margin: 8px 0 14px; }
