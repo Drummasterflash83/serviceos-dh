@@ -54,13 +54,36 @@ bindings and main 01794 341600 route still need fresh provider readback.
 | Opening hours | Review policy says Monday–Friday 08:30–17:00 and holiday closure; test clocks cover one ordinary closed time and Christmas. | Weekdays after 17:00 and weekends are explicitly in scope. | Verify London weekday boundary, weekend and holiday behavior. Morning-before-opening and holiday handling await Chris's answers; do not infer a new rule from this shorthand. |
 | v14 preservation | Stored provider candidate predates the 13 October v14 speech change; current gate correctly requires LIVE/candidate/helper `1.05` and voice/transcriber equality. | Keep Emma's established voice and intelligible numbers. | Read current published identity, voice, transcriber, model and configuration hashes first; copy only reviewed fields into the isolated candidate. Freeze and fingerprint **one** resulting candidate before any paid scenarios. |
 
+## Recovered decisions and remaining unknowns
+
+Chris asked us to find the existing answers rather than repeat the seven launch
+questions. The saved policy and provider inventory establish the following;
+these are **intended rules**, not proof of a current provider route:
+
+| Launch input | Recovered answer | Evidence still needed |
+| --- | --- | --- |
+| Assistant and test number | OpenFolk's Emma workspace names LIVE assistant `4eb2bee8-ac25-47c9-b962-409ed250ceb6` and displays `+44 7426 924154`. | Fresh Vapi number-to-assistant binding and identity read, because a separately launched provider candidate might not be mirrored in OpenFolk. |
+| Hours | Monday–Friday 08:30–17:00 Europe/London; before 08:30, after 17:00, weekends and confirmed England/Wales public holidays are closed. | Same-hash provider conversations at the boundaries and on a weekend/holiday. |
+| Shared fallback | Emergency Call-Outs mailbox 603, after one failed selected-engineer attempt. Intended notices: `rob@drummondheating.co.uk`, `tony@drummondheating.co.uk`, and scoped `#ai-emma` Slack. | Provider-confirmed deposit, **delivered** notices to both recipients, posted Slack receipt, and one supported dual-delivery mechanism. |
+| Human transfer | Domestic or genuinely uncertain urgent → Tony 105 / `+44 1794 378097`; commercial urgent → Rob 109 / `+44 1794 378105`. No engineer cross-cover. | Fresh Birchills target binding and human-accepted handset calls on the isolated number. |
+| Urgency | Serious safety, welfare, loss of essential service, or active property-damage risk. Routine faults do not qualify. | Provider conversation and transfer evidence, including immediate safety advice. |
+| Test participants | Chris owns acceptance; Rob and Tony are the intended receiving engineers. | Their actual availability and a supervised call window are not saved as confirmed facts. Do not schedule or place calls by inference. |
+| Main line | Drummonds main DID is `01794 341600`; existing IVRs are 501/502, with Emma virtual extension 205. | Exact **current** Birchills route and rollback state, then Chris's separate day-of approval after real tests. |
+
+At 07:40 UTC, a fresh read of OpenFolk's saved operational state still showed
+Emma `Ready`, 12 old test-run records (latest 2 October), no intake-installation
+row and no launch-promotion row. Recent Drummonds phone records were Simwood
+records, not evidence that Emma handled a call. The saved noninteractive
+Supabase CLI login could not be read, so no new Vapi/Birchills provider read or
+fingerprint request was attempted. This does not prove whether an external
+provider-only launch happened.
+
 ## One candidate and evidence plan
 
-1. Resolve Chris's seven answers into a single written decision table: urgent
-   eligibility, the 17:00 and weekend boundary, uncertain class, missing or
-   unusable caller details, failed/busy/no-answer/voicemail behavior, shared
-   mailbox recipients/Slack channel, and launch ownership. Do not substitute
-   this draft for those answers.
+1. Use the recovered decision table above. Still resolve missing or unusable
+   caller details, actual busy/no-answer/voicemail provider behavior and the
+   supervised call window from direct evidence; do not ask Chris to repeat
+   facts already recorded here.
 2. Read LIVE Vapi assistant/version/phone bindings and Birchills account 3950
    main-number, IVR 501/502, extension 205, Rob 109, Tony 105 and shared 603
    routing. Compare the assistant identity with the saved 20 October hash and
