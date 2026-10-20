@@ -72,6 +72,20 @@ export const FUNCTIONS = Object.freeze({
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const quote = (value) => `'${value.replaceAll("'", "''")}'`;
 const signatures = Object.keys(FUNCTIONS);
+// Existing ordinary capture may queue a new page between preflight and the
+// transaction. Only a users or unclassifiable job can overlap this users-only
+// authority patch unsafely. Keep this exact predicate shared by both gates.
+export const unsafeActiveJobsFrom = `from public.platform_jobs j
+ left join public.connector_accounts a on a.tenant_id=j.tenant_id
+  and a.id::text=j.payload->>'connector_account_id'
+ where j.tenant_id='${TENANT}'::uuid and j.job_type='commusoft.source_sync'
+  and j.status in ('queued','running','retrying')
+  and (a.id is null or a.status is distinct from 'active'
+   or coalesce(a.settings->'commusoft_import'->>'resource','')
+      not in ('properties','jobs','propertyContacts')
+   or nullif(a.settings->'commusoft_import'->>'approvalId','') is null
+   or j.job_key is distinct from
+      'commusoft.source:'||a.id::text||':'||(a.settings->'commusoft_import'->>'approvalId'))`;
 const functionRows = `select jsonb_agg(jsonb_build_object(
   'signature',p.proname||'('||oidvectortypes(p.proargtypes)||')',
   'hash',encode(sha256(convert_to(pg_get_functiondef(p.oid),'UTF8')),'hex'),
@@ -131,6 +145,7 @@ export const catalogSql = `select jsonb_build_object(
   and flag='learn.inputs.commusoft.users.enabled'),
  'active_jobs',(select count(*) from public.platform_jobs where tenant_id='${TENANT}'::uuid
   and job_type='commusoft.source_sync' and status in ('queued','running','retrying')),
+ 'unsafe_active_jobs',(select count(*) ${unsafeActiveJobsFrom}),
  'source_versions',(select count(*) from public.learn_business_input_versions
   where tenant_id='${TENANT}'::uuid and provider='commusoft' and collection='users'),
  'base_flags',(select count(*) from public.feature_flags where tenant_id='${TENANT}'::uuid
@@ -138,6 +153,56 @@ export const catalogSql = `select jsonb_build_object(
  'connections',(select count(*) from public.provider_connections where tenant_id='${TENANT}'::uuid
   and provider='commusoft' and status='configured' and revoked_at is null)
 ) as catalog`;
+
+// Read-only TEST fixture for the exact shared active-job predicate. It proves
+// all three ordinary resources pass while users, unknown and malformed jobs
+// are held, without inserting a job or changing any capture state.
+export function classificationFixtureSql() {
+  const id = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+  const approval = (n) => id(n + 100);
+  const account = (n, resource, status = "active") =>
+    `(${quote(id(n))}::uuid,${quote(TENANT)}::uuid,${quote(status)},${quote(JSON.stringify({ commusoft_import: { resource, approvalId: approval(n) } }))}::jsonb)`;
+  const job = (n, status, key = `commusoft.source:${id(n)}:${approval(n)}`) =>
+    `(${quote(TENANT)}::uuid,'commusoft.source_sync',${quote(status)},${quote(JSON.stringify({ connector_account_id: id(n) }))}::jsonb,${quote(key)})`;
+  const jobs = [
+    job(101, "running"),
+    job(102, "queued"),
+    job(103, "retrying"),
+    job(104, "running"),
+    job(105, "queued"),
+    job(106, "running"), // Missing account.
+    job(101, "running", "wrong-job-key"),
+    job(107, "queued"),
+    job(104, "succeeded"), // Inactive users job is irrelevant.
+  ];
+  const accounts = [
+    account(101, "properties"),
+    account(102, "jobs"),
+    account(103, "propertyContacts"),
+    account(104, "users"),
+    account(105, "unknown"),
+    account(107, "properties", "disabled"),
+  ];
+  const from = unsafeActiveJobsFrom
+    .replace("public.platform_jobs", "platform_jobs")
+    .replace("public.connector_accounts", "connector_accounts");
+  return `with platform_jobs(tenant_id,job_type,status,payload,job_key) as
+ (values ${jobs.join(",")}),
+ connector_accounts(id,tenant_id,status,settings) as (values ${accounts.join(",")})
+ select (select count(*) ${from}) as unsafe_active_jobs,
+  (select count(*) from platform_jobs where status in ('queued','running','retrying')) as active_jobs`;
+}
+
+export function assessClassificationFixture(rows) {
+  if (
+    !Array.isArray(rows) ||
+    rows.length !== 1 ||
+    Number(rows[0]?.active_jobs) !== 8 ||
+    Number(rows[0]?.unsafe_active_jobs) !== 5
+  )
+    throw Error("users_active_job_classification_changed");
+  return { state: "users_active_job_classification_test_passed", activeJobs: 8, blockedJobs: 5 };
+}
 
 export function assessFunctions(rows, stage = "before", project = PROJECT) {
   if (!["before", "after"].includes(stage) || ![PROJECT, TEST_PROJECT].includes(project))
@@ -168,11 +233,18 @@ export function assessFunctions(rows, stage = "before", project = PROJECT) {
 }
 
 export function assess(catalog, stage = "before", project = PROJECT) {
+  const activeJobs = Number(catalog?.active_jobs);
+  const unsafeActiveJobs = Number(catalog?.unsafe_active_jobs);
   if (
     !catalog ||
     !Array.isArray(catalog.ledger) ||
     Number(catalog.flag_count) !== 0 ||
-    Number(catalog.active_jobs) !== 0 ||
+    catalog.active_jobs == null ||
+    !Number.isSafeInteger(activeJobs) ||
+    activeJobs < 0 ||
+    catalog.unsafe_active_jobs == null ||
+    !Number.isSafeInteger(unsafeActiveJobs) ||
+    unsafeActiveJobs !== 0 ||
     Number(catalog.source_versions) !== 0 ||
     Number(catalog.base_flags) !== 2 ||
     Number(catalog.connections) !== 1
@@ -207,6 +279,7 @@ export function assess(catalog, stage = "before", project = PROJECT) {
     versions: [VERSION, RESUME_VERSION],
     sourceSha256: SOURCE_SHA256,
     resumeSourceSha256: RESUME_SOURCE_SHA256,
+    ordinaryActiveJobs: activeJobs,
     providerRequests: 0,
   };
 }
@@ -295,6 +368,18 @@ async function management(project, token, path, sql = null, readOnly = true, fet
   return JSON.parse(bytes.toString("utf8"));
 }
 
+export async function rehearseClassification({ token = savedCliToken(), fetcher = fetch } = {}) {
+  const rows = await management(
+    TEST_PROJECT,
+    token,
+    "/database/query/read-only",
+    classificationFixtureSql(),
+    true,
+    fetcher,
+  );
+  return { ...assessClassificationFixture(rows), project: TEST_PROJECT, providerRequests: 0 };
+}
+
 export async function readStage(project = PROJECT, token = savedCliToken(), fetcher = fetch) {
   const [info, functions, rows] = await Promise.all([
     management(project, token, "", null, true, fetcher),
@@ -340,8 +425,7 @@ do $users_gate$ begin
    where version::text in ('${VERSION}','${RESUME_VERSION}'))
   or exists(select 1 from public.feature_flags where tenant_id='${TENANT}'::uuid
    and flag='learn.inputs.commusoft.users.enabled')
-  or exists(select 1 from public.platform_jobs where tenant_id='${TENANT}'::uuid
-   and job_type='commusoft.source_sync' and status in ('queued','running','retrying'))
+  or exists(select 1 ${unsafeActiveJobsFrom})
   or exists(select 1 from public.learn_business_input_versions where tenant_id='${TENANT}'::uuid
    and provider='commusoft' and collection='users')
   or (select count(*) from public.feature_flags where tenant_id='${TENANT}'::uuid
@@ -446,6 +530,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         }),
       );
     } else if (args === "--test-rollback-only") console.log(JSON.stringify(await rehearseTest()));
+    else if (args === "--test-active-job-classification")
+      console.log(JSON.stringify(await rehearseClassification()));
     else if (args.startsWith("--verify-worker-bundle --path ")) {
       const s = await readStage();
       console.log(JSON.stringify(assessDownloadedWorker(process.argv[4], s.worker)));

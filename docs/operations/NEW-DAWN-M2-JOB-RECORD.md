@@ -107,7 +107,8 @@ pins the initial LIVE worker v11, deployed worker v12, and the two migration fil
 `20261105180000_commusoft_source_users.sql` and
 `20261105190000_commusoft_source_users_resume.sql` by hash. Its LIVE read-only
 mode checks the worker version, four authority function hashes and grants, both
-missing ledger rows, no active source-sync job, the configured connection and
+missing ledger rows, no active source-user or unclassifiable source-sync job,
+the configured connection and
 the absent source-user flag. Download the LIVE worker with the Supabase CLI and
 use `--verify-worker-bundle --path <download-directory>` to check the v11
 baseline. The merged candidate was compiled from pinned Edge runtime source
@@ -140,6 +141,19 @@ the first page reports more results, the new resume function, credential gate,
 worker and UI allow one more page per explicit reason and check the flag again;
 no automatic traversal or multi-page approval is enabled. Continuations are
 held after 10,000 retained pages for a separate source review.
+
+Ordinary recurring properties, jobs and propertyContacts capture can be active
+during this users-only SQL release. The read-only preflight and the guarded SQL
+transaction use the **same** active-job classifier: an active job passes only
+when its tenant-scoped account exists, is active, has one of those three saved
+resources and its job key matches the saved approval. A users, unknown,
+missing-account, inactive-account or mismatched-key job stops the release. The
+transaction rechecks this classifier before changing any function and rolls
+back on a changed gate; it does not pause ordinary capture. Run the synthetic
+`--test-active-job-classification` read-only TEST check alongside the existing
+`--test-rollback-only` rehearsal. One bounded LIVE install attempt follows a
+fresh preflight; an unknown write outcome is read back once, never replayed
+automatically.
 
 ## Exact current job detail candidate
 
