@@ -3,10 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
 import { financeAmount } from "@/lib/learn-quickbooks-finance";
-import { accountsPeriodCoverage, canReadFounderAccountsPreview, canShowAgedReceivablesReview, readFounderAccountsPairs,
+import { accountsPeriodCoverage, canReadFounderAccountsPreview, canShowAgedReceivablesReview, canShowReceivablesAgeing, readFounderAccountsPairs,
   readFounderAccountsPreview, type AccountsPair } from "@/lib/new-dawn-founder-accounts-preview";
 
 type SavedAccounts = ReturnType<typeof readFounderAccountsPreview>;
+const receivedUtc = (value: string) => `${new Date(value).toISOString().slice(0, 16).replace("T", " ")} UTC`;
 
 /** OpenFolk founder/operator preview; never mounted on the ordinary client home. */
 export function FounderAccountsPreview({ tenant, operator, jobPreviewOpened, reason }: {
@@ -44,6 +45,8 @@ export function FounderAccountsPreview({ tenant, operator, jobPreviewOpened, rea
   const ready=canReadFounderAccountsPreview({operator,jobPreviewOpened,flagEnabled:flag.data.accounts,
     pair,reason,reviewed});
   const showAgedReceivables=canShowAgedReceivablesReview({operator,
+    flagEnabled:flag.data.agedReceivables,saved});
+  const showAgeing=canShowReceivablesAgeing({operator,
     flagEnabled:flag.data.agedReceivables,saved});
 
   async function findPairs() {
@@ -116,13 +119,30 @@ export function FounderAccountsPreview({ tenant, operator, jobPreviewOpened, rea
         <div><dt>Accounts gross profit</dt><dd><strong>{financeAmount(saved.accountsGrossProfit,saved.currency)}</strong></dd></div>
         <div><dt>Net profit · OpenFolk authorised view</dt><dd><strong>{financeAmount(saved.netProfit,saved.currency)}</strong></dd></div>
       </dl>
+      <section className="space-y-2" aria-label="Saved QuickBooks receivables ageing">
+        <h3 className="font-semibold">Receivables report · as of {saved.arAsOf}</h3>
+        <p className="nd-money-scope">Company-level net report balances. Credits may affect buckets; these are not today's collectable debt or a customer, invoice or job list.</p>
+        <dl className="nd-money-values">
+          <div><dt>Report total</dt><dd><strong>{financeAmount(saved.receivables.total,saved.currency)}</strong></dd></div>
+        </dl>
+        {showAgeing && <dl className="nd-money-values" aria-label="Receivables ageing bands">
+          <div><dt>Current</dt><dd>{financeAmount(saved.receivables.current,saved.currency)}</dd></div>
+          <div><dt>1–30 days</dt><dd>{financeAmount(saved.receivables.days1To30,saved.currency)}</dd></div>
+          <div><dt>31–60 days</dt><dd>{financeAmount(saved.receivables.days31To60,saved.currency)}</dd></div>
+          <div><dt>61–90 days</dt><dd>{financeAmount(saved.receivables.days61To90,saved.currency)}</dd></div>
+          <div><dt>91 days and over</dt><dd>{financeAmount(saved.receivables.days91Plus,saved.currency)}</dd></div>
+        </dl>}
+      </section>
       {showAgedReceivables && <aside className="rounded-lg border border-amber-200 bg-amber-50/50 p-4" aria-label="OpenFolk aged receivables review">
         <p className="font-semibold">Review aged receivables</p>
-        <p className="mt-1 text-sm">QuickBooks Aged Receivables · 91 and over · as of {saved.arAsOf}: <strong>{financeAmount(saved.ar91Plus,saved.currency)}</strong></p>
+        <p className="mt-1 text-sm">QuickBooks Aged Receivables · 91 and over · as of {saved.arAsOf}: <strong>{financeAmount(saved.receivables.days91Plus,saved.currency)}</strong></p>
         <p className="nd-money-scope">Positive company-level report bucket in this saved snapshot. It is not linked to a particular customer, invoice or job, and does not authorise a payment chase.</p>
       </aside>}
       <p className="nd-money-scope">Field gross profit: awaiting verified job costs and job links. ARR: awaiting verified recurring contracts and periods.</p>
-      <details className="text-xs"><summary>Saved source and audit</summary><p className="break-all">P&amp;L SHA-256 {saved.profitSha256}; A/R SHA-256 {saved.receivablesSha256}. Read audit {saved.auditId}.</p></details>
+      <details className="text-xs"><summary>Saved source and audit</summary>
+        <p>P&amp;L received {receivedUtc(saved.profitReceivedAt)}; A/R received {receivedUtc(saved.receivablesReceivedAt)}.</p>
+        <p className="break-all">P&amp;L SHA-256 {saved.profitSha256}; A/R SHA-256 {saved.receivablesSha256}. Read audit {saved.auditId}.</p>
+      </details>
       <button className="cp-secondary" onClick={()=>{setSaved(null);setReviewed(false);}}>Close accounts snapshot</button>
     </div>}
   </section>;
