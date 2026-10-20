@@ -267,8 +267,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
     <div className="nd-job-heading">
       <div>
         <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · WORK</p>
-        <h2>Start with jobs needing a check</h2>
-        <p>Review On hold and Pending work first. Open a job for its recorded details.</p>
+        <h2>Jobs needing attention</h2>
+        <p>Start with work that is On hold or Pending. Open a job to see what is recorded.</p>
       </div>
       {enabled && <button className="cp-secondary" onClick={refresh} disabled={page.isFetching || firstPage.isFetching}>
         <RefreshCw size={15} /> Refresh list
@@ -290,44 +290,49 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
     </div>}
     {!operator && !authorisedClient && <p role="status">Your work list is being prepared. Confirmed assignments are not available yet.</p>}
     {enabled && <>
-      <section className="nd-score-hero nd-score-hero--pending" aria-label="Recorded open workload">
-        <div className="nd-work-count"><strong>{activeSummary?.counts.total.toLocaleString("en-GB") ?? "…"}</strong><small>recorded open jobs</small></div>
+      <section className="nd-score-hero nd-score-hero--pending" aria-label="Jobs needing attention">
+        <div className="nd-work-count"><strong>{activeSummary
+          ? (activeSummary.counts.on_hold + activeSummary.counts.pending).toLocaleString("en-GB") : "…"}</strong>
+          <small>to check by status</small></div>
         <div className="nd-score-hero-copy">
-          <p className="of-eyebrow">SAVED COMMUSOFT STATUS</p>
-          <h3>Open jobs</h3>
+          <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · WORK OVERVIEW</p>
+          <h3>See what is waiting</h3>
           <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending · ${activeSummary.counts.open.toLocaleString("en-GB")} Open.`
             : summary.isError ? "Job totals are unavailable." : "Checking workload…"}</p>
-          <button type="button" onClick={() => showJobs(null)}>See all open jobs →</button>
-          {activeSummary && <small>Saved-status count checked {savedAt(activeSummary.snapshotAt)}</small>}
+          <button type="button" onClick={() => showJobs(activeSummary?.counts.on_hold
+            ? "on_hold" : activeSummary?.counts.pending ? "pending" : null)}>
+            {activeSummary?.counts.on_hold ? "Review On-hold jobs" : activeSummary?.counts.pending
+              ? "Review Pending jobs" : "See all open jobs"} →</button>
+          {activeSummary && <small>{activeSummary.counts.total.toLocaleString("en-GB")} open jobs in saved Commusoft records · checked {savedAt(activeSummary.snapshotAt)}</small>}
         </div>
       </section>
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
-        <article><span>JOBS</span><strong>{activeSummary ? `${(activeSummary.counts.on_hold + activeSummary.counts.pending).toLocaleString("en-GB")} to check by status` : "Checking workload"}</strong>
-          <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending` : "Reading job statuses."}</p>
-          {checkedDay?.day && <p>Daily Commusoft check, {statusDay(checkedDay.day)} frozen roster: <strong>
-            {checkedDay.observedCount?.toLocaleString("en-GB")}/{checkedDay.rosterCount?.toLocaleString("en-GB")}
-          </strong> roster jobs observed{checkedDay.missingCount ? ` · ${checkedDay.missingCount} gaps logged` : ""}.
-            {checkedDay.lastProviderCheckAt && <small> Last provider check {savedAt(checkedDay.lastProviderCheckAt)}.</small>}</p>}
-          {checkedDay?.earliestMovingReviewDay && <p>Moving score review from {statusDay(checkedDay.earliestMovingReviewDay)},
-            if daily checks continue and each scored job has 14 observations. No score is published yet.</p>}
-          {dailyCoverage.isError && <p>Daily provider-check coverage is unavailable. Scores remain withheld.</p>}
+        <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
+          <p>Browse the saved list by status and open any job for its details.</p>
+          {checkedDay?.day && <p>Latest daily status check: {statusDay(checkedDay.day)}.</p>}
+          {!!checkedDay?.missingCount && <p role="alert">{checkedDay.missingCount} jobs were missed in that check; scores remain withheld.</p>}
+          {checkedDay?.earliestMovingReviewDay && <p>Job score review can begin {statusDay(checkedDay.earliestMovingReviewDay)} if daily checks continue. No score is published yet.</p>}
+          {dailyCoverage.isError && <p role="alert">Daily job checks are unavailable. Scores remain withheld.</p>}
           <button type="button" onClick={() => oldestHeldRows.length > 0
             ? oldestRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
             : showJobs("on_hold")}>{oldestHeldRows.length > 0 ? "See 10 oldest On-hold jobs" : "See On-hold jobs"} →</button>
         </article>
-        <article><span>CUSTOMERS</span><strong>Still being linked</strong>
-          <p>Customer totals will appear as job and site matches are confirmed.</p>
+        <article><span>CUSTOMERS</span><strong>Not enough data yet</strong>
+          <p>Job and site matches still need review before customer health can be scored.</p>
         </article>
-        <article><span>TEAM</span><strong>Awaiting visit records</strong>
-          <p>Engineer and action-owner views need confirmed visits and assignments.</p>
+        <article><span>TEAM</span><strong>Not enough data yet</strong>
+          <p>Team health needs confirmed visits and who owns each next action.</p>
         </article>
       </div>
-      <details className="nd-job-context"><summary>How to read this view</summary>
+      <details className="nd-job-context"><summary>How these figures are checked</summary>
         <p>These counts use the latest saved Commusoft job statuses. On hold and Pending identify work to check; status alone does not prove urgency, the cause of a hold or who owns the next action.</p>
+        {checkedDay?.day && <p>For the frozen {statusDay(checkedDay.day)} open-job roster, {checkedDay.observedCount?.toLocaleString("en-GB")}/{checkedDay.rosterCount?.toLocaleString("en-GB")} jobs were checked with Commusoft
+          {checkedDay.missingCount ? `; ${checkedDay.missingCount} gaps were logged` : ""}.
+          {checkedDay.lastProviderCheckAt && ` Last check ${savedAt(checkedDay.lastProviderCheckAt)}.`}</p>}
         <p>Job, customer and team scores remain unpublished. A day qualifies for the Moving measure when at least 99% of its frozen open-job roster is checked; any gaps are logged. Each scored job still needs its own 14 daily observations. Customer and team measures need confirmed links and visits.</p>
       </details>
       <section className="nd-work-priority" aria-label="Review saved job statuses">
-        <div><h3>Choose what to review</h3>
+        <div><h3>What needs a check</h3>
           <p>{activeSummary
             ? `Status counts checked ${savedAt(activeSummary.snapshotAt)}.`
             : "Choose a job status below."}</p></div>
@@ -345,8 +350,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
       </section>
       <section className="nd-oldest-jobs" ref={oldestRef} aria-label="Ten oldest On-hold jobs by creation date">
-        <div><h3>Ten oldest On-hold jobs</h3>
-          <p>Oldest by verified job creation date, not time spent On hold. Open a job to see what is recorded.</p></div>
+        <div><h3>Ten oldest On-hold records</h3>
+          <p>Ordered by verified job creation date, not time spent On hold. Some work types still need review before they are treated as customer priorities.</p></div>
         {firstPage.isPending && <p role="status">Reading the oldest recorded On-hold jobs…</p>}
         {firstPage.isError && <p role="alert">The oldest On-hold jobs could not be checked. Refresh to retry.</p>}
         {firstPage.isSuccess && oldestHeldRows.length === 0 && <p>No verified creation-order On-hold jobs are available in this saved snapshot.</p>}
