@@ -94,9 +94,14 @@ export async function runLearnInputTick(config: Config, jobTypes: string[] | nul
             Number(queued) + Number(held) > Number(checked)) return outcome("unconfirmed");
         return outcome(Number(held) > 0 ? "attention" : Number(checked) > 0 ? "processed" : "idle");
       }
+      const freshness = name === "learn-commusoft-worker" ? result.freshness : undefined;
+      if (freshness !== undefined && !["idle", "waiting", "held", "processed", "attention", "unconfirmed"]
+        .includes(String(freshness))) return outcome("unconfirmed");
       if (![0, 1].includes(result.claimed as number) || !Array.isArray(result.outcomes) ||
           result.outcomes.length !== result.claimed) return outcome("unconfirmed");
-      if (result.claimed === 0) return outcome("idle");
+      if (result.claimed === 0) return outcome(freshness === "processed" ? "processed"
+        : freshness === "attention" || freshness === "held" ? "attention"
+          : freshness === "unconfirmed" ? "unconfirmed" : "idle");
       const settled = result.outcomes[0];
       if (object(settled) && settled.state === "waiting" && ["paused", "unavailable"].includes(String(settled.reason)))
         return outcome("attention");
