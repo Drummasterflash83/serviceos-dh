@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { loadCommusoftReviewConnections, type ReviewClient, type ReviewConnection } from "@/lib/learn-commusoft-review";
-import { createSourceJobReviewAction, loadSourceJobPage, SOURCE_JOB_IDENTITIES, SOURCE_JOB_RELATIONSHIPS, type SourceJobPage } from "@/lib/learn-commusoft-source-jobs";
+import { createSourceJobReviewAction, customerSourceForReview, loadSourceJobPage, SOURCE_JOB_IDENTITIES, SOURCE_JOB_RELATIONSHIPS, type SourceJobPage } from "@/lib/learn-commusoft-source-jobs";
+import { loadRecentUnlinkedJobs, type RecentUnlinkedPage } from "@/lib/new-dawn-recent-unlinked-jobs";
 import { LearnCommusoftJobDetails } from "./LearnCommusoftJobDetails";
 
 function ReviewTaskButton({ db, tenant, connection, external, version }: {
@@ -30,8 +31,11 @@ function ReviewTaskButton({ db, tenant, connection, external, version }: {
 }
 
 /** Read-only source cards: unresolved identity never hides a retained job. */
-export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob }: {
+export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob, onReviewJob, onReviewCustomer, operatorReason }: {
   tenantId: string; actorId: string; client?: ReviewClient; onOpenJob?: (id: string) => void;
+  onReviewJob?: (connection: string, external: string) => void;
+  onReviewCustomer?: (connection: string, job: string, customer: string) => void;
+  operatorReason?: string;
 }) {
   const db = client ?? getSupabaseClient();
   const [connections, setConnections] = useState<ReviewConnection[]>([]);
@@ -43,10 +47,30 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob 
   const [result, setResult] = useState<{ key: string; data: SourceJobPage } | null>(null);
   const [notice, setNotice] = useState(""), [busy, setBusy] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [recent, setRecent] = useState<{ key: string; data: RecentUnlinkedPage } | null>(null);
+  const [recentBusy, setRecentBusy] = useState(false), [recentNotice, setRecentNotice] = useState("");
+  const [selectedRecent, setSelectedRecent] = useState<string | null>(null);
+  const recentKey = JSON.stringify([tenantId, actorId, connection, operatorReason, revision]);
+  const visibleRecent = !hidden && recent?.key === recentKey ? recent.data : null;
   const after = cursors[cursors.length - 1];
   const viewQuery = view === "holds" ? "status:on-hold" : view === "review" ? "status:needs-review" : query;
   const key = JSON.stringify([tenantId, actorId, connection, viewQuery, openOnly, after, revision]);
   const visible = !hidden && result?.key === key ? result.data : null;
+  async function reviewExactCustomer(job: string) {
+    if (!onReviewCustomer || !connection || hidden) return;
+    setRecentBusy(true); setRecentNotice("");
+    try {
+      const page = await loadSourceJobPage(db, {
+        tenant: tenantId, actor: actorId, connection, query: job, openOnly: false, after: null,
+      });
+      const exact = page.rows.find(row => row.external_id === job);
+      const customer = exact && customerSourceForReview(exact);
+      if (!customer) throw Error("Exact customer source unavailable");
+      onReviewCustomer(connection, job, customer);
+    } catch {
+      setRecentNotice("The exact job/customer source could not be verified. Refresh the captured job before reviewing identity.");
+    } finally { setRecentBusy(false); }
+  }
   useEffect(() => {
     let active = true;
     setConnections([]); setConnection(""); setResult(null); setNotice(""); setBusy(false);
@@ -67,7 +91,19 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob 
     return () => { active = false; };
   }, [key, hidden, db]);
   useEffect(() => {
-    const hide = () => { if (document.hidden) { setHidden(true); setResult(null); setBusy(false); setNotice("Refresh to recheck access to captured jobs."); } };
+    let active = true;
+    setRecent(null); setSelectedRecent(null);
+    if (!operatorReason || !connection || hidden) return () => { active = false; };
+    setRecentBusy(true); setRecentNotice("");
+    void loadRecentUnlinkedJobs(getSupabaseClient(), {
+      tenant: tenantId, connection, actor: actorId, reason: operatorReason,
+    }).then(data => { if (active) setRecent({ key: recentKey, data }); })
+      .catch(() => { if (active) setRecentNotice("Recent unlinked jobs are unavailable. Refresh the OpenFolk review."); })
+      .finally(() => { if (active) setRecentBusy(false); });
+    return () => { active = false; };
+  }, [recentKey, hidden]);
+  useEffect(() => {
+    const hide = () => { if (document.hidden) { setHidden(true); setResult(null); setRecent(null); setBusy(false); setRecentBusy(false); setNotice("Refresh to recheck access to captured jobs."); } };
     document.addEventListener("visibilitychange", hide);
     return () => document.removeEventListener("visibilitychange", hide);
   }, []);
@@ -80,6 +116,29 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob 
     <div className="flex flex-wrap justify-between gap-3"><div><h3 className="font-semibold">Jobs captured from Commusoft</h3>
       <p>Browse the work already captured, including jobs whose customer identity is still unresolved.</p></div>
       <button className="cp-secondary" onClick={() => { setHidden(false); setCursors([null]); setRevision(n => n + 1); }}>Refresh captured jobs</button></div>
+    {operatorReason && <section className="rounded-xl border border-[#cbbada] bg-white p-4 space-y-3" aria-label="Recent unlinked jobs for OpenFolk review">
+      <h4 className="font-semibold">Recently captured jobs awaiting a reviewed link</h4>
+      <p className="text-sm">OpenFolk review only. These are saved Commusoft records, not current job progress or automatic customer matches.</p>
+      {recentBusy && <p role="status">Checking recent source records…</p>}
+      {recentNotice && <p role="alert">{recentNotice}</p>}
+      {visibleRecent && <>
+        <p><strong>{visibleRecent.unlinkedCount.toLocaleString()} unlinked jobs observed in the past 24 hours</strong> · Latest actual job observation: {visibleRecent.latestSourceObservedAt ? new Date(visibleRecent.latestSourceObservedAt).toLocaleString("en-GB") : "None"}</p>
+        <p className="text-sm">Latest import checkpoint: {visibleRecent.latestCheckpointAt ? new Date(visibleRecent.latestCheckpointAt).toLocaleString("en-GB") : "Not established"}. A checkpoint can contain no job records; use the actual observation time above for freshness.</p>
+        <p className="text-sm">Showing the {visibleRecent.rows.length} most recently observed unlinked records. Review the source before linking any customer or job identity.</p>
+        <div className="space-y-2">{visibleRecent.rows.map(row => <div key={row.external_id} className="rounded-lg border border-[#e5dbe9] p-3 space-y-2">
+          <p><strong>Commusoft job {row.external_id}</strong> · Recorded status: {row.source_status ?? "Unresolved"} · Observed {new Date(row.source_observed_at).toLocaleString("en-GB")}</p>
+          <p className="text-sm">{SOURCE_JOB_RELATIONSHIPS[row.relationship_state]} · {SOURCE_JOB_IDENTITIES[row.customer_identity_state]}</p>
+          <button className="cp-secondary" aria-expanded={selectedRecent === row.external_id} onClick={() => setSelectedRecent(current => current === row.external_id ? null : row.external_id)}>{selectedRecent === row.external_id ? "Close source review" : "Review this source record"}</button>
+          {selectedRecent === row.external_id && <div className="space-y-3 border-t pt-3">
+            {row.version_id ? <><ReviewTaskButton db={db} tenant={tenantId} connection={connection} external={row.external_id} version={row.version_id} />
+              <LearnCommusoftJobDetails tenant={tenantId} connection={connection} version={row.version_id} external={row.external_id} client={db} /></> : <p role="status">This source has conflicting latest versions. Resolve that conflict before preparing a review task.</p>}
+            <button className="cp-secondary" onClick={() => { setView("all"); setDraft(row.external_id); setQuery(row.external_id); setOpenOnly(false); setCursors([null]); }}>Find this ID in captured job cards</button>
+            {onReviewCustomer && row.version_id && (row.relationship_state === "customer_source_retained" || row.relationship_state === "site_customer_source_retained") && <button className="cp-secondary" disabled={recentBusy} onClick={() => void reviewExactCustomer(row.external_id)}>Review exact customer source for this job</button>}
+            {onReviewJob && row.version_id && <button className="cp-secondary" onClick={() => onReviewJob(connection, row.external_id)}>Review job link</button>}
+          </div>}
+        </div>)}</div>
+      </>}
+    </section>}
     <div className="flex flex-wrap gap-2" aria-label="Captured job review views">
       <button className="cp-secondary" aria-pressed={view === "all"} onClick={() => { setView("all"); setDraft(""); setQuery(""); setCursors([null]); }}>All captured jobs</button>
       <button className="cp-secondary" aria-pressed={view === "holds"} onClick={() => { setView("holds"); setDraft(""); setQuery(""); setOpenOnly(true); setCursors([null]); }}>Recorded on hold</button>
@@ -95,13 +154,14 @@ export function LearnCommusoftSourceJobs({ tenantId, actorId, client, onOpenJob 
     {busy && <p role="status">Reading captured jobs…</p>}{notice && <p role="status">{notice}</p>}
     {visible && <>
       <p>{visible.counts.matching_jobs.toLocaleString()} matching jobs · {visible.counts.retained_jobs.toLocaleString()} retained in total · {visible.counts.open_jobs.toLocaleString()} recorded open/pending/on hold.</p>
-      <p className="text-sm">Latest jobs check: {visible.latest_job_page_at ? new Date(visible.latest_job_page_at).toLocaleString("en-GB") : "Not established"}. Individual records can be older. Captured history may be incomplete.</p>
+      <p className="text-sm">Latest import checkpoint: {visible.latest_job_page_at ? new Date(visible.latest_job_page_at).toLocaleString("en-GB") : "Not established"}. A checkpoint can contain no job records. Check each card’s source observation for its actual age; captured history may be incomplete.</p>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label="Captured job cards">{visible.rows.map(row => <article key={`${connection}:${row.external_id}:${row.version_id}`} className="cp-card min-w-0 space-y-3">
         <h4 className="break-words font-semibold">{row.title}</h4><p>Commusoft job {row.external_id} · Recorded status: {row.source_status ?? "Unresolved"}</p>
         {row.business_unit && <p>Source business unit: {row.business_unit}</p>}
         <p>Customer/site reference: {row.property_reference ?? "Not supplied"}{row.customer_reference && ` · Customer reference: ${row.customer_reference}`}</p>
         {row.company_name && <p>Source company name: {row.company_name}</p>}{row.contact_name && <p>Source primary contact: {row.contact_name}</p>}
         <p>{SOURCE_JOB_RELATIONSHIPS[row.relationship_state]}</p><p>{SOURCE_JOB_IDENTITIES[row.customer_identity_state]}</p>
+        {onReviewCustomer && customerSourceForReview(row) && <button className="cp-secondary" onClick={() => onReviewCustomer(connection, row.external_id, customerSourceForReview(row)!)}>Review customer source {customerSourceForReview(row)} for this job</button>}
         <p className="text-sm">Source observation: {new Date(row.observed_at).toLocaleString("en-GB")}. This does not verify job progress or completion.</p>
         {row.reviewed_job_id && onOpenJob ? <button className="cp-secondary" onClick={() => onOpenJob(row.reviewed_job_id!)}>Open linked job card</button> : <p className="text-sm">Communications and performance assessment are not established for this source view.</p>}
         {row.version_id && <ReviewTaskButton db={db} tenant={tenantId} connection={connection} external={row.external_id} version={row.version_id} />}

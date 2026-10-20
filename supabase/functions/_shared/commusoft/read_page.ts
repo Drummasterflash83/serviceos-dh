@@ -14,6 +14,7 @@ export type CommusoftFailure =
   | "authentication_required"
   | "access_denied"
   | "rate_limited"
+  | "lease_wait"
   | "provider_unavailable"
   | "provider_rejected"
   | "response_too_large"

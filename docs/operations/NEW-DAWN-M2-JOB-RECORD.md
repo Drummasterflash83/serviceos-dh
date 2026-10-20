@@ -70,13 +70,21 @@ are potential source collections, but neither is a proven accepted Further Works
 quote, engineer visit or job invoice. These facets remain visibly unavailable
 until their exact source relationship is verified.
 
+The follow-on [visit source audit](NEW-DAWN-M2-VISIT-SOURCE-BOUNDARY.md)
+inspected archived Drummonds diary exports without copying them into Git. They
+have useful job-number and date evidence but no event-level source ID,
+timezone-aware start/end fields, or verified equality to the current v2 job ID.
+The visit facet therefore remains held under the CSV contract below.
+
 The released capture worker and SQL permit gates cover properties, property
 contacts and jobs. The next candidate adds the provider's documented `GET /users`
 as an **explicit, opt-in source collection** through those same tenant-scoped
 approval, quota, checkpoint and credential gates. The first approval is capped
-server-side at one page of ten records and cannot be extended by the existing
-continuation route. It retains source user IDs and
-payloads under their original connection but holds projection: source users are
+server-side at one page of ten records. The paired bounded-resume migration
+allows a later, separately reasoned continuation of exactly one more page,
+still at ten records or fewer, only while the source-user flag is On. It retains
+source user IDs and payloads under their original connection without publishing
+them as canonical staff: source users are
 not OpenFolk staff, account logins, assigned engineers or visits. No user import
 is started by installation. The separate
 `learn.inputs.commusoft.users.enabled` feature flag is absent by default and
@@ -91,6 +99,61 @@ readback are the LIVE acceptance gate after that run settles. Before extending
 to technician visits or job finance, establish a supported provider endpoint or a
 bounded, authorised export and verify its relationship keys. Preserve Commusoft
 job codes as strings and only link other providers on exact, evidenced identities.
+
+### Exact source-user backend release
+
+The [guarded release script](../../scripts/verify/new-dawn-m2-users-backend-release.mjs)
+pins the initial LIVE worker v11, deployed worker v12, and the two migration files
+`20261105180000_commusoft_source_users.sql` and
+`20261105190000_commusoft_source_users_resume.sql` by hash. Its LIVE read-only
+mode checks the worker version, four authority function hashes and grants, both
+missing ledger rows, no active source-user or unclassifiable source-sync job,
+the configured connection and
+the absent source-user flag. Download the LIVE worker with the Supabase CLI and
+use `--verify-worker-bundle --path <download-directory>` to check the v11
+baseline. The merged candidate was compiled from pinned Edge runtime source
+closure `71f07dc895970b0780751b4d206cbb3b8b71668bd1f357341e3e2d373d3fef44`
+and deployed as LIVE worker v12, runtime hash
+`3c74bf18dde616ef8f6170242d4b13cee27a64e7ae205c58e771e55c30dfe4fb`.
+Use `--verify-release-worker-bundle --path <download-directory>` against a
+fresh download to compare all nine executable files with the merged candidate.
+Run `--test-rollback-only` against the isolated TEST database, then repeat the
+LIVE read-only checks. Only then run `--live-install-exact --source-sha
+bac767a835c1e8c97bc1e90d343cccfb2010893d3188ef04ad65c33610d5e501`
+with `NEW_DAWN_M2_USERS_PROJECT=tgbnakbxwcqjeimygroz`. A second
+`--live-read-only` must confirm both exact ledger rows and four post-install
+hashes. Installation makes no provider request or staff/login assignment, and
+leaves the source-user flag Off.
+
+**Do not enable the source-user flag or run the LIVE provider trial while the
+installed worker is v11.** That worker rejects a continuation after page one.
+The reviewed v12 worker source enforces the same cumulative
+`maxPages = retained pages + 1` boundary as the SQL credential-release gate;
+it must be compiled, released, downloaded and independently verified as a new
+worker version before the first GET. The v11 pin above verifies only that the
+default-OFF backend installer targets the existing baseline. An installed SQL
+receipt alone does not make the source-user route ready.
+
+The real one-page trial remains separate. An audited, tenant-only flag change
+and saved operator approval permit a maximum of ten source records. Read back
+only source counts and held status before any person or engineer matching. If
+the first page reports more results, the new resume function, credential gate,
+worker and UI allow one more page per explicit reason and check the flag again;
+no automatic traversal or multi-page approval is enabled. Continuations are
+held after 10,000 retained pages for a separate source review.
+
+Ordinary recurring properties, jobs and propertyContacts capture can be active
+during this users-only SQL release. The read-only preflight and the guarded SQL
+transaction use the **same** active-job classifier: an active job passes only
+when its tenant-scoped account exists, is active, has one of those three saved
+resources and its job key matches the saved approval. A users, unknown,
+missing-account, inactive-account or mismatched-key job stops the release. The
+transaction rechecks this classifier before changing any function and rolls
+back on a changed gate; it does not pause ordinary capture. Run the synthetic
+`--test-active-job-classification` read-only TEST check alongside the existing
+`--test-rollback-only` rehearsal. One bounded LIVE install attempt follows a
+fresh preflight; an unknown write outcome is read back once, never replayed
+automatically.
 
 ## Exact current job detail candidate
 
@@ -113,11 +176,13 @@ withholds the result. A completed receipt cannot be updated, deleted or
 truncated. The rollback-only TEST fixture exercises all three queue states and
 these receipt protections.
 
-The additive SQL and Edge route are installed on LIVE, but the UI action is
-gated by the absent/off `new_dawn.exact_job_detail` tenant flag. Installation
-starts no provider GET, and the queue guard blocks new requests while imports
-are active. Keep the flag off until the queue is idle and the signed-in operator
-preview is verified. A first real GET must
+The additive SQL and Edge route are installed on LIVE. The absent/off
+`new_dawn.exact_job_detail` flag hides the UI action but is **not** an Edge/SQL
+authorization control. The existing queue guard blocks requests while imports
+are active. The staged, default-off
+[one-job trial permit](NEW-DAWN-M2-ONE-JOB-TRIAL.md) adds server-side exact
+request scope and a short-lived queue exception without enabling tenant-wide
+coexistence; it is not installed on LIVE merely by being in Git. A first real GET must
 show the documented response shape, source/as-of labels and audited one-use
 receipt in the signed-in operator preview. Wrong ID, lost actor grant, active
 view-as, changed source link or missing connection fail closed. Seven focused
@@ -171,6 +236,31 @@ Amounts stay source strings and cannot establish paid value or margin. Re-export
 are separately hashed so corrections can be reviewed rather than silently
 overwriting earlier evidence. This stage is deliberately separate from LIVE
 capture; a real export and import authority still need review before ingestion.
+
+The follow-on [private held-facet review](NEW-DAWN-M2-FACET-REVIEW.md) reads the
+same bounded CSV and manifest locally, reports row-level source-field and
+freshness holds for visits, engineers, estimates, invoices and parts/costs,
+and leaves every row unpublished. Its `ready_for_source_review` label is only
+syntactic triage, not an accepted job link, visit, staff identity or money fact.
+
+## Held job-context review candidate
+
+`new_dawn_job_context_candidates` is a separate, default-OFF operator read for
+one canonical job with exactly one reviewed Commusoft job link. It reads at most
+21 already retained interactions to return a page of 20 or fewer from the last
+90 days. A phone call, nondraft email or publicly attested Slack message can appear
+only when it shares an explicitly reviewed customer person/company identity with
+the selected job. Draft email, removed or already job-linked interactions,
+withheld Slack and Slack without current public-channel capture proof are
+excluded. It returns source IDs, occurrence times and customer-match evidence,
+never message bodies or a newly accepted job link. The response labels every
+row `job_identity: unverified`, reports source freshness as unverified, and holds
+finance because no reviewed Commusoft↔QuickBooks job mapping exists. Multiple
+jobs for one customer remain ambiguous. Reads require an audited OpenFolk
+operator reason; no flag is inserted, provider called, link written or client
+access granted by the migration. The disposable PostgreSQL fixture checks the
+default-off gate, rollback, tenant and view-as isolation, source exclusions,
+20-row bound and audit. This candidate is **not installed on LIVE**.
 
 ## Verification
 

@@ -13,6 +13,7 @@ import { createDatabaseS3 } from "./recording-backup-s3.mjs";
 import { uploadDatabasePackage, downloadDatabasePackage } from "./database-backup-transfer.mjs";
 import { RecordingBackupError } from "./recording-backup-core.mjs";
 import { databaseBackupBinding, MAX_DATABASE_PACKAGE_BYTES } from "./database-backup-template.mjs";
+import { classifyPythonStageFailure } from "./database-encrypt-safe-codes.mjs";
 const REPO = fileURLToPath(new URL("../../", import.meta.url));
 const PRIVATE = join(REPO, ".verification-results");
 const SOURCE = join(PRIVATE, "production-database-complete-capture-small-full-2026-10-12");
@@ -127,8 +128,15 @@ function pythonStage(name, data) {
       process.removeListener("SIGINT", interrupt);
       process.removeListener("SIGTERM", interrupt);
       try {
-        need(!failed && code === 0, "database_python_stage_unconfirmed");
-        resolveResult(JSON.parse(Buffer.concat(chunks).toString("utf8").trim().split("\n").at(-1)));
+        const output = Buffer.concat(chunks).toString("utf8");
+        if (failed || code !== 0) {
+          const classification = classifyPythonStageFailure(name, output, failed);
+          const error = new RecordingBackupError(classification.code);
+          if (classification.safeDiagnostic) error.safeDiagnostic = classification.safeDiagnostic;
+          reject(error);
+          return;
+        }
+        resolveResult(JSON.parse(output.trim().split("\n").at(-1)));
       } catch {
         reject(new RecordingBackupError("database_python_stage_unconfirmed"));
       }

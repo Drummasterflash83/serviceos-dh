@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { runExactJobDetail, validateExactJobDetailRequest } from "./exact_job_detail.ts";
+import { rejectedJobDetailShape, runExactJobDetail, validateExactJobDetailRequest } from "./exact_job_detail.ts";
 
 const tenantId = "00000000-0000-4000-8000-000000000001";
 const jobId = "00000000-0000-4000-8000-000000000002";
@@ -21,7 +21,7 @@ test("one exact GET is bound to the prepared reviewed job and confirmed result",
       if (name.endsWith("_current")) return rpcReply(true);
       if (name.endsWith("_finish")) {
         assert.equal(JSON.parse(String(args.p_raw)).id, 123);
-        return rpcReply({ version: "commusoft-exact-job-detail/1", request_id: requestId,
+        return rpcReply({ version: "commusoft-exact-job-detail/3", request_id: requestId,
           job_id: jobId, source_version_id: sourceVersionId });
       }
       throw Error(name);
@@ -35,6 +35,32 @@ test("one exact GET is bound to the prepared reviewed job and confirmed result",
   assert.equal((result as Record<string,unknown>).job_id, jobId);
   assert.equal(calls.filter((name) => name === "GET").length, 1);
   assert.equal(calls.filter((name) => name.endsWith("_current")).length, 2);
+});
+
+test("edge accepts installed v2 receipts until the source quote SQL is installed", async () => {
+  const result = await runExactJobDetail(request, {
+    userRpc: async () => rpcReply({ request_id: requestId, state: "prepared" }),
+    serviceRpc: async (name) => name.endsWith("_acquire") ? rpcReply(ready)
+      : name.endsWith("_current") ? rpcReply(true)
+      : name.endsWith("_finish") ? rpcReply({ version: "commusoft-exact-job-detail/2", request_id: requestId,
+        job_id: jobId, source_version_id: sourceVersionId }) : rpcReply(null),
+    fetcher: async () => Response.json({ id: 123 }),
+  });
+  assert.equal((result as Record<string, unknown>).version, "commusoft-exact-job-detail/2");
+});
+
+test("edge accepts v4 and v5 receipts across the closure rollout", async () => {
+  for (const version of ["commusoft-exact-job-detail/4", "commusoft-exact-job-detail/5"]) {
+    const result = await runExactJobDetail(request, {
+    userRpc: async () => rpcReply({ request_id: requestId, state: "prepared" }),
+    serviceRpc: async (name) => name.endsWith("_acquire") ? rpcReply(ready)
+      : name.endsWith("_current") ? rpcReply(true)
+      : name.endsWith("_finish") ? rpcReply({ version, request_id: requestId,
+        job_id: jobId, source_version_id: sourceVersionId }) : rpcReply(null),
+    fetcher: async () => Response.json({ id: 123 }),
+  });
+    assert.equal((result as Record<string, unknown>).version, version);
+  }
 });
 
 test("missing current authority prevents the provider request", async () => {
@@ -77,8 +103,59 @@ test("authority lost after the GET withholds even a valid response", async () =>
   assert.equal(currentReads, 2); assert.equal(finished, 0); assert.equal(failed, 1);
 });
 
+test("long lease wait remains a prepared request and makes no provider GET", async () => {
+  const retryAt = Date.now() + 40000;
+  const calls: string[] = [];
+  const result = await runExactJobDetail(request, {
+    userRpc: async () => rpcReply({ request_id: requestId, state: "prepared" }),
+    serviceRpc: async (name) => { calls.push(name); return rpcReply({ state: "wait", retry_at: retryAt, wait_kind: "lease" }); },
+    fetcher: async () => { throw Error("must not GET"); },
+  });
+  assert.deepEqual(result, { request_id: requestId, state: "waiting", retry_at: retryAt });
+  assert.deepEqual(calls, ["new_dawn_commusoft_job_detail_acquire"]);
+});
+
+test("provider 429 carries a bounded retry time to durable failure RPC", async () => {
+  const started = Date.now();
+  let failure: Record<string, unknown> | null = null;
+  await assert.rejects(runExactJobDetail(request, {
+    userRpc: async () => rpcReply({ request_id: requestId, state: "prepared" }),
+    serviceRpc: async (name, args) => {
+      if (name.endsWith("_acquire")) return rpcReply(ready);
+      if (name.endsWith("_current")) return rpcReply(true);
+      if (name.endsWith("_fail")) { failure = args; return rpcReply(null); }
+      throw Error(name);
+    },
+    fetcher: async () => Response.json({}, { status: 429, headers: { "Retry-After": "120" } }),
+  }), /rate_limited/);
+  assert.equal(failure?.p_code, "rate_limited");
+  const retryAt = Date.parse(String(failure?.p_retry_at));
+  assert.ok(retryAt >= started + 119000 && retryAt <= started + 121000);
+});
+
 test("malformed requests and unapproved source targets fail closed", () => {
   assert.equal(validateExactJobDetailRequest(request), true);
   assert.equal(validateExactJobDetailRequest({ ...request, extra: "x" }), false);
   assert.equal(validateExactJobDetailRequest({ ...request, reason: "no" }), false);
+});
+
+test("rejected source shape reports only a fixed field category", () => {
+  assert.equal(rejectedJobDetailShape(JSON.stringify({ id: 123, quotedAmount: 12.5 }), "123"), "quotedAmount_type");
+  assert.equal(rejectedJobDetailShape(JSON.stringify({ id: 123, usersCurrentlyAssignedToJob: [{ id: 7, fullName: null }] }), "123"), "assigned_name_type");
+  assert.equal(rejectedJobDetailShape(JSON.stringify({ id: 123, contractID: "77" }), "123"), "contractID_type");
+  assert.equal(rejectedJobDetailShape(JSON.stringify({ id: 123, quotedAmount: "001.25" }), "123"), "sql_rejection_unclassified");
+});
+
+test("failed finish emits a value-free category and still fails the read", async () => {
+  const categories: string[] = [];
+  await assert.rejects(runExactJobDetail(request, {
+    userRpc: async () => rpcReply({ request_id: requestId, state: "prepared" }),
+    serviceRpc: async (name) => name.endsWith("_acquire") ? rpcReply(ready)
+      : name.endsWith("_current") ? rpcReply(true)
+      : name.endsWith("_finish") ? { data: null, error: { message: "private provider payload must not log" } }
+      : rpcReply(null),
+    fetcher: async () => Response.json({ id: 123, quotedAmount: 12.5 }),
+    onRejectedShape: (category) => categories.push(category),
+  }), /result_unconfirmed/);
+  assert.deepEqual(categories, ["quotedAmount_type"]);
 });

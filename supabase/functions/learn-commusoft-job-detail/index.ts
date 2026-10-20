@@ -45,6 +45,7 @@ Deno.serve(async (req: Request) => {
       userRpc: (name, args) => user.rpc(name, args),
       serviceRpc: (name, args) => server.rpc(name, args),
       signal: req.signal,
+      onRejectedShape: (category) => console.warn("commusoft_exact_job_rejected_shape", category),
     }), 200, cors);
   } catch { return reply({ error: "job_detail_unconfirmed" }, 409, cors); }
 });

@@ -1,5 +1,19 @@
+import type { QuickBooksConnection } from "./learn-quickbooks";
+
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
 const uuid = (value: unknown): value is string => typeof value === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(value);
+/** The one-use report route cannot refresh an expired QuickBooks access token. */
+export function reportCaptureConnectionReady(connection: QuickBooksConnection | undefined, now = Date.now()): boolean {
+  if (!connection?.confirmedAt || !connection.realmId || !["active", "paused"].includes(connection.status)) return false;
+  const expires = connection.accessExpiresAt ? Date.parse(connection.accessExpiresAt) : NaN;
+  return Number.isFinite(expires) && expires > now + 120_000;
+}
+export function readReportRefreshResult(value: unknown, requestId: string): "current" | "refreshed" | "busy" | "authentication_required" | "unconfirmed" {
+  if (!object(value) || value.version !== "quickbooks-report-refresh/1" || value.requestId !== requestId ||
+    !["current", "refreshed", "busy", "authentication_required", "unconfirmed"].includes(String(value.state)))
+    throw Error("refresh_result_invalid");
+  return value.state as "current" | "refreshed" | "busy" | "authentication_required" | "unconfirmed";
+}
 export function buildReportCaptureBody(input: {
   tenantId: string; connectionId: string; requestId: string; realmId: string;
   environment: "production" | "sandbox"; kind: "ProfitAndLoss" | "AgedReceivables";

@@ -254,7 +254,7 @@ function OperatorModuleContent({
         <h1>{company}</h1>
         <p>Keep the service working. Move the next outcome forward.</p>
       </div>
-      {jobFirst.data === true && <JobFirstHome tenant={tenantId} operator onOpenInformation={() => onModule("information")} />}
+      {jobFirst.data === true && <JobFirstHome tenant={tenantId} company={company} operator onOpenInformation={() => onModule("information")} />}
       {health.isError && (
         <div className="op-error" role="alert">
           {health.error.message}{" "}

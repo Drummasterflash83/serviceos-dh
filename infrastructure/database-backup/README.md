@@ -23,12 +23,20 @@ The initial approval creates no recurring database schedule. The implementation
 and remaining operating requirements are described below.
 
 The later standing whole-project backup approval covers fresh daily captures.
-That path now has a **2 GiB** hard limit for its encrypted package and storage
-transfer because the current production archive is approaching the original
-1 GiB first-copy limit. It still fails closed rather than truncating a growing
-database. The original first-copy measurement and authorization below are
-historical and unchanged. Reassess runner disk space and transfer time before
-raising the 2 GiB limit again.
+On 19 October the native archive measured **2,274,014,810 bytes**, above the
+then-2 GiB package cap. The package and transfer cap is now **3 GiB**, still
+below S3's single-PUT boundary. Packaging requires free space for its stage,
+tar and ciphertext copies plus 512 MiB before it starts; the independent
+download reserves one ciphertext plus 512 MiB. The 3 GiB native export cap,
+age timeout and S3 deadlines are unchanged. These are bounded code changes,
+not evidence of a fresh off-site copy until a hosted run succeeds. The original
+first-copy measurement and authorization below are historical and unchanged.
+
+If a completed native archive exceeds the package limit, the restricted
+daily failure artifact reports `encrypt_source_archive_size_exceeded` with the
+validated aggregate `archiveBytes`. Other source-export contract failures keep
+`encrypt_source_export_unverified` and disclose no size. This diagnostic does not
+change either size limit or attempt a second backup.
 
 ## Exact proposed destination and contents
 
@@ -489,6 +497,15 @@ The `run-daily-database-backup.mjs --run-once` runner binds the
 export, isolated native restore, public-key encryption and independently
 downloaded copy into one attempt. It stops on an unconfirmed stage and records
 an inspection-required failure; it does not retry source or copy actions.
+The encrypt/preparation failure path now carries only fixed safe codes from
+Python through the Node wrappers to the restricted daily diagnostic. For a
+`package_size_invalid` or `file_size_invalid` code it may also include
+`packageInputBytes`, the non-content aggregate size of the fixed allowlisted
+input files measured at failure. It never includes paths, filenames, recipient,
+hashes or process output. A later measured archive required a separate reviewed
+3 GiB cap change; all timeouts remain intact.
+The hosted workflow checks out a pinned source commit; this diagnostic change
+requires a separate reviewed checkout-pin update before a later run can use it.
 There is no installed schedule or age alert yet. Chris approved the standing
 backup access and existing private London destination on 15 October. A
 successful one-off copy would still leave supervised

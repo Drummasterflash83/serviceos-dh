@@ -48,6 +48,17 @@ class NativeCopyTests(unittest.TestCase):
             with self.assertRaises(RecoveryError):
                 copy_fingerprints(io.BytesIO(body))
 
+    def test_stream_limits_classify_line_total_and_truncation_separately(self):
+        source = sample([b'1\talpha'])
+        with patch('native_copy_fingerprints.MAX_LINE', 40):
+            with self.assertRaisesRegex(RecoveryError, 'line exceeds bound'):
+                copy_fingerprints(io.BytesIO(sample([b'1\t' + b'x' * 50])))
+        with patch('native_copy_fingerprints.MAX_BYTES', len(source)-1):
+            with self.assertRaisesRegex(RecoveryError, 'stream exceeds total bound'):
+                copy_fingerprints(io.BytesIO(source))
+        with self.assertRaisesRegex(RecoveryError, 'line is truncated'):
+            copy_fingerprints(io.BytesIO(source[:-1]))
+
     def test_column_order_and_sequence_state_are_compared(self):
         left = sample([b'1\ta']) + b"SELECT pg_catalog.setval('public.records_id_seq', 12, true);\n"
         right = sample([b'1\ta']) + b"SELECT pg_catalog.setval('public.records_id_seq', 11, true);\n"

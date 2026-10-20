@@ -1,5 +1,14 @@
 > **New Dawn delivery direction (Chris, 19 October 2026).** The active M1–M6 pursuing goal supersedes `BUILD-CONTRACT.md`, `LEARN-ACCEPTANCE.md`, the 00–23 stage prompts, and any conflicting gate in `docs/DEPLOYMENT.md`. Preserve tenant isolation, logged operator access, excluded Slack DMs, secrets and backups, no invented business data, and explicit authority for provider writes, messaging, phone routing, logins, destructive changes and money movement. See `docs/STATUS.md` for the current short status.
 
+> **New Dawn delivery direction (Chris, 19–20 October 2026).** The active
+> M1–M6 pursuing goal supersedes `BUILD-CONTRACT.md`,
+> `LEARN-ACCEPTANCE.md`, the 00–23 stage prompts and any conflicting
+> delivery gate in `docs/DEPLOYMENT.md`. Keep tenant isolation, logged
+> OpenFolk operator access, excluded Slack DMs, secret handling,
+> backups, honest source/freshness labels and the explicit-authority
+> boundaries for provider writes, messages, routing, money, logins and
+> destructive changes. Ship small, verified LIVE slices behind flags.
+
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
 > **Lovable is legacy — not the active deployment path.** The live frontend is

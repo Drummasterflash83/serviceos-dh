@@ -1,4 +1,5 @@
 type Rpc = (name: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>;
+import { CommusoftThrottle } from "./retry_after.ts";
 const uuid = (value: unknown): value is string =>
   typeof value === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(value);
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -33,13 +34,56 @@ function ready(value: unknown, request: ExactJobDetailRequest): value is Ready {
     (value.region === "uk" || value.region === "us") &&
     typeof value.api_key === "string" && /^[\x21-\x7e]{1,4096}$/.test(value.api_key);
 }
-function wait(value: unknown): value is { state: "wait"; retry_at: number } {
+function wait(value: unknown): value is { state: "wait"; retry_at: number; wait_kind?: "lease" | "quota" } {
   return object(value) && value.state === "wait" && Number.isSafeInteger(value.retry_at) &&
-    Number(value.retry_at) > Date.now() && Number(value.retry_at) <= Date.now() + 3000;
+    Number(value.retry_at) > Date.now() && Number(value.retry_at) <= Date.now() + 90000 &&
+    (value.wait_kind === undefined || value.wait_kind === "lease" || value.wait_kind === "quota");
+}
+// A fixed, value-free category for a rejected provider response. Never log the
+// response itself, a field value, a job ID, or the provider's error object.
+export function rejectedJobDetailShape(raw: string, externalId: string): string {
+  let body: unknown;
+  try { body = JSON.parse(raw); } catch { return "json_invalid"; }
+  if (!object(body)) return "root_type";
+  if (typeof body.id !== "number" || !Number.isSafeInteger(body.id) ||
+    String(body.id) !== externalId || "error" in body) return "identity_type";
+  const users = body.usersCurrentlyAssignedToJob;
+  if (users !== undefined && users !== null) {
+    if (!Array.isArray(users)) return "assigned_type";
+    if (users.length > 20) return "assigned_count";
+    for (const user of users) {
+      if (!object(user)) return "assigned_item_type";
+      if (typeof user.id !== "number" || !Number.isSafeInteger(user.id) ||
+        user.id < 0 || user.id > 9999999999999999)
+        return "assigned_id_type";
+      if (typeof user.fullName !== "string") return "assigned_name_type";
+      if (user.fullName.length > 200) return "assigned_name_length";
+    }
+  }
+  for (const field of ["lastUpdatedOnDateTime", "expectedOnsiteDateTime", "expectedCompletionDateTime"]) {
+    const value = body[field];
+    if (value !== undefined && value !== null && String(value).length > 80) return `${field}_length`;
+  }
+  for (const field of ["isJobOnHold", "hasSLA", "onHoldReasonDescription", "SLAStatus", "contractID"]) {
+    const value = body[field];
+    if (value === undefined || value === null) continue;
+    const expected = ["isJobOnHold", "hasSLA"].includes(field) ? "boolean"
+      : field === "contractID" ? "number" : "string";
+    if (typeof value !== expected) return `${field}_type`;
+    if (expected === "string" && String(value).length > 200) return `${field}_length`;
+    if (expected === "number" && (!Number.isSafeInteger(value) || Number(value) < 0 || Number(value) > Number.MAX_SAFE_INTEGER))
+      return `${field}_range`;
+  }
+  if ("quotedAmount" in body && body.quotedAmount !== null) {
+    if (typeof body.quotedAmount !== "string") return "quotedAmount_type";
+    if (new TextEncoder().encode(body.quotedAmount).byteLength > 200) return "quotedAmount_length";
+  }
+  return "sql_rejection_unclassified";
 }
 async function boundedJson(response: Response, externalId: string, signal: AbortSignal): Promise<string> {
   if (!response.ok || !response.body || response.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") {
-    await response.body?.cancel();
+    await response.body?.cancel().catch(() => {});
+    if (response.status === 429) throw new CommusoftThrottle(response.headers.get("retry-after"));
     throw Error(response.status === 401 ? "authentication_required" : "provider_unavailable");
   }
   const reader = response.body.getReader();
@@ -70,6 +114,7 @@ export async function runExactJobDetail(request: ExactJobDetailRequest, ports: {
   signal?: AbortSignal;
   clock?: () => number;
   pause?: (ms: number) => Promise<void>;
+  onRejectedShape?: (category: string) => void;
 }): Promise<unknown> {
   if (!validateExactJobDetailRequest(request)) throw Error("request_invalid");
   const started = await ports.userRpc("new_dawn_commusoft_job_detail_start", {
@@ -86,7 +131,9 @@ export async function runExactJobDetail(request: ExactJobDetailRequest, ports: {
       const acquired = await ports.serviceRpc("new_dawn_commusoft_job_detail_acquire", { p_request: request.requestId });
       if (acquired.error) throw Error("scope_changed");
       if (ready(acquired.data, request)) { a = acquired.data; break; }
-      if (!wait(acquired.data) || attempt === 2) throw Error("provider_unavailable");
+      if (!wait(acquired.data)) throw Error("provider_unavailable");
+      if (acquired.data.retry_at - clock() > 1500 || attempt === 2)
+        return { request_id: request.requestId, state: "waiting", retry_at: acquired.data.retry_at };
       await pause(Math.max(1, Math.min(1500, acquired.data.retry_at - clock() + 20)));
     }
     if (!a) throw Error("provider_unavailable");
@@ -106,14 +153,18 @@ export async function runExactJobDetail(request: ExactJobDetailRequest, ports: {
     const finished = await ports.serviceRpc("new_dawn_commusoft_job_detail_finish", { p_request: request.requestId, p_raw: raw });
     if (finished.error || !object(finished.data) || finished.data.request_id !== request.requestId ||
       finished.data.job_id !== request.jobId || finished.data.source_version_id !== a.source_version_id ||
-      finished.data.version !== "commusoft-exact-job-detail/1") throw Error("result_unconfirmed");
+      !["commusoft-exact-job-detail/2", "commusoft-exact-job-detail/3", "commusoft-exact-job-detail/4", "commusoft-exact-job-detail/5"].includes(String(finished.data.version))) {
+      ports.onRejectedShape?.(rejectedJobDetailShape(raw, a.external_id));
+      throw Error("result_unconfirmed");
+    }
     return finished.data;
   } catch (error) {
-    const code = error instanceof Error && ["scope_changed", "authentication_required", "provider_unavailable",
+    const code = error instanceof Error && ["scope_changed", "authentication_required", "provider_unavailable", "rate_limited",
       "response_too_large", "response_invalid", "result_unconfirmed"].includes(error.message)
       ? error.message : "transport_unavailable";
     await Promise.resolve(ports.serviceRpc("new_dawn_commusoft_job_detail_fail", {
       p_request: request.requestId, p_code: code,
+      p_retry_at: error instanceof CommusoftThrottle ? new Date(error.retryAt).toISOString() : null,
     })).catch(() => {});
     throw Error(code);
   }

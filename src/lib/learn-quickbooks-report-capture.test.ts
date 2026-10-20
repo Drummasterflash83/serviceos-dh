@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildReportCaptureBody, readReportCaptureReceipt } from "./learn-quickbooks-report-capture.ts";
+import { buildReportCaptureBody, readReportCaptureReceipt, readReportRefreshResult, reportCaptureConnectionReady } from "./learn-quickbooks-report-capture.ts";
+import type { QuickBooksConnection } from "./learn-quickbooks.ts";
 import { validateReportCaptureRequest } from "../../supabase/functions/_shared/quickbooks/report_capture.ts";
 const scope = { requestId: "00000000-0000-0000-0000-000000000001", tenantId: "00000000-0000-0000-0000-000000000002",
   realmId: "123", environment: "production" as const, kind: "ProfitAndLoss" as const };
@@ -29,4 +30,27 @@ test("operator UI body satisfies the exact Edge request contract for both report
   assert.equal(validateReportCaptureRequest(aging), true);
   assert.equal(Object.keys(profit).sort().join(","),
     "accountingMethod,agingMethod,connectionId,environment,kind,periodEnd,periodStart,realmId,reason,reportDate,requestId,tenantId");
+});
+test("report capture waits for a valid access token rather than opening an unclaimable request", () => {
+  const now = Date.parse("2026-10-19T20:42:00Z");
+  const connection: QuickBooksConnection = {
+    id: "00000000-0000-0000-0000-000000000004", appId: "00000000-0000-0000-0000-000000000005",
+    environment: "production", realmId: "123", companyName: "Test company", status: "paused",
+    revision: 1, verifiedAt: null, confirmedAt: "2026-10-19T10:00:00Z",
+    accessExpiresAt: "2026-10-19T20:45:00Z", refreshExpiresAt: "2026-11-01T00:00:00Z",
+    refreshInProgress: false,
+  };
+  assert.equal(reportCaptureConnectionReady(connection, now), true);
+  assert.equal(reportCaptureConnectionReady({ ...connection, accessExpiresAt: "2026-10-19T20:44:00Z" }, now), false);
+  assert.equal(reportCaptureConnectionReady({ ...connection, accessExpiresAt: "2026-10-19T16:39:04Z" }, now), false);
+  assert.equal(reportCaptureConnectionReady({ ...connection, accessExpiresAt: null }, now), false);
+  assert.equal(reportCaptureConnectionReady({ ...connection, status: "authentication_required" }, now), false);
+});
+test("operator refresh reply contains only a bound state", () => {
+  assert.equal(readReportRefreshResult({ version: "quickbooks-report-refresh/1", requestId: scope.requestId,
+    state: "refreshed" }, scope.requestId), "refreshed");
+  assert.throws(() => readReportRefreshResult({ version: "quickbooks-report-refresh/1", requestId: "wrong",
+    state: "refreshed" }, scope.requestId));
+  assert.throws(() => readReportRefreshResult({ version: "quickbooks-report-refresh/1", requestId: scope.requestId,
+    state: "success" }, scope.requestId));
 });

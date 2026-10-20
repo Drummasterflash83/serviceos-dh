@@ -89,13 +89,19 @@ try:
         assert sql(worker) != before_worker, 'Shared lease did not patch worker acquisition'
         print(sql(file('scripts/verify/new-dawn-commusoft-shared-lease.assert.sql')))
 
-        def race(owner):
-            return sql("set request.jwt.claim.role='service_role'; select public.learn_commusoft_shared_lease_acquire(repeat('a',64),'source_page','" + owner + "')->>'state';")
+        def race(candidate):
+            kind, owner = candidate
+            return sql("set request.jwt.claim.role='service_role'; select public.learn_commusoft_shared_lease_acquire(repeat('a',64),'" + kind + "','" + owner + "')->>'state';")
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-            outcomes = sorted(pool.map(race, ['dddddddd-dddd-4ddd-8ddd-dddddddddddd:1', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee:1']))
-        assert outcomes == ['ready', 'wait'], 'Concurrent source leases were not serialized: ' + repr(outcomes)
-        print('PASS: concurrent credential-fingerprint claims produce one owner and one wait')
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+            outcomes = sorted(pool.map(race, [
+                ('source_page', 'dddddddd-dddd-4ddd-8ddd-dddddddddddd:1'),
+                ('job_detail', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'),
+                ('opportunity', 'ffffffff-ffff-4fff-8fff-ffffffffffff'),
+                ('verification', '11111111-1111-4111-8111-111111111111'),
+            ]))
+        assert outcomes == ['ready', 'wait', 'wait', 'wait'], 'Concurrent cross-flow leases were not serialized: ' + repr(outcomes)
+        print('PASS: concurrent cross-flow credential-fingerprint claims produce one owner')
     print(sql(file('scripts/verify/learn-commusoft-users.assert.sql')))
     if shared_lease:
         fingerprint = "encode(sha256(convert_to('commusoft:SYNTHETIC_USERS_NO_NETWORK','UTF8')),'hex')"

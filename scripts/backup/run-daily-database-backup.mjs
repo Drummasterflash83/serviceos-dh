@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, open } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { safeEncryptDiagnostic } from "./database-encrypt-safe-codes.mjs";
 
 const REPO = fileURLToPath(new URL("../../", import.meta.url));
 const PRIVATE = join(REPO, ".verification-results");
@@ -27,7 +28,9 @@ const SAFE_RESTORE_CODES = new Set(["restore_command_unavailable_or_timeout",
   "restore_archive_integrity_failed", "restore_archive_changed",
   "restore_row_mismatch", "restore_sequence_mismatch",
   "restore_catalog_mismatch", "restore_extension_mismatch",
-  "restore_cleanup_unconfirmed", "restore_failure_unclassified"]);
+  "restore_cleanup_unconfirmed", "restore_failure_unclassified",
+  "restore_native_stream_bound_or_truncated", "restore_native_row_bound",
+  "restore_native_copy_process_failed", "restore_native_statement_unrecognized"]);
 function safeExportDiagnostic(value) {
   return value && SAFE_EXPORT_STAGES.has(value.exportStage) &&
     SAFE_EXPORT_CODES.has(value.code)
@@ -38,9 +41,22 @@ function safeRestoreDiagnostic(value) {
     SAFE_RESTORE_CODES.has(value.code)
     ? { restoreStage: value.restoreStage, code: value.code } : null;
 }
+export function safeDailyChildFailure(output) {
+  try {
+    const last = JSON.parse(output.trim().split("\n").at(-1));
+    if (last?.secretsPrinted !== false) return null;
+    if (last.state === "export_failed_safe")
+      return safeExportDiagnostic({ exportStage: last.stage, code: last.code });
+    if (last.state === "native_restore_failed_safe")
+      return safeRestoreDiagnostic({ restoreStage: last.stage, code: last.code });
+    if (last.state === "database_public_backup_failed_safe" && last.stage === "encrypt")
+      return safeEncryptDiagnostic(last);
+  } catch { /* Unknown child output never enters hosted logs. */ }
+  return null;
+}
 const STAGES = [
   ["export", "node", (source) => ["scripts/backup/export-production-database.mjs", "--export-unattended-daily", source], 100],
-  ["native_restore", "python3", (source) => ["-B", "scripts/backup/verify_daily_native_export.py", source], 40],
+  ["native_restore", "python3", (source) => ["-B", "scripts/backup/verify_daily_native_export.py", source], 110],
   ["encrypt", "node", (source, id) => ["scripts/backup/run-public-database-backup.mjs", "--prepare-daily", id, source], 20],
   ["copy", "node", (source, id) => ["scripts/backup/run-public-database-backup.mjs", "--copy-daily", id, source], 40],
 ];
@@ -73,14 +89,7 @@ async function runStage(command, args, minutes) {
       process.removeListener("SIGINT", stop);
       process.removeListener("SIGTERM", stop);
       if (failed || code !== 0) {
-        let safe = null;
-        try {
-          const last = JSON.parse(Buffer.concat(chunks).toString("utf8").trim().split("\n").at(-1));
-          if (last?.state === "export_failed_safe" && last.secretsPrinted === false)
-            safe = safeExportDiagnostic({ exportStage: last.stage, code: last.code });
-          else if (last?.state === "native_restore_failed_safe" && last.secretsPrinted === false)
-            safe = safeRestoreDiagnostic({ restoreStage: last.stage, code: last.code });
-        } catch { /* Unknown child output never enters hosted logs. */ }
+        const safe = !failed ? safeDailyChildFailure(Buffer.concat(chunks).toString("utf8")) : null;
         const error = Error("daily_stage_unconfirmed");
         error.safeDiagnostic = safe;
         reject(error);
@@ -141,7 +150,8 @@ export async function runDailyDatabaseBackup({
     throw Error("daily_pipeline_incomplete");
   } catch (error) {
     const diagnosis = stage === "export" ? safeExportDiagnostic(error?.safeDiagnostic)
-      : stage === "native_restore" ? safeRestoreDiagnostic(error?.safeDiagnostic) : null;
+      : stage === "native_restore" ? safeRestoreDiagnostic(error?.safeDiagnostic)
+      : stage === "encrypt" ? safeEncryptDiagnostic(error?.safeDiagnostic) : null;
     const failure = { contract: "database-daily-attempt/1",
       state: "daily_backup_not_verified", runId, stage,
       ...(diagnosis ? diagnosis : { code: "stage_unconfirmed" }),

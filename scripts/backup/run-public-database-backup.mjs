@@ -8,6 +8,8 @@ import { preparePublicDatabaseBackup, copyPreparedDatabaseBackup,
   restoreDownloadedDatabaseBackup } from "./run-serviceos-database-backup.mjs";
 import { createRecoveryEscrow } from "./onepassword-database-recovery.mjs";
 import { MAX_DATABASE_PACKAGE_BYTES } from "./database-backup-template.mjs";
+import { publicPreparationFailure, sourceExportPreparationDiagnostic } from
+  "./database-encrypt-safe-codes.mjs";
 
 const REPO = fileURLToPath(new URL("../../", import.meta.url));
 const PRIVATE = join(REPO, ".verification-results");
@@ -46,13 +48,14 @@ async function main() {
   await privateDirectory(PRIVATE);
   await privateDirectory(source);
   const exported = await privateJson(join(source, "report.json"));
-  need(exported.project === "tgbnakbxwcqjeimygroz" &&
-    exported.state === "export_complete_restore_unverified" &&
-    exported.productionDataWrites === false &&
-    Number.isSafeInteger(exported.archive?.bytes) &&
-    exported.archive.bytes > 0 && exported.archive.bytes <= MAX_DATABASE_PACKAGE_BYTES &&
-    /^[a-f0-9]{64}$/.test(exported.archive.sha256 ?? ""),
-  "database_source_export_unverified");
+  const archiveStat = await lstat(join(source, "database.dump")).catch(() => null);
+  const sourceDiagnostic = sourceExportPreparationDiagnostic(exported, archiveStat,
+    MAX_DATABASE_PACKAGE_BYTES);
+  if (sourceDiagnostic) {
+    const error = Error("database_source_export_unverified");
+    error.safeDiagnostic = sourceDiagnostic;
+    throw error;
+  }
   const publicKey = JSON.parse(await readFile(join(REPO,
     "infrastructure/database-backup/public-recipient.json"), "utf8"));
   need(publicKey.project === exported.project &&
@@ -84,7 +87,9 @@ async function main() {
 }
 try {
   console.log(JSON.stringify(await main()));
-} catch {
-  console.error(JSON.stringify({ state: "database_public_backup_not_verified", secretsPrinted: false }));
+} catch (error) {
+  const diagnostic = publicPreparationFailure(error, mode);
+  if (diagnostic) console.log(JSON.stringify(diagnostic));
+  else console.error(JSON.stringify({ state: "database_public_backup_not_verified", secretsPrinted: false }));
   process.exitCode = 1;
 }

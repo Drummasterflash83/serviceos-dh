@@ -132,3 +132,20 @@ test("revoked permit and oversized page fail closed", async () => {
   assert.equal(oversized.stats().calls, 1);
   assert.equal(oversized.stats().finishes, 0);
 });
+
+test("provider 429 passes a bounded retry time to the retained failure route", async () => {
+  const f = fixture();
+  const original = f.ports.serviceRpc;
+  let failed: Record<string, unknown> | null = null;
+  f.ports.serviceRpc = async (name: string, args?: Record<string, unknown>) => {
+    if (name === "new_dawn_commusoft_opportunity_probe_fail") failed = args ?? null;
+    return original(name);
+  };
+  f.ports.fetcher = async () => Response.json({},
+    { status: 429, headers: { "Retry-After": "120" } });
+  const started = Date.now();
+  await assert.rejects(runOpportunityProbe(request, f.ports), /rate_limited/);
+  assert.equal(failed?.p_code, "rate_limited");
+  const retryAt = Date.parse(String(failed?.p_retry_at));
+  assert.ok(retryAt >= started + 119000 && retryAt <= started + 121000);
+});

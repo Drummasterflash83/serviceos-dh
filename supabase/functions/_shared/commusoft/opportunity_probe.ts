@@ -2,6 +2,7 @@
  * customer/quote projection, or provider mutation. Raw data goes only to the
  * private, operator-gated retention RPC; responses contain bounded summaries.
  */
+import { CommusoftThrottle } from "./retry_after.ts";
 type Rpc = (
   name: string,
   args: Record<string, unknown>,
@@ -99,14 +100,13 @@ async function readPage(
     response.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json"
   ) {
     await response.body?.cancel().catch(() => {});
+    if (response.status === 429) throw new CommusoftThrottle(response.headers.get("retry-after"));
     throw Error(
       response.status === 401
         ? "authentication_required"
         : response.status === 403
           ? "access_denied"
-          : response.status === 429
-            ? "rate_limited"
-            : "provider_unavailable",
+          : "provider_unavailable",
     );
   }
   const reader = response.body.getReader();
@@ -226,6 +226,7 @@ export async function runOpportunityProbe(
       ports.serviceRpc("new_dawn_commusoft_opportunity_probe_fail", {
         p_request: request.requestId,
         p_code: code,
+        p_retry_at: error instanceof CommusoftThrottle ? new Date(error.retryAt).toISOString() : null,
       }),
     ).catch(() => {});
     throw Error(code);

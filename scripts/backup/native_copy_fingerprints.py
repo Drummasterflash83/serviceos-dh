@@ -25,7 +25,9 @@ MAX_LINE = 64 * 1024 * 1024
 MAX_ROWS_PER_TABLE = 20_000_000
 HASH_RUN_ROWS = 100_000
 MAX_TABLES = 1000
-MAX_BYTES = 8 * 1024 * 1024 * 1024
+# LIVE's table data plus TOAST is already about 8 GB before PostgreSQL text
+# COPY encoding. This is a streaming byte ceiling, not an in-memory buffer.
+MAX_BYTES = 32 * 1024 * 1024 * 1024
 
 
 def flush_hash_run(current):
@@ -82,8 +84,12 @@ def copy_fingerprints(stream):
             if not raw:
                 break
             total += len(raw)
-            if len(raw) > MAX_LINE or total > MAX_BYTES or not raw.endswith(b'\n'):
-                raise RecoveryError('Native COPY stream exceeds bound or is truncated')
+            if len(raw) > MAX_LINE:
+                raise RecoveryError('Native COPY line exceeds bound')
+            if total > MAX_BYTES:
+                raise RecoveryError('Native COPY stream exceeds total bound')
+            if not raw.endswith(b'\n'):
+                raise RecoveryError('Native COPY line is truncated')
             if current is not None:
                 if raw == b'\\.\n':
                     current['sha256'] = multiset_digest(current)
@@ -148,7 +154,7 @@ def copy_fingerprints(stream):
             'rows': sum(t['rows'] for t in ordered), 'streamBytes': total}
 
 
-def fingerprints_from_command(command, *, stdin=None, timeout=900):
+def fingerprints_from_command(command, *, stdin=None, timeout=2700):
     # A tempfile drains stderr without deadlock or accidental console disclosure.
     # Contents stay private and are removed when this call ends.
     with tempfile.TemporaryFile() as error_log:
@@ -165,7 +171,10 @@ def fingerprints_from_command(command, *, stdin=None, timeout=900):
         timer.start()
         try:
             result = copy_fingerprints(proc.stdout)
-            status = proc.wait(timeout=30)
+            try:
+                status = proc.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                raise RecoveryError('Native COPY export process did not complete') from None
             if status or expired.is_set():
                 raise RecoveryError('Native COPY export process did not complete')
             return result
@@ -173,7 +182,10 @@ def fingerprints_from_command(command, *, stdin=None, timeout=900):
             timer.cancel()
             if proc.poll() is None:
                 proc.kill()
-            proc.wait(timeout=30)
+            try:
+                proc.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                proc.kill()
             proc.stdout.close()
 
 
