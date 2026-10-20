@@ -8,6 +8,7 @@ import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOper
 import { filterSourceHomeJobs, groupSourceHomeJobs, readSourceHomePage, scopedOperatorSourcePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
+import { mdPreviewJobFacts } from "@/lib/new-dawn-md-job-facts";
 import { parseExactTrialOffer, readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
 import { readJobSourceUserReference, type JobSourceUserReference } from "@/lib/new-dawn-job-source-user-reference";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -183,14 +184,44 @@ function SourceJobPresentation({ tenant, jobs, search, onOpen }: {
   </>;
 }
 
-function MdPreviewJobDetail({ tenant, source }: { tenant: string; source: SourceHomeJob }) {
+function MdPreviewJobDetail({ tenant, actor, reason, source }: {
+  tenant: string; actor: string; reason: string; source: SourceHomeJob;
+}) {
+  const [savedSource, setSavedSource] = useState<OperatorJobSource | null>(null);
+  const [sourceBusy, setSourceBusy] = useState(source.source_state === "reviewed_latest");
+  const [sourceError, setSourceError] = useState(false);
+  useEffect(() => {
+    if (source.source_state !== "reviewed_latest") return;
+    let active = true;
+    setSavedSource(null); setSourceBusy(true); setSourceError(false);
+    void readOperatorJobSource(getSupabaseClient(), tenant, actor, source.id, reason)
+      .then((value) => { if (active) setSavedSource(value); })
+      .catch(() => { if (active) setSourceError(true); })
+      .finally(() => { if (active) setSourceBusy(false); });
+    return () => { active = false; };
+  }, [tenant, actor, reason, source.id, source.source_state]);
   const job = sourceJobAsHomeJob(source, tenant);
   const attention = sourceJobClientAttention(source);
+  const facts = mdPreviewJobFacts(tenant, source, savedSource);
   return <div className="nd-job-detail">
     <h3>{job.job_number ? `Job ${job.job_number}` : "Saved job"}{job.title ? ` · ${job.title}` : ""}</h3>
     <p><strong>{homeJobState(job)}</strong> · Saved job information</p>
     <p>{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</p>
     <p>OpenFolk saved this job information on {checked(source.source_observed_at)}. It may not reflect current Commusoft progress.</p>
+    {sourceBusy && <p role="status">Checking the reviewed job record…</p>}
+    {sourceError && <p role="alert">The recorded work could not be checked. The summary above remains available.</p>}
+    {!sourceBusy && !sourceError && source.source_state === "reviewed_latest" && !facts &&
+      <p>OpenFolk needs to review the saved job link before showing more details.</p>}
+    {facts && <section aria-label="Recorded job details">
+      <h3>Recorded work</h3>
+      <p className="whitespace-pre-wrap break-words">{facts.work ?? "No work description was saved."}{facts.workShortened && " [Source excerpt shortened]"}</p>
+      {(facts.reported || facts.completed || facts.outcome) && <p>
+        {facts.reported && <>Reported in source: {facts.reported}. </>}
+        {facts.completed && <>Completion date in source: {facts.completed}. </>}
+        {facts.outcome && <>Recorded outcome: {facts.outcome}.</>}
+      </p>}
+      <small>Retained Commusoft record observed {checked(facts.observedAt)}. Dates and outcome are saved source text, not a verified visit or live update.</small>
+    </section>}
     <h3>Why this needs attention</h3><p>{attention.why}</p>
     <h3>Next step</h3><p>{attention.nextStep}.</p>
     <small>This preview uses the audited saved job selection. It is not a live provider check, confirmed assignment, full job record or score.</small>
@@ -531,7 +562,7 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
       <Dialog open={mdPreviewOpen && !!selectedMd && activeOperatorSourcePage?.jobs.some((job) => job.id === selectedMd.id)} onOpenChange={(open) => { if (!open) setSelectedMd(null); }}>
         <DialogContent className="cp-dialog max-h-[90vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader><DialogTitle>Saved job summary · owner preview</DialogTitle></DialogHeader>
-          {selectedMd && <MdPreviewJobDetail tenant={tenant} source={selectedMd} />}
+          {selectedMd && user && <MdPreviewJobDetail key={`${tenant}:${selectedMd.id}`} tenant={tenant} actor={user.id} reason={reason} source={selectedMd} />}
         </DialogContent>
       </Dialog>
     </section>
