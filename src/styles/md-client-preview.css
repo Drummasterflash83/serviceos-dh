@@ -26,6 +26,25 @@
 .md-review-heading { padding: 22px 0 2px; }
 .md-review-content .nd-job-home { margin-top: 20px; }
 .md-review-content .lr-daily-stats { margin-top: 20px; }
+.md-money { margin-top: 20px; padding: clamp(22px,3vw,34px); border: 1px solid #e9e7ee; border-radius: 20px; background: #fff; }
+.md-money h2 { margin: 4px 0 8px; color: #25253a; font-size: clamp(24px,2.6vw,31px); font-weight: 550; letter-spacing: -.03em; }
+.md-money > p:not(.of-eyebrow), .md-money-source { max-width: 78ch; color: #706b7e; font-size: 13px; line-height: 1.6; }
+.md-money > button { margin: 16px 0; }
+.md-money-period { display: grid; gap: 7px; max-width: 600px; margin: 0 0 16px; color: #514669; font-size: 13px; font-weight: 600; }
+.md-money-period select { width: 100%; padding: 10px 12px; border: 1px solid #d8d2e1; border-radius: 9px; background: #fff; color: #25253a; font: inherit; }
+.md-money-period span { color: #706b7e; font-size: 12px; font-weight: 400; }
+.md-money [role="alert"] { color: #9b3333; }
+.md-money-source { padding: 13px 16px; border-radius: 9px; background: #f4eff8; }
+.md-money-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin: 18px 0; }
+.md-money-grid article { padding: 20px; border: 1px solid #e9e7ee; border-radius: 16px; background: #faf9f6; }
+.md-money-grid span { display: block; color: #706b7e; font-size: 12px; }
+.md-money-grid strong { display: block; margin: 8px 0; color: #514669; font-size: clamp(20px,2.4vw,28px); font-weight: 650; }
+.md-money-grid p { margin: 0; color: #706b7e; font-size: 12px; line-height: 1.6; }
+.md-money-followup { padding: 18px 20px; border: 1px solid #ded4e8; border-radius: 16px; }
+.md-money-followup h3 { margin: 0 0 12px; color: #25253a; font-size: 17px; }
+.md-money-followup p { margin: 10px 0; color: #706b7e; font-size: 13px; line-height: 1.5; }
+.md-money-followup strong { color: #514669; }
+.md-money-proof { margin-top: 14px; color: #706b7e; font-size: 11px; overflow-wrap: anywhere; }
 @media (max-width: 760px) {
   .md-review-shell { grid-template-columns: 1fr; }
   .md-review-sidebar { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 9px 16px; padding: 14px 18px; }
@@ -35,4 +54,5 @@
   .md-review-sidebar nav button { width: auto; }
   .md-review-return { margin: 0 0 0 auto; padding: 7px; }
   .md-review-topbar { display: none; }
+  .md-money-grid { grid-template-columns: 1fr; }
 }
