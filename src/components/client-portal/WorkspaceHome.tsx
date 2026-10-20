@@ -7,6 +7,7 @@ import { useReceptionistCalls } from "@/lib/use-receptionist-calls";
 import { EmmaIssueSummary } from "@/components/receptionist/EmmaIssueSummary";
 import type { HealthIssue } from "@/lib/use-emma-health";
 import { JobFirstHome, useJobFirstHomeFlag } from "./JobFirstHome";
+import { OpenJobHomeWithEvidence, useOpenJobPageFlag } from "./OpenJobHome";
 
 type WorkspaceHomeProps = {
   tenant: string;
@@ -20,10 +21,13 @@ type WorkspaceHomeProps = {
 export function WorkspaceHome(props: WorkspaceHomeProps) {
   const { tenant, open, operatorAuthorised = false } = props;
   const jobFirst = useJobFirstHomeFlag(tenant);
+  const openJobs = useOpenJobPageFlag(tenant, operatorAuthorised);
   if (jobFirst.data === true) return (
     <div className="cp-work-home cp-home-job-first">
-      <JobFirstHome tenant={tenant} company={props.company} operator={operatorAuthorised}
-        presentationFirst={operatorAuthorised} />
+      {openJobs.data === true
+        ? <OpenJobHomeWithEvidence tenant={tenant} company={props.company} operator={operatorAuthorised} />
+        : <JobFirstHome tenant={tenant} company={props.company} operator={operatorAuthorised}
+          presentationFirst={operatorAuthorised} />}
       <div className="cp-home-cards" aria-label="Other workspace areas">
         <button className="cp-home-card" onClick={() => open("receptionist")}>
           <Headphones size={24} /><h3>AI Receptionist</h3>
