@@ -55,7 +55,12 @@ this candidate. LIVE `receptionist-testing` is v55; the proposed
 The current branch source fixes the incomplete numbered-street case: “14
 Road” cannot pass as a site, while ordinary “12 Example Rd/St” forms can.
 The source candidate's 12 scenario definitions pass unchanged static
-clock/mock/rubric preflight and all focused tests pass. Static checks do not
+clock/mock/rubric preflight against source commit `1712a143a990c555006be83072cc9cd27e5e96fc`.
+The immutable v9 manifest is
+`docs/operations/EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-20-v9.json`
+(SHA-256 `6b1ad13a9b1db4607603256e7de1617f033174bcc8d600c40b458681001b6b02`);
+its scenario-suite hash is `861a9e1122d870e65d029c8addc28c4bf248ca2865ebbe553ec03fd6a7b42b3b`.
+All 193 focused receptionist tests pass. Static checks do not
 execute Vapi conversations, transfer a phone call, establish the saved
 provider candidate hash or prove mailbox/email/Slack delivery.
 

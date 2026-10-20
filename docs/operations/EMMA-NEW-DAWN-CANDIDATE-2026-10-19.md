@@ -5,6 +5,12 @@ main Drummonds number is **not** being switched by this branch. Chris owns
 Emma's launch and must give a specific go-ahead for each Birchills routing
 change on the day.
 
+**20 October update:** The latest read-only Birchills/Vapi configuration
+check, source fix and 193 focused tests are in
+[`EMMA-CURRENT-PROVIDER-READBACK-2026-10-20.md`](EMMA-CURRENT-PROVIDER-READBACK-2026-10-20.md).
+It supersedes the historical provider-readback and source-preflight status
+below. No provider configuration or routing was changed.
+
 ## Source of truth and present evidence
 
 - Branch: `codex/new-dawn-emma`, cut from verified GitHub `main`
@@ -17,12 +23,13 @@ change on the day.
   `2. Ai/Openfolk OS   Pass-Over/Emma Unmerged Work 2026-10-02/` in Chris's
   Dropbox. Its patch applied cleanly to this branch. Its 80 focused tests
   passed locally; it was a development recovery package, not a launch result.
-- The latest recorded Vapi observation in Git is 13 October: published Emma
+- The 13 October historical Vapi observation recorded published Emma
   assistant `4eb2bee8-ac25-47c9-b962-409ed250ceb6`, v14, speed 1.05,
   100% version traffic. The candidate is
-  `dcfc2e66-a438-43ab-b863-467f5a5089df`. This branch has **not** made
-  a fresh authenticated provider read, so those values must be read back
-  before any provider edit or paid test. See
+  `dcfc2e66-a438-43ab-b863-467f5a5089df`. The fresh 20 October graph
+  readback establishes current configuration hashes and voice mismatch,
+  but does not independently confirm version traffic or an effective voice
+  speed. See the update above and
   `docs/operations/EMMA-NATURAL-DELIVERY-2026-10-13.md`.
 - Recorded Birchills state remains historical: main 01794 341600 uses
   IVR 501 in hours and 502 out of hours; extension 205 is the proposed
