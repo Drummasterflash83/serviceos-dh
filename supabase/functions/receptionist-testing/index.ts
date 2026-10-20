@@ -11,7 +11,12 @@ import {
   runState,
 } from "../_shared/receptionist-testing.ts";
 import { evidenceHash } from "../_shared/receptionist-care.ts";
-import { prepareLaunchCandidate } from "../_shared/receptionist-launch-candidate.ts";
+import {
+  candidatePreparationHold,
+  candidatePreparationStateHold,
+  launchCandidateSourceId,
+  prepareLaunchCandidate,
+} from "../_shared/receptionist-launch-candidate.ts";
 import {
   launchWordingModel,
   launchDialogueModel,
@@ -309,7 +314,9 @@ Deno.serve(async (req) => {
         }, 409);
       }
     }
-    const assistant = await api("assistant/" + settings.data.assistant_id);
+    const assistant = await api("assistant/" + launchCandidateSourceId(
+      body.action, service, scheduled, settings.data.assistant_id, workspace.data.assistant_id,
+    ));
     if (body.action === "inspect_launch_speech" && service && !scheduled) {
       if (body.tenantId !== "00000000-0000-0000-0000-000000000001" || assistant.id !== "dcfc2e66-a438-43ab-b863-467f5a5089df")
         return reply({ error: "Fixed test binding required" }, 403);
@@ -468,12 +475,25 @@ Deno.serve(async (req) => {
         return reply({ error: "Testing candidate required" }, 409);
       return reply(await prepareLaunchSuite(db, api, settings.data, tools, actor, assistant));
     }
-    if (body.action === "prepare_candidate" && service) {
+    if (body.action === "prepare_candidate" && service && !scheduled) {
+      // The current saved row is old. Report its fixed review hold even when
+      // the caller has only the selected test assistant's hash. Recheck inside
+      // prepareLaunchCandidate before any provider mutation to cover drift.
+      const existing = await db.from("receptionist_test_candidates")
+        .select("state,source_hash,helper_id,handoff_id,candidate_id")
+        .eq("tenant_id", body.tenantId).maybeSingle();
+      if (existing.error) return reply({ error: "Launch candidate audit unavailable." }, 503);
+      const hold = candidatePreparationStateHold(existing.data, hash);
+      if (hold) return reply(hold, 409);
       if (body.expectedHash !== hash)
         return reply({ error: "Emma changed. Reload the checks before running." }, 409);
-      return reply(
-        await prepareLaunchCandidate(db, api, assistant, tools, hash, actor, body.tenantId),
-      );
+      try {
+        return reply(await prepareLaunchCandidate(db, api, assistant, tools, hash, actor, body.tenantId));
+      } catch (error) {
+        const hold = candidatePreparationHold(error);
+        if (hold) return reply(hold, 409);
+        throw error;
+      }
     }
     if (body.action === "inspect" && service) {
       return reply({
