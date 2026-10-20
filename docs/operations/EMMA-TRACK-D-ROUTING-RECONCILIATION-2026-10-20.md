@@ -23,9 +23,12 @@ phone source has 88 Simwood calls in that interval, latest 08:37:53 UTC;
 there are no saved `live_call_sessions` in the same interval. These are
 OpenFolk records only. They do not prove the current Vapi phone binding,
 Birchills main route, absence of provider-only calls, or dual 603 delivery.
-The source-only manifest v13 reproduces byte-for-byte (SHA-256
-`73886cafb0315b7fa6ddb5c95e94d4930d7c4761463907c1c59bd3717b49990c`);
-12/12 static definitions and 201 focused receptionist tests pass. A fresh
+The current source-only [manifest v14](EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-20-v14.json)
+reproduces byte-for-byte from commit `a7e10223` (manifest SHA-256
+`fc1ab44529a96a0ba86e84b6fa2130815775b6378250bd57d122f8df6a9df838`);
+12/12 static definitions and 202 focused receptionist tests pass. The only
+source change since v13 makes the failed-engineer transfer instruction name
+shared 603 explicitly and forbid cross-cover. A fresh
 provider 12/12 run has not occurred. Provider browser use is disabled in this
 Work session and no existing noninteractive Vapi/Birchills credential is
 available, so no provider configuration was changed or inferred.
