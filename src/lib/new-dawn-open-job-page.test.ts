@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { openJobNextStep, openJobPageFlagName, readOpenJobPage } from "./new-dawn-open-job-page.ts";
+import { openJobNextStep, openJobPageFlagName, readOpenJobPage, readOpenJobStatusSummary } from "./new-dawn-open-job-page.ts";
 
 const tenant = "11111111-1111-4111-8111-111111111111";
 const actor = "22222222-2222-4222-8222-222222222222";
@@ -44,4 +44,17 @@ test("operator and client flags remain distinct; actions do not imply assignment
   assert.equal(openJobPageFlagName(false), "new_dawn.open_job_page");
   assert.match(openJobNextStep("open"), /Confirm/);
   assert.match(openJobNextStep("on_hold"), /Check/);
+});
+
+test("whole-workload counts require fresh, audited and internally consistent scope", () => {
+  const summary = {
+    version: "new-dawn-open-job-status-summary/1", tenant_id: tenant,
+    actor_id: actor, audit_id: audit, observed_at: now, snapshot_at: now,
+    counts: { on_hold: 3, pending: 2, open: 4, total: 9 },
+  };
+  assert.equal(readOpenJobStatusSummary(summary, tenant, actor).counts.total, 9);
+  assert.throws(() => readOpenJobStatusSummary(summary, actor, actor));
+  assert.throws(() => readOpenJobStatusSummary(summary, tenant, tenant));
+  assert.throws(() => readOpenJobStatusSummary({ ...summary, counts: { ...summary.counts, total: 8 } }, tenant, actor));
+  assert.throws(() => readOpenJobStatusSummary({ ...summary, counts: { ...summary.counts, private: 1 } }, tenant, actor));
 });
