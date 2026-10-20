@@ -24,7 +24,7 @@ and marks identity and appointment `unverified` on every row. It makes no
 provider request or source import. The UI button appears only for an operator
 on a current linked job with this flag enabled.
 
-`20261107160000_new_dawn_commusoft_isolated_users_page.sql` adds a separate
+`20261108150000_new_dawn_commusoft_isolated_users_page.sql` adds a separate
 operator-requested, one-page `GET /users` route. It requires the default-off
 `learn.inputs.commusoft.users.enabled` flag, an explicit tenant and configured
 connection, and a reason. The route reads at most 10 source users through the
@@ -35,11 +35,54 @@ versions and an audit receipt. The held job reference can use these versions,
 labelled as an isolated sample, without treating them as complete user coverage
 or staff identities.
 
-Release sequence for review: verify the exact source head; install the SQL
-chain and Edge route in TEST, then assess a bounded operator trial before any
-LIVE promotion. Leave both the reference and users flags absent or false until
-that trial is explicitly configured. If no matching `/users` version has been
-retained, the reference correctly reports `source_record_not_captured`.
+The original users-page filename had the same `20261107160000` version as the
+already published job-closure migration. Its contents are unchanged, but its
+filename is now `20261108150000` so the ledger cannot conflate them. The
+follow-on release controller in
+`scripts/verify/new-dawn-m2-isolated-users-page-release.mjs` pins the source
+hash, six pinned ledger prerequisites, the published closure-version
+owner, before/after shared-lease and source-user-reference function hashes, the
+default-off flags, runtime executable and JWT setting. It reads the active
+recurring job's resource plus account/cursor fingerprints without logging the
+cursor or source-user payload. It never asks that job to pause or yields its
+lease for an isolated sample.
+
+As observed on 20 October 2026, LIVE has the exact older users and shared
+lease ledger hashes, and closure owns `20261107160000`. It has one active
+recurring `propertyContacts` job and no users flag. The
+`20261107130000` source-user-reference ledger/function is absent, so the
+isolated SQL gate correctly stops. The prerequisite must be installed and
+independently read back through its own reviewed release before running the
+isolated installer. No LIVE SQL, Edge deployment, feature flag or Commusoft
+request was made for this follow-on.
+
+The exact nine-file SQL chain compiled in TEST with `ROLLBACK`; after the
+transaction the candidate tables and function were absent. To repeat that
+rehearsal, run:
+
+```sh
+node scripts/verify/new-dawn-m2-isolated-users-page-release.mjs --test-rollback-only
+```
+
+The local Edge candidate is built with the pinned runtime image by
+`new-dawn-m2-users-page-edge-prepare.mjs --prepare-only`; its reviewed source
+closure SHA-256 is `367e6d167d638b0e4c8b853fe0d723accbd6c19f311f5d15dce8ac051962909c`,
+and compiled transport SHA-256 is
+`51958f3b08a5d99b001310760bb320c5493124c3cb89ce6e77aa70f3410149d5`.
+The private artifact is ignored by Git. Once the prerequisite passes, the
+release operator uses separate read-only, SQL install/readback and Edge
+deploy/readback modes; writes require the exact source/artifact hash and an
+explicit LIVE project variable. An uncertain SQL or Edge response triggers
+one independent readback and no automatic replay. Do not turn on the users
+flag or invoke the route as part of installation.
+
+If the SQL transaction fails, it rolls back. After a committed install, leave
+the users flag absent and withdraw the Edge endpoint if necessary; preserve
+the retained tables, versions and audit history. Confirm the exact ledger and
+runtime state independently before any retry or cleanup. The held reference
+still reports `source_record_not_captured` when no matching `/users` version
+exists. A retained user is a source identity, not proof of an appointment or
+visit.
 
 The rollback-only TEST rehearsal is:
 
