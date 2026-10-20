@@ -7,7 +7,8 @@ import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
 import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
 import {
-  openJobNextStep, openJobPageFlagName, readOpenJobPage, readOpenJobStatusSummary,
+  openJobNextStep, openJobPageFlagName, openJobStatusEvidence,
+  readOpenJobPage, readOpenJobStatusSummary,
   type OpenJobPage, type OpenJobRow, type OpenJobStatus,
 } from "@/lib/new-dawn-open-job-page";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -82,6 +83,7 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
       <p><strong>Job {row.external_id}</strong> · {statusLabel[row.status]}</p>
       <p>Customer: {row.source_customer ?? "To confirm"} · Site: {row.source_site ?? row.source_postcode ?? "To confirm"}</p>
       <small>Commusoft record saved {savedAt(row.source_observed_at)}. The job may have changed since then.</small>
+      <p>{openJobStatusEvidence(row, savedAt)}</p>
     </div>
     {detail.isPending && <p role="status">Opening the saved job record…</p>}
     {detail.isError && <p role="alert">The detailed record could not be checked. Refresh the job list; its saved summary remains available.</p>}
@@ -283,7 +285,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
             </span>
             <span className="nd-job-review"><b>{statusLabel[row.status]}</b>
               <small>{row.identity_state === "reviewed_link" ? "Job link reviewed" : "Customer and site link awaiting review"}</small>
-              <small>Saved {savedAt(row.source_observed_at)} · Owner not confirmed</small>
+              <small>{openJobStatusEvidence(row, savedAt)}</small>
+              <small>Owner not confirmed</small>
               <small className="nd-job-next">Next: {openJobNextStep(row.status)}</small>
             </span>
             <ChevronRight size={17} />

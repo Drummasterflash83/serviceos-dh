@@ -12,6 +12,8 @@ const row: OpenJobRow = {
   external_id: "001",
   source_version_id: "00000000-0000-0000-0000-000000000002",
   source_observed_at: "2026-10-20T09:00:00Z",
+  status_first_saved_at: "2026-10-20T09:00:00Z",
+  status_evidence: "timing_unknown",
   status: "open",
   title: "Saved job",
   source_customer: "Customer",

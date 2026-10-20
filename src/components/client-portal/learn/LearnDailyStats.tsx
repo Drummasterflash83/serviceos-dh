@@ -30,13 +30,13 @@ function freshnessText(value: CommusoftFreshness | undefined) {
   if (!value) return "Provider check unavailable";
   if (value.state === "not_checked") return "Provider not checked yet";
   if (value.state === "collecting") return "Checking provider jobs…";
-  if (value.state === "saved_advanced") return "Saved jobs changed since the provider check; a new comparison is needed";
-  if (value.state === "stale") return "Provider check is over 24 hours old";
+  if (value.state === "saved_advanced") return "Saved jobs changed since the last provider check; comparison pending";
+  if (value.state === "stale") return "No current-day provider comparison";
   if (value.state === "partial") return `Comparison incomplete${value.atLeastBehind
     ? ` · at least ${format(value.atLeastBehind)} new jobs found` : ""}`;
   if (value.jobsBehind === 0 && value.savedJobId === value.providerNewestJobId &&
-    value.providerNewestJobId) return `Up to date to job ${value.providerNewestJobId}`;
-  if (value.jobsBehind !== null) return `${format(value.jobsBehind)} jobs behind${value.providerNewestJobId
+    value.providerNewestJobId) return `Matched provider newest job ${value.providerNewestJobId} at last check`;
+  if (value.jobsBehind !== null) return `${format(value.jobsBehind)} provider jobs not yet saved at last check${value.providerNewestJobId
     ? ` · newest job ${value.providerNewestJobId}` : ""}`;
   return "Provider comparison unavailable";
 }
