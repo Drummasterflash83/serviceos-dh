@@ -1,5 +1,7 @@
 -- Bounded, append-only same-day provider checks after saved Jobs advance.
--- This does not start a provider request or alter current flags/schedules.
+-- Installation makes no provider request and alters no flags or schedules;
+-- the existing scheduled worker can make at most eight checks per London day,
+-- at least an hour apart after a saved source advance or partial result.
 begin;
 set local lock_timeout='3s';
 set local statement_timeout='30s';
@@ -112,6 +114,14 @@ begin
    and f.flag='learn.enabled' and f.value='true'::jsonb)
   and exists(select 1 from public.feature_flags f where f.tenant_id=pc.tenant_id
    and f.flag='learn.inputs.commusoft.enabled' and f.value='true'::jsonb)
+  and pc.id=(select pick.id from public.provider_connections pick
+   where pick.tenant_id=pc.tenant_id and pick.provider='commusoft'
+    and pick.status='configured' and pick.auth_mode='private_api_key'
+    and pick.revoked_at is null and pick.verified_at is not null
+    and pick.non_secret_config->>'region' in('uk','us')
+    and coalesce(pick.secret_refs->>'api_key','')~
+     '^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$'
+   order by pick.id limit 1)
  order by pc.tenant_id for share of pc loop
  -- The input tick can invoke this worker more than once a minute. Serialize
  -- claims per tenant before considering a second immutable comparison receipt.
