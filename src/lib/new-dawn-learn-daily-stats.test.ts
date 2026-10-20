@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dailyStatKeys, readDailyStats, readDailyStatsPart } from "./new-dawn-learn-daily-stats.ts";
+import { dailyStatKeys, dailyStatParts, readDailyStats, readDailyStatsPart } from "./new-dawn-learn-daily-stats.ts";
 
 const tenant = "00000000-0000-0000-0000-000000000001";
 const actor = "00000000-0000-0000-0000-000000000002";
@@ -54,4 +54,20 @@ test("rejects a mismatched part, extra source counts, impossible count and actor
   assert.throws(() => readDailyStatsPart(malformed, "business", tenant, actor));
   assert.throws(() => readDailyStatsPart(businessPart(), "business", tenant,
     "00000000-0000-0000-0000-000000000004"));
+});
+
+test("communication sources validate independently so one failed read cannot invent another", () => {
+  assert.deepEqual(dailyStatParts, ["calls", "recordings", "emails", "slack", "business"]);
+  for (const part of ["calls", "recordings", "emails"] as const) {
+    const isolated = {
+      ...response(), version: "new-dawn-learn-daily-stats-part/1",
+      part, counts: { [part]: { today: 1, total: 10 } }, latest_saved_job: null,
+    };
+    assert.deepEqual(readDailyStatsPart(isolated, part, tenant, actor).counts[part],
+      { today: 1, total: 10 });
+    assert.throws(() => readDailyStatsPart(isolated, "business", tenant, actor));
+    assert.throws(() => readDailyStatsPart({ ...isolated,
+      counts: { ...isolated.counts, slack: { today: 0, total: 1 } },
+    }, part, tenant, actor));
+  }
 });

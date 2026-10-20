@@ -14,10 +14,12 @@ export type DailyStats = {
   auditId: string;
 };
 
-export const dailyStatParts = ["communications", "slack", "business"] as const;
+export const dailyStatParts = ["calls", "recordings", "emails", "slack", "business"] as const;
 export type DailyStatPart = (typeof dailyStatParts)[number];
 export const dailyStatPartKeys: Record<DailyStatPart, readonly DailyStatKey[]> = {
-  communications: ["calls", "recordings", "emails"],
+  calls: ["calls"],
+  recordings: ["recordings"],
+  emails: ["emails"],
   slack: ["slack"],
   business: ["jobs", "customers", "sites"],
 };
