@@ -414,11 +414,20 @@
 .nd-score-hero p:not(.of-eyebrow) { max-width: 62ch; color: #625a6d; font-size: 13px; line-height: 1.55; }
 .nd-score-hero p.nd-score-source { font-size: 11px; }
 .nd-score-hero button { margin-top: 9px; }
+.nd-score-hero--pending { margin: 20px 0 13px; padding: 19px 23px; }
+.nd-score-hero--pending .nd-score-ring { flex-basis: 86px; width: 86px; height: 86px; border-width: 5px; }
+.nd-score-hero--pending .nd-score-ring span { font-size: 42px; }
+.nd-score-hero--pending .nd-score-hero-copy h3 { margin: 3px 0 5px; font-size: clamp(23px,2.5vw,30px); }
+.nd-score-hero--pending .nd-score-hero-copy p { margin: 5px 0; }
+.nd-score-hero--pending .nd-score-hero-copy small { display: block; margin-top: 7px; color: #625a6d; font-size: 11px; }
+.nd-score-hero--pending .nd-score-hero-copy button { padding: 0; border: 0; background: transparent; color: #514669; font: inherit; font-size: 13px; font-weight: 700; text-align: left; cursor: pointer; }
+.nd-score-hero--pending .nd-score-hero-copy button:focus-visible { outline: 2px solid #514669; outline-offset: 3px; }
 .nd-score-tiles { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
 .nd-score-tiles article { display: grid; align-content: start; gap: 8px; min-width: 0; padding: 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #fff; }
 .nd-score-tiles span { color: #514669; font-size: 11px; font-weight: 700; letter-spacing: .11em; }
 .nd-score-tiles strong { color: #25253a; font-size: 18px; font-weight: 600; letter-spacing: -.02em; }
 .nd-score-tiles p { margin: 0; color: #706b7e; font-size: 12px; line-height: 1.55; }
+.nd-job-home > .nd-score-tiles + .nd-work-priority { margin-top: 18px; }
 .nd-score-tiles button { justify-self: start; margin-top: 2px; padding: 0; border: 0; background: transparent; color: #514669; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
 .nd-score-bottlenecks { padding: 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #fff; }
 .nd-score-bottlenecks h3 { margin: 0 0 4px; color: #25253a; font-size: 19px; font-weight: 600; }
@@ -429,6 +438,16 @@
 .nd-score-bottlenecks button small { color: #706b7e; font-size: 12px; }
 .nd-score-bottlenecks button strong { font-size: 13px; white-space: nowrap; }
 .nd-score-tiles button:focus-visible, .nd-score-bottlenecks button:focus-visible { outline: 2px solid #514669; outline-offset: 3px; border-radius: 4px; }
+@media (max-width: 720px) {
+  .nd-score-hero--pending { gap: 13px; padding: 16px; }
+  .nd-score-hero--pending .nd-score-ring { flex-basis: 62px; width: 62px; height: 62px; border-width: 4px; }
+  .nd-score-hero--pending .nd-score-ring span { font-size: 30px; }
+  .nd-score-hero--pending .nd-score-ring small { font-size: 9px; }
+  .nd-score-hero--pending .nd-score-hero-copy h3 { font-size: 22px; }
+  .nd-job-home > .nd-score-tiles { grid-template-columns: 1fr; gap: 7px; }
+  .nd-job-home > .nd-score-tiles article { gap: 3px; padding: 12px 14px; }
+  .nd-job-home > .nd-score-tiles strong { font-size: 15px; }
+}
 .nd-open-jobs-heading { scroll-margin-top: 24px; }
 .nd-open-jobs-heading h3 { margin: 4px 0; color: #25253a; font-size: 21px; font-weight: 600; }
 .nd-open-jobs-heading p { margin: 0; color: #706b7e; font-size: 12px; line-height: 1.5; }

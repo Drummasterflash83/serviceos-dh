@@ -198,12 +198,18 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
   const rows = active?.rows ?? [];
   const activeSummary = summary.data?.tenantId === tenant && summary.data.actorId === user?.id
     && !summary.isFetching ? summary.data : null;
+  const attentionCount = activeSummary
+    ? activeSummary.counts.on_hold + activeSummary.counts.pending : null;
   function changeFilter(next: OpenJobStatus | null) {
     setStatus(next); setPageIndex(0); setCursors([null]); setSelected(null);
   }
   function showJobs(next: OpenJobStatus | null) {
     changeFilter(next);
     requestAnimationFrame(() => jobsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
+  function showAttention() {
+    showJobs(activeSummary?.counts.on_hold ? "on_hold" :
+      activeSummary?.counts.pending ? "pending" : null);
   }
   function nextPage() {
     if (!active?.nextCursor) return;
@@ -241,6 +247,35 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
     </div>}
     {!operator && !authorisedClient && <p role="status">Your work list is being prepared. Confirmed assignments are not available yet.</p>}
     {enabled && <>
+      <section className="nd-score-hero nd-score-hero--pending" aria-label="Company scorecard">
+        <div className="nd-score-ring" aria-label="Company score not yet available">
+          <span aria-hidden="true">—</span><small>/100</small>
+        </div>
+        <div className="nd-score-hero-copy">
+          <p className="of-eyebrow">DRUMMONDS · COMPANY HEALTH</p>
+          <h3>How the company is doing</h3>
+          <p><strong>Not enough data yet for a fair score.</strong> Job stage timing and ownership still need confirming; commercial outcomes are assessed when work closes.</p>
+          <p>{attentionCount === null ? "Checking today's recorded work…"
+            : `${attentionCount.toLocaleString("en-GB")} recorded jobs are On hold or Pending. Open them to see the saved status and next check.`}</p>
+          <button type="button" onClick={showAttention}>See the jobs needing attention →</button>
+          {activeSummary && <small>Saved Commusoft statuses as of {savedAt(activeSummary.snapshotAt)}. This is not a performance score.</small>}
+        </div>
+      </section>
+      <div className="nd-score-tiles" aria-label="Jobs, customer and team scorecards">
+        <article><span>JOBS</span><strong>Not enough data yet</strong>
+          <p>Stage time and a confirmed owner are missing. {attentionCount === null ? "Checking the recorded workload."
+            : `${attentionCount.toLocaleString("en-GB")} On-hold or Pending jobs need a source-backed review.`}</p>
+          <button type="button" onClick={showAttention}>Review recorded jobs →</button>
+        </article>
+        <article><span>CUSTOMERS</span><strong>Not enough data yet</strong>
+          <p>Customer and site matches need review before their jobs can show customer health.</p>
+          <p>What lifts it: confirm exact customer and site links.</p>
+        </article>
+        <article><span>TEAM</span><strong>Not enough data yet</strong>
+          <p>Commusoft diary visits, confirmed assignments and worked hours are missing.</p>
+          <p>What lifts it: verify visits and who owns each next step.</p>
+        </article>
+      </div>
       <section className="nd-work-priority" aria-label="Where to start">
         <div><h3>Where to start</h3>
           <p>{activeSummary
@@ -310,22 +345,6 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
             onClick={nextPage}>Next page <ChevronRight size={16} /></button>
         </nav>
       </>}
-      <details className="nd-score-home-disclosure">
-        <summary>How are the company, jobs, customers and team doing? <span>Scores are being prepared</span></summary>
-        <p>A fair score needs confirmed evidence. Recorded open-job counts are not performance scores.</p>
-        <div className="nd-score-tiles" aria-label="Scorecard readiness">
-          <article><span>COMPANY &amp; JOBS</span><strong>Not enough data yet</strong>
-            <p>Job stage age, ownership and commercial outcomes still need confirmation.</p>
-            <button type="button" onClick={() => showJobs(null)}>Review recorded open jobs →</button>
-          </article>
-          <article><span>CUSTOMERS</span><strong>Not enough data yet</strong>
-            <p>Customer and site links need review before job outcomes can show customer health.</p>
-          </article>
-          <article><span>TEAM</span><strong>Not enough data yet</strong>
-            <p>Confirmed assignments and worked hours are needed before a team score is fair.</p>
-          </article>
-        </div>
-      </details>
     </>}
     <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
       <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
