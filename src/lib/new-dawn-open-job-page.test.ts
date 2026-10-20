@@ -62,6 +62,16 @@ test("status age is shown only for repeated saved checks spanning a day", () => 
     status_first_saved_at: new Date(Date.now() + 100_000).toISOString() }] }, tenant, actor, null));
 });
 
+test("frontend rollout reads the existing v1 page with timing withheld", () => {
+  const { status_first_saved_at: _since, status_evidence: _evidence, ...legacyRow } = row;
+  const parsed = readOpenJobPage({ ...page(), version: "new-dawn-open-job-page/1",
+    rows: [legacyRow] }, tenant, actor, null);
+  assert.equal(parsed.rows[0].status_evidence, "timing_unknown");
+  assert.equal(parsed.rows[0].status_first_saved_at, row.source_observed_at);
+  assert.throws(() => readOpenJobPage({ ...page(), version: "new-dawn-open-job-page/1",
+    rows: [row] }, tenant, actor, null));
+});
+
 test("whole-workload counts require fresh, audited and internally consistent scope", () => {
   const summary = {
     version: "new-dawn-open-job-status-summary/1", tenant_id: tenant,
