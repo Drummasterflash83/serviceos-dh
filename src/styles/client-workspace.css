@@ -448,6 +448,7 @@
 .nd-oldest-jobs button { display: grid; grid-template-columns: auto minmax(0,1fr) auto auto; align-items: center; gap: 12px; width: 100%; min-height: 47px; padding: 8px 0; border: 0; background: transparent; color: #302c36; text-align: left; cursor: pointer; }
 .nd-oldest-jobs button strong { font-size: 13px; white-space: nowrap; }
 .nd-oldest-jobs button span { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.nd-oldest-jobs button span em { display: block; overflow: hidden; color: #706b7e; font-size: 11px; font-style: normal; text-overflow: ellipsis; }
 .nd-oldest-jobs button small { color: #706b7e; font-size: 11px; white-space: nowrap; }
 .nd-oldest-jobs button:focus-visible { outline: 2px solid #514669; outline-offset: 2px; }
 @media (max-width: 720px) {

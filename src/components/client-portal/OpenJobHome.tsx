@@ -318,7 +318,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         {oldestHeldRows.length > 0 && <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
           <button type="button" onClick={() => setSelected(row)}>
             <strong>Job {row.external_id}</strong>
-            <span>{row.title ?? "Work description not recorded"}<small> · {row.source_customer ?? "Customer unconfirmed"} · {row.source_site ?? row.source_postcode ?? "Site unconfirmed"}</small></span>
+            <span>{row.title ?? "Work description not recorded"}<em>{row.source_customer ?? "Customer unconfirmed"} · {row.source_site ?? row.source_postcode ?? "Site unconfirmed"}</em></span>
             <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, oldestHeld.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}</small>
             <ChevronRight size={16} />
           </button>
