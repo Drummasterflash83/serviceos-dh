@@ -11,6 +11,22 @@ check, source fix and 193 focused tests are in
 It supersedes the historical provider-readback and source-preflight status
 below. No provider configuration or routing was changed.
 
+**Later 20 October source-only update:** The branch now includes current
+`origin/main` and a narrower fail-closed intake guard: a caller's bare
+“Wait, that's wrong” can retract a just-confirmed callback or the stated site
+without repeating its field name. The immutable
+[`v10 source manifest`](EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-20-v10.json)
+pins source commit `edf3cbeda39c292bc85ad3908f5f1097e93e6ffb`, manifest
+SHA-256 `3ec124e3d3996e005486bd4c8c5730a08c1499906b31cb89d8831141b8468f19`,
+and the unchanged twelve-scenario suite hash
+`861a9e1122d870e65d029c8addc28c4bf248ca2865ebbe553ec03fd6a7b42b3b`.
+The local static scenario definitions pass 12/12 and 194 focused receptionist
+tests pass. No Vapi conversation was run on this source, and the candidate
+stored at Vapi still differs from this source and from published v14. The
+earlier readback remains the latest provider observation, not a readback of
+this change. No real transfer, mailbox deposit, dual email or Slack delivery
+is claimed.
+
 ## Source of truth and present evidence
 
 - Branch: `codex/new-dawn-emma`, cut from verified GitHub `main`
