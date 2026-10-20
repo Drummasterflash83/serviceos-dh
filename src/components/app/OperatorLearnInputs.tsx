@@ -45,6 +45,7 @@ export function OperatorLearnInputs({
     [notice, setNotice] = useState("");
   const [canWrite, setCanWrite] = useState<boolean | null>(null);
   const [usersCaptureEnabled, setUsersCaptureEnabled] = useState<boolean | null>(null);
+  const [usersPageEnabled, setUsersPageEnabled] = useState<boolean | null>(null);
   const [slackOpen, setSlackOpen] = useState(false);
   const [quickbooksOpen, setQuickbooksOpen] = useState(false);
   const [recurringBlocked, setRecurringBlocked] = useState(false);
@@ -83,17 +84,20 @@ export function OperatorLearnInputs({
   async function refresh(ticket: number) {
     setCanWrite(null);
     setUsersCaptureEnabled(null);
+    setUsersPageEnabled(null);
     const [d, permission, usersFlag] = await Promise.all([
       readOperatorInputs(db(), tenantId),
       readOperatorInputWriteAccess(db()),
-      getSupabaseClient().from("feature_flags").select("value")
+      getSupabaseClient().from("feature_flags").select("flag,value")
         .eq("tenant_id", tenantId)
-        .eq("flag", "learn.inputs.commusoft.users.enabled")
-        .maybeSingle(),
+        .in("flag", ["learn.inputs.commusoft.users.enabled", "new_dawn.m2_isolated_users_page"]),
     ]);
     if (!current(ticket)) return;
     setCanWrite(permission);
-    setUsersCaptureEnabled(usersFlag.error ? null : usersFlag.data?.value === true);
+    setUsersCaptureEnabled(usersFlag.error ? null : usersFlag.data?.some((row) =>
+      row.flag === "learn.inputs.commusoft.users.enabled" && row.value === true) === true);
+    setUsersPageEnabled(usersFlag.error ? null : usersFlag.data?.some((row) =>
+      row.flag === "new_dawn.m2_isolated_users_page" && row.value === true) === true);
     setData(d);
     setValues({
       "learn.enabled": d.flags["learn.enabled"] === true,
@@ -102,7 +106,8 @@ export function OperatorLearnInputs({
     setConnection((old) =>
       d.connections.some((c) => c.id === old) ? old : (d.connections[0]?.id ?? ""),
     );
-    if ((usersFlag.error || usersFlag.data?.value !== true) && resource === "users") {
+    if ((usersFlag.error || !usersFlag.data?.some((row) =>
+      row.flag === "learn.inputs.commusoft.users.enabled" && row.value === true)) && resource === "users") {
       setResource("properties");
       setPages(10);
       setPageSize(50);
@@ -376,7 +381,7 @@ export function OperatorLearnInputs({
         onChanged={() => refresh(generation.current)}
       />
       <OperatorScheduledActivityProbe tenantId={tenantId} connectionId={selected?.id ?? null} canRun={canWrite === true && !busy && !pending} />
-      {usersCaptureEnabled === true && selected && canWrite === true && (
+      {usersPageEnabled === true && selected && canWrite === true && (
         <OperatorCommusoftUsersPage
           key={`${backend}:${tenantId}:${actorId}:${selected.id}`}
           tenantId={tenantId}
