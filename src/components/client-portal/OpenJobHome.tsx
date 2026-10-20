@@ -212,8 +212,9 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         p_tenant: tenant, p_reason: operator ? approvedReason : null,
         p_cursor: null, p_status: null, p_page_size: 40,
       }).abortSignal(AbortSignal.timeout(20_000));
-      if (error) throw Error("Open job page unavailable");
-      return readOpenJobPage(data, tenant, user!.id, null);
+      if (error) throw Error("request");
+      try { return readOpenJobPage(data, tenant, user!.id, null); }
+      catch { throw Error("response"); }
     },
   });
   const additionalPage = useQuery<OpenJobPage>({
@@ -228,8 +229,9 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         p_tenant: tenant, p_reason: operator ? approvedReason : null,
         p_cursor: cursors[pageIndex], p_status: status, p_page_size: 40,
       }).abortSignal(AbortSignal.timeout(20_000));
-      if (error) throw Error("Open job page unavailable");
-      return readOpenJobPage(data, tenant, user!.id, status);
+      if (error) throw Error("request");
+      try { return readOpenJobPage(data, tenant, user!.id, status); }
+      catch { throw Error("response"); }
     },
   });
   const page = status === null && pageIndex === 0 ? firstPage : additionalPage;
@@ -370,7 +372,10 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         </label>)}
       </fieldset>
       {page.isPending || page.isFetching ? <p role="status">Reading saved open jobs…</p> : null}
-      {page.isError && <p role="alert">Saved open jobs are unavailable. Refresh to retry.</p>}
+      {page.isError && <p role="alert" data-open-job-failure={
+        page.error instanceof Error && ["request", "response"].includes(page.error.message)
+          ? page.error.message : "unknown"
+      }>Saved open jobs are unavailable. Refresh to retry.</p>}
       {active && <>
         <p className="nd-job-scope">
           <strong>Page {pageIndex + 1} · {rows.length} jobs</strong> · Read {savedAt(active.snapshotAt)}.
