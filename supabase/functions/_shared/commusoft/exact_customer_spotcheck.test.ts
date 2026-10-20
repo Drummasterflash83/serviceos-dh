@@ -100,8 +100,9 @@ test("one separately invoked customer-type GET returns labels as evidence only",
       throw Error(name);
     },
     fetcher: async (url, init) => {
-      assert.equal(url, "https://app.commusoft.co.uk/api/v2/customerTypes");
+      assert.equal(url, "https://app.commusoft.co.uk/api/v2/settings/customerTypes");
       assert.equal(init?.method, "GET");
+      assert.equal(init?.headers?.["User-Agent"], "OpenFolk-ServiceOS/1.0 (+https://openfolk.ai)");
       return Response.json([{ id: 2, name: "Company", companyNameRequired: "Yes" }]);
     },
   });

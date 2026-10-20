@@ -116,11 +116,12 @@ export async function runCustomerSpotcheck(req: SpotcheckRequest, ports: {
     if (!await current()) throw Error("scope_changed");
     const signal = ports.signal ? AbortSignal.any([ports.signal, AbortSignal.timeout(30000)]) : AbortSignal.timeout(30000);
     const origin = acquired.data.region === "uk" ? "https://app.commusoft.co.uk" : "https://app.commusoft.us";
-    const path = req.ordinal === 0 ? "/api/v2/customerTypes" :
+    const path = req.ordinal === 0 ? "/api/v2/settings/customerTypes" :
       `/api/v2/properties/${acquired.data.external_id}`;
     const response = await (ports.fetcher ?? fetch)(`${origin}${path}`, {
       method: "GET", redirect: "error", signal,
-      headers: { Authorization: `Bearer ${acquired.data.api_key}`, Accept: "application/json" },
+      headers: { Authorization: `Bearer ${acquired.data.api_key}`, Accept: "application/json",
+        "User-Agent": "OpenFolk-ServiceOS/1.0 (+https://openfolk.ai)" },
     });
     const raw = await boundedJson(response, acquired.data.external_id, signal);
     if (!await current()) throw Error("scope_changed");
