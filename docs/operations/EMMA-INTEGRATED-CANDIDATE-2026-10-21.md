@@ -22,8 +22,16 @@ modules.
 
 After the current-main merge, the combined source passed 216 focused
 receptionist tests, TypeScript, `node --check` on the service route,
-`git diff --check`, and the production build. Hosted checks on the final
-branch head are still required before PR #88 can be treated as release-ready.
+`git diff --check`, and the production build. Both Vercel builds passed on
+integrated draft PR #88 head `768a1c6b47b230eb2d3477fc20f19e1fb4074b9a`.
+The PR remains draft pending the provider and physical gates below.
+
+The superseded draft PR #323 was closed after its entire head
+`3f13197b99e2e9d9806d1c9680ad60e6a93498fd` was verified as an ancestor
+of PR #88. Its complete Git history is archived in Dropbox `NEW DAWN/` as
+`emma-v15-stale-guard-323-20261021.bundle` (SHA-256
+`610a7b72927325be5d84a0cdbdecdfbe54aca8f192c4b7d817a2b666fd57a79c`);
+the superseded remote branch was deleted. No published history was rewritten.
 
 Remaining launch gates are a fresh full Vapi/Birchills graph and exact hashes,
 verified 603 dialable destination and separate Rob/Tony email delivery, a
