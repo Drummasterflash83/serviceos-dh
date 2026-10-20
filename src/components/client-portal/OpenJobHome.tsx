@@ -159,6 +159,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
   const [pageIndex, setPageIndex] = useState(0);
   const [cursors, setCursors] = useState<Array<string | null>>([null]);
   const [selected, setSelected] = useState<OpenJobRow | null>(null);
+  const [showOldest, setShowOldest] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
   const jobsRef = useRef<HTMLDivElement>(null);
   const oldestRef = useRef<HTMLElement>(null);
@@ -167,7 +168,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
   const enabled = !!user && uuid(tenant) && (operator ? approvedReason !== null : authorisedClient);
   useEffect(() => {
     setApprovedReason(mdReason ?? null); setReason(""); setStatus(null); setPageIndex(0);
-    setCursors([null]); setSelected(null);
+    setCursors([null]); setSelected(null); setShowOldest(false);
   }, [tenant, user?.id, operator, mdReason]);
   const summary = useQuery({
     queryKey: ["new-dawn-open-job-status-summary", tenant, user?.id, operator,
@@ -254,6 +255,10 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
     changeFilter(next);
     requestAnimationFrame(() => jobsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
+  function showOldestJobs() {
+    setShowOldest(true);
+    requestAnimationFrame(() => oldestRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
   function nextPage() {
     if (!active?.nextCursor) return;
     setCursors((prior) => [...prior.slice(0, pageIndex + 1), active.nextCursor]);
@@ -319,7 +324,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
           {checkedDay?.earliestMovingReviewDay && <p>Job score review can begin {statusDay(checkedDay.earliestMovingReviewDay)} if daily checks continue. No score is published yet.</p>}
           {dailyCoverage.isError && <p role="alert">Daily job checks are unavailable. Scores remain withheld.</p>}
           <button type="button" onClick={() => oldestHeldRows.length > 0
-            ? oldestRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+            ? showOldestJobs()
             : showJobs("on_hold")}>{oldestHeldRows.length > 0 ? "See 10 oldest On-hold jobs" : "See On-hold jobs"} →</button>
         </article>
         <article><span>CUSTOMERS</span><strong>Not enough data yet</strong>
@@ -355,12 +360,16 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
       </section>
       <section className="nd-oldest-jobs" ref={oldestRef} aria-label="Ten oldest On-hold jobs by creation date">
-        <div><h3>Ten oldest On-hold records</h3>
-          <p>Ordered by verified job creation date, not time spent On hold. Some work types still need review before they are treated as customer priorities.</p></div>
-        {firstPage.isPending && <p role="status">Reading the oldest recorded On-hold jobs…</p>}
-        {firstPage.isError && <p role="alert">The oldest On-hold jobs could not be checked. Refresh to retry.</p>}
-        {firstPage.isSuccess && oldestHeldRows.length === 0 && <p>No verified creation-order On-hold jobs are available in this saved snapshot.</p>}
-        {oldestHeldRows.length > 0 && <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
+        <h3>Oldest On-hold records</h3>
+        <p>Creation age is not time On hold. This list can include office and accounting work that has not been reviewed as a customer priority.</p>
+        <button type="button" className="nd-oldest-toggle" aria-expanded={showOldest}
+          onClick={() => setShowOldest((shown) => !shown)}>
+          {showOldest ? "Hide oldest records" : "See ten oldest records"} →
+        </button>
+        {showOldest && firstPage.isPending && <p role="status">Reading the oldest recorded On-hold jobs…</p>}
+        {showOldest && firstPage.isError && <p role="alert">The oldest On-hold jobs could not be checked. Refresh to retry.</p>}
+        {showOldest && firstPage.isSuccess && oldestHeldRows.length === 0 && <p>No verified creation-order On-hold jobs are available in this saved snapshot.</p>}
+        {showOldest && oldestHeldRows.length > 0 && <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
           <button type="button" onClick={() => setSelected(row)}>
             <strong>Job {row.external_id}</strong>
             <span>{row.title ?? "Work description not recorded"}<em>{row.source_customer ?? "Customer unconfirmed"} · {row.source_site ?? row.source_postcode ?? "Site unconfirmed"}</em></span>
