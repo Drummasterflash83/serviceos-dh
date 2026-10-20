@@ -18,12 +18,19 @@ test('one-page release accepts only the intended Drummonds sequence',()=>{
     {flag:'new_dawn.m2_isolated_users_page',value:true}],enabled_tenants:1,
     arms:1,flag_audit:[{action:'new_dawn.m2.users_page_gate_enabled'}]};
   assert.equal(assess(armed,'armed').isolatedGateEnabled,true);
+  assert.equal(assess({...armed,page_requests:1,page_states:[
+    {state:'complete',record_count:2,has_more:true}],versions:2},'armed').pageRequests,1);
   const closed={...armed,flags:[...base.flags,
     {flag:'new_dawn.m2_isolated_users_page',value:false}],enabled_tenants:0,
     page_requests:1,page_states:[{state:'complete',record_count:2,has_more:true}],
     versions:2,disarms:1,flag_audit:[...armed.flag_audit,
       {action:'new_dawn.m2.users_page_gate_disabled'}]};
   assert.equal(assess(closed,'closed').retainedVersions,2);
+  assert.equal(assess({...closed,arms:2,aborts:1,flag_audit:[
+    {action:'new_dawn.m2.users_page_gate_enabled'},
+    {action:'new_dawn.m2.users_page_gate_aborted'},
+    {action:'new_dawn.m2.users_page_gate_enabled'},
+    {action:'new_dawn.m2.users_page_gate_disabled'}]},'closed').retainedVersions,2);
   assert.throws(()=>assess({...closed,versions:3},'closed'),/scope_changed/);
   assert.throws(()=>assess({...base,flags:[...base.flags,
     {flag:'learn.inputs.commusoft.users.enabled',value:true}]},'before'),/scope_changed/);

@@ -51,10 +51,13 @@ export function assess(row,stage) {
   if(!base || !legacy || !expected || row.start_hash!==EXPECTED_START ||
     row.connections!==1 || row.enabled_tenants!==(stage==='armed'?1:0) ||
     !auditValid ||
-    row.page_requests!==(stage==='closed'?1:0) ||
+    !(stage==='armed' ? [0,1].includes(row.page_requests) :
+      row.page_requests===(stage==='closed'?1:0)) ||
     row.versions<0 || row.versions>10 || pageStates.length!==row.page_requests ||
     (stage==='before' && row.versions!==0) ||
-    (stage==='armed' && row.versions!==0) ||
+    (stage==='armed' && row.page_requests===0 && row.versions!==0) ||
+    (stage==='armed' && row.page_requests===1 &&
+      (pageStates[0]?.state!=='complete' || row.versions!==pageStates[0]?.record_count)) ||
     (stage==='closed' && (pageStates[0]?.state!=='complete' ||
       row.versions!==pageStates[0]?.record_count)))
     throw Error(`isolated_users_trial_${stage}_scope_changed`);
@@ -174,7 +177,9 @@ export async function readLive(token=savedCliToken()) {
   return rows[0];
 }
 export async function switchLive(enable,token=savedCliToken()) {
-  assess(await readLive(token),enable?'before':'armed');
+  const pre=assess(await readLive(token),enable?'before':'armed');
+  if(!enable && (pre.pageRequests!==1 || pre.pageState!=='complete'))
+    throw Error('isolated_users_trial_page_not_complete');
   let acknowledged=false;
   try {const rows=await query(token,switchSql(enable),true);
     acknowledged=rows?.some?.(r=>r.marker===`isolated-users-page-${enable?'armed':'closed'}/1`)===true;
