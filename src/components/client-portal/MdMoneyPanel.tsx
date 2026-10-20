@@ -7,6 +7,7 @@ import { readFounderAccountsPairs, readFounderAccountsPreview,
   type AccountsPair, type FounderAccountsPreview } from "@/lib/new-dawn-founder-accounts-preview";
 import { readAccountsMarginPreview, type AccountsMarginPreview } from "@/lib/new-dawn-accounts-margin";
 import { accountsNetMargin, newestAccountsPair, netProfitYtdComparison } from "@/lib/new-dawn-md-money";
+import { MdAgedInvoices } from "./MdAgedInvoices";
 
 type Snapshot = { accounts: FounderAccountsPreview; margin: AccountsMarginPreview | null };
 const dateTime = (value: string) => new Date(value).toLocaleString("en-GB", {
@@ -143,6 +144,7 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
         <p><strong>Closed without price, quote or FOC reason:</strong> awaiting verified closure and commercial evidence.</p>
         <p><strong>Liz's chase drafts:</strong> held until invoice-level ageing and customer review are linked. No messages have been drafted or sent.</p>
       </div>
+      <MdAgedInvoices tenant={tenant} reason={reason} />
       <details className="md-money-proof"><summary>Source and read audit</summary>
         <p>P&amp;L SHA-256 {saved.profitSha256}; receivables SHA-256 {saved.receivablesSha256}. Summary audit {saved.auditId}{snapshot.margin ? `; margin audit ${snapshot.margin.auditId}` : ""}.</p>
       </details>
