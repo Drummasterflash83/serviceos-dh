@@ -4,6 +4,7 @@ import type { HealthIssue } from "@/lib/use-emma-health";
 import { BellRing, Headphones, Receipt, Layers, ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { JobFirstHome, useJobFirstHomeFlag } from "@/components/client-portal/JobFirstHome";
+import { OpenJobHomeWithEvidence, useOpenJobPageFlag } from "@/components/client-portal/OpenJobHome";
 import "@/styles/client-investment.css";
 import "@/styles/client-workspace.css";
 import { useOperatorHealth } from "./useOperatorHealth";
@@ -103,6 +104,7 @@ function OperatorModuleContent({
   const [issueToOpen, setIssueToOpen] = useState<string | undefined>();
   const [captureRevision, setCaptureRevision] = useState(0);
   const jobFirst = useJobFirstHomeFlag(tenantId);
+  const openJobs = useOpenJobPageFlag(tenantId, true);
   function openIssue(issue?: HealthIssue) {
     setIssueToOpen(issue?.id);
     onView("improvements");
@@ -254,7 +256,9 @@ function OperatorModuleContent({
         <h1>{company}</h1>
         <p>Keep the service working. Move the next outcome forward.</p>
       </div>
-      {jobFirst.data === true && <JobFirstHome tenant={tenantId} company={company} operator onOpenInformation={() => onModule("information")} />}
+      {jobFirst.data === true && (openJobs.data === true
+        ? <OpenJobHomeWithEvidence tenant={tenantId} company={company} operator onOpenInformation={() => onModule("information")} />
+        : <JobFirstHome tenant={tenantId} company={company} operator onOpenInformation={() => onModule("information")} />)}
       {health.isError && (
         <div className="op-error" role="alert">
           {health.error.message}{" "}
