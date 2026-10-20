@@ -139,7 +139,7 @@ function ClientSourceRow({ tenant, source, onOpen }: {
   const attention = sourceJobClientAttention(source);
   return <button className="nd-job-row" onClick={onOpen}>
     <BriefcaseBusiness size={20} />
-    <span className="nd-job-main"><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job number not confirmed"}</strong><small>{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</small></span>
+    <span className="nd-job-main"><strong>{job.job_number ? `Job ${job.job_number}` : job.title ?? "Job number not confirmed"}</strong><small>{job.title && job.job_number ? `${job.title} · ` : ""}{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</small></span>
     <span className="nd-job-review">
       <b>{attention.label}</b>
       <small>{homeJobState(job)} · Saved {checked(source.source_observed_at)}</small>
@@ -154,22 +154,29 @@ function SourceJobPresentation({ tenant, jobs, onOpen }: {
   tenant: string; jobs: SourceHomeJob[]; onOpen: (job: SourceHomeJob) => void;
 }) {
   const { recentlySaved, needsOpenFolkCheck } = groupSourceHomeJobs(jobs);
+  const visibleChecks = needsOpenFolkCheck.slice(0, 3);
+  const moreChecks = needsOpenFolkCheck.slice(3);
   return <>
     <p className="nd-job-scope"><strong>Recently saved jobs · {recentlySaved.length}</strong> · Their current progress and next owner still need confirmation.</p>
     {recentlySaved.length === 0 && <p className="nd-job-scope">No linked job in this selection was saved in the past 24 hours. This does not mean there is no current work.</p>}
     {recentlySaved.map((source) => <ClientSourceRow key={source.id} tenant={tenant} source={source} onOpen={() => onOpen(source)} />)}
-    {needsOpenFolkCheck.length > 0 && <details className="nd-job-older">
-      <summary>{needsOpenFolkCheck.length} older or changed saved job records · OpenFolk check needed</summary>
-      <p>These records remain available for review. Their saved status must not be treated as today’s job progress.</p>
-      <div className="nd-job-list">{needsOpenFolkCheck.map((source) =>
-        <ClientSourceRow key={source.id} tenant={tenant} source={source} onOpen={() => onOpen(source)} />)}</div>
-    </details>}
+    {needsOpenFolkCheck.length > 0 && <div className="nd-job-check-queue">
+      <p className="nd-job-scope"><strong>Saved job records to check · {needsOpenFolkCheck.length}</strong> · These are not confirmed as today’s work.</p>
+      {visibleChecks.map((source) => <ClientSourceRow key={source.id} tenant={tenant} source={source} onOpen={() => onOpen(source)} />)}
+      {moreChecks.length > 0 && <details className="nd-job-older">
+        <summary>Show {moreChecks.length} more saved records to check</summary>
+        <p>These records remain available for review. Their saved status must not be treated as today’s job progress.</p>
+        <div className="nd-job-list">{moreChecks.map((source) =>
+          <ClientSourceRow key={source.id} tenant={tenant} source={source} onOpen={() => onOpen(source)} />)}</div>
+      </details>}
+    </div>}
   </>;
 }
 
 function MdPreviewJobDetail({ tenant, source }: { tenant: string; source: SourceHomeJob }) {
   const job = sourceJobAsHomeJob(source, tenant);
   return <div className="nd-job-detail">
+    <h3>{job.job_number ? `Job ${job.job_number}` : "Saved job"}{job.title ? ` · ${job.title}` : ""}</h3>
     <p><strong>{homeJobState(job)}</strong> · Saved job information</p>
     <p>{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</p>
     <p>OpenFolk saved this job information on {checked(source.source_observed_at)}. It may not reflect current Commusoft progress.</p>
