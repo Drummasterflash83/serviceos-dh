@@ -414,11 +414,21 @@
 .nd-score-hero p:not(.of-eyebrow) { max-width: 62ch; color: #625a6d; font-size: 13px; line-height: 1.55; }
 .nd-score-hero p.nd-score-source { font-size: 11px; }
 .nd-score-hero button { margin-top: 9px; }
+.nd-score-hero--pending { margin: 20px 0 13px; padding: 19px 23px; }
+.nd-score-hero--pending .nd-work-count { display: grid; flex: 0 0 112px; place-content: center; width: 112px; height: 112px; border: 5px solid #d4c5e1; border-radius: 50%; background: #fff9; color: #514669; text-align: center; }
+.nd-score-hero--pending .nd-work-count strong { font-family: "Inter Tight", Inter, sans-serif; font-size: 35px; line-height: 1; }
+.nd-score-hero--pending .nd-work-count small { max-width: 86px; margin-top: 4px; font-size: 10px; line-height: 1.2; }
+.nd-score-hero--pending .nd-score-hero-copy h3 { margin: 3px 0 5px; font-size: clamp(23px,2.5vw,30px); }
+.nd-score-hero--pending .nd-score-hero-copy p { margin: 5px 0; }
+.nd-score-hero--pending .nd-score-hero-copy small { display: block; margin-top: 7px; color: #625a6d; font-size: 11px; }
+.nd-score-hero--pending .nd-score-hero-copy button { padding: 0; border: 0; background: transparent; color: #514669; font: inherit; font-size: 13px; font-weight: 700; text-align: left; cursor: pointer; }
+.nd-score-hero--pending .nd-score-hero-copy button:focus-visible { outline: 2px solid #514669; outline-offset: 3px; }
 .nd-score-tiles { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
 .nd-score-tiles article { display: grid; align-content: start; gap: 8px; min-width: 0; padding: 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #fff; }
 .nd-score-tiles span { color: #514669; font-size: 11px; font-weight: 700; letter-spacing: .11em; }
 .nd-score-tiles strong { color: #25253a; font-size: 18px; font-weight: 600; letter-spacing: -.02em; }
 .nd-score-tiles p { margin: 0; color: #706b7e; font-size: 12px; line-height: 1.55; }
+.nd-job-home > .nd-score-tiles + .nd-work-priority { margin-top: 18px; }
 .nd-score-tiles button { justify-self: start; margin-top: 2px; padding: 0; border: 0; background: transparent; color: #514669; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
 .nd-score-bottlenecks { padding: 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #fff; }
 .nd-score-bottlenecks h3 { margin: 0 0 4px; color: #25253a; font-size: 19px; font-weight: 600; }
@@ -429,6 +439,31 @@
 .nd-score-bottlenecks button small { color: #706b7e; font-size: 12px; }
 .nd-score-bottlenecks button strong { font-size: 13px; white-space: nowrap; }
 .nd-score-tiles button:focus-visible, .nd-score-bottlenecks button:focus-visible { outline: 2px solid #514669; outline-offset: 3px; border-radius: 4px; }
+.nd-oldest-jobs { margin: 18px 0; padding: 16px 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #fff; scroll-margin-top: 24px; }
+.nd-oldest-jobs h3 { margin: 0 0 4px; color: #25253a; font-size: 18px; font-weight: 600; }
+.nd-oldest-jobs p { margin: 0 0 10px; color: #706b7e; font-size: 12px; line-height: 1.5; }
+.nd-oldest-jobs ol { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.nd-oldest-jobs li { min-width: 0; }
+.nd-oldest-jobs li + li { border-top: 1px solid #f0ecf2; }
+.nd-oldest-jobs button { display: grid; grid-template-columns: auto minmax(0,1fr) auto auto; align-items: center; gap: 12px; width: 100%; min-height: 47px; padding: 8px 0; border: 0; background: transparent; color: #302c36; text-align: left; cursor: pointer; }
+.nd-oldest-jobs button strong { font-size: 13px; white-space: nowrap; }
+.nd-oldest-jobs button span { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.nd-oldest-jobs button small { color: #706b7e; font-size: 11px; white-space: nowrap; }
+.nd-oldest-jobs button:focus-visible { outline: 2px solid #514669; outline-offset: 2px; }
+@media (max-width: 720px) {
+  .nd-score-hero--pending { gap: 13px; padding: 16px; }
+  .nd-score-hero--pending .nd-work-count { flex-basis: 76px; width: 76px; height: 76px; border-width: 4px; }
+  .nd-score-hero--pending .nd-work-count strong { font-size: 27px; }
+  .nd-score-hero--pending .nd-work-count small { font-size: 8px; }
+  .nd-score-hero--pending .nd-score-hero-copy h3 { font-size: 22px; }
+  .nd-job-home > .nd-score-tiles { grid-template-columns: 1fr; gap: 7px; }
+  .nd-job-home > .nd-score-tiles article { gap: 3px; padding: 12px 14px; }
+  .nd-job-home > .nd-score-tiles strong { font-size: 15px; }
+  .nd-oldest-jobs { padding: 14px; }
+  .nd-oldest-jobs button { grid-template-columns: auto minmax(0,1fr) auto; gap: 8px; }
+  .nd-oldest-jobs button small { grid-column: 2; grid-row: 2; white-space: normal; }
+  .nd-oldest-jobs button svg { grid-column: 3; grid-row: 1 / span 2; }
+}
 .nd-open-jobs-heading { scroll-margin-top: 24px; }
 .nd-open-jobs-heading h3 { margin: 4px 0; color: #25253a; font-size: 21px; font-weight: 600; }
 .nd-open-jobs-heading p { margin: 0; color: #706b7e; font-size: 12px; line-height: 1.5; }
