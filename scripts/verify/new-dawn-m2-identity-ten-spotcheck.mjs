@@ -24,13 +24,15 @@ const sample = JSON.parse(readFileSync(file(args.sample), 'utf8'));
 const snapshotBytes = readFileSync(file(args.snapshot));
 const snapshotHash = createHash('sha256').update(snapshotBytes).digest('hex');
 const project = args.project;
-if (!/^[a-z]{20}$/.test(project ?? '') || !uuid(sample.tenant_id) ||
+const ten = sample.purpose === 'ten_link';
+const addendum = sample.purpose === 'category_addendum';
+if ((!ten && !addendum) || !/^[a-z]{20}$/.test(project ?? '') || !uuid(sample.tenant_id) ||
   !uuid(sample.connection_id) || sample.snapshot_sha256 !== snapshotHash ||
   sample.authority_status !== 'provisional_not_apply_authorized' ||
-  !Array.isArray(sample.sample) || sample.sample.length !== 10 ||
-  sample.sample.filter(x => x.shape === 'direct').length !== 5 ||
-  sample.sample.filter(x => x.shape === 'workaddress').length !== 5 ||
-  new Set(sample.sample.map(x => x.customer_external_id)).size !== 10 ||
+  !Array.isArray(sample.sample) || sample.sample.length !== (ten ? 10 : 4) ||
+  (ten && sample.sample.filter(x => x.shape === 'direct').length !== 5) ||
+  (ten && sample.sample.filter(x => x.shape === 'workaddress').length !== 5) ||
+  new Set(sample.sample.map(x => x.customer_external_id)).size !== sample.sample.length ||
   sample.sample.some(x => !numeric(x.job_external_id) ||
     !numeric(x.property_external_id) || !numeric(x.customer_external_id) ||
     !uuid(x.job_source_version_id) || !uuid(x.property_source_version_id) ||
@@ -43,6 +45,9 @@ for (const line of snapshotBytes.toString('utf8').split(/\r?\n/)) if (line) {
   const x = JSON.parse(line);
   if (x.kind === 'source_version') versions.set(x.version_id, x);
 }
+if (addendum && JSON.stringify(sample.sample.map(x =>
+  String(versions.get(x.customer_source_version_id)?.source?.customerType)).sort()) !==
+  JSON.stringify(['3', '6', '7', '8'])) fail('category_addendum_scope_invalid');
 const token = savedCliToken();
 async function management(query) {
   const r = await fetch(`https://api.supabase.com/v1/projects/${project}/database/query/read-only`, {
@@ -180,7 +185,8 @@ for (const [index, x] of sample.sample.entries()) {
     customer_sha256: customer.sha256, all_match: Object.values(checks).every(Boolean) });
 }
 providerKey = null;
-const receipt = { version: 'new-dawn-m2-ten-link-spotcheck/1',
+const receipt = { version: ten ? 'new-dawn-m2-ten-link-spotcheck/1' :
+  'new-dawn-m2-category-addendum/1',
   snapshot_sha256: snapshotHash, checked_at: new Date().toISOString(),
   direct: results.filter(x => x.shape === 'direct').length,
   workaddress: results.filter(x => x.shape === 'workaddress').length,

@@ -267,6 +267,14 @@ for (const g of heldGroups) {
   count.sites += g.sites.size;
 }
 const classes = Object.fromEntries([...classCounts].sort(([a], [b]) => a.localeCompare(b)));
+const byCategory = {};
+for (const g of candidateGroups) {
+  const category = String(g.customer.source.customerType);
+  byCategory[category] ??= { customers: 0, sites: 0, jobs: 0 };
+  byCategory[category].customers++;
+  byCategory[category].sites += g.sites.size;
+  byCategory[category].jobs += g.jobs.length;
+}
 const report = { version: 'new-dawn-m2-identity-dry-run/1',
   authority_status: mapStatus,
   snapshot_sha256: snapshotHash, source_version_rows: sourceVersions,
@@ -274,7 +282,8 @@ const report = { version: 'new-dawn-m2-identity-dry-run/1',
   already_linked_jobs: alreadyLinked.size,
   unlinked_source_job_count: jobKeys.length - alreadyLinked.size,
   clean: { customers: candidateGroups.length,
-    sites: candidateGroups.reduce((n, g) => n + g.sites.size, 0), jobs: cleanJobs },
+    sites: candidateGroups.reduce((n, g) => n + g.sites.size, 0), jobs: cleanJobs,
+    by_category: byCategory },
   held: { jobs: jobHolds.size, classes }, manifest_count: batches.length, batches };
 writeFileSync(join(out, 'aggregate.json'), JSON.stringify(report, null, 2) + '\n',
   { flag: 'wx', mode: 0o600 });
@@ -294,8 +303,26 @@ for (const shape of ['direct', 'workaddress']) for (const g of candidateGroups) 
 }
 if (sample.length === 10)
   writeFileSync(join(out, 'spotcheck-candidates.json'),
-    JSON.stringify({ authority_status: mapStatus, tenant_id: tenant,
+    JSON.stringify({ purpose: 'ten_link', authority_status: mapStatus, tenant_id: tenant,
       connection_id: connection, snapshot_sha256: snapshotHash, sample }, null, 2) + '\n',
+    { flag: 'wx', mode: 0o600 });
+const addendum = [];
+for (const category of ['3', '6', '7', '8']) {
+  const g = candidateGroups.find(x => String(x.customer.source.customerType) === category);
+  const job = g?.jobs[0];
+  if (!g || !job) continue;
+  const property = g.sites.get(job.propertyId);
+  addendum.push({ shape: job.shape, customer_external_id: g.customerId,
+    customer_source_version_id: g.customer.versionId,
+    property_external_id: job.propertyId,
+    property_source_version_id: property.versionId,
+    job_external_id: job.id, job_source_version_id: job.versionId });
+}
+if (addendum.length === 4)
+  writeFileSync(join(out, 'category-addendum-candidates.json'),
+    JSON.stringify({ purpose: 'category_addendum', authority_status: mapStatus,
+      tenant_id: tenant, connection_id: connection,
+      snapshot_sha256: snapshotHash, sample: addendum }, null, 2) + '\n',
     { flag: 'wx', mode: 0o600 });
 console.log(JSON.stringify({ source_job_count: report.source_job_count,
   already_linked_jobs: report.already_linked_jobs,

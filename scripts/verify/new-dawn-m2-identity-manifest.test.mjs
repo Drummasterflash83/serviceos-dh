@@ -66,7 +66,8 @@ test('full saved-job classification produces only clean exact-version manifests'
     assert.equal(printed.source_job_count, 7);
     assert.equal(printed.already_linked_jobs, 1);
     assert.equal(printed.unlinked_source_job_count, 6);
-    assert.deepEqual(printed.clean, { customers: 1, sites: 2, jobs: 2 });
+    assert.deepEqual(printed.clean, { customers: 1, sites: 2, jobs: 2,
+      by_category: { 4: { customers: 1, sites: 2, jobs: 2 } } });
     assert.equal(printed.held.jobs, 4);
     assert.deepEqual(printed.held.classes, {
       account_holder_review_required: { customers: 1, sites: 1, jobs: 1 },
