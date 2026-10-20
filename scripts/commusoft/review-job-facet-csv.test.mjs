@@ -4,13 +4,45 @@ import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { FACET_COLUMNS } from "./prepare-job-facet-csv.mjs";
+import { FACET_COLUMNS, VISIT_COLUMNS_V2 } from "./prepare-job-facet-csv.mjs";
 import { reviewJobFacetCsv } from "./review-job-facet-csv.mjs";
 
 const base = { tenant_id: "00000000-0000-4000-8000-000000000001",
   connection_id: "00000000-0000-4000-8000-000000000002",
   source: "commusoft_csv", exported_at: "2026-10-19T09:00:00Z" };
 const csv = (facet, rows) => [FACET_COLUMNS[facet].join(","), ...rows].join("\n") + "\n";
+const visitV2 = { ...base, exported_at: '2026-10-20T09:00:00Z',
+  facet: 'visits', contract: 'commusoft_visit_export/2',
+  visit_export: { source_account_ref: 'drummonds-v2',
+    covered_from: '2026-10-01T00:00:00+01:00', covered_to: '2026-10-20T00:00:00+01:00',
+    source_timezone: 'Europe/London', coverage: 'complete_window',
+    event_id_semantics: 'event_level_appointment_id', job_id_semantics: 'v2_jobs_id',
+    correction_policy: 'same_id_newer_updated_at', field_dictionary_sha256: 'a'.repeat(64) } };
+
+test('current visit export remains held while source ownership and semantics are checked', () => {
+  const input = [VISIT_COLUMNS_V2.join(','),
+    'event-1,955,001,2026-10-18T09:00:00+01:00,2026-10-18T10:00:00+01:00,user-2,Booked,,2026-10-19T11:00:00+01:00',
+  ].join('\n') + '\n';
+  const report = reviewJobFacetCsv(visitV2, input);
+  assert.equal(report.version, 'commusoft-job-facet-review/2');
+  assert.equal(report.freshness.record_updated_at, 'source_text_held');
+  assert.equal(report.publication, 'off');
+  assert.equal(report.records[0].shape, 'ready_for_source_review');
+  assert.ok(report.records[0].hold_reasons.includes('export_scope_unverified'));
+  assert.equal(JSON.stringify(report).includes('user-2'), false);
+  const incomplete = reviewJobFacetCsv({ ...visitV2, visit_export: {
+    ...visitV2.visit_export, coverage: 'partial_window', correction_policy: 'unknown',
+  } }, input);
+  assert.equal(incomplete.records[0].shape, 'needs_source_fields');
+  assert.ok(incomplete.records[0].hold_reasons.includes('export_window_incomplete'));
+  assert.ok(incomplete.records[0].hold_reasons.includes('correction_behavior_unknown'));
+  const outOfWindow = reviewJobFacetCsv(visitV2, [VISIT_COLUMNS_V2.join(','),
+    'event-2,955,001,2026-10-21T09:00:00+01:00,2026-10-21T10:00:00+01:00,user-2,Booked,,2026-10-21T11:00:00+01:00',
+  ].join('\n') + '\n');
+  assert.equal(outOfWindow.records[0].shape, 'needs_source_fields');
+  assert.ok(outOfWindow.records[0].hold_reasons.includes('event_outside_export_window'));
+  assert.ok(outOfWindow.records[0].hold_reasons.includes('event_updated_after_export'));
+});
 
 test("visit with an exact source job ID stays held until event and job authority are reviewed", () => {
   const report = reviewJobFacetCsv({ ...base, facet: "visits" }, csv("visits", [

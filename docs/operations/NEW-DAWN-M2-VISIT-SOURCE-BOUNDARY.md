@@ -68,3 +68,30 @@ Only then design an immutable, tenant-scoped retention receipt and a held-by-
 default operator readback. A client visit card remains off until real source
 shape, date semantics and cancellation behavior pass that review. No generic
 `scheduledActivities` task is to be relabelled as a visit.
+
+## Current export staging contract
+
+The existing private CSV preparer now accepts a stricter **v2 visit export**
+manifest for a current source export. Its exact columns are
+`source_record_id,job_id,job_code,starts_at,ends_at,engineer_id,status,cancelled_at,updated_at`.
+The first seven legacy columns still parse as historical, unproved v1 evidence.
+The two new columns make cancellation and correction times explicit; blank or
+unzoned values remain held, never inferred from an export date.
+
+For v2, set `contract` to `commusoft_visit_export/2` and provide
+`visit_export` with `source_account_ref`, zoned `covered_from` and `covered_to`,
+IANA `source_timezone`, `coverage` (`complete_window` or `partial_window`),
+`event_id_semantics` (`event_level_appointment_id`), `job_id_semantics`
+(`v2_jobs_id`), `correction_policy` (`same_id_newer_updated_at`,
+`full_replacement` or `unknown`), and the SHA-256 of the source field
+dictionary. These are **source-owner declarations**, not verified facts. A v2
+review always remains held with `export_scope_unverified` until the account,
+event ID and parent job relationship are independently checked against an exact
+reviewed Drummonds job. Partial windows and unknown correction behavior are
+explicit source-field gaps. The export instant must follow the covered window;
+events outside that window or updated after export are held for correction. No
+real current export has been supplied or staged.
+
+Both CSV CLIs now reject output inside a Git checkout, including a worktree or
+symlinked parent; private records can only be written to a separate private
+location with file mode `0600`. The terminal still emits only counts and hashes.
