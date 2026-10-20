@@ -8,6 +8,10 @@ if (!/\nbegin;\n/.test(migration) || !/\ncommit;\s*$/.test(migration))
   throw Error("Exact-link migration envelope changed");
 const body = migration.replace(/\nbegin;\n/, "\n").replace(/\ncommit;\s*$/, "\n");
 const signature = "public.new_dawn_commusoft_exact_link_apply(uuid,uuid,text,uuid,text)";
+const snapshotSql = `select
+ md5(coalesce(pg_get_functiondef(to_regprocedure('${signature}')),'')) as function_definition,
+ to_regclass('public.new_dawn_commusoft_exact_link_events') is not null as event_table_exists,
+ md5(coalesce(pg_get_viewdef('public.learn_business_input_current_links'::regclass,true),'')) as current_links_view`;
 
 async function query(sql, readOnly = true) {
   const response = await fetch(
@@ -29,7 +33,7 @@ async function query(sql, readOnly = true) {
   return response.json();
 }
 
-const before = await query(`select md5(coalesce(pg_get_functiondef(to_regprocedure('${signature}')),'')) as definition`);
+const before = await query(snapshotSql);
 const fixture = `do $fixture$
 declare actor uuid;tenant uuid;connection uuid;customer_id uuid:=gen_random_uuid();
  site_id uuid:=gen_random_uuid();conflict_site_id uuid:=gen_random_uuid();
@@ -191,7 +195,7 @@ try {
 } catch (cause) {
   failure = cause;
 }
-const after = await query(`select md5(coalesce(pg_get_functiondef(to_regprocedure('${signature}')),'')) as definition`);
+const after = await query(snapshotSql);
 if (JSON.stringify(before) !== JSON.stringify(after))
   throw Error("TEST exact-link rehearsal did not roll back");
 if (failure) throw failure;
