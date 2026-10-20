@@ -94,3 +94,39 @@ bindings and main 01794 341600 route still need fresh provider readback.
 The PR remains **draft and not deployable** while fresh provider identity/route
 readback, one-hash provider runs, real handset/603 evidence, dual email and
 Slack delivery evidence, and Chris's separate day-of go-ahead are missing.
+
+## Smallest supervised handset check (draft, no calls placed)
+
+Use an isolated test number and one unchanged candidate hash. Record the
+caller-side audio, Vapi and Birchills call IDs, selected destination, transfer
+result and time, and the original route for rollback. Schedule the closed-state
+checks after 17:00 London on a weekday or at a weekend; the daytime control
+must be within normal hours. Both greeting branches must audibly say that
+Emma is automated and the call is recorded. Never use the main number as the
+test route without Chris's separate day-of instruction.
+
+| Call | Expected outcome |
+| --- | --- |
+| Domestic urgent, Tony accepts | One transfer to Tony 105; a live person explicitly accepts. No Rob call or 603 deposit. |
+| Commercial urgent, Rob accepts | One transfer to Rob 109; a live person explicitly accepts. No Tony call or 603 deposit. |
+| Class genuinely uncertain, Tony accepts | Caller states uncertainty; one transfer to Tony 105. No invented domestic classification or Rob call. |
+| Selected engineer deliberately unavailable | Exactly one selected-engineer attempt returns to Emma; exactly one recorded 603 deposit. Correlate its provider message ID to two **delivered** email receipts and one **posted** scoped Slack receipt. No claim of attendance. |
+
+Repeat the missed case for the other class only if the first proves the route
+and the reviewed spend/window allow it. Check one routine closed caller who
+declines voicemail (no transfer), one weekend boundary and one daytime gas
+control (complete 0800 111 999 safety advice before Mary) on the same hash.
+Any edit to prompt, voice, helper, tool or route resets the evidence set.
+
+### Birchills information request — draft, do not send yet
+
+> For Drummonds account 3950, please provide a read-only configuration export
+> showing the current route of 01794 341600, IVRs 501/502, Emma extension 205,
+> Rob 109, Tony 105, shared Emergency Call-Outs mailbox 603, and each
+> busy/no-answer/declined-transfer fallback. Confirm the exact supported
+> phone/SIP target for transferring a Vapi test call to 603 and how we can
+> distinguish a deposited message from a mere transfer attempt. Please show
+> 603's current notification address and whether two independent recipient
+> emails can be configured or whether OpenFolk must handle verified dual
+> delivery after deposit. Please do not alter routing, mailbox settings,
+> notifications or the main number in response to this information request.
