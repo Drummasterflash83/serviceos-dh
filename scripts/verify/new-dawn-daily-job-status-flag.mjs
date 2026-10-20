@@ -72,11 +72,15 @@ do $daily_flag$ begin
   or (select count(*) from pg_trigger where tgrelid='public.controlplane_change_log'::regclass and tgname in ('controlplane_change_log_no_update','controlplane_change_log_no_delete') and tgenabled='O')<>2
   or (select count(*) from public.feature_flags where flag='${FLAG}' and tenant_id is distinct from '${TENANT}'::uuid)<>0
   or ${enabled}<>${Number(!on)} or ${tenantEnabled}<>${Number(!on)}
-  or (select count(*) from public.feature_flags where flag='${FLAG}')<>${on?0:1}
+  or (select count(*) from public.feature_flags where flag='${FLAG}')${on?'>1':'<>1'}
   ${on?`or (select count(*) from public.feature_flags where tenant_id='${TENANT}'::uuid and flag in ('learn.enabled','learn.inputs.commusoft.enabled') and value='true'::jsonb)<>2
   or (select count(*) from public.provider_connections where tenant_id='${TENANT}'::uuid and provider='commusoft' and status='configured' and auth_mode='private_api_key' and revoked_at is null and verified_at is not null)<>1`:''}
  then raise exception 'daily_status_flag_preflight_changed';end if;
- ${on?`insert into public.feature_flags(tenant_id,flag,value) values('${TENANT}'::uuid,'${FLAG}','true'::jsonb);`:
+ ${on?`if exists(select 1 from public.feature_flags where tenant_id='${TENANT}'::uuid and flag='${FLAG}') then
+   update public.feature_flags set value='true'::jsonb where tenant_id='${TENANT}'::uuid and flag='${FLAG}';
+  else
+   insert into public.feature_flags(tenant_id,flag,value) values('${TENANT}'::uuid,'${FLAG}','true'::jsonb);
+  end if;`:
  `update public.feature_flags set value='false'::jsonb where tenant_id='${TENANT}'::uuid and flag='${FLAG}';`}
  if ${enabled}<>${Number(on)} or ${tenantEnabled}<>${Number(on)}
  then raise exception 'daily_status_flag_postcheck_changed';end if;
