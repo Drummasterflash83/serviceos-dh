@@ -757,6 +757,7 @@ export function OperatorLearnInputs({
                   flags={data.flags}
                   disabled={disabled}
                   approved={approved}
+                  usersCaptureEnabled={usersCaptureEnabled === true}
                   reason={reason}
                   onChange={() => setApproved(false)}
                   onSubmit={submit}

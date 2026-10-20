@@ -80,9 +80,11 @@ The released capture worker and SQL permit gates cover properties, property
 contacts and jobs. The next candidate adds the provider's documented `GET /users`
 as an **explicit, opt-in source collection** through those same tenant-scoped
 approval, quota, checkpoint and credential gates. The first approval is capped
-server-side at one page of ten records and cannot be extended by the existing
-continuation route. It retains source user IDs and
-payloads under their original connection but holds projection: source users are
+server-side at one page of ten records. The paired bounded-resume migration
+allows a later, separately reasoned continuation of exactly one more page,
+still at ten records or fewer, only while the source-user flag is On. It retains
+source user IDs and payloads under their original connection without publishing
+them as canonical staff: source users are
 not OpenFolk staff, account logins, assigned engineers or visits. No user import
 is started by installation. The separate
 `learn.inputs.commusoft.users.enabled` feature flag is absent by default and
@@ -97,6 +99,42 @@ readback are the LIVE acceptance gate after that run settles. Before extending
 to technician visits or job finance, establish a supported provider endpoint or a
 bounded, authorised export and verify its relationship keys. Preserve Commusoft
 job codes as strings and only link other providers on exact, evidenced identities.
+
+### Exact source-user backend release
+
+The [guarded release script](../../scripts/verify/new-dawn-m2-users-backend-release.mjs)
+pins the existing LIVE worker v11 and the two migration files
+`20261105180000_commusoft_source_users.sql` and
+`20261105190000_commusoft_source_users_resume.sql` by hash. Its LIVE read-only
+mode checks the worker version, four authority function hashes and grants, both
+missing ledger rows, no active source-sync job, the configured connection and
+the absent source-user flag. Download the LIVE worker with the Supabase CLI and
+use `--verify-worker-bundle --path <download-directory>` to check its exact
+`/users` route and one-page/ten-record cap. Run `--test-rollback-only` against
+the isolated TEST database, then repeat the LIVE read-only checks on the merged
+commit. Only then run `--live-install-exact --source-sha
+bac767a835c1e8c97bc1e90d343cccfb2010893d3188ef04ad65c33610d5e501`
+with `NEW_DAWN_M2_USERS_PROJECT=tgbnakbxwcqjeimygroz`. A second
+`--live-read-only` must confirm both exact ledger rows and four post-install
+hashes. Installation makes no provider request or staff/login assignment, and
+leaves the source-user flag Off.
+
+**Do not enable the source-user flag or run the LIVE provider trial while the
+installed worker is v11.** That worker rejects a continuation after page one.
+The reviewed candidate worker source now enforces the same cumulative
+`maxPages = retained pages + 1` boundary as the SQL credential-release gate;
+it must be compiled, released, downloaded and independently verified as a new
+worker version before the first GET. The v11 pin above verifies only that the
+default-OFF backend installer targets the existing baseline. An installed SQL
+receipt alone does not make the source-user route ready.
+
+The real one-page trial remains separate. An audited, tenant-only flag change
+and saved operator approval permit a maximum of ten source records. Read back
+only source counts and held status before any person or engineer matching. If
+the first page reports more results, the new resume function, credential gate,
+worker and UI allow one more page per explicit reason and check the flag again;
+no automatic traversal or multi-page approval is enabled. Continuations are
+held after 10,000 retained pages for a separate source review.
 
 ## Exact current job detail candidate
 
