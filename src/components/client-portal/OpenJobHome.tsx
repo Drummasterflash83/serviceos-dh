@@ -293,20 +293,20 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
       <section className="nd-score-hero nd-score-hero--pending" aria-label="Recorded open workload">
         <div className="nd-work-count"><strong>{activeSummary?.counts.total.toLocaleString("en-GB") ?? "…"}</strong><small>recorded open jobs</small></div>
         <div className="nd-score-hero-copy">
-          <p className="of-eyebrow">CURRENT WORKLOAD</p>
+          <p className="of-eyebrow">SAVED COMMUSOFT STATUS</p>
           <h3>Open jobs</h3>
           <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending · ${activeSummary.counts.open.toLocaleString("en-GB")} Open.`
             : summary.isError ? "Job totals are unavailable." : "Checking workload…"}</p>
           <button type="button" onClick={() => showJobs(null)}>See all open jobs →</button>
-          {activeSummary && <small>Last checked {savedAt(activeSummary.snapshotAt)}</small>}
+          {activeSummary && <small>Saved-status count checked {savedAt(activeSummary.snapshotAt)}</small>}
         </div>
       </section>
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${(activeSummary.counts.on_hold + activeSummary.counts.pending).toLocaleString("en-GB")} to check by status` : "Checking workload"}</strong>
           <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending` : "Reading job statuses."}</p>
-          {checkedDay?.day && <p>Daily Commusoft check, {statusDay(checkedDay.day)}: <strong>
+          {checkedDay?.day && <p>Daily Commusoft check, {statusDay(checkedDay.day)} frozen roster: <strong>
             {checkedDay.observedCount?.toLocaleString("en-GB")}/{checkedDay.rosterCount?.toLocaleString("en-GB")}
-          </strong> jobs observed{checkedDay.missingCount ? ` · ${checkedDay.missingCount} gaps logged` : ""}.
+          </strong> roster jobs observed{checkedDay.missingCount ? ` · ${checkedDay.missingCount} gaps logged` : ""}.
             {checkedDay.lastProviderCheckAt && <small> Last provider check {savedAt(checkedDay.lastProviderCheckAt)}.</small>}</p>}
           {checkedDay?.earliestMovingReviewDay && <p>Moving score review from {statusDay(checkedDay.earliestMovingReviewDay)},
             if daily checks continue and each scored job has 14 observations. No score is published yet.</p>}
