@@ -162,6 +162,10 @@ export function validateEmergencyIntake(message: unknown, binding: EmergencyInta
   // Fail closed on an explicit later correction rather than accepting a stale quote.
   for (const turn of userTurns) {
     if (turn.index > name.index && /\b(?:my name|call me|name is)\b/i.test(turn.text) && !contains(turn.text, params.callerName)) return reject("stale_name_or_location");
+    // A caller can retract the location without supplying a replacement. The
+    // earlier exact quote is then no longer safe evidence for an emergency handoff.
+    if (turn.index > site.index && /\b(?:address|postcode|post code|location|site)\b/i.test(turn.text) &&
+      /\b(?:wrong|incorrect|not right|not correct|not sure|unsure)\b/i.test(turn.text)) return reject("stale_name_or_location");
     if (turn.index > site.index && /\b(?:actually|correction|correct address|wrong address|address is|postcode is|post code is|location is)\b/i.test(turn.text) &&
       (concreteLocation(turn.text) || /\b(?:address|postcode|post code|location)\b/i.test(turn.text)) && !contains(turn.text, params.siteAddressOrPostcode)) return reject("stale_name_or_location");
   }

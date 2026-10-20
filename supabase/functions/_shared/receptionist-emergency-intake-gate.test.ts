@@ -176,6 +176,18 @@ test("later explicit name/address corrections invalidate stale evidence", () => 
   }
 });
 
+test("a caller retracting the address without a replacement blocks the emergency handoff", () => {
+  for (const correction of [
+    "Sorry, that is the wrong address.",
+    "That postcode is incorrect.",
+    "I'm not sure about the site location.",
+  ]) {
+    const f = fixture();
+    f.message.artifact.messages.push({ role: "user", message: correction });
+    rejected(f, "stale_name_or_location");
+  }
+});
+
 test("classification cannot be overridden by model choice or stale quotes", () => {
   const f = fixture(); f.message.parameters.kind = "commercial"; rejected(f, "classification_mismatch");
   f.message.parameters.kind = "domestic";
