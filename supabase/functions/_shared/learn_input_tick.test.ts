@@ -193,6 +193,14 @@ test("empty queue stops immediately, or reports saved work before becoming idle"
   }
 });
 
+test("a verified provider freshness page progresses an otherwise empty Commusoft tick", async () => {
+  let calls = 0;
+  const result = await runLearnInputTick({ ...config, slackEnabled: "false" }, null,
+    async () => ok({ ...idle, freshness: ++calls === 1 ? "processed" : "idle" }));
+  assert.equal(calls, 2);
+  assert.equal(result.commusoft.state, "processed");
+});
+
 test("slow requests and delayed timers cannot start another call beyond the tick deadline", async () => {
   let now = 0, calls = 0;
   assert.deepEqual(await drainCommusoftPages(async remaining => {

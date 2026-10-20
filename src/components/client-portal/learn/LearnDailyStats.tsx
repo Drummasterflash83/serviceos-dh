@@ -6,6 +6,7 @@ import { getSupabaseClient } from "@/lib/supabase";
 import {
   dailyStatKeys, readDailyStats, type DailyStatKey,
 } from "@/lib/new-dawn-learn-daily-stats";
+import { readCommusoftFreshness, type CommusoftFreshness } from "@/lib/new-dawn-commusoft-freshness";
 
 const labels: Record<DailyStatKey, string> = {
   calls: "Calls", recordings: "Recording records", emails: "Emails",
@@ -16,6 +17,21 @@ const format = (value: number) => value.toLocaleString("en-GB");
 const when = (value: string) => new Date(value).toLocaleString("en-GB", {
   dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London",
 });
+
+function freshnessText(value: CommusoftFreshness | undefined) {
+  if (!value) return "Provider check unavailable";
+  if (value.state === "not_checked") return "Provider not checked yet";
+  if (value.state === "collecting") return "Checking provider jobs…";
+  if (value.state === "saved_advanced") return "Saved jobs changed since the provider check; checking again";
+  if (value.state === "stale") return "Provider check is over 24 hours old";
+  if (value.state === "partial") return `Comparison incomplete${value.atLeastBehind
+    ? ` · at least ${format(value.atLeastBehind)} new jobs found` : ""}`;
+  if (value.jobsBehind === 0 && value.savedJobId === value.providerNewestJobId &&
+    value.providerNewestJobId) return `Up to date to job ${value.providerNewestJobId}`;
+  if (value.jobsBehind !== null) return `${format(value.jobsBehind)} jobs behind${value.providerNewestJobId
+    ? ` · newest job ${value.providerNewestJobId}` : ""}`;
+  return "Provider comparison unavailable";
+}
 
 /** Aggregate source facts, never a provider completeness or processing claim. */
 export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
@@ -53,6 +69,21 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
       return readDailyStats(data, tenantId, user.id);
     },
   });
+  const freshness = useQuery({
+    queryKey: ["learn-commusoft-freshness", user?.id, tenantId, operator, approvedReason],
+    enabled: !!user && flag.data === true && (!operator || !!approvedReason),
+    retry: false,
+    gcTime: 0,
+    refetchInterval: operator ? false : 300_000,
+    refetchOnWindowFocus: operator ? false : "always",
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().rpc("new_dawn_commusoft_freshness_read", {
+        p_tenant: tenantId, p_operator_reason: operator ? approvedReason : null,
+      }).abortSignal(AbortSignal.timeout(30_000));
+      if (error || !user) throw Error("Provider freshness is unavailable.");
+      return readCommusoftFreshness(data, tenantId, user.id);
+    },
+  });
   if (!user || flag.data !== true) return null;
   const value = stats.data;
   return (
@@ -65,7 +96,7 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
         </div>
         {(!operator || approvedReason) && (
           <button className="cp-secondary" disabled={stats.isFetching}
-            onClick={() => void stats.refetch()}><RefreshCw size={15} /> Refresh totals</button>
+            onClick={() => { void stats.refetch(); void freshness.refetch(); }}><RefreshCw size={15} /> Refresh totals</button>
         )}
       </header>
       {operator && !approvedReason && mdReason === undefined && (
@@ -109,7 +140,11 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
                   <strong>{value.latestSavedJob
                     ? `Job ${value.latestSavedJob.number} · ${when(value.latestSavedJob.savedAt)}`
                     : "No saved job observation"}</strong></div>
-                <div><span>Newest job at Commusoft</span><strong>Not checked with provider</strong></div>
+                <div><span>Newest job at Commusoft</span>
+                  <strong>{freshnessText(freshness.data)}</strong>
+                  {freshness.data?.providerCheckedAt &&
+                    <small>Checked {when(freshness.data.providerCheckedAt)} UK time</small>}
+                </div>
               </div>
             </>
       )}
