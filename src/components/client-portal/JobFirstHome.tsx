@@ -547,20 +547,20 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
         onOpenInformation={onOpenInformation} />}
       <p className="nd-job-scope">Performance scores: not enough data yet.</p>
       <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
-        <DialogContent className="cp-dialog max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader><DialogTitle>Saved job record</DialogTitle></DialogHeader>
           {selected && <JobDetail key={`${tenant}:${selected.id}`} tenant={tenant} job={selected}
             source={clientSource.data?.jobs.find((row) => row.id === selected.id)} />}
         </DialogContent>
       </Dialog>
       <Dialog open={!!selectedOperator} onOpenChange={(open) => { if (!open) setSelectedOperator(null); }}>
-        <DialogContent className="cp-dialog max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader><DialogTitle>Saved job and source</DialogTitle></DialogHeader>
           {selectedOperator && user && <OperatorJobDetail key={`${tenant}:${selectedOperator.id}`} tenant={tenant} actor={user.id} reason={reason} job={selectedOperator} />}
         </DialogContent>
       </Dialog>
       <Dialog open={mdPreviewOpen && !!selectedMd && activeOperatorSourcePage?.jobs.some((job) => job.id === selectedMd.id)} onOpenChange={(open) => { if (!open) setSelectedMd(null); }}>
-        <DialogContent className="cp-dialog max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader><DialogTitle>Saved job summary · owner preview</DialogTitle></DialogHeader>
           {selectedMd && user && <MdPreviewJobDetail key={`${tenant}:${selectedMd.id}`} tenant={tenant} actor={user.id} reason={reason} source={selectedMd} />}
         </DialogContent>
