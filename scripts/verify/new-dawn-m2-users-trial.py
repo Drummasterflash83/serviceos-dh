@@ -164,6 +164,16 @@ try:
         if 'commusoft_users_trial_active' not in str(error):
             raise
     try:
+        sql(input_call.format(request=313, actor=180, resource='users'))
+        raise RuntimeError('First users request accepted after fail-closed flag Off')
+    except RuntimeError as error:
+        if 'commusoft_users_trial_active' not in str(error):
+            raise
+    sql("update public.feature_flags set value='true'::jsonb where tenant_id='00000000-0000-0000-0000-000000000001' "
+        "and flag='learn.inputs.commusoft.users.enabled'")
+    sql("update public.learn_commusoft_recurring set enabled=false,last_state='source_user_trial_paused' "
+        "where account_id=public.fixture_id(303)")
+    try:
         sql(input_call.format(request=314, actor=181, resource='users'))
         raise RuntimeError('Different actor started users trial')
     except RuntimeError as error:
@@ -191,6 +201,10 @@ try:
         "values('00000000-0000-0000-0000-000000000001',public.fixture_id(180)::text,"
         "'learn.commusoft.users_trial.restore','source_users_trial',public.fixture_id(313)::text,"
         "'" + arm + "','new-dawn-m2-users-trial')")
+    sql("update public.feature_flags set value='false'::jsonb where tenant_id='00000000-0000-0000-0000-000000000001' "
+        "and flag='learn.inputs.commusoft.users.enabled'")
+    sql("update public.learn_commusoft_recurring set enabled=true,last_state='source_user_trial_restored' "
+        "where account_id=public.fixture_id(303)")
     if sql(call) != 'recorded':
         raise RuntimeError('Completed trial still blocked recurring control')
     print('new-dawn-m2-users-trial-recurring-resume-fence-synthetic/1')
