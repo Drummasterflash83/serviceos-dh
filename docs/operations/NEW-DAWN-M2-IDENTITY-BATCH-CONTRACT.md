@@ -114,7 +114,7 @@ all 14 matched their saved job, property and customer identities and company
 fields. This evidence supports a reviewed 2–9 company map for this exact
 snapshot. Person and all other categories stay held. Private aggregate counts,
 the exact manifest and its hashes are outside Git in ignored
-mode-0600 storage; no batch has been registered or applied.
+mode-0600 storage. Registration and application require separate receipts.
 
 After the schema is installed with the separate exact five-migration release
 check, OpenFolk → Drummonds → Client information → source review → Reviewed
@@ -124,5 +124,10 @@ file SHA-256 and an explicit confirmation. It shows only aggregate counts and
 the hash, and calls the existing authenticated operator RPC; it does not turn
 on the apply flag. The server still enforces operator authority and validates
 every exact source version. An ordinary client cannot open this operator route.
-The separate `new_dawn.m2_staged_batch_apply` flag remains OFF until the
-release owner performs the exact LIVE apply/readback with a tested reversal.
+The separate `new_dawn.m2_staged_batch_apply` flag remains OFF outside the
+bounded release runner. The release owner must record the exact LIVE
+apply/readback and reversal evidence separately. For the first reviewed
+batch, a narrow service-role authority repair is required because its genuine
+OpenFolk operator approver is not a Drummonds owner/admin. That repair is
+restricted to the exact registered batch and its expiry; it must never change
+the approver's client role or impersonate staff.
