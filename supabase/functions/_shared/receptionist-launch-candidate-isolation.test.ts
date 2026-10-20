@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { candidateEmergencyTool } from "./receptionist-launch-candidate.ts";
+import { candidateEmergencyTool, EMMA_TRANSFER_ASSISTANT_CONTRACT } from "./receptionist-launch-candidate.ts";
 
 test("candidate emergency transfer is an inline copy, not the published shared tool", () => {
   const shared = {
@@ -22,4 +22,9 @@ test("candidate emergency transfer is an inline copy, not the published shared t
   assert.throws(() => candidateEmergencyTool({ ...shared, type: "function" }), /Reviewed emergency transfer source required/);
   assert.throws(() => candidateEmergencyTool({ ...shared, destinations: inline.destinations }),
     /Reviewed emergency transfer source required/, "a pre-edited published tool cannot seed the candidate");
+});
+
+test("cancelled engineer transfers return only to shared 603, never engineer cross-cover", () => {
+  assert.match(EMMA_TRANSFER_ASSISTANT_CONTRACT, /shared mailbox 603 fallback once/);
+  assert.match(EMMA_TRANSFER_ASSISTANT_CONTRACT, /never try the other engineer/);
 });

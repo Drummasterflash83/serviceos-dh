@@ -14,6 +14,22 @@ distribution to both emails is unverified because its mailbox setting exposes
 one address. Chris owns launch. No provider route, message, call or LIVE
 assistant is changed by this source candidate.
 
+**08:45 UTC readback, 20 October:** LIVE OpenFolk still records launch stage
+`Ready`, published assistant `4eb2bee8-ac25-47c9-b962-409ed250ceb6`, test
+number `+44 7426 924154`, selected isolated candidate
+`dcfc2e66-a438-43ab-b863-467f5a5089df`, zero test runs in the preceding
+24 hours, zero intake installations and zero launch promotions. The ordinary
+phone source has 88 Simwood calls in that interval, latest 08:37:53 UTC;
+there are no saved `live_call_sessions` in the same interval. These are
+OpenFolk records only. They do not prove the current Vapi phone binding,
+Birchills main route, absence of provider-only calls, or dual 603 delivery.
+The source-only manifest v13 reproduces byte-for-byte (SHA-256
+`73886cafb0315b7fa6ddb5c95e94d4930d7c4761463907c1c59bd3717b49990c`);
+12/12 static definitions and 201 focused receptionist tests pass. A fresh
+provider 12/12 run has not occurred. Provider browser use is disabled in this
+Work session and no existing noninteractive Vapi/Birchills credential is
+available, so no provider configuration was changed or inferred.
+
 The candidate code and synthetic proof now reject second-engineer cross-cover,
 require caller-grounded uncertain classification, and require one failed
 selected engineer before a correlated 603 deposit. The existing 12-scenario

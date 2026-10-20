@@ -6,11 +6,12 @@ Emma's launch and must give a specific go-ahead for each Birchills routing
 change on the day.
 
 **Track D policy hold, 20 October:** Chris's newer one-engineer-then-shared-
-voicemail direction conflicts with this document's older Rob/Tony cross-cover
-candidate. Read [the reconciliation and frozen-candidate plan](EMMA-TRACK-D-ROUTING-RECONCILIATION-2026-10-20.md)
-before acting on any sequence, test or release step below. Seven decision
-answers and fresh provider identity/routing evidence are outstanding. The
-current PR remains draft; its old cross-cover source must not be published.
+voicemail direction supersedes this document's older Rob/Tony cross-cover
+sequence and test table. Read [the current reconciliation and candidate plan](EMMA-TRACK-D-ROUTING-RECONCILIATION-2026-10-20.md)
+before acting on any sequence, test or release step below. The seven policy
+answers were recovered from saved records; current provider identity/routing,
+real handset, 603 deposit and notice delivery still lack proof. The PR remains
+draft. None of the old cross-cover steps below is a release instruction.
 
 **20 October update:** The latest read-only Birchills/Vapi configuration
 check, source fix and 193 focused tests are in
