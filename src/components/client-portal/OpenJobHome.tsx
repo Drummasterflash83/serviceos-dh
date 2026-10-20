@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
 import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
+import { readDailyStatusCoverage } from "@/lib/new-dawn-daily-status-coverage";
 import {
   openJobNextStep, openJobPageFlagName, openJobStatusEvidence,
   readOpenJobPage, readOpenJobStatusSummary,
@@ -20,6 +21,8 @@ const savedAt = (value: string) => new Date(value).toLocaleString("en-GB");
 const jobDate = (value: string) => new Date(value).toLocaleDateString("en-GB", {
   timeZone: "Europe/London", day: "numeric", month: "short", year: "numeric",
 });
+const statusDay = (value: string) => new Date(`${value}T00:00:00Z`)
+  .toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short" });
 const jobAgeDays = (created: string, snapshot: string) =>
   Math.max(0, Math.floor((Date.parse(snapshot) - Date.parse(created)) / 86_400_000));
 const sourceLabel = (value: string) => value.replace(/[_-]+/g, " ")
@@ -180,6 +183,20 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
       return readOpenJobStatusSummary(data, tenant, user!.id);
     },
   });
+  const dailyCoverage = useQuery({
+    queryKey: ["new-dawn-daily-status-coverage", tenant, user?.id, operator,
+      approvedReason, refreshTick],
+    enabled,
+    staleTime: 0,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().rpc("new_dawn_daily_status_coverage", {
+        p_tenant: tenant, p_reason: operator ? approvedReason : null,
+      }).abortSignal(AbortSignal.timeout(15_000));
+      if (error) throw Error("Daily job status coverage unavailable");
+      return readDailyStatusCoverage(data, tenant, user!.id);
+    },
+  });
   // The unfiltered first page is already ordered with On-hold records first.
   // Reuse it for the ten oldest rows instead of issuing a second expensive
   // snapshot request during the initial Home load.
@@ -195,8 +212,9 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         p_tenant: tenant, p_reason: operator ? approvedReason : null,
         p_cursor: null, p_status: null, p_page_size: 40,
       }).abortSignal(AbortSignal.timeout(20_000));
-      if (error) throw Error("Open job page unavailable");
-      return readOpenJobPage(data, tenant, user!.id, null);
+      if (error) throw Error("request");
+      try { return readOpenJobPage(data, tenant, user!.id, null); }
+      catch { throw Error("response"); }
     },
   });
   const additionalPage = useQuery<OpenJobPage>({
@@ -211,8 +229,9 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         p_tenant: tenant, p_reason: operator ? approvedReason : null,
         p_cursor: cursors[pageIndex], p_status: status, p_page_size: 40,
       }).abortSignal(AbortSignal.timeout(20_000));
-      if (error) throw Error("Open job page unavailable");
-      return readOpenJobPage(data, tenant, user!.id, status);
+      if (error) throw Error("request");
+      try { return readOpenJobPage(data, tenant, user!.id, status); }
+      catch { throw Error("response"); }
     },
   });
   const page = status === null && pageIndex === 0 ? firstPage : additionalPage;
@@ -221,6 +240,9 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
   const rows = active?.rows ?? [];
   const activeSummary = summary.data?.tenantId === tenant && summary.data.actorId === user?.id
     && !summary.isFetching ? summary.data : null;
+  const checkedDay = dailyCoverage.data?.tenantId === tenant &&
+    dailyCoverage.data.actorId === user?.id && !dailyCoverage.isFetching
+    ? dailyCoverage.data : null;
   const oldestHeldRows = firstPage.data?.tenantId === tenant &&
     firstPage.data.actorId === user?.id && !firstPage.isFetching &&
     firstPage.data.creationOrderAvailable
@@ -282,6 +304,13 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${(activeSummary.counts.on_hold + activeSummary.counts.pending).toLocaleString("en-GB")} to check by status` : "Checking workload"}</strong>
           <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending` : "Reading job statuses."}</p>
+          {checkedDay?.day && <p>Daily Commusoft check, {statusDay(checkedDay.day)}: <strong>
+            {checkedDay.observedCount?.toLocaleString("en-GB")}/{checkedDay.rosterCount?.toLocaleString("en-GB")}
+          </strong> jobs observed{checkedDay.missingCount ? ` · ${checkedDay.missingCount} gaps logged` : ""}.
+            {checkedDay.lastProviderCheckAt && <small> Last provider check {savedAt(checkedDay.lastProviderCheckAt)}.</small>}</p>}
+          {checkedDay?.earliestMovingReviewDay && <p>Moving score review from {statusDay(checkedDay.earliestMovingReviewDay)},
+            if daily checks continue and each scored job has 14 observations. No score is published yet.</p>}
+          {dailyCoverage.isError && <p>Daily provider-check coverage is unavailable. Scores remain withheld.</p>}
           <button type="button" onClick={() => oldestHeldRows.length > 0
             ? oldestRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
             : showJobs("on_hold")}>{oldestHeldRows.length > 0 ? "See 10 oldest On-hold jobs" : "See On-hold jobs"} →</button>
@@ -295,7 +324,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
       </div>
       <details className="nd-job-context"><summary>How to read this view</summary>
         <p>These counts use the latest saved Commusoft job statuses. On hold and Pending identify work to check; status alone does not prove urgency, the cause of a hold or who owns the next action.</p>
-        <p>Job, customer and team scores remain unpublished. The job measure needs 14 complete days of checked status observations; its start date depends on full coverage. Customer and team measures need confirmed links and visits.</p>
+        <p>Job, customer and team scores remain unpublished. A day qualifies for the Moving measure when at least 99% of its frozen open-job roster is checked; any gaps are logged. Each scored job still needs its own 14 daily observations. Customer and team measures need confirmed links and visits.</p>
       </details>
       <section className="nd-work-priority" aria-label="Review saved job statuses">
         <div><h3>Choose what to review</h3>
@@ -343,7 +372,10 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
         </label>)}
       </fieldset>
       {page.isPending || page.isFetching ? <p role="status">Reading saved open jobs…</p> : null}
-      {page.isError && <p role="alert">Saved open jobs are unavailable. Refresh to retry.</p>}
+      {page.isError && <p role="alert" data-open-job-failure={
+        page.error instanceof Error && ["request", "response"].includes(page.error.message)
+          ? page.error.message : "unknown"
+      }>Saved open jobs are unavailable. Refresh to retry.</p>}
       {active && <>
         <p className="nd-job-scope">
           <strong>Page {pageIndex + 1} · {rows.length} jobs</strong> · Read {savedAt(active.snapshotAt)}.
