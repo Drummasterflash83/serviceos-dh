@@ -111,10 +111,15 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
   if(process.env.NEW_DAWN_DAILY_STATUS_ALLOW_PROJECT!==PROJECT)
    throw Error('explicit_exact_live_project_required');
   const mode=process.argv.slice(2).join(' ');
-  const result=mode==='--live-read-only'?await readLive():
-   mode==='--live-enable-drummonds'?await switchLive(true):
-   mode==='--live-disable-drummonds'?await switchLive(false):
-   (()=>{throw Error('exact_daily_status_action_required')})();
+  let result;
+  if(mode==='--live-read-only'){
+   const snapshot=await readLive();
+   result={...assess(snapshot,snapshot.scope?.tenant_on===1),
+    inputFlagsOn:snapshot.scope.input_flags_on,
+    configuredConnections:snapshot.scope.connections};
+  }else if(mode==='--live-enable-drummonds')result=await switchLive(true);
+  else if(mode==='--live-disable-drummonds')result=await switchLive(false);
+  else throw Error('exact_daily_status_action_required');
   console.log(JSON.stringify(result));
  }catch(error){console.error(JSON.stringify({state:'daily_status_flag_stopped',
   code:error.message,retryAllowed:false}));process.exitCode=1;}
