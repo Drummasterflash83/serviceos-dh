@@ -30,7 +30,7 @@ function freshnessText(value: CommusoftFreshness | undefined) {
   if (!value) return "Provider check unavailable";
   if (value.state === "not_checked") return "Provider not checked yet";
   if (value.state === "collecting") return "Checking provider jobs…";
-  if (value.state === "saved_advanced") return "Saved jobs changed since the provider check; checking again";
+  if (value.state === "saved_advanced") return "Saved jobs changed since the provider check; a new comparison is needed";
   if (value.state === "stale") return "Provider check is over 24 hours old";
   if (value.state === "partial") return `Comparison incomplete${value.atLeastBehind
     ? ` · at least ${format(value.atLeastBehind)} new jobs found` : ""}`;
@@ -159,11 +159,11 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
                 Commusoft totals count distinct saved source IDs with a consistent type. Revisions do not count as new records today.
               </p>
               <div className="lr-daily-job-check">
-                <div><span>Last saved Commusoft job observation</span>
+                <div><span>Newest saved Commusoft job</span>
                   <strong>{!parts.business ? "Commusoft check unavailable"
                     : parts.business.latestSavedJob
-                      ? `Job ${parts.business.latestSavedJob.number} · ${when(parts.business.latestSavedJob.savedAt)}`
-                      : "No saved job observation"}</strong></div>
+                      ? `Job ${parts.business.latestSavedJob.number} · first seen ${when(parts.business.latestSavedJob.savedAt)}`
+                      : "No saved job"}</strong></div>
                 <div><span>Newest job at Commusoft</span>
                   <strong>{freshnessText(freshness.data)}</strong>
                   {freshness.data?.providerCheckedAt &&
