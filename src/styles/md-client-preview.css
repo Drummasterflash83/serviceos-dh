@@ -29,7 +29,14 @@
 .md-money { margin-top: 20px; padding: clamp(22px,3vw,34px); border: 1px solid #e9e7ee; border-radius: 20px; background: #fff; }
 .md-money h2 { margin: 4px 0 8px; color: #25253a; font-size: clamp(24px,2.6vw,31px); font-weight: 550; letter-spacing: -.03em; }
 .md-money > p:not(.of-eyebrow), .md-money-source { max-width: 78ch; color: #706b7e; font-size: 13px; line-height: 1.6; }
-.md-money > button { margin: 16px 0; }
+.md-money-accounts { margin-top: 18px; padding: 18px 20px; border: 1px solid #e9e7ee; border-radius: 16px; }
+.md-money-accounts h3, .md-money-next h3 { margin: 0 0 7px; color: #25253a; font-size: 17px; }
+.md-money-accounts > p, .md-money-next li { color: #706b7e; font-size: 13px; line-height: 1.5; }
+.md-money-accounts > button { margin: 12px 0 16px; }
+.md-money-next { margin-top: 18px; padding: 18px 20px; border: 1px solid #e9e7ee; border-radius: 16px; background: #faf9f6; }
+.md-money-next ul { margin: 10px 0 0; padding-left: 20px; }
+.md-money-next li + li { margin-top: 8px; }
+.md-money-next strong { color: #514669; }
 .md-money-period { display: grid; gap: 7px; max-width: 600px; margin: 0 0 16px; color: #514669; font-size: 13px; font-weight: 600; }
 .md-money-period select { width: 100%; padding: 10px 12px; border: 1px solid #d8d2e1; border-radius: 9px; background: #fff; color: #25253a; font: inherit; }
 .md-money-period span { color: #706b7e; font-size: 12px; font-weight: 400; }
