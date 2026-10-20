@@ -39,6 +39,21 @@ test("verified job remains held while queue and flags are off", () => {
     ["exact_job_detail_flag_off"]);
 });
 
+test("exactly one disabled M5 opportunity row does not block a one-job read preflight", () => {
+  const state = snapshot();
+  state.runtime.flagsPresent = [{ flag: "new_dawn.m5_opportunities_probe", value: false }];
+  assert.equal(assessExactTrialPreflight(state, now).providerRequests, 0);
+  for (const rows of [
+    [{ flag: "new_dawn.m5_opportunities_probe", value: true }],
+    [{ flag: "new_dawn.exact_job_detail", value: false }],
+    [{ flag: "new_dawn.m5_opportunities_probe", value: false },
+      { flag: "new_dawn.exact_job_detail", value: false }],
+  ]) {
+    state.runtime.flagsPresent = rows;
+    assert.throws(() => assessExactTrialPreflight(state, now), /runtime_not_default_off/);
+  }
+});
+
 test("ambiguous source, changed gate, permit and active request fail closed", () => {
   const cases = [
     (s) => { s.job[0].latest_tie_count = 2; },

@@ -8,6 +8,7 @@ import { canSeeCompanyJobs, homeJobAction, homeJobState, orderHomeJobs, readOper
 import { filterSourceHomeJobs, groupSourceHomeJobs, readSourceHomePage, scopedOperatorSourcePage, sourceHomeFlagName, sourceJobAsHomeJob, sourceJobClientAttention, sourceJobLabel, sourceJobReviewCue, type SourceHomeJob, type SourceHomePage } from "@/lib/new-dawn-source-job-home";
 import { readLearnCardDetail, type LearnCardDetail } from "@/lib/learn-cards";
 import { readOperatorJobSource, type OperatorJobSource } from "@/lib/new-dawn-operator-job-source";
+import { mdPreviewJobFacts } from "@/lib/new-dawn-md-job-facts";
 import { parseExactTrialOffer, readExactJobDetail, type ExactJobDetail } from "@/lib/new-dawn-exact-job-detail";
 import { readJobSourceUserReference, type JobSourceUserReference } from "@/lib/new-dawn-job-source-user-reference";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -15,6 +16,7 @@ import { OwnerMoneyPanel } from "./OwnerMoneyPanel";
 import { FounderAccountsPreview } from "./FounderAccountsPreview";
 import { FounderScoreReadiness } from "./FounderScoreReadiness";
 import { FounderInvoiceReviewCandidates } from "./FounderInvoiceReviewCandidates";
+import { FounderFocClosureReview } from "./FounderFocClosureReview";
 import { FounderOpportunitySourceReview } from "./FounderOpportunitySourceReview";
 import { PublishedOwnerAccountsPanel } from "./PublishedOwnerAccountsPanel";
 import { RecentSavedJobReview } from "./RecentSavedJobReview";
@@ -183,14 +185,44 @@ function SourceJobPresentation({ tenant, jobs, search, onOpen }: {
   </>;
 }
 
-function MdPreviewJobDetail({ tenant, source }: { tenant: string; source: SourceHomeJob }) {
+function MdPreviewJobDetail({ tenant, actor, reason, source }: {
+  tenant: string; actor: string; reason: string; source: SourceHomeJob;
+}) {
+  const [savedSource, setSavedSource] = useState<OperatorJobSource | null>(null);
+  const [sourceBusy, setSourceBusy] = useState(source.source_state === "reviewed_latest");
+  const [sourceError, setSourceError] = useState(false);
+  useEffect(() => {
+    if (source.source_state !== "reviewed_latest") return;
+    let active = true;
+    setSavedSource(null); setSourceBusy(true); setSourceError(false);
+    void readOperatorJobSource(getSupabaseClient(), tenant, actor, source.id, reason)
+      .then((value) => { if (active) setSavedSource(value); })
+      .catch(() => { if (active) setSourceError(true); })
+      .finally(() => { if (active) setSourceBusy(false); });
+    return () => { active = false; };
+  }, [tenant, actor, reason, source.id, source.source_state]);
   const job = sourceJobAsHomeJob(source, tenant);
   const attention = sourceJobClientAttention(source);
+  const facts = mdPreviewJobFacts(tenant, source, savedSource);
   return <div className="nd-job-detail">
     <h3>{job.job_number ? `Job ${job.job_number}` : "Saved job"}{job.title ? ` · ${job.title}` : ""}</h3>
     <p><strong>{homeJobState(job)}</strong> · Saved job information</p>
     <p>{job.customer ?? "Customer not confirmed"} · {job.site ?? "Site not confirmed"}</p>
     <p>OpenFolk saved this job information on {checked(source.source_observed_at)}. It may not reflect current Commusoft progress.</p>
+    {sourceBusy && <p role="status">Checking the reviewed job record…</p>}
+    {sourceError && <p role="alert">The recorded work could not be checked. The summary above remains available.</p>}
+    {!sourceBusy && !sourceError && source.source_state === "reviewed_latest" && !facts &&
+      <p>OpenFolk needs to review the saved job link before showing more details.</p>}
+    {facts && <section aria-label="Recorded job details">
+      <h3>Recorded work</h3>
+      <p className="whitespace-pre-wrap break-words">{facts.work ?? "No work description was saved."}{facts.workShortened && " [Source excerpt shortened]"}</p>
+      {(facts.reported || facts.completed || facts.outcome) && <p>
+        {facts.reported && <>Reported in source: {facts.reported}. </>}
+        {facts.completed && <>Completion date in source: {facts.completed}. </>}
+        {facts.outcome && <>Recorded outcome: {facts.outcome}.</>}
+      </p>}
+      <small>Retained Commusoft record observed {checked(facts.observedAt)}. Dates and outcome are saved source text, not a verified visit or live update.</small>
+    </section>}
     <h3>Why this needs attention</h3><p>{attention.why}</p>
     <h3>Next step</h3><p>{attention.nextStep}.</p>
     <small>This preview uses the audited saved job selection. It is not a live provider check, confirmed assignment, full job record or score.</small>
@@ -465,6 +497,11 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
         <strong>{sourceJobs.length} saved jobs shown</strong> · Most recently saved {latestSaved(clientSource.data.jobs.map((job) => job.source_observed_at))}
         <details><summary>About this view</summary><p>This is a limited selection from {clientSource.data.reviewedJobCount} jobs that OpenFolk has matched to saved Commusoft records. It is not the full workload or a live Commusoft check. Other jobs may be absent while their records are checked. Job ownership and scores are not confirmed.</p></details>
       </div>}
+      {operatorDiagnostics && activeOperatorSourcePage && !mdPreviewOpen && user && <RecentSavedJobReview
+        key={`${tenant}:${user.id}:${reason}`}
+        tenant={tenant} actor={user.id} reason={reason.trim()}
+        onOpenInformation={onOpenInformation} />}
+      {operatorDiagnostics && displayedOperatorJobs && <h3 className="nd-reviewed-job-heading">Reviewed job preview</h3>}
       {displayedOperatorJobs && <div className="nd-job-scope">
         {mdPreviewOpen && activeOperatorSourcePage ? <>
           <strong>{activeOperatorSourcePage.jobs.length} saved jobs shown</strong> · Most recently saved {latestSaved(activeOperatorSourcePage.jobs.map((job) => job.source_observed_at))}
@@ -510,28 +547,24 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
           <button className="cp-secondary" onClick={() => { setSelectedMd(null); setMdPreview(false); setOperatorPage(null); setOperatorSourcePage(null); }}>Change access reason</button>
         </div>
       </details>}
-      {operatorDiagnostics && activeOperatorSourcePage && !mdPreviewOpen && user && <RecentSavedJobReview
-        key={`${tenant}:${user.id}:${reason}`}
-        tenant={tenant} actor={user.id} reason={reason.trim()}
-        onOpenInformation={onOpenInformation} />}
       <p className="nd-job-scope">Performance scores: not enough data yet.</p>
       <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
-        <DialogContent className="cp-dialog max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-          <DialogHeader><DialogTitle>Saved job record</DialogTitle></DialogHeader>
+        <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader className="pr-10 sm:pr-0"><DialogTitle>Saved job record</DialogTitle></DialogHeader>
           {selected && <JobDetail key={`${tenant}:${selected.id}`} tenant={tenant} job={selected}
             source={clientSource.data?.jobs.find((row) => row.id === selected.id)} />}
         </DialogContent>
       </Dialog>
       <Dialog open={!!selectedOperator} onOpenChange={(open) => { if (!open) setSelectedOperator(null); }}>
-        <DialogContent className="cp-dialog max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-          <DialogHeader><DialogTitle>Saved job and source</DialogTitle></DialogHeader>
+        <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader className="pr-10 sm:pr-0"><DialogTitle>Saved job and source</DialogTitle></DialogHeader>
           {selectedOperator && user && <OperatorJobDetail key={`${tenant}:${selectedOperator.id}`} tenant={tenant} actor={user.id} reason={reason} job={selectedOperator} />}
         </DialogContent>
       </Dialog>
       <Dialog open={mdPreviewOpen && !!selectedMd && activeOperatorSourcePage?.jobs.some((job) => job.id === selectedMd.id)} onOpenChange={(open) => { if (!open) setSelectedMd(null); }}>
-        <DialogContent className="cp-dialog max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-          <DialogHeader><DialogTitle>Saved job summary · owner preview</DialogTitle></DialogHeader>
-          {selectedMd && <MdPreviewJobDetail tenant={tenant} source={selectedMd} />}
+        <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader className="pr-10 sm:pr-0"><DialogTitle>Saved job summary · owner preview</DialogTitle></DialogHeader>
+          {selectedMd && user && <MdPreviewJobDetail key={`${tenant}:${selectedMd.id}`} tenant={tenant} actor={user.id} reason={reason} source={selectedMd} />}
         </DialogContent>
       </Dialog>
     </section>
@@ -541,6 +574,8 @@ export function JobFirstHome({ tenant, operator = false, presentationFirst = fal
     {!mdPreviewOpen && !presentationFirst && <OwnerMoneyPanel tenant={tenant} operator={operator} operatorReason={reason} />}
     {operatorDiagnostics && !mdPreviewOpen && <FounderAccountsPreview tenant={tenant} operator={operator}
       jobPreviewOpened={!!displayedOperatorJobs} reason={reason} />}
+    {operatorDiagnostics && !mdPreviewOpen && <FounderFocClosureReview tenant={tenant} operator={operator}
+      jobPreviewOpened={!!displayedOperatorJobs} reason={reason} onOpenInformation={onOpenInformation} />}
     {operatorDiagnostics && !mdPreviewOpen && <FounderInvoiceReviewCandidates tenant={tenant} operator={operator}
       jobPreviewOpened={!!displayedOperatorJobs} reason={reason} />}
     {operatorDiagnostics && !mdPreviewOpen && activeOperatorSourcePage && user &&

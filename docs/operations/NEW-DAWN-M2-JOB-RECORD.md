@@ -206,6 +206,12 @@ exactly:
 | Estimates / invoices | `source_record_id,job_id,job_code,issued_at,status,amount,currency` |
 | Parts and costs | `source_record_id,job_id,job_code,description,quantity,amount,currency` |
 
+For a **current** technician visit export, use the stricter v2 contract in
+[`NEW-DAWN-M2-VISIT-SOURCE-BOUNDARY.md`](NEW-DAWN-M2-VISIT-SOURCE-BOUNDARY.md):
+it adds `cancelled_at` and `updated_at` plus account, window, timezone,
+field-dictionary and correction provenance. The seven-column visits format above
+remains held as legacy staging and cannot establish a current appointment.
+
 For example, a private `scope.json` contains:
 
 ```json

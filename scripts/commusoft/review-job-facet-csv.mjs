@@ -3,6 +3,7 @@ import { open, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { prepareJobFacetCsv } from "./prepare-job-facet-csv.mjs";
+import { privateOutputPath } from "./lib/private-output.mjs";
 
 const decimal = /^-?\d{1,12}(?:\.\d{1,4})?$/;
 const currency = /^[A-Z]{3}$/;
@@ -19,9 +20,30 @@ export function reviewJobFacetCsv(manifest, csv) {
       ? "parent_job_link_unreviewed" : "parent_job_id_missing");
     if (facet === "visits") {
       reasons.push("event_id_semantics_unverified", "visit_status_unreviewed");
+      if (staged.manifest.visit_export) {
+        reasons.push("export_scope_unverified");
+        if (staged.manifest.visit_export.coverage !== "complete_window")
+          reasons.push("export_window_incomplete");
+        if (staged.manifest.visit_export.correction_policy === "unknown")
+          reasons.push("correction_behavior_unknown");
+        if (!zoned(row, "updated_at")) reasons.push("visit_updated_time_unverified");
+        if (fields.cancelled_at && !zoned(row, "cancelled_at"))
+          reasons.push("visit_cancellation_time_unverified");
+      }
       if (!readyText(fields.status)) reasons.push("visit_status_missing");
       const startsAt = Date.parse(fields.starts_at);
       const endsAt = Date.parse(fields.ends_at);
+      if (staged.manifest.visit_export) {
+        const scope = staged.manifest.visit_export;
+        if (!Number.isFinite(startsAt) || startsAt < Date.parse(scope.covered_from) ||
+            startsAt >= Date.parse(scope.covered_to)) reasons.push("event_outside_export_window");
+        if (zoned(row, "updated_at") &&
+            Date.parse(fields.updated_at) > Date.parse(staged.manifest.exported_at))
+          reasons.push("event_updated_after_export");
+        if (zoned(row, "cancelled_at") &&
+            Date.parse(fields.cancelled_at) > Date.parse(staged.manifest.exported_at))
+          reasons.push("cancellation_after_export");
+      }
       if (!zoned(row, "starts_at") || !zoned(row, "ends_at") ||
         !Number.isFinite(startsAt) || !Number.isFinite(endsAt) || endsAt <= startsAt)
         reasons.push("visit_start_end_unverified");
@@ -45,6 +67,9 @@ export function reviewJobFacetCsv(manifest, csv) {
     }
     const sourceFieldsNeedReview = reasons.some(reason => [
       "parent_job_id_missing", "visit_start_end_unverified", "visit_status_missing",
+      "export_window_incomplete", "correction_behavior_unknown",
+      "visit_updated_time_unverified", "visit_cancellation_time_unverified",
+      "event_outside_export_window", "event_updated_after_export", "cancellation_after_export",
       "display_name_missing", "source_user_status_missing", "issued_time_unverified",
       "source_document_status_missing", "amount_or_currency_shape_unverified",
       "part_cost_shape_unverified",
@@ -58,11 +83,15 @@ export function reviewJobFacetCsv(manifest, csv) {
     };
   });
   return {
-    version: "commusoft-job-facet-review/1",
+    version: staged.manifest.visit_export ? "commusoft-job-facet-review/2" : "commusoft-job-facet-review/1",
     scope: staged.manifest,
     input_sha256: staged.sha256,
     freshness: { exported_at: staged.manifest.exported_at,
-      record_updated_at: "not_supplied", current_provider_state: "unverified" },
+      record_updated_at: staged.manifest.visit_export
+        ? staged.records.length > 0 && staged.records.every(row => row.time_states.updated_at === "zoned")
+          ? "source_text_held" : "missing_or_invalid"
+        : "not_supplied",
+      current_provider_state: "unverified" },
     publication: "off",
     counts: { rows: records.length, held: records.length,
       ready_for_source_review: records.filter(row => row.shape === "ready_for_source_review").length,
@@ -79,7 +108,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const manifest = JSON.parse(decoder.decode(await readFile(args[1])));
   const csv = decoder.decode(await readFile(args[3]));
   const result = reviewJobFacetCsv(manifest, csv);
-  const handle = await open(args[5], "wx", 0o600);
+  const handle = await open(await privateOutputPath(args[5]), "wx", 0o600);
   try { await handle.writeFile(JSON.stringify(result, null, 2) + "\n"); }
   finally { await handle.close(); }
   process.stdout.write(JSON.stringify({ version: result.version, input_sha256: result.input_sha256,
