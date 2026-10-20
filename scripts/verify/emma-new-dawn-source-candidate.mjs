@@ -15,6 +15,7 @@ const sourceCommit = process.argv[2];
 if (!/^[a-f0-9]{40}$/.test(sourceCommit ?? ""))
   throw Error("Pass one immutable 40-character source commit SHA.");
 const files = [
+  "supabase/functions/_shared/receptionist-emergency-603-receiver.ts",
   "supabase/functions/_shared/receptionist-emergency-fallback-proof.ts",
   "supabase/functions/_shared/receptionist-emergency-intake-gate.ts",
   "supabase/functions/_shared/receptionist-launch-candidate.ts",

@@ -18,18 +18,23 @@ export type EmergencyFallbackAssessment = {
   missing: string[];
 };
 
+export type Emergency603CoreEvidence = Pick<EmergencyFallbackEvidence,
+  "identity" | "callBinding" | "attempts" | "deposit">;
+
 const recipients = ["rob@drummondheating.co.uk", "tony@drummondheating.co.uk"];
 const isId = (value: unknown) => typeof value === "string" && value.length > 0 && value.length <= 160;
 const millis = (value: unknown) => typeof value === "string" && /^\d{4}-\d\d-\d\dT/.test(value) ? Date.parse(value) : NaN;
 
-export function assessEmergencyFallbackProof(evidence: EmergencyFallbackEvidence): EmergencyFallbackAssessment {
+/** Admission for candidate-only notification planning. It proves the 603
+ * deposit follows two failed, ordered engineer attempts on one call; it does
+ * not claim either email or a Slack alert has been delivered. */
+export function assessEmergency603DepositProof(evidence: Emergency603CoreEvidence): EmergencyFallbackAssessment {
   const missing: string[] = [];
   const identity = evidence.identity;
   if (!identity || ![identity.tenantId, identity.vapiCallId, identity.birchillsCallId].every(isId) ||
     !["domestic", "commercial"].includes(identity.classification))
     return { state: "not_verified", missing: ["call_identity"] };
-  const events = [evidence.callBinding, ...(evidence.attempts ?? []), evidence.deposit,
-    ...(evidence.emailReceipts ?? []), evidence.slackReceipt].filter(Boolean) as Event[];
+  const events = [evidence.callBinding, ...(evidence.attempts ?? []), evidence.deposit].filter(Boolean) as Event[];
   const sameCall = (event: Event) => event.tenantId === identity.tenantId &&
     event.vapiCallId === identity.vapiCallId && event.birchillsCallId === identity.birchillsCallId;
   if (!events.every(event => sameCall(event) && isId(event.providerEventId) && Number.isFinite(millis(event.occurredAt))) ||
@@ -54,6 +59,22 @@ export function assessEmergencyFallbackProof(evidence: EmergencyFallbackEvidence
   if (deposit?.source !== "birchills" || deposit.mailbox !== "603" || deposit.state !== "deposited" || !isId(deposit.mailboxMessageId) ||
     !Number.isFinite(depositTime) || depositTime <= attemptTimes[1])
     missing.push("shared_603_deposit");
+
+  return { state: missing.length ? "not_verified" : "verified", missing };
+}
+
+export function assessEmergencyFallbackProof(evidence: EmergencyFallbackEvidence): EmergencyFallbackAssessment {
+  const core = assessEmergency603DepositProof(evidence);
+  const missing = [...core.missing];
+  const deposit = evidence.deposit;
+  const depositTime = millis(deposit?.occurredAt);
+  const identity = evidence.identity;
+  const deliveries = [...(evidence.emailReceipts ?? []), evidence.slackReceipt].filter(Boolean) as Event[];
+  if (identity && (!deliveries.every(event => event.tenantId === identity.tenantId &&
+    event.vapiCallId === identity.vapiCallId && event.birchillsCallId === identity.birchillsCallId &&
+    isId(event.providerEventId) && Number.isFinite(millis(event.occurredAt))) ||
+    new Set(deliveries.map(event => `${event.source}:${event.providerEventId}`)).size !== deliveries.length))
+    missing.push("correlated_provider_events");
 
   const emails = evidence.emailReceipts ?? [];
   if (emails.length !== 2 || !recipients.every(recipient => emails.some(email =>

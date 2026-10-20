@@ -357,6 +357,22 @@ All eight D/C closed calls must disclose automated/recorded service in the
 closed greeting. The two O calls establish the open greeting. An approved
 `#ai-emma` alert requires a delivery receipt, not merely a queued webhook;
 mailbox 603 must remain separate from personal 109/105 and office 601.
+The candidate-only `receptionist-emergency-603-receiver.ts` now defines the
+local intake boundary: an internal reader must supply a **published** Birchills
+603 source, the matching Vapi/Birchills call with two ordered failed engineer
+legs and a deposited message, and a reviewed OpenFolk `#ai-emma` channel. Only
+then does it freeze exactly two recipient-specific email intents and one scoped
+Slack intent with stable delivery IDs. It copies no caller name, telephone,
+address, transcript or recording into the notices. A separate read-only pass
+requires independently authenticated **delivered** receipts from both email
+recipients and a **posted** Slack receipt for that same call/message before it
+can report verified. Synthetic tests cover domestic and commercial ordering,
+duplicate intake, mismatched sources, and queued versus delivered outcomes.
+This is **not deployed** and has no database outbox, sender, provider receipt
+adapter or actual Birchills 603 deposit; it sends nothing. Before any live
+sender, choose either Birchills-managed dual notification or OpenFolk delivery
+for each message to avoid duplicate emails, implement a durable once-only
+outbox and authenticated receipt adapters, then prove the real phone path.
 Check voicemail consent/refusal from the unchanged 12-scenario suite,
 and rehearse rollback to the captured previous IVR 502 route without
 changing the main number during this test. If callers cannot provide a
