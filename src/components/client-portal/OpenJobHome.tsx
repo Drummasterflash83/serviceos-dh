@@ -16,6 +16,8 @@ import { JobFirstHome } from "./JobFirstHome";
 const uuid = (value: unknown): value is string =>
   typeof value === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(value);
 const savedAt = (value: string) => new Date(value).toLocaleString("en-GB");
+const sourceLabel = (value: string) => value.replace(/[_-]+/g, " ")
+  .replace(/\b\w/g, (letter) => letter.toUpperCase());
 const filters: Array<{ value: OpenJobStatus | null; label: string }> = [
   { value: null, label: "All recorded open" },
   { value: "on_hold", label: "On hold" },
@@ -87,8 +89,8 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
       <section aria-label="Work and stage">
         <h3>Work and stage</h3>
         <p className="whitespace-pre-wrap break-words">{record.description ?? row.title ?? "No work description was saved."}</p>
-        <p>Status: {record.status ?? statusLabel[row.status]}
-          {record.priority ? ` · Priority: ${record.priority}` : ""}</p>
+        <p>Status: {record.status ? sourceLabel(record.status) : statusLabel[row.status]}
+          {record.priority ? ` · Priority: ${sourceLabel(record.priority)}` : ""}</p>
         <p>Stage: {exact?.stage ?? "Not enough data yet — this job's current stage has not been checked."}</p>
         {exact?.pipeline && <p>Workstream: {exact.pipeline}</p>}
       </section>
@@ -189,11 +191,6 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
   const rows = active?.rows ?? [];
   const activeSummary = summary.data?.tenantId === tenant && summary.data.actorId === user?.id
     && !summary.isFetching ? summary.data : null;
-  const nextRecordedStatus: OpenJobStatus | null = activeSummary
-    ? activeSummary.counts.on_hold > 0 ? "on_hold"
-      : activeSummary.counts.pending > 0 ? "pending"
-        : activeSummary.counts.open > 0 ? "open" : null
-    : null;
   function changeFilter(next: OpenJobStatus | null) {
     setStatus(next); setPageIndex(0); setCursors([null]); setSelected(null);
   }
@@ -210,12 +207,12 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
     setPageIndex(0); setCursors([null]); setSelected(null);
     setRefreshTick((tick) => tick + 1);
   }
-  return <section className="nd-job-home" aria-label="Company scorecard and recorded open jobs">
+  return <section className="nd-job-home" aria-label="Recorded open jobs and scorecard readiness">
     <div className="nd-job-heading">
       <div>
         <p className="of-eyebrow">YOUR COMPANY</p>
-        <h2>At a glance</h2>
-        <p>Start with the work that may need attention.</p>
+        <h2>Jobs needing attention</h2>
+        <p>Start with the recorded work, then open a job for its source and next check.</p>
       </div>
       {enabled && <button className="cp-secondary" onClick={refresh} disabled={page.isFetching}>
         <RefreshCw size={15} /> Refresh saved jobs
@@ -237,65 +234,36 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
     </div>}
     {!operator && !authorisedClient && <p role="status">Your work list is being prepared. Confirmed assignments are not available yet.</p>}
     {enabled && <>
-      <section className="nd-score-home" aria-label="Company scorecard">
-        <div className="nd-score-hero">
-          <div className="nd-score-ring" aria-label="Company score: not enough data yet">
-            <span aria-hidden="true">—</span><small aria-hidden="true">/ 100</small>
-          </div>
-          <div className="nd-score-hero-copy">
-            <p className="of-eyebrow">HOW {company?.toUpperCase() ?? "THE COMPANY"} IS DOING</p>
-            <h3>Company score: not enough data yet</h3>
-            <p>We can show recorded work now. A fair score still needs confirmed job progress, ownership and commercial outcomes.</p>
-            {activeSummary && <>
-              <p className="nd-score-source">Commusoft statuses saved as of {savedAt(activeSummary.snapshotAt)}. Counts are not performance scores.</p>
-              {nextRecordedStatus ? <button className="cp-secondary" type="button"
-                onClick={() => showJobs(nextRecordedStatus)}>
-                {nextRecordedStatus === "on_hold" ? `Review ${activeSummary.counts.on_hold.toLocaleString("en-GB")} recorded on-hold jobs`
-                  : nextRecordedStatus === "pending" ? `Review ${activeSummary.counts.pending.toLocaleString("en-GB")} recorded pending jobs`
-                    : `See ${activeSummary.counts.open.toLocaleString("en-GB")} recorded open jobs`}
-              </button> : <p>No open status appears in this saved snapshot; other source gaps may remain.</p>}
-            </>}
-          </div>
-        </div>
-        <div className="nd-score-tiles" aria-label="Jobs, customers and team scorecards">
-          <article><span>JOBS</span><strong>Not enough data yet</strong>
-            <p>{activeSummary
-              ? `${activeSummary.counts.total.toLocaleString("en-GB")} jobs have a saved open status. Stage age and ownership still need confirmation before scoring.`
-              : "Checking recorded open jobs; stage age and ownership still need confirmation."}</p>
-            {activeSummary && <button type="button" onClick={() => showJobs(null)}>See open jobs →</button>}
-          </article>
-          <article><span>CUSTOMERS</span><strong>Not enough data yet</strong>
-            <p>Customer and site links need review before job outcomes can show customer health.</p>
-          </article>
-          <article><span>TEAM</span><strong>Not enough data yet</strong>
-            <p>Confirmed assignments and worked hours are needed before a team score is fair.</p>
-          </article>
-        </div>
-        {summary.isPending && <p role="status">Checking saved job status totals…</p>}
-        {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
-        {activeSummary && <div className="nd-score-bottlenecks">
-          <div><h3>Where work may be held up</h3>
-            <p>Commusoft statuses saved by OpenFolk as of {savedAt(activeSummary.snapshotAt)}. These counts do not identify the person or cause yet.</p></div>
-          {(["on_hold", "pending"] as const).filter((kind) => activeSummary.counts[kind] > 0).map((kind) => (
+      <section className="nd-work-priority" aria-label="Where to start">
+        <div><h3>Where to start</h3>
+          <p>{activeSummary
+            ? `Saved Commusoft status as of ${savedAt(activeSummary.snapshotAt)}. These counts do not identify a cause or owner.`
+            : "Choose a saved status below to review the work."}</p></div>
+        {activeSummary && (["on_hold", "pending"] as const)
+          .filter((kind) => activeSummary.counts[kind] > 0).map((kind) => (
             <button key={kind} type="button" onClick={() => showJobs(kind)}>
               <span><b>{statusLabel[kind]}</b><small>{openJobNextStep(kind)}</small></span>
               <strong>{activeSummary.counts[kind].toLocaleString("en-GB")} jobs</strong>
               <ChevronRight size={17} />
             </button>
           ))}
-          {activeSummary.counts.on_hold === 0 && activeSummary.counts.pending === 0 &&
-            <p>No on-hold or pending statuses appear in this saved snapshot. This does not confirm that every job is progressing.</p>}
-        </div>}
+        {activeSummary && activeSummary.counts.on_hold === 0 && activeSummary.counts.pending === 0 &&
+          <p>No on-hold or pending status appears in this snapshot. That does not confirm every job is progressing.</p>}
+        {summary.isPending && <p role="status">Checking saved job status totals…</p>}
+        {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
       </section>
       <div ref={jobsRef} className="nd-open-jobs-heading">
         <h3>Recorded open jobs</h3>
         <p>Source statuses saved from Commusoft. Open a job to see its recorded details and next check.</p>
       </div>
-      <div className="nd-open-page-filters" aria-label="Filter saved job status">
-        {filters.map((filter) => <button key={filter.value ?? "all"}
-          type="button" aria-pressed={status === filter.value}
-          onClick={() => changeFilter(filter.value)}>{filter.label}</button>)}
-      </div>
+      <fieldset className="nd-open-page-filters">
+        <legend>Show saved jobs by status</legend>
+        {filters.map((filter) => <label key={filter.value ?? "all"}>
+          <input type="radio" name={`nd-open-job-status-${tenant}-${operator ? "operator" : "client"}`}
+            checked={status === filter.value} onChange={() => changeFilter(filter.value)} />
+          <span>{filter.label}</span>
+        </label>)}
+      </fieldset>
       {page.isPending || page.isFetching ? <p role="status">Reading saved open jobs…</p> : null}
       {page.isError && <p role="alert">Saved open jobs are unavailable. Refresh to retry.</p>}
       {active && <>
@@ -331,6 +299,22 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason }: {
             onClick={nextPage}>Next page <ChevronRight size={16} /></button>
         </nav>
       </>}
+      <details className="nd-score-readiness">
+        <summary>How are the company, jobs, customers and team doing? <span>Scores are being prepared</span></summary>
+        <p>A fair score needs confirmed evidence. Recorded open-job counts are not performance scores.</p>
+        <div className="nd-score-tiles" aria-label="Scorecard readiness">
+          <article><span>COMPANY &amp; JOBS</span><strong>Not enough data yet</strong>
+            <p>Job stage age, ownership and commercial outcomes still need confirmation.</p>
+            <button type="button" onClick={() => showJobs(null)}>Review recorded open jobs →</button>
+          </article>
+          <article><span>CUSTOMERS</span><strong>Not enough data yet</strong>
+            <p>Customer and site links need review before job outcomes can show customer health.</p>
+          </article>
+          <article><span>TEAM</span><strong>Not enough data yet</strong>
+            <p>Confirmed assignments and worked hours are needed before a team score is fair.</p>
+          </article>
+        </div>
+      </details>
     </>}
     <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
       <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">

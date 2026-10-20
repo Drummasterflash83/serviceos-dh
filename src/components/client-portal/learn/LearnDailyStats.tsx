@@ -4,7 +4,8 @@ import { RefreshCw } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
-  dailyStatKeys, readDailyStats, type DailyStatKey,
+  dailyStatKeys, dailyStatParts, readDailyStatsPart,
+  type DailyStatKey, type DailyStatPart, type DailyStatsPartResult,
 } from "@/lib/new-dawn-learn-daily-stats";
 import { readCommusoftFreshness, type CommusoftFreshness } from "@/lib/new-dawn-commusoft-freshness";
 
@@ -12,6 +13,13 @@ const labels: Record<DailyStatKey, string> = {
   calls: "Calls", recordings: "Recording records", emails: "Emails",
   slack: "Slack messages", jobs: "Commusoft jobs",
   customers: "Commusoft customers", sites: "Commusoft sites",
+};
+const partForKey: Record<DailyStatKey, DailyStatPart> = {
+  calls: "communications", recordings: "communications", emails: "communications",
+  slack: "slack", jobs: "business", customers: "business", sites: "business",
+};
+const partLabels: Record<DailyStatPart, string> = {
+  communications: "Phone and Email", slack: "Slack", business: "Commusoft",
 };
 const format = (value: number) => value.toLocaleString("en-GB");
 const when = (value: string) => new Date(value).toLocaleString("en-GB", {
@@ -58,15 +66,24 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
     queryKey: ["learn-daily-stats", user?.id, tenantId, operator, approvedReason],
     enabled: !!user && flag.data === true && (!operator || !!approvedReason),
     retry: false,
-    gcTime: 0,
+    staleTime: 60_000,
+    gcTime: 300_000,
     refetchInterval: operator ? false : 300_000,
     refetchOnWindowFocus: operator ? false : "always",
     queryFn: async () => {
-      const { data, error } = await getSupabaseClient().rpc("new_dawn_learn_daily_stats", {
-        p_tenant: tenantId, p_operator_reason: operator ? approvedReason : null,
-      }).abortSignal(AbortSignal.timeout(30_000));
-      if (error || !user) throw Error("Saved daily totals are unavailable.");
-      return readDailyStats(data, tenantId, user.id);
+      const checked = await Promise.all(dailyStatParts.map(async (part) => {
+        try {
+          const { data, error } = await getSupabaseClient().rpc("new_dawn_learn_daily_stats_part", {
+            p_tenant: tenantId, p_part: part,
+            p_operator_reason: operator ? approvedReason : null,
+          }).abortSignal(AbortSignal.timeout(9_000));
+          if (error || !user) return [part, null] as const;
+          return [part, readDailyStatsPart(data, part, tenantId, user.id)] as const;
+        } catch {
+          return [part, null] as const;
+        }
+      }));
+      return Object.fromEntries(checked) as Record<DailyStatPart, DailyStatsPartResult | null>;
     },
   });
   const freshness = useQuery({
@@ -85,7 +102,8 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
     },
   });
   if (!user || flag.data !== true) return null;
-  const value = stats.data;
+  const parts = stats.data;
+  const available = parts && dailyStatParts.some((part) => parts[part]);
   return (
     <section className="cp-card lr-daily-stats" aria-label="Saved inputs by day">
       <header className="lr-daily-head">
@@ -114,22 +132,27 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
       )}
       {(!operator || approvedReason) && (
         stats.isPending ? <p role="status">Checking saved totals…</p>
-          : stats.isError || !value ? <p role="alert">Saved totals could not be checked. Try refreshing later.</p>
+          : stats.isError || !available ? <p role="alert">Saved totals could not be checked. Try refreshing later.</p>
             : <>
-              <p className="lr-daily-asof">As of {when(value.observedAt)} UK time</p>
+              <p className="lr-daily-asof">Each source is checked separately. {dailyStatParts.map((part) =>
+                `${partLabels[part]}: ${parts[part] ? when(parts[part]!.observedAt) : "could not be checked"}`
+              ).join(" · ")} UK time</p>
               <div className="lr-daily-table" role="table" aria-label="Today's and running saved totals">
                 <div className="lr-daily-row lr-daily-column-head" role="row">
                   <span role="columnheader">Input</span>
                   <span role="columnheader">Today</span>
                   <span role="columnheader">Running total</span>
                 </div>
-                {dailyStatKeys.map(key => (
+                {dailyStatKeys.map(key => {
+                  const count = parts[partForKey[key]]?.counts[key];
+                  return (
                   <div className="lr-daily-row" role="row" key={key}>
                     <span role="cell">{labels[key]}</span>
-                    <strong role="cell">{format(value.counts[key].today)}</strong>
-                    <span role="cell">{format(value.counts[key].total)}</span>
+                    <strong role="cell">{count ? format(count.today) : "Not checked"}</strong>
+                    <span role="cell">{count ? format(count.total) : "Not checked"}</span>
                   </div>
-                ))}
+                  );
+                })}
               </div>
               <p className="lr-daily-footnote">
                 Recording totals count saved metadata, not playable audio. Slack counts include saved public-channel messages with visibility proof; withheld messages are excluded.
@@ -137,9 +160,10 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
               </p>
               <div className="lr-daily-job-check">
                 <div><span>Last saved Commusoft job observation</span>
-                  <strong>{value.latestSavedJob
-                    ? `Job ${value.latestSavedJob.number} · ${when(value.latestSavedJob.savedAt)}`
-                    : "No saved job observation"}</strong></div>
+                  <strong>{!parts.business ? "Commusoft check unavailable"
+                    : parts.business.latestSavedJob
+                      ? `Job ${parts.business.latestSavedJob.number} · ${when(parts.business.latestSavedJob.savedAt)}`
+                      : "No saved job observation"}</strong></div>
                 <div><span>Newest job at Commusoft</span>
                   <strong>{freshnessText(freshness.data)}</strong>
                   {freshness.data?.providerCheckedAt &&

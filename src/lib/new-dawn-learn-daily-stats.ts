@@ -14,6 +14,21 @@ export type DailyStats = {
   auditId: string;
 };
 
+export const dailyStatParts = ["communications", "slack", "business"] as const;
+export type DailyStatPart = (typeof dailyStatParts)[number];
+export const dailyStatPartKeys: Record<DailyStatPart, readonly DailyStatKey[]> = {
+  communications: ["calls", "recordings", "emails"],
+  slack: ["slack"],
+  business: ["jobs", "customers", "sites"],
+};
+export type DailyStatsPartResult = {
+  part: DailyStatPart;
+  observedAt: string;
+  counts: Partial<Record<DailyStatKey, DailyStatCount>>;
+  latestSavedJob: DailyStats["latestSavedJob"];
+  auditId: string;
+};
+
 const object = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && !Array.isArray(value);
 const uuid = (value: unknown): value is string =>
@@ -55,4 +70,41 @@ export function readDailyStats(raw: unknown, tenant: string, actor: string): Dai
     },
     auditId: raw.audit_id,
   };
+}
+
+/** The three independent reads must each prove tenant, actor, scope and shape. */
+export function readDailyStatsPart(raw: unknown, part: DailyStatPart,
+  tenant: string, actor: string): DailyStatsPartResult {
+  if (!object(raw) || raw.version !== "new-dawn-learn-daily-stats-part/1"
+    || raw.part !== part || raw.tenant_id !== tenant || raw.actor_id !== actor
+    || !date(raw.observed_at) || !date(raw.day_start)
+    || raw.timezone !== "Europe/London" || raw.scope !== "retained_saved_rows"
+    || !uuid(raw.audit_id) || !object(raw.counts)
+    || raw.provider_newest_job !== null || raw.provider_newest_state !== "not_checked") {
+    throw Error("Saved-input source summary could not be verified.");
+  }
+  const expected = dailyStatPartKeys[part];
+  if (Object.keys(raw.counts).length !== expected.length) {
+    throw Error("Saved-input source summary could not be verified.");
+  }
+  const parsed: Partial<Record<DailyStatKey, DailyStatCount>> = {};
+  for (const key of expected) {
+    const item = raw.counts[key];
+    if (!object(item) || !count(item.today) || !count(item.total)
+      || item.today > item.total) {
+      throw Error("Saved-input source summary could not be verified.");
+    }
+    parsed[key] = { today: item.today, total: item.total };
+  }
+  const latest = raw.latest_saved_job;
+  if (latest !== null && (part !== "business" || !object(latest)
+    || typeof latest.number !== "string" || !latest.number.trim()
+    || latest.number.length > 100 || !date(latest.saved_at))) {
+    throw Error("Saved-input source summary could not be verified.");
+  }
+  return { part, observedAt: raw.observed_at, counts: parsed,
+    latestSavedJob: latest === null ? null : {
+      number: (latest as Record<string, unknown>).number as string,
+      savedAt: (latest as Record<string, unknown>).saved_at as string,
+    }, auditId: raw.audit_id };
 }
