@@ -103,16 +103,21 @@ job codes as strings and only link other providers on exact, evidenced identitie
 ### Exact source-user backend release
 
 The [guarded release script](../../scripts/verify/new-dawn-m2-users-backend-release.mjs)
-pins the existing LIVE worker v11 and the two migration files
+pins the initial LIVE worker v11, deployed worker v12, and the two migration files
 `20261105180000_commusoft_source_users.sql` and
 `20261105190000_commusoft_source_users_resume.sql` by hash. Its LIVE read-only
 mode checks the worker version, four authority function hashes and grants, both
 missing ledger rows, no active source-sync job, the configured connection and
 the absent source-user flag. Download the LIVE worker with the Supabase CLI and
-use `--verify-worker-bundle --path <download-directory>` to check its exact
-`/users` route and one-page/ten-record cap. Run `--test-rollback-only` against
-the isolated TEST database, then repeat the LIVE read-only checks on the merged
-commit. Only then run `--live-install-exact --source-sha
+use `--verify-worker-bundle --path <download-directory>` to check the v11
+baseline. The merged candidate was compiled from pinned Edge runtime source
+closure `71f07dc895970b0780751b4d206cbb3b8b71668bd1f357341e3e2d373d3fef44`
+and deployed as LIVE worker v12, runtime hash
+`3c74bf18dde616ef8f6170242d4b13cee27a64e7ae205c58e771e55c30dfe4fb`.
+Use `--verify-release-worker-bundle --path <download-directory>` against a
+fresh download to compare all nine executable files with the merged candidate.
+Run `--test-rollback-only` against the isolated TEST database, then repeat the
+LIVE read-only checks. Only then run `--live-install-exact --source-sha
 bac767a835c1e8c97bc1e90d343cccfb2010893d3188ef04ad65c33610d5e501`
 with `NEW_DAWN_M2_USERS_PROJECT=tgbnakbxwcqjeimygroz`. A second
 `--live-read-only` must confirm both exact ledger rows and four post-install
@@ -121,7 +126,7 @@ leaves the source-user flag Off.
 
 **Do not enable the source-user flag or run the LIVE provider trial while the
 installed worker is v11.** That worker rejects a continuation after page one.
-The reviewed candidate worker source now enforces the same cumulative
+The reviewed v12 worker source enforces the same cumulative
 `maxPages = retained pages + 1` boundary as the SQL credential-release gate;
 it must be compiled, released, downloaded and independently verified as a new
 worker version before the first GET. The v11 pin above verifies only that the

@@ -3,7 +3,9 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { edgeRuntimeBundle } from "./learn-email-runtime-edge-bundle.mjs";
 import { savedCliToken, TEST_PROJECT } from "./learn-test-readiness.mjs";
+import { executableStructure } from "./new-dawn-m2-closure-edge-release.mjs";
 
 export const PROJECT = "tgbnakbxwcqjeimygroz";
 export const TENANT = "00000000-0000-0000-0000-000000000001";
@@ -25,6 +27,13 @@ export const WORKER = Object.freeze({
     "functions/_shared/commusoft/stored_scope.ts":
       "969447732054d36f07b4e5505ffa02a51717b91f5e3ccf1b6a5872748e55ad76",
   }),
+});
+export const RELEASE_WORKER = Object.freeze({
+  id: "d0db77c9-c88c-49ff-b055-aceef8b59933",
+  slug: WORKER.slug,
+  version: 12,
+  hash: "3c74bf18dde616ef8f6170242d4b13cee27a64e7ae205c58e771e55c30dfe4fb",
+  sourceClosureSha256: "71f07dc895970b0780751b4d206cbb3b8b71668bd1f357341e3e2d373d3fef44",
 });
 export const FUNCTIONS = Object.freeze({
   "learn_commusoft_acquire_page(uuid, uuid, text, integer, jsonb)": Object.freeze({
@@ -234,6 +243,41 @@ export function assessDownloadedWorker(root, metadata) {
   };
 }
 
+export function assessDownloadedReleaseWorker(root, metadata) {
+  if (
+    metadata?.id !== RELEASE_WORKER.id ||
+    metadata.slug !== RELEASE_WORKER.slug ||
+    metadata.version !== RELEASE_WORKER.version ||
+    metadata.ezbr_sha256 !== RELEASE_WORKER.hash ||
+    metadata.status !== "ACTIVE" ||
+    metadata.verify_jwt !== true
+  )
+    throw Error("users_release_worker_changed");
+  const bundle = edgeRuntimeBundle([{ name: WORKER.slug, verifyJwt: true }]);
+  if (
+    bundle.sha256 !== RELEASE_WORKER.sourceClosureSha256 ||
+    bundle.files.length !== 9 ||
+    JSON.stringify(bundle.external) !==
+      JSON.stringify(["https://esm.sh/@supabase/supabase-js@2.45.4"])
+  )
+    throw Error("users_release_worker_source_changed");
+  const base = join(root, "supabase/functions", WORKER.slug);
+  for (const file of bundle.files) {
+    const path = file.path.startsWith(WORKER.slug + "/")
+      ? join(base, "index.ts")
+      : join(base, "functions", file.path);
+    if (executableStructure(readFileSync(path, "utf8")) !== executableStructure(file.source))
+      throw Error("users_release_worker_download_changed:" + file.path);
+  }
+  return {
+    state: "exact_live_worker_v12_executable_closure",
+    workerVersion: RELEASE_WORKER.version,
+    runtimeHash: RELEASE_WORKER.hash,
+    sourceClosureSha256: bundle.sha256,
+    providerRequests: 0,
+  };
+}
+
 async function management(project, token, path, sql = null, readOnly = true, fetcher = fetch) {
   const response = await fetcher(`https://api.supabase.com/v1/projects/${project}${path}`, {
     method: sql ? "POST" : "GET",
@@ -323,8 +367,9 @@ export async function installLive({
   const before = await read(PROJECT, token, fetcher);
   assess(before.catalog, "before");
   if (
-    before.worker?.ezbr_sha256 !== WORKER.hash ||
-    before.worker.version !== WORKER.version ||
+    before.worker?.id !== RELEASE_WORKER.id ||
+    before.worker?.ezbr_sha256 !== RELEASE_WORKER.hash ||
+    before.worker.version !== RELEASE_WORKER.version ||
     before.worker.status !== "ACTIVE" ||
     before.worker.verify_jwt !== true
   )
@@ -348,7 +393,7 @@ export async function installLive({
     versions: [VERSION, RESUME_VERSION],
     sourceSha256: SOURCE_SHA256,
     resumeSourceSha256: RESUME_SOURCE_SHA256,
-    workerVersion: WORKER.version,
+    workerVersion: RELEASE_WORKER.version,
     acknowledged,
     providerRequests: 0,
     flagEnabled: false,
@@ -404,6 +449,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     else if (args.startsWith("--verify-worker-bundle --path ")) {
       const s = await readStage();
       console.log(JSON.stringify(assessDownloadedWorker(process.argv[4], s.worker)));
+    } else if (args.startsWith("--verify-release-worker-bundle --path ")) {
+      const s = await readStage();
+      console.log(JSON.stringify(assessDownloadedReleaseWorker(process.argv[4], s.worker)));
     } else if (
       args === `--live-install-exact --source-sha ${SOURCE_SHA256}` &&
       process.env.NEW_DAWN_M2_USERS_PROJECT === PROJECT
