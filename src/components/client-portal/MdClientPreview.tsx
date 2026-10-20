@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { BookOpen, BriefcaseBusiness, ShieldCheck } from "lucide-react";
+import { BookOpen, BriefcaseBusiness, ShieldCheck, Wallet } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
 import { ClientHeaderBrand } from "@/components/ClientHeaderBrand";
 import { drummondsTenantId, readMdViewReceipt, type MdViewReceipt } from "@/lib/new-dawn-md-view";
 import { OpenJobHome } from "./OpenJobHome";
 import { LearnDailyStats } from "./learn/LearnDailyStats";
+import { MdMoneyPanel } from "./MdMoneyPanel";
 import "@/styles/client-workspace.css";
 import "@/styles/md-client-preview.css";
 
@@ -17,7 +18,7 @@ export function MdClientPreview() {
   const { user } = useAuth();
   const [reason, setReason] = useState("");
   const [review, setReview] = useState<Review | null>(null);
-  const [section, setSection] = useState<"home" | "learn">("home");
+  const [section, setSection] = useState<"home" | "learn" | "money">("home");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [now, setNow] = useState(Date.now());
@@ -56,6 +57,8 @@ export function MdClientPreview() {
           onClick={() => setSection("home")}><BriefcaseBusiness size={17} /> Home</button>
         <button aria-current={section === "learn" ? "page" : undefined}
           onClick={() => setSection("learn")}><BookOpen size={17} /> LEARN stats</button>
+        <button aria-current={section === "money" ? "page" : undefined}
+          onClick={() => setSection("money")}><Wallet size={17} /> Money</button>
       </nav>}
       <a className="md-review-return" href="/openfolk/drummonds?module=home&tools=false">
         Return to OpenFolk
@@ -63,7 +66,7 @@ export function MdClientPreview() {
     </aside>
     <main className="md-review-main">
       <header className="md-review-topbar">
-        <span>Drummonds / {section === "home" ? "Home" : "LEARN"}</span>
+        <span>Drummonds / {section === "home" ? "Home" : section === "learn" ? "LEARN" : "Money"}</span>
         <span>{user?.email ?? "OpenFolk"}</span>
       </header>
       <div className="md-review-content">
@@ -91,12 +94,13 @@ export function MdClientPreview() {
               <h1>Your business, in view.</h1><p>Start with the work that may need attention today.</p></div>
             <OpenJobHome key={`${active.auditId}:home`} tenant={drummondsTenantId}
               company="Drummonds" operator mdReason={active.reason} />
-          </> : <>
+          </> : section === "learn" ? <>
             <div className="md-review-heading"><p className="of-eyebrow">DRUMMONDS · LEARN</p>
               <h1>What arrived today.</h1><p>Real saved inputs, with a time and source for each count.</p></div>
             <LearnDailyStats key={`${active.auditId}:learn`} tenantId={drummondsTenantId}
               operator mdReason={active.reason} />
-          </>}
+          </> : <MdMoneyPanel key={`${active.auditId}:money`} tenant={drummondsTenantId}
+            reason={active.reason} />}
         </>}
       </div>
     </main>
