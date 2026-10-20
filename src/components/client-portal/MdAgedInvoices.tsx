@@ -49,6 +49,9 @@ export function MdAgedInvoices({ tenant, reason }: { tenant: string; reason: str
       }).abortSignal(AbortSignal.timeout(20_000));
       if (error) throw Error("Aged invoice read unavailable");
       const checked = readMdAgedInvoicePage(data, tenant, user.id, after);
+      if (next && page && (checked.asOf !== page.asOf || checked.realmId !== page.realmId ||
+        checked.candidates.some(candidate => rows.some(row => row.versionId === candidate.versionId))))
+        throw Error("Aged invoice page changed");
       if (ticket === generation.current) {
         setRows(next ? [...rows, ...checked.candidates] : checked.candidates);
         setPage(checked);
