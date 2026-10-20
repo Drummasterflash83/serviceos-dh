@@ -27,7 +27,7 @@ test("tenant names and old IDs resolve only through the authorised directory", (
   assert.equal(findOperatorTenant([], "drummonds"), undefined);
 });
 test("module links are validated", () => {
-  for (const module of ["home", "receptionist", "modules", "invoices"])
+  for (const module of ["home", "receptionist", "modules", "invoices", "accounting"])
     assert.equal(operatorModule(module), module);
   for (const legacy of ["programme", "outcomes"]) assert.equal(operatorModule(legacy), "modules");
   for (const invalid of [null, {}, "../bad", "phones"])
