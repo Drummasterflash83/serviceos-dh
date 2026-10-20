@@ -10,9 +10,9 @@ function fixture() {
   const voice = { provider: "11labs", voiceId: "Emma", apiKey: "VOICE_SECRET" };
   const ordinary = { id: ids.ordinary, orgId, type: "transferCall", function: { name: "Route-Call-to-Drummond-Team-20260929" }, destinations: [{ type: "number", number: "+441794378105", description: "Rob109", message: "", transferPlan: { mode: "blind-transfer" } }] };
   const emergency = { id: ids.emergency, orgId, type: "transferCall", function: { name: "Route-Emergency-to-Rob-or-Tony", description: "Try other person on failure." }, destinations: [{ type: "number", number: "+441794378105", description: "ROB EMERGENCY109", message: "Please hold.", transferPlan: { mode: "warm-transfer-experimental", sipVerb: "refer", fallbackPlan: { endCallEnabled: false, message: "Could not connect." }, transferAssistant: { model: { provider: "openai", model: "gpt-4.1", messages: [{ role: "system", content: "Require human acceptance. Voicemail cancels." }] } }, summaryPlan: { enabled: true, customLlmUrl: "https://private.example/secret" } } }] };
-  const helper = { id: ids.helper, orgId, voice, model: { provider: "openai", model: "gpt-4.1", toolIds: [ids.emergency], tools: [], messages: [{ role: "system", content: "EMERGENCY CONTINUATION: primary then backup. No invented delivery." }] } };
-  const live = { id: ids.live, orgId, name: "Emma", voice, firstMessage: "Hello", server: { url: "https://private.example", headers: { Authorization: "PRIVATE_SECRET" } } };
-  const candidate = { id: ids.candidate, orgId, voice, model: { toolIds: [ids.handoff], tools: [{ destinations: ordinary.destinations.map(approvedOrdinaryDestination) }] } };
+  const helper = { id: ids.helper, orgId, voice: structuredClone(voice), model: { provider: "openai", model: "gpt-4.1", toolIds: [ids.emergency], tools: [], messages: [{ role: "system", content: "EMERGENCY CONTINUATION: primary then backup. No invented delivery." }] } };
+  const live = { id: ids.live, orgId, name: "Emma", voice: structuredClone(voice), firstMessage: "Hello", server: { url: "https://private.example", headers: { Authorization: "PRIVATE_SECRET" } } };
+  const candidate = { id: ids.candidate, orgId, voice: structuredClone(voice), model: { toolIds: [ids.handoff], tools: [{ destinations: ordinary.destinations.map(approvedOrdinaryDestination) }] } };
   const handoff = { id: ids.handoff, orgId, type: "handoff", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [{ type: "assistant", assistantId: ids.helper, contextEngineeringPlan: { type: "all" } }] };
   const graph: any = { live, candidate, helper, handoff, ordinary, emergency };
   const source: any = { state: "prepared", candidate_id: ids.candidate, helper_id: ids.helper, handoff_id: ids.handoff, source_assistant: structuredClone(live), source_tools: structuredClone([ordinary, emergency]) };
@@ -50,12 +50,42 @@ test("inspection performs six pinned GETs and does not write or refresh the save
   assert.equal(result.checks.candidateOrdinaryDestinationsMatchApprovedTransform, true);
   assert.equal(result.checks.helperOnlyUsesEmergencyTool, true);
   assert.equal(result.checks.handoffPreservesAllContext, true);
+  assert.deepEqual(result.voiceSpeed, { live: null, candidate: null, helper: null });
+  assert.equal(result.checks.v14SpeedAligned, false);
+  assert.equal(result.checks.candidateTranscriberMatchesLive, false);
+  assert.equal(result.checks.helperTranscriberMatchesLive, false);
   for (const key of ["providerChanged", "savedBaselineChanged", "promotionAttempted", "callsPlaced"] as const)
     assert.equal(result[key], false);
   assert.equal(result.emergency.destinations[0].transferPlan?.fallbackPlan?.endCallEnabled, false);
   assert.equal(result.helper.model.provider, "openai");
   assert.deepEqual(result.helper.model.toolIds, [ids.emergency]);
   assert.match(result.hashes.emergency.configurationHash, /^[a-f0-9]{64}$/);
+});
+
+test("read-only v14 projection exposes only finite speed and explicit voice/transcriber alignment", async () => {
+  const f = fixture();
+  for (const name of ["live", "candidate", "helper"] as const) {
+    f.graph[name].voice.speed = 1.05;
+    f.graph[name].transcriber = { provider: "deepgram", model: "nova-3", apiKey: "TRANSCRIBER_SECRET" };
+  }
+  const aligned = await f.inspect();
+  assert.deepEqual(aligned.voiceSpeed, { live: 1.05, candidate: 1.05, helper: 1.05 });
+  assert.equal(aligned.checks.v14SpeedAligned, true);
+  assert.equal(aligned.checks.candidateVoiceMatchesLive, true);
+  assert.equal(aligned.checks.helperVoiceMatchesLive, true);
+  assert.equal(aligned.checks.candidateTranscriberMatchesLive, true);
+  assert.equal(aligned.checks.helperTranscriberMatchesLive, true);
+  assert.equal(JSON.stringify(aligned).includes("TRANSCRIBER_SECRET"), false);
+
+  f.graph.candidate.voice.speed = undefined;
+  f.graph.helper.voice.speed = "1.05";
+  f.graph.helper.transcriber.model = "different";
+  const drift = await f.inspect();
+  assert.deepEqual(drift.voiceSpeed, { live: 1.05, candidate: null, helper: null });
+  assert.equal(drift.checks.v14SpeedAligned, false);
+  assert.equal(drift.checks.candidateVoiceMatchesLive, false);
+  assert.equal(drift.checks.helperVoiceMatchesLive, false);
+  assert.equal(drift.checks.helperTranscriberMatchesLive, false);
 });
 
 test("fresh provider differences expose precise source mismatches without accepting them", async () => {
