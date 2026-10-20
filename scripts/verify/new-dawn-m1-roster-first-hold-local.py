@@ -64,7 +64,11 @@ try:
       create table public.customer_cards(id uuid,tenant_id uuid,person_id uuid,company_id uuid);
       create table public.people(id uuid,tenant_id uuid);
       create table public.companies(id uuid,tenant_id uuid);
-      create table public.sites(id uuid,tenant_id uuid,postcode text);
+      create table public.sites(id uuid,tenant_id uuid,postcode text,
+       source_system text,external_id text);
+      create table public.import_entity_links(
+       id uuid,tenant_id uuid,source_system text,entity_kind text,
+       external_id text,entity_id uuid,entity_table text);
     """)
     run(f"""
       insert into public.provider_connections values
@@ -82,7 +86,8 @@ try:
         '22','{ident(422)}','customer','people','{ident(300)}','{ident(301)}'),
        ('{ident(303)}','{TENANT}','{ident(100)}','commusoft','properties',
         '15','{ident(415)}','site','sites','{ident(350)}','{ident(301)}');
-      insert into public.sites values('{ident(350)}','{TENANT}','AA1 1AA');
+      insert into public.sites(id,tenant_id,postcode)
+       values('{ident(350)}','{TENANT}','AA1 1AA');
     """)
 
     def source(version, collection, external, payload, tenant=TENANT, connection=100):
@@ -140,6 +145,49 @@ try:
     }, row['job_first_holds']
     assert row['distinct_property_ids_by_first_hold']['provisional_site_review'] == 1
     print('PASS: two-tenant first-hold partition, tied source replay, collision and provisional counts')
+
+    # The M2 parent-path classifier must collapse multiple held work addresses
+    # to one source parent, keep another tenant's exact identity out, and hold
+    # a parent whose latest committed observation becomes ambiguous.
+    source(417, 'properties', '17', {'id': 17, 'type': 'workaddress',
+                                      'parentPropertyID': 21, 'addressLine1': 'F',
+                                      'postcode': 'FF1 1FF'})
+    source(509, 'jobs', '9', {'id': 9, 'propertyID': 17})
+    run(f"""insert into public.import_entity_links values
+     ('{ident(801)}','{OTHER}','commusoft','customer','21','{ident(300)}','people');""")
+    generated = subprocess.run(
+        ['node', '--input-type=module', '-e',
+         "import { QUERY } from './scripts/verify/new-dawn-m2-parent-identity-readback.mjs'; console.log(QUERY)"],
+        cwd=ROOT, text=True, capture_output=True, check=True, timeout=10,
+    ).stdout
+
+    def parent_path():
+        return json.loads(run('select row_to_json(x) from (' +
+                              generated.rstrip().rstrip(';') + ') x;'))
+
+    parent = parent_path()
+    assert (parent['held_jobs'], parent['held_workaddresses'],
+            parent['held_parent_ids']) == (2, 2, 1), parent
+    assert parent['holds'] == {'customer_link_missing': {
+        'jobs': 2, 'workaddresses': 2, 'parent_ids': 1}}, parent
+    assert parent['existing_target_clues'] == {
+        'no_source_keyed_target': 1, 'one_source_keyed_target': 0,
+        'multiple_source_keyed_targets': 0,
+        'legacy_target_rows': 0, 'direct_target_rows': 0}, parent
+    assert parent['parent_name_shapes']['neither_name_shape'] == 1, parent
+    assert parent['site_source_shapes']['source_shape_candidate_after_parent_review'] == 2, parent
+    assert parent['jobs_on_site_source_shape_candidates'] == 2, parent
+    run(f"""insert into public.import_entity_links values
+     ('{ident(802)}','{TENANT}','commusoft','customer','21','{ident(300)}','people');""")
+    parent = parent_path()
+    assert parent['existing_target_clues']['one_source_keyed_target'] == 1, parent
+    assert parent['existing_target_clues']['legacy_target_rows'] == 1, parent
+    source(423, 'properties', '21', {'id': 21, 'type': 'customer'})
+    parent = parent_path()
+    assert parent['holds'] == {'parent_source_missing_or_ambiguous': {
+        'jobs': 2, 'workaddresses': 2, 'parent_ids': 1}}, parent
+    assert parent['parent_name_shapes']['unresolved_source_kind'] == 1, parent
+    print('PASS: parent-path two-tenant isolation, shared parent, exact clue and tied replay hold')
 finally:
     if CREATED:
         subprocess.run(['docker', 'rm', '-f', NAME], capture_output=True, timeout=30)
