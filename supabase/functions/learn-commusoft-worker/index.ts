@@ -14,13 +14,15 @@ Deno.serve(
     const admin = createClient(url, key, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-    const freshness = await runCommusoftFreshness(admin, AbortSignal.timeout(20000));
     const source = await runCommusoftWorker(
       admin,
       crypto.randomUUID(),
       undefined,
       AbortSignal.timeout(90000),
     );
+    // The ordinary source page gets first opportunity. Both reads share the
+    // credential lease, so a pending freshness page may yield and try later.
+    const freshness = await runCommusoftFreshness(admin, AbortSignal.timeout(20000));
     return { ...source, freshness: freshness.state };
   }),
 );
