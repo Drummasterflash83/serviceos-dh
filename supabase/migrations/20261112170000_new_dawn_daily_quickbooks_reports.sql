@@ -106,6 +106,8 @@ returns jsonb language plpgsql security definer set search_path=pg_catalog as $$
 declare s public.learn_quickbooks_daily_reports%rowtype;
  r public.learn_quickbooks_daily_report_runs%rowtype;
  audit uuid:=gen_random_uuid();
+ expected_day date:=(clock_timestamp() at time zone 'Europe/London')::date-1;
+ overdue boolean;
 begin
  if auth.role() is distinct from 'authenticated' or
   p_tenant is distinct from '00000000-0000-0000-0000-000000000001'::uuid then
@@ -119,6 +121,9 @@ begin
   select * into r from public.learn_quickbooks_daily_report_runs
    where connection_id=s.connection_id order by report_date desc limit 1;
  end if;
+ overdue:=coalesce(s.enabled,false) and
+  (clock_timestamp() at time zone 'Europe/London')::time>=time '06:00' and
+  (r.report_date is distinct from expected_day or r.state<>'complete');
  insert into public.controlplane_change_log
   (id,tenant_id,actor,action,resource_type,resource_id,after,reason,
    correlation_id,view_as_active,source)
@@ -133,7 +138,8 @@ begin
   'read_at',clock_timestamp(),'connection_id',
   '04d68333-fc13-42c2-a500-789f386f015c',
   'enabled',coalesce(s.enabled,false),'revision',coalesce(s.revision,0),
-  'period_start',s.period_start,'latest_day',r.report_date,
+  'period_start',s.period_start,'expected_day',expected_day,'overdue',overdue,
+  'latest_day',r.report_date,
   'latest_state',r.state,'latest_code',r.outcome_code);
 end $$;
 

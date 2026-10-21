@@ -70,6 +70,7 @@ export function OperatorDailyQuickBooksReports({ tenantId, actorId, connections 
           status.latestState === 'held' ? `held for review${status.latestCode ? ` (${status.latestCode})` : ''}` :
             'capture in progress'}.`
         : 'No scheduled daily report pair has been verified yet.'}</p>
+      {status.overdue && <p role="alert" className="text-sm">The {status.expectedDay} scheduled P&amp;L and aged receivables pair is overdue or incomplete. Review the runner before relying on current figures.</p>}
       <button className="cp-secondary" type="button" disabled={busy || !connection}
         onClick={() => void change(!status.enabled)}>
         {busy ? 'Checking policy…' : status.enabled ? 'Pause new daily reads' : 'Enable approved daily reads'}

@@ -7,6 +7,8 @@ export type DailyQuickBooksStatus = {
   latestDay: string | null;
   latestState: 'claimed' | 'prepared' | 'complete' | 'held' | null;
   latestCode: string | null;
+  expectedDay: string;
+  overdue: boolean;
   readAt: string;
 };
 
@@ -32,6 +34,8 @@ export function readDailyQuickBooksStatus(value: unknown, actor: string,
     !(value.latest_state === null || ['claimed', 'prepared', 'complete', 'held'].includes(String(value.latest_state))) ||
     !(value.latest_code === null || typeof value.latest_code === 'string' &&
       /^[a-z_]{1,80}$/.test(value.latest_code)) ||
+    !day(value.expected_day) || typeof value.overdue !== 'boolean' ||
+    (value.overdue && !value.enabled) ||
     (value.enabled && (value.revision === 0 || value.period_start !== DRUMMONDS_FY27_PAIR.periodStart)) ||
     (value.latest_day === null) !== (value.latest_state === null))
     throw Error('Daily QuickBooks capture status unavailable');
@@ -39,5 +43,7 @@ export function readDailyQuickBooksStatus(value: unknown, actor: string,
     periodStart: value.period_start as string | null,
     latestDay: value.latest_day as string | null,
     latestState: value.latest_state as DailyQuickBooksStatus['latestState'],
-    latestCode: value.latest_code as string | null, readAt: value.read_at as string };
+    latestCode: value.latest_code as string | null,
+    expectedDay: value.expected_day as string, overdue: value.overdue as boolean,
+    readAt: value.read_at as string };
 }

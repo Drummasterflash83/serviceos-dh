@@ -11,6 +11,7 @@ const value = {
   connection_id: DRUMMONDS_FY27_PAIR.connectionId,
   audit_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', read_at: '2026-10-21T06:00:00Z',
   enabled: false, revision: 0, period_start: null,
+  expected_day: '2026-10-20', overdue: false,
   latest_day: null, latest_state: null, latest_code: null,
 };
 
@@ -22,6 +23,12 @@ test('accepts a dated complete run without report contents', () => {
     period_start: DRUMMONDS_FY27_PAIR.periodStart, latest_day: '2026-10-20',
     latest_state: 'complete' }, actor, now);
   assert.equal(result.latestDay, '2026-10-20');
+});
+test('shows an overdue scheduled pair without claiming a successful read', () => {
+  const result = readDailyQuickBooksStatus({ ...value, enabled: true, revision: 1,
+    period_start: DRUMMONDS_FY27_PAIR.periodStart, overdue: true }, actor, now);
+  assert.equal(result.overdue, true);
+  assert.equal(result.latestDay, null);
 });
 test('rejects wrong company, actor, scope and stale status', () => {
   for (const change of [
