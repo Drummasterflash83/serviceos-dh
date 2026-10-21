@@ -101,6 +101,15 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
     {detail.isPending && <p role="status">Opening the saved job record…</p>}
     {detail.isError && <p role="alert">The detailed record could not be checked. Refresh the job list; its saved summary remains available.</p>}
     {record && <>
+      <section aria-label="Verified customer and site">
+        <h3>Customer and site</h3>
+        {record.contactCounts ? <>
+          <p>Customer: {record.linkedCustomer ?? "Name not recorded on the linked customer."}</p>
+          <p>Site: {record.linkedSite ?? "Address not recorded on the linked site."}</p>
+        </> : <p>{row.identity_state === "reviewed_link"
+          ? "Linked customer and site details could not be verified for this read. Refresh the job before relying on the match."
+          : "The exact customer and site link is awaiting review. Commusoft source details above are not a verified ServiceOS match."}</p>}
+      </section>
       <section aria-label="Work and stage">
         <h3>Work and stage</h3>
         <p className="whitespace-pre-wrap break-words">{record.description ?? row.title ?? "No work description was saved."}</p>
@@ -121,7 +130,9 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
       </section>
       <section aria-label="Contact and visits">
         <h3>Contact and visits</h3>
-        <p>Last customer contact: not enough data yet — no call, email or message has been confirmed as belonging to this job.</p>
+        {record.contactCounts ? <p>{record.contactCounts.phone.toLocaleString("en-GB")} calls · {record.contactCounts.email.toLocaleString("en-GB")} emails confirmed as linked to this job in LEARN.
+          {record.contactCounts.latestAt ? ` Latest recorded contact ${savedAt(record.contactCounts.latestAt)}.` : " No job-linked contact is retained yet."} Unlinked contact history may still exist.</p>
+          : <p>Job-linked contact counts are unavailable until the exact job identity is confirmed.</p>}
         <p>Visits: not enough data yet — no confirmed technician appointment is attached to this job.</p>
       </section>
       {operator && scoreReviewFlag.data === true && <section className="nd-job-score-evidence"
