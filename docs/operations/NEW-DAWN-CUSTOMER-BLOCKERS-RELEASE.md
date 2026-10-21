@@ -17,3 +17,7 @@ commit;
 ```
 
 The drop affects only this derived read; saved jobs, links, customers, sites, and audit rows remain intact.
+
+## Verified before release
+
+The exact SQL SHA-256 is `fa794c6f9a0bfe8e55cfd8d00a8fe1f9fe1dc04846e5a0fac95c9f69557aa3b2`. The LIVE catalog showed the function and ledger absent. `node scripts/verify/new-dawn-customer-blockers-release.mjs --live-rollback-rehearsal` installed the function inside a rolled-back transaction, checked its grants, and confirmed the catalog returned to the original state. TypeScript, the focused decoder tests, and the production build passed. The persistent migration and signed-in LIVE check are still pending.
