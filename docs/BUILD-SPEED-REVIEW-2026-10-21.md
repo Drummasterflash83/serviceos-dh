@@ -1,41 +1,41 @@
-# Build speed review — 21 October 2026, 04:15 UTC
+# Build speed review — 21 October 2026, 07:28 UTC
+
+LIVE means Chris’s audited preview; no Drummonds staff login. Heidi is disabled.
 
 ## 1. Where we are
 
-LIVE means Chris’s MD preview; Heidi remains disabled.
-
-| Milestone | MD can use on LIVE | Deployed but unaccepted; blocker/owner | Forecast vs target |
+| Milestone | MD can see/use on LIVE | Deployed, unaccepted; blocker/owner | Client-ready forecast versus target |
 |---|---|---|---|
-| M1 Home | Paged 330 open jobs (70 On hold, 13 Pending), detail, LEARN totals/freshness. | No scores; workflow unaccepted. **Build/Chris.** | Layout 23 Oct; scored Home earliest 3 Nov. **Misses 22/23 Oct score target.** |
-| M2 job | Source-backed detail; 34/330 open jobs linked. | 296 identity holds; no verified visits, engineer or last contact. Sweep recovery unproved. **Build/Commusoft/Chris.** | Earliest 30 Oct with diary; **misses 23 Oct**. |
-| M3 money | Dated FY27 GP/NP and net A/R through 19 Oct. | No job–invoice bridge, NP target, field GP or standing refresh. **Build/Commusoft/Chris.** | Company view 23 Oct; job money **after 6 Nov** without ledger. |
-| M4 scores | Jobs counts and 3 Nov evidence-review date. | No scores; 20 Oct roster 326/326, per-job history outstanding. **Time/Build/Commusoft.** | First Moving measure 3 Nov earliest; full scores **after 6 Nov**. |
-| M5 obligations | Nothing actionable. | Opportunity API denied; alternate source absent. **Commusoft/Chris.** | Unknown, **after 6 Nov**. |
-| M6 assets | Nothing client-usable. | Synthetic onboarding only; no pilot/source. **Chris/Build.** | Unknown, **after 6 Nov**. |
-| Emma | Modules says “Not launched.” | Test number on older graph; 603 Tony-only; handset proof/route consent absent. **Build/Birchills/Chris.** | Unknown, **after 23 Oct**. |
+| M1 Home | Job-first Home/list/detail, money/freshness; 330 open (70 On hold, 13 Pending). | Layout/workflow not accepted by Chris; no staff access. **Chris/Build.** | Layout 23 Oct; score-led Home earliest 3 Nov. **Misses 22/23 Oct scoring.** |
+| M2 jobs | 34/330 open jobs linked; source-backed detail. | 296 identity holds. Identity worker repeatedly expires; settlement/lease fix is PR #341, not LIVE. Visits/engineer absent. **Build/Commusoft.** | Identity review 23 Oct if fixed; visit-ready ~30 Oct only with export. **Misses 23 Oct full job.** |
+| M3 money | Dated FY27 GP/NP and net A/R through 19 Oct. | Daily reader deployed but policy **Off**; no NP target or job–invoice bridge. **Build/Chris/Commusoft.** | Company view 23 Oct; job money **after 6 Nov** without ledger. |
+| M4 scores | Counts and earliest Moving review date, 3 Nov. | No published score; per-job evidence needs 14 qualifying days. **Time/Build.** | First measure 3 Nov earliest; full score **after 6 Nov**. |
+| M5 obligations | Nothing actionable. | Opportunity API 403; alternate source/export absent. **Commusoft/Chris.** | Unknown, **after 6 Nov**. |
+| M6 assets | Nothing client-usable. | Synthetic onboarding only; no pilot. **Chris/Build.** | Unknown, **after 6 Nov**. |
+| Emma | Modules says “Not launched.” | Draft #88 not provider-deployed; 603 notifies Tony only; route/handset proof and main-DID authority absent. **Build/Birchills/Chris.** | Unknown, **after 23 Oct**. |
 
-## 2. Measured output and time
+## 2. Where the time went
 
-19 October 13:45–21 October 04:15 UTC: **38.5 elapsed hours, 244 merged PRs**, median **103.5 changed lines/3 files**; **70 one-file**, **66 ≤20 lines**. File categories: **52 docs/status/evidence-only, 37 test/readback-only, 19 operator-only, 23 backend-only, 21 mixed/other, 92 touching client UI**. UI touch is not necessarily a usable feature. Flags/guards mixed with code cannot be counted reliably. **185 handback-stage files** changed.
+19 Oct 13:45–21 Oct 07:28 UTC is **41h43 elapsed, not labour**. First-parent Git shows **248 merged PRs**, median **106 changed lines/3 files**; 70 changed one file, 65 changed ≤20 lines. Classification: **53 docs/evidence-only, 16 pure test/readback, 94 touched client UI, 85 backend/other**. UI-touch is an upper bound on usable features; mixed flags/guards cannot be counted reliably. Earlier audit: 19 operator-only PRs; #341 open.
 
-We kept **no time sheet**. Actual hours on verification versus screens, waiting (Chris, exports, providers, tools), and rework **cannot be recovered**. The replaced 24-job preview, score panels and first identity rule are documented rework. I should have instrumented this.
+No time sheet exists before 21 Oct 04:26; historic verification, screen-building, waiting and rework hours **cannot be recovered honestly**. The **04:26–07:25 UTC** log has **1.35h building, 1.46h verifying, 0h waiting, 0.17h rework**. Verification covered hashes, migration/Edge rollback and signed-in checks. The 24-job preview, score panels and identity rule were untimed rework.
 
-Hourly merge trace, **not labour**, UTC (A UI, B Commusoft, C QuickBooks, D Emma, O other; – none): **19 Oct** 14 AB, 15 ABCO, 16–20 ABCO, 21–22 ABC, 23 ABCO; **20 Oct** 00–02 ABCO, 03 ABO, 04 ABCD, 05 B, 06 AB, 07 BCO, 08 BC, 09 ABC, 10 ABCD, 11–12 –, 13 D, 14 B, 15–16 ABCO, 17 A, 18 B, 19 ABC, 20–21 AB, 22–23 –; **21 Oct** 00 C, 01 A, 02 AB, 03–04 –. **26/33 active merge-hours** spanned tracks; LIVE integration was serial. D had **three merged PRs**.
+Git merge-hours show overlap, **not actual agent concurrency** (A UI, B Commusoft, C QuickBooks, D Emma, O other): **19 Oct:** 14 AB; 15 ABCO; 16–20 ABCO; 21–22 ABC; 23 ABCO. **20 Oct:** 00–02 ABCO; 03 ABO; 04 ABCD; 05 B; 06 AB; 07 BCO; 08 BC; 09 ABC; 10 ABCD; 11–12 none; 13 D; 14 B; 15–16 ABCO; 17 A; 18 B; 19 ABC; 20–21 AB; 22–23 none. **21 Oct:** 00 C; 01 A; 02 AB; 03 none; 04 BO; 05 AB; 06 AC; 07 none. LIVE integration was serial; identity failure and the Off daily-reader policy blocked B/C outcomes.
 
-## 3. Top causes, ranked by observable drag; hours lost unrecorded
+## 3. Root causes
 
-1. **Micro-releases.** Goal: “Ship fewer, outcome-sized PRs”; “Don't open STATUS-only PRs.” **244 merges/66 tiny PRs** contradict it. Security checks protect data; separate copy-change proofs are my ceremony.
-2. **Over-interpretation.** I read the goal’s exact dual-ID rule as forbidding Chris-approved clean creation; reset a 325/326 day despite ≥99%; withheld labelled partial scores despite “Missing measures drop out and the weights rescale.” These were my choices, not AGENTS.md.
-3. **Missing authority.** Commusoft office tasks are not visits; no exact QuickBooks `Invoice.Id` bridge exists. Holding invented claims protects clients; source exploration yielded little UI.
-4. **Operator drift.** AGENTS.md requires “explicit, logged client selection and operator reads” for tenant safety, not **19 operator-only PRs** ahead of a clear Home. My sequencing did that.
-5. **Tool/approval friction.** Arc failures, browser review, local paths and approvals slowed integration. “Never invent successful processing” and secret exclusion protect clients; repeat approvals were avoidable.
+Lost hours unrankable; observable drag:
 
-## 4. Proposed fix — **wait for Chris’s reply before applying**
+1. **Micro-PR habit:** 248 merges, 65 tiny. Old AGENTS direction said “Ship small, verified LIVE slices behind flags”; the new goal says “One PR per client-usable outcome.” Separate copy/guard releases were ceremony.
+2. **Verification per slice:** my habit of separate hash pins, ledgers and readbacks amplified each PR. Rollback/isolation protect production; repetition for copy does not.
+3. **Over-strict interpretation:** I treated clean source creation as needing a pre-reviewed site, one missing job as resetting a ≥99% day, and approved partial scores as unpublishable. My choices, not safety rules.
+4. **Operator-first drift:** AGENTS requires “explicit, logged client selection and operator reads.” It did not require preflight screens ahead of Home.
+5. **Real source/tool gaps:** appointment/invoice identity, Birchills 603, Arc input/browser review and local-only paths blocked integration. Holding unproved money/phone claims protects clients; workarounds do not.
 
-Replace the goal’s “Every finished slice goes to LIVE ... as soon as it's verified” with: **“Release 1–3 client-usable outcomes daily in at most two verified LIVE batches. Bundle related code, migrations, rollback and evidence in one outcome PR.”** Add to AGENTS.md: **“Apply approved clean exact-source links in reversible audited batches; ≥99% frozen-roster coverage qualifies a day, with per-job gaps shown; publish approved partial measures with sample, dates and missing measures.”** Keep tenant isolation, secrets out of Git, and explicit consent for provider writes, money, messages, routing and logins.
+## 4. Fix proposed; do not start it before Chris replies
 
-Target **300–1,000 lines/outcome PR** and **one verification per morning/afternoon batch**. Replace Arc forms with an audited one-click action plus CLI readback; put handoffs in Git.
+Replace “Ship small, verified LIVE slices behind flags” in AGENTS with **“Ship 1–3 client-usable outcomes daily in at most two verified LIVE batches; bundle code, schema, rollback and evidence in one 300–1,000-line outcome PR. Use a flag when exposure or rollback warrants it, not for every copy change.”** Codify approved reversible exact-source linking, ≥99% roster days, and labelled partial scores. Retain isolation, audit, secret exclusion and explicit authority for provider writes, money, messages, routing and logins. Verify once per midday/afternoon batch.
 
-**Chris/source-owner actions:** 1. In Drummonds Commusoft, find **Diary/appointment export** and **invoice integration/transfer report**; send the menu breadcrumb or grant a guided read-only session. Published docs do **not** verify click labels. Export ≤100 appointments for **20–27 Oct** with event/job/engineer IDs, zoned times, status/corrections; provide exact job/document IDs and QuickBooks `Invoice.Id`/realm. Unlocks visits, Team and job money. 2. Send Birchills: **“Make mailbox 603 notify Rob and Tony; confirm its transfer target, Rob 109/Tony 105 forwarding, and Mon–Fri 08:30–17:00 versus out-of-hours routes. Send a test receipt; don't change the main DID.”** Unlocks Emma tests. 3. Give FY27 NP target/period/basis, name an asset pilot, inspect `/client-md` on desktop/phone. 4. Decide on bounded standing read-only QuickBooks refresh; prior consent was one-use.
+**Chris’s unblocking actions:** 1. Commusoft → Diary/Reports: export **20–27 Oct appointments** with event/job/engineer IDs, zoned times, status and corrections; send the actual menu breadcrumb (labels unverified). Unlocks visits/Team. 2. Commusoft → integration/report: export **job–invoice transfer ledger** with job/document IDs, QuickBooks Invoice.Id and realm; send the breadcrumb. Unlocks job money. 3. Send Birchills: **“Make mailbox 603 notify Rob and Tony; confirm Rob 109/Tony 105 forwarding and Mon–Fri 08:30–17:00/out-of-hours routes; send a test receipt; do not change the main DID.”** Unlocks Emma tests. 4. Give FY27 NP target/period/basis and asset pilot. 5. Check /client-md desktop/phone after release. 6. Answer pending incident-batch and daily-reader activation questions; unlocks #341 and daily reports.
 
-**Plan:** 21 Oct 09:00–12:00 identity/card recovery readback; 12:00–17:00 job workflow/Home; 17:00–19:00 LIVE batch. 22 Oct 09:00–12:00 diary/ledger or visible holds; 12:00–17:00 LIVE batch/phone review. **By 22 Oct 17:00:** jobs first, dated money/freshness, linked/held counts, no invented score. 23 Oct 09:00–13:00 score/Emma evidence; 13:00–17:00 layout/Dropbox HANDBACK. **By 23 Oct 17:00:** reviewable MD layout and unfinished gates.
+**Tools:** one audited operator button plus CLI readback; Git handoffs and controlled private storage. **Next blocks:** 21 Oct 09–12 identity incident, 12–17 Home/release; 22 Oct 09–12 diary/ledger or holds, 12–17 release/phone; 23 Oct 09–13 layout, 13–17 LIVE check/Dropbox handback. **22 Oct 17:00:** jobs-first, dated money/freshness, linked/held counts. **23 Oct 17:00:** reviewable MD layout with unfinished gates, no invented scores.
