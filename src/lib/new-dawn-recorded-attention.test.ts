@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { groupRecordedAttention } from "./new-dawn-recorded-attention.ts";
-import type { OpenJobRow } from "./new-dawn-open-job-page.ts";
+import { collectRecordedAttentionPages, groupRecordedAttention } from "./new-dawn-recorded-attention.ts";
+import type { OpenJobPage, OpenJobRow } from "./new-dawn-open-job-page.ts";
 
 const row = (id: string, customerId: string | null, name: string | null,
   connection = "11111111-1111-1111-1111-111111111111",
@@ -15,6 +15,42 @@ const row = (id: string, customerId: string | null, name: string | null,
   property_external_id: "40", customer_external_id: customerId,
   context_state: customerId ? "source_customer_and_property" : "source_property_missing",
   identity_state: "awaiting_review",
+});
+
+const page = (rows: OpenJobRow[], nextCursor: string | null,
+  snapshotAt = "2026-10-21T11:00:00Z"): OpenJobPage => ({
+  tenantId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  actorId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+  auditId: "cccccccc-cccc-cccc-cccc-cccccccccccc",
+  observedAt: "2026-10-21T11:00:01Z", snapshotAt,
+  statusFilter: null, rows, nextCursor, creationOrderAvailable: true,
+});
+
+test("paged attention scan keeps one snapshot and stops at the first Open job", async () => {
+  const cursors: Array<string | null> = [];
+  const pages = [page([row("1", "20", "Example")], "next"),
+    page([row("2", "20", "Example", undefined, "pending"),
+      row("3", "20", "Example", undefined, "open")], "unneeded")];
+  const result = await collectRecordedAttentionPages(async (cursor) => {
+    cursors.push(cursor);
+    return pages[cursors.length - 1];
+  });
+  assert.deepEqual(cursors, [null, "next"]);
+  assert.deepEqual(result.rows.map((item) => item.external_id), ["1", "2"]);
+  assert.equal(result.complete, true);
+});
+
+test("paged attention scan labels its cap and rejects drift, repeats and status regression", async () => {
+  const first = page([row("1", "20", "Example")], "next");
+  const capped = await collectRecordedAttentionPages(async () => first, 1);
+  assert.equal(capped.complete, false);
+  await assert.rejects(collectRecordedAttentionPages(async (cursor) =>
+    cursor ? page([row("2", "20", "Example")], null, "2026-10-21T11:01:00Z") : first));
+  await assert.rejects(collectRecordedAttentionPages(async (cursor) =>
+    cursor ? page([row("1", "20", "Example")], null) : first));
+  await assert.rejects(collectRecordedAttentionPages(async (cursor) =>
+    cursor ? page([row("3", "20", "Example")], null) :
+      page([row("2", "20", "Example", undefined, "pending")], "next")));
 });
 
 test("exact provider customer ID groups jobs across sites without claiming a canonical link", () => {

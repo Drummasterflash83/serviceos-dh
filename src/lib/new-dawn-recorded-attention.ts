@@ -1,4 +1,46 @@
-import type { OpenJobRow } from "./new-dawn-open-job-page";
+import type { OpenJobPage, OpenJobRow } from "./new-dawn-open-job-page";
+
+export type RecordedAttentionPages = {
+  rows: OpenJobRow[];
+  snapshotAt: string;
+  complete: boolean;
+};
+
+/** Keep a bounded, pinned scan of the existing audited job pages. The first
+ * Open row proves all On-hold and Pending rows precede it in this snapshot. */
+export async function collectRecordedAttentionPages(
+  readPage: (cursor: string | null) => Promise<OpenJobPage>,
+  maxPages = 4,
+): Promise<RecordedAttentionPages> {
+  let cursor: string | null = null;
+  let snapshotAt: string | null = null;
+  let lastRank = -1;
+  const rows: OpenJobRow[] = [];
+  const seen = new Set<string>();
+  for (let index = 0; index < maxPages; index++) {
+    const page = await readPage(cursor);
+    if (!page.creationOrderAvailable ||
+      (snapshotAt !== null && snapshotAt !== page.snapshotAt) ||
+      (page.rows.length === 0 && page.nextCursor))
+      throw Error("Recorded customer work unavailable");
+    snapshotAt = page.snapshotAt;
+    for (const row of page.rows) {
+      const rank = row.status === "on_hold" ? 0 : row.status === "pending" ? 1 : 2;
+      if (rank < lastRank) throw Error("Recorded customer work unavailable");
+      lastRank = rank;
+      const key = `${row.connection_id}:${row.external_id}`;
+      if (seen.has(key)) throw Error("Recorded customer work unavailable");
+      seen.add(key);
+      if (rank < 2) rows.push(row);
+    }
+    if (lastRank === 2 || !page.nextCursor) {
+      return { rows, snapshotAt, complete: true };
+    }
+    cursor = page.nextCursor;
+  }
+  if (snapshotAt === null) throw Error("Recorded customer work unavailable");
+  return { rows, snapshotAt, complete: false };
+}
 
 export type RecordedAttentionGroup = {
   key: string;

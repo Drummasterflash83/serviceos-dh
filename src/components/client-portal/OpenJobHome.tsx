@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
 import { drummondsTenantId } from "@/lib/new-dawn-md-view";
 import { jobSourceIdentity } from "@/lib/new-dawn-job-identity-label";
-import { groupRecordedAttention } from "@/lib/new-dawn-recorded-attention";
+import { collectRecordedAttentionPages, groupRecordedAttention } from "@/lib/new-dawn-recorded-attention";
 import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
 import { customerBlockedJobDetailKey, readCustomerBlockers, type CustomerBlockedJob } from "@/lib/new-dawn-customer-blockers";
@@ -247,40 +247,14 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     enabled: enabled && showRecordedAttention,
     retry: false,
     refetchOnWindowFocus: false,
-    queryFn: async () => {
-      let cursor: string | null = null;
-      let snapshotAt: string | null = null;
-      let lastRank = -1;
-      let complete = false;
-      const rows: OpenJobRow[] = [];
-      const seen = new Set<string>();
-      for (let index = 0; index < 4; index++) {
-        const { data, error } = await getSupabaseClient().rpc("new_dawn_open_job_page", {
-          p_tenant: tenant, p_reason: operator ? approvedReason : null,
-          p_cursor: cursor, p_status: null, p_page_size: 50,
-        }).abortSignal(AbortSignal.timeout(25_000));
-        if (error) throw Error("Recorded customer work unavailable");
-        const page = readOpenJobPage(data, tenant, user!.id, null);
-        if (!page.creationOrderAvailable ||
-          (snapshotAt !== null && snapshotAt !== page.snapshotAt) ||
-          (page.rows.length === 0 && page.nextCursor))
-          throw Error("Recorded customer work unavailable");
-        snapshotAt = page.snapshotAt;
-        for (const row of page.rows) {
-          const rank = row.status === "on_hold" ? 0 : row.status === "pending" ? 1 : 2;
-          if (rank < lastRank) throw Error("Recorded customer work unavailable");
-          lastRank = rank;
-          const key = `${row.connection_id}:${row.external_id}`;
-          if (seen.has(key)) throw Error("Recorded customer work unavailable");
-          seen.add(key);
-          if (rank < 2) rows.push(row);
-        }
-        if (lastRank === 2 || !page.nextCursor) { complete = true; break; }
-        cursor = page.nextCursor;
-      }
-      if (snapshotAt === null) throw Error("Recorded customer work unavailable");
-      return { rows, snapshotAt, complete };
-    },
+    queryFn: () => collectRecordedAttentionPages(async (cursor) => {
+      const { data, error } = await getSupabaseClient().rpc("new_dawn_open_job_page", {
+        p_tenant: tenant, p_reason: operator ? approvedReason : null,
+        p_cursor: cursor, p_status: null, p_page_size: 50,
+      }).abortSignal(AbortSignal.timeout(25_000));
+      if (error) throw Error("Recorded customer work unavailable");
+      return readOpenJobPage(data, tenant, user!.id, null);
+    }),
   });
   // The unfiltered first page is already ordered with On-hold records first.
   // Reuse it for the ten oldest rows instead of issuing a second expensive
