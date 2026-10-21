@@ -163,7 +163,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   const [pageIndex, setPageIndex] = useState(0);
   const [cursors, setCursors] = useState<Array<string | null>>([null]);
   const [selected, setSelected] = useState<OpenJobRow | null>(null);
-  const [showOldest, setShowOldest] = useState(true);
+  const [showOldest, setShowOldest] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
   const jobsRef = useRef<HTMLDivElement>(null);
   const authorisedClient = !operator && !!user && profile?.tenant_id === tenant &&
@@ -171,7 +171,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   const enabled = !!user && uuid(tenant) && (operator ? approvedReason !== null : authorisedClient);
   useEffect(() => {
     setApprovedReason(mdReason ?? null); setReason(""); setStatus(null); setPageIndex(0);
-    setCursors([null]); setSelected(null); setShowOldest(true);
+    setCursors([null]); setSelected(null); setShowOldest(false);
   }, [tenant, user?.id, operator, mdReason]);
   const summary = useQuery({
     queryKey: ["new-dawn-open-job-status-summary", tenant, user?.id, operator,
@@ -445,7 +445,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
       </>}
       {operator && <section className="nd-oldest-jobs" aria-label="Ten oldest On-hold jobs by creation date">
         <h3>Oldest On-hold jobs to check</h3>
-        <p>Ordered by verified job creation date. Creation age is not time On hold; confirm the cause and next owner in Commusoft.</p>
+        <p>Ordered by verified job creation date. These records can include internal accounts or office work; creation age is not time On hold or proof of customer urgency.</p>
         <button type="button" className="nd-oldest-toggle" aria-expanded={showOldest}
           onClick={() => setShowOldest((shown) => !shown)}>
           {showOldest ? "Hide oldest records" : "Explore ten oldest records"} →
