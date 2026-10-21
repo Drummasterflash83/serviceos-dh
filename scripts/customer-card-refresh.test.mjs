@@ -39,6 +39,7 @@ function fixture({
   conflict = false,
   size = 2,
   graphEdges,
+  graphCountOverride,
 } = {}) {
   const numbers = Array.from({ length: size }, (_, i) => i + 1);
   const cards = numbers.map((n) => ({
@@ -57,6 +58,7 @@ function fixture({
   }));
   const original = structuredClone(cards),
     writes = [];
+  let graphCountCalls = 0;
   const tables = {
     customer_cards: cards,
     people: numbers
@@ -82,6 +84,22 @@ function fixture({
   };
   const db = {
     async rpc(name, args) {
+      if (name === "learn_customer_card_relationship_counts") {
+        assert.equal(args.p_tenant, id(100));
+        assert.ok(args.p_node_ids.length >= 1 && args.p_node_ids.length <= 40, "bounded graph count batch");
+        graphCountCalls++;
+        const error = typeof fail === "function"
+          ? fail({ table: "graph_edges", batchIndex: graphCountCalls, filter: "" })
+          : fail === "graph_edges";
+        if (error) return { data: null, error: { message: "PRIVATE DATABASE CONTENT" } };
+        const rows = args.p_node_ids.map(node_id => ({
+          node_id,
+          edge_count: tables.graph_edges.reduce((n, e) =>
+            n + Number(e.from_node_id === node_id) + Number(e.to_node_id === node_id), 0),
+        }));
+        if (graphCountOverride) graphCountOverride(rows);
+        return { data: rows, error: null };
+      }
       assert.equal(name, "learn_card_projection_inputs");
       assert.equal(args.p_tenant, id(100));
       const card = args.p_card;
@@ -118,7 +136,8 @@ function fixture({
       let eqs = [],
         filter = "",
         patch,
-        cap, inFilter, after;
+        cap, inFilter, after, orderBy,
+        neqFilters = [], ltFilters = [], gtFilters = [], isFilters = [];
       const q = {
         select() {
           return q;
@@ -127,13 +146,16 @@ function fixture({
           eqs.push([k, v]);
           return q;
         },
-        neq() {
+        neq(k, v) {
+          neqFilters.push([k, v]);
           return q;
         },
-        lt() {
+        lt(k, v) {
+          ltFilters.push([k, v]);
           return q;
         },
-        order() {
+        order(k, options) {
+          orderBy = [k, options?.ascending !== false];
           return q;
         },
         limit(n) {
@@ -146,8 +168,12 @@ function fixture({
           return q;
         },
         gt(k, value) {
-          assert.equal(k, "id");
-          after = value;
+          if (k === "id") after = value;
+          else gtFilters.push([k, value]);
+          return q;
+        },
+        is(k, value) {
+          isFilters.push([k, value]);
           return q;
         },
         or(v) {
@@ -182,19 +208,34 @@ function fixture({
           Object.assign(
             cards.find((c) => c.id === key),
             structuredClone(patch),
+            { updated_at: new Date().toISOString() },
           );
           return { data: single ? { id: key } : null, error: null };
         }
         let rows = tables[table];
         if (inFilter) rows = rows.filter(r => inFilter[1].includes(r[inFilter[0]]));
+        for (const [k, v] of neqFilters) rows = rows.filter(r => r[k] !== v);
+        for (const [k, v] of ltFilters) rows = rows.filter(r => r[k] < v);
+        for (const [k, v] of gtFilters) rows = rows.filter(r => r[k] > v);
+        for (const [k, v] of isFilters) {
+          if (k === "context->>projection")
+            rows = rows.filter(r => (r.context?.projection ?? null) === v);
+          else rows = rows.filter(r => (r[k] ?? null) === v);
+        }
         if (table === "graph_edges" && filter) {
           const ids = filter.match(/[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}/g) ?? [];
           rows = rows.filter(r => ids.includes(r.from_node_id) || ids.includes(r.to_node_id))
             .sort((a, b) => a.id.localeCompare(b.id));
           if (after) rows = rows.filter(r => r.id > after);
         }
-        if (table === "customer_cards" && eqs.some(([k]) => k === "id"))
-          rows = rows.filter((r) => r.id === eqs.find(([k]) => k === "id")[1]);
+        if (table === "customer_cards") {
+          for (const [k, v] of eqs) if (k !== "tenant_id") rows = rows.filter(r => r[k] === v);
+        }
+        if (orderBy) {
+          const [k, ascending] = orderBy;
+          rows = [...rows].sort((a, b) =>
+            String(a[k]).localeCompare(String(b[k])) * (ascending ? 1 : -1));
+        }
         if (cap) rows = rows.slice(0, cap);
         return { data: single ? (rows[0] ?? null) : rows, error: null };
       }
@@ -205,6 +246,7 @@ function fixture({
     cards,
     original,
     writes,
+    graphCountCalls: () => graphCountCalls,
     run: (payload) =>
       exports.handleCustomerCardSync({
         tenantId: id(100),
@@ -213,23 +255,49 @@ function fixture({
       }),
   };
 }
-test("maximum sweep bounds URLs, pages graph edges and counts cross-batch endpoints once", async () => {
+test("500-card sweep paginates ten at a time and preserves cross-batch and self-loop counts", async () => {
   const graphEdges = Array.from({length: 1001}, (_, i) => ({id: id(10000 + i), from_node_id: id(1001), to_node_id: id(1041)}));
   graphEdges.push({id: id(20000), from_node_id: id(1001), to_node_id: id(1001)});
   const f = fixture({size: 500, graphEdges});
-  const r = await f.run({limit: 500});
-  assert.equal(r.success, true);
-  assert.equal(r.recordsProcessed, 500);
+  const sweep_since = "2026-10-21T00:00:00Z";
+  let projected = 0;
+  for (let page = 0; page < 50; page++) {
+    const r = await f.run({limit: 500, sweep_since});
+    assert.equal(r.success, true);
+    assert.equal(r.recordsProcessed, 10);
+    projected += r.recordsProcessed;
+  }
+  assert.equal(projected, 500);
+  assert.equal((await f.run({sweep_since})).recordsProcessed, 0);
   assert.equal(f.cards[0].context.projection.business.relationship_count, 1003);
   assert.equal(f.cards[40].context.projection.business.relationship_count, 1001);
   assert.equal(f.cards[499].context.projection.business.relationship_count, 0);
+  assert.equal(f.graphCountCalls(), 50);
 });
-test("a later graph page failure retains all saved projections", async () => {
+test("a later graph count batch failure retains that batch's saved projections", async () => {
   const graphEdges = Array.from({length: 501}, (_, i) => ({id: id(10000 + i), from_node_id: id(1001), to_node_id: id(1041)}));
-  const f = fixture({size: 200, graphEdges, fail: q => q.table === 'graph_edges' && !!q.after});
-  assert.equal((await f.run()).success, false);
-  assert.equal(f.writes.length, 0);
-  assert.deepEqual(f.cards, f.original);
+  const f = fixture({size: 200, graphEdges, fail: q => q.table === 'graph_edges' && q.batchIndex === 2});
+  const sweep_since = "2026-10-21T00:00:00Z";
+  assert.equal((await f.run({sweep_since})).success, true);
+  assert.equal(f.writes.length, 10);
+  assert.equal((await f.run({sweep_since})).success, false);
+  assert.equal(f.writes.length, 10);
+  assert.deepEqual(f.cards.slice(10), f.original.slice(10));
+});
+test("malformed graph degree envelopes never overwrite saved cards", async () => {
+  for (const mutate of [
+    rows => rows.pop(),
+    rows => { rows[0].node_id = id(9999); },
+    rows => { rows[0].edge_count = -1; },
+    rows => { rows[0].edge_count = 0.5; },
+    rows => { if (rows.length > 1) rows[1].node_id = rows[0].node_id; },
+  ]) {
+    const f = fixture({ graphEdges: [], graphCountOverride: mutate });
+    const r = await f.run();
+    assert.equal(r.success, false);
+    assert.equal(f.writes.length, 0);
+    assert.deepEqual(f.cards, f.original);
+  }
 });
 test("shared identity and graph read failures preserve every prior card and redact database prose", async () => {
   for (const table of ["customer_cards", "people", "companies", "graph_nodes", "graph_edges"]) {
