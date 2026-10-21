@@ -176,12 +176,10 @@ export async function handleIdentityResolve(
       counts.events_consumed += receipt.eventsConsumed;
     }
     if (counts.resolved > 0) triggerGraphSyncBackground(tenantId);
-    failedStage = "review_count";
-    const review = await admin.rpc("learn_identity_review_count", { p_tenant: tenantId });
-    if (review.error) noteSqlstate(review.error);
-    if (review.error || !Number.isSafeInteger(review.data) || review.data < 0)
-      throw Error("identity_review_inventory_unconfirmed");
-    counts.review_required = review.data;
+    // A durable review hold is already recorded by the delivery receipt.
+    // Historical holds belong to the operator queue, not this work batch;
+    // recounting the whole tenant here can time out after successful cards
+    // and falsely dead-letter an unrelated ordinary job.
     const needsReview = counts.review_required > 0;
     // A durable hold removes this revision from pending selection. Keep the
     // review visible, but drain unrelated eligible records in the next batch.
