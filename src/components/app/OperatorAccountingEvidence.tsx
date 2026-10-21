@@ -4,6 +4,7 @@ import { readOperatorInputWriteAccess } from "@/lib/learn-operator-inputs";
 import { readQuickBooksOverview, type QuickBooksOverview } from "@/lib/learn-quickbooks";
 import { OperatorQuickBooksReportCapture } from "./OperatorQuickBooksReportCapture";
 import { OperatorApprovedFy27Pair } from "./OperatorApprovedFy27Pair";
+import { OperatorDailyQuickBooksReports } from "./OperatorDailyQuickBooksReports";
 
 /** Short operator path to the existing reviewed, one-use report action. */
 export function OperatorAccountingEvidence({ tenantId, actorId }: {
@@ -60,6 +61,8 @@ export function OperatorAccountingEvidence({ tenantId, actorId }: {
       {canWrite === false && <p role="status">Read-only operator access. An authorised OpenFolk administrator must review and capture source evidence.</p>}
       {overview && canWrite === true && !checking && <>
         <OperatorApprovedFy27Pair key={`fy27:${tenantId}:${actorId}`}
+          tenantId={tenantId} actorId={actorId} connections={overview.connections}/>
+        <OperatorDailyQuickBooksReports key={`daily:${tenantId}:${actorId}`}
           tenantId={tenantId} actorId={actorId} connections={overview.connections}/>
         <OperatorQuickBooksReportCapture key={`${tenantId}:${actorId}`}
           tenantId={tenantId} actorId={actorId} canWrite
