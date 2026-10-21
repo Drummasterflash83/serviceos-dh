@@ -87,6 +87,14 @@ export async function runReportCapture(request: ReportCaptureRequest, ports: {
   });
   if (started.error || !object(started.data) || started.data.requestId !== request.requestId || started.data.state !== "prepared")
     throw Error("scope_denied");
+  return capturePreparedReport(request, ports);
+}
+/** For a service-only scheduled request already prepared by the audited SQL
+ * policy. The caller cannot create or broaden a request through this path. */
+export async function capturePreparedReport(request: ReportCaptureRequest, ports: {
+  serviceRpc: Rpc; fetcher?: typeof fetch; signal?: AbortSignal;
+}): Promise<unknown> {
+  if (!validateReportCaptureRequest(request)) throw Error("request_invalid");
   const claim = await ports.serviceRpc("learn_quickbooks_report_acquire", { p_request: request.requestId });
   if (claim.error || !acquired(claim.data, request)) throw Error("claim_unavailable");
   const a = claim.data;
