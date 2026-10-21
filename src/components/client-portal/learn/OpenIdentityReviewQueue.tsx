@@ -128,7 +128,11 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
           {action === "customer_site" && (row.holdReason === "property_not_exact_work_site" ? onReviewCustomer : onReviewCustomer || onReviewSite) && <button type="button" className="cp-secondary" disabled={!!actionId}
             onClick={() => void reviewExactSource(row)}>{actionId === row.externalId ? "Checking exact source…" : row.holdReason === "property_not_exact_work_site"
               ? "Review customer identity (job stays unlinked)" : "Review customer and site"}</button>}
-          {action === "hold" && <p className="text-sm">Keep this job unlinked until its source route or conflict is reviewed. No match has been guessed.</p>}
+          {action === "hold" && <>
+            <p className="text-sm">Keep this job unlinked until its source route or conflict is reviewed. No match has been guessed.</p>
+            {onReviewJob && <button type="button" className="cp-secondary"
+              onClick={() => onReviewJob(connection, row.externalId)}>Inspect saved job and source conflict</button>}
+          </>}
         </li>;
       })}</ol>
       <div className="flex justify-between gap-2"><button type="button" className="cp-secondary" disabled={busy || cursors.length === 1}
