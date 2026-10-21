@@ -462,6 +462,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
           {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending</p>}
+          {activeSummary?.identity && <p>{activeSummary.identity.linked.toLocaleString("en-GB")} jobs have a checked source match; {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} are still being matched.</p>}
           <p>{sourceFreshness.isPending ? "Checking Commusoft comparison…"
             : commusoftFreshnessSummary(sourceFreshness.data)}</p>
           {sourceFreshness.data?.providerCheckedAt && <small>Newest-job check {savedAt(sourceFreshness.data.providerCheckedAt)}. Older jobs and later updates may still be missing.</small>}
