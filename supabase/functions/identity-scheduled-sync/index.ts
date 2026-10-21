@@ -80,9 +80,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
         jobKey: `identity.resolve:${tenantId}`,
         connectorId: "openfolk-core",
         moduleId: "core.identity",
-        // Prime the drain at the handler's max batch; the worker then self-continues
-        // (chains the next batch after each full run) until the backlog clears.
-        payload: { limit: 200 },
+        // Keep each ordinary attempt inside the Edge runtime's wall-clock
+        // budget; the worker chains another batch after each full settlement.
+        payload: { limit: 10 },
       },
       counts,
       enqueueJob,

@@ -213,7 +213,25 @@ test("empty inventory succeeds with zero work; a full verified batch continues o
   assert.deepEqual(full.continuation?.payload, { limit: 2 });
   const bounded = fixture({ rows: [] });
   await bounded.run({ limit: 2000 });
-  assert.equal(bounded.calls[0].args.p_limit, 50);
+  assert.equal(bounded.calls[0].args.p_limit, 10);
+});
+test("legacy fifty-row job processes ten and does not claim a held full batch", async () => {
+  const rows = Array.from({ length: 10 }, (_, index) => row(index + 2));
+  const f = fixture({ rows, respond: (args: any, receipt: any) => ({
+    data: args.p_interaction === id(2)
+      ? { ...receipt, state: "review_required", reason: "direction_unverified",
+        cardId: null, cardEnriched: false, personCreated: false,
+        companyCreated: false, recommendations: 0, suggestions: 0,
+        eventsConsumed: 0 }
+      : receipt,
+    error: null,
+  }) });
+  const result = await f.run({ limit: 50 });
+  assert.equal(f.calls[0].args.p_limit, 10);
+  assert.equal(result.recordsProcessed, 9);
+  assert.equal(result.result?.reviews_recorded, 1);
+  assert.equal(result.continuation, undefined);
+  assert.equal(result.error?.code, "identity_review_required");
 });
 test("legacy input without a pending event reports zero events consumed", async () => {
   const r = await fixture({

@@ -15,7 +15,7 @@ export async function handleIdentityResolve(
   const batch = Math.max(
     1,
     Math.min(
-      50,
+      10,
       typeof payload.limit === "number" && Number.isFinite(payload.limit)
         ? Math.trunc(payload.limit)
         : 20,
@@ -190,6 +190,11 @@ export async function handleIdentityResolve(
       (payload.limit === undefined ||
         (typeof payload.limit === "number" && Number.isInteger(payload.limit) &&
           payload.limit >= 1 && payload.limit <= 50)) &&
+      // The settlement fence requires a full requested batch when continuing
+      // a held review. A legacy 50-row job may safely settle ten successful
+      // records, but a mixed held batch must let the scheduler prime a new
+      // ten-row job instead of claiming fifty review receipts exist.
+      (counts.review_required === 0 || payload.limit === undefined || payload.limit === batch) &&
       counts.failed === 0 &&
       rows.length === batch &&
       counts.resolved + counts.reviews_recorded === rows.length;
