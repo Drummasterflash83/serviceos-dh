@@ -53,20 +53,17 @@ async function stage() {
 /** An uncertain first write is reconciled by the exact Vault name, never replayed. */
 export async function bind() {
   const before = await stage();
-  if (before.vaultCount === 0) {
-    try {
-      await query(`do $key$ begin
-        if exists(select 1 from vault.secrets where name='${NAME}') then
-          raise exception 'daily_key_exists'; end if;
-        perform vault.create_secret(encode(gen_random_bytes(32),'hex'),
-          '${NAME}','Dedicated Drummonds daily read-only QuickBooks report trigger');
-      end $key$;`, false);
-    } catch { /* Exact-name readback below determines the outcome. */ }
-  }
+  if (before.vaultCount !== 0) throw Error('daily_key_preexisting_stop');
+  const created = await query(`select vault.create_secret(encode(gen_random_bytes(32),'hex'),
+    '${NAME}','Dedicated Drummonds daily read-only QuickBooks report trigger') id`, false);
+  const id = created.length === 1 ? created[0]?.id : null;
+  if (typeof id !== 'string' ||
+    !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id))
+    throw Error('daily_key_creation_unconfirmed');
   const afterVault = await stage();
   if (afterVault.vaultCount !== 1) throw Error('daily_key_vault_outcome_unconfirmed');
   const exact = await query(`select decrypted_secret secret from vault.decrypted_secrets
-    where name='${NAME}'`);
+    where id='${id}'::uuid and name='${NAME}'`);
   const secret = exact.length === 1 ? exact[0]?.secret : null;
   if (typeof secret !== 'string' || !/^[a-f0-9]{64}$/.test(secret))
     throw Error('daily_key_exact_value_unavailable');
