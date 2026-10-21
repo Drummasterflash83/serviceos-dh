@@ -483,7 +483,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           : "Linked customer jobs could not be checked. Refresh to retry."}</p>}
         {linkedCustomers && <>
           {linkedCustomers.groups.length === 0 && <p>No confirmed linked customer jobs are On hold or Pending in this snapshot. Jobs awaiting matching are not included.</p>}
-          {linkedCustomers.groups.map((group) => <details key={`${group.kind}:${group.id}`} open>
+          {linkedCustomers.groups.map((group, index) => <details key={`${group.kind}:${group.id}`}
+            open={index === 0}>
             <summary><span><strong>{group.name}</strong><small>{group.onHold} On hold · {group.pending} Pending</small></span>
               <ChevronRight size={17} aria-hidden="true" /></summary>
             <div className="nd-customer-blocker-jobs">{group.jobs.map((job) => <button type="button"
