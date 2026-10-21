@@ -7,7 +7,7 @@ import { savedCliToken } from './learn-test-readiness.mjs';
 const project='tgbnakbxwcqjeimygroz';
 const version='20261112220000';
 const name='new_dawn_customer_blockers_home';
-const sourceHash='fa794c6f9a0bfe8e55cfd8d00a8fe1f9fe1dc04846e5a0fac95c9f69557aa3b2';
+const sourceHash='bc99225550f87cc2f585312aa7a1b533bb821f06a1262ce5a0a8071f10074c24';
 const signature='public.new_dawn_customer_blockers(uuid,text)';
 const sourcePath=new URL(`../../supabase/migrations/${version}_${name}.sql`,import.meta.url);
 const sha=value=>createHash('sha256').update(value).digest('hex');

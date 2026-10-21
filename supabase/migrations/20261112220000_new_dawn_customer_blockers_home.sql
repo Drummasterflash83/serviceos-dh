@@ -89,13 +89,20 @@ begin
    and j.external_id=u.external_id
    and j.metadata#>>'{learn_business_input,source_version_id}'=u.version_id::text
   join public.sites site on site.id=j.site_id and site.tenant_id=p_tenant
+   and site.source_system=j.source_system
+   and site.external_id=v.payload->>'propertyID'
   left join public.companies c on c.id=j.customer_company_id and c.tenant_id=p_tenant
   left join public.people p on p.id=j.customer_person_id and p.tenant_id=p_tenant
   where jsonb_typeof(v.payload->'id')='number'
    and u.external_id ~ '^[1-9][0-9]{0,15}$'
    and v.payload->>'id'=u.external_id
+   and jsonb_typeof(v.payload->'propertyID')='number'
    and v.payload->>'status' in('on_hold','pending')
    and (j.customer_company_id is null)<>(j.customer_person_id is null)
+   and ((j.customer_company_id is not null
+     and site.company_id=j.customer_company_id and site.person_id is null)
+    or (j.customer_person_id is not null
+     and site.person_id=j.customer_person_id and site.company_id is null))
    and ((j.customer_company_id is not null and c.id is not null
      and nullif(btrim(c.name),'') is not null)
     or (j.customer_person_id is not null and p.id is not null
