@@ -430,6 +430,8 @@
 .nd-score-tiles p { margin: 0; color: #706b7e; font-size: 12px; line-height: 1.55; }
 .nd-job-home > .nd-score-tiles article > small { color: #706b7e; font-size: 11px; }
 .nd-job-home > .nd-score-tiles article > button { min-height: 40px; text-align: left; }
+.nd-customer-tile-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
+.nd-customer-tile-actions button { min-height: 40px; text-align: left; }
 .nd-job-home > .nd-work-priority { margin-top: 13px; }
 .nd-customer-blockers { margin: 18px 0 20px; padding: 19px 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #fff; scroll-margin-top: 24px; }
 .nd-customer-blockers h3 { margin: 0 0 4px; color: #25253a; font-size: 19px; font-weight: 600; }

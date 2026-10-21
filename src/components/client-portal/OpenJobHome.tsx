@@ -187,6 +187,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   const [showRecordedAttention, setShowRecordedAttention] = useState(false);
   const jobsRef = useRef<HTMLDivElement>(null);
   const customersRef = useRef<HTMLElement>(null);
+  const recordedRef = useRef<HTMLDivElement>(null);
   const authorisedClient = !operator && !!user && profile?.tenant_id === tenant &&
     canSeeCompanyJobs(profile.role);
   const enabled = !!user && uuid(tenant) && (operator ? approvedReason !== null : authorisedClient);
@@ -338,10 +339,17 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     });
   }
   function showCustomerWork() {
+    requestAnimationFrame(() => {
+      customersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      customersRef.current?.focus({ preventScroll: true });
+    });
+  }
+  function showStillMatching() {
     setShowRecordedAttention(true);
-    requestAnimationFrame(() => customersRef.current?.scrollIntoView({
-      behavior: "smooth", block: "start",
-    }));
+    requestAnimationFrame(() => {
+      recordedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      recordedRef.current?.focus({ preventScroll: true });
+    });
   }
   function nextPage() {
     if (!active?.nextCursor) return;
@@ -424,8 +432,10 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
             ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} On-hold or Pending jobs are in those groups. More recorded jobs may still need matching.`
             : "Checking which jobs have a confirmed customer and site."}</p>
           <p>Customer score needs job progress and contact history.</p>
-          {linkedCustomers && <button type="button" onClick={showCustomerWork}>
-            See held customer work →</button>}
+          {linkedCustomers && <div className="nd-customer-tile-actions">
+            <button type="button" onClick={showCustomerWork}>See confirmed groups →</button>
+            <button type="button" onClick={showStillMatching}>See jobs still being matched →</button>
+          </div>}
         </article>
         <article><span>TEAM</span><strong>Not enough data yet</strong>
           <p>Needs verified visits and owners of next actions before a team score.</p>
@@ -447,7 +457,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
         {summary.isPending && <p role="status">Checking saved job status totals…</p>}
         {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
       </section>
-      <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check">
+      <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check" tabIndex={-1}>
         <div className="nd-customer-blockers-heading">
           <h3>Customers with jobs to check</h3>
           <p>On-hold or Pending jobs with a confirmed customer and site. Open a job to see what's known; the cause and next owner may still need checking.</p>
@@ -473,11 +483,11 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <button type="button" onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button>
           <button type="button" onClick={() => showJobs("pending")}>See all Pending jobs →</button>
         </div>
-        <div className="nd-recorded-attention">
+        <div ref={recordedRef} className="nd-recorded-attention" tabIndex={-1}>
           <h4>More recorded customer work</h4>
           <p>These names come from saved Commusoft jobs. A customer or site match is not confirmed here. Open a job before deciding what it needs.</p>
           {!showRecordedAttention && <button type="button" className="nd-recorded-attention-toggle"
-            onClick={() => setShowRecordedAttention(true)}>See jobs still being matched →</button>}
+            onClick={showStillMatching}>See jobs still being matched →</button>}
           {recordedAttention.isPending && showRecordedAttention &&
             <p role="status">Checking recorded customer work…</p>}
           {recordedAttention.isError && <>
