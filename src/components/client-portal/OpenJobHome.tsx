@@ -313,33 +313,6 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
           {activeSummary && <small>{activeSummary.counts.total.toLocaleString("en-GB")} open jobs in saved Commusoft records · checked {savedAt(activeSummary.snapshotAt)}</small>}
         </div>
       </section>
-      {operator && mdReason && !summary.isPending && !firstPage.isPending && mdMoney}
-      <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
-        <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
-          <p>Browse the saved jobs by status and open one to see its recorded details.</p>
-          <p>Job scoring is being prepared. {dailyCoverage.isError
-            ? "Daily progress could not be checked; no score is published."
-            : checkedDay?.earliestMovingReviewDay
-              ? `First review from ${statusDay(checkedDay.earliestMovingReviewDay)}, if daily checks continue.`
-              : "No score is published yet."}</p>
-          <button type="button" onClick={() => showJobs("on_hold")}>Review On-hold jobs →</button>
-        </article>
-        <article><span>CUSTOMERS</span><strong>Not enough data yet</strong>
-          <p>Job and site matches still need review before customer health can be scored.</p>
-        </article>
-        <article><span>TEAM</span><strong>Not enough data yet</strong>
-          <p>Team health needs confirmed visits and who owns each next action.</p>
-        </article>
-      </div>
-      {operator && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
-        <p>These counts use the latest saved Commusoft job statuses. On hold and Pending identify work to check; status alone does not prove urgency, the cause of a hold or who owns the next action.</p>
-        {checkedDay?.day && <p>For the frozen {statusDay(checkedDay.day)} open-job roster, {checkedDay.observedCount?.toLocaleString("en-GB")}/{checkedDay.rosterCount?.toLocaleString("en-GB")} jobs were checked with Commusoft
-          {dailyGapState === "pending_today" ? `; ${checkedDay.missingCount} still to check today`
-            : dailyGapState === "past_gap" ? `; ${checkedDay.missingCount} had no observation that day` : ""}.
-          {checkedDay.lastProviderCheckAt && ` Last check ${savedAt(checkedDay.lastProviderCheckAt)}.`}</p>}
-        {dailyCoverage.isError && <p role="alert">Daily provider-check coverage is unavailable. Scores remain withheld.</p>}
-        <p>Job, customer and team scores remain unpublished. A day qualifies for the Moving measure when at least 99% of its frozen open-job roster is checked; any gaps are logged. Each scored job still needs its own 14 daily observations. Customer and team measures need confirmed links and visits.</p>
-      </details>}
       <section className="nd-work-priority" aria-label="Review saved job statuses">
         <div><h3>What needs a check</h3>
           <p>{activeSummary
@@ -358,6 +331,31 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         {summary.isPending && <p role="status">Checking saved job status totals…</p>}
         {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
       </section>
+      {operator && mdReason && !summary.isPending && !firstPage.isPending && mdMoney}
+      <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
+        <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
+          <p>Job scoring is being prepared. {dailyCoverage.isError
+            ? "Daily progress could not be checked; no score is published."
+            : checkedDay?.earliestMovingReviewDay
+              ? `First review from ${statusDay(checkedDay.earliestMovingReviewDay)}, if daily checks continue.`
+              : "No score is published yet."}</p>
+        </article>
+        <article><span>CUSTOMERS</span><strong>Not enough data yet</strong>
+          <p>Customer health is waiting for a trustworthy picture of each customer’s work and contact history.</p>
+        </article>
+        <article><span>TEAM</span><strong>Not enough data yet</strong>
+          <p>Team health will appear when visits and next actions have confirmed owners.</p>
+        </article>
+      </div>
+      {operator && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
+        <p>These counts use the latest saved Commusoft job statuses. On hold and Pending identify work to check; status alone does not prove urgency, the cause of a hold or who owns the next action.</p>
+        {checkedDay?.day && <p>For the frozen {statusDay(checkedDay.day)} open-job roster, {checkedDay.observedCount?.toLocaleString("en-GB")}/{checkedDay.rosterCount?.toLocaleString("en-GB")} jobs were checked with Commusoft
+          {dailyGapState === "pending_today" ? `; ${checkedDay.missingCount} still to check today`
+            : dailyGapState === "past_gap" ? `; ${checkedDay.missingCount} had no observation that day` : ""}.
+          {checkedDay.lastProviderCheckAt && ` Last check ${savedAt(checkedDay.lastProviderCheckAt)}.`}</p>}
+        {dailyCoverage.isError && <p role="alert">Daily provider-check coverage is unavailable. Scores remain withheld.</p>}
+        <p>Job, customer and team scores remain unpublished. A day qualifies for the Moving measure when at least 99% of its frozen open-job roster is checked; any gaps are logged. Each scored job still needs its own 14 daily observations. Customer and team measures need confirmed links and visits.</p>
+      </details>}
       <div ref={jobsRef} className="nd-open-jobs-heading">
         <h3>All open jobs</h3>
         <p>Browse the recorded list by status and open any job for more detail.</p>
