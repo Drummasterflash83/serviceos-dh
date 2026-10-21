@@ -610,7 +610,6 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <button type="button" className="nd-oldest-toggle" onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button>
         </>}
       </details>
-      {operator && mdReason && !summary.isPending && mdMoney}
       {operator && !presentationMode && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
         {tenant === drummondsTenantId && activeSummary?.identity &&
           activeSummary.identity.awaitingReview > 0 &&
@@ -696,6 +695,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
         </nav>
       </>}
       </>}
+      {operator && mdReason && !summary.isPending && mdMoney}
     </>}
     <Dialog open={!!selected || !!selectedCustomerJob} onOpenChange={(open) => {
       if (!open) { setSelected(null); setSelectedCustomerJob(null); }
