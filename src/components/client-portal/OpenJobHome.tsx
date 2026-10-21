@@ -102,6 +102,16 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
     {detail.isPending && <p role="status">Opening the saved job record…</p>}
     {detail.isError && <p role="alert">The detailed record could not be checked. Refresh the job list; its saved summary remains available.</p>}
     {record && <>
+      <section aria-label="Linked customer and site">
+        <h3>Linked customer and site</h3>
+        {record.contactCounts ? <>
+          <p>Customer: {record.linkedCustomer ?? "Name not recorded on the linked customer."}</p>
+          <p>Site: {record.linkedSite ?? "Address not recorded on the linked site."}</p>
+          <p>These are the saved ServiceOS links for this exact Commusoft job version.</p>
+        </> : <p>{row.identity_state === "reviewed_link"
+          ? "Linked customer and site details could not be verified for this read. Refresh the job before relying on the match."
+          : "The exact customer and site link is awaiting review. Commusoft source details above are not a verified ServiceOS match."}</p>}
+      </section>
       <section aria-label="Work and stage">
         <h3>Work and stage</h3>
         <p className="whitespace-pre-wrap break-words">{record.description ?? row.title ?? "No work description was saved."}</p>
@@ -122,7 +132,9 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
       </section>
       <section aria-label="Contact and visits">
         <h3>Contact and visits</h3>
-        <p>Last customer contact: not enough data yet — no call, email or message has been confirmed as belonging to this job.</p>
+        {record.contactCounts ? <p>{record.contactCounts.phone.toLocaleString("en-GB")} calls · {record.contactCounts.email.toLocaleString("en-GB")} emails confirmed as linked to this job in LEARN.
+          {record.contactCounts.latestAt ? ` Latest recorded contact ${savedAt(record.contactCounts.latestAt)}.` : " No job-linked contact is retained yet."} Unlinked contact history may still exist.</p>
+          : <p>Job-linked contact counts are unavailable until the exact job identity is confirmed.</p>}
         <p>Visits: not enough data yet — no confirmed technician appointment is attached to this job.</p>
       </section>
       {operator && scoreReviewFlag.data === true && <section className="nd-job-score-evidence"
@@ -315,41 +327,24 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
       <section className="nd-score-hero nd-score-hero--pending" aria-label="Jobs needing attention">
         <div className="nd-work-count"><strong>{activeSummary
           ? (activeSummary.counts.on_hold + activeSummary.counts.pending).toLocaleString("en-GB") : "…"}</strong>
-          <small>to check by status</small></div>
+          <small>jobs to check</small></div>
         <div className="nd-score-hero-copy">
-          <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · WORK OVERVIEW</p>
-          <h3>See what is waiting</h3>
+          <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · TODAY</p>
+          <h3>How {company ?? "your company"} is doing</h3>
           <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending · ${activeSummary.counts.open.toLocaleString("en-GB")} Open.`
             : summary.isError ? "Job totals are unavailable." : "Checking workload…"}</p>
           <button type="button" onClick={() => showJobs(attentionStatus)}>
             {activeSummary?.counts.on_hold ? "Review On-hold jobs" : activeSummary?.counts.pending
               ? "Review Pending jobs" : "See all open jobs"} →</button>
           {activeSummary && <small>{activeSummary.counts.total.toLocaleString("en-GB")} open jobs in saved Commusoft records · checked {savedAt(activeSummary.snapshotAt)}</small>}
-          {activeSummary?.identity && <small>{activeSummary.identity.linked.toLocaleString("en-GB")} have a current exact job link · {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} await identity review.</small>}
+          {activeSummary?.identity && <small>{activeSummary.identity.linked.toLocaleString("en-GB")} jobs have confirmed customer and site links · {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} need matching.</small>}
         </div>
       </section>
-      <section className="nd-work-priority" aria-label="Review saved job statuses">
-        <div><h3>What needs a check</h3>
-          <p>{activeSummary
-            ? `Status counts checked ${savedAt(activeSummary.snapshotAt)}.`
-            : "Choose a job status below."}</p></div>
-        {activeSummary && (["on_hold", "pending"] as const)
-          .filter((kind) => activeSummary.counts[kind] > 0).map((kind) => (
-            <button key={kind} type="button" onClick={() => showJobs(kind)}>
-              <span><b>{statusLabel[kind]}</b><small>{openJobNextStep(kind)}</small></span>
-              <strong>{activeSummary.counts[kind].toLocaleString("en-GB")} jobs</strong>
-              <ChevronRight size={17} />
-            </button>
-          ))}
-        {activeSummary && activeSummary.counts.on_hold === 0 && activeSummary.counts.pending === 0 &&
-          <p>No on-hold or pending status appears in this snapshot. That does not confirm every job is progressing.</p>}
-        {summary.isPending && <p role="status">Checking saved job status totals…</p>}
-        {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
-      </section>
+      {operator && mdReason && !summary.isPending && !firstPage.isPending && mdMoney}
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
           {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending in saved Commusoft statuses.</p>}
-          {activeSummary?.identity && <p>{activeSummary.identity.linked.toLocaleString("en-GB")} have a current exact job link · {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} awaiting identity review.</p>}
+          {activeSummary?.identity && <p>{activeSummary.identity.linked.toLocaleString("en-GB")} jobs linked to a customer and site · {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} need matching.</p>}
           <p>{dailyCoverage.isError
             ? "Job score withheld: daily progress could not be checked."
             : checkedDay?.earliestMovingReviewDay
@@ -368,7 +363,24 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
           <p>Needs verified visits and owners of next actions before a team score.</p>
         </article>
       </div>
-      {operator && mdReason && !summary.isPending && !firstPage.isPending && mdMoney}
+      <section className="nd-work-priority" aria-label="Review saved job statuses">
+        <div><h3>What needs a check</h3>
+          <p>{activeSummary
+            ? `Status counts checked ${savedAt(activeSummary.snapshotAt)}.`
+            : "Choose a job status below."}</p></div>
+        {activeSummary && (["on_hold", "pending"] as const)
+          .filter((kind) => activeSummary.counts[kind] > 0).map((kind) => (
+            <button key={kind} type="button" onClick={() => showJobs(kind)}>
+              <span><b>{statusLabel[kind]}</b><small>{openJobNextStep(kind)}</small></span>
+              <strong>{activeSummary.counts[kind].toLocaleString("en-GB")} jobs</strong>
+              <ChevronRight size={17} />
+            </button>
+          ))}
+        {activeSummary && activeSummary.counts.on_hold === 0 && activeSummary.counts.pending === 0 &&
+          <p>No on-hold or pending status appears in this snapshot. That does not confirm every job is progressing.</p>}
+        {summary.isPending && <p role="status">Checking saved job status totals…</p>}
+        {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
+      </section>
       {operator && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
         {tenant === drummondsTenantId && activeSummary?.identity &&
           activeSummary.identity.awaitingReview > 0 &&
