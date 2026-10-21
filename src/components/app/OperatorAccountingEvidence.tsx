@@ -5,6 +5,7 @@ import { readQuickBooksOverview, type QuickBooksOverview } from "@/lib/learn-qui
 import { OperatorQuickBooksReportCapture } from "./OperatorQuickBooksReportCapture";
 import { OperatorApprovedFy27Pair } from "./OperatorApprovedFy27Pair";
 import { OperatorDailyQuickBooksReports } from "./OperatorDailyQuickBooksReports";
+import { OperatorAgedInvoices } from "@/components/client-portal/OperatorAgedInvoices";
 
 /** Short operator path to the existing reviewed, one-use report action. */
 export function OperatorAccountingEvidence({ tenantId, actorId }: {
@@ -67,6 +68,8 @@ export function OperatorAccountingEvidence({ tenantId, actorId }: {
         <OperatorQuickBooksReportCapture key={`${tenantId}:${actorId}`}
           tenantId={tenantId} actorId={actorId} canWrite
           connections={overview.connections} onConnectionRefresh={load}/>
+        <OperatorAgedInvoices tenant={tenantId}
+          reason="Review saved 91+ invoice source for the selected client MD Money reconciliation" />
       </>}
     </div>
   </section>;

@@ -641,9 +641,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
 }
 
 /** Keep the existing audited reviewed-card and source-detail routes reachable. */
-export function OpenJobHomeWithEvidence({ tenant, company, operator = false, operatorWorkspace = false, onOpenInformation }: {
+export function OpenJobHomeWithEvidence({ tenant, company, operator = false, onOpenInformation }: {
   tenant: string; company?: string; operator?: boolean;
-  operatorWorkspace?: boolean;
   onOpenInformation?: () => void;
 }) {
   const [showReviewed, setShowReviewed] = useState(false);
@@ -656,7 +655,7 @@ export function OpenJobHomeWithEvidence({ tenant, company, operator = false, ope
         {showReviewed ? "Close reviewed job details" : "Open reviewed job details and evidence"}
       </button>
       {showReviewed && <JobFirstHome tenant={tenant} company={company} operator={operator}
-        presentationFirst={operator && !operatorWorkspace} onOpenInformation={onOpenInformation} />}
+        presentationFirst={operator} onOpenInformation={onOpenInformation} />}
     </div>
   </>;
 }
