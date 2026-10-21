@@ -6,7 +6,8 @@ import { financeAmount } from "@/lib/learn-quickbooks-finance";
 import { readFounderAccountsPairs, readFounderAccountsPreview,
   type AccountsPair, type FounderAccountsPreview } from "@/lib/new-dawn-founder-accounts-preview";
 import { readAccountsMarginPreview, type AccountsMarginPreview } from "@/lib/new-dawn-accounts-margin";
-import { accountsNetMargin, agedReceivablesBucketKind, newestAccountsPair, netProfitYtdComparison } from "@/lib/new-dawn-md-money";
+import { accountsNetMargin, agedReceivablesBucketKind, moneyReportFreshness,
+  newestAccountsPair, netProfitYtdComparison } from "@/lib/new-dawn-md-money";
 import { MdAgedInvoices } from "./MdAgedInvoices";
 
 type Snapshot = { accounts: FounderAccountsPreview; margin: AccountsMarginPreview | null };
@@ -110,6 +111,7 @@ export function MdMoneyPanel({ tenant, reason, summaryOnly = false, onOpenFull }
   const netMargin = saved && snapshot?.margin
     ? accountsNetMargin(saved.netProfit, snapshot.margin.totalIncome) : null;
   const agedBucket = saved ? agedReceivablesBucketKind(saved.receivables.days91Plus) : "unknown";
+  const freshness = saved ? moneyReportFreshness(saved.periodEnd, saved.arAsOf, new Date()) : null;
   if (summaryOnly) return <section className="md-money-strip" aria-label="Drummonds MD company money">
     <div className="md-money-strip-heading"><div>
       <p className="of-eyebrow">DRUMMONDS · MD MONEY</p>
@@ -123,6 +125,9 @@ export function MdMoneyPanel({ tenant, reason, summaryOnly = false, onOpenFull }
       <p role="status">Checking saved accounts…</p>}
     {error && <p role="alert">{error}</p>}
     {saved && <>
+      {freshness && <p className={`md-money-freshness md-money-freshness--${freshness.state}`}
+        role={freshness.state === "older" || freshness.state === "unverified" ? "status" : undefined}>
+        {freshness.message}</p>}
       <div className="md-money-strip-grid">
         <div><span>Accounts gross profit</span>
           <strong>{snapshot?.margin ? `${snapshot.margin.accountsGrossMarginPct}%` : "Awaiting denominator"}</strong>
@@ -166,6 +171,9 @@ export function MdMoneyPanel({ tenant, reason, summaryOnly = false, onOpenFull }
       </label>}
       {error && <p role="alert">{error}</p>}
       {saved && <>
+        {freshness && <p className={`md-money-freshness md-money-freshness--${freshness.state}`}
+          role={freshness.state === "older" || freshness.state === "unverified" ? "status" : undefined}>
+          {freshness.message}</p>}
         <p className="md-money-source">QuickBooks Online · Drummonds company accounts · {saved.periodStart} to {saved.periodEnd} · {saved.accountingMethod} basis · reports saved {dateTime(saved.profitReceivedAt)} and {dateTime(saved.receivablesReceivedAt)} UK. These are saved reports, not today's live balances.</p>
         <div className="md-money-grid">
           <article><span>Accounts gross profit</span>

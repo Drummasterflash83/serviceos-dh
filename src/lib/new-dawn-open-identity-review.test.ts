@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { loadOpenIdentityPage, readOpenIdentityPage } from "./new-dawn-open-identity-review.ts";
+import { loadAttentionIdentityGroups, loadOpenIdentityPage,
+  readOpenIdentityPage } from "./new-dawn-open-identity-review.ts";
 
 const tenant = "00000000-0000-0000-0000-000000000001";
 const connection = "11111111-1111-4111-8111-111111111111";
@@ -52,4 +53,47 @@ test("calls only the scoped read RPC and rejects its error", async () => {
   }]]);
   await assert.rejects(loadOpenIdentityPage({ rpc: async () => ({ data: null, error: {} }) },
     { ...scope, reason: "Open work review", cursor: null }));
+});
+
+test("groups the complete attention prefix across one pinned cursor", async () => {
+  const cursor = Buffer.from("next").toString("base64");
+  const first = readOpenIdentityPage({ ...page([row("100", "on_hold"), row("101", "on_hold")]),
+    next_cursor: cursor }, scope, now);
+  const second = readOpenIdentityPage(page([
+    row("102", "pending"), row("103", "open")]), scope, now);
+  const calls: Array<string | null> = [];
+  const result = await loadAttentionIdentityGroups(async after => {
+    calls.push(after);
+    return after ? second : first;
+  });
+  assert.deepEqual(calls, [null, cursor]);
+  assert.equal(result.jobs, 3);
+  assert.equal(result.groups.length, 1);
+  assert.deepEqual(result.groups[0].jobs.map(job => job.externalId), ["100", "101", "102"]);
+});
+
+test("keeps different properties and incomplete parents apart during urgent review", async () => {
+  const source = readOpenIdentityPage(page([
+    row("100", "on_hold"),
+    { ...row("101", "on_hold"), property_external_id: "46" },
+    { ...row("102", "pending"), property_external_id: null },
+  ]), scope, now);
+  const result = await loadAttentionIdentityGroups(async () => source);
+  assert.equal(result.jobs, 3);
+  assert.equal(result.groups.length, 3);
+  assert.deepEqual(result.groups.map(group => [group.customerExternalId,
+    group.propertyExternalId, group.jobs.map(job => job.externalId)]), [
+    ["12", "45", ["100"]], ["12", "46", ["101"]], ["12", null, ["102"]],
+  ]);
+});
+
+test("refuses mixed snapshots or duplicated rows rather than claiming full grouping", async () => {
+  const cursor = Buffer.from("next").toString("base64");
+  const first = readOpenIdentityPage({ ...page([row("100", "on_hold")]),
+    next_cursor: cursor }, scope, now);
+  const later = readOpenIdentityPage({ ...page([row("101", "pending")]),
+    snapshot_at: new Date(now - 2_000).toISOString() }, scope, now);
+  await assert.rejects(loadAttentionIdentityGroups(async after => after ? later : first));
+  const duplicate = readOpenIdentityPage(page([row("100", "on_hold")]), scope, now);
+  await assert.rejects(loadAttentionIdentityGroups(async after => after ? duplicate : first));
 });
