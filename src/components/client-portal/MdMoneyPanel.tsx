@@ -178,12 +178,12 @@ export function MdMoneyPanel({ tenant, reason, summaryOnly = false, onOpenFull }
           </article>
           <article><span>Net profit · MD only</span>
             <strong>{mdMoneyAmount(saved.netProfit, saved.currency)}</strong>
-            <p>{netMargin ? `Accounts net margin ${netMargin}% for this period (8% margin goal). ` : "Accounts net margin needs a verified income figure. "}{isFy27Ytd
+            <p>{netMargin ? `Accounts net margin ${netMargin}% for this period. ` : "Accounts net margin needs a verified income figure. "}{isFy27Ytd
               ? "FY27 net-profit target comparison awaits the current approved target."
               : "This saved period is not FY27 year-to-date; target comparison is unavailable."}</p>
           </article>
           <article><span>Further Works this month</span><strong>Not enough data yet</strong>
-            <p>Needs classified quotes and linked work before comparison with the £58,000 monthly target.</p>
+            <p>Needs classified quotes, linked work and a confirmed current target.</p>
           </article>
           <article><span>Annual recurring revenue</span><strong>Not enough data yet</strong>
             <p>Needs verified contracts, value and terms.</p>
