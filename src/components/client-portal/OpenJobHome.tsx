@@ -192,6 +192,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   const authorisedClient = !operator && !!user && profile?.tenant_id === tenant &&
     canSeeCompanyJobs(profile.role);
   const enabled = !!user && uuid(tenant) && (operator ? approvedReason !== null : authorisedClient);
+  const showMatchingTools = operator && !presentationMode;
   useEffect(() => {
     setApprovedReason(mdReason ?? null); setReason(""); setStatus(null); setPageIndex(0);
     setCursors([null]); setSelected(null); setSelectedCustomerJob(null);
@@ -257,7 +258,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   const recordedAttention = useQuery({
     queryKey: ["new-dawn-recorded-attention", tenant, user?.id, operator,
       approvedReason],
-    enabled: enabled && showRecordedAttention,
+    enabled: enabled && showMatchingTools && showRecordedAttention,
     retry: false,
     refetchOnWindowFocus: false,
     queryFn: () => collectRecordedAttentionPages(async (cursor) => {
@@ -360,6 +361,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     });
   }
   function showStillMatching() {
+    if (!showMatchingTools) return;
     setShowRecordedAttention(true);
     requestAnimationFrame(() => {
       recordedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -380,7 +382,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       if (showJobBrowser || showOldestJobs) await firstPage.refetch();
       await customerBlockers.refetch();
       await dailyCoverage.refetch();
-      if (showRecordedAttention) await recordedAttention.refetch();
+      if (showMatchingTools && showRecordedAttention) await recordedAttention.refetch();
       if (status !== null && pageIndex === 0) await additionalPage.refetch();
     })();
   }
@@ -459,12 +461,12 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           ? `${linkedCustomers.groups.length.toLocaleString("en-GB")} confirmed groups`
           : customerBlockers.isError ? "Customer view unavailable" : "Checking linked work"}</strong>
           <p>{linkedCustomers
-            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} linked jobs to check. Other jobs still need matching.`
+            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} linked jobs to check. The full job list has the rest.`
             : "Checking confirmed customer and site links."}</p>
           {linkedCustomers && <small>Matches checked {savedAt(linkedCustomers.snapshotAt)}</small>}
           {linkedCustomers && <div className="nd-customer-tile-actions">
             <button type="button" onClick={showCustomerWork}>See confirmed groups →</button>
-            <button type="button" onClick={showStillMatching}>See jobs still being matched →</button>
+            {showMatchingTools && <button type="button" onClick={showStillMatching}>See jobs still being matched →</button>}
           </div>}
         </article>
         <article><span>TEAM</span><strong>Awaiting visit data</strong>
@@ -482,7 +484,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           ? "The latest customer check failed. These are the previously checked groups shown with their date."
           : "Linked customer jobs could not be checked. Refresh to retry."}</p>}
         {linkedCustomers && <>
-          {linkedCustomers.groups.length === 0 && <p>No confirmed linked customer jobs are On hold or Pending in this snapshot. Jobs awaiting matching are not included.</p>}
+          {linkedCustomers.groups.length === 0 && <p>No confirmed linked customer jobs are On hold or Pending in this snapshot. Other open jobs remain in the full work list.</p>}
           {linkedCustomers.groups.map((group, index) => <details key={`${group.kind}:${group.id}`}
             open={index === 0}>
             <summary><span><strong>{group.name}</strong><small>{group.onHold} On hold · {group.pending} Pending</small></span>
@@ -497,14 +499,15 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
               <ChevronRight size={16} aria-hidden="true" />
             </button>)}</div>
           </details>)}
-          <small>{linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} confirmed jobs · checked {savedAt(linkedCustomers.snapshotAt)}. Jobs still being matched are listed separately.</small>
+          <small>{linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} confirmed jobs · checked {savedAt(linkedCustomers.snapshotAt)}. {showMatchingTools
+            ? "Jobs still being matched are listed separately." : "Other open jobs remain in the full work list."}</small>
         </>}
         <div className="nd-customer-blocker-all-work">
           <p>The full work list also includes jobs without a confirmed customer group.</p>
           <button type="button" onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button>
           <button type="button" onClick={() => showJobs("pending")}>See all Pending jobs →</button>
         </div>
-        <div ref={recordedRef} className="nd-recorded-attention" tabIndex={-1}>
+        {showMatchingTools && <div ref={recordedRef} className="nd-recorded-attention" tabIndex={-1}>
           <h4>Other jobs to check</h4>
           <p>Commusoft recorded these customer names, but the customer or site has not been matched yet. Open a job before acting on it.</p>
           {!showRecordedAttention && <button type="button" className="nd-recorded-attention-toggle"
@@ -542,7 +545,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
               </button>)}</div>
             </details>}
           </>}
-        </div>
+        </div>}
       </section>
       {operator && mdReason && !summary.isPending && mdMoney}
       <section className="nd-work-priority" aria-label="Review saved job statuses">
