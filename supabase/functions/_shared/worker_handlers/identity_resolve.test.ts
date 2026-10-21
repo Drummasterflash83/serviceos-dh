@@ -53,6 +53,11 @@ test("confirmed atomic receipt counts a card and the actual acknowledged event o
   assert.equal(r.result?.cards_enriched, 1);
   assert.equal(r.result?.events_consumed, 1);
   assert.equal(f.calls.length, 2);
+  assert.deepEqual(Object.keys(r.result ?? {}).sort(), [
+    "cards_enriched", "companies_created", "continued", "events_consumed",
+    "failed", "people_created", "recommendations", "resolved",
+    "review_required", "reviews_recorded", "suggestions_created",
+  ]);
 });
 test("lost publication reply inspects exact request once without republishing", async () => {
   const f = fixture({
@@ -127,6 +132,11 @@ test("a mixed batch reports partial failure and does not emit a successful conti
   assert.equal(r.result?.failed, 1);
   assert.equal(r.error?.retryable, true);
   assert.equal(r.continuation, undefined);
+  assert.deepEqual(Object.keys(r.result ?? {}).sort(), [
+    "cards_enriched", "companies_created", "continued", "events_consumed",
+    "failed", "people_created", "recommendations", "resolved",
+    "review_required", "reviews_recorded", "suggestions_created",
+  ]);
   assert.ok(!JSON.stringify(r).includes("PRIVATE"));
 });
 test("review-required receipts preserve pending events and never count card completion", async () => {
@@ -213,7 +223,25 @@ test("empty inventory succeeds with zero work; a full verified batch continues o
   assert.deepEqual(full.continuation?.payload, { limit: 2 });
   const bounded = fixture({ rows: [] });
   await bounded.run({ limit: 2000 });
-  assert.equal(bounded.calls[0].args.p_limit, 50);
+  assert.equal(bounded.calls[0].args.p_limit, 10);
+});
+test("legacy fifty-row job processes ten and does not claim a held full batch", async () => {
+  const rows = Array.from({ length: 10 }, (_, index) => row(index + 2));
+  const f = fixture({ rows, respond: (args: any, receipt: any) => ({
+    data: args.p_interaction === id(2)
+      ? { ...receipt, state: "review_required", reason: "direction_unverified",
+        cardId: null, cardEnriched: false, personCreated: false,
+        companyCreated: false, recommendations: 0, suggestions: 0,
+        eventsConsumed: 0 }
+      : receipt,
+    error: null,
+  }) });
+  const result = await f.run({ limit: 50 });
+  assert.equal(f.calls[0].args.p_limit, 10);
+  assert.equal(result.recordsProcessed, 9);
+  assert.equal(result.result?.reviews_recorded, 1);
+  assert.equal(result.continuation, undefined);
+  assert.equal(result.error?.code, "identity_review_required");
 });
 test("legacy input without a pending event reports zero events consumed", async () => {
   const r = await fixture({
