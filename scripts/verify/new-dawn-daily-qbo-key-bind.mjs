@@ -50,20 +50,12 @@ async function stage() {
   return { vaultCount: row.vault_count };
 }
 
-/** An uncertain first write is reconciled by the exact Vault name, never replayed. */
-export async function bind() {
-  const before = await stage();
-  if (before.vaultCount !== 0) throw Error('daily_key_preexisting_stop');
-  const created = await query(`select vault.create_secret(encode(gen_random_bytes(32),'hex'),
-    '${NAME}','Dedicated Drummonds daily read-only QuickBooks report trigger') id`, false);
-  const id = created.length === 1 ? created[0]?.id : null;
-  if (typeof id !== 'string' ||
-    !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id))
-    throw Error('daily_key_creation_unconfirmed');
-  const afterVault = await stage();
-  if (afterVault.vaultCount !== 1) throw Error('daily_key_vault_outcome_unconfirmed');
+async function finishBinding(id) {
+  // The Management API read-only role cannot execute Vault's decrypt helper.
+  // Use its management role for this exact newly created key only; the value
+  // stays in process memory and is never included in an error or log.
   const exact = await query(`select decrypted_secret secret from vault.decrypted_secrets
-    where id='${id}'::uuid and name='${NAME}'`);
+    where id='${id}'::uuid and name='${NAME}'`, false);
   const secret = exact.length === 1 ? exact[0]?.secret : null;
   if (typeof secret !== 'string' || !/^[a-f0-9]{64}$/.test(secret))
     throw Error('daily_key_exact_value_unavailable');
@@ -101,13 +93,41 @@ export async function bind() {
     keyName: NAME, keySha256: sha(secret), providerRequests: 0, policyEnabled: false };
 }
 
+/** An uncertain first write is reconciled by the exact Vault name, never replayed. */
+export async function bind() {
+  const before = await stage();
+  if (before.vaultCount !== 0) throw Error('daily_key_preexisting_stop');
+  const created = await query(`select vault.create_secret(encode(gen_random_bytes(32),'hex'),
+    '${NAME}','Dedicated Drummonds daily read-only QuickBooks report trigger') id`, false);
+  const id = created.length === 1 ? created[0]?.id : null;
+  if (typeof id !== 'string' ||
+    !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id))
+    throw Error('daily_key_creation_unconfirmed');
+  const afterVault = await stage();
+  if (afterVault.vaultCount !== 1) throw Error('daily_key_vault_outcome_unconfirmed');
+  return finishBinding(id);
+}
+
+/** Resume only the exact key this release created after its read-only-role failure. */
+export async function recover() {
+  const before = await stage();
+  if (before.vaultCount !== 1) throw Error('daily_key_recovery_scope_changed');
+  const rows = await query(`select id::text id from vault.secrets where name='${NAME}'`);
+  const id = rows.length === 1 ? rows[0]?.id : null;
+  if (typeof id !== 'string' ||
+    !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id))
+    throw Error('daily_key_recovery_identity_unconfirmed');
+  return finishBinding(id);
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    if (process.argv.slice(2).join(' ') !== '--bind-exact' ||
+    const mode = process.argv.slice(2).join(' ');
+    if (!['--bind-exact', '--recover-exact'].includes(mode) ||
       process.env.NEW_DAWN_QBO_PROJECT !== PROJECT ||
       process.env.NEW_DAWN_QBO_EDGE_SHA !== EDGE_SHA)
       throw Error('daily_key_exact_scope_required');
-    console.log(JSON.stringify(await bind()));
+    console.log(JSON.stringify(await (mode === '--bind-exact' ? bind() : recover())));
   } catch (error) {
     console.error(JSON.stringify({ state: 'stopped',
       reason: error instanceof Error ? error.message : 'unknown' }));
