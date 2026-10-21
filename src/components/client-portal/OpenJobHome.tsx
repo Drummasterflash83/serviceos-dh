@@ -443,7 +443,6 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           {linkedCustomers && <small>Customer matches checked {savedAt(linkedCustomers.snapshotAt)}. Other jobs may still need matching; status alone does not tell us why a job is held or who owns it.</small>}
         </div>
       </section>
-      {operator && mdReason && !summary.isPending && mdMoney}
       <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check" tabIndex={-1}>
         <div className="nd-customer-blockers-heading">
           <h3>Customers with jobs to check</h3>
@@ -516,6 +515,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           </>}
         </div>
       </section>
+      {operator && mdReason && !summary.isPending && mdMoney}
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
           {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending in saved Commusoft statuses.</p>}
