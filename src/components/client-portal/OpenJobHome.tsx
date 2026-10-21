@@ -245,6 +245,12 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
     dailyCoverage.data.actorId === user?.id && !dailyCoverage.isFetching
     ? dailyCoverage.data : null;
   const dailyGapState = dailyStatusGapState(checkedDay);
+  const listHeading = status === null ? "All recorded open jobs" : `${statusLabel[status]} jobs`;
+  const listCount = activeSummary
+    ? (status === null ? activeSummary.counts.total : activeSummary.counts[status]) : null;
+  const listSummary = activeSummary && listCount !== null
+    ? `${listCount.toLocaleString("en-GB")} in the saved status summary checked ${savedAt(activeSummary.snapshotAt)}. `
+    : "";
   const oldestHeldRows = firstPage.data?.tenantId === tenant &&
     firstPage.data.actorId === user?.id && !firstPage.isFetching &&
     firstPage.data.creationOrderAvailable
@@ -254,7 +260,10 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   }
   function showJobs(next: OpenJobStatus | null) {
     changeFilter(next);
-    requestAnimationFrame(() => jobsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    requestAnimationFrame(() => {
+      jobsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      jobsRef.current?.focus({ preventScroll: true });
+    });
   }
   function nextPage() {
     if (!active?.nextCursor) return;
@@ -272,7 +281,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         <h2>Jobs needing attention</h2>
         <p>Start with work that is On hold or Pending. Open a job to see what is recorded.</p>
       </div>
-      {enabled && <button className="cp-secondary" onClick={refresh} disabled={page.isFetching || firstPage.isFetching}>
+      {enabled && <button type="button" className="cp-secondary" aria-label="Refresh saved jobs"
+        onClick={refresh} disabled={page.isFetching || firstPage.isFetching}>
         <RefreshCw size={15} /> Refresh list
       </button>}
     </div>
@@ -356,9 +366,13 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         {dailyCoverage.isError && <p role="alert">Daily provider-check coverage is unavailable. Scores remain withheld.</p>}
         <p>Job, customer and team scores remain unpublished. A day qualifies for the Moving measure when at least 99% of its frozen open-job roster is checked; any gaps are logged. Each scored job still needs its own 14 daily observations. Customer and team measures need confirmed links and visits.</p>
       </details>}
-      <div ref={jobsRef} className="nd-open-jobs-heading">
-        <h3>All open jobs</h3>
-        <p>Browse the recorded list by status and open any job for more detail.</p>
+      <div ref={jobsRef} className="nd-open-jobs-heading" tabIndex={-1} aria-live="polite">
+        <h3>{listHeading}</h3>
+        <p>{listSummary}
+          {status === null
+            ? "Browse by recorded status and open a job to see its details."
+            : `These were last saved as ${statusLabel[status]}. Open a job to check its recorded stage and next step.`}
+        </p>
       </div>
       <fieldset className="nd-open-page-filters">
         <legend>Show jobs by status</legend>
