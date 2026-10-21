@@ -56,6 +56,10 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
     attentionRequest.current++; setAttention(null); setAttentionNotice(""); setAttentionBusy(false);
   }, [tenant, actor, connection, reason]);
   useEffect(() => {
+    if (reviewFlag.data === true) return;
+    attentionRequest.current++; setAttention(null); setAttentionBusy(false);
+  }, [reviewFlag.data]);
+  useEffect(() => {
     const hide = () => { if (document.hidden) {
       attentionRequest.current++; setHidden(true); setPage(null); setAttention(null);
       setAttentionBusy(false);
