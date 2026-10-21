@@ -568,7 +568,6 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           </>}
         </div>}
       </section>
-      {operator && mdReason && !summary.isPending && mdMoney}
       <section className="nd-work-priority" aria-label="Review saved job statuses">
         <div><h3>What needs a check</h3>
           <p>Choose a status to open the jobs behind it.</p></div>
@@ -611,6 +610,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <button type="button" className="nd-oldest-toggle" onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button>
         </>}
       </details>
+      {operator && mdReason && !summary.isPending && mdMoney}
       {operator && !presentationMode && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
         {tenant === drummondsTenantId && activeSummary?.identity &&
           activeSummary.identity.awaitingReview > 0 &&
