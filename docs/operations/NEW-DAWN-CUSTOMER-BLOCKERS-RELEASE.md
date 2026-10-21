@@ -2,6 +2,8 @@
 
 This outcome adds a Customers tile and “Customers with jobs to check” section to the job-first Home. It groups only saved Commusoft On-hold and Pending jobs with one current source version, one exact current canonical job link, a tenant-matched customer and site, a site owned by that customer and matching the saved Commusoft property ID, and a nonblank customer name. Each job opens the existing exact-version audited detail read. Unmatched jobs remain outside the customer groups and are still visible in the paged job list and operator review queue. Source status does not establish customer impact, cause, responsible person, or a score.
 
+The audited `/client-md` presentation uses the operator's identity for server authorization but suppresses OpenFolk-only score-evidence and source-review controls on the client-facing Home and job detail. The audit reason and tenant checks remain unchanged.
+
 The customer groups lead the detailed work. An optional review of the ten oldest saved On-hold records remains directly above the full paged list, using its existing first page with no extra request. A signed-in LIVE read showed that the oldest records include internal Accounts and office jobs; presenting them as the primary customer work would be misleading. The disclosure labels age as time since verified job creation, never time in the On-hold status, and warns that internal work can appear.
 
 Until a company score has real evidence, the hero calls its numbers “Recorded open work” and explicitly says that saved statuses can include internal work and do not prove customer urgency or the next owner.
@@ -46,4 +48,4 @@ Use `/client-md` on both desktop and phone, signed in as OpenFolk. This is an au
 2. The money strip says when a newer completed UK day has no verified report. It has a report date and period; net profit appears only in this MD view, and a net A/R credit is not presented as debt.
 3. The Customers tile opens “Customers with jobs to check.” Expand one customer and open one job. The customer, site, status, and source time should agree with the saved job detail.
 4. The section says that unmatched jobs are excluded; no status is presented as a proven cause, urgency, engineer, or score. The Team tile still says what data is missing.
-5. On the phone, the same actions work without horizontal scrolling, clipped buttons, or an operator banner covering the work list. Record any confusing wording or incorrect match before calling the layout accepted.
+5. On the phone, the same actions work without horizontal scrolling, clipped buttons, or an operator banner covering the work list. Neither the Home nor opened job shows an OpenFolk source-review or private score-evidence panel. Record any confusing wording or incorrect match before calling the layout accepted.

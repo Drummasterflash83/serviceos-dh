@@ -94,7 +94,7 @@ export function MdClientPreview() {
           </details>
           {section === "home" ? <>
             <OpenJobHome key={`${active.auditId}:home`} tenant={drummondsTenantId}
-              company="Drummonds" operator mdReason={active.reason}
+              company="Drummonds" operator presentationMode mdReason={active.reason}
               mdMoney={<MdMoneyPanel tenant={drummondsTenantId} reason={active.reason}
                 summaryOnly onOpenFull={() => setSection("money")} />} />
           </> : section === "learn" ? <>

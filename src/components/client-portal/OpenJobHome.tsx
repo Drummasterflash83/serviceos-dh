@@ -170,8 +170,8 @@ function SourceJobDetail({ row, tenant, actor, reason, operator, customerLinkOnl
 }
 
 /** Source-first job list: all uniquely retained open jobs are reachable by page. */
-export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMoney }: {
-  tenant: string; company?: string; operator?: boolean; mdReason?: string;
+export function OpenJobHome({ tenant, company, operator = false, presentationMode = false, mdReason, mdMoney }: {
+  tenant: string; company?: string; operator?: boolean; presentationMode?: boolean; mdReason?: string;
   mdMoney?: ReactNode;
 }) {
   const { user, profile } = useAuth();
@@ -464,7 +464,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
           <button type="button" className="nd-oldest-toggle" onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button>
         </>}
       </details>
-      {operator && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
+      {operator && !presentationMode && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
         {tenant === drummondsTenantId && activeSummary?.identity &&
           activeSummary.identity.awaitingReview > 0 &&
           <p><a href="/openfolk/drummonds?module=information&tools=false&view=today#open-job-identity-review">
@@ -545,10 +545,10 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
       <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader className="pr-10 sm:pr-0"><DialogTitle>Job details</DialogTitle></DialogHeader>
         {selected && user && <SourceJobDetail row={selected} tenant={tenant} actor={user.id}
-          reason={operator ? approvedReason : null} operator={operator} />}
+          reason={operator ? approvedReason : null} operator={operator && !presentationMode} />}
         {selectedCustomerJob && user && <SourceJobDetail
           row={customerBlockedJobDetailKey(selectedCustomerJob)} tenant={tenant} actor={user.id}
-          reason={operator ? approvedReason : null} operator={operator} customerLinkOnly />}
+          reason={operator ? approvedReason : null} operator={operator && !presentationMode} customerLinkOnly />}
       </DialogContent>
     </Dialog>
   </section>;
