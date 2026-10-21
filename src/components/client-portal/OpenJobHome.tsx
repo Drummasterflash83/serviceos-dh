@@ -95,7 +95,7 @@ function SourceJobDetail({ row, tenant, actor, reason, operator, customerLinkOnl
     <div>
       <p><strong>Job {row.external_id}</strong> · {statusLabel[row.status]}</p>
       {customerLinkOnly ? <p>Opened from a confirmed customer and site link. The exact saved job is checked below.</p> : <>
-        <p>Commusoft customer and site: {sourceIdentity.sourceLabel}</p>
+        <p>Recorded customer and site: {sourceIdentity.sourceLabel}</p>
         <p className="nd-job-identity-state">{sourceIdentity.detailEvidence}</p>
       </>}
       <small>Commusoft record saved {savedAt(row.source_observed_at)}. The job may have changed since then.</small>
@@ -453,7 +453,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
             <button type="button" onClick={() => setSelected(row)}>
               <strong>Job {row.external_id}</strong>
-              <span>{row.title ?? "Work description not recorded"}<em>Commusoft: {jobSourceIdentity(row).sourceLabel}
+              <span>{row.title ?? "Work description not recorded"}<em>Recorded customer and site: {jobSourceIdentity(row).sourceLabel}
                 {jobSourceIdentity(row).shortEvidence ? ` · ${jobSourceIdentity(row).shortEvidence}` : ""}</em></span>
               <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, firstPage.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}
                 {row.status_evidence === "repeat_saved_checks" && <><br />{openJobStatusEvidence(row, savedAt)}</>}
@@ -514,7 +514,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
             <BriefcaseBusiness size={20} />
             <span className="nd-job-main"><strong>Job {row.external_id}</strong>
               <small>{row.title ?? "Work description not recorded"}</small>
-              <small>Commusoft: {jobSourceIdentity(row).sourceLabel}</small>
+              <small>Recorded customer and site: {jobSourceIdentity(row).sourceLabel}</small>
               {jobSourceIdentity(row).shortEvidence &&
                 <small className="nd-job-identity-state">{jobSourceIdentity(row).shortEvidence}</small>}
             </span>
