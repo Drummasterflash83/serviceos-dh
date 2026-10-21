@@ -1,10 +1,13 @@
 # Emma emergency mailbox 603: durable delivery boundary
 
-Source-only design, 21 October 2026. This does not install a schema, enable a
-sender, post to Slack, send mail, alter Birchills/Vapi or change the main DID.
-It describes the missing boundary between the candidate's verified 603 intent
-and an actual notification. Keep this within draft PR #88 until provider
-capability, sender ownership and a supervised handset drill are accepted.
+Source-only design and default-Off implementation, 21 October 2026. Draft
+PR #88 contains `20261112180000_emma_603_notification_outbox.sql` and the
+`receptionist-emergency-603-outbox.ts` bridge. **The migration is not
+installed on LIVE.** It seeds no route or enabled configuration and has no
+scheduler or sender. It cannot post to Slack, send mail, alter Birchills/Vapi
+or change the main DID. The candidate v18 manifest remains byte-for-byte
+unchanged. Keep this boundary within draft PR #88 until provider capability,
+sender ownership and a supervised handset drill are accepted.
 
 ## Current boundary
 
@@ -12,8 +15,9 @@ capability, sender ownership and a supervised handset drill are accepted.
 Birchills 603 voicemail source, one correlated failed attempt to the selected
 engineer, an actual 603 deposit, and the reviewed internal Slack route. It
 derives stable IDs for Rob email, Tony email and one `#ai-emma-urgent` post.
-`readEmergency603Delivery` can assess provider receipts. **Neither function
-persists an intent or sends anything.** The existing
+`readEmergency603Delivery` can assess provider receipts. The new bridge can
+reserve durable intents through one service-only RPC after that proof passes;
+**no function sends anything.** The existing
 `client_notification_outbox` is a feedback/programme Slack queue; its general
 dispatcher is at-least-once and must not be relabelled as 603 delivery proof.
 The existing private voicemail intake is email-source based; the LIVE 603
@@ -44,31 +48,32 @@ target, so neither is assumed.
 
 ## Durable once-only record
 
-Add a service-role-only `receptionist_emergency_603_outbox` table, separate
+The source-only migration adds a service-role-only
+`receptionist_emergency_603_outbox` table, separate
 from customer/client notification queues. One row per
 `(tenant_id, published_source_id, target)` with `target` limited to
 `rob_email`, `tony_email`, `urgent_slack`, and `delivery_id` fixed to the
 receiver's deterministic UUID. Enforce unique keys on both that tuple and
 `delivery_id`; foreign-key the source to the private voicemail source and
-pin the source/audio hash, 603 provider message reference, call-binding
-receipt, notification-owner mode, recipient/channel hash and route version.
+pin the source/audio/content hash, 603 provider message reference, correlated
+proof hash, notification-owner mode, destination and route version.
 Store no caller name, number, address, transcript, audio or public link in
 the row or notice. RLS denies `anon` and `authenticated`; service-only RPCs
 read and mutate it. Default the sender to **Off**.
 
-An atomic `prepare_603_notifications` RPC must recheck the published source,
+The atomic `emma_603_prepare` RPC rechecks the published source,
 exact 603 mailbox, failed selected engineer attempt, deposit and reviewed
-route under one transaction, then insert all three frozen rows with
-`ON CONFLICT DO NOTHING`. A repeat call returns the original IDs and
-fingerprints; a conflicting source or route version goes to review rather
-than silently replacing the intent. No network call occurs in this RPC.
+route under one transaction, then inserts all three frozen rows under an
+advisory lock. A repeat call returns the original IDs and fingerprints; a
+conflicting source or route version is rejected before dispatch. No network
+call occurs in this RPC. The caller must authenticate the provider records
+before passing the proof; the RPC does not accept a public caller.
 
-Claim rows with `FOR UPDATE SKIP LOCKED`, a short lease, a fixed attempt
-budget and an explicit sender-enable gate. The claim must never select
-`uncertain`, `submitted`, `delivered`, `posted` or `cancelled` rows. If the
+The default-Off `emma_603_claim` uses `FOR UPDATE SKIP LOCKED` and a two-minute
+reservation. It never selects `uncertain`, `submitted` or `posted` rows. If the
 process dies after crossing an external send boundary, mark the row
 `uncertain` when its lease expires and reconcile against the provider before
-any retry. Never convert an expired `sending` row back to `queued` blindly.
+any retry. Never convert an expired reservation back to `prepared` blindly.
 
 For OpenFolk-owned email, reuse the existing Resend transport's
 `Idempotency-Key: deliveryId` and response classification. A 2xx is only
@@ -86,6 +91,15 @@ returned channel and `ts` as `posted`. A lost response freezes `uncertain`;
 specific message before a supervised retry. A queued outbox row, accepted
 email, accepted Slack request, transfer attempt or ringing leg cannot be
 described as delivered.
+
+The SQL currently permits only an `openfolk_sender` configuration and no
+configuration is seeded. `birchills_distribution` remains design-only until
+its two independently delivered-recipient receipts can be verified. The
+reservation-bound settlement RPC can record an email as `submitted` or a
+Slack post with a provider reference as `posted`; it cannot mark an email
+delivered. A sender and a separate authenticated delivery-receipt verifier
+are still missing. The sender must recheck the enabled setting and route
+immediately before any future external send.
 
 ## Acceptance evidence and failure tests
 
@@ -108,5 +122,10 @@ Existing components to reuse: private voicemail source/intake in
 `20261101420000_learn_voicemail_private_intake.sql`, the candidate 603
 receiver and fallback proof, `notification-slack.ts`, the Resend transport,
 and the uncertain-send fence in `customer_notification_outbox`. This design
-requires a dedicated migration, worker, delivery-receipt verifier and tests
-before any LIVE sender activation.
+still requires a separately reviewed LIVE migration, sender worker,
+delivery-receipt verifier, Birchills intake/forwarding proof and provider
+drill before any LIVE sender activation. The synthetic PostgreSQL tests in
+`supabase/tests/emma_603_outbox_synthetic.sql` cover default Off, proof and
+route rejection, replay conflict, settlement and expired reservations. The
+separate `emma_603_outbox_concurrency.mjs` runs eight simultaneous preparers
+and claimers against a disposable local database.
