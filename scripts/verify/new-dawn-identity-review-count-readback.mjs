@@ -13,7 +13,11 @@ const files = [
   ['20261112193100_new_dawn_identity_review_count_indexed.sql',
     'a48b888c2fb1eaaac59f29c2aabdb489f005dce534bcac9aceb378a59a82dcf7'],
 ];
-const indexDef = 'CREATE INDEX learn_email_gmail_draft_review_idx ON public.email_messages USING btree (tenant_id, id) WHERE ((provider = \'gmail\'::text) AND ((raw_payload -> \'label_ids\'::text) @> \'["DRAFT"]\'::jsonb))';
+const indexVersion = '20261112193000';
+const indexName = 'new_dawn_identity_review_gmail_draft_index';
+const functionVersion = '20261112193100';
+const functionName = 'new_dawn_identity_review_count_indexed';
+export const indexDef = 'CREATE INDEX learn_email_gmail_draft_review_idx ON public.email_messages USING btree (tenant_id, id) WHERE ((provider = \'gmail\'::text) AND ((raw_payload -> \'label_ids\'::text) @> \'["DRAFT"]\'::jsonb))';
 const sha = value => createHash('sha256').update(value).digest('hex');
 const literal = value => `'${value.replaceAll("'", "''")}'`;
 
@@ -32,9 +36,17 @@ const catalog = `select
  has_function_privilege('anon','public.learn_identity_review_count(uuid)','EXECUTE') anon_execute,
  has_function_privilege('authenticated','public.learn_identity_review_count(uuid)','EXECUTE') authenticated_execute,
  (select count(*)::int from supabase_migrations.schema_migrations
-  where version::text='20261112193000') index_migration_count,
+  where version::text='${indexVersion}') index_migration_count,
+ (select jsonb_build_object('name',name,'sha256',
+  encode(sha256(convert_to(statements[1],'UTF8')),'hex'))
+  from supabase_migrations.schema_migrations
+  where version::text='${indexVersion}') index_ledger,
  (select count(*)::int from supabase_migrations.schema_migrations
-  where version::text='20261112193100') function_migration_count,
+  where version::text='${functionVersion}') function_migration_count,
+ (select jsonb_build_object('name',name,'sha256',
+  encode(sha256(convert_to(statements[1],'UTF8')),'hex'))
+  from supabase_migrations.schema_migrations
+  where version::text='${functionVersion}') function_ledger,
  (select count(*)::int from pg_class c join pg_namespace n on n.oid=c.relnamespace
   where n.nspname='public' and c.relname='learn_email_gmail_draft_review_idx') index_count,
  (select coalesce(bool_and(x.indisvalid and x.indisready and pg_get_indexdef(c.oid)=${literal(indexDef)}),false)
@@ -68,16 +80,29 @@ export function assess(row) {
     row.function_migration_count > 1 || !Number.isInteger(row.raw_review_count))
     throw Error('identity_review_live_state_changed');
   const stage = row.function_migration_count === 1 ? 'installed'
-    : row.index_count === 1 ? 'index_ready' : 'baseline';
+    : row.index_count === 1 && row.index_migration_count === 1 ? 'index_recorded'
+      : row.index_count === 1 ? 'index_ready_unrecorded' : 'baseline';
   if (stage === 'baseline' && (row.function_md5 !== oldFunctionMd5 ||
       row.index_count !== 0 || row.index_migration_count !== 0 ||
-      row.function_migration_count !== 0))
+      row.function_migration_count !== 0 || row.index_ledger !== null ||
+      row.function_ledger !== null))
     throw Error('identity_review_baseline_changed');
-  if (stage === 'index_ready' && (row.function_md5 !== oldFunctionMd5 ||
-      row.index_exact !== true || row.function_migration_count !== 0))
+  if (stage === 'index_ready_unrecorded' && (row.function_md5 !== oldFunctionMd5 ||
+      row.index_exact !== true || row.function_migration_count !== 0 ||
+      row.index_migration_count !== 0 || row.index_ledger !== null ||
+      row.function_ledger !== null))
     throw Error('identity_review_index_stage_changed');
+  if (stage === 'index_recorded' && (row.function_md5 !== oldFunctionMd5 ||
+      row.index_exact !== true || row.function_migration_count !== 0 ||
+      row.index_ledger?.name !== indexName ||
+      row.index_ledger?.sha256 !== files[0][1] || row.function_ledger !== null))
+    throw Error('identity_review_index_ledger_changed');
   if (stage === 'installed' && (row.index_exact !== true || row.index_count !== 1 ||
-      row.index_migration_count !== 1 || row.function_md5 !== newFunctionMd5))
+      row.index_migration_count !== 1 || row.function_md5 !== newFunctionMd5 ||
+      row.index_ledger?.name !== indexName ||
+      row.index_ledger?.sha256 !== files[0][1] ||
+      row.function_ledger?.name !== functionName ||
+      row.function_ledger?.sha256 !== files[1][1]))
     throw Error('identity_review_install_unconfirmed');
   return { stage, project, rawReviewCount: row.raw_review_count,
     functionMd5: row.function_md5, indexExact: row.index_exact,
