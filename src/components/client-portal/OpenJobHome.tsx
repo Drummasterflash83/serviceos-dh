@@ -243,6 +243,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   const rows = active?.rows ?? [];
   const activeSummary = summary.data?.tenantId === tenant && summary.data.actorId === user?.id
     && !summary.isFetching ? summary.data : null;
+  const attentionStatus: OpenJobStatus | null = activeSummary?.counts.on_hold
+    ? "on_hold" : activeSummary?.counts.pending ? "pending" : null;
   const checkedDay = dailyCoverage.data?.tenantId === tenant &&
     dailyCoverage.data.actorId === user?.id && !dailyCoverage.isFetching
     ? dailyCoverage.data : null;
@@ -318,8 +320,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
           <h3>See what is waiting</h3>
           <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending · ${activeSummary.counts.open.toLocaleString("en-GB")} Open.`
             : summary.isError ? "Job totals are unavailable." : "Checking workload…"}</p>
-          <button type="button" onClick={() => showJobs(activeSummary?.counts.on_hold
-            ? "on_hold" : activeSummary?.counts.pending ? "pending" : null)}>
+          <button type="button" onClick={() => showJobs(attentionStatus)}>
             {activeSummary?.counts.on_hold ? "Review On-hold jobs" : activeSummary?.counts.pending
               ? "Review Pending jobs" : "See all open jobs"} →</button>
           {activeSummary && <small>{activeSummary.counts.total.toLocaleString("en-GB")} open jobs in saved Commusoft records · checked {savedAt(activeSummary.snapshotAt)}</small>}
@@ -346,17 +347,23 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
       {operator && mdReason && !summary.isPending && !firstPage.isPending && mdMoney}
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
-          <p>Job scoring is being prepared. {dailyCoverage.isError
-            ? "Daily progress could not be checked; no score is published."
+          {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending in saved Commusoft statuses.</p>}
+          <p>{dailyCoverage.isError
+            ? "Job score withheld: daily progress could not be checked."
             : checkedDay?.earliestMovingReviewDay
-              ? `First review from ${statusDay(checkedDay.earliestMovingReviewDay)}, if daily checks continue.`
-              : "No score is published yet."}</p>
+              ? `Job score withheld. Earliest evidence review ${statusDay(checkedDay.earliestMovingReviewDay)}, if daily checks continue.`
+              : "Job score withheld while daily observations build."}</p>
+          {activeSummary && <><button type="button" onClick={() => showJobs(attentionStatus)}>
+            {attentionStatus === "on_hold" ? "Review recorded On-hold jobs"
+              : attentionStatus === "pending" ? "Review recorded Pending jobs"
+                : "See all recorded open jobs"} →
+          </button><small>Counts checked {savedAt(activeSummary.snapshotAt)}</small></>}
         </article>
         <article><span>CUSTOMERS</span><strong>Not enough data yet</strong>
-          <p>Customer health is waiting for a trustworthy picture of each customer’s work and contact history.</p>
+          <p>Needs confirmed job links and job-level contact history before a customer score.</p>
         </article>
         <article><span>TEAM</span><strong>Not enough data yet</strong>
-          <p>Team health will appear when visits and next actions have confirmed owners.</p>
+          <p>Needs verified visits and owners of next actions before a team score.</p>
         </article>
       </div>
       {operator && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
