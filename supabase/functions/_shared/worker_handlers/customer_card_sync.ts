@@ -18,10 +18,8 @@ import type { WorkerHandlerContext, WorkerHandlerResult } from "../worker_contra
 const DEFAULT_LIMIT = 200;
 const MAX_LIMIT = 500;
 const TIMELINE_MAX = 10;
-// Keep URLs bounded at MAX_LIMIT; the doubled 200-UUID graph filter exceeds
-// the production gateway's request-target limit.
+// Keep identity reads and graph-count RPCs bounded at MAX_LIMIT.
 const ID_BATCH = 40;
-const EDGE_PAGE = 500;
 function batches<T>(values: T[]): T[][] {
   const result: T[][] = [];
   for (let i = 0; i < values.length; i += ID_BATCH) result.push(values.slice(i, i + ID_BATCH));
@@ -140,32 +138,25 @@ export async function handleCustomerCardSync(
       }
     }
     for (const ids of batches([...new Set(personNodeId.values())])) {
+      // Existing tenant+endpoint indexes answer the two degree counts in SQL.
+      // No global edge-id sort, edge-row transfer or unbounded page loop occurs.
+      // Each edge contributes once per selected endpoint; a self-loop remains +2.
+      const { data, error } = await admin.rpc("learn_customer_card_relationship_counts", {
+        p_tenant: tenantId,
+        p_node_ids: ids,
+      });
+      const rows = (data ?? []) as Row[];
       const targets = new Set(ids);
-      let cursor: string | null = null;
-      while (true) {
-        let query = admin
-          .from("graph_edges")
-          .select("id, from_node_id, to_node_id")
-          .eq("tenant_id", tenantId)
-          .or(`from_node_id.in.(${ids.join(",")}),to_node_id.in.(${ids.join(",")})`)
-          .order("id", { ascending: true })
-          .limit(EDGE_PAGE);
-        if (cursor) query = query.gt("id", cursor);
-        const { data: edges, error: edgesError } = await query;
-        if (edgesError) throw new Error("graph_edges_unavailable");
-        const rows = (edges ?? []) as Row[];
-        for (const e of rows) {
-          const f = e.from_node_id as string;
-          const t = e.to_node_id as string;
-          // A cross-batch edge is read twice but counts once per endpoint.
-          if (targets.has(f)) relationshipCount.set(f, (relationshipCount.get(f) ?? 0) + 1);
-          if (targets.has(t)) relationshipCount.set(t, (relationshipCount.get(t) ?? 0) + 1);
-        }
-        if (rows.length < EDGE_PAGE) break;
-        const next = rows[rows.length - 1]?.id;
-        if (typeof next !== "string" || (cursor && next <= cursor)) throw new Error("graph_edges_cursor_invalid");
-        cursor = next;
+      if (error || rows.length !== ids.length) throw new Error("graph_edges_unavailable");
+      for (const row of rows) {
+        const nodeId = row.node_id;
+        const count = row.edge_count;
+        if (typeof nodeId !== "string" || !targets.delete(nodeId) ||
+          typeof count !== "number" || !Number.isSafeInteger(count) || count < 0)
+          throw new Error("graph_edges_unavailable");
+        relationshipCount.set(nodeId, count);
       }
+      if (targets.size) throw new Error("graph_edges_unavailable");
     }
 
     let cardsProjected = 0;

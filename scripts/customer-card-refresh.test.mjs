@@ -39,6 +39,7 @@ function fixture({
   conflict = false,
   size = 2,
   graphEdges,
+  graphCountOverride,
 } = {}) {
   const numbers = Array.from({ length: size }, (_, i) => i + 1);
   const cards = numbers.map((n) => ({
@@ -57,6 +58,7 @@ function fixture({
   }));
   const original = structuredClone(cards),
     writes = [];
+  let graphCountCalls = 0;
   const tables = {
     customer_cards: cards,
     people: numbers
@@ -82,6 +84,22 @@ function fixture({
   };
   const db = {
     async rpc(name, args) {
+      if (name === "learn_customer_card_relationship_counts") {
+        assert.equal(args.p_tenant, id(100));
+        assert.ok(args.p_node_ids.length >= 1 && args.p_node_ids.length <= 40, "bounded graph count batch");
+        graphCountCalls++;
+        const error = typeof fail === "function"
+          ? fail({ table: "graph_edges", batchIndex: graphCountCalls, filter: "" })
+          : fail === "graph_edges";
+        if (error) return { data: null, error: { message: "PRIVATE DATABASE CONTENT" } };
+        const rows = args.p_node_ids.map(node_id => ({
+          node_id,
+          edge_count: tables.graph_edges.reduce((n, e) =>
+            n + Number(e.from_node_id === node_id) + Number(e.to_node_id === node_id), 0),
+        }));
+        if (graphCountOverride) graphCountOverride(rows);
+        return { data: rows, error: null };
+      }
       assert.equal(name, "learn_card_projection_inputs");
       assert.equal(args.p_tenant, id(100));
       const card = args.p_card;
@@ -205,6 +223,7 @@ function fixture({
     cards,
     original,
     writes,
+    graphCountCalls: () => graphCountCalls,
     run: (payload) =>
       exports.handleCustomerCardSync({
         tenantId: id(100),
@@ -213,7 +232,7 @@ function fixture({
       }),
   };
 }
-test("maximum sweep bounds URLs, pages graph edges and counts cross-batch endpoints once", async () => {
+test("maximum sweep requests 40-node degree batches and preserves cross-batch and self-loop counts", async () => {
   const graphEdges = Array.from({length: 1001}, (_, i) => ({id: id(10000 + i), from_node_id: id(1001), to_node_id: id(1041)}));
   graphEdges.push({id: id(20000), from_node_id: id(1001), to_node_id: id(1001)});
   const f = fixture({size: 500, graphEdges});
@@ -223,13 +242,29 @@ test("maximum sweep bounds URLs, pages graph edges and counts cross-batch endpoi
   assert.equal(f.cards[0].context.projection.business.relationship_count, 1003);
   assert.equal(f.cards[40].context.projection.business.relationship_count, 1001);
   assert.equal(f.cards[499].context.projection.business.relationship_count, 0);
+  assert.equal(f.graphCountCalls(), 13);
 });
-test("a later graph page failure retains all saved projections", async () => {
+test("a later graph count batch failure retains all saved projections", async () => {
   const graphEdges = Array.from({length: 501}, (_, i) => ({id: id(10000 + i), from_node_id: id(1001), to_node_id: id(1041)}));
-  const f = fixture({size: 200, graphEdges, fail: q => q.table === 'graph_edges' && !!q.after});
+  const f = fixture({size: 200, graphEdges, fail: q => q.table === 'graph_edges' && q.batchIndex === 2});
   assert.equal((await f.run()).success, false);
   assert.equal(f.writes.length, 0);
   assert.deepEqual(f.cards, f.original);
+});
+test("malformed graph degree envelopes never overwrite saved cards", async () => {
+  for (const mutate of [
+    rows => rows.pop(),
+    rows => { rows[0].node_id = id(9999); },
+    rows => { rows[0].edge_count = -1; },
+    rows => { rows[0].edge_count = 0.5; },
+    rows => { if (rows.length > 1) rows[1].node_id = rows[0].node_id; },
+  ]) {
+    const f = fixture({ graphEdges: [], graphCountOverride: mutate });
+    const r = await f.run();
+    assert.equal(r.success, false);
+    assert.equal(f.writes.length, 0);
+    assert.deepEqual(f.cards, f.original);
+  }
 });
 test("shared identity and graph read failures preserve every prior card and redact database prose", async () => {
   for (const table of ["customer_cards", "people", "companies", "graph_nodes", "graph_edges"]) {
