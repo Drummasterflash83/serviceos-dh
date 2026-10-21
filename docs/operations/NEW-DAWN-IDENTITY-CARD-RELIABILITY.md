@@ -27,14 +27,15 @@ ambiguous, hold further changes rather than treating the old projections as a
 fresh successful sweep. No provider call, staff login or customer-visible score
 is added by this diagnostic change.
 
-**Release fence:** the current LIVE `platform-worker` v113 and direct
+**Release fence:** LIVE `platform-worker` v114 and direct
 `customer-card-sync` v50 have separate deployed source closures. The typed
-handlers in this PR now retain the v113 10-card sweep, urgent-card reservation,
+handlers in this PR retain the v113 10-card sweep, urgent-card reservation,
 one read-only input retry, revision-conflict skip, 50-row identity batch and
-sanitized failure reasons. Do not deploy the repository closure directly:
-verify the complete deployed source inventory, build against that exact LIVE
-source, retain an exact rollback artifact, and limit the first candidate to
-the two sanitized diagnostic catch paths. Deploy and verify the two Edge
-functions separately before claiming complete scheduled and direct coverage;
-the `identity-resolve` endpoint only queues work and is not part of the
-diagnostic bundle.
+sanitized failure reasons. The v114 scheduled worker was built from the exact
+archived v113 closure with only the two diagnostic paths changed, then read
+back by executable hash. Its exact v113 rollback is retained privately. Do
+not deploy the repository closure directly or claim the diagnostic fixed the
+failed jobs: wait for the ordinary retry and its sanitized log. Direct
+`customer-card-sync` v50 still needs a separate same-source release if direct
+path diagnostics become necessary. The `identity-resolve` endpoint only queues
+work and is not part of this diagnostic bundle.
