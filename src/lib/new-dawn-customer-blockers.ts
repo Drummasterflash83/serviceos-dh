@@ -77,7 +77,7 @@ export function readCustomerBlockers(value: unknown, tenant: string, actor: stri
         !["on_hold", "pending"].includes(String(row.status)) ||
         (described && !(row.source_description === null ||
           (typeof row.source_description === "string" &&
-            row.source_description.length <= 160 && row.source_description.trim() &&
+            Array.from(row.source_description).length <= 160 && row.source_description.trim() &&
             row.source_description === row.source_description.trim())))) return unavailable();
       const jobKey = `${row.connection_id}:${row.external_id}`;
       if (seenJobs.has(jobKey)) return unavailable();

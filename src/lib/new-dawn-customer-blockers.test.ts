@@ -36,6 +36,9 @@ test("the current reader carries bounded saved work descriptions without classif
   const result = readCustomerBlockers(described, tenant, actor);
   assert.equal(result.groups[0].jobs[0].sourceDescription, "For Invoicing");
   assert.equal(result.groups[0].jobs[0].status, "on_hold");
+  described.groups[0].jobs[0].source_description = "🔧".repeat(160);
+  assert.equal(readCustomerBlockers(described, tenant, actor).groups[0].jobs[0].sourceDescription,
+    "🔧".repeat(160));
   const tooLong: any = payload();
   tooLong.version = "new-dawn-customer-blockers/2";
   tooLong.groups[0].jobs[0].source_description = "x".repeat(161);
