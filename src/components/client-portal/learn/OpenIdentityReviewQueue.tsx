@@ -9,6 +9,20 @@ import { loadAttentionIdentityGroups, loadOpenIdentityPage,
   type AttentionIdentityGroups, type OpenIdentityPage, type OpenIdentityRow } from "@/lib/new-dawn-open-identity-review";
 import { ExactJobAutoLink } from "./ExactJobAutoLink";
 
+function RecordedSourceContext({ row }: { row: OpenIdentityRow }) {
+  if (!row.sourceWork && !row.sourceCompanyName && !row.sourceContactName &&
+    !row.sourceSiteAddress && !row.sourceSitePostcode) return null;
+  return <div className="space-y-1 text-sm">
+    {row.sourceWork && <p>Recorded work: {row.sourceWork}</p>}
+    {(row.sourceCompanyName || row.sourceContactName) && <p>
+      {row.sourceCompanyName ? `Commusoft company label: ${row.sourceCompanyName}` : "No company label saved"}
+      {row.sourceContactName ? ` · Contact: ${row.sourceContactName}` : ""}
+    </p>}
+    {(row.sourceSiteAddress || row.sourceSitePostcode) &&
+      <p>Recorded property: {[row.sourceSiteAddress, row.sourceSitePostcode].filter(Boolean).join(", ")}</p>}
+  </div>;
+}
+
 /** Audited operator review, ordered by current saved open status. It does not apply identity links. */
 export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
   onReviewJob, onReviewCustomer, onReviewSite }: {
@@ -136,7 +150,7 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
   return <section className="rounded-xl border border-[#a890bb] bg-white p-4 space-y-3" aria-label="Open jobs awaiting identity review">
     <div className="flex flex-wrap justify-between gap-2"><div>
       <h4 className="font-semibold">Open jobs needing a customer or site link</h4>
-      <p className="text-sm">OpenFolk review only. Work through On hold, Pending, then Open. Each row names the exact source customer and property proposed for review, the reason it remains unlinked, and the next available action.</p>
+      <p className="text-sm">OpenFolk review only. Work through On hold, Pending, then Open. Each row shows the recorded source, its held reason and the next review action. A contact name does not establish the account holder; no link is made from this list.</p>
     </div><button type="button" className="cp-secondary" onClick={() => {
       setHidden(false); setCursors([null]); setAttention(null); setRevision(v => v + 1);
     }}>Refresh open-job review</button></div>
@@ -163,6 +177,7 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
               const action = exactLinkReviewAction(display);
               return <li key={`${row.externalId}:${row.sourceVersionId}`} className="rounded-lg border border-[#e5dbe9] p-3 space-y-1">
                 <p className="text-sm"><strong>Job {row.externalId}</strong> · {row.status === "on_hold" ? "On hold" : "Pending"} · Source saved {new Date(row.sourceObservedAt).toLocaleString("en-GB")}</p>
+                <RecordedSourceContext row={row} />
                 <p className="text-sm">{exactLinkReviewLabel(display)}</p>
                 {action === "job" && <ExactJobAutoLink tenant={tenant} connection={connection}
                   external={row.externalId} version={row.sourceVersionId} canApply={applyFlag.data === true}
@@ -191,6 +206,7 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
         const action = exactLinkReviewAction(display);
         return <li key={`${row.externalId}:${row.sourceVersionId}`} className="rounded-lg border border-[#e5dbe9] p-3 space-y-2">
           <p><strong>Commusoft job {row.externalId}</strong> · Recorded {row.status === "on_hold" ? "On hold" : row.status === "pending" ? "Pending" : "Open"}</p>
+          <RecordedSourceContext row={row} />
           <p className="text-sm"><strong>Suggested source match:</strong> customer {row.customerExternalId ? `Commusoft ID ${row.customerExternalId}` : "not established"} · work site {row.propertyExternalId ? `Commusoft property ID ${row.propertyExternalId}` : "not established"}. This is a source route, not an approved ServiceOS link.</p>
           <p className="text-sm"><strong>Why it is here:</strong> {exactLinkReviewLabel(display)}</p>
           <p className="text-xs text-[#706b7e]">Source saved {new Date(row.sourceObservedAt).toLocaleString("en-GB")}. Current source and conflicts are rechecked before any change.</p>
