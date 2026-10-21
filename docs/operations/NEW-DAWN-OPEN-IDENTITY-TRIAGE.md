@@ -12,3 +12,5 @@ Release sequence:
 4. If the signed-in reader fails, run `supabase/release/new-dawn-open-identity-triage/rollback.sql` after checking its candidate hash. It restores only the prior function. Keep the installed ledger entry as a record and document the rollback separately; do not replay the migration blindly.
 
 Local proof: `node --test src/lib/new-dawn-open-identity-review.test.ts`; `node scripts/verify/new-dawn-open-identity-triage-synthetic.mjs | psql -X -v ON_ERROR_STOP=1` against a disposable PostgreSQL 17 database; TypeScript and full build. The synthetic proof covers labels, tenant/cursor denial, audit, rollback/reapply and a later import during paging. It is not a substitute for signed-in LIVE usability or performance acceptance.
+
+The additional `scripts/verify/new-dawn-open-identity-triage-load.sql` runs after that fixture in the same disposable database. With 15,005 projected keys and 120,008 observations, its 40-row first and second pages returned in 14.8 ms and 13.1 ms locally. This detects a gross retained-history scan regression, but the synthetic status mix and stubbed identity candidate differ from LIVE.
