@@ -11,6 +11,7 @@ import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
 import { customerBlockedJobDetailKey, readCustomerBlockers, type CustomerBlockedJob } from "@/lib/new-dawn-customer-blockers";
 import { dailyStatusGapState, readDailyStatusCoverage } from "@/lib/new-dawn-daily-status-coverage";
+import { commusoftFreshnessSummary, readCommusoftFreshness } from "@/lib/new-dawn-commusoft-freshness";
 import {
   openJobNextStep, openJobPageFlagName, openJobStatusEvidence,
   readOpenJobPage, readOpenJobStatusSummary,
@@ -221,6 +222,20 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       return readOpenJobStatusSummary(data, tenant, user!.id);
     },
   });
+  const sourceFreshness = useQuery({
+    queryKey: ["learn-commusoft-freshness", user?.id, tenant, operator, approvedReason],
+    enabled,
+    retry: false,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().rpc("new_dawn_commusoft_freshness_read", {
+        p_tenant: tenant, p_operator_reason: operator ? approvedReason : null,
+      }).abortSignal(AbortSignal.timeout(15_000));
+      if (error) throw Error("Commusoft provider check unavailable");
+      return readCommusoftFreshness(data, tenant, user!.id);
+    },
+  });
   const dailyCoverage = useQuery({
     queryKey: ["new-dawn-daily-status-coverage", tenant, user?.id, operator,
       approvedReason],
@@ -379,6 +394,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     // data if a busy database refuses one of these independent reads.
     void (async () => {
       await summary.refetch();
+      await sourceFreshness.refetch();
       if (showJobBrowser || showOldestJobs) await firstPage.refetch();
       await customerBlockers.refetch();
       if (showMatchingTools) await dailyCoverage.refetch();
@@ -446,6 +462,9 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
           {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending</p>}
+          <p>{sourceFreshness.isPending ? "Checking Commusoft comparison…"
+            : commusoftFreshnessSummary(sourceFreshness.data)}</p>
+          {sourceFreshness.data?.providerCheckedAt && <small>Newest-job check {savedAt(sourceFreshness.data.providerCheckedAt)}. Older jobs and later updates may still be missing.</small>}
           {showMatchingTools && <p>{dailyCoverage.isError
             ? "Daily check unavailable."
             : checkedDay?.day
