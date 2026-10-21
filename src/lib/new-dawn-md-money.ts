@@ -14,6 +14,29 @@ export function fy27LastCompletedUkDate(now: Date): string | null {
   return yesterday >= DRUMMONDS_FY27_START && yesterday <= "2027-03-31" ? yesterday : null;
 }
 
+export type MoneyReportFreshness = {
+  state: "current" | "older" | "partial" | "unverified";
+  message: string;
+};
+
+/** Date coverage is a source fact; it never claims that the scheduled reader ran. */
+export function moneyReportFreshness(
+  periodEnd: string, receivablesAsOf: string, now: Date,
+): MoneyReportFreshness {
+  const validDay = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+    !Number.isNaN(Date.parse(`${value}T00:00:00Z`)) &&
+    new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
+  const lastComplete = fy27LastCompletedUkDate(now);
+  if (!validDay(periodEnd) || !validDay(receivablesAsOf) ||
+    periodEnd !== receivablesAsOf || !lastComplete)
+    return { state: "unverified", message: "Report date coverage needs review before these figures are treated as current." };
+  if (periodEnd < lastComplete)
+    return { state: "older", message: `Figures end ${periodEnd}. More recent company accounts have not been verified.` };
+  if (periodEnd === lastComplete)
+    return { state: "current", message: `Figures cover the last completed UK day (${periodEnd}).` };
+  return { state: "partial", message: `Figures include ${periodEnd}, which is not yet a completed UK day. Treat them as a partial period.` };
+}
+
 /** Prefer the latest accounting period, not the most recently re-read old report. */
 export function newestAccountsPair(pairs: AccountsPair[]): AccountsPair | null {
   return [...pairs].sort((a, b) =>

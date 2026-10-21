@@ -46,6 +46,9 @@
 .md-money-strip-receivables span { color: #514669; font-size: 17px; font-weight: 650; overflow-wrap: anywhere; }
 .md-money-strip-receivables small { flex-basis: 100%; color: #706b7e; line-height: 1.45; }
 .md-money-strip-source { margin: 12px 0 0; color: #706b7e; font-size: 11px; line-height: 1.5; }
+.md-money-freshness { margin: 13px 0 0; padding: 10px 13px; border: 1px solid #e9e7ee; border-radius: 10px; background: #faf9f6; color: #514669; font-size: 12px; line-height: 1.5; }
+.md-money-freshness--older, .md-money-freshness--partial { border-color: #e9d9b9; background: #fbf6ec; color: #775e2d; }
+.md-money-freshness--current { border-color: #d4e7d8; background: #edf7f0; color: #326c54; }
 .md-money-strip [role="alert"] { color: #9b3333; }
 .md-money h2 { margin: 4px 0 8px; color: #25253a; font-size: clamp(24px,2.6vw,31px); font-weight: 550; letter-spacing: -.03em; }
 .md-money > p:not(.of-eyebrow), .md-money-source { max-width: 78ch; color: #706b7e; font-size: 13px; line-height: 1.6; }

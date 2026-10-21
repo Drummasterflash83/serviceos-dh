@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { accountsNetMargin, agedReceivablesBucketKind, fy27LastCompletedUkDate, newestAccountsPair, netProfitYtdComparison } from "./new-dawn-md-money.ts";
+import { accountsNetMargin, agedReceivablesBucketKind, fy27LastCompletedUkDate,
+  moneyReportFreshness, newestAccountsPair, netProfitYtdComparison } from "./new-dawn-md-money.ts";
 import type { AccountsPair } from "./new-dawn-founder-accounts-preview.ts";
 
 const pair = (periodStart: string, periodEnd: string, received: string): AccountsPair => ({
@@ -33,6 +34,17 @@ test("FY27 scope uses the last completed UK day across a clock change", () => {
   assert.equal(fy27LastCompletedUkDate(new Date("2026-10-24T23:30:00Z")), "2026-10-24");
   assert.equal(fy27LastCompletedUkDate(new Date("2026-10-26T00:30:00Z")), "2026-10-25");
   assert.equal(fy27LastCompletedUkDate(new Date("2026-04-01T08:00:00Z")), null);
+});
+
+test("MD money labels saved coverage without claiming a scheduled report ran", () => {
+  const now = new Date("2026-10-21T08:30:00Z");
+  assert.equal(moneyReportFreshness("2026-10-19", "2026-10-19", now).state, "older");
+  assert.match(moneyReportFreshness("2026-10-19", "2026-10-19", now).message,
+    /More recent company accounts have not been verified/);
+  assert.equal(moneyReportFreshness("2026-10-20", "2026-10-20", now).state, "current");
+  assert.equal(moneyReportFreshness("2026-10-21", "2026-10-21", now).state, "partial");
+  assert.equal(moneyReportFreshness("2026-10-20", "2026-10-19", now).state, "unverified");
+  assert.equal(moneyReportFreshness("2026-02-30", "2026-02-30", now).state, "unverified");
 });
 
 test("MD net margin uses same-report income and handles negative profit", () => {
