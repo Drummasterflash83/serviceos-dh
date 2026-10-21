@@ -428,7 +428,7 @@
 .nd-score-tiles span { color: #514669; font-size: 11px; font-weight: 700; letter-spacing: .11em; }
 .nd-score-tiles strong { color: #25253a; font-size: 18px; font-weight: 600; letter-spacing: -.02em; }
 .nd-score-tiles p { margin: 0; color: #706b7e; font-size: 12px; line-height: 1.55; }
-.nd-job-home > .nd-score-tiles + .nd-work-priority { margin-top: 18px; }
+.nd-job-home > .nd-work-priority { margin-top: 13px; }
 .nd-job-context { margin: 14px 0 18px; color: #706b7e; font-size: 12px; line-height: 1.55; }
 .nd-job-context summary { width: fit-content; color: #514669; font-weight: 650; cursor: pointer; }
 .nd-job-context summary:focus-visible { outline: 2px solid #514669; outline-offset: 3px; }
@@ -486,7 +486,7 @@ button.nd-job-row:hover { border-color: #a996c0; background: #fff; }
 .nd-job-row > svg { color: #77648f; }
 .nd-job-row span { display: grid; gap: 4px; min-width: 0; }
 .nd-job-row strong, .nd-job-row b { overflow-wrap: anywhere; font-size: 14px; font-weight: 600; }
-.nd-job-row small { color: #716b78; line-height: 1.4; }
+.nd-job-row small { color: #716b78; line-height: 1.4; overflow-wrap: anywhere; }
 .nd-job-review { align-items: start; }
 .nd-job-review b { width: fit-content; padding: 4px 8px; border-radius: 6px; background: #eee8f3; color: #574466; font-size: 12px; }
 .nd-job-review .nd-job-next { color: #41384c; font-weight: 600; }
