@@ -55,8 +55,11 @@ worker in `supabase/functions/learn-quickbooks-daily-reports/index.ts`, and a
 rollback-only SQL rehearsal. The approved goal supplies standing authority;
 verify the exact LIVE company and operator status, install the schema, deploy
 the worker, record the policy, and add a monitored daily trigger. A
-successful scheduled run and missed-run alert should be verified before calling
-daily capture operational.
+successful scheduled run and the operator's overdue indicator should be
+verified before calling daily capture operational. After 06:00 UK, the status
+read marks yesterday's pair overdue if no complete pair exists. A held or
+missing pair stays visible without turning an old money figure into a current
+one.
 
 ## Residual risk and stop conditions
 
