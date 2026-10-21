@@ -360,7 +360,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
           <small>jobs to check</small></div>
         <div className="nd-score-hero-copy">
           <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · TODAY</p>
-          <h3>How {company ?? "your company"} is doing</h3>
+          <h3>Recorded open work</h3>
           <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending · ${activeSummary.counts.open.toLocaleString("en-GB")} Open.`
             : summary.isError ? "Job totals are unavailable." : "Checking workload…"}</p>
           <button type="button" onClick={() => showJobs(attentionStatus)}>
@@ -368,6 +368,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
               ? "Review Pending jobs" : "See all open jobs"} →</button>
           {activeSummary && <small>{activeSummary.counts.total.toLocaleString("en-GB")} open jobs in saved Commusoft records · checked {savedAt(activeSummary.snapshotAt)}</small>}
           {activeSummary?.identity && <small>{activeSummary.identity.linked.toLocaleString("en-GB")} jobs have confirmed customer and site links · {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} need matching.</small>}
+          {activeSummary && <small>Recorded statuses can include office and internal work. They show what to review, not customer urgency or who owns the next action.</small>}
         </div>
       </section>
       {operator && mdReason && !summary.isPending && !firstPage.isPending && mdMoney}
