@@ -15,13 +15,13 @@ import {
 } from "../customer_card.ts";
 import type { WorkerHandlerContext, WorkerHandlerResult } from "../worker_contract.ts";
 
-const DEFAULT_LIMIT = 200;
-const MAX_LIMIT = 500;
+// A full sweep performs per-card source reads and bounded graph degree counts. Keep its
+// unattended batch below the five-minute platform-job lease under LIVE load.
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 10;
 const TIMELINE_MAX = 10;
-// Keep URLs bounded at MAX_LIMIT; the doubled 200-UUID graph filter exceeds
-// the production gateway's request-target limit.
+// Keep identity reads and graph-count RPCs bounded at MAX_LIMIT.
 const ID_BATCH = 40;
-const EDGE_PAGE = 500;
 function batches<T>(values: T[]): T[][] {
   const result: T[][] = [];
   for (let i = 0; i < values.length; i += ID_BATCH) result.push(values.slice(i, i + ID_BATCH));
@@ -56,27 +56,37 @@ export async function handleCustomerCardSync(
   const sweepSince =
     (typeof payload.sweep_since === "string" && payload.sweep_since) || new Date().toISOString();
   let isSweep = false;
+  let moreToSweep = false;
+  // Only fixed stages and SQLSTATEs enter Edge diagnostics, never private
+  // database messages, source IDs or customer content.
+  let failedStage = "target_cards";
+  let sqlstate: string | null = null;
+  const noteSqlstate = (error: unknown) => {
+    const code = (error as { code?: unknown } | null)?.code;
+    sqlstate = typeof code === "string" && /^[A-Z0-9]{5}$/.test(code) ? code : null;
+  };
 
   try {
     // ── Resolve the target card set ─────────────────────────────────────────
+    const cardFields =
+      "id, person_id, company_id, title, status, priority, confidence, due_at, completed_at, locked_fields, context, updated_at";
     let cardQuery = admin
       .from("customer_cards")
-      .select(
-        "id, person_id, company_id, title, status, priority, confidence, due_at, completed_at, locked_fields, context, updated_at",
-      )
+      .select(cardFields)
       .eq("tenant_id", tenantId);
 
     if (isUuid(payload.customer_card_id)) {
       cardQuery = cardQuery.eq("id", payload.customer_card_id as string);
     } else if (isUuid(payload.graph_node_id)) {
       // Resolve the graph node → its source person → the card for that person.
+      failedStage = "graph_target";
       const { data: gnode, error: graphTargetError } = await admin
         .from("graph_nodes")
         .select("node_type, source_id")
         .eq("tenant_id", tenantId)
         .eq("id", payload.graph_node_id as string)
         .maybeSingle();
-      if (graphTargetError) throw new Error("graph_target_unavailable");
+      if (graphTargetError) { noteSqlstate(graphTargetError); throw new Error("graph_target_unavailable"); }
       const sid = (gnode?.source_id as string | null) ?? null;
       if (gnode?.node_type === "person" && sid) cardQuery = cardQuery.eq("person_id", sid);
       else if (gnode?.node_type === "company" && sid) cardQuery = cardQuery.eq("company_id", sid);
@@ -86,13 +96,47 @@ export async function handleCustomerCardSync(
       cardQuery = cardQuery
         .neq("status", "archived") // archived cards are never reprojected/resurrected
         .lt("updated_at", sweepSince) // only cards not yet refreshed in this sweep
-        .order("updated_at", { ascending: true }) // oldest-refreshed first → full coverage
-        .limit(limit);
+        .order("updated_at", { ascending: true }); // oldest-refreshed first → full coverage
     }
 
-    const { data: cardRows, error: cardErr } = await cardQuery;
-    if (cardErr) throw new Error("cards_unavailable");
-    const cards = (cardRows ?? []) as Row[];
+    let cards: Row[];
+    failedStage = "target_cards";
+    if (isSweep) {
+      // New cards can arrive after the stable sweep cursor. Reserve half the
+      // batch for cards without any projection, then continue the old sweep.
+      // This gives fresh cards prompt evidence without starving full coverage.
+      const urgentLimit = Math.max(1, Math.floor(limit / 2));
+      const { data: urgentRows, error: urgentErr } = await admin
+        .from("customer_cards")
+        .select(cardFields)
+        .eq("tenant_id", tenantId)
+        .neq("status", "archived")
+        .is("context->>projection", null)
+        .gt("updated_at", sweepSince)
+        .lt("updated_at", new Date(nowMs - 5 * 60_000).toISOString())
+        .order("updated_at", { ascending: true })
+        .limit(urgentLimit);
+      if (urgentErr) { noteSqlstate(urgentErr); throw new Error("cards_unavailable"); }
+      const urgent = (urgentRows ?? []) as Row[];
+      const remaining = limit - urgent.length;
+      let ordinary: Row[] = [];
+      let fullOrdinaryPage = false;
+      if (remaining > 0) {
+        // The old sweep is strictly before the cursor and cannot overlap the
+        // urgent after-cursor group; reserve this remainder for full coverage.
+        const { data: oldRows, error: oldErr } = await cardQuery.limit(remaining);
+        if (oldErr) { noteSqlstate(oldErr); throw new Error("cards_unavailable"); }
+        const old = (oldRows ?? []) as Row[];
+        fullOrdinaryPage = old.length >= remaining;
+        ordinary = old;
+      }
+      cards = [...urgent, ...ordinary];
+      moreToSweep = urgent.length >= urgentLimit || fullOrdinaryPage;
+    } else {
+      const { data: cardRows, error: cardErr } = await cardQuery;
+      if (cardErr) { noteSqlstate(cardErr); throw new Error("cards_unavailable"); }
+      cards = (cardRows ?? []) as Row[];
+    }
 
     // ── Batch-load identity rows + graph relationship counts ────────────────
     const personIds = [
@@ -103,29 +147,32 @@ export async function handleCustomerCardSync(
     ] as string[];
 
     const peopleById = new Map<string, Row>();
+    failedStage = "people_prefetch";
     for (const ids of batches(personIds)) {
       const { data, error } = await admin
         .from("people")
         .select("id, display_name, first_name, last_name, primary_email, primary_phone, company_id")
         .eq("tenant_id", tenantId)
         .in("id", ids);
-      if (error) throw new Error("people_unavailable");
+      if (error) { noteSqlstate(error); throw new Error("people_unavailable"); }
       for (const p of (data ?? []) as Row[]) peopleById.set(p.id as string, p);
     }
     const companyById = new Map<string, Row>();
+    failedStage = "company_prefetch";
     for (const ids of batches(companyIds)) {
       const { data, error } = await admin
         .from("companies")
         .select("id, name, domain, phone")
         .eq("tenant_id", tenantId)
         .in("id", ids);
-      if (error) throw new Error("companies_unavailable");
+      if (error) { noteSqlstate(error); throw new Error("companies_unavailable"); }
       for (const c of (data ?? []) as Row[]) companyById.set(c.id as string, c);
     }
 
     // Graph relationship counts for each person node (a real graph read).
     const personNodeId = new Map<string, string>(); // person_id → graph node id
     const relationshipCount = new Map<string, number>(); // graph node id → edge count
+    failedStage = "graph_nodes_prefetch";
     for (const ids of batches(personIds)) {
       const { data: nodes, error: nodesError } = await admin
         .from("graph_nodes")
@@ -134,43 +181,47 @@ export async function handleCustomerCardSync(
         .eq("node_type", "person")
         .eq("source_table", "people")
         .in("source_id", ids);
-      if (nodesError) throw new Error("graph_nodes_unavailable");
+      if (nodesError) { noteSqlstate(nodesError); throw new Error("graph_nodes_unavailable"); }
       for (const n of (nodes ?? []) as Row[]) {
         personNodeId.set(n.source_id as string, n.id as string);
       }
     }
+    failedStage = "graph_edges_prefetch";
     for (const ids of batches([...new Set(personNodeId.values())])) {
+      // Existing tenant+endpoint indexes answer the two degree counts in SQL.
+      // No global edge-id sort, edge-row transfer or unbounded page loop occurs.
+      // Each edge contributes once per selected endpoint; a self-loop remains +2.
+      const { data, error } = await admin.rpc("learn_customer_card_relationship_counts", {
+        p_tenant: tenantId,
+        p_node_ids: ids,
+      });
+      const rows = (data ?? []) as Row[];
       const targets = new Set(ids);
-      let cursor: string | null = null;
-      while (true) {
-        let query = admin
-          .from("graph_edges")
-          .select("id, from_node_id, to_node_id")
-          .eq("tenant_id", tenantId)
-          .or(`from_node_id.in.(${ids.join(",")}),to_node_id.in.(${ids.join(",")})`)
-          .order("id", { ascending: true })
-          .limit(EDGE_PAGE);
-        if (cursor) query = query.gt("id", cursor);
-        const { data: edges, error: edgesError } = await query;
-        if (edgesError) throw new Error("graph_edges_unavailable");
-        const rows = (edges ?? []) as Row[];
-        for (const e of rows) {
-          const f = e.from_node_id as string;
-          const t = e.to_node_id as string;
-          // A cross-batch edge is read twice but counts once per endpoint.
-          if (targets.has(f)) relationshipCount.set(f, (relationshipCount.get(f) ?? 0) + 1);
-          if (targets.has(t)) relationshipCount.set(t, (relationshipCount.get(t) ?? 0) + 1);
-        }
-        if (rows.length < EDGE_PAGE) break;
-        const next = rows[rows.length - 1]?.id;
-        if (typeof next !== "string" || (cursor && next <= cursor)) throw new Error("graph_edges_cursor_invalid");
-        cursor = next;
+      if (error) { noteSqlstate(error); throw new Error("graph_edges_unavailable"); }
+      if (rows.length !== ids.length) throw new Error("graph_edges_unavailable");
+      for (const row of rows) {
+        const nodeId = row.node_id;
+        const count = row.edge_count;
+        if (typeof nodeId !== "string" || !targets.delete(nodeId) ||
+          typeof count !== "number" || !Number.isSafeInteger(count) || count < 0)
+          throw new Error("graph_edges_unavailable");
+        relationshipCount.set(nodeId, count);
       }
+      if (targets.size) throw new Error("graph_edges_unavailable");
     }
 
     let cardsProjected = 0;
     let skipped = 0;
     let failed = 0;
+    let revisionConflicts = 0;
+    let inputRetries = 0;
+    type FailurePhase = "identity" | "inputs" | "projection" | "update";
+    const failurePhases: Record<FailurePhase, number> = {
+      identity: 0,
+      inputs: 0,
+      projection: 0,
+      update: 0,
+    };
     const healthCounts: Record<Health, number> = {
       excellent: 0,
       good: 0,
@@ -179,6 +230,7 @@ export async function handleCustomerCardSync(
     };
 
     for (const card of cards) {
+      let phase: FailurePhase = "identity";
       try {
         const cardId = card.id as string;
         const personId = card.person_id as string | null;
@@ -222,10 +274,21 @@ export async function handleCustomerCardSync(
 
         // Filter retained drafts before taking either bounded evidence window.
         // A failed/malformed eligibility read must preserve the saved projection.
-        const { data: inputData, error: inputError } = await admin.rpc(
+        phase = "inputs";
+        let { data: inputData, error: inputError } = await admin.rpc(
           "learn_card_projection_inputs",
           { p_tenant: tenantId, p_card: cardId },
         );
+        // A cold PostgREST statement can time out even when the same bounded
+        // read succeeds warm. Retry one read-only RPC once; never repeat a card
+        // update after an ambiguous write response.
+        if (inputError) {
+          inputRetries += 1;
+          ({ data: inputData, error: inputError } = await admin.rpc(
+            "learn_card_projection_inputs",
+            { p_tenant: tenantId, p_card: cardId },
+          ));
+        }
         const inputs = inputData as {
           version?: string;
           tenantId?: string;
@@ -267,6 +330,7 @@ export async function handleCustomerCardSync(
         const interactions = inputs.interactions;
         const recs = inputs.recommendations;
         const ascending = [...interactions].reverse();
+        phase = "projection";
 
         // ── Communication ────────────────────────────────────────────────
         const last7 = coverage.interactionsLast7;
@@ -420,6 +484,7 @@ export async function handleCustomerCardSync(
         if (!locked.includes("latest_activity_at")) {
           patch.latest_activity_at = lastInteractionAt;
         }
+        phase = "update";
         if (typeof card.updated_at !== "string") throw new Error("card_revision_unavailable");
         const { data: updatedCard, error: updErr } = await admin
           .from("customer_cards")
@@ -429,30 +494,55 @@ export async function handleCustomerCardSync(
           .eq("updated_at", card.updated_at)
           .select("id")
           .maybeSingle();
-        if (updErr || updatedCard?.id !== cardId) {
+        if (updErr) {
           failed += 1;
+          failurePhases.update += 1;
+          continue;
+        }
+        if (updatedCard?.id !== cardId) {
+          // Another normal identity/card writer may have revised this card
+          // during the bounded sweep. Do not publish a projection computed
+          // from the older snapshot, and do not strand the whole sweep behind
+          // a retry: the next sweep will read the new revision.
+          const { data: currentCard, error: currentErr } = await admin
+            .from("customer_cards")
+            .select("updated_at")
+            .eq("tenant_id", tenantId)
+            .eq("id", cardId)
+            .maybeSingle();
+          if (!currentErr && typeof currentCard?.updated_at === "string" &&
+            currentCard.updated_at !== card.updated_at) {
+            revisionConflicts += 1;
+            skipped += 1;
+            continue;
+          }
+          failed += 1;
+          failurePhases.update += 1;
           continue;
         }
         cardsProjected += 1;
         healthCounts[health] += 1;
       } catch (_e) {
         failed += 1; // failure-isolated: one bad card never aborts the batch
+        failurePhases[phase] += 1;
       }
     }
 
     // Self-continue the sweep while a full batch was taken (more stale cards remain);
     // stops automatically when the final batch is short. Strictly serial via the
     // idempotent job_key.
-    const moreToSweep = isSweep && (cardRows?.length ?? 0) >= limit;
     return {
       success: failed === 0,
       recordsProcessed: cardsProjected,
       result: {
         cards_projected: cardsProjected,
         skipped,
+        revision_conflicts: revisionConflicts,
+        input_retries: inputRetries,
+        failure_phases: failurePhases,
         failed,
         health_counts: healthCounts,
-        swept: cardRows?.length ?? 0,
+        swept: cards.length,
       },
       ...(moreToSweep
         ? {
@@ -467,7 +557,10 @@ export async function handleCustomerCardSync(
         ? {
             error: {
               code: "card_partial_failure",
-              message: `${failed} card projection(s) failed`,
+              // Only phase names and counts enter the durable job ledger.
+              message: `${failed} card projection(s) failed; phases=${Object.entries(failurePhases)
+                .filter(([, count]) => count > 0)
+                .map(([name, count]) => `${name}:${count}`).join(",")}`,
               retryable: true,
             },
           }
@@ -476,6 +569,7 @@ export async function handleCustomerCardSync(
   } catch {
     // Database/provider prose can contain private source details. Keep it out of
     // durable job results and preserve the existing projection for retry.
+    console.warn(JSON.stringify({ event: "card_read_failed", stage: failedStage, sqlstate }));
     const message = "Required customer-card data could not be read. Existing cards were retained.";
     return {
       success: false,
