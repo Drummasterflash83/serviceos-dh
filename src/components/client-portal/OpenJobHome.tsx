@@ -349,11 +349,11 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   const recordedGroups = recordedAttention.data
     ? groupRecordedAttention(recordedAttention.data.rows, confirmedAttentionKeys) : null;
   const dailyGapState = dailyStatusGapState(checkedDay);
-  const listHeading = status === null ? "All recorded open jobs" : `${statusLabel[status]} jobs`;
+  const listHeading = status === null ? "Open jobs on record" : `${statusLabel[status]} jobs`;
   const listCount = activeSummary
     ? (status === null ? activeSummary.counts.total : activeSummary.counts[status]) : null;
   const listSummary = activeSummary && listCount !== null
-    ? `${listCount.toLocaleString("en-GB")} in the saved status summary checked ${savedAt(activeSummary.snapshotAt)}. `
+    ? `${listCount.toLocaleString("en-GB")} jobs · status checked ${savedAt(activeSummary.snapshotAt)}. `
     : "";
   const oldestHeldRows = firstPage.data?.tenantId === tenant &&
     firstPage.data.actorId === user?.id &&
@@ -446,7 +446,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · TODAY</p>
           <h3>Review held work</h3>
           <p>{activeSummary
-            ? "Start with the recorded On-hold and Pending jobs. Check each job before deciding what needs action."
+            ? "Start with jobs marked On hold or Pending. Open one to see its work and next step."
             : summary.isError ? "The latest job counts are unavailable. You can still browse recorded jobs."
               : "Checking recorded job status…"}</p>
           <div className="nd-hero-actions">
@@ -465,8 +465,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
           {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending</p>}
-          {activeSummary?.identity && <p>{activeSummary.identity.linked.toLocaleString("en-GB")} jobs have a checked source match; {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} are still being matched.</p>}
-          <p>{sourceFreshness.isPending ? "Checking Commusoft comparison…"
+          {activeSummary?.identity && <p>{activeSummary.identity.linked.toLocaleString("en-GB")} job matches checked; {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} still need checking.</p>}
+          <p>{sourceFreshness.isPending ? "Checking the latest job comparison…"
             : commusoftFreshnessSummary(sourceFreshness.data)}</p>
           {sourceFreshness.data?.providerCheckedAt && <small>Newest-job check {savedAt(sourceFreshness.data.providerCheckedAt)}. Older jobs and later updates may still be missing.</small>}
           {showMatchingTools && <p>{dailyCoverage.isError
@@ -499,7 +499,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check" tabIndex={-1}>
         <div className="nd-customer-blockers-heading">
           <h3>Customers with jobs to check</h3>
-          <p>Confirmed customer and site links only. Check each job's work before deciding what needs action.</p>
+          <p>These jobs have a confirmed customer and site. Open one to see its work and next step.</p>
         </div>
         {customerBlockers.isPending && <p role="status">Checking linked customer jobs…</p>}
         {customerBlockers.isFetching && linkedCustomers && <p role="status">Checking for newer linked customer jobs…</p>}
@@ -526,7 +526,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
             ? "Jobs still being matched are listed separately." : "Other open jobs remain in the full work list."}</small>
         </>}
         <div className="nd-customer-blocker-all-work">
-          <p>The full work list also includes jobs without a confirmed customer group.</p>
+          <p>Other jobs are in the full work list, including those still being matched.</p>
           <button type="button" onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button>
           <button type="button" onClick={() => showJobs("pending")}>See all Pending jobs →</button>
         </div>
@@ -571,7 +571,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
         </div>}
       </section>
       <section className="nd-work-priority" aria-label="Review saved job statuses">
-        <div><h3>What needs a check</h3>
+        <div><h3>Jobs to review</h3>
           <p>Choose a status to open the jobs behind it.</p></div>
         {activeSummary && (["on_hold", "pending"] as const)
           .filter((kind) => activeSummary.counts[kind] > 0).map((kind) => (
@@ -627,10 +627,10 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
         <p>Job, customer and team scores remain unpublished. A day qualifies for observed status history when at least 99% of its frozen open-job roster is checked; per-job gaps are logged. The retained checks establish minimum observed time in a stage, not its actual start or the effect of a supplier wait. Each client's weights, stage targets and wait rules need a reviewed policy before any numeric score.</p>
       </details>}
       {!showJobBrowser && <div className="nd-browse-open-jobs">
-        <h3>Browse every recorded open job</h3>
-        <p>The saved list includes customer and office work, including jobs whose customer or site still needs checking.</p>
+        <h3>Browse open jobs on record</h3>
+        <p>Includes customer and office work. Some customer and site matches still need checking.</p>
         <button type="button" className="cp-secondary" onClick={() => showJobs(null)}>
-          Browse {activeSummary?.counts.total.toLocaleString("en-GB") ?? "all"} open jobs →
+          See {activeSummary?.counts.total.toLocaleString("en-GB") ?? "all"} open jobs →
         </button>
       </div>}
       {showJobBrowser && <>
@@ -638,8 +638,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
         <h3>{listHeading}</h3>
         <p>{listSummary}
           {status === null
-            ? "Browse by recorded status and open a job to see its details."
-            : `These were last saved as ${statusLabel[status]}. Open a job to check its recorded stage and next step.`}
+            ? "Filter by status and open a job for details."
+            : `These were last checked as ${statusLabel[status]}. Open a job for its stage and next step.`}
         </p>
       </div>
       <fieldset className="nd-open-page-filters">
@@ -662,7 +662,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       {active && <>
         <p className="nd-job-scope">
           <strong>Page {pageIndex + 1} · {rows.length} jobs</strong> · Read {savedAt(active.snapshotAt)}.
-          These are saved Commusoft statuses, not live progress or confirmed assignments.
+          Status may have changed since this check; assignments are not confirmed here.
           {active.nextCursor ? " More jobs follow." : " End of this saved status selection."}
         </p>
         {rows.length === 0 && <p>No saved jobs have this status in this view. Some source records may still need checking.</p>}
@@ -672,7 +672,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
             <BriefcaseBusiness size={20} />
             <span className="nd-job-main"><strong>Job {row.external_id}</strong>
               <small>{row.title ?? "Work description not recorded"}</small>
-              <small>Recorded customer and site: {jobSourceIdentity(row).sourceLabel}</small>
+              <small>Customer and property on the job: {jobSourceIdentity(row).sourceLabel}</small>
               {jobSourceIdentity(row).shortEvidence &&
                 <small className="nd-job-identity-state">{jobSourceIdentity(row).shortEvidence}</small>}
             </span>
