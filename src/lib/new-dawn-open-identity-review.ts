@@ -23,6 +23,7 @@ export type OpenIdentityPage = {
 export type AttentionIdentityGroup = {
   key: string;
   customerExternalId: string | null;
+  propertyExternalId: string | null;
   jobs: OpenIdentityRow[];
 };
 export type AttentionIdentityGroups = {
@@ -140,9 +141,12 @@ export async function loadAttentionIdentityGroups(
       const jobKey = `${row.externalId}:${row.sourceVersionId}`;
       if (seenJobs.has(jobKey)) throw unavailable();
       seenJobs.add(jobKey);
-      const key = row.customerExternalId
-        ? `customer:${row.customerExternalId}` : `job:${jobKey}`;
-      const group = groups.get(key) ?? { key, customerExternalId: row.customerExternalId, jobs: [] };
+      const key = row.customerExternalId && row.propertyExternalId
+        ? `customer:${row.customerExternalId}:property:${row.propertyExternalId}`
+        : `job:${jobKey}`;
+      const group = groups.get(key) ?? { key,
+        customerExternalId: row.customerExternalId,
+        propertyExternalId: row.propertyExternalId, jobs: [] };
       group.jobs.push(row);
       groups.set(key, group);
       jobs++;

@@ -72,6 +72,21 @@ test("groups the complete attention prefix across one pinned cursor", async () =
   assert.deepEqual(result.groups[0].jobs.map(job => job.externalId), ["100", "101", "102"]);
 });
 
+test("keeps different properties and incomplete parents apart during urgent review", async () => {
+  const source = readOpenIdentityPage(page([
+    row("100", "on_hold"),
+    { ...row("101", "on_hold"), property_external_id: "46" },
+    { ...row("102", "pending"), property_external_id: null },
+  ]), scope, now);
+  const result = await loadAttentionIdentityGroups(async () => source);
+  assert.equal(result.jobs, 3);
+  assert.equal(result.groups.length, 3);
+  assert.deepEqual(result.groups.map(group => [group.customerExternalId,
+    group.propertyExternalId, group.jobs.map(job => job.externalId)]), [
+    ["12", "45", ["100"]], ["12", "46", ["101"]], ["12", null, ["102"]],
+  ]);
+});
+
 test("refuses mixed snapshots or duplicated rows rather than claiming full grouping", async () => {
   const cursor = Buffer.from("next").toString("base64");
   const first = readOpenIdentityPage({ ...page([row("100", "on_hold")]),

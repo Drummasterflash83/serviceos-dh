@@ -153,7 +153,9 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
         <div className="max-h-[58vh] overflow-y-auto rounded-lg border border-[#e5dbe9] bg-white px-3">
           {attention.groups.map(group => <details key={group.key} className="border-b border-[#eee8f1] py-2 last:border-b-0">
             <summary className="cursor-pointer text-sm font-semibold text-[#3b3044]">
-              {group.customerExternalId ? `Commusoft customer property ${group.customerExternalId}` : "Customer source unresolved"} · {group.jobs.length} job{group.jobs.length === 1 ? "" : "s"}
+              {group.customerExternalId && group.propertyExternalId
+                ? `Commusoft customer ${group.customerExternalId} · property ${group.propertyExternalId}`
+                : `Source parent incomplete · job ${group.jobs[0]?.externalId}`} · {group.jobs.length} job{group.jobs.length === 1 ? "" : "s"}
             </summary>
             <ol className="mt-2 space-y-2">{group.jobs.map(row => {
               const display = { externalId: row.externalId, sourceVersionId: row.sourceVersionId,
