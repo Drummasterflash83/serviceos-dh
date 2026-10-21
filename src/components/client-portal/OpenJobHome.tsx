@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
 import { drummondsTenantId } from "@/lib/new-dawn-md-view";
 import { jobSourceIdentity } from "@/lib/new-dawn-job-identity-label";
+import { groupRecordedAttention } from "@/lib/new-dawn-recorded-attention";
 import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
 import { customerBlockedJobDetailKey, readCustomerBlockers, type CustomerBlockedJob } from "@/lib/new-dawn-customer-blockers";
@@ -183,6 +184,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   const [selected, setSelected] = useState<OpenJobRow | null>(null);
   const [selectedCustomerJob, setSelectedCustomerJob] = useState<CustomerBlockedJob | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
+  const [showRecordedAttention, setShowRecordedAttention] = useState(false);
   const jobsRef = useRef<HTMLDivElement>(null);
   const customersRef = useRef<HTMLElement>(null);
   const authorisedClient = !operator && !!user && profile?.tenant_id === tenant &&
@@ -191,6 +193,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   useEffect(() => {
     setApprovedReason(mdReason ?? null); setReason(""); setStatus(null); setPageIndex(0);
     setCursors([null]); setSelected(null); setSelectedCustomerJob(null);
+    setShowRecordedAttention(false);
   }, [tenant, user?.id, operator, mdReason]);
   const summary = useQuery({
     queryKey: ["new-dawn-open-job-status-summary", tenant, user?.id, operator,
@@ -233,6 +236,50 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       }).abortSignal(AbortSignal.timeout(25_000));
       if (error) throw Error("Confirmed customer jobs unavailable");
       return readCustomerBlockers(data, tenant, user!.id);
+    },
+  });
+  // Resolve saved attention jobs only when requested. The existing audited
+  // page RPC pins later cursor pages to the first page's source snapshot.
+  // This does not create or claim a canonical customer or site link.
+  const recordedAttention = useQuery({
+    queryKey: ["new-dawn-recorded-attention", tenant, user?.id, operator,
+      approvedReason, refreshTick],
+    enabled: enabled && showRecordedAttention,
+    retry: false,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      let cursor: string | null = null;
+      let snapshotAt: string | null = null;
+      let lastRank = -1;
+      let complete = false;
+      const rows: OpenJobRow[] = [];
+      const seen = new Set<string>();
+      for (let index = 0; index < 4; index++) {
+        const { data, error } = await getSupabaseClient().rpc("new_dawn_open_job_page", {
+          p_tenant: tenant, p_reason: operator ? approvedReason : null,
+          p_cursor: cursor, p_status: null, p_page_size: 50,
+        }).abortSignal(AbortSignal.timeout(25_000));
+        if (error) throw Error("Recorded customer work unavailable");
+        const page = readOpenJobPage(data, tenant, user!.id, null);
+        if (!page.creationOrderAvailable ||
+          (snapshotAt !== null && snapshotAt !== page.snapshotAt) ||
+          (page.rows.length === 0 && page.nextCursor))
+          throw Error("Recorded customer work unavailable");
+        snapshotAt = page.snapshotAt;
+        for (const row of page.rows) {
+          const rank = row.status === "on_hold" ? 0 : row.status === "pending" ? 1 : 2;
+          if (rank < lastRank) throw Error("Recorded customer work unavailable");
+          lastRank = rank;
+          const key = `${row.connection_id}:${row.external_id}`;
+          if (seen.has(key)) throw Error("Recorded customer work unavailable");
+          seen.add(key);
+          if (rank < 2) rows.push(row);
+        }
+        if (lastRank === 2 || !page.nextCursor) { complete = true; break; }
+        cursor = page.nextCursor;
+      }
+      if (snapshotAt === null) throw Error("Recorded customer work unavailable");
+      return { rows, snapshotAt, complete };
     },
   });
   // The unfiltered first page is already ordered with On-hold records first.
@@ -290,6 +337,10 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   const linkedCustomers = customerBlockers.data?.tenantId === tenant &&
     customerBlockers.data.actorId === user?.id && !customerBlockers.isFetching
     ? customerBlockers.data : null;
+  const confirmedAttentionKeys = new Set(linkedCustomers?.groups.flatMap((group) =>
+    group.jobs.map((job) => `${job.connectionId}:${job.externalId}:${job.sourceVersionId}`)) ?? []);
+  const recordedGroups = recordedAttention.data
+    ? groupRecordedAttention(recordedAttention.data.rows, confirmedAttentionKeys) : null;
   const dailyGapState = dailyStatusGapState(checkedDay);
   const listHeading = status === null ? "All recorded open jobs" : `${statusLabel[status]} jobs`;
   const listCount = activeSummary
@@ -441,6 +492,45 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <p>The full work list also includes jobs without a confirmed customer group.</p>
           <button type="button" onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button>
           <button type="button" onClick={() => showJobs("pending")}>See all Pending jobs →</button>
+        </div>
+        <div className="nd-recorded-attention">
+          <h4>More recorded customer work</h4>
+          <p>These names come from saved Commusoft jobs. A customer or site match is not confirmed here. Open a job before deciding what it needs.</p>
+          {!showRecordedAttention && <button type="button" className="nd-recorded-attention-toggle"
+            onClick={() => setShowRecordedAttention(true)}>See jobs still being matched →</button>}
+          {recordedAttention.isPending && showRecordedAttention &&
+            <p role="status">Checking recorded customer work…</p>}
+          {recordedAttention.isError && <>
+            <p role="alert">Recorded customer work could not be checked. The full job list remains available.</p>
+            <button type="button" className="nd-recorded-attention-toggle"
+              onClick={() => void recordedAttention.refetch()}>Try this view again</button>
+          </>}
+          {recordedGroups && <>
+            <p>{recordedGroups.shown.toLocaleString("en-GB")} jobs to check across {recordedGroups.groups.length.toLocaleString("en-GB")} recorded customer groups
+              {recordedGroups.ungrouped.length ? `; ${recordedGroups.ungrouped.length} have missing or conflicting source names` : ""}.
+              {recordedAttention.data?.complete ? "" : " This is a bounded first portion; use the full job list for the rest."}
+              {linkedCustomers ? " Confirmed jobs shown above are excluded." : " The confirmed-customer check is unavailable, so some jobs may also appear above."}
+              {` Checked ${savedAt(recordedAttention.data!.snapshotAt)}.`}</p>
+            {recordedGroups.groups.map((group) => <details key={group.key}>
+              <summary><span><strong>{group.name}</strong><small>Recorded in Commusoft · match still to confirm · {group.onHold} On hold · {group.pending} Pending</small></span>
+                <ChevronRight size={17} aria-hidden="true" /></summary>
+              <div className="nd-customer-blocker-jobs">{group.jobs.map((job) => <button type="button"
+                key={`${job.connection_id}:${job.external_id}`} onClick={() => { setSelectedCustomerJob(null); setSelected(job); }}>
+                <span>Job {job.external_id}{job.source_site ? ` · ${job.source_site}` : ""}</span>
+                <small>{statusLabel[job.status]} · saved {savedAt(job.source_observed_at)}</small>
+                <ChevronRight size={16} aria-hidden="true" />
+              </button>)}</div>
+            </details>)}
+            {recordedGroups.ungrouped.length > 0 && <details>
+              <summary><span><strong>Customer details to check</strong><small>{recordedGroups.ungrouped.length} jobs have missing or conflicting recorded names</small></span>
+                <ChevronRight size={17} aria-hidden="true" /></summary>
+              <div className="nd-customer-blocker-jobs">{recordedGroups.ungrouped.map((job) => <button type="button"
+                key={`${job.connection_id}:${job.external_id}`} onClick={() => { setSelectedCustomerJob(null); setSelected(job); }}>
+                <span>Job {job.external_id}</span><small>{statusLabel[job.status]} · saved {savedAt(job.source_observed_at)}</small>
+                <ChevronRight size={16} aria-hidden="true" />
+              </button>)}</div>
+            </details>}
+          </>}
         </div>
       </section>
       <details className="nd-oldest-jobs" aria-label="Oldest recorded On-hold jobs">
