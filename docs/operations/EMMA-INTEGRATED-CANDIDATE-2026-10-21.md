@@ -39,3 +39,7 @@ reviewed isolated candidate write and test-number binding, 12 provider
 conversations against one frozen hash, real Rob/Tony handset answers, one 603
 deposit, and correlated email and Slack receipts. The main DID remains
 unchanged until those pass and Chris gives the separate day-of go-ahead.
+
+## Current-main sync, 21 October evening
+
+Current published `main` at `f1682bd65080c05bb6766df1db44e0ef6a6b9944` was merged normally into this draft; no published history was rewritten. The merged source commit is `f4f47e69680e2d6b8f222ab2058be293a3dcce6b`. Its [v19 static manifest](EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-21-v19.json) has SHA-256 `37883a1581960b9aed68d4928d8af8bf6cb4bd97a94937ccf95b119d36ee7306` and retains scenario-suite SHA-256 `0de4ae5f817fa707ca7eb61dbf8e98b7b54ac46ece89879fb3c790bcc24953b1`. All 219 focused receptionist tests, TypeScript, production build and 48 prebuild checks pass on the merged tree. The twelve scenarios are **static only**; none was run against Vapi or a handset, and the test number remains on published Emma. The founder's fresh 19:01 UK fixed-account preflight still shows candidate voice equality unproved, Rob/Tony target bindings unproved and mailbox 603 Tony-only. It does not disclose the full source-matched graph hashes needed for the guarded isolated repair. No provider write was made.
