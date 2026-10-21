@@ -62,3 +62,29 @@ test("a UK-day sweep in progress is not labelled as a completed-day gap", () => 
   assert.equal(dailyStatusGapState({ ...running, missingCount: 0 }, new Date("2026-10-21T00:19:00Z")), "none");
   assert.equal(dailyStatusGapState(null), "none");
 });
+
+test("today's partial sweep preserves only yesterday's completed streak", () => {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date(now));
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  const today = `${part("year")}-${part("month")}-${part("day")}`;
+  const yesterday = new Date(Date.parse(`${today}T00:00:00Z`) - 86_400_000)
+    .toISOString().slice(0, 10);
+  const review = new Date(Date.parse(`${yesterday}T00:00:00Z`) + 14 * 86_400_000)
+    .toISOString().slice(0, 10);
+  const running = { ...receipt(), day: today, roster_count: 330,
+    observed_count: 119, missing_count: 211,
+    qualifying_streak_days: 1, streak_start_day: yesterday,
+    earliest_moving_review_day: review };
+  const checked = readDailyStatusCoverage(running, tenant, actor);
+  assert.equal(checked.qualifyingStreakDays, 1);
+  assert.equal(checked.earliestMovingReviewDay, review);
+  assert.equal(dailyStatusGapState(checked), "pending_today");
+  assert.throws(() => readDailyStatusCoverage({ ...running,
+    qualifying_streak_days: 2 }, tenant, actor));
+  assert.throws(() => readDailyStatusCoverage({ ...running,
+    day: yesterday }, tenant, actor));
+  assert.throws(() => readDailyStatusCoverage({ ...running,
+    observed_count: 327, missing_count: 3 }, tenant, actor));
+});
