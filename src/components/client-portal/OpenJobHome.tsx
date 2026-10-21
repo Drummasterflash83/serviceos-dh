@@ -113,7 +113,7 @@ function SourceJobDetail({ row, tenant, actor, reason, operator, customerLinkOnl
         {record.contactCounts ? <>
           <p>Customer: {record.linkedCustomer ?? "Name not recorded on the linked customer."}</p>
           <p>Site: {record.linkedSite ?? "Address not recorded on the linked site."}</p>
-          <p>These are the saved ServiceOS links for this exact Commusoft job version.</p>
+          <p>These links were checked against this saved Commusoft job.</p>
         </> : <p>{row.identity_state === "reviewed_link"
           ? "Linked customer and site details could not be verified for this read. Refresh the job before relying on the match."
           : "The exact customer and site link is awaiting review. Commusoft source details above are not a verified ServiceOS match."}</p>}
@@ -162,8 +162,8 @@ function SourceJobDetail({ row, tenant, actor, reason, operator, customerLinkOnl
           {exact ? ` Exact job detail checked ${savedAt(exact.checkedAt)}.` : " No exact job detail has been checked for this saved version."}
           {exact?.providerUpdatedAt ? ` Commusoft last updated it at ${exact.providerUpdatedAt}.` : ""}
         </p>
-        <p>Source people are not confirmed OpenFolk assignments. Office tasks and expected onsite times are not technician visits.</p>
-        <small>Read {savedAt(record.readAt)} · Audit {record.auditId}.</small>
+        <p>People named on the source job are not confirmed as responsible or as having attended. Office tasks and expected onsite times are not technician visits.</p>
+        <small>Checked {savedAt(record.readAt)}{operator ? ` · Audit ${record.auditId}` : ""}.</small>
       </details>
     </>}
   </div>;
