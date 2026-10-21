@@ -7,6 +7,9 @@ export type ClientJobRecord = {
   status: string | null;
   priority: string | null;
   description: string | null;
+  linkedCustomer: string | null;
+  linkedSite: string | null;
+  contactCounts: { phone: number; email: number; latestAt: string | null } | null;
   exactDetail: null | {
     checkedAt: string;
     stage: string | null;
@@ -31,7 +34,8 @@ export function readClientJobRecord(
   value: unknown, tenant: string, actor: string, row: OpenJobRow,
   now = Date.now(),
 ): ClientJobRecord {
-  if (!object(value) || value.version !== "new-dawn-client-job-record/1" ||
+  if (!object(value) || !["new-dawn-client-job-record/1",
+    "new-dawn-client-job-record/2"].includes(String(value.version)) ||
     value.tenant_id !== tenant || value.actor_id !== actor ||
     value.connection_id !== row.connection_id ||
     value.external_id !== row.external_id ||
@@ -44,6 +48,30 @@ export function readClientJobRecord(
     !bounded(value.status, 120) || !bounded(value.priority, 120) ||
     !bounded(value.description, 4000))
     throw unavailable();
+  let linkedCustomer: string | null = null;
+  let linkedSite: string | null = null;
+  let contactCounts: ClientJobRecord["contactCounts"] = null;
+  if (value.version === "new-dawn-client-job-record/2") {
+    if (!bounded(value.linked_customer, 200) || !bounded(value.linked_site, 500) ||
+      !(value.contact_counts === null || object(value.contact_counts))) throw unavailable();
+    if (value.contact_counts !== null) {
+      const counts = value.contact_counts as Record<string, unknown>;
+      if (row.identity_state !== "reviewed_link" ||
+        Object.keys(counts).sort().join() !== ["phone", "email", "latest_at"].sort().join() ||
+        !Number.isSafeInteger(counts.phone) || Number(counts.phone) < 0 ||
+        !Number.isSafeInteger(counts.email) || Number(counts.email) < 0 ||
+        !(counts.latest_at === null || instant(counts.latest_at)) ||
+        (Number(counts.phone) + Number(counts.email) === 0 && counts.latest_at !== null) ||
+        (Number(counts.phone) + Number(counts.email) > 0 && counts.latest_at === null))
+        throw unavailable();
+      contactCounts = { phone: counts.phone as number, email: counts.email as number,
+        latestAt: counts.latest_at as string | null };
+    } else if (value.linked_customer !== null || value.linked_site !== null) {
+      throw unavailable();
+    }
+    linkedCustomer = value.linked_customer as string | null;
+    linkedSite = value.linked_site as string | null;
+  }
   let exactDetail: ClientJobRecord["exactDetail"] = null;
   if (value.exact_detail !== null) {
     const exact = value.exact_detail;
@@ -76,6 +104,7 @@ export function readClientJobRecord(
     status: value.status,
     priority: value.priority,
     description: value.description,
+    linkedCustomer, linkedSite, contactCounts,
     exactDetail,
   };
 }

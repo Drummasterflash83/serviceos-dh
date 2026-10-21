@@ -41,6 +41,25 @@ test("reads exact stage and source people without converting them into assignmen
   assert.equal(record.exactDetail?.stage, "Awaiting parts");
   assert.deepEqual(record.exactDetail?.sourceUsers, [{ id: "7", name: "Source user" }]);
   assert.equal(record.exactDetail?.holdReason, "Parts requested");
+  assert.equal(record.contactCounts, null);
+});
+
+test("shows only confirmed current-job contact counts and canonical labels", () => {
+  const receipt = { ...base, version: "new-dawn-client-job-record/2",
+    linked_customer: "Example Ltd", linked_site: "1 Example Road",
+    contact_counts: { phone: 2, email: 3, latest_at: "2026-10-20T08:45:00Z" } };
+  const record = readClientJobRecord(receipt, tenant, actor, row, now);
+  assert.equal(record.linkedCustomer, "Example Ltd");
+  assert.equal(record.linkedSite, "1 Example Road");
+  assert.deepEqual(record.contactCounts, { phone: 2, email: 3,
+    latestAt: "2026-10-20T08:45:00Z" });
+  assert.throws(() => readClientJobRecord(receipt, tenant, actor,
+    { ...row, identity_state: "awaiting_review" }, now));
+  assert.throws(() => readClientJobRecord({ ...receipt,
+    contact_counts: { phone: 0, email: 0, latest_at: receipt.contact_counts.latest_at } },
+    tenant, actor, row, now));
+  assert.throws(() => readClientJobRecord({ ...receipt,
+    contact_counts: { ...receipt.contact_counts, private: 1 } }, tenant, actor, row, now));
 });
 
 test("holds exact detail for an unreviewed job, and refuses changed scope", () => {
