@@ -124,8 +124,9 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
           {action === "job" && <ExactJobAutoLink tenant={tenant} connection={connection}
             external={row.externalId} version={row.sourceVersionId} canApply={applyFlag.data === true}
             onInspect={onReviewJob ? () => onReviewJob(connection, row.externalId) : undefined} />}
-          {action === "customer_site" && (onReviewCustomer || onReviewSite) && <button type="button" className="cp-secondary" disabled={!!actionId}
-            onClick={() => void reviewExactSource(row)}>{actionId === row.externalId ? "Checking exact source…" : "Review customer and work site"}</button>}
+          {action === "customer_site" && (row.holdReason === "property_not_exact_work_site" ? onReviewCustomer : onReviewCustomer || onReviewSite) && <button type="button" className="cp-secondary" disabled={!!actionId}
+            onClick={() => void reviewExactSource(row)}>{actionId === row.externalId ? "Checking exact source…" : row.holdReason === "property_not_exact_work_site"
+              ? "Review customer identity (job stays unlinked)" : "Review customer and work site"}</button>}
           {action === "hold" && <p className="text-sm">Keep this job unlinked until its source route or conflict is reviewed. No match has been guessed.</p>}
         </li>;
       })}</ol>
