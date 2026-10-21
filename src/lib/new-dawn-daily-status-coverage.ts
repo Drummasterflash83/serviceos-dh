@@ -14,6 +14,23 @@ export type DailyStatusCoverage = {
   earliestMovingReviewDay: string | null;
 };
 
+const londonDay = (at: Date): string => {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(at);
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
+};
+
+/** A frozen roster's unobserved jobs are pending during its UK day. Only an
+ * earlier day's remainder can be described as a completed-day gap. */
+export function dailyStatusGapState(
+  coverage: DailyStatusCoverage | null, at = new Date(),
+): "pending_today" | "past_gap" | "none" {
+  if (!coverage?.day || !coverage.missingCount) return "none";
+  return coverage.day >= londonDay(at) ? "pending_today" : "past_gap";
+}
+
 const object = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && !Array.isArray(value);
 const uuid = (value: unknown): value is string =>
@@ -54,11 +71,21 @@ export function readDailyStatusCoverage(
     throw Error("Daily job status coverage unavailable");
   }
   const hasStreak = value.qualifying_streak_days > 0;
+  const dayMs = 86_400_000;
+  const latestMs = hasDay ? Date.parse(`${value.day}T00:00:00Z`) : NaN;
+  const lastQualifyingMs = hasStreak
+    ? Date.parse(`${value.streak_start_day}T00:00:00Z`) +
+      (Number(value.qualifying_streak_days) - 1) * dayMs
+    : NaN;
+  const todayPending = hasDay && value.day === londonDay(new Date(value.observed_at as string)) &&
+    Number(value.observed_count) * 100 < Number(value.roster_count) * 99;
   if (hasStreak ? !day(value.streak_start_day) ||
     !day(value.earliest_moving_review_day) || !hasDay ||
     Date.parse(`${value.earliest_moving_review_day}T00:00:00Z`) -
-      Date.parse(`${value.streak_start_day}T00:00:00Z`) !== 14 * 86_400_000 ||
-    (value.observed_count as number) * 100 < (value.roster_count as number) * 99
+      Date.parse(`${value.streak_start_day}T00:00:00Z`) !== 14 * dayMs ||
+    !((!todayPending && Number(value.observed_count) * 100 >=
+      Number(value.roster_count) * 99 && lastQualifyingMs === latestMs) ||
+      (todayPending && lastQualifyingMs === latestMs - dayMs))
     : value.streak_start_day !== null || value.earliest_moving_review_day !== null) {
     throw Error("Daily job status coverage unavailable");
   }

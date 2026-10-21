@@ -29,7 +29,7 @@ const BUILD_TIME = new Date().toISOString();
 const BUILD_ENV = process.env.VERCEL_ENV || process.env.NODE_ENV || "local";
 
 export default defineConfig({
-  plugins: [publicHome(BUILD_ENV)],
+  plugins: [publicHome(BUILD_ENV, BUILD_SHA)],
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

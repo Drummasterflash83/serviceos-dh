@@ -119,14 +119,15 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
         const action = exactLinkReviewAction(display);
         return <li key={`${row.externalId}:${row.sourceVersionId}`} className="rounded-lg border border-[#e5dbe9] p-3 space-y-2">
           <p><strong>Commusoft job {row.externalId}</strong> · Recorded {row.status === "on_hold" ? "On hold" : row.status === "pending" ? "Pending" : "Open"}</p>
-          <p className="text-sm">Customer ID: {row.customerExternalId ?? "Not established"} · Work site ID: {row.propertyExternalId ?? "Not established"} · Source saved {new Date(row.sourceObservedAt).toLocaleString("en-GB")}</p>
+          <p className="text-sm">Commusoft customer property ID: {row.customerExternalId ?? "Not established"} · Commusoft job property ID: {row.propertyExternalId ?? "Not established"} · Source saved {new Date(row.sourceObservedAt).toLocaleString("en-GB")}</p>
           <p className="text-sm">{exactLinkReviewLabel(display)}</p>
           {action === "job" && <ExactJobAutoLink tenant={tenant} connection={connection}
             external={row.externalId} version={row.sourceVersionId} canApply={applyFlag.data === true}
             onInspect={onReviewJob ? () => onReviewJob(connection, row.externalId) : undefined} />}
-          {action === "customer_site" && (onReviewCustomer || onReviewSite) && <button type="button" className="cp-secondary" disabled={!!actionId}
-            onClick={() => void reviewExactSource(row)}>{actionId === row.externalId ? "Checking exact source…" : "Review customer and work site"}</button>}
-          {action === "hold" && <p className="text-sm">Held for source or identity conflict. No match has been guessed.</p>}
+          {action === "customer_site" && (row.holdReason === "property_not_exact_work_site" ? onReviewCustomer : onReviewCustomer || onReviewSite) && <button type="button" className="cp-secondary" disabled={!!actionId}
+            onClick={() => void reviewExactSource(row)}>{actionId === row.externalId ? "Checking exact source…" : row.holdReason === "property_not_exact_work_site"
+              ? "Review customer identity (job stays unlinked)" : "Review customer and site"}</button>}
+          {action === "hold" && <p className="text-sm">Keep this job unlinked until its source route or conflict is reviewed. No match has been guessed.</p>}
         </li>;
       })}</ol>
       <div className="flex justify-between gap-2"><button type="button" className="cp-secondary" disabled={busy || cursors.length === 1}

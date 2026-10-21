@@ -9,7 +9,7 @@ import { OpenFolkHome } from "../src/components/OpenFolkHome";
  * All private paths retain their existing app, auth and server handling.
  * The source component and stylesheet are shared, so the two versions cannot drift.
  */
-export function publicHome(environment?: string): Plugin {
+export function publicHome(environment?: string, buildSha?: string): Plugin {
   return {
     name: "openfolk-static-home",
     apply: "build",
@@ -21,6 +21,7 @@ export function publicHome(environment?: string): Plugin {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
+<meta name="openfolk-build" content="${/^[0-9a-f]{40}$/i.test(buildSha ?? "") ? buildSha : "unknown"}">
 <title>OpenFolk: Your business working better.</title>
 <meta name="description" content="OpenFolk: Your business working better.">
 <meta property="og:title" content="OpenFolk: Your business working better.">

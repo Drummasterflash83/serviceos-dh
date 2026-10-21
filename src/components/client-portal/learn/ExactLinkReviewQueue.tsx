@@ -113,7 +113,8 @@ export function ExactLinkReviewQueue({ tenant, actor, connection, reason, db, on
           <ExactJobAutoLink tenant={tenant} connection={connection} external={row.externalId}
             version={row.sourceVersionId} canApply={applyFlag.data === true}
             onInspect={onReviewJob ? () => onReviewJob(connection, row.externalId) : undefined} />}
-        {exactLinkReviewAction(row) === "customer_site" && (onReviewCustomer || onReviewSite) && <button type="button" className="cp-secondary" disabled={!!actionId} onClick={() => void reviewExactSource(row)}>{actionId === row.externalId ? "Checking exact source…" : "Review exact customer and work site"}</button>}
+        {exactLinkReviewAction(row) === "customer_site" && (row.reason === "property_not_exact_work_site" ? onReviewCustomer : onReviewCustomer || onReviewSite) && <button type="button" className="cp-secondary" disabled={!!actionId} onClick={() => void reviewExactSource(row)}>{actionId === row.externalId ? "Checking exact source…" : row.reason === "property_not_exact_work_site"
+          ? "Review customer identity (job stays unlinked)" : "Review exact customer and work site"}</button>}
         {exactLinkReviewAction(row) === "hold" && <p className="text-sm">Held. Resolve the source or identity conflict before linking.</p>}
       </li>)}</ol>
       <div className="flex justify-between gap-2"><button type="button" className="cp-secondary" disabled={busy || cursors.length === 1} onClick={() => setCursors(v => v.slice(0, -1))}>Previous source IDs</button>

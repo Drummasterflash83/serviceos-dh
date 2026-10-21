@@ -58,7 +58,7 @@ export function readExactLinkReviewPage(
 export function exactLinkReviewAction(row: ExactLinkReviewRow):
   "job" | "customer_site" | "hold" {
   if (row.state === "ready") return "job";
-  if (["customer_mapping_missing_or_stale", "site_mapping_missing_or_stale", "customer_mapping_missing_or_ambiguous", "site_mapping_missing_or_ambiguous"]
+  if (["customer_mapping_missing_or_stale", "site_mapping_missing_or_stale", "customer_mapping_missing_or_ambiguous", "site_mapping_missing_or_ambiguous", "property_not_exact_work_site"]
     .includes(row.reason ?? "")) return "customer_site";
   return "hold";
 }
@@ -81,7 +81,7 @@ export function exactLinkReviewLabel(row: ExactLinkReviewRow): string {
     site_mapping_missing_or_ambiguous: "The exact work site has no single current mapping. Review its source and conflicts.",
     customer_mapping_missing_or_ambiguous: "The exact customer has no single current mapping. Review its source and conflicts.",
     customer_mapping_missing_or_stale: "The exact customer needs a current reviewed link.",
-    property_not_exact_work_site: "The saved property is not an exact work address; hold for source review.",
+    property_not_exact_work_site: "This Commusoft property is not a separate work address. A customer's own address can still be a valid site, but its exact customer, site and job links need separate review. The job stays unlinked.",
     property_source_missing_or_ambiguous: "The source property is missing or ambiguous.",
     customer_source_missing_or_ambiguous: "The source customer is missing or ambiguous.",
     customer_site_conflict: "Customer and site records conflict; hold for review.",

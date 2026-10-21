@@ -15,7 +15,9 @@ const dateTime = (value: string) => new Date(value).toLocaleString("en-GB", {
 });
 
 /** Money is only mounted inside the short-lived, audited Drummonds MD view. */
-export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: string }) {
+export function MdMoneyPanel({ tenant, reason, summaryOnly = false, onOpenFull }: {
+  tenant: string; reason: string; summaryOnly?: boolean; onOpenFull?: () => void;
+}) {
   const { user } = useAuth();
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [periods, setPeriods] = useState<AccountsPair[]>([]);
@@ -108,6 +110,37 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
   const netMargin = saved && snapshot?.margin
     ? accountsNetMargin(saved.netProfit, snapshot.margin.totalIncome) : null;
   const agedBucket = saved ? agedReceivablesBucketKind(saved.receivables.days91Plus) : "unknown";
+  if (summaryOnly) return <section className="md-money-strip" aria-label="Drummonds MD company money">
+    <div className="md-money-strip-heading"><div>
+      <p className="of-eyebrow">DRUMMONDS · MD MONEY</p>
+      <h3>Company money</h3>
+      <p>Saved QuickBooks accounts for a dated period. Job-level money still needs verified links.</p>
+    </div>{onOpenFull && <button type="button" onClick={onOpenFull}>See money detail →</button>}</div>
+    {flags.isError && <p role="alert">Money release status is unavailable.</p>}
+    {flags.data?.accounts !== true && !flags.isPending && !flags.isError &&
+      <p role="status">Accounts figures are not released for this view yet.</p>}
+    {flags.data?.accounts === true && !saved && !error &&
+      <p role="status">Checking saved accounts…</p>}
+    {error && <p role="alert">{error}</p>}
+    {saved && <>
+      <div className="md-money-strip-grid">
+        <div><span>Accounts gross profit</span>
+          <strong>{snapshot?.margin ? `${snapshot.margin.accountsGrossMarginPct}%` : "Awaiting denominator"}</strong>
+          <small>Accounts basis · field GP needs job costs</small></div>
+        <div><span>Net profit · MD only</span>
+          <strong>{financeAmount(saved.netProfit, saved.currency)}</strong>
+          <small>FY27 to {saved.periodEnd} · target pending</small></div>
+        <div><span>Further Works</span><strong>Not enough data yet</strong>
+          <small>Needs classified quotes and linked work</small></div>
+        <div><span>Recurring revenue</span><strong>Not enough data yet</strong>
+          <small>Needs verified contracts and terms</small></div>
+      </div>
+      <p className="md-money-strip-receivables"><strong>Company receivables · {saved.arAsOf}</strong>
+        <span>{financeAmount(saved.receivables.total, saved.currency)}</span>
+        <small>Net total on the saved A/R report, including credits; not a live balance or invoice chase.</small></p>
+      <p className="md-money-strip-source">QuickBooks · {saved.periodStart} to {saved.periodEnd} · {saved.accountingMethod} basis · saved {dateTime(saved.profitReceivedAt)} UK. These are saved reports, not today's live balances.</p>
+    </>}
+  </section>;
   return <section className="md-money" aria-label="Drummonds MD money">
     <p className="of-eyebrow">DRUMMONDS · MONEY</p>
     <h2>Company money at a glance.</h2>
@@ -152,13 +185,24 @@ export function MdMoneyPanel({ tenant, reason }: { tenant: string; reason: strin
             <p>Verified recurring contracts, value and term are needed.</p>
           </article>
         </div>
+        <section className="md-money-receivables" aria-label="Saved company receivables">
+          <p className="of-eyebrow">QUICKBOOKS · SAVED A/R REPORT</p>
+          <h3>Company receivables as of {saved.arAsOf}</h3>
+          <strong className="md-money-receivables-total">{financeAmount(saved.receivables.total, saved.currency)}</strong>
+          <p>This is the net total on the verified company report, including credits. It is neither a live balance nor a list of invoices to chase.</p>
+          {agedBucket === "credit" && <p><strong>91 days and over:</strong> {financeAmount(saved.receivables.days91Plus, saved.currency)} net credit. Do not treat this age group as overdue debt.</p>}
+          <h4>Age groups on this report</h4>
+          <dl>
+            <div><dt>Current</dt><dd>{financeAmount(saved.receivables.current, saved.currency)}</dd></div>
+            <div><dt>1–30 days</dt><dd>{financeAmount(saved.receivables.days1To30, saved.currency)}</dd></div>
+            <div><dt>31–60 days</dt><dd>{financeAmount(saved.receivables.days31To60, saved.currency)}</dd></div>
+            <div><dt>61–90 days</dt><dd>{financeAmount(saved.receivables.days61To90, saved.currency)}</dd></div>
+            <div><dt>91 days and over</dt><dd>{financeAmount(saved.receivables.days91Plus, saved.currency)}{agedBucket === "credit" ? " net credit" : ""}</dd></div>
+          </dl>
+        </section>
         <div className="md-money-followup">
           <h3>Job-to-cash gaps and ageing context</h3>
-          {agedBucket === "positive" ?
-            <p><strong>Aged receivables to review:</strong> {financeAmount(saved.receivables.days91Plus, saved.currency)} in the report's 91-day-and-over net bucket, as of {saved.arAsOf}. This is not an invoice-level chase list.</p> :
-            <p><strong>91-day-and-over report bucket:</strong> {agedBucket === "credit"
-              ? `${financeAmount(saved.receivables.days91Plus, saved.currency)} net credit balance`
-              : agedBucket === "zero" ? "Net zero" : "Unavailable"}, as of {saved.arAsOf}. This does not establish overdue debt or a cleared invoice list.</p>}
+          {agedBucket === "positive" && <p><strong>Ageing is a review cue:</strong> the positive 91-day-and-over report bucket does not identify a collectible invoice or authorise a chase.</p>}
           <p><strong>Completed, not invoiced:</strong> awaiting verified Commusoft completion and QuickBooks job links.</p>
           <p><strong>Closed without price, quote or FOC reason:</strong> awaiting verified closure and commercial evidence.</p>
           <p><strong>Liz's chase drafts:</strong> held until invoice-level ageing and customer review are linked. No messages have been drafted or sent.</p>

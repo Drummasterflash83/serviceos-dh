@@ -119,8 +119,16 @@ const jobKeys = [...versions.keys()].filter(k => k.startsWith('jobs:'))
   .map(k => k.slice(5)).sort((a, b) => numeric(a) && numeric(b) ? sortIds(a, b) :
     a.localeCompare(b));
 const groups = new Map(), jobHolds = new Map(), alreadyLinked = new Set();
+const openStatuses = new Map();
 for (const jobId of jobKeys) {
   if (!numeric(jobId)) { jobHolds.set(jobId, 'job_identity_invalid'); continue; }
+  const latest = current('jobs', jobId);
+  if (!latest.reason) {
+    const status = latest.source.status;
+    if (status === 'on_hold' || status === 'pending' ||
+      status === 'Open' || status === 'ongoing')
+      openStatuses.set(jobId, status === 'ongoing' ? 'Open' : status);
+  }
   if (currentLinks.has(jobId)) { alreadyLinked.add(jobId); continue; }
   if (sourceLinks.has(`jobs:${jobId}`)) {
     jobHolds.set(jobId, 'retained_reversed_link_review'); continue;
@@ -215,6 +223,21 @@ for (const g of heldGroups) for (const j of g.jobs) jobHolds.set(j.id, g.reason)
 const cleanJobs = candidateGroups.reduce((n, g) => n + g.jobs.length, 0);
 if (cleanJobs + jobHolds.size + alreadyLinked.size !== jobKeys.length)
   fail('job accounting incomplete');
+const cleanJobIds = new Set(candidateGroups.flatMap(g => g.jobs.map(j => j.id)));
+const openClasses = {};
+const openByStatus = {};
+let openLinked = 0, openClean = 0, openHeld = 0;
+for (const [jobId, status] of openStatuses) {
+  openByStatus[status] ??= { linked: 0, clean: 0, held: 0 };
+  if (alreadyLinked.has(jobId)) { openLinked++; openByStatus[status].linked++; }
+  else if (cleanJobIds.has(jobId)) { openClean++; openByStatus[status].clean++; }
+  else {
+    openHeld++; openByStatus[status].held++;
+    const reason = jobHolds.get(jobId);
+    if (!reason) fail('open job classification incomplete');
+    openClasses[reason] = (openClasses[reason] ?? 0) + 1;
+  }
+}
 
 mkdirSync(out, { mode: 0o700 });
 const batches = [];
@@ -285,6 +308,12 @@ const report = { version: 'new-dawn-m2-identity-dry-run/1',
     sites: candidateGroups.reduce((n, g) => n + g.sites.size, 0), jobs: cleanJobs,
     by_category: byCategory },
   held: { jobs: jobHolds.size, classes }, manifest_count: batches.length, batches };
+report.open = { total: openStatuses.size, already_linked: openLinked,
+  clean: openClean, held: openHeld, by_status: openByStatus,
+  held_classes: Object.fromEntries(Object.entries(openClasses).sort(([a], [b]) =>
+    a.localeCompare(b))) };
+if (report.open.total !== openLinked + openClean + openHeld)
+  fail('open job accounting incomplete');
 writeFileSync(join(out, 'aggregate.json'), JSON.stringify(report, null, 2) + '\n',
   { flag: 'wx', mode: 0o600 });
 const sample = [], usedCustomers = new Set();
@@ -327,5 +356,6 @@ if (addendum.length === 4)
 console.log(JSON.stringify({ source_job_count: report.source_job_count,
   already_linked_jobs: report.already_linked_jobs,
   unlinked_source_job_count: report.unlinked_source_job_count,
-  clean: report.clean, held: report.held, manifest_count: report.manifest_count,
+  clean: report.clean, held: report.held, open: report.open,
+  manifest_count: report.manifest_count,
   snapshot_sha256: snapshotHash }));
