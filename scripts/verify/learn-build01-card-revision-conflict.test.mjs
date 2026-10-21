@@ -97,6 +97,37 @@ test('missing update without a newer revision still fails visibly', async () => 
   assert.equal(result.result.revision_conflicts, 0);
 });
 
+test('a failed target read logs only a fixed stage and SQLSTATE', async () => {
+  const warnings = [];
+  const prior = console.warn;
+  console.warn = value => warnings.push(value);
+  try {
+    const query = {
+      select() { return query; },
+      eq() { return query; },
+      then(resolve, reject) {
+        return Promise.resolve({ data: null,
+          error: { code: '57014', message: 'PRIVATE customer details' } })
+          .then(resolve, reject);
+      },
+    };
+    const result = await handle({
+      supabaseAdmin: { from(table) {
+        assert.equal(table, 'customer_cards');
+        return query;
+      } }, tenantId: tenant, payload: { customer_card_id: cardId },
+    });
+    assert.equal(result.success, false);
+    assert.equal(result.error.code, 'card_sync_error');
+    assert.deepEqual(warnings.map(value => JSON.parse(value)), [
+      { event: 'card_read_failed', stage: 'target_cards', sqlstate: '57014' },
+    ]);
+    assert.doesNotMatch(JSON.stringify({ result, warnings }), /PRIVATE/);
+  } finally {
+    console.warn = prior;
+  }
+});
+
 test('unattended sweep bounds the batch and continues with the same cursor', async () => {
   const cards = Array.from({ length: 41 }, (_, n) => ({
     id: `card-${n}`, person_id: `person-${n}`, company_id: null,
