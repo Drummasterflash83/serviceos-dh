@@ -35,6 +35,7 @@ export type OpenJobStatusSummary = {
   observedAt: string;
   snapshotAt: string;
   counts: Record<OpenJobStatus | "total", number>;
+  identity: { linked: number; awaitingReview: number } | null;
 };
 
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -57,7 +58,8 @@ export function openJobPageFlagName(operator: boolean) {
 export function readOpenJobStatusSummary(
   value: unknown, tenant: string, actor: string,
 ): OpenJobStatusSummary {
-  if (!object(value) || value.version !== "new-dawn-open-job-status-summary/1" ||
+  if (!object(value) || !["new-dawn-open-job-status-summary/1",
+    "new-dawn-open-job-status-summary/2"].includes(String(value.version)) ||
     value.tenant_id !== tenant || value.actor_id !== actor || !uuid(value.audit_id) ||
     !time(value.observed_at) || !time(value.snapshot_at) || !object(value.counts) ||
     Date.parse(value.observed_at as string) < Date.now() - 300_000 ||
@@ -69,10 +71,23 @@ export function readOpenJobStatusSummary(
     Object.values(counts).some((n) => !Number.isSafeInteger(n) || Number(n) < 0) ||
     Number(counts.on_hold) + Number(counts.pending) + Number(counts.open) !== counts.total)
     throw Error("Open job status summary unavailable");
+  let identity: OpenJobStatusSummary["identity"] = null;
+  if (value.version === "new-dawn-open-job-status-summary/2") {
+    if (!object(value.identity) || Object.keys(value.identity).sort().join() !==
+      ["linked", "awaiting_review"].sort().join() ||
+      !Number.isSafeInteger(value.identity.linked) || Number(value.identity.linked) < 0 ||
+      !Number.isSafeInteger(value.identity.awaiting_review) ||
+      Number(value.identity.awaiting_review) < 0 ||
+      Number(value.identity.linked) + Number(value.identity.awaiting_review) !== counts.total)
+      throw Error("Open job status summary unavailable");
+    identity = { linked: value.identity.linked as number,
+      awaitingReview: value.identity.awaiting_review as number };
+  }
   return {
     tenantId: tenant, actorId: actor, auditId: value.audit_id as string,
     observedAt: value.observed_at as string, snapshotAt: value.snapshot_at as string,
     counts: counts as OpenJobStatusSummary["counts"],
+    identity,
   };
 }
 
