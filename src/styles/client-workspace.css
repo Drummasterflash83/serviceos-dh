@@ -422,6 +422,9 @@
 .nd-score-hero--pending .nd-score-hero-copy p { margin: 5px 0; }
 .nd-score-hero--pending .nd-score-hero-copy small { display: block; margin-top: 7px; color: #625a6d; font-size: 11px; }
 .nd-score-hero--pending .nd-score-hero-copy button { padding: 0; border: 0; background: transparent; color: #514669; font: inherit; font-size: 13px; font-weight: 700; text-align: left; cursor: pointer; }
+.nd-score-hero--pending .nd-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin: 8px 0 3px; }
+.nd-score-hero--pending .nd-hero-actions button { margin: 0; min-height: 36px; }
+.nd-score-hero--pending .nd-hero-actions .nd-hero-secondary { color: #706b7e; font-weight: 550; }
 .nd-score-hero--pending .nd-score-hero-copy button:focus-visible { outline: 2px solid #514669; outline-offset: 3px; }
 .nd-score-tiles { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
 .nd-score-tiles article { display: grid; align-content: start; gap: 8px; min-width: 0; padding: 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #fff; }
