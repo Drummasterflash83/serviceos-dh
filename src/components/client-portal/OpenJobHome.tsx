@@ -389,7 +389,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <div>
         <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · WORK</p>
         <h2>Jobs needing attention</h2>
-        <p>Start with work that is On hold or Pending. Open a job to see what is recorded.</p>
+        <p>Start with customer jobs that are On hold or Pending. Open one to see what needs checking.</p>
       </div>
       {enabled && <button type="button" className="cp-secondary" aria-label="Refresh saved jobs"
         onClick={refresh} disabled={summary.isFetching || customerBlockers.isFetching ||
@@ -421,29 +421,33 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <section className="nd-score-hero nd-score-hero--pending" aria-label="Jobs needing attention">
         <div className="nd-work-count"><strong>{linkedCustomers
           ? linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB") : "…"}</strong>
-          <small>linked customer jobs</small></div>
+          <small>customer jobs to check</small></div>
         <div className="nd-score-hero-copy">
           <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · TODAY</p>
-          <h3>Customer jobs to check</h3>
+          <h3>Start with customer work</h3>
           <p>{linkedCustomers
-            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} confirmed customer jobs are On hold or Pending. Open a job to see its recorded stage and what needs checking.`
-            : customerBlockers.isError ? "Confirmed customer jobs are unavailable. The full recorded work list is still available."
-              : "Checking confirmed customer work…"}</p>
-          <button type="button" onClick={() => linkedCustomers?.linkedBlockedJobs
-            ? showCustomerWork() : showJobs(attentionStatus)}>
-            {linkedCustomers?.linkedBlockedJobs ? "Open customer jobs"
-              : activeSummary?.counts.on_hold ? "Review recorded On-hold jobs" : activeSummary?.counts.pending
-                ? "Review recorded Pending jobs" : "See all open jobs"} →</button>
-          {activeSummary && <small>Across all saved work: {activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending · {activeSummary.counts.open.toLocaleString("en-GB")} Open. Checked {savedAt(activeSummary.snapshotAt)}.</small>}
-          {summary.isFetching && activeSummary && <small>Checking for newer saved job totals…</small>}
-          {linkedCustomers && <small>Confirmed customer work checked {savedAt(linkedCustomers.snapshotAt)}. Other recorded jobs may still need matching; status alone does not prove urgency or ownership.</small>}
+            ? "These On-hold or Pending jobs have a confirmed customer and site. Open one to check its current recorded stage."
+            : customerBlockers.isError ? "Customer matches are unavailable right now. You can still browse all recorded jobs."
+              : "Checking customer jobs…"}</p>
+          <div className="nd-hero-actions">
+            <button type="button" onClick={() => linkedCustomers?.linkedBlockedJobs
+              ? showCustomerWork() : showJobs(attentionStatus)}>
+              {linkedCustomers?.linkedBlockedJobs ? "Open customer jobs"
+                : activeSummary?.counts.on_hold ? "See On-hold jobs" : activeSummary?.counts.pending
+                  ? "See Pending jobs" : "See all jobs"} →</button>
+            {activeSummary?.counts.on_hold ? <button type="button" className="nd-hero-secondary"
+              onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button> : null}
+          </div>
+          {activeSummary && <small>Across all recorded work: {activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending · {activeSummary.counts.open.toLocaleString("en-GB")} Open · checked {savedAt(activeSummary.snapshotAt)}.</small>}
+          {summary.isFetching && activeSummary && <small>Checking for newer job totals…</small>}
+          {linkedCustomers && <small>Customer matches checked {savedAt(linkedCustomers.snapshotAt)}. Other jobs may still need matching; status alone does not tell us why a job is held or who owns it.</small>}
         </div>
       </section>
       {operator && mdReason && !summary.isPending && mdMoney}
       <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check" tabIndex={-1}>
         <div className="nd-customer-blockers-heading">
           <h3>Customers with jobs to check</h3>
-          <p>On-hold or Pending jobs with a confirmed customer and site. Open a job to see what's known; the cause and next owner may still need checking.</p>
+          <p>Only jobs with a confirmed customer and site appear here. Open one to see what is known and what still needs checking.</p>
         </div>
         {customerBlockers.isPending && <p role="status">Checking linked customer jobs…</p>}
         {customerBlockers.isFetching && linkedCustomers && <p role="status">Checking for newer linked customer jobs…</p>}
@@ -462,7 +466,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
               <ChevronRight size={16} aria-hidden="true" />
             </button>)}</div>
           </details>)}
-          <small>{linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} jobs with confirmed customer and site · checked {savedAt(linkedCustomers.snapshotAt)}. Jobs still being matched are not shown in these groups.</small>
+          <small>{linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} confirmed jobs · checked {savedAt(linkedCustomers.snapshotAt)}. Jobs still being matched are listed separately.</small>
         </>}
         <div className="nd-customer-blocker-all-work">
           <p>The full work list also includes jobs without a confirmed customer group.</p>
@@ -470,8 +474,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <button type="button" onClick={() => showJobs("pending")}>See all Pending jobs →</button>
         </div>
         <div ref={recordedRef} className="nd-recorded-attention" tabIndex={-1}>
-          <h4>More recorded customer work</h4>
-          <p>These names come from saved Commusoft jobs. A customer or site match is not confirmed here. Open a job before deciding what it needs.</p>
+          <h4>Other jobs to check</h4>
+          <p>Commusoft recorded these customer names, but the customer or site has not been matched yet. Open a job before acting on it.</p>
           {!showRecordedAttention && <button type="button" className="nd-recorded-attention-toggle"
             onClick={showStillMatching}>See jobs still being matched →</button>}
           {recordedAttention.isPending && showRecordedAttention &&
