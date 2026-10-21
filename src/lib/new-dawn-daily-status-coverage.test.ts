@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readDailyStatusCoverage } from "./new-dawn-daily-status-coverage.ts";
+import { dailyStatusGapState, readDailyStatusCoverage } from "./new-dawn-daily-status-coverage.ts";
 
 const tenant = "11111111-1111-4111-8111-111111111111";
 const actor = "22222222-2222-4222-8222-222222222222";
@@ -50,4 +50,15 @@ test("absence of a roster stays explicit", () => {
     earliest_moving_review_day: null };
   assert.equal(readDailyStatusCoverage(empty, tenant, actor).day, null);
   assert.throws(() => readDailyStatusCoverage({ ...empty, roster_count: 0 }, tenant, actor));
+});
+
+test("a UK-day sweep in progress is not labelled as a completed-day gap", () => {
+  const running = readDailyStatusCoverage({ ...receipt(), day: "2026-10-21",
+    observed_count: 77, roster_count: 330, missing_count: 253,
+    qualifying_streak_days: 0, streak_start_day: null,
+    earliest_moving_review_day: null }, tenant, actor);
+  assert.equal(dailyStatusGapState(running, new Date("2026-10-21T00:19:00Z")), "pending_today");
+  assert.equal(dailyStatusGapState(running, new Date("2026-10-21T23:19:00Z")), "past_gap");
+  assert.equal(dailyStatusGapState({ ...running, missingCount: 0 }, new Date("2026-10-21T00:19:00Z")), "none");
+  assert.equal(dailyStatusGapState(null), "none");
 });

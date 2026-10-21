@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
 import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
-import { readDailyStatusCoverage } from "@/lib/new-dawn-daily-status-coverage";
+import { dailyStatusGapState, readDailyStatusCoverage } from "@/lib/new-dawn-daily-status-coverage";
 import {
   openJobNextStep, openJobPageFlagName, openJobStatusEvidence,
   readOpenJobPage, readOpenJobStatusSummary,
@@ -245,6 +245,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   const checkedDay = dailyCoverage.data?.tenantId === tenant &&
     dailyCoverage.data.actorId === user?.id && !dailyCoverage.isFetching
     ? dailyCoverage.data : null;
+  const dailyGapState = dailyStatusGapState(checkedDay);
   const oldestHeldRows = firstPage.data?.tenantId === tenant &&
     firstPage.data.actorId === user?.id && !firstPage.isFetching &&
     firstPage.data.creationOrderAvailable
@@ -322,7 +323,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
           <p>Browse the saved list by status and open any job for its details.</p>
           {checkedDay?.day && <p>Latest daily status check: {statusDay(checkedDay.day)}.</p>}
-          {!!checkedDay?.missingCount && <p role="alert">{checkedDay.missingCount} jobs were missed in that check; scores remain withheld.</p>}
+          {dailyGapState === "pending_today" && <p>{checkedDay!.missingCount} jobs still to check today. The daily sweep is in progress; scores remain withheld.</p>}
+          {dailyGapState === "past_gap" && <p role="alert">{checkedDay!.missingCount} jobs had no provider observation on {statusDay(checkedDay!.day!)}; scores remain withheld.</p>}
           {checkedDay?.earliestMovingReviewDay && <p>Job score review can begin {statusDay(checkedDay.earliestMovingReviewDay)} if daily checks continue. No score is published yet.</p>}
           {dailyCoverage.isError && <p role="alert">Daily job checks are unavailable. Scores remain withheld.</p>}
           <button type="button" onClick={() => oldestHeldRows.length > 0
@@ -339,7 +341,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
       <details className="nd-job-context"><summary>How these figures are checked</summary>
         <p>These counts use the latest saved Commusoft job statuses. On hold and Pending identify work to check; status alone does not prove urgency, the cause of a hold or who owns the next action.</p>
         {checkedDay?.day && <p>For the frozen {statusDay(checkedDay.day)} open-job roster, {checkedDay.observedCount?.toLocaleString("en-GB")}/{checkedDay.rosterCount?.toLocaleString("en-GB")} jobs were checked with Commusoft
-          {checkedDay.missingCount ? `; ${checkedDay.missingCount} gaps were logged` : ""}.
+          {dailyGapState === "pending_today" ? `; ${checkedDay.missingCount} still to check today`
+            : dailyGapState === "past_gap" ? `; ${checkedDay.missingCount} had no observation that day` : ""}.
           {checkedDay.lastProviderCheckAt && ` Last check ${savedAt(checkedDay.lastProviderCheckAt)}.`}</p>}
         <p>Job, customer and team scores remain unpublished. A day qualifies for the Moving measure when at least 99% of its frozen open-job roster is checked; any gaps are logged. Each scored job still needs its own 14 daily observations. Customer and team measures need confirmed links and visits.</p>
       </details>
