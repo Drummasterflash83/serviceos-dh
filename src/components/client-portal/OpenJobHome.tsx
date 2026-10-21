@@ -124,25 +124,25 @@ function SourceJobDetail({ row, tenant, actor, reason, operator, customerLinkOnl
         <p className="whitespace-pre-wrap break-words">{record.description ?? row.title ?? "No work description was saved."}</p>
         <p>Status: {record.status ? sourceLabel(record.status) : statusLabel[row.status]}
           {record.priority ? ` · Priority: ${sourceLabel(record.priority)}` : ""}</p>
-        <p>Stage: {exact?.stage ?? "Not enough data yet — this job's current stage has not been checked."}</p>
+        <p>Stage: {exact?.stage ?? "Not verified yet."}</p>
         {exact?.pipeline && <p>Workstream: {exact.pipeline}</p>}
       </section>
       <section aria-label="People and next step">
         <h3>People and next step</h3>
         {exact?.sourceUsers.length
-          ? <p>People listed on this job: {exact.sourceUsers.map((person) => person.name).join(", ")}. We have not confirmed who is the engineer or who attended.</p>
-          : <p>Engineer: not enough data yet — no verified engineer or appointment is attached to this record.</p>}
-        <p>What it is waiting on: {exact?.holdReason
-          ? `${exact.holdReason} (recorded reason; person responsible not yet confirmed)`
-          : "not enough data yet — the status does not tell us the cause or person responsible."}</p>
+          ? <p>People listed in Commusoft: {exact.sourceUsers.map((person) => person.name).join(", ")}. Ownership and attendance are not verified.</p>
+          : <p>Engineer: not verified yet.</p>}
+        <p>Waiting on: {exact?.holdReason
+          ? `${exact.holdReason} (recorded cause; owner not verified)`
+          : "Cause and owner not verified yet."}</p>
         <p>Next check: {openJobNextStep(row.status)}.</p>
       </section>
       <section aria-label="Contact and visits">
         <h3>Contact and visits</h3>
-        {record.contactCounts ? <p>{record.contactCounts.phone.toLocaleString("en-GB")} calls · {record.contactCounts.email.toLocaleString("en-GB")} emails confirmed as linked to this job in LEARN.
-          {record.contactCounts.latestAt ? ` Latest recorded contact ${savedAt(record.contactCounts.latestAt)}.` : " No job-linked contact is retained yet."} Unlinked contact history may still exist.</p>
-          : <p>Job-linked contact counts are unavailable until the exact job identity is confirmed.</p>}
-        <p>Visits: not enough data yet — no confirmed technician appointment is attached to this job.</p>
+        {record.contactCounts ? <p>{record.contactCounts.phone.toLocaleString("en-GB")} calls · {record.contactCounts.email.toLocaleString("en-GB")} emails linked to this job in LEARN.
+          {record.contactCounts.latestAt ? ` Latest saved contact ${savedAt(record.contactCounts.latestAt)}.` : ""} Other contact may be unlinked.</p>
+          : <p>Job-linked contact: not verified until the job match is confirmed.</p>}
+        <p>Visits: no verified technician appointment yet.</p>
       </section>
       {operator && !customerLinkOnly && scoreReviewFlag.data === true && <section className="nd-job-score-evidence"
         aria-label="OpenFolk private job score evidence review">
