@@ -1,0 +1,23 @@
+-- These source observations arrive after the projection trigger is installed,
+-- but before its history backfill. Backfill must not replace their newer rows.
+insert into public.learn_business_input_pages values
+ ('30000000-0000-4000-8000-000000000007',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000100','commusoft','jobs','2026-10-03'),
+ ('30000000-0000-4000-8000-000000000008',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000100','commusoft','jobs','2026-10-04');
+insert into public.learn_business_input_versions values
+ ('20000000-0000-4000-8000-000000000007',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000100','commusoft','jobs','102',
+  '{"id":102,"status":"Open"}'),
+ ('20000000-0000-4000-8000-000000000008',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000100','commusoft','jobs','101',
+  '{"id":101,"status":"pending"}');
+insert into public.learn_business_input_observations values
+ ('30000000-0000-4000-8000-000000000007',
+  '20000000-0000-4000-8000-000000000007',1),
+ ('30000000-0000-4000-8000-000000000008',
+  '20000000-0000-4000-8000-000000000008',1);
