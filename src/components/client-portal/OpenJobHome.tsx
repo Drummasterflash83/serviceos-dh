@@ -182,7 +182,6 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   const [cursors, setCursors] = useState<Array<string | null>>([null]);
   const [selected, setSelected] = useState<OpenJobRow | null>(null);
   const [selectedCustomerJob, setSelectedCustomerJob] = useState<CustomerBlockedJob | null>(null);
-  const [showOldest, setShowOldest] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
   const jobsRef = useRef<HTMLDivElement>(null);
   const customersRef = useRef<HTMLElement>(null);
@@ -191,7 +190,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   const enabled = !!user && uuid(tenant) && (operator ? approvedReason !== null : authorisedClient);
   useEffect(() => {
     setApprovedReason(mdReason ?? null); setReason(""); setStatus(null); setPageIndex(0);
-    setCursors([null]); setSelected(null); setSelectedCustomerJob(null); setShowOldest(false);
+    setCursors([null]); setSelected(null); setSelectedCustomerJob(null);
   }, [tenant, user?.id, operator, mdReason]);
   const summary = useQuery({
     queryKey: ["new-dawn-open-job-status-summary", tenant, user?.id, operator,
@@ -419,31 +418,6 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         {summary.isPending && <p role="status">Checking saved job status totals…</p>}
         {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
       </section>
-      <section className="nd-oldest-jobs" aria-label="Oldest On-hold jobs by creation date">
-        <h3>Oldest On-hold jobs to check</h3>
-        <p>These jobs were created earliest. Creation age is not time On hold or proof of urgency; office and internal jobs can appear here.</p>
-        {firstPage.isPending && <p role="status">Checking the oldest recorded jobs…</p>}
-        {firstPage.isError && <p role="alert">The oldest On-hold jobs could not be checked. Refresh to retry.</p>}
-        {firstPage.isSuccess && oldestHeldRows.length === 0 && <p>No verified creation-order On-hold jobs are available in this saved snapshot.</p>}
-        {oldestHeldRows.length > 0 && <>
-          <ol>{oldestHeldRows.slice(0, showOldest ? 10 : 5).map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
-            <button type="button" onClick={() => setSelected(row)}>
-              <strong>Job {row.external_id}</strong>
-              <span>{row.title ?? "Work description not recorded"}<em>Commusoft: {jobSourceIdentity(row).sourceLabel}
-                {jobSourceIdentity(row).shortEvidence ? ` · ${jobSourceIdentity(row).shortEvidence}` : ""}</em></span>
-              <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, firstPage.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}
-                {row.status_evidence === "repeat_saved_checks" && <><br />{openJobStatusEvidence(row, savedAt)}</>}
-              </small>
-              <ChevronRight size={16} />
-            </button>
-          </li>)}</ol>
-          {oldestHeldRows.length > 5 && <button type="button" className="nd-oldest-toggle"
-            aria-expanded={showOldest} onClick={() => setShowOldest((shown) => !shown)}>
-            {showOldest ? "Show five jobs" : "Show ten jobs"} →
-          </button>}
-          <button type="button" className="nd-oldest-toggle" onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button>
-        </>}
-      </section>
       <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check">
         <div className="nd-customer-blockers-heading">
           <h3>Customers with jobs to check</h3>
@@ -471,6 +445,27 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
           <button type="button" onClick={() => showJobs("pending")}>See all Pending jobs →</button>
         </div>
       </section>
+      <details className="nd-oldest-jobs" aria-label="Oldest recorded On-hold jobs">
+        <summary>Explore the oldest recorded On-hold jobs</summary>
+        <p>These jobs were created earliest. Creation age is not time On hold or proof of urgency; office and internal jobs can appear here.</p>
+        {firstPage.isPending && <p role="status">Checking the oldest recorded jobs…</p>}
+        {firstPage.isError && <p role="alert">The oldest On-hold jobs could not be checked. Refresh to retry.</p>}
+        {firstPage.isSuccess && oldestHeldRows.length === 0 && <p>No verified creation-order On-hold jobs are available in this saved snapshot.</p>}
+        {oldestHeldRows.length > 0 && <>
+          <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
+            <button type="button" onClick={() => setSelected(row)}>
+              <strong>Job {row.external_id}</strong>
+              <span>{row.title ?? "Work description not recorded"}<em>Commusoft: {jobSourceIdentity(row).sourceLabel}
+                {jobSourceIdentity(row).shortEvidence ? ` · ${jobSourceIdentity(row).shortEvidence}` : ""}</em></span>
+              <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, firstPage.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}
+                {row.status_evidence === "repeat_saved_checks" && <><br />{openJobStatusEvidence(row, savedAt)}</>}
+              </small>
+              <ChevronRight size={16} />
+            </button>
+          </li>)}</ol>
+          <button type="button" className="nd-oldest-toggle" onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button>
+        </>}
+      </details>
       {operator && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
         {tenant === drummondsTenantId && activeSummary?.identity &&
           activeSummary.identity.awaitingReview > 0 &&

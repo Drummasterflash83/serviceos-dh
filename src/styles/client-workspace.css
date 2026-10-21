@@ -465,6 +465,8 @@
 .nd-score-bottlenecks button strong { font-size: 13px; white-space: nowrap; }
 .nd-score-tiles button:focus-visible, .nd-score-bottlenecks button:focus-visible { outline: 2px solid #514669; outline-offset: 3px; border-radius: 4px; }
 .nd-oldest-jobs { margin: 18px 0; padding: 16px 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #fff; scroll-margin-top: 24px; }
+.nd-oldest-jobs summary { color: #514669; font-size: 14px; font-weight: 600; cursor: pointer; }
+.nd-oldest-jobs[open] summary { margin-bottom: 8px; }
 .nd-oldest-jobs h3 { margin: 0 0 4px; color: #25253a; font-size: 18px; font-weight: 600; }
 .nd-oldest-jobs p { margin: 0 0 10px; color: #706b7e; font-size: 12px; line-height: 1.5; }
 .nd-oldest-jobs .nd-oldest-toggle { margin: 0 0 3px; padding: 3px 0; border: 0; background: transparent; color: #514669; font-size: 12px; font-weight: 650; text-align: left; cursor: pointer; }
