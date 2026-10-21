@@ -85,10 +85,13 @@ export function MdClientPreview() {
           </form>
           {error && <p role="alert">{error}</p>}
         </section> : <>
-          <div className="md-review-notice" role="status">
-            OpenFolk read-only presentation · Access logged · Expires {new Date(active.expiresAt).toLocaleTimeString("en-GB", { timeZone: "Europe/London", hour: "2-digit", minute: "2-digit" })} UK
-            <button type="button" onClick={() => { setReview(null); setSection("home"); }}>Leave view</button>
-          </div>
+          <details className="md-review-notice">
+            <summary>OpenFolk preview · access logged · until {new Date(active.expiresAt).toLocaleTimeString("en-GB", { timeZone: "Europe/London", hour: "2-digit", minute: "2-digit" })} UK</summary>
+            <div className="md-review-notice-details">
+              <span>This is a read-only presentation through your OpenFolk identity. Source reads are audited; no Drummonds staff login is enabled.</span>
+              <button type="button" onClick={() => { setReview(null); setSection("home"); }}>Leave view</button>
+            </div>
+          </details>
           {section === "home" ? <>
             <OpenJobHome key={`${active.auditId}:home`} tenant={drummondsTenantId}
               company="Drummonds" operator mdReason={active.reason}
