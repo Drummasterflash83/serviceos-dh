@@ -5,6 +5,8 @@ import { assess, releaseSql, sources } from './new-dawn-current-job-source-relea
 const [projection, summary] = sources();
 const baseline = '1a373342368cc703a09860bc6162c0a98a8116cebd104719d212449fb9603f9a';
 const candidate = '9219b20578e4213f927785ffd4c0714066cdb5972997b7b02e9024ef0fff4e23';
+const customerBaseline = 'edc63a68703186905bbd7a61a791629c843b14a4ebdefe3b9660260f51e17e55';
+const customerCandidate = 'a2f5916d204014e3affced8136308a74e67d6c0d42ea7856cdf27d7276f813c0';
 
 function stageRow(stage) {
   return {
@@ -15,7 +17,10 @@ function stageRow(stage) {
     cache_present: stage >= 1,
     trigger_present: stage >= 1,
     summary_sha: stage >= 2 ? candidate : baseline,
+    customer_sha: stage >= 2 ? customerCandidate : customerBaseline,
     auth_execute: true, anon_execute: false, service_execute: false,
+    customer_auth_execute: true, customer_anon_execute: false,
+    customer_service_execute: false,
   };
 }
 
@@ -28,6 +33,8 @@ test('only exact source files and coherent release stages pass', () => {
     assert.throws(() => assess(changed, stage), /stage_changed/);
   }
   assert.throws(() => assess({ ...stageRow(2), anon_execute: true }, 2), /stage_changed/);
+  assert.throws(() => assess({ ...stageRow(2), customer_auth_execute: false }, 2), /stage_changed/);
+  assert.throws(() => assess({ ...stageRow(2), customer_sha: customerBaseline }, 2), /stage_changed/);
   assert.throws(() => assess({ ...stageRow(2), ledger_1_sha: null }, 2), /stage_changed/);
 });
 
@@ -45,6 +52,7 @@ test('each stage is exact, guarded, ledgered and distinct', () => {
   assert.match(first, /create table public\.new_dawn_commusoft_current_job_source/);
   assert.doesNotMatch(first, /open_job_summary_candidate_changed/);
   assert.match(second, /open_job_summary_candidate_changed/);
+  assert.match(second, /customer_blockers_candidate_changed/);
   assert.match(second, new RegExp(projection.sha));
   assert.throws(() => releaseSql(3), /stage_invalid/);
 });

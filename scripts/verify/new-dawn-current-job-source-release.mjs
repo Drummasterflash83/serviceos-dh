@@ -7,12 +7,15 @@ import { savedCliToken } from './learn-test-readiness.mjs';
 const project = 'tgbnakbxwcqjeimygroz';
 const baseline = '1a373342368cc703a09860bc6162c0a98a8116cebd104719d212449fb9603f9a';
 const candidate = '9219b20578e4213f927785ffd4c0714066cdb5972997b7b02e9024ef0fff4e23';
+const customerBaseline = 'edc63a68703186905bbd7a61a791629c843b14a4ebdefe3b9660260f51e17e55';
+const customerCandidate = 'a2f5916d204014e3affced8136308a74e67d6c0d42ea7856cdf27d7276f813c0';
 const signature = 'public.new_dawn_open_job_status_summary(uuid,text)';
+const customerSignature = 'public.new_dawn_customer_blockers(uuid,text)';
 const files = [
   { version: '20261113000000', name: 'new_dawn_commusoft_current_job_source',
     sha: 'd1a2c9e754b285d6a8360427d5e75db1d7359a969871b53fb09365981e1ef46c' },
   { version: '20261113010000', name: 'new_dawn_open_job_summary_current_source',
-    sha: '7a1b8501a7e65ccd1f6ff18fe3ead729ad7a8109c7b2a871ae51eb30d4e51888' },
+    sha: '2c19c89b0c24cd896655702c1095614400db7d36c4ca14be10a437815ae7fa49' },
 ];
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const literal = value => `'${String(value).replaceAll("'", "''")}'`;
@@ -58,9 +61,13 @@ const catalog = `select
   and tgrelid='public.learn_business_input_observations'::regclass
   and not tgisinternal) trigger_present,
  encode(sha256(convert_to(pg_get_functiondef('${signature}'::regprocedure),'UTF8')),'hex') summary_sha,
+ encode(sha256(convert_to(pg_get_functiondef('${customerSignature}'::regprocedure),'UTF8')),'hex') customer_sha,
  has_function_privilege('authenticated','${signature}','EXECUTE') auth_execute,
  has_function_privilege('anon','${signature}','EXECUTE') anon_execute,
- has_function_privilege('service_role','${signature}','EXECUTE') service_execute`;
+ has_function_privilege('service_role','${signature}','EXECUTE') service_execute,
+ has_function_privilege('authenticated','${customerSignature}','EXECUTE') customer_auth_execute,
+ has_function_privilege('anon','${customerSignature}','EXECUTE') customer_anon_execute,
+ has_function_privilege('service_role','${customerSignature}','EXECUTE') customer_service_execute`;
 
 export async function readStage(token=savedCliToken(),fetcher=fetch) {
   const [info,rows]=await Promise.all([
@@ -81,12 +88,15 @@ export function assess(row,stage) {
     row.ledger_2_sha!==(stage>=2?files[1].sha:null) ||
     row.cache_present!==(stage>=1) || row.trigger_present!==(stage>=1) ||
     row.summary_sha!==(stage>=2?candidate:baseline) ||
+    row.customer_sha!==(stage>=2?customerCandidate:customerBaseline) ||
     row.auth_execute!==true || row.anon_execute!==false ||
-    row.service_execute!==false)
+    row.service_execute!==false || row.customer_auth_execute!==true ||
+    row.customer_anon_execute!==false || row.customer_service_execute!==false)
     throw Error('current_job_source_stage_changed');
-  return {state:['ready_exact','projection_installed','summary_installed'][stage],
+  return {state:['ready_exact','projection_installed','home_readers_installed'][stage],
     project,stage,sourceSha256:files.map(x=>x.sha),
-    functionSha256:row.summary_sha,providerRequests:0,sourceWrites:0};
+    functionSha256:row.summary_sha,customerFunctionSha256:row.customer_sha,
+    providerRequests:0,sourceWrites:0};
 }
 
 export function releaseSql(stage) {
@@ -102,6 +112,8 @@ do $gate$ begin
      where version::text='${source.version}')<>0
   or encode(sha256(convert_to(pg_get_functiondef('${signature}'::regprocedure),'UTF8')),'hex')
     <> '${baseline}'
+  or encode(sha256(convert_to(pg_get_functiondef('${customerSignature}'::regprocedure),'UTF8')),'hex')
+    <> '${customerBaseline}'
   or (to_regclass('public.new_dawn_commusoft_current_job_source') is not null)
     is distinct from ${before>=1}
   or exists(select 1 from pg_trigger
@@ -133,8 +145,9 @@ export async function installLive(token=savedCliToken(),fetcher=fetch) {
     catch { /* Resolve uncertain acknowledgement by readback, never replay. */ }
     assess(await readStage(token,fetcher),stage);
   }
-  return {state:'summary_installed',project,stage:2,
+  return {state:'home_readers_installed',project,stage:2,
     sourceSha256:files.map(x=>x.sha),functionSha256:candidate,
+    customerFunctionSha256:customerCandidate,
     providerRequests:0,sourceWrites:0};
 }
 

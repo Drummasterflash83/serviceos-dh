@@ -86,3 +86,80 @@ begin
  if r->'counts'<>'{"open":1,"pending":1,"on_hold":0,"total":2}'::jsonb
  then raise exception 'current_job_source_newer_count_wrong'; end if;
 end $check$;
+
+-- The second audited Home reader must show only one exact, same-version
+-- customer/site/job link and withhold an equal-time source conflict.
+drop view public.learn_business_input_current_links;
+create table public.learn_business_input_current_links (
+ tenant_id uuid,connection_id uuid,provider text,collection text,
+ external_id text,entity_kind text,entity_table text,entity_id uuid,
+ source_version_id uuid
+);
+alter table public.jobs add column source_system text;
+alter table public.jobs add column external_id text;
+alter table public.jobs add column site_id uuid;
+alter table public.jobs add column customer_company_id uuid;
+alter table public.jobs add column customer_person_id uuid;
+create table public.sites (
+ id uuid,tenant_id uuid,source_system text,external_id text,
+ company_id uuid,person_id uuid
+);
+create table public.companies (id uuid,tenant_id uuid,name text);
+create table public.people (id uuid,tenant_id uuid,display_name text);
+insert into public.companies values
+ ('40000000-0000-4000-8000-000000000001',
+  '00000000-0000-0000-0000-000000000001','Synthetic Company');
+insert into public.sites values
+ ('50000000-0000-4000-8000-000000000001',
+  '00000000-0000-0000-0000-000000000001',
+  'commusoft:connection:00000000-0000-0000-0000-000000000100','501',
+  '40000000-0000-4000-8000-000000000001',null);
+insert into public.jobs values
+ ('60000000-0000-4000-8000-000000000001',
+  '00000000-0000-0000-0000-000000000001',
+  '{"learn_business_input":{"source_version_id":"20000000-0000-4000-8000-000000000011"}}',
+  'commusoft:connection:00000000-0000-0000-0000-000000000100','105',
+  '50000000-0000-4000-8000-000000000001',
+  '40000000-0000-4000-8000-000000000001',null);
+insert into public.learn_business_input_current_links values
+ ('00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000100','commusoft','jobs','105',
+  'job','jobs','60000000-0000-4000-8000-000000000001',
+  '20000000-0000-4000-8000-000000000011');
+insert into public.learn_business_input_pages values
+ ('30000000-0000-4000-8000-000000000011',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000100','commusoft','jobs','2026-10-06');
+insert into public.learn_business_input_versions values
+ ('20000000-0000-4000-8000-000000000011',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000100','commusoft','jobs','105',
+  '{"id":105,"status":"on_hold","propertyID":501}');
+insert into public.learn_business_input_observations values
+ ('30000000-0000-4000-8000-000000000011',
+  '20000000-0000-4000-8000-000000000011',1);
+do $check$ declare r jsonb; begin
+ r:=public.new_dawn_customer_blockers(
+  '00000000-0000-0000-0000-000000000001',null);
+ if (r->>'linked_blocked_jobs')::int<>1 or jsonb_array_length(r->'groups')<>1
+  or r->'groups'->0->>'customer_name'<>'Synthetic Company'
+ then raise exception 'current_job_customer_group_missing'; end if;
+end $check$;
+insert into public.learn_business_input_pages values
+ ('30000000-0000-4000-8000-000000000012',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000100','commusoft','jobs','2026-10-06');
+insert into public.learn_business_input_versions values
+ ('20000000-0000-4000-8000-000000000012',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000100','commusoft','jobs','105',
+  '{"id":105,"status":"pending","propertyID":501}');
+insert into public.learn_business_input_observations values
+ ('30000000-0000-4000-8000-000000000012',
+  '20000000-0000-4000-8000-000000000012',1);
+do $check$ declare r jsonb; begin
+ r:=public.new_dawn_customer_blockers(
+  '00000000-0000-0000-0000-000000000001',null);
+ if (r->>'linked_blocked_jobs')::int<>0 or jsonb_array_length(r->'groups')<>0
+ then raise exception 'current_job_customer_conflict_exposed'; end if;
+end $check$;
