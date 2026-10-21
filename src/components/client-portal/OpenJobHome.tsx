@@ -4,6 +4,7 @@ import { BriefcaseBusiness, ChevronLeft, ChevronRight, RefreshCw } from "lucide-
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
+import { drummondsTenantId } from "@/lib/new-dawn-md-view";
 import { jobSourceIdentity } from "@/lib/new-dawn-job-identity-label";
 import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
@@ -162,7 +163,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   const [pageIndex, setPageIndex] = useState(0);
   const [cursors, setCursors] = useState<Array<string | null>>([null]);
   const [selected, setSelected] = useState<OpenJobRow | null>(null);
-  const [showOldest, setShowOldest] = useState(false);
+  const [showOldest, setShowOldest] = useState(true);
   const [refreshTick, setRefreshTick] = useState(0);
   const jobsRef = useRef<HTMLDivElement>(null);
   const authorisedClient = !operator && !!user && profile?.tenant_id === tenant &&
@@ -170,7 +171,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   const enabled = !!user && uuid(tenant) && (operator ? approvedReason !== null : authorisedClient);
   useEffect(() => {
     setApprovedReason(mdReason ?? null); setReason(""); setStatus(null); setPageIndex(0);
-    setCursors([null]); setSelected(null); setShowOldest(false);
+    setCursors([null]); setSelected(null); setShowOldest(true);
   }, [tenant, user?.id, operator, mdReason]);
   const summary = useQuery({
     queryKey: ["new-dawn-open-job-status-summary", tenant, user?.id, operator,
@@ -324,6 +325,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
             {activeSummary?.counts.on_hold ? "Review On-hold jobs" : activeSummary?.counts.pending
               ? "Review Pending jobs" : "See all open jobs"} →</button>
           {activeSummary && <small>{activeSummary.counts.total.toLocaleString("en-GB")} open jobs in saved Commusoft records · checked {savedAt(activeSummary.snapshotAt)}</small>}
+          {activeSummary?.identity && <small>{activeSummary.identity.linked.toLocaleString("en-GB")} have a current exact job link · {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} await identity review.</small>}
         </div>
       </section>
       <section className="nd-work-priority" aria-label="Review saved job statuses">
@@ -347,6 +349,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
           {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending in saved Commusoft statuses.</p>}
+          {activeSummary?.identity && <p>{activeSummary.identity.linked.toLocaleString("en-GB")} have a current exact job link · {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} awaiting identity review.</p>}
           <p>{dailyCoverage.isError
             ? "Job score withheld: daily progress could not be checked."
             : checkedDay?.earliestMovingReviewDay
@@ -367,6 +370,11 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
       </div>
       {operator && mdReason && !summary.isPending && !firstPage.isPending && mdMoney}
       {operator && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
+        {tenant === drummondsTenantId && activeSummary?.identity &&
+          activeSummary.identity.awaitingReview > 0 &&
+          <p><a href="/openfolk/drummonds?module=information&tools=false&view=today">
+            Review {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} open jobs awaiting customer or site identity in OpenFolk →
+          </a></p>}
         <p>These counts use the latest saved Commusoft job statuses. On hold and Pending identify work to check; status alone does not prove urgency, the cause of a hold or who owns the next action.</p>
         {checkedDay?.day && <p>For the frozen {statusDay(checkedDay.day)} open-job roster, {checkedDay.observedCount?.toLocaleString("en-GB")}/{checkedDay.rosterCount?.toLocaleString("en-GB")} jobs were checked with Commusoft
           {dailyGapState === "pending_today" ? `; ${checkedDay.missingCount} still to check today`
@@ -436,8 +444,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         </nav>
       </>}
       {operator && <section className="nd-oldest-jobs" aria-label="Ten oldest On-hold jobs by creation date">
-        <h3>Oldest saved On-hold records</h3>
-        <p>For OpenFolk review. Creation age is not time On hold, and these records can include office or accounting work. They have not been classified as customer priorities.</p>
+        <h3>Oldest On-hold jobs to check</h3>
+        <p>Ordered by verified job creation date. Creation age is not time On hold; confirm the cause and next owner in Commusoft.</p>
         <button type="button" className="nd-oldest-toggle" aria-expanded={showOldest}
           onClick={() => setShowOldest((shown) => !shown)}>
           {showOldest ? "Hide oldest records" : "Explore ten oldest records"} →
