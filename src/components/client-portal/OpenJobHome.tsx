@@ -8,6 +8,7 @@ import { drummondsTenantId } from "@/lib/new-dawn-md-view";
 import { jobSourceIdentity } from "@/lib/new-dawn-job-identity-label";
 import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
+import { customerBlockedJobDetailKey, readCustomerBlockers, type CustomerBlockedJob } from "@/lib/new-dawn-customer-blockers";
 import { dailyStatusGapState, readDailyStatusCoverage } from "@/lib/new-dawn-daily-status-coverage";
 import {
   openJobNextStep, openJobPageFlagName, openJobStatusEvidence,
@@ -55,8 +56,9 @@ export function useOpenJobPageFlag(tenant: string, operator: boolean) {
   });
 }
 
-function SourceJobDetail({ row, tenant, actor, reason, operator }: {
+function SourceJobDetail({ row, tenant, actor, reason, operator, customerLinkOnly = false }: {
   row: OpenJobRow; tenant: string; actor: string; reason: string | null; operator: boolean;
+  customerLinkOnly?: boolean;
 }) {
   const scoreReviewFlag = useQuery({
     queryKey: ["new-dawn-score-readiness-flag", actor, tenant],
@@ -92,8 +94,10 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
   return <div className="nd-job-detail space-y-4">
     <div>
       <p><strong>Job {row.external_id}</strong> · {statusLabel[row.status]}</p>
-      <p>Commusoft customer and site: {sourceIdentity.sourceLabel}</p>
-      <p className="nd-job-identity-state">{sourceIdentity.detailEvidence}</p>
+      {customerLinkOnly ? <p>Opened from a confirmed customer and site link. The exact saved job is checked below.</p> : <>
+        <p>Commusoft customer and site: {sourceIdentity.sourceLabel}</p>
+        <p className="nd-job-identity-state">{sourceIdentity.detailEvidence}</p>
+      </>}
       <small>Commusoft record saved {savedAt(row.source_observed_at)}. The job may have changed since then.</small>
       <p>{row.job_created_at ? `Job created in Commusoft ${jobDate(row.job_created_at)}.`
         : "Job creation date could not be verified."} This is not time spent in the current status.</p>
@@ -137,7 +141,7 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
           : <p>Job-linked contact counts are unavailable until the exact job identity is confirmed.</p>}
         <p>Visits: not enough data yet — no confirmed technician appointment is attached to this job.</p>
       </section>
-      {operator && scoreReviewFlag.data === true && <section className="nd-job-score-evidence"
+      {operator && !customerLinkOnly && scoreReviewFlag.data === true && <section className="nd-job-score-evidence"
         aria-label="OpenFolk private job score evidence review">
         <p className="of-eyebrow">OPENFOLK · PRIVATE SCORE REVIEW</p>
         <h3>What this job needs before a score</h3>
@@ -175,15 +179,17 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   const [pageIndex, setPageIndex] = useState(0);
   const [cursors, setCursors] = useState<Array<string | null>>([null]);
   const [selected, setSelected] = useState<OpenJobRow | null>(null);
+  const [selectedCustomerJob, setSelectedCustomerJob] = useState<CustomerBlockedJob | null>(null);
   const [showOldest, setShowOldest] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
   const jobsRef = useRef<HTMLDivElement>(null);
+  const customersRef = useRef<HTMLElement>(null);
   const authorisedClient = !operator && !!user && profile?.tenant_id === tenant &&
     canSeeCompanyJobs(profile.role);
   const enabled = !!user && uuid(tenant) && (operator ? approvedReason !== null : authorisedClient);
   useEffect(() => {
     setApprovedReason(mdReason ?? null); setReason(""); setStatus(null); setPageIndex(0);
-    setCursors([null]); setSelected(null); setShowOldest(false);
+    setCursors([null]); setSelected(null); setSelectedCustomerJob(null); setShowOldest(false);
   }, [tenant, user?.id, operator, mdReason]);
   const summary = useQuery({
     queryKey: ["new-dawn-open-job-status-summary", tenant, user?.id, operator,
@@ -211,6 +217,21 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
       }).abortSignal(AbortSignal.timeout(15_000));
       if (error) throw Error("Daily job status coverage unavailable");
       return readDailyStatusCoverage(data, tenant, user!.id);
+    },
+  });
+  const customerBlockers = useQuery({
+    queryKey: ["new-dawn-customer-blockers", tenant, user?.id, operator,
+      approvedReason, refreshTick],
+    enabled,
+    staleTime: 0,
+    retry: false,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().rpc("new_dawn_customer_blockers", {
+        p_tenant: tenant, p_reason: operator ? approvedReason : null,
+      }).abortSignal(AbortSignal.timeout(25_000));
+      if (error) throw Error("Confirmed customer jobs unavailable");
+      return readCustomerBlockers(data, tenant, user!.id);
     },
   });
   // The unfiltered first page is already ordered with On-hold records first.
@@ -261,6 +282,9 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   const checkedDay = dailyCoverage.data?.tenantId === tenant &&
     dailyCoverage.data.actorId === user?.id && !dailyCoverage.isFetching
     ? dailyCoverage.data : null;
+  const linkedCustomers = customerBlockers.data?.tenantId === tenant &&
+    customerBlockers.data.actorId === user?.id && !customerBlockers.isFetching
+    ? customerBlockers.data : null;
   const dailyGapState = dailyStatusGapState(checkedDay);
   const listHeading = status === null ? "All recorded open jobs" : `${statusLabel[status]} jobs`;
   const listCount = activeSummary
@@ -274,6 +298,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
     ? firstPage.data.rows.filter((row) => row.status === "on_hold").slice(0, 10) : [];
   function changeFilter(next: OpenJobStatus | null) {
     setStatus(next); setPageIndex(0); setCursors([null]); setSelected(null);
+    setSelectedCustomerJob(null);
   }
   function showJobs(next: OpenJobStatus | null) {
     changeFilter(next);
@@ -288,7 +313,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
     setPageIndex((prior) => prior + 1); setSelected(null);
   }
   function refresh() {
-    setPageIndex(0); setCursors([null]); setSelected(null);
+    setPageIndex(0); setCursors([null]); setSelected(null); setSelectedCustomerJob(null);
     setRefreshTick((tick) => tick + 1);
   }
   return <section className="nd-job-home" aria-label={`${company ?? "Company"} open jobs`}>
@@ -356,8 +381,15 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
                 : "See all recorded open jobs"} →
           </button><small>Counts checked {savedAt(activeSummary.snapshotAt)}</small></>}
         </article>
-        <article><span>CUSTOMERS</span><strong>Not enough data yet</strong>
-          <p>Needs confirmed job links and job-level contact history before a customer score.</p>
+        <article><span>CUSTOMERS</span><strong>{linkedCustomers
+          ? `${linkedCustomers.groups.length.toLocaleString("en-GB")} to check`
+          : customerBlockers.isError ? "Customer view unavailable" : "Checking linked work"}</strong>
+          <p>{linkedCustomers
+            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} confirmed linked jobs are On hold or Pending. Other jobs may still be awaiting a customer match.`
+            : "Checking which saved jobs have confirmed customer and site links."}</p>
+          <p>Customer score is withheld until job measures and contact history are ready.</p>
+          {linkedCustomers && <button type="button" onClick={() => customersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+            See customers to check →</button>}
         </article>
         <article><span>TEAM</span><strong>Not enough data yet</strong>
           <p>Needs verified visits and owners of next actions before a team score.</p>
@@ -380,6 +412,28 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
           <p>No on-hold or pending status appears in this snapshot. That does not confirm every job is progressing.</p>}
         {summary.isPending && <p role="status">Checking saved job status totals…</p>}
         {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
+      </section>
+      <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check">
+        <div className="nd-customer-blockers-heading">
+          <h3>Customers being held up</h3>
+          <p>Confirmed customer and site links with a saved job status of On hold or Pending. The status alone does not prove why work stopped or who owns the next action.</p>
+        </div>
+        {customerBlockers.isPending && <p role="status">Checking linked customer jobs…</p>}
+        {customerBlockers.isError && <p role="alert">Linked customer jobs could not be checked. Refresh to retry.</p>}
+        {linkedCustomers && <>
+          {linkedCustomers.groups.length === 0 && <p>No confirmed linked customer jobs are On hold or Pending in this snapshot. Jobs awaiting matching are not included.</p>}
+          {linkedCustomers.groups.map((group) => <details key={`${group.kind}:${group.id}`}>
+            <summary><span><strong>{group.name}</strong><small>{group.onHold} On hold · {group.pending} Pending</small></span>
+              <ChevronRight size={17} aria-hidden="true" /></summary>
+            <div className="nd-customer-blocker-jobs">{group.jobs.map((job) => <button type="button"
+              key={`${job.connectionId}:${job.externalId}`}
+              onClick={() => { setSelected(null); setSelectedCustomerJob(job); }}>
+              <span>Job {job.externalId}</span><small>{statusLabel[job.status]} · saved {savedAt(job.sourceObservedAt)}</small>
+              <ChevronRight size={16} aria-hidden="true" />
+            </button>)}</div>
+          </details>)}
+          <small>{linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} exactly linked jobs · checked {savedAt(linkedCustomers.snapshotAt)}. Jobs without confirmed links are excluded.</small>
+        </>}
       </section>
       {operator && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
         {tenant === drummondsTenantId && activeSummary?.identity &&
@@ -478,11 +532,16 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         </li>)}</ol>}
       </section>}
     </>}
-    <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
+    <Dialog open={!!selected || !!selectedCustomerJob} onOpenChange={(open) => {
+      if (!open) { setSelected(null); setSelectedCustomerJob(null); }
+    }}>
       <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader className="pr-10 sm:pr-0"><DialogTitle>Job details</DialogTitle></DialogHeader>
         {selected && user && <SourceJobDetail row={selected} tenant={tenant} actor={user.id}
           reason={operator ? approvedReason : null} operator={operator} />}
+        {selectedCustomerJob && user && <SourceJobDetail
+          row={customerBlockedJobDetailKey(selectedCustomerJob)} tenant={tenant} actor={user.id}
+          reason={operator ? approvedReason : null} operator={operator} customerLinkOnly />}
       </DialogContent>
     </Dialog>
   </section>;
