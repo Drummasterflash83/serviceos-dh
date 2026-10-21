@@ -1,0 +1,11 @@
+# Emma source candidate v18 — 21 October 2026
+
+This is a source freeze for review, not a deployed provider candidate, phone-number binding or call outcome. The normal merge of `main` at `2c1a674d` into draft PR #88's source has commit `40c00bf700bb27254f37796226d932e6abd878a3`. It preserves the current M1–M4 production changes without rebasing or rewriting published history.
+
+[`EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-21-v18.json`](EMMA-SOURCE-CANDIDATE-MANIFEST-2026-10-21-v18.json) pins the 15 candidate code files at that immutable commit. Candidate-source SHA-256: `7c089d61486a2eb27b05730d2d5ebeff60a8e78455818e47413580852eb383c9`. Scenario revision `single-engineer-603-v12` has suite SHA-256 `0de4ae5f817fa707ca7eb61dbf8e98b7b54ac46ece89879fb3c790bcc24953b1`; the 12 scenario definitions passed static preflight. The manifest file SHA-256 is `f90bf507b54a7b0681ad713b4df23a4407ac3a93423e6c26cb7b4c44e27f229e`.
+
+The integrated tree passed 216 focused receptionist tests, TypeScript and the production build on 21 October. Static scenarios use fictional caller facts and mocked transfers. There have been **zero** provider conversations or real handset tests for this source freeze.
+
+The latest fixed-account read-only provider check still found the Vapi test number bound to published Emma, an older isolated candidate/helper with different voices, and no installed candidate-only emergency topology. Birchills 603 had one Tony notification address, with no proved supported transfer target or dual delivery. The source-only speech reconciliation action cannot itself satisfy those gates. Do not rebind the old candidate, claim a 603 deposit/email/Slack alert, or change the main DID from this manifest.
+
+Before an isolated provider test, obtain a fresh exact graph/phone read, review a bounded candidate-only update under separate provider-write authority, verify readback and test-number binding, then freeze the resulting graph and run all twelve provider conversations against that **same** hash. A real Rob/Tony handset drill, one correlated 603 deposit with both delivered emails and scoped Slack receipt, time-route proof, and Chris's separate exact main-number approval remain later gates.
