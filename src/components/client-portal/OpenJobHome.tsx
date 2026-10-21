@@ -434,6 +434,11 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
           </details>)}
           <small>{linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} exactly linked jobs · checked {savedAt(linkedCustomers.snapshotAt)}. Jobs without confirmed links are excluded.</small>
         </>}
+        <div className="nd-customer-blocker-all-work">
+          <p>The full work list also includes jobs without a confirmed customer group.</p>
+          <button type="button" onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button>
+          <button type="button" onClick={() => showJobs("pending")}>See all Pending jobs →</button>
+        </div>
       </section>
       {operator && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
         {tenant === drummondsTenantId && activeSummary?.identity &&

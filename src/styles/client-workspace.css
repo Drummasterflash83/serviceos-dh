@@ -445,7 +445,11 @@
 .nd-customer-blocker-jobs { display: grid; margin: 0 0 12px 12px; border-left: 2px solid #e9e1ef; }
 .nd-customer-blocker-jobs button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 43px; padding: 8px 10px; border: 0; background: transparent; color: #514669; text-align: left; cursor: pointer; }
 .nd-customer-blocker-jobs button span { flex: 1; font-size: 12px; font-weight: 650; }
+.nd-customer-blocker-all-work { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #efebf0; }
+.nd-customer-blocker-all-work p { flex-basis: 100%; margin: 0; }
+.nd-customer-blocker-all-work button { padding: 2px 0; border: 0; background: transparent; color: #514669; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
 .nd-customer-blockers summary:focus-visible, .nd-customer-blocker-jobs button:focus-visible { outline: 2px solid #514669; outline-offset: 2px; border-radius: 4px; }
+.nd-customer-blocker-all-work button:focus-visible { outline: 2px solid #514669; outline-offset: 2px; border-radius: 4px; }
 .nd-job-context { margin: 14px 0 18px; color: #706b7e; font-size: 12px; line-height: 1.55; }
 .nd-job-context summary { width: fit-content; color: #514669; font-weight: 650; cursor: pointer; }
 .nd-job-context summary:focus-visible { outline: 2px solid #514669; outline-offset: 3px; }
