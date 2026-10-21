@@ -201,7 +201,10 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       approvedReason, refreshTick],
     enabled,
     staleTime: 0,
-    retry: false,
+    // A first-load read can time out while several saved-source views warm up.
+    // Retry once; never turn an unavailable count into a guessed value.
+    retry: (failures) => failures < 1,
+    retryDelay: 500,
     queryFn: async () => {
       const { data, error } = await getSupabaseClient().rpc("new_dawn_open_job_status_summary", {
         p_tenant: tenant, p_reason: operator ? approvedReason : null,
@@ -229,7 +232,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       approvedReason, refreshTick],
     enabled,
     staleTime: 0,
-    retry: false,
+    retry: (failures) => failures < 1,
+    retryDelay: 500,
     refetchOnWindowFocus: false,
     queryFn: async () => {
       const { data, error } = await getSupabaseClient().rpc("new_dawn_customer_blockers", {
