@@ -183,7 +183,6 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   const [cursors, setCursors] = useState<Array<string | null>>([null]);
   const [selected, setSelected] = useState<OpenJobRow | null>(null);
   const [selectedCustomerJob, setSelectedCustomerJob] = useState<CustomerBlockedJob | null>(null);
-  const [refreshTick, setRefreshTick] = useState(0);
   const [showRecordedAttention, setShowRecordedAttention] = useState(false);
   const jobsRef = useRef<HTMLDivElement>(null);
   const customersRef = useRef<HTMLElement>(null);
@@ -196,11 +195,15 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     setCursors([null]); setSelected(null); setSelectedCustomerJob(null);
     setShowRecordedAttention(false);
   }, [tenant, user?.id, operator, mdReason]);
+  // Keep a bounded, actor/reason-scoped last-good read across MD page switches.
+  // Refetch on mount; while it runs or fails, display only the dated prior result.
   const summary = useQuery({
     queryKey: ["new-dawn-open-job-status-summary", tenant, user?.id, operator,
-      approvedReason, refreshTick],
+      approvedReason],
     enabled,
     staleTime: 0,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
     // A first-load read can time out while several saved-source views warm up.
     // Retry once; never turn an unavailable count into a guessed value.
     retry: (failures) => failures < 1,
@@ -215,7 +218,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   });
   const dailyCoverage = useQuery({
     queryKey: ["new-dawn-daily-status-coverage", tenant, user?.id, operator,
-      approvedReason, refreshTick],
+      approvedReason],
     enabled,
     staleTime: 0,
     retry: false,
@@ -229,9 +232,10 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   });
   const customerBlockers = useQuery({
     queryKey: ["new-dawn-customer-blockers", tenant, user?.id, operator,
-      approvedReason, refreshTick],
+      approvedReason],
     enabled,
     staleTime: 0,
+    gcTime: 30 * 60_000,
     retry: (failures) => failures < 1,
     retryDelay: 500,
     refetchOnWindowFocus: false,
@@ -248,7 +252,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   // This does not create or claim a canonical customer or site link.
   const recordedAttention = useQuery({
     queryKey: ["new-dawn-recorded-attention", tenant, user?.id, operator,
-      approvedReason, refreshTick],
+      approvedReason],
     enabled: enabled && showRecordedAttention,
     retry: false,
     refetchOnWindowFocus: false,
@@ -266,9 +270,10 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   // snapshot request during the initial Home load.
   const firstPage = useQuery<OpenJobPage>({
     queryKey: ["new-dawn-open-job-first-page", tenant, user?.id, operator,
-      approvedReason, refreshTick],
+      approvedReason],
     enabled,
     staleTime: 0,
+    gcTime: 30 * 60_000,
     // A bounded retry absorbs an intermittent database/request timeout on the
     // expensive saved-source page. Never retry a malformed response.
     retry: (failures, error) => failures < 1 && error instanceof Error && error.message === "request",
@@ -286,7 +291,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   });
   const additionalPage = useQuery<OpenJobPage>({
     queryKey: ["new-dawn-open-job-page", tenant, user?.id, operator,
-      approvedReason, status, cursors[pageIndex], refreshTick],
+      approvedReason, status, cursors[pageIndex]],
     enabled: enabled && (status !== null || pageIndex > 0) && !firstPage.isFetching,
     staleTime: 0,
     retry: (failures, error) => failures < 1 && error instanceof Error && error.message === "request",
@@ -304,17 +309,17 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   });
   const page = status === null && pageIndex === 0 ? firstPage : additionalPage;
   const active = page.data?.tenantId === tenant && page.data.actorId === user?.id
-    && !page.isFetching ? page.data : null;
+    ? page.data : null;
   const rows = active?.rows ?? [];
   const activeSummary = summary.data?.tenantId === tenant && summary.data.actorId === user?.id
-    && !summary.isFetching ? summary.data : null;
+    ? summary.data : null;
   const attentionStatus: OpenJobStatus | null = activeSummary?.counts.on_hold
     ? "on_hold" : activeSummary?.counts.pending ? "pending" : null;
   const checkedDay = dailyCoverage.data?.tenantId === tenant &&
     dailyCoverage.data.actorId === user?.id && !dailyCoverage.isFetching
     ? dailyCoverage.data : null;
   const linkedCustomers = customerBlockers.data?.tenantId === tenant &&
-    customerBlockers.data.actorId === user?.id && !customerBlockers.isFetching
+    customerBlockers.data.actorId === user?.id
     ? customerBlockers.data : null;
   const confirmedAttentionKeys = new Set(linkedCustomers?.groups.flatMap((group) =>
     group.jobs.map((job) => `${job.connectionId}:${job.externalId}:${job.sourceVersionId}`)) ?? []);
@@ -328,7 +333,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     ? `${listCount.toLocaleString("en-GB")} in the saved status summary checked ${savedAt(activeSummary.snapshotAt)}. `
     : "";
   const oldestHeldRows = firstPage.data?.tenantId === tenant &&
-    firstPage.data.actorId === user?.id && !firstPage.isFetching &&
+    firstPage.data.actorId === user?.id &&
     firstPage.data.creationOrderAvailable
     ? firstPage.data.rows.filter((row) => row.status === "on_hold").slice(0, 10) : [];
   function changeFilter(next: OpenJobStatus | null) {
@@ -362,7 +367,16 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   }
   function refresh() {
     setPageIndex(0); setCursors([null]); setSelected(null); setSelectedCustomerJob(null);
-    setRefreshTick((tick) => tick + 1);
+    // Recheck the same scoped keys in order, retaining their dated last-good
+    // data if a busy database refuses one of these independent reads.
+    void (async () => {
+      await summary.refetch();
+      await firstPage.refetch();
+      await customerBlockers.refetch();
+      await dailyCoverage.refetch();
+      if (showRecordedAttention) await recordedAttention.refetch();
+      if (status !== null && pageIndex === 0) await additionalPage.refetch();
+    })();
   }
   return <section className="nd-job-home" aria-label={`${company ?? "Company"} open jobs`}>
     <div className="nd-job-heading">
@@ -372,7 +386,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
         <p>Start with work that is On hold or Pending. Open a job to see what is recorded.</p>
       </div>
       {enabled && <button type="button" className="cp-secondary" aria-label="Refresh saved jobs"
-        onClick={refresh} disabled={page.isFetching || firstPage.isFetching}>
+        onClick={refresh} disabled={summary.isFetching || customerBlockers.isFetching ||
+          page.isFetching || firstPage.isFetching}>
         <RefreshCw size={15} /> Refresh list
       </button>}
     </div>
@@ -412,6 +427,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
               : activeSummary?.counts.on_hold ? "Review recorded On-hold jobs" : activeSummary?.counts.pending
                 ? "Review recorded Pending jobs" : "See all open jobs"} →</button>
           {activeSummary && <small>{activeSummary.counts.total.toLocaleString("en-GB")} open jobs recorded in Commusoft · checked {savedAt(activeSummary.snapshotAt)}</small>}
+          {summary.isFetching && activeSummary && <small>Checking for newer saved job totals…</small>}
           {activeSummary?.identity && <small>Customer and site confirmed for {activeSummary.identity.linked.toLocaleString("en-GB")} jobs; {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} still being checked.</small>}
           {activeSummary && <small>Some are office work. Status alone does not show customer urgency or who acts next.</small>}
         </div>
@@ -461,7 +477,9 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
         {activeSummary && activeSummary.counts.on_hold === 0 && activeSummary.counts.pending === 0 &&
           <p>No on-hold or pending status appears in this snapshot. That does not confirm every job is progressing.</p>}
         {summary.isPending && <p role="status">Checking saved job status totals…</p>}
-        {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
+        {summary.isError && <p role="alert">{activeSummary
+          ? "The latest status check failed. The dated counts above are the last saved result."
+          : "Saved status totals are unavailable. The job list can still be opened."}</p>}
       </section>
       <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check" tabIndex={-1}>
         <div className="nd-customer-blockers-heading">
@@ -469,7 +487,10 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <p>On-hold or Pending jobs with a confirmed customer and site. Open a job to see what's known; the cause and next owner may still need checking.</p>
         </div>
         {customerBlockers.isPending && <p role="status">Checking linked customer jobs…</p>}
-        {customerBlockers.isError && <p role="alert">Linked customer jobs could not be checked. Refresh to retry.</p>}
+        {customerBlockers.isFetching && linkedCustomers && <p role="status">Checking for newer linked customer jobs…</p>}
+        {customerBlockers.isError && <p role="alert">{linkedCustomers
+          ? "The latest customer check failed. These are the previously checked groups shown with their date."
+          : "Linked customer jobs could not be checked. Refresh to retry."}</p>}
         {linkedCustomers && <>
           {linkedCustomers.groups.length === 0 && <p>No confirmed linked customer jobs are On hold or Pending in this snapshot. Jobs awaiting matching are not included.</p>}
           {linkedCustomers.groups.map((group) => <details key={`${group.kind}:${group.id}`}>
@@ -533,7 +554,9 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
         <summary>Explore the oldest recorded On-hold jobs</summary>
         <p>These jobs were created earliest. Creation age is not time On hold or proof of urgency; office and internal jobs can appear here.</p>
         {firstPage.isPending && <p role="status">Checking the oldest recorded jobs…</p>}
-        {firstPage.isError && <p role="alert">The oldest On-hold jobs could not be checked. Refresh to retry.</p>}
+        {firstPage.isError && <p role="alert">{oldestHeldRows.length
+          ? "The latest oldest-job check failed. These are from the dated previous result."
+          : "The oldest On-hold jobs could not be checked. Refresh to retry."}</p>}
         {firstPage.isSuccess && oldestHeldRows.length === 0 && <p>No verified creation-order On-hold jobs are available in this saved snapshot.</p>}
         {oldestHeldRows.length > 0 && <>
           <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
@@ -580,11 +603,13 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <span>{filter.label}</span>
         </label>)}
       </fieldset>
-      {page.isPending || page.isFetching ? <p role="status">Reading saved open jobs…</p> : null}
+      {page.isPending || page.isFetching ? <p role="status">{active
+        ? "Checking for newer saved jobs…" : "Reading saved open jobs…"}</p> : null}
       {page.isError && <p role="alert" data-open-job-failure={
         page.error instanceof Error && ["request", "response"].includes(page.error.message)
           ? page.error.message : "unknown"
-      }>Saved open jobs are unavailable. {page.error instanceof Error && page.error.message === "response"
+      }>{active ? "The latest job-page check failed. The dated previous page remains visible. "
+        : "Saved open jobs are unavailable. "}{page.error instanceof Error && page.error.message === "response"
         ? "Refresh this page to load the latest OpenFolk version."
         : "Refresh to retry."}</p>}
       {active && <>
