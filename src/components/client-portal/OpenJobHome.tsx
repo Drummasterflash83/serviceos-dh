@@ -244,7 +244,10 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
       approvedReason, refreshTick],
     enabled,
     staleTime: 0,
-    retry: false,
+    // A bounded retry absorbs an intermittent database/request timeout on the
+    // expensive saved-source page. Never retry a malformed response.
+    retry: (failures, error) => failures < 1 && error instanceof Error && error.message === "request",
+    retryDelay: 500,
     refetchOnWindowFocus: false,
     queryFn: async () => {
       const { data, error } = await getSupabaseClient().rpc("new_dawn_open_job_page", {
@@ -261,7 +264,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
       approvedReason, status, cursors[pageIndex], refreshTick],
     enabled: enabled && (status !== null || pageIndex > 0) && !firstPage.isFetching,
     staleTime: 0,
-    retry: false,
+    retry: (failures, error) => failures < 1 && error instanceof Error && error.message === "request",
+    retryDelay: 500,
     refetchOnWindowFocus: false,
     queryFn: async () => {
       const { data, error } = await getSupabaseClient().rpc("new_dawn_open_job_page", {
