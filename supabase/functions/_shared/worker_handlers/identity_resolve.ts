@@ -34,7 +34,7 @@ export async function handleIdentityResolve(
     failed: 0,
     continued: false,
   };
-  // Failure receipts may identify a fixed operation and SQLSTATE, never the
+  // Failure logs may identify a fixed operation and SQLSTATE, never the
   // database error message or a private interaction/customer identifier.
   let failedStage = "pending_inventory";
   let sqlstate: string | null = null;
@@ -192,16 +192,18 @@ export async function handleIdentityResolve(
       ...(continuation ? { continuation } : {}),
     };
   } catch {
+    // The fenced settlement RPC accepts only count fields in `result`; keep
+    // its durable contract unchanged and emit a sanitized Edge log instead.
+    console.warn(JSON.stringify({ event: "identity_read_failed", stage: failedStage, sqlstate }));
     return {
       success: false,
       recordsProcessed: counts.resolved,
-      result: { ...counts, diagnostic_stage: failedStage, sqlstate },
+      result: counts,
       error: {
         code: "identity_inventory_unconfirmed",
         message:
           "Identity work could not be read reliably. Retained inputs have not been declared complete.",
         retryable: true,
-        failedStep: failedStage,
       },
     };
   }

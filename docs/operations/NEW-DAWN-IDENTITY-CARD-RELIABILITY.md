@@ -8,17 +8,19 @@ no `pending` or `ready` interactions at the read-only snapshot, while 105,366
 interactions were durably held for identity review. Do not turn these holds into
 successful work or manually enqueue duplicate jobs.
 
-The worker now adds only a fixed `diagnostic_stage` and a five-character
-SQLSTATE, when available, to the existing durable failure result. It does not
-store database error prose, query text, source IDs or private customer content.
-The existing retry and dead-letter behavior is unchanged. Identity stages are
+The worker now emits only a fixed stage and a five-character SQLSTATE, when
+available, to a sanitized Edge log entry on these failures. It does not log
+database error prose, query text, source IDs or private customer content.
+The existing durable result, retry and dead-letter contracts are unchanged;
+the identity settlement explicitly rejects extra result fields. Identity stages are
 `pending_inventory`, `delivery` and `review_count`; customer-card stages are
 `graph_target`, `target_cards`, `people_prefetch`, `company_prefetch`,
 `graph_nodes_prefetch` and `graph_edges_prefetch`. Per-card projection failures
 remain separately reported as `card_partial_failure`.
 
 After the same-source Edge worker is released, allow the normal scheduled job
-to run once. Read only its status, attempt, safe code, stage and SQLSTATE. A
+to run once. Read only its status, attempt and safe code from the queue, and
+the fixed stage/SQLSTATE from the corresponding sanitized Edge log. A
 successful scheduled run is the acceptance evidence; an error stage guides a
 bounded source fix or isolated restore reproduction. If the result remains
 ambiguous, hold further changes rather than treating the old projections as a

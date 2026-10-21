@@ -191,19 +191,25 @@ test("missing, duplicated or invalid inventory prevents every mutation", async (
   }
 });
 test("failed inventory reports only its fixed stage and SQLSTATE", async () => {
-  const pending = await fixture({ inventory: { data: null,
-    error: { code: "57014", message: "PRIVATE database query and contact" } } }).run();
-  assert.equal(pending.error?.failedStep, "pending_inventory");
-  assert.equal(pending.result?.diagnostic_stage, "pending_inventory");
-  assert.equal(pending.result?.sqlstate, "57014");
-  assert.doesNotMatch(JSON.stringify(pending), /PRIVATE|contact/);
-
-  const review = await fixture({ rows: [], review: { data: null,
-    error: { code: "57014", message: "PRIVATE held identity" } } }).run();
-  assert.equal(review.error?.failedStep, "review_count");
-  assert.equal(review.result?.diagnostic_stage, "review_count");
-  assert.equal(review.result?.sqlstate, "57014");
-  assert.doesNotMatch(JSON.stringify(review), /PRIVATE held identity/);
+  const warnings: string[] = [], prior = console.warn;
+  console.warn = (message: string) => { warnings.push(message); };
+  try {
+    const pending = await fixture({ inventory: { data: null,
+      error: { code: "57014", message: "PRIVATE database query and contact" } } }).run();
+    const review = await fixture({ rows: [], review: { data: null,
+      error: { code: "57014", message: "PRIVATE held identity" } } }).run();
+    assert.equal(pending.error?.code, "identity_inventory_unconfirmed");
+    assert.equal(review.error?.code, "identity_inventory_unconfirmed");
+    assert.equal(pending.result?.diagnostic_stage, undefined);
+    assert.equal(review.result?.diagnostic_stage, undefined);
+    assert.deepEqual(warnings.map(value => JSON.parse(value)), [
+      { event: "identity_read_failed", stage: "pending_inventory", sqlstate: "57014" },
+      { event: "identity_read_failed", stage: "review_count", sqlstate: "57014" },
+    ]);
+    assert.doesNotMatch(JSON.stringify({ pending, review, warnings }), /PRIVATE|contact/);
+  } finally {
+    console.warn = prior;
+  }
 });
 test("empty inventory succeeds with zero work; a full verified batch continues once", async () => {
   const empty = await fixture({ rows: [] }).run();

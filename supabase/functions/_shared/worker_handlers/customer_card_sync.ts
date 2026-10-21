@@ -56,7 +56,7 @@ export async function handleCustomerCardSync(
   const sweepSince =
     (typeof payload.sweep_since === "string" && payload.sweep_since) || new Date().toISOString();
   let isSweep = false;
-  // Durable diagnostics are limited to a fixed stage and SQLSTATE. Never save
+  // Diagnostic logs are limited to a fixed stage and SQLSTATE. Never log
   // PostgREST messages, query text, source IDs or private customer data.
   let failedStage = "target_cards";
   let sqlstate: string | null = null;
@@ -490,11 +490,11 @@ export async function handleCustomerCardSync(
   } catch {
     // Database/provider prose can contain private source details. Keep it out of
     // durable job results and preserve the existing projection for retry.
+    console.warn(JSON.stringify({ event: "card_read_failed", stage: failedStage, sqlstate }));
     const message = "Required customer-card data could not be read. Existing cards were retained.";
     return {
       success: false,
-      result: { diagnostic_stage: failedStage, sqlstate },
-      error: { code: "card_sync_error", message, retryable: true, failedStep: failedStage },
+      error: { code: "card_sync_error", message, retryable: true },
     };
   }
 }
