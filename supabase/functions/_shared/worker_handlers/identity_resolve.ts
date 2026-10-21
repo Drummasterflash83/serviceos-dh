@@ -32,7 +32,6 @@ export async function handleIdentityResolve(
     review_required: 0,
     reviews_recorded: 0,
     failed: 0,
-    failure_reasons: {} as Record<string, number>,
     continued: false,
   };
   // Only fixed stages and SQLSTATEs enter Edge diagnostics, never private
@@ -158,8 +157,10 @@ export async function handleIdentityResolve(
       }
       if (!receipt) {
         counts.failed++;
-        const reason = diagnostic ?? "delivery_unconfirmed";
-        counts.failure_reasons[reason] = (counts.failure_reasons[reason] ?? 0) + 1;
+        // Settlement accepts only its fixed numeric/bool result keys. Keep
+        // machine diagnostics in the operational log, never in the receipt.
+        console.warn(JSON.stringify({ event: "identity_delivery_unconfirmed",
+          reason: diagnostic ?? "delivery_unconfirmed" }));
         continue;
       }
       if (receipt.state === "review_required") {
