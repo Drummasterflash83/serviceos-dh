@@ -32,6 +32,23 @@ test("accepts a scoped, audited on-hold then pending then open page", () => {
   assert.deepEqual(result.rows.map(item => item.status), ["on_hold", "pending", "open"]);
 });
 
+test("v2 shows bounded source labels without treating a contact as an account-holder match", () => {
+  const recorded = { ...row("100", "on_hold"),
+    source_work: "Boiler repair", source_site_address: "1 Example Road",
+    source_site_postcode: "AB1 2CD", source_company_name: null,
+    source_contact_name: "Example Contact" };
+  const v2 = { ...page([recorded]), version: "new-dawn-open-identity-review/2" };
+  const result = readOpenIdentityPage(v2, scope, now);
+  assert.equal(result.rows[0].sourceSiteAddress, "1 Example Road");
+  assert.equal(result.rows[0].sourceContactName, "Example Contact");
+  assert.equal(result.rows[0].candidateState, "review");
+  assert.equal(result.rows[0].suggestedCustomerId, null);
+  assert.throws(() => readOpenIdentityPage({ ...v2, rows: [{ ...recorded,
+    source_site_address: "A".repeat(201) }] }, scope, now));
+  assert.throws(() => readOpenIdentityPage({ ...v2, rows: [{ ...recorded,
+    source_contact_name: undefined }] }, scope, now));
+});
+
 test("rejects tenant confusion, status reordering and unsupported ready links", () => {
   assert.throws(() => readOpenIdentityPage({ ...page([row("100", "open")]), tenant_id: actor }, scope, now));
   assert.throws(() => readOpenIdentityPage(page([row("100", "open"), row("101", "on_hold")]), scope, now));

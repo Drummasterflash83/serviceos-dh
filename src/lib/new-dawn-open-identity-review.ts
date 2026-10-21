@@ -3,6 +3,11 @@ export type OpenIdentityRow = {
   status: "on_hold" | "pending" | "open";
   sourceVersionId: string;
   sourceObservedAt: string;
+  sourceWork: string | null;
+  sourceSiteAddress: string | null;
+  sourceSitePostcode: string | null;
+  sourceCompanyName: string | null;
+  sourceContactName: string | null;
   propertyExternalId: string | null;
   customerExternalId: string | null;
   candidateState: "ready" | "review";
@@ -43,6 +48,8 @@ const instant = (value: unknown): value is string =>
   typeof value === "string" && /(?:Z|[+-]\d\d:\d\d)$/.test(value) && Number.isFinite(Date.parse(value));
 const reasonCode = (value: unknown): value is string =>
   typeof value === "string" && /^[a-z][a-z_]{0,79}$/.test(value);
+const boundedText = (value: unknown, limit: number) =>
+  value === null || (typeof value === "string" && value.length > 0 && value.length <= limit);
 const unavailable = () => Error("Open-job identity review could not be verified.");
 const ranks = { on_hold: 0, pending: 1, open: 2 } as const;
 
@@ -50,7 +57,7 @@ const ranks = { on_hold: 0, pending: 1, open: 2 } as const;
 export function readOpenIdentityPage(raw: unknown, scope: {
   tenant: string; connection: string; actor: string;
 }, now = Date.now()): OpenIdentityPage {
-  if (!object(raw) || raw.version !== "new-dawn-open-identity-review/1" ||
+  if (!object(raw) || !["new-dawn-open-identity-review/1", "new-dawn-open-identity-review/2"].includes(String(raw.version)) ||
     raw.tenant_id !== scope.tenant || raw.connection_id !== scope.connection ||
     raw.actor_id !== scope.actor || !uuid(raw.audit_id) ||
     !instant(raw.observed_at) || !instant(raw.snapshot_at) ||
@@ -61,6 +68,7 @@ export function readOpenIdentityPage(raw: unknown, scope: {
       raw.next_cursor.length <= 512 && /^[A-Za-z\d+/]+=*$/.test(raw.next_cursor)))) throw unavailable();
 
   const rows: OpenIdentityRow[] = [];
+  const hasSourceLabels = raw.version === "new-dawn-open-identity-review/2";
   let previousRank = -1;
   let previousId = "";
   for (const value of raw.rows) {
@@ -73,6 +81,11 @@ export function readOpenIdentityPage(raw: unknown, scope: {
       !(value.hold_reason === null || reasonCode(value.hold_reason)) ||
       !(value.suggested_site_id === null || uuid(value.suggested_site_id)) ||
       !(value.suggested_customer_id === null || uuid(value.suggested_customer_id)) ||
+      (hasSourceLabels && !([
+        ["source_work", 160], ["source_site_address", 200], ["source_site_postcode", 40],
+        ["source_company_name", 160], ["source_contact_name", 160],
+      ] as const).every(([key, limit]) => Object.hasOwn(value, key) &&
+        boundedText(value[key], limit))) ||
       (value.candidate_state === "ready" && (value.hold_reason !== null ||
         !uuid(value.suggested_site_id) || !uuid(value.suggested_customer_id))) ||
       (value.candidate_state === "review" && (value.hold_reason === null ||
@@ -87,6 +100,11 @@ export function readOpenIdentityPage(raw: unknown, scope: {
       status: value.status as OpenIdentityRow["status"],
       sourceVersionId: value.source_version_id as string,
       sourceObservedAt: value.source_observed_at as string,
+      sourceWork: hasSourceLabels ? value.source_work as string | null : null,
+      sourceSiteAddress: hasSourceLabels ? value.source_site_address as string | null : null,
+      sourceSitePostcode: hasSourceLabels ? value.source_site_postcode as string | null : null,
+      sourceCompanyName: hasSourceLabels ? value.source_company_name as string | null : null,
+      sourceContactName: hasSourceLabels ? value.source_contact_name as string | null : null,
       propertyExternalId: value.property_external_id as string | null,
       customerExternalId: value.customer_external_id as string | null,
       candidateState: value.candidate_state as OpenIdentityRow["candidateState"],
