@@ -6,8 +6,8 @@ import { financeAmount } from "@/lib/learn-quickbooks-finance";
 import { readMdAgedInvoicePage, type AgedInvoice, type AgedInvoicePage } from
   "@/lib/new-dawn-md-aged-invoices";
 
-/** Only mounted within Chris's guarded, short-lived Drummonds MD session. */
-export function MdAgedInvoices({ tenant, reason }: { tenant: string; reason: string }) {
+/** OpenFolk-only saved invoice-source review, outside the MD presentation. */
+export function OperatorAgedInvoices({ tenant, reason }: { tenant: string; reason: string }) {
   const { user } = useAuth();
   const [rows, setRows] = useState<AgedInvoice[]>([]);
   const [page, setPage] = useState<AgedInvoicePage | null>(null);
@@ -64,26 +64,26 @@ export function MdAgedInvoices({ tenant, reason }: { tenant: string; reason: str
       if (ticket === generation.current) { working.current = false; setBusy(false); }
     }
   }
-  return <details className="md-money-aged" aria-label="91-day invoice source review">
-    <summary>Inspect saved invoice records</summary>
-    <p>Saved QuickBooks invoice leads due 91 days or more ago. The balances are original invoice snapshots, not a reconciled debt total, customer chase list or Commusoft job link.</p>
+  return <details className="nd-money-panel rounded-xl border p-4" aria-label="OpenFolk 91-day invoice source review">
+    <summary className="cursor-pointer font-semibold text-sm">OpenFolk · inspect saved 91+ invoice records</summary>
+    <p className="nd-money-scope mt-3">Saved QuickBooks invoice leads due 91 days or more ago. The balances are original invoice snapshots, not a reconciled debt total, customer chase list or Commusoft job link.</p>
     <button className="cp-secondary" type="button" disabled={busy}
       onClick={() => void readPage(false)}>
       {busy && rows.length === 0 ? "Checking saved invoices…" : "Review saved 91+ invoices"}
     </button>
     {error && <p role="alert">{error}</p>}
     {page && <>
-      <p className="md-money-source">QuickBooks production company {page.realmId} · as of {page.asOf} · {page.eligibleCount} source candidates · showing {rows.length}{page.hasMore ? " so far" : ""}. Only invoices observed within seven days are eligible.</p>
+      <p className="nd-money-scope">QuickBooks production company {page.realmId} · as of {page.asOf} · {page.eligibleCount} source candidates · showing {rows.length}{page.hasMore ? " so far" : ""}. Only invoices observed within seven days are eligible.</p>
       {rows.length === 0 ? <p>No qualifying saved invoice sources are available. This does not establish that debt is zero.</p> :
-        <ol className="md-money-aged-list">{rows.map(row => <li key={row.versionId}>
+        <ol className="grid gap-2 p-0 list-none">{rows.map(row => <li className="grid gap-1 rounded-lg border p-3 text-sm" key={row.versionId}>
           <strong>Invoice {row.documentNumber || row.invoiceId}</strong>
           <span>Due {row.dueDate} · saved balance {financeAmount(row.balance, row.currency)}</span>
           <small>Observed {row.sourceObservedAt.slice(0, 16).replace("T", " ")} UTC · source updated {row.sourceUpdatedAt.slice(0, 10)}</small>
-          <details><summary>Source proof</summary>Invoice ID {row.invoiceId}; version {row.versionId}; SHA-256 {row.sourceSha256}.</details>
+          <details className="text-xs"><summary>Source proof</summary>Invoice ID {row.invoiceId}; version {row.versionId}; SHA-256 {row.sourceSha256}.</details>
         </li>)}</ol>}
       {page.hasMore && <button className="cp-secondary" type="button" disabled={busy}
         onClick={() => void readPage(true)}>{busy ? "Checking next page…" : "Show 20 more"}</button>}
-      <details className="md-money-proof"><summary>Read audits</summary>{auditIds.join(" · ")}</details>
+      <details className="break-all text-xs"><summary>Read audits</summary>{auditIds.join(" · ")}</details>
     </>}
   </details>;
 }
