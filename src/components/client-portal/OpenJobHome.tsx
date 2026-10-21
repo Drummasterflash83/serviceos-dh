@@ -391,7 +391,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <div>
         <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · WORK</p>
         <h2>Jobs needing attention</h2>
-        <p>Review saved On-hold and Pending records. Open one before treating it as field work or a priority.</p>
+        <p>Start with On-hold and Pending jobs. Open each job to check its work and next step.</p>
       </div>
       {enabled && <button type="button" className="cp-secondary" aria-label="Refresh saved jobs"
         onClick={refresh} disabled={summary.isFetching || customerBlockers.isFetching ||
@@ -423,10 +423,10 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <section className="nd-score-hero nd-score-hero--pending" aria-label="Jobs needing attention">
         <div className="nd-work-count"><strong>{linkedCustomers
           ? linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB") : "…"}</strong>
-          <small>linked records to check</small></div>
+          <small>customer jobs to check</small></div>
         <div className="nd-score-hero-copy">
           <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · TODAY</p>
-          <h3>Check customer-linked work</h3>
+          <h3>Check customer jobs</h3>
           <p>{linkedCustomers
             ? "These jobs have confirmed customer and site links. Open one to check the recorded work and status."
             : customerBlockers.isError ? "Customer matches are unavailable right now. You can still browse all recorded jobs."
@@ -434,7 +434,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <div className="nd-hero-actions">
             <button type="button" onClick={() => linkedCustomers?.linkedBlockedJobs
               ? showCustomerWork() : showJobs(attentionStatus)}>
-              {linkedCustomers?.linkedBlockedJobs ? "Review linked records"
+              {linkedCustomers?.linkedBlockedJobs ? "Open customer jobs"
                 : activeSummary?.counts.on_hold ? "See On-hold jobs" : activeSummary?.counts.pending
                   ? "See Pending jobs" : "See all jobs"} →</button>
             {activeSummary?.counts.on_hold ? <button type="button" className="nd-hero-secondary"
