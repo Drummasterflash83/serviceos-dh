@@ -98,6 +98,15 @@ test("whole-workload counts require fresh, audited and internally consistent sco
     counts: { on_hold: 3, pending: 2, open: 4, total: 9 },
   };
   assert.equal(readOpenJobStatusSummary(summary, tenant, actor).counts.total, 9);
+  assert.equal(readOpenJobStatusSummary(summary, tenant, actor).identity, null);
+  const withIdentity = { ...summary, version: "new-dawn-open-job-status-summary/2",
+    identity: { linked: 3, awaiting_review: 6 } };
+  assert.deepEqual(readOpenJobStatusSummary(withIdentity, tenant, actor).identity,
+    { linked: 3, awaitingReview: 6 });
+  assert.throws(() => readOpenJobStatusSummary({ ...withIdentity,
+    identity: { linked: 4, awaiting_review: 6 } }, tenant, actor));
+  assert.throws(() => readOpenJobStatusSummary({ ...withIdentity,
+    identity: { linked: 3, awaiting_review: 6, private: 1 } }, tenant, actor));
   assert.throws(() => readOpenJobStatusSummary(summary, actor, actor));
   assert.throws(() => readOpenJobStatusSummary(summary, tenant, tenant));
   assert.throws(() => readOpenJobStatusSummary({ ...summary, counts: { ...summary.counts, total: 8 } }, tenant, actor));

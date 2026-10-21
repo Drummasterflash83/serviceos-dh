@@ -25,6 +25,12 @@ export function OperatorCommusoftReview({
   const [guided, setGuided] = useState<GuidedJobReview | null>(null);
   const [requestedSite, setRequestedSite] = useState<{ connection: string; external: string } | null>(null);
   const generation = useRef(0);
+  const reviewSection = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (window.location.hash !== "#open-job-identity-review") return;
+    const frame = requestAnimationFrame(() => reviewSection.current?.scrollIntoView({ block: "start" }));
+    return () => cancelAnimationFrame(frame);
+  }, []);
   function close() {
     generation.current++;
     setSession(null);
@@ -95,7 +101,8 @@ export function OperatorCommusoftReview({
     } else returnToJob();
   }
   return (
-    <section className="op-embedded cp-root min-w-0 space-y-4" aria-label="Review business inputs for cards">
+    <section ref={reviewSection} id="open-job-identity-review"
+      className="op-embedded cp-root min-w-0 space-y-4" aria-label="Review business inputs for cards">
       <header>
         <h2 className="text-xl font-semibold">Turn retained inputs into customer context</h2>
         <p>

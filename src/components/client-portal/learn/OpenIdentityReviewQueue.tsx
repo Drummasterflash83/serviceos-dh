@@ -103,7 +103,7 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
   return <section className="rounded-xl border border-[#a890bb] bg-white p-4 space-y-3" aria-label="Open jobs awaiting identity review">
     <div className="flex flex-wrap justify-between gap-2"><div>
       <h4 className="font-semibold">Open jobs needing a customer or site link</h4>
-      <p className="text-sm">OpenFolk review only. Saved on-hold work comes first, then pending and open work. Source IDs are suggestions; every link is checked against its current source before it can be applied.</p>
+      <p className="text-sm">OpenFolk review only. Work through On hold, Pending, then Open. Each row names the exact source customer and property proposed for review, the reason it remains unlinked, and the next available action.</p>
     </div><button type="button" className="cp-secondary" onClick={() => {
       setHidden(false); setCursors([null]); setRevision(v => v + 1);
     }}>Refresh open-job review</button></div>
@@ -119,15 +119,20 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
         const action = exactLinkReviewAction(display);
         return <li key={`${row.externalId}:${row.sourceVersionId}`} className="rounded-lg border border-[#e5dbe9] p-3 space-y-2">
           <p><strong>Commusoft job {row.externalId}</strong> · Recorded {row.status === "on_hold" ? "On hold" : row.status === "pending" ? "Pending" : "Open"}</p>
-          <p className="text-sm">Commusoft customer property ID: {row.customerExternalId ?? "Not established"} · Commusoft job property ID: {row.propertyExternalId ?? "Not established"} · Source saved {new Date(row.sourceObservedAt).toLocaleString("en-GB")}</p>
-          <p className="text-sm">{exactLinkReviewLabel(display)}</p>
+          <p className="text-sm"><strong>Suggested source match:</strong> customer {row.customerExternalId ? `Commusoft ID ${row.customerExternalId}` : "not established"} · work site {row.propertyExternalId ? `Commusoft property ID ${row.propertyExternalId}` : "not established"}. This is a source route, not an approved ServiceOS link.</p>
+          <p className="text-sm"><strong>Why it is here:</strong> {exactLinkReviewLabel(display)}</p>
+          <p className="text-xs text-[#706b7e]">Source saved {new Date(row.sourceObservedAt).toLocaleString("en-GB")}. Current source and conflicts are rechecked before any change.</p>
           {action === "job" && <ExactJobAutoLink tenant={tenant} connection={connection}
             external={row.externalId} version={row.sourceVersionId} canApply={applyFlag.data === true}
             onInspect={onReviewJob ? () => onReviewJob(connection, row.externalId) : undefined} />}
           {action === "customer_site" && (row.holdReason === "property_not_exact_work_site" ? onReviewCustomer : onReviewCustomer || onReviewSite) && <button type="button" className="cp-secondary" disabled={!!actionId}
             onClick={() => void reviewExactSource(row)}>{actionId === row.externalId ? "Checking exact source…" : row.holdReason === "property_not_exact_work_site"
               ? "Review customer identity (job stays unlinked)" : "Review customer and site"}</button>}
-          {action === "hold" && <p className="text-sm">Keep this job unlinked until its source route or conflict is reviewed. No match has been guessed.</p>}
+          {action === "hold" && <>
+            <p className="text-sm">Keep this job unlinked until its source route or conflict is reviewed. No match has been guessed.</p>
+            {onReviewJob && <button type="button" className="cp-secondary"
+              onClick={() => onReviewJob(connection, row.externalId)}>Inspect saved job and source conflict</button>}
+          </>}
         </li>;
       })}</ol>
       <div className="flex justify-between gap-2"><button type="button" className="cp-secondary" disabled={busy || cursors.length === 1}
