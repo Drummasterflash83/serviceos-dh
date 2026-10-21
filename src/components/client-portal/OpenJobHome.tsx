@@ -344,7 +344,6 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         {summary.isPending && <p role="status">Checking saved job status totals…</p>}
         {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
       </section>
-      {operator && mdReason && !summary.isPending && !firstPage.isPending && mdMoney}
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
           {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending in saved Commusoft statuses.</p>}
@@ -366,6 +365,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
           <p>Needs verified visits and owners of next actions before a team score.</p>
         </article>
       </div>
+      {operator && mdReason && !summary.isPending && !firstPage.isPending && mdMoney}
       {operator && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
         <p>These counts use the latest saved Commusoft job statuses. On hold and Pending identify work to check; status alone does not prove urgency, the cause of a hold or who owns the next action.</p>
         {checkedDay?.day && <p>For the frozen {statusDay(checkedDay.day)} open-job roster, {checkedDay.observedCount?.toLocaleString("en-GB")}/{checkedDay.rosterCount?.toLocaleString("en-GB")} jobs were checked with Commusoft
