@@ -16,7 +16,20 @@ export type OpenIdentityPage = {
   totalUnlinked: number;
   nextCursor: string | null;
   observedAt: string;
+  snapshotAt: string;
   auditId: string;
+};
+
+export type AttentionIdentityGroup = {
+  key: string;
+  customerExternalId: string | null;
+  jobs: OpenIdentityRow[];
+};
+export type AttentionIdentityGroups = {
+  groups: AttentionIdentityGroup[];
+  jobs: number;
+  snapshotAt: string;
+  totalUnlinked: number;
 };
 
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -85,7 +98,62 @@ export function readOpenIdentityPage(raw: unknown, scope: {
     (raw.next_cursor !== null && rows.length === 0)) throw unavailable();
   return { rows, totalUnlinked: raw.total_unlinked as number,
     nextCursor: raw.next_cursor as string | null,
-    observedAt: raw.observed_at as string, auditId: raw.audit_id as string };
+    observedAt: raw.observed_at as string, snapshotAt: raw.snapshot_at as string,
+    auditId: raw.audit_id as string };
+}
+
+/** Complete the saved attention prefix before grouping; never show a partial
+ * group list as the full workload. The cursor pins one server snapshot. */
+export async function loadAttentionIdentityGroups(
+  load: (cursor: string | null) => Promise<OpenIdentityPage>,
+): Promise<AttentionIdentityGroups> {
+  const groups = new Map<string, AttentionIdentityGroup>();
+  const seenJobs = new Set<string>();
+  const seenCursors = new Set<string>();
+  let cursor: string | null = null;
+  let snapshotAt: string | null = null;
+  let totalUnlinked: number | null = null;
+  let jobs = 0;
+  let previousRank = -1;
+  let previousExternal = "";
+  const complete = (): AttentionIdentityGroups => ({
+    groups: [...groups.values()].sort((a, b) => {
+      const heldA = a.jobs.filter(job => job.status === "on_hold").length;
+      const heldB = b.jobs.filter(job => job.status === "on_hold").length;
+      return heldB - heldA || b.jobs.length - a.jobs.length || a.key.localeCompare(b.key);
+    }),
+    jobs, snapshotAt: snapshotAt!, totalUnlinked: totalUnlinked!,
+  });
+  for (let pageIndex = 0; pageIndex < 6; pageIndex++) {
+    const page = await load(cursor);
+    if (snapshotAt !== null && (snapshotAt !== page.snapshotAt ||
+      totalUnlinked !== page.totalUnlinked)) throw unavailable();
+    snapshotAt ??= page.snapshotAt;
+    totalUnlinked ??= page.totalUnlinked;
+    for (const row of page.rows) {
+      const rank = ranks[row.status];
+      if (rank < previousRank || (rank === previousRank &&
+        row.externalId <= previousExternal)) throw unavailable();
+      previousRank = rank;
+      previousExternal = row.externalId;
+      if (row.status === "open") return complete();
+      const jobKey = `${row.externalId}:${row.sourceVersionId}`;
+      if (seenJobs.has(jobKey)) throw unavailable();
+      seenJobs.add(jobKey);
+      const key = row.customerExternalId
+        ? `customer:${row.customerExternalId}` : `job:${jobKey}`;
+      const group = groups.get(key) ?? { key, customerExternalId: row.customerExternalId, jobs: [] };
+      group.jobs.push(row);
+      groups.set(key, group);
+      jobs++;
+      if (jobs > totalUnlinked) throw unavailable();
+    }
+    if (page.nextCursor === null) return complete();
+    if (!page.rows.length || seenCursors.has(page.nextCursor)) throw unavailable();
+    seenCursors.add(page.nextCursor);
+    cursor = page.nextCursor;
+  }
+  throw unavailable();
 }
 
 export async function loadOpenIdentityPage(

@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import type { ReviewClient } from "@/lib/learn-commusoft-review";
 import { loadSourceJobPage } from "@/lib/learn-commusoft-source-jobs";
 import { planGuidedJobReview, type GuidedJobReview } from "@/lib/new-dawn-guided-job-review";
 import { exactLinkReviewAction, exactLinkReviewLabel, exactSourceReviewDestination } from "@/lib/new-dawn-m2-link-review";
-import { loadOpenIdentityPage, type OpenIdentityPage, type OpenIdentityRow } from "@/lib/new-dawn-open-identity-review";
+import { loadAttentionIdentityGroups, loadOpenIdentityPage,
+  type AttentionIdentityGroups, type OpenIdentityPage, type OpenIdentityRow } from "@/lib/new-dawn-open-identity-review";
 import { ExactJobAutoLink } from "./ExactJobAutoLink";
 
 /** Audited operator review, ordered by current saved open status. It does not apply identity links. */
@@ -23,6 +24,10 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
   const [hidden, setHidden] = useState(false);
   const [revision, setRevision] = useState(0);
   const [actionId, setActionId] = useState("");
+  const [attention, setAttention] = useState<AttentionIdentityGroups | null>(null);
+  const [attentionBusy, setAttentionBusy] = useState(false);
+  const [attentionNotice, setAttentionNotice] = useState("");
+  const attentionRequest = useRef(0);
   const cursor = cursors[cursors.length - 1];
   const reviewFlag = useQuery({
     queryKey: ["new-dawn-m2-link-review-flag", supabaseConfig.url, tenant, actor],
@@ -48,9 +53,13 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
   });
   useEffect(() => {
     setCursors([null]); setPage(null); setNotice(""); setActionId("");
+    attentionRequest.current++; setAttention(null); setAttentionNotice(""); setAttentionBusy(false);
   }, [tenant, actor, connection, reason]);
   useEffect(() => {
-    const hide = () => { if (document.hidden) { setHidden(true); setPage(null); } };
+    const hide = () => { if (document.hidden) {
+      attentionRequest.current++; setHidden(true); setPage(null); setAttention(null);
+      setAttentionBusy(false);
+    } };
     document.addEventListener("visibilitychange", hide);
     return () => document.removeEventListener("visibilitychange", hide);
   }, []);
@@ -71,6 +80,26 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
     const timer = setTimeout(() => { setPage(null); setHidden(true); }, 180_000);
     return () => clearTimeout(timer);
   }, [page]);
+  useEffect(() => {
+    if (!attention) return;
+    const timer = setTimeout(() => setAttention(null), 180_000);
+    return () => clearTimeout(timer);
+  }, [attention]);
+
+  async function groupAttentionJobs() {
+    if (attentionBusy || actionId) return;
+    const request = ++attentionRequest.current;
+    setAttentionBusy(true); setAttention(null); setAttentionNotice("");
+    try {
+      const result = await loadAttentionIdentityGroups(cursor =>
+        loadOpenIdentityPage(getSupabaseClient(), {
+          tenant, connection, actor, reason, cursor,
+        }));
+      if (request === attentionRequest.current && !document.hidden) setAttention(result);
+    } catch {
+      if (request === attentionRequest.current) setAttentionNotice("The complete On-hold/Pending group list could not be verified. Use the paged source review below and try again later.");
+    } finally { if (request === attentionRequest.current) setAttentionBusy(false); }
+  }
 
   async function reviewExactSource(row: OpenIdentityRow) {
     if ((!onReviewCustomer && !onReviewSite) || hidden || actionId) return;
@@ -105,8 +134,45 @@ export function OpenIdentityReviewQueue({ tenant, actor, connection, reason, db,
       <h4 className="font-semibold">Open jobs needing a customer or site link</h4>
       <p className="text-sm">OpenFolk review only. Work through On hold, Pending, then Open. Each row names the exact source customer and property proposed for review, the reason it remains unlinked, and the next available action.</p>
     </div><button type="button" className="cp-secondary" onClick={() => {
-      setHidden(false); setCursors([null]); setRevision(v => v + 1);
+      setHidden(false); setCursors([null]); setAttention(null); setRevision(v => v + 1);
     }}>Refresh open-job review</button></div>
+    <div className="rounded-lg border border-[#e5dbe9] bg-[#faf9f6] p-3 space-y-2">
+      <p className="text-sm">Review urgent work by exact Commusoft parent customer property. One reviewed source identity may affect several jobs; this grouping does not create or suggest a canonical match.</p>
+      <button type="button" className="cp-secondary" disabled={attentionBusy || hidden}
+        onClick={() => void groupAttentionJobs()}>
+        {attentionBusy ? "Checking all urgent groups…" : "Group On-hold and Pending jobs"}
+      </button>
+      {attentionNotice && <p role="alert" className="text-sm">{attentionNotice}</p>}
+      {attention && <>
+        <p className="text-sm"><strong>{attention.jobs} jobs in {attention.groups.length} source customer groups</strong> · On hold or Pending · saved snapshot {new Date(attention.snapshotAt).toLocaleString("en-GB")}. The full queue below includes {attention.totalUnlinked} unlinked open jobs.</p>
+        {attention.groups.length === 0 && <p className="text-sm">No unlinked On-hold or Pending jobs were recorded in this snapshot.</p>}
+        <div className="max-h-[58vh] overflow-y-auto rounded-lg border border-[#e5dbe9] bg-white px-3">
+          {attention.groups.map(group => <details key={group.key} className="border-b border-[#eee8f1] py-2 last:border-b-0">
+            <summary className="cursor-pointer text-sm font-semibold text-[#3b3044]">
+              {group.customerExternalId ? `Commusoft customer property ${group.customerExternalId}` : "Customer source unresolved"} · {group.jobs.length} job{group.jobs.length === 1 ? "" : "s"}
+            </summary>
+            <ol className="mt-2 space-y-2">{group.jobs.map(row => {
+              const display = { externalId: row.externalId, sourceVersionId: row.sourceVersionId,
+                state: row.candidateState, reason: row.holdReason } as const;
+              const action = exactLinkReviewAction(display);
+              return <li key={`${row.externalId}:${row.sourceVersionId}`} className="rounded-lg border border-[#e5dbe9] p-3 space-y-1">
+                <p className="text-sm"><strong>Job {row.externalId}</strong> · {row.status === "on_hold" ? "On hold" : "Pending"} · Source saved {new Date(row.sourceObservedAt).toLocaleString("en-GB")}</p>
+                <p className="text-sm">{exactLinkReviewLabel(display)}</p>
+                {action === "job" && <ExactJobAutoLink tenant={tenant} connection={connection}
+                  external={row.externalId} version={row.sourceVersionId} canApply={applyFlag.data === true}
+                  onInspect={onReviewJob ? () => onReviewJob(connection, row.externalId) : undefined} />}
+                {action === "customer_site" && (onReviewCustomer || onReviewSite) &&
+                  <button type="button" className="cp-secondary" disabled={!!actionId}
+                    onClick={() => void reviewExactSource(row)}>
+                    {actionId === row.externalId ? "Checking exact source…" : "Review exact customer and site"}
+                  </button>}
+                {action === "hold" && <p className="text-sm">Keep unlinked until its source or conflict is reviewed.</p>}
+              </li>;
+            })}</ol>
+          </details>)}
+        </div>
+      </>}
+    </div>
     {busy && <p role="status">Checking current saved job identities…</p>}
     {notice && <p role="alert">{notice}</p>}
     {page && <>
