@@ -4,6 +4,7 @@ import { BriefcaseBusiness, ChevronLeft, ChevronRight, RefreshCw } from "lucide-
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
+import { jobSourceIdentity } from "@/lib/new-dawn-job-identity-label";
 import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
 import { dailyStatusGapState, readDailyStatusCoverage } from "@/lib/new-dawn-daily-status-coverage";
@@ -89,7 +90,8 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
   return <div className="nd-job-detail space-y-4">
     <div>
       <p><strong>Job {row.external_id}</strong> · {statusLabel[row.status]}</p>
-      <p>Customer: {row.source_customer ?? "To confirm"} · Site: {row.source_site ?? row.source_postcode ?? "To confirm"}</p>
+      <p>Commusoft customer and site: {jobSourceIdentity(row).sourceLabel}</p>
+      <p className="nd-job-identity-state">{jobSourceIdentity(row).detailEvidence}</p>
       <small>Commusoft record saved {savedAt(row.source_observed_at)}. The job may have changed since then.</small>
       <p>{row.job_created_at ? `Job created in Commusoft ${jobDate(row.job_created_at)}.`
         : "Job creation date could not be verified."} This is not time spent in the current status.</p>
@@ -135,7 +137,6 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
           <p>Needed: {measure.missing}. Next: {measure.next}.</p>
         </li>)}</ol>
       </section>}
-      {row.identity_state !== "reviewed_link" && <p>The customer and site labels come from Commusoft; OpenFolk still needs to confirm the match.</p>}
       <details><summary>Where this information came from</summary>
         <p>Commusoft job {row.external_id}, saved {savedAt(record.sourceObservedAt)}.
           {exact ? ` Exact job detail checked ${savedAt(exact.checkedAt)}.` : " No exact job detail has been checked for this saved version."}
@@ -402,12 +403,13 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
             <BriefcaseBusiness size={20} />
             <span className="nd-job-main"><strong>Job {row.external_id}</strong>
               <small>{row.title ?? "Work description not recorded"}</small>
-              <small>{row.source_customer ?? "Customer to confirm"} · {row.source_site ?? row.source_postcode ?? "Site to confirm"}</small>
+              <small>Commusoft: {jobSourceIdentity(row).sourceLabel}</small>
+              <small className="nd-job-identity-state">{jobSourceIdentity(row).shortEvidence}</small>
             </span>
             <span className="nd-job-review"><b>{statusLabel[row.status]}</b>
               <small className="nd-job-next">{openJobNextStep(row.status)}</small>
               <small>{row.job_created_at ? `Created ${jobDate(row.job_created_at)}`
-                : "Creation date unverified"}{row.identity_state !== "reviewed_link" ? " · Customer/site match pending" : ""}</small>
+                : "Creation date unverified"}</small>
               {row.status_evidence === "repeat_saved_checks" &&
                 <small>{openJobStatusEvidence(row, savedAt)}</small>}
             </span>
@@ -437,7 +439,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         {showOldest && oldestHeldRows.length > 0 && <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
           <button type="button" onClick={() => setSelected(row)}>
             <strong>Job {row.external_id}</strong>
-            <span>{row.title ?? "Work description not recorded"}<em>{row.source_customer ?? "Customer unconfirmed"} · {row.source_site ?? row.source_postcode ?? "Site unconfirmed"}</em></span>
+            <span>{row.title ?? "Work description not recorded"}<em>Commusoft: {jobSourceIdentity(row).sourceLabel} · {jobSourceIdentity(row).shortEvidence}</em></span>
             <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, firstPage.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}
               {row.status_evidence === "repeat_saved_checks" && <><br />{openJobStatusEvidence(row, savedAt)}</>}
             </small>
