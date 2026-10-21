@@ -438,10 +438,11 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
           {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending in saved Commusoft statuses.</p>}
           <p>{dailyCoverage.isError
-            ? "Job score unavailable: daily progress could not be checked."
-            : checkedDay?.earliestMovingReviewDay
-              ? `Job score needs more daily history. Earliest review ${statusDay(checkedDay.earliestMovingReviewDay)} if checks continue.`
-              : "Job score needs more daily progress history."}</p>
+            ? "Daily job-check evidence is unavailable."
+            : checkedDay?.day
+              ? `Daily status check on ${statusDay(checkedDay.day)}: ${checkedDay.observedCount?.toLocaleString("en-GB")}/${checkedDay.rosterCount?.toLocaleString("en-GB")} jobs observed.`
+              : "Daily job-check evidence is being collected."}</p>
+          <p>Progress rules and the effect of supplier waits will be set with each client before scores appear.</p>
           {activeSummary && <><button type="button" onClick={() => showJobs(attentionStatus)}>
             {attentionStatus === "on_hold" ? "Review recorded On-hold jobs"
               : attentionStatus === "pending" ? "Review recorded Pending jobs"
@@ -454,14 +455,14 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <p>{linkedCustomers
             ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} On-hold or Pending jobs are in those groups. More recorded jobs may still need matching.`
             : "Checking which jobs have a confirmed customer and site."}</p>
-          <p>Customer score needs job progress and contact history.</p>
+          <p>Customer scoring needs confirmed job progress, contact history and client-approved rules.</p>
           {linkedCustomers && <div className="nd-customer-tile-actions">
             <button type="button" onClick={showCustomerWork}>See confirmed groups →</button>
             <button type="button" onClick={showStillMatching}>See jobs still being matched →</button>
           </div>}
         </article>
         <article><span>TEAM</span><strong>Not enough data yet</strong>
-          <p>Needs verified visits and owners of next actions before a team score.</p>
+          <p>Verified visits and owners of next actions are needed before team scoring rules can be set.</p>
         </article>
       </div>
       <section className="nd-work-priority" aria-label="Review saved job statuses">
@@ -585,8 +586,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           {dailyGapState === "pending_today" ? `; ${checkedDay.missingCount} still to check today`
             : dailyGapState === "past_gap" ? `; ${checkedDay.missingCount} had no observation that day` : ""}.
           {checkedDay.lastProviderCheckAt && ` Last check ${savedAt(checkedDay.lastProviderCheckAt)}.`}</p>}
-        {dailyCoverage.isError && <p role="alert">Daily provider-check coverage is unavailable. Scores remain withheld.</p>}
-        <p>Job, customer and team scores remain unpublished. A day qualifies for the Moving measure when at least 99% of its frozen open-job roster is checked; any gaps are logged. Each scored job still needs its own 14 daily observations. Customer and team measures need confirmed links and visits.</p>
+        {dailyCoverage.isError && <p role="alert">Daily provider-check coverage is unavailable. No score is published.</p>}
+        <p>Job, customer and team scores remain unpublished. A day qualifies for observed status history when at least 99% of its frozen open-job roster is checked; per-job gaps are logged. The retained checks establish minimum observed time in a stage, not its actual start or the effect of a supplier wait. Each client's weights, stage targets and wait rules need a reviewed policy before any numeric score.</p>
       </details>}
       <div ref={jobsRef} className="nd-open-jobs-heading" tabIndex={-1} aria-live="polite">
         <h3>{listHeading}</h3>

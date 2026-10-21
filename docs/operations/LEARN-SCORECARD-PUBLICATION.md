@@ -1,6 +1,25 @@
 # LEARN scorecard publication
 
-Implemented and verified locally; not deployed or used to rate actual employees.
+The publication contract below has TEST verification; no real-person numeric
+score is published on LIVE. Recheck the target ledger before claiming a wider
+deployment.
+
+## Current product direction (Chris, 21 October 2026)
+
+Collect and show the underlying work evidence before assigning numeric job,
+customer or team scores. Each client must be able to review how its own process
+stages, target times and measure weights affect a score. An external supplier
+wait, for example, may change which clock runs and who can move the job next;
+neither a Commusoft status nor a long-lived job alone proves that rule. The
+present tenant-scoped draft/publication framework supports weighted measures,
+revisioned policies, evidence and minimum samples, but does **not** yet model
+per-stage clocks, external-wait start/end evidence, responsibility or client
+approval of those timing rules. Do not publish a numeric Moving score from a
+guessed stage median or treat 3 November as a promised score launch. Keep
+dated status observations and show only the minimum interval they prove,
+alongside gaps and missing process evidence. Design the timing and pause policy
+with client review after the workflow sources are complete; any future policy
+change must be revisioned and prospective, with old evidence preserved.
 
 ## Behaviour
 
