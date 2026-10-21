@@ -1,5 +1,65 @@
 // One-time, service-role-only launch repair. Does not alter a live assistant,
 // telephone number or existing tool. Original provider configuration is retained.
+import { releaseConfiguration } from "./receptionist-release.ts";
+
+// Inline copy belongs only to the isolated helper. Vapi's assistant model.tools
+// supports built-in transferCall tools; never add 603 to the published shared
+// emergency tool just to make the candidate pass its later release gate.
+export function candidateEmergencyTool(source: any) {
+  if (source?.type !== "transferCall" || source?.function?.name !== "Route-Emergency-to-Rob-or-Tony" ||
+    !Array.isArray(source.destinations) || source.destinations.length !== 2)
+    throw Error("Reviewed emergency transfer source required.");
+  return structuredClone(releaseConfiguration(source));
+}
+
+export const EMMA_TRANSFER_ASSISTANT_CONTRACT =
+  "You are Emma speaking privately to the destination engineer while the caller is on hold. Call transferSuccessful only after a live human operator explicitly accepts this caller. Call transferCancel for voicemail, an automated greeting, an IVR, busy, no answer, an unreachable destination or a declined call. Do not treat a ring, transfer request or voicemail greeting as human acceptance. Return the caller to Emma on cancellation so she can attempt only the reviewed shared mailbox 603 fallback once; never try the other engineer. Never promise an engineer connection or message delivery without a provider receipt.";
+
+export const EMERGENCY_CONTINUATION_CONTRACT =
+  "EMERGENCY CONTINUATION: You are the SAME Emma, continuing an eligible out-of-hours emergency already assessed in the conversation. Do not introduce yourself, repeat the recording notice or office-closed message, or repeat any safety advice or details already given. Use the full conversation history. Ask only missing minimum details: name, confirmed callback number, concrete site/address and brief issue. Commercial urgent: attempt Rob 109 once. Domestic urgent: attempt Tony 105 once. If the caller genuinely cannot establish whether the property is domestic or commercial, attempt Tony 105 once; do not invent a classification. Use only Route-Emergency-to-Rob-or-Tony. One invocation selects ONE destination; it does not ring all destinations. Never try the other engineer as cross-cover or retry the selected engineer. A voicemail greeting, ringing, busy, no answer or declined call is not human acceptance. After the selected engineer transfer explicitly fails and returns the caller to you, explain that the engineer could not take the call, then use the reviewed shared emergency mailbox 603 destination once if it is available in that tool. If the 603 destination is unavailable or its transfer fails, collect any missing message details and explain the limitation; do not invent another route. Never claim an engineer answered, a voicemail was deposited, either email was delivered, a Slack alert was sent, or attendance was promised without independent confirmation. The intended 603 deposit must be independently matched to delivery receipts for both rob@drummondheating.co.uk and tony@drummondheating.co.uk and to a scoped #ai-emma Slack alert before operational acceptance; you have no email or Slack tool and cannot certify those receipts to the caller. Do not use ordinary routing or return to the main number. Preserve existing safety advice and do not delay immediate emergency action.";
+export function launchCandidateSourceId(
+  action: string,
+  service: boolean,
+  scheduled: boolean,
+  selectedAssistantId: string,
+  publishedAssistantId: string,
+) {
+  return action === "prepare_candidate" && service && !scheduled
+    ? publishedAssistantId
+    : selectedAssistantId;
+}
+
+const preparationHolds = {
+  source: "Launch candidate source changed; reviewed reconciliation required. No provider retry sent.",
+  prepared: "Launch candidate already prepared; inspect the provider graph before another action. No provider retry sent.",
+  partial: "Launch candidate has a partial or uncertain preparation; review provider state. No retry sent.",
+} as const;
+
+export function candidatePreparationStateHold(row: any, sourceHash: string) {
+  if (!row) return null;
+  const error = row.source_hash !== sourceHash ? preparationHolds.source
+    : row.state === "prepared" ? preparationHolds.prepared
+    : row.state !== "rejected" || row.helper_id || row.handoff_id || row.candidate_id
+    ? preparationHolds.partial : null;
+  return error ? {
+    state: "review_required",
+    error,
+    providerChanged: false,
+    automaticRetrySent: false,
+  } : null;
+}
+
+export function candidatePreparationHold(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  if (!Object.values(preparationHolds).includes(message as typeof preparationHolds[keyof typeof preparationHolds]))
+    return null;
+  return {
+    state: "review_required",
+    error: message,
+    providerChanged: false,
+    automaticRetrySent: false,
+  };
+}
 export async function prepareLaunchCandidate(
   db: any,
   api: any,
@@ -20,20 +80,12 @@ export async function prepareLaunchCandidate(
     throw Error("Launch candidate source changed.");
   const existing = await db
     .from("receptionist_test_candidates")
-    .select("state,helper_id,handoff_id,candidate_id")
+    .select("state,source_hash,helper_id,handoff_id,candidate_id")
     .eq("tenant_id", tenant)
     .maybeSingle();
   if (existing.error) throw Error("Launch candidate audit unavailable.");
-  if (
-    existing.data &&
-    !(
-      existing.data.state === "rejected" &&
-      !existing.data.helper_id &&
-      !existing.data.handoff_id &&
-      !existing.data.candidate_id
-    )
-  )
-    return existing.data;
+  const hold = candidatePreparationStateHold(existing.data, hash);
+  if (hold) throw Error(hold.error);
   if (!existing.data) {
     const saved = await db
       .from("receptionist_test_candidates")
@@ -56,7 +108,7 @@ export async function prepareLaunchCandidate(
       typeof m.content === "string"
         ? m.content.replace(
             "Then immediately emit `Route-Call-to-Drummond-Team-20260929` with `appropriate ROB EMERGENCY or TONY EMERGENCY destination under the emergency cross-cover sequence`.",
-            "Then immediately use `Route-Emergency-to-Rob-or-Tony` to continue the emergency cross-cover sequence.",
+            "Then immediately use `Route-Emergency-to-Rob-or-Tony` to continue the emergency response.",
           )
         : m.content,
   }));
@@ -71,14 +123,13 @@ export async function prepareLaunchCandidate(
     firstMessageMode: "assistant-speaks-first-with-model-generated-message",
     model: {
       ...assistant.model,
-      tools: [],
-      toolIds: [emergency.id],
+      tools: [candidateEmergencyTool(emergency)],
+      toolIds: [],
       messages: [
         ...messages,
         {
           role: "system",
-          content:
-            "EMERGENCY CONTINUATION: You are the SAME Emma, continuing an eligible out-of-hours emergency already assessed in the conversation. Do not introduce yourself, repeat the recording notice or office-closed message, or repeat any safety advice or details already given. Use the full conversation history. Ask only missing minimum details: commercial/domestic if unclear, name, confirmed callback number, site/address and brief issue. Commercial tries Rob first then Tony once after failure; domestic tries Tony first then Rob once after failure. Use only Route-Emergency-to-Rob-or-Tony. Never retry either person. A voicemail greeting is not human acceptance. If both fail, explain clearly, collect any missing message details, and never claim an email was sent, a voicemail delivered, an engineer dispatched or attendance promised. There is no email tool. Do not use ordinary routing or return to the main number. Preserve existing safety advice and do not delay immediate emergency action.",
+          content: EMERGENCY_CONTINUATION_CONTRACT,
         },
       ],
     },
@@ -89,14 +140,14 @@ export async function prepareLaunchCandidate(
     function: {
       name: "Route-Emergency-to-Rob-or-Tony",
       description:
-        "Eligible out-of-hours emergencies only, after safety advice and minimum details. Continue seamlessly as Emma with emergency cross-cover: commercial Rob then Tony; domestic Tony then Rob. This is an internal handoff, not a completed telephone transfer.",
+        "Eligible out-of-hours emergencies only, after safety advice and minimum details. Continue seamlessly as Emma: commercial urgent to Rob; domestic or genuinely uncertain urgent to Tony; one failed selected engineer then shared mailbox 603. This is an internal handoff, not a completed telephone transfer.",
     },
     destinations: [
       {
         type: "assistant",
         assistantId: helper.id,
         description:
-          "Emergency cross-cover continuation for eligible out-of-hours commercial or domestic incidents.",
+          "Emergency continuation for eligible out-of-hours commercial, domestic or genuinely uncertain incidents.",
         contextEngineeringPlan: { type: "all" },
       },
     ],
@@ -114,7 +165,7 @@ export async function prepareLaunchCandidate(
         {
           role: "system",
           content:
-            "TRANSFER IMPLEMENTATION: Route-Emergency-to-Rob-or-Tony is an internal handoff to Emma’s emergency continuation, not a transferCall tool on this assistant. Use it for eligible out-of-hours emergencies after safety advice and required minimum details. Do not announce a new assistant or say the caller has reached an engineer. Ordinary and daytime calls continue to use Route-Call-to-Drummond-Team-20260929. Never use the ordinary tool for emergency cross-cover.",
+            "TRANSFER IMPLEMENTATION: Route-Emergency-to-Rob-or-Tony is an internal handoff to Emma’s emergency continuation, not a transferCall tool on this assistant. Use it for eligible out-of-hours emergencies after safety advice and required minimum details. Do not announce a new assistant or say the caller has reached an engineer. Ordinary and daytime calls continue to use Route-Call-to-Drummond-Team-20260929. Never use the ordinary tool for this emergency route.",
         },
       ],
     },

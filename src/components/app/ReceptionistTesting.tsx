@@ -254,7 +254,7 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
               {Boolean(providerPreflight.birchills.mainNumber?.rules.length) && (
                 <p>Observed DID rules: {providerPreflight.birchills.mainNumber?.rules.map((rule) => `${rule.interval || "unnamed"} → ${rule.destination}`).join("; ")}.</p>
               )}
-              <p>Emma extension 205 forwards to the saved test number: {providerPreflight.birchills.extensions?.["205"]?.forwardsToEmmaTestNumber ? "yes" : "not proved"}. Rob 109 and Tony 105 match their saved targets: {providerPreflight.birchills.extensions?.["109"]?.forwardsToSavedRobNumber && providerPreflight.birchills.extensions?.["105"]?.forwardsToSavedTonyNumber ? "yes" : "not both proved"}. Mailbox 603 notification address: {providerPreflight.birchills.extensions?.["603"]?.emailRecipient ?? "not checked"}.</p>
+              <p>Emma extension 205 forwards to the saved test number: {providerPreflight.birchills.extensions?.["205"]?.forwardsToEmmaTestNumber ? "yes" : "not proved"}. Rob 109 matches his saved target: {providerPreflight.birchills.extensions?.["109"]?.forwardsToSavedRobNumber ? "yes" : "not proved"}. Tony 105 matches his saved target: {providerPreflight.birchills.extensions?.["105"]?.forwardsToSavedTonyNumber ? "yes" : "not proved"}. Mailbox 603 notification address: {providerPreflight.birchills.extensions?.["603"]?.emailRecipient ?? "not checked"}.</p>
               <p><strong>Still to prove:</strong> {(providerPreflight.birchills.policyHolds ?? ["provider_read_unavailable"]).map((hold) => preflightHoldLabels[hold] ?? "provider configuration needs review").join("; ")}. A real 603 deposit and separate delivered email/Slack receipts remain required.</p>
             </div>
           )}
@@ -335,7 +335,7 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                   </div>
                 ))}
               </div>
-              <p className="of-test-note">Still to prove: two-way handset audio, emergency primary/backup order, emergency mailbox 603 and receipt by both engineers. No automatic live calls run from this page.</p>
+              <p className="of-test-note">Still to prove: two-way handset audio, one class-selected engineer attempt, return to Emma after a failed attempt, one shared mailbox 603 deposit and separate delivery receipts for Rob and Tony. No automatic live calls run from this page.</p>
             </div>
           )}
           <div className="of-test-card">

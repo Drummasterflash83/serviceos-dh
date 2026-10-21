@@ -11,7 +11,12 @@ import {
   runState,
 } from "../_shared/receptionist-testing.ts";
 import { evidenceHash } from "../_shared/receptionist-care.ts";
-import { prepareLaunchCandidate } from "../_shared/receptionist-launch-candidate.ts";
+import {
+  candidatePreparationHold,
+  candidatePreparationStateHold,
+  launchCandidateSourceId,
+  prepareLaunchCandidate,
+} from "../_shared/receptionist-launch-candidate.ts";
 import {
   launchWordingModel,
   launchDialogueModel,
@@ -26,6 +31,9 @@ import { DH_APPROVED_REVIEW_POLICY } from "../_shared/receptionist-launch-review
 import { clearLaunchModel } from "../_shared/receptionist-launch-clear-contract.ts";
 import { launchPromotion } from "../_shared/receptionist-launch-promotion.ts";
 import { inspectLaunchGraph } from "../_shared/receptionist-launch-inspection.ts";
+import { reconcileIsolatedEmmaVoice } from "../_shared/receptionist-launch-voice-reconcile.ts";
+import { installCandidateIntake } from "../_shared/receptionist-intake-installation.ts";
+import { safeSpeechProjection } from "../_shared/receptionist-launch-intake-contract.ts";
 import { inspectVapiLaunchBindings, inspectBirchillsLaunchBindings } from "../_shared/receptionist-provider-preflight.ts";
 import { PHYSICAL_EVIDENCE_IDS, physicalEvidence } from "../_shared/receptionist-physical-evidence.ts";
 import { captureTestHarness, compareTestHarness, inspectTestPersonality } from "../_shared/receptionist-test-harness.ts";
@@ -307,7 +315,40 @@ Deno.serve(async (req) => {
         }, 409);
       }
     }
-    const assistant = await api("assistant/" + settings.data.assistant_id);
+    if (body.action === "reconcile_isolated_voice") {
+      if (!service || scheduled || body.tenantId !== "00000000-0000-0000-0000-000000000001" ||
+        settings.data.assistant_id !== "dcfc2e66-a438-43ab-b863-467f5a5089df" ||
+        workspace.data.assistant_id !== "4eb2bee8-ac25-47c9-b962-409ed250ceb6")
+        return reply({ error: "Explicit fixed-account OpenFolk maintenance required." }, 403);
+      try {
+        const result = await reconcileIsolatedEmmaVoice(db, api, actor, body.expectedHashes);
+        return reply(result, ["verified", "already_aligned"].includes(result.state) ? 200 : 409);
+      } catch {
+        // A provider PATCH may have applied despite a failed response. Never
+        // expose raw provider details or imply that no write occurred.
+        return reply({ error: "Isolated Emma speech repair needs review. Inspect the saved audit and fresh provider graph before any retry.",
+          providerState: "review_required", automaticRetrySent: false }, 409);
+      }
+    }
+    const assistant = await api("assistant/" + launchCandidateSourceId(
+      body.action, service, scheduled, settings.data.assistant_id, workspace.data.assistant_id,
+    ));
+    if (body.action === "inspect_launch_speech" && service && !scheduled) {
+      if (body.tenantId !== "00000000-0000-0000-0000-000000000001" || assistant.id !== "dcfc2e66-a438-43ab-b863-467f5a5089df")
+        return reply({ error: "Fixed test binding required" }, 403);
+      const live = await api("assistant/4eb2bee8-ac25-47c9-b962-409ed250ceb6");
+      const calls = await Promise.all(["01a0fc7b-5a44-7cc3-8fcf-feb0004b1d00", "01a0fc71-1139-7dd4-98b6-3f42bffa980a"].map(async id => {
+        const c = await api(`call/${id}`);
+        if (c.orgId !== live.orgId || c.assistantId !== assistant.id) return { id, bindingVerified: false };
+        return {id,endedReason:c.endedReason,startedAt:c.startedAt,endedAt:c.endedAt,
+          messages:list(c.artifact?.messages ?? c.messages).slice(0,100).map(m => ({
+            role:m.role,time:m.time,endTime:m.endTime,secondsFromStart:m.secondsFromStart,
+            message:typeof m.message === 'string' ? m.message.slice(0,800) : null,
+            tools:list(m.toolCalls ?? m.tool_calls).map(t => ({id:t.id,name:t.function?.name})),
+          }))};
+      }));
+      return reply({readOnly:true,candidate:safeSpeechProjection(assistant),live:safeSpeechProjection(live),calls});
+    }
     if (body.action === "inspect_suite" && service && !scheduled) {
       const suite = await api("eval/simulation/suite/" + settings.data.suite_id);
       const simulation = await api("eval/simulation/" + suite.simulationIds[0]);
@@ -355,6 +396,16 @@ Deno.serve(async (req) => {
     const hash = await evidenceHash({ assistant, tools });
     const main = body.tenantId === "00000000-0000-0000-0000-000000000001" ? "+441794341600" : null;
     const checks = configurationChecks(assistant, tools, main);
+    if (body.action === "install_candidate_intake" && service && !scheduled) {
+      if (body.tenantId !== "00000000-0000-0000-0000-000000000001" || body.expectedHash !== hash)
+        return reply({error:"Candidate changed; inspect before installation"},409);
+      try {
+        return reply(await installCandidateIntake(db,api,actor,Deno.env.get("EMMA_TEST_INTAKE_TOKEN") ?? ""));
+      } catch {
+        // Never forward provider errors containing the scoped webhook credential.
+        return reply({error:"Candidate intake installation needs review. No automatic retry was sent.",providerState:"review_required"},409);
+      }
+    }
     if (
       [
         "repair_candidate_wording",
@@ -440,12 +491,25 @@ Deno.serve(async (req) => {
         return reply({ error: "Testing candidate required" }, 409);
       return reply(await prepareLaunchSuite(db, api, settings.data, tools, actor, assistant));
     }
-    if (body.action === "prepare_candidate" && service) {
+    if (body.action === "prepare_candidate" && service && !scheduled) {
+      // The current saved row is old. Report its fixed review hold even when
+      // the caller has only the selected test assistant's hash. Recheck inside
+      // prepareLaunchCandidate before any provider mutation to cover drift.
+      const existing = await db.from("receptionist_test_candidates")
+        .select("state,source_hash,helper_id,handoff_id,candidate_id")
+        .eq("tenant_id", body.tenantId).maybeSingle();
+      if (existing.error) return reply({ error: "Launch candidate audit unavailable." }, 503);
+      const hold = candidatePreparationStateHold(existing.data, hash);
+      if (hold) return reply(hold, 409);
       if (body.expectedHash !== hash)
         return reply({ error: "Emma changed. Reload the checks before running." }, 409);
-      return reply(
-        await prepareLaunchCandidate(db, api, assistant, tools, hash, actor, body.tenantId),
-      );
+      try {
+        return reply(await prepareLaunchCandidate(db, api, assistant, tools, hash, actor, body.tenantId));
+      } catch (error) {
+        const hold = candidatePreparationHold(error);
+        if (hold) return reply(hold, 409);
+        throw error;
+      }
     }
     if (body.action === "inspect" && service) {
       return reply({
@@ -467,7 +531,10 @@ Deno.serve(async (req) => {
           id: t.id,
           type: t.type,
           function: t.function,
-          destinations: t.destinations,
+          destinations: list(t.destinations).map(({server, ...destination}) => ({
+            ...destination,
+            ...(server ? {server:{configured:true,authenticationConfigured:!!server.credentialId || Object.keys(object(server.headers)).length > 0}} : {}),
+          })),
         })),
         hash,
       });

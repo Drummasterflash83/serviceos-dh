@@ -142,20 +142,41 @@ export async function inspectLaunchGraph(db: any, api: Api, settings: any, works
     ordinaryCandidateMatches = same(graph.candidate.model?.tools?.[0]?.destinations,
       graph.ordinary.destinations?.map(approvedOrdinaryDestination));
   } catch { /* An unsupported shared destination is evidence to review, not a bypass. */ }
+  const helperInlineTools = list(graph.helper.model?.tools);
+  const helperInlineEmergency = helperInlineTools.length === 1 ? helperInlineTools[0] : null;
+  const helperUsesCandidateOnlyEmergencyTool = same(graph.helper.model?.toolIds, []) &&
+    helperInlineEmergency?.type === "transferCall" &&
+    helperInlineEmergency.function?.name === "Route-Emergency-to-Rob-or-Tony" &&
+    list(helperInlineEmergency.destinations).length === 3 &&
+    list(helperInlineEmergency.destinations).every((d: any) => d.type === "number");
+  // Voice objects may contain provider credentials. Expose only their finite
+  // speed values and exact alignment checks; an omitted speed is unknown,
+  // never an assumed provider default or evidence that v14 survived.
+  const voiceSpeed = {
+    live: number(graph.live.voice?.speed),
+    candidate: number(graph.candidate.voice?.speed),
+    helper: number(graph.helper.voice?.speed),
+  };
   return {
     readOnly: true, tenantId: ids.tenant, startedAt, completedAt: new Date().toISOString(),
     evidence: "Fresh provider GETs; sequentially observed configuration, not an atomic snapshot or call test.",
     projection: "Whitelisted fields; URLs and credentials redacted; unlisted fields are not shown. Hashes cover the full release configuration.",
     hashes, savedSource: { state: clean(source.state, 100), comparisons, unchanged: comparisons.every(c => c.matchesSavedSource) },
+    voiceSpeed,
     checks: {
       candidateOrdinaryDestinationsMatchApprovedTransform: ordinaryCandidateMatches,
       helperOnlyUsesEmergencyTool: same(graph.helper.model?.toolIds, [ids.emergency]) && list(graph.helper.model?.tools).length === 0,
+      helperUsesCandidateOnlyEmergencyTool,
       handoffPreservesAllContext: graph.handoff.destinations?.length === 1 &&
         graph.handoff.destinations[0].assistantId === ids.helper && graph.handoff.destinations[0].contextEngineeringPlan?.type === "all",
-      candidateVoiceMatchesLive: same(graph.candidate.voice, graph.live.voice),
-      helperVoiceMatchesLive: same(graph.helper.voice, graph.live.voice),
+      candidateVoiceMatchesLive: !!graph.live.voice && same(graph.candidate.voice, graph.live.voice),
+      helperVoiceMatchesLive: !!graph.live.voice && same(graph.helper.voice, graph.live.voice),
+      candidateTranscriberMatchesLive: !!graph.live.transcriber && same(graph.candidate.transcriber, graph.live.transcriber),
+      helperTranscriberMatchesLive: !!graph.live.transcriber && same(graph.helper.transcriber, graph.live.transcriber),
+      v14SpeedAligned: voiceSpeed.live === 1.05 && voiceSpeed.candidate === 1.05 && voiceSpeed.helper === 1.05,
     },
     helper: { id: ids.helper, ...assistant(graph.helper, clean) },
+    helperInlineEmergency: helperInlineEmergency ? tool(helperInlineEmergency, clean) : null,
     handoff: tool(graph.handoff, clean), ordinary: tool(graph.ordinary, clean), emergency: tool(graph.emergency, clean),
     baselineEmergencyDestinations: list(baseline.emergency.destinations).map(d => ({ number: destination(d, clean).number, description: clean(d.description) })),
     providerChanged: false, savedBaselineChanged: false, promotionAttempted: false, callsPlaced: false,

@@ -7,6 +7,7 @@ import { evidenceHash } from "./receptionist-care.ts";
 import { releaseConfiguration, releaseHash, stableJson } from "./receptionist-release.ts";
 import { launchScenarioPayloads } from "./receptionist-launch-scenarios.ts";
 import { approvedOrdinaryDestination } from "./receptionist-launch-destinations.ts";
+import { EMERGENCY_CONTINUATION_CONTRACT, EMMA_TRANSFER_ASSISTANT_CONTRACT } from "./receptionist-launch-candidate.ts";
 import { captureTestHarness } from "./receptionist-test-harness.ts";
 import { list, UUID } from "./receptionist-testing.ts";
 
@@ -53,17 +54,66 @@ function validateGraph(g: any, source: any) {
   const required = ["+441794378095", "+441794378105", "+441794378096", "+441794840042", "+441794840043"];
   if (!required.every(n => c.model.tools[0].destinations.some((d: any) => d.number === n)))
     throw Error("Launch reviewed ordinary destination is missing.");
+  // The published assistant still references g.emergency. The additional 603
+  // destination belongs only to the isolated helper's inline transfer tool.
+  // Structural labels do not prove Birchills routing or notification delivery.
+  const helperEmergency = list(g.helper.model?.tools)[0];
+  const emergencyDestinations = list(helperEmergency?.destinations);
+  const emergencyLabels = ["Rob emergency 109", "Tony emergency 105", "Shared emergency mailbox 603"];
+  const { destinations: _sharedDestinations, ...sharedTool } = releaseConfiguration(g.emergency);
+  const { destinations: _candidateDestinations, ...candidateTool } = releaseConfiguration(helperEmergency ?? {});
+  const withoutPlan = (destination: any) => {
+    const { transferPlan: _plan, ...identity } = destination;
+    return identity;
+  };
+  if (list(g.emergency.destinations).length !== 2 ||
+    !same(candidateTool, sharedTool) ||
+    !same(emergencyDestinations.slice(0, 2).map(withoutPlan), g.emergency.destinations.map(withoutPlan)) ||
+    emergencyDestinations.length !== 3 ||
+    new Set(emergencyDestinations.map((d: any) => d.number)).size !== 3 ||
+    !emergencyDestinations.every((d: any) => d.type === "number" &&
+      /^\+[1-9]\d{6,14}$/.test(d.number ?? "") && d.transferPlan &&
+      d.number !== "+441794341600" && d.number !== "+441794840043" &&
+      emergencyLabels.includes(d.description)) ||
+    !emergencyLabels.every(label => emergencyDestinations.some((d: any) => d.description === label)))
+    throw Error("Launch emergency Rob/Tony/603 destination graph is incomplete; no behaviour published.");
+  // A transferCall invocation selects one destination. Selected engineer→603 is possible
+  // only if a failed engineer leg returns the caller to this helper. A generic
+  // or blind warm transfer cannot establish that; the provider phone drill is
+  // still required to prove the configured behavior works in this account.
+  for (const engineer of emergencyDestinations.slice(0, 2)) {
+    const plan = engineer.transferPlan;
+    if (plan?.mode !== "warm-transfer-experimental" ||
+      plan.fallbackPlan?.endCallEnabled !== false ||
+      !list(plan.transferAssistant?.model?.messages).some((m: any) =>
+        m.role === "system" && m.content === EMMA_TRANSFER_ASSISTANT_CONTRACT))
+      throw Error("Launch selected-engineer fallback requires reviewed human acceptance and a returnable failed transfer.");
+  }
+  const destination = g.handoff.destinations?.[0];
   if (g.handoff.type !== "handoff" || g.handoff.function?.name !== "Route-Emergency-to-Rob-or-Tony" ||
-    g.handoff.destinations?.length !== 1 || g.handoff.destinations[0].type !== "assistant" ||
-    g.handoff.destinations[0].assistantId !== ids.helper ||
-    g.handoff.destinations[0].contextEngineeringPlan?.type !== "all" ||
-    !same(g.helper.model?.toolIds, [ids.emergency]) || list(g.helper.model?.tools).length ||
+    g.handoff.destinations?.length !== 1 || destination?.type !== "dynamic" ||
+    destination.server?.url !== "https://tgbnakbxwcqjeimygroz.supabase.co/functions/v1/receptionist-intake-check" ||
+    !/^[A-Za-z0-9_-]{43,128}$/.test(destination.server?.headers?.["X-OpenFolk-Intake-Token"] ?? "") ||
+    !same(g.helper.model?.toolIds, []) || list(g.helper.model?.tools).length !== 1 ||
     g.emergency.type !== "transferCall" || g.emergency.function?.name !== "Route-Emergency-to-Rob-or-Tony" ||
-    !g.helper.model?.messages?.some((m: any) => m.content?.startsWith("EMERGENCY CONTINUATION:")))
+    !g.helper.model?.messages?.some((m: any) => m.content === EMERGENCY_CONTINUATION_CONTRACT))
     throw Error("Launch emergency continuation graph changed.");
   for (const assistant of [c, g.helper])
     if (!same(assistant.voice, g.live.voice) || !same(assistant.transcriber, g.live.transcriber))
       throw Error("Launch voice or transcription differs from the existing live service.");
+  // The published v14 speed trial must survive the candidate promotion. A
+  // stale pre-v14 candidate is a release stop, not an implicit voice rollback.
+  if (g.live.voice?.speed !== 1.05 || c.voice?.speed !== 1.05 || g.helper.voice?.speed !== 1.05)
+    throw Error("Emma v14 speech setting is not aligned across the launch graph.");
+  const firstMessage = c.firstMessage as string;
+  const holiday = firstMessage.indexOf("{% if openfolk_holidays contains openfolk_holiday_key %}");
+  const open = firstMessage.indexOf("{% else %}", holiday);
+  if (holiday < 0 || open < holiday ||
+      !/automated receptionist/i.test(firstMessage.slice(holiday, open)) ||
+      !/call is recorded/i.test(firstMessage.slice(holiday, open)) ||
+      !/automated receptionist/i.test(firstMessage.slice(open)) ||
+      !/call is recorded/i.test(firstMessage.slice(open)))
+    throw Error("Both closed and ordinary Emma greetings must disclose AI and recording.");
 }
 
 async function readGraph(api: Api) {
@@ -118,12 +168,25 @@ export function requireLaunchEvidence(run: any, settings: any, candidateHash: st
   }
 }
 
+// A frozen provider harness only proves that the same suite ran and was read
+// back. It does not prove that its caller instructions, clock, mocks and judges
+// were the twelve reviewed definitions. Compare those fields before accepting
+// a passing run; provider IDs and timestamps are deliberately excluded.
+export function requireReviewedLaunchScenario(scenario: any, expected: any[]) {
+  const reviewed = expected.find(s => s.name === scenario?.name);
+  if (!reviewed || expected.filter(s => s.name === scenario.name).length !== 1 ||
+    !["instructions", "targetOverrides", "toolMocks", "evaluations"].every(k => same(scenario[k], reviewed[k])) ||
+    list(scenario.hooks).length)
+    throw Error("Launch scenario differs from the twelve reviewed caller, clock, mock and judge definitions.");
+}
+
 const receipt = (row: any, retried = false) => ({
   state: row.state, liveAssistantId: ids.live, candidateId: ids.candidate,
   runId: row.run_id, candidateHash: row.candidate_hash, providerVersion: row.provider_version ?? null,
   mainNumberChanged: false, sharedToolsChanged: false, retried,
   emergencyTelephonyAcceptance: "not_verified", mailboxDelivery: "not_verified",
-  limitation: "Root-assistant simulations intercept the handoff. This is behaviour publication, not main-line launch or proof of emergency cross-cover, voicemail or email delivery.",
+  dualEmailDelivery: "not_verified", slackAlertDelivery: "not_verified",
+  limitation: "Root-assistant simulations intercept the handoff. This is behaviour publication, not main-line launch or proof of selected-engineer transfer, mailbox 603 deposit, either email receipt or Slack alert delivery.",
 });
 
 export async function launchPromotion(db: any, api: Api, settings: any, workspace: any, actor: string, expectedHash: string) {
@@ -139,6 +202,10 @@ export async function launchPromotion(db: any, api: Api, settings: any, workspac
   if (previous.data) return receipt(previous.data, false);
   const source = await db.from("receptionist_test_candidates").select("*").eq("tenant_id", ids.tenant).single();
   if (source.error) throw Error("Launch candidate snapshot unavailable.");
+  const intake = await db.from("receptionist_intake_installation")
+    .select("state,candidate_id").eq("tenant_id", ids.tenant).maybeSingle();
+  if (intake.error || intake.data?.state !== "verified" || intake.data.candidate_id !== ids.candidate)
+    throw Error("Candidate intake receiver and dynamic handoff need verified installation.");
   const latest = await db.from("receptionist_test_runs").select("*").eq("tenant_id", ids.tenant).order("created_at", { ascending: false }).limit(1).maybeSingle();
   if (latest.error) throw Error("Latest launch evidence unavailable.");
   const g = await readGraph(api);
@@ -150,7 +217,9 @@ export async function launchPromotion(db: any, api: Api, settings: any, workspac
     throw Error("Live Emma changed since the candidate was created; review before publication.");
   const scenarios = launchScenarioPayloads(tools, g.candidate);
   requireLaunchEvidence(latest.data, settings, candidateHash, scenarios);
-  const harness = await captureTestHarness(api, settings.suite_id);
+  const harness = await captureTestHarness(api, settings.suite_id, {
+    onScenario: scenario => requireReviewedLaunchScenario(scenario, scenarios),
+  });
   if (harness.fingerprint !== latest.data.report.harness.fingerprint)
     throw Error("Launch test setup changed since the passing run.");
   const providerRun = await api("eval/simulation/run/" + latest.data.provider_id);
@@ -181,11 +250,17 @@ export async function launchPromotion(db: any, api: Api, settings: any, workspac
     const newest = await db.from("receptionist_test_runs").select("*").eq("tenant_id", ids.tenant).order("created_at", { ascending: false }).limit(1).maybeSingle();
     const selected = await db.from("receptionist_test_settings").select("*").eq("tenant_id", ids.tenant).single();
     const bound = await db.from("receptionist_workspaces").select("assistant_id").eq("tenant_id", ids.tenant).single();
-    if (newest.error || selected.error || bound.error || bound.data?.assistant_id !== ids.live || newest.data?.id !== latest.data.id ||
+    const intakeNow = await db.from("receptionist_intake_installation")
+      .select("state,candidate_id").eq("tenant_id", ids.tenant).maybeSingle();
+    if (newest.error || selected.error || bound.error || intakeNow.error ||
+      intakeNow.data?.state !== "verified" || intakeNow.data?.candidate_id !== ids.candidate ||
+      bound.data?.assistant_id !== ids.live || newest.data?.id !== latest.data.id ||
       selected.data?.suite_id !== settings.suite_id || selected.data?.assistant_id !== ids.candidate ||
       await graphHash(current) !== stableGraphHash) return await finish("conflict");
     requireLaunchEvidence(newest.data, selected.data, candidateHash, scenarios);
-    const freshHarness = await captureTestHarness(api, selected.data.suite_id);
+    const freshHarness = await captureTestHarness(api, selected.data.suite_id, {
+      onScenario: scenario => requireReviewedLaunchScenario(scenario, scenarios),
+    });
     if (freshHarness.fingerprint !== newest.data.report.harness.fingerprint)
       return await finish("conflict");
   } catch { return await finish("conflict"); }

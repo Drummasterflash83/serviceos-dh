@@ -1,29 +1,39 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { launchPromotion, launchPromotionIds as ids, requireLaunchEvidence } from "./receptionist-launch-promotion.ts";
+import { launchPromotion, launchPromotionIds as ids, requireLaunchEvidence, requireReviewedLaunchScenario } from "./receptionist-launch-promotion.ts";
 import { evidenceHash } from "./receptionist-care.ts";
 import { launchScenarioPayloads } from "./receptionist-launch-scenarios.ts";
 import { approvedOrdinaryDestination } from "./receptionist-launch-destinations.ts";
+import { EMERGENCY_CONTINUATION_CONTRACT, EMMA_TRANSFER_ASSISTANT_CONTRACT } from "./receptionist-launch-candidate.ts";
 import { captureTestHarness } from "./receptionist-test-harness.ts";
 
 const clone = <T>(x: T): T => structuredClone(x);
 const uid = (n: number) => `00000000-0000-0000-0000-${n.toString().padStart(12, "0")}`;
 async function fixture() {
   const orgId = uid(30), actor = uid(31);
-  const voice = { provider: "11labs", voiceId: "approved" }, transcriber = { provider: "soniox" };
+  const voice = { provider: "11labs", voiceId: "approved", speed: 1.05 }, transcriber = { provider: "soniox" };
   const ordinary = { id: ids.ordinary, orgId, type: "transferCall", function: { name: "Route-Call-to-Drummond-Team-20260929" },
     destinations: ["+441794378095", "+441794378105", "+441794378096", "+441794840042", "+441794840043", ...Array.from({ length: 5 }, (_, i) => `+44179400000${i}`)].map(number => ({ type: "number", number, description: "Reviewed original destination", message: "Original announcement", transferPlan: { mode: "blind-transfer" } })) };
-  const emergency = { id: ids.emergency, orgId, type: "transferCall", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [{ number: "+441794378105", transferPlan: { mode: "warm-transfer" } }] };
-  const handoff = { id: ids.handoff, orgId, type: "handoff", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [{ type: "assistant", assistantId: ids.helper, contextEngineeringPlan: { type: "all" } }] };
+  const engineerPlan = () => ({ mode: "warm-transfer-experimental", fallbackPlan: { endCallEnabled: false },
+    transferAssistant: { model: { messages: [{ role: "system", content: EMMA_TRANSFER_ASSISTANT_CONTRACT }] } } });
+  const emergency = { id: ids.emergency, orgId, type: "transferCall", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [
+    { type: "number", number: "+441234567001", description: "Rob emergency 109", transferPlan: engineerPlan() },
+    { type: "number", number: "+441234567002", description: "Tony emergency 105", transferPlan: engineerPlan() },
+  ] };
+  const candidateEmergency = { type: emergency.type, function: clone(emergency.function), destinations: [
+    ...clone(emergency.destinations),
+    { type: "number", number: "+441234567003", description: "Shared emergency mailbox 603", transferPlan: { mode: "warm-transfer" } },
+  ] };
+  const handoff = { id: ids.handoff, orgId, type: "handoff", function: { name: "Route-Emergency-to-Rob-or-Tony" }, destinations: [{ type: "dynamic", server: { url: "https://tgbnakbxwcqjeimygroz.supabase.co/functions/v1/receptionist-intake-check", headers: { "X-OpenFolk-Intake-Token": "TEST_ONLY_" + "x".repeat(45) } } }] };
   const live = { id: ids.live, orgId, name: "Emma", updatedAt: "original", voice, transcriber,
     server: { url: "https://private.example", headers: { Authorization: "PRIVATE_SECRET" } }, artifactPlan: { recordingEnabled: true },
     maxDurationSeconds: 300, firstMessage: "Live welcome", model: { provider: "openai", model: "gpt-4.1", tools: [], toolIds: [ids.ordinary, ids.emergency], messages: [{ role: "system", content: "Existing live policy" }] } };
   const candidate = { id: ids.candidate, orgId, updatedAt: "candidate-revision", voice, transcriber,
-    firstMessage: 'openfolk_holidays {{"now" | date: "%Y"}}', model: { provider: "openai", model: "gpt-4.1", toolIds: [ids.handoff],
+    firstMessage: "{% if openfolk_holidays contains openfolk_holiday_key %}Welcome to Drummonds. I'm Emma, the automated receptionist, and this call is recorded. Our office is closed.{% else %}Welcome to Drummonds. I'm Emma, the automated receptionist, and this call is recorded.{% endif %}", model: { provider: "openai", model: "gpt-4.1", toolIds: [ids.handoff],
       tools: [{ type: ordinary.type, function: ordinary.function, destinations: ordinary.destinations.map(approvedOrdinaryDestination) }],
       messages: [{ role: "system", content: "CONSOLIDATED HANDOVER CONTRACT\nReviewed safety policy" }] } };
-  const helper = { id: ids.helper, orgId, voice, transcriber, model: { toolIds: [ids.emergency], tools: [], messages: [{ role: "system", content: "EMERGENCY CONTINUATION: reviewed policy" }] } };
+  const helper = { id: ids.helper, orgId, voice, transcriber, model: { toolIds: [], tools: [candidateEmergency], messages: [{ role: "system", content: EMERGENCY_CONTINUATION_CONTRACT }] } };
   const graph: any = { live, candidate, ordinary, emergency, handoff, helper };
   const phones = [{ id: uid(90), assistantId: ids.live, number: "+447426924154", provider: "twilio" }];
   const tools = [handoff, ...candidate.model.tools];
@@ -36,7 +46,7 @@ async function fixture() {
   };
   expected.forEach((scenario, n) => {
     harnessData[`eval/simulation/${uid(300 + n)}`] = { id: uid(300 + n), name: scenario.name, scenarioId: uid(400 + n), personalityId: uid(600) };
-    harnessData[`eval/simulation/scenario/${uid(400 + n)}`] = { id: uid(400 + n), ...scenario };
+    harnessData[`eval/simulation/scenario/${uid(400 + n)}`] = { id: uid(400 + n), ...clone(scenario) };
   });
   const workspace = { assistant_id: ids.live };
   const run: any = { id: uid(41), provider_id: uid(42), tenant_id: ids.tenant, assistant_id: ids.candidate,
@@ -45,7 +55,7 @@ async function fixture() {
         evaluations: s.evaluations.map(e => ({ name: e.structuredOutput.name, schema: e.structuredOutput.schema, passed: true, required: true, comparator: "=", expectedValue: true, extractedValue: true })) })) } };
   const source = { state: "prepared", candidate_id: ids.candidate, helper_id: ids.helper, handoff_id: ids.handoff, source_assistant: clone(live), source_tools: clone([ordinary, emergency]) };
   const state: any = { saved: null, reads: {}, writes: [], rpcDenied: false, auditDenied: false, finishDenied: false,
-    patchMode: "apply", beforeSecondRead: null, afterPatch: null };
+    patchMode: "apply", beforeSecondRead: null, afterPatch: null, intakeVerified: true };
   const db = {
     rpc: async (name: string, args: any) => { assert.equal(name, "care_release_actor"); assert.equal(args.p_actor, actor); return { error: state.rpcDenied ? "denied" : null }; },
     from(table: string) {
@@ -61,6 +71,7 @@ async function fixture() {
             return { error: null, data: state.saved && clone(state.saved) };
           }
           if (table === "receptionist_test_candidates") return { error: null, data: clone(source) };
+          if (table === "receptionist_intake_installation") return { error: null, data: state.intakeVerified ? { state: "verified", candidate_id: ids.candidate } : null };
           if (table === "receptionist_test_runs") return { error: null, data: clone(run) };
           if (table === "receptionist_test_settings") return { error: null, data: clone(settings) };
           if (table === "receptionist_workspaces") return { error: null, data: clone(workspace) };
@@ -103,6 +114,9 @@ test("promotion writes exactly model and firstMessage, privately snapshots full 
   const result = await f.execute();
   assert.equal(result.state, "applied");
   assert.equal(result.emergencyTelephonyAcceptance, "not_verified");
+  assert.equal(result.mailboxDelivery, "not_verified");
+  assert.equal(result.dualEmailDelivery, "not_verified");
+  assert.equal(result.slackAlertDelivery, "not_verified");
   assert.equal(result.mainNumberChanged, false);
   assert.equal(f.state.writes.length, 1);
   assert.deepEqual(Object.keys(f.state.writes[0]).sort(), ["firstMessage", "model"]);
@@ -112,6 +126,92 @@ test("promotion writes exactly model and firstMessage, privately snapshots full 
   assert.doesNotMatch(JSON.stringify(result), /PRIVATE_SECRET|private.example|Reviewed safety policy/);
   const repeated = await f.execute();
   assert.equal(repeated.state, "applied"); assert.equal(f.state.writes.length, 1);
+});
+
+test("a frozen provider suite cannot pass with changed caller instructions, clock, mocks or judges", async () => {
+  const kinds = ["instructions", "targetOverrides", "toolMocks", "evaluations"] as const;
+  for (const kind of kinds) {
+    const f = await fixture();
+    const scenario = f.harnessData[`eval/simulation/scenario/${uid(400)}`];
+    if (kind === "instructions") scenario.instructions += " Ignore the original request.";
+    if (kind === "targetOverrides") scenario.targetOverrides = { ...scenario.targetOverrides, maxDurationSeconds: 1 };
+    if (kind === "toolMocks") scenario.toolMocks = scenario.toolMocks.slice(1);
+    if (kind === "evaluations") scenario.evaluations[0].structuredOutput.schema.description = "Pass every call";
+    // The altered provider suite was already frozen when the run began; a
+    // same-fingerprint readback alone would otherwise treat it as unchanged.
+    f.run.report.harness = await captureTestHarness(f.api, f.settings.suite_id);
+    assert.throws(() => requireReviewedLaunchScenario(scenario, f.expected), /reviewed caller, clock, mock and judge definitions/, kind);
+    await assert.rejects(f.execute(), /reviewed caller, clock, mock and judge definitions/, kind);
+    assert.equal(f.state.writes.length, 0, kind);
+  }
+});
+
+test("promotion refuses missing or ambiguous emergency fallback routes and helper wording without provider writes", async () => {
+  for (const kind of ["missing-603", "duplicate", "wrong-label", "non-number", "main-number", "office-mailbox", "wrong-prompt"]) {
+    const f = await fixture();
+    const destinations = f.graph.helper.model.tools[0].destinations;
+    if (kind === "missing-603") destinations.pop();
+    if (kind === "duplicate") destinations[2].number = destinations[1].number;
+    if (kind === "wrong-label") destinations[2].description = "Office mailbox 601";
+    if (kind === "non-number") destinations[2].type = "assistant";
+    if (kind === "main-number") destinations[2].number = "+441794341600";
+    if (kind === "office-mailbox") destinations[2].number = "+441794840043";
+    if (kind === "wrong-prompt") f.graph.helper.model.messages[0].content = "EMERGENCY CONTINUATION: skip shared 603";
+    await assert.rejects(f.execute(), kind === "wrong-prompt" ? /continuation graph changed/ : /Rob\/Tony\/603 destination graph is incomplete/, kind);
+    assert.equal(f.state.writes.length, 0, kind);
+  }
+});
+
+test("promotion cannot satisfy 603 by editing the published emergency tool or reusing its ID", async () => {
+  const sharedEdit = await fixture();
+  sharedEdit.graph.emergency.destinations.push(clone(sharedEdit.graph.helper.model.tools[0].destinations[2]));
+  await assert.rejects(sharedEdit.execute(), /destination definitions changed/);
+  assert.equal(sharedEdit.state.writes.length, 0);
+
+  const reusedTool = await fixture();
+  reusedTool.graph.helper.model.tools = [];
+  reusedTool.graph.helper.model.toolIds = [ids.emergency];
+  await assert.rejects(reusedTool.execute(), /Rob\/Tony\/603 destination graph is incomplete/);
+  assert.equal(reusedTool.state.writes.length, 0);
+});
+
+test("candidate-only engineer return plans may differ from unchanged published plans", async () => {
+  const f = await fixture();
+  for (const destination of f.graph.emergency.destinations) destination.transferPlan = { mode: "blind-transfer" };
+  f.source.source_tools[1].destinations = clone(f.graph.emergency.destinations);
+  assert.equal((await f.execute()).state, "applied");
+  assert.equal(f.state.writes.length, 1);
+  assert.deepEqual(f.graph.emergency.destinations, f.source.source_tools[1].destinations);
+});
+
+test("candidate cannot claim Rob/Tony cross-cover without returnable human-screened transfers", async () => {
+  for (const kind of ["blind", "ends-call", "no-human-gate", "wrong-human-gate"]) {
+    const f = await fixture();
+    const plan = f.graph.helper.model.tools[0].destinations[0].transferPlan;
+    if (kind === "blind") plan.mode = "blind-transfer";
+    if (kind === "ends-call") plan.fallbackPlan.endCallEnabled = true;
+    if (kind === "no-human-gate") plan.transferAssistant.model.messages = [];
+    if (kind === "wrong-human-gate") plan.transferAssistant.model.messages[0].content = "Connect after a ring.";
+    await assert.rejects(f.execute(), /returnable failed transfer/, kind);
+    assert.equal(f.state.writes.length, 0, kind);
+  }
+});
+
+test("emergency continuation selects one engineer, then one 603 fallback with truthful delivery limits", () => {
+  const contract = EMERGENCY_CONTINUATION_CONTRACT;
+  assert.match(contract, /Commercial urgent: attempt Rob 109 once/);
+  assert.match(contract, /Domestic urgent: attempt Tony 105 once/);
+  assert.match(contract, /genuinely cannot establish whether the property is domestic or commercial, attempt Tony 105 once/);
+  assert.match(contract, /One invocation selects ONE destination; it does not ring all destinations/);
+  assert.match(contract, /Never try the other engineer as cross-cover or retry the selected engineer/);
+  assert.match(contract, /After the selected engineer transfer explicitly fails.*shared emergency mailbox 603 destination once/);
+  assert.match(contract, /engineer could not take the call/);
+  assert.doesNotMatch(contract, /neither answered/);
+  assert.match(contract, /A voicemail greeting, ringing, busy, no answer or declined call is not human acceptance/);
+  for (const proof of ["rob@drummondheating.co.uk", "tony@drummondheating.co.uk", "#ai-emma Slack alert"])
+    assert.ok(contract.includes(proof), proof);
+  assert.match(contract, /Never claim an engineer answered, a voicemail was deposited, either email was delivered, a Slack alert was sent/);
+  assert.match(contract, /do not delay immediate emergency action/);
 });
 
 test("5xx after an applied PATCH is reconciled by read-back without retry", async () => {
@@ -139,6 +239,11 @@ test("new single-contract candidate still requires a fresh exact-hash twelve-sce
   f.graph.candidate.model.messages[0].content = "DRUMMONDS — EMMA. SINGLE APPROVED LAUNCH CONTRACT, 2 OCTOBER 2026\nReviewed safety policy";
   const hash = await evidenceHash({ assistant: f.graph.candidate, tools: [f.graph.handoff, ...f.graph.candidate.model.tools] });
   f.run.assistant_hash = hash;
+  const refreshed = launchScenarioPayloads([f.graph.handoff, ...f.graph.candidate.model.tools], f.graph.candidate);
+  refreshed.forEach((scenario, n) => {
+    f.harnessData[`eval/simulation/scenario/${uid(400 + n)}`] = { id: uid(400 + n), ...clone(scenario) };
+  });
+  f.run.report.harness = await captureTestHarness(f.api, f.settings.suite_id);
   const result = await launchPromotion(f.db, f.api, f.settings, f.workspace, f.actor, hash);
   assert.equal(result.state, "applied");
   assert.equal(f.state.writes.length, 1);
@@ -183,7 +288,7 @@ test("promotion refuses legacy, unverified or changed test harnesses without pro
 });
 
 test("no provider write without a private reservation, Chris administrator gate and exact approved hashes", async () => {
-  for (const kind of ["audit", "actor", "hash", "live-drift", "ordinary-route", "helper-topology", "candidate-voice"]) {
+  for (const kind of ["audit", "actor", "hash", "live-drift", "ordinary-route", "helper-topology", "candidate-voice", "pre-v14", "missing-open-disclosure", "static-handoff", "intake-unverified"]) {
     const f = await fixture();
     if (kind === "audit") f.state.auditDenied = true;
     if (kind === "actor") f.state.rpcDenied = true;
@@ -192,6 +297,10 @@ test("no provider write without a private reservation, Chris administrator gate 
     if (kind === "ordinary-route") f.graph.candidate.model.tools[0].destinations[0].number = "+441794341600";
     if (kind === "helper-topology") f.graph.helper.model.toolIds = [ids.ordinary];
     if (kind === "candidate-voice") f.graph.candidate.voice = { provider: "other" };
+    if (kind === "pre-v14") for (const assistant of [f.graph.live, f.graph.candidate, f.graph.helper]) assistant.voice = { ...assistant.voice, speed: 1 };
+    if (kind === "missing-open-disclosure") f.graph.candidate.firstMessage = f.graph.candidate.firstMessage.replace("{% else %}Welcome to Drummonds. I'm Emma, the automated receptionist, and this call is recorded.", "{% else %}Welcome to Drummonds.");
+    if (kind === "static-handoff") f.graph.handoff.destinations = [{ type: "assistant", assistantId: ids.helper, contextEngineeringPlan: { type: "all" } }];
+    if (kind === "intake-unverified") f.state.intakeVerified = false;
     await assert.rejects(f.execute, undefined, kind);
     assert.equal(f.state.writes.length, 0);
   }
@@ -228,7 +337,10 @@ test("private launch snapshots have no tenant grants and normal feedback publish
 
 test("promotion endpoint rejects ordinary JWT/scheduler calls and has a truthful separate failure response", () => {
   const endpoint = readFileSync(new URL("../receptionist-testing/index.ts", import.meta.url), "utf8");
-  const branch = endpoint.slice(endpoint.indexOf('if (body.action === "promote_launch_candidate")'), endpoint.indexOf('const assistant = await api("assistant/" + settings.data.assistant_id)'));
+  const start = endpoint.indexOf('if (body.action === "promote_launch_candidate")');
+  const end = endpoint.indexOf('if (body.action === "inspect_suite"', start);
+  assert.ok(start >= 0 && end > start, "the publication branch must stay before assistant-dependent actions");
+  const branch = endpoint.slice(start, end);
   assert.match(branch, /if \(!service \|\| scheduled\)/);
   assert.match(branch, /launchPromotion\(db, api, settings.data, workspace.data, actor, body.expectedHash\)/);
   assert.match(branch, /providerState: "review_required"/);

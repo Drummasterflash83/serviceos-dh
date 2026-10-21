@@ -1,0 +1,173 @@
+{
+  "version": "emma-source-candidate/1",
+  "sourceCommit": "40c00bf700bb27254f37796226d932e6abd878a3",
+  "candidateSourceSha256": "7c089d61486a2eb27b05730d2d5ebeff60a8e78455818e47413580852eb383c9",
+  "scenarioRevision": "single-engineer-603-v12",
+  "scenarioSuiteSha256": "0de4ae5f817fa707ca7eb61dbf8e98b7b54ac46ece89879fb3c790bcc24953b1",
+  "sourceFiles": [
+    {
+      "path": "supabase/functions/_shared/receptionist-emergency-603-receiver.ts",
+      "sha256": "919f69d1886f674a896f8092cb56317c44fa99ed93e06ab1f6c5e17e7fe8ddbe"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-emergency-fallback-proof.ts",
+      "sha256": "29f40e26936c686ccf569f12d710f308fb1e4e9f9a7e3787ec87bf2900329fb8"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-emergency-intake-gate.ts",
+      "sha256": "6cf37e26b08618404bda6c02ef7a25599698f72dc7dedd99af90dc8b35463e40"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-launch-candidate.ts",
+      "sha256": "f453a30f89090c60715112b304c9ec007bdb3c2cd23d92e9af9e61ba83c09d44"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-launch-clear-contract.ts",
+      "sha256": "dcedc5144cc3b9d6f0d4f4fe8187d8e500200ff3c031577b2d5399eb7c4493d9"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-launch-consistency.ts",
+      "sha256": "4da33ed02941a7c5a68d416b62a8423549748d576c9045a48dc2f2cf242fdf98"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-launch-destinations.ts",
+      "sha256": "e3f35162ff4535ba2126fa6262e7e33a0312601e6288586f9ad06d4d0c2f3e29"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-launch-intake-contract.ts",
+      "sha256": "41cd7bea6b3a7d625b11345aec5e831a6a08ee2a539f7507be2ee756c9b28f2f"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-launch-promotion.ts",
+      "sha256": "0c4fb2054de66526f8a0653060939379796346fc9283b9996b2e5768509e72e8"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-launch-scenarios.ts",
+      "sha256": "3d9b0f516ee88ec26b0615eb5e24da8f4d2a5062e781ac53f0c166b377eb93e2"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-launch-wording.ts",
+      "sha256": "8f9def81658879260b991d689f5557ecd03348199bfb64ba080992a4a2cdd29a"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-launch-voice-reconcile.ts",
+      "sha256": "cef1851eda96c4c2860c338840bbc34d5ac2f7a598bc2440b7670fa86facad2d"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-test-clock.ts",
+      "sha256": "c920f1371e2af0da2e47d5df8158896b086ee6ecb184647ba0816ece71533529"
+    },
+    {
+      "path": "supabase/functions/_shared/receptionist-testing.ts",
+      "sha256": "1b7659bb8da77da1e17c6fbd7ebc0c8c6dfdb302a32c18291df65f7d4ecb96e4"
+    },
+    {
+      "path": "supabase/functions/receptionist-testing/index.ts",
+      "sha256": "105753b93bc65e47c2718d7b46f9480e108b527e0cd5fb27f2f10724e737f6d8"
+    }
+  ],
+  "results": [
+    {
+      "index": 1,
+      "name": "Ask for Mary",
+      "payloadSha256": "980e05232f60d35851830aa72991cbac01c93fe777f868cf1b46d92e996ff19e",
+      "staticPreflight": "passed",
+      "conversationalOutcome": "not_run",
+      "realPhoneOutcome": "not_run"
+    },
+    {
+      "index": 2,
+      "name": "Rob uses his new extension",
+      "payloadSha256": "fff50f255cb9837293bf98da8387a32a0a0e076cc787ad6d834018f42ec758b7",
+      "staticPreflight": "passed",
+      "conversationalOutcome": "not_run",
+      "realPhoneOutcome": "not_run"
+    },
+    {
+      "index": 3,
+      "name": "Alan never silently reaches Rob",
+      "payloadSha256": "af4fe74f91bddc53c80c045eac8ad31b04d611eadf605b2dc3d2a5f673c228dd",
+      "staticPreflight": "passed",
+      "conversationalOutcome": "not_run",
+      "realPhoneOutcome": "not_run"
+    },
+    {
+      "index": 4,
+      "name": "Heidi with voicemail consent",
+      "payloadSha256": "1b4e57d4ea732eec0544f81aebf7219a698c134948ae9da2f0dab72f0548cdc5",
+      "staticPreflight": "passed",
+      "conversationalOutcome": "not_run",
+      "realPhoneOutcome": "not_run"
+    },
+    {
+      "index": 5,
+      "name": "Sales voicemail bypasses the main number",
+      "payloadSha256": "7d338165a3c5b9d6a54d1cc8b41eec3f5e9c81079f2e9039b549c7226e0d058d",
+      "staticPreflight": "passed",
+      "conversationalOutcome": "not_run",
+      "realPhoneOutcome": "not_run"
+    },
+    {
+      "index": 6,
+      "name": "Closed office: hours and declined Heidi voicemail",
+      "payloadSha256": "a96d013806e13ed8b5b599763d541138a46fbe71cb4e5136b85b6eb82f7cd8e9",
+      "staticPreflight": "passed",
+      "conversationalOutcome": "not_run",
+      "realPhoneOutcome": "not_run"
+    },
+    {
+      "index": 7,
+      "name": "Christmas Day: office closed and Heidi voicemail declined",
+      "payloadSha256": "6bde1492062fd8ded0ff573ab7662ad4a36be1249a9ac09daf4f4e40e44969b8",
+      "staticPreflight": "passed",
+      "conversationalOutcome": "not_run",
+      "realPhoneOutcome": "not_run"
+    },
+    {
+      "index": 8,
+      "name": "Closed office: Heidi personal voicemail with consent",
+      "payloadSha256": "cf79e726c99bc74b9b8c77af5067638e6e9623f38b3805aeea7367a9513465d9",
+      "staticPreflight": "passed",
+      "conversationalOutcome": "not_run",
+      "realPhoneOutcome": "not_run"
+    },
+    {
+      "index": 9,
+      "name": "Closed office: routine Rob enquiry never bypasses consent",
+      "payloadSha256": "152fd91a3b0073a6a24b441c362c993f3e1dcde48173dff6785c67e932aebc0a",
+      "staticPreflight": "passed",
+      "conversationalOutcome": "not_run",
+      "realPhoneOutcome": "not_run"
+    },
+    {
+      "index": 10,
+      "name": "Out of hours: domestic leak to emergency continuation (mocked)",
+      "payloadSha256": "de377acdca1534bd70aae0359301ed41799bd67af13c57bcf7e69520b714896f",
+      "staticPreflight": "passed",
+      "conversationalOutcome": "not_run",
+      "realPhoneOutcome": "not_run"
+    },
+    {
+      "index": 11,
+      "name": "Out of hours: commercial live fault to emergency continuation (mocked)",
+      "payloadSha256": "e4060446ddf3c37d03d8aba32bfc0498ddc959daa900c1d5fca87672460a0c05",
+      "staticPreflight": "passed",
+      "conversationalOutcome": "not_run",
+      "realPhoneOutcome": "not_run"
+    },
+    {
+      "index": 12,
+      "name": "During office hours: gas safety first, then Mary",
+      "payloadSha256": "ba9b9227eeee9c842ed32b5ab7832aca67f85dee4a0cf58da799f4f53d7054d4",
+      "staticPreflight": "passed",
+      "conversationalOutcome": "not_run",
+      "realPhoneOutcome": "not_run"
+    }
+  ],
+  "summary": {
+    "staticPreflight": "12/12 passed",
+    "conversationalOutcome": "not_run",
+    "realPhoneOutcome": "not_run",
+    "limitation": "The synthetic fixture validates scenario definitions against the unchanged source files. It does not run Emma or establish a provider candidate hash, conversation behavior, handset transfer, mailbox deposit, email or Slack delivery."
+  }
+}
