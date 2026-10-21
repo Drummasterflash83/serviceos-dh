@@ -4,8 +4,8 @@ import { RefreshCw } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
-  dailyStatKeys, dailyStatParts, readDailyStatsPart,
-  type DailyStatKey, type DailyStatPart, type DailyStatsPartResult,
+  dailyStatKeys, dailyStatParts, readDailyStatsPart, resolveDailyStatsPart,
+  type DailyStatKey, type DailyStatsPartResult,
 } from "@/lib/new-dawn-learn-daily-stats";
 import { commusoftFreshnessSummary, readCommusoftFreshness } from "@/lib/new-dawn-commusoft-freshness";
 import "@/styles/learn-daily-stats.css";
@@ -15,11 +15,11 @@ const labels: Record<DailyStatKey, string> = {
   slack: "Slack messages", jobs: "Commusoft jobs",
   customers: "Commusoft customers", sites: "Commusoft sites",
 };
-const partForKey: Record<DailyStatKey, DailyStatPart> = {
+const partForKey: Record<DailyStatKey, (typeof dailyStatParts)[number]> = {
   calls: "calls", recordings: "recordings", emails: "emails",
   slack: "slack", jobs: "business", customers: "business", sites: "business",
 };
-const partLabels: Record<DailyStatPart, string> = {
+const partLabels: Record<(typeof dailyStatParts)[number], string> = {
   calls: "Calls", recordings: "Recordings", emails: "Email",
   slack: "Slack", business: "Commusoft",
 };
@@ -70,6 +70,30 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
       }
     },
   })) });
+  const communicationQueries = statQueries.slice(0, 3);
+  const legacyEnabled = !!user && flag.data === true && (!operator || !!approvedReason) &&
+    communicationQueries.every((query) => !query.isPending) &&
+    communicationQueries.some((query) => query.data === null);
+  const legacyCommunications = useQuery({
+    queryKey: ["learn-daily-stats-communications-compat", user?.id, tenantId,
+      operator, approvedReason],
+    enabled: legacyEnabled,
+    retry: false,
+    staleTime: 60_000,
+    gcTime: 0,
+    refetchInterval: operator ? false : 300_000,
+    refetchOnWindowFocus: operator ? false : "always",
+    queryFn: async (): Promise<DailyStatsPartResult | null> => {
+      try {
+        const { data, error } = await getSupabaseClient().rpc("new_dawn_learn_daily_stats_part", {
+          p_tenant: tenantId, p_part: "communications",
+          p_operator_reason: operator ? approvedReason : null,
+        }).abortSignal(AbortSignal.timeout(25_000));
+        if (error || !user) return null;
+        return readDailyStatsPart(data, "communications", tenantId, user.id);
+      } catch { return null; }
+    },
+  });
   const freshness = useQuery({
     queryKey: ["learn-commusoft-freshness", user?.id, tenantId, operator, approvedReason],
     enabled: !!user && flag.data === true && (!operator || !!approvedReason),
@@ -86,11 +110,24 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
     },
   });
   if (!user || flag.data !== true) return null;
+  const legacyAge = legacyCommunications.data
+    ? Date.now() - Date.parse(legacyCommunications.data.observedAt) : Infinity;
+  const legacyResult = legacyCommunications.data &&
+    legacyAge >= -60_000 && legacyAge < 360_000
+    ? legacyCommunications.data : null;
   const parts = Object.fromEntries(dailyStatParts.map((part, index) =>
-    [part, statQueries[index].data ?? null])) as Record<DailyStatPart, DailyStatsPartResult | null>;
+    [part, resolveDailyStatsPart(part, statQueries[index].data ?? null,
+      legacyResult)])) as Record<(typeof dailyStatParts)[number], DailyStatsPartResult | null>;
   const available = dailyStatParts.some((part) => parts[part]);
-  const checking = statQueries.some((query) => query.isPending);
-  const fetching = statQueries.some((query) => query.isFetching);
+  const checking = statQueries.some((query) => query.isPending) ||
+    (legacyEnabled && legacyCommunications.isPending);
+  const fetching = statQueries.some((query) => query.isFetching) ||
+    (legacyEnabled && legacyCommunications.isFetching);
+  const pendingPart = (part: (typeof dailyStatParts)[number]) => {
+    const direct = statQueries[dailyStatParts.indexOf(part)];
+    return direct.isPending || (part !== "slack" && part !== "business" &&
+      direct.data === null && legacyEnabled && legacyCommunications.isPending);
+  };
   return (
     <section className="cp-card lr-daily-stats" aria-label="Saved inputs by day">
       <header className="lr-daily-head">
@@ -101,7 +138,9 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
         </div>
         {(!operator || approvedReason) && (
           <button className="cp-secondary" disabled={fetching}
-            onClick={() => { statQueries.forEach((query) => { void query.refetch(); }); void freshness.refetch(); }}><RefreshCw size={15} /> Refresh totals</button>
+            onClick={() => { statQueries.forEach((query) => { void query.refetch(); });
+              if (legacyEnabled) void legacyCommunications.refetch();
+              void freshness.refetch(); }}><RefreshCw size={15} /> Refresh totals</button>
         )}
       </header>
       {operator && !approvedReason && mdReason === undefined && (
@@ -121,9 +160,9 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
         !available && checking ? <p role="status">Checking saved totals…</p>
           : !available ? <p role="alert">Saved totals could not be checked. Try refreshing later.</p>
             : <>
-              <p className="lr-daily-asof">Each source is checked separately. {dailyStatParts.map((part, index) =>
+              <p className="lr-daily-asof">Checked times: {dailyStatParts.map((part) =>
                 `${partLabels[part]}: ${parts[part] ? when(parts[part]!.observedAt)
-                  : statQueries[index].isPending ? "checking" : "could not be checked"}`
+                  : pendingPart(part) ? "checking" : "could not be checked"}`
               ).join(" · ")} UK time</p>
               <div className="lr-daily-table" role="table" aria-label="Today's and running saved totals">
                 <div className="lr-daily-row lr-daily-column-head" role="row">
@@ -134,7 +173,7 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
                 {dailyStatKeys.map(key => {
                   const part = partForKey[key];
                   const count = parts[part]?.counts[key];
-                  const pending = statQueries[dailyStatParts.indexOf(part)].isPending;
+                  const pending = pendingPart(part);
                   return (
                   <div className="lr-daily-row" role="row" key={key}>
                     <span role="cell">{labels[key]}</span>
@@ -153,7 +192,7 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
               </details>}
               <div className="lr-daily-job-check">
                 <div><span>Newest saved Commusoft job</span>
-                  <strong>{!parts.business ? statQueries[dailyStatParts.indexOf("business")].isPending
+                  <strong>{!parts.business ? pendingPart("business")
                     ? "Checking Commusoft" : "Commusoft check unavailable"
                     : parts.business.latestSavedJob
                       ? `Job ${parts.business.latestSavedJob.number} · first seen ${when(parts.business.latestSavedJob.savedAt)}`

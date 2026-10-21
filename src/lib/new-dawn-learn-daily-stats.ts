@@ -15,8 +15,9 @@ export type DailyStats = {
 };
 
 export const dailyStatParts = ["calls", "recordings", "emails", "slack", "business"] as const;
-export type DailyStatPart = (typeof dailyStatParts)[number];
+export type DailyStatPart = (typeof dailyStatParts)[number] | "communications";
 export const dailyStatPartKeys: Record<DailyStatPart, readonly DailyStatKey[]> = {
+  communications: ["calls", "recordings", "emails"],
   calls: ["calls"],
   recordings: ["recordings"],
   emails: ["emails"],
@@ -109,4 +110,21 @@ export function readDailyStatsPart(raw: unknown, part: DailyStatPart,
       number: (latest as Record<string, unknown>).number as string,
       savedAt: (latest as Record<string, unknown>).saved_at as string,
     }, auditId: raw.audit_id };
+}
+
+/** The older audited RPC may still serve open clients while the source split
+ * is released separately. Use it only for a communication source that failed
+ * its own strict read; never let it fill Slack or business counts. */
+export function resolveDailyStatsPart(
+  part: (typeof dailyStatParts)[number],
+  direct: DailyStatsPartResult | null,
+  legacy: DailyStatsPartResult | null,
+): DailyStatsPartResult | null {
+  if (direct?.part === part) return direct;
+  if (!legacy || legacy.part !== "communications" ||
+    !["calls", "recordings", "emails"].includes(part)) return null;
+  const value = legacy.counts[part as DailyStatKey];
+  if (!value) return null;
+  return { part, observedAt: legacy.observedAt, counts: { [part]: value },
+    latestSavedJob: null, auditId: legacy.auditId };
 }

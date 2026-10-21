@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dailyStatKeys, dailyStatParts, readDailyStats, readDailyStatsPart } from "./new-dawn-learn-daily-stats.ts";
+import { dailyStatKeys, dailyStatParts, readDailyStats, readDailyStatsPart, resolveDailyStatsPart } from "./new-dawn-learn-daily-stats.ts";
 
 const tenant = "00000000-0000-0000-0000-000000000001";
 const actor = "00000000-0000-0000-0000-000000000002";
@@ -70,4 +70,31 @@ test("communication sources validate independently so one failed read cannot inv
       counts: { ...isolated.counts, slack: { today: 0, total: 1 } },
     }, part, tenant, actor));
   }
+});
+
+test("a verified old communications read fills only failed communication parts", () => {
+  const old = readDailyStatsPart({ ...response(),
+    version: "new-dawn-learn-daily-stats-part/1", part: "communications",
+    counts: { calls: { today: 0, total: 4 }, recordings: { today: 0, total: 3 },
+      emails: { today: 2, total: 20 } }, latest_saved_job: null,
+  }, "communications", tenant, actor);
+  const newCalls = readDailyStatsPart({ ...response(),
+    version: "new-dawn-learn-daily-stats-part/1", part: "calls",
+    counts: { calls: { today: 1, total: 5 } }, latest_saved_job: null,
+  }, "calls", tenant, actor);
+  assert.deepEqual(resolveDailyStatsPart("calls", newCalls, old)?.counts.calls,
+    { today: 1, total: 5 });
+  assert.deepEqual(resolveDailyStatsPart("emails", null, old)?.counts.emails,
+    { today: 2, total: 20 });
+  assert.deepEqual(resolveDailyStatsPart("emails", newCalls, old)?.counts.emails,
+    { today: 2, total: 20 });
+  assert.equal(resolveDailyStatsPart("slack", null, old), null);
+  assert.equal(resolveDailyStatsPart("business", null, old), null);
+  assert.equal(resolveDailyStatsPart("emails", null, null), null);
+  assert.throws(() => readDailyStatsPart({ ...response(),
+    version: "new-dawn-learn-daily-stats-part/1", part: "communications",
+    counts: { calls: { today: 0, total: 4 }, recordings: { today: 0, total: 3 },
+      emails: { today: 2, total: 20 }, slack: { today: 0, total: 0 } },
+    latest_saved_job: null,
+  }, "communications", tenant, actor));
 });
