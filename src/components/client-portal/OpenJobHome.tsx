@@ -224,7 +224,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   const dailyCoverage = useQuery({
     queryKey: ["new-dawn-daily-status-coverage", tenant, user?.id, operator,
       approvedReason],
-    enabled,
+    enabled: enabled && showMatchingTools,
     staleTime: 0,
     retry: false,
     queryFn: async () => {
@@ -381,7 +381,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       await summary.refetch();
       if (showJobBrowser || showOldestJobs) await firstPage.refetch();
       await customerBlockers.refetch();
-      await dailyCoverage.refetch();
+      if (showMatchingTools) await dailyCoverage.refetch();
       if (showMatchingTools && showRecordedAttention) await recordedAttention.refetch();
       if (status !== null && pageIndex === 0) await additionalPage.refetch();
     })();
@@ -446,11 +446,11 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
           {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending</p>}
-          <p>{dailyCoverage.isError
+          {showMatchingTools && <p>{dailyCoverage.isError
             ? "Daily check unavailable."
             : checkedDay?.day
               ? `Daily check ${statusDay(checkedDay.day)}.`
-              : "Daily checks are being collected."}</p>
+              : "Daily checks are being collected."}</p>}
           {activeSummary && <><button type="button" onClick={() => showJobs(attentionStatus)}>
             {attentionStatus === "on_hold" ? "Review recorded On-hold jobs"
               : attentionStatus === "pending" ? "Review recorded Pending jobs"
