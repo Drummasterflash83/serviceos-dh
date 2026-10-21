@@ -6,7 +6,7 @@ export type CustomerBlockedJob = {
   sourceVersionId: string;
   sourceObservedAt: string;
   status: "on_hold" | "pending";
-  sourceDescription: string | null;
+  sourceDescription: string | null | undefined;
 };
 export type CustomerBlockerGroup = {
   kind: "company" | "person";
@@ -87,7 +87,7 @@ export function readCustomerBlockers(value: unknown, tenant: string, actor: stri
         sourceVersionId: row.source_version_id as string,
         sourceObservedAt: row.source_observed_at as string,
         status: row.status as CustomerBlockedJob["status"],
-        sourceDescription: described ? row.source_description as string | null : null };
+        sourceDescription: described ? row.source_description as string | null : undefined };
     });
     if (onHold !== raw.on_hold) return unavailable();
     total += jobs.length;

@@ -26,7 +26,7 @@ test("a confirmed customer job retains exact source keys for audited detail", ()
   assert.equal(row.external_id, "123");
   assert.equal(row.source_version_id, version);
   assert.equal(row.identity_state, "reviewed_link");
-  assert.equal(result.groups[0].jobs[0].sourceDescription, null);
+  assert.equal(result.groups[0].jobs[0].sourceDescription, undefined);
 });
 
 test("the current reader carries bounded saved work descriptions without classifying them", () => {
@@ -36,6 +36,8 @@ test("the current reader carries bounded saved work descriptions without classif
   const result = readCustomerBlockers(described, tenant, actor);
   assert.equal(result.groups[0].jobs[0].sourceDescription, "For Invoicing");
   assert.equal(result.groups[0].jobs[0].status, "on_hold");
+  described.groups[0].jobs[0].source_description = null;
+  assert.equal(readCustomerBlockers(described, tenant, actor).groups[0].jobs[0].sourceDescription, null);
   described.groups[0].jobs[0].source_description = "🔧".repeat(160);
   assert.equal(readCustomerBlockers(described, tenant, actor).groups[0].jobs[0].sourceDescription,
     "🔧".repeat(160));

@@ -462,7 +462,9 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
             <div className="nd-customer-blocker-jobs">{group.jobs.map((job) => <button type="button"
               key={`${job.connectionId}:${job.externalId}`}
               onClick={() => { setSelected(null); setSelectedCustomerJob(job); }}>
-              <span>Job {job.externalId}{job.sourceDescription ? ` · ${job.sourceDescription}` : " · Description not recorded"}</span>
+              <span>Job {job.externalId}{job.sourceDescription
+                ? ` · ${job.sourceDescription}` : job.sourceDescription === null
+                  ? " · Description not recorded" : " · Open job for work description"}</span>
               <small>{statusLabel[job.status]} · saved {savedAt(job.sourceObservedAt)}</small>
               <ChevronRight size={16} aria-hidden="true" />
             </button>)}</div>

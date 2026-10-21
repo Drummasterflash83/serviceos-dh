@@ -5,7 +5,7 @@ The MD Home currently calls every confirmed On-hold/Pending record “customer w
 ## Contract and scope
 
 - The input is the **current retained Commusoft job source version** already selected by `new_dawn_commusoft_current_job_source`. There is no new provider call. `description` is trimmed, capped at 160 characters, and emitted as `null` if absent. The UI renders it as text and labels a missing description explicitly. Neither the SQL nor the UI classifies field/office work or urgency.
-- The response advances to `new-dawn-customer-blockers/2`; the client accepts v1 during rollout and validates the added v2 key, length and exact source identity. Tenant, actor, audit, customer/site matching, date and row limits remain enforced.
+- The response advances to `new-dawn-customer-blockers/2`; the client accepts v1 during rollout and tells the user to open the job for its description until v2 is installed. In v2, an absent source description is labelled as such. The client validates the added key, length and exact source identity. Tenant, actor, audit, customer/site matching, date and row limits remain enforced.
 - The MD Home describes confirmed records as linked records requiring inspection. The unlinked On-hold/Pending jobs remain in the paged list and operator identity-review queue. This change does not create links, assign staff, change statuses, change scores or enable a client login.
 - This release depends on `20261113000000` and `20261113010000` from the reliable current-source Home release. It must not install before both are verified on LIVE.
 
