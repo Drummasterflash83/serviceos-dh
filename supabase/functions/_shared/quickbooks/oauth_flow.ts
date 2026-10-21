@@ -180,7 +180,7 @@ export async function completeQuickBooksAuthorization(
 export async function refreshQuickBooksConnection(
   tenantId: string,
   connectionId: string,
-  ports: { rpc: Rpc; fetcher?: typeof fetch; clock?: () => number; signal?: AbortSignal },
+  ports: { rpc: Rpc; fetcher?: typeof fetch; clock?: () => number; signal?: AbortSignal; stillAuthorized?: () => Promise<boolean> },
 ): Promise<"current" | "refreshed" | "busy" | "authentication_required" | "unconfirmed"> {
   if (!uuid(tenantId) || !uuid(connectionId)) return "unconfirmed";
   try {
@@ -206,11 +206,13 @@ export async function refreshQuickBooksConnection(
     const signal = ports.signal
       ? AbortSignal.any([ports.signal, AbortSignal.timeout(Math.ceil(remaining))])
       : AbortSignal.timeout(Math.ceil(remaining));
+    if (ports.stillAuthorized && !await ports.stillAuthorized()) return "unconfirmed";
     const pair = await requestQuickBooksTokens(
       { clientId: a.clientId, clientSecret: a.clientSecret },
       { kind: "refresh", refreshToken: a.refreshToken },
       { ...ports, signal },
     );
+    if (ports.stillAuthorized && !await ports.stillAuthorized()) return "unconfirmed";
     const saved = await ports.rpc("learn_quickbooks_refresh_finish", {
       ...scope,
       p_lease: a.leaseId,

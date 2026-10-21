@@ -285,10 +285,7 @@ export async function deadLetterJob(
   }
 }
 
-/**
- * Reclaim jobs whose worker died mid-run (lease expired): move them back to
- * 'retrying', available now, so the next claim picks them up. Returns the count.
- */
+/** Reclaim expired jobs without running past their configured attempt limit. */
 export async function releaseExpiredLeases(client: SupabaseClient): Promise<number> {
   let voicemailReclaimed = 0;
   try {
@@ -297,24 +294,61 @@ export async function releaseExpiredLeases(client: SupabaseClient): Promise<numb
   } catch {
     /* A failed recovery leaves voicemail jobs untouched for inspection. */
   }
+  let reclaimed = 0;
   try {
-    const { data } = await client
-      .from("platform_jobs")
-      .update({
-        status: "retrying",
-        available_at: new Date().toISOString(),
-        lease_expires_at: null,
-        error_code: "lease_expired",
-        last_error: "Worker lease expired before completion — reclaimed.",
-      })
+    const now = new Date().toISOString();
+    // A bounded read avoids moving an exhausted job back to the active queue.
+    // The exact attempt is checked again on update in case another worker won
+    // the claim after this read. The next tick handles any overflow or error.
+    const { data: expired, error } = await client.from("platform_jobs")
+      .select("id,attempt_count,max_attempts")
       .eq("status", "running")
       .neq("job_type", "phone.voicemail_import")
-      .lt("lease_expires_at", new Date().toISOString())
-      .select("id");
-    return voicemailReclaimed + (data ?? []).length;
+      .lt("lease_expires_at", now)
+      .order("lease_expires_at", { ascending: true })
+      .limit(100);
+    if (error || !Array.isArray(expired)) return voicemailReclaimed;
+    for (const job of expired) {
+      if (typeof job.id !== "string" ||
+        !Number.isSafeInteger(job.attempt_count) || job.attempt_count < 1 ||
+        !Number.isSafeInteger(job.max_attempts) || job.max_attempts < 1) continue;
+      const exhausted = job.attempt_count >= job.max_attempts;
+      const changes = exhausted
+        ? {
+          status: "dead_letter",
+          dead_lettered_at: now,
+          failed_at: now,
+          lease_expires_at: null,
+          error_code: "lease_expired",
+          last_error: "Worker lease expired at the configured attempt limit.",
+          error_count: job.attempt_count,
+        }
+        : {
+          status: "retrying",
+          available_at: now,
+          next_run_at: now,
+          lease_expires_at: null,
+          error_code: "lease_expired",
+          last_error: "Worker lease expired before completion — reclaimed.",
+          error_count: job.attempt_count,
+        };
+      try {
+        const { data, error: updateError } = await client.from("platform_jobs")
+          .update(changes)
+          .eq("id", job.id)
+          .eq("status", "running")
+          .eq("attempt_count", job.attempt_count)
+          .lt("lease_expires_at", now)
+          .select("id");
+        if (!updateError && Array.isArray(data)) reclaimed += data.length;
+      } catch {
+        // Leave this exact row for the next ordinary tick.
+      }
+    }
   } catch {
-    return voicemailReclaimed;
+    // A failed queue read never asserts that an expired lease was recovered.
   }
+  return voicemailReclaimed + reclaimed;
 }
 
 /** Extend a running job's lease (worker still processing). Best-effort. */

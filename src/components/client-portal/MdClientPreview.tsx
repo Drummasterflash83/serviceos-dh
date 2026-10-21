@@ -67,7 +67,7 @@ export function MdClientPreview() {
     <main className="md-review-main">
       <header className="md-review-topbar">
         <span>Drummonds / {section === "home" ? "Home" : section === "learn" ? "LEARN" : "Money"}</span>
-        <span>{user?.email ?? "OpenFolk"}</span>
+        <span>Read-only presentation</span>
       </header>
       <div className="md-review-content">
         {!active ? <section className="md-review-gate" aria-label="Open Drummonds MD view">
@@ -94,7 +94,7 @@ export function MdClientPreview() {
           </details>
           {section === "home" ? <>
             <OpenJobHome key={`${active.auditId}:home`} tenant={drummondsTenantId}
-              company="Drummonds" operator mdReason={active.reason}
+              company="Drummonds" operator presentationMode mdReason={active.reason}
               mdMoney={<MdMoneyPanel tenant={drummondsTenantId} reason={active.reason}
                 summaryOnly onOpenFull={() => setSection("money")} />} />
           </> : section === "learn" ? <>

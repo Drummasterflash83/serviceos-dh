@@ -6,7 +6,6 @@ const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")
 const row = (n = 2) => ({ interaction_id: id(n), source_revision: String(n % 10).repeat(64) });
 function fixture(options: any = {}) {
   const calls: any[] = [];
-  const reviews = new Set();
   let inventoryCall = 0;
   const admin: any = {
     from() {
@@ -17,8 +16,6 @@ function fixture(options: any = {}) {
       if (name === "learn_identity_pending")
         return options.inventories?.[inventoryCall++] ??
           options.inventory ?? { data: options.rows ?? [row()], error: null };
-      if (name === "learn_identity_review_count")
-        return options.review ?? { data: reviews.size, error: null };
       assert.equal(name, "learn_identity_deliver");
       assert.equal(args.p_tenant, id(1));
       const receipt = {
@@ -39,7 +36,6 @@ function fixture(options: any = {}) {
       const answer = options.respond
         ? options.respond(args, receipt)
         : { data: receipt, error: null };
-      if (answer.data?.state === "review_required") reviews.add(args.p_interaction);
       return answer;
     },
   };
@@ -56,7 +52,12 @@ test("confirmed atomic receipt counts a card and the actual acknowledged event o
   assert.equal(r.recordsProcessed, 1);
   assert.equal(r.result?.cards_enriched, 1);
   assert.equal(r.result?.events_consumed, 1);
-  assert.equal(f.calls.length, 3);
+  assert.equal(f.calls.length, 2);
+  assert.deepEqual(Object.keys(r.result ?? {}).sort(), [
+    "cards_enriched", "companies_created", "continued", "events_consumed",
+    "failed", "people_created", "recommendations", "resolved",
+    "review_required", "reviews_recorded", "suggestions_created",
+  ]);
 });
 test("lost publication reply inspects exact request once without republishing", async () => {
   const f = fixture({
@@ -131,6 +132,11 @@ test("a mixed batch reports partial failure and does not emit a successful conti
   assert.equal(r.result?.failed, 1);
   assert.equal(r.error?.retryable, true);
   assert.equal(r.continuation, undefined);
+  assert.deepEqual(Object.keys(r.result ?? {}).sort(), [
+    "cards_enriched", "companies_created", "continued", "events_consumed",
+    "failed", "people_created", "recommendations", "resolved",
+    "review_required", "reviews_recorded", "suggestions_created",
+  ]);
   assert.ok(!JSON.stringify(r).includes("PRIVATE"));
 });
 test("review-required receipts preserve pending events and never count card completion", async () => {
@@ -190,23 +196,18 @@ test("missing, duplicated or invalid inventory prevents every mutation", async (
     assert.equal(r.error?.code, "identity_inventory_unconfirmed");
   }
 });
-test("failed inventory reports only its fixed stage and SQLSTATE", async () => {
+test("failed pending inventory reports only its fixed stage and SQLSTATE", async () => {
   const warnings: string[] = [], prior = console.warn;
   console.warn = (message: string) => { warnings.push(message); };
   try {
     const pending = await fixture({ inventory: { data: null,
       error: { code: "57014", message: "PRIVATE database query and contact" } } }).run();
-    const review = await fixture({ rows: [], review: { data: null,
-      error: { code: "57014", message: "PRIVATE held identity" } } }).run();
     assert.equal(pending.error?.code, "identity_inventory_unconfirmed");
-    assert.equal(review.error?.code, "identity_inventory_unconfirmed");
     assert.equal(pending.result?.diagnostic_stage, undefined);
-    assert.equal(review.result?.diagnostic_stage, undefined);
     assert.deepEqual(warnings.map(value => JSON.parse(value)), [
       { event: "identity_read_failed", stage: "pending_inventory", sqlstate: "57014" },
-      { event: "identity_read_failed", stage: "review_count", sqlstate: "57014" },
     ]);
-    assert.doesNotMatch(JSON.stringify({ pending, review, warnings }), /PRIVATE|contact/);
+    assert.doesNotMatch(JSON.stringify({ pending, warnings }), /PRIVATE|contact/);
   } finally {
     console.warn = prior;
   }
@@ -222,7 +223,25 @@ test("empty inventory succeeds with zero work; a full verified batch continues o
   assert.deepEqual(full.continuation?.payload, { limit: 2 });
   const bounded = fixture({ rows: [] });
   await bounded.run({ limit: 2000 });
-  assert.equal(bounded.calls[0].args.p_limit, 50);
+  assert.equal(bounded.calls[0].args.p_limit, 10);
+});
+test("legacy fifty-row job processes ten and does not claim a held full batch", async () => {
+  const rows = Array.from({ length: 10 }, (_, index) => row(index + 2));
+  const f = fixture({ rows, respond: (args: any, receipt: any) => ({
+    data: args.p_interaction === id(2)
+      ? { ...receipt, state: "review_required", reason: "direction_unverified",
+        cardId: null, cardEnriched: false, personCreated: false,
+        companyCreated: false, recommendations: 0, suggestions: 0,
+        eventsConsumed: 0 }
+      : receipt,
+    error: null,
+  }) });
+  const result = await f.run({ limit: 50 });
+  assert.equal(f.calls[0].args.p_limit, 10);
+  assert.equal(result.recordsProcessed, 9);
+  assert.equal(result.result?.reviews_recorded, 1);
+  assert.equal(result.continuation, undefined);
+  assert.equal(result.error?.code, "identity_review_required");
 });
 test("legacy input without a pending event reports zero events consumed", async () => {
   const r = await fixture({
@@ -232,17 +251,12 @@ test("legacy input without a pending event reports zero events consumed", async 
   assert.equal(r.result?.events_consumed, 0);
 });
 
-test("persisted holds remain visible even when no new identity work is pending", async () => {
-  const r = await fixture({ rows: [], review: { data: 4, error: null } }).run();
-  assert.equal(r.success, false);
-  assert.equal(r.result?.review_required, 4);
-  assert.equal(r.error?.code, "identity_review_required");
-  const failed = await fixture({
-    rows: [],
-    review: { data: null, error: { message: "PRIVATE" } },
-  }).run();
-  assert.equal(failed.success, false);
-  assert.equal(failed.error?.code, "identity_inventory_unconfirmed");
+test("historical review holds are not recounted by an unrelated work batch", async () => {
+  const f = fixture({ rows: [] });
+  const r = await f.run();
+  assert.equal(r.success, true);
+  assert.equal(r.result?.review_required, 0);
+  assert.deepEqual(f.calls.map(call => call.name), ["learn_identity_pending"]);
 });
 
 const heldReceipt = (r: any) => ({ ...r, state: "review_required", reason: "direction_unverified",
@@ -263,22 +277,22 @@ test("a full mixed batch continues without declaring held identities complete", 
 });
 test("all-held full batch progresses, but a partial batch and empty inventory stop", async () => {
   for (const rows of [[row(2), row(3)], [row(2)], []]) {
-    const r = await fixture({ rows, review: { data: 7, error: null },
+    const r = await fixture({ rows,
       respond: (_: any, r: any) => ({ data: heldReceipt(r), error: null }) }).run({ limit: 2 });
-    assert.equal(r.success, false);
+    assert.equal(r.success, rows.length === 0);
     assert.equal(r.recordsProcessed, 0);
     assert.equal(r.result?.events_consumed, 0);
     assert.equal(r.result?.reviews_recorded, rows.length);
-    assert.equal(r.result?.review_required, 7);
+    assert.equal(r.result?.review_required, rows.length);
     assert.equal(!!r.continuation, rows.length === 2);
   }
 });
 test("existing unrelated holds cannot stop a full batch of confirmed cards", async () => {
-  const r = await fixture({ rows: [row(2), row(3)], review: { data: 4, error: null } }).run({ limit: 2 });
-  assert.equal(r.success, false);
+  const r = await fixture({ rows: [row(2), row(3)] }).run({ limit: 2 });
+  assert.equal(r.success, true);
   assert.equal(r.recordsProcessed, 2);
   assert.equal(r.result?.reviews_recorded, 0);
-  assert.equal(r.result?.review_required, 4);
+  assert.equal(r.result?.review_required, 0);
   assert.ok(r.continuation);
 });
 test("a review hold plus an unconfirmed delivery never continues or hides the failure", async () => {

@@ -430,7 +430,38 @@
 .nd-score-tiles p { margin: 0; color: #706b7e; font-size: 12px; line-height: 1.55; }
 .nd-job-home > .nd-score-tiles article > small { color: #706b7e; font-size: 11px; }
 .nd-job-home > .nd-score-tiles article > button { min-height: 40px; text-align: left; }
+.nd-customer-tile-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
+.nd-customer-tile-actions button { min-height: 40px; text-align: left; }
 .nd-job-home > .nd-work-priority { margin-top: 13px; }
+.nd-customer-blockers { margin: 18px 0 20px; padding: 19px 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #fff; scroll-margin-top: 24px; }
+.nd-browse-open-jobs { margin: 20px 0 4px; padding: 18px 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #faf9f6; }
+.nd-browse-open-jobs h3 { margin: 0 0 5px; color: #25253a; font-size: 18px; }
+.nd-browse-open-jobs p { margin: 0 0 12px; color: #706b7e; font-size: 12px; line-height: 1.5; }
+.nd-customer-blockers h3 { margin: 0 0 4px; color: #25253a; font-size: 19px; font-weight: 600; }
+.nd-customer-blockers p, .nd-customer-blockers > small { display: block; margin: 0 0 12px; color: #706b7e; font-size: 12px; line-height: 1.5; }
+.nd-customer-blockers > small { margin: 12px 0 0; }
+.nd-customer-blockers details { border-top: 1px solid #efebf0; }
+.nd-customer-blockers summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; cursor: pointer; list-style: none; }
+.nd-customer-blockers summary::-webkit-details-marker { display: none; }
+.nd-customer-blockers summary span { display: grid; gap: 2px; min-width: 0; }
+.nd-customer-blockers summary strong { color: #302c36; font-size: 14px; font-weight: 650; overflow-wrap: anywhere; }
+.nd-customer-blockers summary > svg { flex: 0 0 auto; }
+.nd-customer-blockers summary small, .nd-customer-blocker-jobs small { color: #706b7e; font-size: 11px; }
+.nd-customer-blockers details[open] summary > svg { transform: rotate(90deg); }
+.nd-customer-blocker-jobs { display: grid; margin: 0 0 12px 12px; border-left: 2px solid #e9e1ef; }
+.nd-customer-blocker-jobs button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 43px; padding: 8px 10px; border: 0; background: transparent; color: #514669; text-align: left; cursor: pointer; }
+.nd-customer-blocker-jobs button span { flex: 1; min-width: 0; font-size: 12px; font-weight: 650; overflow-wrap: anywhere; }
+.nd-customer-blocker-all-work { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #efebf0; }
+.nd-customer-blocker-all-work p { flex-basis: 100%; margin: 0; }
+.nd-customer-blocker-all-work button { padding: 2px 0; border: 0; background: transparent; color: #514669; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
+.nd-customer-blockers summary:focus-visible, .nd-customer-blocker-jobs button:focus-visible { outline: 2px solid #514669; outline-offset: 2px; border-radius: 4px; }
+.nd-customer-blocker-all-work button:focus-visible { outline: 2px solid #514669; outline-offset: 2px; border-radius: 4px; }
+.nd-recorded-attention { margin-top: 17px; padding-top: 14px; border-top: 1px solid #efebf0; }
+.nd-recorded-attention h4 { margin: 0 0 5px; color: #25253a; font-size: 15px; font-weight: 650; }
+.nd-recorded-attention p { max-width: 78ch; margin: 0 0 11px; color: #706b7e; font-size: 12px; line-height: 1.5; }
+.nd-recorded-attention-toggle { min-height: 40px; padding: 0; border: 0; background: transparent; color: #514669; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
+.nd-recorded-attention-toggle:focus-visible { outline: 2px solid #514669; outline-offset: 3px; }
+.nd-recorded-attention [role="alert"] { color: #9b3333; }
 .nd-job-context { margin: 14px 0 18px; color: #706b7e; font-size: 12px; line-height: 1.55; }
 .nd-job-context summary { width: fit-content; color: #514669; font-weight: 650; cursor: pointer; }
 .nd-job-context summary:focus-visible { outline: 2px solid #514669; outline-offset: 3px; }
@@ -446,6 +477,8 @@
 .nd-score-bottlenecks button strong { font-size: 13px; white-space: nowrap; }
 .nd-score-tiles button:focus-visible, .nd-score-bottlenecks button:focus-visible { outline: 2px solid #514669; outline-offset: 3px; border-radius: 4px; }
 .nd-oldest-jobs { margin: 18px 0; padding: 16px 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #fff; scroll-margin-top: 24px; }
+.nd-oldest-jobs summary { color: #514669; font-size: 14px; font-weight: 600; cursor: pointer; }
+.nd-oldest-jobs[open] summary { margin-bottom: 8px; }
 .nd-oldest-jobs h3 { margin: 0 0 4px; color: #25253a; font-size: 18px; font-weight: 600; }
 .nd-oldest-jobs p { margin: 0 0 10px; color: #706b7e; font-size: 12px; line-height: 1.5; }
 .nd-oldest-jobs .nd-oldest-toggle { margin: 0 0 3px; padding: 3px 0; border: 0; background: transparent; color: #514669; font-size: 12px; font-weight: 650; text-align: left; cursor: pointer; }
@@ -459,6 +492,9 @@
 .nd-oldest-jobs li button small { color: #706b7e; font-size: 11px; max-width: 260px; white-space: normal; }
 .nd-oldest-jobs button:focus-visible { outline: 2px solid #514669; outline-offset: 2px; }
 @media (max-width: 720px) {
+  .nd-customer-blockers { padding: 15px; }
+  .nd-customer-blocker-jobs button { flex-wrap: wrap; }
+  .nd-customer-blocker-jobs button small { order: 3; flex-basis: 100%; }
   .nd-score-hero--pending { gap: 13px; padding: 16px; }
   .nd-score-hero--pending .nd-work-count { display: flex; flex-basis: auto; align-items: baseline; gap: 8px; width: 100%; min-height: 60px; padding: 10px 12px; text-align: left; }
   .nd-score-hero--pending .nd-work-count strong { font-size: 27px; }

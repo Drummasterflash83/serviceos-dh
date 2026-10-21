@@ -394,6 +394,11 @@ verify_jwt = false
 [functions.learn-quickbooks-worker]
 verify_jwt = false
 
+# Dedicated, default-off FY27 daily report worker. No trigger is installed here.
+# It accepts only an empty POST with its own infrastructure key.
+[functions.learn-quickbooks-daily-reports]
+verify_jwt = false
+
 [functions.learn-quickbooks-invoice-check]
 # The handler verifies Auth with auth.getUser, matching the OAuth start route.
 verify_jwt = false

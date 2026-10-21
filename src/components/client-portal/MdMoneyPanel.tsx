@@ -6,8 +6,8 @@ import { financeAmount } from "@/lib/learn-quickbooks-finance";
 import { readFounderAccountsPairs, readFounderAccountsPreview,
   type AccountsPair, type FounderAccountsPreview } from "@/lib/new-dawn-founder-accounts-preview";
 import { readAccountsMarginPreview, type AccountsMarginPreview } from "@/lib/new-dawn-accounts-margin";
-import { accountsNetMargin, agedReceivablesBucketKind, newestAccountsPair, netProfitYtdComparison } from "@/lib/new-dawn-md-money";
-import { MdAgedInvoices } from "./MdAgedInvoices";
+import { DRUMMONDS_FY27_START, accountsNetMargin, agedReceivablesBucketKind, moneyReportFreshness,
+  newestAccountsPair } from "@/lib/new-dawn-md-money";
 
 type Snapshot = { accounts: FounderAccountsPreview; margin: AccountsMarginPreview | null };
 const dateTime = (value: string) => new Date(value).toLocaleString("en-GB", {
@@ -106,10 +106,11 @@ export function MdMoneyPanel({ tenant, reason, summaryOnly = false, onOpenFull }
   }, [tenant, user, reason, flags.data?.accounts, openSavedAccounts]);
 
   const saved = snapshot?.accounts;
-  const ytd = saved ? netProfitYtdComparison(saved.periodStart, saved.periodEnd) : null;
   const netMargin = saved && snapshot?.margin
     ? accountsNetMargin(saved.netProfit, snapshot.margin.totalIncome) : null;
+  const isFy27Ytd = saved?.periodStart === DRUMMONDS_FY27_START;
   const agedBucket = saved ? agedReceivablesBucketKind(saved.receivables.days91Plus) : "unknown";
+  const freshness = saved ? moneyReportFreshness(saved.periodEnd, saved.arAsOf, new Date()) : null;
   if (summaryOnly) return <section className="md-money-strip" aria-label="Drummonds MD company money">
     <div className="md-money-strip-heading"><div>
       <p className="of-eyebrow">DRUMMONDS · MD MONEY</p>
@@ -123,6 +124,9 @@ export function MdMoneyPanel({ tenant, reason, summaryOnly = false, onOpenFull }
       <p role="status">Checking saved accounts…</p>}
     {error && <p role="alert">{error}</p>}
     {saved && <>
+      {freshness && <p className={`md-money-freshness md-money-freshness--${freshness.state}`}
+        role={freshness.state === "older" || freshness.state === "unverified" ? "status" : undefined}>
+        {freshness.message}</p>}
       <div className="md-money-strip-grid">
         <div><span>Accounts gross profit</span>
           <strong>{snapshot?.margin ? `${snapshot.margin.accountsGrossMarginPct}%` : "Awaiting denominator"}</strong>
@@ -144,10 +148,10 @@ export function MdMoneyPanel({ tenant, reason, summaryOnly = false, onOpenFull }
   return <section className="md-money" aria-label="Drummonds MD money">
     <p className="of-eyebrow">DRUMMONDS · MONEY</p>
     <h2>Company money at a glance.</h2>
-    <p>Start with verified QuickBooks company accounts for the dated period below. Job-to-cash gaps and original invoice records follow. Each read is audited; nothing here moves money or sends a chase.</p>
+    <p>Saved QuickBooks accounts for the period shown below. The figures are company totals, not job profit or live balances.</p>
     <div className="md-money-accounts">
       <h3>Company accounts</h3>
-      <p>The latest verified saved QuickBooks period opens with this audited view. Figures show their dates and accounting basis.</p>
+      <p>Latest verified saved period, with its date and accounting basis.</p>
       {flags.isError && <p role="alert">Money release status is unavailable.</p>}
       {flags.data?.accounts !== true && !flags.isPending && !flags.isError &&
         <p role="status">Accounts figures are not released for this view yet.</p>}
@@ -166,23 +170,28 @@ export function MdMoneyPanel({ tenant, reason, summaryOnly = false, onOpenFull }
       </label>}
       {error && <p role="alert">{error}</p>}
       {saved && <>
+        {freshness && <p className={`md-money-freshness md-money-freshness--${freshness.state}`}
+          role={freshness.state === "older" || freshness.state === "unverified" ? "status" : undefined}>
+          {freshness.message}</p>}
         <p className="md-money-source">QuickBooks Online · Drummonds company accounts · {saved.periodStart} to {saved.periodEnd} · {saved.accountingMethod} basis · reports saved {dateTime(saved.profitReceivedAt)} and {dateTime(saved.receivablesReceivedAt)} UK. These are saved reports, not today's live balances.</p>
         <div className="md-money-grid">
           <article><span>Accounts gross profit</span>
             <strong>{snapshot.margin ? `${snapshot.margin.accountsGrossMarginPct}%` : "Not enough data yet"}</strong>
             <p>{snapshot.margin
-              ? `QuickBooks gross profit ${financeAmount(saved.accountsGrossProfit, saved.currency)} ÷ total income ${financeAmount(snapshot.margin.totalIncome, saved.currency)}. The 30% floor and 35% target basis are unconfirmed.`
-              : "A verified total-income denominator is needed for the percentage. Field GP awaits job costs and links."}</p>
+              ? "QuickBooks accounts basis. Field margin and target basis still need job costs and Finance confirmation."
+              : "Needs a verified income figure. Field margin still needs job costs and links."}</p>
           </article>
           <article><span>Net profit · MD only</span>
             <strong>{financeAmount(saved.netProfit, saved.currency)}</strong>
-            <p>For {saved.periodStart} to {saved.periodEnd}. Accounts net margin: {netMargin ? `${netMargin}%` : "held"}{netMargin ? ` (net profit ÷ total income; 8% same-period target)` : " until a verified total-income denominator is available"}. {ytd?.target} comparison held: {ytd?.reason}</p>
+            <p>{netMargin ? `Accounts net margin ${netMargin}% for this period (8% margin goal). ` : "Accounts net margin needs a verified income figure. "}{isFy27Ytd
+              ? "FY27 net-profit target comparison awaits the current approved target."
+              : "This saved period is not FY27 year-to-date; target comparison is unavailable."}</p>
           </article>
           <article><span>Further Works this month</span><strong>Not enough data yet</strong>
-            <p>£58,000 monthly target. Verified estimate value and a Further Works classification are needed.</p>
+            <p>Needs classified quotes and linked work before comparison with the £58,000 monthly target.</p>
           </article>
           <article><span>Annual recurring revenue</span><strong>Not enough data yet</strong>
-            <p>Verified recurring contracts, value and term are needed.</p>
+            <p>Needs verified contracts, value and terms.</p>
           </article>
         </div>
         <section className="md-money-receivables" aria-label="Saved company receivables">
@@ -191,35 +200,26 @@ export function MdMoneyPanel({ tenant, reason, summaryOnly = false, onOpenFull }
           <strong className="md-money-receivables-total">{financeAmount(saved.receivables.total, saved.currency)}</strong>
           <p>This is the net total on the verified company report, including credits. It is neither a live balance nor a list of invoices to chase.</p>
           {agedBucket === "credit" && <p><strong>91 days and over:</strong> {financeAmount(saved.receivables.days91Plus, saved.currency)} net credit. Do not treat this age group as overdue debt.</p>}
-          <h4>Age groups on this report</h4>
-          <dl>
-            <div><dt>Current</dt><dd>{financeAmount(saved.receivables.current, saved.currency)}</dd></div>
-            <div><dt>1–30 days</dt><dd>{financeAmount(saved.receivables.days1To30, saved.currency)}</dd></div>
-            <div><dt>31–60 days</dt><dd>{financeAmount(saved.receivables.days31To60, saved.currency)}</dd></div>
-            <div><dt>61–90 days</dt><dd>{financeAmount(saved.receivables.days61To90, saved.currency)}</dd></div>
-            <div><dt>91 days and over</dt><dd>{financeAmount(saved.receivables.days91Plus, saved.currency)}{agedBucket === "credit" ? " net credit" : ""}</dd></div>
-          </dl>
+          <details className="md-money-age-breakdown"><summary>See report age groups</summary>
+            {agedBucket === "positive" && <p>A positive 91-day bucket is a review cue, not a confirmed collectible invoice or approval to chase.</p>}
+            <dl>
+              <div><dt>Current</dt><dd>{financeAmount(saved.receivables.current, saved.currency)}</dd></div>
+              <div><dt>1–30 days</dt><dd>{financeAmount(saved.receivables.days1To30, saved.currency)}</dd></div>
+              <div><dt>31–60 days</dt><dd>{financeAmount(saved.receivables.days31To60, saved.currency)}</dd></div>
+              <div><dt>61–90 days</dt><dd>{financeAmount(saved.receivables.days61To90, saved.currency)}</dd></div>
+              <div><dt>91 days and over</dt><dd>{financeAmount(saved.receivables.days91Plus, saved.currency)}{agedBucket === "credit" ? " net credit" : ""}</dd></div>
+            </dl>
+          </details>
         </section>
-        <div className="md-money-followup">
-          <h3>Job-to-cash gaps and ageing context</h3>
-          {agedBucket === "positive" && <p><strong>Ageing is a review cue:</strong> the positive 91-day-and-over report bucket does not identify a collectible invoice or authorise a chase.</p>}
-          <p><strong>Completed, not invoiced:</strong> awaiting verified Commusoft completion and QuickBooks job links.</p>
-          <p><strong>Closed without price, quote or FOC reason:</strong> awaiting verified closure and commercial evidence.</p>
-          <p><strong>Liz's chase drafts:</strong> held until invoice-level ageing and customer review are linked. No messages have been drafted or sent.</p>
-        </div>
-        <details className="md-money-proof"><summary>Source and read audit</summary>
-          <p>P&amp;L SHA-256 {saved.profitSha256}; receivables SHA-256 {saved.receivablesSha256}. Summary audit {saved.auditId}{snapshot.margin ? `; margin audit ${snapshot.margin.auditId}` : ""}.</p>
-        </details>
       </>}
     </div>
     <div className="md-money-next">
-      <h3>What still needs source evidence</h3>
+      <h3>What the accounts cannot answer yet</h3>
       <ul>
-        <li><strong>FY27 net-profit comparison:</strong> the saved 1 April–19 October report covers FY27 to its stated cutoff. Finance has not confirmed the current target or its phasing. The historical £144k snapshot is not a confirmed current target.</li>
-        <li><strong>Further Works versus £58k/month:</strong> current, classified quote and delivered or invoiced work with dates.</li>
-        <li><strong>ARR:</strong> current recurring contracts with value, term and changes, reconciled to Finance.</li>
+        <li><strong>Completed work not invoiced:</strong> needs verified Commusoft completion and exact QuickBooks job-to-invoice links.</li>
+        <li><strong>FY27 target:</strong> needs Finance's current net-profit target and timing. The older £144k snapshot is not a current target.</li>
+        <li><strong>Further Works and recurring revenue:</strong> need classified quotes and verified contract values and terms.</li>
       </ul>
     </div>
-    <MdAgedInvoices tenant={tenant} reason={reason} />
   </section>;
 }

@@ -32,6 +32,9 @@ const record: ClientJobRecord = {
   status: "open",
   priority: null,
   description: null,
+  linkedCustomer: null,
+  linkedSite: null,
+  contactCounts: null,
   exactDetail: {
     checkedAt: "2026-10-20T09:00:30Z",
     stage: "In progress",

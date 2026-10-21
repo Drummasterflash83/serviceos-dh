@@ -15,7 +15,7 @@ export async function handleIdentityResolve(
   const batch = Math.max(
     1,
     Math.min(
-      50,
+      10,
       typeof payload.limit === "number" && Number.isFinite(payload.limit)
         ? Math.trunc(payload.limit)
         : 20,
@@ -32,7 +32,6 @@ export async function handleIdentityResolve(
     review_required: 0,
     reviews_recorded: 0,
     failed: 0,
-    failure_reasons: {} as Record<string, number>,
     continued: false,
   };
   // Only fixed stages and SQLSTATEs enter Edge diagnostics, never private
@@ -158,8 +157,10 @@ export async function handleIdentityResolve(
       }
       if (!receipt) {
         counts.failed++;
-        const reason = diagnostic ?? "delivery_unconfirmed";
-        counts.failure_reasons[reason] = (counts.failure_reasons[reason] ?? 0) + 1;
+        // Settlement accepts only its fixed numeric/bool result keys. Keep
+        // machine diagnostics in the operational log, never in the receipt.
+        console.warn(JSON.stringify({ event: "identity_delivery_unconfirmed",
+          reason: diagnostic ?? "delivery_unconfirmed" }));
         continue;
       }
       if (receipt.state === "review_required") {
@@ -176,12 +177,10 @@ export async function handleIdentityResolve(
       counts.events_consumed += receipt.eventsConsumed;
     }
     if (counts.resolved > 0) triggerGraphSyncBackground(tenantId);
-    failedStage = "review_count";
-    const review = await admin.rpc("learn_identity_review_count", { p_tenant: tenantId });
-    if (review.error) noteSqlstate(review.error);
-    if (review.error || !Number.isSafeInteger(review.data) || review.data < 0)
-      throw Error("identity_review_inventory_unconfirmed");
-    counts.review_required = review.data;
+    // A durable review hold is already recorded by the delivery receipt.
+    // Historical holds belong to the operator queue, not this work batch;
+    // recounting the whole tenant here can time out after successful cards
+    // and falsely dead-letter an unrelated ordinary job.
     const needsReview = counts.review_required > 0;
     // A durable hold removes this revision from pending selection. Keep the
     // review visible, but drain unrelated eligible records in the next batch.
@@ -192,6 +191,11 @@ export async function handleIdentityResolve(
       (payload.limit === undefined ||
         (typeof payload.limit === "number" && Number.isInteger(payload.limit) &&
           payload.limit >= 1 && payload.limit <= 50)) &&
+      // The settlement fence requires a full requested batch when continuing
+      // a held review. A legacy 50-row job may safely settle ten successful
+      // records, but a mixed held batch must let the scheduler prime a new
+      // ten-row job instead of claiming fifty review receipts exist.
+      (counts.review_required === 0 || payload.limit === undefined || payload.limit === batch) &&
       counts.failed === 0 &&
       rows.length === batch &&
       counts.resolved + counts.reviews_recorded === rows.length;

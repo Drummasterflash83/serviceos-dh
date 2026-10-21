@@ -85,6 +85,10 @@ try:
  sql(candidate.replace('\ncommit;','\nrollback;'))
  assert sql("select to_regclass('learn_processing_settlements') is null and to_regclass('learn_processing_publications') is null")=='t'
  sql(candidate)
+ # The hosted project uses the later fixed-key and review-continuation
+ # settlement contract. Exercise the actual handler against that contract;
+ # the original queue migration alone would accept extra result fields.
+ sql(source('supabase/migrations/20261103030000_learn_projection_batch_capacity.sql'))
  sql('begin;'+source('scripts/verify/learn-processing-queue.assert.sql')+'rollback;')
  subprocess.run(['node','scripts/verify/learn-processing-queue-client-probe.mjs',name],cwd=root,check=True,timeout=90)
  print('PASS: publication lease fences, source-to-card flow, atomic continuation and settlement, exact replay, rollback, retries and role isolation',flush=True)
