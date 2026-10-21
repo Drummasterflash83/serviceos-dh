@@ -457,6 +457,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
               onClick={showCustomerWork}>See confirmed customer jobs →</button> : null}
           </div>
           {summary.isFetching && activeSummary && <small>Checking for newer job totals…</small>}
+          {summary.isError && activeSummary && <small role="alert">Latest count check failed. Showing saved counts from {savedAt(activeSummary.snapshotAt)}.</small>}
         </div>
       </section>
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
