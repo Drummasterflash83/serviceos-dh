@@ -371,7 +371,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
           {activeSummary && <small>Recorded statuses can include office and internal work. They show what to review, not customer urgency or who owns the next action.</small>}
         </div>
       </section>
-      {operator && mdReason && !summary.isPending && !firstPage.isPending && mdMoney}
+      {operator && mdReason && !summary.isPending && mdMoney}
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
         <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
           {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending in saved Commusoft statuses.</p>}

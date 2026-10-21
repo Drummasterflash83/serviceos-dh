@@ -10,6 +10,8 @@ The same outcome adds an on-demand OpenFolk review of **all current unlinked On-
 
 The MD Money strip and detail now label the saved P&L/A/R date coverage against the last completed UK day. An older pair says more recent accounts have not been verified; a current-day pair is labelled partial. This uses only the existing audited, saved report pair and makes no new QuickBooks request. `node scripts/verify/new-dawn-daily-money-readback.mjs --live-read-only` checks only the exact Drummonds daily policy and run state, without logging report contents, connection secrets or amounts. It can prove whether unattended capture is enabled and whether a day completed; the on-screen date label alone cannot.
 
+The MD Money strip no longer waits for the expensive saved-job page to finish. Once job status totals have settled, a transient job-page timeout cannot hide already verified, dated accounts evidence.
+
 The saved open-job page makes one automatic retry only when its request fails. A malformed response is still rejected and shown as unavailable. This follows a signed-in LIVE first-page failure that loaded on one manual retry; it does not remove the underlying query-timeout risk. The release readback must confirm that the paged job list loads without a manual refresh.
 
 ## Release order
