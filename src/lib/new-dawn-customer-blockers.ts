@@ -6,6 +6,7 @@ export type CustomerBlockedJob = {
   sourceVersionId: string;
   sourceObservedAt: string;
   status: "on_hold" | "pending";
+  sourceDescription: string | null;
 };
 export type CustomerBlockerGroup = {
   kind: "company" | "person";
@@ -39,7 +40,8 @@ const unavailable = () => { throw Error("Confirmed customer jobs unavailable"); 
 
 /** Never turn an incomplete source match into a customer claim. */
 export function readCustomerBlockers(value: unknown, tenant: string, actor: string): CustomerBlockers {
-  if (!object(value) || value.version !== "new-dawn-customer-blockers/1" ||
+  if (!object(value) || !["new-dawn-customer-blockers/1",
+    "new-dawn-customer-blockers/2"].includes(String(value.version)) ||
     value.tenant_id !== tenant || value.actor_id !== actor || !uuid(value.audit_id) ||
     !time(value.observed_at) || !time(value.snapshot_at) ||
     Date.parse(value.observed_at) < Date.now() - 300_000 ||
@@ -64,13 +66,19 @@ export function readCustomerBlockers(value: unknown, tenant: string, actor: stri
     seenCustomers.add(customerKey);
     let onHold = 0;
     const jobs: CustomerBlockedJob[] = raw.jobs.map((row: unknown) => {
+      const described = value.version === "new-dawn-customer-blockers/2";
       if (!object(row) || !exactKeys(row,
-        ["connection_id", "external_id", "source_version_id", "source_observed_at", "status"]) ||
+        ["connection_id", "external_id", "source_version_id", "source_observed_at", "status",
+          ...(described ? ["source_description"] : [])]) ||
         !uuid(row.connection_id) || !uuid(row.source_version_id) ||
         typeof row.external_id !== "string" || !/^[1-9]\d{0,15}$/.test(row.external_id) ||
         !time(row.source_observed_at) ||
         Date.parse(row.source_observed_at) > Date.parse(value.snapshot_at as string) ||
-        !["on_hold", "pending"].includes(String(row.status))) return unavailable();
+        !["on_hold", "pending"].includes(String(row.status)) ||
+        (described && !(row.source_description === null ||
+          (typeof row.source_description === "string" &&
+            row.source_description.length <= 160 && row.source_description.trim() &&
+            row.source_description === row.source_description.trim())))) return unavailable();
       const jobKey = `${row.connection_id}:${row.external_id}`;
       if (seenJobs.has(jobKey)) return unavailable();
       seenJobs.add(jobKey);
@@ -78,7 +86,8 @@ export function readCustomerBlockers(value: unknown, tenant: string, actor: stri
       return { connectionId: row.connection_id as string, externalId: row.external_id as string,
         sourceVersionId: row.source_version_id as string,
         sourceObservedAt: row.source_observed_at as string,
-        status: row.status as CustomerBlockedJob["status"] };
+        status: row.status as CustomerBlockedJob["status"],
+        sourceDescription: described ? row.source_description as string | null : null };
     });
     if (onHold !== raw.on_hold) return unavailable();
     total += jobs.length;

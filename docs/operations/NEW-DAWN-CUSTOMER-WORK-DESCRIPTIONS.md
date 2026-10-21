@@ -1,0 +1,22 @@
+# Customer-linked work descriptions · 21 October 2026
+
+The MD Home currently calls every confirmed On-hold/Pending record “customer work” but does not show what Commusoft says the work is. A bounded LIVE review found office and commercial record descriptions among those links. A held status by itself is not evidence that field work is urgent. This outcome shows the saved source description beside each exactly linked record and uses neutral copy so Chris can inspect it without a false priority claim.
+
+## Contract and scope
+
+- The input is the **current retained Commusoft job source version** already selected by `new_dawn_commusoft_current_job_source`. There is no new provider call. `description` is trimmed, capped at 160 characters, and emitted as `null` if absent. The UI renders it as text and labels a missing description explicitly. Neither the SQL nor the UI classifies field/office work or urgency.
+- The response advances to `new-dawn-customer-blockers/2`; the client accepts v1 during rollout and validates the added v2 key, length and exact source identity. Tenant, actor, audit, customer/site matching, date and row limits remain enforced.
+- The MD Home describes confirmed records as linked records requiring inspection. The unlinked On-hold/Pending jobs remain in the paged list and operator identity-review queue. This change does not create links, assign staff, change statuses, change scores or enable a client login.
+- This release depends on `20261113000000` and `20261113010000` from the reliable current-source Home release. It must not install before both are verified on LIVE.
+
+## Release and reversal
+
+The exact migration is `supabase/migrations/20261113020000_new_dawn_customer_work_descriptions.sql`, SHA-256 `6af7397766541cea5c8c6e5f9e704d5f70344beb00c23272aeb8c11985d7dcd8`. It checks the prior function definition hash `a2f5916d204014e3affced8136308a74e67d6c0d42ea7856cdf27d7276f813c0` and its replacement hash `99c5e202c99aec449c20cc89b4f87923a97fef79dbd8804e9c9e0fa2fae16eea`. The release script also checks both dependency migration hashes, projection, trigger, function grants and the migration ledger, and installs with a ledger entry in one transaction. Do a read-only stage check before and after. A lost install response is resolved by readback, never by automatic replay.
+
+The exact rollback is `supabase/release/new-dawn-customer-work-descriptions/rollback.sql`. It only replaces the v2 function with its checked v1 definition. The migration ledger remains historical; a further release requires a new version. The rollback cannot remove or change Commusoft source rows or identity links.
+
+## Evidence and acceptance
+
+In disposable PostgreSQL 17, the final guarded migration returned a v2 customer-group row with synthetic description “For Invoicing,” and the exact rollback restored the prior function hash. Parser tests cover v1 compatibility, the v2 description and malformed/missing v2 fields. The release-script tests cover exact dependencies, grants, version and function hash. This is synthetic evidence, not a LIVE release.
+
+For LIVE acceptance, install only after the parent current-source release passes its signed-in readback. Confirm the saved description on a linked record and check that the UI no longer calls every held record urgent field work. Confirm the unlinked records and paged list remain accessible. Keep private real record details in the handback evidence, not this public document.

@@ -389,7 +389,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <div>
         <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · WORK</p>
         <h2>Jobs needing attention</h2>
-        <p>Start with customer jobs that are On hold or Pending. Open one to see what needs checking.</p>
+        <p>Review saved On-hold and Pending records. Open one before treating it as field work or a priority.</p>
       </div>
       {enabled && <button type="button" className="cp-secondary" aria-label="Refresh saved jobs"
         onClick={refresh} disabled={summary.isFetching || customerBlockers.isFetching ||
@@ -421,18 +421,18 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <section className="nd-score-hero nd-score-hero--pending" aria-label="Jobs needing attention">
         <div className="nd-work-count"><strong>{linkedCustomers
           ? linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB") : "…"}</strong>
-          <small>customer jobs to check</small></div>
+          <small>linked records to check</small></div>
         <div className="nd-score-hero-copy">
           <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · TODAY</p>
-          <h3>Start with customer work</h3>
+          <h3>Check customer-linked work</h3>
           <p>{linkedCustomers
-            ? "These On-hold or Pending jobs have a confirmed customer and site. Open one to check its current recorded stage."
+            ? "These records have a confirmed customer and site. Commusoft status alone does not tell us whether they are field work, office work or urgent."
             : customerBlockers.isError ? "Customer matches are unavailable right now. You can still browse all recorded jobs."
               : "Checking customer jobs…"}</p>
           <div className="nd-hero-actions">
             <button type="button" onClick={() => linkedCustomers?.linkedBlockedJobs
               ? showCustomerWork() : showJobs(attentionStatus)}>
-              {linkedCustomers?.linkedBlockedJobs ? "Open customer jobs"
+              {linkedCustomers?.linkedBlockedJobs ? "Review linked records"
                 : activeSummary?.counts.on_hold ? "See On-hold jobs" : activeSummary?.counts.pending
                   ? "See Pending jobs" : "See all jobs"} →</button>
             {activeSummary?.counts.on_hold ? <button type="button" className="nd-hero-secondary"
@@ -447,7 +447,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check" tabIndex={-1}>
         <div className="nd-customer-blockers-heading">
           <h3>Customers with jobs to check</h3>
-          <p>Only jobs with a confirmed customer and site appear here. Open one to see what is known and what still needs checking.</p>
+          <p>Only jobs with a confirmed customer and site appear here. Their saved work descriptions help distinguish field and office work; neither status nor description proves urgency.</p>
         </div>
         {customerBlockers.isPending && <p role="status">Checking linked customer jobs…</p>}
         {customerBlockers.isFetching && linkedCustomers && <p role="status">Checking for newer linked customer jobs…</p>}
@@ -462,7 +462,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
             <div className="nd-customer-blocker-jobs">{group.jobs.map((job) => <button type="button"
               key={`${job.connectionId}:${job.externalId}`}
               onClick={() => { setSelected(null); setSelectedCustomerJob(job); }}>
-              <span>Job {job.externalId}</span><small>{statusLabel[job.status]} · saved {savedAt(job.sourceObservedAt)}</small>
+              <span>Job {job.externalId}{job.sourceDescription ? ` · ${job.sourceDescription}` : " · Description not recorded"}</span>
+              <small>{statusLabel[job.status]} · saved {savedAt(job.sourceObservedAt)}</small>
               <ChevronRight size={16} aria-hidden="true" />
             </button>)}</div>
           </details>)}
