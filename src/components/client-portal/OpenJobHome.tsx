@@ -438,9 +438,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
             {activeSummary?.counts.on_hold ? <button type="button" className="nd-hero-secondary"
               onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button> : null}
           </div>
-          {activeSummary && <small>Across all recorded work: {activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending · {activeSummary.counts.open.toLocaleString("en-GB")} Open · checked {savedAt(activeSummary.snapshotAt)}.</small>}
           {summary.isFetching && activeSummary && <small>Checking for newer job totals…</small>}
-          {linkedCustomers && <small>Matches checked {savedAt(linkedCustomers.snapshotAt)}. Other jobs still need matching; a status does not establish urgency or an owner.</small>}
         </div>
       </section>
       <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
@@ -463,6 +461,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <p>{linkedCustomers
             ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} linked jobs to check. Other jobs still need matching.`
             : "Checking confirmed customer and site links."}</p>
+          {linkedCustomers && <small>Matches checked {savedAt(linkedCustomers.snapshotAt)}</small>}
           {linkedCustomers && <div className="nd-customer-tile-actions">
             <button type="button" onClick={showCustomerWork}>See confirmed groups →</button>
             <button type="button" onClick={showStillMatching}>See jobs still being matched →</button>
