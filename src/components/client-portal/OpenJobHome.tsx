@@ -499,7 +499,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
             <p>{recordedGroups.shown.toLocaleString("en-GB")} jobs to check across {recordedGroups.groups.length.toLocaleString("en-GB")} recorded customer groups
               {recordedGroups.ungrouped.length ? `; ${recordedGroups.ungrouped.length} have missing or conflicting source names` : ""}.
               {recordedAttention.data?.complete ? "" : " This is a bounded first portion; use the full job list for the rest."}
-              {linkedCustomers ? " Confirmed jobs shown above are excluded." : " The confirmed-customer check is unavailable, so some jobs may also appear above."}
+              {linkedCustomers ? " Jobs confirmed for this same saved version are left out; changed records may need checking again." : " The confirmed-customer check is unavailable, so some jobs may also appear above."}
               {` Checked ${savedAt(recordedAttention.data!.snapshotAt)}.`}</p>
             {recordedGroups.groups.map((group) => <details key={group.key}>
               <summary><span><strong>{group.name}</strong><small>Recorded in Commusoft · match still to confirm · {group.onHold} On hold · {group.pending} Pending</small></span>
