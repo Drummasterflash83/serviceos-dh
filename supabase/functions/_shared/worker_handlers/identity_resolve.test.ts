@@ -190,6 +190,27 @@ test("missing, duplicated or invalid inventory prevents every mutation", async (
     assert.equal(r.error?.code, "identity_inventory_unconfirmed");
   }
 });
+test("failed inventory reports only its fixed stage and SQLSTATE", async () => {
+  const warnings: string[] = [], prior = console.warn;
+  console.warn = (message: string) => { warnings.push(message); };
+  try {
+    const pending = await fixture({ inventory: { data: null,
+      error: { code: "57014", message: "PRIVATE database query and contact" } } }).run();
+    const review = await fixture({ rows: [], review: { data: null,
+      error: { code: "57014", message: "PRIVATE held identity" } } }).run();
+    assert.equal(pending.error?.code, "identity_inventory_unconfirmed");
+    assert.equal(review.error?.code, "identity_inventory_unconfirmed");
+    assert.equal(pending.result?.diagnostic_stage, undefined);
+    assert.equal(review.result?.diagnostic_stage, undefined);
+    assert.deepEqual(warnings.map(value => JSON.parse(value)), [
+      { event: "identity_read_failed", stage: "pending_inventory", sqlstate: "57014" },
+      { event: "identity_read_failed", stage: "review_count", sqlstate: "57014" },
+    ]);
+    assert.doesNotMatch(JSON.stringify({ pending, review, warnings }), /PRIVATE|contact/);
+  } finally {
+    console.warn = prior;
+  }
+});
 test("empty inventory succeeds with zero work; a full verified batch continues once", async () => {
   const empty = await fixture({ rows: [] }).run();
   assert.equal(empty.success, true);
@@ -201,7 +222,7 @@ test("empty inventory succeeds with zero work; a full verified batch continues o
   assert.deepEqual(full.continuation?.payload, { limit: 2 });
   const bounded = fixture({ rows: [] });
   await bounded.run({ limit: 2000 });
-  assert.equal(bounded.calls[0].args.p_limit, 200);
+  assert.equal(bounded.calls[0].args.p_limit, 50);
 });
 test("legacy input without a pending event reports zero events consumed", async () => {
   const r = await fixture({

@@ -38,10 +38,11 @@ endpoint's card.
 2. After verifying the RPC on LIVE, publish the handler change in
    `supabase/functions/_shared/worker_handlers/customer_card_sync.ts`
    through the scheduled `platform-worker` and direct `customer-card-sync`
-   routes that use the shared handler. Candidate file SHA-256
-   `70b913d65ab8f8fb9521891625bdea0f6f1b6859e43d6c8b02ea3b9ed170e8e8`.
-   Rebase the exact source patch onto the archived LIVE v114 diagnostic package
-   so its sanitized stage/SQLSTATE logging is retained. Do not publish this
+   routes that use the shared handler. The branch now includes the diagnostic
+   source merged through PR #336, including sanitized stage/SQLSTATE logging.
+   Merged handler SHA-256: `c27087645192966b7f7ef019f27e9c45556afb898b0d1cfdaa5d96a3cadd4a63`.
+   Repackage against the archived LIVE v114 body and verify the candidate's
+   exact executable hash before publishing. Do not publish this
    source before the RPC exists or restore an older Edge package accidentally.
 3. Observe the ordinary next `customer_card.sync` job and its card counts,
    source freshness and sanitized error stage. Do not infer success from a
@@ -56,8 +57,8 @@ EXECUTE before any Edge publish.
 
 ## Evidence and limits
 
-- `node --test scripts/customer-card-refresh.test.mjs`: 12/12. Includes a
-  500-card sweep in 13 bounded batches, cross-batch and self-loop parity,
+- `node --test scripts/customer-card-refresh.test.mjs scripts/verify/learn-build01-card-revision-conflict.test.mjs`: 17/17 after merging PR #336. Includes a
+  500-card sweep in 50 bounded ten-card batches, cross-batch and self-loop parity,
   second-batch failure with zero card writes, malformed response guards and
   existing per-card projection behavior.
 - Disposable PostgreSQL 17:
