@@ -42,8 +42,8 @@ alter table public.learn_quickbooks_daily_report_runs enable row level security;
 revoke all on public.learn_quickbooks_daily_reports,public.learn_quickbooks_daily_report_runs
  from public,anon,authenticated,service_role;
 
--- The operator must separately obtain the standing approval described in the
--- review before calling this. The prior one-off report approval is insufficient.
+-- Chris approved this standing read-only Drummonds scope in the 21 Oct New Dawn
+-- goal. The authenticated operator action records that approval and a reason.
 create function public.learn_quickbooks_daily_report_control(
  p_tenant uuid,p_connection uuid,p_revision bigint,p_enabled boolean,
  p_period_start date,p_approval_reference text,p_reason text
@@ -53,6 +53,8 @@ declare c public.learn_quickbooks_connections%rowtype;s public.learn_quickbooks_
 begin
  if auth.role() is distinct from 'authenticated' or p_connection is null or p_revision is null
   or p_revision<0 or p_enabled is null or p_period_start is null
+  or p_tenant is distinct from '00000000-0000-0000-0000-000000000001'::uuid
+  or p_connection is distinct from '04d68333-fc13-42c2-a500-789f386f015c'::uuid
   or p_approval_reference is null or length(btrim(p_approval_reference)) not between 10 and 200
   or p_reason is null or length(btrim(p_reason)) not between 10 and 500 then
   raise exception 'daily_report_invalid' using errcode='22023';end if;
@@ -73,7 +75,7 @@ begin
   return jsonb_build_object('revision',p_revision+1,'enabled',false);
  end if;
  select * into c from public.learn_quickbooks_connections where id=p_connection and tenant_id=p_tenant for share;
- if not found or c.environment<>'production' or c.realm_id is null or c.confirmed_at is null
+ if not found or c.environment<>'production' or c.realm_id<>'1197397945' or c.confirmed_at is null
   or c.status not in ('active','paused') or c.token_secret_id is null then
   raise exception 'daily_report_connection_unavailable' using errcode='42501';end if;
  select * into a from public.learn_quickbooks_apps where id=c.app_id and active for share;
@@ -97,6 +99,44 @@ begin
  return jsonb_build_object('revision',p_revision+1,'enabled',p_enabled);
 end $$;
 
+-- One bounded operator status read supports the one-click control and makes
+-- missed, held and complete days visible without exposing report bodies.
+create function public.learn_quickbooks_daily_report_status(p_tenant uuid)
+returns jsonb language plpgsql security definer set search_path=pg_catalog as $$
+declare s public.learn_quickbooks_daily_reports%rowtype;
+ r public.learn_quickbooks_daily_report_runs%rowtype;
+ audit uuid:=gen_random_uuid();
+begin
+ if auth.role() is distinct from 'authenticated' or
+  p_tenant is distinct from '00000000-0000-0000-0000-000000000001'::uuid then
+  raise exception 'daily_report_forbidden' using errcode='42501';end if;
+ perform public.learn_operator_input_access(p_tenant,auth.uid(),true);
+ perform public.learn_quickbooks_actor_access(p_tenant,auth.uid());
+ select * into s from public.learn_quickbooks_daily_reports
+  where connection_id='04d68333-fc13-42c2-a500-789f386f015c'::uuid
+   and tenant_id=p_tenant;
+ if found then
+  select * into r from public.learn_quickbooks_daily_report_runs
+   where connection_id=s.connection_id order by report_date desc limit 1;
+ end if;
+ insert into public.controlplane_change_log
+  (id,tenant_id,actor,action,resource_type,resource_id,after,reason,
+   correlation_id,view_as_active,source)
+ values(audit,p_tenant,auth.uid()::text,'quickbooks.daily_report_status_read',
+  'quickbooks',p_tenant::text,
+  jsonb_build_object('enabled',coalesce(s.enabled,false),
+   'latest_day',r.report_date,'latest_state',r.state),
+  'Review daily QuickBooks report capture',audit::text,false,
+  'new-dawn-quickbooks-daily-reports');
+ return jsonb_build_object('version','new-dawn-daily-quickbooks-status/1',
+  'tenant_id',p_tenant,'actor_id',auth.uid(),'audit_id',audit,
+  'read_at',clock_timestamp(),'connection_id',
+  '04d68333-fc13-42c2-a500-789f386f015c',
+  'enabled',coalesce(s.enabled,false),'revision',coalesce(s.revision,0),
+  'period_start',s.period_start,'latest_day',r.report_date,
+  'latest_state',r.state,'latest_code',r.outcome_code);
+end $$;
+
 create function public.learn_quickbooks_daily_report_current(p_run uuid) returns boolean
 language plpgsql security definer set search_path=pg_catalog as $$
 declare r public.learn_quickbooks_daily_report_runs%rowtype;s public.learn_quickbooks_daily_reports%rowtype;
@@ -106,7 +146,10 @@ begin
   and state in ('claimed','prepared') and claimed_at>clock_timestamp()-interval '5 minutes';
  if not found then return false;end if;
  select * into s from public.learn_quickbooks_daily_reports where connection_id=r.connection_id
-  and tenant_id=r.tenant_id and enabled and revision=r.schedule_revision;
+  and tenant_id=r.tenant_id and enabled and revision=r.schedule_revision
+  and tenant_id='00000000-0000-0000-0000-000000000001'::uuid
+  and connection_id='04d68333-fc13-42c2-a500-789f386f015c'::uuid
+  and realm_id='1197397945';
  if not found then return false;end if;
  perform public.learn_quickbooks_actor_access(s.tenant_id,s.approved_by);
  perform public.learn_quickbooks_enabled(s.tenant_id);
@@ -128,6 +171,9 @@ begin
  if auth.role() is distinct from 'service_role' then raise exception 'daily_report_forbidden' using errcode='42501';end if;
  if (clock_timestamp() at time zone 'Europe/London')::time<time '04:00' then return null;end if;
  for s in select * from public.learn_quickbooks_daily_reports where enabled and period_start<=d
+  and tenant_id='00000000-0000-0000-0000-000000000001'::uuid
+  and connection_id='04d68333-fc13-42c2-a500-789f386f015c'::uuid
+  and realm_id='1197397945'
   order by changed_at,connection_id for update skip locked loop
   if exists(select 1 from public.learn_quickbooks_daily_report_runs x
    where x.connection_id=s.connection_id and (x.report_date=d or x.state in ('claimed','prepared'))) then continue;end if;
@@ -271,12 +317,14 @@ begin
 end $$;
 
 revoke all on function public.learn_quickbooks_daily_report_control(uuid,uuid,bigint,boolean,date,text,text),
+ public.learn_quickbooks_daily_report_status(uuid),
  public.learn_quickbooks_daily_report_current(uuid),public.learn_quickbooks_daily_report_claim(),
  public.learn_quickbooks_daily_refresh_acquire(uuid),
  public.learn_quickbooks_daily_refresh_finish(uuid,uuid,bigint,bigint,jsonb),
  public.learn_quickbooks_daily_report_prepare(uuid),public.learn_quickbooks_daily_report_finish(uuid,text)
  from public,anon,authenticated,service_role;
 grant execute on function public.learn_quickbooks_daily_report_control(uuid,uuid,bigint,boolean,date,text,text) to authenticated;
+grant execute on function public.learn_quickbooks_daily_report_status(uuid) to authenticated;
 grant execute on function public.learn_quickbooks_daily_report_current(uuid),public.learn_quickbooks_daily_report_claim(),
  public.learn_quickbooks_daily_refresh_acquire(uuid),
  public.learn_quickbooks_daily_refresh_finish(uuid,uuid,bigint,bigint,jsonb),

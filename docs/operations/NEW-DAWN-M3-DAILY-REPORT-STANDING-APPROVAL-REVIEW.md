@@ -1,12 +1,13 @@
-# New Dawn M3: proposed standing approval for daily QuickBooks report evidence
+# New Dawn M3: approved standing daily QuickBooks source evidence
 
-**State:** Source proposal only. No standing approval has been given for this
-workflow. Do not install the migration, deploy or invoke the worker, store a
-trigger key, enable the policy, or schedule a call on the basis of this document.
-Chris's earlier approval covered one refresh and two reads for 19 October; it
-does not authorize recurring access.
+**State:** Chris's 21 October New Dawn pursuing goal expressly approves a
+standing, read-only daily FY27 P&L and A/R refresh. The scope below is the
+Drummonds production connection already used for the approved 19 October pair.
+This file records that authority; it does not prove the schedule is enabled or
+that any daily pair has completed. Do not represent a configured policy as a
+successful provider read.
 
-## Exact proposed scope for review
+## Exact approved scope
 
 - Tenant: Drummonds in LIVE only; use its existing confirmed **production**
   QuickBooks connection and recorded realm ID. The connection and app IDs must
@@ -32,25 +33,28 @@ does not authorize recurring access.
 ## Technical boundaries
 
 The new policy starts with no row and defaults Off. An authenticated OpenFolk
-operator with existing control-plane and QuickBooks authority must record an
-explicit approval reference, exact FY27 start, reason and confirmed company/app
-identity. Routine full-source imports may change the connection revision; each
+operator with existing control-plane and QuickBooks authority records the
+21 October goal as approval reference, exact FY27 start, reason and confirmed
+company/app identity through the one-click control. The SQL restricts this to
+the exact Drummonds tenant, saved connection and production realm. Routine
+full-source imports may change the connection revision; each
 individual report request still freezes that revision and token generation.
 Every service run revalidates that operator's live authority, the active
 QuickBooks module, confirmed company and app identity, and current policy
 revision. Each report GET also checks its captured connection revision and
 token generation. Disabling or changing the policy fences the report GET path.
 The runner has a dedicated infrastructure key and ignores request bodies and
-tenant selectors. **No host schedule is included in this source change.**
+tenant selectors. The separate versioned host schedule runs at 04:05 UTC,
+after 04:00 in both UK winter and summer time; its Vault header key is read at
+run time and its body is empty. The policy remains Off until the authenticated
+OpenFolk control action enables this exact company.
 
-Before any future enablement, review the migration in
+Before enablement, review the migration in
 `supabase/migrations/20261112170000_new_dawn_daily_quickbooks_reports.sql`, the
 worker in `supabase/functions/learn-quickbooks-daily-reports/index.ts`, and a
-rollback-only SQL rehearsal. Obtain Chris's express standing authorization for
-the exact company, dates, frequency, token refresh, private retention and
-activation. Then install on TEST, rehearse the authorization and failure fences,
-review the LIVE migration separately, deploy the worker, record the standing
-approval via the control RPC, and finally add a monitored daily trigger. A
+rollback-only SQL rehearsal. The approved goal supplies standing authority;
+verify the exact LIVE company and operator status, install the schema, deploy
+the worker, record the policy, and add a monitored daily trigger. A
 successful scheduled run and missed-run alert should be verified before calling
 daily capture operational.
 

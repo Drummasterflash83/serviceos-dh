@@ -18,7 +18,6 @@ declare c public.learn_quickbooks_connections%rowtype;a public.learn_quickbooks_
  actor uuid;r uuid:='deab0000-0000-4000-8000-000000000001';
  synthetic_tenant uuid; synthetic_app uuid:='deab0000-0000-4000-8000-000000000010';
  synthetic_connection uuid:='deab0000-0000-4000-8000-000000000011';
- scheduled uuid:='deab0000-0000-4000-8000-000000000002';
  manual uuid:='deab0000-0000-4000-8000-000000000003';
 begin
  select id into synthetic_tenant from public.tenants where status='active' order by id limit 1;
@@ -49,44 +48,35 @@ begin
   values(c.tenant_id,'learn.inputs.quickbooks.enabled','true'::jsonb);end if;
  perform set_config('request.jwt.claim.role','authenticated',true);
  perform set_config('request.jwt.claim.sub',actor::text,true);
- if public.learn_quickbooks_daily_report_control(c.tenant_id,c.id,0,true,'2026-04-01',
-  'Synthetic rollback approval','Synthetic rollback only FY27 reports')->>'enabled'<>'true' then
-  raise exception 'fixture_control_enable_failed';end if;
- insert into public.learn_quickbooks_daily_report_runs(id,connection_id,tenant_id,report_date,schedule_revision,state)
- values(r,c.id,c.tenant_id,current_date-1,1,'claimed');
+ begin
+  perform public.learn_quickbooks_daily_report_control(c.tenant_id,c.id,0,true,'2026-04-01',
+   'Synthetic rollback approval','Synthetic rollback only FY27 reports');
+  raise exception 'fixture_wrong_tenant_allowed';
+ exception when sqlstate '22023' then null;end;
+ begin
+  perform public.learn_quickbooks_daily_report_status(c.tenant_id);
+  raise exception 'fixture_wrong_tenant_status_allowed';
+ exception when sqlstate '42501' then null;end;
  perform set_config('request.jwt.claim.role','service_role',true);
- if not public.learn_quickbooks_daily_report_current(r) then raise exception 'fixture_current_policy_failed';end if;
- insert into public.learn_quickbooks_report_requests(id,tenant_id,connection_id,actor_id,
-  environment,realm_id,connection_revision,token_generation,report_kind,period_start,
-  period_end,accounting_method,reason,daily_run_id,state,claimed_at)
- values(scheduled,c.tenant_id,c.id,actor,c.environment,c.realm_id,c.revision,c.token_generation,
-  'ProfitAndLoss','2026-04-01',current_date-1,'Accrual','Synthetic scheduled report check',r,
-  'claimed',clock_timestamp());
+ if public.learn_quickbooks_daily_report_claim() is not null then
+  raise exception 'fixture_unapproved_claim_allowed';end if;
  insert into public.learn_quickbooks_report_requests(id,tenant_id,connection_id,actor_id,
   environment,realm_id,connection_revision,token_generation,report_kind,period_start,
   period_end,accounting_method,reason,state,claimed_at)
  values(manual,c.tenant_id,c.id,actor,c.environment,c.realm_id,c.revision,c.token_generation,
   'ProfitAndLoss','2026-04-01',current_date-1,'Accrual','Synthetic manual report check',
   'claimed',clock_timestamp());
- if not public.learn_quickbooks_report_current(scheduled)
-  or not public.learn_quickbooks_report_current(manual) then raise exception 'fixture_prior_contract_failed';end if;
- perform set_config('request.jwt.claim.role','authenticated',true);
- if public.learn_quickbooks_daily_report_control(c.tenant_id,c.id,1,false,'2026-04-01',
-  'Synthetic rollback revoke','Synthetic rollback policy withdrawal')->>'enabled'<>'false' then
-  raise exception 'fixture_control_disable_failed';end if;
- perform set_config('request.jwt.claim.role','service_role',true);
- if public.learn_quickbooks_daily_report_current(r) or public.learn_quickbooks_report_current(scheduled)
-  or not public.learn_quickbooks_report_current(manual) then raise exception 'fixture_revocation_failed';end if;
- update public.learn_quickbooks_report_requests set state='prepared' where id=scheduled;
- begin
-  perform public.learn_quickbooks_report_acquire(scheduled);
-  raise exception 'fixture_revoked_acquire_allowed';
- exception when sqlstate '42501' then null;end;
+ if not public.learn_quickbooks_report_current(manual) then
+  raise exception 'fixture_manual_contract_changed';end if;
+ if exists(select 1 from public.learn_quickbooks_daily_reports where connection_id=c.id) then
+  raise exception 'fixture_wrong_tenant_policy_created';end if;
  if has_table_privilege('anon','public.learn_quickbooks_daily_reports','SELECT')
   or has_table_privilege('authenticated','public.learn_quickbooks_daily_report_runs','SELECT')
   or has_function_privilege('anon','public.learn_quickbooks_daily_report_claim()','EXECUTE')
   or has_function_privilege('authenticated','public.learn_quickbooks_daily_report_claim()','EXECUTE')
   or not has_function_privilege('service_role','public.learn_quickbooks_daily_report_claim()','EXECUTE')
+  or has_function_privilege('anon','public.learn_quickbooks_daily_report_status(uuid)','EXECUTE')
+  or not has_function_privilege('authenticated','public.learn_quickbooks_daily_report_status(uuid)','EXECUTE')
   or not has_function_privilege('authenticated','public.learn_quickbooks_report_start(uuid,uuid,uuid,text,text,text,date,date,text,date,text,text)','EXECUTE')
   or has_function_privilege('service_role','public.learn_quickbooks_report_start(uuid,uuid,uuid,text,text,text,date,date,text,date,text,text)','EXECUTE')
   or not has_function_privilege('service_role','public.learn_quickbooks_report_acquire(uuid)','EXECUTE') then
@@ -113,7 +103,8 @@ export async function rehearse(fetcher = fetch, token = savedCliToken()) {
   if (!Array.isArray(rows) || rows.length !== 1 || rows[0]?.marker !== 'new-dawn-daily-qbo-rehearsal/1')
     throw Error('TEST rollback daily QBO rehearsal receipt missing');
   return { state:'passed_rolled_back', project:TEST_PROJECT, providerRequests:0,
-    syntheticDailyRuns:1, privateValuesReturned:false };
+    syntheticDailyRuns:0, wrongTenantDenied:true, manualReportPreserved:true,
+    privateValuesReturned:false };
 }
 
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
