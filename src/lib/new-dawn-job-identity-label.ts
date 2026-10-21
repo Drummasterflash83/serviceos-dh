@@ -10,11 +10,9 @@ export function jobSourceIdentity(row: SourceIdentity) {
   const reviewed = row.identity_state === "reviewed_link";
   return {
     sourceLabel: `${customer} · ${site}`,
-    shortEvidence: reviewed
-      ? "Job source linked · customer/site labels unverified"
-      : "Job source link awaiting review · customer/site labels unverified",
+    shortEvidence: reviewed ? null : "Job match awaiting review",
     detailEvidence: reviewed
-      ? "This Commusoft job source has a reviewed OpenFolk job link. The customer and site names are Commusoft labels; this check does not confirm their own matches."
-      : "These customer and site names are Commusoft source labels. The OpenFolk job source link is still awaiting review; their own matches are not confirmed by this check.",
+      ? "This Commusoft job has a reviewed OpenFolk job link. The customer and site names are from Commusoft; this check does not confirm separate customer or site matches."
+      : "These customer and site names are from Commusoft. This job still needs an OpenFolk match review; the names are not confirmed customer or site matches.",
   };
 }

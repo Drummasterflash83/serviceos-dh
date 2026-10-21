@@ -87,11 +87,12 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
   });
   const record = detail.data;
   const exact = record?.exactDetail;
+  const sourceIdentity = jobSourceIdentity(row);
   return <div className="nd-job-detail space-y-4">
     <div>
       <p><strong>Job {row.external_id}</strong> · {statusLabel[row.status]}</p>
-      <p>Commusoft customer and site: {jobSourceIdentity(row).sourceLabel}</p>
-      <p className="nd-job-identity-state">{jobSourceIdentity(row).detailEvidence}</p>
+      <p>Commusoft customer and site: {sourceIdentity.sourceLabel}</p>
+      <p className="nd-job-identity-state">{sourceIdentity.detailEvidence}</p>
       <small>Commusoft record saved {savedAt(row.source_observed_at)}. The job may have changed since then.</small>
       <p>{row.job_created_at ? `Job created in Commusoft ${jobDate(row.job_created_at)}.`
         : "Job creation date could not be verified."} This is not time spent in the current status.</p>
@@ -404,7 +405,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
             <span className="nd-job-main"><strong>Job {row.external_id}</strong>
               <small>{row.title ?? "Work description not recorded"}</small>
               <small>Commusoft: {jobSourceIdentity(row).sourceLabel}</small>
-              <small className="nd-job-identity-state">{jobSourceIdentity(row).shortEvidence}</small>
+              {jobSourceIdentity(row).shortEvidence &&
+                <small className="nd-job-identity-state">{jobSourceIdentity(row).shortEvidence}</small>}
             </span>
             <span className="nd-job-review"><b>{statusLabel[row.status]}</b>
               <small className="nd-job-next">{openJobNextStep(row.status)}</small>
@@ -439,7 +441,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         {showOldest && oldestHeldRows.length > 0 && <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
           <button type="button" onClick={() => setSelected(row)}>
             <strong>Job {row.external_id}</strong>
-            <span>{row.title ?? "Work description not recorded"}<em>Commusoft: {jobSourceIdentity(row).sourceLabel} · {jobSourceIdentity(row).shortEvidence}</em></span>
+            <span>{row.title ?? "Work description not recorded"}<em>Commusoft: {jobSourceIdentity(row).sourceLabel}
+              {jobSourceIdentity(row).shortEvidence ? ` · ${jobSourceIdentity(row).shortEvidence}` : ""}</em></span>
             <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, firstPage.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}
               {row.status_evidence === "repeat_saved_checks" && <><br />{openJobStatusEvidence(row, savedAt)}</>}
             </small>
