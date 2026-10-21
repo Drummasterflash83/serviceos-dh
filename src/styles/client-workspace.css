@@ -600,7 +600,7 @@ button.nd-job-row:hover { border-color: #a996c0; background: #fff; }
 @media (max-width: 720px) { .nd-score-hero { align-items: flex-start; flex-direction: column; } .nd-score-ring { flex-basis: auto; width: 112px; height: 112px; } .nd-score-tiles { grid-template-columns: 1fr; } .nd-score-bottlenecks { padding: 17px; } }
 @media (max-width: 720px) {
   .nd-score-hero--pending { display: grid; grid-template-columns: 66px minmax(0, 1fr); align-items: start; gap: 12px; }
-  .nd-score-hero--pending .nd-work-count { display: grid; place-content: center; width: 66px; min-height: 66px; padding: 6px; text-align: center; }
+  .nd-score-hero--pending .nd-work-count { display: grid; place-content: center; width: 66px; min-height: 76px; padding: 6px; text-align: center; }
   .nd-score-hero--pending .nd-work-count strong { font-size: 26px; }
   .nd-score-hero--pending .nd-work-count small { max-width: 56px; margin: 2px 0 0; font-size: 9px; }
   .nd-score-hero--pending .nd-score-hero-copy .of-eyebrow { display: none; }
@@ -609,7 +609,7 @@ button.nd-job-row:hover { border-color: #a996c0; background: #fff; }
 }
 @media (max-width: 400px) {
   .nd-score-hero--pending { grid-template-columns: 56px minmax(0, 1fr); gap: 9px; padding: 13px; }
-  .nd-score-hero--pending .nd-work-count { width: 56px; min-height: 56px; }
+  .nd-score-hero--pending .nd-work-count { width: 56px; min-height: 72px; }
   .nd-score-hero--pending .nd-work-count strong { font-size: 23px; }
   .nd-score-hero--pending .nd-work-count small { max-width: 48px; font-size: 10px; }
 }

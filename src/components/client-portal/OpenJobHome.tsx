@@ -336,6 +336,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     ? summary.data : null;
   const attentionStatus: OpenJobStatus | null = activeSummary?.counts.on_hold
     ? "on_hold" : activeSummary?.counts.pending ? "pending" : null;
+  const heldWorkCount = activeSummary
+    ? activeSummary.counts.on_hold + activeSummary.counts.pending : null;
   const checkedDay = dailyCoverage.data?.tenantId === tenant &&
     dailyCoverage.data.actorId === user?.id && !dailyCoverage.isFetching
     ? dailyCoverage.data : null;
@@ -437,24 +439,22 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     {!operator && !authorisedClient && <p role="status">Your work list is being prepared. Confirmed assignments are not available yet.</p>}
     {enabled && <>
       <section className="nd-score-hero nd-score-hero--pending" aria-label="Jobs needing attention">
-        <div className="nd-work-count"><strong>{linkedCustomers
-          ? linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB") : "…"}</strong>
-          <small>customer jobs to check</small></div>
+        <div className="nd-work-count"><strong>{heldWorkCount === null
+          ? "…" : heldWorkCount.toLocaleString("en-GB")}</strong>
+          <small>On hold or Pending</small></div>
         <div className="nd-score-hero-copy">
           <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · TODAY</p>
-          <h3>Check customer jobs</h3>
-          <p>{linkedCustomers
-            ? "These jobs have confirmed customer and site links. Open one to check the recorded work and status."
-            : customerBlockers.isError ? "Customer matches are unavailable right now. You can still browse all recorded jobs."
-              : "Checking customer jobs…"}</p>
+          <h3>Review held work</h3>
+          <p>{activeSummary
+            ? "Start with the recorded On-hold and Pending jobs. Check each job before deciding what needs action."
+            : summary.isError ? "The latest job counts are unavailable. You can still browse recorded jobs."
+              : "Checking recorded job status…"}</p>
           <div className="nd-hero-actions">
-            <button type="button" onClick={() => linkedCustomers?.linkedBlockedJobs
-              ? showCustomerWork() : showJobs(attentionStatus)}>
-              {linkedCustomers?.linkedBlockedJobs ? "Open customer jobs"
-                : activeSummary?.counts.on_hold ? "See On-hold jobs" : activeSummary?.counts.pending
-                  ? "See Pending jobs" : "See all jobs"} →</button>
-            {activeSummary?.counts.on_hold ? <button type="button" className="nd-hero-secondary"
-              onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button> : null}
+            <button type="button" onClick={() => showJobs(attentionStatus)}>
+              {attentionStatus === "on_hold" ? "See On-hold jobs"
+                : attentionStatus === "pending" ? "See Pending jobs" : "See all jobs"} →</button>
+            {linkedCustomers?.linkedBlockedJobs ? <button type="button" className="nd-hero-secondary"
+              onClick={showCustomerWork}>See confirmed customer jobs →</button> : null}
           </div>
           {summary.isFetching && activeSummary && <small>Checking for newer job totals…</small>}
         </div>
