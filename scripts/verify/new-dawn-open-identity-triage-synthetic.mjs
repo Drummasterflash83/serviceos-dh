@@ -1,5 +1,6 @@
 /** Emit a disposable PostgreSQL 17 proof for the audited open-job review v2. */
 import { readFileSync } from 'node:fs';
+import { releaseSql } from './new-dawn-open-identity-triage-release.mjs';
 
 const read = path => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
 const sample = read('scripts/verify/new-dawn-open-job-page-synthetic.sql');
@@ -15,6 +16,9 @@ process.stdout.write([
      if not exists(select 1 from pg_roles where rolname='service_role') then create role service_role; end if;
    end $$;`,
   read('scripts/verify/new-dawn-open-job-page-bootstrap.sql'),
+  `create schema supabase_migrations;
+   create table supabase_migrations.schema_migrations(
+     version text primary key,name text not null,statements text[] not null);`,
   'alter table public.learn_business_input_pages add primary key(id);',
   'alter table public.learn_business_input_versions add primary key(id);',
   sample.slice(0, seedStart),
@@ -28,11 +32,14 @@ process.stdout.write([
    insert into public.feature_flags values(
      '11111111-1111-4111-8111-111111111111',
      'new_dawn.m2_link_review_queue','true');
+   insert into public.feature_flags values(
+     '00000000-0000-0000-0000-000000000001',
+     'new_dawn.m2_link_review_queue','true');
    create function public.new_dawn_commusoft_exact_link_candidate(uuid,uuid,text)
    returns jsonb language sql as $$
      select '{"state":"review","reason":"site_mapping_missing_or_ambiguous"}'::jsonb $$;`,
   read('supabase/migrations/20261111170000_new_dawn_open_identity_priority.sql'),
-  read('supabase/migrations/20261113040000_new_dawn_open_identity_triage.sql'),
+  releaseSql(),
   `set test.actor='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
    set test.role='authenticated';
    do $$ declare page jsonb;begin
@@ -46,6 +53,10 @@ process.stdout.write([
      or page#>>'{rows,0,source_site_postcode}'<>'AB1 2CD'
      or page#>>'{rows,0,hold_reason}'<>'site_mapping_missing_or_ambiguous'
     then raise exception 'triage source labels failed %',page;end if;
+    if (select count(*) from supabase_migrations.schema_migrations
+      where version='20261113040000'
+       and name='new_dawn_open_identity_triage')<>1
+    then raise exception 'triage release ledger missing';end if;
    end $$;`,
   read('supabase/release/new-dawn-open-identity-triage/rollback.sql'),
   read('supabase/migrations/20261113040000_new_dawn_open_identity_triage.sql'),
