@@ -32,6 +32,6 @@ Use `/client-md` on both desktop and phone, signed in as OpenFolk. This is an au
 
 1. The page starts with jobs needing attention: On hold and Pending counts, a dated saved-source check, and a link into the full paged job list.
 2. The money strip says when a newer completed UK day has no verified report. It has a report date and period; net profit appears only in this MD view, and a net A/R credit is not presented as debt.
-3. The Customers tile opens “Customers being held up.” Expand one customer and open one job. The customer, site, status, and source time should agree with the saved job detail.
+3. The Customers tile opens “Customers with jobs to check.” Expand one customer and open one job. The customer, site, status, and source time should agree with the saved job detail.
 4. The section says that unmatched jobs are excluded; no status is presented as a proven cause, urgency, engineer, or score. The Team tile still says what data is missing.
 5. On the phone, the same actions work without horizontal scrolling, clipped buttons, or an operator banner covering the work list. Record any confusing wording or incorrect match before calling the layout accepted.

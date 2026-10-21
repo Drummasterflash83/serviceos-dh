@@ -99,9 +99,11 @@ function SourceJobDetail({ row, tenant, actor, reason, operator, customerLinkOnl
         <p className="nd-job-identity-state">{sourceIdentity.detailEvidence}</p>
       </>}
       <small>Commusoft record saved {savedAt(row.source_observed_at)}. The job may have changed since then.</small>
-      <p>{row.job_created_at ? `Job created in Commusoft ${jobDate(row.job_created_at)}.`
-        : "Job creation date could not be verified."} This is not time spent in the current status.</p>
-      <p>{openJobStatusEvidence(row, savedAt)}</p>
+      {!customerLinkOnly && <>
+        <p>{row.job_created_at ? `Job created in Commusoft ${jobDate(row.job_created_at)}.`
+          : "Job creation date could not be verified."} This is not time spent in the current status.</p>
+        <p>{openJobStatusEvidence(row, savedAt)}</p>
+      </>}
     </div>
     {detail.isPending && <p role="status">Opening the saved job record…</p>}
     {detail.isError && <p role="alert">The detailed record could not be checked. Refresh the job list; its saved summary remains available.</p>}
