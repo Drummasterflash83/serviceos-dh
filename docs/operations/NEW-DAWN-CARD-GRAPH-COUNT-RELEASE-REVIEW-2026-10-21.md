@@ -35,6 +35,11 @@ endpoint's card.
    `8176fecdf713f208aeee691fdbb778b11981fd079ead07997e6001d7c5b124f0`.
    It creates one read-only RPC and service-role-only EXECUTE grant; no row,
    index, role membership or client access changes.
+   The exact one-transaction installer and readback are
+   `scripts/verify/new-dawn-card-graph-count-release.mjs`. Its LIVE read-only
+   preflight found both endpoint indexes, no RPC and no migration ledger row.
+   The installer requires the exact project and SQL hash, then re-reads grants
+   and the ledger; an uncertain write is never replayed automatically.
 2. After verifying the RPC on LIVE, publish the handler change in
    `supabase/functions/_shared/worker_handlers/customer_card_sync.ts`
    through the scheduled `platform-worker` and direct `customer-card-sync`
@@ -44,6 +49,11 @@ endpoint's card.
    Repackage against the archived LIVE v114 body and verify the candidate's
    exact executable hash before publishing. Do not publish this
    source before the RPC exists or restore an older Edge package accidentally.
+   A staged v114 package changing only that handler compiled in the pinned
+   local runtime (ESZIP SHA-256
+   `994bafc61093af0068ff588fd514eab33a3e3a158b57c06c519e0591d04b572c`)
+   and booted without network or real credentials; its unauthenticated probe
+   returned 403. This is not a LIVE publish or signed-in card readback.
 3. Observe the ordinary next `customer_card.sync` job and its card counts,
    source freshness and sanitized error stage. Do not infer success from a
    queued row or from an Edge publish alone. If another `57014` occurs,
@@ -72,3 +82,5 @@ EXECUTE before any Edge publish.
 - TypeScript `tsc --noEmit` passed. This is a source/test candidate only;
   LIVE migration, Edge readback and completed scheduled-job evidence remain
   release gates.
+- The exact installer adds three focused tests; the combined handler and
+  installer suite is 20/20 after merging current `main`.
