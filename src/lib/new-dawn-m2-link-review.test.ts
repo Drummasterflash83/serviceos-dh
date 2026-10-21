@@ -35,6 +35,14 @@ test("source ambiguity and conflict remain held", () => {
     assert.equal(exactLinkReviewAction({ externalId: "10", state: "review", reason, sourceVersionId: null }), "hold");
 });
 
+test("customer-owned address can start customer review without unlocking its job link", () => {
+  const row = { externalId: "10", state: "review" as const,
+    reason: "property_not_exact_work_site", sourceVersionId: version };
+  assert.equal(exactLinkReviewAction(row), "customer_site");
+  assert.equal(exactSourceReviewDestination(row, "reviewed", null), "customer");
+  assert.match(exactLinkReviewLabel(row), /job stays unlinked/);
+});
+
 test("only a reviewed customer with an exact retained work-site ID skips customer review", () => {
   const row = { externalId: "10", state: "review" as const,
     reason: "site_mapping_missing_or_stale", sourceVersionId: null };

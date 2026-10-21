@@ -72,3 +72,15 @@ test("unreviewed source identity cannot borrow an exact stage or source person",
   assert.equal(evidence.find((item) => item.key === "stage_progress")?.state, "missing");
   assert.equal(evidence.find((item) => item.key === "owner_next_step")?.state, "missing");
 });
+
+test("repeated saved status is a lower bound, never a numeric Moving score", () => {
+  const repeated = { ...row, identity_state: "awaiting_review" as const,
+    status: "on_hold" as const, status_evidence: "repeat_saved_checks" as const,
+    status_first_saved_at: "2026-10-18T09:00:00Z" };
+  const evidence = inspectJobScoreEvidence(repeated, record);
+  const moving = evidence.find((item) => item.key === "stage_progress");
+  assert.equal(moving?.state, "source_fragment");
+  assert.match(moving?.sourceCue ?? "", /since at least/);
+  assert.match(moving?.sourceCue ?? "", /actual stage entry.*unverified/);
+  assert.equal("score" in (moving ?? {}), false);
+});

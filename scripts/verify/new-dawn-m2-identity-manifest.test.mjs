@@ -21,18 +21,18 @@ const rows = [
     companyName: 'Synthetic Works', addressLine1: '1 Synthetic Road', postcode: 'AB1 2CD' }),
   source('properties', 22, 2, { type: 'workaddress', parentPropertyID: 21,
     addressLine1: '2 Synthetic Road', postcode: 'AB2 3CD' }),
-  source('jobs', 31, 3, { propertyID: 21 }),
-  source('jobs', 32, 4, { propertyID: 22 }),
+  source('jobs', 31, 3, { propertyID: 21, status: 'pending' }),
+  source('jobs', 32, 4, { propertyID: 22, status: 'on_hold' }),
   source('properties', 23, 5, { type: 'customer', customerType: 5,
     firstName: 'Ada', lastName: 'Example', addressLine1: '3 Synthetic Road',
     postcode: 'CD1 2EF' }),
-  source('jobs', 33, 6, { propertyID: 23 }),
-  source('jobs', 34, 7, { propertyID: 99 }),
+  source('jobs', 33, 6, { propertyID: 23, status: 'Open' }),
+  source('jobs', 34, 7, { propertyID: 99, status: 'ongoing' }),
   source('properties', 24, 8, { type: 'customer', customerType: 4,
     companyName: 'Collision Ltd', addressLine1: '4 Synthetic Road', postcode: 'XY1 2ZZ' }),
-  source('jobs', 35, 9, { propertyID: 24 }),
-  source('jobs', 36, 10, { propertyID: 21 }),
-  source('jobs', 37, 11, { propertyID: 21 }),
+  source('jobs', 35, 9, { propertyID: 24, status: 'Open' }),
+  source('jobs', 36, 10, { propertyID: 21, status: 'Open' }),
+  source('jobs', 37, 11, { propertyID: 21, status: 'pending' }),
   ...[['properties', 21, 1], ['properties', 22, 2], ['jobs', 31, 3],
     ['jobs', 32, 4], ['properties', 23, 5], ['jobs', 33, 6],
     ['jobs', 34, 7], ['properties', 24, 8], ['jobs', 35, 9],
@@ -76,6 +76,20 @@ test('full saved-job classification produces only clean exact-version manifests'
       site_postcode_collision: { customers: 1, sites: 1, jobs: 1 },
     });
     assert.equal(printed.manifest_count, 1);
+    assert.deepEqual(printed.open, {
+      total: 7, already_linked: 1, clean: 2, held: 4,
+      by_status: {
+        pending: { linked: 0, clean: 1, held: 1 },
+        on_hold: { linked: 0, clean: 1, held: 0 },
+        Open: { linked: 1, clean: 0, held: 3 },
+      },
+      held_classes: {
+        account_holder_review_required: 1,
+        property_source_missing_or_ambiguous: 1,
+        retained_reversed_link_review: 1,
+        site_postcode_collision: 1,
+      },
+    });
     assert.ok(!result.stdout.includes('Synthetic') &&
       !result.stdout.includes('external_id') && !result.stdout.includes('customer_id'));
     const manifestPath = join(out, 'manifest-0001.json');

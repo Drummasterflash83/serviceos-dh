@@ -14,6 +14,20 @@ export type DailyStatusCoverage = {
   earliestMovingReviewDay: string | null;
 };
 
+/** A frozen roster's unobserved jobs are pending during its UK day. Only an
+ * earlier day's remainder can be described as a completed-day gap. */
+export function dailyStatusGapState(
+  coverage: DailyStatusCoverage | null, at = new Date(),
+): "pending_today" | "past_gap" | "none" {
+  if (!coverage?.day || !coverage.missingCount) return "none";
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(at);
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  const today = `${part("year")}-${part("month")}-${part("day")}`;
+  return coverage.day >= today ? "pending_today" : "past_gap";
+}
+
 const object = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && !Array.isArray(value);
 const uuid = (value: unknown): value is string =>
