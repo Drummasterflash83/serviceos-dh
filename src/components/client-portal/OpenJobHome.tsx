@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
 import { drummondsTenantId } from "@/lib/new-dawn-md-view";
 import { jobSourceIdentity } from "@/lib/new-dawn-job-identity-label";
+import { collectRecordedAttentionPages, groupRecordedAttention } from "@/lib/new-dawn-recorded-attention";
 import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
 import { customerBlockedJobDetailKey, readCustomerBlockers, type CustomerBlockedJob } from "@/lib/new-dawn-customer-blockers";
@@ -95,7 +96,7 @@ function SourceJobDetail({ row, tenant, actor, reason, operator, customerLinkOnl
     <div>
       <p><strong>Job {row.external_id}</strong> · {statusLabel[row.status]}</p>
       {customerLinkOnly ? <p>Opened from a confirmed customer and site link. The exact saved job is checked below.</p> : <>
-        <p>Commusoft customer and site: {sourceIdentity.sourceLabel}</p>
+        <p>Recorded customer and site: {sourceIdentity.sourceLabel}</p>
         <p className="nd-job-identity-state">{sourceIdentity.detailEvidence}</p>
       </>}
       <small>Commusoft record saved {savedAt(row.source_observed_at)}. The job may have changed since then.</small>
@@ -123,25 +124,25 @@ function SourceJobDetail({ row, tenant, actor, reason, operator, customerLinkOnl
         <p className="whitespace-pre-wrap break-words">{record.description ?? row.title ?? "No work description was saved."}</p>
         <p>Status: {record.status ? sourceLabel(record.status) : statusLabel[row.status]}
           {record.priority ? ` · Priority: ${sourceLabel(record.priority)}` : ""}</p>
-        <p>Stage: {exact?.stage ?? "Not enough data yet — this job's current stage has not been checked."}</p>
+        <p>Stage: {exact?.stage ?? "Not verified yet."}</p>
         {exact?.pipeline && <p>Workstream: {exact.pipeline}</p>}
       </section>
       <section aria-label="People and next step">
         <h3>People and next step</h3>
         {exact?.sourceUsers.length
-          ? <p>People listed on this job: {exact.sourceUsers.map((person) => person.name).join(", ")}. We have not confirmed who is the engineer or who attended.</p>
-          : <p>Engineer: not enough data yet — no verified engineer or appointment is attached to this record.</p>}
-        <p>What it is waiting on: {exact?.holdReason
-          ? `${exact.holdReason} (recorded reason; person responsible not yet confirmed)`
-          : "not enough data yet — the status does not tell us the cause or person responsible."}</p>
+          ? <p>People listed in Commusoft: {exact.sourceUsers.map((person) => person.name).join(", ")}. Ownership and attendance are not verified.</p>
+          : <p>Engineer: not verified yet.</p>}
+        <p>Waiting on: {exact?.holdReason
+          ? `${exact.holdReason} (recorded cause; owner not verified)`
+          : "Cause and owner not verified yet."}</p>
         <p>Next check: {openJobNextStep(row.status)}.</p>
       </section>
       <section aria-label="Contact and visits">
         <h3>Contact and visits</h3>
-        {record.contactCounts ? <p>{record.contactCounts.phone.toLocaleString("en-GB")} calls · {record.contactCounts.email.toLocaleString("en-GB")} emails confirmed as linked to this job in LEARN.
-          {record.contactCounts.latestAt ? ` Latest recorded contact ${savedAt(record.contactCounts.latestAt)}.` : " No job-linked contact is retained yet."} Unlinked contact history may still exist.</p>
-          : <p>Job-linked contact counts are unavailable until the exact job identity is confirmed.</p>}
-        <p>Visits: not enough data yet — no confirmed technician appointment is attached to this job.</p>
+        {record.contactCounts ? <p>{record.contactCounts.phone.toLocaleString("en-GB")} calls · {record.contactCounts.email.toLocaleString("en-GB")} emails linked to this job in LEARN.
+          {record.contactCounts.latestAt ? ` Latest saved contact ${savedAt(record.contactCounts.latestAt)}.` : ""} Other contact may be unlinked.</p>
+          : <p>Job-linked contact: not verified until the job match is confirmed.</p>}
+        <p>Visits: no verified technician appointment yet.</p>
       </section>
       {operator && !customerLinkOnly && scoreReviewFlag.data === true && <section className="nd-job-score-evidence"
         aria-label="OpenFolk private job score evidence review">
@@ -183,21 +184,27 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   const [selected, setSelected] = useState<OpenJobRow | null>(null);
   const [selectedCustomerJob, setSelectedCustomerJob] = useState<CustomerBlockedJob | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
+  const [showRecordedAttention, setShowRecordedAttention] = useState(false);
   const jobsRef = useRef<HTMLDivElement>(null);
   const customersRef = useRef<HTMLElement>(null);
+  const recordedRef = useRef<HTMLDivElement>(null);
   const authorisedClient = !operator && !!user && profile?.tenant_id === tenant &&
     canSeeCompanyJobs(profile.role);
   const enabled = !!user && uuid(tenant) && (operator ? approvedReason !== null : authorisedClient);
   useEffect(() => {
     setApprovedReason(mdReason ?? null); setReason(""); setStatus(null); setPageIndex(0);
     setCursors([null]); setSelected(null); setSelectedCustomerJob(null);
+    setShowRecordedAttention(false);
   }, [tenant, user?.id, operator, mdReason]);
   const summary = useQuery({
     queryKey: ["new-dawn-open-job-status-summary", tenant, user?.id, operator,
       approvedReason, refreshTick],
     enabled,
     staleTime: 0,
-    retry: false,
+    // A first-load read can time out while several saved-source views warm up.
+    // Retry once; never turn an unavailable count into a guessed value.
+    retry: (failures) => failures < 1,
+    retryDelay: 500,
     queryFn: async () => {
       const { data, error } = await getSupabaseClient().rpc("new_dawn_open_job_status_summary", {
         p_tenant: tenant, p_reason: operator ? approvedReason : null,
@@ -225,7 +232,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       approvedReason, refreshTick],
     enabled,
     staleTime: 0,
-    retry: false,
+    retry: (failures) => failures < 1,
+    retryDelay: 500,
     refetchOnWindowFocus: false,
     queryFn: async () => {
       const { data, error } = await getSupabaseClient().rpc("new_dawn_customer_blockers", {
@@ -234,6 +242,24 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       if (error) throw Error("Confirmed customer jobs unavailable");
       return readCustomerBlockers(data, tenant, user!.id);
     },
+  });
+  // Resolve saved attention jobs only when requested. The existing audited
+  // page RPC pins later cursor pages to the first page's source snapshot.
+  // This does not create or claim a canonical customer or site link.
+  const recordedAttention = useQuery({
+    queryKey: ["new-dawn-recorded-attention", tenant, user?.id, operator,
+      approvedReason, refreshTick],
+    enabled: enabled && showRecordedAttention,
+    retry: false,
+    refetchOnWindowFocus: false,
+    queryFn: () => collectRecordedAttentionPages(async (cursor) => {
+      const { data, error } = await getSupabaseClient().rpc("new_dawn_open_job_page", {
+        p_tenant: tenant, p_reason: operator ? approvedReason : null,
+        p_cursor: cursor, p_status: null, p_page_size: 50,
+      }).abortSignal(AbortSignal.timeout(25_000));
+      if (error) throw Error("Recorded customer work unavailable");
+      return readOpenJobPage(data, tenant, user!.id, null);
+    }),
   });
   // The unfiltered first page is already ordered with On-hold records first.
   // Reuse it for the ten oldest rows instead of issuing a second expensive
@@ -290,6 +316,10 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   const linkedCustomers = customerBlockers.data?.tenantId === tenant &&
     customerBlockers.data.actorId === user?.id && !customerBlockers.isFetching
     ? customerBlockers.data : null;
+  const confirmedAttentionKeys = new Set(linkedCustomers?.groups.flatMap((group) =>
+    group.jobs.map((job) => `${job.connectionId}:${job.externalId}:${job.sourceVersionId}`)) ?? []);
+  const recordedGroups = recordedAttention.data
+    ? groupRecordedAttention(recordedAttention.data.rows, confirmedAttentionKeys) : null;
   const dailyGapState = dailyStatusGapState(checkedDay);
   const listHeading = status === null ? "All recorded open jobs" : `${statusLabel[status]} jobs`;
   const listCount = activeSummary
@@ -310,6 +340,19 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     requestAnimationFrame(() => {
       jobsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       jobsRef.current?.focus({ preventScroll: true });
+    });
+  }
+  function showCustomerWork() {
+    requestAnimationFrame(() => {
+      customersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      customersRef.current?.focus({ preventScroll: true });
+    });
+  }
+  function showStillMatching() {
+    setShowRecordedAttention(true);
+    requestAnimationFrame(() => {
+      recordedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      recordedRef.current?.focus({ preventScroll: true });
     });
   }
   function nextPage() {
@@ -357,17 +400,19 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <section className="nd-score-hero nd-score-hero--pending" aria-label="Jobs needing attention">
         <div className="nd-work-count"><strong>{activeSummary
           ? (activeSummary.counts.on_hold + activeSummary.counts.pending).toLocaleString("en-GB") : "…"}</strong>
-          <small>jobs to check</small></div>
+          <small>records</small></div>
         <div className="nd-score-hero-copy">
           <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · TODAY</p>
           <h3>Recorded open work</h3>
           <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending · ${activeSummary.counts.open.toLocaleString("en-GB")} Open.`
             : summary.isError ? "Job totals are unavailable." : "Checking workload…"}</p>
-          <button type="button" onClick={() => showJobs(attentionStatus)}>
-            {activeSummary?.counts.on_hold ? "Review On-hold jobs" : activeSummary?.counts.pending
-              ? "Review Pending jobs" : "See all open jobs"} →</button>
+          <button type="button" onClick={() => linkedCustomers?.linkedBlockedJobs
+            ? showCustomerWork() : showJobs(attentionStatus)}>
+            {linkedCustomers?.linkedBlockedJobs ? "Start with confirmed customer jobs"
+              : activeSummary?.counts.on_hold ? "Review recorded On-hold jobs" : activeSummary?.counts.pending
+                ? "Review recorded Pending jobs" : "See all open jobs"} →</button>
           {activeSummary && <small>{activeSummary.counts.total.toLocaleString("en-GB")} open jobs recorded in Commusoft · checked {savedAt(activeSummary.snapshotAt)}</small>}
-          {activeSummary?.identity && <small>{activeSummary.identity.linked.toLocaleString("en-GB")} linked to a customer and site · {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} awaiting a match.</small>}
+          {activeSummary?.identity && <small>Customer and site confirmed for {activeSummary.identity.linked.toLocaleString("en-GB")} jobs; {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} still being checked.</small>}
           {activeSummary && <small>Some are office work. Status alone does not show customer urgency or who acts next.</small>}
         </div>
       </section>
@@ -387,14 +432,16 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           </button><small>Counts checked {savedAt(activeSummary.snapshotAt)}</small></>}
         </article>
         <article><span>CUSTOMERS</span><strong>{linkedCustomers
-          ? `${linkedCustomers.groups.length.toLocaleString("en-GB")} to check`
+          ? `${linkedCustomers.groups.length.toLocaleString("en-GB")} confirmed groups`
           : customerBlockers.isError ? "Customer view unavailable" : "Checking linked work"}</strong>
           <p>{linkedCustomers
-            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} confirmed linked jobs are On hold or Pending. Other jobs may still be awaiting a customer match.`
-            : "Checking which saved jobs have confirmed customer and site links."}</p>
+            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} On-hold or Pending jobs are in those groups. More recorded jobs may still need matching.`
+            : "Checking which jobs have a confirmed customer and site."}</p>
           <p>Customer score needs job progress and contact history.</p>
-          {linkedCustomers && <button type="button" onClick={() => customersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}>
-            See customers to check →</button>}
+          {linkedCustomers && <div className="nd-customer-tile-actions">
+            <button type="button" onClick={showCustomerWork}>See confirmed groups →</button>
+            <button type="button" onClick={showStillMatching}>See jobs still being matched →</button>
+          </div>}
         </article>
         <article><span>TEAM</span><strong>Not enough data yet</strong>
           <p>Needs verified visits and owners of next actions before a team score.</p>
@@ -416,10 +463,10 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
         {summary.isPending && <p role="status">Checking saved job status totals…</p>}
         {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
       </section>
-      <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check">
+      <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check" tabIndex={-1}>
         <div className="nd-customer-blockers-heading">
           <h3>Customers with jobs to check</h3>
-          <p>Linked jobs recorded as On hold or Pending. Open a job to see what's known; the cause and next owner may still need checking.</p>
+          <p>On-hold or Pending jobs with a confirmed customer and site. Open a job to see what's known; the cause and next owner may still need checking.</p>
         </div>
         {customerBlockers.isPending && <p role="status">Checking linked customer jobs…</p>}
         {customerBlockers.isError && <p role="alert">Linked customer jobs could not be checked. Refresh to retry.</p>}
@@ -435,12 +482,51 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
               <ChevronRight size={16} aria-hidden="true" />
             </button>)}</div>
           </details>)}
-          <small>{linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} exactly linked jobs · checked {savedAt(linkedCustomers.snapshotAt)}. Jobs without confirmed links are excluded.</small>
+          <small>{linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} jobs with confirmed customer and site · checked {savedAt(linkedCustomers.snapshotAt)}. Jobs still being matched are not shown in these groups.</small>
         </>}
         <div className="nd-customer-blocker-all-work">
           <p>The full work list also includes jobs without a confirmed customer group.</p>
           <button type="button" onClick={() => showJobs("on_hold")}>See all On-hold jobs →</button>
           <button type="button" onClick={() => showJobs("pending")}>See all Pending jobs →</button>
+        </div>
+        <div ref={recordedRef} className="nd-recorded-attention" tabIndex={-1}>
+          <h4>More recorded customer work</h4>
+          <p>These names come from saved Commusoft jobs. A customer or site match is not confirmed here. Open a job before deciding what it needs.</p>
+          {!showRecordedAttention && <button type="button" className="nd-recorded-attention-toggle"
+            onClick={showStillMatching}>See jobs still being matched →</button>}
+          {recordedAttention.isPending && showRecordedAttention &&
+            <p role="status">Checking recorded customer work…</p>}
+          {recordedAttention.isError && <>
+            <p role="alert">Recorded customer work could not be checked. The full job list remains available.</p>
+            <button type="button" className="nd-recorded-attention-toggle"
+              onClick={() => void recordedAttention.refetch()}>Try this view again</button>
+          </>}
+          {recordedGroups && <>
+            <p>{recordedGroups.shown.toLocaleString("en-GB")} jobs to check across {recordedGroups.groups.length.toLocaleString("en-GB")} recorded customer groups
+              {recordedGroups.ungrouped.length ? `; ${recordedGroups.ungrouped.length} have missing or conflicting source names` : ""}.
+              {recordedAttention.data?.complete ? "" : " This is a bounded first portion; use the full job list for the rest."}
+              {linkedCustomers ? " Jobs confirmed for this same saved version are left out; changed records may need checking again." : " The confirmed-customer check is unavailable, so some jobs may also appear above."}
+              {` Checked ${savedAt(recordedAttention.data!.snapshotAt)}.`}</p>
+            {recordedGroups.groups.map((group) => <details key={group.key}>
+              <summary><span><strong>{group.name}</strong><small>Recorded in Commusoft · match still to confirm · {group.onHold} On hold · {group.pending} Pending</small></span>
+                <ChevronRight size={17} aria-hidden="true" /></summary>
+              <div className="nd-customer-blocker-jobs">{group.jobs.map((job) => <button type="button"
+                key={`${job.connection_id}:${job.external_id}`} onClick={() => { setSelectedCustomerJob(null); setSelected(job); }}>
+                <span>Job {job.external_id}{job.source_site ? ` · ${job.source_site}` : ""}</span>
+                <small>{statusLabel[job.status]} · saved {savedAt(job.source_observed_at)}</small>
+                <ChevronRight size={16} aria-hidden="true" />
+              </button>)}</div>
+            </details>)}
+            {recordedGroups.ungrouped.length > 0 && <details>
+              <summary><span><strong>Customer details to check</strong><small>{recordedGroups.ungrouped.length} jobs have missing or conflicting recorded names</small></span>
+                <ChevronRight size={17} aria-hidden="true" /></summary>
+              <div className="nd-customer-blocker-jobs">{recordedGroups.ungrouped.map((job) => <button type="button"
+                key={`${job.connection_id}:${job.external_id}`} onClick={() => { setSelectedCustomerJob(null); setSelected(job); }}>
+                <span>Job {job.external_id}</span><small>{statusLabel[job.status]} · saved {savedAt(job.source_observed_at)}</small>
+                <ChevronRight size={16} aria-hidden="true" />
+              </button>)}</div>
+            </details>}
+          </>}
         </div>
       </section>
       <details className="nd-oldest-jobs" aria-label="Oldest recorded On-hold jobs">
@@ -453,7 +539,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
             <button type="button" onClick={() => setSelected(row)}>
               <strong>Job {row.external_id}</strong>
-              <span>{row.title ?? "Work description not recorded"}<em>Commusoft: {jobSourceIdentity(row).sourceLabel}
+              <span>{row.title ?? "Work description not recorded"}<em>Recorded customer and site: {jobSourceIdentity(row).sourceLabel}
                 {jobSourceIdentity(row).shortEvidence ? ` · ${jobSourceIdentity(row).shortEvidence}` : ""}</em></span>
               <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, firstPage.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}
                 {row.status_evidence === "repeat_saved_checks" && <><br />{openJobStatusEvidence(row, savedAt)}</>}
@@ -507,14 +593,14 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           These are saved Commusoft statuses, not live progress or confirmed assignments.
           {active.nextCursor ? " More jobs follow." : " End of this saved status selection."}
         </p>
-        {rows.length === 0 && <p>No uniquely retained source jobs have this saved status in this snapshot. Source gaps still need review.</p>}
+        {rows.length === 0 && <p>No saved jobs have this status in this view. Some source records may still need checking.</p>}
         <div className="nd-job-list">
           {rows.map((row) => <button key={`${row.connection_id}:${row.external_id}`}
             type="button" className="nd-job-row" onClick={() => setSelected(row)}>
             <BriefcaseBusiness size={20} />
             <span className="nd-job-main"><strong>Job {row.external_id}</strong>
               <small>{row.title ?? "Work description not recorded"}</small>
-              <small>Commusoft: {jobSourceIdentity(row).sourceLabel}</small>
+              <small>Recorded customer and site: {jobSourceIdentity(row).sourceLabel}</small>
               {jobSourceIdentity(row).shortEvidence &&
                 <small className="nd-job-identity-state">{jobSourceIdentity(row).shortEvidence}</small>}
             </span>

@@ -75,35 +75,21 @@
 .md-money-receivables-total { display: block; color: #514669; font-size: clamp(24px,3vw,34px); font-weight: 650; overflow-wrap: anywhere; }
 .md-money-receivables p:not(.of-eyebrow) { max-width: 72ch; margin: 9px 0; color: #706b7e; font-size: 12px; line-height: 1.55; }
 .md-money-receivables p strong { color: #514669; }
-.md-money-receivables h4 { margin: 17px 0 0; color: #25253a; font-size: 13px; font-weight: 600; }
+.md-money-age-breakdown { margin-top: 16px; }
+.md-money-age-breakdown > summary { color: #514669; cursor: pointer; font-size: 13px; font-weight: 600; }
+.md-money-age-breakdown > summary:focus-visible { outline: 2px solid #514669; outline-offset: 4px; }
 .md-money-receivables dl { display: grid; gap: 8px; margin: 10px 0 0; font-size: 12px; }
 .md-money-receivables dl div { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; padding-top: 8px; border-top: 1px solid #e9e7ee; }
 .md-money-receivables dt { color: #706b7e; }
 .md-money-receivables dd { margin: 0; color: #25253a; text-align: right; overflow-wrap: anywhere; }
-.md-money-followup { padding: 18px 20px; border: 1px solid #ded4e8; border-radius: 16px; }
-.md-money-followup h3 { margin: 0 0 12px; color: #25253a; font-size: 17px; }
-.md-money-followup p { margin: 10px 0; color: #706b7e; font-size: 13px; line-height: 1.5; }
-.md-money-followup strong { color: #514669; }
-.md-money-aged { margin-top: 18px; padding: 18px 20px; border: 1px solid #e9e7ee; border-radius: 16px; }
-.md-money-aged > summary { color: #514669; cursor: pointer; font-size: 14px; font-weight: 600; }
-.md-money-aged > summary:focus-visible { outline: 2px solid #514669; outline-offset: 4px; }
-.md-money-aged h3 { margin: 0 0 7px; color: #25253a; font-size: 17px; }
-.md-money-aged > p { color: #706b7e; font-size: 13px; line-height: 1.5; }
-.md-money-aged > button { margin: 8px 0 14px; }
-.md-money-aged-list { display: grid; gap: 9px; padding: 0; list-style: none; }
-.md-money-aged-list li { display: grid; gap: 3px; padding: 12px; border: 1px solid #eee9f1; border-radius: 10px; background: #faf9f6; overflow-wrap: anywhere; }
-.md-money-aged-list strong { color: #514669; font-size: 13px; }
-.md-money-aged-list span, .md-money-aged-list small { color: #706b7e; font-size: 12px; }
-.md-money-aged-list details { color: #706b7e; font-size: 11px; }
-.md-money-proof { margin-top: 14px; color: #706b7e; font-size: 11px; overflow-wrap: anywhere; }
 @media (max-width: 1050px) { .md-money-strip-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width: 760px) {
   .md-review-shell { grid-template-columns: 1fr; }
   .md-review-sidebar { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 9px 16px; padding: 14px 18px; }
   .md-review-brand { padding: 0; }
   .md-review-badge { padding: 8px 10px; }
-  .md-review-sidebar nav { display: flex; flex-basis: 100%; gap: 6px; }
-  .md-review-sidebar nav button { width: auto; }
+  .md-review-sidebar nav { display: flex; flex-basis: 100%; flex-wrap: wrap; gap: 6px; }
+  .md-review-sidebar nav button { flex: 1 1 auto; justify-content: center; width: auto; }
   .md-review-return { margin: 0 0 0 auto; padding: 7px; }
   .md-review-topbar { display: none; }
   .md-money-grid { grid-template-columns: 1fr; }
