@@ -367,7 +367,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
             {activeSummary?.counts.on_hold ? "Review On-hold jobs" : activeSummary?.counts.pending
               ? "Review Pending jobs" : "See all open jobs"} →</button>
           {activeSummary && <small>{activeSummary.counts.total.toLocaleString("en-GB")} open jobs recorded in Commusoft · checked {savedAt(activeSummary.snapshotAt)}</small>}
-          {activeSummary?.identity && <small>{activeSummary.identity.linked.toLocaleString("en-GB")} linked to a customer and site · {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} awaiting a match.</small>}
+          {activeSummary?.identity && <small>Customer and site confirmed for {activeSummary.identity.linked.toLocaleString("en-GB")} jobs; {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} still being checked.</small>}
           {activeSummary && <small>Some are office work. Status alone does not show customer urgency or who acts next.</small>}
         </div>
       </section>
@@ -390,8 +390,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           ? `${linkedCustomers.groups.length.toLocaleString("en-GB")} to check`
           : customerBlockers.isError ? "Customer view unavailable" : "Checking linked work"}</strong>
           <p>{linkedCustomers
-            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} confirmed linked jobs are On hold or Pending. Other jobs may still be awaiting a customer match.`
-            : "Checking which saved jobs have confirmed customer and site links."}</p>
+            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} On-hold or Pending jobs have a confirmed customer and site. Other jobs may still need matching.`
+            : "Checking which jobs have a confirmed customer and site."}</p>
           <p>Customer score needs job progress and contact history.</p>
           {linkedCustomers && <button type="button" onClick={() => customersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}>
             See customers to check →</button>}
@@ -419,7 +419,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check">
         <div className="nd-customer-blockers-heading">
           <h3>Customers with jobs to check</h3>
-          <p>Linked jobs recorded as On hold or Pending. Open a job to see what's known; the cause and next owner may still need checking.</p>
+          <p>On-hold or Pending jobs with a confirmed customer and site. Open a job to see what's known; the cause and next owner may still need checking.</p>
         </div>
         {customerBlockers.isPending && <p role="status">Checking linked customer jobs…</p>}
         {customerBlockers.isError && <p role="alert">Linked customer jobs could not be checked. Refresh to retry.</p>}
@@ -435,7 +435,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
               <ChevronRight size={16} aria-hidden="true" />
             </button>)}</div>
           </details>)}
-          <small>{linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} exactly linked jobs · checked {savedAt(linkedCustomers.snapshotAt)}. Jobs without confirmed links are excluded.</small>
+          <small>{linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} jobs with confirmed customer and site · checked {savedAt(linkedCustomers.snapshotAt)}. Jobs still being matched are not shown in these groups.</small>
         </>}
         <div className="nd-customer-blocker-all-work">
           <p>The full work list also includes jobs without a confirmed customer group.</p>
@@ -507,7 +507,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           These are saved Commusoft statuses, not live progress or confirmed assignments.
           {active.nextCursor ? " More jobs follow." : " End of this saved status selection."}
         </p>
-        {rows.length === 0 && <p>No uniquely retained source jobs have this saved status in this snapshot. Source gaps still need review.</p>}
+        {rows.length === 0 && <p>No saved jobs have this status in this view. Some source records may still need checking.</p>}
         <div className="nd-job-list">
           {rows.map((row) => <button key={`${row.connection_id}:${row.external_id}`}
             type="button" className="nd-job-row" onClick={() => setSelected(row)}>

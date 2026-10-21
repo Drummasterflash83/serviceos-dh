@@ -4,7 +4,7 @@ The audited MD Money page already has a verified saved P&L and A/R pair, but its
 
 No QuickBooks request, financial action, chase draft, tenant grant, staff login, report value, source receipt or database function changes. The underlying operator report-summary preview still shows the saved receipt hashes and audit proof. The MD read remains guarded by its existing short-lived OpenFolk presentation session and logs each source request.
 
-The same client presentation also replaces technical matching shorthand in the job list and oldest On-hold rows with "Recorded customer and site". Unconfirmed matches remain labelled as such, and the job detail still names Commusoft and exposes its saved time and source limits. The desktop header no longer prints Chris's OpenFolk email while presenting; the preview badge and expandable audit/access notice remain visible. This is copy only: it does not turn a source name into a confirmed customer/site link.
+The same client presentation also replaces technical matching shorthand in the job list and oldest On-hold rows with "Recorded customer and site". Home's customer coverage and grouped work use ordinary, explicit wording for confirmed and still-unmatched jobs. Unconfirmed matches remain labelled as such, and the job detail still names Commusoft and exposes its saved time and source limits. The desktop header no longer prints Chris's OpenFolk email while presenting; the preview badge and expandable audit/access notice remain visible. This is copy only: it does not turn a source name into a confirmed customer/site link.
 
 ## Release and acceptance
 
