@@ -81,7 +81,7 @@ export function exactLinkReviewLabel(row: ExactLinkReviewRow): string {
     site_mapping_missing_or_ambiguous: "The exact work site has no single current mapping. Review its source and conflicts.",
     customer_mapping_missing_or_ambiguous: "The exact customer has no single current mapping. Review its source and conflicts.",
     customer_mapping_missing_or_stale: "The exact customer needs a current reviewed link.",
-    property_not_exact_work_site: "Commusoft has not classified this as a work address. Review the source customer identity first; this job stays unlinked until its site and job relationship are separately verified.",
+    property_not_exact_work_site: "This Commusoft property is not a separate work address. A customer's own address can still be a valid site, but its exact customer, site and job links need separate review. The job stays unlinked.",
     property_source_missing_or_ambiguous: "The source property is missing or ambiguous.",
     customer_source_missing_or_ambiguous: "The source customer is missing or ambiguous.",
     customer_site_conflict: "Customer and site records conflict; hold for review.",
