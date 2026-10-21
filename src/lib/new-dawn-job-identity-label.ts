@@ -11,9 +11,10 @@ export function jobSourceIdentity(row: SourceIdentity) {
   return {
     sourceLabel: `${customer} · ${site}`,
     shortEvidence: reviewed
-      ? "Customer/site IDs reviewed" : "Customer/site match awaiting review",
+      ? "Job source linked · customer/site labels unverified"
+      : "Job source link awaiting review · customer/site labels unverified",
     detailEvidence: reviewed
-      ? "Customer and site IDs have a reviewed OpenFolk link. The names shown are from Commusoft."
-      : "These are Commusoft source labels. The OpenFolk customer and site match is still awaiting review.",
+      ? "This Commusoft job source has a reviewed OpenFolk job link. The customer and site names are Commusoft labels; this check does not confirm their own matches."
+      : "These customer and site names are Commusoft source labels. The OpenFolk job source link is still awaiting review; their own matches are not confirmed by this check.",
   };
 }
