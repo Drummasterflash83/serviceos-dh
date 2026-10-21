@@ -21,3 +21,13 @@ The drop affects only this derived read; saved jobs, links, customers, sites, an
 ## Verified before release
 
 The exact SQL SHA-256 is `fa794c6f9a0bfe8e55cfd8d00a8fe1f9fe1dc04846e5a0fac95c9f69557aa3b2`. The LIVE catalog showed the function and ledger absent. `node scripts/verify/new-dawn-customer-blockers-release.mjs --live-rollback-rehearsal` installed the function inside a rolled-back transaction, checked its grants, and confirmed the catalog returned to the original state. TypeScript, the focused decoder tests, and the production build passed. The persistent migration and signed-in LIVE check are still pending.
+
+## Chris's five-point signed-in check after release
+
+Use `/client-md` on both desktop and phone, signed in as OpenFolk. This is an audited presentation preview, not a Drummonds staff login.
+
+1. The page starts with jobs needing attention: On hold and Pending counts, a dated saved-source check, and a link into the full paged job list.
+2. The money strip has a report date and period; net profit appears only in this MD view, and a net A/R credit is not presented as debt.
+3. The Customers tile opens “Customers being held up.” Expand one customer and open one job. The customer, site, status, and source time should agree with the saved job detail.
+4. The section says that unmatched jobs are excluded; no status is presented as a proven cause, urgency, engineer, or score. The Team tile still says what data is missing.
+5. On the phone, the same actions work without horizontal scrolling, clipped buttons, or an operator banner covering the work list. Record any confusing wording or incorrect match before calling the layout accepted.
