@@ -434,6 +434,9 @@
 .nd-customer-tile-actions button { min-height: 40px; text-align: left; }
 .nd-job-home > .nd-work-priority { margin-top: 13px; }
 .nd-customer-blockers { margin: 18px 0 20px; padding: 19px 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #fff; scroll-margin-top: 24px; }
+.nd-browse-open-jobs { margin: 20px 0 4px; padding: 18px 20px; border: 1px solid #e9e7ee; border-radius: 17px; background: #faf9f6; }
+.nd-browse-open-jobs h3 { margin: 0 0 5px; color: #25253a; font-size: 18px; }
+.nd-browse-open-jobs p { margin: 0 0 12px; color: #706b7e; font-size: 12px; line-height: 1.5; }
 .nd-customer-blockers h3 { margin: 0 0 4px; color: #25253a; font-size: 19px; font-weight: 600; }
 .nd-customer-blockers p, .nd-customer-blockers > small { display: block; margin: 0 0 12px; color: #706b7e; font-size: 12px; line-height: 1.5; }
 .nd-customer-blockers > small { margin: 12px 0 0; }

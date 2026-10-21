@@ -184,6 +184,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   const [selected, setSelected] = useState<OpenJobRow | null>(null);
   const [selectedCustomerJob, setSelectedCustomerJob] = useState<CustomerBlockedJob | null>(null);
   const [showRecordedAttention, setShowRecordedAttention] = useState(false);
+  const [showJobBrowser, setShowJobBrowser] = useState(false);
+  const [showOldestJobs, setShowOldestJobs] = useState(false);
   const jobsRef = useRef<HTMLDivElement>(null);
   const customersRef = useRef<HTMLElement>(null);
   const recordedRef = useRef<HTMLDivElement>(null);
@@ -194,6 +196,8 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     setApprovedReason(mdReason ?? null); setReason(""); setStatus(null); setPageIndex(0);
     setCursors([null]); setSelected(null); setSelectedCustomerJob(null);
     setShowRecordedAttention(false);
+    setShowJobBrowser(false);
+    setShowOldestJobs(false);
   }, [tenant, user?.id, operator, mdReason]);
   // Keep a bounded, actor/reason-scoped last-good read across MD page switches.
   // Refetch on mount; while it runs or fails, display only the dated prior result.
@@ -271,7 +275,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
   const firstPage = useQuery<OpenJobPage>({
     queryKey: ["new-dawn-open-job-first-page", tenant, user?.id, operator,
       approvedReason],
-    enabled,
+    enabled: enabled && (showJobBrowser || showOldestJobs),
     staleTime: 0,
     gcTime: 30 * 60_000,
     // A bounded retry absorbs an intermittent database/request timeout on the
@@ -342,6 +346,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     setSelectedCustomerJob(null);
   }
   function showJobs(next: OpenJobStatus | null) {
+    setShowJobBrowser(true);
     changeFilter(next);
     requestAnimationFrame(() => {
       jobsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -372,7 +377,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     // data if a busy database refuses one of these independent reads.
     void (async () => {
       await summary.refetch();
-      await firstPage.refetch();
+      if (showJobBrowser || showOldestJobs) await firstPage.refetch();
       await customerBlockers.refetch();
       await dailyCoverage.refetch();
       if (showRecordedAttention) await recordedAttention.refetch();
@@ -414,75 +419,27 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
     {!operator && !authorisedClient && <p role="status">Your work list is being prepared. Confirmed assignments are not available yet.</p>}
     {enabled && <>
       <section className="nd-score-hero nd-score-hero--pending" aria-label="Jobs needing attention">
-        <div className="nd-work-count"><strong>{activeSummary
-          ? (activeSummary.counts.on_hold + activeSummary.counts.pending).toLocaleString("en-GB") : "…"}</strong>
-          <small>records</small></div>
+        <div className="nd-work-count"><strong>{linkedCustomers
+          ? linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB") : "…"}</strong>
+          <small>linked customer jobs</small></div>
         <div className="nd-score-hero-copy">
           <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · TODAY</p>
-          <h3>Recorded open work</h3>
-          <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending · ${activeSummary.counts.open.toLocaleString("en-GB")} Open.`
-            : summary.isError ? "Job totals are unavailable." : "Checking workload…"}</p>
+          <h3>Customer jobs to check</h3>
+          <p>{linkedCustomers
+            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} confirmed customer jobs are On hold or Pending. Open a job to see its recorded stage and what needs checking.`
+            : customerBlockers.isError ? "Confirmed customer jobs are unavailable. The full recorded work list is still available."
+              : "Checking confirmed customer work…"}</p>
           <button type="button" onClick={() => linkedCustomers?.linkedBlockedJobs
             ? showCustomerWork() : showJobs(attentionStatus)}>
-            {linkedCustomers?.linkedBlockedJobs ? "Start with confirmed customer jobs"
+            {linkedCustomers?.linkedBlockedJobs ? "Open customer jobs"
               : activeSummary?.counts.on_hold ? "Review recorded On-hold jobs" : activeSummary?.counts.pending
                 ? "Review recorded Pending jobs" : "See all open jobs"} →</button>
-          {activeSummary && <small>{activeSummary.counts.total.toLocaleString("en-GB")} open jobs recorded in Commusoft · checked {savedAt(activeSummary.snapshotAt)}</small>}
+          {activeSummary && <small>Across all saved work: {activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending · {activeSummary.counts.open.toLocaleString("en-GB")} Open. Checked {savedAt(activeSummary.snapshotAt)}.</small>}
           {summary.isFetching && activeSummary && <small>Checking for newer saved job totals…</small>}
-          {activeSummary?.identity && <small>Customer and site confirmed for {activeSummary.identity.linked.toLocaleString("en-GB")} jobs; {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} still being checked.</small>}
-          {activeSummary && <small>Some are office work. Status alone does not show customer urgency or who acts next.</small>}
+          {linkedCustomers && <small>Confirmed customer work checked {savedAt(linkedCustomers.snapshotAt)}. Other recorded jobs may still need matching; status alone does not prove urgency or ownership.</small>}
         </div>
       </section>
       {operator && mdReason && !summary.isPending && mdMoney}
-      <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
-        <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
-          {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending in saved Commusoft statuses.</p>}
-          <p>{dailyCoverage.isError
-            ? "Daily job-check evidence is unavailable."
-            : checkedDay?.day
-              ? `Daily status check on ${statusDay(checkedDay.day)}: ${checkedDay.observedCount?.toLocaleString("en-GB")}/${checkedDay.rosterCount?.toLocaleString("en-GB")} jobs observed.`
-              : "Daily job-check evidence is being collected."}</p>
-          <p>Progress rules and the effect of supplier waits will be set with each client before scores appear.</p>
-          {activeSummary && <><button type="button" onClick={() => showJobs(attentionStatus)}>
-            {attentionStatus === "on_hold" ? "Review recorded On-hold jobs"
-              : attentionStatus === "pending" ? "Review recorded Pending jobs"
-                : "See all recorded open jobs"} →
-          </button><small>Counts checked {savedAt(activeSummary.snapshotAt)}</small></>}
-        </article>
-        <article><span>CUSTOMERS</span><strong>{linkedCustomers
-          ? `${linkedCustomers.groups.length.toLocaleString("en-GB")} confirmed groups`
-          : customerBlockers.isError ? "Customer view unavailable" : "Checking linked work"}</strong>
-          <p>{linkedCustomers
-            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} On-hold or Pending jobs are in those groups. More recorded jobs may still need matching.`
-            : "Checking which jobs have a confirmed customer and site."}</p>
-          <p>Customer scoring needs confirmed job progress, contact history and client-approved rules.</p>
-          {linkedCustomers && <div className="nd-customer-tile-actions">
-            <button type="button" onClick={showCustomerWork}>See confirmed groups →</button>
-            <button type="button" onClick={showStillMatching}>See jobs still being matched →</button>
-          </div>}
-        </article>
-        <article><span>TEAM</span><strong>Not enough data yet</strong>
-          <p>Verified visits and owners of next actions are needed before team scoring rules can be set.</p>
-        </article>
-      </div>
-      <section className="nd-work-priority" aria-label="Review saved job statuses">
-        <div><h3>What needs a check</h3>
-          <p>Choose a status to open the jobs behind it.</p></div>
-        {activeSummary && (["on_hold", "pending"] as const)
-          .filter((kind) => activeSummary.counts[kind] > 0).map((kind) => (
-            <button key={kind} type="button" onClick={() => showJobs(kind)}>
-              <span><b>{statusLabel[kind]}</b><small>{openJobNextStep(kind)}</small></span>
-              <strong>{activeSummary.counts[kind].toLocaleString("en-GB")} jobs</strong>
-              <ChevronRight size={17} />
-            </button>
-          ))}
-        {activeSummary && activeSummary.counts.on_hold === 0 && activeSummary.counts.pending === 0 &&
-          <p>No on-hold or pending status appears in this snapshot. That does not confirm every job is progressing.</p>}
-        {summary.isPending && <p role="status">Checking saved job status totals…</p>}
-        {summary.isError && <p role="alert">{activeSummary
-          ? "The latest status check failed. The dated counts above are the last saved result."
-          : "Saved status totals are unavailable. The job list can still be opened."}</p>}
-      </section>
       <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check" tabIndex={-1}>
         <div className="nd-customer-blockers-heading">
           <h3>Customers with jobs to check</h3>
@@ -495,7 +452,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           : "Linked customer jobs could not be checked. Refresh to retry."}</p>}
         {linkedCustomers && <>
           {linkedCustomers.groups.length === 0 && <p>No confirmed linked customer jobs are On hold or Pending in this snapshot. Jobs awaiting matching are not included.</p>}
-          {linkedCustomers.groups.map((group) => <details key={`${group.kind}:${group.id}`}>
+          {linkedCustomers.groups.map((group) => <details key={`${group.kind}:${group.id}`} open>
             <summary><span><strong>{group.name}</strong><small>{group.onHold} On hold · {group.pending} Pending</small></span>
               <ChevronRight size={17} aria-hidden="true" /></summary>
             <div className="nd-customer-blocker-jobs">{group.jobs.map((job) => <button type="button"
@@ -552,7 +509,57 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           </>}
         </div>
       </section>
-      <details className="nd-oldest-jobs" aria-label="Oldest recorded On-hold jobs">
+      <div className="nd-score-tiles" aria-label="Jobs, customer and team overview">
+        <article><span>JOBS</span><strong>{activeSummary ? `${activeSummary.counts.total.toLocaleString("en-GB")} open jobs` : "Checking workload"}</strong>
+          {activeSummary && <p>{activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · {activeSummary.counts.pending.toLocaleString("en-GB")} Pending in saved Commusoft statuses.</p>}
+          <p>{dailyCoverage.isError
+            ? "Latest daily status check unavailable."
+            : checkedDay?.day
+              ? `Last daily status check: ${statusDay(checkedDay.day)}.`
+              : "Daily status checks are being collected."}</p>
+          <p>Job progress scores will follow client-agreed stage and supplier-wait rules.</p>
+          {activeSummary && <><button type="button" onClick={() => showJobs(attentionStatus)}>
+            {attentionStatus === "on_hold" ? "Review recorded On-hold jobs"
+              : attentionStatus === "pending" ? "Review recorded Pending jobs"
+                : "See all recorded open jobs"} →
+          </button><small>Counts checked {savedAt(activeSummary.snapshotAt)}</small></>}
+        </article>
+        <article><span>CUSTOMERS</span><strong>{linkedCustomers
+          ? `${linkedCustomers.groups.length.toLocaleString("en-GB")} confirmed groups`
+          : customerBlockers.isError ? "Customer view unavailable" : "Checking linked work"}</strong>
+          <p>{linkedCustomers
+            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} On-hold or Pending jobs are in those groups. More recorded jobs may still need matching.`
+            : "Checking which jobs have a confirmed customer and site."}</p>
+          <p>Customer scores will follow confirmed job progress and client-agreed rules.</p>
+          {linkedCustomers && <div className="nd-customer-tile-actions">
+            <button type="button" onClick={showCustomerWork}>See confirmed groups →</button>
+            <button type="button" onClick={showStillMatching}>See jobs still being matched →</button>
+          </div>}
+        </article>
+        <article><span>TEAM</span><strong>Awaiting visit data</strong>
+          <p>Who attended and who owns the next action are not verified yet.</p>
+        </article>
+      </div>
+      <section className="nd-work-priority" aria-label="Review saved job statuses">
+        <div><h3>What needs a check</h3>
+          <p>Choose a status to open the jobs behind it.</p></div>
+        {activeSummary && (["on_hold", "pending"] as const)
+          .filter((kind) => activeSummary.counts[kind] > 0).map((kind) => (
+            <button key={kind} type="button" onClick={() => showJobs(kind)}>
+              <span><b>{statusLabel[kind]}</b><small>{openJobNextStep(kind)}</small></span>
+              <strong>{activeSummary.counts[kind].toLocaleString("en-GB")} jobs</strong>
+              <ChevronRight size={17} />
+            </button>
+          ))}
+        {activeSummary && activeSummary.counts.on_hold === 0 && activeSummary.counts.pending === 0 &&
+          <p>No on-hold or pending status appears in this snapshot. That does not confirm every job is progressing.</p>}
+        {summary.isPending && <p role="status">Checking saved job status totals…</p>}
+        {summary.isError && <p role="alert">{activeSummary
+          ? "The latest status check failed. The dated counts above are the last saved result."
+          : "Saved status totals are unavailable. The job list can still be opened."}</p>}
+      </section>
+      <details className="nd-oldest-jobs" aria-label="Oldest recorded On-hold jobs"
+        onToggle={(event) => setShowOldestJobs(event.currentTarget.open)}>
         <summary>Explore the oldest recorded On-hold jobs</summary>
         <p>These jobs were created earliest. Creation age is not time On hold or proof of urgency; office and internal jobs can appear here.</p>
         {firstPage.isPending && <p role="status">Checking the oldest recorded jobs…</p>}
@@ -589,6 +596,14 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
         {dailyCoverage.isError && <p role="alert">Daily provider-check coverage is unavailable. No score is published.</p>}
         <p>Job, customer and team scores remain unpublished. A day qualifies for observed status history when at least 99% of its frozen open-job roster is checked; per-job gaps are logged. The retained checks establish minimum observed time in a stage, not its actual start or the effect of a supplier wait. Each client's weights, stage targets and wait rules need a reviewed policy before any numeric score.</p>
       </details>}
+      {!showJobBrowser && <div className="nd-browse-open-jobs">
+        <h3>Browse every recorded open job</h3>
+        <p>The saved list includes customer and office work, including jobs whose customer or site still needs checking.</p>
+        <button type="button" className="cp-secondary" onClick={() => showJobs(null)}>
+          Browse {activeSummary?.counts.total.toLocaleString("en-GB") ?? "all"} open jobs →
+        </button>
+      </div>}
+      {showJobBrowser && <>
       <div ref={jobsRef} className="nd-open-jobs-heading" tabIndex={-1} aria-live="polite">
         <h3>{listHeading}</h3>
         <p>{listSummary}
@@ -650,6 +665,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           <button className="cp-secondary" disabled={!active.nextCursor}
             onClick={nextPage}>Next page <ChevronRight size={16} /></button>
         </nav>
+      </>}
       </>}
     </>}
     <Dialog open={!!selected || !!selectedCustomerJob} onOpenChange={(open) => {
