@@ -375,7 +375,9 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
           <button type="button" onClick={() => setSelected(row)}>
             <strong>Job {row.external_id}</strong>
             <span>{row.title ?? "Work description not recorded"}<em>{row.source_customer ?? "Customer unconfirmed"} · {row.source_site ?? row.source_postcode ?? "Site unconfirmed"}</em></span>
-            <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, firstPage.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}</small>
+            <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, firstPage.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}
+              {row.status_evidence === "repeat_saved_checks" && <><br />{openJobStatusEvidence(row, savedAt)}</>}
+            </small>
             <ChevronRight size={16} />
           </button>
         </li>)}</ol>}
@@ -418,6 +420,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
               <small className="nd-job-next">{openJobNextStep(row.status)}</small>
               <small>{row.job_created_at ? `Created ${jobDate(row.job_created_at)}`
                 : "Creation date unverified"}{row.identity_state !== "reviewed_link" ? " · Customer/site match pending" : ""}</small>
+              {row.status_evidence === "repeat_saved_checks" &&
+                <small>{openJobStatusEvidence(row, savedAt)}</small>}
             </span>
             <ChevronRight size={17} />
           </button>)}

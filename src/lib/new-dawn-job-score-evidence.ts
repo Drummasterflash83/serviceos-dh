@@ -75,7 +75,10 @@ export function inspectJobScoreEvidence(
   return JOB_SCORE_EVIDENCE_RULES.map((rule): JobScoreEvidence => {
     let state: JobScoreEvidence["state"] = "missing";
     let sourceCue: string | null = null;
-    if (rule.key === "stage_progress" && exact?.stage?.trim()) {
+    if (rule.key === "stage_progress" && row.status_evidence === "repeat_saved_checks") {
+      state = "source_fragment";
+      sourceCue = `Saved checks show ${row.status.replaceAll("_", " ")} since at least ${new Date(row.status_first_saved_at).toLocaleDateString("en-GB", { timeZone: "Europe/London" })}; its actual stage entry, daily provider sequence and comparable norm are unverified.`;
+    } else if (rule.key === "stage_progress" && exact?.stage?.trim()) {
       state = "source_fragment";
       sourceCue = "A current stage label was saved; its entry time and norm are unverified.";
     } else if (
