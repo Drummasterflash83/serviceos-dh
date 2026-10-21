@@ -38,6 +38,10 @@
 .md-money-strip-grid span { color: #706b7e; font-size: 11px; }
 .md-money-strip-grid strong { color: #514669; font-size: clamp(16px,1.8vw,23px); font-weight: 650; overflow-wrap: anywhere; }
 .md-money-strip-grid small { color: #706b7e; font-size: 10px; line-height: 1.45; }
+.md-money-strip-receivables { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 12px; margin: 12px 0 0; padding: 12px 14px; border: 1px solid #e9e7ee; border-radius: 12px; background: #faf9f6; font-size: 12px; }
+.md-money-strip-receivables strong { color: #25253a; font-weight: 600; }
+.md-money-strip-receivables span { color: #514669; font-size: 17px; font-weight: 650; overflow-wrap: anywhere; }
+.md-money-strip-receivables small { flex-basis: 100%; color: #706b7e; line-height: 1.45; }
 .md-money-strip-source { margin: 12px 0 0; color: #706b7e; font-size: 11px; line-height: 1.5; }
 .md-money-strip [role="alert"] { color: #9b3333; }
 .md-money h2 { margin: 4px 0 8px; color: #25253a; font-size: clamp(24px,2.6vw,31px); font-weight: 550; letter-spacing: -.03em; }
@@ -60,6 +64,16 @@
 .md-money-grid span { display: block; color: #706b7e; font-size: 12px; }
 .md-money-grid strong { display: block; margin: 8px 0; color: #514669; font-size: clamp(20px,2.4vw,28px); font-weight: 650; }
 .md-money-grid p { margin: 0; color: #706b7e; font-size: 12px; line-height: 1.6; }
+.md-money-receivables { margin: 18px 0; padding: 20px; border: 1px solid #d8d2e1; border-radius: 16px; background: #faf9f6; }
+.md-money-receivables h3 { margin: 3px 0 8px; color: #25253a; font-size: 17px; }
+.md-money-receivables-total { display: block; color: #514669; font-size: clamp(24px,3vw,34px); font-weight: 650; overflow-wrap: anywhere; }
+.md-money-receivables p:not(.of-eyebrow) { max-width: 72ch; margin: 9px 0; color: #706b7e; font-size: 12px; line-height: 1.55; }
+.md-money-receivables p strong { color: #514669; }
+.md-money-receivables h4 { margin: 17px 0 0; color: #25253a; font-size: 13px; font-weight: 600; }
+.md-money-receivables dl { display: grid; gap: 8px; margin: 10px 0 0; font-size: 12px; }
+.md-money-receivables dl div { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; padding-top: 8px; border-top: 1px solid #e9e7ee; }
+.md-money-receivables dt { color: #706b7e; }
+.md-money-receivables dd { margin: 0; color: #25253a; text-align: right; overflow-wrap: anywhere; }
 .md-money-followup { padding: 18px 20px; border: 1px solid #ded4e8; border-radius: 16px; }
 .md-money-followup h3 { margin: 0 0 12px; color: #25253a; font-size: 17px; }
 .md-money-followup p { margin: 10px 0; color: #706b7e; font-size: 13px; line-height: 1.5; }

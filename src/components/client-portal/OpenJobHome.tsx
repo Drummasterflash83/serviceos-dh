@@ -163,7 +163,6 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   const [showOldest, setShowOldest] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
   const jobsRef = useRef<HTMLDivElement>(null);
-  const oldestRef = useRef<HTMLElement>(null);
   const authorisedClient = !operator && !!user && profile?.tenant_id === tenant &&
     canSeeCompanyJobs(profile.role);
   const enabled = !!user && uuid(tenant) && (operator ? approvedReason !== null : authorisedClient);
@@ -257,10 +256,6 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
     changeFilter(next);
     requestAnimationFrame(() => jobsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
-  function showOldestJobs() {
-    setShowOldest(true);
-    requestAnimationFrame(() => oldestRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
-  }
   function nextPage() {
     if (!active?.nextCursor) return;
     setCursors((prior) => [...prior.slice(0, pageIndex + 1), active.nextCursor]);
@@ -327,9 +322,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
             : checkedDay?.earliestMovingReviewDay
               ? `First review from ${statusDay(checkedDay.earliestMovingReviewDay)}, if daily checks continue.`
               : "No score is published yet."}</p>
-          <button type="button" onClick={() => oldestHeldRows.length > 0
-            ? showOldestJobs()
-            : showJobs("on_hold")}>{oldestHeldRows.length > 0 ? "See 10 oldest On-hold jobs" : "See On-hold jobs"} →</button>
+          <button type="button" onClick={() => showJobs("on_hold")}>Review On-hold jobs →</button>
         </article>
         <article><span>CUSTOMERS</span><strong>Not enough data yet</strong>
           <p>Job and site matches still need review before customer health can be scored.</p>
@@ -364,27 +357,6 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
           <p>No on-hold or pending status appears in this snapshot. That does not confirm every job is progressing.</p>}
         {summary.isPending && <p role="status">Checking saved job status totals…</p>}
         {summary.isError && <p role="alert">Saved status totals are unavailable. The job list can still be opened.</p>}
-      </section>
-      <section className="nd-oldest-jobs" ref={oldestRef} aria-label="Ten oldest On-hold jobs by creation date">
-        <h3>Oldest On-hold records</h3>
-        <p>Creation age is not time On hold. This list can include office and accounting work that has not been reviewed as a customer priority.</p>
-        <button type="button" className="nd-oldest-toggle" aria-expanded={showOldest}
-          onClick={() => setShowOldest((shown) => !shown)}>
-          {showOldest ? "Hide oldest records" : "See ten oldest records"} →
-        </button>
-        {showOldest && firstPage.isPending && <p role="status">Reading the oldest recorded On-hold jobs…</p>}
-        {showOldest && firstPage.isError && <p role="alert">The oldest On-hold jobs could not be checked. Refresh to retry.</p>}
-        {showOldest && firstPage.isSuccess && oldestHeldRows.length === 0 && <p>No verified creation-order On-hold jobs are available in this saved snapshot.</p>}
-        {showOldest && oldestHeldRows.length > 0 && <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
-          <button type="button" onClick={() => setSelected(row)}>
-            <strong>Job {row.external_id}</strong>
-            <span>{row.title ?? "Work description not recorded"}<em>{row.source_customer ?? "Customer unconfirmed"} · {row.source_site ?? row.source_postcode ?? "Site unconfirmed"}</em></span>
-            <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, firstPage.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}
-              {row.status_evidence === "repeat_saved_checks" && <><br />{openJobStatusEvidence(row, savedAt)}</>}
-            </small>
-            <ChevronRight size={16} />
-          </button>
-        </li>)}</ol>}
       </section>
       <div ref={jobsRef} className="nd-open-jobs-heading">
         <h3>All open jobs</h3>
@@ -440,6 +412,27 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
             onClick={nextPage}>Next page <ChevronRight size={16} /></button>
         </nav>
       </>}
+      {operator && <section className="nd-oldest-jobs" aria-label="Ten oldest On-hold jobs by creation date">
+        <h3>Oldest saved On-hold records</h3>
+        <p>For OpenFolk review. Creation age is not time On hold, and these records can include office or accounting work. They have not been classified as customer priorities.</p>
+        <button type="button" className="nd-oldest-toggle" aria-expanded={showOldest}
+          onClick={() => setShowOldest((shown) => !shown)}>
+          {showOldest ? "Hide oldest records" : "Explore ten oldest records"} →
+        </button>
+        {showOldest && firstPage.isPending && <p role="status">Reading the oldest recorded On-hold jobs…</p>}
+        {showOldest && firstPage.isError && <p role="alert">The oldest On-hold jobs could not be checked. Refresh to retry.</p>}
+        {showOldest && firstPage.isSuccess && oldestHeldRows.length === 0 && <p>No verified creation-order On-hold jobs are available in this saved snapshot.</p>}
+        {showOldest && oldestHeldRows.length > 0 && <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
+          <button type="button" onClick={() => setSelected(row)}>
+            <strong>Job {row.external_id}</strong>
+            <span>{row.title ?? "Work description not recorded"}<em>{row.source_customer ?? "Customer unconfirmed"} · {row.source_site ?? row.source_postcode ?? "Site unconfirmed"}</em></span>
+            <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, firstPage.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}
+              {row.status_evidence === "repeat_saved_checks" && <><br />{openJobStatusEvidence(row, savedAt)}</>}
+            </small>
+            <ChevronRight size={16} />
+          </button>
+        </li>)}</ol>}
+      </section>}
     </>}
     <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
       <DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-3xl">
