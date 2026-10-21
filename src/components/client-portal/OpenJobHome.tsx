@@ -396,15 +396,17 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       <section className="nd-score-hero nd-score-hero--pending" aria-label="Jobs needing attention">
         <div className="nd-work-count"><strong>{activeSummary
           ? (activeSummary.counts.on_hold + activeSummary.counts.pending).toLocaleString("en-GB") : "…"}</strong>
-          <small>jobs to check</small></div>
+          <small>records</small></div>
         <div className="nd-score-hero-copy">
           <p className="of-eyebrow">{company ?? "YOUR COMPANY"} · TODAY</p>
           <h3>Recorded open work</h3>
           <p>{activeSummary ? `${activeSummary.counts.on_hold.toLocaleString("en-GB")} On hold · ${activeSummary.counts.pending.toLocaleString("en-GB")} Pending · ${activeSummary.counts.open.toLocaleString("en-GB")} Open.`
             : summary.isError ? "Job totals are unavailable." : "Checking workload…"}</p>
-          <button type="button" onClick={() => showJobs(attentionStatus)}>
-            {activeSummary?.counts.on_hold ? "Review On-hold jobs" : activeSummary?.counts.pending
-              ? "Review Pending jobs" : "See all open jobs"} →</button>
+          <button type="button" onClick={() => linkedCustomers?.linkedBlockedJobs
+            ? showCustomerWork() : showJobs(attentionStatus)}>
+            {linkedCustomers?.linkedBlockedJobs ? "Start with confirmed customer jobs"
+              : activeSummary?.counts.on_hold ? "Review recorded On-hold jobs" : activeSummary?.counts.pending
+                ? "Review recorded Pending jobs" : "See all open jobs"} →</button>
           {activeSummary && <small>{activeSummary.counts.total.toLocaleString("en-GB")} open jobs recorded in Commusoft · checked {savedAt(activeSummary.snapshotAt)}</small>}
           {activeSummary?.identity && <small>Customer and site confirmed for {activeSummary.identity.linked.toLocaleString("en-GB")} jobs; {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} still being checked.</small>}
           {activeSummary && <small>Some are office work. Status alone does not show customer urgency or who acts next.</small>}
