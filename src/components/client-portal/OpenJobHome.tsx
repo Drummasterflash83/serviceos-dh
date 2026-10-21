@@ -450,11 +450,13 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
             : summary.isError ? "The latest job counts are unavailable. You can still browse recorded jobs."
               : "Checking recorded job status…"}</p>
           <div className="nd-hero-actions">
-            <button type="button" onClick={() => showJobs(attentionStatus)}>
-              {attentionStatus === "on_hold" ? "See On-hold jobs"
-                : attentionStatus === "pending" ? "See Pending jobs" : "See all jobs"} →</button>
-            {linkedCustomers?.linkedBlockedJobs ? <button type="button" className="nd-hero-secondary"
-              onClick={showCustomerWork}>See confirmed customer jobs →</button> : null}
+            {activeSummary?.counts.on_hold ? <button type="button" onClick={() => showJobs("on_hold")}>
+              See {activeSummary.counts.on_hold.toLocaleString("en-GB")} On-hold jobs →</button> : null}
+            {activeSummary?.counts.pending ? <button type="button" className="nd-hero-secondary"
+              onClick={() => showJobs("pending")}>
+              See {activeSummary.counts.pending.toLocaleString("en-GB")} Pending jobs →</button> : null}
+            {(!activeSummary || heldWorkCount === 0) && <button type="button" onClick={() => showJobs(null)}>
+              See all recorded open jobs →</button>}
           </div>
           {summary.isFetching && activeSummary && <small>Checking for newer job totals…</small>}
           {summary.isError && activeSummary && <small role="alert">Latest count check failed. Showing saved counts from {savedAt(activeSummary.snapshotAt)}.</small>}
