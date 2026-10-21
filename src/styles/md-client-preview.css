@@ -88,8 +88,8 @@
   .md-review-sidebar { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 9px 16px; padding: 14px 18px; }
   .md-review-brand { padding: 0; }
   .md-review-badge { padding: 8px 10px; }
-  .md-review-sidebar nav { display: flex; flex-basis: 100%; gap: 6px; }
-  .md-review-sidebar nav button { width: auto; }
+  .md-review-sidebar nav { display: flex; flex-basis: 100%; flex-wrap: wrap; gap: 6px; }
+  .md-review-sidebar nav button { flex: 1 1 auto; justify-content: center; width: auto; }
   .md-review-return { margin: 0 0 0 auto; padding: 7px; }
   .md-review-topbar { display: none; }
   .md-money-grid { grid-template-columns: 1fr; }
