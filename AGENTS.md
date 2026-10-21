@@ -23,8 +23,13 @@
   site and job link batches without repeated approval. Hold collisions,
   duplicates, and unclear person/company identities for review. Never guess.
 - A daily open-job status roster qualifies at 99% or greater coverage; show
-  each missing job. Approved partial scores may publish with sample size, dates,
-  missing measures and rescaled weights; advisory only, with no pay effect.
+  each missing job. Chris revised the scoring direction on 21 October: gather
+  complete process evidence first, then review client-specific stage targets,
+  measure weights and treatment of supplier/external waits. Do not publish a
+  numeric job, customer or team score from minimum observed status age alone.
+  Future scores remain advisory, with samples, dates, missing inputs and no pay
+  effect. The 3 November observation milestone is an evidence review, not a
+  promised score launch.
 - The standing QuickBooks authority covers a read-only daily P&L and A/R
   refresh. It does not cover accounting changes or customer chases.
 - Prefer audited one-click operator actions and CLI readback over brittle browser

@@ -49,11 +49,15 @@ the database and uncertain settlements are not reported as success.
 ## Scoring boundary and rollback
 
 Fourteen **complete, consecutive London calendar days** of provider-observed
-status are needed before a minimum time-in-status measure can be published.
-If the first complete sweep is 20 October, 3 November is the earliest possible
-date. A provider-observed status change resets the lower bound. A missing day,
-unknown provider status or partial sweep withholds that measure; it is never
-scored as zero. Do not describe `createdOnDateTime` as status age.
+status were the initial minimum proposed for reviewing a Moving measure. If
+the first complete sweep is 20 October, 3 November is the earliest evidence
+review date, **not a score-publication date**. Chris's 21 October direction is
+to gather complete dated process evidence before setting client-specific
+stage targets, weights and rules for supplier/external waits. A
+provider-observed status change resets the lower bound. A missing day, unknown
+provider status or partial sweep is a visible evidence gap, never a zero score.
+Do not describe `createdOnDateTime` as status age or infer the true stage start
+from the first saved observation.
 
 To pause provider reads, turn the dedicated flag Off. Retain completed ledger
 rows and their audit entries; do not delete or rewrite them. Worker deployment
