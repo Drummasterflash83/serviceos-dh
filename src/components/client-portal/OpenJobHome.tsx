@@ -4,6 +4,7 @@ import { BriefcaseBusiness, ChevronLeft, ChevronRight, RefreshCw } from "lucide-
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { canSeeCompanyJobs } from "@/lib/new-dawn-job-home";
+import { jobSourceIdentity } from "@/lib/new-dawn-job-identity-label";
 import { readClientJobRecord } from "@/lib/new-dawn-client-job-record";
 import { inspectJobScoreEvidence } from "@/lib/new-dawn-job-score-evidence";
 import { dailyStatusGapState, readDailyStatusCoverage } from "@/lib/new-dawn-daily-status-coverage";
@@ -86,10 +87,12 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
   });
   const record = detail.data;
   const exact = record?.exactDetail;
+  const sourceIdentity = jobSourceIdentity(row);
   return <div className="nd-job-detail space-y-4">
     <div>
       <p><strong>Job {row.external_id}</strong> · {statusLabel[row.status]}</p>
-      <p>Customer: {row.source_customer ?? "To confirm"} · Site: {row.source_site ?? row.source_postcode ?? "To confirm"}</p>
+      <p>Commusoft customer and site: {sourceIdentity.sourceLabel}</p>
+      <p className="nd-job-identity-state">{sourceIdentity.detailEvidence}</p>
       <small>Commusoft record saved {savedAt(row.source_observed_at)}. The job may have changed since then.</small>
       <p>{row.job_created_at ? `Job created in Commusoft ${jobDate(row.job_created_at)}.`
         : "Job creation date could not be verified."} This is not time spent in the current status.</p>
@@ -135,7 +138,6 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
           <p>Needed: {measure.missing}. Next: {measure.next}.</p>
         </li>)}</ol>
       </section>}
-      {row.identity_state !== "reviewed_link" && <p>The customer and site labels come from Commusoft; OpenFolk still needs to confirm the match.</p>}
       <details><summary>Where this information came from</summary>
         <p>Commusoft job {row.external_id}, saved {savedAt(record.sourceObservedAt)}.
           {exact ? ` Exact job detail checked ${savedAt(exact.checkedAt)}.` : " No exact job detail has been checked for this saved version."}
@@ -245,6 +247,12 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
     dailyCoverage.data.actorId === user?.id && !dailyCoverage.isFetching
     ? dailyCoverage.data : null;
   const dailyGapState = dailyStatusGapState(checkedDay);
+  const listHeading = status === null ? "All recorded open jobs" : `${statusLabel[status]} jobs`;
+  const listCount = activeSummary
+    ? (status === null ? activeSummary.counts.total : activeSummary.counts[status]) : null;
+  const listSummary = activeSummary && listCount !== null
+    ? `${listCount.toLocaleString("en-GB")} in the saved status summary checked ${savedAt(activeSummary.snapshotAt)}. `
+    : "";
   const oldestHeldRows = firstPage.data?.tenantId === tenant &&
     firstPage.data.actorId === user?.id && !firstPage.isFetching &&
     firstPage.data.creationOrderAvailable
@@ -254,7 +262,10 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
   }
   function showJobs(next: OpenJobStatus | null) {
     changeFilter(next);
-    requestAnimationFrame(() => jobsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    requestAnimationFrame(() => {
+      jobsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      jobsRef.current?.focus({ preventScroll: true });
+    });
   }
   function nextPage() {
     if (!active?.nextCursor) return;
@@ -272,7 +283,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         <h2>Jobs needing attention</h2>
         <p>Start with work that is On hold or Pending. Open a job to see what is recorded.</p>
       </div>
-      {enabled && <button className="cp-secondary" onClick={refresh} disabled={page.isFetching || firstPage.isFetching}>
+      {enabled && <button type="button" className="cp-secondary" aria-label="Refresh saved jobs"
+        onClick={refresh} disabled={page.isFetching || firstPage.isFetching}>
         <RefreshCw size={15} /> Refresh list
       </button>}
     </div>
@@ -356,9 +368,13 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         {dailyCoverage.isError && <p role="alert">Daily provider-check coverage is unavailable. Scores remain withheld.</p>}
         <p>Job, customer and team scores remain unpublished. A day qualifies for the Moving measure when at least 99% of its frozen open-job roster is checked; any gaps are logged. Each scored job still needs its own 14 daily observations. Customer and team measures need confirmed links and visits.</p>
       </details>}
-      <div ref={jobsRef} className="nd-open-jobs-heading">
-        <h3>All open jobs</h3>
-        <p>Browse the recorded list by status and open any job for more detail.</p>
+      <div ref={jobsRef} className="nd-open-jobs-heading" tabIndex={-1} aria-live="polite">
+        <h3>{listHeading}</h3>
+        <p>{listSummary}
+          {status === null
+            ? "Browse by recorded status and open a job to see its details."
+            : `These were last saved as ${statusLabel[status]}. Open a job to check its recorded stage and next step.`}
+        </p>
       </div>
       <fieldset className="nd-open-page-filters">
         <legend>Show jobs by status</legend>
@@ -388,12 +404,14 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
             <BriefcaseBusiness size={20} />
             <span className="nd-job-main"><strong>Job {row.external_id}</strong>
               <small>{row.title ?? "Work description not recorded"}</small>
-              <small>{row.source_customer ?? "Customer to confirm"} · {row.source_site ?? row.source_postcode ?? "Site to confirm"}</small>
+              <small>Commusoft: {jobSourceIdentity(row).sourceLabel}</small>
+              {jobSourceIdentity(row).shortEvidence &&
+                <small className="nd-job-identity-state">{jobSourceIdentity(row).shortEvidence}</small>}
             </span>
             <span className="nd-job-review"><b>{statusLabel[row.status]}</b>
               <small className="nd-job-next">{openJobNextStep(row.status)}</small>
               <small>{row.job_created_at ? `Created ${jobDate(row.job_created_at)}`
-                : "Creation date unverified"}{row.identity_state !== "reviewed_link" ? " · Customer/site match pending" : ""}</small>
+                : "Creation date unverified"}</small>
               {row.status_evidence === "repeat_saved_checks" &&
                 <small>{openJobStatusEvidence(row, savedAt)}</small>}
             </span>
@@ -423,7 +441,8 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
         {showOldest && oldestHeldRows.length > 0 && <ol>{oldestHeldRows.map((row) => <li key={`${row.connection_id}:${row.external_id}`}>
           <button type="button" onClick={() => setSelected(row)}>
             <strong>Job {row.external_id}</strong>
-            <span>{row.title ?? "Work description not recorded"}<em>{row.source_customer ?? "Customer unconfirmed"} · {row.source_site ?? row.source_postcode ?? "Site unconfirmed"}</em></span>
+            <span>{row.title ?? "Work description not recorded"}<em>Commusoft: {jobSourceIdentity(row).sourceLabel}
+              {jobSourceIdentity(row).shortEvidence ? ` · ${jobSourceIdentity(row).shortEvidence}` : ""}</em></span>
             <small>{row.job_created_at ? `Created ${jobAgeDays(row.job_created_at, firstPage.data!.snapshotAt)} days before this read` : "Creation date not verified"}<br />Source saved {savedAt(row.source_observed_at)}
               {row.status_evidence === "repeat_saved_checks" && <><br />{openJobStatusEvidence(row, savedAt)}</>}
             </small>
