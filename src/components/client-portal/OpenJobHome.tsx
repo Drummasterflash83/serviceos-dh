@@ -294,6 +294,7 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       approvedReason, status, cursors[pageIndex]],
     enabled: enabled && (status !== null || pageIndex > 0) && !firstPage.isFetching,
     staleTime: 0,
+    gcTime: 30 * 60_000,
     retry: (failures, error) => failures < 1 && error instanceof Error && error.message === "request",
     retryDelay: 500,
     refetchOnWindowFocus: false,
