@@ -145,9 +145,12 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
                 })}
               </div>
               <p className="lr-daily-footnote">
-                Recording totals count saved metadata, not playable audio. Slack counts include saved public-channel messages with visibility proof; withheld messages are excluded.
-                Commusoft totals count distinct saved source IDs with a consistent type. Revisions do not count as new records today.
+                These are saved records, not a check that every provider record has arrived. Recording counts do not confirm playable audio.
               </p>
+              {operator && <details className="lr-daily-footnote">
+                <summary>How OpenFolk checks these counts</summary>
+                <p>Slack includes public-channel messages with visibility proof; withheld messages are excluded. Commusoft totals count distinct saved source IDs with a consistent type. Revisions do not count as new records today.</p>
+              </details>}
               <div className="lr-daily-job-check">
                 <div><span>Newest saved Commusoft job</span>
                   <strong>{!parts.business ? statQueries[dailyStatParts.indexOf("business")].isPending
@@ -161,7 +164,7 @@ export function LearnDailyStats({ tenantId, operator = false, mdReason }: {
                     <small>Checked {when(freshness.data.providerCheckedAt)} UK time</small>}
                 </div>
               </div>
-              <p className="lr-daily-footnote">The Commusoft comparison checks newest job creation in a bounded provider read. It does not prove that every older job or revision is saved.</p>
+              <p className="lr-daily-footnote">The newest-job comparison does not confirm that every older job or later update is saved.</p>
             </>
       )}
     </section>
