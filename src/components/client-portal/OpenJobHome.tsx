@@ -337,6 +337,12 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
       jobsRef.current?.focus({ preventScroll: true });
     });
   }
+  function showCustomerWork() {
+    setShowRecordedAttention(true);
+    requestAnimationFrame(() => customersRef.current?.scrollIntoView({
+      behavior: "smooth", block: "start",
+    }));
+  }
   function nextPage() {
     if (!active?.nextCursor) return;
     setCursors((prior) => [...prior.slice(0, pageIndex + 1), active.nextCursor]);
@@ -412,14 +418,14 @@ export function OpenJobHome({ tenant, company, operator = false, presentationMod
           </button><small>Counts checked {savedAt(activeSummary.snapshotAt)}</small></>}
         </article>
         <article><span>CUSTOMERS</span><strong>{linkedCustomers
-          ? `${linkedCustomers.groups.length.toLocaleString("en-GB")} to check`
+          ? `${linkedCustomers.groups.length.toLocaleString("en-GB")} confirmed groups`
           : customerBlockers.isError ? "Customer view unavailable" : "Checking linked work"}</strong>
           <p>{linkedCustomers
-            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} On-hold or Pending jobs have a confirmed customer and site. Other jobs may still need matching.`
+            ? `${linkedCustomers.linkedBlockedJobs.toLocaleString("en-GB")} On-hold or Pending jobs are in those groups. More recorded jobs may still need matching.`
             : "Checking which jobs have a confirmed customer and site."}</p>
           <p>Customer score needs job progress and contact history.</p>
-          {linkedCustomers && <button type="button" onClick={() => customersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}>
-            See customers to check →</button>}
+          {linkedCustomers && <button type="button" onClick={showCustomerWork}>
+            See held customer work →</button>}
         </article>
         <article><span>TEAM</span><strong>Not enough data yet</strong>
           <p>Needs verified visits and owners of next actions before a team score.</p>
