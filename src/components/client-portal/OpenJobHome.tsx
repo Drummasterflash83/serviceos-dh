@@ -101,11 +101,12 @@ function SourceJobDetail({ row, tenant, actor, reason, operator }: {
     {detail.isPending && <p role="status">Opening the saved job record…</p>}
     {detail.isError && <p role="alert">The detailed record could not be checked. Refresh the job list; its saved summary remains available.</p>}
     {record && <>
-      <section aria-label="Verified customer and site">
-        <h3>Customer and site</h3>
+      <section aria-label="Linked customer and site">
+        <h3>Linked customer and site</h3>
         {record.contactCounts ? <>
           <p>Customer: {record.linkedCustomer ?? "Name not recorded on the linked customer."}</p>
           <p>Site: {record.linkedSite ?? "Address not recorded on the linked site."}</p>
+          <p>These are the saved ServiceOS links for this exact Commusoft job version.</p>
         </> : <p>{row.identity_state === "reviewed_link"
           ? "Linked customer and site details could not be verified for this read. Refresh the job before relying on the match."
           : "The exact customer and site link is awaiting review. Commusoft source details above are not a verified ServiceOS match."}</p>}
