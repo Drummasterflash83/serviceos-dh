@@ -74,13 +74,16 @@ export async function bind() {
         headers: { 'x-serviceos-worker-key': secret, 'Content-Type': 'application/json' },
       });
       const body = await response.json().catch(() => null);
-      return response.status === 200 && body?.ok === true &&
-        body?.result?.state === 'not_due' && body?.result?.checked === 0;
-    } catch { return false; }
+      return { bound: response.status === 200 && body?.ok === true &&
+        body?.result?.state === 'not_due' && body?.result?.checked === 0,
+      vacant: response.status === 503 && body?.code === 'worker_unavailable' };
+    } catch { return { bound: false, vacant: false }; }
   };
-  // An already-bound key needs no second write. A failed probe is safe because
-  // stage() proves no standing policy exists, so the runner has no due work.
-  if (!await probe()) {
+  // A 403 proves an unrelated key may already exist: stop instead of replacing
+  // it. The exact policy is Off, so this no-body probe has no due provider work.
+  const initial = await probe();
+  if (!initial.bound && !initial.vacant) throw Error('daily_key_existing_edge_binding_stop');
+  if (!initial.bound) {
     // Write one exact Edge setting. Never list, read or overwrite other secrets.
     try { await request('/secrets', { method: 'POST', body: [{ name: NAME, value: secret }] }); }
     catch { /* A second probe determines whether a lost acknowledgement applied. */ }
@@ -90,7 +93,7 @@ export async function bind() {
   let bound = false;
   for (let attempt = 0; attempt < 3 && !bound; attempt++) {
     if (attempt) await new Promise(resolve => setTimeout(resolve, 2000));
-    bound = await probe();
+    bound = (await probe()).bound;
   }
   if (!bound)
     throw Error('daily_key_edge_binding_unconfirmed');
