@@ -61,6 +61,17 @@ read marks yesterday's pair overdue if no complete pair exists. A held or
 missing pair stays visible without turning an old money figure into a current
 one.
 
+The exact release order is: schema SHA-256
+`37d53ae3809d31471c5541b94e2d548837d98f27c01b4a01e61f1a9cdc6be6b1`;
+compiled Edge EZBR SHA-256
+`573ee0fb0133f1e9eae766a8bad10144d7af9941cb3a4ec92c8e94302d5e005a`;
+one dedicated key generated in LIVE Vault and bound only to this Edge function;
+then schedule SHA-256
+`0caf06d819e49ce459110b8692e8b36cff532e9e0bdfd15f282c71f392404ed1`.
+The key binder reads only that newly named key, never lists or copies other
+credentials, and proves the endpoint has no due policy before an operator
+enables it. The source and deployment checks live in the same outcome PR.
+
 ## Residual risk and stop conditions
 
 OAuth refresh rotates a provider credential. If approval is withdrawn during an
