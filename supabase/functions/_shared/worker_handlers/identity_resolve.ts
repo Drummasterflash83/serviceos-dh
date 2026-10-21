@@ -34,6 +34,14 @@ export async function handleIdentityResolve(
     failed: 0,
     continued: false,
   };
+  // Failure receipts may identify a fixed operation and SQLSTATE, never the
+  // database error message or a private interaction/customer identifier.
+  let failedStage = "pending_inventory";
+  let sqlstate: string | null = null;
+  const noteSqlstate = (error: unknown) => {
+    const code = (error as { code?: unknown } | null)?.code;
+    sqlstate = typeof code === "string" && /^[A-Z0-9]{5}$/.test(code) ? code : null;
+  };
   const validReceipt = (data: any, args: {
     p_request: string; p_interaction: string; p_revision: string;
   }) =>
@@ -84,10 +92,12 @@ export async function handleIdentityResolve(
     return { receipt: null, missing };
   }
   try {
+    failedStage = "pending_inventory";
     const { data: rows, error } = await admin.rpc("learn_identity_pending", {
       p_tenant: tenantId,
       p_limit: batch,
     });
+    if (error) noteSqlstate(error);
     if (
       error ||
       !Array.isArray(rows) ||
@@ -97,6 +107,7 @@ export async function handleIdentityResolve(
     )
       throw Error("identity_inventory_unconfirmed");
     for (const row of rows) {
+      failedStage = "delivery";
       let { receipt, missing } = await deliver(row);
       if (!receipt && missing) {
         // A source can change after inventory and before publication. Re-read
@@ -137,7 +148,9 @@ export async function handleIdentityResolve(
       counts.events_consumed += receipt.eventsConsumed;
     }
     if (counts.resolved > 0) triggerGraphSyncBackground(tenantId);
+    failedStage = "review_count";
     const review = await admin.rpc("learn_identity_review_count", { p_tenant: tenantId });
+    if (review.error) noteSqlstate(review.error);
     if (review.error || !Number.isSafeInteger(review.data) || review.data < 0)
       throw Error("identity_review_inventory_unconfirmed");
     counts.review_required = review.data;
@@ -182,12 +195,13 @@ export async function handleIdentityResolve(
     return {
       success: false,
       recordsProcessed: counts.resolved,
-      result: counts,
+      result: { ...counts, diagnostic_stage: failedStage, sqlstate },
       error: {
         code: "identity_inventory_unconfirmed",
         message:
           "Identity work could not be read reliably. Retained inputs have not been declared complete.",
         retryable: true,
+        failedStep: failedStage,
       },
     };
   }

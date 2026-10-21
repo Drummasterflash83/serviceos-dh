@@ -190,6 +190,21 @@ test("missing, duplicated or invalid inventory prevents every mutation", async (
     assert.equal(r.error?.code, "identity_inventory_unconfirmed");
   }
 });
+test("failed inventory reports only its fixed stage and SQLSTATE", async () => {
+  const pending = await fixture({ inventory: { data: null,
+    error: { code: "57014", message: "PRIVATE database query and contact" } } }).run();
+  assert.equal(pending.error?.failedStep, "pending_inventory");
+  assert.equal(pending.result?.diagnostic_stage, "pending_inventory");
+  assert.equal(pending.result?.sqlstate, "57014");
+  assert.doesNotMatch(JSON.stringify(pending), /PRIVATE|contact/);
+
+  const review = await fixture({ rows: [], review: { data: null,
+    error: { code: "57014", message: "PRIVATE held identity" } } }).run();
+  assert.equal(review.error?.failedStep, "review_count");
+  assert.equal(review.result?.diagnostic_stage, "review_count");
+  assert.equal(review.result?.sqlstate, "57014");
+  assert.doesNotMatch(JSON.stringify(review), /PRIVATE held identity/);
+});
 test("empty inventory succeeds with zero work; a full verified batch continues once", async () => {
   const empty = await fixture({ rows: [] }).run();
   assert.equal(empty.success, true);

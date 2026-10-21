@@ -56,6 +56,14 @@ export async function handleCustomerCardSync(
   const sweepSince =
     (typeof payload.sweep_since === "string" && payload.sweep_since) || new Date().toISOString();
   let isSweep = false;
+  // Durable diagnostics are limited to a fixed stage and SQLSTATE. Never save
+  // PostgREST messages, query text, source IDs or private customer data.
+  let failedStage = "target_cards";
+  let sqlstate: string | null = null;
+  const noteSqlstate = (error: unknown) => {
+    const code = (error as { code?: unknown } | null)?.code;
+    sqlstate = typeof code === "string" && /^[A-Z0-9]{5}$/.test(code) ? code : null;
+  };
 
   try {
     // ── Resolve the target card set ─────────────────────────────────────────
@@ -70,13 +78,14 @@ export async function handleCustomerCardSync(
       cardQuery = cardQuery.eq("id", payload.customer_card_id as string);
     } else if (isUuid(payload.graph_node_id)) {
       // Resolve the graph node → its source person → the card for that person.
+      failedStage = "graph_target";
       const { data: gnode, error: graphTargetError } = await admin
         .from("graph_nodes")
         .select("node_type, source_id")
         .eq("tenant_id", tenantId)
         .eq("id", payload.graph_node_id as string)
         .maybeSingle();
-      if (graphTargetError) throw new Error("graph_target_unavailable");
+      if (graphTargetError) { noteSqlstate(graphTargetError); throw new Error("graph_target_unavailable"); }
       const sid = (gnode?.source_id as string | null) ?? null;
       if (gnode?.node_type === "person" && sid) cardQuery = cardQuery.eq("person_id", sid);
       else if (gnode?.node_type === "company" && sid) cardQuery = cardQuery.eq("company_id", sid);
@@ -90,8 +99,9 @@ export async function handleCustomerCardSync(
         .limit(limit);
     }
 
+    failedStage = "target_cards";
     const { data: cardRows, error: cardErr } = await cardQuery;
-    if (cardErr) throw new Error("cards_unavailable");
+    if (cardErr) { noteSqlstate(cardErr); throw new Error("cards_unavailable"); }
     const cards = (cardRows ?? []) as Row[];
 
     // ── Batch-load identity rows + graph relationship counts ────────────────
@@ -103,29 +113,32 @@ export async function handleCustomerCardSync(
     ] as string[];
 
     const peopleById = new Map<string, Row>();
+    failedStage = "people_prefetch";
     for (const ids of batches(personIds)) {
       const { data, error } = await admin
         .from("people")
         .select("id, display_name, first_name, last_name, primary_email, primary_phone, company_id")
         .eq("tenant_id", tenantId)
         .in("id", ids);
-      if (error) throw new Error("people_unavailable");
+      if (error) { noteSqlstate(error); throw new Error("people_unavailable"); }
       for (const p of (data ?? []) as Row[]) peopleById.set(p.id as string, p);
     }
     const companyById = new Map<string, Row>();
+    failedStage = "company_prefetch";
     for (const ids of batches(companyIds)) {
       const { data, error } = await admin
         .from("companies")
         .select("id, name, domain, phone")
         .eq("tenant_id", tenantId)
         .in("id", ids);
-      if (error) throw new Error("companies_unavailable");
+      if (error) { noteSqlstate(error); throw new Error("companies_unavailable"); }
       for (const c of (data ?? []) as Row[]) companyById.set(c.id as string, c);
     }
 
     // Graph relationship counts for each person node (a real graph read).
     const personNodeId = new Map<string, string>(); // person_id → graph node id
     const relationshipCount = new Map<string, number>(); // graph node id → edge count
+    failedStage = "graph_nodes_prefetch";
     for (const ids of batches(personIds)) {
       const { data: nodes, error: nodesError } = await admin
         .from("graph_nodes")
@@ -134,11 +147,12 @@ export async function handleCustomerCardSync(
         .eq("node_type", "person")
         .eq("source_table", "people")
         .in("source_id", ids);
-      if (nodesError) throw new Error("graph_nodes_unavailable");
+      if (nodesError) { noteSqlstate(nodesError); throw new Error("graph_nodes_unavailable"); }
       for (const n of (nodes ?? []) as Row[]) {
         personNodeId.set(n.source_id as string, n.id as string);
       }
     }
+    failedStage = "graph_edges_prefetch";
     for (const ids of batches([...new Set(personNodeId.values())])) {
       const targets = new Set(ids);
       let cursor: string | null = null;
@@ -152,7 +166,7 @@ export async function handleCustomerCardSync(
           .limit(EDGE_PAGE);
         if (cursor) query = query.gt("id", cursor);
         const { data: edges, error: edgesError } = await query;
-        if (edgesError) throw new Error("graph_edges_unavailable");
+        if (edgesError) { noteSqlstate(edgesError); throw new Error("graph_edges_unavailable"); }
         const rows = (edges ?? []) as Row[];
         for (const e of rows) {
           const f = e.from_node_id as string;
@@ -479,7 +493,8 @@ export async function handleCustomerCardSync(
     const message = "Required customer-card data could not be read. Existing cards were retained.";
     return {
       success: false,
-      error: { code: "card_sync_error", message, retryable: true },
+      result: { diagnostic_stage: failedStage, sqlstate },
+      error: { code: "card_sync_error", message, retryable: true, failedStep: failedStage },
     };
   }
 }
