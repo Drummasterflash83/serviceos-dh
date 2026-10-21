@@ -438,13 +438,14 @@
 .nd-customer-blockers details { border-top: 1px solid #efebf0; }
 .nd-customer-blockers summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; cursor: pointer; list-style: none; }
 .nd-customer-blockers summary::-webkit-details-marker { display: none; }
-.nd-customer-blockers summary span { display: grid; gap: 2px; }
-.nd-customer-blockers summary strong { color: #302c36; font-size: 14px; font-weight: 650; }
+.nd-customer-blockers summary span { display: grid; gap: 2px; min-width: 0; }
+.nd-customer-blockers summary strong { color: #302c36; font-size: 14px; font-weight: 650; overflow-wrap: anywhere; }
+.nd-customer-blockers summary > svg { flex: 0 0 auto; }
 .nd-customer-blockers summary small, .nd-customer-blocker-jobs small { color: #706b7e; font-size: 11px; }
 .nd-customer-blockers details[open] summary > svg { transform: rotate(90deg); }
 .nd-customer-blocker-jobs { display: grid; margin: 0 0 12px 12px; border-left: 2px solid #e9e1ef; }
 .nd-customer-blocker-jobs button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 43px; padding: 8px 10px; border: 0; background: transparent; color: #514669; text-align: left; cursor: pointer; }
-.nd-customer-blocker-jobs button span { flex: 1; font-size: 12px; font-weight: 650; }
+.nd-customer-blocker-jobs button span { flex: 1; min-width: 0; font-size: 12px; font-weight: 650; overflow-wrap: anywhere; }
 .nd-customer-blocker-all-work { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #efebf0; }
 .nd-customer-blocker-all-work p { flex-basis: 100%; margin: 0; }
 .nd-customer-blocker-all-work button { padding: 2px 0; border: 0; background: transparent; color: #514669; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
