@@ -1,6 +1,18 @@
 import type { AccountsPair } from "./new-dawn-founder-accounts-preview";
+import { financeAmount } from "./learn-quickbooks-finance.ts";
 
 export const DRUMMONDS_FY27_START = "2026-04-01";
+
+/** Client-facing UK dates and exact sterling strings; no floating-point conversion. */
+export const mdUkDay = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value)
+  ? `${value.slice(8, 10)}/${value.slice(5, 7)}/${value.slice(0, 4)}` : value;
+
+export function mdMoneyAmount(value: string | null, code: string | null): string {
+  const exact = financeAmount(value, code);
+  if (code !== "GBP" || !exact.startsWith("GBP ")) return exact;
+  const amount = exact.slice(4);
+  return amount.startsWith("-") ? `-£${amount.slice(1)}` : `£${amount}`;
+}
 
 /** The latest completed UK calendar day within Drummonds' evidenced FY27. */
 export function fy27LastCompletedUkDate(now: Date): string | null {
@@ -31,10 +43,10 @@ export function moneyReportFreshness(
     periodEnd !== receivablesAsOf || !lastComplete)
     return { state: "unverified", message: "Report date coverage needs review before these figures are treated as current." };
   if (periodEnd < lastComplete)
-    return { state: "older", message: `Figures end ${periodEnd}. More recent company accounts have not been verified.` };
+    return { state: "older", message: `Figures end ${mdUkDay(periodEnd)}. More recent company accounts have not been verified.` };
   if (periodEnd === lastComplete)
-    return { state: "current", message: `Figures cover the last completed UK day (${periodEnd}).` };
-  return { state: "partial", message: `Figures include ${periodEnd}, which is not yet a completed UK day. Treat them as a partial period.` };
+    return { state: "current", message: `Figures cover the last completed UK day (${mdUkDay(periodEnd)}).` };
+  return { state: "partial", message: `Figures include ${mdUkDay(periodEnd)}, which is not yet a completed UK day. Treat them as a partial period.` };
 }
 
 /** Prefer the latest accounting period, not the most recently re-read old report. */

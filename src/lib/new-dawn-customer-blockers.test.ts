@@ -26,6 +26,28 @@ test("a confirmed customer job retains exact source keys for audited detail", ()
   assert.equal(row.external_id, "123");
   assert.equal(row.source_version_id, version);
   assert.equal(row.identity_state, "reviewed_link");
+  assert.equal(result.groups[0].jobs[0].sourceDescription, undefined);
+});
+
+test("the current reader carries bounded saved work descriptions without classifying them", () => {
+  const described: any = payload();
+  described.version = "new-dawn-customer-blockers/2";
+  described.groups[0].jobs[0].source_description = "For Invoicing";
+  const result = readCustomerBlockers(described, tenant, actor);
+  assert.equal(result.groups[0].jobs[0].sourceDescription, "For Invoicing");
+  assert.equal(result.groups[0].jobs[0].status, "on_hold");
+  described.groups[0].jobs[0].source_description = null;
+  assert.equal(readCustomerBlockers(described, tenant, actor).groups[0].jobs[0].sourceDescription, null);
+  described.groups[0].jobs[0].source_description = "🔧".repeat(160);
+  assert.equal(readCustomerBlockers(described, tenant, actor).groups[0].jobs[0].sourceDescription,
+    "🔧".repeat(160));
+  const tooLong: any = payload();
+  tooLong.version = "new-dawn-customer-blockers/2";
+  tooLong.groups[0].jobs[0].source_description = "x".repeat(161);
+  assert.throws(() => readCustomerBlockers(tooLong, tenant, actor));
+  const invented: any = payload();
+  invented.version = "new-dawn-customer-blockers/2";
+  assert.throws(() => readCustomerBlockers(invented, tenant, actor));
 });
 
 test("a different tenant, stale read, or inconsistent job count is rejected", () => {

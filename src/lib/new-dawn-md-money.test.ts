@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { accountsNetMargin, agedReceivablesBucketKind, fy27LastCompletedUkDate,
-  moneyReportFreshness, newestAccountsPair, netProfitYtdComparison } from "./new-dawn-md-money.ts";
+  mdMoneyAmount, mdUkDay, moneyReportFreshness, newestAccountsPair,
+  netProfitYtdComparison } from "./new-dawn-md-money.ts";
 import type { AccountsPair } from "./new-dawn-founder-accounts-preview.ts";
 
 const pair = (periodStart: string, periodEnd: string, received: string): AccountsPair => ({
@@ -40,11 +41,19 @@ test("MD money labels saved coverage without claiming a scheduled report ran", (
   const now = new Date("2026-10-21T08:30:00Z");
   assert.equal(moneyReportFreshness("2026-10-19", "2026-10-19", now).state, "older");
   assert.match(moneyReportFreshness("2026-10-19", "2026-10-19", now).message,
-    /More recent company accounts have not been verified/);
+    /Figures end 19\/10\/2026.*More recent company accounts have not been verified/);
   assert.equal(moneyReportFreshness("2026-10-20", "2026-10-20", now).state, "current");
   assert.equal(moneyReportFreshness("2026-10-21", "2026-10-21", now).state, "partial");
   assert.equal(moneyReportFreshness("2026-10-20", "2026-10-19", now).state, "unverified");
   assert.equal(moneyReportFreshness("2026-02-30", "2026-02-30", now).state, "unverified");
+});
+
+test("MD money prints exact sterling and UK dates without Number rounding", () => {
+  assert.equal(mdUkDay("2026-10-19"), "19/10/2026");
+  assert.equal(mdMoneyAmount("9007199254740993.01", "GBP"), "£9,007,199,254,740,993.01");
+  assert.equal(mdMoneyAmount("-1000.10", "GBP"), "-£1,000.10");
+  assert.equal(mdMoneyAmount(null, "GBP"), "Not available");
+  assert.equal(mdMoneyAmount("10.00", "EUR"), "EUR 10.00");
 });
 
 test("MD net margin uses same-report income and handles negative profit", () => {
