@@ -415,7 +415,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
       </section>
       <section ref={customersRef} className="nd-customer-blockers" aria-label="Customers with linked jobs to check">
         <div className="nd-customer-blockers-heading">
-          <h3>Customers being held up</h3>
+          <h3>Customers with jobs to check</h3>
           <p>Confirmed customer and site links with a saved job status of On hold or Pending. The status alone does not prove why work stopped or who owns the next action.</p>
         </div>
         {customerBlockers.isPending && <p role="status">Checking linked customer jobs…</p>}
