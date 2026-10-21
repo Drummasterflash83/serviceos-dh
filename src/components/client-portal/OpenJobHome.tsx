@@ -372,7 +372,7 @@ export function OpenJobHome({ tenant, company, operator = false, mdReason, mdMon
       {operator && <details className="nd-job-context"><summary>OpenFolk source and score checks</summary>
         {tenant === drummondsTenantId && activeSummary?.identity &&
           activeSummary.identity.awaitingReview > 0 &&
-          <p><a href="/openfolk/drummonds?module=information&tools=false&view=today">
+          <p><a href="/openfolk/drummonds?module=information&tools=false&view=today#open-job-identity-review">
             Review {activeSummary.identity.awaitingReview.toLocaleString("en-GB")} open jobs awaiting customer or site identity in OpenFolk →
           </a></p>}
         <p>These counts use the latest saved Commusoft job statuses. On hold and Pending identify work to check; status alone does not prove urgency, the cause of a hold or who owns the next action.</p>
