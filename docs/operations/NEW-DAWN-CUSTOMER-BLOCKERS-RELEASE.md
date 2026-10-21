@@ -2,6 +2,8 @@
 
 This outcome adds a Customers tile and “Customers with jobs to check” section to the job-first Home. It groups only saved Commusoft On-hold and Pending jobs with one current source version, one exact current canonical job link, a tenant-matched customer and site, a site owned by that customer and matching the saved Commusoft property ID, and a nonblank customer name. Each job opens the existing exact-version audited detail read. Unmatched jobs remain outside the customer groups and are still visible in the paged job list and operator review queue. Source status does not establish customer impact, cause, responsible person, or a score.
 
+The operator's urgent review groups use the exact Commusoft customer **and property** IDs. Two properties under one customer remain separate, and incomplete parent IDs are kept as individual job reviews; no source grouping implies a canonical match.
+
 The audited `/client-md` presentation uses the operator's identity for server authorization but suppresses OpenFolk-only score-evidence and source-review controls on the client-facing Home and job detail. The audit reason and tenant checks remain unchanged.
 
 The customer groups lead the detailed work. An optional review of the ten oldest saved On-hold records remains directly above the full paged list, using its existing first page with no extra request. A signed-in LIVE read showed that the oldest records include internal Accounts and office jobs; presenting them as the primary customer work would be misleading. The disclosure labels age as time since verified job creation, never time in the On-hold status, and warns that internal work can appear.
@@ -38,7 +40,7 @@ The drop affects only this derived read; saved jobs, links, customers, sites, an
 
 ## Verified before release
 
-The exact SQL SHA-256 is `bc99225550f87cc2f585312aa7a1b533bb821f06a1262ce5a0a8071f10074c24`. The LIVE catalog showed the function and ledger absent. `node scripts/verify/new-dawn-customer-blockers-release.mjs --live-rollback-rehearsal` installed the function inside a rolled-back transaction, checked its grants, and confirmed the catalog returned to the original state. The integrated tree passed TypeScript, 16 focused customer/queue/Money/readback tests, and the production build with 48 prebuild tests. The exact read-only daily Money CLI returned only policy/run metadata; it neither enabled capture nor requested reports. The persistent migration and signed-in LIVE check are still pending.
+The exact SQL SHA-256 is `bc99225550f87cc2f585312aa7a1b533bb821f06a1262ce5a0a8071f10074c24`. The LIVE catalog showed the function and ledger absent. `node scripts/verify/new-dawn-customer-blockers-release.mjs --live-rollback-rehearsal` installed the function inside a rolled-back transaction, checked its grants, and confirmed the catalog returned to the original state. The integrated tree passed TypeScript, 17 focused customer/queue/Money/readback tests, and the production build with 48 prebuild tests. The exact read-only daily Money CLI returned only policy/run metadata; it neither enabled capture nor requested reports. The persistent migration and signed-in LIVE check are still pending.
 
 ## Chris's five-point signed-in check after release
 
